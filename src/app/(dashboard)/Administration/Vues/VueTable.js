@@ -1,0 +1,113 @@
+import { useState } from 'react';
+import Table from '@/components/Table';
+import * as XLSX from 'xlsx';
+import { FaRegEye, FaEdit } from "react-icons/fa";
+import { RiDeleteBin6Line } from "react-icons/ri";
+
+const VueTable = ({ 
+  data = [], 
+  loading = false, 
+  onAction, 
+  onRefresh
+}) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  // Filter data based on search term
+  const filteredData = data.filter(item => 
+    item.vue?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Calculate paginated data
+  const indexOfLastItem = currentPage * rowsPerPage;
+  const indexOfFirstItem = indexOfLastItem - rowsPerPage;
+  const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Define table columns with action buttons
+  const columns = [
+    { key: 'vue', label: 'Vue' },
+    { 
+      key: 'actions', 
+      label: 'Actions',
+      render: (row) => (
+        <div className="flex gap-4 items-center">
+          
+          <button
+            className="text-blue-500 hover:text-blue-700"
+            onClick={() => onAction && onAction('edit', row.id)}
+            title="Modifier"
+          >
+            <FaEdit className="w-4 h-4" />
+          </button>
+          <button
+            className="text-red-500 hover:text-red-700"
+            onClick={() => onAction && onAction('delete', row)}
+            title="Supprimer"
+          >
+            <RiDeleteBin6Line className="w-4 h-4" />
+          </button>
+        </div>
+      )
+    }
+  ];
+
+  // Handle search
+  const handleSearchChange = (term) => {
+    setSearchTerm(term);
+    setCurrentPage(1); // Reset to first page on search
+  };
+
+  // Handle page change
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+  };
+
+  // Handle rows per page change
+  const handleRowsPerPageChange = (newSize) => {
+    setRowsPerPage(newSize);
+    setCurrentPage(1); // Reset to first page when changing rows per page
+  };
+
+  // Export to Excel function
+  const handleExportExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(data.map(item => ({
+      ID: item.id,
+      Vue: item.vue
+    })));
+    
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Vues");
+    XLSX.writeFile(workbook, "vues_export.xlsx");
+  };
+  
+  return (
+    <div>
+      <Table 
+        columns={columns}
+        data={currentItems}
+        totalRows={filteredData.length}
+        loading={loading}
+        addUserLink="/Administration/Vues?action=add"
+        onSearchChange={handleSearchChange}
+        currentPage={currentPage}
+        rowsPerPage={rowsPerPage}
+        onPageChange={handlePageChange}
+        onRowsPerPageChange={handleRowsPerPageChange}
+        onExport={handleExportExcel}
+        enableExport={data.length > 0}
+      />
+      
+      <div className="flex justify-end mt-4">
+        <button 
+          onClick={onRefresh}
+          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+        >
+          Actualiser
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default VueTable;

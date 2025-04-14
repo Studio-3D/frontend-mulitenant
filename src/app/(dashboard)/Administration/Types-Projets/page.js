@@ -1,0 +1,170 @@
+"use client";
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import axios from 'axios';
+import { useAuth } from '@/context/AuthContext';
+import { useSociete } from '@/context/SocieteContext';
+import { TbArrowBackUp } from "react-icons/tb";
+import Link from 'next/link';
+import toast from 'react-hot-toast';
+import { APIURL } from '@/configs/api';
+import SocieteSelector from '@/components/SocieteSelector';
+import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
+import TypeProjetTable from './TypeProjetTable';
+import TypeProjetFilter from './TypeProjetFilter';
+import TypeProjetForm from './TypeProjetForm';
+
+export default function TypeProjetsPage() {
+  const [action, setAction] = useState(null);
+  const [typeProjetId, setTypeProjetId] = useState(null);
+  const [showFilter, setShowFilter] = useState(false);
+  const [typeProjets, setTypeProjets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [filterParams, setFilterParams] = useState({});
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [rowToDelete, setRowToDelete] = useState(null);
+  
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { user } = useAuth();
+  const { selectedSociete, loading: societeLoading, selectSociete } = useSociete();
+
+  // This effect handles URL parameter changes
+  useEffect(() => {
+    // Parse query parameters
+    const actionParam = searchParams.get('action');
+    const idParam = searchParams.get('id');
+    
+    // Reset component state based on URL parameters
+    setAction(actionParam || null);
+    setTypeProjetId(idParam || null);
+    
+    // Load data if we're on the main page
+    if (!actionParam && selectedSociete) {
+      fetchTypeProjets();
+    }
+  }, [searchParams, selectedSociete]); 
+
+  const fetchTypeProjets = async (filters = {}) => {
+    if (!selectedSociete) return;
+    
+    setLoading(true);
+    setError(null);
+    
+    try {
+      await selectSociete(selectedSociete);
+      
+      const token = localStorage.getItem('accessToken');
+      const response = await axios.get(APIURL.TYPEPROJETS, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { ...filters }
+      });
+      
+      const types = response.data.typeProjets || response.data || [];
+      setTypeProjets(types);
+    } catch (err) {
+      console.error("API Error:", err);
+      setError(`Erreur lors du chargement des types de projets: ${err.message}`);
+      toast.error("Erreur lors du chargement des types de projets");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFilterSubmit = (values) => {
+    setFilterParams(values);
+    fetchTypeProjets(values);
+    setShowFilter(false);
+  };
+
+  const handleAction = (actionType, row) => {
+    if (actionType === 'edit') {
+      router.push(`/Administration/Types-Projets?action=edit&id=${row}`);
+    } else if (actionType === 'delete') {
+      // Handle delete with confirmation
+      setRowToDelete(row);
+      setDeleteModalOpen(true);
+    }
+  };
+
+  
+
+  // Handle form completion
+  const handleFormComplete = () => {
+    // Use router.replace instead of push to ensure a clean navigation
+    router.replace('/Administration/Types-Projets');
+  };
+
+  // For superadmins without a selected société
+  if (user?.role === 1 && !selectedSociete && !societeLoading) {
+    return (
+      <div className="container mx-auto p-4">
+        <h1 className="text-2xl font-bold mb-6">Types de Projets</h1>
+        <div className="bg-amber-50 border-l-4 border-amber-500 p-4 mb-6">
+          <p>Veuillez sélectionner une société pour accéder aux types de projets.</p>
+        </div>
+        <SocieteSelector returnPath="/Administration/Types-Projets" />
+      </div>
+    );
+  }
+
+  // Show form for add/edit actions
+  if (action === 'add' || action === 'edit') {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-6">
+          <Link href="/Administration/Types-Projets" className="inline-flex items-center gap-2 text-[#009FFF] hover:text-blue-800">
+            <TbArrowBackUp className="text-xl" />
+            <span>Retour à la liste</span>
+          </Link>
+        </div>
+        <h1 className="text-2xl font-bold mb-6">
+          {action === 'add' ? 'Ajouter un nouveau type de projet' : 'Modifier le type de projet'}
+        </h1>
+        <TypeProjetForm 
+          id={action === 'edit' ? typeProjetId : null} 
+          onComplete={handleFormComplete}
+        />
+      </div>
+    );
+  }
+
+  // Main view with table
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-6">Gestion des Types de Projets</h1>
+      
+      {error && (
+        <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
+          <p>{error}</p>
+        </div>
+      )}
+      
+      {showFilter && (
+        <TypeProjetFilter 
+          onSubmit={handleFilterSubmit} 
+          onClose={() => setShowFilter(false)}
+          initialValues={filterParams}
+        />
+      )}
+      <DeleteConfirmationModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        entityName="TYPEPROJETS"
+        itemLabel={rowToDelete?.type}
+        entityId={rowToDelete?.id}
+        data={typeProjets}
+        onDeleted={() => fetchTypeProjets(filterParams)} // <- ici
+      />
+      <TypeProjetTable
+        data={typeProjets}
+        loading={loading || societeLoading}
+        onAction={handleAction}
+        onAddClick={() => router.push('/Administration/Types-Projets?action=add')}
+        onFilterClick={() => setShowFilter(true)}
+        onRefresh={() => fetchTypeProjets(filterParams)}
+      />
+    </div>
+  );
+}

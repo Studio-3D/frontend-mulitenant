@@ -1,0 +1,130 @@
+"use client";
+import { createContext, useState, useContext, useEffect, useCallback } from 'react';
+import axios from 'axios';
+import { APIURL } from '@/configs/api';
+import { useSociete } from './SocieteContext';
+
+// Create context
+const ProjetContext = createContext();
+
+// Context hook
+export const useProjet = () => {
+  const context = useContext(ProjetContext);
+  if (!context) {
+    throw new Error('useProjet must be used within a ProjetProvider');
+  }
+  return context;
+};
+
+// Provider component
+export function ProjetProvider({ children }) {
+  const [projets, setProjets] = useState([]);
+  const [selectedProjet, setSelectedProjet] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const { selectedSociete } = useSociete();
+
+  // Fetch all projects for the selected société
+  const fetchProjets = useCallback(async () => {
+    if (!selectedSociete) {
+      console.log('No société selected, cannot fetch projects');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await axios.get(APIURL.PROJETS, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      const fetchedProjets = response.data.projets || [];
+      setProjets(fetchedProjets);
+      
+      // Restore selected project from localStorage if exists
+      const savedProjet = localStorage.getItem('selectedProjet');
+      if (savedProjet) {
+        try {
+          const parsedProjet = JSON.parse(savedProjet);
+          setSelectedProjet(parsedProjet);
+        } catch (err) {
+          console.error('Error parsing saved projet:', err);
+          localStorage.removeItem('selectedProjet');
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching projets:', err);
+      setError('Failed to load projets');
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedSociete]);
+
+  // Effect to fetch projects when société changes
+  useEffect(() => {
+    if (selectedSociete) {
+      fetchProjets();
+    } else {
+      // Clear projects when no société is selected
+      setProjets([]);
+      setSelectedProjet(null);
+    }
+  }, [selectedSociete, fetchProjets]);
+
+  // Select a project
+  const selectProjet = (projet) => {
+    if (!projet || !projet.id) {
+      console.error("Attempting to select invalid project:", projet);
+      return;
+    }
+    
+    console.log("Setting selected project in context:", projet.id);
+    setSelectedProjet(projet);
+    
+    // Store in localStorage for persistence
+    localStorage.setItem('selectedProjet', JSON.stringify(projet));
+  };
+
+  // Effect to load selected project from localStorage on initialization
+  useEffect(() => {
+    const savedProjet = localStorage.getItem('selectedProjet');
+    if (savedProjet) {
+      try {
+        const parsedProjet = JSON.parse(savedProjet);
+        if (parsedProjet && parsedProjet.id) {
+          console.log("Loaded project from localStorage:", parsedProjet.id);
+          setSelectedProjet(parsedProjet);
+        }
+      } catch (err) {
+        console.error('Error parsing saved projet:', err);
+        localStorage.removeItem('selectedProjet');
+      }
+    }
+  }, []);
+
+  // Clear selected project
+  const clearSelectedProjet = () => {
+    setSelectedProjet(null);
+    localStorage.removeItem('selectedProjet');
+  };
+
+  return (
+    <ProjetContext.Provider
+      value={{
+        projets,
+        selectedProjet,
+        loading,
+        error,
+        fetchProjets,
+        selectProjet,
+        clearSelectedProjet
+      }}
+    >
+      {children}
+    </ProjetContext.Provider>
+  );
+}
+
+export default ProjetContext;
