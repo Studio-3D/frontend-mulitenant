@@ -25,7 +25,8 @@ COPY --from=build /app/public ./public
 COPY --from=build /app/next.config.mjs ./
 
 ENV NODE_ENV=production
+ENV PORT=8080
 
-EXPOSE 3000
+EXPOSE 8080
 
-CMD ["npm", "run", "start"]
+CMD ["npm", "start"]
