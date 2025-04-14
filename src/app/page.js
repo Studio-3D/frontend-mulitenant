@@ -19,10 +19,9 @@ export default function Home() {
     }
   }, [user, loading, router]);
 
-  // Show loading state while checking authentication
   return (
     <div className="flex items-center justify-center min-h-screen">
-      <LoadingSpin /> {/* Use your loading spinner here */}
+      <LoadingSpin />
     </div>
   );
 }
