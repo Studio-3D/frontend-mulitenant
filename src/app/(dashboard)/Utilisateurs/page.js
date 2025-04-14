@@ -58,7 +58,7 @@ const Page = () => {
       console.log('Response:', response.data);
 
       if (response.data?.users) {
-        let filteredUsers = response.data.users;
+        let filteredUsers = response.data.users.filter(u => u.id !== user?.id);
 
         // Client-side filtering
         if (searchTerm) {
@@ -84,7 +84,9 @@ const Page = () => {
 
         setUsers(filteredUsers);
         setTotalRows(
-          response.data.pagination?.totalItems || filteredUsers.length
+          response.data.pagination?.totalItems 
+            ? Math.max(response.data.pagination.totalItems - 1, 0) // Adjust total count
+            : filteredUsers.length
         );
       } else {
         setError('Aucun utilisateur trouvé');
@@ -257,11 +259,22 @@ const Page = () => {
       <div className="relative">
       <Table
         columns={columns}
-        data={selectedSociete?.id ? formatUsers() : []}
-        totalRows={selectedSociete?.id ? totalRows : 0}
+        data={
+          user?.role === 1 // Check if Super Admin
+            ? formatUsers() // Show all users regardless of societe
+            : selectedSociete?.id 
+              ? formatUsers() // Show societe-specific users for others
+              : []
+        }
+        totalRows={
+          user?.role === 1
+            ? totalRows // Show total across all sociétés
+            : selectedSociete?.id
+              ? totalRows
+              : 0
+        }
         loading={loading}
         error={error}
-        // add 
         addLink={`/Utilisateurs/ajouter-utilisateur?societe_id=${selectedSociete?.id}`}
         enableExport
         currentPage={currentPage}
@@ -271,9 +284,11 @@ const Page = () => {
         onSearchChange={setSearchTerm}
         addUserLink="/Utilisateurs/ajouter-utilisateur"
         emptyMessage={
-          !selectedSociete?.id
-            ? "Veuillez sélectionner une société pour voir les utilisateurs."
-            : "Aucun utilisateur trouvé."
+          user?.role === 1
+            ? "Aucun utilisateur trouvé." // Super Admin sees generic message
+            : !selectedSociete?.id
+              ? "Veuillez sélectionner une société pour voir les utilisateurs." // Others see prompt
+              : "Aucun utilisateur trouvé."
         }
       />
 </div>

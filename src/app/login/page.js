@@ -3,13 +3,12 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import Link from 'next/link';
-import Image from 'next/image';
 import  LoadingSpin from '../../components/LoadingSpin'; // Import your loading spinner component
 
 export default function Login() {
   // State
-  const [email, setEmail] = useState('admin@email.com');
-  const [password, setPassword] = useState('password');
+  const [email, setEmail] = useState('superadmin@gmail.com');
+  const [password, setPassword] = useState('superadmin');
   const [rememberMe, setRememberMe] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
