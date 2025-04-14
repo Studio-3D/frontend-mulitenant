@@ -90,7 +90,7 @@ const SourceTable = ({
         data={currentItems}
         totalRows={filteredData.length}
         loading={loading}
-        addUserLink="/Administration/Sources?action=add"
+        addUserLink="/administration/sources?action=add"
         onSearchChange={handleSearchChange}
         currentPage={currentPage}
         rowsPerPage={rowsPerPage}

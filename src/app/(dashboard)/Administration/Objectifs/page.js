@@ -95,9 +95,9 @@ export default function ObjectifsPage() {
   
   const handleAction = (actionType, row) => {
     if (actionType === 'view') {
-      router.push(`/Administration/Objectifs/${row}`);
+      router.push(`/administration/objectifs/${row}`);
     } else if (actionType === 'edit') {
-      router.push(`/Administration/Objectifs?action=edit&id=${row}`);
+      router.push(`/administration/objectifs?action=edit&id=${row}`);
     } else if (actionType === 'delete') {
       // Handle delete with confirmation
       setRowToDelete(row);
@@ -127,18 +127,7 @@ export default function ObjectifsPage() {
   // Show form for add/edit actions
   if (action === 'add' || action === 'edit') {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <Link href="/Administration/Objectifs" className="inline-flex items-center gap-2 text-[#009FFF] hover:text-blue-800">
-            <TbArrowBackUp className="text-xl" />
-            <span>Retour à la liste</span>
-          </Link>
-        </div>
-        <h1 className="text-2xl font-bold mb-6">
-          {action === 'add' ? 'Ajouter un nouvel objectif' : 'Modifier l\'objectif'}
-        </h1>
         <ObjectifForm id={action === 'edit' ? objectifId : null} />
-      </div>
     );
   }
 
@@ -159,7 +148,7 @@ export default function ObjectifsPage() {
         data={objectifs}
         loading={loading}
         onAction={handleAction}
-        onAddClick={() => router.push('/Administration/Objectifs?action=add')}
+        onAddClick={() => router.push('/administration/objectifs?action=add')}
         onFilterClick={() => setShowFilter(true)}
         onRefresh={() => fetchObjectifs(filterParams)}
         canAddObjectifs={canAddObjectifs}

@@ -80,7 +80,7 @@ export default function TypeProjetsPage() {
 
   const handleAction = (actionType, row) => {
     if (actionType === 'edit') {
-      router.push(`/Administration/Types-Projets?action=edit&id=${row}`);
+      router.push(`/administration/typesProjets?action=edit&id=${row}`);
     } else if (actionType === 'delete') {
       // Handle delete with confirmation
       setRowToDelete(row);
@@ -93,7 +93,7 @@ export default function TypeProjetsPage() {
   // Handle form completion
   const handleFormComplete = () => {
     // Use router.replace instead of push to ensure a clean navigation
-    router.replace('/Administration/Types-Projets');
+    router.replace('/administration/typesProjets');
   };
 
   // For superadmins without a selected société
@@ -104,7 +104,7 @@ export default function TypeProjetsPage() {
         <div className="bg-amber-50 border-l-4 border-amber-500 p-4 mb-6">
           <p>Veuillez sélectionner une société pour accéder aux types de projets.</p>
         </div>
-        <SocieteSelector returnPath="/Administration/Types-Projets" />
+        <SocieteSelector returnPath="/administration/typesProjets" />
       </div>
     );
   }
@@ -112,21 +112,11 @@ export default function TypeProjetsPage() {
   // Show form for add/edit actions
   if (action === 'add' || action === 'edit') {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <Link href="/Administration/Types-Projets" className="inline-flex items-center gap-2 text-[#009FFF] hover:text-blue-800">
-            <TbArrowBackUp className="text-xl" />
-            <span>Retour à la liste</span>
-          </Link>
-        </div>
-        <h1 className="text-2xl font-bold mb-6">
-          {action === 'add' ? 'Ajouter un nouveau type de projet' : 'Modifier le type de projet'}
-        </h1>
+      
         <TypeProjetForm 
           id={action === 'edit' ? typeProjetId : null} 
           onComplete={handleFormComplete}
         />
-      </div>
     );
   }
 
@@ -161,7 +151,7 @@ export default function TypeProjetsPage() {
         data={typeProjets}
         loading={loading || societeLoading}
         onAction={handleAction}
-        onAddClick={() => router.push('/Administration/Types-Projets?action=add')}
+        onAddClick={() => router.push('/administration/typesProjets?action=add')}
         onFilterClick={() => setShowFilter(true)}
         onRefresh={() => fetchTypeProjets(filterParams)}
       />

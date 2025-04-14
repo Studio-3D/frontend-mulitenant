@@ -28,7 +28,7 @@ const PartenaireTable = ({
 
   // Define table columns with action buttons
   const columns = [
-    { key: 'description', label: 'Description' },
+    { key: 'description', label: 'Partenaire' },
     { key: 'remise', label: 'Remise (%)' },
     { 
       key: 'actions', 
@@ -92,7 +92,7 @@ const PartenaireTable = ({
         data={currentItems}
         totalRows={filteredData.length}
         loading={loading}
-        addUserLink="/Administration/Partenaires?action=add"
+        addUserLink="/administration/partenaires?action=add"
         onSearchChange={handleSearchChange}
         currentPage={currentPage}
         rowsPerPage={rowsPerPage}

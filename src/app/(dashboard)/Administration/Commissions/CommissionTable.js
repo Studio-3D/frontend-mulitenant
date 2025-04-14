@@ -1,23 +1,23 @@
-import { useState } from 'react';
-import Table from '@/components/Table';
-import * as XLSX from 'xlsx';
+import { useState } from "react";
+import Table from "@/components/Table";
+import * as XLSX from "xlsx";
 import { FaRegEye, FaEdit } from "react-icons/fa";
 import { RiDeleteBin6Line } from "react-icons/ri";
 
-const CommissionTable = ({ 
-  data = [], 
-  loading = false, 
-  onAction, 
-  onAddClick, 
+const CommissionTable = ({
+  data = [],
+  loading = false,
+  onAction,
+  onAddClick,
   onFilterClick,
-  onRefresh
+  onRefresh,
 }) => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   // Filter data based on search term
-  const filteredData = data.filter(item => 
+  const filteredData = data.filter((item) =>
     item.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -28,33 +28,32 @@ const CommissionTable = ({
 
   // Define table columns with action buttons
   const columns = [
-    { key: 'Date', label: 'Date' },
-    { key: 'Responsable', label: 'Responsable' },
-    { key: 'Montant', label: 'Montant' },
-    { key: 'Mode Paiement', label: 'Mode Paiement' },
-    { 
-      key: 'actions', 
-      label: 'Actions',
+    { key: "Date", label: "Date" },
+    { key: "Responsable", label: "Responsable" },
+    { key: "Montant", label: "Montant" },
+    { key: "Mode Paiement", label: "Mode Paiement" },
+    {
+      key: "actions",
+      label: "Actions",
       render: (row) => (
         <div className="flex gap-4 items-center">
-          
           <button
             className="text-blue-500 hover:text-blue-700"
-            onClick={() => onAction && onAction('edit', row.id)}
+            onClick={() => onAction && onAction("edit", row.id)}
             title="Modifier"
           >
             <FaEdit className="w-4 h-4" />
           </button>
           <button
             className="text-red-500 hover:text-red-700"
-            onClick={() => onAction && onAction('delete', row)}
+            onClick={() => onAction && onAction("delete", row)}
             title="Supprimer"
           >
             <RiDeleteBin6Line className="w-4 h-4" />
           </button>
         </div>
-      )
-    }
+      ),
+    },
   ];
 
   // Handle search
@@ -76,25 +75,27 @@ const CommissionTable = ({
 
   // Export to Excel function
   const handleExportExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(data.map(item => ({
-      ID: item.id,
-      Description: item.description,
-      Remise: item.remise || '0'
-    })));
-    
+    const worksheet = XLSX.utils.json_to_sheet(
+      data.map((item) => ({
+        ID: item.id,
+        Description: item.description,
+        Remise: item.remise || "0",
+      }))
+    );
+
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Commissions");
     XLSX.writeFile(workbook, "commissions_export.xlsx");
   };
-  
+
   return (
     <div>
-      <Table 
+      <Table
         columns={columns}
         data={currentItems}
         totalRows={filteredData.length}
         loading={loading}
-        addUserLink="/Administration/Commissions?action=add"
+        addUserLink="/administration/commissions?action=add"
         onSearchChange={handleSearchChange}
         currentPage={currentPage}
         rowsPerPage={rowsPerPage}
@@ -102,9 +103,8 @@ const CommissionTable = ({
         onRowsPerPageChange={handleRowsPerPageChange}
         onExport={handleExportExcel}
         enableExport={true}
-
       />
-      
+
       {/* <div className="flex justify-between mt-4">
         
         <button 

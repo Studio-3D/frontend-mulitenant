@@ -30,6 +30,7 @@ export default function BanquesPage() {
   const { selectedProjet } = useProjet();
   const [totalRows, setTotalRows] = useState(0);
 
+  // This effect handles URL parameter changes
   useEffect(() => {
     // Parse query parameters
     const actionParam = searchParams.get('action');
@@ -71,7 +72,7 @@ export default function BanquesPage() {
 
   const handleAction = (actionType, row) => {
     if (actionType === 'edit') {
-      router.push(`/Administration/Banques?action=edit&id=${row.id}`);
+      router.push(`/administration/banques?action=edit&id=${row.id}`);
     } else if (actionType === 'delete') {
       // Handle delete with confirmation
         setBanqueToDelete(row);
@@ -85,7 +86,7 @@ export default function BanquesPage() {
   // Handle form completion
   const handleFormComplete = () => {
     // Use router.replace instead of push to ensure a clean navigation
-    router.replace('/Administration/Banques');
+    router.replace('/administration/banques');
   };
 
   // If not logged in, show appropriate message
@@ -96,21 +97,12 @@ export default function BanquesPage() {
   // Show form for add/edit actions
   if (action === 'add' || action === 'edit') {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <Link href="/Administration/Banques" className="inline-flex items-center gap-2 text-[#009FFF] hover:text-blue-800">
-            <TbArrowBackUp className="text-xl" />
-            <span>Retour à la liste</span>
-          </Link>
-        </div>
-        <h1 className="text-2xl font-bold mb-6">
-          {action === 'add' ? 'Ajouter une nouvelle banque' : 'Modifier la banque'}
-        </h1>
+        
         <BanqueForm
           id={action === 'edit' ? banqueId : null} 
           onComplete={handleFormComplete}
         />
-      </div>
+      
     );
   }
 
@@ -133,7 +125,7 @@ export default function BanquesPage() {
         setData={setBanques}
         loading={loading}
         onAction={handleAction}
-        onAddClick={() => router.push('/Administration/Banques?action=add')}
+        onAddClick={() => router.push('/administration/banques?action=add')}
         onFilterClick={() => setShowFilter(true)}
         onRefresh={() => fetchBanques(filterParams)}
       />

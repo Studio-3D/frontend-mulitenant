@@ -87,7 +87,7 @@ export default function PartenairesPage() {
 
   const handleAction = (actionType, row) => {
     if (actionType === 'edit') {
-      router.push(`/Administration/Partenaires?action=edit&id=${row}`);
+      router.push(`/administration/partenaires?action=edit&id=${row}`);
     } else if (actionType === 'delete') {
       // Handle delete with confirmation
       setRowToDelete(row);
@@ -100,7 +100,7 @@ export default function PartenairesPage() {
   // Handle form completion
   const handleFormComplete = () => {
     // Use router.replace instead of push to ensure a clean navigation
-    router.replace('/Administration/Partenaires');
+    router.replace('/administration/partenaires');
   };
 
   // If not logged in or no project selected, show appropriate message
@@ -115,21 +115,11 @@ export default function PartenairesPage() {
   // Show form for add/edit actions
   if (action === 'add' || action === 'edit') {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <Link href="/Administration/Partenaires" className="inline-flex items-center gap-2 text-[#009FFF] hover:text-blue-800">
-            <TbArrowBackUp className="text-xl" />
-            <span>Retour à la liste</span>
-          </Link>
-        </div>
-        <h1 className="text-2xl font-bold mb-6">
-          {action === 'add' ? 'Ajouter un nouveau partenaire' : 'Modifier le partenaire'}
-        </h1>
+      
         <PartenaireForm 
           id={action === 'edit' ? partenaireId : null} 
           onComplete={handleFormComplete}
         />
-      </div>
     );
   }
 
@@ -150,7 +140,7 @@ export default function PartenairesPage() {
         data={partenaires}
         loading={loading}
         onAction={handleAction}
-        onAddClick={() => router.push('/Administration/Partenaires?action=add')}
+        onAddClick={() => router.push('/administration/partenaires?action=add')}
         onFilterClick={() => setShowFilter(true)}
         onRefresh={() => fetchPartenaires(filterParams)}
       />

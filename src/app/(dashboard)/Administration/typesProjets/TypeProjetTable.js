@@ -4,7 +4,7 @@ import * as XLSX from 'xlsx';
 import { FaRegEye, FaEdit } from "react-icons/fa";
 import { RiDeleteBin6Line } from "react-icons/ri";
 
-const TypeBienTable = ({ 
+const TypeProjetTable = ({ 
   data = [], 
   loading = false, 
   onAction, 
@@ -28,7 +28,7 @@ const TypeBienTable = ({
 
   // Define table columns with action buttons
   const columns = [
-    { key: 'type', label: 'Type de bien' },
+    { key: 'type', label: 'Type de projet' },
     { 
       key: 'actions', 
       label: 'Actions',
@@ -78,8 +78,8 @@ const TypeBienTable = ({
     })));
     
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Types de Biens");
-    XLSX.writeFile(workbook, "types-biens.xlsx");
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Types de Projets");
+    XLSX.writeFile(workbook, "types-projets.xlsx");
   };
   
   return (
@@ -89,7 +89,7 @@ const TypeBienTable = ({
         data={currentItems}
         totalRows={filteredData.length}
         loading={loading}
-        addUserLink="/Administration/Types-Biens?action=add"
+        addUserLink="/administration/typesProjets?action=add"
         onSearchChange={handleSearchChange}
         currentPage={currentPage}
         rowsPerPage={rowsPerPage}
@@ -99,16 +99,16 @@ const TypeBienTable = ({
         enableExport={data.length > 0}
       />
       
-      <div className="flex justify-end mt-4">
+      {/* <div className="flex justify-end mt-4">
         <button 
           onClick={onRefresh}
           className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
         >
           Actualiser
         </button>
-      </div>
+      </div> */}
     </div>
   );
 };
 
-export default TypeBienTable;
+export default TypeProjetTable;

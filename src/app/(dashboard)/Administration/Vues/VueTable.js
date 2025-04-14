@@ -88,7 +88,7 @@ const VueTable = ({
         data={currentItems}
         totalRows={filteredData.length}
         loading={loading}
-        addUserLink="/Administration/Vues?action=add"
+        addUserLink="/administration/vues?action=add"
         onSearchChange={handleSearchChange}
         currentPage={currentPage}
         rowsPerPage={rowsPerPage}
