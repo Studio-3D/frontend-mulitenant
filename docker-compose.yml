@@ -1,15 +1,31 @@
 version: '3.8'
 
 services:
-  frontend:
+  # Development service
+  frontend-dev:
     build:
       context: ./
+      dockerfile: Dockerfile.dev
     volumes:
-      - front_vm:/app
+      - ./:/app
+      - /app/node_modules
     ports:
       - "3000:3000"
     env_file:
       - .env
+    environment:
+      - NODE_ENV=development
+    command: npm run dev
 
-volumes:
-  front_vm:
+  # Production service
+  frontend-prod:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
