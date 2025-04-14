@@ -30,7 +30,6 @@ export default function BanquesPage() {
   const { selectedProjet } = useProjet();
   const [totalRows, setTotalRows] = useState(0);
 
-  // This effect handles URL parameter changes
   useEffect(() => {
     // Parse query parameters
     const actionParam = searchParams.get('action');
