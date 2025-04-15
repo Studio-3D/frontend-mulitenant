@@ -11,6 +11,8 @@ import BanqueTable from './BanqueTable';
 import BanqueFilter from './BanqueFilter';
 import BanqueForm from './BanqueForm';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
+import { useSociete } from '@/context/SocieteContext';
+import SocieteSelector from '@/components/SocieteSelector';
 
 export default function BanquesPage() {
   const [action, setAction] = useState(null);
@@ -27,7 +29,7 @@ export default function BanquesPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
-  const { selectedProjet } = useProjet();
+  const { selectedSociete, loading: societeLoading } = useSociete();
   const [totalRows, setTotalRows] = useState(0);
 
   // This effect handles URL parameter changes
@@ -44,7 +46,7 @@ export default function BanquesPage() {
     if (!actionParam) {
       fetchBanques();
     }
-  }, [searchParams, selectedProjet]); // Important to include searchParams as a dependency
+  }, [searchParams, selectedSociete]); // Important to include searchParams as a dependency
 
   const fetchBanques = async (filters = {}) => {
     setLoading(true);
@@ -93,6 +95,18 @@ export default function BanquesPage() {
   if (!user) {
     return <div>Veuillez vous connecter pour accéder à cette page.</div>;
   }
+
+  if (user?.role === 1 && !selectedSociete && !societeLoading) {
+      return (
+        <div className="container mx-auto p-4">
+          <h1 className="text-2xl font-bold mb-6">Types de Biens</h1>
+          <div className="bg-amber-50 border-l-4 border-amber-500 p-4 mb-6">
+            <p>Veuillez sélectionner une société pour accéder aux types de biens.</p>
+          </div>
+          <SocieteSelector returnPath="/administration/typesBiens" />
+        </div>
+      );
+    }
 
   // Show form for add/edit actions
   if (action === 'add' || action === 'edit') {
