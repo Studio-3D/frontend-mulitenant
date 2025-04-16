@@ -80,7 +80,7 @@ export default function SourcesPage() {
 
   const handleAction = (actionType, row) => {
     if (actionType === 'edit') {
-      router.push(`/Administration/Sources?action=edit&id=${row}`);
+      router.push(`/administration/sources?action=edit&id=${row}`);
     } else if (actionType === 'delete') {
       // Handle delete with confirmation
       setRowToDelete(row);
@@ -92,7 +92,7 @@ export default function SourcesPage() {
   // Handle form completion
   const handleFormComplete = () => {
     // Use router.replace instead of push to ensure a clean navigation
-    router.replace('/Administration/Sources');
+    router.replace('/administration/sources');
   };
 
   // If not logged in, show appropriate message
@@ -103,21 +103,11 @@ export default function SourcesPage() {
   // Show form for add/edit actions
   if (action === 'add' || action === 'edit') {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <Link href="/Administration/Sources" className="inline-flex items-center gap-2 text-[#009FFF] hover:text-blue-800">
-            <TbArrowBackUp className="text-xl" />
-            <span>Retour à la liste</span>
-          </Link>
-        </div>
-        <h1 className="text-2xl font-bold mb-6">
-          {action === 'add' ? 'Ajouter une nouvelle source' : 'Modifier la source'}
-        </h1>
+      
         <SourceForm 
           id={action === 'edit' ? sourceId : null} 
           onComplete={handleFormComplete}
         />
-      </div>
     );
   }
 
@@ -138,7 +128,7 @@ export default function SourcesPage() {
         data={sources}
         loading={loading}
         onAction={handleAction}
-        onAddClick={() => router.push('/Administration/Sources?action=add')}
+        onAddClick={() => router.push('/administration/sources?action=add')}
         onFilterClick={() => setShowFilter(true)}
         onRefresh={() => fetchSources(filterParams)}
       />

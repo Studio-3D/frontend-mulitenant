@@ -190,7 +190,7 @@ const ObjectifTable = ({
         data={formattedObjectifs}
         totalRows={filteredData.length}
         loading={loading}
-        addUserLink={canAddObjectifs ? "/Administration/Objectifs?action=add" : undefined}
+        addUserLink={canAddObjectifs ? "/administration/objectifs?action=add" : undefined}
         onSearchChange={handleSearchChange}
         currentPage={currentPage}
         rowsPerPage={rowsPerPage}

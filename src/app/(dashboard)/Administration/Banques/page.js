@@ -11,6 +11,8 @@ import BanqueTable from './BanqueTable';
 import BanqueFilter from './BanqueFilter';
 import BanqueForm from './BanqueForm';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
+import { useSociete } from '@/context/SocieteContext';
+import SocieteSelector from '@/components/SocieteSelector';
 
 export default function BanquesPage() {
   const [action, setAction] = useState(null);
@@ -27,7 +29,7 @@ export default function BanquesPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
-  const { selectedProjet } = useProjet();
+  const { selectedSociete, loading: societeLoading } = useSociete();
   const [totalRows, setTotalRows] = useState(0);
 
   // This effect handles URL parameter changes
@@ -44,7 +46,7 @@ export default function BanquesPage() {
     if (!actionParam) {
       fetchBanques();
     }
-  }, [searchParams, selectedProjet]); // Important to include searchParams as a dependency
+  }, [searchParams, selectedSociete]); // Important to include searchParams as a dependency
 
   const fetchBanques = async (filters = {}) => {
     setLoading(true);
@@ -72,7 +74,7 @@ export default function BanquesPage() {
 
   const handleAction = (actionType, row) => {
     if (actionType === 'edit') {
-      router.push(`/Administration/Banques?action=edit&id=${row.id}`);
+      router.push(`/administration/banques?action=edit&id=${row.id}`);
     } else if (actionType === 'delete') {
       // Handle delete with confirmation
         setBanqueToDelete(row);
@@ -86,7 +88,7 @@ export default function BanquesPage() {
   // Handle form completion
   const handleFormComplete = () => {
     // Use router.replace instead of push to ensure a clean navigation
-    router.replace('/Administration/Banques');
+    router.replace('/administration/banques');
   };
 
   // If not logged in, show appropriate message
@@ -94,24 +96,27 @@ export default function BanquesPage() {
     return <div>Veuillez vous connecter pour accéder à cette page.</div>;
   }
 
+  if (user?.role === 1 && !selectedSociete && !societeLoading) {
+      return (
+        <div className="container mx-auto p-4">
+          <h1 className="text-2xl font-bold mb-6">Types de Biens</h1>
+          <div className="bg-amber-50 border-l-4 border-amber-500 p-4 mb-6">
+            <p>Veuillez sélectionner une société pour accéder aux types de biens.</p>
+          </div>
+          <SocieteSelector returnPath="/administration/typesBiens" />
+        </div>
+      );
+    }
+
   // Show form for add/edit actions
   if (action === 'add' || action === 'edit') {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <Link href="/Administration/Banques" className="inline-flex items-center gap-2 text-[#009FFF] hover:text-blue-800">
-            <TbArrowBackUp className="text-xl" />
-            <span>Retour à la liste</span>
-          </Link>
-        </div>
-        <h1 className="text-2xl font-bold mb-6">
-          {action === 'add' ? 'Ajouter une nouvelle banque' : 'Modifier la banque'}
-        </h1>
+        
         <BanqueForm
           id={action === 'edit' ? banqueId : null} 
           onComplete={handleFormComplete}
         />
-      </div>
+      
     );
   }
 
@@ -134,7 +139,7 @@ export default function BanquesPage() {
         setData={setBanques}
         loading={loading}
         onAction={handleAction}
-        onAddClick={() => router.push('/Administration/Banques?action=add')}
+        onAddClick={() => router.push('/administration/banques?action=add')}
         onFilterClick={() => setShowFilter(true)}
         onRefresh={() => fetchBanques(filterParams)}
       />

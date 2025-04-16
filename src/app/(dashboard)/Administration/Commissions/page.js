@@ -87,7 +87,7 @@ export default function CommissionsPage() {
 
   const handleAction = (actionType, row) => {
     if (actionType === 'edit') {
-      router.push(`/Administration/Commissions?action=edit&id=${row}`);
+      router.push(`/administration/commissions?action=edit&id=${row}`);
     } else if (actionType === 'delete') {
       // Handle delete with confirmation
       setRowToDelete(row);
@@ -100,7 +100,7 @@ export default function CommissionsPage() {
   // Handle form completion
   const handleFormComplete = () => {
     // Use router.replace instead of push to ensure a clean navigation
-    router.replace('/Administration/Commissions');
+    router.replace('/administration/commissions');
   };
 
   // If not logged in or no project selected, show appropriate message
@@ -117,7 +117,7 @@ export default function CommissionsPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
-          <Link href="/Administration/Commissions" className="inline-flex items-center gap-2 text-[#009FFF] hover:text-blue-800">
+          <Link href="/administration/commissions" className="inline-flex items-center gap-2 text-[#009FFF] hover:text-blue-800">
             <TbArrowBackUp className="text-xl" />
             <span>Retour à la liste</span>
           </Link>
@@ -150,7 +150,7 @@ export default function CommissionsPage() {
         data={commissions}
         loading={loading}
         onAction={handleAction}
-        onAddClick={() => router.push('/Administration/Commissions?action=add')}
+        onAddClick={() => router.push('/administration/commissions?action=add')}
         onFilterClick={() => setShowFilter(true)}
         onRefresh={() => fetchCommissions(filterParams)}
       />
