@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import Link from 'next/link';
-import  LoadingSpin from '../../components/LoadingSpin'; // Import your loading spinner component
+import LoadingSpin from '../../components/LoadingSpin'; // Import your loading spinner component
 
 export default function Login() {
   // State

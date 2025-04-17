@@ -1,18 +1,23 @@
 'use client';
 
-import { useState, useEffect } from "react";
-import { CiFilter, CiSearch } from "react-icons/ci";
-import { IoAddOutline } from "react-icons/io5";
-import { MdImportExport } from "react-icons/md";
-import Link from "next/link";
-import Modal from "./Modal";
+import { useState, useEffect } from 'react';
+import { CiFilter, CiSearch } from 'react-icons/ci';
+import { IoAddOutline } from 'react-icons/io5';
+import { MdImportExport } from 'react-icons/md';
+import Link from 'next/link';
+import Modal from './Modal';
+import { handleExportExcel } from '../../src/configs/export';
+import Modal_Import from './Modal_Import';
 
-const Table = ({ 
-  columns, 
-  data, 
-  totalRows = 0, 
-  addUserLink, 
-  loading, 
+const Table = ({
+  name_file_export,
+  data_to_export,
+  columns_export,
+  columns,
+  data,
+  totalRows = 0,
+  addLink,
+  loading,
   error,
   emptyMessage,
   onPageChange = () => {},
@@ -21,32 +26,15 @@ const Table = ({
   currentPage = 1,
   rowsPerPage = 10,
   onAddClick,
-  onExport = null, // Accept onExport prop
-  enableExport = false // Keep enableExport flag
+  onExport = null,
+  enableExport = false,
+  enableImport = false,
+  filterComponent = null, // New prop for custom filter component
 }) => {
   const [showModal, setShowModal] = useState(null);
-  const [localSearchTerm, setLocalSearchTerm] = useState("");
-
-  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [localSearchTerm, setLocalSearchTerm] = useState('');
+  const [showFilter, setShowFilter] = useState(false);
   const [showModal_Import, setShowModal_Import] = useState(false);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      const filterDropdown = document.getElementById('filter-dropdown');
-      const filterButton = document.getElementById('filter-button');
-      if (filterDropdown && filterButton && 
-          !filterDropdown.contains(event.target) && 
-          !filterButton.contains(event.target)) {
-        setShowFilterDropdown(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  // Safe calculation of total pages
-  const totalPages = Math.max(1, Math.ceil(totalRows / Math.max(1, rowsPerPage)));
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -56,7 +44,6 @@ const Table = ({
 
     return () => clearTimeout(timer);
   }, [localSearchTerm, onSearchChange, onPageChange]);
-
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
@@ -75,29 +62,35 @@ const Table = ({
     onRowsPerPageChange(newRowsPerPage);
   };
 
+  const handleExport = () => {
+    handleExportExcel(
+      data_to_export,
+      columns_export,
+      name_file_export + '.xlsx'
+    );
+  };
+
+  // Safe calculation of total pages
+  const totalPages = Math.max(
+    1,
+    Math.ceil(totalRows / Math.max(1, rowsPerPage))
+  );
+
   return (
-    <div className="mx-auto px-6 py-4 mt-2 bg-white rounded-lg shadow-md">
+    <div className="mx-auto px-6 py-4 mt-2 mb-4 bg-white rounded-lg shadow-md">
       {/* Table Controls */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-6">
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <div className="relative">
-            <button 
-              id="filter-button"
-              className="border border-gray-300 rounded-lg p-1.5 bg-transparent cursor-pointer flex items-center"
-              onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+          {filterComponent && (
+            <button
+              className={`border rounded-lg p-1.5 cursor-pointer flex items-center ${
+                showFilter ? 'bg-[#009FFF] text-white' : 'border-gray-300 bg-transparent'
+              }`}
+              onClick={() => setShowFilter(!showFilter)}
             >
               <CiFilter className="w-6 h-6" />
             </button>
-            
-            {showFilterDropdown && (
-              <div 
-                id="filter-dropdown"
-                className="absolute top-full left-0 mt-2 bg-white border rounded-lg shadow-lg z-50 p-4 min-w-[1570px] min-h-[100px]"
-              >
-                {/* Empty dropdown content */}
-              </div>
-            )}
-          </div>
+          )}
 
           <div className="flex-1 sm:flex-none flex items-center border border-gray-300 rounded-lg p-1.5 bg-transparent gap-2 w-full sm:w-[300px]">
             <CiSearch className="w-6 h-6" />
@@ -113,39 +106,50 @@ const Table = ({
         </div>
 
         <div className="flex gap-2 items-center">
-        {onAddClick && (
-          <button
-            onClick={onAddClick}
-            className="flex gap-1 items-center bg-green-600 text-white font-medium rounded-lg px-3 py-1.5"
-          >
-            <IoAddOutline className="w-5 h-5" />
-            <span>Ajouter</span>
-          </button>
-        )}
-          {addUserLink && (
-            <Link href={addUserLink} className="flex gap-1 items-center bg-green-600 text-white font-medium rounded-lg px-3 py-1.5">
+          {addLink && (
+            <Link
+              href={addLink}
+              className="flex gap-1 items-center bg-green-600 text-white font-medium rounded-lg px-3 py-1.5"
+            >
               <IoAddOutline className="w-5 h-5" />
               <span>Ajouter</span>
             </Link>
           )}
+         
           {enableExport && (
-            <button 
+            <button
               className="flex gap-1 items-center bg-[#009FFF] text-white font-medium rounded-lg px-3 py-1.5"
-              onClick={onExport}
+              onClick={handleExport}
             >
               <MdImportExport className="w-5 h-5" />
               <span>Exporter</span>
             </button>
           )}
+          {enableImport && (
+            <button
+              className="flex gap-1 items-center bg-[#231651] text-white font-medium rounded-lg px-3 py-1.5"
+              onClick={() => setShowModal_Import(true)}
+            >
+              <MdImportExport className="w-5 h-5" />
+              <span>Importer</span>
+            </button>
+          )}
         </div>
       </div>
+
+      {/* Filter row - appears above the table */}
+      {showFilter && filterComponent && (
+        <div className="w-full pt-4">
+          {filterComponent}
+        </div>
+      )}
 
       {/* Table */}
       <div className="overflow-auto mt-4 h-[72vh]">
         {error ? (
           <div className="text-center text-red-500 py-4">{error}</div>
         ) : (
-          <table className="w-full border-collapse mt-6">
+          <table className="w-full border-collapse">
             <thead>
               <tr className="bg-[#009FFF] text-white">
                 {columns.map((column) => (
@@ -165,10 +169,13 @@ const Table = ({
                       </td>
                     ))}
                   </tr>
-                )) 
+                ))
               ) : data.length === 0 ? (
                 <tr>
-                  <td colSpan={columns.length} className="py-4 text-center text-gray-500">
+                  <td
+                    colSpan={columns.length}
+                    className="py-4 text-center text-gray-500"
+                  >
                     {emptyMessage}
                   </td>
                 </tr>
@@ -198,7 +205,9 @@ const Table = ({
             onChange={handleRowsPerPageChange}
           >
             {[10, 20, 30].map((num) => (
-              <option key={num} value={num}>{num}</option>
+              <option key={num} value={num}>
+                {num}
+              </option>
             ))}
           </select>
         </div>
@@ -229,10 +238,18 @@ const Table = ({
           {showModal}
         </Modal>
       )}
+      {showModal_Import && (
+        <Modal isVisible={true} onClose={() => setShowModal_Import(false)}>
+          <Modal_Import
+            title='Prospects'
+            route='upload_excel_prospect'
+            localstorage='load_data_prospect'
+            onClose={() => setShowModal_Import(false)}
+          />
+        </Modal>
+      )}
     </div>
-    
   );
 };
 
 export default Table;
-

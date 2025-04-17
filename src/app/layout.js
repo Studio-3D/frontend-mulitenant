@@ -26,9 +26,9 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Toaster position="top-center" reverseOrder={false} />
-        <AuthProvider> {/* ✅ AuthProvider must be the outermost */}
-          <SocieteProvider> {/* ✅ Depends on AuthProvider */}
-            <ProjetProvider> {/* ✅ Can be inside or outside depending on its dependencies */}
+        <AuthProvider> 
+          <SocieteProvider> 
+            <ProjetProvider> 
               {children}
             </ProjetProvider>
           </SocieteProvider>

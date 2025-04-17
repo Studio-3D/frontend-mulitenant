@@ -143,7 +143,7 @@ export default function Societes() {
           <Modal isVisible={showSociete} onClose={() => setShowSociete(false)}>
             <AfficherSociete
               societeId={selectedSocieteId}
-              accessToken={localStorage.getItem('accessToken')}
+              accessToken={localStorage.getItem('accessToken')} 
               onClose={() => setShowSociete(false)}
             />
           </Modal>

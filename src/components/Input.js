@@ -10,10 +10,10 @@ export default function Input({
   error, 
   children,
   readOnly,
-  required  // Added required prop
+  required,
 }) {
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col w-full"> {/* Default to full width */}
       <label className="font-medium text-gray-700">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
@@ -26,7 +26,7 @@ export default function Input({
           onChange={onChange}
           readOnly={readOnly}
           required={required}
-          className={`w-[350px] h-[38px] text-[15px] px-4 py-2 outline-none border rounded-md
+          className={`h-[38px] text-[15px] px-4 py-2 outline-none border rounded-md w-full
             ${
               readOnly 
                 ? 'cursor-default bg-gray-50 border-[#b7daf6]' 
