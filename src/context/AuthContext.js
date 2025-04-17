@@ -12,22 +12,22 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = window.localStorage.getItem('accessToken');
-    if (token) {
-      axios.get(authConfig.dashboardEndpoint, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      .then(response => {
-        setUser(response.data.user);
-        setLoading(false);
-      })
-      .catch(() => {
-        window.localStorage.removeItem('accessToken');
-        setLoading(false);
-      });
-    } else {
+    const initAuth = async () => {
+      const token = window.localStorage.getItem('accessToken');
+      if (token) {
+        try {
+          const response = await axios.get(authConfig.dashboardEndpoint, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setUser(response.data.user);
+        } catch (error) {
+          window.localStorage.removeItem('accessToken');
+        }
+      }
       setLoading(false);
-    }
+    };
+
+    initAuth();
   }, []);
 
   const login = async (params) => {
@@ -43,13 +43,13 @@ export function AuthProvider({ children }) {
       });
       
       setUser(userResponse.data.user);
-      setLoading(false);
       router.push('/');
       return true;
     } catch (error) {
-      setLoading(false);
       console.error("Login error:", error);
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -62,17 +62,24 @@ export function AuthProvider({ children }) {
     } finally {
       window.localStorage.removeItem('accessToken');
       setUser(null);
-      router.push("/");
+      router.push("/login");
     }
   };
 
-  return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  const value = {
+    user,
+    loading,
+    login,
+    logout
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
-  return useContext(AuthContext);
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 }

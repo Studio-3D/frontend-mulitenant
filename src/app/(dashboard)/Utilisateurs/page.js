@@ -16,6 +16,8 @@ import { APIURL, RESOURCE_URL } from '../../../configs/api';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import DeleteData from '@/components/DeleteData';
+import Input from '@/components/Input';
+import SelectInput from '@/components/SelectInput';
 
 const Page = () => {
   const [users, setUsers] = useState([]);
@@ -58,7 +60,7 @@ const Page = () => {
       console.log('Response:', response.data);
 
       if (response.data?.users) {
-        let filteredUsers = response.data.users;
+        let filteredUsers = response.data.users.filter(u => u.id !== user?.id);
 
         // Client-side filtering
         if (searchTerm) {
@@ -84,7 +86,9 @@ const Page = () => {
 
         setUsers(filteredUsers);
         setTotalRows(
-          response.data.pagination?.totalItems || filteredUsers.length
+          response.data.pagination?.totalItems 
+            ? Math.max(response.data.pagination.totalItems - 1, 0) // Adjust total count
+            : filteredUsers.length
         );
       } else {
         setError('Aucun utilisateur trouvé');
@@ -129,17 +133,17 @@ const Page = () => {
 
   // Format users data for table display
   const formatUsers = () => {
-    return users.map((user) => ({
-      id: user.id,
-      avatar: user.photo
-        ? `${RESOURCE_URL.DOCS}/${user.societe?.raison_sociale_concatene}_${user.societe?.id}/users/${user.photo}`
+    return users.map((us) => ({
+      id: us.id,
+      avatar: us.photo
+        ? `${RESOURCE_URL.DOCS}/${us.societe ? us?.societe?.raison_sociale_concatene : user?.societe?.raison_sociale_concatene}_${us.societe_id ? us.societe_id : user.societe_id}/users/${us?.photo}`
         : '/default-avatar.png',
-      nomComplet: `${user.name || ''} ${user.prenom || ''}`.trim(),
-      email: user.email,
-      telephone: user.phone || 'Non spécifié',
-      role: getRoleText(user.role),
-      date: new Date(user.created_at).toLocaleDateString(),
-      status: user.is_actif ? 'Actif' : 'Inactif',
+      nomComplet: `${us.name || ''} ${us.prenom || ''}`.trim(),
+      email: us.email,
+      telephone: us.phone || 'Non spécifié',
+      role: getRoleText(us.role),
+      date: new Date(us.created_at).toLocaleDateString(),
+      status: us.is_actif ? 'Actif' : 'Inactif',
     }));
   };
 
@@ -254,26 +258,108 @@ const Page = () => {
 
   return (
     <>
-      <div className="relative">
+      <div className="relative ">
       <Table
         columns={columns}
-        data={selectedSociete?.id ? formatUsers() : []}
-        totalRows={selectedSociete?.id ? totalRows : 0}
+        filterComponent={
+          <div className="space-y-4">
+            <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(6, minmax(0, 1fr))' }}>
+              {/* Your filter inputs here */}
+              <div className='w-[250px]'>
+              <Input
+                type="text"
+                placeholder="Rechercher par nom..."
+                className=" p-2 rounded border border-gray-300 bg-transparent"
+                />
+              </div>
+              <div className='w-[250px]'>
+              <SelectInput
+                options={[
+                  { value: '', label: 'Tous les rôles' },
+                  { value: '1', label: 'Super Admin' },
+                  { value: '2', label: 'Admin' },
+                  { value: '3', label: 'Commercial' },
+                ]}
+                placeholder="Sélectionner un rôle"
+                className=" p-2 rounded border border-gray-300 bg-transparent"
+                />
+              </div>
+              <div className='w-[250px]'>
+              <SelectInput
+                options={[
+                  { value: '', label: 'Tous les rôles' },
+                  { value: '1', label: 'Super Admin' },
+                  { value: '2', label: 'Admin' },
+                  { value: '3', label: 'Commercial' },
+                ]}
+                placeholder="Sélectionner un rôle"
+                className=" p-2 rounded border border-gray-300 bg-transparent"
+                />
+              </div>
+              <div className='w-[250px]'>
+              <SelectInput
+                options={[
+                  { value: '', label: 'Tous les rôles' },
+                  { value: '1', label: 'Super Admin' },
+                  { value: '2', label: 'Admin' },
+                  { value: '3', label: 'Commercial' },
+                ]}
+                placeholder="Sélectionner un rôle"
+                className=" p-2 rounded border border-gray-300 bg-transparent"
+                />
+              </div>
+              <div className='w-[250px]'>
+              <SelectInput
+                options={[
+                  { value: '', label: 'Tous les rôles' },
+                  { value: '1', label: 'Super Admin' },
+                  { value: '2', label: 'Admin' },
+                  { value: '3', label: 'Commercial' },
+                ]}
+                placeholder="Sélectionner un rôle"
+                className=" p-2 rounded border border-gray-300 bg-transparent"
+                />
+              </div>
+              <div className="flex justify-end">
+              <button
+                type="submit"
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Appliquer les filtres
+              </button>
+            </div>
+            </div>
+          </div>
+        }
+        data={
+          user?.role === 1 // Check if Super Admin
+            ? formatUsers() // Show all users regardless of societe
+            : selectedSociete?.id 
+              ? formatUsers() // Show societe-specific users for others
+              : []
+        }
+        totalRows={
+          user?.role === 1
+            ? totalRows // Show total across all sociétés
+            : selectedSociete?.id
+              ? totalRows
+              : 0
+        }
         loading={loading}
         error={error}
-        // add 
-        addLink={`/Utilisateurs/ajouter-utilisateur?societe_id=${selectedSociete?.id}`}
+        addLink={`/Utilisateurs/Ajouter-Utilisateur`}
         enableExport
         currentPage={currentPage}
         rowsPerPage={rowsPerPage}
         onPageChange={setCurrentPage}
         onRowsPerPageChange={setRowsPerPage}
         onSearchChange={setSearchTerm}
-        addUserLink="/Utilisateurs/ajouter-utilisateur"
         emptyMessage={
-          !selectedSociete?.id
-            ? "Veuillez sélectionner une société pour voir les utilisateurs."
-            : "Aucun utilisateur trouvé."
+          user?.role === 1
+            ? "Aucun utilisateur trouvé." // Super Admin sees generic message
+            : !selectedSociete?.id
+              ? "Veuillez sélectionner une société pour voir les utilisateurs." // Others see prompt
+              : "Aucun utilisateur trouvé."
         }
       />
 </div>

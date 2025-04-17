@@ -9,8 +9,10 @@ import toast from 'react-hot-toast';
 import { RiEditLine } from "react-icons/ri";
 import LoadingSpin from '../LoadingSpin';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useAuth } from '../../context/AuthContext';
 
 const ProfileContent = ({ userId }) => {
+  const { user } = useAuth();
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -134,10 +136,20 @@ const ProfileContent = ({ userId }) => {
         <div className="flex items-center flex-grow">
           <input type='file' accept='image/*' className='hidden' />
           <div className='relative w-32 h-32 cursor-pointer'>
-            <img
-              src={userData.photo ? 
-                `${RESOURCE_URL.DOCS}/${selectedSociete.raison_sociale_concatene}_${selectedSociete.id}/users/${userData.photo}`
-                : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'}
+          <img
+              src={
+                userData.photo
+                  ? `${RESOURCE_URL.DOCS}/${
+                      userData.societe
+                        ? userData?.societe?.raison_sociale_concatene
+                        : user?.societe?.raison_sociale_concatene
+                    }_${
+                      userData.societe_id
+                        ? userData.societe_id
+                        : user.societe_id
+                    }/users/${userData?.photo}`
+                  : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
+              }
               alt="User Avatar"
               className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
             />
