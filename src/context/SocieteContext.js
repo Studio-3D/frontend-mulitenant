@@ -1,61 +1,29 @@
 "use client";
 import { createContext, useState, useContext, useEffect } from "react";
 import axios from "axios";
-import toast from "react-hot-toast";
-import { useAuth } from "./AuthContext";
 
 const SocieteContext = createContext();
 
 export const useSociete = () => {
   const context = useContext(SocieteContext);
   if (!context) {
-    throw new Error("useSociete ne peut être utilisé qu'à l'intérieur de SocieteProvider.");
+    throw new Error("useSociete must be used within a SocieteProvider");
   }
   return context;
 };
 
 export function SocieteProvider({ children }) {
-  const { user, loading: authLoading } = useAuth();
   const [selectedSociete, setSelectedSociete] = useState(null);
   const [societes, setSocietes] = useState([]);
-  const [loading, setLoading] = useState({
-    init: true,        // Initial loading state
-    societes: true,    // Societes fetching
-    selection: false   // Societe selection
-  });
-  const [initialized, setInitialized] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Initialize from localStorage on first load
-  useEffect(() => {
-    if (initialized) return;
-    
-    const storedSociete = localStorage.getItem("selectedSociete");
-    if (storedSociete) {
-      try {
-        setSelectedSociete(JSON.parse(storedSociete));
-      } catch (e) {
-        console.error("Error parsing stored societe", e);
-        localStorage.removeItem("selectedSociete");
-      }
-    }
-    setInitialized(true);
-    setLoading(prev => ({ ...prev, init: false }));
-  }, [initialized]);
-
-  // Clear selected societe on logout
-  useEffect(() => {
-    if (!authLoading && !user) {
-      setSelectedSociete(null);
-      localStorage.removeItem("selectedSociete");
-    }
-  }, [user, authLoading]);
-
+  // Extract the fetch function so it can be reused later.
   const fetchSocietes = async () => {
     try {
-      setLoading(prev => ({ ...prev, societes: true }));
       const token = localStorage.getItem("accessToken");
       if (!token) {
-        setLoading(prev => ({ ...prev, societes: false }));
+        setLoading(false);
         return;
       }
 
@@ -64,32 +32,37 @@ export function SocieteProvider({ children }) {
       });
 
       setSocietes(response.data.societes || []);
-      
-      // Verify the selected societe still exists
-      if (selectedSociete) {
-        const exists = response.data.societes.some(s => s.id === selectedSociete.id);
-        if (!exists) {
-          setSelectedSociete(null);
+
+      // Only set selected société if there is one saved
+      const savedSociete = localStorage.getItem("selectedSociete");
+      if (savedSociete) {
+        try {
+          setSelectedSociete(JSON.parse(savedSociete));
+        } catch (err) {
+          console.error("Error parsing saved société:", err);
           localStorage.removeItem("selectedSociete");
+          setSelectedSociete(null);
         }
+      } else {
+        setSelectedSociete(null); // Ensure no société is selected at first login
       }
+
+      setLoading(false);
     } catch (err) {
-      toast.error("Erreur lors du chargement des sociétés.");
-    } finally {
-      setLoading(prev => ({ ...prev, societes: false }));
+      console.error("Error fetching sociétés:", err);
+      setError("Failed to load sociétés");
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (user && initialized) {
-      fetchSocietes();
-    }
-  }, [user, initialized]);
+    fetchSocietes();
+  }, []);
 
   const selectSociete = async (societe) => {
     try {
-      setLoading(prev => ({ ...prev, selection: true }));
       const token = localStorage.getItem("accessToken");
+
       await axios.put(
         "http://localhost:8000/api/Switch_Societes",
         { societe_id: societe.id },
@@ -98,12 +71,12 @@ export function SocieteProvider({ children }) {
 
       setSelectedSociete(societe);
       localStorage.setItem("selectedSociete", JSON.stringify(societe));
+
       return true;
     } catch (err) {
-      toast.error("Erreur lors de la sélection de la société.");
+      console.error("Error switching société:", err);
+      setError("Failed to switch société");
       return false;
-    } finally {
-      setLoading(prev => ({ ...prev, selection: false }));
     }
   };
 
@@ -112,23 +85,22 @@ export function SocieteProvider({ children }) {
     localStorage.removeItem("selectedSociete");
   };
 
+  // Expose a refresh function to re-fetch the sociétés.
   const refreshSocietes = async () => {
+    setLoading(true);
     await fetchSocietes();
   };
-
-  // Combined loading state
-  const isLoading = loading.init || loading.societes || authLoading;
 
   return (
     <SocieteContext.Provider
       value={{
         selectedSociete,
         societes,
-        loading: isLoading,
-        selectionLoading: loading.selection,
+        loading,
+        error,
         selectSociete,
         clearSelectedSociete,
-        refreshSocietes,
+        refreshSocietes, // now available for consumers
       }}
     >
       {children}

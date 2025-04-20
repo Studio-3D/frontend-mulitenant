@@ -248,7 +248,12 @@ const Menu = () => {
       icon: <RiDiscountPercentFill />,
       href: "/remise-des-cles",
     },
-    { label: "Sav", icon: <RiFolderUserFill />, href: "/Sav" },
+    { label: "Sav", 
+      icon: <RiFolderUserFill />, 
+      href: "/ServicesPrestataires",
+      needsSociete: user.role === 1,
+
+    },
     { label: "Reclamations", icon: <MdFeed />, href: "/Reclamations" },
     {
       label: "Encaissments",
