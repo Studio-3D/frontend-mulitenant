@@ -99,11 +99,11 @@ export default function BanquesPage() {
   if (user?.role === 1 && !selectedSociete && !societeLoading) {
       return (
         <div className="container mx-auto p-4">
-          <h1 className="text-2xl font-bold mb-6">Types de Biens</h1>
+          <h1 className="text-2xl font-bold mb-6">Banques</h1>
           <div className="bg-amber-50 border-l-4 border-amber-500 p-4 mb-6">
             <p>Veuillez sélectionner une société pour accéder aux types de biens.</p>
           </div>
-          <SocieteSelector returnPath="/administration/typesBiens" />
+          <SocieteSelector returnPath="/administration/banques" />
         </div>
       );
     }
