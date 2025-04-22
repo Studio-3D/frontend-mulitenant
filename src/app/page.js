@@ -12,7 +12,7 @@ export default function Home() {
     if (!loading) {
       // If user is logged in, redirect to dashboard, otherwise to login
       if (user) {
-        router.push('/Tableau-de-Bord');
+        router.push('/tableau-de-bord');
       } else {
         router.push('/login');
       }
