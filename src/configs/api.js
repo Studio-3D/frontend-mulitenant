@@ -76,7 +76,7 @@ export const ENDPOINTS = {
   COMPOSITIONBIENS: '/compositionBiens/home',
   VISITES: '/crm/visites',
   APPELS: '/crm/appels',
-  PROSPECTS: '/CRM/Prospects',
+  PROSPECTS: '/crm/prospects',
   CLIENTS: '/clients/home',
   ENCAISSEMENTS: '/encaissements/home',
   RESERVATIONS: '/reservations/home',
