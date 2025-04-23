@@ -55,8 +55,8 @@ const VisiteForm = (id, origin) => {
 
   const router = useRouter();
   const accessToken = localStorage.getItem('accessToken');
-  const selectedProspect = JSON.parse(localStorage.getItem('selectedProspect'));
-
+  const stored = JSON.parse(localStorage.getItem('selectedProspect'));
+  const selectedProspect = stored?.dataProspect || {};  
   const pusher_key_proposition = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_PROP;
   const [loading, setLoading] = useState(false);
   const [loading_tp_frein, setLoading_tp_frein] = useState(false);
