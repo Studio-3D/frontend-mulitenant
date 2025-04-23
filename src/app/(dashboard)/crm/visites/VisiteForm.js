@@ -211,8 +211,8 @@ const VisiteForm = (id, origin) => {
     defaultValues,
   });
   //selectedProjet?.max_etages insted of 1
-  if (list_etages.length === 0 && selectedProjet?.max_etages||1 > 0) {
-    for (let i = 0; i <= selectedProjet?.max_etages||1; i++) {
+  if (list_etages.length === 0 && 1 > 0) {
+    for (let i = 0; i <= 1; i++) {
       list_etages.push({ id: i + 1, value: i });
     }
   }
