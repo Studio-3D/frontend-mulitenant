@@ -45,12 +45,11 @@ const VisiteTable = (dataProspect, dataClient) => {
       'statut_visite',
     ],
   };
-
+ // Prepare parameters based on conditions
+ const clientId = dataClient?.dataClient?.id;
+ const prospectId = dataProspect?.dataProspect?.id;
   useEffect(() => {
-    // Prepare parameters based on conditions
-    const clientId = dataClient?.dataClient?.id;
-    const prospectId = dataProspect?.dataProspect?.id;
-
+  
     const params_url = clientId
       ? { client_id: clientId }
       : prospectId
@@ -231,6 +230,17 @@ const VisiteTable = (dataProspect, dataClient) => {
     { key: 'propriete_dite_bien', label: 'Bien' },
     { key: 'statut', label: 'Statut' },
   ];
+  const canAddVisite = isSuperAdmin(user.role) || isAdmin(user.role) || isCommercial(user.role);
+
+let handleAddClick;
+if (canAddVisite) {
+  if (prospectId != null) {
+    localStorage.setItem('selectedProspect', JSON.stringify(dataProspect)); // Store prospect info
+  }
+  handleAddClick = `${ENDPOINTS.VISITES}?action=add`;
+} else {
+  handleAddClick = undefined;
+}
 
   return (
     <>
@@ -250,16 +260,12 @@ const VisiteTable = (dataProspect, dataClient) => {
           onRowsPerPageChange={setRowsPerPage}
           onSearchChange={setSearchTerm}
           enableExport={true}
-          addLink={
-            isSuperAdmin(user.role) ||
-            isAdmin(user.role) ||
-            isCommercial(user.role)
-              ? `${ENDPOINTS.VISITES}?action=add`
-              : undefined
-          }
+          addLink={handleAddClick}
         />
       </div>
     </>
+     
+  
   );
 };
 
