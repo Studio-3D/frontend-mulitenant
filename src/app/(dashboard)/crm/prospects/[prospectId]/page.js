@@ -8,6 +8,9 @@ import { useRouter } from 'next/navigation';
 import { useParams } from 'next/navigation';
 import Button from '@/components/Button'; // adjust the path as needed
 import HistoriquesTable from './HistoriquesTable';
+import BreadCrumb from '../../../navigation/BreadCrumb';
+import LoadingSpin from '@/components/LoadingSpin';
+import VisiteTable from '../../visites/VisiteTable';
 const ProspectDetails = () => {
   const { token } = useAuth();
   const router = useRouter();
@@ -53,11 +56,20 @@ const ProspectDetails = () => {
   return (
     <>
       {loading ? (
-        <div className="flex justify-center items-center h-screen">
-          <div className="animate-spin h-12 w-12 border-4 border-t-transparent border-blue-500 border-solid rounded-full" />
+        <div className="flex items-center justify-center min-h-screen">
+          <LoadingSpin /> {/* Use your loading spinner here */}
         </div>
       ) : (
         <>
+          <div
+            className="flex items-center justify-start"
+            style={{ marginBottom: '8px' }}
+          >
+            <BreadCrumb
+              baseUrl={ENDPOINTS.PROSPECTS}
+              step={`Détail prospect`}
+            />
+          </div>
           <div className="container mx-auto">
             <div className="flex flex-col lg:flex-row gap-6">
               {/* Project Summary Card - Left Side */}
@@ -72,10 +84,12 @@ const ProspectDetails = () => {
                       </span>
                     </div>
                     <h1 className="text-xl font-semibold">
-                      {prospectDetails?.nom + ' ' + prospectDetails?.prenom}
+                      {(prospectDetails?.nom || '') +
+                        ' ' +
+                        (prospectDetails?.prenom || '')}
                     </h1>
                     <div className="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm mt-2">
-                      {`Cin: ${prospectDetails?.cin}`}
+                      {`Cin: ${prospectDetails?.cin || ''}`}
                     </div>
                   </div>
 
@@ -194,15 +208,15 @@ const ProspectDetails = () => {
                   <div className="p-6">
                     {activeTab === 'historiques' && (
                       <div className="min-h-[400px]">
-                         <div className="min-h-[400px]">
-                        <HistoriquesTable id={prospectDetails.id} />
-                      </div>
+                        <div className="min-h-[400px]">
+                          <HistoriquesTable id={prospectDetails.id} />
+                        </div>
                       </div>
                     )}
 
                     {activeTab === 'visites' && (
                       <div className="min-h-[400px]">
-                        <p>visites</p>
+                     <VisiteTable dataProspect={prospectDetails} />
                       </div>
                     )}
                   </div>
