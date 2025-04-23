@@ -46,7 +46,7 @@ export default function VisiteFormEdit({ id }) {
   const accessToken = localStorage.getItem('accessToken');
   const pusher_key_proposition = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_PROP;
   const [loading, setLoading] = useState({ form: false, visites: false });
-  const selectedProjet = JSON.parse(localStorage.getItem('selectedProjet'));
+  const selectedProjet = JSON.parse(localStorage.getItem('selectedProjet'))||1;
   const [backendErrors, setBackendErrors] = useState({});
   const [sources, setSources] = useState([]);
   const [partenaires, setPartenaires] = useState([]);
@@ -77,7 +77,7 @@ export default function VisiteFormEdit({ id }) {
 
   const defaultValues = {
     // selectedProjet.id || ''
-    selectedProjet: 1,
+    selectedProjet: selectedProjet.id||1,
     prospect_id: '',
     cin: '',
     nom: '',
@@ -156,16 +156,16 @@ export default function VisiteFormEdit({ id }) {
     })
   );
 
-  /*if (list_etages.length === 0 && selectedProjet.max_etages > 0) {
-    for (var i = 0; i <= selectedProjet?.max_etages; i++) {
+  if (list_etages.length === 0 && (selectedProjet.max_etages||1) > 0) {
+    for (var i = 0; i <= (selectedProjet?.max_etages||1); i++) {
       list_etages.push({ value: i });
     }
-  }*/
-  if (list_etages.length === 0) {
-    for (let i = 0; i <= 1; i++) {
+  }
+  /*if (list_etages.length === 0) {
+    for (let i = 0; i <= (selectedProjet.max_etages||1); i++) {
       list_etages.push({ id: i + 1, value: i });
     }
-  }
+  }*/
 
   //fin multiple bien
 
@@ -938,7 +938,7 @@ export default function VisiteFormEdit({ id }) {
       await axios
         .get(
           // `${APIURL.ROOT}/v1/getBiensByProjet_Concat/` + selectedProjet?.id,
-          `${APIURL.ROOT}/v1/getBiensByProjet_Concat/` + 1,
+          `${APIURL.ROOT}/v1/getBiensByProjet_Concat/` +  selectedProjet?.id||1,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
