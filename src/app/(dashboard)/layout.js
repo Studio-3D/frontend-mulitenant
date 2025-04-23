@@ -58,7 +58,7 @@ export default function DashboardLayout({ children }) {
     <div className="flex h-screen">
       {/* Left Sidebar - Fixed position with higher z-index */}
       <div className=" fixed top-0 left-0 w-[12%] md:w-[8%] lg:w-[18%] xl:w-[14%] h-full bg-[#231651] p-2 overflow-auto scrollbar-none z-50">
-        <Link href={"/Tableau-de-Bord"} className="flex items-center gap-2 text-text p-2">
+        <Link href={"/tableau-de-bord"} className="flex items-center gap-2 text-text p-2">
           <FaHouse className="w-[20px] h-[20px] text-white inline-block" />
           <span className="hidden lg:block text-white font-semibold">Immo Gestion</span>
         </Link>

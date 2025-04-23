@@ -22,25 +22,41 @@ const page = () => {
         </div>
 
         {/* Right column (1/3 width on lg screens) */}
-        <div className='bg-white rounded-lg shadow p-4'>
-          <div className='h-full'>
-            {/* Content Area - adjust height as needed */}
-            <div className='flex flex-col h-full'>
-              <h2 className='text-xl font-semibold mb-4'>Summary</h2>
-              <div className='flex-1 grid gap-4'>
-                {/* Example summary cards - customize as needed */}
-                <div className='bg-blue-50 p-4 rounded-lg'>
-                  <h3 className='font-medium'>Total Encaissements</h3>
-                  <p className='text-2xl font-bold'>€24,560</p>
-                </div>
-                <div className='bg-green-50 p-4 rounded-lg'>
-                  <h3 className='font-medium'>Total Visits</h3>
-                  <p className='text-2xl font-bold'>12,430</p>
-                </div>
-                <div className='bg-purple-50 p-4 rounded-lg'>
-                  <h3 className='font-medium'>Conversion Rate</h3>
-                  <p className='text-2xl font-bold'>3.2%</p>
-                </div>
+        <div className='flex flex-col gap-6 '>
+          {/* Stats Section */}
+          <div className=''>
+            <div className='flex flex-col gap-4 '>
+              {/* Penalties */}
+              <div className='lg:h-[180px] bg-white rounded-lg shadow-md p-4 border-l-4 border-blue-500 pl-3'>
+                <h3 className='text-sm font-medium text-gray-500'>Penalités</h3>
+                <p className='text-lg font-bold'>$6643 <span className='text-green-500 text-sm'>+3.5% ↑</span></p>
+                <p className='text-xs text-gray-400'>comparé à ($23540 l'année dernière)</p>
+              </div>
+              
+              {/* Remboursement */}
+              <div className='lg:h-[180px] bg-white rounded-lg shadow-md p-4 border-l-4 border-green-500 pl-3'>
+                <h3 className='text-sm font-medium text-gray-500'>Remboursement</h3>
+                <p className='text-lg font-bold'>$7265 <span className='text-green-500 text-sm'>+3.5% ↑</span></p>
+                <p className='text-xs text-gray-400'>comparé à ($23540 l'année dernière)</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Appels Section */}
+          <div className='lg:h-[100%] bg-white rounded-lg shadow-md p-4 '>
+            <h3 className='font-medium mb-3'>Appels</h3>
+            <div className='space-y-2'>
+              <div className='flex justify-between items-center'>
+                <span className='text-sm'>Appels entrants</span>
+                <span className='font-bold'>50%</span>
+              </div>
+              <div className='flex justify-between items-center'>
+                <span className='text-sm'>Appels sortants</span>
+                <span className='font-bold'>30%</span>
+              </div>
+              <div className='flex justify-between items-center'>
+                <span className='text-sm'>Appels manqués</span>
+                <span className='font-bold'>20%</span>
               </div>
             </div>
           </div>
