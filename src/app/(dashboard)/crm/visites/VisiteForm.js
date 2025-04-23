@@ -64,7 +64,7 @@ const VisiteForm = (id, origin) => {
   const [loading_form, setLoading_form] = useState(false);
 
   //  const { selectedProjet } = useProjet();
-  const selectedProjet = 1; //JSON.parse(localStorage.getItem('selectedProjet'))
+  const selectedProjet = JSON.parse(localStorage.getItem('selectedProjet'))||1
   const [backendErrors, setBackendErrors] = useState({});
   const [sources, setSources] = useState([]);
   const [partenaires, setPartenaires] = useState([]);
@@ -130,7 +130,7 @@ const VisiteForm = (id, origin) => {
   //selectedProjet?.id
   const defaultValues = {
     interet: '',
-    selectedProjet: 1 || '',
+    selectedProjet: selectedProjet?.id||1,
     id_t_appel: selectedProspect?.id_t_appel || '',
     prospect_id: selectedProspect?.id || '',
     cin: selectedProspect?.cin || '',
@@ -211,8 +211,8 @@ const VisiteForm = (id, origin) => {
     defaultValues,
   });
   //selectedProjet?.max_etages insted of 1
-  if (list_etages.length === 0 && 1 > 0) {
-    for (let i = 0; i <= 1; i++) {
+  if (list_etages.length === 0 && selectedProjet?.max_etages||1 > 0) {
+    for (let i = 0; i <= selectedProjet?.max_etages||1; i++) {
       list_etages.push({ id: i + 1, value: i });
     }
   }
@@ -1103,9 +1103,8 @@ const VisiteForm = (id, origin) => {
     if (Number(watch('interet')) === 1) {
       setLoading_bien(true);
       await axios
-        // `${APIURL.ROOT}/v1/getBiensByProjet_Concat/` + selectedProjet?.id,
 
-        .get(`${APIURL.ROOT}/v1/getBiensByProjet_Concat/` + 1, {
+        .get(`${APIURL.ROOT}/v1/getBiensByProjet_Concat/` + selectedProjet?.id||1, {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
