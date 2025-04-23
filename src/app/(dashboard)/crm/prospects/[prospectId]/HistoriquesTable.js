@@ -6,7 +6,7 @@ import { useAuth } from '../../../../../context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { fetchData_table_by_id } from '../../../../../../src/configs/api-utils';
 import format from 'date-fns/format';
-import { FaRegEye, FaEdit, FaRegEdit, FaCheck } from 'react-icons/fa';
+import { FaRegEye} from 'react-icons/fa';
 
 import { Statuts_Prospect } from '../../../../../../src/configs/enum';
 
@@ -67,8 +67,7 @@ const HistoriquesTable = (id) => {
       id: pro.id,
 
       date_traitement: pro.date_traitement
-        ? format(new Date(pro.date_traitement), 'dd/MM/yyyy ')
-        : '',
+       ,
       //statut: Statuts_Prospect[pro.statut]?.label,
       statut: pro.statut,
       rdv: pro.rdv ? format(new Date(pro.rdv), 'dd/MM/yyyy H:m') : '',
@@ -145,8 +144,7 @@ const HistoriquesTable = (id) => {
   const data_to_export = () => {
     return historiques.map((pro) => ({
       date_traitement: pro.date_traitement
-        ? format(new Date(pro.date_traitement), 'dd/MM/yyyy')
-        : '',
+        ,
       statut: Statuts_Prospect[pro.statut]?.label,
 
       rdv: pro.rdv ? format(new Date(pro.rdv), 'dd/MM/yyyy H:m') : '',

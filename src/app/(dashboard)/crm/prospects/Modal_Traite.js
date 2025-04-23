@@ -10,7 +10,7 @@ import Autocomplete from '@/components/Autocomplete';
 import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-export default function Modal_Traite({ onClose, id, num_tel }) {
+export default function Modal_Traite({ onClose, id, num_tel, nom_prenom }) {
   const { token } = useAuth();
   const accessToken = token || localStorage.getItem('accessToken');
   const [loading, setLoading] = useState({ form: false });
@@ -19,7 +19,9 @@ export default function Modal_Traite({ onClose, id, num_tel }) {
     rdv: '', // Make sure all fields you need are present
     statut: '',
     date_rappel: '',
-    commentaire:''
+    commentaire: '',
+    nom_prenom: nom_prenom,
+    telephone:num_tel
   };
   const validationSchemaRef = useRef(
     yup.object().shape({
@@ -92,6 +94,7 @@ export default function Modal_Traite({ onClose, id, num_tel }) {
     errors,
     width = 'w-full',
     height = 'h-10',
+    disabled=false,
     isTextarea = false, // New prop for handling textareas
   }) => {
     return (
@@ -117,6 +120,7 @@ export default function Modal_Traite({ onClose, id, num_tel }) {
                 className={`block ${width} ${height} px-3 py-2 mt-1 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
                   errors[name] ? 'border-red-500' : ''
                 }`}
+                disabled={disabled}
                 required={required}
                 value={field.value || ''}
                 onChange={(e) => field.onChange(e.target.value)} // Ensure React Hook Form handles the change
@@ -131,6 +135,7 @@ export default function Modal_Traite({ onClose, id, num_tel }) {
                   errors[name] ? 'border-red-500' : ''
                 }`}
                 required={required}
+                disabled={disabled}
                 value={field.value || ''}
                 onChange={(e) => field.onChange(e.target.value)} // Ensure React Hook Form handles the change
               />
@@ -146,21 +151,18 @@ export default function Modal_Traite({ onClose, id, num_tel }) {
     );
   };
 
-
   return (
     <div className="w-full max-w-[90%] sm:max-w-[500px] md:max-w-[600px] lg:max-w-[800px] h-auto bg-white flex flex-col mx-auto">
-    {/* Header */}
-      <div className="w-full h-[150px] bg-[rgb(87,80,129)] px-4">
+
+      <div className="w-full h-[60px] bg-[#009FFF] px-4">
         <div className="flex items-center justify-center h-full">
           <h1 className="text-3xl font-bold text-center text-white">
-            Triater Prospect : {num_tel}
+            Traiter Prospect
           </h1>
         </div>
       </div>
 
-      <div className="p-4 w-[600px]">
-
-        
+      <div className="p-4 w-[600px] " >
         <form
           onSubmit={handleSubmit(onSubmit)}
           className="mt-4 mx-auto w-full max-w-[360px] flex flex-col items-center"
@@ -168,10 +170,42 @@ export default function Modal_Traite({ onClose, id, num_tel }) {
           {/* Row for Input and MdPrint */}
           <div className="flex items-center space-x-2 w-full">
             {
+              <>
+                <TextField
+                  type="text"
+                  label="Nom Complet:"
+                  disabled={true}
+                  name="nom_prenom"
+                  control={control}
+                  errors={errors}
+                  width="w-80" // Optional: Change height for textarea
+                />
+              </>
+            }
+          </div>
+          <div className="flex items-center space-x-2 w-full">
+            {
+              <>
+                <TextField
+                  type="number"
+                  label="Téléphone:"
+                  disabled={true}
+                  name="telephone"
+                  control={control}
+                  errors={errors}
+                  width="w-80" // Optional: Change height for textarea
+                />
+              </>
+            }
+          </div>
+          <div className="flex items-center space-x-2 w-full">
+            {
               <Autocomplete
                 required={true}
                 label="Statut:"
-                options={Object.values(Statuts_Prospect).filter(option => option.id !== '4')} // ['active', 'inactive', 'pending']
+                options={Object.values(Statuts_Prospect).filter(
+                  (option) => option.id !== '4'
+                )} // ['active', 'inactive', 'pending']
                 choix="label"
                 onChange={handleStatutChange}
                 width="w-80"

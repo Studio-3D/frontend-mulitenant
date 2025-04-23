@@ -5,12 +5,15 @@ const Autocomplete = ({
   options = [],
   value,
   onChange,
-  placeholder = 'Select...',
+  placeholder = 'Choisissz un élément',
   choix = 'nom', // The field to display in the dropdown options
   loading = false,
   width = 'w-full',
   height = 'h-10',
   required = false, // Add required prop
+  errors,
+  backendErrors,
+  name, // Add name prop
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -34,6 +37,10 @@ const Autocomplete = ({
     setIsOpen(true);
   };
 
+  const rawError = errors[name] || backendErrors[name];
+  const errorMessage =
+    rawError?.message ??
+    (typeof rawError === 'string' ? rawError : '');
   return (
     <div className={`relative ${width}`}>
       {/* Label with red asterisk if required */}
@@ -50,8 +57,8 @@ const Autocomplete = ({
           onFocus={() => setIsOpen(true)}
           onBlur={() => setTimeout(() => setIsOpen(false), 100)}
           placeholder={placeholder}
-          className={`w-full ${height} p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500`}
-          required={required}
+          className={`w-full ${height} p-2 border ${errorMessage ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 ${errorMessage ? 'focus:ring-red-500' : 'focus:ring-indigo-500'}`}
+          required={required} // Apply required attribute
         />
 
         {isOpen && (
@@ -77,6 +84,13 @@ const Autocomplete = ({
           </div>
         )}
       </div>
+
+      {/* Display error message if present */}
+      {errorMessage && (
+        <div className="text-red-500 text-sm mt-1">
+          {errorMessage}
+        </div>
+      )}
     </div>
   );
 };

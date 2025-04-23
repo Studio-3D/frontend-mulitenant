@@ -53,24 +53,28 @@ export const fetchData_Select = async (items, setData, setLoading) => {
 
 export const fetchData_table_by_projet = async (
   entity,
+  params_url,
   searchTerm,
   currentPage,
   rowsPerPage,
   accesstoken,
-  setLoading,
-  setError,
-  setData,
-  setTotalRows
+  setLoading = () => {},      // default to no-op function if not provided
+  setError = () => {},
+  setData = () => {},
+  setTotalRows = () => {}
 ) => {
   setLoading(true);
   setError('');
-  const selectedProjet =
-    JSON.parse(localStorage.getItem('selectedProjet')) || {}; // Ensure it's not null
+
+  const selectedProjet = JSON.parse(localStorage.getItem('selectedProjet')) || {};
+
   try {
     const params = {
       page: currentPage,
       size: rowsPerPage,
+      ...params_url
     };
+
     const response = await axios.get(
       `${APIURL.ROOT}/v1/projets/${selectedProjet?.id || 1}/${entity.API_URL}/`,
       {
@@ -84,17 +88,12 @@ export const fetchData_table_by_projet = async (
     if (response.data && Array.isArray(response.data[entity.dataKey])) {
       let filteredData = response.data[entity.dataKey];
 
-      // Apply global search and specific filtering for 'role' and 'status' in a single filter
       if (searchTerm) {
         const lowerSearchTerm = searchTerm.toLowerCase();
 
         filteredData = filteredData.filter((item) => {
-          // Create the full name string by combining 'name' and 'prenom'
-          const fullName = `${item.name || ''}${item.prenom || ''} ${
-            item.prenom || ''
-          }`.toLowerCase();
+          const fullName = `${item.name || ''}${item.prenom || ''} ${item.prenom || ''}`.toLowerCase();
 
-          // Map role ID to role text using User_roles
           const role = Object.keys(User_roles).find(
             (key) => User_roles[key] === item.role
           );
@@ -104,19 +103,16 @@ export const fetchData_table_by_projet = async (
 
           const status = (item.is_actif ? '1' : '2').toLowerCase();
 
-          // Check if any of the fields match the searchTerm
           return (
-            fullName.includes(lowerSearchTerm) || // Search in the full name
-            roleText.includes(lowerSearchTerm) || // Search in role text
-            status.includes(lowerSearchTerm) || // Search in status
+            fullName.includes(lowerSearchTerm) ||
+            roleText.includes(lowerSearchTerm) ||
+            status.includes(lowerSearchTerm) ||
             entity.searchFields.some((field) => {
-              // If the field is 'fullname', search in the combined fullName
               if (field === 'fullname') {
                 return fullName.includes(lowerSearchTerm);
               }
-
               const value = (item[field] || '').toLowerCase();
-              return value.includes(lowerSearchTerm); // Search in other fields
+              return value.includes(lowerSearchTerm);
             })
           );
         });
@@ -138,6 +134,7 @@ export const fetchData_table_by_projet = async (
     setLoading(false);
   }
 };
+
 
 export const fetchData_table_by_id = async (
   entity,

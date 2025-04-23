@@ -19,7 +19,7 @@ import { useAuth } from '../../../../context/AuthContext';
 import Autocomplete from '@/components/Autocomplete';
 import TextField from '@/components/Textfield'; // Import the component
 import Button from '@/components/Button'; // adjust the path as needed
-
+import LoadingSpin from '@/components/LoadingSpin'
 export default function ProspectForm() {
   const { token } = useAuth();
   const router = useRouter();
@@ -354,10 +354,11 @@ export default function ProspectForm() {
     setValue('partenaire_id', newValue ? newValue.id : ''); // Set partenaire ID
   };
 
+  
   if (isEditing && !formData) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin h-12 w-12 border-4 border-t-transparent border-blue-500 border-solid rounded-full" />
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpin /> {/* Use your loading spinner here */}
       </div>
     );
   }
@@ -375,13 +376,13 @@ export default function ProspectForm() {
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="space-y-4">
               {check && info_client && (
-                <div className="bg-yellow-100 text-yellow-700 p-3 rounded-md">
+                      <div className="bg-[rgba(253,181,40,0.12)] border-l-4 border-yellow-500 text-[rgb(227,162,36)] p-4 text-center rounded">
                   <p>{info_client}</p>
                 </div>
               )}
 
               {check_p && info_prospect && (
-                <div className="bg-blue-100 text-blue-700 p-3 rounded-md">
+                <div className="bg-blue-100 text-blue-700 p-3 rounded-md border-l-4 border-blue-500 p-4 text-center rounded">
                   <p>{info_prospect}</p>
                 </div>
               )}
@@ -494,7 +495,7 @@ export default function ProspectForm() {
                 </div>
 
                 {/* Source Select */}
-                <div className="flex-grow min-w-[300px] sm:w-[300px] md:w-[400px]">
+                <div className="">
                   <Autocomplete
                     label="Source:"
                     options={sources}
@@ -506,7 +507,7 @@ export default function ProspectForm() {
                 </div>
 
                 {/* Partenaire Select (conditionally rendered) */}
-                <div className="flex-grow min-w-[300px] sm:w-[300px] md:w-[400px]">
+                <div className="">
                   {source_txt === 'Partenaire' && (
                     <Autocomplete
                       label="Partenaire:"

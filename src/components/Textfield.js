@@ -15,9 +15,11 @@ const TextField = ({
   backendErrors,
   width = 'w-full', // Default width is 'w-full' for full width
   height = 'h-10', // Default height is 'h-10' (input height)
+  min = null,
+  max = null,
 }) => {
   return (
-    <div className="mb-4">
+    <div className="mb-2">
       <label htmlFor={name} className="block text-sm font-medium text-gray-700">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
@@ -49,6 +51,8 @@ const TextField = ({
           ) : (
             <input
               {...field}
+              min={min}
+              max={max}
               id={name}
               name={name}
               type={type}
