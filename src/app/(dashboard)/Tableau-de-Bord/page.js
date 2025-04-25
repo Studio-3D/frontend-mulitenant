@@ -2,6 +2,7 @@
 import React from 'react'
 import { EncaissementChart } from '../../../components/TableauDeBord/EncaissementChart'
 import { VisitesChart } from '../../../components/TableauDeBord/VisitesChart'
+import { AppelsChart } from '../../../components/TableauDeBord/AppelsChart'
 
 const page = () => {
   return (
@@ -25,40 +26,26 @@ const page = () => {
         <div className='flex flex-col gap-6 '>
           {/* Stats Section */}
           <div className=''>
-            <div className='flex flex-col gap-4 '>
-              {/* Penalties */}
-              <div className='lg:h-[180px] bg-white rounded-lg shadow-md p-4 border-l-4 border-blue-500 pl-3'>
-                <h3 className='text-sm font-medium text-gray-500'>Penalités</h3>
-                <p className='text-lg font-bold'>$6643 <span className='text-green-500 text-sm'>+3.5% ↑</span></p>
-                <p className='text-xs text-gray-400'>comparé à ($23540 l'année dernière)</p>
-              </div>
-              
-              {/* Remboursement */}
-              <div className='lg:h-[180px] bg-white rounded-lg shadow-md p-4 border-l-4 border-green-500 pl-3'>
-                <h3 className='text-sm font-medium text-gray-500'>Remboursement</h3>
-                <p className='text-lg font-bold'>$7265 <span className='text-green-500 text-sm'>+3.5% ↑</span></p>
-                <p className='text-xs text-gray-400'>comparé à ($23540 l'année dernière)</p>
-              </div>
+          <div className='flex flex-col gap-6'>
+            {/* Penalties */}
+            <div className=' bg-white rounded-lg shadow-md p-4 lg:p-6 border-l-4 border-[#2CAFFE] pl-3'>
+              <h3 className=' lg:text-2xl font-semibold lg:pb-4'>Penalités</h3>
+              <p className='text-lg lg:text-3xl lg:pb-4 font-bold'>$66 643,60 <span className='text-green-500 text-sm lg:text-base'>+3.5% ↑</span></p>
+              <p className='text-xs lg:text-lg text-gray-400'>comparé à ($23540 l'année dernière)</p>
+            </div>
+            
+            {/* Remboursement */}
+            <div className=' bg-white rounded-lg shadow-md p-4 lg:p-6 border-l-4 border-[#2CFE7F] pl-3'>
+              <h3 className=' lg:text-2xl font-semibold lg:pb-4'>Remboursement</h3>
+              <p className='text-lg lg:text-3xl lg:pb-4 font-bold'>$7265 <span className='text-green-500 text-sm lg:text-base'>+3.5% ↑</span></p>
+              <p className='text-xs lg:text-lg text-gray-400'>comparé à ($23540 l'année dernière)</p>
             </div>
           </div>
+        </div>
 
           {/* Appels Section */}
-          <div className='lg:h-[100%] bg-white rounded-lg shadow-md p-4 '>
-            <h3 className='font-medium mb-3'>Appels</h3>
-            <div className='space-y-2'>
-              <div className='flex justify-between items-center'>
-                <span className='text-sm'>Appels entrants</span>
-                <span className='font-bold'>50%</span>
-              </div>
-              <div className='flex justify-between items-center'>
-                <span className='text-sm'>Appels sortants</span>
-                <span className='font-bold'>30%</span>
-              </div>
-              <div className='flex justify-between items-center'>
-                <span className='text-sm'>Appels manqués</span>
-                <span className='font-bold'>20%</span>
-              </div>
-            </div>
+          <div className='flex justify-between lg:h-[100%] bg-white rounded-lg shadow-md p-4 '>
+          <AppelsChart/>
           </div>
         </div>
       </div>
