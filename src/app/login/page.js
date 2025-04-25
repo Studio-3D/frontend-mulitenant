@@ -35,7 +35,7 @@ export default function Login() {
         password,
         rememberMe
       });
-      router.push('/');
+      router.push('/tableau-de-bord'); // Redirect to dashboard after successful login
     } catch (err) {
       console.error('Login error:', err);
       setError("L'e-mail ou le mot de passe n'est pas valide ou l'utilisateur n'est pas Actif");
