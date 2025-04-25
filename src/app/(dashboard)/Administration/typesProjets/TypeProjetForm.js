@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react';
-import { APIURL } from '@/configs/api';
+import { APIURL, ENDPOINTS } from '@/configs/api';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import BreadCrumb from '../../navigation/BreadCrumb';
+import Button from '@/components/Button';
+import { useRouter } from 'next/navigation';
 
 const TypeProjetForm = ({ id = null, onComplete }) => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  
+  const router = useRouter();
+
   // Form state
   const [formData, setFormData] = useState({
     type: ''
@@ -133,8 +137,15 @@ const TypeProjetForm = ({ id = null, onComplete }) => {
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <form onSubmit={handleSubmit}>
+    <div className="p-3">
+          <div className="flex items-center justify-start">
+            <BreadCrumb
+              baseUrl={ENDPOINTS.TYPEPROJETS}
+              step={`${id ? 'Modifier' : 'Ajouter'} un  type de projet`}
+            />
+          </div>
+          <div className="p-6 mt-4 bg-white shadow-md rounded-md">
+          <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label className="block text-gray-700 text-sm font-bold mb-2">
           Type de projet <span className="text-red-500">*</span>
@@ -156,24 +167,21 @@ const TypeProjetForm = ({ id = null, onComplete }) => {
           )}
         </div>
         
-        <div className="flex justify-end gap-4 mt-6">
-          <button
-            type="button"
-            onClick={handleReset}
-            className="bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-          >
-            Réinitialiser
-          </button>
-          <button
-            type="submit"
-            className="bg-teal-500 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            disabled={submitting}
-          >
-            {submitting ? 'Chargement...' : (id ? 'Modifier' : 'Ajouter')}
-          </button>
-        </div>
+        <div className="flex justify-center gap-4 items-center mt-6 mb-6">
+                    <Button type="button" onClick={() => router.back()}>
+                      Annuler
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={submitting}
+                      loading={loading.form}
+                    >
+                      {submitting ? 'Chargement...' : (id ? 'Modifier' : 'Ajouter')}
+                    </Button>
+                  </div>
       </form>
-    </div>
+          </div>
+        </div>
   );
 };
 

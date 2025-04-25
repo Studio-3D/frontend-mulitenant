@@ -87,7 +87,7 @@ export default function TypeBiensPage() {
 
   const handleAction = (actionType, row) => {
     if (actionType === 'edit') {
-      router.push(`/Administration/Types-Biens?action=edit&id=${row}`);
+      router.push(`/administration/typesBiens?action=edit&id=${row}`);
     } else if (actionType === 'delete') {
       // Handle delete with confirmation
       setRowToDelete(row);
@@ -99,7 +99,7 @@ export default function TypeBiensPage() {
   // Handle form completion
   const handleFormComplete = () => {
     // Use router.replace instead of push to ensure a clean navigation
-    router.replace('/Administration/Types-Biens');
+    router.replace('/administration/typesBiens');
   };
 
   // For superadmins without a selected société
@@ -110,7 +110,7 @@ export default function TypeBiensPage() {
         <div className="bg-amber-50 border-l-4 border-amber-500 p-4 mb-6">
           <p>Veuillez sélectionner une société pour accéder aux types de biens.</p>
         </div>
-        <SocieteSelector returnPath="/Administration/Types-Biens" />
+        <SocieteSelector returnPath="/administration/typesBiens" />
       </div>
     );
   }
@@ -130,21 +130,11 @@ export default function TypeBiensPage() {
   // Show form for add/edit actions
   if (action === 'add' || action === 'edit') {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <Link href="/Administration/Types-Biens" className="inline-flex items-center gap-2 text-[#009FFF] hover:text-blue-800">
-            <TbArrowBackUp className="text-xl" />
-            <span>Retour à la liste</span>
-          </Link>
-        </div>
-        <h1 className="text-2xl font-bold mb-6">
-          {action === 'add' ? 'Ajouter un nouveau type de bien' : 'Modifier le type de bien'}
-        </h1>
+      
         <TypeBienForm 
           id={action === 'edit' ? typeBienId : null} 
           onComplete={handleFormComplete}
         />
-      </div>
     );
   }
 
@@ -174,7 +164,7 @@ export default function TypeBiensPage() {
         data={typeBiens}
         loading={loading || societeLoading || projetLoading}
         onAction={handleAction}
-        onAddClick={() => router.push('/Administration/Types-Biens?action=add')}
+        onAddClick={() => router.push('/administration/typesBiens?action=add')}
         onFilterClick={() => setShowFilter(true)}
         onRefresh={() => fetchTypeBiens(filterParams)}
       />

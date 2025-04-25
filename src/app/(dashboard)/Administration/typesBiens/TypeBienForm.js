@@ -3,11 +3,11 @@ import { useProjet } from "@/context/ProjetContext";
 import { APIURL, ENDPOINTS } from "@/configs/api";
 import axios from "axios";
 import toast from "react-hot-toast";
-import Button from "@/components/Button";
 import BreadCrumb from "../../navigation/BreadCrumb";
+import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
 
-const FreinForm = ({ id = null, onComplete }) => {
+const TypeBienForm = ({ id = null, onComplete }) => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const { selectedProjet } = useProjet();
@@ -15,7 +15,7 @@ const FreinForm = ({ id = null, onComplete }) => {
 
   // Form state
   const [formData, setFormData] = useState({
-    description: "",
+    type: "",
     projet_id: selectedProjet?.id || "",
   });
 
@@ -28,29 +28,29 @@ const FreinForm = ({ id = null, onComplete }) => {
       setFormData((prev) => ({ ...prev, projet_id: selectedProjet.id }));
     }
 
-    // Load frein data if editing
+    // Load type bien data if editing
     if (id) {
-      fetchFreinData(id);
+      fetchTypeBienData(id);
     }
   }, [id, selectedProjet]);
 
-  const fetchFreinData = async (freinId) => {
+  const fetchTypeBienData = async (typeBienId) => {
     setLoading(true);
     try {
       const token = localStorage.getItem("accessToken");
-      const response = await axios.get(`${APIURL.TYPEFREINS}/${freinId}`, {
+      const response = await axios.get(`${APIURL.TYPEBIENS}/${typeBienId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (response.data?.typefrein) {
-        const freinData = response.data.typefrein;
+      if (response.data?.typeBien) {
+        const typeBienData = response.data.typeBien;
         setFormData({
-          description: freinData.description || "",
-          projet_id: freinData.projet_id || selectedProjet?.id || "",
+          type: typeBienData.type || "",
+          projet_id: typeBienData.projet_id || selectedProjet?.id || "",
         });
       }
     } catch (error) {
-      console.error("Error fetching frein data:", error);
+      console.error("Error fetching type bien data:", error);
       toast.error("Erreur lors du chargement des données");
     } finally {
       setLoading(false);
@@ -65,8 +65,8 @@ const FreinForm = ({ id = null, onComplete }) => {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.description.trim()) {
-      newErrors.description = "La description est requise";
+    if (!formData.type.trim()) {
+      newErrors.type = "Le type est requis";
     }
 
     setErrors(newErrors);
@@ -88,27 +88,18 @@ const FreinForm = ({ id = null, onComplete }) => {
 
     try {
       const token = localStorage.getItem("accessToken");
-      let url = APIURL.TYPEFREINS;
+      let url = APIURL.TYPEBIENS;
       let method = "post";
-
-      // Add projet_id as a query parameter
-      const params = new URLSearchParams();
-      params.append("projet_id", selectedProjet.id);
 
       if (id) {
         url = `${url}/${id}`;
         method = "put";
       }
 
-      // Only send description in the body, not projet_id
-      const dataToSend = {
-        description: formData.description,
-      };
-
       const response = await axios({
         method,
         url,
-        data: dataToSend,
+        data: formData,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -116,7 +107,9 @@ const FreinForm = ({ id = null, onComplete }) => {
       });
 
       toast.success(
-        id ? "Frein modifié avec succès" : "Frein ajouté avec succès"
+        id
+          ? "Type de bien modifié avec succès"
+          : "Type de bien ajouté avec succès"
       );
 
       // Ensure we wait for the toast before navigating
@@ -141,20 +134,6 @@ const FreinForm = ({ id = null, onComplete }) => {
     }
   };
 
-  const handleReset = () => {
-    if (id) {
-      // Reset to original data if editing
-      fetchFreinData(id);
-    } else {
-      // Clear form if adding new
-      setFormData({
-        description: "",
-        projet_id: selectedProjet?.id || "",
-      });
-    }
-    setErrors({});
-  };
-
   if (loading) {
     return (
       <div className="flex justify-center items-center h-32">
@@ -167,31 +146,29 @@ const FreinForm = ({ id = null, onComplete }) => {
     <div className="p-3">
       <div className="flex items-center justify-start">
         <BreadCrumb
-          baseUrl={ENDPOINTS.TYPEFREINS}
-          step={`${id ? "Modifier" : "Ajouter"} un  Frein`}
+          baseUrl={ENDPOINTS.TYPEBIENS}
+          step={`${id ? "Modifier" : "Ajouter"} une  type de bien`}
         />
       </div>
       <div className="p-6 mt-4 bg-white shadow-md rounded-md">
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2">
-              Frein <span className="text-red-500">*</span>
+              Type de bien <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
-              name="description"
-              value={formData.description}
+              name="type"
+              value={formData.type}
               onChange={handleChange}
               className={`shadow appearance-none border ${
-                errors.description ? "border-red-500" : "border-gray-300"
+                errors.type ? "border-red-500" : "border-gray-300"
               } rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
-              placeholder="Saisir la description du frein"
+              placeholder="Saisir le type de bien"
             />
-            {errors.description && (
+            {errors.type && (
               <p className="text-red-500 text-xs italic">
-                {typeof errors.description === "string"
-                  ? errors.description
-                  : errors.description[0]}
+                {typeof errors.type === "string" ? errors.type : errors.type[0]}
               </p>
             )}
           </div>
@@ -212,4 +189,4 @@ const FreinForm = ({ id = null, onComplete }) => {
   );
 };
 
-export default FreinForm;
+export default TypeBienForm;

@@ -87,7 +87,7 @@ const TypologieTable = ({
         data={currentItems}
         totalRows={filteredData.length}
         loading={loading}
-        addUserLink="/Administration/Typologies?action=add"
+        addUserLink="/administration/typologies?action=add"
         onSearchChange={handleSearchChange}
         currentPage={currentPage}
         rowsPerPage={rowsPerPage}

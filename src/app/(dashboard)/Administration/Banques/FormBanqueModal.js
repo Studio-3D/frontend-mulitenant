@@ -53,7 +53,9 @@ const BanqueModal = ({ isOpen, onClose, onSuccess, token, banque }) => {
 
       let message = "Quelque chose ne va pas bien";
       if (res.status === 200) {
-        message = `La banque a été ${banque ? "modifiée" : "ajoutée"} avec succès !`;
+        message = `La banque a été ${
+          banque ? "modifiée" : "ajoutée"
+        } avec succès !`;
         toast.success(message);
         setNom(""); // Clear form after submission
         if (onClose) onClose();
@@ -78,7 +80,6 @@ const BanqueModal = ({ isOpen, onClose, onSuccess, token, banque }) => {
   return (
     <Modal isVisible={true} onClose={onClose}>
       <div className="p-4 w-[600px]">
-
         <h2 className="text-xl font-semibold mb-4">
           {banque ? "Modifier la banque" : "Ajouter une banque"}
         </h2>
@@ -104,7 +105,9 @@ const BanqueModal = ({ isOpen, onClose, onSuccess, token, banque }) => {
             Annuler
           </button>
           <button
-            className={`px-4 py-2 bg-green-600 text-white rounded ${loading ? "opacity-50" : ""}`}
+            className={`px-4 py-2 bg-green-600 text-white rounded ${
+              loading ? "opacity-50" : ""
+            }`}
             onClick={handleSubmit}
             disabled={loading}
           >

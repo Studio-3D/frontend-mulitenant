@@ -5,10 +5,25 @@ import ProspectTable from './ProspectTable';
 import ProspectForm from './ProspectForm';
 import { useSearchParams } from 'next/navigation';
 import CRMNavbar from '@/components/CRMNavbar';
+import { isAdmin, isSuperAdmin, isCommercial } from '../../../../configs/enum';
+import { useAuth } from '../../../../context/AuthContext';
+import { useRouter } from 'next/navigation';
 
 export default function Page() {
   const ACTION = { EDIT: 'edit', ADD: 'add' };
   const [child, setChild] = useState(null);
+  const { user } = useAuth();
+  const userRole = user?.role;
+  const router = useRouter();
+  useEffect(() => {
+    if (
+      !isAdmin(userRole) &&
+      !isSuperAdmin(userRole) &&
+      !isCommercial(userRole)
+    ) {
+      router.push('/');
+    }
+  }, [router]);
 
   const searchParams = useSearchParams();
   useEffect(() => {

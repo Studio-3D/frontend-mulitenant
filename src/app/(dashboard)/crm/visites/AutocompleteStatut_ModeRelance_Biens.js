@@ -1,0 +1,98 @@
+import { useState } from 'react';
+
+const AutocompleteStatut_ModeRelance_Biens = ({
+  label = null,
+  name = null,
+  placeholder = '',
+  options = [],
+  value,
+  onChange,
+  required = false,
+  showAllOnFocus = true,
+  width = 'w-full',
+  height = 'h-10',
+  code = 'code',
+  labelKey = 'label',
+}) => {
+  const handleFocus = () => {
+    if (showAllOnFocus) setSearchQuery('');
+    setIsOpen(true);
+  };
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredOptions = options.filter((option) =>
+    option[labelKey]?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const selectedOption = options.find((opt) => opt[code] === value);
+
+  const handleSelect = (option) => {
+    onChange({
+      target: {
+        name,
+        value: option[code],
+      },
+    });
+    setSearchQuery(option[labelKey]);
+    setIsOpen(false);
+  };
+
+  const handleChange = (e) => {
+    const inputValue = e.target.value;
+    setSearchQuery(inputValue);
+    if (inputValue === '') {
+      onChange({
+        target: {
+          name,
+          value: '',
+        },
+      });
+    }
+    setIsOpen(true);
+  };
+
+  return (
+    <div className={`relative ${width}`}>
+      {label && (
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          {label} {required && <span className="text-red-500">*</span>}
+        </label>
+      )}
+
+      <input
+        type="text"
+        name={name}
+        value={searchQuery || (selectedOption ? selectedOption[labelKey] : '')}
+        onChange={handleChange}
+        onFocus={handleFocus}
+
+        onBlur={() => setTimeout(() => setIsOpen(false), 100)}
+        placeholder={placeholder}
+        className={`w-full ${height} p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm`}
+        required={required}
+      />
+
+      {isOpen && (
+        <div className="absolute top-full left-0 w-full bg-white shadow-lg rounded-md mt-1 max-h-60 overflow-y-auto border border-gray-300 z-10">
+          {filteredOptions.length === 0 ? (
+            <div className="p-2 text-gray-500 text-sm">Aucun résultat trouvé</div>
+          ) : (
+            filteredOptions.map((option) => (
+              <div
+                key={option[code]}
+                className="p-2 text-sm cursor-pointer hover:bg-indigo-100"
+                onClick={() => handleSelect(option)}
+              >
+                {option[labelKey]}
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default AutocompleteStatut_ModeRelance_Biens;

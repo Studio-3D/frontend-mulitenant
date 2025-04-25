@@ -87,7 +87,7 @@ export default function FreinsPage() {
 
   const handleAction = (actionType, row) => {
     if (actionType === 'edit') {
-      router.push(`/Administration/Freins?action=edit&id=${row.id}`);
+      router.push(`/administration/freins?action=edit&id=${row.id}`);
     } else if (actionType === 'delete') {
       // Handle delete with confirmation
       setRowToDelete(row);
@@ -99,7 +99,7 @@ export default function FreinsPage() {
   // Handle form completion
   const handleFormComplete = () => {
     // Use router.replace instead of push to ensure a clean navigation
-    router.replace('/Administration/Freins');
+    router.replace('/administration/freins');
   };
 
   // If not logged in or no project selected, show appropriate message
@@ -114,21 +114,11 @@ export default function FreinsPage() {
   // Show form for add/edit actions
   if (action === 'add' || action === 'edit') {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <Link href="/Administration/Freins" className="inline-flex items-center gap-2 text-[#009FFF] hover:text-blue-800">
-            <TbArrowBackUp className="text-xl" />
-            <span>Retour à la liste</span>
-          </Link>
-        </div>
-        <h1 className="text-2xl font-bold mb-6">
-          {action === 'add' ? 'Ajouter un nouveau frein' : 'Modifier le frein'}
-        </h1>
+      
         <FreinForm
           id={action === 'edit' ? freinId : null} 
           onComplete={handleFormComplete}
         />
-      </div>
     );
   }
 
@@ -149,7 +139,7 @@ export default function FreinsPage() {
         data={freins}
         loading={loading}
         onAction={handleAction}
-        onAddClick={() => router.push('/Administration/Freins?action=add')}
+        onAddClick={() => router.push('/administration/freins?action=add')}
         onFilterClick={() => setShowFilter(true)}
         onRefresh={() => fetchFreins(filterParams)}
       />

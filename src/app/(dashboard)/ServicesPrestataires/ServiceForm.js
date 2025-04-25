@@ -1,52 +1,60 @@
+"use client";
 import { useState, useEffect } from "react";
-import { APIURL, ENDPOINTS } from "@/configs/api";
-import axios from "axios";
-import toast from "react-hot-toast";
-import BreadCrumb from "../../navigation/BreadCrumb";
-import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
+import axios from "axios";
+import { APIURL, ENDPOINTS } from "@/configs/api";
+import toast from "react-hot-toast";
+import { useProjet } from "@/context/ProjetContext";
+import Button from "@/components/Button";
+import BreadCrumb from "../navigation/BreadCrumb";
 
-const SourceForm = ({ id = null, onComplete }) => {
-  const [loading, setLoading] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+export default function ServiceForm({ id = null, onComplete }) {
   const router = useRouter();
+  const [loading, setLoading] = useState(id ? true : false);
+  const [submitting, setSubmitting] = useState(false);
+  const { selectedProjet } = useProjet();
 
   // Form state
   const [formData, setFormData] = useState({
-    source: "",
+    nom: "",
+    
   });
 
   // Validation errors
   const [errors, setErrors] = useState({});
 
+  // Fetch service data if editing
   useEffect(() => {
-    // Load source data if editing
-    if (id) {
-      fetchSourceData(id);
-    }
-  }, [id]);
+    if (!id) return;
 
-  const fetchSourceData = async (sourceId) => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem("accessToken");
-      const response = await axios.get(`${APIURL.SOURCES}/${sourceId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (response.data?.source) {
-        const sourceData = response.data.source;
-        setFormData({
-          source: sourceData.source || "",
+    const fetchService = async () => {
+      try {
+        const token = localStorage.getItem("accessToken");
+        const response = await axios.get(`${APIURL.ServicesPrestataires}/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
         });
+
+        const service = response.data.service;
+        setFormData({
+          nom: service.nom || "",
+        });
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching service:", error);
+        toast.error("Erreur lors du chargement du service");
+        if (onComplete) onComplete();
       }
-    } catch (error) {
-      console.error("Error fetching source data:", error);
-      toast.error("Erreur lors du chargement des données");
-    } finally {
-      setLoading(false);
+    };
+
+    fetchService();
+  }, [id, selectedProjet, onComplete]);
+
+  useEffect(() => {
+    // Update projet_id in form when selectedProjet changes
+    if (selectedProjet) {
+      setFormData((prev) => ({ ...prev, projet_id: selectedProjet.id }));
     }
-  };
+  }, [selectedProjet]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -56,8 +64,8 @@ const SourceForm = ({ id = null, onComplete }) => {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.source.trim()) {
-      newErrors.source = "La source est requise";
+    if (!formData.nom.trim()) {
+      newErrors.nom = "La nom est requise";
     }
 
     setErrors(newErrors);
@@ -69,17 +77,18 @@ const SourceForm = ({ id = null, onComplete }) => {
 
     if (!validateForm()) return;
 
+    // Check if project is selected
+    if (!selectedProjet) {
+      toast.error("Veuillez d'abord sélectionner un projet");
+      return;
+    }
+
     setSubmitting(true);
 
     try {
       const token = localStorage.getItem("accessToken");
-      let url = APIURL.SOURCES;
-      let method = "post";
-
-      if (id) {
-        url = `${url}/${id}`;
-        method = "put";
-      }
+      const method = id ? "put" : "post";
+      const url = id ? `${APIURL.SERVICE}/${id}` : APIURL.SERVICE;
 
       const response = await axios({
         method,
@@ -91,43 +100,23 @@ const SourceForm = ({ id = null, onComplete }) => {
         },
       });
 
-      toast.success(
-        id ? "Source modifiée avec succès" : "Source ajoutée avec succès"
-      );
+      toast.success(`Service ${id ? "modifié" : "créé"} avec succès`);
 
       // Ensure we wait for the toast before navigating
       setTimeout(() => {
         if (onComplete) onComplete();
       }, 300);
     } catch (error) {
-      console.error("Error submitting form:", error);
+      console.error("Error submitting service:", error);
 
       if (error.response?.status === 422) {
-        const backendErrors = error.response.data.errors || {};
-        setErrors(backendErrors);
-
-        Object.values(backendErrors).forEach((errorArray) => {
-          errorArray.forEach((message) => toast.error(message));
-        });
+        setErrors(error.response.data.errors || {});
       } else {
-        toast.error("Erreur lors de l'enregistrement");
+        toast.error("Une erreur est survenue lors de l'enregistrement");
       }
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const handleReset = () => {
-    if (id) {
-      // Reset to original data if editing
-      fetchSourceData(id);
-    } else {
-      // Clear form if adding new
-      setFormData({
-        source: "",
-      });
-    }
-    setErrors({});
   };
 
   if (loading) {
@@ -142,34 +131,36 @@ const SourceForm = ({ id = null, onComplete }) => {
     <div className="p-3">
       <div className="flex items-center justify-start">
         <BreadCrumb
-          baseUrl={ENDPOINTS.SOURCES}
-          step={`${id ? "Modifier" : "Ajouter"} une source`}
+          baseUrl={ENDPOINTS.ServicesPrestataires}
+          step={`${id ? "Modifier" : "Ajouter"} un service`}
         />
       </div>
       <div className="p-6 mt-4 bg-white shadow-md rounded-md">
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2">
-              Source <span className="text-red-500">*</span>
+              Service <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
-              name="source"
-              value={formData.source}
+              name="nom"
+              value={formData.nom}
               onChange={handleChange}
               className={`shadow appearance-none border ${
-                errors.source ? "border-red-500" : "border-gray-300"
+                errors.nom ? "border-red-500" : "border-gray-300"
               } rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
-              placeholder="Saisir la source"
+              placeholder="Saisir la nom"
             />
-            {errors.source && (
+            {errors.nom && (
               <p className="text-red-500 text-xs italic">
-                {typeof errors.source === "string"
-                  ? errors.source
-                  : errors.source[0]}
+                {typeof errors.nom === "string"
+                  ? errors.nom
+                  : errors.nom[0]}
               </p>
             )}
           </div>
+
+         
 
           <div className="flex justify-center gap-4 items-center mt-6 mb-6">
             <Button type="button" onClick={() => router.back()}>
@@ -183,6 +174,4 @@ const SourceForm = ({ id = null, onComplete }) => {
       </div>
     </div>
   );
-};
-
-export default SourceForm;
+}

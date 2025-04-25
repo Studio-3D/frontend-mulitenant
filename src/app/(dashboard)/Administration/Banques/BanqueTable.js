@@ -1,20 +1,16 @@
-import { useState } from 'react';
-import Table from '@/components/Table';
-import * as XLSX from 'xlsx';
+import { useState } from "react";
+import Table from "@/components/Table";
+import * as XLSX from "xlsx";
 import { FaRegEye, FaEdit } from "react-icons/fa";
 import { RiDeleteBin6Line } from "react-icons/ri";
 
-const BanqueTable = ({ 
-  data = [], 
-  loading = false, 
-  onAction, 
-}) => {
-  const [searchTerm, setSearchTerm] = useState('');
+const BanqueTable = ({ data = [], loading = false, onAction }) => {
+  const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   // Filter data based on search term
-  const filteredData = data.filter(item => 
+  const filteredData = data.filter((item) =>
     item.nom?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -25,30 +21,29 @@ const BanqueTable = ({
 
   // Define table columns with action buttons
   const columns = [
-    { key: 'nom', label: 'Banque' },
-    { 
-      key: 'actions', 
-      label: 'Actions',
+    { key: "nom", label: "Banque" },
+    {
+      key: "actions",
+      label: "Actions",
       render: (row) => (
         <div className="flex gap-4 items-center">
-          
           <button
             className="text-blue-500 hover:text-blue-700"
-            onClick={() => onAction && onAction('edit', row)}
+            onClick={() => onAction && onAction("edit", row)}
             title="Modifier"
           >
             <FaEdit className="w-4 h-4" />
           </button>
           <button
             className="text-red-500 hover:text-red-700"
-            onClick={() => onAction && onAction('delete', row)}
+            onClick={() => onAction && onAction("delete", row)}
             title="Supprimer"
           >
             <RiDeleteBin6Line className="w-4 h-4" />
           </button>
         </div>
-      )
-    }
+      ),
+    },
   ];
 
   // Handle search
@@ -68,27 +63,28 @@ const BanqueTable = ({
     setCurrentPage(1); // Reset to first page when changing page size
   };
 
-  
   // Export to Excel function
   const handleExportExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(data.map(item => ({
-      ID: item.id,
-      Banque: item.nom
-    })));
-    
+    const worksheet = XLSX.utils.json_to_sheet(
+      data.map((item) => ({
+        ID: item.id,
+        Banque: item.nom,
+      }))
+    );
+
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Banques");
     XLSX.writeFile(workbook, "banques_export.xlsx");
   };
-  
+
   return (
     <div>
-      <Table 
+      <Table
         columns={columns}
         data={currentItems}
         totalRows={filteredData.length}
         loading={loading}
-        addUserLink="/Administration/Banques?action=add"
+        addUserLink="/administration/banques?action=add"
         onSearchChange={handleSearchChange}
         currentPage={currentPage}
         rowsPerPage={rowsPerPage}
@@ -96,9 +92,8 @@ const BanqueTable = ({
         onRowsPerPageChange={handleRowsPerPageChange}
         onExport={handleExportExcel}
         enableExport={data.length > 0}
-
       />
-      
+
       {/* <div className="flex justify-between mt-4">
         
         <button 

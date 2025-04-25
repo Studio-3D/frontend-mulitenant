@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import Table from '@/components/Table';
-import { FaRegEye, FaEdit, FaRegEdit, FaCheck } from 'react-icons/fa';
+import { FaRegEye, FaEdit, FaCheck } from 'react-icons/fa';
 import { RiDeleteBin6Line } from 'react-icons/ri';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
@@ -10,7 +10,7 @@ import { useAuth } from '../../../../context/AuthContext';
 import { APIURL, ENDPOINTS } from '../../../../configs/api';
 import { useRouter } from 'next/navigation';
 import { fetchData_table_by_projet } from '../../../../../src/configs/api-utils';
-import { isAdmin, isSuperAdmin } from '../../../../configs/enum';
+import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
 import Modal_Traite from './Modal_Traite';
 import { Statuts_Prospect } from '../../../../../src/configs/enum';
 
@@ -27,6 +27,7 @@ const ProspectTable = () => {
   const [open_traite, setOpen_traite] = useState(false);
   const [traite_id, setId_traite] = useState(null);
   const [num_tel, setTel_num] = useState(null);
+  const [nom_prenom, setNomPrenom] = useState(null);
 
   const { user, token } = useAuth();
   const accesstoken = token || localStorage.getItem('accessToken');
@@ -37,13 +38,13 @@ const ProspectTable = () => {
   const entity = {
     API_URL: 'prospects',
     dataKey: 'prospects',
-    name: 'Prospect',
     searchFields: ['fullname', 'email', 'telephone', 'cin'],
   };
 
   useEffect(() => {
     fetchData_table_by_projet(
       entity,
+      {},
       searchTerm,
       currentPage,
       rowsPerPage,
@@ -98,10 +99,11 @@ const ProspectTable = () => {
     router.push(`${ENDPOINTS.PROSPECTS}?id=${ProspectId}&action=edit`);
   }
 
-  const handleraiter = (Id, num_tel) => {
+  const handleraiter = (Id, num_tel, nom_prenom) => {
     setOpen_traite(!open_traite);
     setId_traite(Id);
     setTel_num(num_tel);
+    setNomPrenom(nom_prenom);
   };
 
   // Format users data for table display
@@ -184,7 +186,7 @@ const ProspectTable = () => {
           <FaCheck
             className="w-4 h-4  hover:text-['rgb(87,80,129)']-700 text-['rgb(87,80,129)'] cursor-pointer"
             title="Traiter"
-            onClick={() => handleraiter(row.id, row.telephone)}
+            onClick={() => handleraiter(row.id, row.telephone, row.nomComplet)}
           />
 
           {row.client == null &&
@@ -257,7 +259,7 @@ const ProspectTable = () => {
           enableExport={true}
           enableImport={true}
           addLink={
-            isSuperAdmin(user.role) || isAdmin(user.role)
+            isSuperAdmin(user.role) || isAdmin(user.role)||isCommercial(user.role)
               ? `${ENDPOINTS.PROSPECTS}?action=add`
               : undefined
           }
@@ -296,6 +298,7 @@ const ProspectTable = () => {
         <>
           <Modal isVisible={true} onClose={() => setOpen_traite(false)}>
             <Modal_Traite
+              nom_prenom={nom_prenom}
               num_tel={num_tel}
               id={traite_id}
               onClose={() => setOpen_traite(false)}

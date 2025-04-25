@@ -4,12 +4,10 @@ import * as XLSX from 'xlsx';
 import { FaRegEye, FaEdit } from "react-icons/fa";
 import { RiDeleteBin6Line } from "react-icons/ri";
 
-const TypeProjetTable = ({ 
+const TypeBienTable = ({ 
   data = [], 
   loading = false, 
   onAction, 
-  onAddClick, 
-  onFilterClick,
   onRefresh
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -28,7 +26,7 @@ const TypeProjetTable = ({
 
   // Define table columns with action buttons
   const columns = [
-    { key: 'type', label: 'Type de projet' },
+    { key: 'type', label: 'Type de bien' },
     { 
       key: 'actions', 
       label: 'Actions',
@@ -78,8 +76,8 @@ const TypeProjetTable = ({
     })));
     
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Types de Projets");
-    XLSX.writeFile(workbook, "types-projets.xlsx");
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Types de Biens");
+    XLSX.writeFile(workbook, "types-biens.xlsx");
   };
   
   return (
@@ -89,7 +87,7 @@ const TypeProjetTable = ({
         data={currentItems}
         totalRows={filteredData.length}
         loading={loading}
-        addUserLink="/Administration/Types-Projets?action=add"
+        addUserLink="/administration/typesBiens?action=add"
         onSearchChange={handleSearchChange}
         currentPage={currentPage}
         rowsPerPage={rowsPerPage}
@@ -99,16 +97,16 @@ const TypeProjetTable = ({
         enableExport={data.length > 0}
       />
       
-      {/* <div className="flex justify-end mt-4">
+      <div className="flex justify-end mt-4">
         <button 
           onClick={onRefresh}
           className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
         >
           Actualiser
         </button>
-      </div> */}
+      </div>
     </div>
   );
 };
 
-export default TypeProjetTable;
+export default TypeBienTable;

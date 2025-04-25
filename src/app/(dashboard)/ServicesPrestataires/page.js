@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import ProspectTable from './ProspectTable'
-import ProspectForm from './ProspectForm'
+import ServiceTable from './ServiceTable'
+import ServiceForm from './ServiceForm'
 import { useSearchParams } from 'next/navigation'
 
 export default function Page() {
@@ -23,9 +23,9 @@ export default function Page() {
   // Fonction pour déterminer le composant enfant en fonction de l'action et de l'id
   const determineChildComponent = (action, id) => {
     if (action === ACTION.ADD) {
-      return <ProspectForm />
+      return <ServiceForm />
     } else if (!isNaN(parseInt(id)) && action === ACTION.EDIT) {
-      return <ProspectForm id={id} />
+      return <ServiceForm id={id} />
     } else {
       console.warn('Invalid action or missing id:', action, id) // Debugging
 
@@ -40,7 +40,7 @@ export default function Page() {
       ) : (
         <>
           <div>
-            <ProspectTable />
+            <ServiceTable />
           </div>
         </>
       )}
