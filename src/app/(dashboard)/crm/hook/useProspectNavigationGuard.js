@@ -1,67 +1,29 @@
-'use client';  // This ensures we're in the client-side context
+'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-const useProspectNavigationGuard = () => {
-  const [showModal, setShowModal] = useState(false);
-  const [nextUrl, setNextUrl] = useState(null);
-  const allowNavigation = useRef(false);
+export default function useClearProspect() {
+  /* Removes selectedProspect when navigating to another route ✅ Removes selectedProspect when refreshing the page ✅ Removes selectedProspect when the VisiteForm component unmounts*/
 
-  // Block page unload (tab close or refresh)
+  const router = useRouter();
+
   useEffect(() => {
-    const handleBeforeUnload = (e) => {
-      if (localStorage.getItem('selectedProspect')) {
-        e.preventDefault();
-        e.returnValue = '';  // Default confirmation
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, []);
-
-  // Handle manual navigation using window.location (for App Router)
-  const handleManualNavigation = (url) => {
-    const hasProspect = localStorage.getItem('selectedProspect');
-    if (hasProspect) {
-      setShowModal(true);
-      setNextUrl(url);
-      throw 'Navigation blocked temporarily'; // Temporarily block navigation
-    }
-  };
-
-  // Listen for navigation events
-  useEffect(() => {
-    // Override the window.location logic to show the modal
-    const handleHashChange = () => {
-      handleManualNavigation(window.location.href);
-    };
-
-    // Listen for manual navigation (such as when a user clicks a link)
-    window.addEventListener('hashchange', handleHashChange);
-
-    return () => {
-      window.removeEventListener('hashchange', handleHashChange);
-    };
-  }, []);
-
-  // Confirm navigation (clear or keep the prospect)
-  const confirmNavigation = (clear) => {
-    if (clear) {
+    // Function to clear localStorage
+    const clearProspect = () => {
       localStorage.removeItem('selectedProspect');
-    }
+    };
 
-    allowNavigation.current = true;
+    // Clear localStorage on page reload
+    window.addEventListener('beforeunload', clearProspect);
 
-    if (nextUrl) {
-      window.location.href = nextUrl;  // Resume navigation
-    }
-  };
-
-  return { showModal, confirmNavigation, setShowModal };
-};
-
-export default useProspectNavigationGuard;
+     // Clear localStorage when navigating to another route
+     const handleRouteChange = () => {
+        clearProspect();
+    };
+    return () => {
+      window.removeEventListener('beforeunload', clearProspect);
+      handleRouteChange();
+    };
+  }, [router]);
+}
