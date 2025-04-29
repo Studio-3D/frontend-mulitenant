@@ -101,6 +101,7 @@ const Menu = () => {
         icon: <TbLayoutDashboardFilled />,
         href: "/tableau-de-bord",
       },
+
     ];
 
     if (role === User_roles.ROLE_SUPER_ADMIN) {

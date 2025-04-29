@@ -13,7 +13,7 @@ export default {
 		  foreground: '#333333',  
 		  primary: '#007bff',     
 		  secondary: '#6c757d',   
-		  accent: '#17a2b8',      
+		  accent: '#E5E5E5',      
 		  muted: '#f8f9fa',       
 		  destructive: '#dc3545', 
 		  border: '#dee2e6',      
