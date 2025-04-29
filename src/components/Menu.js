@@ -37,6 +37,10 @@ import { useSociete } from "@/context/SocieteContext";
 import SocieteDialog from "./SocieteDialog";
 import { useProjet } from "@/context/ProjetContext";
 import ProjetDialog from "./ProjetDialog";
+import { FaTools } from "react-icons/fa";
+import { HiOutlineUserGroup } from "react-icons/hi";
+import { HiOutlineDocumentReport } from "react-icons/hi";
+import { FaUniversity, FaRegCreditCard } from "react-icons/fa";
 
 const Menu = () => {
   const [menuItems, setMenuItems] = useState([]);
@@ -92,7 +96,12 @@ const Menu = () => {
 
   const getMenuItems = (role) => {
     const items = [
-      { label: 'Tableau de Bord', icon: <TbLayoutDashboardFilled />, href: '/tableau-de-bord' },
+      {
+        label: "Tableau de Bord",
+        icon: <TbLayoutDashboardFilled />,
+        href: "/tableau-de-bord",
+      },
+
     ];
 
     if (role === User_roles.ROLE_SUPER_ADMIN) {
@@ -146,28 +155,28 @@ const Menu = () => {
           label: "Types Biens",
           icon: <FaRegFolderOpen />,
           href: "/administration/typesBiens",
-          needsProjet: true, // tous les rôles
+          needsProjet: true, 
           needsSociete: user.role === 1,
         },
         {
           label: "Objectifs",
           icon: <LuFileText />,
           href: "/administration/objectifs",
-          needsProjet: true, // tous les rôles
+          needsProjet: true, 
           needsSociete: user.role === 1,
         },
         {
           label: "Commissions",
           icon: <FaFileInvoiceDollar />,
           href: "/administration/commissions",
-          needsProjet: true, // tous les rôles
+          needsProjet: true, 
           needsSociete: user.role === 1,
         },
         {
           label: "Freins",
           icon: <FaCircleExclamation />,
           href: "/administration/freins",
-          needsProjet: true, // tous les rôles
+          needsProjet: true, 
           needsSociete: user.role === 1,
         },
         {
@@ -180,26 +189,26 @@ const Menu = () => {
           label: "Partenaires",
           icon: <TbReportAnalytics />,
           href: "/administration/partenaires",
-          needsProjet: true, // tous les rôles
+          needsProjet: true, 
           needsSociete: user.role === 1,
         },
         {
           label: "Vues",
           icon: <FaRegEye />,
           href: "/administration/vues",
-          needsProjet: true, // tous les rôles
+          needsProjet: true, 
           needsSociete: user.role === 1,
         },
         {
           label: "Typologies",
           icon: <FaRegFolderOpen />,
           href: "/administration/typologies",
-          needsProjet: true, // tous les rôles
+          needsProjet: true, 
           needsSociete: user.role === 1,
         },
         {
           label: "Banques",
-          icon: <FaBuilding />,
+          icon: <FaUniversity />,          
           href: "/administration/banques",
           needsSociete: user.role === 1,
         },
@@ -212,7 +221,7 @@ const Menu = () => {
       label: "CRM",
       icon: <SiCivicrm />,
       href: "/crm",
-      needsProjet: true, // tous les rôles
+      needsProjet: true, 
       needsSociete: user.role === 1,
     },
     {
@@ -232,7 +241,7 @@ const Menu = () => {
     {
       label: "Calendrier",
       icon: <BsCalendar3 />,
-      href: "/Calendrier",
+      href: "/calendrier",
       needsSociete: user.role === 1,
       needsProjet: true,
     },
@@ -244,17 +253,40 @@ const Menu = () => {
       icon: <RiDiscountPercentFill />,
       href: "/remise-des-cles",
     },
-    { label: "Sav", 
-      icon: <RiFolderUserFill />, 
-      href: "/ServicesPrestataires",
-      needsSociete: user.role === 1,
-
+    {
+      label: "Sav",
+      icon: <RiFolderUserFill />,
+      children: [
+        {
+          label: "Services prestataire",
+          icon: <FaTools />, // outil = services
+          href: "/sav/services",
+          needsSociete: user.role === 1,
+          
+        },
+        {
+          label: "Prestataires",
+          icon: <HiOutlineUserGroup />, // groupe de personnes = prestataires
+          href: "/sav/prestataires",
+          //needsProjet: true,
+          needsSociete: user.role === 1,
+        },
+        {
+          label: "Reclamations",
+          icon: <HiOutlineDocumentReport />, // document = réclamation
+          href: "/sav/reclamations",
+          needsProjet: true,
+          needsSociete: user.role === 1,
+        },
+      ],
     },
+    
+    
     { label: "Reclamations", icon: <MdFeed />, href: "/Reclamations" },
     {
       label: "Encaissments",
       icon: <FaFileInvoiceDollar />,
-      href: "/Encaissments",
+      href: "/encaissments",
     },
     {
       label: "Comptabilité",
@@ -265,7 +297,7 @@ const Menu = () => {
     {
       label: "Historique Importation",
       icon: <FaHistory />,
-      href: "/Historique-Importation",
+      href: "/historique-importation",
     },
   ];
 

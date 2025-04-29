@@ -165,29 +165,7 @@ export const fetchData_table_by_id = async (
       }
     );
 
-    /*if (response.data && Array.isArray(response.data[entity.dataKey])) {
-      let filteredData = response.data[entity.dataKey];
-
-      // Apply global search and specific filtering for 'role' and 'status' in a single filter
-      if (searchTerm) {
-        const lowerSearchTerm = searchTerm.toLowerCase();
-        // Map role ID to role text using User_roles
-
-        filteredData = filteredData.filter((item) => {
-          // Check if any of the fields match the searchTerm
-          const statut = Object.keys(Statuts_Prospect).find(
-            (key) => Statuts_Prospect[key] === item.label
-          );
-          // Check if any of the fields match the searchTerm
-          return (
-            statut.includes(lowerSearchTerm) || // Search in status
-            entity.searchFields.some((field) => {
-              const value = (item[field] || '').toLowerCase();
-              return value.includes(lowerSearchTerm); // Search in other fields
-            })
-          );
-        });
-      }*/
+    
     if (response.data && Array.isArray(response.data[entity.dataKey])) {
       let rawData = response.data[entity.dataKey];
 
