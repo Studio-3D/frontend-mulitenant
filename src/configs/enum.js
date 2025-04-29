@@ -41,8 +41,15 @@ export const VISITE_INTERETS = {
   1: { code: 1, label: 'Intéressé', color: 'bg-green-100 text-green-800' },
   2: { code: 2, label: 'Réceptif', color: 'bg-blue-100 text-blue-800' },
   3: { code: 3, label: 'Perdu', color: 'bg-red-100 text-red-800' },
+  4 : { code: 4, label: 'Injoignable', color: 'bg-gray-100 text-white-800' },
+
 };
 
+export const getInteret_label = number => {
+  if (VISITE_INTERETS[number]?.code == number) {
+    return VISITE_INTERETS[number]?.label
+  }
+}
 // Visite statuses for form selection
 export const VISITE_STATUT_FORM = {
   1: { code: 1, label: 'Pré-Réservation'},
@@ -56,6 +63,17 @@ export const VISITE_TYPE_NOTIF = {
   2: { code: 2, label: 'Appel'},
   3: { code: 3, label: 'Email'},
 };
+
+export const MODES_RELANCES = {
+  1: { code: '1', label: 'Sms' },
+  2: { code: '2', label: 'Appel ' },
+  3: { code: '3', label: 'Email ' }
+}
+export const getRelance_label = number => {
+  if (MODES_RELANCES[number]?.code == number) {
+    return MODES_RELANCES[number]?.label
+  }
+}
 
 // Payment modes
 export const MODE_PAIEMENT = {
@@ -96,6 +114,10 @@ export const ORIENTATIONS = {
   8: { code: 8, label: 'Sud-Ouest', description: 'Orientation Sud-Ouest' },
 };
 
+export const getOrientationLabel = (code) => {
+  return ORIENTATIONS[code]?.label || 'Unknown';
+};
+
 export const ORIENTATION_ABBREVIATIONS = {
   'Nord': 'N',
   'Sud': 'S',
@@ -106,9 +128,33 @@ export const ORIENTATION_ABBREVIATIONS = {
   'Sud-Est': 'S_E',
   'Sud-Ouest': 'S_O',
 };
+
+// Function that accepts a letter/abbreviation and returns the full word
+export const getFullOrientation = (letter) => {
+  // Reverse the object so that the keys are abbreviations and values are the full names
+  const reversedAbbreviations = Object.fromEntries(
+    Object.entries(ORIENTATION_ABBREVIATIONS).map(([key, value]) => [value, key])
+  );
+
+  // Return the full orientation name based on abbreviation
+  return reversedAbbreviations[letter] || 'Unknown Orientation'; // Default if not found
+};
+export const getOrientationCode = orientation => ORIENTATIONS[orientation]?.code || ''
+
 export const Statuts_Prospect = {
   1: { id: '1', label: 'Planification Rendez Vous' },
   2: { id: '2', label: 'Injoignable' },
   3: { id: '3', label: 'Rappel' },
   4: { id: '4', label: 'Converti en Visite' },
+  5: { id: '5', label: 'Nouveau Appel' },
+
+}
+export const TYPES_APPELS = {
+  1: { code: '1', label: 'Appel Entrant' },
+  2: { code: '2', label: 'Appel Sortant' }
+}
+export const getTypeAppelLabel = number => {
+  if (TYPES_APPELS[number].code == number) {
+    return TYPES_APPELS[number].label
+  }
 }

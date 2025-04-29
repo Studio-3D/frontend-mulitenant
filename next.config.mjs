@@ -8,7 +8,9 @@ const nextConfig = {
   
   // Enable SWC minification for faster builds
   swcMinify: true,
-  
+  experimental: {
+    turbo: false
+  },
   // Configure image domains if you're using next/image with external images
   images: {
     domains: ['example.com'],
