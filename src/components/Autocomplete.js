@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 
 const Autocomplete = ({
@@ -34,6 +35,7 @@ const Autocomplete = ({
             .includes(String(searchQuery).toLowerCase());
         });
 
+
   // Effect to clear input when no options match
   useEffect(() => {
     if (!loading && filteredOptions.length === 0 && searchQuery) {
@@ -68,16 +70,16 @@ const Autocomplete = ({
   return (
     <div className={`relative ${width}`}>
       {/* Label */}
+
       <label className="block text-sm font-medium text-gray-700">
-        {label}
-        {required && <span className="text-red-500 ml-1">*</span>}
+        {label} {required && <span className="text-red-500">*</span>}
       </label>
 
       {/* Input Field */}
       <div className="relative mt-1">
         <input
           type="text"
-          value={searchQuery || (value ? value[choix] : '')}
+          value={searchQuery}
           onChange={handleChange}
           onFocus={() => {
             setIsOpen(true);
@@ -90,6 +92,7 @@ const Autocomplete = ({
           } rounded-md focus:outline-none focus:ring-2 ${
             errorMessage ? 'focus:ring-red-500' : 'focus:ring-indigo-500'
           }`}
+
           required={required}
         />
 
@@ -99,10 +102,10 @@ const Autocomplete = ({
             {loading ? (
               <div className="flex items-center justify-center p-4">
                 <div className="w-4 h-4 border-2 border-t-2 border-gray-500 rounded-full animate-spin mr-2"></div>
-                <span>Loading...</span>
+                <span>Chargement...</span>
               </div>
             ) : filteredOptions.length === 0 ? (
-              <div className="p-2 text-gray-500">No options found</div>
+              <div className="p-2 text-gray-500">Aucune option trouvée</div>
             ) : (
               filteredOptions.map((option) => (
                 <div
@@ -110,7 +113,7 @@ const Autocomplete = ({
                   className="p-2 cursor-pointer hover:bg-indigo-100"
                   onClick={() => handleSelect(option)}
                 >
-                  {option[choix]}
+                  {getOptionLabel ? getOptionLabel(option) : option[choix]}
                 </div>
               ))
             )}
