@@ -23,6 +23,8 @@ import { useProjet } from "@/context/ProjetContext";
 import TextField from "@/components/Textfield";
 import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
 import Autocomplete from '@/components/Autocomplete';
+import SelectInput from "@/components/SelectInput";
+import { encryptUserType, USER_TYPES } from "@/components/user-utils";
 
 const PrestataireForm = ({ id = null }) => {
   const [loading, setLoading] = useState(false);
@@ -102,7 +104,6 @@ const PrestataireForm = ({ id = null }) => {
   };
 
   useEffect(() => {
-    //fetchDataByProjet('ServicesPrestataires',setServices, setLoading);
     fetchServices();
   }, []);
 
@@ -286,18 +287,26 @@ const handleChange_event = (name) => (event) => {
           onChange={handleChange_event('telephone')}
         />
 
-        <AutocompleteSelectComponent
-        required
-        label="Civilité :"
-        name="civilite"
-        value={Number(watch('civilite'))}
-        errors={errors}
-        backendErrors={backendErrors}
-        control={control}
-        options={CIVILITES}
-        onChange={(code) => {
-        setValue('civilite', code)
-        }}
+        
+        <Controller
+          name="civilite"
+          control={control}
+          rules={{ required: "La civilité est requise" }}
+          render={({ field }) => (
+            <SelectInput
+              label="Civilité :"
+              placeholder="Sélectionner une civilité"
+              options={Object.values(CIVILITES).map((item) => ({
+                value: item.code,
+                label: item.label
+              }))}
+              value={field.value}
+              onChange={(val) => field.onChange(val)}
+              error={errors?.civilite?.message || backendErrors?.civilite?.[0]}
+            />
+
+
+              )}
         />
 
         <Autocomplete
