@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const AutocompleteStatut_ModeRelance_Biens = ({
   label = null,
@@ -14,20 +14,24 @@ const AutocompleteStatut_ModeRelance_Biens = ({
   code = 'code',
   labelKey = 'label',
 }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Filter options based on search query
+  const filteredOptions = options.filter((option) =>
+    option[labelKey]?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Get the selected option based on the provided value
+  const selectedOption = options.find((opt) => opt[code] === value);
+
+  // Handle input focus
   const handleFocus = () => {
     if (showAllOnFocus) setSearchQuery('');
     setIsOpen(true);
   };
 
-  const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-
-  const filteredOptions = options.filter((option) =>
-    option[labelKey]?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const selectedOption = options.find((opt) => opt[code] === value);
-
+  // Handle option selection
   const handleSelect = (option) => {
     onChange({
       target: {
@@ -35,13 +39,16 @@ const AutocompleteStatut_ModeRelance_Biens = ({
         value: option[code],
       },
     });
-    setSearchQuery(option[labelKey]);
-    setIsOpen(false);
+    setSearchQuery(option[labelKey]); // Set input field to selected label
+    setIsOpen(false); // Close dropdown
   };
 
+  // Handle input change
   const handleChange = (e) => {
     const inputValue = e.target.value;
     setSearchQuery(inputValue);
+
+    // Clear the input if it's empty
     if (inputValue === '') {
       onChange({
         target: {
@@ -50,8 +57,22 @@ const AutocompleteStatut_ModeRelance_Biens = ({
         },
       });
     }
-    setIsOpen(true);
+
+    setIsOpen(true); // Show dropdown
   };
+
+  // Effect to clear input when no options match
+  useEffect(() => {
+    if (filteredOptions.length === 0 && searchQuery) {
+      setSearchQuery(''); // Clear input
+      onChange({
+        target: {
+          name,
+          value: '',
+        },
+      }); // Notify parent that value is cleared
+    }
+  }, [filteredOptions, searchQuery, onChange, name]);
 
   return (
     <div className={`relative ${width}`}>
@@ -67,8 +88,7 @@ const AutocompleteStatut_ModeRelance_Biens = ({
         value={searchQuery || (selectedOption ? selectedOption[labelKey] : '')}
         onChange={handleChange}
         onFocus={handleFocus}
-
-        onBlur={() => setTimeout(() => setIsOpen(false), 100)}
+        onBlur={() => setTimeout(() => setIsOpen(false), 100)} // Delay closing dropdown to allow clicks
         placeholder={placeholder}
         className={`w-full ${height} p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm`}
         required={required}

@@ -36,7 +36,7 @@ const VisiteTable = (dataProspect, dataClient) => {
     dataKey: 'data',
 
     searchFields: [
-      'cc',
+      'responsable',
       'date',
       'nomComplet',
       'telephone',
@@ -132,8 +132,8 @@ const VisiteTable = (dataProspect, dataClient) => {
   // Table columns configuration
   const columns = [
     {
-      key: 'cc',
-      label: 'CC',
+      key: 'responsable',
+      label: 'Responsable',
       render: (row) => (
         <div className="flex items-center gap-3">
           <span>{row.cc}</span>
@@ -222,7 +222,7 @@ const VisiteTable = (dataProspect, dataClient) => {
   };
 
   const columns_export = [
-    { key: 'cc', label: 'Commercial' },
+    { key: 'responsable', label: 'Commercial' },
     { key: 'date', label: 'Date' },
     { key: 'nomComplet', label: 'nomComplet' },
     { key: 'telephone', label: 'Telephone' },

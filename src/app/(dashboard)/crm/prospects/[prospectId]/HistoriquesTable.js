@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import Table from '@/components/Table';
 import { useAuth } from '../../../../../context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { fetchData_table_by_id } from '../../../../../../src/configs/api-utils';
 import format from 'date-fns/format';
-import { FaRegEye} from 'react-icons/fa';
+import { FaRegEye } from 'react-icons/fa';
 
 import { Statuts_Prospect } from '../../../../../../src/configs/enum';
 
@@ -15,12 +15,11 @@ const HistoriquesTable = (id) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedId, setSelectedId] = useState(null);
   const [totalRows, setTotalRows] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const { user, token } = useAuth();
+  const { token } = useAuth();
   const accesstoken = token || localStorage.getItem('accessToken');
 
   const router = useRouter();
@@ -60,14 +59,14 @@ const HistoriquesTable = (id) => {
   const handleShow = (vId) => {
     router.push(`/crm/visites/${vId}`);
   };
-
+  const handleShowAppel = (Id) => {
+    router.push(`/crm/appels/${Id}`);
+  };
   // Format users data for table display
   const formatData = () => {
     return historiques.map((pro) => ({
       id: pro.id,
-
-      date_traitement: pro.date_traitement
-       ,
+      date_traitement: pro.date_traitement,
       //statut: Statuts_Prospect[pro.statut]?.label,
       statut: pro.statut,
       rdv: pro.rdv ? format(new Date(pro.rdv), 'dd/MM/yyyy H:m') : '',
@@ -75,7 +74,8 @@ const HistoriquesTable = (id) => {
         ? format(new Date(pro.date_rappel), 'dd/MM/yyyy ')
         : '',
       commentaire: pro.statut,
-      visite_id:pro.visite_id
+      visite_id: pro.visite_id,
+      appel_id:pro.appel_id
     }));
   };
 
@@ -99,9 +99,10 @@ const HistoriquesTable = (id) => {
 
         const roleColors = {
           'Planification Rendez Vous': 'bg-blue-100 text-[#009FFF]',
-          Injoignable: 'bg-purple-100 text-purple-600',
-          Rappel: 'bg-yellow-100 text-yellow-600',
-          
+          'Injoignable': 'bg-purple-100 text-purple-600',
+          'Rappel': 'bg-yellow-100 text-yellow-600',
+          'Nouveau Appel': 'bg-green-100 text-green-600',
+
         };
 
         return (
@@ -131,6 +132,13 @@ const HistoriquesTable = (id) => {
               onClick={() => handleShow(row.visite_id)}
             />
           )}
+          {row.appel_id != null && (
+            <FaRegEye
+              className="w-4 h-4 text-green-500 hover:text-green-700 cursor-pointer"
+              title="Voir Visite"
+              onClick={() => handleShowAppel(row.appel_id)}
+            />
+          )}
         </div>
       ),
     },
@@ -143,8 +151,7 @@ const HistoriquesTable = (id) => {
   //EXPORT
   const data_to_export = () => {
     return historiques.map((pro) => ({
-      date_traitement: pro.date_traitement
-        ,
+      date_traitement: pro.date_traitement,
       statut: Statuts_Prospect[pro.statut]?.label,
 
       rdv: pro.rdv ? format(new Date(pro.rdv), 'dd/MM/yyyy H:m') : '',

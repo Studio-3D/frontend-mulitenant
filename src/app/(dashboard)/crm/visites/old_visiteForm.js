@@ -1,6 +1,7 @@
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   fetchData_Select,
   fetchDataByProjet,
@@ -15,6 +16,7 @@ import * as yup from 'yup';
 import { APIURL, ENDPOINTS } from '../../../../configs/api';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../../../context/AuthContext';
+import AutocompleteMultiple from '@/components/AutocompleteMultiple';
 
 import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
 import TextField from '@/components/Textfield'; // Import the component
@@ -36,11 +38,10 @@ import {
 } from '@/configs/enum';
 import Pusher from 'pusher-js';
 import Modal_OldVisites_Perdu from './Modal_OldVisites_Perdu';
-import FreinsComponent from './FreinsComponent';
-import PanelInteresse from './PanelInteresse';
-import PanelInteresse_vendu from './PanelInteresse_Vendu';
 
 const VisiteForm = (id, origin) => {
+  // const { showModal, confirmNavigation, setShowModal } = useProspectNavigationGuard();
+
   const { user } = useAuth();
   const [email_required, setEmail_required] = useState(false);
 
@@ -56,6 +57,7 @@ const VisiteForm = (id, origin) => {
   const accessToken = localStorage.getItem('accessToken');
   const stored = JSON.parse(localStorage.getItem('selectedProspect'));
   const selectedProspect = stored?.dataProspect;
+  console.log('sss==>' + selectedProspect?.telephone);
   const pusher_key_proposition = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_PROP;
   const [loading, setLoading] = useState(false);
   const [loading_tp_frein, setLoading_tp_frein] = useState(false);
@@ -86,7 +88,6 @@ const VisiteForm = (id, origin) => {
   const [check_total, setCheck_total] = useState(0);
   const [banques, setBanques] = useState([]);
   const [expanded, setExpanded] = useState([]);
-  //const [expandedVendu, setExpandedVendu] = useState([]);
   const [loading_button_save_1, setLoading_button_save_1] = useState(false);
   const [loading_bien, setLoading_bien] = useState(false);
   const [type_freins, setType_freins] = useState([]);
@@ -1222,26 +1223,12 @@ const VisiteForm = (id, origin) => {
   };
 
   const handleAccordionChange = (panel) => (event, isExpanded) => {
-    console.log('Clicked panel:', panel);
-    console.log('Before update:', expanded);
     setExpanded((prevExpanded) =>
       prevExpanded.includes(panel)
         ? prevExpanded.filter((p) => p !== panel)
         : [...prevExpanded, panel]
     );
-    console.log('After update:', expanded);
   };
-
-  /*const handleAccordionChangeVendu = (panel) => (event, isExpanded) => {
-    console.log('Clicked panel:', panel);
-    console.log('Before update:', expanded);
-    setExpandedVendu((prevExpanded) =>
-      prevExpanded.includes(panel)
-        ? prevExpanded.filter((p) => p !== panel)
-        : [...prevExpanded, panel]
-    );
-    console.log('After update:', expanded);
-  };*/
 
   const handlechangeprix_remise = (value, index, name) => {
     const list = [...(name ? input_biens_vendu : input_biens)];
@@ -1905,74 +1892,69 @@ const VisiteForm = (id, origin) => {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {input_biens_vendu.length == 0 && (
+                  {watch('loading_b_pre') == false && (
                     <>
-                      {watch('loading_b_pre') == false && (
+                      <div className="">
+                        <AutocompleteSelectComponent
+                          label="Intérêt:"
+                          name="interet"
+                          required={true}
+                          //  options={VISITE_INTERETS}
+                          options={
+                            input_biens_vendu.length > 0
+                              ? {
+                                  1: VISITE_INTERETS[1],
+                                  // 3: VISITE_INTERETS[3],
+                                }
+                              : {
+                                  1: VISITE_INTERETS[1],
+                                  2: VISITE_INTERETS[2],
+                                  3: VISITE_INTERETS[3],
+                                }
+                          }
+                          disabled={watch('telephone') == ''}
+                          onChange={handleChange_interet}
+                        />
+                      </div>
+                      {Number(watch('interet')) == 1 && (
                         <>
-                          <div className="">
-                            <AutocompleteSelectComponent
-                              label="Intérêt :"
-                              name="interet"
-                              required={true}
-                              //  options={VISITE_INTERETS}
-                              options={
-                                input_biens_vendu.length > 0
-                                  ? {
-                                      1: VISITE_INTERETS[1],
-                                      // 3: VISITE_INTERETS[3],
-                                    }
-                                  : {
-                                      1: VISITE_INTERETS[1],
-                                      2: VISITE_INTERETS[2],
-                                      3: VISITE_INTERETS[3],
-                                    }
-                              }
-                              disabled={watch('telephone') == ''}
-                              onChange={handleChange_interet}
-                            />
-                          </div>
-                          {Number(watch('interet')) == 1 && (
-                            <>
-                              <TextField
-                                label="Nombre de Biens à ajouter:"
-                                name="nb_bien_added"
-                                type="number"
-                                control={control}
-                                errors={{
-                                  ...errors,
-                                  nb_bien_added:
-                                    formSubmitted &&
-                                    Number(watch('interet')) === 1 &&
-                                    !watch('nb_bien_added')
-                                      ? 'Ce champ est obligatoire lorsque interet est Intéressé.'
-                                      : null,
-                                }}
-                                backendErrors={backendErrors}
-                                defaultValues={defaultValues}
-                                onChange={handleChange_NbrBien}
-                                required={Number(watch('interet')) === 1}
-                              />
-                            </>
-                          )}
-                        </>
-                      )}
-                      {isOrigin && display_cin && display_cin_1 && (
-                        <div>
                           <TextField
-                            label="Cin:"
-                            name="cin"
+                            label="Nombre de Biens à ajouter:"
+                            name="nb_bien_added"
+                            type="number"
                             control={control}
-                            errors={errors}
+                            errors={{
+                              ...errors,
+                              nb_bien_added:
+                                formSubmitted &&
+                                Number(watch('interet')) === 1 &&
+                                !watch('nb_bien_added')
+                                  ? 'Ce champ est obligatoire lorsque interet est Intéressé.'
+                                  : null,
+                            }}
                             backendErrors={backendErrors}
                             defaultValues={defaultValues}
-                            onChange={handleChange_event('cin')}
+                            onChange={handleChange_NbrBien}
                             required={Number(watch('interet')) === 1}
                           />
-                        </div>
+                        </>
                       )}
                     </>
                   )}
-
+                  {isOrigin && display_cin && display_cin_1 && (
+                    <div>
+                      <TextField
+                        label="Cin:"
+                        name="cin"
+                        control={control}
+                        errors={errors}
+                        backendErrors={backendErrors}
+                        defaultValues={defaultValues}
+                        onChange={handleChange_event('cin')}
+                        required={Number(watch('interet')) === 1}
+                      />
+                    </div>
+                  )}
                   {Number(watch('interet')) === 2 && (
                     <>
                       <div className="">
@@ -1998,44 +1980,369 @@ const VisiteForm = (id, origin) => {
                     </>
                   )}
                   {Number(watch('interet')) === 3 && (
-                    <FreinsComponent
-                      watch={watch}
-                      control={control}
-                      errors={errors}
-                      backendErrors={backendErrors}
-                      defaultValues={defaultValues}
-                      formSubmitted={formSubmitted}
-                      type_freins={type_freins}
-                      list_tranches={list_tranches}
-                      list_etages={list_etages}
-                      orientationOptions={orientationOptions}
-                      list_typologies={list_typologies}
-                      list_vues={list_vues}
-                      loading_tp_frein={loading_tp_frein}
-                      loading={loading}
-                      handleChange_freins={handleChange_freins}
-                      handlePrixChange={handlePrixChange}
-                      setValue={setValue}
-                      info_prix={info_prix}
-                      info_sup={info_sup}
-                      isEditMode={false} // Specify the mode here
-                    />
+                    <>
+                     <div>
+                        <AutocompleteMultiple
+                          label="Freins :"
+                          name="frein"
+                          required={true}
+                          options={type_freins}
+                          choiceKey="description"
+                          onChange={handleChange_freins}
+                          placeholder="sélectionnez un ou plusieurs freins"
+                          errors={{
+                            ...errors,
+                            frein:
+                              formSubmitted && watch('frein').length == 0
+                                ? 'Veuillez renseigner le champ frein.'
+                                : null,
+                          }}
+                          loading={loading_tp_frein}
+                          backendErrors={backendErrors}
+                        />
+                      </div>
+                      {watch('frein').includes('autre') && (
+                        <div>
+                          <TextField
+                            label="Description Frein Autre:"
+                            name="description_autre"
+                            multi={true}
+                            control={control}
+                            errors={errors}
+                            backendErrors={backendErrors}
+                            defaultValues={defaultValues}
+                            required={watch('frein').includes('autre')}
+                            width="w-full" // Optionally set width, default is 'w-80'
+                            height="h-full"
+                          />
+                        </div>
+                      )}
+
+                      {watch('frein')?.includes('tranche') && ( // Safe access using optional chaining
+                        <div>
+                          <AutocompleteMultiple
+                            label="Tranches :"
+                            name="tranche"
+                            required={true}
+                            options={list_tranches}
+                            choiceKey="nom"
+                            onChange={(newValue) => {
+                              try {
+                                console.log('Selected tranches:', newValue);
+
+                                if (Array.isArray(newValue)) {
+                                  const selectedIds = newValue.map(
+                                    (option) => option?.id
+                                  );
+                                  console.log('ids tranches', selectedIds);
+                                  setValue('tranches', selectedIds); // Set only IDs to the form field
+                                } else {
+                                  console.error(
+                                    'Expected newValue to be an array of selected options, but received:',
+                                    newValue
+                                  );
+                                }
+                              } catch (error) {
+                                console.error(
+                                  'Error in tranches onChange handler:',
+                                  error
+                                );
+                              }
+                            }}
+                            placeholder="sélectionnez un ou plusieurs Tranches"
+                            errors={{
+                              ...errors,
+                              tranche:
+                                formSubmitted &&
+                                watch('frein')?.includes('tranche') &&
+                                watch('tranches').length === 0
+                                  ? "Ce champ est obligatoire lorsque 'frein' inclut 'tranche'."
+                                  : null,
+                            }}
+                            backendErrors={backendErrors}
+                            loading={loading}
+                          />
+                        </div>
+                      )}
+
+                      {watch('frein')?.includes('etage') && (
+                        <div>
+                          <AutocompleteMultiple
+                            label="Etages :"
+                            name="etages"
+                            required={true}
+                            options={list_etages}
+                            choiceKey="value"
+                            onChange={(newValue) => {
+                              try {
+                                console.log('Selected etages:', newValue);
+                                if (Array.isArray(newValue)) {
+                                  const selectedVal = newValue.map(
+                                    (option) => option?.value
+                                  ); // option.value should be a number like 1 or 2
+                                  const etagesArray = selectedVal.join(','); // no need to map again!
+                                  console.log('etagesArray:', etagesArray); // Output: "1,2"
+                                  setValue('etages', etagesArray); // ✔️ correct usage
+                                } else {
+                                  console.error(
+                                    'Expected newValue to be an array of selected options, but received:',
+                                    newValue
+                                  );
+                                }
+                              } catch (error) {
+                                console.error(
+                                  'Error in etages onChange handler:',
+                                  error
+                                );
+                              }
+                            }}
+                            placeholder="sélectionnez un ou plusieurs etages"
+                            errors={{
+                              ...errors,
+                              etages:
+                                formSubmitted &&
+                                watch('frein')?.includes('etage') &&
+                                watch('etages').length === 0
+                                  ? "Ce champ est obligatoire lorsque 'frein' inclut 'etage'."
+                                  : null,
+                            }}
+                            loading={loading}
+                            backendErrors={backendErrors}
+                          />
+                        </div>
+                      )}
+                      {watch('frein').includes('orientation') && (
+                        <div>
+                          <AutocompleteMultiple
+                            label="Orientations :"
+                            name="orientations"
+                            required={true}
+                            options={orientationOptions}
+                            choiceKey="label"
+                            onChange={(newValue) => {
+                              try {
+                                console.log(
+                                  'Selected orientationOptions:',
+                                  newValue
+                                );
+
+                                if (Array.isArray(newValue)) {
+                                  const selectedCode = newValue.map(
+                                    (option) => option?.code
+                                  );
+                                  console.log(
+                                    'code orientations',
+                                    selectedCode
+                                  );
+                                  setValue('orientations', selectedCode); // Set only IDs to the form field
+                                } else {
+                                  console.error(
+                                    'Expected newValue orientations to be an array of selected options, but received:',
+                                    newValue
+                                  );
+                                }
+                              } catch (error) {
+                                console.error(
+                                  'Error in orientations onChange handler:',
+                                  error
+                                );
+                              }
+                            }}
+                            placeholder="sélectionnez un ou plusieurs orientations"
+                            errors={{
+                              ...errors,
+                              orientations:
+                                formSubmitted &&
+                                watch('frein')?.includes('orientation') &&
+                                watch('orientations').length === 0
+                                  ? "Ce champ est obligatoire lorsque 'frein' inclut 'orientation'."
+                                  : null,
+                            }}
+                            loading={loading}
+                            backendErrors={backendErrors}
+                          />
+                        </div>
+                      )}
+                      {watch('frein').includes('avance') && (
+                        <div>
+                          <TextField
+                            label="Avance:"
+                            name="avance"
+                            type="number"
+                            control={control}
+                            errors={errors}
+                            backendErrors={backendErrors}
+                            defaultValues={defaultValues}
+                            required={watch('frein')?.includes('avance')}
+                          />
+                        </div>
+                      )}
+
+                      {watch('frein').includes('prix') && (
+                        <>
+                          <div>
+                            {info_prix != null && (
+                              <div className="w-full">
+                                <div className="bg-[rgba(253,181,40,0.12)] border-l-4 border-yellow-500 text-[rgb(227,162,36)] p-4 text-center rounded">
+                                  {info_prix}
+                                </div>
+                              </div>
+                            )}
+                            <TextField
+                              label="Prix Min:"
+                              name="prix_min"
+                              type="number"
+                              control={control}
+                              errors={errors}
+                              backendErrors={backendErrors}
+                              defaultValues={defaultValues}
+                              onChange={handlePrixChange(1)}
+                              required={watch('frein')?.includes('prix')}
+                            />
+                            <TextField
+                              label="Prix Max:"
+                              name="prix_max"
+                              type="number"
+                              control={control}
+                              errors={errors}
+                              backendErrors={backendErrors}
+                              defaultValues={defaultValues}
+                              onChange={handlePrixChange(1)}
+                              required={watch('frein')?.includes('prix')}
+                            />
+                          </div>
+                        </>
+                      )}
+                      {watch('frein').includes('superficie') && (
+                        <>
+                          <div>
+                            {info_sup != null && (
+                              <div className="w-full">
+                                <div className="bg-blue-100 text-blue-700 p-3 rounded-md border-l-4 border-blue-500 p-4 text-center rounded">
+                                  {info_sup}
+                                </div>
+                              </div>
+                            )}
+                            <TextField
+                              label="Sup Min:"
+                              name="sup_min"
+                              type="number"
+                              control={control}
+                              errors={errors}
+                              backendErrors={backendErrors}
+                              defaultValues={defaultValues}
+                              onChange={handlePrixChange(2)}
+                              required={watch('frein')?.includes('superficie')}
+                            />
+                            <TextField
+                              label="Sup Max:"
+                              name="sup_max"
+                              type="number"
+                              control={control}
+                              errors={errors}
+                              backendErrors={backendErrors}
+                              defaultValues={defaultValues}
+                              onChange={handlePrixChange(2)}
+                              required={watch('frein')?.includes('superficie')}
+                            />
+                          </div>
+                        </>
+                      )}
+                      {watch('frein').includes('typologie') && (
+                        <div>
+                          <AutocompleteMultiple
+                            label="Typologies :"
+                            name="typologies"
+                            required={true}
+                            options={list_typologies}
+                            choiceKey="typologie"
+                            onChange={(newValue) => {
+                              try {
+                                console.log('Selected typologies:', newValue);
+
+                                if (Array.isArray(newValue)) {
+                                  const selectedIds = newValue.map(
+                                    (option) => option?.id
+                                  );
+                                  console.log('ids tranches', selectedIds);
+                                  setValue('typologies', selectedIds); // Set only IDs to the form field
+                                } else {
+                                  console.error(
+                                    'Expected newValue to be an array of selected options, but received:',
+                                    newValue
+                                  );
+                                }
+                              } catch (error) {
+                                console.error(
+                                  'Error in typologies onChange handler:',
+                                  error
+                                );
+                              }
+                            }}
+                            placeholder="sélectionnez un ou plusieurs Typologies"
+                            errors={{
+                              ...errors,
+                              typologies:
+                                formSubmitted &&
+                                watch('frein')?.includes('typologie') &&
+                                watch('typologies').length === 0
+                                  ? "Ce champ est obligatoire lorsque 'frein' inclut 'typologie'."
+                                  : null,
+                            }}
+                            loading={loading}
+                            backendErrors={backendErrors}
+                          />
+                        </div>
+                      )}
+                      {watch('frein').includes('vue') && (
+                        <div>
+                          <AutocompleteMultiple
+                            label="vue :"
+                            name="vues"
+                            required={true}
+                            options={list_vues}
+                            choiceKey="vue"
+                            onChange={(newValue) => {
+                              try {
+                                console.log('Selected vues:', newValue);
+
+                                if (Array.isArray(newValue)) {
+                                  const selectedIds = newValue.map(
+                                    (option) => option?.id
+                                  );
+                                  console.log('ids vues', selectedIds);
+                                  setValue('vues', selectedIds); // Set only IDs to the form field
+                                } else {
+                                  console.error(
+                                    'Expected newValue to be an array of selected options, but received:',
+                                    newValue
+                                  );
+                                }
+                              } catch (error) {
+                                console.error(
+                                  'Error in vues onChange handler:',
+                                  error
+                                );
+                              }
+                            }}
+                            placeholder="sélectionnez un ou plusieurs Vues"
+                            errors={{
+                              ...errors,
+                              vues:
+                                formSubmitted &&
+                                watch('frein')?.includes('vue') &&
+                                watch('vues').length === 0
+                                  ? "Ce champ est obligatoire lorsque 'frein' inclut 'vue'."
+                                  : null,
+                            }}
+                            loading={loading}
+                            backendErrors={backendErrors}
+                          />
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
-                {/*<PanelInteresse_vendu
-                  input_biens_vendu={input_biens_vendu}
-                  //handleAccordionChange={handleAccordionChangeVendu}
-                  //expanded={expandedVendu}
-                  handleChange={handleChange}
-                  handleinputchange_bien_vendu={handleinputchange_bien_vendu}
-                  info_reservation={info_reservation}
-                  MODE_FINANCE={MODE_FINANCE}
-                  MODE_PAIEMENT={MODE_PAIEMENT}
-                  check_total={check_total}
-                  user={user}
-                  banques={banques}
-                />*/}
-                {/*Pannel Interesse Vendu**/}
                 {input_biens_vendu.map((x, j) => {
                   return (
                     <div key={`panel_bienn${j + 1}`}>
@@ -2474,93 +2781,8 @@ const VisiteForm = (id, origin) => {
                     </div>
                   );
                 })}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {input_biens_vendu.length > 0 && (
-                    <>
-                      {watch('loading_b_pre') == false && (
-                        <>
-                          <div className="">
-                            <AutocompleteSelectComponent
-                              label="Intérêt :"
-                              name="interet"
-                              required={true}
-                              //  options={VISITE_INTERETS}
-                              options={
-                                input_biens_vendu.length > 0
-                                  ? {
-                                      1: VISITE_INTERETS[1],
-                                      // 3: VISITE_INTERETS[3],
-                                    }
-                                  : {
-                                      1: VISITE_INTERETS[1],
-                                      2: VISITE_INTERETS[2],
-                                      3: VISITE_INTERETS[3],
-                                    }
-                              }
-                              disabled={watch('telephone') == ''}
-                              onChange={handleChange_interet}
-                            />
-                          </div>
-                          {Number(watch('interet')) == 1 && (
-                            <>
-                              <TextField
-                                label="Nombre de Biens à ajouter:"
-                                name="nb_bien_added"
-                                type="number"
-                                control={control}
-                                errors={{
-                                  ...errors,
-                                  nb_bien_added:
-                                    formSubmitted &&
-                                    Number(watch('interet')) === 1 &&
-                                    !watch('nb_bien_added')
-                                      ? 'Ce champ est obligatoire lorsque interet est Intéressé.'
-                                      : null,
-                                }}
-                                backendErrors={backendErrors}
-                                defaultValues={defaultValues}
-                                onChange={handleChange_NbrBien}
-                                required={Number(watch('interet')) === 1}
-                              />
-                            </>
-                          )}
-                        </>
-                      )}
-                      {isOrigin && display_cin && display_cin_1 && (
-                        <div>
-                          <TextField
-                            label="Cin:"
-                            name="cin"
-                            control={control}
-                            errors={errors}
-                            backendErrors={backendErrors}
-                            defaultValues={defaultValues}
-                            onChange={handleChange_event('cin')}
-                            required={Number(watch('interet')) === 1}
-                          />
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
+
                 <div>
-                  {/*watch('nb_bien_added') !== '' && (
-                    <PanelInteresse
-                      input_biens={input_biens}
-                      input_biens_vendu={input_biens_vendu}
-                      handleAccordionChange={handleAccordionChange}
-                      expanded={expanded}
-                      handleChange={handleChange}
-                      handleinputchange={handleinputchange}
-                      user={user}
-                      biensByProjet={biensByProjet}
-                      loading_bien={loading_bien}
-                      info_reservation={info_reservation}
-                      banques={banques}
-                      MODE_FINANCE={MODE_FINANCE}
-                      VISITE_STATUT_FORM={VISITE_STATUT_FORM}
-                    />
-                  )*/}
                   {watch('nb_bien_added') !== '' &&
                     input_biens.map((x, i) => (
                       <div key={`panel_bien${i + 1}`}>

@@ -1,4 +1,3 @@
-// Fichier : components/Autocomplete.jsx
 
 import React, { useState, useEffect } from 'react';
 
@@ -9,68 +8,95 @@ const Autocomplete = ({
   onChange,
   placeholder = 'Choisissez un élément',
   choix = 'nom',
-  getOptionLabel,
   loading = false,
   width = 'w-full',
   height = 'h-10',
   required = false,
-  errors = {},
-  backendErrors = {},
+  errors,
+  backendErrors,
   name,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Filter options based on search query
+  const filteredOptions =
+    String(searchQuery || '') === ''
+      ? options
+      : options.filter((option) => {
+          const targetValue = option[choix];
+          const stringValue =
+            targetValue !== null && targetValue !== undefined
+              ? String(targetValue)
+              : '';
+
+          return stringValue
+            .toLowerCase()
+            .includes(String(searchQuery).toLowerCase());
+        });
+
+
+  // Effect to clear input when no options match
   useEffect(() => {
-    if (value && !searchQuery) {
-      const label = getOptionLabel ? getOptionLabel(value) : value[choix];
-      setSearchQuery(label || '');
+    if (!loading && filteredOptions.length === 0 && searchQuery) {
+      setSearchQuery(''); // Clear search query
+      onChange(null); // Notify parent of cleared value
     }
-  }, [value, getOptionLabel, choix, searchQuery]);
+  }, [filteredOptions, loading, searchQuery, onChange]);
 
-  const filteredOptions = String(searchQuery || '') === ''
-    ? options
-    : options.filter(option => {
-        const label = getOptionLabel ? getOptionLabel(option) : option[choix];
-        return String(label || '').toLowerCase().includes(String(searchQuery).toLowerCase());
-      });
-
+  // Handle selecting an option from the dropdown
   const handleSelect = (option) => {
-    onChange(option);
-    setSearchQuery(getOptionLabel ? getOptionLabel(option) : option[choix]);
-    setIsOpen(false);
+    onChange(option); // Notify parent with selected option
+    setSearchQuery(option[choix]); // Update input value with selected option
+    setIsOpen(false); // Close dropdown
   };
 
+  // Handle input changes
   const handleChange = (e) => {
     const inputValue = e.target.value;
     setSearchQuery(inputValue);
     if (inputValue === '') {
-      onChange(null);
+      onChange(null); // Clear parent value if input is empty
     }
-    setIsOpen(true);
+    setIsOpen(true); // Open dropdown on input
   };
 
+  // Handle errors passed via props
   const rawError = errors[name] || backendErrors[name];
-  const errorMessage = rawError?.message ?? (typeof rawError === 'string' ? rawError : '');
+  const errorMessage =
+    rawError?.message ??
+    (typeof rawError === 'string' ? rawError : '');
 
   return (
     <div className={`relative ${width}`}>
+      {/* Label */}
+
       <label className="block text-sm font-medium text-gray-700">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
 
+      {/* Input Field */}
       <div className="relative mt-1">
         <input
           type="text"
           value={searchQuery}
           onChange={handleChange}
-          onFocus={() => setIsOpen(true)}
-          onBlur={() => setTimeout(() => setIsOpen(false), 200)}
+          onFocus={() => {
+            setIsOpen(true);
+            setSearchQuery(''); // Force display of all options
+          }}
+          onBlur={() => setTimeout(() => setIsOpen(false), 200)} // Delay closing dropdown to allow clicks
           placeholder={placeholder}
-          className={`w-full ${height} p-2 border ${errorMessage ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 ${errorMessage ? 'focus:ring-red-500' : 'focus:ring-indigo-500'}`}
+          className={`w-full ${height} p-2 border ${
+            errorMessage ? 'border-red-500' : 'border-gray-300'
+          } rounded-md focus:outline-none focus:ring-2 ${
+            errorMessage ? 'focus:ring-red-500' : 'focus:ring-indigo-500'
+          }`}
+
           required={required}
         />
 
+        {/* Dropdown Options */}
         {isOpen && (
           <div className="absolute top-full left-0 w-full bg-white shadow-lg rounded-md mt-1 max-h-60 overflow-y-auto border border-gray-300 z-10">
             {loading ? (
@@ -95,6 +121,7 @@ const Autocomplete = ({
         )}
       </div>
 
+      {/* Error Message */}
       {errorMessage && (
         <div className="text-red-500 text-sm mt-1">{errorMessage}</div>
       )}
