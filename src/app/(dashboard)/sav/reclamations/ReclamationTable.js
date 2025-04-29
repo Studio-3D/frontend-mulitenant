@@ -66,11 +66,21 @@ const ReclamationTable = () => {
   const accesstoken = token || localStorage.getItem("accessToken");
   const router = useRouter();
 
+
+/* const entity = {
+  API_URL: "Reclamations",
+  dataKey: "reclamations",
+  name: "Réclamation",
+  searchFields: ["titre", "description"],
+}; */
+
+
+
   const entity = {
     API_URL: "ReclamationsSav",
     dataKey: "reclamationSav",
-    name: "reclamationSav",
-    searchFields: ["client"],
+    name: "reclamation",
+    searchFields: ["client.nom"],
   };
 
   useEffect(() => {
