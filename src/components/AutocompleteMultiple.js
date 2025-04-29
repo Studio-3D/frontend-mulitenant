@@ -126,12 +126,11 @@ const AutocompleteMultiple = ({
               </button>
             </span>
           ))}
-
           <input
             id={name}
             type="text"
             value={inputValue}
-            placeholder={placeholder}
+            placeholder={inputValue.length === 0 && selectedOptions.length === 0 ? placeholder : ''}
             onChange={handleInputChange}
             onFocus={handleInputFocus}
             className="flex-grow min-w-[100px] p-1 text-sm outline-none"

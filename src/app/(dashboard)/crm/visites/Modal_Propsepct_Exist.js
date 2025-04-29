@@ -12,10 +12,10 @@ export default function Modal_Propsepct_Exist({
   client_prospect,
 }) {
   function handle_click_appel(appelId) {
-    window.open(`/appels/show/${appelId}`, '_blank');
+    window.open(`/appels/${appelId}`, '_blank');
   }
   function handle_click_visite(vId) {
-    window.open(`/visites/show/${vId}`, '_blank');
+    window.open(`/visites/${vId}`, '_blank');
   }
 
   return (

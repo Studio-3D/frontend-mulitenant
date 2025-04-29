@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import Table from '@/components/Table';
-import { FaRegEye, FaEdit, FaCheck } from 'react-icons/fa';
+import { FaRegEye, FaEdit, FaCheck, FaSync } from 'react-icons/fa';
 import { RiDeleteBin6Line } from 'react-icons/ri';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
@@ -74,6 +74,7 @@ const ProspectTable = () => {
 
         fetchData_table_by_projet(
           entity,
+          {},
           searchTerm,
           currentPage,
           rowsPerPage,
@@ -106,6 +107,13 @@ const ProspectTable = () => {
     setNomPrenom(nom_prenom);
   };
 
+   function handle_convert_to_visite(row) {
+      localStorage.setItem(
+        'selectedProspect',
+        JSON.stringify({ dataProspect: row })
+      );
+      router.push(`${ENDPOINTS.VISITES}?action=add`);
+    }
   // Format users data for table display
   const formatData = () => {
     return prospects.map((pro) => ({
@@ -126,6 +134,7 @@ const ProspectTable = () => {
         pro.last_statut != null
           ? Statuts_Prospect[pro.last_statut?.statut]?.label
           : '',
+      prospect: pro
     }));
   };
 
@@ -187,6 +196,11 @@ const ProspectTable = () => {
             className="w-4 h-4  hover:text-['rgb(87,80,129)']-700 text-['rgb(87,80,129)'] cursor-pointer"
             title="Traiter"
             onClick={() => handleraiter(row.id, row.telephone, row.nomComplet)}
+          />
+          <FaSync
+            className="w-4 h-4 text-green-500  cursor-pointer"
+            title="Convertir en visite"
+            onClick={() => handle_convert_to_visite(row.prospect)}
           />
 
           {row.client == null &&
@@ -259,7 +273,9 @@ const ProspectTable = () => {
           enableExport={true}
           enableImport={true}
           addLink={
-            isSuperAdmin(user.role) || isAdmin(user.role)||isCommercial(user.role)
+            isSuperAdmin(user.role) ||
+            isAdmin(user.role) ||
+            isCommercial(user.role)
               ? `${ENDPOINTS.PROSPECTS}?action=add`
               : undefined
           }
@@ -280,6 +296,7 @@ const ProspectTable = () => {
               setShowDeleteModal(false);
               fetchData_table_by_projet(
                 entity,
+                {},
                 searchTerm,
                 currentPage,
                 rowsPerPage,

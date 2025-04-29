@@ -31,6 +31,7 @@ export const APIURL = {
   VISITES: `${APIBASEURL}/v1/visites`,
   ENCAISSEMENTS: `${APIBASEURL}/v1/encaissements`,
   APPELS: `${APIBASEURL}/v1/appels`,
+  T_APPELS: `${APIBASEURL}/v1/destroy_t_appel`,
   ROOTV1: `${APIBASEURL}/v1`,
   PROSPECTS: `${APIBASEURL}/v1/prospects`,
   CLIENTS: `${APIBASEURL}/v1/clients`,
