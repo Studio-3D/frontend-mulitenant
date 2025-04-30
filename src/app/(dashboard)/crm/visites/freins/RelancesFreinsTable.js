@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import { fetchData_table_by_projet } from '../../../../../../src/configs/api-utils';
 import { format } from 'date-fns';
 
-import BreadCrumb from '../../../navigation/BreadCrumb';
+import Input from '@/components/Input';
 
 const RelancesFreinsTable = () => {
   const [data, setData] = useState([]);
@@ -25,6 +25,24 @@ const RelancesFreinsTable = () => {
 
   const router = useRouter();
   // Declare the entity object in the component scope
+  const [filters, setFilters] = useState({
+    nom_prenom: '',
+    telephone: '',
+    frein: '',
+    date: '',
+  });
+  const [tempFilters, setTempFilters] = useState({ ...filters });
+  const handleFilterChange = (field, value) => {
+    setTempFilters((prev) => ({ ...prev, [field]: value }));
+  };
+  const resetFilters = () => {
+    const reset = Object.fromEntries(Object.keys(filters).map(key => [key, '']));
+    setFilters(reset);
+    setTempFilters(reset);
+  };
+  const applyFilters = () => {
+    setFilters(tempFilters);
+  };
 
   const entity = {
     API_URL: 'get_clients_freins',
@@ -35,7 +53,7 @@ const RelancesFreinsTable = () => {
   useEffect(() => {
     fetchData_table_by_projet(
       entity,
-      {},
+      filters,
       searchTerm,
       currentPage,
       rowsPerPage,
@@ -45,7 +63,7 @@ const RelancesFreinsTable = () => {
       setData,
       setTotalRows
     );
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm]);
+  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters]);
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
@@ -60,9 +78,9 @@ const RelancesFreinsTable = () => {
     window.open(`/crm/visites/${visiteId}`, '_blank');
   };
   const handle_Bien = (frId, nom_prenom) => {
-    localStorage.setItem('nom_prenom_frein',nom_prenom)
+    localStorage.setItem('nom_prenom_frein', nom_prenom);
     window.open(`/crm/visites/freins/${frId}`, '_blank');
-  }
+  };
 
   const formatData = () => {
     return data.map((pro) => {
@@ -121,7 +139,7 @@ const RelancesFreinsTable = () => {
           <FaEdit
             className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
             title="Traiter les Biens Disponibles"
-            onClick={() => handle_Bien(row.id,row.nomComplet)}
+            onClick={() => handle_Bien(row.id, row.nomComplet)}
           />
         </div>
       ),
@@ -163,10 +181,12 @@ const RelancesFreinsTable = () => {
 
   return (
     <>
-      <div className="flex items-center justify-start">
-        <BreadCrumb baseUrl={'#'} step={'Freins Clients'} />
-      </div>
+     
       <div className="reflative">
+      <h1 style={{ fontWeight: 'bold', fontSize: '19px', color: '#231651' }}>
+      
+          {'Freins Clients'}
+        </h1>
         <Table
           data_to_export={data_to_export()}
           columns_export={columns_export}
@@ -182,6 +202,71 @@ const RelancesFreinsTable = () => {
           onRowsPerPageChange={setRowsPerPage}
           onSearchChange={setSearchTerm}
           enableExport={true}
+          filterComponent={
+            <div className="space-y-4 p-4 rounded-lg shadow-md">
+              <div
+                className="grid gap-5"
+                style={{
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                }}
+              >
+                {/* Champs de recherche */}
+                <input
+                  type={tempFilters.date ? 'date' : 'text'}
+                  placeholder="Date"
+                  value={tempFilters.date}
+                  onFocus={(e) => (e.target.type = 'date')}
+                  onChange={(e) =>
+                    handleFilterChange('date', e.target.value)
+                  }
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
+                <Input
+                  type="text"
+                  placeholder="Nom & Prénom"
+                  value={tempFilters.nom_prenom}
+                  onChange={(e) =>
+                    handleFilterChange('nom_prenom', e.target.value)
+                  }
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
+                <Input
+                  type="number"
+                  placeholder="Téléphone"
+                  value={tempFilters.telephone}
+                  onChange={(e) =>
+                    handleFilterChange('telephone', e.target.value)
+                  }
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
+                <Input
+                  type="text"
+                  placeholder="frein"
+                  value={tempFilters.frein}
+                  onChange={(e) => handleFilterChange('frein', e.target.value)}
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
+              </div>
+
+              {/* Boutons */}
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={applyFilters}
+                  className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                >
+                  Appliquer les filtres
+                </button>
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
+                >
+                  Réinitialiser
+                </button>
+              </div>
+            </div>
+          }
         />
       </div>
     </>

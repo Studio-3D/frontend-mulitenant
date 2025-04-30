@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { format, parseISO, isValid } from 'date-fns';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import Document from './bon_pre_reservation.js';
+import Input from '@/components/Input';
 
 const PreReservationTable = () => {
   const [data, setData] = useState([]);
@@ -20,6 +21,28 @@ const PreReservationTable = () => {
   const [totalRows, setTotalRows] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  const [filters, setFilters] = useState({
+    bien: '',
+    prospect: '',
+    respo: '',
+    code_pre: '',
+  });
+
+  const [tempFilters, setTempFilters] = useState({ ...filters });
+  const handleFilterChange = (field, value) => {
+    setTempFilters((prev) => ({ ...prev, [field]: value }));
+  };
+  const resetFilters = () => {
+    const reset = Object.fromEntries(
+      Object.keys(filters).map((key) => [key, ''])
+    );
+    setFilters(reset);
+    setTempFilters(reset);
+  };
+  const applyFilters = () => {
+    setFilters(tempFilters);
+  };
 
   const { token } = useAuth();
   const accesstoken = token || localStorage.getItem('accessToken');
@@ -38,7 +61,7 @@ const PreReservationTable = () => {
     localStorage.setItem('v_id_org', null);
     fetchData_table_by_projet(
       entity,
-      {},
+      filters,
       searchTerm,
       currentPage,
       rowsPerPage,
@@ -48,7 +71,7 @@ const PreReservationTable = () => {
       setData,
       setTotalRows
     );
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm]);
+  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters]);
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
@@ -186,11 +209,6 @@ const PreReservationTable = () => {
             title="Voir détails"
             onClick={() => handleShow(row)}
           />
-          <FaEdit
-            className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
-            title="Modifier"
-            onClick={() => handleEdit(row.id)}
-          />
 
           <PDFDownloadLink
             document={
@@ -204,11 +222,11 @@ const PreReservationTable = () => {
                     ? row.visite?.rdv_relation?.rdv
                     : null,
                   row.date_pre_reserve,
-                  row.bien.propriete_dite_bien,
-                  row.bien.niveau,
-                  row.bien.superficie_architecte,
-                  row.bien.orientation,
-                  row.bien.prix,
+                  row.bien?.propriete_dite_bien,
+                  row.bien?.niveau,
+                  row.bien?.superficie_architecte,
+                  row.bien?.orientation,
+                  row.bien?.prix,
                   row.t_appel != null
                     ? row.t_appel.user?.name
                     : row?.visite != null
@@ -322,6 +340,69 @@ const PreReservationTable = () => {
           onRowsPerPageChange={setRowsPerPage}
           onSearchChange={setSearchTerm}
           enableExport={true}
+          filterComponent={
+            <div className="space-y-4 p-4 rounded-lg shadow-md">
+              <div
+                className="grid gap-1"
+                style={{
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                }}
+              >
+                {/* Champs de recherche */}
+                <Input
+                  type="text"
+                  placeholder="Bien"
+                  value={tempFilters.bien}
+                  onChange={(e) => handleFilterChange('bien', e.target.value)}
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
+                <Input
+                  type="text"
+                  placeholder="Nom & Prénom"
+                  value={tempFilters.prospect}
+                  onChange={(e) =>
+                    handleFilterChange('prospect', e.target.value)
+                  }
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
+                <Input
+                  type="text"
+                  placeholder="Responsable"
+                  value={tempFilters.respo}
+                  onChange={(e) => handleFilterChange('respo', e.target.value)}
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
+
+                <Input
+                  type="text"
+                  placeholder="Code"
+                  value={tempFilters.code_pre}
+                  onChange={(e) =>
+                    handleFilterChange('code_pre', e.target.value)
+                  }
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
+              </div>
+
+              {/* Boutons */}
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={applyFilters}
+                  className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                >
+                  Appliquer les filtres
+                </button>
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
+                >
+                  Réinitialiser
+                </button>
+              </div>
+            </div>
+          }
         />
       </div>
     </>

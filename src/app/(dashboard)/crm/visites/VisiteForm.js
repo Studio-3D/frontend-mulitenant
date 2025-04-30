@@ -1,3 +1,4 @@
+"use client";
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useState, useEffect, useRef } from 'react';
@@ -39,8 +40,10 @@ import Modal_OldVisites_Perdu from './Modal_OldVisites_Perdu';
 import FreinsComponent from './FreinsComponent';
 import PanelInteresse from './PanelInteresse';
 import PanelInteresse_vendu from './PanelInteresse_Vendu';
-
+import useClearProspect from "./hook/useClearProspect";
 const VisiteForm = (id, origin) => {
+  const router = useRouter();
+  useClearProspect(); // Clear localstorage prospect when changing route /reload/or close page
   const { user } = useAuth();
   const [email_required, setEmail_required] = useState(false);
 
@@ -52,7 +55,7 @@ const VisiteForm = (id, origin) => {
   const [id_appel, setId_appel] = useState(null);
   const [id_visite, setId_visite] = useState(null);
 
-  const router = useRouter();
+ // const router = useRouter();
   const accessToken = localStorage.getItem('accessToken');
   const stored = JSON.parse(localStorage.getItem('selectedProspect'));
   const selectedProspect = stored?.dataProspect;

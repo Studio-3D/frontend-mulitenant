@@ -672,9 +672,8 @@ export default function AppelsForm({ id }) {
                 res.data.prospect.prenom
             );
             setClient_prospect('Est un prospect');
-
           }
-          setOpen_Dialog(true)   
+          setOpen_Dialog(true);
 
           setValue('prospect_id', prospect_id);
           setValue('nom', nom);
@@ -703,7 +702,6 @@ export default function AppelsForm({ id }) {
           if (res.data.prospect.visites.length > 0) {
             setId_visite(res.data.prospect.visites[0].id);
           }
-          
         } else {
           defaultValues['prospect_id'] = null;
           setOpen_Dialog(false);
@@ -1065,17 +1063,6 @@ export default function AppelsForm({ id }) {
                   }}
                 />
               )}
-            </div>
-            {/*Traitement*/}
-            <div className="col-span-3 mt-4">
-              <h2
-                className="text-lg font-medium border-b pb-2 mb-4"
-                style={{ color: '#231651' }}
-              >
-                Informations {"d'appel"}
-              </h2>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-start">
               {/* Intérêt (toujours visible) */}
               <div className="sm:col-span-1">
                 <AutocompleteSelectComponent
@@ -1088,10 +1075,21 @@ export default function AppelsForm({ id }) {
                   onChange={handleChange_interet}
                 />
               </div>
-
+            </div>
+            {Number(watch('interet')) != '' && (
+              <div className="col-span-3 mt-4">
+                <h2
+                  className="text-lg font-medium border-b pb-2 mb-4"
+                  style={{ color: '#231651' }}
+                >
+                  Informations {"d'appel"}
+                </h2>
+              </div>
+            )}
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-start">
               {/* Tranche et Bloc si interet == 1 */}
               {Number(watch('interet')) == 1 && (
-                <div className="grid grid-cols-[1.7fr_1fr] gap-4">
+                <>
                   <Autocomplete
                     label="Tranche:"
                     name="tranche_id"
@@ -1274,12 +1272,12 @@ export default function AppelsForm({ id }) {
                       defaultValues={defaultValues}
                     />
                   </div>
-                </div>
+                </>
               )}
 
               {/* Mode Relance et Date Relance si interet == 2 */}
               {Number(watch('interet')) == 2 && (
-                <div className="sm:col-span-1">
+                <>
                   <AutocompleteSelectComponent
                     label="Mode Relance:"
                     name="mode_relance"
@@ -1290,24 +1288,22 @@ export default function AppelsForm({ id }) {
                     backendErrors={backendErrors}
                     onChange={(code) => setValue('mode_relance', code)}
                   />
-                  <div className="mt-4">
-                    <TextField
-                      label="Date Relance:"
-                      name="date_relance"
-                      value={watch('date_relance')}
-                      type="date"
-                      control={control}
-                      errors={errors}
-                      backendErrors={backendErrors}
-                      defaultValues={defaultValues}
-                    />
-                  </div>
-                </div>
+                  <TextField
+                    label="Date Relance:"
+                    name="date_relance"
+                    value={watch('date_relance')}
+                    type="date"
+                    control={control}
+                    errors={errors}
+                    backendErrors={backendErrors}
+                    defaultValues={defaultValues}
+                  />
+                </>
               )}
               {/*Perdu*/}
 
               {Number(watch('interet')) == 3 && (
-                <div className="sm:col-span-2">
+                <>
                   <AutocompleteMultiple
                     label="Freins :"
                     name="freins"
@@ -1547,18 +1543,19 @@ export default function AppelsForm({ id }) {
                       </div>
                     </>
                   )}
-                  {(watch('freins')?.includes('superficie') ||
+                   {(watch('freins')?.includes('superficie') ||
                     freins_value.includes('superficie')) && (
                     <>
-                      {info_sup != null && (
-                        <div className="w-full">
+                      <div>
+                        {info_prix != null && (
+                          <div className="w-full">
                           <div className="bg-blue-100 text-blue-700 p-3 rounded-md border-l-4 border-blue-500 p-4 text-center rounded">
-                            {info_sup}
+                          {info_prix}
+                            </div>
                           </div>
-                        </div>
-                      )}
-                      <div className="sm:col-span-2 flex gap-4">
-                        <div className="w-1/2">
+                        )}
+                        <div className="sm:col-span-2 flex gap-4">
+                          <div className="w-1/2">
                           <TextField
                             label="Sup Min:"
                             name="sup_min"
@@ -1570,9 +1567,9 @@ export default function AppelsForm({ id }) {
                             onChange={handlePrixChange(2)}
                             required={watch('freins')?.includes('superficie')}
                           />
-                        </div>
-                        <div className="w-1/2">
-                          <TextField
+                          </div>
+                          <div className="w-1/2">
+                            <TextField
                             label="Sup Max:"
                             name="sup_max"
                             type="number"
@@ -1583,10 +1580,12 @@ export default function AppelsForm({ id }) {
                             onChange={handlePrixChange(2)}
                             required={watch('freins')?.includes('superficie')}
                           />
+                          </div>
                         </div>
                       </div>
                     </>
                   )}
+                 
                   {(watch('freins')?.includes('typologie') ||
                     freins_value.includes('typologie')) && (
                     <div>
@@ -1685,7 +1684,7 @@ export default function AppelsForm({ id }) {
                       />
                     </div>
                   )}
-                </div>
+                </>
               )}
             </div>
           </div>

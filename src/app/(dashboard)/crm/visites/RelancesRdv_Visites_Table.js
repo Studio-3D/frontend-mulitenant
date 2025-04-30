@@ -8,16 +8,40 @@ import { fetchData_table_by_projet } from '../../../../../src/configs/api-utils'
 import Link from 'next/link';
 import { format } from 'date-fns';
 
-import BreadCrumb from '../../navigation/BreadCrumb';
 import {
+  MODES_RELANCES,
   VISITE_INTERETS,
   getRelance_label,
 } from '../../../../../src/configs/enum';
 
 import Modal from '@/components/Modal';
 import Modal_Traite from '../../crm/Modal_Traite';
+import Input from '@/components/Input';
 
 const RelancesRdv_Visites_Table = (type) => {
+  const [filters, setFilters] = useState({
+    nom_prenom: '',
+    cin: '',
+    telephone: '',
+    mode_relance: '',
+    date_relance: '',
+    rdv: '',
+  });
+  const [tempFilters, setTempFilters] = useState({ ...filters });
+  const handleFilterChange = (field, value) => {
+    setTempFilters((prev) => ({ ...prev, [field]: value }));
+  };
+  const resetFilters = () => {
+    const reset = Object.fromEntries(
+      Object.keys(filters).map((key) => [key, ''])
+    );
+    setFilters(reset);
+    setTempFilters(reset);
+  };
+  const applyFilters = () => {
+    setFilters(tempFilters);
+  };
+
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -45,9 +69,12 @@ const RelancesRdv_Visites_Table = (type) => {
   };
 
   useEffect(() => {
+    const params_url = { type: Number(type.type) };
+    const combinedFilters = { ...filters, ...params_url };
+
     fetchData_table_by_projet(
       entity,
-      { type: Number(type.type) },
+      combinedFilters,
       searchTerm,
       currentPage,
       rowsPerPage,
@@ -57,7 +84,7 @@ const RelancesRdv_Visites_Table = (type) => {
       setData,
       setTotalRows
     );
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm]);
+  }, [accesstoken, currentPage, rowsPerPage, searchTerm,filters]);
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
@@ -300,15 +327,11 @@ const RelancesRdv_Visites_Table = (type) => {
   ];
   return (
     <div>
-      <div className="flex items-center justify-start">
-        <BreadCrumb
-          baseUrl={'#'}
-          step={
-            Number(type.type) === 1 ? 'Relances Visites' : 'Rendez-Vous Visites'
-          }
-        />
-      </div>
       <div className="reflative">
+        <h1 style={{ fontWeight: 'bold', fontSize: '19px', color: '#231651' }}>
+          {' '}
+          {Number(type.type) === 1 ? 'Relances Visites' : 'Rendez-Vous Visites'}
+        </h1>
         <Table
           data_to_export={data_to_export()}
           columns_export={columns_export}
@@ -328,6 +351,103 @@ const RelancesRdv_Visites_Table = (type) => {
           onRowsPerPageChange={setRowsPerPage}
           onSearchChange={setSearchTerm}
           enableExport={true}
+           filterComponent={
+                      <div className="space-y-4 p-4 rounded-lg shadow-md">
+                        <div
+                          className="grid gap-1"
+                          style={{
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                          }}
+                        >
+                          {/* Champs de recherche */}
+                          <Input
+                            type="text"
+                            placeholder="Nom & Prénom"
+                            value={tempFilters.nom_prenom}
+                            onChange={(e) =>
+                              handleFilterChange('nom_prenom', e.target.value)
+                            }
+                            className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                          />
+                          <Input
+                            type="text"
+                            placeholder="Cin"
+                            value={tempFilters.cin}
+                            onChange={(e) => handleFilterChange('cin', e.target.value)}
+                            className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                          />
+                          <Input
+                            type="number"
+                            placeholder="Téléphone..."
+                            value={tempFilters.telephone}
+                            onChange={(e) =>
+                              handleFilterChange('telephone', e.target.value)
+                            }
+                            className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                          />
+                          {Number(type.type) == 1 ? (
+                            <>
+                              <input
+                                type={tempFilters.date_relance ? 'date' : 'text'}
+                                placeholder="Date Relance"
+                                value={tempFilters.date_relance}
+                                onFocus={(e) => (e.target.type = 'date')}
+                                onChange={(e) =>
+                                  handleFilterChange('date_relance', e.target.value)
+                                }
+                                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                              />
+                              <select
+                                value={tempFilters.mode_relance}
+                                onChange={(e) =>
+                                  handleFilterChange('mode_relance', e.target.value)
+                                }
+                                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                              >
+                                <option value="" disabled>
+                                  Choisir un Mode Relance
+                                </option>
+          
+                                {Object.values(MODES_RELANCES).map((data) => (
+                                  <option key={data.code} value={Number(data.code)}>
+                                    {data.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </>
+                          ) : (
+                            <input
+                              type={tempFilters.rdv ? 'date' : 'text'}
+                              placeholder="Rendez Vous"
+                              value={tempFilters.rdv}
+                              onFocus={(e) => (e.target.type = 'date')}
+                              onChange={(e) =>
+                                handleFilterChange('rdv', e.target.value)
+                              }
+                              className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                            />
+                          )}
+                        </div>
+          
+                        {/* Boutons */}
+                        <div className="flex justify-end gap-3 pt-2">
+                          <button
+                            type="button"
+                            onClick={applyFilters}
+                            className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                          >
+                            Appliquer les filtres
+                          </button>
+                          <button
+                            type="button"
+                            onClick={resetFilters}
+                            className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
+                          >
+                            Réinitialiser
+                          </button>
+                        </div>
+                      </div>
+                    }
         />
       </div>
 

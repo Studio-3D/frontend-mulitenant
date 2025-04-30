@@ -42,6 +42,7 @@ export default function Biens_Dispo_By_frein_id() {
   useEffect(() => {
     fetchData_table_by_id(
       entity,
+      {},
       searchTerm,
       currentPage,
       rowsPerPage,
