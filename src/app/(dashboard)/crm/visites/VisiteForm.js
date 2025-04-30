@@ -38,9 +38,7 @@ import {
 import Pusher from 'pusher-js';
 import Modal_OldVisites_Perdu from './Modal_OldVisites_Perdu';
 import FreinsComponent from './FreinsComponent';
-import PanelInteresse from './PanelInteresse';
-import PanelInteresse_vendu from './PanelInteresse_Vendu';
-import useClearProspect from "./hook/useClearProspect";
+
 const VisiteForm = (id, origin) => {
   const router = useRouter();
   useClearProspect(); // Clear localstorage prospect when changing route /reload/or close page
