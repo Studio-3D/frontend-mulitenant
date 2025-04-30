@@ -3,8 +3,6 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useProjet } from "@/context/ProjetContext";
-import { TbArrowBackUp } from "react-icons/tb";
-import Link from "next/link";
 import axios from "axios";
 import { APIURL } from "@/configs/api";
 import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
@@ -15,7 +13,6 @@ import VueForm from "./VueForm";
 export default function VuesPage() {
   const [action, setAction] = useState(null);
   const [vueId, setVueId] = useState(null);
-  const [showFilter, setShowFilter] = useState(false);
   const [vues, setVues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterParams, setFilterParams] = useState({});
@@ -68,7 +65,6 @@ export default function VuesPage() {
   const handleFilterSubmit = (values) => {
     setFilterParams(values);
     fetchVues(values);
-    setShowFilter(false);
   };
 
   const handleAction = (actionType, row) => {
@@ -92,9 +88,6 @@ export default function VuesPage() {
     return <div>Veuillez vous connecter pour accéder à cette page.</div>;
   }
 
-  if (!selectedProjet && !action) {
-    return <div>Veuillez sélectionner un projet pour accéder aux vues.</div>;
-  }
 
   // Show form for add/edit actions
   if (action === "add" || action === "edit") {
@@ -111,13 +104,7 @@ export default function VuesPage() {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Gestion des Vues</h1>
 
-      {showFilter && (
-        <VueFilter
-          onSubmit={handleFilterSubmit}
-          onClose={() => setShowFilter(false)}
-          initialValues={filterParams}
-        />
-      )}
+      
       <DeleteConfirmationModal
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
@@ -132,7 +119,7 @@ export default function VuesPage() {
         loading={loading}
         onAction={handleAction}
         onAddClick={() => router.push("/administration/vues?action=add")}
-        onFilterClick={() => setShowFilter(true)}
+        onFilterSubmit={handleFilterSubmit} 
         onRefresh={() => fetchVues(filterParams)}
       />
     </div>
