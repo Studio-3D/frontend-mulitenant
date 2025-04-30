@@ -78,7 +78,7 @@ const ReclamationTable = () => {
 
   const entity = {
     API_URL: "ReclamationsSav",
-    dataKey: "reclamationSav",
+    dataKey: "data",
     name: "reclamation",
     searchFields: ["client.nom"],
   };
