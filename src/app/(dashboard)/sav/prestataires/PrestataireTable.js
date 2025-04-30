@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FaEdit } from "react-icons/fa";
 import { RiDeleteBin6Line, RiEyeLine } from "react-icons/ri";
+import axios from "axios";
 
 import { APIURL, ENDPOINTS } from "@/configs/api";
 import { fetchData_table_by_projet } from "@/configs/api-utils";
@@ -26,6 +27,7 @@ const PrestataireTable = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [services, setServices] = useState([]);
+  const accessToken = localStorage.getItem("accessToken");
 
   const { user, token } = useAuth();
   const accesstoken = token || localStorage.getItem("accessToken");
@@ -37,7 +39,7 @@ const PrestataireTable = () => {
     email: "",
     telephone: "",
     adresse:"",
-    service_id: "",
+    serviceId: "",
     
   });
 
@@ -45,7 +47,7 @@ const PrestataireTable = () => {
 
   const entity = {
     API_URL: "Prestataires",
-    dataKey: "prestataires",
+    dataKey: "data",
     name: "Prestataire",
     searchFields: ["nom"],
   };
@@ -53,7 +55,7 @@ const PrestataireTable = () => {
       try {
   
         const response = await axios.get(
-          `${APIURL.ROOT}/v1/projets/${selectedProjet?.id}/ServicesPrestataires/`,
+          `${APIURL.ROOT}/v1/projets/1/ServicesPrestataires/`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
@@ -101,7 +103,7 @@ const PrestataireTable = () => {
         email: "",
         telephone: "",
         adresse:"",
-        service_id: "",
+        serviceId: "",
       };
       setFilters(reset);
       setTempFilters(reset);
@@ -253,8 +255,8 @@ const PrestataireTable = () => {
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
               <select
-                value={tempFilters.service_id}
-                onChange={(e) => handleChange("propriete_dite_bien", e.target.value)} // Envoi du service_id
+                value={tempFilters.serviceId}
+                onChange={(e) => handleFilterChange("serviceId", e.target.value)} // Envoi du serviceId
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               >
                 <option value="" disabled>Choisir un service</option>
@@ -263,7 +265,7 @@ const PrestataireTable = () => {
                 ) : (
                   services.map(service => (
                     <option key={service.id} value={service.id}>
-                      {service.name} {/* Assure-toi d'utiliser le nom correct */}
+                      {service.nom} {/* Assure-toi d'utiliser le nom correct */}
                     </option>
                   ))
                 )}

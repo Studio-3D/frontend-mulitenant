@@ -30,7 +30,7 @@ const ServiceTable = () => {
 
   const entity = {
     API_URL: "ServicesPrestataires",
-    dataKey: "services",
+    dataKey: "data",
     name: "Service",
     searchFields: ["nom"],
   };
