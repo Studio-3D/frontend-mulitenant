@@ -6,6 +6,7 @@ import { useState } from 'react';
 
 export default function DeleteData({
   route,
+  number,
   Id,
   accessToken,
   onClose,
@@ -22,13 +23,24 @@ export default function DeleteData({
 
     setLoading(true); // Start loading
     try {
-      await axios.delete(`${route}/${Id}`, {
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      if (number != null) {
+        await axios.delete(`${route}/${Id}/${number}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+      } else {
+        await axios.delete(`${route}/${Id}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+      }
+
       toast.success('Donnée supprimé avec succès');
       if (onClose) onClose();
     } catch (error) {

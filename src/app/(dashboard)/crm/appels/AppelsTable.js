@@ -1,21 +1,25 @@
-'use client';
-
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import Table from '@/components/Table';
-import { FaRegEye, FaEdit, FaCheck, FaSync } from 'react-icons/fa';
+import { FaRegEye, FaEdit, FaSync, FaRegIdCard } from 'react-icons/fa';
 import { RiDeleteBin6Line } from 'react-icons/ri';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
 import { useAuth } from '../../../../context/AuthContext';
 import { APIURL, ENDPOINTS } from '../../../../configs/api';
 import { useRouter } from 'next/navigation';
-import { fetchData_table_by_projet } from '../../../../../src/configs/api-utils';
+import format from 'date-fns/format';
 import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
-import Modal_Traite from './Modal_Traite';
-import { Statuts_Prospect } from '../../../../../src/configs/enum';
+import { fetchData_table_by_projet } from '../../../../../src/configs/api-utils';
+import Link from 'next/link';
 import Input from '@/components/Input';
-const ProspectTable = () => {
-  const [prospects, setProspects] = useState([]);
+
+import { VISITE_INTERETS } from '../../../../../src/configs/enum';
+const AppelsTable = () => {
+  const { user, token } = useAuth();
+  const accesstoken = token || localStorage.getItem('accessToken');
+
+  const router = useRouter();
+  const [appels, setAppels] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -24,30 +28,20 @@ const ProspectTable = () => {
   const [totalRows, setTotalRows] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [open_traite, setOpen_traite] = useState(false);
-  const [traite_id, setId_traite] = useState(null);
-  const [num_tel, setTel_num] = useState(null);
-  const [nom_prenom, setNomPrenom] = useState(null);
 
-  const { user, token } = useAuth();
-  const accesstoken = token || localStorage.getItem('accessToken');
-
-  const router = useRouter();
-  // Declare the entity object in the component scope
   const [filters, setFilters] = useState({
+    date: '',
     nom: '',
     prenom: '',
-    cin: '',
     telephone: '',
-    email: '',
-    statut:'',
+    interet: '',
   });
   const [tempFilters, setTempFilters] = useState({ ...filters });
 
   const entity = {
-    API_URL: 'prospects',
-    dataKey: 'prospects',
-    searchFields: ['nom','prenom', 'email', 'telephone', 'cin'],
+    API_URL: 'appels',
+    dataKey: 'data',
+    searchFields: ['date', 'nom', 'prenom', 'telephone'],
   };
 
   useEffect(() => {
@@ -60,7 +54,7 @@ const ProspectTable = () => {
       accesstoken,
       setLoading,
       setError,
-      setProspects,
+      setAppels,
       setTotalRows
     );
   }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters]);
@@ -75,127 +69,97 @@ const ProspectTable = () => {
     return () => clearTimeout(timer); // Clean up the timeout on each render
   }, [searchTerm]);
 
-  useEffect(() => {
-    //Implementing the setInterval method
-    const interval = setInterval(() => {
-      if (localStorage.getItem('load_data_prospect') == 1) {
-        localStorage.setItem('load_data_prospect', 0);
-
-        fetchData_table_by_projet(
-          entity,
-          filters,
-          searchTerm,
-          currentPage,
-          rowsPerPage,
-          accesstoken,
-          setLoading,
-          setError,
-          setProspects,
-          setTotalRows
-        );
-      }
-    }, 1000);
-
-    //Clearing the interval
-    return () => clearInterval(interval);
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters]);
-
-  const handleShow = (prospectId) => {
-    router.push(`/crm/prospects/${prospectId}`);
+  const handleShow = (appelId) => {
+    router.push(`/crm/appels/${appelId}`);
   };
 
-  function handleEdit(ProspectId) {
-    console.log(`Editing Prospect ID: ${ProspectId}`); // Debugging
-    router.push(`${ENDPOINTS.PROSPECTS}?id=${ProspectId}&action=edit`);
+  function handleEdit(appelId) {
+    // Navigate to /utilisateurs?id={id}&action=edit
+    router.push(`${ENDPOINTS.APPELS}?id=${appelId}&action=edit`);
   }
 
-  const handleraiter = (Id, num_tel, nom_prenom) => {
-    setOpen_traite(!open_traite);
-    setId_traite(Id);
-    setTel_num(num_tel);
-    setNomPrenom(nom_prenom);
-  };
-
-  function handle_convert_to_visite(row) {
+  function handle_convert_to_visite(prospect) {
     localStorage.setItem(
       'selectedProspect',
-      JSON.stringify({ dataProspect: row })
+      JSON.stringify({ dataProspect: prospect })
     );
     router.push(`${ENDPOINTS.VISITES}?action=add`);
   }
+
+  const voir_visite = (vId) => {
+    window.open(`/crm/visites/${vId}`, '_blank');
+  };
+
   // Format users data for table display
   const formatData = () => {
-    return prospects.map((pro) => ({
-      id: pro.id,
-      nom: `${pro.nom || ''}`.trim(),
-      prenom: `${pro.prenom || ''}`.trim(),
-      nomComplet: `${pro.nom || ''} ${pro.prenom || ''}`.trim(),
-      email: pro.email,
+    return appels.map((data) => ({
+      id: data.id,
+      date:
+        data?.last_traitement_appel?.date != null
+          ? format(new Date(data?.last_traitement_appel?.date), 'dd/MM/yyyy')
+          : null,
+      nom: `${data.prospect.nom || ''} `.trim(),
+      prenom: `${data.prospect.prenom || ''}`.trim(),
       telephone:
-        (pro.telephone ? pro.telephone : '') +
-          (pro.telephone && pro.telephone_num2 && pro.telephone_num2 !== 'null'
-            ? ' / ' + pro.telephone_num2
+        (data.prospect.telephone ? data.prospect.telephone : '') +
+          (data.prospect.telephone &&
+          data.prospect.telephone_num2 &&
+          data.prospect.telephone_num2 !== 'null'
+            ? ' / ' + data.prospect.telephone_num2
             : '') || 'Non spécifié',
-      cin: pro.cin,
-      client: pro.client,
-      visites: pro.visites,
-      appels: pro.appels,
-      origin: pro.origin,
-      statut:
-        pro.last_statut != null
-          ? Statuts_Prospect[pro.last_statut?.statut]?.label
-          : '',
-      prospect: pro,
+      cin: data.prospect.cin,
+      // source: data.prospect.source?.source,
+      prospect: data.prospect,
+      interet: data.last_traitement_appel?.interet,
+      last_traitement_id: data.last_traitement_appel?.id || null,
+      last_traitement_visite_id: data.last_traitement_appel?.visite_id || null,
     }));
   };
 
+  const getInteretBadge = (interest) => {
+    const interetInfo = VISITE_INTERETS[interest];
+    return (
+      <span
+        className={`px-2 py-1 rounded-full text-xs font-medium ${interetInfo.color}`}
+      >
+        {interetInfo.label}
+      </span>
+    );
+  };
   // Table columns configuration
   const columns = [
+    { key: 'date', label: 'Date' },
     {
       key: 'nom',
       label: 'Nom',
-      render: (row) => (
-        <div className="flex items-center gap-3">
-          <span>{row.nom}</span>
-        </div>
-      ),
+      render: (row) => {
+        return (
+          <Link href={'/crm/prospects/' + row.prospect.id} target="_blank">
+            <strong style={{ fontWeight: 600 }}>{row.nom}</strong>
+          </Link>
+        );
+      },
     },
     {
       key: 'prenom',
       label: 'Prénom',
-      render: (row) => (
-        <div className="flex items-center gap-3">
-          <span>{row.prenom}</span>
-        </div>
-      ),
-    },
-    { key: 'telephone', label: 'Téléphone' },
-    { key: 'cin', label: 'Cin' },
-    { key: 'email', label: 'Email' },
-
-    {
-      key: 'statut',
-      label: 'Statut',
       render: (row) => {
-        if (!row.statut) return ''; // or return null;
-
-        const roleColors = {
-          'Planification Rendez Vous': 'bg-blue-100 text-[#009FFF]',
-          Injoignable: 'bg-purple-100 text-purple-600',
-          Rappel: 'bg-yellow-100 text-yellow-600',
-        };
-
         return (
-          <span
-            className={`px-2 py-1 rounded text-sm font-semibold ${
-              roleColors[row.statut] || 'bg-gray-100 text-gray-600'
-            }`}
-          >
-            {row.statut}
-          </span>
+          <Link href={'/crm/prospects/' + row.prospect.id} target="_blank">
+            <strong style={{ fontWeight: 600 }}>{row.prenom}</strong>
+          </Link>
         );
       },
     },
+    { key: 'telephone', label: 'Téléphone' },
+    {
+      key: 'interet',
+      label: 'Intéret',
+      render: (row) => {
+        return getInteretBadge(row.interet);
+      },
+    },
+
     {
       key: 'actions',
       label: 'Actions',
@@ -209,68 +173,82 @@ const ProspectTable = () => {
           <FaEdit
             className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
             title="Modifier"
-            onClick={() => handleEdit(row.id)}
+            onClick={() => handleEdit(row.last_traitement_id)}
           />
 
-          <FaCheck
-            className="w-4 h-4  hover:text-['rgb(87,80,129)']-700 text-['rgb(87,80,129)'] cursor-pointer"
-            title="Traiter"
-            onClick={() => handleraiter(row.id, row.telephone, row.nomComplet)}
+          <RiDeleteBin6Line
+            className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
+            onClick={() => {
+              setSelectedId(row.id);
+              setShowDeleteModal(true);
+            }}
+            title="Supprimer Appel"
           />
-          <FaSync
-            className="w-4 h-4 text-green-500  cursor-pointer"
-            title="Convertir en visite"
-            onClick={() => handle_convert_to_visite(row.prospect)}
-          />
-
-          {row.client == null &&
-            row.visites.length == 0 &&
-            row.appels == null && (
-              <RiDeleteBin6Line
-                className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
-                onClick={() => {
-                  setSelectedId(row.id);
-                  setShowDeleteModal(true);
-                }}
-                title="Supprimer utilisateur"
-              />
-            )}
+          {row.last_traitement_visite_id == null ? (
+            <FaSync
+              className="w-4 h-4 text-green-500  cursor-pointer"
+              title="Convertir en visite"
+              onClick={() => handle_convert_to_visite(row.prospect)}
+            />
+          ) : (
+            <FaRegIdCard
+              onClick={() => voir_visite(row.last_traitement_visite_id)}
+            />
+          )}
         </div>
       ),
     },
   ];
 
-  {
-    /* Dynamic Modals Import */
-  }
-
   //EXPORT
 
   const data_to_export = () => {
-    return prospects.map((pro) => ({
-      nomComplet: `${pro.nom || ''} ${pro.prenom || ''}`.trim(),
-      email: pro.email,
+    return appels.map((data) => ({
+      nomComplet: `${data.prospect.nom || ''} ${
+        data.prospect.prenom || ''
+      }`.trim(),
       telephone:
-        (pro.telephone ? pro.telephone : '') +
-          (pro.telephone && pro.telephone_num2 && pro.telephone_num2 !== 'null'
-            ? ' / ' + pro.telephone_num2
+        (data.prospect.telephone ? data.prospect.telephone : '') +
+          (data.prospect.telephone &&
+          data.prospect.telephone_num2 &&
+          data.prospect.telephone_num2 !== 'null'
+            ? ' / ' + data.prospect.telephone_num2
             : '') || 'Non spécifié',
-      cin: pro.cin,
-
-      type_client: pro.partenaire_id === null ? 'Particulier' : 'professionnel',
-      partenaire: pro.partenaire_id ? pro.partenaire?.description : '',
-      source: pro?.source?.source,
+      cin: data.prospect.cin,
+      email: data?.prospect.email || '',
+      type_prospect:
+        data?.prospect.partenaire_id === null ? 'Particulier' : 'professionnel',
+      partenaire: data?.prospect.partenaire_id
+        ? data.partenaire?.description
+        : '',
+      source: data?.prospect.source?.source,
+      interet: VISITE_INTERETS[data.last_traitement_appel?.interet]?.label,
+      date:
+        format(new Date(data?.last_traitement_appel?.date), 'dd/MM/yyyy') || '',
+      date_traitement:
+        format(
+          new Date(data?.last_traitement_appel?.date_traitement),
+          'dd/MM/yyyy'
+        ) || '',
+      type_appel:
+        data?.last_traitement_appel?.type_appel == 1
+          ? 'Entrant'
+          : 'Sortant' || '',
     }));
   };
 
   const columns_export = [
+    { key: 'date', label: 'Date Appel' },
+    { key: 'cin', label: 'Cin' },
     { key: 'nomComplet', label: 'nomComplet' },
     { key: 'telephone', label: 'Telephone' },
-    { key: 'cin', label: 'Cin' },
     { key: 'email', label: 'Email' },
-    { key: 'type_client', label: 'Type Prospect' },
+    { key: 'type_prospect', label: 'Type Prospect' },
     { key: 'source', label: 'Source' },
     { key: 'partenaire', label: 'Partenaire' },
+    { key: 'interet', label: 'Intérêt' },
+    { key: 'date_traitement', label: 'Date traitement' },
+    { key: 'type_appel', label: 'Type Appel' },
   ];
 
   const handleFilterChange = (field, value) => {
@@ -281,12 +259,11 @@ const ProspectTable = () => {
   };
   const resetFilters = () => {
     const reset = {
+      date: '',
       nom: '',
       prenom: '',
-      cin: '',
       telephone: '',
-      email:'',
-      statut:''
+      interet: '',
     };
     setFilters(reset);
     setTempFilters(reset);
@@ -298,7 +275,7 @@ const ProspectTable = () => {
         <Table
           data_to_export={data_to_export()}
           columns_export={columns_export}
-          name_file_export={'propects_export'}
+          name_file_export={'appels_export'}
           columns={columns}
           data={formatData()}
           totalRows={totalRows}
@@ -310,28 +287,30 @@ const ProspectTable = () => {
           onRowsPerPageChange={setRowsPerPage}
           onSearchChange={setSearchTerm}
           enableExport={true}
-          enableImport={true}
+          enableImport={false}
           addLink={
             isSuperAdmin(user.role) ||
             isAdmin(user.role) ||
             isCommercial(user.role)
-              ? `${ENDPOINTS.PROSPECTS}?action=add`
+              ? `${ENDPOINTS.APPELS}?action=add`
               : undefined
           }
           filterComponent={
             <div className="space-y-4 p-4 rounded-lg shadow-md">
               <div
-                className="grid gap-5"
+                className="grid gap-1"
                 style={{
                   gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
                 }}
               >
                 {/* Champs de recherche */}
-                <Input
-                  type="text"
-                  placeholder="Cin"
-                  value={tempFilters.cin}
-                  onChange={(e) => handleFilterChange('cin', e.target.value)}
+                
+                 <input
+                  type={tempFilters.date ? 'date' : 'text'}
+                  placeholder="Date"
+                  value={tempFilters.date}
+                  onFocus={(e) => (e.target.type = 'date')}
+                  onChange={(e) => handleFilterChange('date', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
                 <Input
@@ -358,26 +337,18 @@ const ProspectTable = () => {
                   }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-                 <Input
-                  type="email"
-                  placeholder="Email"
-                  value={tempFilters.email}
-                  onChange={(e) =>
-                    handleFilterChange('email', e.target.value)
-                  }
-                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-                />
+               
                 <select
-                  value={tempFilters.statut}
-                  onChange={(e) => handleFilterChange('statut', e.target.value)}
+                  value={tempFilters.interet}
+                  onChange={(e) => handleFilterChange('interet', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 >
                   <option value="" disabled>
-                    Choisir un Statut
+                    Choisir un Intéret
                   </option>
 
-                  {Object.values(Statuts_Prospect).map((data) => (
-                    <option key={data.id} value={data.id}>
+                  {Object.values(VISITE_INTERETS).map((data) => (
+                    <option key={data.code} value={data.code}>
                       {data.label}
                     </option>
                   ))}
@@ -405,16 +376,15 @@ const ProspectTable = () => {
           }
         />
       </div>
-
       {showDeleteModal && selectedId && (
         <Modal
           isVisible={showDeleteModal}
           onClose={() => setShowDeleteModal(false)}
         >
           <DeleteData
-            route={APIURL.PROSPECTS}
+            route={APIURL.APPELS}
             Id={selectedId}
-            message={'Etes-vous sûr de vouloir supprimer ce Prospect ?'}
+            message={'Etes-vous sûr de vouloir supprimer cette Appel ?'}
             accessToken={accesstoken}
             onClose={() => {
               setShowDeleteModal(false);
@@ -427,28 +397,15 @@ const ProspectTable = () => {
                 accesstoken,
                 setLoading,
                 setError,
-                setProspects,
+                setAppels,
                 setTotalRows
               );
             }}
           />
         </Modal>
-      )}
-
-      {open_traite == true && (
-        <>
-          <Modal isVisible={true} onClose={() => setOpen_traite(false)}>
-            <Modal_Traite
-              nom_prenom={nom_prenom}
-              num_tel={num_tel}
-              id={traite_id}
-              onClose={() => setOpen_traite(false)}
-            />
-          </Modal>
-        </>
-      )}
+      )}{' '}
     </>
   );
 };
 
-export default ProspectTable;
+export default AppelsTable;

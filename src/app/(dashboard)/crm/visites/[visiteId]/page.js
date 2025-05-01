@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -6,12 +6,10 @@ import axios from 'axios';
 import { APIURL } from '@/configs/api';
 import CRMNavbar from '@/components/CRMNavbar';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
-import { 
-  VISITE_INTERETS, 
+import {
+  VISITE_INTERETS,
   VISITE_STATUT,
   VISITE_TYPE_NOTIF,
-  ORIENTATIONS
 } from '@/configs/enum';
 
 export default function VisiteDetailsPage({ params }) {
@@ -24,18 +22,18 @@ export default function VisiteDetailsPage({ params }) {
   useEffect(() => {
     const fetchVisiteDetails = async () => {
       if (!visiteId) return;
-      
+
       setLoading(true);
       try {
         const token = localStorage.getItem('accessToken');
         const response = await axios.get(`${APIURL.VISITES}/${visiteId}`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
-        
+
         setVisite(response.data.visite);
       } catch (err) {
-        console.error("Error fetching visite details:", err);
-        setError("Impossible de récupérer les détails de la visite");
+        console.error('Error fetching visite details:', err);
+        setError('Impossible de récupérer les détails de la visite');
       } finally {
         setLoading(false);
       }
@@ -63,18 +61,28 @@ export default function VisiteDetailsPage({ params }) {
   };
 
   const getStatusBadge = (status) => {
-    const statusInfo = VISITE_STATUT[status] || { label: 'Inconnu', color: 'bg-gray-100 text-gray-800' };
+    const statusInfo = VISITE_STATUT[status] || {
+      label: 'Inconnu',
+      color: 'bg-gray-100 text-gray-800',
+    };
     return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
+      <span
+        className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}
+      >
         {statusInfo.label}
       </span>
     );
   };
 
   const getInterestBadge = (interest) => {
-    const interestInfo = VISITE_INTERETS[interest] || { label: 'Inconnu', color: 'bg-gray-100 text-gray-800' };
+    const interestInfo = VISITE_INTERETS[interest] || {
+      label: 'Inconnu',
+      color: 'bg-gray-100 text-gray-800',
+    };
     return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${interestInfo.color}`}>
+      <span
+        className={`px-2 py-1 rounded-full text-xs font-medium ${interestInfo.color}`}
+      >
         {interestInfo.label}
       </span>
     );
@@ -99,10 +107,10 @@ export default function VisiteDetailsPage({ params }) {
         <CRMNavbar />
         <div className="bg-white rounded-lg shadow-md p-6 mt-6">
           <div className="bg-red-50 border-l-4 border-red-500 p-4">
-            <p className="text-red-700">{error || "Visite non trouvée"}</p>
+            <p className="text-red-700">{error || 'Visite non trouvée'}</p>
           </div>
           <div className="mt-4">
-            <button 
+            <button
               onClick={() => router.push('/CRM/Visites')}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             >
@@ -122,13 +130,13 @@ export default function VisiteDetailsPage({ params }) {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-semibold">Détails de la visite</h1>
           <div className="space-x-2">
-            <button 
+            <button
               onClick={() => router.push(`/CRM/Visites/edit/${visiteId}`)}
               className="px-4 py-2 border rounded-md hover:bg-gray-100"
             >
               Modifier
             </button>
-            <button 
+            <button
               onClick={() => router.push('/CRM/Visites')}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             >
@@ -140,11 +148,15 @@ export default function VisiteDetailsPage({ params }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Visite Information */}
           <div className="col-span-2">
-            <h2 className="text-lg font-medium border-b pb-2 mb-4">Informations de la visite</h2>
+            <h2 className="text-lg font-medium border-b pb-2 mb-4">
+              Informations de la visite
+            </h2>
           </div>
 
           <div>
-            <p className="text-sm font-medium text-gray-500">Date de la visite</p>
+            <p className="text-sm font-medium text-gray-500">
+              Date de la visite
+            </p>
             <p className="mt-1">{formatDate(visite.date)}</p>
           </div>
 
@@ -169,15 +181,22 @@ export default function VisiteDetailsPage({ params }) {
 
           {visite.date_relance && (
             <div>
-              <p className="text-sm font-medium text-gray-500">Date de relance</p>
+              <p className="text-sm font-medium text-gray-500">
+                Date de relance
+              </p>
               <p className="mt-1">{formatDate(visite.date_relance)}</p>
             </div>
           )}
 
           {visite.mode_relance && (
             <div>
-              <p className="text-sm font-medium text-gray-500">Mode de relance</p>
-              <p className="mt-1">{VISITE_TYPE_NOTIF[visite.mode_relance]?.label || visite.mode_relance}</p>
+              <p className="text-sm font-medium text-gray-500">
+                Mode de relance
+              </p>
+              <p className="mt-1">
+                {VISITE_TYPE_NOTIF[visite.mode_relance]?.label ||
+                  visite.mode_relance}
+              </p>
             </div>
           )}
 
@@ -201,7 +220,10 @@ export default function VisiteDetailsPage({ params }) {
               <p className="text-sm font-medium text-gray-500">Freins</p>
               <div className="mt-1 flex flex-wrap gap-2">
                 {visite.frein.map((frein, index) => (
-                  <span key={index} className="px-2 py-1 bg-gray-100 rounded-full text-xs">
+                  <span
+                    key={index}
+                    className="px-2 py-1 bg-gray-100 rounded-full text-xs"
+                  >
                     {frein}
                   </span>
                 ))}
@@ -211,7 +233,9 @@ export default function VisiteDetailsPage({ params }) {
 
           {visite.description_autre && (
             <div className="col-span-2">
-              <p className="text-sm font-medium text-gray-500">Description autre frein</p>
+              <p className="text-sm font-medium text-gray-500">
+                Description autre frein
+              </p>
               <p className="mt-1">{visite.description_autre}</p>
             </div>
           )}
@@ -225,12 +249,16 @@ export default function VisiteDetailsPage({ params }) {
 
           {/* Prospect Information */}
           <div className="col-span-2 mt-8">
-            <h2 className="text-lg font-medium border-b pb-2 mb-4">Informations du prospect</h2>
+            <h2 className="text-lg font-medium border-b pb-2 mb-4">
+              Informations du prospect
+            </h2>
           </div>
 
           <div>
             <p className="text-sm font-medium text-gray-500">Nom complet</p>
-            <p className="mt-1">{`${visite.nom || ''} ${visite.prenom || ''}`}</p>
+            <p className="mt-1">{`${visite.nom || ''} ${
+              visite.prenom || ''
+            }`}</p>
           </div>
 
           <div>
@@ -269,18 +297,24 @@ export default function VisiteDetailsPage({ params }) {
           )}
 
           <div>
-            <p className="text-sm font-medium text-gray-500">Accepte d'être contacté</p>
+            <p className="text-sm font-medium text-gray-500">
+              Accepte {'d\'être'} contacté
+            </p>
             <p className="mt-1">{visite.notifie === 1 ? 'Oui' : 'Non'}</p>
           </div>
 
           {/* Commercial Information */}
           <div className="col-span-2 mt-8">
-            <h2 className="text-lg font-medium border-b pb-2 mb-4">Commercial</h2>
+            <h2 className="text-lg font-medium border-b pb-2 mb-4">
+              Commercial
+            </h2>
           </div>
 
           <div>
             <p className="text-sm font-medium text-gray-500">Nom complet</p>
-            <p className="mt-1">{`${visite.nom_cc || ''} ${visite.prenom_cc || ''}`}</p>
+            <p className="mt-1">{`${visite.nom_cc || ''} ${
+              visite.prenom_cc || ''
+            }`}</p>
           </div>
 
           <div>
@@ -289,7 +323,9 @@ export default function VisiteDetailsPage({ params }) {
           </div>
 
           <div>
-            <p className="text-sm font-medium text-gray-500">Dernière modification</p>
+            <p className="text-sm font-medium text-gray-500">
+              Dernière modification
+            </p>
             <p className="mt-1">{formatDateTime(visite.updated_at)}</p>
           </div>
         </div>

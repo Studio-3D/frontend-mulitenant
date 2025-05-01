@@ -1,76 +1,254 @@
-"use client";
+'use client';
 import { useRouter, usePathname } from 'next/navigation';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { FiUser, FiCalendar, FiPhoneCall, FiHome, FiClock, FiUsers } from 'react-icons/fi';
+import {
+  FiUser,
+  FiCalendar,
+  FiPhoneCall,
+  FiHome,
+  FiClock,
+  FiUsers,
+  FiMenu,FiPause,
+  FiChevronDown,
+  FiChevronUp
+} from 'react-icons/fi';
+import Pusher from 'pusher-js';
+import FetchNotifMenu from '../../src/configs/FetchNotifMenu';
 
-export default function CRMNavbar() {
+const CRMNavbar = () => {
   const router = useRouter();
+  const pusher_key_NotifMenu =
+    process.env.NEXT_PUBLIC_PUSHER_APP_KEY_NOTIF_MENU;
+
   const pathname = usePathname();
-  
-  // CRM navigation items
-  const navItems = [
-    { 
-      name: 'Prospects', 
-      path: '/crm/prospects', 
-      icon: <FiUser className="w-5 h-5" /> 
-    },
-    { 
-      name: 'Visites', 
-      path: '/crm/visites', 
-      icon: <FiUsers className="w-5 h-5" /> 
-    },
-    { 
-      name: 'Appels', 
-      path: '/crm/appels', 
-      icon: <FiPhoneCall className="w-5 h-5" /> 
-    },
-    { 
-      name: 'Pré-réservations', 
-      path: '/crm/preReservation', 
-      icon: <FiHome className="w-5 h-5" /> 
-    },
-    { 
-      name: 'Relances', 
-      path: '/crm/relances', 
-      icon: <FiClock className="w-5 h-5" />,
-      badge: 3, // Example badge count, should be dynamic
-    },
-    { 
-      name: 'RDV', 
-      path: '/crm/rdv', 
-      icon: <FiCalendar className="w-5 h-5" />,
-      badge: 2, // Example badge count, should be dynamic
+  const projetId = JSON.parse(localStorage.getItem('selectedProjet'))
+    ? JSON.parse(localStorage.getItem('selectedProjet')).id
+    : 1;
+  const [nb_relances_appels, setnb_rel_appel] = useState(0);
+  const [nb_rdv_appel, setnb_rdv_appel] = useState(0);
+  const [nb_relance_visite, setnb_rel_visite] = useState(0);
+  const [nb_rdv_visite, setnb_rdv_visite] = useState(0);
+  const [nb_rel_client_freins, set_nb_rel_client_freins] = useState(0);
+  const [param, setParam] = useState('D');
+  const [param_2, setParam_2] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [openSubmenu, setOpenSubmenu] = useState(null);
+  const navRef = useRef(null);
+
+  const nb_total_relances =
+    Number(nb_relance_visite) + Number(nb_relances_appels);
+  const nb_total_rdv = Number(nb_rdv_appel) + Number(nb_rdv_visite);
+
+  const fetchDataNotiMon = async (nb) => {
+    if (param_2 == 0) {
+      await FetchNotifMenu(
+        nb,
+        projetId,
+        setnb_rel_appel,
+        setnb_rdv_appel,
+        setnb_rel_visite,
+        setnb_rdv_visite,
+        set_nb_rel_client_freins
+      );
     }
+  };
+
+  useEffect(() => {
+    pusher_function();
+    if (param == 'D') {
+      fetchDataNotiMon('D');
+    }
+  }, [param]);
+
+  const pusher_function = async () => {
+    const pusher = new Pusher(`${pusher_key_NotifMenu}`, {
+      cluster: 'eu',
+      encrypted: true,
+    });
+
+    const channel = pusher.subscribe('NotifMenu');
+
+    channel.bind('App\\Events\\NotifMenuEvent', (data) => {
+      fetchDataNotiMon(data.NotifMenuId);
+      setParam(data.NotifMenuId);
+      setParam_2(1);
+    });
+
+    return () => {
+      channel.unbind('App\\Events\\NotifMenuEvent');
+      pusher.unsubscribe('NotifMenu');
+    };
+  };
+
+  // Close submenu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (navRef.current && !navRef.current.contains(event.target)) {
+        setOpenSubmenu(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const toggleSubmenu = (menu) => {
+    setOpenSubmenu(openSubmenu === menu ? null : menu);
+  };
+
+  const navItems = [
+    {
+      name: 'Prospects',
+      path: '/crm/prospects',
+      icon: <FiUser className="w-5 h-5" />,
+    },
+    {
+      name: 'Visites',
+      path: '/crm/visites',
+      icon: <FiUsers className="w-5 h-5" />,
+    },
+    {
+      name: 'Appels',
+      path: '/crm/appels',
+      icon: <FiPhoneCall className="w-5 h-5" />,
+      badge: nb_relances_appels + nb_rdv_appel,
+    },
+    {
+      name: 'Pré-réservations',
+      path: '/crm/pre-reservations',
+      icon: <FiHome className="w-5 h-5" />,
+    },
+    {
+      name: 'Relances',
+      icon: <FiClock className="w-5 h-5" />,
+      badge: nb_total_relances,
+      subItems: [
+        {
+          name: 'Appels Relances',
+          path: '/crm/appels/relances',
+          badge: nb_relances_appels,
+        },
+        {
+          name: 'Visites Relances',
+          path: '/crm/visites/relances',
+          badge: nb_relance_visite,
+        },
+      ],
+    },
+    {
+      name: 'RDV',
+      icon: <FiCalendar className="w-5 h-5" />,
+      badge: nb_total_rdv,
+      subItems: [
+        {
+          name: 'Appels RDV',
+          path: '/crm/appels/rdv',
+          badge: nb_rdv_appel,
+        },
+        {
+          name: 'Visites RDV',
+          path: '/crm/visites/rdv',
+          badge: nb_rdv_visite,
+        },
+      ],
+    },
+    {
+      name: 'Freins',
+      path: '/crm/visites/freins',
+      icon: <FiPause className="w-5 h-5" />,
+      badge: nb_rel_client_freins,
+    },
   ];
 
-  // Check if path is active
-  const isActive = (path) => {
-    return pathname.startsWith(path);
+  const isActive = (path) => pathname === path;
+  const isParentActive = (subItems) => {
+    return subItems?.some((subItem) => pathname.startsWith(subItem.path));
+  };
+
+  // Get the active submenu item name
+  const getActiveSubmenuName = (subItems) => {
+    const activeItem = subItems?.find((subItem) => pathname.startsWith(subItem.path));
+    return activeItem?.name || null;
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4 mb-6">
-      <nav className="flex flex-wrap gap-2">
-        {navItems.map((item) => (
-          <Link 
-            key={item.name}
-            href={item.path}
-            className={`flex items-center gap-2 px-4 py-3 rounded-md transition-colors ${
-              isActive(item.path) 
-                ? 'bg-blue-600 text-white' 
-                : 'text-gray-700 hover:bg-gray-100'
-            }`}
-          >
-            {item.icon}
-            <span>{item.name}</span>
-            {item.badge && (
-              <span className="inline-flex items-center justify-center w-5 h-5 ml-1 text-xs font-semibold text-white bg-red-500 rounded-full">
-                {item.badge}
-              </span>
-            )}
-          </Link>
-        ))}
+    <div className="bg-white rounded-lg shadow-md p-4 mb-6" ref={navRef}>
+      {/* Collapsible Menu Button */}
+      <button
+        className="block md:hidden text-gray-700 focus:outline-none"
+        onClick={() => setMenuOpen(!menuOpen)}
+      >
+        <FiMenu className="w-6 h-6" />
+      </button>
+
+      {/* Responsive Navigation */}
+      <nav
+        className={`flex flex-col gap-4 md:flex-row ${
+          menuOpen ? 'block' : 'hidden md:flex'
+        }`}
+      >
+        {navItems.map((item) => {
+          const activeSubmenuName = getActiveSubmenuName(item.subItems);
+          const showSubmenuName = activeSubmenuName && (isParentActive(item.subItems) || openSubmenu === item.name);
+
+          return (
+            <div key={item.name} className="relative">
+              <Link
+                href={item.path || '#'}
+                onClick={() => item.subItems && toggleSubmenu(item.name)}
+                className={`flex items-center gap-2 px-1 m-1 py-3 w-48 rounded-md transition-colors ${
+                  isActive(item.path) || isParentActive(item.subItems)
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                {item.icon}
+                <span>
+                  {showSubmenuName ? activeSubmenuName : item.name}
+                </span>
+                {item.badge && (
+                  <span className="inline-flex items-center justify-center w-5 h-5 ml-1 text-xs font-semibold text-white bg-red-500 rounded-full">
+                    {item.badge}
+                  </span>
+                )}
+                {item.subItems && (
+                  <span className="ml-auto">
+                    {openSubmenu === item.name ? (
+                      <FiChevronUp className="w-4 h-4" />
+                    ) : (
+                      <FiChevronDown className="w-4 h-4" />
+                    )}
+                  </span>
+                )}
+              </Link>
+              {item.subItems && openSubmenu === item.name && (
+                <div className="absolute left-0 top-full bg-white shadow-md rounded-md mt-2 w-48 z-10">
+                  {item.subItems.map((subItem) => (
+                    <Link
+                      key={subItem.name}
+                      href={subItem.path}
+                      className={`flex items-center justify-between px-4 py-2 m-1 text-gray-700 hover:bg-gray-100 hover:rounded-md ${
+                        isActive(subItem.path) ? 'bg-blue-50 rounded-md' : ''
+                      }`}
+                    >
+                      <span>{subItem.name}</span>
+                      {subItem.badge && (
+                        <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-semibold text-white bg-red-500 rounded-full">
+                          {subItem.badge}
+                        </span>
+                      )}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </nav>
     </div>
   );
-}
+};
+
+export default CRMNavbar;
