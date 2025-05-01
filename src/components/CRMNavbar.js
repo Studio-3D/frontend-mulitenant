@@ -174,7 +174,7 @@ const CRMNavbar = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4 mb-6" ref={navRef}>
+    <div className="bg-white rounded-lg shadow-md p-4 mb-4" ref={navRef}>
       {/* Collapsible Menu Button */}
       <button
         className="block md:hidden text-gray-700 focus:outline-none"
@@ -198,9 +198,9 @@ const CRMNavbar = () => {
               <Link
                 href={item.path || '#'}
                 onClick={() => item.subItems && toggleSubmenu(item.name)}
-                className={`flex items-center gap-2 px-1 m-1 py-3 w-48 rounded-md transition-colors ${
+                className={`flex items-center gap-2 px-1 py-3 xl:w-48 rounded-md transition-colors ${
                   isActive(item.path) || isParentActive(item.subItems)
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-[#009FFF] text-white font-normal'
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >
@@ -209,7 +209,7 @@ const CRMNavbar = () => {
                   {showSubmenuName ? activeSubmenuName : item.name}
                 </span>
                 {item.badge && (
-                  <span className="inline-flex items-center justify-center w-5 h-5 ml-1 text-xs font-semibold text-white bg-red-500 rounded-full">
+                  <span className="inline-flex items-center justify-center w-5 h-5  text-xs font-semibold text-white bg-red-500 rounded-full">
                     {item.badge}
                   </span>
                 )}
@@ -224,7 +224,7 @@ const CRMNavbar = () => {
                 )}
               </Link>
               {item.subItems && openSubmenu === item.name && (
-                <div className="absolute left-0 top-full bg-white shadow-md rounded-md mt-2 w-48 z-10">
+                <div className="absolute left-0 top-full bg-white shadow-md rounded-md mt-2 xl:w-48 z-10">
                   {item.subItems.map((subItem) => (
                     <Link
                       key={subItem.name}
