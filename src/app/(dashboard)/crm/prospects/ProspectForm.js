@@ -500,7 +500,7 @@ export default function ProspectForm() {
                     label="Source:"
                     options={sources}
                     value={
-                      sources.find((opt) => opt.id === watch('source')) || null
+                      sources.find((opt) => opt.id == watch('source')) || null
                     }
                     loading={loading_auto}
                     choix="source"

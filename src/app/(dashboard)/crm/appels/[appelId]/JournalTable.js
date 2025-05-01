@@ -17,12 +17,25 @@ import Modal_Show from './Modal_Show';
 import Modal_Traite from '../../../crm/Modal_Traite';
 
 import {
-  isAdmin, isCommercial, isSuperAdmin ,
+  isAdmin,
+  isCommercial,
+  isSuperAdmin,
   getTypeAppelLabel,
   VISITE_INTERETS,
   getRelance_label,
+  TYPES_APPELS,
 } from '../../../../../../src/configs/enum';
+import Input from '@/components/Input';
+
 const JournalTable = (id) => {
+  const [filters, setFilters] = useState({
+    responsable: '',
+    type_appel: '',
+    date: '',
+    interet: '',
+  });
+  const [tempFilters, setTempFilters] = useState({ ...filters });
+
   const [selectedId, setSelectedId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
@@ -77,12 +90,13 @@ const JournalTable = (id) => {
     id: JSON.stringify(id.id),
     API_URL: 'index_traitement_appel',
     dataKey: 'data',
-    searchFields: ['nomCC', 'date', 'type_appel', 'interet'],
+    searchFields: ['nomCC', 'date'],
   };
 
   useEffect(() => {
     fetchData_table_by_id(
       entity,
+      filters,
       searchTerm,
       currentPage,
       rowsPerPage,
@@ -92,7 +106,7 @@ const JournalTable = (id) => {
       setJournaux,
       setTotalRows
     );
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm]);
+  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters]);
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
@@ -377,6 +391,22 @@ const JournalTable = (id) => {
     { key: 'type_appel', label: 'Type Appel' },
     { key: 'interet', label: 'Intéret' },
   ];
+  const handleFilterChange = (field, value) => {
+    setTempFilters((prev) => ({ ...prev, [field]: value }));
+  };
+  const applyFilters = () => {
+    setFilters(tempFilters);
+  };
+  const resetFilters = () => {
+    const reset = {
+      responsable: '',
+      type_appel: '',
+      date: '',
+      interet: '',
+    };
+    setFilters(reset);
+    setTempFilters(reset);
+  };
   return (
     <>
       <div className="reflative">
@@ -401,6 +431,90 @@ const JournalTable = (id) => {
             isCommercial(user.role)
               ? `${ENDPOINTS.APPELS}?action=add`
               : undefined
+          }
+          filterComponent={
+            <div className="space-y-4 p-4 rounded-lg shadow-md">
+              <div
+                className="grid gap-5"
+                style={{
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                }}
+              >
+                {/* Champs de recherche */}
+                <Input
+                  type="date"
+                  placeholder="Date"
+                  value={tempFilters.date}
+                  onChange={(e) => handleFilterChange('date', e.target.value)}
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
+                 <input
+                  type={tempFilters.date ? 'date' : 'text'}
+                  placeholder="Date"
+                  value={tempFilters.date}
+                  onFocus={(e) => (e.target.type = 'date')}
+                  onChange={(e) => handleFilterChange('date_traitement', e.target.value)}
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
+                <Input
+                  type="text"
+                  placeholder="Responsable"
+                  value={tempFilters.responsable}
+                  onChange={(e) => handleFilterChange('responsable', e.target.value)}
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
+               
+                
+                <select
+                  value={tempFilters.interet}
+                  onChange={(e) => handleFilterChange('interet', e.target.value)}
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                >
+                  <option value="" disabled>
+                    Choisir un Intérêt
+                  </option>
+
+                  {Object.values(VISITE_INTERETS).map((data) => (
+                    <option key={data.code} value={data.code}>
+                      {data.label}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={tempFilters.type_appel}
+                  onChange={(e) => handleFilterChange('type_appel', e.target.value)}
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                >
+                  <option value="" disabled>
+                    Choisir un Type Appel
+                  </option>
+
+                  {Object.values(TYPES_APPELS).map((data) => (
+                    <option key={data.code} value={Number(data.code)}>
+                      {data.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Boutons */}
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={applyFilters}
+                  className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                >
+                  Appliquer les filtres
+                </button>
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
+                >
+                  Réinitialiser
+                </button>
+              </div>
+            </div>
           }
         />
       </div>
