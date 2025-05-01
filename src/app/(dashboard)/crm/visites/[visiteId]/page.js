@@ -298,7 +298,7 @@ export default function VisiteDetailsPage({ params }) {
 
           <div>
             <p className="text-sm font-medium text-gray-500">
-              Accepte d'être contacté
+              Accepte {'d\'être'} contacté
             </p>
             <p className="mt-1">{visite.notifie === 1 ? 'Oui' : 'Non'}</p>
           </div>

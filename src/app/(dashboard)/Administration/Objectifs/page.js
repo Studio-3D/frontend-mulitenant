@@ -17,7 +17,6 @@ import ObjectifForm from './ObjectifForm';
 export default function ObjectifsPage() {
   const [action, setAction] = useState(null);
   const [objectifId, setObjectifId] = useState(null);
-  const [showFilter, setShowFilter] = useState(false);
   const [objectifs, setObjectifs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterParams, setFilterParams] = useState({});
@@ -90,7 +89,6 @@ export default function ObjectifsPage() {
   const handleFilterSubmit = (values) => {
     setFilterParams(values);
     fetchObjectifs(values);
-    setShowFilter(false);
   };
   
   const handleAction = (actionType, row) => {
@@ -114,15 +112,7 @@ export default function ObjectifsPage() {
     return <div className="container mx-auto px-4 py-8">Veuillez vous connecter pour accéder à cette page.</div>;
   }
   
-  if (!selectedProjet && !action) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-amber-50 border-l-4 border-amber-500 p-4 mb-6">
-          <p className="text-amber-700">Veuillez sélectionner un projet pour gérer les objectifs.</p>
-        </div>
-      </div>
-    );
-  }
+  
 
   // Show form for add/edit actions
   if (action === 'add' || action === 'edit') {
@@ -136,22 +126,17 @@ export default function ObjectifsPage() {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Gestion des Objectifs</h1>
       
-      {showFilter && (
-        <ObjectifFilter 
-          onSubmit={handleFilterSubmit} 
-          onClose={() => setShowFilter(false)}
-          initialValues={filterParams}
-        />
-      )}
+      
       
       <ObjectifTable 
         data={objectifs}
         loading={loading}
         onAction={handleAction}
         onAddClick={() => router.push('/administration/objectifs?action=add')}
-        onFilterClick={() => setShowFilter(true)}
         onRefresh={() => fetchObjectifs(filterParams)}
         canAddObjectifs={canAddObjectifs}
+        onFilterSubmit={handleFilterSubmit} 
+
       />
       <DeleteConfirmationModal
         isOpen={deleteModalOpen}

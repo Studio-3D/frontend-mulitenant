@@ -138,6 +138,7 @@ export const fetchData_table_by_projet = async (
 
 export const fetchData_table_by_id = async (
   entity,
+  params_url,
   searchTerm,
   currentPage,
   rowsPerPage,
@@ -153,6 +154,7 @@ export const fetchData_table_by_id = async (
     const params = {
       page: currentPage,
       size: rowsPerPage,
+      ...params_url
     };
 
     const response = await axios.get(
