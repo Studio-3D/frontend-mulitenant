@@ -201,7 +201,27 @@ const Page = () => {
               onChange={(value) => formik.setFieldValue("gender", value)} // Handle change with Formik
               error={formik.errors.gender} // Show error if validation fails
             />
-            <Input label='Téléphone' type='text' name="phone" value={formik.values.phone} onChange={formik.handleChange} {...formik.getFieldProps('phone')} error={formik.errors.phone} />
+            <Input
+              label='Téléphone'
+              type='text'
+              name="phone"
+              value={formik.values.phone}
+              onChange={(e) => {
+                // Filter to allow only numbers
+                const numericValue = e.target.value.replace(/[^0-9]/g, '');
+                // Update Formik's value
+                formik.setFieldValue('phone', numericValue);
+              }}
+              onKeyPress={(e) => {
+                // Prevent non-numeric key presses
+                if (!/[0-9]/.test(e.key)) {
+                  e.preventDefault();
+                }
+              }}
+              error={formik.errors.phone}
+              inputMode="numeric" // Shows numeric keyboard on mobile
+              pattern="[0-9]*"   // Additional hint for numeric input
+            />
             <Input label="CIN" type="text" name="cin" value={formik.values.cin} onChange={formik.handleChange} {...formik.getFieldProps('cin')} error={formik.errors.cin}/>
             <DateInput
               label="Date d'embauche"

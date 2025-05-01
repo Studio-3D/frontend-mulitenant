@@ -41,7 +41,6 @@ import FreinsComponent from './FreinsComponent';
 
 const VisiteForm = (id, origin) => {
   const router = useRouter();
-  useClearProspect(); // Clear localstorage prospect when changing route /reload/or close page
   const { user } = useAuth();
   const [email_required, setEmail_required] = useState(false);
 
@@ -124,13 +123,6 @@ const VisiteForm = (id, origin) => {
 
   const isEditing = id && Object.keys(id).length > 0;
   const isOrigin = !!origin;
-  //selectedProjet?.id
-  /* const [partenaire_txt, setPartenaire_txt] = useState(
-    selectedProspect?.partenaire
-      ? selectedProspect.partenaire.description &&
-          setValue('partenaire_txt', selectedProspect.partenaire.description)
-      : null
-  );*/
   const [partenaire_txt, setPartenaire_txt] = useState(
     selectedProspect?.partenaire?.description
       ? selectedProspect.partenaire.description
@@ -1233,17 +1225,6 @@ const VisiteForm = (id, origin) => {
     console.log('After update:', expanded);
   };
 
-  /*const handleAccordionChangeVendu = (panel) => (event, isExpanded) => {
-    console.log('Clicked panel:', panel);
-    console.log('Before update:', expanded);
-    setExpandedVendu((prevExpanded) =>
-      prevExpanded.includes(panel)
-        ? prevExpanded.filter((p) => p !== panel)
-        : [...prevExpanded, panel]
-    );
-    console.log('After update:', expanded);
-  };*/
-
   const handlechangeprix_remise = (value, index, name) => {
     const list = [...(name ? input_biens_vendu : input_biens)];
 
@@ -1780,22 +1761,6 @@ const VisiteForm = (id, origin) => {
     // setPartenaire_txt(newValue ? newValue : ''); // Set partenaire value
     setValue('partenaire_id', newValue ? newValue.id : ''); // Set partenaire ID
   };
-
-  /*const handleChange_freins = (selectedValues) => {
-    try {
-      console.log('Changed:', selectedValues);
-
-      const descriptions = selectedValues
-        .map((item) => item?.description?.toLowerCase() || '')
-        .join(', ');
-      console.log('Descriptions:', descriptions);
-
-      setValue('frein', descriptions);
-    } catch (error) {
-      console.error('Error in handleChange_freins:', error);
-    }
-  };
-*/
   const handleChange_freins = (selectedValues) => {
     try {
       console.log('Changed:', selectedValues);
@@ -1849,31 +1814,22 @@ const VisiteForm = (id, origin) => {
           </Modal>
         </>
       )}{' '}
-      <div className="p-3">
-        <div className="flex items-center justify-start">
-          <BreadCrumb
-            baseUrl={ENDPOINTS.VISITES}
-            step={`${isEditing ? 'Modifier' : 'Ajouter'} une Visite`}
-          />
-        </div>
+      <div >
         {(!isOrigin ||
           (isOrigin && OldBiens_pre.length > 0 && paper_exist == 1) ||
           (isOrigin &&
             OldBiens_pre.length == 0 &&
             !watch('loading_b_pre'))) && (
-          <div className="p-6 mt-4 bg-white shadow-md rounded-md">
+          <div className="p-6 mt-4 h-[89vh] bg-white shadow-md rounded-md">
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="space-y-4">
                 {/* Client/Prospect Information */}
-                <div className="col-span-3">
-                  <h2
-                    className="text-lg font-medium border-b pb-2 mb-4"
-                    style={{ color: '#231651' }}
-                  >
+                <div>
+                  <h2 className="text-xl font-medium border-b pb-2">
                     Informations du prospect
                   </h2>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
                   {!isOrigin && (
                     <ProspectInformations
                       control={control}

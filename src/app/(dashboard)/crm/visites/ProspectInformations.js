@@ -1,7 +1,8 @@
 import React from 'react';
 import { Controller } from 'react-hook-form';
-import TextField from '@/components/Textfield'; // Import the component
-import Autocomplete from '@/components/Autocomplete'; // Import the component
+import Autocomplete from '@/components/Autocomplete';
+import Input from '@/components/Input';
+import SelectInput from '@/components/SelectInput';
 
 const ProspectInformations = ({
   control,
@@ -19,150 +20,170 @@ const ProspectInformations = ({
   selectedProspect,
   disabled_var_source,
   partenaire_txt,
-  sourceValue, // Add this prop for the source value
-  partenaireValue, // Add this prop for the partenaire value
+  sourceValue,
+  partenaireValue,
   handleChange_event,
 }) => {
   return (
     <>
       <div>
-        <TextField
-          label="Cin:"
-          name="cin"
-          required={Number(watch('interet')) === 1}
-          control={control}
-          errors={{
-            ...errors,
-            cin:
-              formSubmitted && Number(watch('interet')) === 1
-                ? 'Ce champ est obligatoire lorsque interet est intéressé.'
-                : null,
-          }}
-          backendErrors={backendErrors}
-          defaultValues={defaultValues}
-          onChange={handleChange_event('cin')}
-        />
-      </div>
-      <div>
-        <TextField
+        <Input
           label="Nom:"
           name="nom"
+          required
           control={control}
-          errors={errors}
-          backendErrors={backendErrors}
-          defaultValues={defaultValues}
+          error={errors?.nom?.message || backendErrors?.nom}
+          defaultValue={defaultValues?.nom}
         />
       </div>
       <div>
-        <TextField
+        <Input
           label="Prenom:"
           name="prenom"
           required
           control={control}
-          errors={errors}
-          backendErrors={backendErrors}
-          defaultValues={defaultValues}
+          error={errors?.prenom?.message || backendErrors?.prenom}
+          defaultValue={defaultValues?.prenom}
         />
       </div>
       <div>
-        <TextField
+        <Input
           label="Email:"
           name="email"
           type="email"
           required={email_required}
-          errors={{
-            ...errors,
-            email:
-              formSubmitted && email_required && !watch('email')
-                ? { message: 'Email obligatoire' }
-                : formSubmitted &&
-                  watch('email') &&
-                  !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(watch('email'))
-                ? { message: 'Email invalide' }
-                : null,
+          control={control}
+          error={
+            formSubmitted && email_required && !watch('email')
+              ? 'Email obligatoire'
+              : formSubmitted &&
+                watch('email') &&
+                !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(watch('email'))
+              ? 'Email invalide'
+              : errors?.email?.message || backendErrors?.email
+          }
+          defaultValue={defaultValues?.email}
+          onChange={(e) => {
+            control?.register('email').onChange(e);
+            handleChange_event("l'email")(e);
           }}
-          control={control}
-          backendErrors={backendErrors}
-          defaultValues={defaultValues}
-          onChange={handleChange_event("l'email")}
         />
       </div>
       <div>
-        <TextField
-          label="Telephone:"
-          required
-          name="telephone"
-          type="number"
+        <Input
+          label="CNI:"
+          name="cin"
+          required={Number(watch('interet')) === 1}
           control={control}
-          errors={errors}
-          backendErrors={backendErrors}
-          defaultValues={defaultValues}
-          onChange={handleChange_event('Téléphone')}
+          error={
+            formSubmitted && Number(watch('interet')) === 1 && !watch('cin')
+              ? 'Ce champ est obligatoire lorsque interet est intéressé.'
+              : errors?.cin?.message || backendErrors?.cin
+          }
+          defaultValue={defaultValues?.cin}
+          onChange={(e) => {
+            control?.register('cin').onChange(e);
+            handleChange_event('cin')(e);
+          }}
         />
       </div>
       <div>
-        <TextField
-          label="Telephone 2:"
-          required
-          name="telephone_num2"
-          type="number"
-          control={control}
-          errors={errors}
-          backendErrors={backendErrors}
-          defaultValues={defaultValues}
-          onChange={handleChange_event('Téléphone2')}
-        />
+      <Input
+        label="Telephone:"
+        required
+        name="telephone"
+        type="text" // Keep as text input
+        control={control}
+        error={errors?.telephone?.message || backendErrors?.telephone}
+        defaultValue={defaultValues?.telephone}
+        onKeyPress={(e) => {
+          // Only allow numbers (0-9) to be pressed
+          if (!/[0-9]/.test(e.key)) {
+            e.preventDefault();
+          }
+        }}
+        onChange={(e) => {
+          // Filter out any non-numeric characters that might get through (like paste)
+          const numericValue = e.target.value.replace(/[^0-9]/g, '');
+          // Update the input value
+          e.target.value = numericValue;
+          // Pass to form handlers
+          control?.register('telephone').onChange(e);
+          handleChange_event('Téléphone')(e);
+        }}
+        inputMode="numeric" // Shows numeric keyboard on mobile
+      />
       </div>
       <div>
-        <TextField
+      <Input
+        label="Telephone 2:"
+        name="telephone_num2"
+        type="text" // Keep as text input
+        control={control}
+        error={errors?.telephone_num2?.message || backendErrors?.telephone_num2}
+        defaultValue={defaultValues?.telephone_num2}
+        onKeyPress={(e) => {
+          // Only allow numbers (0-9) to be pressed
+          if (!/[0-9]/.test(e.key)) {
+            e.preventDefault();
+          }
+        }}
+        onChange={(e) => {
+          // Filter out any non-numeric characters that might get through (like paste)
+          const numericValue = e.target.value.replace(/[^0-9]/g, '');
+          // Update the input value
+          e.target.value = numericValue;
+          // Pass to form handlers
+          control?.register('telephone_num2').onChange(e);
+          handleChange_event('Téléphone2')(e);
+        }}
+        inputMode="numeric" // Shows numeric keyboard on mobile
+      />
+      </div>
+      <div>
+        <Input
           label="Ville:"
           name="ville"
           control={control}
-          errors={errors}
-          backendErrors={backendErrors}
-          defaultValues={defaultValues}
+          error={errors?.ville?.message || backendErrors?.ville}
+          defaultValue={defaultValues?.ville}
         />
       </div>
       {selectedProspect?.source || disabled_var_source ? (
         <div>
-          <TextField
+          <SelectInput
             label="Source:"
             name="source_txt"
             disabled
             control={control}
-            errors={errors}
-            backendErrors={backendErrors}
-            defaultValues={defaultValues}
+            error={errors?.source_txt?.message || backendErrors?.source_txt}
+            defaultValue={defaultValues?.source_txt}
           />
         </div>
       ) : (
         <div>
-          <Autocomplete
+          <SelectInput
             label="Source:"
             required
             name="source_id"
             value={sourceValue}
             options={sources}
-            loading={loading}
-            control={control}
-            errors={errors}
-            backendErrors={backendErrors}
+            placeholder="Sélectionnez une source"
             onChange={handleSourceChange}
-            choix="source"
+            error={errors?.source_id?.message || backendErrors?.source_id}
           />
         </div>
       )}
       {watch('source_txt') === 'Partenaire' &&
         (partenaire_txt != null ? (
           <div>
-            <TextField
+            <Input
               label="Partenaire:"
               name="partenaire_txt"
               disabled
               control={control}
-              errors={errors}
-              backendErrors={backendErrors}
-              defaultValues={defaultValues}
+              error={errors?.partenaire_txt?.message || backendErrors?.partenaire_txt}
+              defaultValue={defaultValues?.partenaire_txt}
             />
           </div>
         ) : (
