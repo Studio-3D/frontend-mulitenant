@@ -15,7 +15,6 @@ import PartenaireForm from './PartenaireForm';
 export default function PartenairesPage() {
   const [action, setAction] = useState(null);
   const [partenaireId, setPartenaireId] = useState(null);
-  const [showFilter, setShowFilter] = useState(false);
   const [partenaires, setPartenaires] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterParams, setFilterParams] = useState({});
@@ -82,9 +81,7 @@ export default function PartenairesPage() {
   const handleFilterSubmit = (values) => {
     setFilterParams(values);
     fetchPartenaires(values);
-    setShowFilter(false);
   };
-
   const handleAction = (actionType, row) => {
     if (actionType === 'edit') {
       router.push(`/administration/partenaires?action=edit&id=${row}`);
@@ -108,10 +105,6 @@ export default function PartenairesPage() {
     return <div>Veuillez vous connecter pour accéder à cette page.</div>;
   }
   
-  if (!selectedProjet && !action) {
-    return <div>Veuillez sélectionner un projet pour accéder aux partenaires.</div>;
-  }
-
   // Show form for add/edit actions
   if (action === 'add' || action === 'edit') {
     return (
@@ -128,20 +121,12 @@ export default function PartenairesPage() {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Gestion des Partenaires</h1>
       
-      {showFilter && (
-        <PartenaireFilter 
-          onSubmit={handleFilterSubmit} 
-          onClose={() => setShowFilter(false)}
-          initialValues={filterParams}
-        />
-      )}
-      
       <PartenaireTable 
         data={partenaires}
         loading={loading}
         onAction={handleAction}
         onAddClick={() => router.push('/administration/partenaires?action=add')}
-        onFilterClick={() => setShowFilter(true)}
+        onFilterSubmit={handleFilterSubmit} 
         onRefresh={() => fetchPartenaires(filterParams)}
       />
       <DeleteConfirmationModal

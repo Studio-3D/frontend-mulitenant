@@ -17,7 +17,6 @@ import TypeProjetForm from './TypeProjetForm';
 export default function TypeProjetsPage() {
   const [action, setAction] = useState(null);
   const [typeProjetId, setTypeProjetId] = useState(null);
-  const [showFilter, setShowFilter] = useState(false);
   const [typeProjets, setTypeProjets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -32,28 +31,30 @@ export default function TypeProjetsPage() {
 
   // This effect handles URL parameter changes
   useEffect(() => {
-    // Parse query parameters
     const actionParam = searchParams.get('action');
     const idParam = searchParams.get('id');
-    
-    // Reset component state based on URL parameters
+  
     setAction(actionParam || null);
     setTypeProjetId(idParam || null);
-    
-    // Load data if we're on the main page
-    if (!actionParam && selectedSociete) {
-      fetchTypeProjets();
+  
+    if (!actionParam && user) {
+      if (user.role === 1 && selectedSociete) {
+        fetchTypeProjets();
+      } else if (user.role !== 1) {
+        fetchTypeProjets();
+      }
     }
-  }, [searchParams, selectedSociete]); 
+  }, [searchParams, selectedSociete, user]);
+  
 
   const fetchTypeProjets = async (filters = {}) => {
-    if (!selectedSociete) return;
+    if (!selectedSociete && user.role==1) return;
     
     setLoading(true);
     setError(null);
     
     try {
-      await selectSociete(selectedSociete);
+      //await selectSociete(selectedSociete);
       
       const token = localStorage.getItem('accessToken');
       const response = await axios.get(APIURL.TYPEPROJETS, {
@@ -75,7 +76,6 @@ export default function TypeProjetsPage() {
   const handleFilterSubmit = (values) => {
     setFilterParams(values);
     fetchTypeProjets(values);
-    setShowFilter(false);
   };
 
   const handleAction = (actionType, row) => {
@@ -97,18 +97,7 @@ export default function TypeProjetsPage() {
   };
 
   // For superadmins without a selected société
-  if (user?.role === 1 && !selectedSociete && !societeLoading) {
-    return (
-      <div className="container mx-auto p-4">
-        <h1 className="text-2xl font-bold mb-6">Types de Projets</h1>
-        <div className="bg-amber-50 border-l-4 border-amber-500 p-4 mb-6">
-          <p>Veuillez sélectionner une société pour accéder aux types de projets.</p>
-        </div>
-        <SocieteSelector returnPath="/administration/typesProjets" />
-      </div>
-    );
-  }
-
+  
   // Show form for add/edit actions
   if (action === 'add' || action === 'edit') {
     return (
@@ -131,13 +120,7 @@ export default function TypeProjetsPage() {
         </div>
       )}
       
-      {showFilter && (
-        <TypeProjetFilter 
-          onSubmit={handleFilterSubmit} 
-          onClose={() => setShowFilter(false)}
-          initialValues={filterParams}
-        />
-      )}
+      
       <DeleteConfirmationModal
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
@@ -152,7 +135,7 @@ export default function TypeProjetsPage() {
         loading={loading || societeLoading}
         onAction={handleAction}
         onAddClick={() => router.push('/administration/typesProjets?action=add')}
-        onFilterClick={() => setShowFilter(true)}
+        onFilterSubmit={handleFilterSubmit} 
         onRefresh={() => fetchTypeProjets(filterParams)}
       />
     </div>

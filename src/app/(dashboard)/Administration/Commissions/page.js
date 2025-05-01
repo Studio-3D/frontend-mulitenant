@@ -9,24 +9,27 @@ import axios from 'axios';
 import { APIURL } from '@/configs/api';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import CommissionTable from './CommissionTable';
-import CommissionFilter from './CommissionFilter';
 import CommissionForm from './CommissionForm';
 
 export default function CommissionsPage() {
   const [action, setAction] = useState(null);
   const [commissionId, setCommissionId] = useState(null);
-  const [showFilter, setShowFilter] = useState(false);
   const [commissions, setCommissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterParams, setFilterParams] = useState({});
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [rowToDelete, setRowToDelete] = useState(null);
-    
+  const token = localStorage.getItem('accessToken');
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
   const { selectedProjet } = useProjet();
 
+  const handleFilterSubmit = (values) => {
+    setFilterParams(values);
+    fetchCommissions(values);
+  };
   // This effect handles URL parameter changes
   useEffect(() => {
     // Parse query parameters
@@ -48,13 +51,13 @@ export default function CommissionsPage() {
     
     setLoading(true);
     try {
-      const token = localStorage.getItem('accessToken');
       const response = await axios.get(`${APIURL.ROOT}/v1/projets/${selectedProjet.id}/commissions_traites/`, {
-        headers: { Authorization: `Bearer ${token}` },
-        params: { 
+        headers: { Authorization: `Bearer ${token}`,
+      },
+        /* params: { 
           projet_id: selectedProjet.id,
           ...filters
-        }
+        } */
       });
       
       // Handle different response structures
@@ -79,11 +82,7 @@ export default function CommissionsPage() {
     }
   };
 
-  const handleFilterSubmit = (values) => {
-    setFilterParams(values);
-    fetchCommissions(values);
-    setShowFilter(false);
-  };
+  
 
   const handleAction = (actionType, row) => {
     if (actionType === 'edit') {
@@ -108,10 +107,7 @@ export default function CommissionsPage() {
     return <div>Veuillez vous connecter pour accéder à cette page.</div>;
   }
   
-  if (!selectedProjet && !action) {
-    return <div>Veuillez sélectionner un projet pour accéder aux commissions.</div>;
-  }
-
+  
   // Show form for add/edit actions
   if (action === 'add' || action === 'edit') {
     return (
@@ -138,20 +134,13 @@ export default function CommissionsPage() {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Gestion des Commissions</h1>
       
-      {showFilter && (
-        <CommissionFilter
-          onSubmit={handleFilterSubmit} 
-          onClose={() => setShowFilter(false)}
-          initialValues={filterParams}
-        />
-      )}
       
       <CommissionTable
         data={commissions}
         loading={loading}
         onAction={handleAction}
         onAddClick={() => router.push('/administration/commissions?action=add')}
-        onFilterClick={() => setShowFilter(true)}
+        onFilterSubmit={handleFilterSubmit} 
         onRefresh={() => fetchCommissions(filterParams)}
       />
       <DeleteConfirmationModal

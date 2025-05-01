@@ -15,7 +15,6 @@ import TypologieForm from "./TypologieForm";
 export default function TypologiesPage() {
   const [action, setAction] = useState(null);
   const [typologieId, setTypologieId] = useState(null);
-  const [showFilter, setShowFilter] = useState(false);
   const [typologies, setTypologies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterParams, setFilterParams] = useState({});
@@ -68,7 +67,6 @@ export default function TypologiesPage() {
   const handleFilterSubmit = (values) => {
     setFilterParams(values);
     fetchTypologies(values);
-    setShowFilter(false);
   };
 
   const handleAction = (actionType, row) => {
@@ -92,11 +90,7 @@ export default function TypologiesPage() {
     return <div>Veuillez vous connecter pour accéder à cette page.</div>;
   }
 
-  if (!selectedProjet && !action) {
-    return (
-      <div>Veuillez sélectionner un projet pour accéder aux typologies.</div>
-    );
-  }
+  
 
   // Show form for add/edit actions
   if (action === "add" || action === "edit") {
@@ -113,20 +107,13 @@ export default function TypologiesPage() {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Gestion des Typologies</h1>
 
-      {showFilter && (
-        <TypologieFilter
-          onSubmit={handleFilterSubmit}
-          onClose={() => setShowFilter(false)}
-          initialValues={filterParams}
-        />
-      )}
 
       <TypologieTable
         data={typologies}
         loading={loading}
         onAction={handleAction}
         onAddClick={() => router.push("/administration/typologies?action=add")}
-        onFilterClick={() => setShowFilter(true)}
+        onFilterSubmit={handleFilterSubmit} 
         onRefresh={() => fetchTypologies(filterParams)}
       />
       <DeleteConfirmationModal

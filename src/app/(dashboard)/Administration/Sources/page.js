@@ -14,7 +14,6 @@ import SourceForm from './SourceForm';
 export default function SourcesPage() {
   const [action, setAction] = useState(null);
   const [sourceId, setSourceId] = useState(null);
-  const [showFilter, setShowFilter] = useState(false);
   const [sources, setSources] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterParams, setFilterParams] = useState({});
@@ -75,7 +74,6 @@ export default function SourcesPage() {
   const handleFilterSubmit = (values) => {
     setFilterParams(values);
     fetchSources(values);
-    setShowFilter(false);
   };
 
   const handleAction = (actionType, row) => {
@@ -116,20 +114,13 @@ export default function SourcesPage() {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Gestion des Sources</h1>
       
-      {showFilter && (
-        <SourceFilter 
-          onSubmit={handleFilterSubmit} 
-          onClose={() => setShowFilter(false)}
-          initialValues={filterParams}
-        />
-      )}
       
       <SourceTable 
         data={sources}
         loading={loading}
         onAction={handleAction}
         onAddClick={() => router.push('/administration/sources?action=add')}
-        onFilterClick={() => setShowFilter(true)}
+        onFilterSubmit={handleFilterSubmit} 
         onRefresh={() => fetchSources(filterParams)}
       />
       <DeleteConfirmationModal
