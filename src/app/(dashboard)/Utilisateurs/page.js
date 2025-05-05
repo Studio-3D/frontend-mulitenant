@@ -314,9 +314,9 @@ const Page = () => {
         <Table
           columns={columns}
           filterComponent={
-            <div className="space-y-4 p-4 rounded-lg shadow-md">
+            <div className="space-y-4 ">
               <div
-                className="grid gap-3"
+                className="grid gap-3 "
                 style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}
               >
                 {/* Champs de recherche */}
@@ -440,7 +440,7 @@ const Page = () => {
           }
           loading={loading}
           error={error}
-          addLink={`/Utilisateurs/Ajouter-Utilisateur`}
+          addLink={user?.role === 1 ? `/Utilisateurs/Ajouter-Utilisateur` : undefined}
           enableExport
           currentPage={currentPage}
           rowsPerPage={rowsPerPage}

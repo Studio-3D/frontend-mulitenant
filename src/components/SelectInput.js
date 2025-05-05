@@ -33,39 +33,51 @@ export default function SelectInput({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Ensure options is always an array
+  const safeOptions = Array.isArray(options) ? options : [];
+  
+  // Get the error message in the same way as Input component
   const getErrorMessage = () => {
-    if (error) return error;
-    if (!backendErrors) return null;
-    
-    if (typeof backendErrors === 'string') return backendErrors;
-    if (typeof backendErrors === 'object') {
-      if (backendErrors.message) return backendErrors.message;
-      if (backendErrors.error) return backendErrors.error;
-      if (Array.isArray(backendErrors)) return backendErrors.join(', ');
+    if (error) {
+      if (typeof error === 'object' && error.message) {
+        return error.message;
+      }
+      if (typeof error === 'string') {
+        return error;
+      }
+      return 'Ce champ est obligatoire';
+    }
+    if (backendErrors) {
+      if (typeof backendErrors === 'string') {
+        return backendErrors;
+      }
+      if (typeof backendErrors === 'object' && backendErrors.message) {
+        return backendErrors.message;
+      }
+      if (Array.isArray(backendErrors)) {
+        return backendErrors.join(', ');
+      }
     }
     return null;
   };
 
   const errorMessage = getErrorMessage();
 
-  // Safely find the selected option
-  const selectedOption = options.find(option => 
+  // Safely find the selected option using the safeOptions array
+  const selectedOption = safeOptions.find(option => 
     String(option.value) === String(value)
   );
 
   return (
     <div className="flex flex-col w-full" ref={dropdownRef}>
-      {label && <label className="font-medium text-gray-700 mb-1">{label}</label>}
+      {label && <label className="font-medium text-gray-700 ">{label}</label>}
       <div className="relative">
         <div
           className={classNames(
-            "min-h-[38px] px-4 py-2 border rounded-md cursor-pointer flex items-center justify-between w-full",
+            "h-[38px] text-[15px] px-4 py-2 border rounded-md cursor-pointer flex items-center justify-between w-full",
             {
-              "border-gray-300 hover:border-gray-400": !errorMessage && !isOpen,
-              "border-blue-500 ring-1 ring-blue-500": !errorMessage && isOpen,
-              "border-red-500": errorMessage,
-              "bg-gray-50": !isOpen && !errorMessage,
-              "bg-red-50": errorMessage,
+              "border-gray-300 hover:border-gray-500 focus:border-gray-500": !errorMessage,
+              "border-red-500 focus:border-red-500 hover:border-red-500": errorMessage,
             }
           )}
           onClick={toggleDropdown}
@@ -82,8 +94,8 @@ export default function SelectInput({
         
         {isOpen && (
           <ul className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
-            {options.length > 0 ? (
-              options.map((option) => (
+            {safeOptions.length > 0 ? (
+              safeOptions.map((option) => (
                 <li
                   key={option.value}
                   className={classNames(
@@ -104,7 +116,7 @@ export default function SelectInput({
         )}
       </div>
       {errorMessage && (
-        <p className="text-red-600 text-sm mt-1">{errorMessage}</p>
+        <p className="text-red-500 text-sm mt-1">{errorMessage}</p>
       )}
     </div>
   );

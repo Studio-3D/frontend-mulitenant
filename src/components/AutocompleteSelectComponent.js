@@ -9,7 +9,7 @@ const AutocompleteSelectComponent = ({
   value = null, // <-- Accept selected value
   defaultValue = null,
   width = 'w-full',
-  height = 'h-10',
+  height = 'h-[38px]',
   disabled = false,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -37,7 +37,7 @@ const AutocompleteSelectComponent = ({
   return (
     <div className={`relative ${width}`}>
       {/* Label */}
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700">
+      <label htmlFor={name} className="block font-medium text-gray-700">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
@@ -69,7 +69,7 @@ const AutocompleteSelectComponent = ({
           placeholder="Choisissez un élément"
           className={`
                w-full ${height} p-2 border border-gray-300 rounded-md 
-                focus:outline-none focus:ring-2 focus:ring-indigo-500
+                focus:outline-none 'focus:border-gray-500 
                ${disabled ? 'bg-gray-100 cursor-not-allowed opacity-50' : ''}
              `}
           disabled={disabled} // <-- new
@@ -85,7 +85,7 @@ const AutocompleteSelectComponent = ({
               filteredOptions.map((option) => (
                 <div
                   key={option.code}
-                  className={`p-2 text-sm sm:text-base md:text-lg cursor-pointer hover:bg-indigo-100 ${option.color}`}
+                  className={`p-2 m-1 cursor-pointer hover:bg-indigo-50 rounded-md `}
                   onClick={() => {
                     if (disabled) return;
 

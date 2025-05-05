@@ -99,7 +99,7 @@ const Menu = () => {
       {
         label: "Tableau de Bord",
         icon: <TbLayoutDashboardFilled />,
-        href: "/Tableau-de-Bord",
+        href: "/tableau-de-bord",
       },
 
     ];

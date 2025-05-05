@@ -38,8 +38,9 @@ import {
 import Pusher from 'pusher-js';
 import Modal_OldVisites_Perdu from './Modal_OldVisites_Perdu';
 import FreinsComponent from './FreinsComponent';
-import PanelInteresse from './PanelInteresse';
-import PanelInteresse_vendu from './PanelInteresse_Vendu';
+import SelectInput from '@/components/SelectInput';
+import Input from '@/components/Input';
+
 
 const VisiteForm = (id, origin) => {
 
@@ -55,7 +56,6 @@ const VisiteForm = (id, origin) => {
   const [id_appel, setId_appel] = useState(null);
   const [id_visite, setId_visite] = useState(null);
 
-  const router = useRouter();
   const accessToken = localStorage.getItem('accessToken');
   const stored = JSON.parse(localStorage.getItem('selectedProspect'));
   const selectedProspect = stored?.dataProspect;
@@ -1856,15 +1856,12 @@ const VisiteForm = (id, origin) => {
                   )}
                 </div>
                 <div className="col-span-3 mt-4">
-                  <h2
-                    className="text-lg font-medium border-b pb-2 mb-4"
-                    style={{ color: '#231651' }}
-                  >
+                  <h2 className="text-xl font-medium  border-b pb-2 mb-4">
                     Informations de la visite
                   </h2>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
                   {input_biens_vendu.length == 0 && (
                     <>
                       {watch('loading_b_pre') == false && (

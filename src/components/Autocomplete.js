@@ -9,7 +9,7 @@ const Autocomplete = ({
   choix = 'nom',
   loading = false,
   width = 'w-full',
-  height = 'h-10',
+  height = 'h-[38px]',
   required = false,
   errors,
   backendErrors,
@@ -68,13 +68,13 @@ const Autocomplete = ({
   return (
     <div className={`relative ${width}`}>
       {/* Label */}
-      <label className="block text-sm font-medium text-gray-700">
+      <label className="block font-medium text-gray-700">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
 
       {/* Input Field */}
-      <div className="relative mt-1">
+      <div className="relative">
         <input
           type="text"
           value={searchQuery || (value ? value[choix] : '')}
@@ -87,8 +87,8 @@ const Autocomplete = ({
           placeholder={placeholder}
           className={`w-full ${height} p-2 border ${
             errorMessage ? 'border-red-500' : 'border-gray-300'
-          } rounded-md focus:outline-none focus:ring-2 ${
-            errorMessage ? 'focus:ring-red-500' : 'focus:ring-indigo-500'
+          } rounded-md focus:outline-none  ${
+            errorMessage ? 'focus:ring-red-500' : 'focus:border-gray-500'
           }`}
           required={required}
         />
@@ -107,7 +107,7 @@ const Autocomplete = ({
               filteredOptions.map((option) => (
                 <div
                   key={option.id}
-                  className="p-2 cursor-pointer hover:bg-indigo-100"
+                  className="p-2 cursor-pointer hover:bg-indigo-50 m-1 rounded-md"
                   onClick={() => handleSelect(option)}
                 >
                   {option[choix]}
