@@ -227,16 +227,6 @@ const VisiteForm = (id, origin) => {
   }
 */
 
-  //fin multiple bien
-
-  const mystyle_Grid = {
-    width: '100%',
-    background: 'rgb(102 108 255)',
-    borderRadius: '10px',
-    marginTop: '20px',
-    marginLeft: '15px',
-  };
-
   const pusher_function = async () => {
     console.log('je suis en pusher');
     Pusher.logToConsole = true;
@@ -2543,14 +2533,10 @@ const VisiteForm = (id, origin) => {
                         {/* Top Divider */}
 
                         {/* Accordion */}
-                        <div className="border mt-4 rounded-md  shadow">
+                        <div className="border mt-4 rounded-md">
                           <button
                             type="button"
-                            className="w-full flex justify-between items-center px-4 py-3  text-white text-base font-medium focus:outline-none"
-                            style={{
-                              background:
-                                'rgb(35 22 81 / var(--tw-text-opacity, 1))',
-                            }}
+                            className="bg-[#009FFF] rounded-t-md w-full flex justify-between items-center px-4 py-3  text-white font-medium focus:outline-none"
                             onClick={handleAccordionChange(
                               `panel_bien${i + 1}`
                             )}

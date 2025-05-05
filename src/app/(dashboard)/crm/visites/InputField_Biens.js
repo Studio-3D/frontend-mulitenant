@@ -10,7 +10,7 @@ const InputField_Biens = ({
   required = false,
   disabled = false,
   width = 'w-full',
-  height = 'h-10',
+  height = 'h-[38px]',
   min = null,
   max = null,
   placeholder = '',
@@ -19,7 +19,7 @@ const InputField_Biens = ({
     <div className="mb-4">
       <label
         htmlFor={name}
-        className="block text-sm font-medium text-gray-700 mb-1"
+        className="block text-[15px] font-medium text-gray-700 mb-1"
       >
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
@@ -35,7 +35,7 @@ const InputField_Biens = ({
           disabled={disabled}
           placeholder={placeholder}
           rows={4}
-          className={`block ${width} px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+          className={`block ${width} px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none  hover:border-gray-500 focus:border-gray-500 ${
             disabled ? 'bg-gray-100 cursor-not-allowed' : ''
           }`}
         />
@@ -51,7 +51,7 @@ const InputField_Biens = ({
           min={min}
           max={max}
           placeholder={placeholder}
-          className={`block ${width} ${height} px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+          className={`block ${width} ${height} px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none  hover:border-gray-500 focus:border-gray-500 ${
             disabled ? 'bg-gray-100 cursor-not-allowed' : ''
           }`}
         />
