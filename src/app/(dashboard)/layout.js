@@ -66,7 +66,7 @@ export default function DashboardLayout({ children }) {
       </div>
 
       {/* Right Content - Pushed to the right with proper width */}
-      <div className="w-full pl-[12%] md:pl-[8%] lg:pl-[18%] xl:pl-[14%] bg-background overflow-auto">
+      <div className="w-full pl-[12%] md:pl-[8%] lg:pl-[18%] xl:pl-[14%] bg-background overflow-auto scrollbar-none ">
         {/* Navbar now spans the entire right content area */}
         <Navbar />
         
