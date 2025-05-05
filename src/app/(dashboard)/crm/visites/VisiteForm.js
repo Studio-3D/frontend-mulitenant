@@ -1823,7 +1823,7 @@ const VisiteForm = (id, origin) => {
           (isOrigin &&
             OldBiens_pre.length == 0 &&
             !watch('loading_b_pre'))) && (
-          <div className="p-6 mt-4 h-[89vh] bg-white shadow-md rounded-md">
+          <div className="p-6 mt-4 min-h-[89vh] bg-white shadow-md rounded-md">
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="space-y-4">
                 {/* Client/Prospect Information */}
@@ -1900,14 +1900,33 @@ const VisiteForm = (id, origin) => {
                                   nb_bien_added:
                                     formSubmitted &&
                                     Number(watch('interet')) === 1 &&
-                                    !watch('nb_bien_added')
+                                    (!watch('nb_bien_added') && watch('nb_bien_added') !== 0)
                                       ? 'Ce champ est obligatoire lorsque interet est Intéressé.'
+                                      : Number(watch('nb_bien_added')) < 0
+                                      ? 'Veuillez entrer un nombre positif.'
                                       : null,
                                 }}
                                 backendErrors={backendErrors}
-                                defaultValues={defaultValues}
-                                onChange={handleChange_NbrBien}
+                                defaultValues={{ nb_bien_added: 0 }}
                                 required={Number(watch('interet')) === 1}
+                                inputProps={{
+                                  min: 0,
+                                  inputMode: 'numeric',
+                                }}
+                                onChange={(e) => {
+                                  let value = e.target.value;
+
+                                  // Remove leading 0 when user starts typing
+                                  if (value.length > 1 && value.startsWith('0')) {
+                                    value = value.replace(/^0+/, '');
+                                  }
+
+                                  // Only allow digits (optional extra check)
+                                  if (/^\d*$/.test(value)) {
+                                    e.target.value = value;
+                                    handleChange_NbrBien(e);
+                                  }
+                                }}
                               />
                             </>
                           )}
@@ -2026,7 +2045,7 @@ const VisiteForm = (id, origin) => {
                                 <div>
                                   {/* Replace with your own Autocomplete or HeadlessUI */}
                                   {x.bien_id != null && (
-                                    <InputField_Biens
+                                    <InputField_Biens 
                                       label="Bien"
                                       name=""
                                       type="text"

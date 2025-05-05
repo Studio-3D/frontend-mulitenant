@@ -43,7 +43,7 @@ const AutocompleteSelectComponent = ({
       </label>
 
       {/* Input Field */}
-      <div className="relative mt-1">
+      <div className="relative">
         <input
           id={name}
           name={name}
@@ -69,7 +69,7 @@ const AutocompleteSelectComponent = ({
           placeholder="Choisissez un élément"
           className={`
                w-full ${height} p-2 border border-gray-300 rounded-md 
-                focus:outline-none 'focus:border-gray-500 
+                focus:outline-none hover:border-gray-500 focus:border-gray-500
                ${disabled ? 'bg-gray-100 cursor-not-allowed opacity-50' : ''}
              `}
           disabled={disabled} // <-- new
@@ -85,7 +85,7 @@ const AutocompleteSelectComponent = ({
               filteredOptions.map((option) => (
                 <div
                   key={option.code}
-                  className={`p-2 m-1 cursor-pointer hover:bg-indigo-50 rounded-md `}
+                  className={`p-2 m-1 cursor-pointer  hover:bg-indigo-50 rounded-md `}
                   onClick={() => {
                     if (disabled) return;
 

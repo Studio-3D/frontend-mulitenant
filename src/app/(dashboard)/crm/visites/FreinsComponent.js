@@ -259,7 +259,7 @@ const FreinsComponent = ({
           <div className="sm:col-span-2 flex gap-4">
             {info_sup != null && (
               <div className="w-full">
-                <div className="bg-blue-100 text-blue-700 p-3 rounded-md border-l-4 border-blue-500 p-4 text-center rounded">
+                <div className="bg-blue-100 text-blue-700  border-l-4 border-blue-500 p-4 text-center rounded">
                   {info_sup}
                 </div>
               </div>

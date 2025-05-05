@@ -230,7 +230,7 @@ const ProspectInformations = ({
             />
           </div>
         ))}
-      <div className="flex items-center justify-between mt-5">
+      <div className="flex items-center justify-between w-full mt-4">
         <Controller
           name="notifie"
           control={control}
@@ -242,7 +242,7 @@ const ProspectInformations = ({
                 {...field}
                 checked={field.value === 1}
                 onChange={(e) => field.onChange(e.target.checked ? 1 : 0)}
-                className="h-5 w-10 items-center rounded-full bg-gray-300 transition-all duration-300"
+                className="h-5 w-7 items-center rounded-full bg-gray-300 transition-all duration-300 "
               />
               <span
                 className={` font-medium ${
