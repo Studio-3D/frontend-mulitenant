@@ -44,7 +44,7 @@ const AutocompleteBien = ({ x, i, user, biensByProjet, handleinputchange ,loadin
 
   return (
     <div className="relative w-full">
-      <label className="block text-sm font-medium mb-1">
+      <label className="block font-medium  text-gray-700">
         Bien <span className="text-red-500">*</span>
       </label>
 
@@ -58,7 +58,7 @@ const AutocompleteBien = ({ x, i, user, biensByProjet, handleinputchange ,loadin
         }} 
         onBlur={() => setTimeout(() => setIsOpen(false), 100)}
         placeholder="Sélectionner un bien"
-        className="w-full h-10 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+        className="w-full h-[38px] p-2 border border-gray-300 rounded-md focus:outline-none  hover:border-gray-500 focus:border-gray-500 text-[15px]"
         required
       />
 
@@ -88,7 +88,7 @@ const AutocompleteBien = ({ x, i, user, biensByProjet, handleinputchange ,loadin
               </svg>
             </div>
           ) : filteredOptions?.length === 0 ? (
-            <div className="p-2 text-gray-500 text-sm">Aucun bien trouvé</div>
+            <div className="p-2 text-gray-500 text-[15px]">Aucun bien trouvé</div>
           ) : (
             filteredOptions?.map((option) => {
               const isDisabled =
@@ -109,7 +109,7 @@ const AutocompleteBien = ({ x, i, user, biensByProjet, handleinputchange ,loadin
               return (
                 <div
                   key={option.id}
-                  className={`p-2 text-sm cursor-pointer hover:bg-indigo-100 ${
+                  className={`p-2 text-[15px] m-2 rounded-md cursor-pointer hover:bg-indigo-50 ${
                     isDisabled ? 'opacity-50 pointer-events-none' : ''
                   }`}
                   onClick={() => !isDisabled && handleSelect(option)}

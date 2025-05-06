@@ -18,6 +18,13 @@ const Autocomplete = ({
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Initialize searchQuery with the current value
+  useEffect(() => {
+    if (value && value[choix]) {
+      setSearchQuery(value[choix]);
+    }
+  }, [value, choix]);
+
   // Filter options based on search query
   const filteredOptions =
     String(searchQuery || '') === ''
@@ -37,29 +44,30 @@ const Autocomplete = ({
   // Effect to clear input when no options match
   useEffect(() => {
     if (!loading && filteredOptions.length === 0 && searchQuery) {
-      setSearchQuery(''); // Clear search query
-      onChange(null); // Notify parent of cleared value
+      setSearchQuery('');
+      onChange(null);
     }
   }, [filteredOptions, loading, searchQuery, onChange]);
 
-  // Handle selecting an option from the dropdown
   const handleSelect = (option) => {
-    onChange(option); // Notify parent with selected option
-    setSearchQuery(option[choix]); // Update input value with selected option
-    setIsOpen(false); // Close dropdown
+    onChange(option);
+    setSearchQuery(option[choix]);
+    setIsOpen(false);
   };
 
-  // Handle input changes
   const handleChange = (e) => {
     const inputValue = e.target.value;
     setSearchQuery(inputValue);
     if (inputValue === '') {
-      onChange(null); // Clear parent value if input is empty
+      onChange(null);
     }
-    setIsOpen(true); // Open dropdown on input
+    setIsOpen(true);
   };
 
-  // Handle errors passed via props
+  const toggleDropdown = () => {
+    setIsOpen(!isOpen);
+  };
+
   const rawError = errors[name] || backendErrors[name];
   const errorMessage =
     rawError?.message ??
@@ -77,21 +85,34 @@ const Autocomplete = ({
       <div className="relative">
         <input
           type="text"
-          value={searchQuery || (value ? value[choix] : '')}
+          value={searchQuery || ''}
           onChange={handleChange}
-          onFocus={() => {
-            setIsOpen(true);
-            setSearchQuery(''); // Force display of all options
-          }}
-          onBlur={() => setTimeout(() => setIsOpen(false), 200)} // Delay closing dropdown to allow clicks
+          onFocus={() => setIsOpen(true)}
+          onBlur={() => setTimeout(() => setIsOpen(false), 200)}
           placeholder={placeholder}
           className={`w-full ${height} p-2 border ${
             errorMessage ? 'border-red-500' : 'border-gray-300'
-          } rounded-md focus:outline-none  ${
+          } rounded-md focus:outline-none ${
             errorMessage ? 'focus:ring-red-500' : 'focus:border-gray-500'
-          }`}
+          } pr-8`}  // Added pr-8 for icon spacing
           required={required}
         />
+        
+        {/* Dropdown Toggle Icon */}
+        <div 
+          className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer"
+          onClick={toggleDropdown}
+        >
+          {isOpen ? (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
+            </svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+            </svg>
+          )}
+        </div>
 
         {/* Dropdown Options */}
         {isOpen && (

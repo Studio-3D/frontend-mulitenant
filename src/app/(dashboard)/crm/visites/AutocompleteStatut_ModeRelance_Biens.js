@@ -10,7 +10,7 @@ const AutocompleteStatut_ModeRelance_Biens = ({
   required = false,
   showAllOnFocus = true,
   width = 'w-full',
-  height = 'h-10',
+  height = 'h-[38px]',
   code = 'code',
   labelKey = 'label',
 }) => {
@@ -77,7 +77,7 @@ const AutocompleteStatut_ModeRelance_Biens = ({
   return (
     <div className={`relative ${width}`}>
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block font-medium text-gray-700 ">
           {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
@@ -90,19 +90,19 @@ const AutocompleteStatut_ModeRelance_Biens = ({
         onFocus={handleFocus}
         onBlur={() => setTimeout(() => setIsOpen(false), 100)} // Delay closing dropdown to allow clicks
         placeholder={placeholder}
-        className={`w-full ${height} p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm`}
+        className={`w-full ${height} p-2 border border-gray-300 rounded-md focus:outline-none hover:border-gray-500 focus:border-gray-500`}
         required={required}
       />
 
       {isOpen && (
         <div className="absolute top-full left-0 w-full bg-white shadow-lg rounded-md mt-1 max-h-60 overflow-y-auto border border-gray-300 z-10">
           {filteredOptions.length === 0 ? (
-            <div className="p-2 text-gray-500 text-sm">Aucun résultat trouvé</div>
+            <div className="p-2 text-gray-500 text-[15px]">Aucun résultat trouvé</div>
           ) : (
             filteredOptions.map((option) => (
               <div
                 key={option[code]}
-                className="p-2 text-sm cursor-pointer hover:bg-indigo-100"
+                className="p-2 text-[15px] cursor-pointer m-2 hover:bg-indigo-50 rounded-md"
                 onClick={() => handleSelect(option)}
               >
                 {option[labelKey]}

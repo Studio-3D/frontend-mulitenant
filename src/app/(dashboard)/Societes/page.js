@@ -170,7 +170,7 @@ export default function Societes() {
       <Table 
         columns={columns}
         filterComponent={
-          <div className="space-y-4 p-4 rounded-lg shadow-md">
+          <div className="space-y-4">
             <div
               className="grid gap-3"
               style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}
