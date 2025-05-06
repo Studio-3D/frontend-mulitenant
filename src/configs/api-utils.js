@@ -76,7 +76,7 @@ export const fetchData_table_by_projet = async (
     };
 
     const response = await axios.get(
-      `${APIURL.ROOT}/v1/projets/${selectedProjet?.id || 1}/${entity.API_URL}/`,
+      `${APIURL.ROOT}/v1/projets/${selectedProjet?.id}/${entity.API_URL}/`,
       {
         headers: {
           Authorization: `Bearer ${accesstoken}`,
@@ -120,8 +120,8 @@ export const fetchData_table_by_projet = async (
 
       setData(filteredData);
       setTotalRows(response.data.pagination?.totalItems || filteredData.length);
-    } else {
-      setError(`No ${entity.name} found.`);
+    } else {   
+     setData([])
     }
   } catch (err) {
     setError(err.response?.data?.message || 'Error loading data');

@@ -16,6 +16,7 @@ import {
   VISITE_STATUT,
 } from '../../../../../src/configs/enum';
 import Link from 'next/link';
+import SelectInput from '@/components/SelectInput';
 
 const VisiteTable = (dataProspect, dataClient) => {
   const [visites, setVisites] = useState([]);
@@ -286,7 +287,7 @@ const VisiteTable = (dataProspect, dataClient) => {
           enableExport={true}
           addLink={handleAddClick}
           filterComponent={
-            <div className="space-y-4 p-4 rounded-lg shadow-md">
+            <div className="space-y-4 p-4 rounded-lg ">
               <div
                 className="grid gap-5"
                 style={{
@@ -301,7 +302,7 @@ const VisiteTable = (dataProspect, dataClient) => {
                   onChange={(e) => handleFilterChange('cc', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-                {prospectId == null && clientId == null &&(
+                {prospectId == null && clientId == null && (
                   <>
                     <Input
                       type="text"
@@ -342,26 +343,16 @@ const VisiteTable = (dataProspect, dataClient) => {
                     />
                   </>
                 )}
-
-                <select
+                <SelectInput
                   value={tempFilters.interet}
-                  onChange={(e) =>
-                    handleFilterChange('interet', e.target.value)
-                  }
-                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-                >
-                  <option value="" disabled>
-                    Choisir un Intéret
-                  </option>
-
-                  {Object.values(VISITE_INTERETS)
-                    .filter((data) => data.code != 4) // Exclude code 4
-                    .map((data) => (
-                      <option key={data.code} value={data.code}>
-                        {data.label}
-                      </option>
-                    ))}
-                </select>
+                  onChange={(value) => handleFilterChange('interet', value)}
+                  options={Object.values(VISITE_INTERETS).map((data) => ({
+                    value: data.code,
+                    label: data.label,
+                  }))}
+                  placeholder="Choisir un Intéret"
+                  className="h-10 text-sm w-full"
+                />
               </div>
 
               {/* Boutons */}

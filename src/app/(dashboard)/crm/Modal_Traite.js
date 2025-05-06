@@ -41,12 +41,22 @@ export default function Modal_Traite({ onClose, id, text, client, type_menu }) {
     setBackendErrors();
     //1 traiter_rdv_relance_appel 2/traite visites
     let url;
+  /*  if(type_menu == 3){
+      url = `${APIURL.ROOTV1}/traiter_relance_rdv_visite/${Number(id)}`;
 
-    if (!client || type_menu === 1) {
+    }else{
+      if (!client || type_menu == 1) {
+        url = `${APIURL.ROOTV1}/traiter_relance_rdv_appel/${Number(id)}`;
+      } else {
+        url = `${APIURL.ROOTV1}/traiter_relance_rdv_visite/${Number(id)}`;
+      }
+    }*/
+    if (type_menu === 1 || (!client && type_menu != 3)) {
       url = `${APIURL.ROOTV1}/traiter_relance_rdv_appel/${Number(id)}`;
     } else {
       url = `${APIURL.ROOTV1}/traiter_relance_rdv_visite/${Number(id)}`;
     }
+   
     let method = 'put';
 
     axios({
@@ -73,8 +83,16 @@ export default function Modal_Traite({ onClose, id, text, client, type_menu }) {
             localStorage.setItem('load_data_journaux', 1);
           } else {
             //1 appels 2//visites
-            const key = type_menu === 1 ? 'load_data_rdv_relance_appels' : 'load_data_rdv_relance_visites';
-            localStorage.setItem(key, 1);
+          ///  const key = type_menu === 1 ? 'load_data_rdv_relance_appels' : 'load_data_rdv_relance_visites';
+          let key = null;
+          if (type_menu == 1) {
+            key = 'load_data_rdv_relance_appels';
+          } else if (type_menu == 2) {
+            key = 'load_data_rdv_relance_visites';
+          } else {
+            key = 'visite_fetch_show';
+          }
+          localStorage.setItem(key, 1);
           }
         }
       })

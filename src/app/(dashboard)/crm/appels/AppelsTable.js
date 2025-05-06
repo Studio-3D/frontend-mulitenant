@@ -12,6 +12,7 @@ import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
 import { fetchData_table_by_projet } from '../../../../../src/configs/api-utils';
 import Link from 'next/link';
 import Input from '@/components/Input';
+import SelectInput from '@/components/SelectInput';
 
 import { VISITE_INTERETS } from '../../../../../src/configs/enum';
 const AppelsTable = () => {
@@ -296,7 +297,7 @@ const AppelsTable = () => {
               : undefined
           }
           filterComponent={
-            <div className="space-y-4 p-4 rounded-lg shadow-md">
+            <div className="space-y-4 p-4 rounded-lg ">
               <div
                 className="grid gap-1"
                 style={{
@@ -304,8 +305,8 @@ const AppelsTable = () => {
                 }}
               >
                 {/* Champs de recherche */}
-                
-                 <input
+
+                <input
                   type={tempFilters.date ? 'date' : 'text'}
                   placeholder="Date"
                   value={tempFilters.date}
@@ -337,22 +338,16 @@ const AppelsTable = () => {
                   }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-               
-                <select
+                <SelectInput
                   value={tempFilters.interet}
-                  onChange={(e) => handleFilterChange('interet', e.target.value)}
-                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-                >
-                  <option value="" disabled>
-                    Choisir un Intéret
-                  </option>
-
-                  {Object.values(VISITE_INTERETS).map((data) => (
-                    <option key={data.code} value={data.code}>
-                      {data.label}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(value) => handleFilterChange('interet', value)}
+                  options={Object.values(VISITE_INTERETS).map((data) => ({
+                    value: data.code,
+                    label: data.label,
+                  }))}
+                  placeholder="Choisir un Intéret"
+                  className="h-10 text-sm w-full"
+                />
               </div>
 
               {/* Boutons */}

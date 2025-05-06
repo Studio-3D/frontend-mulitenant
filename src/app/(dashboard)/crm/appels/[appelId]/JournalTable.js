@@ -15,6 +15,7 @@ import { APIURL, ENDPOINTS } from '../../../../../../src/configs/api';
 import Modal from '@/components/Modal';
 import Modal_Show from './Modal_Show';
 import Modal_Traite from '../../../crm/Modal_Traite';
+import SelectInput from '@/components/SelectInput';
 
 import {
   isAdmin,
@@ -433,7 +434,7 @@ const JournalTable = (id) => {
               : undefined
           }
           filterComponent={
-            <div className="space-y-4 p-4 rounded-lg shadow-md">
+            <div className="space-y-4 p-4 rounded-lg">
               <div
                 className="grid gap-5"
                 style={{
@@ -448,53 +449,47 @@ const JournalTable = (id) => {
                   onChange={(e) => handleFilterChange('date', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-                 <input
+                <input
                   type={tempFilters.date ? 'date' : 'text'}
                   placeholder="Date"
                   value={tempFilters.date}
                   onFocus={(e) => (e.target.type = 'date')}
-                  onChange={(e) => handleFilterChange('date_traitement', e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange('date_traitement', e.target.value)
+                  }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
                 <Input
                   type="text"
                   placeholder="Responsable"
                   value={tempFilters.responsable}
-                  onChange={(e) => handleFilterChange('responsable', e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange('responsable', e.target.value)
+                  }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-               
-                
-                <select
+
+                <SelectInput
                   value={tempFilters.interet}
-                  onChange={(e) => handleFilterChange('interet', e.target.value)}
-                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-                >
-                  <option value="" disabled>
-                    Choisir un Intérêt
-                  </option>
+                  onChange={(value) => handleFilterChange('interet', value)}
+                  options={Object.values(VISITE_INTERETS).map((data) => ({
+                    value: data.code,
+                    label: data.label,
+                  }))}
+                  placeholder="Choisir un Intéret"
+                  className="h-10 text-sm w-full"
+                />
 
-                  {Object.values(VISITE_INTERETS).map((data) => (
-                    <option key={data.code} value={data.code}>
-                      {data.label}
-                    </option>
-                  ))}
-                </select>
-                <select
+                <SelectInput
                   value={tempFilters.type_appel}
-                  onChange={(e) => handleFilterChange('type_appel', e.target.value)}
-                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-                >
-                  <option value="" disabled>
-                    Choisir un Type Appel
-                  </option>
-
-                  {Object.values(TYPES_APPELS).map((data) => (
-                    <option key={data.code} value={Number(data.code)}>
-                      {data.label}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(value) => handleFilterChange('type_appel', value)}
+                  options={Object.values(TYPES_APPELS).map((data) => ({
+                    value: data.code,
+                    label: data.label,
+                  }))}
+                  placeholder="Choisir un Type Appel"
+                  className="h-10 text-sm w-full"
+                />
               </div>
 
               {/* Boutons */}
