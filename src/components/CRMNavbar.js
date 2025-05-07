@@ -9,9 +9,10 @@ import {
   FiHome,
   FiClock,
   FiUsers,
-  FiMenu,FiPause,
+  FiMenu,
+  FiPause,
   FiChevronDown,
-  FiChevronUp
+  FiChevronUp,
 } from 'react-icons/fi';
 import Pusher from 'pusher-js';
 import FetchNotifMenu from '../../src/configs/FetchNotifMenu';
@@ -113,7 +114,6 @@ const CRMNavbar = () => {
       name: 'Appels',
       path: '/crm/appels',
       icon: <FiPhoneCall className="w-5 h-5" />,
-      badge: nb_relances_appels + nb_rdv_appel,
     },
     {
       name: 'Pré-réservations',
@@ -169,7 +169,9 @@ const CRMNavbar = () => {
 
   // Get the active submenu item name
   const getActiveSubmenuName = (subItems) => {
-    const activeItem = subItems?.find((subItem) => pathname.startsWith(subItem.path));
+    const activeItem = subItems?.find((subItem) =>
+      pathname.startsWith(subItem.path)
+    );
     return activeItem?.name || null;
   };
 
@@ -191,7 +193,9 @@ const CRMNavbar = () => {
       >
         {navItems.map((item) => {
           const activeSubmenuName = getActiveSubmenuName(item.subItems);
-          const showSubmenuName = activeSubmenuName && (isParentActive(item.subItems) || openSubmenu === item.name);
+          const showSubmenuName =
+            activeSubmenuName &&
+            (isParentActive(item.subItems) || openSubmenu === item.name);
 
           return (
             <div key={item.name} className="relative">
@@ -205,9 +209,7 @@ const CRMNavbar = () => {
                 }`}
               >
                 {item.icon}
-                <span>
-                  {showSubmenuName ? activeSubmenuName : item.name}
-                </span>
+                <span>{showSubmenuName ? activeSubmenuName : item.name}</span>
                 {item.badge && (
                   <span className="inline-flex items-center justify-center w-5 h-5  text-xs font-semibold text-white bg-red-500 rounded-full">
                     {item.badge}

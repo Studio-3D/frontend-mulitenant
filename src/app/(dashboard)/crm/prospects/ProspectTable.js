@@ -14,6 +14,8 @@ import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
 import Modal_Traite from './Modal_Traite';
 import { Statuts_Prospect } from '../../../../../src/configs/enum';
 import Input from '@/components/Input';
+import SelectInput from '@/components/SelectInput';
+
 const ProspectTable = () => {
   const [prospects, setProspects] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -40,14 +42,14 @@ const ProspectTable = () => {
     cin: '',
     telephone: '',
     email: '',
-    statut:'',
+    statut: '',
   });
   const [tempFilters, setTempFilters] = useState({ ...filters });
 
   const entity = {
     API_URL: 'prospects',
     dataKey: 'prospects',
-    searchFields: ['nom','prenom', 'email', 'telephone', 'cin'],
+    searchFields: ['nom', 'prenom', 'email', 'telephone', 'cin'],
   };
 
   useEffect(() => {
@@ -285,8 +287,8 @@ const ProspectTable = () => {
       prenom: '',
       cin: '',
       telephone: '',
-      email:'',
-      statut:''
+      email: '',
+      statut: '',
     };
     setFilters(reset);
     setTempFilters(reset);
@@ -319,7 +321,7 @@ const ProspectTable = () => {
               : undefined
           }
           filterComponent={
-            <div className="space-y-4 p-4 rounded-lg shadow-md">
+            <div className="space-y-4 p-4 rounded-lg ">
               <div
                 className="grid gap-5"
                 style={{
@@ -358,30 +360,23 @@ const ProspectTable = () => {
                   }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-                 <Input
+                <Input
                   type="email"
                   placeholder="Email"
                   value={tempFilters.email}
-                  onChange={(e) =>
-                    handleFilterChange('email', e.target.value)
-                  }
+                  onChange={(e) => handleFilterChange('email', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-                <select
+                <SelectInput
                   value={tempFilters.statut}
-                  onChange={(e) => handleFilterChange('statut', e.target.value)}
-                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-                >
-                  <option value="" disabled>
-                    Choisir un Statut
-                  </option>
-
-                  {Object.values(Statuts_Prospect).map((data) => (
-                    <option key={data.id} value={data.id}>
-                      {data.label}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(value) => handleFilterChange('statut', value)}
+                  options={Object.values(Statuts_Prospect).map((data) => ({
+                    value: data.id,
+                    label: data.label,
+                  }))}
+                  placeholder="Choisir un Statut"
+                  className="h-10 text-sm w-full"
+                />
               </div>
 
               {/* Boutons */}

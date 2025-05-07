@@ -8,7 +8,7 @@ export default function SelectInput({
   label, 
   placeholder = "Select an option", 
   options = [], 
-  value,
+  value='',
   backendErrors, 
   onChange = () => {}, 
   error
@@ -52,7 +52,6 @@ export default function SelectInput({
   const selectedOption = options.find(option => 
     String(option.value) === String(value)
   );
-
   return (
     <div className="flex flex-col w-full" ref={dropdownRef}>
       {label && <label className="font-medium text-gray-700 mb-1">{label}</label>}

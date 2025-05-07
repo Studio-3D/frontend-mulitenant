@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useState, useEffect, useRef } from 'react';
@@ -38,12 +38,10 @@ import {
 import Pusher from 'pusher-js';
 import Modal_OldVisites_Perdu from './Modal_OldVisites_Perdu';
 import FreinsComponent from './FreinsComponent';
-import PanelInteresse from './PanelInteresse';
-import PanelInteresse_vendu from './PanelInteresse_Vendu';
+import useClearProspect from '../hook/useClearProspect';
 
 const VisiteForm = (id, origin) => {
-
-  const router = useRouter();
+  useClearProspect();
   const { user } = useAuth();
   const [email_required, setEmail_required] = useState(false);
 
@@ -1817,7 +1815,7 @@ const VisiteForm = (id, origin) => {
           </Modal>
         </>
       )}{' '}
-      <div >
+      <div>
         {(!isOrigin ||
           (isOrigin && OldBiens_pre.length > 0 && paper_exist == 1) ||
           (isOrigin &&

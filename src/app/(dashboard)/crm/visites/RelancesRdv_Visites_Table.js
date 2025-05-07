@@ -352,7 +352,7 @@ const RelancesRdv_Visites_Table = (type) => {
           onSearchChange={setSearchTerm}
           enableExport={true}
            filterComponent={
-                      <div className="space-y-4 p-4 rounded-lg shadow-md">
+                      <div className="space-y-4 p-4 rounded-lg ">
                         <div
                           className="grid gap-1"
                           style={{
