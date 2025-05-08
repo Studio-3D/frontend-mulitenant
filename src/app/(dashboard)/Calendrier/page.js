@@ -1,12 +1,14 @@
 'use client';
 import React from 'react'
+import { Calendar } from '@/components/calendar/Calendar';
 
 
 const page = () => {
   return (
-    <div className="">
+    <div className="w-full">
    
-  </div>
+      <Calendar />
+    </div>
   )
 }
 

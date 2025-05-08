@@ -77,7 +77,7 @@ export const Calendar = () => {
           </div>;
     }
   };
-  return <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+  return <div className="bg-white rounded-xl shadow-lg overflow-hidden p-4">
       <div className="flex flex-col md:flex-row">
         <CalendarSidebar />
         <div className="flex-1">
