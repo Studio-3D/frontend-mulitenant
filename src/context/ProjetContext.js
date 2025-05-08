@@ -3,6 +3,7 @@ import { createContext, useState, useContext, useEffect, useCallback } from 'rea
 import axios from 'axios';
 import { APIURL } from '@/configs/api';
 import { useSociete } from './SocieteContext';
+import { useAuth } from './AuthContext';
 
 // Create context
 const ProjetContext = createContext();
@@ -23,6 +24,7 @@ export function ProjetProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { selectedSociete } = useSociete();
+  const { user } = useAuth();
 
   // Fetch all projects for the selected société
   const fetchProjets = useCallback(async () => {
@@ -65,6 +67,10 @@ export function ProjetProvider({ children }) {
   // Effect to fetch projects when société changes
   useEffect(() => {
     if (selectedSociete) {
+      // Reset selected project when société changes
+      clearSelectedProjet();
+      
+      // Fetch projects for the new société
       fetchProjets();
     } else {
       // Clear projects when no société is selected
@@ -72,6 +78,13 @@ export function ProjetProvider({ children }) {
       setSelectedProjet(null);
     }
   }, [selectedSociete, fetchProjets]);
+
+  // Clear selected project when user logs out
+  useEffect(() => {
+    if (!user) {
+      clearSelectedProjet();
+    }
+  }, [user]);
 
   // Select a project
   const selectProjet = (projet) => {
@@ -108,6 +121,7 @@ export function ProjetProvider({ children }) {
   const clearSelectedProjet = () => {
     setSelectedProjet(null);
     localStorage.removeItem('selectedProjet');
+    console.log("Selected project cleared");
   };
 
   return (

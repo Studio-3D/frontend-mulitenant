@@ -6,32 +6,34 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
 
-// import icons
-import { TbLayoutDashboardFilled } from "react-icons/tb";
-import { FaBuilding } from "react-icons/fa";
-import { FaFolderOpen } from "react-icons/fa";
-import { FaRegFolderOpen } from "react-icons/fa6";
-import { RiArrowRightSLine } from "react-icons/ri";
-import { RiArrowDownSLine } from "react-icons/ri";
-import { LuFileText } from "react-icons/lu";
-import { LuClipboardPenLine } from "react-icons/lu";
-import { TbReportAnalytics } from "react-icons/tb";
-import { BiSolidBriefcase } from "react-icons/bi";
-import { SiCivicrm } from "react-icons/si";
-import { FaHandshake } from "react-icons/fa";
-import { LuTimerReset } from "react-icons/lu";
-import { BsCalendar3 } from "react-icons/bs";
-import { RiDiscountPercentFill } from "react-icons/ri";
-import { RiFolderUserFill } from "react-icons/ri";
-import { MdFeed } from "react-icons/md";
-import { FaFileInvoiceDollar } from "react-icons/fa";
-import { SiLibreofficecalc } from "react-icons/si";
-import { ImStatsDots } from "react-icons/im";
-import { FaHistory } from "react-icons/fa";
-import { FaCircleExclamation } from "react-icons/fa6";
-import { IoSettings } from "react-icons/io5";
-import { PiUsersFourFill } from "react-icons/pi";
-import { FaRegEye } from "react-icons/fa6";
+// Replace all react-icons with lucide-react
+import { 
+  LayoutDashboard, 
+  Building, 
+  Folder, 
+  FolderOpen, 
+  ChevronRight, 
+  ChevronDown, 
+  FileText, 
+  ClipboardEdit, 
+  BarChart3, 
+  Briefcase, 
+  CreditCard,
+  Handshake, 
+  Timer, 
+  Calendar, 
+  Percent, 
+  Users, 
+  FileInput, 
+  Calculator, 
+  BarChart4, 
+  History, 
+  AlertCircle, 
+  Settings, 
+  UsersRound,
+  Eye
+} from "lucide-react";
+
 import { User_roles } from "../configs/enum";
 import { useSociete } from "@/context/SocieteContext";
 import SocieteDialog from "./SocieteDialog";
@@ -92,13 +94,13 @@ const Menu = () => {
 
   const getMenuItems = (role) => {
     const items = [
-      { label: 'Tableau de Bord', icon: <TbLayoutDashboardFilled />, href: '/tableau-de-bord' },
+      { label: 'Tableau de Bord', icon: <LayoutDashboard size={20} />, href: '/tableau-de-bord' },
     ];
 
     if (role === User_roles.ROLE_SUPER_ADMIN) {
       items.push({
         label: "Societes",
-        icon: <FaBuilding />,
+        icon: <Building size={20} />,
         href: "/Societes",
       });
     }
@@ -109,7 +111,7 @@ const Menu = () => {
 
     items.push({
       label: "Projets",
-      icon: <BiSolidBriefcase />,
+      icon: <Briefcase size={20} />,
       href: "/Projets",
       needsSociete: true && user.role == 1,
     });
@@ -128,78 +130,78 @@ const Menu = () => {
   const getAdminItems = () => [
     {
       label: "Utilisateurs",
-      icon: <PiUsersFourFill />,
+      icon: <UsersRound size={20} />,
       href: "/Utilisateurs",
       needsSociete: user.role === 1,
     },
     {
       label: "Administration",
-      icon: <IoSettings />,
+      icon: <Settings size={20} />,
       children: [
         {
           label: "Types Projets",
-          icon: <FaFolderOpen />,
+          icon: <Folder size={20} />,
           href: "/administration/typesProjets",
           needsSociete: user.role === 1,
         },
         {
           label: "Types Biens",
-          icon: <FaRegFolderOpen />,
+          icon: <FolderOpen size={20} />,
           href: "/administration/typesBiens",
           needsProjet: true, // tous les rôles
           needsSociete: user.role === 1,
         },
         {
           label: "Objectifs",
-          icon: <LuFileText />,
+          icon: <FileText size={20} />,
           href: "/administration/objectifs",
           needsProjet: true, // tous les rôles
           needsSociete: user.role === 1,
         },
         {
           label: "Commissions",
-          icon: <FaFileInvoiceDollar />,
+          icon: <CreditCard size={20} />,
           href: "/administration/commissions",
           needsProjet: true, // tous les rôles
           needsSociete: user.role === 1,
         },
         {
           label: "Freins",
-          icon: <FaCircleExclamation />,
+          icon: <AlertCircle size={20} />,
           href: "/administration/freins",
           needsProjet: true, // tous les rôles
           needsSociete: user.role === 1,
         },
         {
           label: "Sources",
-          icon: <LuClipboardPenLine />,
+          icon: <ClipboardEdit size={20} />,
           href: "/administration/sources",
           needsSociete: user.role === 1,
         },
         {
           label: "Partenaires",
-          icon: <TbReportAnalytics />,
+          icon: <BarChart3 size={20} />,
           href: "/administration/partenaires",
           needsProjet: true, // tous les rôles
           needsSociete: user.role === 1,
         },
         {
           label: "Vues",
-          icon: <FaRegEye />,
+          icon: <Eye size={20} />,
           href: "/administration/vues",
           needsProjet: true, // tous les rôles
           needsSociete: user.role === 1,
         },
         {
           label: "Typologies",
-          icon: <FaRegFolderOpen />,
+          icon: <FolderOpen size={20} />,
           href: "/administration/typologies",
           needsProjet: true, // tous les rôles
           needsSociete: user.role === 1,
         },
         {
           label: "Banques",
-          icon: <FaBuilding />,
+          icon: <Building size={20} />,
           href: "/administration/banques",
           needsSociete: user.role === 1,
         },
@@ -210,28 +212,28 @@ const Menu = () => {
   const getCommercialItems = () => [
     {
       label: "CRM",
-      icon: <SiCivicrm />,
+      icon: <CreditCard size={20} />,
       href: "/crm",
       needsProjet: true, // tous les rôles
       needsSociete: user.role === 1,
     },
     {
       label: "Ventes",
-      icon: <FaHandshake />,
+      icon: <Handshake size={20} />,
       href: "/Ventes",
       needsSociete: user.role === 1,
       needsProjet: true,
     },
     {
       label: "Actualités du Jour",
-      icon: <LuTimerReset />,
+      icon: <Timer size={20} />,
       href: "/actualites-du-jour",
       needsSociete: user.role === 1,
       needsProjet: true,
     },
     {
       label: "Calendrier",
-      icon: <BsCalendar3 />,
+      icon: <Calendar size={20} />,
       href: "/Calendrier",
       needsSociete: user.role === 1,
       needsProjet: true,
@@ -241,30 +243,38 @@ const Menu = () => {
   const getAdditionalAdminItems = () => [
     {
       label: "Remise Des Clés",
-      icon: <RiDiscountPercentFill />,
+      icon: <Percent size={20} />,
       href: "/remise-des-cles",
     },
-    { label: "Sav", 
-      icon: <RiFolderUserFill />, 
+    { 
+      label: "Sav", 
+      icon: <Users size={20} />, 
       href: "/ServicesPrestataires",
       needsSociete: user.role === 1,
-
     },
-    { label: "Reclamations", icon: <MdFeed />, href: "/Reclamations" },
+    { 
+      label: "Reclamations", 
+      icon: <FileInput size={20} />, 
+      href: "/Reclamations" 
+    },
     {
       label: "Encaissments",
-      icon: <FaFileInvoiceDollar />,
+      icon: <CreditCard size={20} />,
       href: "/Encaissments",
     },
     {
       label: "Comptabilité",
-      icon: <SiLibreofficecalc />,
+      icon: <Calculator size={20} />,
       href: "/comptabilite",
     },
-    { label: "Statistiques", icon: <ImStatsDots />, href: "/Statistiques" },
+    { 
+      label: "Statistiques", 
+      icon: <BarChart4 size={20} />, 
+      href: "/Statistiques" 
+    },
     {
       label: "Historique Importation",
-      icon: <FaHistory />,
+      icon: <History size={20} />,
       href: "/Historique-Importation",
     },
   ];
@@ -289,16 +299,16 @@ const Menu = () => {
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 flex items-center text-xl justify-start lg:justify-center">
+                  <span className="w-6 h-6 flex items-center justify-start lg:justify-center">
                     {item.icon}
                   </span>
                   <span className="hidden lg:block">{item.label}</span>
                 </div>
-                <span className="w-4 h-4 md:w-6 md:h-6 flex justify-start items-center text-xs md:text-xl">
+                <span className="w-4 h-4 md:w-6 md:h-6 flex justify-start items-center">
                   {openDropdown === index ? (
-                    <RiArrowDownSLine />
+                    <ChevronDown size={18} />
                   ) : (
-                    <RiArrowRightSLine />
+                    <ChevronRight size={18} />
                   )}
                 </span>
               </div>

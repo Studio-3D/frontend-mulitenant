@@ -1,9 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { CiFilter, CiSearch } from 'react-icons/ci';
-import { IoAddOutline } from 'react-icons/io5';
-import { MdImportExport } from 'react-icons/md';
+import { Filter, Search, Plus, Download, Upload } from 'lucide-react';
 import Link from 'next/link';
 import Modal from './Modal';
 import { handleExportExcel } from '../../src/configs/export';
@@ -88,12 +86,12 @@ const Table = ({
               }`}
               onClick={() => setShowFilter(!showFilter)}
             >
-              <CiFilter className="w-6 h-6" />
+              <Filter className="w-6 h-6" />
             </button>
           )}
 
           <div className="flex-1 sm:flex-none flex items-center border border-gray-300 rounded-lg p-1.5 bg-transparent gap-2 w-full sm:w-[300px]">
-            <CiSearch className="w-6 h-6" />
+            <Search className="w-6 h-6" />
             <input
               className="bg-transparent outline-none text-gray-600 w-full"
               type="text"
@@ -111,7 +109,7 @@ const Table = ({
               href={addLink}
               className="flex gap-1 items-center bg-green-600 text-white font-medium rounded-lg px-3 py-1.5"
             >
-              <IoAddOutline className="w-5 h-5" />
+              <Plus className="w-5 h-5" />
               <span>Ajouter</span>
             </Link>
           )}
@@ -121,7 +119,7 @@ const Table = ({
               className="flex gap-1 items-center bg-[#009FFF] text-white font-medium rounded-lg px-3 py-1.5"
               onClick={handleExport}
             >
-              <MdImportExport className="w-5 h-5" />
+              <Download className="w-5 h-5" />
               <span>Exporter</span>
             </button>
           )}
@@ -130,7 +128,7 @@ const Table = ({
               className="flex gap-1 items-center bg-[#231651] text-white font-medium rounded-lg px-3 py-1.5"
               onClick={() => setShowModal_Import(true)}
             >
-              <MdImportExport className="w-5 h-5" />
+              <Upload className="w-5 h-5" />
               <span>Importer</span>
             </button>
           )}

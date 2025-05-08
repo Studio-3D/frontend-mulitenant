@@ -47,8 +47,7 @@ export function SocieteProvider({ children }) {
   // Clear selected societe on logout
   useEffect(() => {
     if (!authLoading && !user) {
-      setSelectedSociete(null);
-      localStorage.removeItem("selectedSociete");
+      clearSelectedSociete();
     }
   }, [user, authLoading]);
 
@@ -61,40 +60,34 @@ export function SocieteProvider({ children }) {
         return;
       }
 
-      // Check user role to determine how to get societes
       if (user && (isAdmin(user.role) || isCommercial(user.role))) {
-        // For admin or commercial users, check if user data includes societe info
         if (user.societe) {
-          // If user object already has societe information, use it
           const userSociete = user.societe;
           setSocietes([userSociete]);
           
-          // Automatically select the single societe
           setSelectedSociete(userSociete);
           localStorage.setItem("selectedSociete", JSON.stringify(userSociete));
         } else if (user.societe_id) {
-          // If we only have the ID, we need to create a minimal societe object
           const userSociete = { 
             id: user.societe_id,
             nom: user.societe_nom || "Société associée",
-            // Add any other required fields
           };
           setSocietes([userSociete]);
           setSelectedSociete(userSociete);
           localStorage.setItem("selectedSociete", JSON.stringify(userSociete));
         } else {
-          // If we can't determine the societe, show an error
           toast.error("Impossible de déterminer votre société. Contactez l'administrateur.");
           setSocietes([]);
         }
       } else {
         // For superadmin, use the SOCIETES endpoint
         try {
-          const response = await axios.get(APIURL.SOCIETES, {
+          console.log("Fetching societes for superadmin...");
+          const response = await axios.get(APIURL.GETSOCIETES, {
             headers: { Authorization: `Bearer ${token}` },
           });
-
-          const fetchedSocietes = response.data.societes || [];
+          const fetchedSocietes = response.data.societes || []; 
+          console.log("Fetched societes:", fetchedSocietes); 
           setSocietes(fetchedSocietes);
           
           // Verify the selected societe still exists
@@ -129,6 +122,12 @@ export function SocieteProvider({ children }) {
     try {
       setLoading(prev => ({ ...prev, selection: true }));
       const token = localStorage.getItem("accessToken");
+      
+      // If selecting a different société, clear the project first
+      if (selectedSociete && selectedSociete.id !== societe.id) {
+        localStorage.removeItem("selectedProjet");
+      }
+      
       await axios.put(
         "http://localhost:8000/api/Switch_Societes",
         { societe_id: societe.id },
@@ -147,6 +146,7 @@ export function SocieteProvider({ children }) {
   };
 
   const clearSelectedSociete = () => {
+    console.log("Clearing selected société");
     setSelectedSociete(null);
     localStorage.removeItem("selectedSociete");
   };

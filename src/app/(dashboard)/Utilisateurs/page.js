@@ -96,7 +96,7 @@ const Page = () => {
     } catch (err) {
       setError(err.response?.data?.message || 'Erreur lors du chargement');
       if (err.response?.status === 401) {
-        router.push('/connexion');
+        router.push('/');
         toast.error('Session expirée, veuillez vous reconnecter.');
       }
     } finally {

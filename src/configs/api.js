@@ -5,7 +5,6 @@ export const RESOURCE_URL = {
   DOCS: `${BASERESOURCEURL}/Docs`,
 };
 
-
 export const APIURL = {
   ROOT: APIBASEURL,
   ME: `${APIBASEURL}/dashboard`,
@@ -14,6 +13,7 @@ export const APIURL = {
   LOGOUT: `${APIBASEURL}/logout`,
   UTILISATEURS: `${APIBASEURL}/v1/utilisateurs`,
   SOCIETES: `${APIBASEURL}/v1/societes`,
+  GETSOCIETES: `${APIBASEURL}/get_societes`,
   TYPEPROJETS: `${APIBASEURL}/v1/typeProjets`,
   TYPEBIENS: `${APIBASEURL}/v1/typeBiens`,
   TYPEFREINS: `${APIBASEURL}/v1/typefreins`,
@@ -51,8 +51,11 @@ export const APIURL = {
   ECHEANCESTRANCE:`${APIBASEURL}/v1/EcheancesTranche`,
   ETAPESPROJET:`${APIBASEURL}/v1/etapesProjet`,
   COMMISSIONS: `${APIBASEURL}/v1/commissions`,
-  COMMISSSIONCONFIG: `${APIBASEURL}/v1/commisssionConfig`, // Using the exact same spelling with three S's
+  COMMISSSIONCONFIG: `${APIBASEURL}/v1/commisssionConfig`,
   COMMISSIONSCONFIGURATIONS: `${APIBASEURL}/v1/commissionsConfigurations`,
+  FACTURES_BY_DECOMPTE: `${APIBASEURL}/v1/factures_by_decompte`,
+  DOCUMENTS_FACTURES: `${BASERESOURCEURL}/Docs/factures`,
+  DOCUMENTS_CPS: `${BASERESOURCEURL}/Docs/cps`,
 }
 
 export const ENDPOINTS = {
@@ -80,15 +83,15 @@ export const ENDPOINTS = {
   CLIENTS: '/clients/home',
   ENCAISSEMENTS: '/encaissements/home',
   RESERVATIONS: '/reservations/home',
-  TVA: '/tva/home',
+  TVA: '/comptabilite',
   DESISTEMENT:'/desistements/home',
   PAIEMENTS:'/paiements/home',
   OBJECTIFS:'/administration/objectifs',
-  FOURNISSEURS: '/fournisseurs/home',
-  DECOMPTES: '/decomptes/home',
-  FACTURES: '/factures/home',
-  CPS:'/cps/home',
-  CREDITS:'/credits/home',
+  FOURNISSEURS: '/comptabilite/fournisseurs',
+  DECOMPTES: '/comptabilite/decomptes',
+  FACTURES: '/comptabilite/factures',
+  CPS:'/comptabilite/cps',
+  CREDITS:'/comptabilite/credits',
   ServicesPrestataires:'/ServicesPrestataires/home',
   Prestataires:'/Prestataires/home',
   ReclamationsSav:'/reclamationsSav/home',
