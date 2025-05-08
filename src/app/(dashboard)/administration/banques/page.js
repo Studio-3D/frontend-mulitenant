@@ -17,7 +17,6 @@ import SocieteSelector from '@/components/SocieteSelector';
 export default function BanquesPage() {
   const [action, setAction] = useState(null);
   const [banqueId, setBanqueId] = useState(null);
-  const [showFilter, setShowFilter] = useState(false);
   const [banques, setBanques] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterParams, setFilterParams] = useState({});
@@ -66,11 +65,7 @@ export default function BanquesPage() {
     }
   };
 
-  const handleFilterSubmit = (values) => {
-    setFilterParams(values);
-    fetchBanques(values);
-    setShowFilter(false);
-  };
+  
 
   const handleAction = (actionType, row) => {
     if (actionType === 'edit') {
@@ -96,17 +91,13 @@ export default function BanquesPage() {
     return <div>Veuillez vous connecter pour accéder à cette page.</div>;
   }
 
-  if (user?.role === 1 && !selectedSociete && !societeLoading) {
-      return (
-        <div className="container mx-auto p-4">
-          <h1 className="text-2xl font-bold mb-6">Banques</h1>
-          <div className="bg-amber-50 border-l-4 border-amber-500 p-4 mb-6">
-            <p>Veuillez sélectionner une société pour accéder aux types de biens.</p>
-          </div>
-          <SocieteSelector returnPath="/administration/banques" />
-        </div>
-      );
-    }
+  
+
+    const handleFilterSubmit = (values) => {
+      setFilterParams(values);
+      fetchBanques(values);
+    };
+    
 
   // Show form for add/edit actions
   if (action === 'add' || action === 'edit') {
@@ -124,25 +115,17 @@ export default function BanquesPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Gestion des Banques</h1>
-      
-      {showFilter && (
-        <BanqueFilter
-          onSubmit={handleFilterSubmit} 
-          onClose={() => setShowFilter(false)}
-          initialValues={filterParams}
-        />
-      )}
-      
+     
       <BanqueTable
         data={banques}
         totalRows={totalRows}
-        setData={setBanques}
         loading={loading}
         onAction={handleAction}
         onAddClick={() => router.push('/administration/banques?action=add')}
-        onFilterClick={() => setShowFilter(true)}
+        onFilterSubmit={handleFilterSubmit} 
         onRefresh={() => fetchBanques(filterParams)}
       />
+
       <DeleteConfirmationModal
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}

@@ -4,21 +4,33 @@ import * as XLSX from 'xlsx';
 import { FaRegEye, FaEdit } from "react-icons/fa";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { format } from 'date-fns';
+import Input from "@/components/Input";
 
 const ObjectifTable = ({ 
   data = [], 
   loading = false, 
-  onAction, 
-  onAddClick, 
-  onFilterClick,
-  onRefresh,
+  onAction,onFilterSubmit ,
+  
   canAddObjectifs = false
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+  const [tempFilters, setTempFilters] = useState({date: "",commercial:"" }); // les champs que l'utilisateur tape
+  const handleFilterChange = (field, value) => {
+    setTempFilters((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const applyFilters = () => {
+    onFilterSubmit && onFilterSubmit(tempFilters); 
+  };
   
+  const resetFilters = () => {
+    const reset = { date: "",commercial:""  };
+    setTempFilters(reset);
+    onFilterSubmit && onFilterSubmit(reset); 
+  };
   // Filter data based on search term
   const filteredData = data.filter(item => {
     const userName = item.user ? `${item.user.name} ${item.user.prenom}`.toLowerCase() : '';
@@ -188,6 +200,49 @@ const ObjectifTable = ({
       <Table 
         columns={columns}
         data={formattedObjectifs}
+        filterComponent={
+          <div className="space-y-4 p-4 rounded-lg shadow-md">
+            <div
+              className="grid gap-3"
+              style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}
+            >
+              <Input
+                type="text"
+                placeholder="commercial..."
+                value={tempFilters.commercial}
+                onChange={(e) => handleFilterChange("commercial", e.target.value)}
+                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+              />
+              <input
+                type="text"
+                placeholder="Date..."
+                onFocus={(e) => (e.target.type = "date")}
+                onBlur={(e) => e.target.type = e.target.value ? "date" : "text"}
+                value={tempFilters.date}
+                onChange={(e) => handleFilterChange("date", e.target.value)}
+                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+              /> 
+              
+            </div>
+        
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={applyFilters}
+                className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+              >
+                Appliquer les filtres
+              </button>
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
+              >
+                Réinitialiser
+              </button>
+            </div>
+          </div>
+        }
         totalRows={filteredData.length}
         loading={loading}
         addUserLink={canAddObjectifs ? "/administration/objectifs?action=add" : undefined}
@@ -202,20 +257,7 @@ const ObjectifTable = ({
 
       />
       
-{/*       <div className="flex justify-end gap-2 mt-4">
-        <button 
-          onClick={onFilterClick}
-          className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
-        >
-          Filtrer
-        </button>
-        <button 
-          onClick={onRefresh}
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-        >
-          Actualiser
-        </button>
-      </div> */}
+
     </div>
   );
 };

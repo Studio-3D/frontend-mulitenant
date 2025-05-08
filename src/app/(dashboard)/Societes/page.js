@@ -10,6 +10,7 @@ import { RiDeleteBin6Line } from 'react-icons/ri';
 import { APIURL, RESOURCE_URL } from '../../../configs/api';
 import DeleteData from '@/components/DeleteData';
 import Link from "next/link";
+import Input from "@/components/Input";
 
 export default function Societes() {
   const [societes, setSocietes] = useState([]);
@@ -19,16 +20,37 @@ export default function Societes() {
   const [selectedSocieteId, setSelectedSocieteId] = useState(null);
   const [showDelete, setShowDelete] = useState(false);
   const [showSociete, setShowSociete] = useState(false);
+  const [totalRows, setTotalRows] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [filters, setFilters] = useState({
+    nom_contact: "",
+    email: "",
+    tel: "",
+    prenom_contact: "",
+    adresse: "",
+    raison_sociale:""
+  });
+  const [tempFilters, setTempFilters] = useState({ ...filters });
 
   const accesstoken = localStorage.getItem('accessToken');
   // Fetch sociétés function
   const fetchSocietes = async () => {
     try {
+      const params = {
+        
+        ...filters,
+      };
+
       const response = await axios.get(APIURL.SOCIETES, {
-        headers: { Authorization: `Bearer ${accesstoken}` }
+
+        headers: { Authorization: `Bearer ${accesstoken}`,},
+        params,
       });
 
       setSocietes(response.data.societes || []);
+      setTotalRows(response.data.pagination?.totalItems || 0);
+
       setLoading(false);
     } catch (err) {
       console.error("API Error:", err);
@@ -40,8 +62,27 @@ export default function Societes() {
   // Fetch sociétés on component mount
   useEffect(() => {
     fetchSocietes();
-  }, []);
+  }, [filters,currentPage, rowsPerPage, searchTerm]);
 
+  const handleFilterChange = (field, value) => {
+    setTempFilters((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const applyFilters = () => {
+    setFilters(tempFilters); // C’est ici que fetchUsers va être déclenché
+  };
+
+  const resetFilters = () => {
+    const reset = {
+      nom_contact: "",
+      email: "",
+      tel: "",
+      prenom_contact: "",
+      adresse: "",
+      raison_sociale:""    };
+    setFilters(reset);
+    setTempFilters(reset);
+  };
    // Handle successful deletion of a société
    const handleDeleteSuccess = (deletedId) => {
     setSocietes((prevSocietes) => prevSocietes.filter(societe => societe.id !== deletedId));
@@ -63,14 +104,14 @@ export default function Societes() {
       return {
         id: societe.id,
         logo: logoUrl,
-        raison_sociale: societe.raison_sociale || 'N/A',
+        raison_sociale: societe.raison_sociale ,
         contact:
           societe.nom_contact && societe.prenom_contact
             ? `${societe.nom_contact} ${societe.prenom_contact}`
-            : societe.nom_contact || societe.prenom_contact || 'N/A',
-        email: societe.email || 'N/A',
-        telephone: societe.tel || 'N/A',
-        adresse: societe.adresse || 'N/A',
+            : societe.nom_contact || societe.prenom_contact ,
+        email: societe.email ,
+        telephone: societe.tel ,
+        adresse: societe.adresse ,
         created_at: new Date(societe.created_at).toLocaleDateString('fr-FR'),
       };
     });
@@ -128,8 +169,87 @@ export default function Societes() {
       {/* Table */}
       <Table 
         columns={columns}
+        filterComponent={
+          <div className="space-y-4 p-4 rounded-lg shadow-md">
+            <div
+              className="grid gap-3"
+              style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}
+            >
+              <Input
+                type="text"
+                placeholder="Raison sociale..."
+                value={tempFilters.raison_sociale}
+                onChange={(e) => handleFilterChange("raison_sociale", e.target.value)}
+                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+              />
+        
+              <Input
+                type="text"
+                placeholder="Nom contact..."
+                value={tempFilters.nom_contact}
+                onChange={(e) => handleFilterChange("nom_contact", e.target.value)}
+                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+              />
+        
+              <Input
+                type="text"
+                placeholder="Prénom contact..."
+                value={tempFilters.prenom_contact}
+                onChange={(e) => handleFilterChange("prenom_contact", e.target.value)}
+                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+              />
+        
+              <Input
+                type="text"
+                placeholder="Email..."
+                value={tempFilters.email}
+                onChange={(e) => handleFilterChange("email", e.target.value)}
+                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+              />
+        
+              <Input
+                type="text"
+                placeholder="Téléphone..."
+                value={tempFilters.tel}
+                onChange={(e) => handleFilterChange("tel", e.target.value)}
+                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+              />
+        
+              <Input
+                type="text"
+                placeholder="Adresse..."
+                value={tempFilters.adresse}
+                onChange={(e) => handleFilterChange("adresse", e.target.value)}
+                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+              />
+            </div>
+        
+            {/* Boutons */}
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={applyFilters}
+                className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+              >
+                Appliquer les filtres
+              </button>
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
+              >
+                Réinitialiser
+              </button>
+            </div>
+          </div>
+        }
+        
         data={formatSocietesForTable()}
-        totalRows={societes.length}
+        totalRows={totalRows}
+        currentPage={currentPage}  
+        rowsPerPage={rowsPerPage}
+        onPageChange={setCurrentPage}
+        onRowsPerPageChange={setRowsPerPage}
         // add + export buttons
         addLink={"/Societes/ajouter-societe"}
         enableExport={true}

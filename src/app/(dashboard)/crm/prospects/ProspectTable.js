@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import Table from '@/components/Table';
-import { FaRegEye, FaEdit, FaCheck } from 'react-icons/fa';
+import { FaRegEye, FaEdit, FaCheck, FaSync } from 'react-icons/fa';
 import { RiDeleteBin6Line } from 'react-icons/ri';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
@@ -13,6 +13,8 @@ import { fetchData_table_by_projet } from '../../../../../src/configs/api-utils'
 import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
 import Modal_Traite from './Modal_Traite';
 import { Statuts_Prospect } from '../../../../../src/configs/enum';
+import Input from '@/components/Input';
+import SelectInput from '@/components/SelectInput';
 
 const ProspectTable = () => {
   const [prospects, setProspects] = useState([]);
@@ -34,17 +36,26 @@ const ProspectTable = () => {
 
   const router = useRouter();
   // Declare the entity object in the component scope
+  const [filters, setFilters] = useState({
+    nom: '',
+    prenom: '',
+    cin: '',
+    telephone: '',
+    email: '',
+    statut: '',
+  });
+  const [tempFilters, setTempFilters] = useState({ ...filters });
 
   const entity = {
     API_URL: 'prospects',
     dataKey: 'prospects',
-    searchFields: ['fullname', 'email', 'telephone', 'cin'],
+    searchFields: ['nom', 'prenom', 'email', 'telephone', 'cin'],
   };
 
   useEffect(() => {
     fetchData_table_by_projet(
       entity,
-      {},
+      filters,
       searchTerm,
       currentPage,
       rowsPerPage,
@@ -54,7 +65,7 @@ const ProspectTable = () => {
       setProspects,
       setTotalRows
     );
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm]);
+  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters]);
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
@@ -74,6 +85,7 @@ const ProspectTable = () => {
 
         fetchData_table_by_projet(
           entity,
+          filters,
           searchTerm,
           currentPage,
           rowsPerPage,
@@ -88,7 +100,7 @@ const ProspectTable = () => {
 
     //Clearing the interval
     return () => clearInterval(interval);
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm]);
+  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters]);
 
   const handleShow = (prospectId) => {
     router.push(`/crm/prospects/${prospectId}`);
@@ -106,10 +118,19 @@ const ProspectTable = () => {
     setNomPrenom(nom_prenom);
   };
 
+  function handle_convert_to_visite(row) {
+    localStorage.setItem(
+      'selectedProspect',
+      JSON.stringify({ dataProspect: row })
+    );
+    router.push(`${ENDPOINTS.VISITES}?action=add`);
+  }
   // Format users data for table display
   const formatData = () => {
     return prospects.map((pro) => ({
       id: pro.id,
+      nom: `${pro.nom || ''}`.trim(),
+      prenom: `${pro.prenom || ''}`.trim(),
       nomComplet: `${pro.nom || ''} ${pro.prenom || ''}`.trim(),
       email: pro.email,
       telephone:
@@ -126,17 +147,27 @@ const ProspectTable = () => {
         pro.last_statut != null
           ? Statuts_Prospect[pro.last_statut?.statut]?.label
           : '',
+      prospect: pro,
     }));
   };
 
   // Table columns configuration
   const columns = [
     {
-      key: 'nomComplet',
-      label: 'Nom Complet',
+      key: 'nom',
+      label: 'Nom',
       render: (row) => (
         <div className="flex items-center gap-3">
-          <span>{row.nomComplet}</span>
+          <span>{row.nom}</span>
+        </div>
+      ),
+    },
+    {
+      key: 'prenom',
+      label: 'Prénom',
+      render: (row) => (
+        <div className="flex items-center gap-3">
+          <span>{row.prenom}</span>
         </div>
       ),
     },
@@ -187,6 +218,11 @@ const ProspectTable = () => {
             className="w-4 h-4  hover:text-['rgb(87,80,129)']-700 text-['rgb(87,80,129)'] cursor-pointer"
             title="Traiter"
             onClick={() => handleraiter(row.id, row.telephone, row.nomComplet)}
+          />
+          <FaSync
+            className="w-4 h-4 text-green-500  cursor-pointer"
+            title="Convertir en visite"
+            onClick={() => handle_convert_to_visite(row.prospect)}
           />
 
           {row.client == null &&
@@ -239,6 +275,25 @@ const ProspectTable = () => {
     { key: 'partenaire', label: 'Partenaire' },
   ];
 
+  const handleFilterChange = (field, value) => {
+    setTempFilters((prev) => ({ ...prev, [field]: value }));
+  };
+  const applyFilters = () => {
+    setFilters(tempFilters);
+  };
+  const resetFilters = () => {
+    const reset = {
+      nom: '',
+      prenom: '',
+      cin: '',
+      telephone: '',
+      email: '',
+      statut: '',
+    };
+    setFilters(reset);
+    setTempFilters(reset);
+  };
+
   return (
     <>
       <div className="reflative">
@@ -259,9 +314,89 @@ const ProspectTable = () => {
           enableExport={true}
           enableImport={true}
           addLink={
-            isSuperAdmin(user.role) || isAdmin(user.role)||isCommercial(user.role)
+            isSuperAdmin(user.role) ||
+            isAdmin(user.role) ||
+            isCommercial(user.role)
               ? `${ENDPOINTS.PROSPECTS}?action=add`
               : undefined
+          }
+          filterComponent={
+            <div className="space-y-4 p-4 rounded-lg ">
+              <div
+                className="grid gap-5"
+                style={{
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                }}
+              >
+                {/* Champs de recherche */}
+                <Input
+                  type="text"
+                  placeholder="Cin"
+                  value={tempFilters.cin}
+                  onChange={(e) => handleFilterChange('cin', e.target.value)}
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
+                <Input
+                  type="text"
+                  placeholder="Nom"
+                  value={tempFilters.nom}
+                  onChange={(e) => handleFilterChange('nom', e.target.value)}
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
+                <Input
+                  type="text"
+                  placeholder="Prénom"
+                  value={tempFilters.prenom}
+                  onChange={(e) => handleFilterChange('prenom', e.target.value)}
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
+
+                <Input
+                  type="number"
+                  placeholder="Téléphone"
+                  value={tempFilters.telephone}
+                  onChange={(e) =>
+                    handleFilterChange('telephone', e.target.value)
+                  }
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
+                <Input
+                  type="email"
+                  placeholder="Email"
+                  value={tempFilters.email}
+                  onChange={(e) => handleFilterChange('email', e.target.value)}
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
+                <SelectInput
+                  value={tempFilters.statut}
+                  onChange={(value) => handleFilterChange('statut', value)}
+                  options={Object.values(Statuts_Prospect).map((data) => ({
+                    value: data.id,
+                    label: data.label,
+                  }))}
+                  placeholder="Choisir un Statut"
+                  className="h-10 text-sm w-full"
+                />
+              </div>
+
+              {/* Boutons */}
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={applyFilters}
+                  className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                >
+                  Appliquer les filtres
+                </button>
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
+                >
+                  Réinitialiser
+                </button>
+              </div>
+            </div>
           }
         />
       </div>
@@ -280,6 +415,7 @@ const ProspectTable = () => {
               setShowDeleteModal(false);
               fetchData_table_by_projet(
                 entity,
+                {},
                 searchTerm,
                 currentPage,
                 rowsPerPage,

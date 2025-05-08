@@ -15,7 +15,6 @@ import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 export default function FreinsPage() {
   const [action, setAction] = useState(null);
   const [freinId, setFreinId] = useState(null);
-  const [showFilter, setShowFilter] = useState(false);
   const [freins, setFreins] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterParams, setFilterParams] = useState({});
@@ -82,7 +81,6 @@ export default function FreinsPage() {
   const handleFilterSubmit = (values) => {
     setFilterParams(values);
     fetchFreins(values);
-    setShowFilter(false);
   };
 
   const handleAction = (actionType, row) => {
@@ -107,9 +105,7 @@ export default function FreinsPage() {
     return <div>Veuillez vous connecter pour accéder à cette page.</div>;
   }
   
-  if (!selectedProjet && !action) {
-    return <div>Veuillez sélectionner un projet pour accéder aux freins.</div>;
-  }
+  
 
   // Show form for add/edit actions
   if (action === 'add' || action === 'edit') {
@@ -127,20 +123,13 @@ export default function FreinsPage() {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Gestion des Freins</h1>
       
-      {showFilter && (
-        <FreinFilter
-          onSubmit={handleFilterSubmit} 
-          onClose={() => setShowFilter(false)}
-          initialValues={filterParams}
-        />
-      )}
       
       <FreinTable
         data={freins}
         loading={loading}
         onAction={handleAction}
         onAddClick={() => router.push('/administration/freins?action=add')}
-        onFilterClick={() => setShowFilter(true)}
+        onFilterSubmit={handleFilterSubmit} 
         onRefresh={() => fetchFreins(filterParams)}
       />
       <DeleteConfirmationModal

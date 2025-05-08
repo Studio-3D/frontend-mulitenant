@@ -76,7 +76,7 @@ export const fetchData_table_by_projet = async (
     };
 
     const response = await axios.get(
-      `${APIURL.ROOT}/v1/projets/${selectedProjet?.id || 1}/${entity.API_URL}/`,
+      `${APIURL.ROOT}/v1/projets/${selectedProjet?.id}/${entity.API_URL}/`,
       {
         headers: {
           Authorization: `Bearer ${accesstoken}`,
@@ -120,8 +120,8 @@ export const fetchData_table_by_projet = async (
 
       setData(filteredData);
       setTotalRows(response.data.pagination?.totalItems || filteredData.length);
-    } else {
-      setError(`No ${entity.name} found.`);
+    } else {   
+     setData([])
     }
   } catch (err) {
     setError(err.response?.data?.message || 'Error loading data');
@@ -138,6 +138,7 @@ export const fetchData_table_by_projet = async (
 
 export const fetchData_table_by_id = async (
   entity,
+  params_url,
   searchTerm,
   currentPage,
   rowsPerPage,
@@ -153,6 +154,7 @@ export const fetchData_table_by_id = async (
     const params = {
       page: currentPage,
       size: rowsPerPage,
+      ...params_url
     };
 
     const response = await axios.get(
@@ -165,35 +167,14 @@ export const fetchData_table_by_id = async (
       }
     );
 
-    /*if (response.data && Array.isArray(response.data[entity.dataKey])) {
-      let filteredData = response.data[entity.dataKey];
-
-      // Apply global search and specific filtering for 'role' and 'status' in a single filter
-      if (searchTerm) {
-        const lowerSearchTerm = searchTerm.toLowerCase();
-        // Map role ID to role text using User_roles
-
-        filteredData = filteredData.filter((item) => {
-          // Check if any of the fields match the searchTerm
-          const statut = Object.keys(Statuts_Prospect).find(
-            (key) => Statuts_Prospect[key] === item.label
-          );
-          // Check if any of the fields match the searchTerm
-          return (
-            statut.includes(lowerSearchTerm) || // Search in status
-            entity.searchFields.some((field) => {
-              const value = (item[field] || '').toLowerCase();
-              return value.includes(lowerSearchTerm); // Search in other fields
-            })
-          );
-        });
-      }*/
+    
     if (response.data && Array.isArray(response.data[entity.dataKey])) {
       let rawData = response.data[entity.dataKey];
 
       // Format the data first
       const formattedData = rawData.map((pro) => {
         const statutLabel = Statuts_Prospect[pro.statut]?.label || '';
+      //  const type_appel = (pro.type_appel ? '1' : '2').toLowerCase();
 
         return {
           ...pro,
@@ -201,7 +182,7 @@ export const fetchData_table_by_id = async (
             ? format(new Date(pro.date_traitement), 'dd/MM/yyyy')
             : '',
           statut: statutLabel,
-
+         // type:type_appel,
           rappel: pro.date_rappel
             ? format(new Date(pro.date_rappel), 'dd/MM/yyyy')
             : '',

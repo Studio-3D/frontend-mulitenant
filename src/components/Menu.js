@@ -39,6 +39,10 @@ import { useSociete } from "@/context/SocieteContext";
 import SocieteDialog from "./SocieteDialog";
 import { useProjet } from "@/context/ProjetContext";
 import ProjetDialog from "./ProjetDialog";
+import { FaTools } from "react-icons/fa";
+import { HiOutlineUserGroup } from "react-icons/hi";
+import { HiOutlineDocumentReport } from "react-icons/hi";
+import { FaUniversity, FaRegCreditCard } from "react-icons/fa";
 
 const Menu = () => {
   const [menuItems, setMenuItems] = useState([]);
@@ -148,28 +152,28 @@ const Menu = () => {
           label: "Types Biens",
           icon: <FolderOpen size={20} />,
           href: "/administration/typesBiens",
-          needsProjet: true, // tous les rôles
+          needsProjet: true, 
           needsSociete: user.role === 1,
         },
         {
           label: "Objectifs",
           icon: <FileText size={20} />,
           href: "/administration/objectifs",
-          needsProjet: true, // tous les rôles
+          needsProjet: true, 
           needsSociete: user.role === 1,
         },
         {
           label: "Commissions",
           icon: <CreditCard size={20} />,
           href: "/administration/commissions",
-          needsProjet: true, // tous les rôles
+          needsProjet: true, 
           needsSociete: user.role === 1,
         },
         {
           label: "Freins",
           icon: <AlertCircle size={20} />,
           href: "/administration/freins",
-          needsProjet: true, // tous les rôles
+          needsProjet: true, 
           needsSociete: user.role === 1,
         },
         {
@@ -182,21 +186,21 @@ const Menu = () => {
           label: "Partenaires",
           icon: <BarChart3 size={20} />,
           href: "/administration/partenaires",
-          needsProjet: true, // tous les rôles
+          needsProjet: true, 
           needsSociete: user.role === 1,
         },
         {
           label: "Vues",
           icon: <Eye size={20} />,
           href: "/administration/vues",
-          needsProjet: true, // tous les rôles
+          needsProjet: true, 
           needsSociete: user.role === 1,
         },
         {
           label: "Typologies",
           icon: <FolderOpen size={20} />,
           href: "/administration/typologies",
-          needsProjet: true, // tous les rôles
+          needsProjet: true, 
           needsSociete: user.role === 1,
         },
         {
@@ -214,7 +218,7 @@ const Menu = () => {
       label: "CRM",
       icon: <CreditCard size={20} />,
       href: "/crm",
-      needsProjet: true, // tous les rôles
+      needsProjet: true, 
       needsSociete: user.role === 1,
     },
     {
@@ -246,17 +250,36 @@ const Menu = () => {
       icon: <Percent size={20} />,
       href: "/remise-des-cles",
     },
-    { 
-      label: "Sav", 
-      icon: <Users size={20} />, 
-      href: "/ServicesPrestataires",
-      needsSociete: user.role === 1,
+    {
+      label: "Sav",
+      icon: <RiFolderUserFill />,
+      children: [
+        {
+          label: "Services prestataire",
+          icon: <FaTools />, // outil = services
+          href: "/sav/services",
+          needsSociete: user.role === 1,
+          
+        },
+        {
+          label: "Prestataires",
+          icon: <HiOutlineUserGroup />, // groupe de personnes = prestataires
+          href: "/sav/prestataires",
+          //needsProjet: true,
+          needsSociete: user.role === 1,
+        },
+        {
+          label: "Reclamations",
+          icon: <HiOutlineDocumentReport />, // document = réclamation
+          href: "/sav/reclamations",
+          needsProjet: true,
+          needsSociete: user.role === 1,
+        },
+      ],
     },
-    { 
-      label: "Reclamations", 
-      icon: <FileInput size={20} />, 
-      href: "/Reclamations" 
-    },
+    
+    
+    { label: "Reclamations", icon: <MdFeed />, href: "/Reclamations" },
     {
       label: "Encaissments",
       icon: <CreditCard size={20} />,

@@ -1,52 +1,72 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState, useCallback } from 'react';
-import Table from '@/components/Table';
-import Link from 'next/link';
-import { FaRegEye, FaUserEdit, FaUserSlash } from 'react-icons/fa';
-import { RiDeleteBin6Line } from 'react-icons/ri';
-import { BiSolidUser } from 'react-icons/bi';
-import Modal from '@/components/Modal';
-import BlockUser from '@/components/Utilisateurs/BlockUser';
-import UnblockUser from '@/components/Utilisateurs/UnblockUser';
-import axios from 'axios';
-import { useAuth } from '../../../context/AuthContext';
-import { useSociete } from '../../../context/SocieteContext';
-import { APIURL, RESOURCE_URL } from '../../../configs/api';
-import { useRouter } from 'next/navigation';
-import toast from 'react-hot-toast';
-import DeleteData from '@/components/DeleteData';
-import Input from '@/components/Input';
-import SelectInput from '@/components/SelectInput';
+import React, { useEffect, useState, useCallback } from "react";
+import Table from "@/components/Table";
+import Link from "next/link";
+import { FaRegEye, FaUserEdit, FaUserSlash } from "react-icons/fa";
+import { RiDeleteBin6Line } from "react-icons/ri";
+import { BiSolidUser } from "react-icons/bi";
+import Modal from "@/components/Modal";
+import BlockUser from "@/components/Utilisateurs/BlockUser";
+import UnblockUser from "@/components/Utilisateurs/UnblockUser";
+import axios from "axios";
+import { useAuth } from "../../../context/AuthContext";
+import { useSociete } from "../../../context/SocieteContext";
+import { APIURL, RESOURCE_URL } from "../../../configs/api";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import DeleteData from "@/components/DeleteData";
+import Input from "@/components/Input";
+import SelectInput from "@/components/SelectInput";
+import {
+  EDUCATION_LEVELS,
+  encryptUserType,
+  GENDERS,
+  USER_STATUS,
+  USER_TYPES,
+} from "@/components/user-utils";
 
 const Page = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [showBlockModal, setShowBlockModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showUnblockModal, setShowUnblockModal] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [totalRows, setTotalRows] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [filters, setFilters] = useState({
+    nom: "",
+    email: "",
+    telephone: "",
+    societe: "",
+    role: "",
+    genre: "",
+    niveau: "",
+    statut: "",
+  });
+
+  const [tempFilters, setTempFilters] = useState({ ...filters });
 
   const { user, token } = useAuth();
   const { selectedSociete } = useSociete();
   const router = useRouter();
 
-  const accesstoken = token || localStorage.getItem('accessToken');
+  const accesstoken = token || localStorage.getItem("accessToken");
 
   // Fetch users from API with pagination and search
   const fetchUsers = useCallback(async () => {
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       const params = {
         page: currentPage,
         size: rowsPerPage,
+        ...filters,
       };
 
       if (user?.role !== 1 && selectedSociete?.id) {
@@ -57,22 +77,24 @@ const Page = () => {
         headers: { Authorization: `Bearer ${accesstoken}` },
         params,
       });
-      console.log('Response:', response.data);
+      console.log("Response:", response.data);
 
       if (response.data?.users) {
-        let filteredUsers = response.data.users.filter(u => u.id !== user?.id);
+        let filteredUsers = response.data.users.filter(
+          (u) => u.id !== user?.id
+        );
 
         // Client-side filtering
         if (searchTerm) {
           filteredUsers = response.data.users.filter((user) => {
             const searchText = searchTerm.toLowerCase();
-            const fullName = `${user.name || ''} ${
-              user.prenom || ''
+            const fullName = `${user.name || ""} ${
+              user.prenom || ""
             }`.toLowerCase();
-            const email = user.email?.toLowerCase() || '';
-            const phone = (user.phone || '').toLowerCase();
+            const email = user.email?.toLowerCase() || "";
+            const phone = (user.phone || "").toLowerCase();
             const role = getRoleText(user.role).toLowerCase();
-            const status = (user.is_actif ? '1' : '2').toLowerCase();
+            const status = (user.is_actif ? "1" : "2").toLowerCase();
 
             return (
               fullName.includes(searchText) ||
@@ -86,15 +108,15 @@ const Page = () => {
 
         setUsers(filteredUsers);
         setTotalRows(
-          response.data.pagination?.totalItems 
+          response.data.pagination?.totalItems
             ? Math.max(response.data.pagination.totalItems - 1, 0) // Adjust total count
             : filteredUsers.length
         );
       } else {
-        setError('Aucun utilisateur trouvé');
+        setError("Aucun utilisateur trouvé");
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Erreur lors du chargement');
+      setError(err.response?.data?.message || "Erreur lors du chargement");
       if (err.response?.status === 401) {
         router.push('/');
         toast.error('Session expirée, veuillez vous reconnecter.');
@@ -110,24 +132,48 @@ const Page = () => {
     token,
     user?.role,
     router,
+    filters,
   ]);
+
+  const handleFilterChange = (field, value) => {
+    setTempFilters((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const applyFilters = () => {
+    setFilters(tempFilters); // C’est ici que fetchUsers va être déclenché
+  };
+
+  const resetFilters = () => {
+    const reset = {
+      nom: "",
+      email: "",
+      telephone: "",
+      societe: "",
+      role: "",
+      genre: "",
+      niveau: "",
+      statut: "",
+    };
+    setFilters(reset);
+    setTempFilters(reset);
+  };
 
   // Fetch users when pagination or search changes
   useEffect(() => {
     fetchUsers();
-  }, [fetchUsers]);
+  }, [filters, currentPage, rowsPerPage, searchTerm, selectedSociete]);
 
   // Format user role text
   const getRoleText = (roleId) => {
     switch (parseInt(roleId)) {
       case 1:
-        return 'Super Admin';
+        return "Super Admin";
       case 2:
-        return 'Admin';
+        return "Admin";
       case 3:
-        return 'Commercial';
+        return "Commercial";
       default:
-        return 'Utilisateur';
+        return "Utilisateur";
     }
   };
 
@@ -136,22 +182,28 @@ const Page = () => {
     return users.map((us) => ({
       id: us.id,
       avatar: us.photo
-        ? `${RESOURCE_URL.DOCS}/${us.societe ? us?.societe?.raison_sociale_concatene : user?.societe?.raison_sociale_concatene}_${us.societe_id ? us.societe_id : user.societe_id}/users/${us?.photo}`
-        : '/default-avatar.png',
-      nomComplet: `${us.name || ''} ${us.prenom || ''}`.trim(),
+        ? `${RESOURCE_URL.DOCS}/${
+            us.societe
+              ? us?.societe?.raison_sociale_concatene
+              : user?.societe?.raison_sociale_concatene
+          }_${us.societe_id ? us.societe_id : user.societe_id}/users/${
+            us?.photo
+          }`
+        : "/default-avatar.png",
+      nomComplet: `${us.name || ""} ${us.prenom || ""}`.trim(),
       email: us.email,
-      telephone: us.phone || 'Non spécifié',
+      telephone: us.phone || "Non spécifié",
       role: getRoleText(us.role),
       date: new Date(us.created_at).toLocaleDateString(),
-      status: us.is_actif ? 'Actif' : 'Inactif',
+      status: us.is_actif ? "Actif" : "Inactif",
     }));
   };
 
   // Table columns configuration
   const columns = [
     {
-      key: 'nomComplet',
-      label: 'Nom Complet',
+      key: "nomComplet",
+      label: "Nom Complet",
       render: (row) => (
         <div className="flex items-center gap-3">
           <img
@@ -160,31 +212,31 @@ const Page = () => {
             className="w-7 h-7 rounded-full border border-gray-300"
             onError={(e) => {
               e.target.src =
-                'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png';
+                "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
             }}
           />
           <span>{row.nomComplet}</span>
         </div>
       ),
     },
-    { key: 'email', label: 'Email' },
-    { key: 'date', label: 'Date' },
-    { key: 'telephone', label: 'Téléphone' },
+    { key: "email", label: "Email" },
+    { key: "date", label: "Date" },
+    { key: "telephone", label: "Téléphone" },
     {
-      key: 'role',
-      label: 'Rôle',
+      key: "role",
+      label: "Rôle",
       render: (row) => {
         const roleColors = {
-          'Super Admin': 'bg-blue-100 text-[#009FFF]',
-          'Admin': 'bg-purple-100 text-purple-600',
-          'Commercial': 'bg-yellow-100 text-yellow-600',
-          'Utilisateur': 'bg-gray-100 text-gray-600',
+          "Super Admin": "bg-blue-100 text-[#009FFF]",
+          Admin: "bg-purple-100 text-purple-600",
+          Commercial: "bg-yellow-100 text-yellow-600",
+          Utilisateur: "bg-gray-100 text-gray-600",
         };
 
         return (
           <span
             className={`px-2 py-1 rounded text-sm font-semibold ${
-              roleColors[row.role] || 'bg-gray-100 text-gray-600'
+              roleColors[row.role] || "bg-gray-100 text-gray-600"
             }`}
           >
             {row.role}
@@ -193,14 +245,14 @@ const Page = () => {
       },
     },
     {
-      key: 'status',
-      label: 'Statut',
+      key: "status",
+      label: "Statut",
       render: (row) => (
         <span
           className={`px-2 py-1 rounded text-sm font-semibold ${
-            row.status === 'Actif'
-              ? 'bg-green-100 text-green-600'
-              : 'bg-red-100 text-[#E53935]'
+            row.status === "Actif"
+              ? "bg-green-100 text-green-600"
+              : "bg-red-100 text-[#E53935]"
           }`}
         >
           {row.status}
@@ -208,8 +260,8 @@ const Page = () => {
       ),
     },
     {
-      key: 'actions',
-      label: 'Actions',
+      key: "actions",
+      label: "Actions",
       render: (row) => (
         <div className="flex gap-3 items-center">
           <Link href={`/Utilisateurs/afficher-utilisateur/${row.id}`}>
@@ -219,12 +271,12 @@ const Page = () => {
             />
           </Link>
           <Link href={`/Utilisateurs/afficher-utilisateur/${row.id}?edit=true`}>
-            <FaUserEdit 
+            <FaUserEdit
               className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
               title="Modifier"
             />
           </Link>
-          {row.status === 'Actif' ? (
+          {row.status === "Actif" ? (
             <BiSolidUser
               className="w-4 h-4 text-green-500 hover:text-green-700 cursor-pointer"
               onClick={() => {
@@ -259,111 +311,151 @@ const Page = () => {
   return (
     <>
       <div className="relative ">
-      <Table
-        columns={columns}
-        filterComponent={
-          <div className="space-y-4">
-            <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(6, minmax(0, 1fr))' }}>
-              {/* Your filter inputs here */}
-              <div className='w-[250px]'>
-              <Input
-                type="text"
-                placeholder="Rechercher par nom..."
-                className=" p-2 rounded border border-gray-300 bg-transparent"
-                />
-              </div>
-              <div className='w-[250px]'>
-              <SelectInput
-                options={[
-                  { value: '', label: 'Tous les rôles' },
-                  { value: '1', label: 'Super Admin' },
-                  { value: '2', label: 'Admin' },
-                  { value: '3', label: 'Commercial' },
-                ]}
-                placeholder="Sélectionner un rôle"
-                className=" p-2 rounded border border-gray-300 bg-transparent"
-                />
-              </div>
-              <div className='w-[250px]'>
-              <SelectInput
-                options={[
-                  { value: '', label: 'Tous les rôles' },
-                  { value: '1', label: 'Super Admin' },
-                  { value: '2', label: 'Admin' },
-                  { value: '3', label: 'Commercial' },
-                ]}
-                placeholder="Sélectionner un rôle"
-                className=" p-2 rounded border border-gray-300 bg-transparent"
-                />
-              </div>
-              <div className='w-[250px]'>
-              <SelectInput
-                options={[
-                  { value: '', label: 'Tous les rôles' },
-                  { value: '1', label: 'Super Admin' },
-                  { value: '2', label: 'Admin' },
-                  { value: '3', label: 'Commercial' },
-                ]}
-                placeholder="Sélectionner un rôle"
-                className=" p-2 rounded border border-gray-300 bg-transparent"
-                />
-              </div>
-              <div className='w-[250px]'>
-              <SelectInput
-                options={[
-                  { value: '', label: 'Tous les rôles' },
-                  { value: '1', label: 'Super Admin' },
-                  { value: '2', label: 'Admin' },
-                  { value: '3', label: 'Commercial' },
-                ]}
-                placeholder="Sélectionner un rôle"
-                className=" p-2 rounded border border-gray-300 bg-transparent"
-                />
-              </div>
-              <div className="flex justify-end">
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        <Table
+          columns={columns}
+          filterComponent={
+            <div className="space-y-4 p-4 rounded-lg shadow-md">
+              <div
+                className="grid gap-3"
+                style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}
               >
-                Appliquer les filtres
-              </button>
+                {/* Champs de recherche */}
+                <Input
+                  type="text"
+                  placeholder="Nom & prénom..."
+                  value={tempFilters.nom}
+                  onChange={(e) => handleFilterChange("nom", e.target.value)}
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
+          
+                <Input
+                  type="text"
+                  placeholder="Email..."
+                  value={tempFilters.email}
+                  onChange={(e) => handleFilterChange("email", e.target.value)}
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
+          
+                <Input
+                  type="text"
+                  placeholder="Téléphone..."
+                  value={tempFilters.telephone}
+                  onChange={(e) => handleFilterChange("telephone", e.target.value)}
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
+          
+                {!selectedSociete && (
+                  <Input
+                    type="text"
+                    placeholder="Société..."
+                    value={tempFilters.societe}
+                    onChange={(e) => handleFilterChange("societe", e.target.value)}
+                    className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                  />
+                )}
+          
+                <SelectInput
+                  value={tempFilters.role}
+                  onChange={(value) => handleFilterChange("role", value)}
+                  options={Object.entries(USER_TYPES)
+                    .filter(([key]) => key !== "SUPERADMIN") // on enlève SUPERADMIN
+                    .map(([key, label]) => ({
+                      value: encryptUserType(label), 
+                      label,
+                    }))
+                  }
+                  placeholder="Rôle"
+                  //className="h-10 text-sm w-full"
+                />
+
+
+                <SelectInput
+                  value={tempFilters.genre}
+                  onChange={(value) => handleFilterChange("genre", value)}
+                  options={Object.values(GENDERS).map(({ code, label }) => ({
+                    value: code,
+                    label,
+                  }))}
+                  placeholder="Genre"
+                  className="h-10 text-sm w-full"
+                />
+          
+                <SelectInput
+                  value={tempFilters.niveau}
+                  onChange={(value) => handleFilterChange("niveau", value)}
+                  options={Object.entries(EDUCATION_LEVELS).map(([key, label]) => ({
+                    value: label,
+                    label,
+                  }))}
+                  placeholder="Niveau d’étude"
+                  className="h-10 text-sm w-full"
+                />
+          
+                <SelectInput
+                  value={tempFilters.statut?.toString()}
+                  onChange={(value) => handleFilterChange("statut", Number(value))}
+                  options={Object.values(USER_STATUS).map(({ code, label }) => ({
+                    value: code.toString(),
+                    label,
+                  }))}
+                  placeholder="Statut"
+                  className="h-10 text-sm w-full"
+                />
+          
+              </div>
+          
+              {/* Boutons */}
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={applyFilters}
+                  className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                >
+                  Appliquer les filtres
+                </button>
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
+                >
+                  Réinitialiser
+                </button>
+              </div>
             </div>
-            </div>
-          </div>
-        }
-        data={
-          user?.role === 1 // Check if Super Admin
-            ? formatUsers() // Show all users regardless of societe
-            : selectedSociete?.id 
+          }
+          
+          data={
+            user?.role === 1 // Check if Super Admin
+              ? formatUsers() // Show all users regardless of societe
+              : selectedSociete?.id
               ? formatUsers() // Show societe-specific users for others
               : []
-        }
-        totalRows={
-          user?.role === 1
-            ? totalRows // Show total across all sociétés
-            : selectedSociete?.id
+          }
+          totalRows={
+            user?.role === 1
+              ? totalRows // Show total across all sociétés
+              : selectedSociete?.id
               ? totalRows
               : 0
-        }
-        loading={loading}
-        error={error}
-        addLink={`/Utilisateurs/Ajouter-Utilisateur`}
-        enableExport
-        currentPage={currentPage}
-        rowsPerPage={rowsPerPage}
-        onPageChange={setCurrentPage}
-        onRowsPerPageChange={setRowsPerPage}
-        onSearchChange={setSearchTerm}
-        emptyMessage={
-          user?.role === 1
-            ? "Aucun utilisateur trouvé." // Super Admin sees generic message
-            : !selectedSociete?.id
+          }
+          loading={loading}
+          error={error}
+          addLink={`/Utilisateurs/Ajouter-Utilisateur`}
+          enableExport
+          currentPage={currentPage}
+          rowsPerPage={rowsPerPage}
+          onPageChange={setCurrentPage}
+          onRowsPerPageChange={setRowsPerPage}
+          onSearchChange={setSearchTerm}
+          emptyMessage={
+            user?.role === 1
+              ? "Aucun utilisateur trouvé." // Super Admin sees generic message
+              : !selectedSociete?.id
               ? "Veuillez sélectionner une société pour voir les utilisateurs." // Others see prompt
               : "Aucun utilisateur trouvé."
-        }
-      />
-</div>
-
+          }
+        />
+      </div>
 
       {/* Modals for user actions */}
       {showBlockModal && selectedUserId && (
@@ -399,12 +491,14 @@ const Page = () => {
       )}
 
       {showDeleteModal && selectedUserId && (
-        <Modal isVisible={showDeleteModal} onClose={() => setShowDeleteModal(false)}>
+        <Modal
+          isVisible={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+        >
           <DeleteData
             route={APIURL.UTILISATEURS}
             Id={selectedUserId}
             message={"vous êtes sûr de vouloir supprimer cet utilisateur?"}
-
             userId={selectedUserId}
             accessToken={accesstoken}
             onClose={() => {

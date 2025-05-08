@@ -6,11 +6,20 @@ const Button = ({ type, onClick, disabled, loading, children, className }) => {
 
   const disabledStyle = disabled || loading ? 'cursor-not-allowed' : '';
 
-  const buttonStyle = type === 'submit'
-  ? `${loading || disabled ? 'bg-green-500' : 'bg-[#2D8548]'} ${baseStyle} ${disabledStyle}`
-  : type === 'edit'
-  ? `bg-[#0002dc80] ${baseStyle}`  // Color for edit button (you can adjust the color as needed)
-  : `bg-gray-400 ${baseStyle}`; // Default color for other types (non-submit/edit)
+  const buttonStyle =
+    type == 'submit'
+      ? `${
+          loading || disabled ? 'bg-green-500' : 'bg-[#2D8548]'
+        } ${baseStyle} ${disabledStyle}`
+      : type == 'edit'
+      ? `bg-[orange] ${baseStyle}`
+      : type == 'traite_relance'
+      ? `bg-[#3b82f6] ${baseStyle}`
+       : type == 'traite_rdv'
+      ? `bg-[rgb(61,158,206)] ${baseStyle}`
+      : type == 'delete'
+      ? `bg-[red] ${baseStyle}` // Color for edit button (you can adjust the color as needed)
+      : `bg-gray-400 ${baseStyle}`; // Default color for other types (non-submit/edit)
   return (
     <button
       type={type}

@@ -115,18 +115,7 @@ const TypeProjetForm = ({ id = null, onComplete }) => {
     }
   };
 
-  const handleReset = () => {
-    if (id) {
-      // Reset to original data if editing
-      fetchTypeProjetData(id);
-    } else {
-      // Clear form if adding new
-      setFormData({
-        type: ''
-      });
-    }
-    setErrors({});
-  };
+  
 
   if (loading) {
     return (

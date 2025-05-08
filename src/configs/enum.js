@@ -29,61 +29,112 @@ export const isAdmin = (role) => {
 };
 
 export const VISITE_STATUT = {
-  1: { code: 1, label: 'Pré-Réservation' , color: 'bg-blue-100 text-blue-800'},
-  2: { code: 2, label: 'Vendu' ,color: 'bg-green-100 text-green-800'},
-  3: { code: 3, label: 'Pré-Réservation-Perdu',color: 'bg-yellow-100 text-yellow-800'  },
+  1: { code: 1, label: 'Pré-Réservation', color: 'bg-blue-100 text-blue-800' },
+  2: { code: 2, label: 'Vendu', color: 'bg-green-100 text-green-800' },
+  3: {
+    code: 3,
+    label: 'Pré-Réservation-Perdu',
+    color: 'bg-yellow-100 text-yellow-800',
+  },
   4: { code: 4, label: 'Réservation-Perdu', color: 'bg-red-100 text-red-800' },
-  5: { code: 5, label: 'Pré-Réservation-Vendu',color: 'bg-purple-100 text-purple-800' },
-}
+  5: {
+    code: 5,
+    label: 'Pré-Réservation-Vendu',
+    color: 'bg-purple-100 text-purple-800',
+  },
+};
 
 // Visite interest levels
 export const VISITE_INTERETS = {
   1: { code: 1, label: 'Intéressé', color: 'bg-green-100 text-green-800' },
   2: { code: 2, label: 'Réceptif', color: 'bg-blue-100 text-blue-800' },
   3: { code: 3, label: 'Perdu', color: 'bg-red-100 text-red-800' },
+  4: { code: 4, label: 'Injoignable', color: 'bg-gray-100 text-white-800' },
 };
 
+export const getInteret_label = (number) => {
+  if (VISITE_INTERETS[number]?.code == number) {
+    return VISITE_INTERETS[number]?.label;
+  }
+};
 // Visite statuses for form selection
 export const VISITE_STATUT_FORM = {
-  1: { code: 1, label: 'Pré-Réservation'},
-  2: { code: 2, label: 'Vendu'},
-
+  1: { code: 1, label: 'Pré-Réservation' },
+  2: { code: 2, label: 'Vendu' },
 };
 
 // Visite notification types
 export const VISITE_TYPE_NOTIF = {
-  1: { code: 1, label: 'Sms'},
-  2: { code: 2, label: 'Appel'},
-  3: { code: 3, label: 'Email'},
+  1: { code: 1, label: 'Sms' },
+  2: { code: 2, label: 'Appel' },
+  3: { code: 3, label: 'Email' },
+};
+
+export const MODES_RELANCES = {
+  1: { code: '1', label: 'Sms' },
+  2: { code: '2', label: 'Appel ' },
+  3: { code: '3', label: 'Email ' },
+};
+/*export const getRelance_label = number => {
+  if (MODES_RELANCES[number]?.code == number) {
+    return MODES_RELANCES[number]?.label
+  }
+}*/
+
+export const getRelance_label = (number) => {
+  const mode = MODES_RELANCES[number];
+  if (!mode) return null;
+
+  const baseClasses =
+    'inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold';
+
+  switch (mode.label.trim().toLowerCase()) {
+    case 'sms':
+      return (
+        <span className={`${baseClasses} bg-green-100 `}>{mode.label}</span>
+      );
+    case 'appel':
+      return (
+        <span className={`${baseClasses} bg-orange-100 `}>{mode.label}</span>
+      );
+    case 'email':
+      return (
+        <span className={`${baseClasses} bg-blue-100 `}>{mode.label}</span>
+      );
+    default:
+      return (
+        <span className={`${baseClasses} bg-gray-100 `}>{mode.label}</span>
+      );
+  }
 };
 
 // Payment modes
 export const MODE_PAIEMENT = {
-  1: { code: 1, label: 'Espèce'},
-  2: { code: 2, label: 'Chèque'},
-  3: { code: 3, label: 'Chèque Banque'},
-  4: { code: 4, label: 'Chèque Certifié'},
-  5: { code: 5, label: 'Virement'},
-  6: { code: 6, label: 'Versement'},
-}
+  1: { code: 1, label: 'Espèce' },
+  2: { code: 2, label: 'Chèque' },
+  3: { code: 3, label: 'Chèque Banque' },
+  4: { code: 4, label: 'Chèque Certifié' },
+  5: { code: 5, label: 'Virement' },
+  6: { code: 6, label: 'Versement' },
+};
 
 //desistement
 export const MODE_PAIEMENT_with_transfert = {
-  1: { code: 1, label: 'Espèce'},
-  2: { code: 2, label: 'Chèque'},
-  3: { code: 3, label: 'Chèque Banque'},
-  4: { code: 4, label: 'Chèque Certifié'},
-  5: { code: 5, label: 'Virement'},
-  6: { code: 6, label: 'Versement'},
-  7: { code: 7, label: 'Transfert Dossier'},
-}
+  1: { code: 1, label: 'Espèce' },
+  2: { code: 2, label: 'Chèque' },
+  3: { code: 3, label: 'Chèque Banque' },
+  4: { code: 4, label: 'Chèque Certifié' },
+  5: { code: 5, label: 'Virement' },
+  6: { code: 6, label: 'Versement' },
+  7: { code: 7, label: 'Transfert Dossier' },
+};
 
 // Financing modes
 export const MODE_FINANCE = {
-  1: { code: 1, label: 'Comptant'},
-  2: { code: 2, label: 'Crédit'},
-  3: { code: 3, label: 'Indécis'},
-}
+  1: { code: 1, label: 'Comptant' },
+  2: { code: 2, label: 'Crédit' },
+  3: { code: 3, label: 'Indécis' },
+};
 // Orientations
 export const ORIENTATIONS = {
   1: { code: 1, label: 'Nord', description: 'Orientation Nord' },
@@ -96,19 +147,50 @@ export const ORIENTATIONS = {
   8: { code: 8, label: 'Sud-Ouest', description: 'Orientation Sud-Ouest' },
 };
 
+export const getOrientationLabel = (code) => {
+  return ORIENTATIONS[code]?.label || 'Unknown';
+};
+
 export const ORIENTATION_ABBREVIATIONS = {
-  'Nord': 'N',
-  'Sud': 'S',
-  'Est': 'E',
-  'Ouest': 'O',
+  Nord: 'N',
+  Sud: 'S',
+  Est: 'E',
+  Ouest: 'O',
   'Nord-Est': 'N_E',
   'Nord-Ouest': 'N_O',
   'Sud-Est': 'S_E',
   'Sud-Ouest': 'S_O',
 };
+
+// Function that accepts a letter/abbreviation and returns the full word
+export const getFullOrientation = (letter) => {
+  // Reverse the object so that the keys are abbreviations and values are the full names
+  const reversedAbbreviations = Object.fromEntries(
+    Object.entries(ORIENTATION_ABBREVIATIONS).map(([key, value]) => [
+      value,
+      key,
+    ])
+  );
+
+  // Return the full orientation name based on abbreviation
+  return reversedAbbreviations[letter] || 'Unknown Orientation'; // Default if not found
+};
+export const getOrientationCode = (orientation) =>
+  ORIENTATIONS[orientation]?.code || '';
+
 export const Statuts_Prospect = {
   1: { id: '1', label: 'Planification Rendez Vous' },
   2: { id: '2', label: 'Injoignable' },
   3: { id: '3', label: 'Rappel' },
   4: { id: '4', label: 'Converti en Visite' },
-}
+  5: { id: '5', label: 'Nouveau Appel' },
+};
+export const TYPES_APPELS = {
+  1: { code: '1', label: 'Appel Entrant' },
+  2: { code: '2', label: 'Appel Sortant' },
+};
+export const getTypeAppelLabel = (number) => {
+  if (TYPES_APPELS[number].code == number) {
+    return TYPES_APPELS[number].label;
+  }
+};

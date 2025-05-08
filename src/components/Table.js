@@ -75,7 +75,7 @@ const Table = ({
   );
 
   return (
-    <div className="mx-auto px-6 py-4 mt-2 mb-4 bg-white rounded-lg shadow-md">
+    <div className="mx-auto px-6 py-4 mt-2 mb-4 bg-white rounded-lg ">
       {/* Table Controls */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-6">
         <div className="flex items-center gap-2 w-full sm:w-auto">
