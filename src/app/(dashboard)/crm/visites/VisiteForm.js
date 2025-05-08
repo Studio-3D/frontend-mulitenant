@@ -2555,7 +2555,7 @@ const VisiteForm = (id, origin) => {
                           {expanded.includes(`panel_bien${i + 1}`) && (
                             <>
                               <div className="p-4 space-y-4">
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-x-5 gap-y-4">
                                   {/* Bien Autocomplete */}
                                   <div>
                                     {/* Replace with your own Autocomplete or HeadlessUI */}
