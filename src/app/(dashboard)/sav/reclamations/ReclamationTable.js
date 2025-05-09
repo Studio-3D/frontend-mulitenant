@@ -5,8 +5,7 @@ import Modal from "@/components/Modal";
 import Table from "@/components/Table";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { FaEdit } from "react-icons/fa";
-import { RiDeleteBin6Line } from "react-icons/ri";
+import { Pencil, Trash2 } from "lucide-react";
 import SelectInput from "@/components/SelectInput";
 import Input from "@/components/Input";
 
@@ -117,11 +116,11 @@ const ReclamationTable = () => {
       label: "Actions",
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <FaEdit
+          <Pencil
             className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
             onClick={() => handleEdit(row.id)}
           />
-          <RiDeleteBin6Line
+          <Trash2
             className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
             onClick={() => {
               setSelectedId(row.id);

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from "react";
-import { BiChevronDown } from "react-icons/bi";
+import { ChevronDown } from "lucide-react";
 import classNames from "classnames";
 
 export default function SelectInput({ 
@@ -72,7 +72,7 @@ export default function SelectInput({
           <span className={value ? "text-gray-800" : "text-gray-500"}>
             {selectedOption?.label || placeholder}
           </span>
-          <BiChevronDown 
+          <ChevronDown 
             className={`text-gray-500 transition-transform duration-200 ${
               isOpen ? "rotate-180" : ""
             }`}

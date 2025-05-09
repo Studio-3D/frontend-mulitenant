@@ -1,5 +1,5 @@
 'use client';
-import { IoAlertCircleOutline } from "react-icons/io5";
+import { AlertCircle } from "lucide-react";
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { APIURL } from '../../configs/api';
@@ -38,7 +38,7 @@ export default function UnblockUser({ userId, accessToken, onClose }) { // Ensur
         <div className="w-[500px] p-4">
             {/* Unblock Confirmation */}
             <div className="text-center">
-                <IoAlertCircleOutline className="text-[#FFA500] text-6xl mx-auto mt-2 mb-4" />
+                <AlertCircle className="text-[#FFA500] text-6xl mx-auto mt-2 mb-4" />
                 <h2 className="text-xl font-semibold">Débloquer l'utilisateur</h2>
                 <p className="text-[#878484] mt-2">Êtes-vous sûr de vouloir débloquer cet utilisateur ?</p>
                 <div className="flex justify-center gap-4 mt-4 mb-4">

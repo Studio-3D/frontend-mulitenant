@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import Table from '@/components/Table';
 import * as XLSX from 'xlsx';
-import { FaRegEye, FaEdit } from "react-icons/fa";
-import { RiDeleteBin6Line } from "react-icons/ri";
+import { Eye, Pencil, Trash2 } from "lucide-react";
 import Input from "@/components/Input";
 
 const TypologieTable = ({ 
@@ -45,20 +44,19 @@ const TypologieTable = ({
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-4 items-center">
-          
           <button
             className="text-blue-500 hover:text-blue-700"
             onClick={() => onAction && onAction('edit', row.id)}
             title="Modifier"
           >
-            <FaEdit className="w-4 h-4" />
+            <Pencil className="w-4 h-4" />
           </button>
           <button
             className="text-red-500 hover:text-red-700"
             onClick={() => onAction && onAction('delete', row)}
             title="Supprimer"
           >
-            <RiDeleteBin6Line className="w-4 h-4" />
+            <Trash2 className="w-4 h-4" />
           </button>
         </div>
       )

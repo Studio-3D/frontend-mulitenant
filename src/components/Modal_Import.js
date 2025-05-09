@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { MdPrint } from 'react-icons/md'; // Import the print icon
+import { Printer } from 'lucide-react'; // Replace MdPrint
 import Button from './Button';
 import toast from 'react-hot-toast';
 import { APIURL } from '../configs/api';
@@ -116,7 +116,7 @@ export default function Modal_Import({ onClose, title, route }) {
           onSubmit={(e) => onSubmit_file(e)}
           className="mt-4 mx-auto w-full max-w-[360px] flex flex-col items-center"
         >
-          {/* Row for Input and MdPrint */}
+          {/* Row for Input and Printer */}
           <div className="flex items-center space-x-2 w-full">
             {/* File Input */}
             <input
@@ -130,7 +130,7 @@ export default function Modal_Import({ onClose, title, route }) {
               className="w-full p-2 border rounded mb-2"
             />
 
-            {/* MdPrint Button */}
+            {/* Printer Button */}
             <div className="flex items-center justify-center">
               <button
                 type="button"
@@ -139,7 +139,7 @@ export default function Modal_Import({ onClose, title, route }) {
                 aria-label="Clear"
                 onClick={() => handleFileClick()}
               >
-                <MdPrint className="text-blue-500 text-xl" />
+                <Printer className="text-blue-500 w-5 h-5" />
               </button>
             </div>
           </div>

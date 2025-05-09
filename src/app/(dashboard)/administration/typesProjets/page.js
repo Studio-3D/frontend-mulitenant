@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import axios from 'axios';
 import { useAuth } from '@/context/AuthContext';
 import { useSociete } from '@/context/SocieteContext';
-import { TbArrowBackUp } from "react-icons/tb";
+import { ArrowLeft } from "lucide-react";
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { APIURL } from '@/configs/api';

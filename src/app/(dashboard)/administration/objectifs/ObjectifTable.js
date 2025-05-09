@@ -1,8 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import Table from '@/components/Table';
 import * as XLSX from 'xlsx';
-import { FaRegEye, FaEdit } from "react-icons/fa";
-import { RiDeleteBin6Line } from "react-icons/ri";
+import { Eye, Edit, Trash2 } from "lucide-react";
 import { format } from 'date-fns';
 import Input from "@/components/Input";
 
@@ -142,14 +141,14 @@ const ObjectifTable = ({
             onClick={() => onAction && onAction('edit', row.id)}
             title="Modifier"
           >
-            <FaEdit className="w-4 h-4" />
+            <Edit className="w-4 h-4" />
           </button>
           <button
             className="text-red-500 hover:text-red-700"
             onClick={() => onAction && onAction('delete', row)}
             title="Supprimer"
           >
-            <RiDeleteBin6Line className="w-4 h-4" />
+            <Trash2 className="w-4 h-4" />
           </button>
         </div>
       )

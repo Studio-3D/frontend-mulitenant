@@ -9,9 +9,10 @@ import Table from '@/components/Table';
 import Link from 'next/link';
 import { useAuth } from '../../../../../../context/AuthContext';
 import { useParams } from 'next/navigation';
-import { FaRegEye, FaCheck } from 'react-icons/fa';
+import { Eye, Check } from 'lucide-react';
 import Modal from '@/components/Modal';
 import Modal_Traite_Frein from './Modal_Traite_Frein';
+
 export default function Biens_Dispo_By_frein_id() {
   const router = useRouter();
   const { freinId } = useParams();
@@ -114,7 +115,7 @@ export default function Biens_Dispo_By_frein_id() {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <FaRegEye
+          <Eye
             className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
             title="Voir détails"
             onClick={() => handleShow(row.bien_id)}
@@ -171,7 +172,7 @@ export default function Biens_Dispo_By_frein_id() {
         className="flex gap-1 items-center bg-green-500 text-white font-medium rounded-lg px-3 py-1.5"
         onClick={showTraitement}
       >
-        <FaCheck className="w-5 h-5" />
+        <Check className="w-5 h-5" />
         <span>Traiter Frein</span>
       </button>
       <div className="reflative">

@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
 
-// Replace all react-icons with lucide-react
 import { 
   LayoutDashboard, 
   Building, 
@@ -31,7 +30,11 @@ import {
   AlertCircle, 
   Settings, 
   UsersRound,
-  Eye
+  Eye,
+  Wrench,
+  FileIcon,
+  Building2,
+  FolderCog
 } from "lucide-react";
 
 import { User_roles } from "../configs/enum";
@@ -39,10 +42,6 @@ import { useSociete } from "@/context/SocieteContext";
 import SocieteDialog from "./SocieteDialog";
 import { useProjet } from "@/context/ProjetContext";
 import ProjetDialog from "./ProjetDialog";
-import { FaTools } from "react-icons/fa";
-import { HiOutlineUserGroup } from "react-icons/hi";
-import { HiOutlineDocumentReport } from "react-icons/hi";
-import { FaUniversity, FaRegCreditCard } from "react-icons/fa";
 
 const Menu = () => {
   const [menuItems, setMenuItems] = useState([]);
@@ -252,25 +251,25 @@ const Menu = () => {
     },
     {
       label: "Sav",
-      icon: <RiFolderUserFill />,
+      icon: <FolderCog />, // Replace FolderUser with FolderCog which exists in lucide-react
       children: [
         {
           label: "Services prestataire",
-          icon: <FaTools />, // outil = services
+          icon: <Wrench />, // outil = services
           href: "/sav/services",
           needsSociete: user.role === 1,
           
         },
         {
           label: "Prestataires",
-          icon: <HiOutlineUserGroup />, // groupe de personnes = prestataires
+          icon: <Users />, // groupe de personnes = prestataires
           href: "/sav/prestataires",
           //needsProjet: true,
           needsSociete: user.role === 1,
         },
         {
           label: "Reclamations",
-          icon: <HiOutlineDocumentReport />, // document = réclamation
+          icon: <FileText />, 
           href: "/sav/reclamations",
           needsProjet: true,
           needsSociete: user.role === 1,
@@ -279,7 +278,7 @@ const Menu = () => {
     },
     
     
-    { label: "Reclamations", icon: <MdFeed />, href: "/Reclamations" },
+    { label: "Reclamations", icon: <FileText />, href: "/Reclamations" },
     {
       label: "Encaissments",
       icon: <CreditCard size={20} />,

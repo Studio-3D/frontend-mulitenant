@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useProjet } from '@/context/ProjetContext';
-import { TbArrowBackUp } from "react-icons/tb";
+import { ArrowLeft } from "lucide-react";
 import Link from 'next/link';
 import axios from 'axios';
 import { APIURL } from '@/configs/api';
@@ -114,7 +114,7 @@ export default function CommissionsPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
           <Link href="/administration/commissions" className="inline-flex items-center gap-2 text-[#009FFF] hover:text-blue-800">
-            <TbArrowBackUp className="text-xl" />
+            <ArrowLeft className="text-xl" />
             <span>Retour à la liste</span>
           </Link>
         </div>

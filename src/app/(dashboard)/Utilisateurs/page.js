@@ -3,9 +3,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import Table from "@/components/Table";
 import Link from "next/link";
-import { FaRegEye, FaUserEdit, FaUserSlash } from "react-icons/fa";
-import { RiDeleteBin6Line } from "react-icons/ri";
-import { BiSolidUser } from "react-icons/bi";
+import { Eye, UserCog, UserX, User, Trash2 } from "lucide-react";
 import Modal from "@/components/Modal";
 import BlockUser from "@/components/Utilisateurs/BlockUser";
 import UnblockUser from "@/components/Utilisateurs/UnblockUser";
@@ -265,19 +263,19 @@ const Page = () => {
       render: (row) => (
         <div className="flex gap-3 items-center">
           <Link href={`/Utilisateurs/afficher-utilisateur/${row.id}`}>
-            <FaRegEye
+            <Eye
               className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
               title="Voir détails"
             />
           </Link>
           <Link href={`/Utilisateurs/afficher-utilisateur/${row.id}?edit=true`}>
-            <FaUserEdit
+            <UserCog
               className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
               title="Modifier"
             />
           </Link>
           {row.status === "Actif" ? (
-            <BiSolidUser
+            <User
               className="w-4 h-4 text-green-500 hover:text-green-700 cursor-pointer"
               onClick={() => {
                 setSelectedUserId(row.id);
@@ -286,7 +284,7 @@ const Page = () => {
               title="Bloquer utilisateur"
             />
           ) : (
-            <FaUserSlash
+            <UserX
               className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
               onClick={() => {
                 setSelectedUserId(row.id);
@@ -295,7 +293,7 @@ const Page = () => {
               title="Débloquer utilisateur"
             />
           )}
-          <RiDeleteBin6Line
+          <Trash2
             className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
             onClick={() => {
               setSelectedUserId(row.id);

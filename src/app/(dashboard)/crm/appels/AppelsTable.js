@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Table from '@/components/Table';
-import { FaRegEye, FaEdit, FaSync, FaRegIdCard } from 'react-icons/fa';
-import { RiDeleteBin6Line } from 'react-icons/ri';
+import { Eye, Pencil, RefreshCw, CreditCard, Trash2 } from 'lucide-react';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
 import { useAuth } from '../../../../context/AuthContext';
@@ -166,18 +165,18 @@ const AppelsTable = () => {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <FaRegEye
+          <Eye
             className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
             title="Voir détails"
             onClick={() => handleShow(row.id)}
           />
-          <FaEdit
+          <Pencil
             className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
             title="Modifier"
             onClick={() => handleEdit(row.last_traitement_id)}
           />
 
-          <RiDeleteBin6Line
+          <Trash2
             className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
             onClick={() => {
               setSelectedId(row.id);
@@ -186,13 +185,14 @@ const AppelsTable = () => {
             title="Supprimer Appel"
           />
           {row.last_traitement_visite_id == null ? (
-            <FaSync
+            <RefreshCw
               className="w-4 h-4 text-green-500  cursor-pointer"
               title="Convertir en visite"
               onClick={() => handle_convert_to_visite(row.prospect)}
             />
           ) : (
-            <FaRegIdCard
+            <CreditCard
+              className="w-4 h-4 text-blue-500 cursor-pointer"
               onClick={() => voir_visite(row.last_traitement_visite_id)}
             />
           )}

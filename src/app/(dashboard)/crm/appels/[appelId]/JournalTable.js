@@ -8,8 +8,7 @@ import { fetchData_table_by_id } from '../../../../../../src/configs/api-utils';
 import format from 'date-fns/format';
 import DeleteData from '@/components/DeleteData';
 
-import { FaRegEye, FaEdit, FaMeetup, FaCheckCircle } from 'react-icons/fa';
-import { RiDeleteBin6Line } from 'react-icons/ri';
+import { Eye, Edit, CalendarClock, CheckCircle, Trash2 } from 'lucide-react';
 
 import { APIURL, ENDPOINTS } from '../../../../../../src/configs/api';
 import Modal from '@/components/Modal';
@@ -305,13 +304,13 @@ const JournalTable = (id) => {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <FaEdit
+          <Edit
             className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
             title="Modifier"
             onClick={() => handleEdit(row.id)}
           />
           {VISITE_INTERETS[row.interet]?.label != 'Injoignable' && (
-            <FaRegEye
+            <Eye
               className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
               title="Voir détails"
               onClick={() =>
@@ -341,7 +340,7 @@ const JournalTable = (id) => {
             row.relance.type_traitement == 0 &&
             row.relance.deleted_at == null &&
             row.user?.user_id_origin == user.id && (
-              <FaCheckCircle
+              <CheckCircle
                 className="w-4 h-4 text-green-500 hover:text-green-700 cursor-pointer"
                 title="Traiter Relance"
                 onClick={() => handleValider(row.relance?.id, 'Relance')}
@@ -351,14 +350,14 @@ const JournalTable = (id) => {
             row.rdv.type_traitement == 0 &&
             row.rdv.deleted_at == null &&
             row.user?.user_id_origin == user.id && (
-              <FaMeetup
+              <CalendarClock
                 className="w-4 h-4 text-orange-500 hover:text-orange-700 cursor-pointer"
                 title="Traiter Rendez Vous"
                 onClick={() => handleValider(row.rdv?.id, 'RDV')}
               />
             )}
 
-          <RiDeleteBin6Line
+          <Trash2
             className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
             onClick={() => {
               setSelectedId(row.id);
