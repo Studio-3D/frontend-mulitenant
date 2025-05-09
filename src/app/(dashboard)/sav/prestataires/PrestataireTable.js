@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { FaEdit } from "react-icons/fa";
 import { RiDeleteBin6Line, RiEyeLine } from "react-icons/ri";
 import axios from "axios";
-
+import Select from 'react-select';
 import { APIURL, ENDPOINTS } from "@/configs/api";
 import { fetchData_table_by_projet } from "@/configs/api-utils";
 import { isAdmin, isSuperAdmin } from "@/configs/enum";
@@ -16,7 +16,7 @@ import { useAuth } from "@/context/AuthContext";
 import SelectInput from "@/components/SelectInput";
 import Input from "@/components/Input";
 
-const PrestataireTable = () => {
+const PrestataireTable = (serviceId) => {
   const [prestataires, setPrestataires] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -28,7 +28,6 @@ const PrestataireTable = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [services, setServices] = useState([]);
   const accessToken = localStorage.getItem("accessToken");
-
   const { user, token } = useAuth();
   const accesstoken = token || localStorage.getItem("accessToken");
   const router = useRouter();
@@ -38,8 +37,7 @@ const PrestataireTable = () => {
     cin: "",
     email: "",
     telephone: "",
-    adresse:"",
-    serviceId: "",
+    serviceId: serviceId.service_id == null ? "" : serviceId.service_id, 
     
   });
 
@@ -51,6 +49,7 @@ const PrestataireTable = () => {
     name: "Prestataire",
     searchFields: ["nom"],
   };
+
   const fetchServices = async () => {
       try {
   
@@ -73,10 +72,19 @@ const PrestataireTable = () => {
       fetchServices();
     }, []);
 
+    function handleShow(Id) {
+      router.push(`/sav/prestataires/show/${Id}`);
+    }
+
+    const handleFilterToggle = (isOpen) => {
+      if (!isOpen) resetFilters(); // Si on ferme, on réinitialise
+    };
+
   useEffect(() => {
-      fetchData_table_by_projet(
+
+    fetchData_table_by_projet(
         entity,
-        filters,
+        filters,       
         searchTerm,
         currentPage,
         rowsPerPage,
@@ -102,8 +110,7 @@ const PrestataireTable = () => {
         cin: "",
         email: "",
         telephone: "",
-        adresse:"",
-        serviceId: "",
+        serviceId: serviceId.service_id == null ? "" : serviceId.service_id, // n'inclut que si null
       };
       setFilters(reset);
       setTempFilters(reset);
@@ -112,7 +119,7 @@ const PrestataireTable = () => {
   const handleEdit = (id) =>
     router.push(`${ENDPOINTS.Prestataires}?id=${id}&action=edit`);
 
-  const columns = [
+  const allColumns  = [
     { key: "cin", label: "CIN" },
     { key: "nom", label: "Nom" },
     { key: "prenom", label: "Prénom" },
@@ -123,26 +130,22 @@ const PrestataireTable = () => {
       render: (row) => {
         return  row.service.nom 
       },
-    },
-    
-         
+    },    
     { key: "telephone", label: "Téléphone" },
-    { key: "adresse", label: "Adresse" },
     {
       key: "actions",
       label: "Actions",
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <FaEdit
+           <FaEdit
             className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
             onClick={() => handleEdit(row.id)}
           />
-          {row.reclamations?.length > 0 ? (
             <RiEyeLine
               className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
               onClick={() => handleShow(row.id)}
             />
-          ) : (
+         
             <RiDeleteBin6Line
               className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
               onClick={() => {
@@ -150,13 +153,15 @@ const PrestataireTable = () => {
                 setShowDeleteModal(true);
               }}
             />
-          )}
         </div>
       ),
     },
   ];
   
-
+  const columns = !serviceId.service_id 
+  ? allColumns
+  : allColumns.filter(col => col.key !== "service");
+  
   const formatData = () => {
     return prestataires.map((pre) => ({
       id: pre.id,
@@ -166,14 +171,13 @@ const PrestataireTable = () => {
       email: pre.email,
       service: pre.service || '',
       telephone: pre.telephone,
-      adresse: pre.adresse,
       reclamations: pre.reclamations || [],
     }));
   };
   
 
   const data_to_export = () => {
-    return prestataires.map((pre) => ({
+    return prestataires?.map((pre) => ({
       CIN: pre.cin,
       Nom: pre.nom,
       Prénom: pre.prenom,
@@ -185,6 +189,8 @@ const PrestataireTable = () => {
   };
   
 
+  const selectedPrestataire = prestataires.find((prestataire) => prestataire.id === selectedId);
+
   const columns_export = [
     { key: "CIN", label: "CIN" },
     { key: "Nom", label: "Nom" },
@@ -192,16 +198,17 @@ const PrestataireTable = () => {
     { key: "Email", label: "Email" },
     { key: "Service", label: "Service" },
     { key: "Téléphone", label: "Téléphone" },
-    { key: "Adresse", label: "Adresse" },
   ];
   
   return (
     <>
       <Table
+        title={serviceId.service_id && "Prestataires liées"}
         data_to_export={data_to_export()}
         columns_export={columns_export}
         name_file_export={"prestataire_export"}
         columns={columns}
+        onFilterToggle={handleFilterToggle}
         data={formatData()}
         filterComponent={
           <div className="space-y-4 p-4 rounded-lg shadow-md">
@@ -209,7 +216,6 @@ const PrestataireTable = () => {
               className="grid gap-3"
               style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}
             >
-              {/* Champs de recherche */}
               <Input
                 type="text"
                 placeholder="Nom..."
@@ -247,34 +253,33 @@ const PrestataireTable = () => {
                 onChange={(e) => handleFilterChange("telephone", e.target.value)}
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
-              <Input
-                type="text"
-                placeholder="Adresse..."
-                value={tempFilters.adresse}
-                onChange={(e) => handleFilterChange("adresse", e.target.value)}
-                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+              
+              {!serviceId.service_id && (
+                <Select
+                isClearable
+                value={services
+                  .map(service => ({
+                    value: service.id,
+                    label: service.nom,
+                    id: service.id
+                  }))
+                  .find(opt => opt.value === tempFilters.serviceId) || null}
+                onChange={(selected) => handleFilterChange("serviceId", selected?.value || null)}
+                options={services.map(service => ({
+                  value: service.id,
+                  label: service.nom,
+                  id: service.id
+                }))}
+                isLoading={loading}
+                placeholder="Choisir un service..."
+                className="text-sm"
               />
-              <select
-                value={tempFilters.serviceId}
-                onChange={(e) => handleFilterChange("serviceId", e.target.value)} // Envoi du serviceId
-                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-              >
-                <option value="" disabled>Choisir un service</option>
-                {loading ? (
-                  <option>Chargement...</option>
-                ) : (
-                  services.map(service => (
-                    <option key={service.id} value={service.id}>
-                      {service.nom} {/* Assure-toi d'utiliser le nom correct */}
-                    </option>
-                  ))
-                )}
-              </select>
+              
+              )}
         
              
             </div>
         
-            {/* Boutons */}
             <div className="flex justify-end gap-3 pt-2">
               <button
                 type="button"
@@ -315,12 +320,18 @@ const PrestataireTable = () => {
           <DeleteData
             route={APIURL.Prestataires}
             Id={selectedId}
-            message={"Êtes-vous sûr de vouloir supprimer ce prestataire ?"}
+            type="Prestataire"
+            message={
+              selectedPrestataire && selectedPrestataire.reclamations && selectedPrestataire.reclamations.length > 0
+                ? `Attention : la suppression de ce prestataire entraînera également la suppression de tous les réclamations associés. Êtes-vous sûr de vouloir le supprimer ?`
+                : `Êtes-vous sûr de vouloir supprimer ce prestataire ?`
+            }
             accessToken={accesstoken}
             onClose={() => {
               setShowDeleteModal(false);
               fetchData_table_by_projet(
                 entity,
+                filters,       
                 searchTerm,
                 currentPage,
                 rowsPerPage,
@@ -329,7 +340,7 @@ const PrestataireTable = () => {
                 setError,
                 setPrestataires,
                 setTotalRows
-              );
+              );      
             }}
           />
         </Modal>
