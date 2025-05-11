@@ -50,14 +50,15 @@ export default function ProjetsDropDown() {
     const handleSelectProjet = async (projet) => {
         if (isSubmitting) return;
 
+        // Close the dropdown immediately before doing anything else
+        setIsSelectorOpened(false);
+        setInputValue("");
+
         setIsSubmitting(true);
         const success = selectProjet(projet);
         setIsSubmitting(false);
 
-        if (success) {
-            setIsSelectorOpened(false);
-            setInputValue("");
-        }
+        // No need for additional dropdown closing logic here as it's already closed above
     };
 
     // Filter projets based on search input

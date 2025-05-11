@@ -4,6 +4,7 @@ import axios from 'axios';
 import { APIURL } from '@/configs/api';
 import { useSociete } from './SocieteContext';
 import { useAuth } from './AuthContext';
+import { usePathname, useRouter } from 'next/navigation'; // Import navigation hooks
 
 // Create context
 const ProjetContext = createContext();
@@ -25,6 +26,8 @@ export function ProjetProvider({ children }) {
   const [error, setError] = useState(null);
   const { selectedSociete } = useSociete();
   const { user } = useAuth();
+  const pathname = usePathname(); // Get current URL path
+  const router = useRouter();  // Get router for navigation
 
   // Fetch all projects for the selected société
   const fetchProjets = useCallback(async () => {
@@ -90,7 +93,7 @@ export function ProjetProvider({ children }) {
   const selectProjet = (projet) => {
     if (!projet || !projet.id) {
       console.error("Attempting to select invalid project:", projet);
-      return;
+      return false;
     }
     
     console.log("Setting selected project in context:", projet.id);
@@ -98,6 +101,29 @@ export function ProjetProvider({ children }) {
     
     // Store in localStorage for persistence
     localStorage.setItem('selectedProjet', JSON.stringify(projet));
+    
+    // Check if we're on a project detail page and update the URL if needed
+    if (pathname) {
+      // Match the pattern /Projets/{id} to detect project detail pages
+      const projectMatch = pathname.match(/^\/Projets\/(\d+)(\/.*)?$/);
+      
+      if (projectMatch) {
+        const currentProjectId = projectMatch[1];
+        const trailingPath = projectMatch[2] || '';
+        
+        if (currentProjectId !== projet.id.toString()) {
+          // Construct new URL with the new project ID but keep any trailing path
+          const newPath = `/Projets/${projet.id}${trailingPath}`;
+          
+          // Use the router to update the URL without a full page refresh
+          router.push(newPath, {scroll: false});
+          
+          console.log(`Updated URL from project ${currentProjectId} to ${projet.id}`);
+        }
+      }
+    }
+    
+    return true;
   };
 
   // Effect to load selected project from localStorage on initialization

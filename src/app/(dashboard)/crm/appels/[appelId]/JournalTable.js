@@ -2,15 +2,15 @@
 
 import React, { useEffect, useState } from 'react';
 import Table from '@/components/Table';
-import { useAuth } from '../../../../../context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
-import { fetchData_table_by_id } from '../../../../../../src/configs/api-utils';
+import { fetchData_table_by_id } from '@/configs/api-utils';
 import format from 'date-fns/format';
 import DeleteData from '@/components/DeleteData';
 
 import { Eye, Edit, CalendarClock, CheckCircle, Trash2 } from 'lucide-react';
 
-import { APIURL, ENDPOINTS } from '../../../../../../src/configs/api';
+import { APIURL, ENDPOINTS } from '@/configs/api';
 import Modal from '@/components/Modal';
 import Modal_Show from './Modal_Show';
 import Modal_Traite from '../../../crm/Modal_Traite';
@@ -340,7 +340,7 @@ const JournalTable = (id) => {
             row.relance.type_traitement == 0 &&
             row.relance.deleted_at == null &&
             row.user?.user_id_origin == user.id && (
-              <CheckCircle
+              <FaCheckCircle
                 className="w-4 h-4 text-green-500 hover:text-green-700 cursor-pointer"
                 title="Traiter Relance"
                 onClick={() => handleValider(row.relance?.id, 'Relance')}
@@ -350,14 +350,14 @@ const JournalTable = (id) => {
             row.rdv.type_traitement == 0 &&
             row.rdv.deleted_at == null &&
             row.user?.user_id_origin == user.id && (
-              <CalendarClock
+              <FaMeetup
                 className="w-4 h-4 text-orange-500 hover:text-orange-700 cursor-pointer"
                 title="Traiter Rendez Vous"
                 onClick={() => handleValider(row.rdv?.id, 'RDV')}
               />
             )}
 
-          <Trash2
+          <RiDeleteBin6Line
             className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
             onClick={() => {
               setSelectedId(row.id);
