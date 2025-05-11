@@ -11,13 +11,14 @@ export default function DeleteData({
   accessToken,
   onClose,
   message,
+  type='Donnée',
 }) {
   const [loading, setLoading] = useState(false); // State for loading spinner
 
   // Delete user handler
   const handleDelete = async () => {
     if (!Id || !accessToken) {
-      toast.error('Donnée ou token invalide');
+      toast.error(`${type}  ou token invalide`);
       return;
     }
 
@@ -41,7 +42,7 @@ export default function DeleteData({
         });
       }
 
-      toast.success('Donnée supprimé avec succès');
+      toast.success(`${type} supprimé avec succès`);
       if (onClose) onClose();
     } catch (error) {
       console.error(

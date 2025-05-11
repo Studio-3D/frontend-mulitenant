@@ -8,6 +8,8 @@ import { handleExportExcel } from '../../src/configs/export';
 import Modal_Import from './Modal_Import';
 
 const Table = ({
+  onFilterToggle = () => {},
+  title,
   name_file_export,
   data_to_export,
   columns_export,
@@ -17,7 +19,7 @@ const Table = ({
   addLink,
   loading,
   error,
-  emptyMessage,
+  emptyMessage = "Aucune donnée trouvée",
   onPageChange = () => {},
   onRowsPerPageChange,
   onSearchChange = () => {},
@@ -34,6 +36,12 @@ const Table = ({
   const [showFilter, setShowFilter] = useState(false);
   const [showModal_Import, setShowModal_Import] = useState(false);
 
+  const toggleFilter = () => {
+    const newState = !showFilter;
+    setShowFilter(newState);
+    onFilterToggle(newState); // <--- Appelle le parent
+  };
+  
   useEffect(() => {
     const timer = setTimeout(() => {
       onSearchChange(localSearchTerm);
@@ -75,7 +83,11 @@ const Table = ({
   );
 
   return (
-    <div className="mx-auto px-6 py-4 mt-2 mb-4 bg-white rounded-lg ">
+    <div className="mx-auto px-6 py-4 mt-2 mb-4 bg-white rounded-lg shadow-md">
+      {title && (
+        <h2 className="text-xl font-semibold text-gray-700 mb-2">{title}</h2>
+      )}
+
       {/* Table Controls */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-6">
         <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -84,8 +96,8 @@ const Table = ({
               className={`border rounded-lg p-1.5 cursor-pointer flex items-center ${
                 showFilter ? 'bg-[#009FFF] text-white' : 'border-gray-300 bg-transparent'
               }`}
-              onClick={() => setShowFilter(!showFilter)}
-            >
+              onClick={toggleFilter}
+              >
               <Filter className="w-6 h-6" />
             </button>
           )}

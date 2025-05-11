@@ -76,6 +76,9 @@ const BanqueTable = ({ data = [], loading = false, onAction,onFilterSubmit  }) =
     setRowsPerPage(newSize);
     setCurrentPage(1); // Reset to first page when changing page size
   };
+  const handleFilterToggle = (isOpen) => {
+    if (!isOpen) resetFilters(); // Si on ferme, on réinitialise
+  };
 
   // Export to Excel function
   const handleExportExcel = () => {
@@ -96,6 +99,7 @@ const BanqueTable = ({ data = [], loading = false, onAction,onFilterSubmit  }) =
       <Table
         columns={columns}
         data={currentItems}
+        onFilterToggle={handleFilterToggle}
         filterComponent={
           <div className="space-y-4 p-4 rounded-lg shadow-md">
             <div
@@ -109,9 +113,7 @@ const BanqueTable = ({ data = [], loading = false, onAction,onFilterSubmit  }) =
                 onChange={(e) => handleFilterChange("nom", e.target.value)}
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
-              
             </div>
-        
             <div className="flex justify-end gap-3 pt-2">
               <button
                 type="button"

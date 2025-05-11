@@ -7,15 +7,27 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Pencil, Trash2 } from "lucide-react";
 import SelectInput from "@/components/SelectInput";
-import Input from "@/components/Input";
 
-import { APIURL, ENDPOINTS } from "@/configs/api";
+import { APIURL, ENDPOINTS, RESOURCE_URL } from "@/configs/api";
 import { fetchData_table_by_projet } from "@/configs/api-utils";
-import { isAdmin, isSuperAdmin } from "@/configs/enum";
+import { isAdmin, isSuperAdmin, Statuts_Prospect } from "@/configs/enum";
 import { useAuth } from "@/context/AuthContext";
 import { format } from "date-fns";
+import { Box, Dialog, DialogContent, DialogTitle, Grid, IconButton, Typography } from "@mui/material";
+import Input from "@/components/Input";
+import { MdBuild } from "react-icons/md"; // Clé à molette
+import axios from "axios";
+import toast from "react-hot-toast";
+import { BsEye } from "react-icons/bs";
+import { FaCheck } from "react-icons/fa"
+import ReclamationDialog from "@/components/dialogTraiterRec";
+import { useProjet } from "@/context/ProjetContext";
+import { BsFileEarmark  } from "react-icons/bs";
 
-const ReclamationTable = () => {
+
+
+
+const ReclamationTable = (prestId ) => {
   const [reclamations, setReclamations] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -25,6 +37,50 @@ const ReclamationTable = () => {
   const [totalRows, setTotalRows] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [disabled, setDisabled] = useState(false)
+// état local
+const [openDialog, setOpenDialog] = useState(false)
+const [dialogType, setDialogType] = useState("traiter") // ou "resoudre"
+const [formValues, setFormValues] = useState({})
+const [prestataires, setPrestataires] = useState([]);
+const { selectedProjet } = useProjet();
+console.log('prestId',prestId)
+const openTraitement = (id, bien) => {
+  setSelectedId(id)
+  setDialogType("traiter")
+  setFormValues({ bien, prestataire_id: '', date_intervention: '', commentaire: '' })
+  setOpenDialog(true)
+}
+
+const openResolution = (id, bien) => {
+  setSelectedId(id)
+  setDialogType("resoudre")
+  setFormValues({ bien, statut: '', date_fin_inter: '', commentaire: '' })
+  setOpenDialog(true)
+}
+
+const fetchPrestataires= async () => {
+    try {
+      setLoading(true);
+
+      const response = await axios.get(
+        `${APIURL.ROOT}/v1/projets/${selectedProjet?.id}/Prestataires/`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      const { data } = response;
+      setPrestataires(data.prestataire);
+
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+
   const [filters, setFilters] = useState({
     client: "",
     date_intervention: "",
@@ -36,6 +92,7 @@ const ReclamationTable = () => {
   });
 
   const [tempFilters, setTempFilters] = useState({ ...filters });
+  const accessToken = localStorage.getItem('accessToken')
 
   const handleFilterChange = (field, value) => {
     setTempFilters((prev) => ({ ...prev, [field]: value }));
@@ -66,15 +123,6 @@ const ReclamationTable = () => {
   const router = useRouter();
 
 
-/* const entity = {
-  API_URL: "Reclamations",
-  dataKey: "reclamations",
-  name: "Réclamation",
-  searchFields: ["titre", "description"],
-}; */
-
-
-
   const entity = {
     API_URL: "ReclamationsSav",
     dataKey: "data",
@@ -83,9 +131,10 @@ const ReclamationTable = () => {
   };
 
   useEffect(() => {
+    fetchPrestataires()
     fetchData_table_by_projet(
       entity,
-      filters, 
+      { ...filters,prestataire_id: prestId }, 
       searchTerm,
       currentPage,
       rowsPerPage,
@@ -97,54 +146,225 @@ const ReclamationTable = () => {
     );
   }, [searchTerm, currentPage, rowsPerPage, accesstoken,filters]);
   
+  const handleSubmitReclamation = (e) => {
+    e.preventDefault();
+  
+    // Validation
+    if (dialogType === "traiter") {
+      if (!formValues.prestataire_id || !formValues.date_intervention) {
+        toast.error("Veuillez remplir tous les champs obligatoires (Prestataire et Date).");
+        return;
+      }
+    } else if (dialogType === "resoudre") {
+      if (!formValues.statut || !formValues.date_fin_inter) {
+        toast.error("Veuillez remplir tous les champs obligatoires (Statut et Date de Fin).");
+        return;
+      }
+    }
+  
+    setDisabled(true);
+  
+    const formData = new FormData();
+  
+    if (dialogType === "traiter") {
+      formData.append("date_intervention", formValues.date_intervention);
+      formData.append("prestataire_id", formValues.prestataire_id);
+      formData.append("commentaire", formValues.commentaire || ""); // Ensure empty string instead of null
+    } else {
+      formData.append("statut", formValues.statut);
+      formData.append("date_fin_intervention", formValues.date_fin_inter);
+      formData.append("commentaire", formValues.commentaire || ""); // Ensure empty string instead of null
+    }
+  
+    // DEBUG: Log FormData contents *before* sending
+    console.log("FormData contents:");
+
+
+    for (const pair of formData.entries()) {
+      console.log(pair[0] + ': ' + pair[1]);
+    }
+    console.log("FormData :",formData);
+
+  
+    const endpoint =
+      dialogType === "traiter"
+        ? `${APIURL.ROOTV1}/traiter_reclamation_sav/${selectedId}`
+        : `${APIURL.ROOTV1}/resoudre_reclamation_sav/${selectedId}`;
+  
+        axios.post(endpoint, formData, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          }
+        })
+      .then(() => {
+        toast.success(dialogType === "traiter" ? "Réclamation traitée !" : "Réclamation résolue !");
+        setOpenDialog(false);
+        setDisabled(false);
+  
+        // Rechargement des données
+        fetchData_table_by_projet(
+          entity,
+          filters,
+          searchTerm,
+          currentPage,
+          rowsPerPage,
+          accessToken,
+          setLoading,
+          setError,
+          setReclamations,
+          setTotalRows
+        );
+      })
+      .catch((err) => {
+        console.error(err);
+        setDisabled(false);
+        toast.error("Erreur lors de la soumission.");
+      });
+  };
+  
+
+  
   const handleEdit = (id) =>
     router.push(`${ENDPOINTS.ReclamationsSav}?id=${id}&action=edit`);
 
+ 
+
+  const getFileUrl = (fichier) => {
+    return `${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/reclamations/${fichier}`;
+  };
+ 
+  
+
+ const statut = {
+    1: { code: 1, label: 'En Attente', color: 'bg-blue-100 text-blue-800' },
+    2: { code: 2, label: 'En Cours', color: 'bg-blue-100 text-blue-800' },
+    3: { code: 3, label: 'Resolu', color: 'bg-green-100 text-green-800' },
+    4: { code: 4, label: 'Non Resolu', color: 'bg-red-100 text-red-800' },
+  };
+
+  
+
+  const getStatutBadge = (Statut) => {
+    const statInfo = statut[Statut];
+    if (!statInfo) return null;
+  
+    return (
+      <span
+        className={`px-2 py-1 rounded-full text-xs font-medium ${statInfo.color}`}
+      >
+        {statInfo.label}
+      </span>
+    );
+  };
+
+  function NomBienComplet(bien) {
+    const noms = [];
+  
+    if (bien.tranche?.nom) noms.push(bien.tranche.nom);
+    if (bien.bloc?.nom) noms.push(bien.bloc.nom);
+    if (bien.immeuble?.nom) noms.push(bien.immeuble.nom);
+  
+    noms.push(bien.propriete_dite_bien);
+  
+    return noms.join(' - ');
+  }
+  
+  function handleShow(Id) {
+    router.push(`/sav/reclamations/show/${Id}`);
+  }
+  
   const columns = [
-    { key: 'date_reclamation', label: 'Date Réclamation' },
-    { key: 'bien', label: 'Bien' },
-    { key: 'client', label: 'Client' },
-    { key: 'probleme', label: 'Problèmes' },
-   // ...(prestataire_id != null ? [{ key: 'service', label: 'Service/Prestataire' }] : []),
-    { key: 'date_intervention', label: 'Date Intervention' },
-    { key: 'date_fin_intervention', label: 'Date Fin Intervention' },
-    { key: 'statut', label: 'Statut' },
-    { key: 'date_traitement', label: 'Date' },
-    { key: 'commentaire', label: 'Commentaire' },    
     {
-      key: "actions",
-      label: "Actions",
+      key: 'date_reclamation',
+      label: 'Date Réclamation',
+      render: (row) => {
+        const date = new Date(row.date_reclamation);
+        const formattedDate = date.toLocaleDateString('fr-FR'); // jj/mm/aaaa
+        return <strong>{formattedDate}</strong>; // en gras
+      },
+    },    
+    { key: 'bien', label: 'Bien' },
+    { key: 'service', label: 'Service' },
+    { key: 'prestataire', label: 'Prestataire' },
+    {
+      key: 'statut',
+      label: 'Statut',
+      render: (row) => {
+        return getStatutBadge(row.statut_raw);
+      },
+    },
+        
+    {
+      key: 'actions',
+      label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <Pencil
+          <BsEye
+            className="w-4 h-4 text-blue-500 hover:text-yellow-700 cursor-pointer"
+            onClick={() => handleShow(row.id)}
+          />
+          <FaEdit
             className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
             onClick={() => handleEdit(row.id)}
           />
-          <Trash2
-            className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
+          {row.statut_raw === 1 && (
+            <>
+              <MdBuild
+                className="w-5 h-5 text-red-500 hover:text-red-700 cursor-pointer"
+                title="Traiter"
+                onClick={() => openTraitement(row.id, row.bien)}
+              />
+            </>
+          )}
+          {row.statut_raw === 2 && (
+            <>
+            <FaCheck
+              className="w-4 h-4 text-green-600 hover:text-green-800 cursor-pointer"
+              title="Résoudre"
+              onClick={() => openResolution(row.id, row.bien)}
+            />
+
+            </>
+          )}
+
+          <RiDeleteBin6Line
+            className="w-4 h-4 text-red-1000 hover:text-red-700 cursor-pointer"
             onClick={() => {
               setSelectedId(row.id);
               setShowDeleteModal(true);
             }}
           />
-        </div>
+          {row.piece_jointe && row.piece_jointe.length > 0 && (
+            <div className="flex gap-2">
+              <BsFileEarmark 
+                title="visualiser piece jointe"
+                className="w-4 h-4 text-blue-500 cursor-pointer"
+                onClick={() => window.open(getFileUrl(row.piece_jointe[0]?.fichier), "_blank")}
+              />
+
+            </div>
+          )}
+
+    </div>
+ 
       ),
     },
   ];
+  
+  
+
 
   const formatData = () => {
     return reclamations?.map((rec) => ({
       id: rec.id,
       date_reclamation: rec.date_reclamation,
-      bien: rec.bien.propriete_dite_bien,
-      client: `${rec.client.nom} ${rec.client.prenom}`,
-      problemes: rec.problemes,
-      service_prestataire:
-        rec.prestataire?.service?.nom && rec.prestataire?.nom
-          ? `${rec.prestataire.service.nom} / ${rec.prestataire.nom} ${rec.prestataire.prenom}`
+      bien: NomBienComplet(rec.bien),
+      emplacement: rec.emplacement,
+      service:
+        rec?.service?.nom 
+          ? rec?.service?.nom
           : '',
-      date_intervention: rec.date_intervention,
-      date_fin_intervention: rec.date_fin_intervention,
+      prestataire:rec.prestataire?.nom? `${rec.prestataire.nom} ${rec.prestataire.prenom}`:'',
       statut:
         rec.statut == '1'
           ? 'En Cours'
@@ -153,8 +373,8 @@ const ReclamationTable = () => {
           : rec.statut == '3'
           ? 'Non Résolu'
           : '',
-      date_traitement: rec.date_traitement,
-      commentaire: rec.commentaire
+      statut_raw: parseInt(rec.statut),
+      piece_jointe: rec.piece_jointe,
     }));
   };
   
@@ -166,7 +386,7 @@ const ReclamationTable = () => {
         : '',
       Bien: rec.bien?.propriete_dite_bien,
       Client: `${rec.client.nom} ${rec.client.prenom}`,
-      Problèmes: rec.problemes,
+      Problèmes: rec.emplacement,
       "Service / Prestataire":
         rec.prestataire?.service?.nom && rec.prestataire?.nom
           ? `${rec.prestataire.service.nom} / ${rec.prestataire.nom} ${rec.prestataire.prenom}`
@@ -192,6 +412,13 @@ const ReclamationTable = () => {
     }));
   };
   
+  const isPrestIdEmpty = 
+  !prestId || (typeof prestId === 'object' && Object.keys(prestId).length === 0);
+  
+
+  const handleFilterToggle = (isOpen) => {
+    if (!isOpen) resetFilters(); // Si on ferme, on réinitialise
+  };
 
   const columns_export = [
     { key: 'Date Réclamation', label: 'Date Réclamation' },
@@ -209,9 +436,11 @@ const ReclamationTable = () => {
   return (
     <>
       <Table
+        title={prestId.prestataire_id && "Reclamations liées"}
         data_to_export={data_to_export()}
         columns_export={columns_export}
         name_file_export={"reclamation_export"}
+        onFilterToggle={handleFilterToggle}
         columns={columns}
         filterComponent={
           <div className="space-y-4 p-4 rounded-lg shadow-md">
@@ -318,23 +547,40 @@ const ReclamationTable = () => {
         enableExport={true}
         enableImport={true}
         addLink={
-          isSuperAdmin(user.role) || isAdmin(user.role)
+          (isSuperAdmin(user?.role) || isAdmin(user?.role)) && isPrestIdEmpty
             ? `${ENDPOINTS.ReclamationsSav}?action=add`
             : undefined
         }
+        
       />
+      <ReclamationDialog
+      
+  open={openDialog}
+  onClose={() => setOpenDialog(false)}
+  type={dialogType}
+  prestataires={prestataires}
+  values={formValues}
+  setValues={setFormValues}
+  onSubmit={handleSubmitReclamation}
+  disabled={disabled}
+/>
+
+
+
 
       {showDeleteModal && selectedId && (
         <Modal isVisible={true} onClose={() => setShowDeleteModal(false)}>
           <DeleteData
             route={APIURL.ReclamationsSav}
             Id={selectedId}
-            message={"Êtes-vous sûr de vouloir supprimer ce reclamation ?"}
+            message={"Êtes-vous sûr de vouloir supprimer cette reclamation ?"}
             accessToken={accesstoken}
+            type="Reclamation"
             onClose={() => {
               setShowDeleteModal(false);
               fetchData_table_by_projet(
                 entity,
+                filters, 
                 searchTerm,
                 currentPage,
                 rowsPerPage,

@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Printer } from 'lucide-react'; // Replace MdPrint
 import Button from './Button';
 import toast from 'react-hot-toast';
-import { APIURL } from '../configs/api';
+import { APIURL, RESOURCE_URL } from '../configs/api';
 import { useAuth } from '../context/AuthContext';
 
 export default function Modal_Import({ onClose, title, route }) {
@@ -15,13 +15,18 @@ export default function Modal_Import({ onClose, title, route }) {
   const accessToken = token || localStorage.getItem('accessToken');
   const [loading, setLoading] = useState({ form: false });
   const fileInputRef = useRef(null);
-  const FileUrl = process.env.NEXT_PUBLIC_IMG_URL;
+  const FileUrl = 'http://localhost:8000/';
   const [file, setFile] = useState(null);
   const [backendErrors, setBackendErrors] = useState(null);
 
-  const handleFileClick = () => {
-    window.open(`${FileUrl}/Docs/import_prospect.xlsx`, '_blank');
-  };
+  
+  const handleFileClick = file => {
+    window.open(
+      `${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/reclamations/${file}`,
+      '_blank'
+    )
+  }
+
   const onSubmit_file = (e) => {
     e.preventDefault();
 
