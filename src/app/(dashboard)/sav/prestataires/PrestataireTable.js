@@ -15,7 +15,7 @@ import { useAuth } from "@/context/AuthContext";
 import SelectInput from "@/components/SelectInput";
 import Input from "@/components/Input";
 
-const PrestataireTable = (serviceId) => {
+const PrestataireTable = ({ service_id }) => {
   const [prestataires, setPrestataires] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -36,8 +36,7 @@ const PrestataireTable = (serviceId) => {
     cin: "",
     email: "",
     telephone: "",
-    serviceId: serviceId.service_id == null ? "" : serviceId.service_id, 
-    
+    serviceId: service_id == null ? "" : service_id, 
   });
 
   const [tempFilters, setTempFilters] = useState({ ...filters });
@@ -50,70 +49,68 @@ const PrestataireTable = (serviceId) => {
   };
 
   const fetchServices = async () => {
-      try {
-  
-        const response = await axios.get(
-          `${APIURL.ROOT}/v1/projets/1/ServicesPrestataires/`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
-        const { data } = response;
-        setServices(data.services);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-  
-    useEffect(() => {
-      fetchServices();
-    }, []);
-
-    function handleShow(Id) {
-      router.push(`/sav/prestataires/show/${Id}`);
+    try {
+      const response = await axios.get(
+        `${APIURL.ROOT}/v1/projets/1/ServicesPrestataires/`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      const { data } = response;
+      setServices(data.services);
+    } catch (error) {
+      console.error("Error fetching data:", error);
     }
+  };
+  
+  useEffect(() => {
+    fetchServices();
+  }, []);
 
-    const handleFilterToggle = (isOpen) => {
-      if (!isOpen) resetFilters(); // Si on ferme, on réinitialise
-    };
+  function handleShow(Id) {
+    router.push(`/sav/prestataires/show/${Id}`);
+  }
+
+  const handleFilterToggle = (isOpen) => {
+    if (!isOpen) resetFilters(); // Si on ferme, on réinitialise
+  };
 
   useEffect(() => {
-
     fetchData_table_by_projet(
-        entity,
-        filters,       
-        searchTerm,
-        currentPage,
-        rowsPerPage,
-        accesstoken,
-        setLoading,
-        setError,
-        setPrestataires,
-        setTotalRows
-      );
-    }, [searchTerm, currentPage, rowsPerPage, accesstoken,filters]);
+      entity,
+      filters,       
+      searchTerm,
+      currentPage,
+      rowsPerPage,
+      accesstoken,
+      setLoading,
+      setError,
+      setPrestataires,
+      setTotalRows
+    );
+  }, [searchTerm, currentPage, rowsPerPage, accesstoken, filters]);
     
-    const handleFilterChange = (field, value) => {
-      setTempFilters((prev) => ({ ...prev, [field]: value }));
-    };
+  const handleFilterChange = (field, value) => {
+    setTempFilters((prev) => ({ ...prev, [field]: value }));
+  };
   
-    const applyFilters = () => {
-      setFilters(tempFilters); // C’est ici que fetchUsers va être déclenché
+  const applyFilters = () => {
+    setFilters(tempFilters); // C’est ici que fetchUsers va être déclenché
+  };
+  const resetFilters = () => {
+    const reset = {
+      nom: "",
+      prenom: "",
+      cin: "",
+      email: "",
+      telephone: "",
+      serviceId: service_id == null ? "" : service_id, // n'inclut que si null
     };
-    const resetFilters = () => {
-      const reset = {
-        nom: "",
-        prenom: "",
-        cin: "",
-        email: "",
-        telephone: "",
-        serviceId: serviceId.service_id == null ? "" : serviceId.service_id, // n'inclut que si null
-      };
-      setFilters(reset);
-      setTempFilters(reset);
-    };
+    setFilters(reset);
+    setTempFilters(reset);
+  };
 
   const handleEdit = (id) =>
     router.push(`${ENDPOINTS.Prestataires}?id=${id}&action=edit`);
@@ -127,7 +124,7 @@ const PrestataireTable = (serviceId) => {
       key: "service",
       label: "Service",
       render: (row) => {
-        return  row.service.nom 
+        return row.service?.nom || "-"
       },
     },    
     { key: "telephone", label: "Téléphone" },
@@ -153,14 +150,15 @@ const PrestataireTable = (serviceId) => {
                 setShowDeleteModal(true);
               }}
             />
+          )}
         </div>
       ),
     },
   ];
   
-  const columns = !serviceId.service_id 
-  ? allColumns
-  : allColumns.filter(col => col.key !== "service");
+  const columns = !service_id 
+    ? allColumns
+    : allColumns.filter(col => col.key !== "service");
   
   const formatData = () => {
     return prestataires.map((pre) => ({
@@ -203,7 +201,7 @@ const PrestataireTable = (serviceId) => {
   return (
     <>
       <Table
-        title={serviceId.service_id && "Prestataires liées"}
+        title={service_id && "Prestataires liées"}
         data_to_export={data_to_export()}
         columns_export={columns_export}
         name_file_export={"prestataire_export"}
@@ -254,7 +252,7 @@ const PrestataireTable = (serviceId) => {
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
               
-              {!serviceId.service_id && (
+              {!service_id && (
                 <Select
                 isClearable
                 value={services
