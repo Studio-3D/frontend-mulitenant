@@ -2,16 +2,15 @@
 
 import React, { useEffect, useState } from 'react';
 import Table from '@/components/Table';
-import { useAuth } from '../../../../../context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
-import { fetchData_table_by_id } from '../../../../../../src/configs/api-utils';
+import { fetchData_table_by_id } from '@/configs/api-utils';
 import format from 'date-fns/format';
 import DeleteData from '@/components/DeleteData';
 
-import { FaRegEye, FaEdit, FaMeetup, FaCheckCircle } from 'react-icons/fa';
-import { RiDeleteBin6Line } from 'react-icons/ri';
+import { Eye, Edit, CalendarClock, CheckCircle, Trash2 } from 'lucide-react';
 
-import { APIURL, ENDPOINTS } from '../../../../../../src/configs/api';
+import { APIURL, ENDPOINTS } from '@/configs/api';
 import Modal from '@/components/Modal';
 import Modal_Show from './Modal_Show';
 import Modal_Traite from '../../../crm/Modal_Traite';
@@ -305,13 +304,13 @@ const JournalTable = (id) => {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <FaEdit
+          <Edit
             className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
             title="Modifier"
             onClick={() => handleEdit(row.id)}
           />
           {VISITE_INTERETS[row.interet]?.label != 'Injoignable' && (
-            <FaRegEye
+            <Eye
               className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
               title="Voir détails"
               onClick={() =>

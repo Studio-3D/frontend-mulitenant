@@ -5,8 +5,7 @@ import Modal from "@/components/Modal";
 import Table from "@/components/Table";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { FaEdit } from "react-icons/fa";
-import { RiDeleteBin6Line } from "react-icons/ri";
+import { Pencil, Trash2, Eye, Check, Wrench, File } from "lucide-react";
 import SelectInput from "@/components/SelectInput";
 
 import { APIURL, ENDPOINTS, RESOURCE_URL } from "@/configs/api";
@@ -16,17 +15,10 @@ import { useAuth } from "@/context/AuthContext";
 import { format } from "date-fns";
 import { Box, Dialog, DialogContent, DialogTitle, Grid, IconButton, Typography } from "@mui/material";
 import Input from "@/components/Input";
-import { MdBuild } from "react-icons/md"; // Clé à molette
 import axios from "axios";
 import toast from "react-hot-toast";
-import { BsEye } from "react-icons/bs";
-import { FaCheck } from "react-icons/fa"
 import ReclamationDialog from "@/components/dialogTraiterRec";
 import { useProjet } from "@/context/ProjetContext";
-import { BsFileEarmark  } from "react-icons/bs";
-
-
-
 
 const ReclamationTable = (prestId ) => {
   const [reclamations, setReclamations] = useState([]);
@@ -299,17 +291,17 @@ const fetchPrestataires= async (service_id) => {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <BsEye
+          <Eye
             className="w-4 h-4 text-blue-500 hover:text-yellow-700 cursor-pointer"
             onClick={() => handleShow(row.id)}
           />
-          <FaEdit
+          <Pencil
             className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
             onClick={() => handleEdit(row.id)}
           />
           {row.statut_raw === 1 && (
             <>
-              <MdBuild
+              <Wrench
                 className="w-5 h-5 text-red-500 hover:text-red-700 cursor-pointer"
                 title="Traiter"
                 onClick={() => openTraitement(row, row.bien)}
@@ -318,7 +310,7 @@ const fetchPrestataires= async (service_id) => {
           )}
           {row.statut_raw === 2 && (
             <>
-            <FaCheck
+            <Check
               className="w-4 h-4 text-green-600 hover:text-green-800 cursor-pointer"
               title="Résoudre"
               onClick={() => openResolution(row.id, row.bien)}
@@ -327,7 +319,7 @@ const fetchPrestataires= async (service_id) => {
             </>
           )}
 
-          <RiDeleteBin6Line
+          <Trash2
             className="w-4 h-4 text-red-1000 hover:text-red-700 cursor-pointer"
             onClick={() => {
               setSelectedId(row.id);
@@ -337,6 +329,7 @@ const fetchPrestataires= async (service_id) => {
           
     </div>
  
+
       ),
     },
   ];

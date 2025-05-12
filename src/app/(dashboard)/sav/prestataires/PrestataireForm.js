@@ -24,7 +24,6 @@ import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponen
 import Autocomplete from '@/components/Autocomplete';
 import SelectInput from "@/components/SelectInput";
 import { encryptUserType, USER_TYPES } from "@/components/user-utils";
-import Select from 'react-select';
 import InputSelect from "@/components/inputSelect";
 import Input from '@/components/Input';
 

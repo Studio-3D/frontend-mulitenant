@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { useProjet } from '@/context/ProjetContext';
-import { FiSearch } from 'react-icons/fi';
+import { Search } from 'lucide-react';
 
 export default function ProjetSelector({ onSelect }) {
   const { projets, fetchProjets, selectProjet, loading } = useProjet();
@@ -57,7 +57,7 @@ export default function ProjetSelector({ onSelect }) {
       {/* Search input */}
       <div className="relative mb-4">
         <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-          <FiSearch className="w-5 h-5 text-gray-400" />
+          <Search className="w-5 h-5 text-gray-400" />
         </div>
         <input
           type="text"

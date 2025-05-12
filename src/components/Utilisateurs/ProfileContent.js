@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useSociete } from '@/context/SocieteContext';
 import Input from "../Input";
 import toast from 'react-hot-toast';
-import { RiEditLine } from "react-icons/ri";
+import { Edit } from "lucide-react";
 import LoadingSpin from '../LoadingSpin';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
@@ -154,7 +154,7 @@ const ProfileContent = ({ userId }) => {
               className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
             />
             <div className="absolute top-1 right-1 bg-white p-1 rounded-full shadow-md">
-              <RiEditLine className="text-gray-600 text-lg" />
+              <Edit className="text-gray-600 text-lg" />
             </div>
           </div>
           <div className="flex flex-col p-4 mt-8">

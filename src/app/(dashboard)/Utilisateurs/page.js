@@ -3,9 +3,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import Table from "@/components/Table";
 import Link from "next/link";
-import { FaRegEye, FaUserEdit, FaUserSlash } from "react-icons/fa";
-import { RiDeleteBin6Line } from "react-icons/ri";
-import { BiSolidUser } from "react-icons/bi";
+import { Eye, UserCog, UserX, User, Trash2 } from "lucide-react";
 import Modal from "@/components/Modal";
 import BlockUser from "@/components/Utilisateurs/BlockUser";
 import UnblockUser from "@/components/Utilisateurs/UnblockUser";
@@ -118,8 +116,8 @@ const Page = () => {
     } catch (err) {
       setError(err.response?.data?.message || "Erreur lors du chargement");
       if (err.response?.status === 401) {
-        router.push("/connexion");
-        toast.error("Session expirée, veuillez vous reconnecter.");
+        router.push('/');
+        toast.error('Session expirée, veuillez vous reconnecter.');
       }
     } finally {
       setLoading(false);
@@ -265,19 +263,19 @@ const Page = () => {
       render: (row) => (
         <div className="flex gap-3 items-center">
           <Link href={`/Utilisateurs/afficher-utilisateur/${row.id}`}>
-            <FaRegEye
+            <Eye
               className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
               title="Voir détails"
             />
           </Link>
           <Link href={`/Utilisateurs/afficher-utilisateur/${row.id}?edit=true`}>
-            <FaUserEdit
+            <UserCog
               className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
               title="Modifier"
             />
           </Link>
           {row.status === "Actif" ? (
-            <BiSolidUser
+            <User
               className="w-4 h-4 text-green-500 hover:text-green-700 cursor-pointer"
               onClick={() => {
                 setSelectedUserId(row.id);
@@ -286,7 +284,7 @@ const Page = () => {
               title="Bloquer utilisateur"
             />
           ) : (
-            <FaUserSlash
+            <UserX
               className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
               onClick={() => {
                 setSelectedUserId(row.id);
@@ -295,7 +293,7 @@ const Page = () => {
               title="Débloquer utilisateur"
             />
           )}
-          <RiDeleteBin6Line
+          <Trash2
             className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
             onClick={() => {
               setSelectedUserId(row.id);
@@ -314,9 +312,9 @@ const Page = () => {
         <Table
           columns={columns}
           filterComponent={
-            <div className="space-y-4 p-4 rounded-lg shadow-md">
+            <div className="space-y-4 ">
               <div
-                className="grid gap-3"
+                className="grid gap-3 "
                 style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}
               >
                 {/* Champs de recherche */}
@@ -440,7 +438,7 @@ const Page = () => {
           }
           loading={loading}
           error={error}
-          addLink={`/Utilisateurs/Ajouter-Utilisateur`}
+          addLink={user?.role === 1 ? `/Utilisateurs/Ajouter-Utilisateur` : undefined}
           enableExport
           currentPage={currentPage}
           rowsPerPage={rowsPerPage}

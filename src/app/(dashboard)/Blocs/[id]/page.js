@@ -5,12 +5,12 @@ import axios from "axios";
 import { APIURL } from "@/configs/api";
 import { useAuth } from "@/context/AuthContext";
 import { 
-  MdApartment, 
-  MdHome,
-  MdEdit,
-  MdDelete,
-  MdArrowBack
-} from "react-icons/md";
+  Building2, 
+  Home,
+  Edit,
+  Trash2,
+  ArrowLeft
+} from "lucide-react";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import Link from "next/link";
@@ -228,8 +228,8 @@ export default function BlocDetailsPage() {
 
   // Define tabs for this view - only immeubles and biens
   const tabs = [
-    { id: "immeubles", label: "Immeubles", icon: <MdApartment className="w-5 h-5"/> },
-    { id: "biens", label: "Biens", icon: <MdHome className="w-5 h-5"/> }
+    { id: "immeubles", label: "Immeubles", icon: <Building2 className="w-5 h-5"/> },
+    { id: "biens", label: "Biens", icon: <Home className="w-5 h-5"/> }
   ];
 
   return (
@@ -241,21 +241,21 @@ export default function BlocDetailsPage() {
             href={`/Tranches/${bloc.tranche_id}`}
             className="inline-flex items-center text-[#009FFF] hover:text-blue-800"
           >
-            <MdArrowBack className="mr-1" /> Retour à la tranche
+            <ArrowLeft className="mr-1" /> Retour à la tranche
           </Link>
         ) : bloc.projet_id ? (
           <Link 
             href={`/Projets/${bloc.projet_id}?tab=blocs`}
             className="inline-flex items-center text-[#009FFF] hover:text-blue-800"
           >
-            <MdArrowBack className="mr-1" /> Retour au projet
+            <ArrowLeft className="mr-1" /> Retour au projet
           </Link>
         ) : (
           <Link 
             href="/Projets"
             className="inline-flex items-center text-[#009FFF] hover:text-blue-800"
           >
-            <MdArrowBack className="mr-1" /> Retour aux projets
+            <ArrowLeft className="mr-1" /> Retour aux projets
           </Link>
         )}
       </div>
@@ -283,7 +283,7 @@ export default function BlocDetailsPage() {
               <div className="grid grid-cols-2 gap-4 text-center">
                 <div className="p-2">
                   <div className="flex flex-col items-center">
-                    <MdApartment className="w-6 h-6 text-red-500 mb-1" />
+                    <Building2 className="w-6 h-6 text-red-500 mb-1" />
                     <span className="text-xl font-medium">
                       {countsLoading ? "0" : counts.immeubles}
                     </span>
@@ -293,7 +293,7 @@ export default function BlocDetailsPage() {
                 
                 <div className="p-2">
                   <div className="flex flex-col items-center">
-                    <MdHome className="w-6 h-6 text-blue-500 mb-1" />
+                    <Home className="w-6 h-6 text-blue-500 mb-1" />
                     <span className="text-xl font-medium">
                       {countsLoading ? "0" : counts.biens}
                     </span>
@@ -331,7 +331,7 @@ export default function BlocDetailsPage() {
                     href={`/Blocs/${id}/modifier`}
                     className="flex-1 flex items-center justify-center gap-2 py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
                   >
-                    <MdEdit className="w-5 h-5" />
+                    <Edit className="w-5 h-5" />
                     <span>Modifier</span>
                   </Link>
                   
@@ -340,7 +340,7 @@ export default function BlocDetailsPage() {
                     disabled={confirming}
                     className="flex-1 flex items-center justify-center gap-2 py-2 px-4 bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors disabled:bg-red-300"
                   >
-                    <MdDelete className="w-5 h-5" />
+                    <Trash2 className="w-5 h-5" />
                     <span>Supprimer</span>
                   </button>
                 </div>

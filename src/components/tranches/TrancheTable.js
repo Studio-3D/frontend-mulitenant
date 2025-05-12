@@ -6,8 +6,7 @@ import Table from '@/components/Table';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { useAuth } from "@/context/AuthContext";
-import { FaRegEye, FaEdit } from "react-icons/fa";
-import { RiDeleteBin6Line } from "react-icons/ri";
+import { Eye, Edit, Trash2 } from "lucide-react";
 import * as XLSX from 'xlsx';
 
 export default function TrancheTable({ projetId }) {
@@ -40,7 +39,7 @@ export default function TrancheTable({ projetId }) {
             onClick={() => handleAction('view', row.id)}
             title="Voir"
           >
-            <FaRegEye className="w-4 h-4" />
+            <Eye className="w-4 h-4" />
           </button>
           
           {canManageTranches && (
@@ -50,14 +49,14 @@ export default function TrancheTable({ projetId }) {
                 onClick={() => handleAction('edit', row.id)}
                 title="Modifier"
               >
-                <FaEdit className="w-4 h-4" />
+                <Edit className="w-4 h-4" />
               </button>
               <button
                 className="text-red-500 hover:text-red-700"
                 onClick={() => handleAction('delete', row.id)}
                 title="Supprimer"
               >
-                <RiDeleteBin6Line className="w-4 h-4" />
+                <Trash2 className="w-4 h-4" />
               </button>
             </>
           )}

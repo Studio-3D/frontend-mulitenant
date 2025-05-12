@@ -1,8 +1,7 @@
 'use client';
 
 import Button from '@/components/Button';
-
-import { FaRegEye } from 'react-icons/fa';
+import { Eye } from 'lucide-react';
 
 export default function Modal_Propsepct_Exist({
   onClose,
@@ -50,7 +49,7 @@ export default function Modal_Propsepct_Exist({
               <h5 className="text-base sm:text-lg font-medium flex items-center justify-center">
                 {'A Déja fait un Appel'}
                 <div className="ml-2">
-                  <FaRegEye
+                  <Eye
                     className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
                     title="Voir détails"
                     onClick={() => handle_click_appel(id_appel)}
@@ -66,7 +65,7 @@ export default function Modal_Propsepct_Exist({
               <h5 className="text-base sm:text-lg font-medium flex items-center justify-center">
                 {'A Déja fait une Visite'}
                 <div className="ml-2">
-                  <FaRegEye
+                  <Eye
                     className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
                     title="Voir détails"
                     onClick={() => handle_click_visite(id_visite)}
