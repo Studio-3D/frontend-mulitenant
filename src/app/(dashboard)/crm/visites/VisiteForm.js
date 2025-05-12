@@ -40,6 +40,7 @@ import Modal_OldVisites_Perdu from './Modal_OldVisites_Perdu';
 import FreinsComponent from './FreinsComponent';
 import SelectInput from '@/components/SelectInput';
 import Input from '@/components/Input';
+import DateInput from '@/components/DateInput';
 
 
 const VisiteForm = (id, origin) => {
@@ -3028,30 +3029,10 @@ const VisiteForm = (id, origin) => {
                   </div>
                 )}
               </div>
-              <div className="flex justify-center gap-4 items-center mt-6 mb-6">
+              <div className="flex justify-center items-center gap-4 mt-20">
                 <Button type="button" onClick={() => router.back()}>
                   Annuler
                 </Button>
-                {/*isDisabled && (
-                  <ul className="text-sm text-red-500 mt-2">
-                    {loading_form && <li>Chargement du formulaire</li>}
-                    {info_prix && <li>Conflit information sur le prix</li>}
-                    {info_sup && <li>Conflit information supplémentaire</li>}
-                    {check_save == false && (
-                      <li>Vérification de sauvegarde non validée</li>
-                    )}
-                    {OldBiens_pre.length > 0 && !isOrigin && (
-                      <li>Ancien bien transféré non original</li>
-                    )}
-                    {info_reservation && <li>Bien déjà réservé</li>}
-                    {open_D_P && <li>Fenêtre D_P ouverte</li>}
-                    {watch('list_bien_transfere_vendu').length === 0 &&
-                      watch('interet') == 1 &&
-                      watch('nb_bien_added') == 0 && (
-                        <li>Aucun bien transféré ou ajouté</li>
-                      )}
-                  </ul>
-                )*/}
                 <Button
                   type="submit"
                   disabled={isDisabled}

@@ -23,7 +23,7 @@ export const WeekView = ({
           </div>)}
       </div>
       <div className="grid grid-cols-8">
-        <div className="w-20">
+        <div className="">
           {hours.map(hour => <div key={hour} className="h-20 border-b text-right pr-2 pt-1 text-sm text-gray-500">
               {format(new Date().setHours(hour), 'ha')}
             </div>)}

@@ -92,7 +92,7 @@ const Autocomplete = ({
           onFocus={() => setIsOpen(true)}
           onBlur={() => setTimeout(() => setIsOpen(false), 200)}
           placeholder={placeholder}
-          className={`w-full ${height} p-2 border ${
+          className={`w-full  ${height} p-2 border ${
             errorMessage ? 'border-red-500' : 'border-gray-300'
           } rounded-md focus:outline-none ${
             errorMessage ? 'focus:ring-red-500' : 'focus:border-gray-500'

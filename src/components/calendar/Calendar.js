@@ -63,7 +63,7 @@ export const Calendar = () => {
       default:
         return <div className="calendar-grid">
             <div className="grid grid-cols-7 border-b">
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => <div key={index} className="py-2 text-center text-sm font-medium text-blue-600">
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => <div key={index} className="py-2 text-center text-sm font-medium text-blue-500">
                     {day}
                   </div>)}
             </div>

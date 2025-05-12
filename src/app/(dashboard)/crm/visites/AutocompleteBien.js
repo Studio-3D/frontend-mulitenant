@@ -1,16 +1,31 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FaChevronDown } from 'react-icons/fa';
 
 const AutocompleteBien = ({ x, i, user, biensByProjet, handleinputchange, loading }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [inputValue, setInputValue] = useState('');
+  const dropdownRef = useRef(null); // Ref for the dropdown container
 
   // Initialize with the current selected value
   useEffect(() => {
     const selectedOption = biensByProjet?.find((b) => b.id === x.bien_id);
     setInputValue(selectedOption?.propriete_dite_bien || '');
   }, [x.bien_id, biensByProjet]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const filteredOptions = biensByProjet?.filter((option) =>
     option.propriete_dite_bien.toLowerCase().includes(searchQuery.toLowerCase())
@@ -57,7 +72,7 @@ const AutocompleteBien = ({ x, i, user, biensByProjet, handleinputchange, loadin
   };
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full" ref={dropdownRef}>
       <label className="block font-medium text-gray-700">
         Bien <span className="text-red-500">*</span>
       </label>
@@ -67,11 +82,7 @@ const AutocompleteBien = ({ x, i, user, biensByProjet, handleinputchange, loadin
           type="text"
           value={inputValue}
           onChange={handleChange}
-          onFocus={() => {
-            setIsOpen(true);
-            // Don't clear the input value here
-          }}
-          onBlur={() => setTimeout(() => setIsOpen(false), 100)}
+          onFocus={() => setIsOpen(true)}
           placeholder="Sélectionner un bien"
           className="w-full cursor-pointer h-[38px] p-2 border border-gray-300 rounded-md focus:outline-none hover:border-gray-500 focus:border-gray-500 text-[15px] pr-8"
           required
@@ -85,7 +96,7 @@ const AutocompleteBien = ({ x, i, user, biensByProjet, handleinputchange, loadin
           {isOpen ? (
             <FaChevronDown className="h-4 w-4 m-2 text-gray-400 rotate-180" />
           ) : (
-            <FaChevronDown className="h-4 w-4 m-2 text-gray-400 " />
+            <FaChevronDown className="h-4 w-4 m-2 text-gray-400" />
           )}
         </div>
 

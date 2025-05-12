@@ -51,20 +51,19 @@ const ProspectInformations = ({
           label="Email:"
           name="email"
           type="email"
-          required={email_required}
+          placeholder="email@example.com"
+          required
           control={control}
-          error={
-            formSubmitted && email_required && !watch('email')
-              ? 'Email obligatoire'
-              : formSubmitted &&
-                watch('email') &&
-                !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(watch('email'))
-              ? 'Email invalide'
-              : errors?.email?.message || backendErrors?.email
-          }
+          rules={{
+            required: true,
+            pattern: {
+              value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+              message: 'Email invalide'
+            }
+          }}
+          error={errors?.email?.message || backendErrors?.email}
           defaultValue={defaultValues?.email}
           onChange={(e) => {
-            control?.register('email').onChange(e);
             handleChange_event("l'email")(e);
           }}
         />
@@ -75,16 +74,15 @@ const ProspectInformations = ({
           name="cin"
           required={Number(watch('interet')) === 1}
           control={control}
-          error={
-            formSubmitted && Number(watch('interet')) === 1 && !watch('cin')
-              ? 'Ce champ est obligatoire lorsque interet est intéressé.'
-              : errors?.cin?.message || backendErrors?.cin
-          }
-          defaultValue={defaultValues?.cin}
-          onChange={(e) => {
-            control?.register('cin').onChange(e);
-            handleChange_event('cin')(e);
+          rules={{
+            validate: (value) => {
+              if (Number(watch('interet')) === 1 && !value) {
+                return 'Ce champ est obligatoire lorsque interet est intéressé.';
+              }
+              return true;
+            }
           }}
+          defaultValue={defaultValues?.cin}
         />
       </div>
       <div>
