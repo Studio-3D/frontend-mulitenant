@@ -46,7 +46,7 @@ const FreinsComponent = ({
           choiceKey="description"
           valueKey="description"
           onChange={handleChange_freins}
-          placeholder="sélectionnez un ou plusieurs freins"
+          placeholder="Sélectionnez un ou plusieurs freins"
           errors={{
             ...errors,
             frein:
@@ -56,26 +56,11 @@ const FreinsComponent = ({
           }}
           loading={loading_tp_frein}
           backendErrors={backendErrors}
+          
         />
       </div>
 
-      {/* Description Autre Field */}
-      {watch('frein')?.includes('autre') && (
-        <div>
-          <TextField
-            label="Description Frein Autre:"
-            name="description_autre"
-            multi={true}
-            control={control}
-            errors={errors}
-            backendErrors={backendErrors}
-            defaultValues={defaultValues}
-            required={watch('frein')?.includes('autre')}
-            width="w-full"
-            height="h-full"
-          />
-        </div>
-      )}
+      
 
       {/* Tranches Field */}
       {watch('frein')?.includes('tranche') && (
@@ -213,86 +198,82 @@ const FreinsComponent = ({
         </div>
       )}
       {/* Prix Fields */}
-      {watch('frein')?.includes('prix') && (
-        <>
-          <div className="sm:col-span-2 flex gap-4">
-            {info_prix != null && (
-              <div className="w-full">
-                <div className="bg-[rgba(253,181,40,0.12)] border-l-4 border-yellow-500 text-[rgb(227,162,36)] p-4 text-center rounded">
-                  {info_prix}
-                </div>
-              </div>
-            )}
-            <div className="w-1/2">
-              <TextField
-                label="Prix Min:"
-                name="prix_min"
-                type="number"
-                control={control}
-                errors={errors}
-                backendErrors={backendErrors}
-                defaultValues={defaultValues}
-                onChange={handlePrixChange(1)}
-                required={watch('frein')?.includes('prix')}
-              />
-            </div>
-            <div className="w-1/2">
-              <TextField
-                label="Prix Max:"
-                name="prix_max"
-                type="number"
-                control={control}
-                errors={errors}
-                backendErrors={backendErrors}
-                defaultValues={defaultValues}
-                onChange={handlePrixChange(1)}
-                required={watch('frein')?.includes('prix')}
-              />
-            </div>
+{watch('frein')?.includes('prix') && (
+  <>
+    <div className="sm:col-span-2 flex gap-4">
+      <div className="w-1/2">
+        <TextField
+          label="Prix Min:"
+          name="prix_min"
+          type="number"
+          control={control}
+          errors={errors}
+          backendErrors={backendErrors}
+          defaultValues={defaultValues}
+          onChange={handlePrixChange(1)}
+          required={watch('frein')?.includes('prix')}
+        />
+        {info_prix != null && (
+          <div className="text-red-500 text-sm mt-1">
+            {info_prix}
           </div>
-        </>
-      )}
+        )}
+      </div>
+      <div className="w-1/2">
+        <TextField
+          label="Prix Max:"
+          name="prix_max"
+          type="number"
+          control={control}
+          errors={errors}
+          backendErrors={backendErrors}
+          defaultValues={defaultValues}
+          onChange={handlePrixChange(1)}
+          required={watch('frein')?.includes('prix')}
+        />
+      </div>
+    </div>
+  </>
+)}
 
       {/* Superficie Fields */}
-      {watch('frein')?.includes('superficie') && (
-        <>
-          <div className="sm:col-span-2 flex gap-4">
-            {info_sup != null && (
-              <div className="w-full">
-                <div className="bg-blue-100 text-blue-700 p-3 rounded-md border-l-4 border-blue-500 p-4 text-center rounded">
-                  {info_sup}
-                </div>
-              </div>
-            )}
-            <div className="w-1/2">
-              <TextField
-                label="Sup Min:"
-                name="sup_min"
-                type="number"
-                control={control}
-                errors={errors}
-                backendErrors={backendErrors}
-                defaultValues={defaultValues}
-                onChange={handlePrixChange(2)}
-                required={watch('frein')?.includes('superficie')}
-              />
-            </div>
-            <div className="w-1/2">
-              <TextField
-                label="Sup Max:"
-                name="sup_max"
-                type="number"
-                control={control}
-                errors={errors}
-                backendErrors={backendErrors}
-                defaultValues={defaultValues}
-                onChange={handlePrixChange(2)}
-                required={watch('frein')?.includes('superficie')}
-              />
-            </div>
+{watch('frein')?.includes('superficie') && (
+  <>
+    <div className="sm:col-span-2 flex gap-4">
+      <div className="w-1/2">
+        <TextField
+          label="Sup Min:"
+          name="sup_min"
+          type="number"
+          control={control}
+          errors={errors}
+          backendErrors={backendErrors}
+          defaultValues={defaultValues}
+          onChange={handlePrixChange(2)}
+          required={watch('frein')?.includes('superficie')}
+        />
+        {info_sup != null && (
+          <div className="text-red-500 text-sm mt-1">
+            {info_sup}
           </div>
-        </>
-      )}
+        )}
+      </div>
+      <div className="w-1/2">
+        <TextField
+          label="Sup Max:"
+          name="sup_max"
+          type="number"
+          control={control}
+          errors={errors}
+          backendErrors={backendErrors}
+          defaultValues={defaultValues}
+          onChange={handlePrixChange(2)}
+          required={watch('frein')?.includes('superficie')}
+        />
+      </div>
+    </div>
+  </>
+)}
 
       {/* Typologies Field */}
       {watch('frein')?.includes('typologie') && (
@@ -333,7 +314,7 @@ const FreinsComponent = ({
       {watch('frein')?.includes('vue') && (
         <div>
           <AutocompleteMultiple
-            label="vue :"
+            label="Vue :"
             name="vues"
             required={true}
             options={list_vues}
@@ -359,6 +340,23 @@ const FreinsComponent = ({
             }}
             loading={loading}
             backendErrors={backendErrors}
+          />
+        </div>
+      )}
+      {/* Description Autre Field */}
+      {watch('frein')?.includes('autre') && (
+        <div>
+          <TextField
+            label="Description Frein Autre:"
+            name="description_autre"
+            multi={true}
+            control={control}
+            errors={errors}
+            backendErrors={backendErrors}
+            defaultValues={defaultValues}
+            required={watch('frein')?.includes('autre')}
+            width="w-full"
+            height="h-full"
           />
         </div>
       )}

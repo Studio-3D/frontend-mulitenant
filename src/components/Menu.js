@@ -97,7 +97,11 @@ const Menu = () => {
 
   const getMenuItems = (role) => {
     const items = [
-      { label: 'Tableau de Bord', icon: <LayoutDashboard size={20} />, href: '/tableau-de-bord' },
+      {
+        label: "Tableau de Bord",
+        icon: <TbLayoutDashboardFilled />,
+        href: "/tableau-de-bord",
+      },
     ];
 
     if (role === User_roles.ROLE_SUPER_ADMIN) {

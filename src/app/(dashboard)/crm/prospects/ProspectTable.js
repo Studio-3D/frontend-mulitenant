@@ -320,7 +320,7 @@ const ProspectTable = () => {
               : undefined
           }
           filterComponent={
-            <div className="space-y-4 p-4 rounded-lg ">
+            <div className="space-y-4 ">
               <div
                 className="grid gap-5"
                 style={{

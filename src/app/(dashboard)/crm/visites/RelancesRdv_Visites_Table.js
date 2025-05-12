@@ -328,10 +328,6 @@ const RelancesRdv_Visites_Table = (type) => {
   return (
     <div>
       <div className="reflative">
-        <h1 style={{ fontWeight: 'bold', fontSize: '19px', color: '#231651' }}>
-          {' '}
-          {Number(type.type) === 1 ? 'Relances Visites' : 'Rendez-Vous Visites'}
-        </h1>
         <Table
           data_to_export={data_to_export()}
           columns_export={columns_export}
@@ -352,7 +348,7 @@ const RelancesRdv_Visites_Table = (type) => {
           onSearchChange={setSearchTerm}
           enableExport={true}
            filterComponent={
-                      <div className="space-y-4 p-4 rounded-lg ">
+                      <div className="space-y-4 ">
                         <div
                           className="grid gap-1"
                           style={{
