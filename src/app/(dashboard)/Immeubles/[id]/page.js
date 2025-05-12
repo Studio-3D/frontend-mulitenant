@@ -5,11 +5,11 @@ import axios from "axios";
 import { APIURL } from "@/configs/api";
 import { useAuth } from "@/context/AuthContext";
 import { 
-  MdHome,
-  MdEdit,
-  MdDelete,
-  MdArrowBack
-} from "react-icons/md";
+  Home,
+  Pencil,
+  Trash2,
+  ArrowLeft
+} from "lucide-react";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import Link from "next/link";
@@ -188,28 +188,28 @@ export default function ImmeubleDetailsPage() {
             href={`/Blocs/${immeuble.bloc_id}`}
             className="inline-flex items-center text-[#009FFF] hover:text-blue-800"
           >
-            <MdArrowBack className="mr-1" /> Retour au bloc
+            <ArrowLeft className="mr-1" /> Retour au bloc
           </Link>
         ) : immeuble.tranche_id ? (
           <Link 
             href={`/Tranches/${immeuble.tranche_id}`}
             className="inline-flex items-center text-[#009FFF] hover:text-blue-800"
           >
-            <MdArrowBack className="mr-1" /> Retour à la tranche
+            <ArrowLeft className="mr-1" /> Retour à la tranche
           </Link>
         ) : immeuble.projet_id ? (
           <Link 
             href={`/Projets/${immeuble.projet_id}?tab=immeubles`}
             className="inline-flex items-center text-[#009FFF] hover:text-blue-800"
           >
-            <MdArrowBack className="mr-1" /> Retour au projet
+            <ArrowLeft className="mr-1" /> Retour au projet
           </Link>
         ) : (
           <Link 
             href="/Projets"
             className="inline-flex items-center text-[#009FFF] hover:text-blue-800"
           >
-            <MdArrowBack className="mr-1" /> Retour aux projets
+            <ArrowLeft className="mr-1" /> Retour aux projets
           </Link>
         )}
       </div>
@@ -237,7 +237,7 @@ export default function ImmeubleDetailsPage() {
               <div className="grid grid-cols-1 gap-4 text-center">
                 <div className="p-2">
                   <div className="flex flex-col items-center">
-                    <MdHome className="w-6 h-6 text-blue-500 mb-1" />
+                    <Home className="w-6 h-6 text-blue-500 mb-1" />
                     <span className="text-xl font-medium">
                       {countLoading ? "0" : count.biens}
                     </span>
@@ -284,7 +284,7 @@ export default function ImmeubleDetailsPage() {
                     href={`/Immeubles/${id}/modifier`}
                     className="flex-1 flex items-center justify-center gap-2 py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
                   >
-                    <MdEdit className="w-5 h-5" />
+                    <Pencil className="w-5 h-5" />
                     <span>Modifier</span>
                   </Link>
                   
@@ -293,7 +293,7 @@ export default function ImmeubleDetailsPage() {
                     disabled={confirming}
                     className="flex-1 flex items-center justify-center gap-2 py-2 px-4 bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors disabled:bg-red-300"
                   >
-                    <MdDelete className="w-5 h-5" />
+                    <Trash2 className="w-5 h-5" />
                     <span>Supprimer</span>
                   </button>
                 </div>
@@ -307,7 +307,7 @@ export default function ImmeubleDetailsPage() {
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="border-b border-gray-200 p-4 flex justify-between items-center">
               <h2 className="text-lg font-semibold flex items-center">
-                <MdHome className="w-5 h-5 mr-2 text-blue-500" />
+                <Home className="w-5 h-5 mr-2 text-blue-500" />
                 Biens <span className="ml-1 text-xs text-gray-500">({countLoading ? "0" : count.biens})</span>
               </h2>
             </div>

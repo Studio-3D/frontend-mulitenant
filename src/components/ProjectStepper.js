@@ -1,5 +1,5 @@
 "use client";
-import { FiCheck } from 'react-icons/fi';
+import { Check } from 'lucide-react';
 
 // Updated to accept both activeStep and steps in the expected format
 export default function ProjectStepper({ steps, activeStep }) {
@@ -13,7 +13,7 @@ export default function ProjectStepper({ steps, activeStep }) {
                 activeStep >= index ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-500"
               }`}
             >
-              {activeStep > index ? <FiCheck className="w-5 h-5" /> : index + 1}
+              {activeStep > index ? <Check className="w-5 h-5" /> : index + 1}
             </div>
             <span
               className={`mt-2 text-sm ${activeStep >= index ? "text-blue-500 font-medium" : "text-gray-500"}`}

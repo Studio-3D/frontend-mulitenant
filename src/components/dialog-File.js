@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { IoMdClose } from 'react-icons/io';
+import { X } from 'lucide-react';
 
 export default function ConfirmDialog({ open, onClose, onConfirm, title, confirmText = 'Oui', cancelText = 'Non' }) {
   if (!open) return null;
@@ -24,7 +24,7 @@ export default function ConfirmDialog({ open, onClose, onConfirm, title, confirm
           onClick={onClose}
           className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
         >
-          <IoMdClose size={24} />
+          <X size={24} />
         </button>
 
         {/* Titre */}

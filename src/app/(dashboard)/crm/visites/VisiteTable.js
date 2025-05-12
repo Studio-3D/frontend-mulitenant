@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useState, useCallback } from 'react';
 import Table from '@/components/Table';
-import { FaRegEye } from 'react-icons/fa';
+import { Eye } from 'lucide-react';
 
 import { useAuth } from '../../../../context/AuthContext';
 import { ENDPOINTS } from '../../../../configs/api';
@@ -192,7 +192,7 @@ const VisiteTable = (dataProspect, dataClient) => {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <FaRegEye
+          <Eye
             className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
             title="Voir détails"
             onClick={() => handleShow(row.origin_id)}

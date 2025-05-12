@@ -5,8 +5,7 @@ import Modal from "@/components/Modal";
 import Table from "@/components/Table";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { FaEdit } from "react-icons/fa";
-import { RiDeleteBin6Line, RiEyeLine } from "react-icons/ri";
+import { Pencil, Trash2, Eye } from "lucide-react";
 import axios from "axios";
 import Select from 'react-select';
 import { APIURL, ENDPOINTS } from "@/configs/api";
@@ -137,16 +136,17 @@ const PrestataireTable = (serviceId) => {
       label: "Actions",
       render: (row) => (
         <div className="flex gap-3 items-center">
-           <FaEdit
+          <Pencil
             className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
             onClick={() => handleEdit(row.id)}
           />
-            <RiEyeLine
+          {row.reclamations?.length > 0 ? (
+            <Eye
               className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
               onClick={() => handleShow(row.id)}
             />
-         
-            <RiDeleteBin6Line
+          ) : (
+            <Trash2
               className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
               onClick={() => {
                 setSelectedId(row.id);

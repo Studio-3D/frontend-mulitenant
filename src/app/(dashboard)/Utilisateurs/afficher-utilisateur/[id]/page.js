@@ -4,13 +4,9 @@ import ProfileContent from '@/components/Utilisateurs/ProfileContent';
 import ProjetsContent from '@/components/Utilisateurs/ProjetsContent';
 import VisitesContent from '@/components/Utilisateurs/VisitesContent';
 import VentesContent from '@/components/Utilisateurs/VentesContent';
-import { FaUserAlt } from "react-icons/fa";
-import { IoBagRemoveSharp } from "react-icons/io5";
-import { FaMapLocation } from "react-icons/fa6";
-import { RiShakeHandsFill } from "react-icons/ri";
+import { User, Briefcase, Map, Handshake } from "lucide-react";
 import { useParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-
 
 export default function UserDetailsPage() { // Renamed to PascalCase
   const { id } = useParams();
@@ -19,10 +15,10 @@ export default function UserDetailsPage() { // Renamed to PascalCase
    
 
   const menuItems = [
-    { label: 'Profil', icon: <FaUserAlt /> },
-    { label: 'Projets', icon: <IoBagRemoveSharp /> },
-    { label: 'Visites', icon: <FaMapLocation /> },
-    { label: 'Ventes', icon: <RiShakeHandsFill /> },
+    { label: 'Profil', icon: <User /> },
+    { label: 'Projets', icon: <Briefcase /> },
+    { label: 'Visites', icon: <Map /> },
+    { label: 'Ventes', icon: <Handshake /> },
   ];
 
   return (

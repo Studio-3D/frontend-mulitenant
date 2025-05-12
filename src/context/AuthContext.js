@@ -60,7 +60,10 @@ export function AuthProvider({ children }) {
         headers: { Authorization: `Bearer ${token}` }
       });
     } finally {
+      // Clear all authentication and application state
       window.localStorage.removeItem('accessToken');
+      window.localStorage.removeItem('selectedSociete');
+      window.localStorage.removeItem('selectedProjet');
       setUser(null);
       router.push("/login");
     }
