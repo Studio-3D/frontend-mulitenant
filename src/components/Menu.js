@@ -286,7 +286,9 @@ const Menu = () => {
     {
       label: "Encaissments",
       icon: <FaFileInvoiceDollar />,
-      href: "/encaissments",
+      href: "/encaissements",
+      needsSociete: user.role === 1,
+      needsProjet: true,
     },
     {
       label: "Comptabilité",

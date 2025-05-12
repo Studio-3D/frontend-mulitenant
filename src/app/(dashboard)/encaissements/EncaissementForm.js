@@ -5,7 +5,6 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
-import BreadCrumb from "../../navigation/BreadCrumb";
 import {
   Grid,
   FormControl,
@@ -27,6 +26,7 @@ import { encryptUserType, USER_TYPES } from "@/components/user-utils";
 import Select from 'react-select';
 import InputSelect from "@/components/inputSelect";
 import Input from '@/components/Input';
+import BreadCrumb from "../navigation/BreadCrumb";
 
 const PrestataireForm = ({ id = null }) => {
   const [loading, setLoading] = useState(false);
@@ -304,26 +304,32 @@ const handleChange_event = (name) => (event) => {
     error={errors?.telephone?.message || backendErrors?.telephone?.[0]}
   />
 
-    <Controller
-      name="civilite"
-      control={control}
-      rules={{ required: "La civilité est requise" }}
-      render={({ field }) => (
-        <SelectInput
-          label="Civilité :"
-          placeholder="Sélectionner une civilité"
-          options={Object.values(CIVILITES).map((item) => ({
-            value: item.code,
-            label: item.label
-          }))}
-          value={field.value}
-          onChange={(val) => field.onChange(val)}
-          error={errors?.civilite?.message || backendErrors?.civilite?.[0]}
+  {/* ...civilité, service_id restent tels quels avec Controller ou InputSelect */}
+
+  
+
+
+        
+        <Controller
+          name="civilite"
+          control={control}
+          rules={{ required: "La civilité est requise" }}
+          render={({ field }) => (
+            <SelectInput
+              label="Civilité :"
+              placeholder="Sélectionner une civilité"
+              options={Object.values(CIVILITES).map((item) => ({
+                value: item.code,
+                label: item.label
+              }))}
+              value={field.value}
+              onChange={(val) => field.onChange(val)}
+              error={errors?.civilite?.message || backendErrors?.civilite?.[0]}
+            />
+
+
+              )}
         />
-
-
-          )}
-    />
 
 <InputSelect
   label="Service"

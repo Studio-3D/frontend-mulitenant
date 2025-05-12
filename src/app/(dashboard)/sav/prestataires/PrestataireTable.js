@@ -37,10 +37,10 @@ const PrestataireTable = (serviceId) => {
     cin: "",
     email: "",
     telephone: "",
-    serviceId: serviceId.service_id == null ? "" : serviceId.service_id, 
+    serviceId: serviceId?.service?.id == null ? "" : serviceId?.service?.id, 
     
   });
-
+console.log("serviceId", serviceId?.service?.id)
   const [tempFilters, setTempFilters] = useState({ ...filters });
 
   const entity = {
@@ -110,7 +110,7 @@ const PrestataireTable = (serviceId) => {
         cin: "",
         email: "",
         telephone: "",
-        serviceId: serviceId.service_id == null ? "" : serviceId.service_id, // n'inclut que si null
+        serviceId: serviceId?.service?.id == null ? "" : serviceId?.service?.id, 
       };
       setFilters(reset);
       setTempFilters(reset);
@@ -158,7 +158,7 @@ const PrestataireTable = (serviceId) => {
     },
   ];
   
-  const columns = !serviceId.service_id 
+  const columns = !serviceId?.service?.id 
   ? allColumns
   : allColumns.filter(col => col.key !== "service");
   
@@ -203,7 +203,7 @@ const PrestataireTable = (serviceId) => {
   return (
     <>
       <Table
-        title={serviceId.service_id && "Prestataires liées"}
+        title={`Prestataires liées à service: ${serviceId?.service?.nom}` }
         data_to_export={data_to_export()}
         columns_export={columns_export}
         name_file_export={"prestataire_export"}
@@ -211,7 +211,7 @@ const PrestataireTable = (serviceId) => {
         onFilterToggle={handleFilterToggle}
         data={formatData()}
         filterComponent={
-          <div className="space-y-4 p-4 rounded-lg shadow-md">
+          <div className="space-y-4 rounded-lg">
             <div
               className="grid gap-3"
               style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}
@@ -254,7 +254,7 @@ const PrestataireTable = (serviceId) => {
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
               
-              {!serviceId.service_id && (
+              {!serviceId?.service?.id && (
                 <Select
                 isClearable
                 value={services
@@ -283,18 +283,19 @@ const PrestataireTable = (serviceId) => {
             <div className="flex justify-end gap-3 pt-2">
               <button
                 type="button"
-                onClick={applyFilters}
-                className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-              >
-                Appliquer les filtres
-              </button>
-              <button
-                type="button"
                 onClick={resetFilters}
                 className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
               >
                 Réinitialiser
               </button>
+              <button
+                type="button"
+                onClick={applyFilters}
+                className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+              >
+                Appliquer les filtres
+              </button>
+              
             </div>
           </div>
         }
