@@ -3,7 +3,6 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useState, useEffect, useRef } from 'react';
-import { useSearchParams } from 'next/navigation';
 import {
   fetchData_Select,
   fetchDataByProjet,
@@ -20,15 +19,15 @@ import Autocomplete from '@/components/Autocomplete';
 import TextField from '@/components/Textfield'; // Import the component
 import Button from '@/components/Button'; // adjust the path as needed
 import LoadingSpin from '@/components/LoadingSpin';
-export default function ProspectForm() {
+export default function ProspectForm({ id, onClose, onSuccess }) {
   const { token } = useAuth();
   const router = useRouter();
 
   const accessToken = token || localStorage.getItem('accessToken');
   const selectedProjet =
     JSON.parse(localStorage.getItem('selectedProjet')) || null;
-  const searchParams = useSearchParams();
-  const id = searchParams.get('id');
+  /*const searchParams = useSearchParams();
+  const id = searchParams.get('id');*/
 
   const [formData, setFormData] = useState();
   const [loading, setLoading] = useState({ form: false });
@@ -213,8 +212,11 @@ export default function ProspectForm() {
           } avec succès`;
           reset(defaultValues);
           toast.success(message);
-          router.push(ENDPOINTS.PROSPECTS);
+          localStorage.setItem('visite_fetch_show',1 );
+
           if (onSuccess) onSuccess();
+          if (onClose) onClose();
+          else router.push(ENDPOINTS.PROSPECTS);
         } else if (res.status === 422) {
           message = res.data.message;
           setBackendErrors(res.data.errors);
@@ -549,7 +551,16 @@ export default function ProspectForm() {
               {/* Buttons */}
 
               <div className="flex justify-center gap-4 items-center mt-6 mb-6">
-                <Button type="button" onClick={() => router.back()}>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    if (onClose) {
+                      onClose();
+                    } else {
+                      router.back();
+                    }
+                  }}
+                >
                   Annuler
                 </Button>
                 <Button

@@ -40,7 +40,7 @@ export default function Page() {
       ) : (
         <>
           <div>
-            <PrestataireTable />
+            <PrestataireTable service_id={null} />
           </div>
         </>
       )}

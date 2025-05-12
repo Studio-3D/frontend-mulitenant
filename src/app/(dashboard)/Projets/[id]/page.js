@@ -6,13 +6,14 @@ import { APIURL } from "@/configs/api";
 import { useAuth } from "@/context/AuthContext";
 import { useProjet } from "@/context/ProjetContext";
 import { 
-  MdStorage, 
-  MdOutlineViewInAr, 
-  MdApartment, 
-  MdHome,
-  MdEdit,
-  MdDelete
-} from "react-icons/md";
+  Database, 
+  Layers, 
+  Building, 
+  Home,
+  Pencil,
+  Trash2,
+  ArrowLeft
+} from "lucide-react";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import Link from "next/link";
@@ -121,10 +122,10 @@ export default function ProjectDetailsPage() {
   const showImmeubleTab = projet.nbre_immeubles > 0;
 
   const tabs = [];
-  if (showTrancheTab) tabs.push({ id: "tranches", label: "Tranches", icon: <MdStorage className="w-5 h-5"/> });
-  if (showBlocTab) tabs.push({ id: "blocs", label: "Blocs", icon: <MdOutlineViewInAr className="w-5 h-5"/> });
-  if (showImmeubleTab) tabs.push({ id: "immeubles", label: "Immeubles", icon: <MdApartment className="w-5 h-5"/> });
-  tabs.push({ id: "biens", label: "Biens", icon: <MdHome className="w-5 h-5"/> });
+  if (showTrancheTab) tabs.push({ id: "tranches", label: "Tranches", icon: <Database className="w-5 h-5"/> });
+  if (showBlocTab) tabs.push({ id: "blocs", label: "Blocs", icon: <Layers className="w-5 h-5"/> });
+  if (showImmeubleTab) tabs.push({ id: "immeubles", label: "Immeubles", icon: <Building className="w-5 h-5"/> });
+  tabs.push({ id: "biens", label: "Biens", icon: <Home className="w-5 h-5"/> });
 
   return (
     <div className="container mx-auto">
@@ -149,7 +150,7 @@ export default function ProjectDetailsPage() {
                 {showTrancheTab && (
                   <div className="p-2">
                     <div className="flex flex-col items-center">
-                      <MdStorage className="w-6 h-6 text-green-500 mb-1" />
+                      <Database className="w-6 h-6 text-green-500 mb-1" />
                       <span className="text-xl font-medium">{projet.tranche_count || 0}</span>
                       <span className="text-sm text-gray-500">Tranches</span>
                     </div>
@@ -159,7 +160,7 @@ export default function ProjectDetailsPage() {
                 {showBlocTab && (
                   <div className="p-2">
                     <div className="flex flex-col items-center">
-                      <MdOutlineViewInAr className="w-6 h-6 text-orange-500 mb-1" />
+                      <Layers className="w-6 h-6 text-orange-500 mb-1" />
                       <span className="text-xl font-medium">{projet.bloc_count || 0}</span>
                       <span className="text-sm text-gray-500">Blocs</span>
                     </div>
@@ -169,7 +170,7 @@ export default function ProjectDetailsPage() {
                 {showImmeubleTab && (
                   <div className="p-2">
                     <div className="flex flex-col items-center">
-                      <MdApartment className="w-6 h-6 text-red-500 mb-1" />
+                      <Building className="w-6 h-6 text-red-500 mb-1" />
                       <span className="text-xl font-medium">{projet.immeuble_count || 0}</span>
                       <span className="text-sm text-gray-500">Immeubles</span>
                     </div>
@@ -178,7 +179,7 @@ export default function ProjectDetailsPage() {
 
                 <div className="p-2">
                   <div className="flex flex-col items-center">
-                    <MdHome className="w-6 h-6 text-blue-500 mb-1" />
+                    <Home className="w-6 h-6 text-blue-500 mb-1" />
                     <span className="text-xl font-medium">{projet.bien_count || 0}</span>
                     <span className="text-sm text-gray-500">Biens</span>
                   </div>
@@ -291,7 +292,7 @@ export default function ProjectDetailsPage() {
                     href={`/Projets/${id}/modifier`}
                     className="flex-1 flex items-center justify-center gap-2 py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
                   >
-                    <MdEdit className="w-5 h-5" />
+                    <Pencil className="w-5 h-5" />
                     <span>Modifier</span>
                   </Link>
                   
@@ -300,7 +301,7 @@ export default function ProjectDetailsPage() {
                     disabled={confirming}
                     className="flex-1 flex items-center justify-center gap-2 py-2 px-4 bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors disabled:bg-red-300"
                   >
-                    <MdDelete className="w-5 h-5" />
+                    <Trash2 className="w-5 h-5" />
                     <span>Supprimer</span>
                   </button>
                 </div>

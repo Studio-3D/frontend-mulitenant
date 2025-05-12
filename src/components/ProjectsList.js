@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useProjet } from '../context/ProjetContext';
 import Link from 'next/link';
-import { FiEye, FiEdit, FiHome } from 'react-icons/fi';
+import { Eye, Pencil, Home } from 'lucide-react';
 
 export default function ProjectsList() {
   const { projets, loading, error, selectedProjet, selectProjet } = useProjet();
@@ -41,7 +41,7 @@ export default function ProjectsList() {
   if (projets.length === 0) {
     return (
       <div className="text-center py-10">
-        <FiHome className="mx-auto text-gray-400 text-5xl mb-4" />
+        <Home className="mx-auto text-gray-400 text-5xl mb-4" />
         <h3 className="text-xl font-medium text-gray-500">Aucun projet disponible</h3>
         <p className="text-gray-400 mt-2">Commencez par créer un nouveau projet</p>
       </div>
@@ -107,10 +107,10 @@ export default function ProjectsList() {
               
               <div className="flex space-x-3">
                 <Link href={`/Projets/${projet.id}`} className="text-gray-600 hover:text-[#009FFF]">
-                  <FiEye size={18} />
+                  <Eye size={18} />
                 </Link>
                 <Link href={`/Projets/edit/${projet.id}`} className="text-gray-600 hover:text-[#009FFF]">
-                  <FiEdit size={18} />
+                  <Pencil size={18} />
                 </Link>
               </div>
             </div>

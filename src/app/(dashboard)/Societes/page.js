@@ -5,8 +5,7 @@ import Table from '@/components/Table';
 import axios from "axios";
 import Modal from '@/components/Modal';
 import AfficherSociete from "./AfficherSociete";
-import { FaRegEye, FaUserEdit } from 'react-icons/fa';
-import { RiDeleteBin6Line } from 'react-icons/ri';
+import { Eye, UserCog, Trash2 } from 'lucide-react';
 import { APIURL, RESOURCE_URL } from '../../../configs/api';
 import DeleteData from '@/components/DeleteData';
 import Link from "next/link";
@@ -142,7 +141,7 @@ export default function Societes() {
       label: 'Actions',
       render: row => (
         <div className="flex gap-3 items-center cursor-pointer">
-            <FaRegEye className="w-4 h-4 text-blue-500 hover:text-blue-700" 
+            <Eye className="w-4 h-4 text-blue-500 hover:text-blue-700" 
             onClick={()=>
               {
                 setSelectedSocieteId(row.id); // Set the selected société ID
@@ -150,9 +149,9 @@ export default function Societes() {
               }
             }/>
           <Link href={`/Societes/${row.id}/edit`}>
-            <FaUserEdit className="w-4 h-4 text-green-500 hover:text-green-700"/>
+            <UserCog className="w-4 h-4 text-green-500 hover:text-green-700"/>
           </Link>
-          <RiDeleteBin6Line
+          <Trash2
             className="w-4 h-4 text-red-500 hover:text-red-700"
             onClick={() => {
               setSelectedSocieteId(row.id); // Set the selected société ID

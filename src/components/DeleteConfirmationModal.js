@@ -1,5 +1,5 @@
 'use client';
-import { IoAlertCircleOutline } from "react-icons/io5";
+import { AlertCircle } from "lucide-react";
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { APIURL } from "@/configs/api";
@@ -47,7 +47,7 @@ const DeleteConfirmationModal = ({
   return (
     <Modal isVisible={true} onClose={onClose}>
       <div className="w-[500px] p-4">
-        <IoAlertCircleOutline className="text-[#FF4E4E] text-6xl mx-auto mt-2 mb-4" />
+        <AlertCircle className="text-[#FF4E4E] w-14 h-14 mx-auto mt-2 mb-4" />
         <h2 className="text-xl font-semibold text-center">Confirmation de suppression</h2>
         <p className="text-center text-[#878484] mt-2">
           Êtes-vous sûr de vouloir supprimer <span className="font-semibold">{itemLabel}</span> ?

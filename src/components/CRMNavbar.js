@@ -3,16 +3,17 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
-  FiUser,
-  FiCalendar,
-  FiPhoneCall,
-  FiHome,
-  FiClock,
-  FiUsers,
-  FiMenu,FiPause,
-  FiChevronDown,
-  FiChevronUp
-} from 'react-icons/fi';
+  User,
+  Calendar,
+  Phone,
+  Home,
+  Clock,
+  Users,
+  Menu,
+  Pause,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
 import Pusher from 'pusher-js';
 import FetchNotifMenu from '../../src/configs/FetchNotifMenu';
 
@@ -102,27 +103,26 @@ const CRMNavbar = () => {
     {
       name: 'Prospects',
       path: '/crm/prospects',
-      icon: <FiUser className="w-5 h-5" />,
+      icon: <User className="w-5 h-5" />,
     },
     {
       name: 'Visites',
       path: '/crm/visites',
-      icon: <FiUsers className="w-5 h-5" />,
+      icon: <Users className="w-5 h-5" />,
     },
     {
       name: 'Appels',
       path: '/crm/appels',
-      icon: <FiPhoneCall className="w-5 h-5" />,
-      badge: nb_relances_appels + nb_rdv_appel,
+      icon: <Phone className="w-5 h-5" />,
     },
     {
       name: 'Pré-réservations',
       path: '/crm/pre-reservations',
-      icon: <FiHome className="w-5 h-5" />,
+      icon: <Home className="w-5 h-5" />,
     },
     {
       name: 'Relances',
-      icon: <FiClock className="w-5 h-5" />,
+      icon: <Clock className="w-5 h-5" />,
       badge: nb_total_relances,
       subItems: [
         {
@@ -139,7 +139,7 @@ const CRMNavbar = () => {
     },
     {
       name: 'RDV',
-      icon: <FiCalendar className="w-5 h-5" />,
+      icon: <Calendar className="w-5 h-5" />,
       badge: nb_total_rdv,
       subItems: [
         {
@@ -157,7 +157,7 @@ const CRMNavbar = () => {
     {
       name: 'Freins',
       path: '/crm/visites/freins',
-      icon: <FiPause className="w-5 h-5" />,
+      icon: <Pause className="w-5 h-5" />,
       badge: nb_rel_client_freins,
     },
   ];
@@ -169,7 +169,9 @@ const CRMNavbar = () => {
 
   // Get the active submenu item name
   const getActiveSubmenuName = (subItems) => {
-    const activeItem = subItems?.find((subItem) => pathname.startsWith(subItem.path));
+    const activeItem = subItems?.find((subItem) =>
+      pathname.startsWith(subItem.path)
+    );
     return activeItem?.name || null;
   };
 
@@ -180,7 +182,7 @@ const CRMNavbar = () => {
         className="block md:hidden text-gray-700 focus:outline-none"
         onClick={() => setMenuOpen(!menuOpen)}
       >
-        <FiMenu className="w-6 h-6" />
+        <Menu className="w-6 h-6" />
       </button>
 
       {/* Responsive Navigation */}
@@ -191,7 +193,9 @@ const CRMNavbar = () => {
       >
         {navItems.map((item) => {
           const activeSubmenuName = getActiveSubmenuName(item.subItems);
-          const showSubmenuName = activeSubmenuName && (isParentActive(item.subItems) || openSubmenu === item.name);
+          const showSubmenuName =
+            activeSubmenuName &&
+            (isParentActive(item.subItems) || openSubmenu === item.name);
 
           return (
             <div key={item.name} className="relative flex-1">
@@ -216,9 +220,9 @@ const CRMNavbar = () => {
                 {item.subItems && (
                   <span className="ml-auto">
                     {openSubmenu === item.name ? (
-                      <FiChevronUp className="w-4 h-4" />
+                      <ChevronUp className="w-4 h-4" />
                     ) : (
-                      <FiChevronDown className="w-4 h-4" />
+                      <ChevronDown className="w-4 h-4" />
                     )}
                   </span>
                 )}

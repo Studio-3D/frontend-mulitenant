@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Table from '@/components/Table';
-import { FaRegEye, FaCheckCircle } from 'react-icons/fa';
+import { Eye, CheckCircle } from 'lucide-react';
 
 import { useAuth } from '../../../../context/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -14,6 +14,7 @@ import {
   getRelance_label,
 } from '../../../../../src/configs/enum';
 import Input from '@/components/Input';
+import SelectInput from '@/components/SelectInput';
 
 import Modal from '@/components/Modal';
 import Modal_Traite from '../../crm/Modal_Traite';
@@ -243,19 +244,19 @@ const RelancesRdvAppelsTable = (type) => {
     label: 'Actions',
     render: (row) => (
       <div className="flex gap-3 items-center">
-        <FaRegEye
+        <Eye
           className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
           title="Voir détails"
           onClick={() => handleShow(row.appel_id)}
         />
         {Number(type.type) == 1 ? (
-          <FaCheckCircle
+          <CheckCircle
             className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
             title="Traiter Relance"
             onClick={() => handleValider(row.id, 'Relance', row.nomComplet)}
           />
         ) : (
-          <FaCheckCircle
+          <CheckCircle
             className="w-4 h-4 text-green-500 hover:text-green-700 cursor-pointer"
             title="Traiter Rendez Vous"
             onClick={() => handleValider(row.id, 'RDV', row.nomComplet)}
@@ -341,7 +342,7 @@ const RelancesRdvAppelsTable = (type) => {
           onSearchChange={setSearchTerm}
           enableExport={true}
           filterComponent={
-            <div className="space-y-4 p-4 rounded-lg shadow-md">
+            <div className="space-y-4 p-4 rounded-lg ">
               <div
                 className="grid gap-1"
                 style={{
@@ -386,23 +387,18 @@ const RelancesRdvAppelsTable = (type) => {
                       }
                       className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                     />
-                    <select
-                      value={tempFilters.mode_relance}
-                      onChange={(e) =>
-                        handleFilterChange('mode_relance', e.target.value)
-                      }
-                      className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-                    >
-                      <option value="" disabled>
-                        Choisir un Mode Relance
-                      </option>
 
-                      {Object.values(MODES_RELANCES).map((data) => (
-                        <option key={data.code} value={Number(data.code)}>
-                          {data.label}
-                        </option>
-                      ))}
-                    </select>
+                     <SelectInput
+                                      value={tempFilters.mode_relance}
+                                      onChange={(value) => handleFilterChange('mode_relance', value)}
+                                      options={Object.values(MODES_RELANCES).map((data) => ({
+                                        value: data.code,
+                                        label: data.label,
+                                      }))}
+                                      placeholder="Choisir un Mode Relance"
+                                      className="h-10 text-sm w-full"
+                                    />
+                    
                   </>
                 ) : (
                   <input

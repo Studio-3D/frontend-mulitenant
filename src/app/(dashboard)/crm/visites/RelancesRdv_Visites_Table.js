@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Table from '@/components/Table';
-import { FaRegEye, FaCheckCircle } from 'react-icons/fa';
+import { Eye, CheckCircle } from 'lucide-react';
 
 import { useAuth } from '../../../../context/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -252,19 +252,19 @@ const RelancesRdv_Visites_Table = (type) => {
     label: 'Actions',
     render: (row) => (
       <div className="flex gap-3 items-center">
-        <FaRegEye
+        <Eye
           className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
           title="Voir détails"
           onClick={() => handleShow(row.visite_id)}
         />
         {Number(type.type) === 1 ? (
-          <FaCheckCircle
+          <CheckCircle
             className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
             title="Traiter Relance"
             onClick={() => handleValider(row.id, 'Relance', row.nomComplet)}
           />
         ) : (
-          <FaCheckCircle
+          <CheckCircle
             className="w-4 h-4 text-green-500 hover:text-green-700 cursor-pointer"
             title="Traiter Rendez Vous"
             onClick={() => handleValider(row.id, 'RDV', row.nomComplet)}

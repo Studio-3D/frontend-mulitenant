@@ -2,8 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import Table from '@/components/Table';
-import { FaRegEye, FaEdit, FaCheck, FaSync } from 'react-icons/fa';
-import { RiDeleteBin6Line } from 'react-icons/ri';
+import { Eye, Pencil, Check, RefreshCw, Trash2 } from 'lucide-react';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
 import { useAuth } from '../../../../context/AuthContext';
@@ -14,6 +13,8 @@ import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
 import Modal_Traite from './Modal_Traite';
 import { Statuts_Prospect } from '../../../../../src/configs/enum';
 import Input from '@/components/Input';
+import SelectInput from '@/components/SelectInput';
+
 const ProspectTable = () => {
   const [prospects, setProspects] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -40,14 +41,14 @@ const ProspectTable = () => {
     cin: '',
     telephone: '',
     email: '',
-    statut:'',
+    statut: '',
   });
   const [tempFilters, setTempFilters] = useState({ ...filters });
 
   const entity = {
     API_URL: 'prospects',
     dataKey: 'prospects',
-    searchFields: ['nom','prenom', 'email', 'telephone', 'cin'],
+    searchFields: ['nom', 'prenom', 'email', 'telephone', 'cin'],
   };
 
   useEffect(() => {
@@ -201,23 +202,23 @@ const ProspectTable = () => {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <FaRegEye
+          <Eye
             className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
             title="Voir détails"
             onClick={() => handleShow(row.id)}
           />
-          <FaEdit
+          <Pencil
             className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
             title="Modifier"
             onClick={() => handleEdit(row.id)}
           />
 
-          <FaCheck
+          <Check
             className="w-4 h-4  hover:text-['rgb(87,80,129)']-700 text-['rgb(87,80,129)'] cursor-pointer"
             title="Traiter"
             onClick={() => handleraiter(row.id, row.telephone, row.nomComplet)}
           />
-          <FaSync
+          <RefreshCw
             className="w-4 h-4 text-green-500  cursor-pointer"
             title="Convertir en visite"
             onClick={() => handle_convert_to_visite(row.prospect)}
@@ -226,7 +227,7 @@ const ProspectTable = () => {
           {row.client == null &&
             row.visites.length == 0 &&
             row.appels == null && (
-              <RiDeleteBin6Line
+              <Trash2
                 className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
                 onClick={() => {
                   setSelectedId(row.id);
@@ -285,8 +286,8 @@ const ProspectTable = () => {
       prenom: '',
       cin: '',
       telephone: '',
-      email:'',
-      statut:''
+      email: '',
+      statut: '',
     };
     setFilters(reset);
     setTempFilters(reset);
@@ -358,30 +359,23 @@ const ProspectTable = () => {
                   }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-                 <Input
+                <Input
                   type="email"
                   placeholder="Email"
                   value={tempFilters.email}
-                  onChange={(e) =>
-                    handleFilterChange('email', e.target.value)
-                  }
+                  onChange={(e) => handleFilterChange('email', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-                <select
+                <SelectInput
                   value={tempFilters.statut}
-                  onChange={(e) => handleFilterChange('statut', e.target.value)}
-                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-                >
-                  <option value="" disabled>
-                    Choisir un Statut
-                  </option>
-
-                  {Object.values(Statuts_Prospect).map((data) => (
-                    <option key={data.id} value={data.id}>
-                      {data.label}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(value) => handleFilterChange('statut', value)}
+                  options={Object.values(Statuts_Prospect).map((data) => ({
+                    value: data.id,
+                    label: data.label,
+                  }))}
+                  placeholder="Choisir un Statut"
+                  className="h-10 text-sm w-full"
+                />
               </div>
 
               {/* Boutons */}

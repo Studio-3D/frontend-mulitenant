@@ -2,19 +2,19 @@
 
 import React, { useEffect, useState } from 'react';
 import Table from '@/components/Table';
-import { useAuth } from '../../../../../context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
-import { fetchData_table_by_id } from '../../../../../../src/configs/api-utils';
+import { fetchData_table_by_id } from '@/configs/api-utils';
 import format from 'date-fns/format';
 import DeleteData from '@/components/DeleteData';
 
-import { FaRegEye, FaEdit, FaMeetup, FaCheckCircle } from 'react-icons/fa';
-import { RiDeleteBin6Line } from 'react-icons/ri';
+import { Eye, Edit, CalendarClock, CheckCircle, Trash2 } from 'lucide-react';
 
-import { APIURL, ENDPOINTS } from '../../../../../../src/configs/api';
+import { APIURL, ENDPOINTS } from '@/configs/api';
 import Modal from '@/components/Modal';
 import Modal_Show from './Modal_Show';
 import Modal_Traite from '../../../crm/Modal_Traite';
+import SelectInput from '@/components/SelectInput';
 
 import {
   isAdmin,
@@ -304,13 +304,13 @@ const JournalTable = (id) => {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <FaEdit
+          <Edit
             className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
             title="Modifier"
             onClick={() => handleEdit(row.id)}
           />
           {VISITE_INTERETS[row.interet]?.label != 'Injoignable' && (
-            <FaRegEye
+            <Eye
               className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
               title="Voir détails"
               onClick={() =>
@@ -433,7 +433,7 @@ const JournalTable = (id) => {
               : undefined
           }
           filterComponent={
-            <div className="space-y-4 p-4 rounded-lg shadow-md">
+            <div className="space-y-4 p-4 rounded-lg">
               <div
                 className="grid gap-5"
                 style={{
@@ -448,53 +448,47 @@ const JournalTable = (id) => {
                   onChange={(e) => handleFilterChange('date', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-                 <input
+                <input
                   type={tempFilters.date ? 'date' : 'text'}
                   placeholder="Date"
                   value={tempFilters.date}
                   onFocus={(e) => (e.target.type = 'date')}
-                  onChange={(e) => handleFilterChange('date_traitement', e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange('date_traitement', e.target.value)
+                  }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
                 <Input
                   type="text"
                   placeholder="Responsable"
                   value={tempFilters.responsable}
-                  onChange={(e) => handleFilterChange('responsable', e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange('responsable', e.target.value)
+                  }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-               
-                
-                <select
+
+                <SelectInput
                   value={tempFilters.interet}
-                  onChange={(e) => handleFilterChange('interet', e.target.value)}
-                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-                >
-                  <option value="" disabled>
-                    Choisir un Intérêt
-                  </option>
+                  onChange={(value) => handleFilterChange('interet', value)}
+                  options={Object.values(VISITE_INTERETS).map((data) => ({
+                    value: data.code,
+                    label: data.label,
+                  }))}
+                  placeholder="Choisir un Intéret"
+                  className="h-10 text-sm w-full"
+                />
 
-                  {Object.values(VISITE_INTERETS).map((data) => (
-                    <option key={data.code} value={data.code}>
-                      {data.label}
-                    </option>
-                  ))}
-                </select>
-                <select
+                <SelectInput
                   value={tempFilters.type_appel}
-                  onChange={(e) => handleFilterChange('type_appel', e.target.value)}
-                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-                >
-                  <option value="" disabled>
-                    Choisir un Type Appel
-                  </option>
-
-                  {Object.values(TYPES_APPELS).map((data) => (
-                    <option key={data.code} value={Number(data.code)}>
-                      {data.label}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(value) => handleFilterChange('type_appel', value)}
+                  options={Object.values(TYPES_APPELS).map((data) => ({
+                    value: data.code,
+                    label: data.label,
+                  }))}
+                  placeholder="Choisir un Type Appel"
+                  className="h-10 text-sm w-full"
+                />
               </div>
 
               {/* Boutons */}

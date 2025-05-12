@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Table from '@/components/Table';
-import { FaRegEye, FaDownload, FaEdit } from 'react-icons/fa';
+import { Eye, Pencil, Download } from 'lucide-react';
 
 import { useAuth } from '../../../../../context/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -131,12 +131,12 @@ const RelancesFreinsTable = () => {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <FaRegEye
+          <Eye
             className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
             title="Voir détails"
             onClick={() => handleShow(row.frein_id_origin)}
           />
-          <FaEdit
+          <Pencil
             className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
             title="Traiter les Biens Disponibles"
             onClick={() => handle_Bien(row.id, row.nomComplet)}
@@ -203,7 +203,7 @@ const RelancesFreinsTable = () => {
           onSearchChange={setSearchTerm}
           enableExport={true}
           filterComponent={
-            <div className="space-y-4 p-4 rounded-lg shadow-md">
+            <div className="space-y-4 p-4 rounded-lg ">
               <div
                 className="grid gap-5"
                 style={{

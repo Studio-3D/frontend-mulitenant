@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Table from '@/components/Table';
-import { FaRegEye, FaDownload, FaEdit } from 'react-icons/fa';
+import { Eye, Download } from 'lucide-react';
 
 import { useAuth } from '../../../../context/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -204,7 +204,7 @@ const PreReservationTable = () => {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <FaRegEye
+          <Eye
             className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
             title="Voir détails"
             onClick={() => handleShow(row)}
@@ -243,7 +243,7 @@ const PreReservationTable = () => {
             fileName="bon_pre_reservation.pdf"
           >
             {({ loading }) =>
-              loading ? 'Loading document...' : <FaDownload />
+              loading ? 'Loading document...' : <Download className="w-4 h-4" />
             }
           </PDFDownloadLink>
         </div>
@@ -341,7 +341,7 @@ const PreReservationTable = () => {
           onSearchChange={setSearchTerm}
           enableExport={true}
           filterComponent={
-            <div className="space-y-4 p-4 rounded-lg shadow-md">
+            <div className="space-y-4 p-4 rounded-lg ">
               <div
                 className="grid gap-1"
                 style={{

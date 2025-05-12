@@ -6,12 +6,11 @@ import { useAuth } from '../../../../../context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { fetchData_table_by_id } from '../../../../../../src/configs/api-utils';
 import format from 'date-fns/format';
-import { FaRegEye } from 'react-icons/fa';
+import { Eye } from 'lucide-react';
 
 import { Statuts_Prospect } from '../../../../../../src/configs/enum';
-import Input from '@/components/Input';
-import TextField from '@/components/Textfield';
 
+import SelectInput from '@/components/SelectInput';
 const HistoriquesTable = (id) => {
   const [historiques, setHistoriques] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -150,14 +149,14 @@ const HistoriquesTable = (id) => {
       render: (row) => (
         <div className="flex gap-3 items-center">
           {row.visite_id != null && (
-            <FaRegEye
+            <Eye
               className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
               title="Voir Visite"
               onClick={() => handleShow(row.visite_id)}
             />
           )}
           {row.appel_id != null && (
-            <FaRegEye
+            <Eye
               className="w-4 h-4 text-green-500 hover:text-green-700 cursor-pointer"
               title="Voir Visite"
               onClick={() => handleShowAppel(row.appel_id)}
@@ -212,7 +211,7 @@ const HistoriquesTable = (id) => {
           onSearchChange={setSearchTerm}
           enableExport={true}
           filterComponent={
-            <div className="space-y-4 p-4 rounded-lg shadow-md">
+            <div className="space-y-4 p-4 rounded-lg ">
               <div
                 className="grid gap-5"
                 style={{
@@ -225,7 +224,9 @@ const HistoriquesTable = (id) => {
                   placeholder="Date Traitement"
                   value={tempFilters.date_traitement}
                   onFocus={(e) => (e.target.type = 'date')}
-                  onChange={(e) => handleFilterChange('date_traitement', e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange('date_traitement', e.target.value)
+                  }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
 
@@ -248,22 +249,16 @@ const HistoriquesTable = (id) => {
                   }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-
-                <select
+                <SelectInput
                   value={tempFilters.statut}
-                  onChange={(e) => handleFilterChange('statut', e.target.value)}
-                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-                >
-                  <option value="" disabled>
-                    Choisir un Statut
-                  </option>
-
-                  {Object.values(Statuts_Prospect).map((data) => (
-                    <option key={data.id} value={data.id}>
-                      {data.label}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(value) => handleFilterChange('statut', value)}
+                  options={Object.values(Statuts_Prospect).map((data) => ({
+                    value: data.id,
+                    label: data.label,
+                  }))}
+                  placeholder="Choisir un Statut"
+                  className="h-10 text-sm w-full"
+                />
               </div>
 
               {/* Boutons */}

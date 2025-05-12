@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Table from '@/components/Table';
-import { FaRegEye, FaEdit, FaSync, FaRegIdCard } from 'react-icons/fa';
-import { RiDeleteBin6Line } from 'react-icons/ri';
+import { Eye, Pencil, RefreshCw, CreditCard, Trash2 } from 'lucide-react';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
 import { useAuth } from '../../../../context/AuthContext';
@@ -12,6 +11,7 @@ import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
 import { fetchData_table_by_projet } from '../../../../../src/configs/api-utils';
 import Link from 'next/link';
 import Input from '@/components/Input';
+import SelectInput from '@/components/SelectInput';
 
 import { VISITE_INTERETS } from '../../../../../src/configs/enum';
 const AppelsTable = () => {
@@ -165,18 +165,18 @@ const AppelsTable = () => {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <FaRegEye
+          <Eye
             className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
             title="Voir détails"
             onClick={() => handleShow(row.id)}
           />
-          <FaEdit
+          <Pencil
             className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
             title="Modifier"
             onClick={() => handleEdit(row.last_traitement_id)}
           />
 
-          <RiDeleteBin6Line
+          <Trash2
             className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
             onClick={() => {
               setSelectedId(row.id);
@@ -185,13 +185,14 @@ const AppelsTable = () => {
             title="Supprimer Appel"
           />
           {row.last_traitement_visite_id == null ? (
-            <FaSync
+            <RefreshCw
               className="w-4 h-4 text-green-500  cursor-pointer"
               title="Convertir en visite"
               onClick={() => handle_convert_to_visite(row.prospect)}
             />
           ) : (
-            <FaRegIdCard
+            <CreditCard
+              className="w-4 h-4 text-blue-500 cursor-pointer"
               onClick={() => voir_visite(row.last_traitement_visite_id)}
             />
           )}
@@ -296,7 +297,7 @@ const AppelsTable = () => {
               : undefined
           }
           filterComponent={
-            <div className="space-y-4 p-4 rounded-lg shadow-md">
+            <div className="space-y-4 p-4 rounded-lg ">
               <div
                 className="grid gap-1"
                 style={{
@@ -304,8 +305,8 @@ const AppelsTable = () => {
                 }}
               >
                 {/* Champs de recherche */}
-                
-                 <input
+
+                <input
                   type={tempFilters.date ? 'date' : 'text'}
                   placeholder="Date"
                   value={tempFilters.date}
@@ -337,22 +338,16 @@ const AppelsTable = () => {
                   }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-               
-                <select
+                <SelectInput
                   value={tempFilters.interet}
-                  onChange={(e) => handleFilterChange('interet', e.target.value)}
-                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-                >
-                  <option value="" disabled>
-                    Choisir un Intéret
-                  </option>
-
-                  {Object.values(VISITE_INTERETS).map((data) => (
-                    <option key={data.code} value={data.code}>
-                      {data.label}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(value) => handleFilterChange('interet', value)}
+                  options={Object.values(VISITE_INTERETS).map((data) => ({
+                    value: data.code,
+                    label: data.label,
+                  }))}
+                  placeholder="Choisir un Intéret"
+                  className="h-10 text-sm w-full"
+                />
               </div>
 
               {/* Boutons */}

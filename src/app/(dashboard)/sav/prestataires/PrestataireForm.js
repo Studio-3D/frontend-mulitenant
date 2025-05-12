@@ -13,7 +13,6 @@ import {
   Autocomplete as Autocomplete1,
   MenuItem,
   InputLabel,
-  Select,
   FormHelperText,
   Alert
 } from "@mui/material";
@@ -25,6 +24,8 @@ import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponen
 import Autocomplete from '@/components/Autocomplete';
 import SelectInput from "@/components/SelectInput";
 import { encryptUserType, USER_TYPES } from "@/components/user-utils";
+import InputSelect from "@/components/inputSelect";
+import Input from '@/components/Input';
 
 const PrestataireForm = ({ id = null }) => {
   const [loading, setLoading] = useState(false);
@@ -46,7 +47,18 @@ const PrestataireForm = ({ id = null }) => {
     setValue,
     watch,
     formState: { errors },
-  } = useForm();
+  } = useForm({
+    defaultValues: {
+      cin: '',
+      nom: '',
+      prenom: '',
+      telephone: '',
+      civilite: '',
+      service_id: '',
+      email: '',
+      adresse: ''
+    }
+  });
 
   // Load prestataire data if editing
   useEffect(() => {
@@ -247,45 +259,54 @@ const handleChange_event = (name) => (event) => {
     <form onSubmit={handleSubmit(onSubmit)}>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
 
-        <TextField
-          label="Cin:"
-          name="cin"
-          control={control}
-          required
-          errors={errors}
-          backendErrors={backendErrors}
-          onChange={handleChange_event('cin')}
-        />
+      <Input
+    label="Cin:"
+    name="cin"
+    value={watch('cin')||''}
+    onChange={(e) => {
+      setValue('cin', e.target.value)
+      handleChange_event('cin')(e)
+    }}
+    required
+    error={errors?.cin?.message || backendErrors?.cin?.[0]}
+  />
 
-        <TextField
-          label="Nom:"
-          name="nom"
-          required
-          control={control}
-          errors={errors}
-          backendErrors={backendErrors}
-        />
+  <Input
+    label="Nom:"
+    name="nom"
+    value={watch('nom')||''}
+    onChange={(e) => setValue('nom', e.target.value)}
+    required
+    error={errors?.nom?.message || backendErrors?.nom?.[0]}
+  />
 
-        <TextField
-          label="Prénom:"
-          name="prenom"
-          required
-          control={control}
-          errors={errors}
-          backendErrors={backendErrors}
-        />
+  <Input
+    label="Prénom:"
+    name="prenom"
+    value={watch('prenom')}
+    onChange={(e) => setValue('prenom', e.target.value)}
+    required
+    error={errors?.prenom?.message || backendErrors?.prenom?.[0]}
+  />
 
-        <TextField
-          label="Téléphone:"
-          name="telephone"
-          type="number"
-          required
-          disabled={disabled_var}
-          control={control}
-          errors={errors}
-          backendErrors={backendErrors}
-          onChange={handleChange_event('telephone')}
-        />
+  <Input
+    label="Téléphone:"
+    name="telephone"
+    type="number"
+    value={watch('telephone')}
+    onChange={(e) => {
+      setValue('telephone', e.target.value)
+      handleChange_event('telephone')(e)
+    }}
+    disabled={disabled_var}
+    required
+    error={errors?.telephone?.message || backendErrors?.telephone?.[0]}
+  />
+
+  {/* ...civilité, service_id restent tels quels avec Controller ou InputSelect */}
+
+  
+
 
         
         <Controller
@@ -309,43 +330,39 @@ const handleChange_event = (name) => (event) => {
               )}
         />
 
-        <Autocomplete
-          label="Service:"
-          name="service_id"
-          options={services}
-          loading={loading}
-          required
+<InputSelect
+  label="Service"
+  name="service_id"
+  value={watch('service_id')}
+  onChange={(val) => {
+    setValue('service_id', val?.value || null);
+    const newValue = services.find(s => s.id === val?.value);
+  }}
+  options={services.map(s => ({ value: s.id, label: s.nom }))}
+  placeholder="Choisir un service..."
+  isLoading={loading}
+  error={errors?.service_id}
+  required
+/>
 
-          value={
-            services.find((opt) => opt.id == watch('service_id')) ||
-            null
-          }
-          choix="nom"
-          control={control}
-          errors={errors}
-          backendErrors={backendErrors}
-          onChange={(newValue) => {
-            setValue('service_id', newValue ? newValue.id : '');
-            
-          }}
-        />
+              
   
-        <TextField
-          label="Email:"
-          name="email"
-          required
-          control={control}
-          errors={errors}
-          backendErrors={backendErrors}
-        />
+<Input
+    label="Email:"
+    name="email"
+    value={watch('email')}
+    onChange={(e) => setValue('email', e.target.value)}
+    required
+    error={errors?.email?.message || backendErrors?.email?.[0]}
+/>
 
-        <TextField
-          label="Adresse:"
-          name="adresse"
-          control={control}
-          errors={errors}
-          backendErrors={backendErrors}
-        />
+  <Input
+    label="Adresse:"
+    name="adresse"
+    value={watch('adresse')}
+    onChange={(e) => setValue('adresse', e.target.value)}
+    error={errors?.adresse?.message || backendErrors?.adresse?.[0]}
+/>
 
       </div>
 
