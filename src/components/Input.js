@@ -19,8 +19,9 @@ export default function Input({
   required,
   inputMode,
 }) {
-  // Ensure value is never null for uncontrolled components
-  const safeValue = value === null ? '' : value;
+  // Ensure value is never null
+  const safeValue = value == null ? '' : value;
+
 
   if (control) {
     return (
@@ -32,7 +33,7 @@ export default function Input({
           // Ensure field.value is never null for controlled components
           const fieldValue = field.value === null ? '' : field.value;
           const combinedError = fieldState.error?.message || error || backendErrors;
-          
+
           return (
             <div className="flex flex-col w-full">
               <label className="font-medium text-gray-700">
@@ -98,6 +99,7 @@ export default function Input({
           disabled={disabled}
           required={required}
           inputMode={inputMode}
+          accept={type == 'file' ? 'image/*,application/pdf' : undefined}
           className={`h-[38px] text-[15px] px-4 py-2 outline-none border rounded-md w-full
             ${
               readOnly || disabled

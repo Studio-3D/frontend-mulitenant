@@ -1,0 +1,669 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import Table from '@/components/Table';
+import {
+  FaRegEye,
+  FaEdit,
+  FaTimes,
+  FaCheck,
+  FaClock,
+  FaEye,
+} from 'react-icons/fa';
+import { RiDeleteBin6Line } from 'react-icons/ri';
+import Modal from '@/components/Modal';
+import DeleteData from '@/components/DeleteData';
+import { useAuth } from '../../../../context/AuthContext';
+import { APIURL, ENDPOINTS } from '../../../../configs/api';
+import { useRouter } from 'next/navigation';
+import format from 'date-fns/format';
+import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
+import { fetchData_table_by_projet } from '../../../../../src/configs/api-utils';
+import Link from 'next/link';
+import Input from '@/components/Input';
+import SelectInput from '@/components/SelectInput';
+
+import { MODE_FINANCE } from '../../../../../src/configs/enum';
+import Modal_Valider_Reservation from './Modal_Valider_Reservation';
+
+const ReservationTable = ({ dataClient }) => {
+  const { user, token } = useAuth();
+  const userRole = user.role;
+  const accesstoken = token || localStorage.getItem('accessToken');
+
+  // Declare the entity object in the component scope
+
+  const router = useRouter();
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedId, setSelectedId] = useState(null);
+  const [totalRows, setTotalRows] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [ID, setID] = useState(0)
+  const [action, setAction] = useState(null)
+  // validation /rejet
+  const [first_num_recu, set_first_num_recu] = useState(null)
+  const [first_av_statut, set_first_av_statut] = useState(null)
+  const [av_id, setav_id] = useState(0)
+  const [open_v_reservation, setOpen_v_reservation] = useState(false)
+  const [open_r, setOpen_r] = useState(false)
+  const [confirm_r, setConfirm_r] = useState(false)
+  const [code_reservation, setCode_reservation] = useState(null)
+  const [Commentaire_av, setCommentaire_av] = useState(null)
+  const [date_encaissement, set_date_encaissement] = useState(null)
+  const [num_remise, set_num_remise] = useState(null)
+  const [open_v_avances, setOpen_v_avances] = useState(false)
+  const [Commentaire_res, setCommentaire_res] = useState(null)
+  const [loading_v, setLoading_v] = useState(false)
+
+  const [filters, setFilters] = useState({
+    code_reservation: '',
+    date_start: '',
+    date_end: '',
+    bien: '',
+    client: '',
+    cc: '',
+  });
+  const [tempFilters, setTempFilters] = useState({ ...filters });
+
+  const handleFilterChange = (field, value) => {
+    setTempFilters((prev) => ({ ...prev, [field]: value }));
+  };
+  const resetFilters = () => {
+    const reset = Object.fromEntries(
+      Object.keys(filters).map((key) => [key, ''])
+    );
+    setFilters(reset);
+    setTempFilters(reset);
+  };
+  const applyFilters = () => {
+    setFilters(tempFilters);
+  };
+  const entity = {
+    API_URL: 'reservations',
+    dataKey: 'data',
+    searchFields: [],
+  };
+
+  const clientId = dataClient?.dataClient?.id;
+  useEffect(() => {
+    const params_url = clientId ? { client_id: clientId } : {};
+    const combinedFilters = { ...filters, ...params_url };
+
+   
+    fetchData_table_by_projet(
+      entity,
+      combinedFilters,
+      searchTerm,
+      currentPage,
+      rowsPerPage,
+      accesstoken,
+      setLoading,
+      setError,
+      setData,
+      setTotalRows
+    );
+  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters]);
+
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 1200); // Wait for 1.2s after user stops typing before updating the debounced value
+
+    return () => clearTimeout(timer); // Clean up the timeout on each render
+  }, [searchTerm]);
+
+  const formatData = () => {
+    return data.map((pro) => {
+      return {
+        id: pro.id,
+        code_reservation: pro.code_reservation,
+        cc: pro.user.name + ' ' + pro.user.prenom,
+        user_id: pro.user.id,
+        date_reservation: pro.date_reservation,
+        aquereurs: pro.aquereurs,
+        bien_id: pro.bien_id,
+        propriete_dite_bien: pro.bien?.propriete_dite_bien,
+        prix: pro.prix,
+        avances_sum_montant: pro.avances_sum_montant,
+        statut: pro.statut,
+        data_res: pro,
+      };
+    });
+  };
+
+  // Dynamically build columns based on type
+  const columns = [
+    {
+      key: 'cc',
+      label: 'Commercial',
+      render: (row) => {
+        return isSuperAdmin(userRole) || isAdmin(userRole) ? (
+          <>
+            {row.data_res.user && (
+              <>
+                <Link target="_blank" href={'/utilisateurs/' + row.user_id}>
+                  <strong style={{ fontWeight: 600 }}>{row.cc}</strong>
+                </Link>
+              </>
+            )}
+          </>
+        ) : (
+          row.cc
+        );
+      },
+    },
+
+    {
+      key: 'date_reservation',
+      label: 'Date Réservation',
+      render: (row) => (
+        <div className="flex items-center gap-3">
+          <span>
+            {row.date_reservation
+              ? format(new Date(row.date_reservation), 'dd/MM/yyyy ', { timeZone: 'UTC' })
+              : ''}
+          </span>
+        </div>
+      ),
+    },
+    { key: 'code_reservation', label: 'Code' },
+    {
+      key: 'nomComplet',
+      label: 'Nom Complet',
+      render: (row) => {
+        return row.data_res?.aquereurs
+          ? Object.keys(row.data_res.aquereurs).map((key) => (
+              <div key={key}>
+                {' '}
+                {/* Added a keyed wrapper (React requires keys in lists) */}
+                <Link
+                  target="_blank"
+                  href={`/ventes/clients/${row.data_res.aquereurs[key].client.id}`}
+                >
+                  <strong>
+                    {row.data_res.aquereurs[key].client.nom}{' '}
+                    {row.data_res.aquereurs[key].client.prenom}
+                  </strong>
+                </Link>
+              </div>
+            ))
+          : null; // Return `null` instead of empty string for cleaner React rendering
+      },
+    },
+    {
+      key: 'propriete_dite_bien',
+      label: 'Bien',
+      render: (row) => (
+        <Link target="_blank" href={`/biens/${row.bien_id}`}>
+          <strong style={{ fontWeight: 600 }}>{row.propriete_dite_bien}</strong>
+        </Link>
+      ),
+    },
+    {
+      key: 'prix',
+      label: 'Prix',
+      render: (row) => (
+        <b style={{ color: 'blue' }}>
+          {row.prix ? `${row.prix.toLocaleString()} DH` : ''}
+        </b>
+      ),
+    },
+    {
+      key: 'avance',
+      label: 'Avance',
+      render: (row) => (
+        <b style={{ color: 'green' }}>
+          {row.avances_sum_montant
+            ? `${row.avances_sum_montant.toLocaleString()} DH`
+            : ''}
+        </b>
+      ),
+    },
+    {
+      key: 'reste',
+      label: 'Reste',
+      render: (row) => (
+        <b style={{ color: 'red' }}>
+          {row.prix - row.avances_sum_montant
+            ? (row.prix - row.avances_sum_montant).toLocaleString() + ' DH'
+            : ''}{' '}
+        </b>
+      ),
+    },
+    {
+      key: 'date_validation',
+      label: 'Date Validation',
+      render: (row) => (
+        <div className="flex items-center gap-3">
+          <span>
+            {row.data_res.last_statut != null &&
+              row.data_res.last_statut.statut == 1 &&
+              (row.data_res.last_statut.date_validation
+                ? format(
+                    new Date(row.data_res.last_statut.date_validation),
+                    'dd/MM/yyyy kk:mm'
+                  )
+                : '')}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: 'respo_validation',
+      label: 'Responsable Validation',
+      render: (row) => (
+        <div className="flex items-center gap-3">
+          <span>
+            {row.data_res.last_statut != null &&
+              row.data_res.last_statut.statut == 1 &&
+              row.data_res.last_statut.user.name +
+                ' ' +
+                row.data_res.last_statut.user.name}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      render: (row) => (
+        <div className="flex gap-3 items-center">
+          {/* View Button */}
+          <FaCheck
+                    className="w-4 h-4 text-green-500 hover:text-green-700 cursor-pointer"
+                    title="Valider"
+                    onClick={() =>
+                      handle_valider(
+                        row.id,
+                        row.code_reservation,
+                        row.data_res.first_avance?.num_recu,
+                        row.data_res.first_avance?.id,
+                        row.data_res.first_avance?.statut
+                      )
+                    }
+                  />
+          <FaRegEye
+            className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
+            title="Voir détails"
+            onClick={() => handleShow(row.id)}
+          />
+
+          {/* Edit Button */}
+          <FaEdit
+            className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
+            title="Modifier"
+            onClick={() => handleEdit(row.id)}
+          />
+
+          {/* Status-based actions */}
+          {row.statut == 3 ? (
+            <>
+              {isSuperAdmin(userRole) || isAdmin(userRole) ? (
+                <>
+                  {/* Approve Button */}
+                  <FaCheck
+                    className="w-4 h-4 text-green-500 hover:text-green-700 cursor-pointer"
+                    title="Valider"
+                    onClick={() =>
+                      handle_valider(
+                        row.id,
+                        row.code_reservation,
+                        row.data_res.first_avance?.num_recu,
+                        row.data_res.first_avance?.id,
+                        row.data_res.first_avance?.statut
+                      )
+                    }
+                  />
+
+                  {/* Reject Button */}
+                  <FaTimes
+                    className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
+                    title="Refuser"
+                    onClick={() => handle_rejeter(row.id, row.code_reservation)}
+                  />
+                </>
+              ) : (
+                <FaClock
+                  className="w-4 h-4 text-gray-500 hover:text-gray-700 cursor-pointer"
+                  title="La Réservation est en Attente de Validation"
+                  onClick={() => handle_show_info_2(row.code_reservation)}
+                />
+              )}
+            </>
+          ) : row.statut == 2 ? (
+            <FaEye
+              className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
+              title="Détail du Rejet"
+              onClick={() =>
+                handle_show_comment_rejete(
+                  row.code_reservation,
+                  row.data_res.last_statut?.commentaire
+                )
+              }
+            />
+          ) : row.statut == 1 && row.first_avance?.statut == 3 ? (
+            <FaClock
+              className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
+              title="Premier avance en attente de validation"
+              onClick={() => handle_show_info(row.code_reservation)}
+            />
+          ) : null}
+
+          {/* Cancel/Withdraw Button */}
+          {(isSuperAdmin(userRole) ||
+            isAdmin(userRole) ||
+            isCommercial(userRole)) &&
+            row.statut == 1 && (
+              <FaTimes
+                className={`w-4 h-4 cursor-pointer ${
+                  row.data_res.desistement_att_validation_rejete?.statut == 0
+                    ? 'text-orange-500 hover:text-orange-700'
+                    : row.data_res.desistement_att_validation_rejete?.statut ==
+                      2
+                    ? 'text-red-500 hover:text-red-700'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+                title={
+                  row.data_res.desistement_att_validation_rejete?.statut == 0
+                    ? 'désistement en attente'
+                    : row.data_res.desistement_att_validation_rejete?.statut ==
+                      2
+                    ? 'Désistement rejeté'
+                    : 'Désister la réservation'
+                }
+                onClick={() =>
+                  row.data_res.desistement_att_validation_rejete != null
+                    ? handleDesiste(
+                        row.id,
+                        row.data_res.desistement_att_validation_rejete?.id,
+                        row.data_res.desistement_att_validation_rejete?.statut,
+                        row.data_res.desistement_att_validation_rejete
+                          ?.commentaire_rejete
+                      )
+                    : handleDesiste(row.id, null, null, null)
+                }
+              />
+            )}
+
+          {/* Delete Button */}
+          {(isSuperAdmin(userRole) || isAdmin(userRole)) && (
+            <RiDeleteBin6Line
+              className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
+              onClick={() => {
+                setSelectedId(row.id);
+                setShowDeleteModal(true);
+              }}
+              title="Supprimer la réservation"
+            />
+          )}
+        </div>
+      ),
+    },
+  ];
+
+  //EXPORT
+
+  const data_to_export = () => {
+    return data.map((item) => {
+      // Extract acquereurs data
+      const acquereursNames = item?.aquereurs
+        ? item.aquereurs
+            .map(
+              (acq) => (acq.client?.nom + ' ' + acq.client?.prenom).trim() || ''
+            )
+            .filter((name) => name) // Remove empty strings
+            .join(' / ')
+        : '';
+
+      const acquereursCin = item?.aquereurs
+        ? item.aquereurs
+            .map((acq) => acq.client?.cin || '')
+            .filter((cin) => cin) // Remove empty strings
+            .join(' / ')
+        : '';
+
+      const acquereursTele = item?.aquereurs
+        ? item.aquereurs
+            .map((acq) => acq.client?.telephone_num1 || '')
+            .filter((tele) => tele) // Remove empty strings
+            .join(' / ')
+        : '';
+
+      return {
+        code_reservation: item.code_reservation || '',
+        date_reservation: item.date_reservation
+          ? format(new Date(item.date_reservation), 'dd/MM/yyyy')
+          : '',
+        bien: item.bien?.propriete_dite_bien || '',
+        prix: item.prix ? `${item.prix.toLocaleString()} DH` : '',
+        avance: item.avances_sum_montant
+          ? `${item.avances_sum_montant.toLocaleString()} DH`
+          : '',
+        Reste:
+          item.prix && item.avances_sum_montant
+            ? `${(item.prix - item.avances_sum_montant).toLocaleString()} DH`
+            : '',
+        date_validation:
+          item.last_statut?.statut == 1 && item.last_statut?.date_validation
+            ? format(
+                new Date(item.last_statut.date_validation),
+                'dd/MM/yyyy kk:mm'
+              )
+            : '',
+        responsable_validation:
+          item.last_statut?.statut == 1 && item.last_statut?.user
+            ? `${item.last_statut.user.name || ''} ${
+                item.last_statut.user.name || ''
+              }`.trim()
+            : '',
+        nb_acquereurs: item.nb_acquereurs || '',
+        mode_financement: MODE_FINANCE[item.mode_financement]?.label || '',
+        prix_remise: item.prix_remise || '',
+        prix_forfetaire: item.prix_forfetaire || '',
+        noms_acquereurs: acquereursNames,
+        cins_acquereurs: acquereursCin,
+        tele_acquereurs: acquereursTele,
+      };
+    });
+  };
+
+  const columns_export = [
+    { key: 'code_reservation', label: 'Code reservation' },
+    { key: 'date_reservation', label: 'Date reservation' },
+    { key: 'bien', label: 'Bien' },
+    { key: 'prix', label: 'Prix' },
+    { key: 'avance', label: 'Avance' },
+    { key: 'Reste', label: 'Reste' },
+    { key: 'date_validation', label: 'Date validation' },
+    { key: 'responsable_validation', label: 'Responsable validation' },
+    { key: 'nb_acquereurs', label: 'Nbrs acquereurs' },
+    { key: 'mode_financement', label: 'Mode financement' },
+    { key: 'prix_remise', label: 'Prix remise' },
+    { key: 'prix_forfetaire', label: 'Prix forfetaire' },
+
+    //clients
+    { key: 'noms_acquereurs', label: 'Nom client' },
+    { key: 'cins_acquereurs', label: 'Cin client' },
+    { key: 'tele_acquereurs', label: 'Tele client' },
+  ];
+
+ 
+
+  const handle_valider = (Id, code, num_recu, av_id, av_statut) => {
+    setAction(null)
+    setOpen_v_reservation(!open_v_reservation)
+    setID(Id)
+    setCode_reservation(code)
+    set_first_num_recu(num_recu)
+    set_first_av_statut(av_statut)
+    setav_id(av_id)
+  }
+
+  const handle_rejeter = (Id, code) => {
+    setConfirm_r(false)
+    setOpen_r(!open_r)
+    setID(Id)
+    setCode_reservation(code)
+  }
+
+  return (
+    <>
+      {' '}
+      <div className="reflative">
+        <Table
+          data_to_export={data_to_export()}
+          columns_export={columns_export}
+          name_file_export={'reservations_export'}
+          columns={columns}
+          data={formatData()}
+          totalRows={totalRows}
+          loading={loading}
+          error={error}
+          currentPage={currentPage}
+          rowsPerPage={rowsPerPage}
+          onPageChange={setCurrentPage}
+          onRowsPerPageChange={setRowsPerPage}
+          onSearchChange={setSearchTerm}
+          enableExport={true}
+          enableImport={true}
+          addLink={
+            isSuperAdmin(user.role) ||
+            isAdmin(user.role) ||
+            isCommercial(user.role)
+              ? `${ENDPOINTS.RESERVATIONS}?action=add`
+              : undefined
+          }
+          filterComponent={
+            <div className="space-y-4 p-4 rounded-lg ">
+              <div
+                className="grid gap-5"
+                style={{
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                }}
+              >
+                {/* Champs de recherche */}
+                <Input
+                  type="text"
+                  placeholder="Code Réservation"
+                  value={tempFilters.code_reservation}
+                  onChange={(e) =>
+                    handleFilterChange('code_reservation', e.target.value)
+                  }
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
+                <Input
+                  type="date"
+                  placeholder="Date début"
+                  value={tempFilters.date_start}
+                  onChange={(e) =>
+                    handleFilterChange('date_start', e.target.value)
+                  }
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
+                <Input
+                  type="date"
+                  placeholder="Date Fin"
+                  value={tempFilters.date_end}
+                  onChange={(e) =>
+                    handleFilterChange('date_end', e.target.value)
+                  }
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
+
+                <Input
+                  type="text"
+                  placeholder="Bien"
+                  value={tempFilters.bien}
+                  onChange={(e) => handleFilterChange('bien', e.target.value)}
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
+                <Input
+                  type="text"
+                  placeholder="Client"
+                  value={tempFilters.client}
+                  onChange={(e) => handleFilterChange('client', e.target.value)}
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
+                <Input
+                  type="text"
+                  placeholder="Commercial"
+                  value={tempFilters.cc}
+                  onChange={(e) => handleFilterChange('cc', e.target.value)}
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
+              </div>
+
+              {/* Boutons */}
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={applyFilters}
+                  className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                >
+                  Appliquer les filtres
+                </button>
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
+                >
+                  Réinitialiser
+                </button>
+              </div>
+            </div>
+          }
+        />
+      </div>
+      {showDeleteModal && selectedId && (
+        <Modal
+          isVisible={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+        >
+          <DeleteData
+            route={APIURL.RESERVATIONS}
+            Id={selectedId}
+            message={'Etes-vous sûr de vouloir supprimer cete Réservation ?'}
+            accessToken={accesstoken}
+            onClose={() => {
+              setShowDeleteModal(false);
+              fetchData_table_by_projet(
+                entity,
+                {},
+                searchTerm,
+                currentPage,
+                rowsPerPage,
+                accesstoken,
+                setLoading,
+                setError,
+                setData,
+                setTotalRows
+              );
+            }}
+          />
+        </Modal>
+      )}
+       {open_v_reservation && (
+              <>
+                <Modal isVisible={true} onClose={() => setOpen_v_reservation(false)}>
+                  <Modal_Valider_Reservation
+                    code_reservation={code_reservation}
+                    first_av_statut={first_av_statut}
+                    first_num_recu={first_num_recu}
+                    id= {ID}
+                    onClose={() => setOpen_v_reservation(false)}
+                  />
+                </Modal>
+              </>
+            )}
+    </>
+  );
+};
+
+export default ReservationTable;

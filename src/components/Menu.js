@@ -226,8 +226,9 @@ const Menu = () => {
     },
     {
       label: "Ventes",
-      icon: <Handshake size={20} />,
-      href: "/Ventes",
+      icon: <FaHandshake />,
+      href: "/ventes",
+
       needsSociete: user.role === 1,
       needsProjet: true,
     },

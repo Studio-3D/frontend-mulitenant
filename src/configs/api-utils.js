@@ -311,7 +311,7 @@ export const fetchList_fichier_exist = async (
   const accessToken = localStorage.getItem('accessToken');
   setLoading_list(true);
   try {
-    const res = await axios.get(`${APIURL.ROOT}/v1/files_docs/${item}`, {
+    const res = await axios.get(`${APIURL.ROOTV1}/files_docs/${item}`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -321,5 +321,30 @@ export const fetchList_fichier_exist = async (
     toast.error(erreur?.response?.data?.message || 'Failed to load files');
   } finally {
     setLoading_list(false);
+  }
+};
+
+export const fetchDataByProjet_2 = async (items,datakey, setData, setLoading) => {
+  const accessToken = localStorage.getItem('accessToken');
+  const selectedProjet =
+    JSON.parse(localStorage.getItem('selectedProjet')) || {}; // Ensure it's not null
+  setLoading(true);
+  try {
+    const response = await axios.get(
+      `${APIURL.ROOTV1}/${items}/${selectedProjet?.id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    setLoading(false);
+    console.log('wa data==>'+response.data[datakey])
+    setData(response.data[datakey]);
+  } catch (error) {
+    setLoading(false);
+    console.error('Error fetching data:', error);
+    toast.error('Failed to fetch data');
   }
 };
