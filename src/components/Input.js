@@ -4,6 +4,7 @@ import { Controller } from 'react-hook-form';
 
 export default function Input({
   label,
+  multi = false,
   type = 'text',
   name,
   value,
@@ -20,7 +21,7 @@ export default function Input({
   inputMode,
 }) {
   // Ensure value is never null
-  const safeValue = value === null ? '' : value;
+  const safeValue = value == null ? '' : value;
 
   if (control) {
     return (
@@ -38,23 +39,35 @@ export default function Input({
               <input
                 {...field}
                 type={type}
-                value={field.value === null ? '' : field.value} // Handle null values
+                value={field.value == null ? '' : field.value} // Handle null values
                 placeholder={placeholder}
                 readOnly={readOnly}
                 disabled={disabled}
                 required={required}
                 inputMode={inputMode}
+                accept={type == 'file' ? 'image/*,application/pdf' : undefined}
                 className={`h-[38px] text-[15px] px-4 py-2 outline-none border rounded-md w-full
                   ${
                     readOnly || disabled
                       ? 'cursor-default bg-gray-50 border-[#b7daf6]'
                       : 'border-gray-300 hover:border-gray-500 focus:border-gray-500'
                   }
-                  ${error ? 'border-red-500 focus:border-red-500 hover:border-red-500' : ''}
+                  ${
+                    error
+                      ? 'border-red-500 focus:border-red-500 hover:border-red-500'
+                      : ''
+                  }
+                  ${type == 'file' ? 'p-0 border-none' : ''}
                 `}
                 onChange={(e) => {
-                  field.onChange(e);
-                  onChange?.(e);
+                  if (type == 'file') {
+                    const files = e.target.files;
+                    field.onChange(files); // Update React Hook Form state
+                    onChange?.(e, files); // Call your custom handler with event and files
+                  } else {
+                    field.onChange(e);
+                    onChange?.(e);
+                  }
                 }}
               />
               {children && (
@@ -84,20 +97,26 @@ export default function Input({
         <input
           type={type}
           name={name}
-          value={safeValue} // Use safeValue instead of value directly
+          value={type == 'file' ? undefined : safeValue} // Don't set value for file inputs
           defaultValue={defaultValue}
           onChange={onChange}
           readOnly={readOnly}
           disabled={disabled}
           required={required}
           inputMode={inputMode}
+          accept={type == 'file' ? 'image/*,application/pdf' : undefined}
           className={`h-[38px] text-[15px] px-4 py-2 outline-none border rounded-md w-full
             ${
               readOnly || disabled
                 ? 'cursor-default bg-gray-50 border-[#b7daf6]'
                 : 'border-gray-300 hover:border-gray-500 focus:border-gray-500'
             }
-            ${error ? 'border-red-500 focus:border-red-500 hover:border-red-500' : ''}
+            ${
+              error
+                ? 'border-red-500 focus:border-red-500 hover:border-red-500'
+                : ''
+            }
+            ${type == 'file' ? 'p-0 border-none' : ''}
           `}
           placeholder={placeholder}
         />
@@ -109,7 +128,7 @@ export default function Input({
       </div>
       {(error || backendErrors) && (
         <p className="text-red-500 text-sm mt-1">
-          {typeof error === 'string' ? error : 'Ce champ est obligatoire'}
+          {typeof error == 'string' ? error : 'Ce champ est obligatoire'}
         </p>
       )}
     </div>

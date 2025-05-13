@@ -13,14 +13,15 @@ const TextField = ({
   defaultValues,
   errors,
   backendErrors,
-  width = 'w-full', // Default width is 'w-full' for full width
-  height = 'h-10', // Default height is 'h-10' (input height)
+  width = 'w-full',
+  height = 'h-[38px]',
   min = null,
   max = null,
+  accept = null, // Add accept prop
 }) => {
   return (
     <div className="mb-2">
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700">
+      <label htmlFor={name} className="block text-[15px] font-medium text-gray-700">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
@@ -36,7 +37,7 @@ const TextField = ({
               {...field}
               id={name}
               name={name}
-              className={`block ${width} ${height} px-3 py-2 mt-1 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+              className={`block ${width} ${height} px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
                 disabled ? 'bg-gray-100 cursor-not-allowed' : ''
               } ${errors[name] || backendErrors[name] ? 'border-red-500' : ''}`}
               required={required}
@@ -44,8 +45,25 @@ const TextField = ({
               rows={4}
               value={field.value === null ? '' : field.value}
               onChange={(event) => {
-                field.onChange(event); // Make sure react-hook-form handles the change
-                customOnChange(event); // Also invoke customOnChange
+                field.onChange(event);
+                customOnChange(event);
+              }}
+            />
+          ) : type === 'file' ? ( // Special handling for file inputs
+            <input
+              id={name}
+              name={name}
+              type="file"
+              className={`block ${width} ${height} px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none hover:border-gray-500 focus:border-gray-500 ${
+                disabled ? 'bg-gray-100 cursor-not-allowed' : ''
+              } ${errors[name] || backendErrors[name] ? 'border-red-500' : ''}`}
+              required={required}
+              disabled={disabled}
+              accept={accept}
+              onChange={(event) => {
+                // For file inputs, we pass the FileList object
+                field.onChange(event.target.files);
+                customOnChange(event);
               }}
             />
           ) : (
@@ -56,15 +74,15 @@ const TextField = ({
               id={name}
               name={name}
               type={type}
-              className={`block ${width} ${height} px-3 py-2 mt-1 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+              className={`block ${width} ${height} px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none hover:border-gray-500 focus:border-gray-500 ${
                 disabled ? 'bg-gray-100 cursor-not-allowed' : ''
               } ${errors[name] || backendErrors[name] ? 'border-red-500' : ''}`}
               required={required}
               disabled={disabled}
               value={field.value === null ? '' : field.value}
               onChange={(event) => {
-                field.onChange(event); // Make sure react-hook-form handles the change
-                customOnChange(event); // Also invoke customOnChange
+                field.onChange(event);
+                customOnChange(event);
               }}
             />
           )
@@ -81,7 +99,6 @@ const TextField = ({
       {backendErrors[name] && backendErrors[name].length > 0 && (
         <div className="mt-1 text-xs text-red-600">
           <p style={{ color: 'red' }}>{backendErrors[name][0]}</p>
-          {/* Display backend error message */}
         </div>
       )}
     </div>
