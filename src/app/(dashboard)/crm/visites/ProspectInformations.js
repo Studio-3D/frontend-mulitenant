@@ -51,20 +51,19 @@ const ProspectInformations = ({
           label="Email:"
           name="email"
           type="email"
-          required={email_required}
+          placeholder="email@example.com"
+          required
           control={control}
-          error={
-            formSubmitted && email_required && !watch('email')
-              ? 'Email obligatoire'
-              : formSubmitted &&
-                watch('email') &&
-                !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(watch('email'))
-              ? 'Email invalide'
-              : errors?.email?.message || backendErrors?.email
-          }
+          rules={{
+            required: true,
+            pattern: {
+              value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+              message: 'Email invalide'
+            }
+          }}
+          error={errors?.email?.message || backendErrors?.email}
           defaultValue={defaultValues?.email}
           onChange={(e) => {
-            control?.register('email').onChange(e);
             handleChange_event("l'email")(e);
           }}
         />
@@ -75,44 +74,57 @@ const ProspectInformations = ({
           name="cin"
           required={Number(watch('interet')) === 1}
           control={control}
-          error={
-            formSubmitted && Number(watch('interet')) === 1 && !watch('cin')
-              ? 'Ce champ est obligatoire lorsque interet est intéressé.'
-              : errors?.cin?.message || backendErrors?.cin
-          }
-          defaultValue={defaultValues?.cin}
-          onChange={(e) => {
-            control?.register('cin').onChange(e);
-            handleChange_event('cin')(e);
+          rules={{
+            validate: (value) => {
+              if (Number(watch('interet')) === 1 && !value) {
+                return 'Ce champ est obligatoire lorsque interet est intéressé.';
+              }
+              return true;
+            }
           }}
+          defaultValue={defaultValues?.cin}
         />
       </div>
       <div>
       <Input
-        label="Telephone:"
-        required
-        name="telephone"
-        type="text" // Keep as text input
-        control={control}
-        error={errors?.telephone?.message || backendErrors?.telephone}
-        defaultValue={defaultValues?.telephone}
-        onKeyPress={(e) => {
-          // Only allow numbers (0-9) to be pressed
-          if (!/[0-9]/.test(e.key)) {
-            e.preventDefault();
-          }
-        }}
-        onChange={(e) => {
-          // Filter out any non-numeric characters that might get through (like paste)
-          const numericValue = e.target.value.replace(/[^0-9]/g, '');
-          // Update the input value
-          e.target.value = numericValue;
-          // Pass to form handlers
-          control?.register('telephone').onChange(e);
-          handleChange_event('Téléphone')(e);
-        }}
-        inputMode="numeric" // Shows numeric keyboard on mobile
-      />
+  label="Telephone:"
+  required
+  name="telephone"
+  type="text"
+  control={control}
+  error={errors?.telephone?.message || backendErrors?.telephone}
+  defaultValue={defaultValues?.telephone}
+  inputMode="numeric"
+  onKeyDown={(e) => {
+    const allowedKeys = [
+      'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab',
+    ];
+
+    if (allowedKeys.includes(e.key)) return;
+
+    if (!/^[0-9]$/.test(e.key)) {
+      e.preventDefault();
+    }
+  }}
+  onChange={(e) => {
+    const numericValue = e.target.value.replace(/[^0-9]/g, '');
+
+    // If using react-hook-form's setValue method:
+    if (control.setValue) {
+      control.setValue('telephone', numericValue, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    }
+
+    // Trigger your custom handler
+    handleChange_event('Téléphone')({
+      ...e,
+      target: { ...e.target, value: numericValue },
+    });
+  }}
+/>
+
       </div>
       <div>
       <Input
@@ -150,30 +162,35 @@ const ProspectInformations = ({
         />
       </div>
       {selectedProspect?.source || disabled_var_source ? (
-        <div>
-          <SelectInput
-            label="Source:"
-            name="source_txt"
-            disabled
-            control={control}
-            error={errors?.source_txt?.message || backendErrors?.source_txt}
-            defaultValue={defaultValues?.source_txt}
-          />
-        </div>
-      ) : (
-        <div>
-          <SelectInput
-            label="Source:"
-            required
-            name="source_id"
-            value={sourceValue}
-            options={sources}
-            placeholder="Sélectionnez une source"
-            onChange={handleSourceChange}
-            error={errors?.source_id?.message || backendErrors?.source_id}
-          />
-        </div>
-      )}
+         <div>
+           <SelectInput
+             options={sources}
+             label="Source:"
+             name="source_txt"
+             disabled
+             control={control}
+             errors={errors}
+             backendErrors={backendErrors}
+             defaultValues={defaultValues}
+           />
+         </div>
+       ) : (
+         <div>
+           <Autocomplete
+             label="Source:"
+             required
+             name="source_id"
+             value={sourceValue}
+             options={sources}
+             loading={loading}
+             control={control}
+             errors={errors}
+             backendErrors={backendErrors}
+             onChange={handleSourceChange}
+             choix="source"
+           />
+         </div>
+       )}
       {watch('source_txt') === 'Partenaire' &&
         (partenaire_txt != null ? (
           <div>
@@ -211,27 +228,27 @@ const ProspectInformations = ({
             />
           </div>
         ))}
-      <div className="flex items-center">
+      <div className="flex items-center justify-between w-full mt-4">
         <Controller
           name="notifie"
           control={control}
           defaultValue={defaultValues['notifie'] || 0}
           render={({ field }) => (
-            <label className="flex items-center space-x-2">
-              <span
-                className={`text-sm font-medium ${
-                  field.value === 1 ? 'text-purple-600' : ''
-                }`}
-              >
-                Accepte être contacté:
-              </span>
+            <label className="flex justify-center items-center space-x-2">
               <input
                 type="checkbox"
                 {...field}
                 checked={field.value === 1}
                 onChange={(e) => field.onChange(e.target.checked ? 1 : 0)}
-                className="h-5 w-10 rounded-full bg-gray-300 transition-all duration-300"
+                className="h-5 w-7 items-center rounded-full bg-gray-300 transition-all duration-300 "
               />
+              <span
+                className={` font-medium ${
+                  field.value === 1 ? 'text-[#009FFF]' : ''
+                }`}
+              >
+                Accepte être contacté
+              </span>
             </label>
           )}
         />

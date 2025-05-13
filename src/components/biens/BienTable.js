@@ -6,8 +6,7 @@ import Table from '@/components/Table';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { useAuth } from "@/context/AuthContext";
-import { FaEdit } from "react-icons/fa";
-import { RiDeleteBin6Line } from "react-icons/ri";
+import { Pencil, Trash2 } from "lucide-react";
 import * as XLSX from 'xlsx';
 
 export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
@@ -55,14 +54,14 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
                   onClick={() => handleAction('edit', row.id)}
                   title="Modifier"
                 >
-                  <FaEdit className="w-4 h-4" />
+                  <Pencil className="w-4 h-4" />
                 </button>
                 <button
                   className="text-red-500 hover:text-red-700"
                   onClick={() => handleAction('delete', row.id)}
                   title="Supprimer"
                 >
-                  <RiDeleteBin6Line className="w-4 h-4" />
+                  <Trash2 className="w-4 h-4" />
                 </button>
               </>
             )}

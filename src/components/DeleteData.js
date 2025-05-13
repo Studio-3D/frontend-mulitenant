@@ -1,5 +1,5 @@
 'use client';
-import { IoAlertCircleOutline } from 'react-icons/io5';
+import { AlertCircle } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { useState } from 'react';
@@ -11,13 +11,14 @@ export default function DeleteData({
   accessToken,
   onClose,
   message,
+  type='Donnée',
 }) {
   const [loading, setLoading] = useState(false); // State for loading spinner
 
   // Delete user handler
   const handleDelete = async () => {
     if (!Id || !accessToken) {
-      toast.error('Donnée ou token invalide');
+      toast.error(`${type}  ou token invalide`);
       return;
     }
 
@@ -41,7 +42,7 @@ export default function DeleteData({
         });
       }
 
-      toast.success('Donnée supprimé avec succès');
+      toast.success(`${type} supprimé avec succès`);
       if (onClose) onClose();
     } catch (error) {
       console.error(
@@ -56,7 +57,7 @@ export default function DeleteData({
 
   return (
     <div className="w-[500px] p-4">
-      <IoAlertCircleOutline className="text-[#FF4E4E] text-6xl mx-auto mt-2 mb-4" />
+      <AlertCircle className="text-[#FF4E4E] w-14 h-14 mx-auto mt-2 mb-4" />
       <h2 className="text-xl font-semibold text-center">
         Confirmation de la suppression
       </h2>
