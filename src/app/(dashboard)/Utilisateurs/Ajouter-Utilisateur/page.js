@@ -8,13 +8,10 @@ import toast from "react-hot-toast";
 import { APIURL } from '../../../../configs/api';
 import { useSociete } from "../../../../context/SocieteContext";
 import { useAuth } from "../../../../context/AuthContext";
-import { RiEditLine } from "react-icons/ri";
+import { Pencil, Eye, EyeOff } from "lucide-react";
 import Input from "../../../../components/Input";
 import SelectInput from "../../../../components/SelectInput";
 import DateInput from "../../../../components/DateInput";
-import { GrFormView, GrFormViewHide} from "react-icons/gr";
-
-
 
 const Page = () => {
   const router = useRouter();
@@ -163,7 +160,7 @@ const Page = () => {
               className="w-full h-full rounded-full object-cover border-8 border-gray-100 shadow-md"
             />
             <div className="absolute top-1 right-1 bg-white p-1 rounded-full shadow-md">
-              <RiEditLine className="text-gray-600 text-lg" />
+              <Pencil className="text-gray-600 w-5 h-5" />
             </div>
           </div>
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-16 md:gap-y-3 gap-y-4 p-4 '>
@@ -269,12 +266,12 @@ const Page = () => {
             onChange={formik.handleChange}
             error={formik.errors.password}>
             {showPassword ? (
-                <GrFormViewHide
+                <EyeOff
                   className="w-6 h-6 text-gray-600"
                   onClick={() => setShowPassword(false)}
                 />
               ) : (
-                <GrFormView
+                <Eye
                   className="w-6 h-6 text-gray-500"
                   onClick={() => setShowPassword(true)}
                 />
@@ -286,12 +283,12 @@ const Page = () => {
             onChange={formik.handleChange}
             error={formik.errors.password_confirmation}>
             {showPasswordConfirmation ? (
-                <GrFormViewHide
+                <EyeOff
                   className="w-6 h-6 text-gray-600"
                   onClick={() => setShowPasswordConfirmation(false)}
                 />
               ) : (
-                <GrFormView
+                <Eye
                   className="w-6 h-6 text-gray-500"
                   onClick={() => setShowPasswordConfirmation(true)}
                 />

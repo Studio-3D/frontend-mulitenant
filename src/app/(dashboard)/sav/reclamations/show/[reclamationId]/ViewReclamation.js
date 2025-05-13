@@ -11,13 +11,13 @@ import {
   Divider,
 } from "@mui/material";
 import {
-  MdOutlineHome,
-  MdBuild,
-  MdDateRange,
-  MdCheckCircle,
-  MdErrorOutline,
-  MdAttachFile,
-} from "react-icons/md";
+  Home,
+  Wrench,
+  Calendar,
+  CheckCircle,
+  AlertCircle,
+  Paperclip,
+} from "lucide-react";
 import { APIURL, ENDPOINTS, RESOURCE_URL } from "@/configs/api";
 import { useAuth } from "@/context/AuthContext";
 import LoadingSpin from '@/components/LoadingSpin';
@@ -30,7 +30,6 @@ function formatDate(dateStr) {
   const d = new Date(dateStr);
   return d.toLocaleDateString();
 }
-
 
 function getStatutLabel(statut) {
   switch (statut) {
@@ -55,7 +54,7 @@ function getStatutLabel(statut) {
         <Chip
           label="Résolue"
           color="success"
-          icon={<MdCheckCircle />}
+          icon={<CheckCircle size={16} />}
           sx={{ fontWeight: "bold", fontSize: 14 }}
         />
       );
@@ -63,7 +62,7 @@ function getStatutLabel(statut) {
     return (
       <Chip
         label="Non Résolue"
-        icon={<MdErrorOutline />}
+        icon={<AlertCircle size={16} />}
         color="error"
         sx={{ fontWeight: "bold", fontSize: 14 }}
       />
@@ -73,7 +72,7 @@ function getStatutLabel(statut) {
         <Chip
           label="Inconnu"
           color="default"
-          icon={<MdErrorOutline />}
+          icon={<AlertCircle size={16} />}
           sx={{ fontWeight: "bold", fontSize: 14 }}
         />
       );
@@ -212,7 +211,7 @@ export default function ViewReclamationFullPage({ reclamationId }) {
 
           {/* Bien */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <MdOutlineHome color="#009FFF" size={26} />
+            <Home color="#009FFF" size={26} />
             <Typography variant="body1" sx={{ fontWeight: 600 }}>
               <b>Bien :</b> {bien?.propriete_dite_bien || "-"} (N° {bien?.numero || "-"}) - Bloc {bien?.bloc?.nom || "-"}
             </Typography>
@@ -220,7 +219,7 @@ export default function ViewReclamationFullPage({ reclamationId }) {
 
           {/* Prestataire */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <MdBuild color="#009FFF" size={26} />
+            <Wrench color="#009FFF" size={26} />
             <Typography variant="body1" sx={{ fontWeight: 600 }}>
               <b>Prestataire :</b> {prestataire?.civilite || "-"} {prestataire?.nom || "-"} {prestataire?.prenom || "-"} ({prestataire?.telephone || "-"})
             </Typography>
@@ -228,7 +227,7 @@ export default function ViewReclamationFullPage({ reclamationId }) {
 
           {/* Service */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <MdBuild color="#ec2F4B" size={26} />
+            <Wrench color="#ec2F4B" size={26} />
             <Typography variant="body1" sx={{ fontWeight: 600 }}>
               <b>Service :</b> {service?.nom || "-"}
             </Typography>
@@ -236,13 +235,13 @@ export default function ViewReclamationFullPage({ reclamationId }) {
 
           {/* Problèmes */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <MdErrorOutline color="#ec2F4B" size={26} />
+            <AlertCircle color="#ec2F4B" size={26} />
             <Typography variant="body1" sx={{ fontWeight: 600 }}>
               <b>Emplacement(s) :</b> {Details.emplacements || "-"}
             </Typography>
           </Box>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <MdErrorOutline color="#ec2F4B" size={26} />
+            <AlertCircle color="#ec2F4B" size={26} />
             <Typography variant="body1" sx={{ fontWeight: 600 }}>
               <b>Problème(s) :</b> {Details.problemes || "-"}
             </Typography>
@@ -262,13 +261,13 @@ export default function ViewReclamationFullPage({ reclamationId }) {
                       onClick={() => window.open(getFileUrl(pj.fichier), '_blank')}
                       color="primary"
                     >
-                      <MdAttachFile />{i + 1}
+                      <Paperclip size={18} />{i + 1}
                     </IconButton>
                   </Tooltip>
                 ))}
               </Stack>
-                      </>
-                    )}
+            </>
+          )}
         </Paper>
 
         {/* Colonne droite - Dates et commentaires */}
@@ -291,21 +290,21 @@ export default function ViewReclamationFullPage({ reclamationId }) {
 
           <Stack spacing={2}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <MdDateRange color="#009FFF" size={24} />
+              <Calendar color="#009FFF" size={24} />
               <Typography variant="body1" sx={{ fontWeight: 600 }}>
                 <b>Date réclamation :</b> {formatDate(Details.date_reclamation)}
               </Typography>
             </Box>
 
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <MdDateRange color="#009FFF" size={24} />
+              <Calendar color="#009FFF" size={24} />
               <Typography variant="body1" sx={{ fontWeight: 600 }}>
                 <b>Date intervention :</b> {formatDate(Details.date_intervention)}
               </Typography>
             </Box>
 
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <MdDateRange color="#009FFF" size={24} />
+              <Calendar color="#009FFF" size={24} />
               <Typography variant="body1" sx={{ fontWeight: 600 }}>
                 <b>Date fin intervention :</b> {formatDate(Details.date_fin_intervention)}
               </Typography>
@@ -334,27 +333,26 @@ export default function ViewReclamationFullPage({ reclamationId }) {
         </Paper>
       </Box>
       <Box
-  sx={{
-    mt: 4,
-    display: "flex",
-    justifyContent: "center",
-    gap: 2,
-  }}
->
-  <Button type="button" onClick={() => router.back()}>
-    Retour
-  </Button>
+        sx={{
+          mt: 4,
+          display: "flex",
+          justifyContent: "center",
+          gap: 2,
+        }}
+      >
+        <Button type="button" onClick={() => router.back()}>
+          Retour
+        </Button>
 
-  <Button
-   type="submit"
-    onClick={() => { router.push(`${ENDPOINTS.ReclamationsSav}?id=${reclamationId}&action=edit`);
-    }}
-  >
-    Modifier
-  </Button>
-</Box>
-
+        <Button
+          type="submit"
+          onClick={() => {
+            router.push(`${ENDPOINTS.ReclamationsSav}?id=${reclamationId}&action=edit`);
+          }}
+        >
+          Modifier
+        </Button>
+      </Box>
     </Box>
-    
   );
 }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FaChevronDown } from 'react-icons/fa';
 
 const AutocompleteMultiple = ({
   label,
@@ -22,6 +23,11 @@ const AutocompleteMultiple = ({
   const [filteredOptions, setFilteredOptions] = useState(options);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
+  // Toggle dropdown visibility
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
   // Sync external `value` to selectedOptions
   useEffect(() => {
     if (Array.isArray(value) && value.length > 0) {
@@ -36,9 +42,7 @@ const AutocompleteMultiple = ({
         })
       );
       setSelectedOptions(matched);
-    } /*else {
-      setSelectedOptions([]);
-    }*/
+    }
   }, [value, options, actualValueKey]);
 
   // Handle typing in the input
@@ -52,7 +56,7 @@ const AutocompleteMultiple = ({
       setFilteredOptions(
         options.filter(opt =>
           opt[choiceKey].toLowerCase().includes(val.toLowerCase())
-        )
+      ),
       );
     }
     setIsDropdownOpen(true);
@@ -100,32 +104,34 @@ const AutocompleteMultiple = ({
   return (
     <div id={`dropdown-${name}`} className="w-full relative">
       {label && (
-        <label htmlFor={name} className="block text-sm font-medium text-gray-700">
+        <label htmlFor={name} className="block font-medium text-gray-700">
           {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
 
-      <div className="relative mt-1">
+      <div className="relative">
         <div
-          className={`flex flex-wrap items-center gap-2 p-2 border rounded bg-white min-h-[42px] ${
+          className={`flex items-center gap-2 p-2 border rounded-md bg-white h-[38px] w-full overflow-hidden ${
             errors[name] ? 'border-red-500' : 'border-gray-300'
           }`}
         >
-          {selectedOptions.map((opt, idx) => (
-            <span
-              key={idx}
-              className="flex items-center px-2 py-1 text-sm text-white bg-[rgb(61,129,156)] rounded"
-            >
-              {opt[choiceKey]}
-              <button
-                type="button"
-                onClick={() => handleRemoveOption(opt)}
-                className="ml-2 text-xs text-gray-100 hover:text-gray-300"
+          <div className="flex flex-nowrap ">
+            {selectedOptions.map((opt, idx) => (
+              <span
+                key={idx}
+                className="flex-shrink-0 z-10 flex items-center px-2 py-1 text-sm text-white bg-[rgb(61,129,156)] rounded mr-2"
               >
-                ×
-              </button>
-            </span>
-          ))}
+                {opt[choiceKey]}
+                <button
+                  type="button"
+                  onClick={() => handleRemoveOption(opt)}
+                  className=" text-gray-100 hover:text-gray-300"
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
           <input
             id={name}
             type="text"
@@ -133,8 +139,20 @@ const AutocompleteMultiple = ({
             placeholder={inputValue.length === 0 && selectedOptions.length === 0 ? placeholder : ''}
             onChange={handleInputChange}
             onFocus={handleInputFocus}
-            className="flex-grow min-w-[100px] p-1 text-sm outline-none"
+            className="flex-grow  outline-none "
           />
+          
+          {/* Dropdown Toggle Icon */}
+          <div 
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer"
+            onClick={toggleDropdown}
+          >
+            {isDropdownOpen ? (
+              <FaChevronDown className="h-4 w-4 m-2 text-gray-400 rotate-180" />
+            ) : (
+              <FaChevronDown className="h-4 w-4 m-2 text-gray-400" />
+            )}
+          </div>
         </div>
 
         {loading && (
@@ -144,7 +162,7 @@ const AutocompleteMultiple = ({
         )}
 
         {isDropdownOpen && (
-          <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-48 overflow-y-auto">
+          <div className="absolute z-30 w-full max-w-[600px] bg-white border border-gray-300 rounded shadow-lg max-h-48 overflow-y-auto">
             {loading ? (
               <div className="flex justify-center items-center p-4">
                 <div className="w-6 h-6 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
