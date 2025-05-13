@@ -44,11 +44,7 @@ export default function ReclamationForm({ id }) {
   }));
 
   
-  const [clientss] = useState([
-    { id: '1', nom: 'nabila',prenom:'nono' },
-    { id: '2', nom: 'nawal',prenom:'fofo' },
-    
-  ])
+  
 
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [formData, setFormData] = useState(null);
@@ -499,7 +495,7 @@ export default function ReclamationForm({ id }) {
         onChange={(val) => {
           setValue('client_id', val?.value || null);
         }}
-        options={clientss.map(c => ({
+        options={clients.map(c => ({
           value: c.id,
           label: `${c.prenom} ${c.nom}` // plus lisible
         }))}

@@ -37,12 +37,14 @@ const [dialogType, setDialogType] = useState("traiter") // ou "resoudre"
 const [formValues, setFormValues] = useState({})
 const [prestataires, setPrestataires] = useState([]);
 const { selectedProjet } = useProjet();
-console.log('prestId',prestId)
-const openTraitement = (id, bien) => {
-  setSelectedId(id)
+
+const openTraitement = (row, bien) => {
+  setSelectedId(row.id)
   setDialogType("traiter")
   setFormValues({ bien, prestataire_id: '', date_intervention: '', commentaire: '' })
   setOpenDialog(true)
+  fetchPrestataires(row.service_id)
+
 }
 
 const openResolution = (id, bien) => {
@@ -50,12 +52,12 @@ const openResolution = (id, bien) => {
   setDialogType("resoudre")
   setFormValues({ bien, statut: '', date_fin_inter: '', commentaire: '' })
   setOpenDialog(true)
+
 }
 
-const fetchPrestataires= async () => {
+const fetchPrestataires= async (service_id) => {
     try {
       setLoading(true);
-
       const response = await axios.get(
         `${APIURL.ROOT}/v1/projets/${selectedProjet?.id}/Prestataires/`,
         {
@@ -64,9 +66,8 @@ const fetchPrestataires= async () => {
           },
         }
       );
-      const { data } = response;
-      setPrestataires(data.prestataire);
-
+        const filtered = response.data.prestataire.filter(p => p.service_id == service_id);
+        setPrestataires(filtered);  
       setLoading(false);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -94,6 +95,8 @@ const fetchPrestataires= async () => {
   const applyFilters = () => {
     setFilters(tempFilters); // C’est ici que fetchUsers va être déclenché
   };
+
+ 
 
   const resetFilters = () => {
     const reset = {
@@ -124,7 +127,6 @@ const fetchPrestataires= async () => {
   };
 
   useEffect(() => {
-    fetchPrestataires()
     fetchData_table_by_projet(
       entity,
       { ...filters,prestataire_id: prestId }, 
@@ -190,7 +192,12 @@ const fetchPrestataires= async () => {
           }
         })
       .then(() => {
-        toast.success(dialogType === "traiter" ? "Réclamation traitée !" : "Réclamation résolue !");
+        toast.success(
+          dialogType === "traiter"
+            ? "Réclamation traitée !"
+            : `Réclamation ${formValues.statut == 3 ? "résolue" : "non résolue"} !`
+        );
+        
         setOpenDialog(false);
         setDisabled(false);
   
@@ -219,14 +226,6 @@ const fetchPrestataires= async () => {
   
   const handleEdit = (id) =>
     router.push(`${ENDPOINTS.ReclamationsSav}?id=${id}&action=edit`);
-
- 
-
-  const getFileUrl = (fichier) => {
-    return `${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/reclamations/${fichier}`;
-  };
- 
-  
 
  const statut = {
     1: { code: 1, label: 'En Attente', color: 'bg-blue-100 text-blue-800' },
@@ -305,7 +304,7 @@ const fetchPrestataires= async () => {
               <Wrench
                 className="w-5 h-5 text-red-500 hover:text-red-700 cursor-pointer"
                 title="Traiter"
-                onClick={() => openTraitement(row.id, row.bien)}
+                onClick={() => openTraitement(row, row.bien)}
               />
             </>
           )}
@@ -327,16 +326,10 @@ const fetchPrestataires= async () => {
               setShowDeleteModal(true);
             }}
           />
-          {row.piece_jointe && row.piece_jointe.length > 0 && (
-            <div className="flex gap-2">
-              <File 
-                title="visualiser piece jointe"
-                className="w-4 h-4 text-blue-500 cursor-pointer"
-                onClick={() => window.open(getFileUrl(row.piece_jointe[0]?.fichier), "_blank")}
-              />
-            </div>
-          )}
-        </div>
+          
+    </div>
+ 
+
       ),
     },
   ];
@@ -350,6 +343,7 @@ const fetchPrestataires= async () => {
       date_reclamation: rec.date_reclamation,
       bien: NomBienComplet(rec.bien),
       emplacement: rec.emplacement,
+      service_id: rec.service_id,
       service:
         rec?.service?.nom 
           ? rec?.service?.nom
@@ -433,7 +427,7 @@ const fetchPrestataires= async () => {
         onFilterToggle={handleFilterToggle}
         columns={columns}
         filterComponent={
-          <div className="space-y-4 p-4 rounded-lg shadow-md">
+          <div className="space-y-4 rounded-lg">
             <div
               className="grid gap-3"
               style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}
@@ -510,18 +504,19 @@ const fetchPrestataires= async () => {
             <div className="flex justify-end gap-3 pt-2">
               <button
                 type="button"
-                onClick={applyFilters}
-                className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-              >
-                Appliquer les filtres
-              </button>
-              <button
-                type="button"
                 onClick={resetFilters}
                 className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
               >
                 Réinitialiser
               </button>
+              <button
+                type="button"
+                onClick={applyFilters}
+                className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+              >
+                Appliquer les filtres
+              </button>
+              
             </div>
           </div>
         }
@@ -544,19 +539,15 @@ const fetchPrestataires= async () => {
         
       />
       <ReclamationDialog
-      
-  open={openDialog}
-  onClose={() => setOpenDialog(false)}
-  type={dialogType}
-  prestataires={prestataires}
-  values={formValues}
-  setValues={setFormValues}
-  onSubmit={handleSubmitReclamation}
-  disabled={disabled}
-/>
-
-
-
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        type={dialogType}
+        prestataires={prestataires}        
+        values={formValues}
+        setValues={setFormValues}
+        onSubmit={handleSubmitReclamation}
+        disabled={disabled}
+      />
 
       {showDeleteModal && selectedId && (
         <Modal isVisible={true} onClose={() => setShowDeleteModal(false)}>

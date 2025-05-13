@@ -285,8 +285,11 @@ const Menu = () => {
     { label: "Reclamations", icon: <FileText />, href: "/Reclamations" },
     {
       label: "Encaissments",
-      icon: <CreditCard size={20} />,
-      href: "/Encaissments",
+      icon: <FaFileInvoiceDollar />,
+      href: "/encaissements",
+      needsSociete: user.role === 1,
+      needsProjet: true,
+
     },
     {
       label: "Comptabilité",

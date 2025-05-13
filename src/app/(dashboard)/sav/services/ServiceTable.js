@@ -141,7 +141,7 @@ const ServiceTable = () => {
         data={formatData()}
         onFilterToggle={handleFilterToggle}
         filterComponent={
-          <div className="space-y-4 p-4 rounded-lg shadow-md">
+          <div className="space-y-4 rounded-lg">
             <div
               className="grid gap-3"
               style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}
@@ -151,18 +151,11 @@ const ServiceTable = () => {
                 placeholder="Nom..."
                 value={tempFilters.nom}
                 onChange={(e) => handleFilterChange("nom", e.target.value)}
-                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
               />
             </div>
         
             <div className="flex justify-end gap-3 pt-2">
-              <button
-                type="button"
-                onClick={applyFilters}
-                className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-              >
-                Appliquer les filtres
-              </button>
               <button
                 type="button"
                 onClick={resetFilters}
@@ -170,6 +163,14 @@ const ServiceTable = () => {
               >
                 Réinitialiser
               </button>
+              <button
+                type="button"
+                onClick={applyFilters}
+                className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+              >
+                Appliquer les filtres
+              </button>
+              
             </div>
           </div>
         }

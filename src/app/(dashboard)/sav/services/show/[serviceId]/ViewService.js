@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState } from 'react';
 import LoadingSpin from '@/components/LoadingSpin';
-import ServiceDetail from './ServiceDetail';
 import { APIURL } from '@/configs/api';
 import axios from 'axios';
 import PrestataireTable from '../../../prestataires/PrestataireTable';
@@ -35,8 +34,7 @@ if (loading) {
 
   return (
     <div className=" space-y-2">
-      <ServiceDetail Details={Details} />
-      <PrestataireTable service_id={serviceId} />
+      <PrestataireTable service={Details} />
     </div>
 
 
