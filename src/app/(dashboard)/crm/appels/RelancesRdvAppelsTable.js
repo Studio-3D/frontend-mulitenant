@@ -390,68 +390,66 @@ const RelancesRdvAppelsTable = (type) => {
                       className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                     />
 
-                     <SelectInput
-                                      value={tempFilters.mode_relance}
-                                      onChange={(value) => handleFilterChange('mode_relance', value)}
-                                      options={Object.values(MODES_RELANCES).map((data) => ({S).map((data) => ({
-                                        value: data.code,
-                                        label: data.label,
-                                      }))}
-                                      placeholder="Choisir un Mode Relance"isir un Mode Relance"
-                                      className="h-10 text-sm w-full"  className="h-10 text-sm w-full"
-                                    />>
+                    <SelectInput
+                      value={tempFilters.mode_relance}
+                      onChange={(value) => handleFilterChange('mode_relance', value)}
+                      options={Object.values(MODES_RELANCES).map((data) => ({
+                        value: data.code,
+                        label: data.label,
+                      }))}
+                      placeholder="Choisir un Mode Relance"
+                      className="h-10 text-sm w-full"
+                    />
                     
                   </>
                 ) : (
-                  <inputdate' : 'text'}
-                    type={tempFilters.rdv ? 'date' : 'text'}s"
+                  <input
+                    type={tempFilters.rdv ? 'date' : 'text'}
                     placeholder="Rendez Vous"
-                    value={tempFilters.rdv}(e.target.type = 'date')}
-                    onFocus={(e) => (e.target.type = 'date')}e.target.value)}
-                    onChange={(e) =>lassName="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                    value={tempFilters.rdv}
+                    onFocus={(e) => (e.target.type = 'date')}
+                    onChange={(e) =>
                       handleFilterChange('rdv', e.target.value)
                     }
-                    className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"v>
+                    className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                   />
-                )}              {/* Boutons */}
-              </div>"flex justify-end gap-3 pt-2">
-
-              {/* Boutons */}"button"
-              <div className="flex justify-end gap-3 pt-2">yFilters}
-                <buttong-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                )}
+              </div>
+              {/* Boutons */}
+              <div className="flex justify-end gap-3 pt-2">
+                <button
                   type="button"
-                  onClick={applyFilters} Appliquer les filtres
+                  onClick={applyFilters}
                   className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
                 >
-                  Appliquer les filtres"button"
-                </button>tFilters}
-                <buttong-gray-400 text-white text-sm rounded hover:bg-gray-500"
+                  Appliquer les filtres
+                </button>
+                <button
                   type="button"
-                  onClick={resetFilters} Réinitialiser
+                  onClick={resetFilters}
                   className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
                 >
                   Réinitialiser
                 </button>
               </div>
-            </div>v>
+            </div>
           }
-        />      {open_dialog_r && (
+        />
       </div>
-<Modal isVisible={true} onClose={() => setOpen_dialog_r(false)}>
       {open_dialog_r && (
-        <>1} //1appels
+        <>
           <Modal isVisible={true} onClose={() => setOpen_dialog_r(false)}>
             <Modal_Traite
-              type_menu={1} //1appelsrdv}
-              client={client}setOpen_dialog_r(false)}
+              type_menu={1} //1appels
+              client={client}
               text={text}
-              id={ID_rel_rdv}dal>
+              id={ID_rel_rdv}
               onClose={() => setOpen_dialog_r(false)}
             />
-          </Modal>v>
+          </Modal>
         </>
       )}
     </div>
-  );export default RelancesRdvAppelsTable;
+  );
 };
 export default RelancesRdvAppelsTable;
