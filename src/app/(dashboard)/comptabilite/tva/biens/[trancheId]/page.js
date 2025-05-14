@@ -140,7 +140,7 @@ const TvaBiensPage = () => {
   const columns = [
     {
       key: 'propriete_dite_bien',
-      label: 'Propriété dite bien',
+      label: 'Bien',
       render: (row) => <span className="font-medium">{row.propriete_dite_bien}</span>
     },
     {
@@ -180,23 +180,13 @@ const TvaBiensPage = () => {
     },
     {
       key: 'type',
-      label: 'Type/Conventionné',
+      label: 'Type',
       render: (row) => (
         <div>
           <div>{row.type_bien?.type || '-'}</div>
           <div>{row.conventionne == 0 ? 'Non Conventionné' : 'Conventionné'}</div>
         </div>
       )
-    },
-    {
-      key: 'superficie',
-      label: 'Sup',
-      render: (row) => row.superficie_total || '-'
-    },
-    {
-      key: 'niveau',
-      label: 'Niveau',
-      render: (row) => (row.niveau == 0 ? 'RDC' : row.niveau)
     },
     {
       key: 'prix_ttc',

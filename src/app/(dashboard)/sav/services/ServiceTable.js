@@ -12,6 +12,8 @@ import { fetchData_table_by_projet } from "@/configs/api-utils";
 import { isAdmin, isSuperAdmin } from "@/configs/enum";
 import { useAuth } from "@/context/AuthContext";
 import Input from "@/components/Input";
+import { useProjet } from "@/context/ProjetContext"; // Import ProjetContext
+import ProjetDialog from "@/components/ProjetDialog"; // Import ProjetDialog
 
 const ServiceTable = () => {
   const [services, setServices] = useState([]);
@@ -29,6 +31,8 @@ const ServiceTable = () => {
   const router = useRouter();
   const [filters, setFilters] = useState({nom: ""})
   const [tempFilters, setTempFilters] = useState({ ...filters });
+  const { selectedProjet, projets, fetchProjets } = useProjet(); // Get selectedProjet from context
+  const [showProjetModal, setShowProjetModal] = useState(false); // State for project modal
 
   const entity = {
     API_URL: "ServicesPrestataires",
@@ -37,20 +41,39 @@ const ServiceTable = () => {
     searchFields: ["nom"],
   };
 
+  // Check if a project is selected
   useEffect(() => {
-    fetchData_table_by_projet(
-      entity,
-      filters, 
-      searchTerm,
-      currentPage,
-      rowsPerPage,
-      accesstoken,
-      setLoading,
-      setError,
-      setServices,
-      setTotalRows
-    );
-  }, [searchTerm, currentPage, rowsPerPage, accesstoken,filters]);
+    if (!selectedProjet && !showProjetModal) {
+      fetchProjets(); // Fetch projects if not already done
+      setShowProjetModal(true);
+    }
+  }, [selectedProjet, showProjetModal, fetchProjets]);
+
+  // Reset state when project changes
+  useEffect(() => {
+    if (selectedProjet) {
+      setServices([]);
+      setCurrentPage(1);
+      setError("");
+    }
+  }, [selectedProjet]);
+
+  useEffect(() => {
+    if (selectedProjet) {
+      fetchData_table_by_projet(
+        entity,
+        filters, 
+        searchTerm,
+        currentPage,
+        rowsPerPage,
+        accesstoken,
+        setLoading,
+        setError,
+        setServices,
+        setTotalRows
+      );
+    }
+  }, [searchTerm, currentPage, rowsPerPage, accesstoken, filters, selectedProjet]); // Add selectedProjet dependency
   
   function handleShow(Id, nom) {
     localStorage.setItem('service_pre', JSON.stringify(nom))
@@ -66,7 +89,7 @@ const ServiceTable = () => {
   };
 
   const applyFilters = () => {
-    setFilters(tempFilters); // C’est ici que fetchUsers va être déclenché
+    setFilters(tempFilters); // C'est ici que fetchUsers va être déclenché
   };
   const resetFilters = () => {
     const reset = {
@@ -131,8 +154,38 @@ const ServiceTable = () => {
 
   const columns_export = [{ key: "nom", label: "Nom" }];
 
+  // Handle project selection
+  const handleProjectSelected = () => {
+    setShowProjetModal(false);
+    setCurrentPage(1); // Reset to first page
+    
+    // Fetch data with the newly selected project
+    if (selectedProjet) {
+      fetchData_table_by_projet(
+        entity,
+        filters, 
+        searchTerm,
+        1,
+        rowsPerPage,
+        accesstoken,
+        setLoading,
+        setError,
+        setServices,
+        setTotalRows
+      );
+    }
+  };
+
   return (
     <>
+      {/* Project Selection Modal */}
+      <ProjetDialog
+        open={showProjetModal}
+        onClose={() => setShowProjetModal(false)}
+        projets={projets}
+        onSelect={handleProjectSelected}
+      />
+      
       <Table
         data_to_export={data_to_export()}
         columns_export={columns_export}
@@ -209,9 +262,6 @@ const ServiceTable = () => {
     />
   </Modal>
 )}
-
-
-     
     </>
   );
 };

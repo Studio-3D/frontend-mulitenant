@@ -7,13 +7,15 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Pencil, Trash2, Eye } from "lucide-react";
 import axios from "axios";
-import Select from 'react-select';
 import { APIURL, ENDPOINTS } from "@/configs/api";
 import { fetchData_table_by_projet } from "@/configs/api-utils";
 import { isAdmin, isSuperAdmin } from "@/configs/enum";
 import { useAuth } from "@/context/AuthContext";
 import SelectInput from "@/components/SelectInput";
 import Input from "@/components/Input";
+import InputSelect from "@/components/inputSelect";
+import { useProjet } from "@/context/ProjetContext"; // Import ProjetContext
+import ProjetDialog from "@/components/ProjetDialog"; // Import ProjetDialog
 
 const PrestataireTable = ({ service_id }) => {
   const [prestataires, setPrestataires] = useState([]);
@@ -40,6 +42,8 @@ const PrestataireTable = ({ service_id }) => {
   });
 
   const [tempFilters, setTempFilters] = useState({ ...filters });
+  const { selectedProjet, projets, fetchProjets } = useProjet(); // Get data from ProjetContext
+  const [showProjetModal, setShowProjetModal] = useState(false); // State for project modal
 
   const entity = {
     API_URL: "Prestataires",
@@ -48,10 +52,20 @@ const PrestataireTable = ({ service_id }) => {
     searchFields: ["nom"],
   };
 
+  // Check if a project is selected
+  useEffect(() => {
+    if (!selectedProjet && !showProjetModal && !service_id) {
+      fetchProjets(); // Fetch projects if not already done
+      setShowProjetModal(true);
+    }
+  }, [selectedProjet, showProjetModal, fetchProjets, service_id]);
+
   const fetchServices = async () => {
+    if (!selectedProjet) return;
+    
     try {
       const response = await axios.get(
-        `${APIURL.ROOT}/v1/projets/1/ServicesPrestataires/`,
+        `${APIURL.ROOT}/v1/projets/${selectedProjet.id}/ServicesPrestataires/`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -66,8 +80,10 @@ const PrestataireTable = ({ service_id }) => {
   };
   
   useEffect(() => {
-    fetchServices();
-  }, []);
+    if (selectedProjet) {
+      fetchServices();
+    }
+  }, [selectedProjet]);
 
   function handleShow(Id) {
     router.push(`/sav/prestataires/show/${Id}`);
@@ -78,26 +94,28 @@ const PrestataireTable = ({ service_id }) => {
   };
 
   useEffect(() => {
-    fetchData_table_by_projet(
-      entity,
-      filters,       
-      searchTerm,
-      currentPage,
-      rowsPerPage,
-      accesstoken,
-      setLoading,
-      setError,
-      setPrestataires,
-      setTotalRows
-    );
-  }, [searchTerm, currentPage, rowsPerPage, accesstoken, filters]);
+    if (selectedProjet || service_id) {
+      fetchData_table_by_projet(
+        entity,
+        filters,       
+        searchTerm,
+        currentPage,
+        rowsPerPage,
+        accesstoken,
+        setLoading,
+        setError,
+        setPrestataires,
+        setTotalRows
+      );
+    }
+  }, [searchTerm, currentPage, rowsPerPage, accesstoken, filters, selectedProjet, service_id]);
     
   const handleFilterChange = (field, value) => {
     setTempFilters((prev) => ({ ...prev, [field]: value }));
   };
   
   const applyFilters = () => {
-    setFilters(tempFilters); // C’est ici que fetchUsers va être déclenché
+    setFilters(tempFilters); // C'est ici que fetchUsers va être déclenché
   };
   const resetFilters = () => {
     const reset = {
@@ -173,7 +191,6 @@ const PrestataireTable = ({ service_id }) => {
     }));
   };
   
-
   const data_to_export = () => {
     return prestataires?.map((pre) => ({
       CIN: pre.cin,
@@ -186,7 +203,6 @@ const PrestataireTable = ({ service_id }) => {
     }));
   };
   
-
   const selectedPrestataire = prestataires.find((prestataire) => prestataire.id === selectedId);
 
   const columns_export = [
@@ -198,8 +214,41 @@ const PrestataireTable = ({ service_id }) => {
     { key: "Téléphone", label: "Téléphone" },
   ];
   
+  // Handle project selection
+  const handleProjectSelected = () => {
+    setShowProjetModal(false);
+    setCurrentPage(1); // Reset to first page
+    
+    // Fetch services and data with the newly selected project
+    if (selectedProjet) {
+      fetchServices();
+      fetchData_table_by_projet(
+        entity,
+        filters,       
+        searchTerm,
+        1,
+        rowsPerPage,
+        accesstoken,
+        setLoading,
+        setError,
+        setPrestataires,
+        setTotalRows
+      );
+    }
+  };
+  
   return (
     <>
+      {/* Project Selection Modal */}
+      {!service_id && (
+        <ProjetDialog
+          open={showProjetModal}
+          onClose={() => setShowProjetModal(false)}
+          projets={projets}
+          onSelect={handleProjectSelected}
+        />
+      )}
+      
       <Table
         title={service_id && "Prestataires liées"}
         data_to_export={data_to_export()}
@@ -252,30 +301,21 @@ const PrestataireTable = ({ service_id }) => {
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
               
-              {!service_id && (
-                <Select
-                isClearable
-                value={services
-                  .map(service => ({
+              {!service_id && selectedProjet && (
+                <InputSelect
+                  label="Service"
+                  name="serviceId"
+                  value={tempFilters.serviceId}
+                  onChange={(selected) => handleFilterChange("serviceId", selected?.value || null)}
+                  options={services.map(service => ({
                     value: service.id,
-                    label: service.nom,
-                    id: service.id
-                  }))
-                  .find(opt => opt.value === tempFilters.serviceId) || null}
-                onChange={(selected) => handleFilterChange("serviceId", selected?.value || null)}
-                options={services.map(service => ({
-                  value: service.id,
-                  label: service.nom,
-                  id: service.id
-                }))}
-                isLoading={loading}
-                placeholder="Choisir un service..."
-                className="text-sm"
-              />
-              
+                    label: service.nom
+                  }))}
+                  placeholder="Choisir un service..."
+                  isLoading={loading}
+                  isClearable={true}
+                />
               )}
-        
-             
             </div>
         
             <div className="flex justify-end gap-3 pt-2">
@@ -307,7 +347,7 @@ const PrestataireTable = ({ service_id }) => {
         enableExport={true}
         enableImport={true}
         addLink={
-          isSuperAdmin(user.role) || isAdmin(user.role)
+          (isSuperAdmin(user.role) || isAdmin(user.role)) && selectedProjet
             ? `${ENDPOINTS.Prestataires}?action=add`
             : undefined
         }

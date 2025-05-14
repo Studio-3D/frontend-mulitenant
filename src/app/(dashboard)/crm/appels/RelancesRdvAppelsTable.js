@@ -3,6 +3,7 @@ import Table from '@/components/Table';
 import { Eye, CheckCircle } from 'lucide-react';
 
 import { useAuth } from '../../../../context/AuthContext';
+import { useProjet } from '../../../../context/ProjetContext';
 import { useRouter } from 'next/navigation';
 import { fetchData_table_by_projet } from '../../../../../src/configs/api-utils';
 import Link from 'next/link';
@@ -35,6 +36,7 @@ const RelancesRdvAppelsTable = (type) => {
   const [ID_rel_rdv, setID_rel_rdv] = useState(0);
 
   const { token } = useAuth();
+  const { selectedProjet } = useProjet();
   const accesstoken = token || localStorage.getItem('accessToken');
 
   const router = useRouter();
@@ -88,7 +90,7 @@ const RelancesRdvAppelsTable = (type) => {
       setData,
       setTotalRows
     );
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters]);
+  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters, selectedProjet]);
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
@@ -391,66 +393,65 @@ const RelancesRdvAppelsTable = (type) => {
                      <SelectInput
                                       value={tempFilters.mode_relance}
                                       onChange={(value) => handleFilterChange('mode_relance', value)}
-                                      options={Object.values(MODES_RELANCES).map((data) => ({
+                                      options={Object.values(MODES_RELANCES).map((data) => ({S).map((data) => ({
                                         value: data.code,
                                         label: data.label,
                                       }))}
-                                      placeholder="Choisir un Mode Relance"
-                                      className="h-10 text-sm w-full"
-                                    />
+                                      placeholder="Choisir un Mode Relance"isir un Mode Relance"
+                                      className="h-10 text-sm w-full"  className="h-10 text-sm w-full"
+                                    />>
                     
                   </>
                 ) : (
-                  <input
-                    type={tempFilters.rdv ? 'date' : 'text'}
+                  <inputdate' : 'text'}
+                    type={tempFilters.rdv ? 'date' : 'text'}s"
                     placeholder="Rendez Vous"
-                    value={tempFilters.rdv}
-                    onFocus={(e) => (e.target.type = 'date')}
-                    onChange={(e) =>
+                    value={tempFilters.rdv}(e.target.type = 'date')}
+                    onFocus={(e) => (e.target.type = 'date')}e.target.value)}
+                    onChange={(e) =>lassName="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                       handleFilterChange('rdv', e.target.value)
                     }
-                    className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                    className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"v>
                   />
-                )}
-              </div>
+                )}              {/* Boutons */}
+              </div>"flex justify-end gap-3 pt-2">
 
-              {/* Boutons */}
-              <div className="flex justify-end gap-3 pt-2">
-                <button
+              {/* Boutons */}"button"
+              <div className="flex justify-end gap-3 pt-2">yFilters}
+                <buttong-blue-600 text-white text-sm rounded hover:bg-blue-700"
                   type="button"
-                  onClick={applyFilters}
+                  onClick={applyFilters} Appliquer les filtres
                   className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
                 >
-                  Appliquer les filtres
-                </button>
-                <button
+                  Appliquer les filtres"button"
+                </button>tFilters}
+                <buttong-gray-400 text-white text-sm rounded hover:bg-gray-500"
                   type="button"
-                  onClick={resetFilters}
+                  onClick={resetFilters} Réinitialiser
                   className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
                 >
                   Réinitialiser
                 </button>
               </div>
-            </div>
+            </div>v>
           }
-        />
+        />      {open_dialog_r && (
       </div>
-
+<Modal isVisible={true} onClose={() => setOpen_dialog_r(false)}>
       {open_dialog_r && (
-        <>
+        <>1} //1appels
           <Modal isVisible={true} onClose={() => setOpen_dialog_r(false)}>
             <Modal_Traite
-              type_menu={1} //1appels
-              client={client}
+              type_menu={1} //1appelsrdv}
+              client={client}setOpen_dialog_r(false)}
               text={text}
-              id={ID_rel_rdv}
+              id={ID_rel_rdv}dal>
               onClose={() => setOpen_dialog_r(false)}
             />
-          </Modal>
+          </Modal>v>
         </>
       )}
     </div>
-  );
+  );export default RelancesRdvAppelsTable;
 };
-
 export default RelancesRdvAppelsTable;
