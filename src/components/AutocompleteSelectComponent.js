@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FaChevronDown } from "react-icons/fa";
 
 const AutocompleteSelectComponent = ({
   label,
@@ -6,25 +7,23 @@ const AutocompleteSelectComponent = ({
   options,
   required = false,
   onChange,
-  value = null, // <-- Accept selected value
+  value = null,
   defaultValue = null,
   width = 'w-full',
-  height = 'h-10',
+  height = 'h-[38px]',
   disabled = false,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
+  const [inputValue, setInputValue] = useState('');
 
   const optionsArray = Object.values(options);
 
   useEffect(() => {
-    // Pre-fill search input when value changes externally
+    // Initialize with the current value
     const matchedOption = optionsArray.find((opt) => opt.code === value);
-    if (matchedOption) {
-      setSearchQuery(matchedOption.label);
-    } else {
-      setSearchQuery('');
-    }
+    setInputValue(matchedOption ? matchedOption.label : '');
+    setSearchQuery('');
   }, [value]);
 
   const filteredOptions = searchQuery
@@ -32,51 +31,76 @@ const AutocompleteSelectComponent = ({
         option.label.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : optionsArray;
-  const selectedOption = options[value] || null;
+
+  const toggleDropdown = () => {
+    if (disabled) return;
+    setIsOpen(!isOpen);
+    if (!isOpen) {
+      setSearchQuery(''); // Start fresh when opening
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const val = e.target.value;
+    setInputValue(val);
+    setSearchQuery(val);
+    setIsOpen(true);
+    if (!val) {
+      onChange(null); // Clear selection if input is empty
+    }
+  };
+
+  const handleSelect = (option) => {
+    onChange(option.code);
+    setInputValue(option.label);
+    setSearchQuery('');
+    setIsOpen(false);
+  };
 
   return (
     <div className={`relative ${width}`}>
-      {/* Label */}
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700">
+      <label htmlFor={name} className="block font-medium text-gray-700">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
 
-      {/* Input Field */}
-      <div className="relative mt-1">
+      <div className="relative">
         <input
           id={name}
           name={name}
           type="text"
-          // value={searchQuery}
-
-          value={searchQuery || (selectedOption ? selectedOption.label : '')}
-          onChange={(e) => {
-            const inputValue = e.target.value;
-            setSearchQuery(inputValue);
-            if (!inputValue) {
-              setIsOpen(false);
-              onChange(null);
-            } else {
-              setIsOpen(true);
-            }
-          }}
+          value={inputValue}
+          onChange={handleInputChange}
           onFocus={() => {
+            if (disabled) return;
             setIsOpen(true);
-            setSearchQuery(''); // <- Vide le champ pour forcer l'affichage de toutes les options
+            // Don't clear the input value here
           }}
           onBlur={() => setTimeout(() => setIsOpen(false), 150)}
           placeholder="Choisissez un élément"
           className={`
-               w-full ${height} p-2 border border-gray-300 rounded-md 
-                focus:outline-none focus:ring-2 focus:ring-indigo-500
-               ${disabled ? 'bg-gray-100 cursor-not-allowed opacity-50' : ''}
-             `}
-          disabled={disabled} // <-- new
+            w-full ${height} p-2 border border-gray-300 rounded-md 
+            focus:outline-none hover:border-gray-500 focus:border-gray-500
+            ${disabled ? 'bg-gray-100 cursor-not-allowed opacity-50' : ''}
+            pr-8
+          `}
+          disabled={disabled}
           required={required}
         />
 
-        {/* Dropdown Options */}
+        {!disabled && (
+          <div 
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer"
+            onClick={toggleDropdown}
+          >
+            {isOpen ? (
+              <FaChevronDown className="h-4 w-4 m-2 text-gray-400 rotate-180" />
+            ) : (
+              <FaChevronDown className="h-4 w-4 m-2 text-gray-400" />
+            )}
+          </div>
+        )}
+
         {isOpen && (
           <div className="absolute top-full left-0 w-full bg-white shadow-md rounded-md mt-1 max-h-60 overflow-y-auto border border-gray-300 z-10">
             {filteredOptions.length === 0 ? (
@@ -85,14 +109,8 @@ const AutocompleteSelectComponent = ({
               filteredOptions.map((option) => (
                 <div
                   key={option.code}
-                  className={`p-2 text-sm sm:text-base md:text-lg cursor-pointer hover:bg-indigo-100 ${option.color}`}
-                  onClick={() => {
-                    if (disabled) return;
-
-                    onChange(option.code); // <-- Send back the code only
-                    setSearchQuery(option.label);
-                    setIsOpen(false);
-                  }}
+                  className="p-2 m-1 cursor-pointer hover:bg-indigo-50 rounded-md"
+                  onClick={() => handleSelect(option)}
                 >
                   {option.label}
                 </div>

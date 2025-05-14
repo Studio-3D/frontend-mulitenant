@@ -66,13 +66,19 @@ export default function DashboardLayout({ children }) {
       </div>
 
       {/* Right Content - Pushed to the right with proper width */}
-      <div className="w-full pl-[12%] md:pl-[8%] lg:pl-[18%] xl:pl-[14%] bg-background overflow-auto">
-        {/* Navbar now spans the entire right content area */}
-        <Navbar />
-        
-        <div className="px-4 pt-20"> {/* Increased top padding to avoid overlap with navbar */}
-          {children}
-        </div>
+      <div className="w-full pl-[12%] md:pl-[8%] lg:pl-[18%] xl:pl-[14%] bg-background overflow-auto scrollbar-none ">
+        {/* Use column layout to stack navbar and content */}
+          <div className="flex flex-col">
+            {/* Fixed height navbar */}
+            <div className="h-16">
+              <Navbar />
+            </div>
+
+            {/* Main content below navbar, no padding needed */}
+            <div className=" flex-1 p-4">
+              {children}
+            </div>
+          </div>
       </div>
       
       {/* Société Modal - Only shown when needed by the useEffect logic */}

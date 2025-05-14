@@ -38,10 +38,16 @@ import {
 import Pusher from 'pusher-js';
 import Modal_OldVisites_Perdu from './Modal_OldVisites_Perdu';
 import FreinsComponent from './FreinsComponent';
-import useClearProspect from '../hook/useClearProspect';
+
+import SelectInput from '@/components/SelectInput';
+import Input from '@/components/Input';
+import DateInput from '@/components/DateInput';
+
+
+
 
 const VisiteForm = (id, origin) => {
-  useClearProspect();
+
   const { user } = useAuth();
   const [email_required, setEmail_required] = useState(false);
 
@@ -53,7 +59,6 @@ const VisiteForm = (id, origin) => {
   const [id_appel, setId_appel] = useState(null);
   const [id_visite, setId_visite] = useState(null);
 
-  const router = useRouter();
   const accessToken = localStorage.getItem('accessToken');
   const stored = JSON.parse(localStorage.getItem('selectedProspect'));
   const selectedProspect = stored?.dataProspect;
@@ -224,16 +229,6 @@ const VisiteForm = (id, origin) => {
     }
   }
 */
-
-  //fin multiple bien
-
-  const mystyle_Grid = {
-    width: '100%',
-    background: 'rgb(102 108 255)',
-    borderRadius: '10px',
-    marginTop: '20px',
-    marginLeft: '15px',
-  };
 
   const pusher_function = async () => {
     console.log('je suis en pusher');
@@ -1821,7 +1816,7 @@ const VisiteForm = (id, origin) => {
           (isOrigin &&
             OldBiens_pre.length == 0 &&
             !watch('loading_b_pre'))) && (
-          <div className="p-6 mt-4 h-[89vh] bg-white shadow-md rounded-md">
+          <div className="p-6 mt-4 min-h-[89vh] bg-white shadow-md rounded-md">
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="space-y-4">
                 {/* Client/Prospect Information */}
@@ -1854,15 +1849,12 @@ const VisiteForm = (id, origin) => {
                   )}
                 </div>
                 <div className="col-span-3 mt-4">
-                  <h2
-                    className="text-lg font-medium border-b pb-2 mb-4"
-                    style={{ color: '#231651' }}
-                  >
+                  <h2 className="text-xl font-medium  border-b pb-2 mb-4">
                     Informations de la visite
                   </h2>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
                   {input_biens_vendu.length == 0 && (
                     <>
                       {watch('loading_b_pre') == false && (
@@ -1901,14 +1893,33 @@ const VisiteForm = (id, origin) => {
                                   nb_bien_added:
                                     formSubmitted &&
                                     Number(watch('interet')) === 1 &&
-                                    !watch('nb_bien_added')
+                                    (!watch('nb_bien_added') && watch('nb_bien_added') !== 0)
                                       ? 'Ce champ est obligatoire lorsque interet est Intéressé.'
+                                      : Number(watch('nb_bien_added')) < 0
+                                      ? 'Veuillez entrer un nombre positif.'
                                       : null,
                                 }}
                                 backendErrors={backendErrors}
-                                defaultValues={defaultValues}
-                                onChange={handleChange_NbrBien}
+                                defaultValues={{ nb_bien_added: 0 }}
                                 required={Number(watch('interet')) === 1}
+                                inputProps={{
+                                  min: 0,
+                                  inputMode: 'numeric',
+                                }}
+                                onChange={(e) => {
+                                  let value = e.target.value;
+
+                                  // Remove leading 0 when user starts typing
+                                  if (value.length > 1 && value.startsWith('0')) {
+                                    value = value.replace(/^0+/, '');
+                                  }
+
+                                  // Only allow digits (optional extra check)
+                                  if (/^\d*$/.test(value)) {
+                                    e.target.value = value;
+                                    handleChange_NbrBien(e);
+                                  }
+                                }}
                               />
                             </>
                           )}
@@ -2027,7 +2038,7 @@ const VisiteForm = (id, origin) => {
                                 <div>
                                   {/* Replace with your own Autocomplete or HeadlessUI */}
                                   {x.bien_id != null && (
-                                    <InputField_Biens
+                                    <InputField_Biens 
                                       label="Bien"
                                       name=""
                                       type="text"
@@ -2525,14 +2536,10 @@ const VisiteForm = (id, origin) => {
                         {/* Top Divider */}
 
                         {/* Accordion */}
-                        <div className="border mt-4 rounded-md  shadow">
+                        <div className="border mt-4 rounded-md">
                           <button
                             type="button"
-                            className="w-full flex justify-between items-center px-4 py-3  text-white text-base font-medium focus:outline-none"
-                            style={{
-                              background:
-                                'rgb(35 22 81 / var(--tw-text-opacity, 1))',
-                            }}
+                            className="bg-[#009FFF] rounded-t-md w-full flex justify-between items-center px-4 py-3  text-white font-medium focus:outline-none"
                             onClick={handleAccordionChange(
                               `panel_bien${i + 1}`
                             )}
@@ -2551,7 +2558,7 @@ const VisiteForm = (id, origin) => {
                           {expanded.includes(`panel_bien${i + 1}`) && (
                             <>
                               <div className="p-4 space-y-4">
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-x-5 gap-y-4">
                                   {/* Bien Autocomplete */}
                                   <div>
                                     {/* Replace with your own Autocomplete or HeadlessUI */}
@@ -3024,30 +3031,10 @@ const VisiteForm = (id, origin) => {
                   </div>
                 )}
               </div>
-              <div className="flex justify-center gap-4 items-center mt-6 mb-6">
+              <div className="flex justify-center items-center gap-4 mt-20">
                 <Button type="button" onClick={() => router.back()}>
                   Annuler
                 </Button>
-                {/*isDisabled && (
-                  <ul className="text-sm text-red-500 mt-2">
-                    {loading_form && <li>Chargement du formulaire</li>}
-                    {info_prix && <li>Conflit information sur le prix</li>}
-                    {info_sup && <li>Conflit information supplémentaire</li>}
-                    {check_save == false && (
-                      <li>Vérification de sauvegarde non validée</li>
-                    )}
-                    {OldBiens_pre.length > 0 && !isOrigin && (
-                      <li>Ancien bien transféré non original</li>
-                    )}
-                    {info_reservation && <li>Bien déjà réservé</li>}
-                    {open_D_P && <li>Fenêtre D_P ouverte</li>}
-                    {watch('list_bien_transfere_vendu').length === 0 &&
-                      watch('interet') == 1 &&
-                      watch('nb_bien_added') == 0 && (
-                        <li>Aucun bien transféré ou ajouté</li>
-                      )}
-                  </ul>
-                )*/}
                 <Button
                   type="submit"
                   disabled={isDisabled}

@@ -303,32 +303,26 @@ const handleChange_event = (name) => (event) => {
     error={errors?.telephone?.message || backendErrors?.telephone?.[0]}
   />
 
-  {/* ...civilité, service_id restent tels quels avec Controller ou InputSelect */}
-
-  
-
-
-        
-        <Controller
-          name="civilite"
-          control={control}
-          rules={{ required: "La civilité est requise" }}
-          render={({ field }) => (
-            <SelectInput
-              label="Civilité :"
-              placeholder="Sélectionner une civilité"
-              options={Object.values(CIVILITES).map((item) => ({
-                value: item.code,
-                label: item.label
-              }))}
-              value={field.value}
-              onChange={(val) => field.onChange(val)}
-              error={errors?.civilite?.message || backendErrors?.civilite?.[0]}
-            />
-
-
-              )}
+    <Controller
+      name="civilite"
+      control={control}
+      rules={{ required: "La civilité est requise" }}
+      render={({ field }) => (
+        <SelectInput
+          label="Civilité :"
+          placeholder="Sélectionner une civilité"
+          options={Object.values(CIVILITES).map((item) => ({
+            value: item.code,
+            label: item.label
+          }))}
+          value={field.value}
+          onChange={(val) => field.onChange(val)}
+          error={errors?.civilite?.message || backendErrors?.civilite?.[0]}
         />
+
+
+          )}
+    />
 
 <InputSelect
   label="Service"

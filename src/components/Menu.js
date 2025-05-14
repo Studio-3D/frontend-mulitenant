@@ -34,7 +34,7 @@ import {
   Wrench,
   FileIcon,
   Building2,
-  FolderCog
+  FolderCog,
 } from "lucide-react";
 
 import { User_roles } from "../configs/enum";
@@ -97,7 +97,11 @@ const Menu = () => {
 
   const getMenuItems = (role) => {
     const items = [
-      { label: 'Tableau de Bord', icon: <LayoutDashboard size={20} />, href: '/tableau-de-bord' },
+      {
+        label: "Tableau de Bord",
+        icon: <LayoutDashboard />,
+        href: "/tableau-de-bord",
+      },
     ];
 
     if (role === User_roles.ROLE_SUPER_ADMIN) {
@@ -222,8 +226,9 @@ const Menu = () => {
     },
     {
       label: "Ventes",
-      icon: <Handshake size={20} />,
-      href: "/Ventes",
+      icon: <FaHandshake />,
+      href: "/ventes",
+
       needsSociete: user.role === 1,
       needsProjet: true,
     },
@@ -281,8 +286,11 @@ const Menu = () => {
     { label: "Reclamations", icon: <FileText />, href: "/Reclamations" },
     {
       label: "Encaissments",
-      icon: <CreditCard size={20} />,
-      href: "/Encaissments",
+      icon: <FaFileInvoiceDollar />,
+      href: "/encaissements",
+      needsSociete: user.role === 1,
+      needsProjet: true,
+
     },
     {
       label: "Comptabilité",
