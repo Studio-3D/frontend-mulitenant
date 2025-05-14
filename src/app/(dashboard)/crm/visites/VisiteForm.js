@@ -44,8 +44,10 @@ import Input from '@/components/Input';
 import DateInput from '@/components/DateInput';
 
 
+
+
 const VisiteForm = (id, origin) => {
-  useClearProspect();
+
   const { user } = useAuth();
   const [email_required, setEmail_required] = useState(false);
 

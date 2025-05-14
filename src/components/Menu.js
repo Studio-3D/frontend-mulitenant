@@ -34,7 +34,7 @@ import {
   Wrench,
   FileIcon,
   Building2,
-  FolderCog
+  FolderCog,
 } from "lucide-react";
 
 import { User_roles } from "../configs/enum";
@@ -99,7 +99,7 @@ const Menu = () => {
     const items = [
       {
         label: "Tableau de Bord",
-        icon: <TbLayoutDashboardFilled />,
+        icon: <LayoutDashboard />,
         href: "/tableau-de-bord",
       },
     ];
