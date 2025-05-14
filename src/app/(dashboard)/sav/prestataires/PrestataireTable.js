@@ -38,9 +38,11 @@ const PrestataireTable = ({ service_id }) => {
     cin: "",
     email: "",
     telephone: "",
-    serviceId: service_id == null ? "" : service_id, 
-  });
+    serviceId: serviceId?.service?.id == null ? "" : serviceId?.service?.id, 
+    
 
+  });
+console.log("serviceId", serviceId?.service?.id)
   const [tempFilters, setTempFilters] = useState({ ...filters });
   const { selectedProjet, projets, fetchProjets } = useProjet(); // Get data from ProjetContext
   const [showProjetModal, setShowProjetModal] = useState(false); // State for project modal
@@ -114,20 +116,21 @@ const PrestataireTable = ({ service_id }) => {
     setTempFilters((prev) => ({ ...prev, [field]: value }));
   };
   
-  const applyFilters = () => {
-    setFilters(tempFilters); // C'est ici que fetchUsers va être déclenché
-  };
-  const resetFilters = () => {
-    const reset = {
-      nom: "",
-      prenom: "",
-      cin: "",
-      email: "",
-      telephone: "",
-      serviceId: service_id == null ? "" : service_id, // n'inclut que si null
+
+    const applyFilters = () => {
+      setFilters(tempFilters); // C’est ici que fetchUsers va être déclenché
     };
-    setFilters(reset);
-    setTempFilters(reset);
+    const resetFilters = () => {
+      const reset = {
+        nom: "",
+        prenom: "",
+        cin: "",
+        email: "",
+        telephone: "",
+        serviceId: serviceId?.service?.id == null ? "" : serviceId?.service?.id, 
+      };
+      setFilters(reset);
+      setTempFilters(reset);
   };
 
   const handleEdit = (id) =>
@@ -174,9 +177,10 @@ const PrestataireTable = ({ service_id }) => {
     },
   ];
   
-  const columns = !service_id 
-    ? allColumns
-    : allColumns.filter(col => col.key !== "service");
+  const columns = !serviceId?.service?.id 
+  ? allColumns
+  : allColumns.filter(col => col.key !== "service");
+
   
   const formatData = () => {
     return prestataires.map((pre) => ({
@@ -250,7 +254,8 @@ const PrestataireTable = ({ service_id }) => {
       )}
       
       <Table
-        title={service_id && "Prestataires liées"}
+        title={`Prestataires liées à service: ${serviceId?.service?.nom}` }
+
         data_to_export={data_to_export()}
         columns_export={columns_export}
         name_file_export={"prestataire_export"}
@@ -258,7 +263,7 @@ const PrestataireTable = ({ service_id }) => {
         onFilterToggle={handleFilterToggle}
         data={formatData()}
         filterComponent={
-          <div className="space-y-4 p-4 rounded-lg shadow-md">
+          <div className="space-y-4 rounded-lg">
             <div
               className="grid gap-3"
               style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}
@@ -308,6 +313,7 @@ const PrestataireTable = ({ service_id }) => {
                   value={tempFilters.serviceId}
                   onChange={(selected) => handleFilterChange("serviceId", selected?.value || null)}
                   options={services.map(service => ({
+
                     value: service.id,
                     label: service.nom
                   }))}
@@ -321,18 +327,19 @@ const PrestataireTable = ({ service_id }) => {
             <div className="flex justify-end gap-3 pt-2">
               <button
                 type="button"
-                onClick={applyFilters}
-                className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-              >
-                Appliquer les filtres
-              </button>
-              <button
-                type="button"
                 onClick={resetFilters}
                 className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
               >
                 Réinitialiser
               </button>
+              <button
+                type="button"
+                onClick={applyFilters}
+                className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+              >
+                Appliquer les filtres
+              </button>
+              
             </div>
           </div>
         }

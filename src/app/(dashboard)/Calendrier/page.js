@@ -1,16 +1,14 @@
 'use client';
 import React from 'react'
-import { ClientDetailsPage } from '../../../components/visites/ClientDetailsPage';
+import { Calendar } from '@/components/calendar/Calendar';
+
 
 const page = () => {
   return (
-    <div className="flex w-full bg-slate-50">
-    {/* This is where your sidebar would be */}
-    <div className="">
-      {/* This is where your header would be */}
-      <ClientDetailsPage />
+    <div className="w-full">
+   
+      <Calendar />
     </div>
-  </div>
   )
 }
 

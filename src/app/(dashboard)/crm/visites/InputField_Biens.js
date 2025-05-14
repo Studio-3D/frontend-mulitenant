@@ -1,5 +1,3 @@
-import React from 'react';
-
 const InputField_Biens = ({
   label,
   name,
@@ -10,16 +8,21 @@ const InputField_Biens = ({
   required = false,
   disabled = false,
   width = 'w-full',
-  height = 'h-10',
+  height = 'h-[38px]',
   min = null,
   max = null,
   placeholder = '',
 }) => {
+  // For datetime-local inputs, ensure placeholder shows format
+  const resolvedPlaceholder = type === 'datetime-local' && !placeholder 
+    ? 'YYYY-MM-DDTHH:MM' 
+    : placeholder;
+
   return (
     <div className="mb-4">
       <label
         htmlFor={name}
-        className="block text-sm font-medium text-gray-700 mb-1"
+        className="block text-[15px] font-medium text-gray-700"
       >
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
@@ -33,28 +36,40 @@ const InputField_Biens = ({
           onChange={onChange}
           required={required}
           disabled={disabled}
-          placeholder={placeholder}
+          placeholder={resolvedPlaceholder}
           rows={4}
-          className={`block ${width} px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+          className={`block ${width} w-full px-3 py-2 text-sm border border-gray-300 rounded-md  focus:outline-none hover:border-gray-500 focus:border-gray-500 ${
             disabled ? 'bg-gray-100 cursor-not-allowed' : ''
           }`}
         />
       ) : (
-        <input
-          id={name}
-          name={name}
-          type={type}
-          value={value !== undefined && value !== null ? value : ''}
-          onChange={onChange}
-          required={required}
-          disabled={disabled}
-          min={min}
-          max={max}
-          placeholder={placeholder}
-          className={`block ${width} ${height} px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
-            disabled ? 'bg-gray-100 cursor-not-allowed' : ''
-          }`}
-        />
+        <div className="relative ">
+          <input
+            id={name}
+            name={name}
+            type={type}
+            value={value !== undefined && value !== null ? value : ''}
+            onChange={onChange}
+            required={required}
+            disabled={disabled}
+            min={min}
+            max={max}
+            placeholder={resolvedPlaceholder}
+            className={`block ${width} ${height}  px-3 py-2 text-sm border border-gray-300 rounded-md  focus:outline-none hover:border-gray-500 focus:border-gray-500 ${
+              disabled ? 'bg-gray-100 cursor-not-allowed' : ''
+            }`}
+            // These styles ensure the picker appears on the entire input click
+            style={{
+              cursor: 'pointer',
+              caretColor: 'transparent' // Hides blinking cursor
+            }}
+            onFocus={(e) => {
+              if (type === 'datetime-local') {
+                e.target.showPicker(); // This triggers the native picker
+              }
+            }}
+          />
+        </div>
       )}
     </div>
   );
