@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import authConfig from "../configs/auth";
@@ -10,6 +10,35 @@ export function AuthProvider({ children }) {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const isRefreshing = useRef(false);
+
+  // Setup axios interceptors for handling token expiration
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        if (error.response && error.response.status === 401 && !isRefreshing.current) {
+          isRefreshing.current = true;
+          
+          // Clear all authentication and application state
+          window.localStorage.removeItem('accessToken');
+          window.localStorage.removeItem('selectedSociete');
+          window.localStorage.removeItem('selectedProjet');
+          setUser(null);
+          
+          router.push('/login');
+          
+          isRefreshing.current = false;
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    // Clean up interceptor on unmount
+    return () => {
+      axios.interceptors.response.eject(interceptor);
+    };
+  }, [router]);
 
   useEffect(() => {
     const initAuth = async () => {

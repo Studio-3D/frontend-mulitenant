@@ -3,6 +3,7 @@ import Table from '@/components/Table';
 import { Eye, CheckCircle } from 'lucide-react';
 
 import { useAuth } from '../../../../context/AuthContext';
+import { useProjet } from '../../../../context/ProjetContext';
 import { useRouter } from 'next/navigation';
 import { fetchData_table_by_projet } from '../../../../../src/configs/api-utils';
 import Link from 'next/link';
@@ -57,6 +58,7 @@ const RelancesRdv_Visites_Table = (type) => {
   const [ID_rel_rdv, setID_rel_rdv] = useState(0);
 
   const { token } = useAuth();
+  const { selectedProjet } = useProjet();
   const accesstoken = token || localStorage.getItem('accessToken');
 
   const router = useRouter();
@@ -84,7 +86,7 @@ const RelancesRdv_Visites_Table = (type) => {
       setData,
       setTotalRows
     );
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm,filters]);
+  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters, selectedProjet]);
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
@@ -119,7 +121,7 @@ const RelancesRdv_Visites_Table = (type) => {
 
     //Clearing the interval
     return () => clearInterval(interval);
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm]);
+  }, [accesstoken, currentPage, rowsPerPage, searchTerm, selectedProjet]);
   const handleShow = (vId) => {
     router.push(`/crm/visites/${vId}`);
   };

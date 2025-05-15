@@ -340,7 +340,7 @@ const JournalTable = (id) => {
             row.relance.type_traitement == 0 &&
             row.relance.deleted_at == null &&
             row.user?.user_id_origin == user.id && (
-              <FaCheckCircle
+              <CheckCircle
                 className="w-4 h-4 text-green-500 hover:text-green-700 cursor-pointer"
                 title="Traiter Relance"
                 onClick={() => handleValider(row.relance?.id, 'Relance')}
@@ -350,14 +350,14 @@ const JournalTable = (id) => {
             row.rdv.type_traitement == 0 &&
             row.rdv.deleted_at == null &&
             row.user?.user_id_origin == user.id && (
-              <FaMeetup
+              <CalendarClock
                 className="w-4 h-4 text-orange-500 hover:text-orange-700 cursor-pointer"
                 title="Traiter Rendez Vous"
                 onClick={() => handleValider(row.rdv?.id, 'RDV')}
               />
             )}
 
-          <RiDeleteBin6Line
+          <Trash2
             className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
             onClick={() => {
               setSelectedId(row.id);

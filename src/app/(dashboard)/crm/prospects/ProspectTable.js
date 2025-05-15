@@ -6,6 +6,7 @@ import { Eye, Pencil, Check, RefreshCw, Trash2 } from 'lucide-react';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
 import { useAuth } from '../../../../context/AuthContext';
+import { useProjet } from '../../../../context/ProjetContext';
 import { APIURL, ENDPOINTS } from '../../../../configs/api';
 import { useRouter } from 'next/navigation';
 import { fetchData_table_by_projet } from '../../../../../src/configs/api-utils';
@@ -31,6 +32,7 @@ const ProspectTable = () => {
   const [nom_prenom, setNomPrenom] = useState(null);
 
   const { user, token } = useAuth();
+  const { selectedProjet } = useProjet();
   const accesstoken = token || localStorage.getItem('accessToken');
 
   const router = useRouter();
@@ -64,7 +66,7 @@ const ProspectTable = () => {
       setProspects,
       setTotalRows
     );
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters]);
+  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters, selectedProjet]);
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
@@ -99,7 +101,7 @@ const ProspectTable = () => {
 
     //Clearing the interval
     return () => clearInterval(interval);
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters]);
+  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters, selectedProjet]);
 
   const handleShow = (prospectId) => {
     router.push(`/crm/prospects/${prospectId}`);

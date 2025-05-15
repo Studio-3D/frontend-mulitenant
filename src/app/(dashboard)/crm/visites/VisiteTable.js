@@ -4,6 +4,7 @@ import Table from '@/components/Table';
 import { Eye } from 'lucide-react';
 
 import { useAuth } from '../../../../context/AuthContext';
+import { useProjet } from '../../../../context/ProjetContext';
 import { ENDPOINTS } from '../../../../configs/api';
 import { useRouter } from 'next/navigation';
 import { fetchData_table_by_projet } from '../../../../../src/configs/api-utils';
@@ -28,6 +29,7 @@ const VisiteTable = (dataProspect, dataClient) => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const { user, token } = useAuth();
+  const { selectedProjet } = useProjet();
   const accesstoken = token || localStorage.getItem('accessToken');
 
   // Declare the entity object in the component scope
@@ -81,6 +83,7 @@ const VisiteTable = (dataProspect, dataClient) => {
     clientId,
     prospectId,
     filters,
+    selectedProjet,
   ]);
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
