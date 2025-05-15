@@ -53,9 +53,16 @@ export default function ProjetsDropDown() {
         // Close the dropdown immediately before doing anything else
         setIsSelectorOpened(false);
         setInputValue("");
-
+        
         setIsSubmitting(true);
-        const success = selectProjet(projet);
+        
+        // Display toast or notification here if needed
+        console.log("Changing project to:", projet.nom);
+        
+        // Update localStorage before context update to ensure API calls use the new project
+        localStorage.setItem("selectedProjet", JSON.stringify(projet));
+        
+        const success = await selectProjet(projet);
         setIsSubmitting(false);
 
         // No need for additional dropdown closing logic here as it's already closed above

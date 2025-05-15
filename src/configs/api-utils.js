@@ -67,6 +67,15 @@ export const fetchData_table_by_projet = async (
   setError('');
 
   const selectedProjet = JSON.parse(localStorage.getItem('selectedProjet')) || {};
+  
+  // If no project is selected, return early
+  if (!selectedProjet || !selectedProjet.id) {
+    setError('Veuillez sélectionner un projet');
+    setLoading(false);
+    setData([]);
+    setTotalRows(0);
+    return;
+  }
 
   try {
     const params = {
@@ -130,11 +139,11 @@ export const fetchData_table_by_projet = async (
     } else {
       toast.error('Failed to fetch data');
     }
+    setData([]);
   } finally {
     setLoading(false);
   }
 };
-
 
 export const fetchData_table_by_id = async (
   entity,
