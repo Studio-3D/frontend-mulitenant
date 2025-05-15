@@ -998,7 +998,7 @@ export default function ReservationForm({ id }) {
   };
   return (
     <>
-      <div className="p-3">
+      <div className="">
         <div className="flex items-center justify-start">
           <BreadCrumb
             baseUrl={ENDPOINTS.RESERVATIONS}
@@ -1006,7 +1006,7 @@ export default function ReservationForm({ id }) {
           />
         </div>
       </div>
-      <div className="p-6 mt-4 bg-white shadow-md rounded-md">
+      <div className="p-6 mt-4 min-h-[89vh] bg-white shadow-md rounded-md">
         {info_reservation != null && (
           <div className="bg-[rgba(253,181,40,0.12)] border-l-4 border-yellow-500 text-[rgb(227,162,36)] p-4 text-center rounded mb-4">
             <p>{info_reservation}</p>

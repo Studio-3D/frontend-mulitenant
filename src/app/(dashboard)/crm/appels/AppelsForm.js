@@ -875,7 +875,7 @@ export default function AppelsForm({ id }) {
           </Modal>
         </>
       )}
-      <div className="p-3">
+      <div className="">
         <div className="flex items-center justify-start">
           <BreadCrumb
             baseUrl={ENDPOINTS.APPELS}
@@ -883,7 +883,7 @@ export default function AppelsForm({ id }) {
           />
         </div>
       </div>
-      <div className="p-6 mt-4 bg-white shadow-md rounded-md">
+      <div className="p-6  mt-4 min-h-[89vh] bg-white shadow-md rounded-md">
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="space-y-4">
             {info_cin && (
@@ -1549,7 +1549,7 @@ export default function AppelsForm({ id }) {
                       <div>
                         {info_prix != null && (
                           <div className="w-full">
-                          <div className="bg-blue-100 text-blue-700 p-3 rounded-md border-l-4 border-blue-500 p-4 text-center rounded">
+                          <div className="bg-blue-100 text-blue-700 border-l-4 border-blue-500 p-4 text-center rounded">
                           {info_prix}
                             </div>
                           </div>

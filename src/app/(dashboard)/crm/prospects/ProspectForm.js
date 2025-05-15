@@ -366,14 +366,14 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
 
   return (
     <>
-      <div className="p-3">
+      <div className="">
         <div className="flex items-center justify-start">
           <BreadCrumb
             baseUrl={ENDPOINTS.PROSPECTS}
             step={`${isEditing ? 'Modifier' : 'Ajouter'} un prospect`}
           />
         </div>
-        <div className="p-6 mt-4 bg-white shadow-md rounded-md">
+        <div className="p-6 mt-4 min-h-[89vh] bg-white shadow-md rounded-md">
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="space-y-4">
               {check && info_client && (
@@ -383,12 +383,17 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
               )}
 
               {check_p && info_prospect && (
-                <div className="bg-blue-100 text-blue-700 p-3 rounded-md border-l-4 border-blue-500 p-4 text-center rounded">
+                <div className="bg-blue-100 text-blue-700 border-l-4 border-blue-500 p-4 text-center rounded">
                   <p>{info_prospect}</p>
                 </div>
               )}
 
               {/* First set of fields (Responsive grid) */}
+              <div>
+                  <h2 className="text-xl font-medium border-b pb-2">
+                    Informations du prospect
+                  </h2>
+                </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
                 <div>
                   <TextField
@@ -452,7 +457,7 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
                 </div>
                 <div>
                   <TextField
-                    label="Telephone num2:"
+                    label="Telephone 2:"
                     name="telephone_num2"
                     type="number"
                     control={control}
@@ -462,40 +467,7 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
                     onChange={handleChange_tele}
                   />
                 </div>
-              </div>
-
-              {/* Third set of fields (Responsive grid) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
-                {/* Accepte d'être contacté */}
-                <div className="flex items-center space-x-2">
-                  <Controller
-                    name="notifie"
-                    control={control}
-                    defaultValue={defaultValues['notifie'] || 0}
-                    render={({ field }) => (
-                      <label className="flex items-center space-x-2">
-                        <span
-                          className={`text-sm font-medium ${
-                            field.value === 1 ? 'text-purple-600' : ''
-                          }`}
-                        >
-                          Accepte être contacté:
-                        </span>
-                        <input
-                          type="checkbox"
-                          {...field}
-                          checked={field.value === 1}
-                          onChange={(e) =>
-                            field.onChange(e.target.checked ? 1 : 0)
-                          }
-                          className="h-5 w-10 rounded-full bg-gray-300 transition-all duration-300"
-                        />
-                      </label>
-                    )}
-                  />
-                </div>
-
-                {/* Source Select */}
+              {/* Source Select */}
                 <div className="">
                   <Autocomplete
                     name="source"
@@ -509,8 +481,41 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
                     errors={errors}
                     backendErrors={backendErrors}
                     onChange={handleSourceChange}
-                  />
+                    />
                 </div>
+
+              {/* Third set of fields (Responsive grid) */}
+                {/* Accepte d'être contacté */}
+                <div className="flex items-center justify-between w-full mt-4">
+                  <Controller
+                    name="notifie"
+                    control={control}
+                    defaultValue={defaultValues['notifie'] || 0}
+                    render={({ field }) => (
+                      <label className="flex justify-center items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          {...field}
+                          checked={field.value === 1}
+                          onChange={(e) =>
+                            field.onChange(e.target.checked ? 1 : 0)
+                          }
+                          className="h-5 w-10 rounded-full bg-gray-300 transition-all duration-300"
+                          />
+                        <span
+                          className={`text-sm font-medium ${
+                            field.value === 1 ? 'text-[#009FFF]' : ''
+                          }`}
+                          >
+                          Accepte être contacté:
+                        </span>
+                      </label>
+                    )}
+                    />
+                    </div>
+               
+
+                
 
                 {/* Partenaire Select (conditionally rendered) */}
                 <div className="">
@@ -533,7 +538,7 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
               </div>
 
               {/* Message field in the next row */}
-              <div className="flex-1 mt-4">
+              <div className="flex-1 mt-4 ">
                 <TextField
                   label="Message:"
                   name="message"
@@ -550,7 +555,8 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
 
               {/* Buttons */}
 
-              <div className="flex justify-center gap-4 items-center mt-6 mb-6">
+            </div>
+              <div className="flex justify-center items-center gap-4 xl:mt-32">
                 <Button
                   type="button"
                   onClick={() => {
@@ -571,7 +577,6 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
                   Enregistrer
                 </Button>
               </div>
-            </div>
           </form>
         </div>
       </div>

@@ -3031,7 +3031,7 @@ const VisiteForm = (id, origin) => {
                   </div>
                 )}
               </div>
-              <div className="flex justify-center items-center gap-4 mt-20">
+              <div className="flex justify-center items-center gap-4 xl:mt-32">
                 <Button type="button" onClick={() => router.back()}>
                   Annuler
                 </Button>

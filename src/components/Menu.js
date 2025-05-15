@@ -10,6 +10,7 @@ import {
   LayoutDashboard, 
   Building, 
   Folder, 
+  Landmark,
   FolderOpen, 
   ChevronRight, 
   ChevronDown, 
@@ -226,7 +227,7 @@ const Menu = () => {
     },
     {
       label: "Ventes",
-      icon: <FaHandshake />,
+      icon: <Handshake />,
       href: "/ventes",
 
       needsSociete: user.role === 1,
@@ -234,14 +235,14 @@ const Menu = () => {
     },
     {
       label: "Actualités du Jour",
-      icon: <Timer size={20} />,
+      icon: <Timer />,
       href: "/actualites-du-jour",
       needsSociete: user.role === 1,
       needsProjet: true,
     },
     {
       label: "Calendrier",
-      icon: <Calendar size={20} />,
+      icon: <Calendar />,
       href: "/Calendrier",
       needsSociete: user.role === 1,
       needsProjet: true,
@@ -251,7 +252,7 @@ const Menu = () => {
   const getAdditionalAdminItems = () => [
     {
       label: "Remise Des Clés",
-      icon: <Percent size={20} />,
+      icon: <Percent />,
       href: "/remise-des-cles",
     },
     {
@@ -286,7 +287,7 @@ const Menu = () => {
     { label: "Reclamations", icon: <FileText />, href: "/Reclamations" },
     {
       label: "Encaissments",
-      icon: <FaFileInvoiceDollar />,
+      icon: <Landmark />,
       href: "/encaissements",
       needsSociete: user.role === 1,
       needsProjet: true,
@@ -294,7 +295,7 @@ const Menu = () => {
     },
     {
       label: "Comptabilité",
-      icon: <Calculator size={20} />,
+      icon: <Calculator  />,
       href: "/comptabilite",
     },
     { 
