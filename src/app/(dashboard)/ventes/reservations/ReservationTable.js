@@ -3,14 +3,13 @@
 import React, { useEffect, useState } from 'react';
 import Table from '@/components/Table';
 import {
-  FaRegEye,
-  FaEdit,
-  FaTimes,
-  FaCheck,
-  FaClock,
-  FaEye,
-} from 'react-icons/fa';
-import { RiDeleteBin6Line } from 'react-icons/ri';
+  Eye,
+  Edit,
+  X,
+  Check,
+  Clock,
+} from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
 import { useAuth } from '../../../../context/AuthContext';
@@ -18,20 +17,18 @@ import { APIURL, ENDPOINTS } from '../../../../configs/api';
 import { useRouter } from 'next/navigation';
 import format from 'date-fns/format';
 import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
-import { fetchData_table_by_projet } from '../../../../../src/configs/api-utils';
+import { fetchData_table_by_projet } from '../../../../configs/api-utils';
 import Link from 'next/link';
 import Input from '@/components/Input';
 import SelectInput from '@/components/SelectInput';
 
-import { MODE_FINANCE } from '../../../../../src/configs/enum';
+import { MODE_FINANCE } from '../../../../configs/enum';
 import Modal_Valider_Reservation from './Modal_Valider_Reservation';
 
 const ReservationTable = ({ dataClient }) => {
   const { user, token } = useAuth();
   const userRole = user.role;
   const accesstoken = token || localStorage.getItem('accessToken');
-
-  // Declare the entity object in the component scope
 
   const router = useRouter();
   const [data, setData] = useState([]);
@@ -45,7 +42,6 @@ const ReservationTable = ({ dataClient }) => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [ID, setID] = useState(0)
   const [action, setAction] = useState(null)
-  // validation /rejet
   const [first_num_recu, set_first_num_recu] = useState(null)
   const [first_av_statut, set_first_av_statut] = useState(null)
   const [av_id, setav_id] = useState(0)
@@ -114,9 +110,9 @@ const ReservationTable = ({ dataClient }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
-    }, 1200); // Wait for 1.2s after user stops typing before updating the debounced value
+    }, 1200);
 
-    return () => clearTimeout(timer); // Clean up the timeout on each render
+    return () => clearTimeout(timer);
   }, [searchTerm]);
 
   const formatData = () => {
@@ -138,7 +134,6 @@ const ReservationTable = ({ dataClient }) => {
     });
   };
 
-  // Dynamically build columns based on type
   const columns = [
     {
       key: 'cc',
@@ -181,8 +176,6 @@ const ReservationTable = ({ dataClient }) => {
         return row.data_res?.aquereurs
           ? Object.keys(row.data_res.aquereurs).map((key) => (
               <div key={key}>
-                {' '}
-                {/* Added a keyed wrapper (React requires keys in lists) */}
                 <Link
                   target="_blank"
                   href={`/ventes/clients/${row.data_res.aquereurs[key].client.id}`}
@@ -194,7 +187,7 @@ const ReservationTable = ({ dataClient }) => {
                 </Link>
               </div>
             ))
-          : null; // Return `null` instead of empty string for cleaner React rendering
+          : null;
       },
     },
     {
@@ -275,40 +268,34 @@ const ReservationTable = ({ dataClient }) => {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          {/* View Button */}
-          <FaCheck
-                    className="w-4 h-4 text-green-500 hover:text-green-700 cursor-pointer"
-                    title="Valider"
-                    onClick={() =>
-                      handle_valider(
-                        row.id,
-                        row.code_reservation,
-                        row.data_res.first_avance?.num_recu,
-                        row.data_res.first_avance?.id,
-                        row.data_res.first_avance?.statut
-                      )
-                    }
-                  />
-          <FaRegEye
+          <Check
+            className="w-4 h-4 text-green-500 hover:text-green-700 cursor-pointer"
+            title="Valider"
+            onClick={() =>
+              handle_valider(
+                row.id,
+                row.code_reservation,
+                row.data_res.first_avance?.num_recu,
+                row.data_res.first_avance?.id,
+                row.data_res.first_avance?.statut
+              )
+            }
+          />
+          <Eye
             className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
             title="Voir détails"
             onClick={() => handleShow(row.id)}
           />
-
-          {/* Edit Button */}
-          <FaEdit
+          <Edit
             className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
             title="Modifier"
             onClick={() => handleEdit(row.id)}
           />
-
-          {/* Status-based actions */}
           {row.statut == 3 ? (
             <>
               {isSuperAdmin(userRole) || isAdmin(userRole) ? (
                 <>
-                  {/* Approve Button */}
-                  <FaCheck
+                  <Check
                     className="w-4 h-4 text-green-500 hover:text-green-700 cursor-pointer"
                     title="Valider"
                     onClick={() =>
@@ -321,16 +308,14 @@ const ReservationTable = ({ dataClient }) => {
                       )
                     }
                   />
-
-                  {/* Reject Button */}
-                  <FaTimes
+                  <X
                     className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
                     title="Refuser"
                     onClick={() => handle_rejeter(row.id, row.code_reservation)}
                   />
                 </>
               ) : (
-                <FaClock
+                <Clock
                   className="w-4 h-4 text-gray-500 hover:text-gray-700 cursor-pointer"
                   title="La Réservation est en Attente de Validation"
                   onClick={() => handle_show_info_2(row.code_reservation)}
@@ -338,7 +323,7 @@ const ReservationTable = ({ dataClient }) => {
               )}
             </>
           ) : row.statut == 2 ? (
-            <FaEye
+            <Eye
               className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
               title="Détail du Rejet"
               onClick={() =>
@@ -349,19 +334,17 @@ const ReservationTable = ({ dataClient }) => {
               }
             />
           ) : row.statut == 1 && row.first_avance?.statut == 3 ? (
-            <FaClock
+            <Clock
               className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
               title="Premier avance en attente de validation"
               onClick={() => handle_show_info(row.code_reservation)}
             />
           ) : null}
-
-          {/* Cancel/Withdraw Button */}
           {(isSuperAdmin(userRole) ||
             isAdmin(userRole) ||
             isCommercial(userRole)) &&
             row.statut == 1 && (
-              <FaTimes
+              <X
                 className={`w-4 h-4 cursor-pointer ${
                   row.data_res.desistement_att_validation_rejete?.statut == 0
                     ? 'text-orange-500 hover:text-orange-700'
@@ -391,10 +374,8 @@ const ReservationTable = ({ dataClient }) => {
                 }
               />
             )}
-
-          {/* Delete Button */}
           {(isSuperAdmin(userRole) || isAdmin(userRole)) && (
-            <RiDeleteBin6Line
+            <Trash2
               className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
               onClick={() => {
                 setSelectedId(row.id);
@@ -408,31 +389,28 @@ const ReservationTable = ({ dataClient }) => {
     },
   ];
 
-  //EXPORT
-
   const data_to_export = () => {
     return data.map((item) => {
-      // Extract acquereurs data
       const acquereursNames = item?.aquereurs
         ? item.aquereurs
             .map(
               (acq) => (acq.client?.nom + ' ' + acq.client?.prenom).trim() || ''
             )
-            .filter((name) => name) // Remove empty strings
+            .filter((name) => name)
             .join(' / ')
         : '';
 
       const acquereursCin = item?.aquereurs
         ? item.aquereurs
             .map((acq) => acq.client?.cin || '')
-            .filter((cin) => cin) // Remove empty strings
+            .filter((cin) => cin)
             .join(' / ')
         : '';
 
       const acquereursTele = item?.aquereurs
         ? item.aquereurs
             .map((acq) => acq.client?.telephone_num1 || '')
-            .filter((tele) => tele) // Remove empty strings
+            .filter((tele) => tele)
             .join(' / ')
         : '';
 
@@ -487,14 +465,10 @@ const ReservationTable = ({ dataClient }) => {
     { key: 'mode_financement', label: 'Mode financement' },
     { key: 'prix_remise', label: 'Prix remise' },
     { key: 'prix_forfetaire', label: 'Prix forfetaire' },
-
-    //clients
     { key: 'noms_acquereurs', label: 'Nom client' },
     { key: 'cins_acquereurs', label: 'Cin client' },
     { key: 'tele_acquereurs', label: 'Tele client' },
   ];
-
- 
 
   const handle_valider = (Id, code, num_recu, av_id, av_statut) => {
     setAction(null)
@@ -515,7 +489,6 @@ const ReservationTable = ({ dataClient }) => {
 
   return (
     <>
-      {' '}
       <div className="reflative">
         <Table
           data_to_export={data_to_export()}
@@ -548,7 +521,6 @@ const ReservationTable = ({ dataClient }) => {
                   gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
                 }}
               >
-                {/* Champs de recherche */}
                 <Input
                   type="text"
                   placeholder="Code Réservation"
@@ -576,7 +548,6 @@ const ReservationTable = ({ dataClient }) => {
                   }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-
                 <Input
                   type="text"
                   placeholder="Bien"
@@ -599,8 +570,6 @@ const ReservationTable = ({ dataClient }) => {
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
               </div>
-
-              {/* Boutons */}
               <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="button"
@@ -649,19 +618,17 @@ const ReservationTable = ({ dataClient }) => {
           />
         </Modal>
       )}
-       {open_v_reservation && (
-              <>
-                <Modal isVisible={true} onClose={() => setOpen_v_reservation(false)}>
-                  <Modal_Valider_Reservation
-                    code_reservation={code_reservation}
-                    first_av_statut={first_av_statut}
-                    first_num_recu={first_num_recu}
-                    id= {ID}
-                    onClose={() => setOpen_v_reservation(false)}
-                  />
-                </Modal>
-              </>
-            )}
+      {open_v_reservation && (
+        <Modal isVisible={true} onClose={() => setOpen_v_reservation(false)}>
+          <Modal_Valider_Reservation
+            code_reservation={code_reservation}
+            first_av_statut={first_av_statut}
+            first_num_recu={first_num_recu}
+            id={ID}
+            onClose={() => setOpen_v_reservation(false)}
+          />
+        </Modal>
+      )}
     </>
   );
 };

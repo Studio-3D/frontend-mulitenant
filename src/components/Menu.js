@@ -35,6 +35,7 @@ import {
   FileIcon,
   Building2,
   FolderCog,
+  Receipt,
 } from "lucide-react";
 
 import { User_roles } from "../configs/enum";
@@ -226,7 +227,7 @@ const Menu = () => {
     },
     {
       label: "Ventes",
-      icon: <FaHandshake />,
+      icon: <Handshake />,
       href: "/ventes",
 
       needsSociete: user.role === 1,
@@ -256,18 +257,18 @@ const Menu = () => {
     },
     {
       label: "Sav",
-      icon: <FolderCog />, // Replace FolderUser with FolderCog which exists in lucide-react
+      icon: <FolderCog />,
       children: [
         {
           label: "Services prestataire",
-          icon: <Wrench />, // outil = services
+          icon: <Wrench />,
           href: "/sav/services",
           needsSociete: user.role === 1,
           
         },
         {
           label: "Prestataires",
-          icon: <Users />, // groupe de personnes = prestataires
+          icon: <Users />,
           href: "/sav/prestataires",
           //needsProjet: true,
           needsSociete: user.role === 1,
@@ -286,7 +287,7 @@ const Menu = () => {
     { label: "Reclamations", icon: <FileText />, href: "/Reclamations" },
     {
       label: "Encaissments",
-      icon: <FaFileInvoiceDollar />,
+      icon: <Receipt />,
       href: "/encaissements",
       needsSociete: user.role === 1,
       needsProjet: true,

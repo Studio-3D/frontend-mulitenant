@@ -1,12 +1,12 @@
 'use client';
-import { IoAlertCircleOutline } from 'react-icons/io5';
+import { AlertCircle } from 'lucide-react';
 
 export default function Modal_File({ onConfirm, onClose }) {
   // Delete user handler
 
   return (
     <div className="w-[500px] p-4">
-      <IoAlertCircleOutline className="text-[#FF4E4E] text-6xl mx-auto mt-2 mb-4" />
+      <AlertCircle className="text-[#FF4E4E] text-6xl mx-auto mt-2 mb-4" />
       <h2 className="text-xl font-semibold text-center">
         Confirmation des Fichiers
       </h2>

@@ -31,7 +31,7 @@ import {
   fetchDataByProjet,
   fetchDataByProjet_2,
   fetchList_fichier_exist,
-} from '../../../../../src/configs/api-utils';
+} from '../../../../configs/api-utils';
 import Modal from '@/components/Modal';
 import Modal_File from './Modal_file';
 
