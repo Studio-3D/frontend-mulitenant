@@ -36,12 +36,14 @@ import {
   Building2,
   FolderCog
 } from "lucide-react";
+import { TbLayoutDashboardFilled } from 'react-icons/tb';
 
 import { User_roles } from "../configs/enum";
 import { useSociete } from "@/context/SocieteContext";
 import SocieteDialog from "./SocieteDialog";
 import { useProjet } from "@/context/ProjetContext";
 import ProjetDialog from "./ProjetDialog";
+import { FaFileInvoiceDollar } from "react-icons/fa";
 
 const Menu = () => {
   const [menuItems, setMenuItems] = useState([]);
@@ -251,7 +253,9 @@ const Menu = () => {
     {
       label: "Remise Des Clés",
       icon: <Percent size={20} />,
-      href: "/remise-des-cles",
+      href: "/remiseCles",
+      needsSociete: user.role === 1,
+      needsProjet: true,
     },
     {
       label: "Sav",
@@ -262,13 +266,15 @@ const Menu = () => {
           icon: <Wrench />, // outil = services
           href: "/sav/services",
           needsSociete: user.role === 1,
+          needsProjet: true,
+
           
         },
         {
           label: "Prestataires",
           icon: <Users />, // groupe de personnes = prestataires
           href: "/sav/prestataires",
-          //needsProjet: true,
+          needsProjet: true,
           needsSociete: user.role === 1,
         },
         {

@@ -41,8 +41,8 @@ const EncaissementTable = ({dataClient_id, bien_id}) => {
   const router = useRouter();
   const [filters, setFilters] = useState({
   code_reservation: "",
-  bien: "",
-  client: "",
+  bienId: "",
+  clientId: "",
   montant: "",
   type_encaissement: "",
   de: "",
@@ -66,8 +66,8 @@ const applyFilters = () => {
 const resetFilters = () => {
   const reset = {
     code_reservation: "",
-    bien: "",
-    client: "",
+    bienId: "",
+    clientId: "",
     montant: "",
     type_encaissement: "",
     de: "",
@@ -110,7 +110,7 @@ const fetchBiens = async () => {
       setLoading(true);
 
       const response = await axios.get(
-        `${APIURL.ROOT}/getClient_by_projet/${selectedProjet?.id}`,
+        `${APIURL.ROOT}/v1/projets/${selectedProjet?.id}/clients/`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -416,8 +416,8 @@ const rows = formatData();
         
       <InputSelect
         label="Client"
-        name="cien_id"
-        onChange={(selected) => handleFilterChange("client_id", selected?.value || null)}
+        name="cienId"
+        onChange={(selected) => handleFilterChange("clientId", selected?.value || null)}
         options={clients.map(s => ({
           value: s.id,
           label: s.nom + ' ' + s.prenom
@@ -427,8 +427,8 @@ const rows = formatData();
       />
       <InputSelect
         label="Bien"
-        name="bien_id"
-        onChange={(selected) => handleFilterChange("bien_id", selected?.value || null)}
+        name="bienId"
+        onChange={(selected) => handleFilterChange("bienId", selected?.value || null)}
         options={biens.map(s => ({
           value: s.id,
           label: s.propriete_dite_bien
