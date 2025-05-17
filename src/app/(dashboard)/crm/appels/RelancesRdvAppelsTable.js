@@ -3,6 +3,7 @@ import Table from '@/components/Table';
 import { Eye, CheckCircle } from 'lucide-react';
 
 import { useAuth } from '../../../../context/AuthContext';
+import { useProjet } from '../../../../context/ProjetContext';
 import { useRouter } from 'next/navigation';
 import { fetchData_table_by_projet } from '../../../../../src/configs/api-utils';
 import Link from 'next/link';
@@ -35,6 +36,7 @@ const RelancesRdvAppelsTable = (type) => {
   const [ID_rel_rdv, setID_rel_rdv] = useState(0);
 
   const { token } = useAuth();
+  const { selectedProjet } = useProjet();
   const accesstoken = token || localStorage.getItem('accessToken');
 
   const router = useRouter();
@@ -88,7 +90,7 @@ const RelancesRdvAppelsTable = (type) => {
       setData,
       setTotalRows
     );
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters]);
+  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters, selectedProjet]);
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
@@ -388,16 +390,16 @@ const RelancesRdvAppelsTable = (type) => {
                       className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                     />
 
-                     <SelectInput
-                                      value={tempFilters.mode_relance}
-                                      onChange={(value) => handleFilterChange('mode_relance', value)}
-                                      options={Object.values(MODES_RELANCES).map((data) => ({
-                                        value: data.code,
-                                        label: data.label,
-                                      }))}
-                                      placeholder="Choisir un Mode Relance"
-                                      className="h-10 text-sm w-full"
-                                    />
+                    <SelectInput
+                      value={tempFilters.mode_relance}
+                      onChange={(value) => handleFilterChange('mode_relance', value)}
+                      options={Object.values(MODES_RELANCES).map((data) => ({
+                        value: data.code,
+                        label: data.label,
+                      }))}
+                      placeholder="Choisir un Mode Relance"
+                      className="h-10 text-sm w-full"
+                    />
                     
                   </>
                 ) : (
@@ -413,7 +415,6 @@ const RelancesRdvAppelsTable = (type) => {
                   />
                 )}
               </div>
-
               {/* Boutons */}
               <div className="flex justify-end gap-3 pt-2">
                 <button
@@ -435,7 +436,6 @@ const RelancesRdvAppelsTable = (type) => {
           }
         />
       </div>
-
       {open_dialog_r && (
         <>
           <Modal isVisible={true} onClose={() => setOpen_dialog_r(false)}>
@@ -452,5 +452,4 @@ const RelancesRdvAppelsTable = (type) => {
     </div>
   );
 };
-
 export default RelancesRdvAppelsTable;

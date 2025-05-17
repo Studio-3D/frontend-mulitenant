@@ -8,12 +8,14 @@ import { useEffect, useState } from "react";
 import { FaEdit } from "react-icons/fa";
 import { RiDeleteBin6Line, RiEyeLine } from "react-icons/ri";
 import axios from "axios";
-import Select from 'react-select';
 import { APIURL, ENDPOINTS } from "@/configs/api";
 import { fetchData_table_by_projet } from "@/configs/api-utils";
 import { isAdmin, isSuperAdmin } from "@/configs/enum";
 import { useAuth } from "@/context/AuthContext";
 import Input from "@/components/Input";
+import InputSelect from "@/components/inputSelect";
+import { useProjet } from "@/context/ProjetContext"; // Import ProjetContext
+import ProjetDialog from "@/components/ProjetDialog"; // Import ProjetDialog
 
 const PrestataireTable = (serviceId) => {
   const [prestataires, setPrestataires] = useState([]);
@@ -41,6 +43,8 @@ const PrestataireTable = (serviceId) => {
   });
 
   const [tempFilters, setTempFilters] = useState({ ...filters });
+  const { selectedProjet, projets, fetchProjets } = useProjet(); // Get data from ProjetContext
+  const [showProjetModal, setShowProjetModal] = useState(false); // State for project modal
 
   const entity = {
     API_URL: "Prestataires",
@@ -49,27 +53,38 @@ const PrestataireTable = (serviceId) => {
     searchFields: ["nom"],
   };
 
+  // Check if a project is selected
+  useEffect(() => {
+    if (!selectedProjet && !showProjetModal && !service_id) {
+      fetchProjets(); // Fetch projects if not already done
+      setShowProjetModal(true);
+    }
+  }, [selectedProjet, showProjetModal, fetchProjets, service_id]);
+
   const fetchServices = async () => {
-      try {
+    if (!selectedProjet) return;
+    
+    try {
+      const response = await axios.get(
+        `${APIURL.ROOT}/v1/projets/${selectedProjet.id}/ServicesPrestataires/`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      const { data } = response;
+      setServices(data.services);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
   
-        const response = await axios.get(
-          `${APIURL.ROOT}/v1/projets/1/ServicesPrestataires/`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
-        const { data } = response;
-        setServices(data.services);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-  
-    useEffect(() => {
+  useEffect(() => {
+    if (selectedProjet) {
       fetchServices();
-    }, []);
+    }
+  }, [selectedProjet]);
 
     function handleShow(Id) {
       router.push(`/sav/prestataires/show/${Id}`);
@@ -82,6 +97,7 @@ const PrestataireTable = (serviceId) => {
   useEffect(() => {
 
     fetchData_table_by_projet(
+
         entity,
         filters,       
         searchTerm,
@@ -94,11 +110,13 @@ const PrestataireTable = (serviceId) => {
         setTotalRows
       );
     }, [searchTerm, currentPage, rowsPerPage, accesstoken,filters]);
+
     
     const handleFilterChange = (field, value) => {
       setTempFilters((prev) => ({ ...prev, [field]: value }));
     };
   
+
     const applyFilters = () => {
       setFilters(tempFilters); // C’est ici que fetchUsers va être déclenché
     };
@@ -114,6 +132,7 @@ const PrestataireTable = (serviceId) => {
       setFilters(reset);
       setTempFilters(reset);
     };
+
 
   const handleEdit = (id) =>
     router.push(`${ENDPOINTS.Prestataires}?id=${id}&action=edit`);
@@ -174,7 +193,6 @@ const PrestataireTable = (serviceId) => {
     }));
   };
   
-
   const data_to_export = () => {
     return prestataires?.map((pre) => ({
       CIN: pre.cin,
@@ -187,7 +205,6 @@ const PrestataireTable = (serviceId) => {
     }));
   };
   
-
   const selectedPrestataire = prestataires.find((prestataire) => prestataire.id === selectedId);
 
   const columns_export = [
@@ -199,8 +216,41 @@ const PrestataireTable = (serviceId) => {
     { key: "Téléphone", label: "Téléphone" },
   ];
   
+  // Handle project selection
+  const handleProjectSelected = () => {
+    setShowProjetModal(false);
+    setCurrentPage(1); // Reset to first page
+    
+    // Fetch services and data with the newly selected project
+    if (selectedProjet) {
+      fetchServices();
+      fetchData_table_by_projet(
+        entity,
+        filters,       
+        searchTerm,
+        1,
+        rowsPerPage,
+        accesstoken,
+        setLoading,
+        setError,
+        setPrestataires,
+        setTotalRows
+      );
+    }
+  };
+  
   return (
     <>
+      {/* Project Selection Modal */}
+      {!service_id && (
+        <ProjetDialog
+          open={showProjetModal}
+          onClose={() => setShowProjetModal(false)}
+          projets={projets}
+          onSelect={handleProjectSelected}
+        />
+      )}
+      
       <Table
         title={serviceId?.service?.nom && `Prestataires liées à ${serviceId?.service?.nom}`} 
         data_to_export={data_to_export()}
@@ -279,6 +329,7 @@ const PrestataireTable = (serviceId) => {
                 />
               )}
              
+
             </div>
         
             <div className="flex justify-end gap-3 pt-2">
@@ -312,7 +363,7 @@ const PrestataireTable = (serviceId) => {
         enableExport={true}
         enableImport={true}
         addLink={
-          isSuperAdmin(user.role) || isAdmin(user.role)
+          (isSuperAdmin(user.role) || isAdmin(user.role)) && selectedProjet
             ? `${ENDPOINTS.Prestataires}?action=add`
             : undefined
         }

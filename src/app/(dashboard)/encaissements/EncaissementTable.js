@@ -5,8 +5,7 @@ import Modal from "@/components/Modal";
 import Table from "@/components/Table";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { FaEdit } from "react-icons/fa";
-import { RiDeleteBin6Line, RiEyeLine } from "react-icons/ri";
+import { Edit, Trash2, Eye } from "lucide-react";
 import axios from "axios";
 import Select from 'react-select';
 import { APIURL, ENDPOINTS } from "@/configs/api";
@@ -275,7 +274,7 @@ const getTypeEncaissementBadge = (type) => {
     render: (row) => (
       <div className="flex gap-3 items-center">
         
-        <RiEyeLine
+        <Eye
           className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
           onClick={() => handleShow(row.type_encaissement, row.reservation_id, row.remboursement?.desistement_id, row.penalite?.desistement_id)}
         />

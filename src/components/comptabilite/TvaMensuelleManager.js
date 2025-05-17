@@ -264,21 +264,6 @@ const TvaMensuelleManager = ({ userRole }) => {
       }
     },
     { 
-      key: 'avance_terrain', 
-      label: 'Avance Terrain',
-      render: (row) => row.avance_terrain?.toString().replace(/,/g, '.') || '0'
-    },
-    { 
-      key: 'avance_bien_ttc', 
-      label: 'Avance Bien TTC',
-      render: (row) => row.avance_bien_ttc?.toString().replace(/,/g, '.') || '0'
-    },
-    { 
-      key: 'avance_bien_ht', 
-      label: 'Avance Bien HT',
-      render: (row) => row.avance_bien_ht?.toString().replace(/,/g, '.') || '0'
-    },
-    { 
       key: 'tva_a_payer', 
       label: 'TVA à Déclarer',
       render: (row) => row.tva_a_payer?.toString().replace(/,/g, '.') || '0'
@@ -291,9 +276,6 @@ const TvaMensuelleManager = ({ userRole }) => {
     { key: 'code_reservation', label: 'Code Réservation' },
     { key: 'montant', label: 'Montant' },
     { key: 'type_enc', label: 'Type Encaissement' },
-    { key: 'avance_terrain', label: 'Avance Terrain' },
-    { key: 'avance_bien_ttc', label: 'Avance Bien TTC' },
-    { key: 'avance_bien_ht', label: 'Avance Bien HT' },
     { key: 'tva_a_payer', label: 'TVA à Déclarer' },
     { key: 'aq_names', label: 'Nom client' },
     { key: 'aq_cin', label: 'CIN client' },
@@ -348,9 +330,6 @@ const TvaMensuelleManager = ({ userRole }) => {
         code_reservation: item.reservation?.code_reservation || "",
         montant: montant,
         type_enc: getTypeEncaissementLabel(item.encaissement?.type_encaissement),
-        avance_terrain: item.avance_terrain?.toString().replace(/,/g, '.') || "",
-        avance_bien_ttc: item.avance_bien_ttc?.toString().replace(/,/g, '.') || "",
-        avance_bien_ht: item.avance_bien_ht?.toString().replace(/,/g, '.') || "",
         tva_a_payer: item.tva_a_payer?.toString().replace(/,/g, '.') || "",
         aq_names: acquereursNames,
         aq_cin: acquereursCin,

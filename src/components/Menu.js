@@ -34,7 +34,8 @@ import {
   Wrench,
   FileIcon,
   Building2,
-  FolderCog
+  FolderCog,
+  Receipt,
 } from "lucide-react";
 import { TbLayoutDashboardFilled } from 'react-icons/tb';
 
@@ -101,7 +102,7 @@ const Menu = () => {
     const items = [
       {
         label: "Tableau de Bord",
-        icon: <TbLayoutDashboardFilled />,
+        icon: <LayoutDashboard />,
         href: "/tableau-de-bord",
       },
     ];
@@ -228,8 +229,9 @@ const Menu = () => {
     },
     {
       label: "Ventes",
-      icon: <Handshake size={20} />,
-      href: "/Ventes",
+      icon: <Handshake />,
+      href: "/ventes",
+
       needsSociete: user.role === 1,
       needsProjet: true,
     },
@@ -259,11 +261,11 @@ const Menu = () => {
     },
     {
       label: "Sav",
-      icon: <FolderCog />, // Replace FolderUser with FolderCog which exists in lucide-react
+      icon: <FolderCog />,
       children: [
         {
           label: "Services prestataire",
-          icon: <Wrench />, // outil = services
+          icon: <Wrench />,
           href: "/sav/services",
           needsSociete: user.role === 1,
           needsProjet: true,
@@ -272,7 +274,7 @@ const Menu = () => {
         },
         {
           label: "Prestataires",
-          icon: <Users />, // groupe de personnes = prestataires
+          icon: <Users />,
           href: "/sav/prestataires",
           needsProjet: true,
           needsSociete: user.role === 1,
@@ -291,7 +293,7 @@ const Menu = () => {
     { label: "Reclamations", icon: <FileText />, href: "/Reclamations" },
     {
       label: "Encaissments",
-      icon: <FaFileInvoiceDollar />,
+      icon: <Receipt />,
       href: "/encaissements",
       needsSociete: user.role === 1,
       needsProjet: true,

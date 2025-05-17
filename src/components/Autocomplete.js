@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaChevronDown } from "react-icons/fa";
+import { ChevronDown } from "lucide-react";
 
 
 const Autocomplete = ({
@@ -106,9 +106,9 @@ const Autocomplete = ({
           onClick={toggleDropdown}
         >
           {isOpen ? (
-            <FaChevronDown className="h-4 w-4 m-2 text-gray-400 rotate-180" />
+            <ChevronDown className="h-4 w-4 m-2 text-gray-400 rotate-180" />
           ) : (
-            <FaChevronDown className="h-4 w-4 m-2 text-gray-400" />
+            <ChevronDown className="h-4 w-4 m-2 text-gray-400" />
           )}
         </div>
 

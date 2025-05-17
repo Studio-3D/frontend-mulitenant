@@ -20,7 +20,10 @@ export default function Input({
   inputMode,
   multiline = false, // Ajout du support multiline
 }) {
-  const safeValue = value === null ? '' : value;
+
+  // Ensure value is never null
+  const safeValue = value == null ? '' : value;
+
 
   if (control) {
     return (
@@ -168,6 +171,7 @@ export default function Input({
             `}
           />
         )}
+
         {children && (
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer">
             {children}
