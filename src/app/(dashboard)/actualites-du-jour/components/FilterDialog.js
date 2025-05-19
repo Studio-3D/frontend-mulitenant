@@ -5,7 +5,7 @@ import Modal from '@/components/Modal';
 import { X } from 'lucide-react';
 import Autocomplete from '@/components/Autocomplete';
 
-export default function FilterDialog({ onClose, onSubmit, initialValues, projetId }) {
+export default function FilterDialog({ onClose, onSubmit, initialValues, projetId, mode = 'filter' }) {
   const [fromDate, setFromDate] = useState(initialValues?.fromDate || '');
   const [toDate, setToDate] = useState(initialValues?.toDate || '');
   const [commercial, setCommercial] = useState(null);
@@ -21,6 +21,7 @@ export default function FilterDialog({ onClose, onSubmit, initialValues, projetI
       const accessToken = localStorage.getItem('accessToken');
       
       try {
+        // Update to match the old frontend URL pattern exactly
         const response = await axios.get(
           `${APIURL.ROOTV1}/get_commerciaux/${projetId}`, 
           {
@@ -30,20 +31,31 @@ export default function FilterDialog({ onClose, onSubmit, initialValues, projetI
           }
         );
         
-        // Add "All commercials" option
+        // Add "All commercials" option - consistent with the old frontend
         const commercialsList = [
-          { id: 'tous', nom: 'Tous les Commerciaux', prenom: '', name: 'Tous les Commerciaux' }
+          { id: 'tout', name: 'Tous les Commerciaux', prenom: '', tout: 1 }
         ];
         
-        // Format commercials data
-        response.data.users.forEach(user => {
-          commercialsList.push({
-            id: user.user?.id || user.id,
-            nom: user.user?.name || user.name || '',
-            prenom: user.user?.prenom || user.prenom || '',
-            name: `${user.user?.name || user.name || ''} ${user.user?.prenom || user.prenom || ''}`.trim()
+        // Format commercials data to match expected structure
+        if (response.data.users && Array.isArray(response.data.users)) {
+          response.data.users.forEach(user => {
+            if (user.user) {
+              commercialsList.push({
+                id: user.user.id,
+                name: user.user.name || '',
+                prenom: user.user.prenom || '',
+                user: user.user
+              });
+            } else {
+              commercialsList.push({
+                id: user.id,
+                name: user.name || '',
+                prenom: user.prenom || '',
+                user: user
+              });
+            }
           });
-        });
+        }
         
         setCommercials(commercialsList);
       } catch (error) {
@@ -61,15 +73,19 @@ export default function FilterDialog({ onClose, onSubmit, initialValues, projetI
     onSubmit({
       fromDate,
       toDate,
-      commercial
+      commercial: commercial || { id: 'tous', name: 'Tous les Commerciaux' }
     });
+  };
+
+  const getTitle = () => {
+    return mode === 'activities' ? "Activités par Commerciaux" : "Actualités Par commerciaux";
   };
 
   return (
     <Modal isVisible={true} onClose={onClose}>
       <div className="w-[500px] p-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Filtrer les actualités</h2>
+          <h2 className="text-xl font-semibold">{getTitle()}</h2>
           <button 
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700"
@@ -89,6 +105,7 @@ export default function FilterDialog({ onClose, onSubmit, initialValues, projetI
                 value={fromDate}
                 onChange={(e) => setFromDate(e.target.value)}
                 className="w-full h-[38px] p-2 border border-gray-300 rounded-md focus:outline-none hover:border-gray-500 focus:border-gray-500"
+                required={mode === 'activities'}
               />
             </div>
             
@@ -101,6 +118,7 @@ export default function FilterDialog({ onClose, onSubmit, initialValues, projetI
                 value={toDate}
                 onChange={(e) => setToDate(e.target.value)}
                 className="w-full h-[38px] p-2 border border-gray-300 rounded-md focus:outline-none hover:border-gray-500 focus:border-gray-500"
+                required={mode === 'activities'}
               />
             </div>
           </div>
@@ -111,9 +129,13 @@ export default function FilterDialog({ onClose, onSubmit, initialValues, projetI
               options={commercials}
               value={commercial}
               onChange={setCommercial}
-              placeholder="Choisissez un commercial"
+              placeholder="Choisissez un Commercial"
               loading={loadingCommercials}
               choix="name"
+              required={false}
+              name="commercial"
+              errors={{}}
+              backendErrors={{}}
             />
           </div>
           
@@ -127,9 +149,9 @@ export default function FilterDialog({ onClose, onSubmit, initialValues, projetI
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-[#009FFF] text-white rounded-md hover:bg-blue-600"
+              className="px-4 py-2 bg-[#666CFF] text-white rounded-md hover:bg-indigo-600"
             >
-              Appliquer
+              Enregistrer
             </button>
           </div>
         </form>

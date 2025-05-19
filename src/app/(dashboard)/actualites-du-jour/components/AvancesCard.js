@@ -4,7 +4,6 @@ import axios from 'axios';
 import { APIURL } from '@/configs/api';
 import { toast } from 'react-hot-toast';
 import Modal from '@/components/Modal';
-import { X } from 'lucide-react';
 
 export default function AvancesCard({ avances = [], sumAvances = 0, commercial = 'tous' }) {
   const [showHistoryModal, setShowHistoryModal] = useState(false);
@@ -49,9 +48,7 @@ export default function AvancesCard({ avances = [], sumAvances = 0, commercial =
             onClick={() => setShowHistoryModal(true)}
             className="text-gray-500 hover:text-gray-700"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
-            </svg>
+            <span>+</span>
           </button>
         </div>
         
@@ -74,14 +71,7 @@ export default function AvancesCard({ avances = [], sumAvances = 0, commercial =
           <div className="space-y-4">
             {(historyDate ? historyData : avances).map((item, index) => (
               <div key={index} className="flex items-center">
-                <div className="bg-gray-100 rounded-lg w-10 h-10 flex items-center justify-center mr-3 flex-shrink-0">
-                  <img 
-                    src={`/images/${['immobilie.png', 'imm.png', 'fav.jpg'][index % 3]}`} 
-                    alt="Property" 
-                    className="w-5 h-5"
-                  />
-                </div>
-                
+                {/* Remove Home icon */}
                 <div className="flex-1">
                   <div className="font-medium">{item.propriete_dite_bien}</div>
                   <div className="text-sm text-gray-500">
@@ -110,7 +100,7 @@ export default function AvancesCard({ avances = [], sumAvances = 0, commercial =
                 onClick={() => setShowHistoryModal(false)}
                 className="text-gray-500 hover:text-gray-700"
               >
-                <X className="h-5 w-5" />
+                X
               </button>
             </div>
             

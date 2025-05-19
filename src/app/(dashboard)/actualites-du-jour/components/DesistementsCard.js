@@ -1,22 +1,21 @@
 import React, { useState } from 'react';
-import { UserMinus, UserSwitch, UsersIcon, RefreshCw } from 'lucide-react';
 
 export default function DesistementsCard({ desistements = [], sumPenalites = 0, sumMontantAAjouter = 0 }) {
   const [activeTab, setActiveTab] = useState('DD');
   
-  // Type definition mappings
+
   const getType = (type, type_dp) => {
-    if (type === 1) return 1; // DD
-    if (type === 3) return 5; // CHANGE
+    if (type === 1) return 1;
+    if (type === 3) return 5;
     if (type === 2) {
-      if (type_dp === 1) return 2; // DP PROCHE
-      if (type_dp === 2) return 3; // DP CO
-      if (type_dp === 3) return 4; // DP PARTIEL
+      if (type_dp === 1) return 2;
+      if (type_dp === 2) return 3;
+      if (type_dp === 3) return 4;
     }
     return 0;
   };
   
-  // Categorize desistements by type
+
   const categorizedData = {
     1: desistements.filter(item => getType(item.type, item.type_dp) === 1),
     2: desistements.filter(item => getType(item.type, item.type_dp) === 2),
@@ -25,16 +24,17 @@ export default function DesistementsCard({ desistements = [], sumPenalites = 0, 
     5: desistements.filter(item => getType(item.type, item.type_dp) === 5)
   };
 
+
   // Tab configuration
   const tabs = [
-    { id: 'DD', label: 'DD', icon: <UserMinus size={20} />, color: 'text-red-500' },
-    { id: 'DP PROCHE', label: 'DP PROCHE', icon: <UserSwitch size={20} />, color: 'text-orange-500' },
-    { id: 'DP CO', label: 'DP CO', icon: <UsersIcon size={20} />, color: 'text-yellow-500' },
-    { id: 'DP PARTIEL', label: 'DP PARTIEL', icon: <UserMinus size={20} />, color: 'text-green-500' },
-    { id: 'CHANGE', label: 'CHANGE', icon: <RefreshCw size={20} />, color: 'text-blue-500' }
+    { id: 'DD', label: 'DD', color: 'text-red-500' },
+    { id: 'DP PROCHE', label: 'DP PROCHE', color: 'text-orange-500' },
+    { id: 'DP CO', label: 'DP CO', color: 'text-yellow-500' },
+    { id: 'DP PARTIEL', label: 'DP PARTIEL', color: 'text-green-500' },
+    { id: 'CHANGE', label: 'CHANGE', color: 'text-blue-500' }
   ];
 
-  // Mapping of tab IDs to data categories
+
   const tabToDataMap = {
     'DD': 1,
     'DP PROCHE': 2,
@@ -43,7 +43,7 @@ export default function DesistementsCard({ desistements = [], sumPenalites = 0, 
     'CHANGE': 5
   };
 
-  // Random colors for chips
+
   const chipColors = [
     'bg-green-100 text-green-800',
     'bg-red-100 text-red-800',
@@ -52,8 +52,8 @@ export default function DesistementsCard({ desistements = [], sumPenalites = 0, 
     'bg-purple-100 text-purple-800'
   ];
   
-  // Random parente options (for demo)
-  const parentes = ['Parents', 'Fils', 'Frères', 'Autre', 'Soeurs'];
+
+  const parentes = ['Lien_parente', 'Lien_parente', 'Lien_parente', 'Lien_parente', 'Autre'];
 
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden h-full">
@@ -74,10 +74,7 @@ export default function DesistementsCard({ desistements = [], sumPenalites = 0, 
                   : 'border-2 border-gray-200'
               }`}
             >
-              <div className={`p-2 rounded-lg ${activeTab === tab.id ? tab.color : 'text-gray-500'}`}>
-                {tab.icon}
-              </div>
-              <span className={`text-xs font-medium mt-1 ${activeTab === tab.id ? 'text-blue-600' : 'text-gray-600'}`}>
+              <span className={`text-xs font-medium ${activeTab === tab.id ? '!text-blue-600' : '!text-gray-600'}`}>
                 {tab.label}
               </span>
             </button>

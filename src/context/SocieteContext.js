@@ -123,8 +123,12 @@ export function SocieteProvider({ children }) {
       setLoading(prev => ({ ...prev, selection: true }));
       const token = localStorage.getItem("accessToken");
       
+      // Store the current project before changing société
+      const currentProject = localStorage.getItem("selectedProjet");
+      
       // If selecting a different société, clear the project first
       if (selectedSociete && selectedSociete.id !== societe.id) {
+        console.log("Société changed, clearing selected project");
         localStorage.removeItem("selectedProjet");
       }
       
@@ -136,6 +140,11 @@ export function SocieteProvider({ children }) {
 
       setSelectedSociete(societe);
       localStorage.setItem("selectedSociete", JSON.stringify(societe));
+      
+      console.log("Previous project:", currentProject ? JSON.parse(currentProject).id : "none", 
+                 "Current project:", localStorage.getItem("selectedProjet") ? 
+                 JSON.parse(localStorage.getItem("selectedProjet")).id : "none");
+      
       return true;
     } catch (err) {
       toast.error("Erreur lors de la sélection de la société.");

@@ -23,6 +23,24 @@ export default function ProjetsDropDown() {
         }
     }, [isSelectorOpened, projets.length, loading, fetchProjets, hasFetchAttempted]);
 
+    // Attempt to restore project from localStorage on component mount
+    useEffect(() => {
+        if (!selectedProjet) {
+            const savedProject = localStorage.getItem('selectedProjet');
+            if (savedProject) {
+                try {
+                    const parsedProject = JSON.parse(savedProject);
+                    if (parsedProject && parsedProject.id) {
+                        console.log("ProjetsDropDown: Restoring project from localStorage", parsedProject.id);
+                        selectProjet(parsedProject);
+                    }
+                } catch (error) {
+                    console.error("Error parsing saved project in dropdown:", error);
+                }
+            }
+        }
+    }, [selectedProjet, selectProjet]);
+
     // Reset fetch tracking when dropdown closes
     useEffect(() => {
         if (!isSelectorOpened) {
@@ -56,16 +74,11 @@ export default function ProjetsDropDown() {
         
         setIsSubmitting(true);
         
-        // Display toast or notification here if needed
-        console.log("Changing project to:", projet.nom);
-        
         // Update localStorage before context update to ensure API calls use the new project
         localStorage.setItem("selectedProjet", JSON.stringify(projet));
         
         const success = await selectProjet(projet);
         setIsSubmitting(false);
-
-        // No need for additional dropdown closing logic here as it's already closed above
     };
 
     // Filter projets based on search input
