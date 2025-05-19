@@ -16,7 +16,7 @@ export default function MeetingCard({ meetings = [] }) {
       <div className="px-6 py-4 border-b">
         <div className="text-lg font-semibold">Calendrier des Réunions</div>
       </div>
-      
+
       <div className="px-6 py-4">
         <div className="space-y-6">
           {meetings.map((item, index) => (
@@ -24,20 +24,21 @@ export default function MeetingCard({ meetings = [] }) {
               {/* Remove the user icon */}
               <div className="flex-1">
                 <div className="font-medium mb-1">
-                  {item.visite.prospect.nom} {item.visite.prospect.prenom}
+                  {item.visite?.prospect?.nom ?? 'N/A'}{' '}
+                  {item.visite?.prospect?.prenom ?? ''}
                 </div>
                 <div className="flex items-center text-gray-500 text-sm mb-1">
                   {/* Remove the Calendar icon */}
                   <span>{item.date_relance || item.rdv}</span>
                 </div>
               </div>
-              
+
               <div className={`${colors[index % colors.length]} text-xs px-2 py-1 rounded-full`}>
                 {item.date_relance ? 'Relance' : 'RDV'}
               </div>
             </div>
           ))}
-          
+
           {meetings.length === 0 && (
             <div className="text-center py-4 text-gray-500">
               Aucune réunion prévue

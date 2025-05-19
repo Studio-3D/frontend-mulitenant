@@ -8,7 +8,7 @@ import Autocomplete from '@/components/Autocomplete';
 export default function FilterDialog({ onClose, onSubmit, initialValues, projetId, mode = 'filter' }) {
   const [fromDate, setFromDate] = useState(initialValues?.fromDate || '');
   const [toDate, setToDate] = useState(initialValues?.toDate || '');
-  const [commercial, setCommercial] = useState(null);
+  const [commercial, setCommercial] = useState(initialValues?.commercial || null);
   const [commercials, setCommercials] = useState([]);
   const [loadingCommercials, setLoadingCommercials] = useState(false);
 
@@ -54,17 +54,24 @@ export default function FilterDialog({ onClose, onSubmit, initialValues, projetI
                 user: user
               });
             }
-          });
-        }
-        
-        setCommercials(commercialsList);
-      } catch (error) {
-        console.error('Error fetching commercials:', error);
-      } finally {
-        setLoadingCommercials(false);
-      }
-    };
-    
+  const [error, setError] = useState(null);
+
+// In the try-catch block:
+  try {
+    // existing code
+  } catch (error) {
+    console.error('Error fetching commercials:', error);
+   setError('Unable to load commercials. Please try again later.');
+  } finally {
+    setLoadingCommercials(false);
+  }
+
+// Then in the render, add error display:
+  {error && (
+    <div className="text-red-500 mb-4">
+      {error}
+    </div>
+  )}
     fetchCommercials();
   }, [projetId]);
 
@@ -73,7 +80,7 @@ export default function FilterDialog({ onClose, onSubmit, initialValues, projetI
     onSubmit({
       fromDate,
       toDate,
-      commercial: commercial || { id: 'tous', name: 'Tous les Commerciaux' }
+      commercial: commercial || { id: 'tout', name: 'Tous les Commerciaux', prenom: '', tout: 1 }
     });
   };
 
