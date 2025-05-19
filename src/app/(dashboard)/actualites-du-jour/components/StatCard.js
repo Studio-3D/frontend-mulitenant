@@ -1,23 +1,17 @@
 import React from 'react';
-import { ChevronUp, ChevronDown } from 'lucide-react';
 
-export default function StatCard({ title, value, trend, trendUp = true, subtitle, icon, color = 'bg-blue-500' }) {
+export default function StatCard({ title, value, trend, trendUp = true, subtitle, color = 'bg-blue-500' }) {
   return (
     <div className="bg-white rounded-lg shadow p-6 h-full">
       <div className="flex justify-between items-start mb-6">
-        <div className={`${color} p-2 rounded-lg text-white`}>
-          {icon}
-        </div>
+        {/* Remove the icon container */}
+        <div className={`${color} p-2 rounded-lg text-white`}></div>
         
         <div className="flex items-center text-sm">
           <span className={trendUp ? 'text-green-600' : 'text-red-600'}>
             {trend}
           </span>
-          {trendUp ? (
-            <ChevronUp className="h-4 w-4 text-green-600" />
-          ) : (
-            <ChevronDown className="h-4 w-4 text-red-600" />
-          )}
+          {/* Remove the ChevronUp/ChevronDown icons */}
         </div>
       </div>
       

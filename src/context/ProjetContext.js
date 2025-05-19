@@ -4,12 +4,10 @@ import axios from 'axios';
 import { APIURL } from '@/configs/api';
 import { useSociete } from './SocieteContext';
 import { useAuth } from './AuthContext';
-import { usePathname, useRouter } from 'next/navigation'; // Import navigation hooks
+import { usePathname, useRouter } from 'next/navigation';
 
-// Create context
 const ProjetContext = createContext();
 
-// Context hook
 export const useProjet = () => {
   const context = useContext(ProjetContext);
   if (!context) {
@@ -18,7 +16,6 @@ export const useProjet = () => {
   return context;
 };
 
-// Provider component
 export function ProjetProvider({ children }) {
   const [projets, setProjets] = useState([]);
   const [selectedProjet, setSelectedProjet] = useState(null);
@@ -26,10 +23,41 @@ export function ProjetProvider({ children }) {
   const [error, setError] = useState(null);
   const { selectedSociete } = useSociete();
   const { user } = useAuth();
-  const pathname = usePathname(); // Get current URL path
-  const router = useRouter();  // Get router for navigation
+  const pathname = usePathname();
+  const router = useRouter();
+  const [initialized, setInitialized] = useState(false);
+  const [projetLoadAttempted, setProjetLoadAttempted] = useState(false);
 
-  // Fetch all projects for the selected société
+
+
+  useEffect(() => {
+  
+    try {
+      console.log("INITIAL MOUNT: Checking localStorage for selected project");
+      const savedProjetString = localStorage.getItem('selectedProjet');
+      
+      if (savedProjetString) {
+        try {
+          const parsedProjet = JSON.parse(savedProjetString);
+          if (parsedProjet && parsedProjet.id) {
+            console.log("INITIAL MOUNT: Found project in localStorage, ID:", parsedProjet.id);
+            setSelectedProjet(parsedProjet);
+          }
+        } catch (err) {
+          console.error('Error parsing saved projet during initialization:', err);
+        
+        }
+      } else {
+        console.log("INITIAL MOUNT: No project found in localStorage");
+      }
+    } catch (err) {
+      console.error("Error during initial project load:", err);
+    } finally {
+      setProjetLoadAttempted(true);
+    }
+  }, []);
+
+
   const fetchProjets = useCallback(async () => {
     if (!selectedSociete) {
       console.log('No société selected, cannot fetch projects');
@@ -48,15 +76,26 @@ export function ProjetProvider({ children }) {
       const fetchedProjets = response.data.projets || [];
       setProjets(fetchedProjets);
       
-      // Restore selected project from localStorage if exists
-      const savedProjet = localStorage.getItem('selectedProjet');
-      if (savedProjet) {
-        try {
-          const parsedProjet = JSON.parse(savedProjet);
-          setSelectedProjet(parsedProjet);
-        } catch (err) {
-          console.error('Error parsing saved projet:', err);
-          localStorage.removeItem('selectedProjet');
+    
+      if (!selectedProjet) {
+        const savedProjet = localStorage.getItem('selectedProjet');
+        if (savedProjet) {
+          try {
+            const parsedProjet = JSON.parse(savedProjet);
+            if (parsedProjet && parsedProjet.id) {
+            
+              const projectExists = fetchedProjets.some(p => p.id === parsedProjet.id);
+              
+              if (projectExists) {
+                console.log("FETCH: Restoring project from localStorage", parsedProjet.id);
+                setSelectedProjet(parsedProjet);
+              } else {
+                console.log("FETCH: Saved project not found in current projects list");
+              }
+            }
+          } catch (err) {
+            console.error('Error parsing saved projet during fetch:', err);
+          }
         }
       }
     } catch (err) {
@@ -64,47 +103,54 @@ export function ProjetProvider({ children }) {
       setError('Failed to load projets');
     } finally {
       setLoading(false);
+      setInitialized(true);
     }
-  }, [selectedSociete]);
+  }, [selectedSociete, selectedProjet]);
 
-  // Effect to fetch projects when société changes
+
   useEffect(() => {
-    if (selectedSociete) {
-      // Reset selected project when société changes
-      clearSelectedProjet();
+    if (selectedSociete && projetLoadAttempted) {
+    
+      const previousSocieteId = localStorage.getItem('previousSocieteId');
       
-      // Fetch projects for the new société
+    
+      if (previousSocieteId && previousSocieteId !== selectedSociete.id.toString()) {
+        console.log("Société changed from", previousSocieteId, "to", selectedSociete.id, "clearing selected project");
+        clearSelectedProjet();
+      }
+      
+    
+      localStorage.setItem('previousSocieteId', selectedSociete.id.toString());
+      
+    
       fetchProjets();
-    } else {
-      // Clear projects when no société is selected
-      setProjets([]);
-      setSelectedProjet(null);
     }
-  }, [selectedSociete, fetchProjets]);
+  }, [selectedSociete, fetchProjets, projetLoadAttempted]);
 
-  // Clear selected project when user logs out
+
   useEffect(() => {
-    if (!user) {
+    if (!user && initialized) {
       clearSelectedProjet();
     }
-  }, [user]);
+  }, [user, initialized]);
 
-  // Select a project
-  const selectProjet = (projet) => {
+
+  const selectProjet = useCallback((projet) => {
     if (!projet || !projet.id) {
       console.error("Attempting to select invalid project:", projet);
       return false;
     }
     
-    console.log("Setting selected project in context:", projet.id);
-    setSelectedProjet(projet);
+    console.log("Explicitly selecting project:", projet.id);
     
-    // Store in localStorage for persistence
+  
     localStorage.setItem('selectedProjet', JSON.stringify(projet));
     
-    // Check if we're on a project detail page and update the URL if needed
+  
+    setSelectedProjet(projet);
+    
+  
     if (pathname) {
-      // Match the pattern /Projets/{id} to detect project detail pages
       const projectMatch = pathname.match(/^\/Projets\/(\d+)(\/.*)?$/);
       
       if (projectMatch) {
@@ -112,43 +158,41 @@ export function ProjetProvider({ children }) {
         const trailingPath = projectMatch[2] || '';
         
         if (currentProjectId !== projet.id.toString()) {
-          // Construct new URL with the new project ID but keep any trailing path
           const newPath = `/Projets/${projet.id}${trailingPath}`;
-          
-          // Use the router to update the URL without a full page refresh
           router.push(newPath, {scroll: false});
-          
-          console.log(`Updated URL from project ${currentProjectId} to ${projet.id}`);
         }
       }
     }
     
     return true;
-  };
+  }, [pathname, router]);
 
-  // Effect to load selected project from localStorage on initialization
-  useEffect(() => {
-    const savedProjet = localStorage.getItem('selectedProjet');
-    if (savedProjet) {
-      try {
-        const parsedProjet = JSON.parse(savedProjet);
-        if (parsedProjet && parsedProjet.id) {
-          console.log("Loaded project from localStorage:", parsedProjet.id);
-          setSelectedProjet(parsedProjet);
-        }
-      } catch (err) {
-        console.error('Error parsing saved projet:', err);
-        localStorage.removeItem('selectedProjet');
-      }
-    }
-  }, []);
 
-  // Clear selected project
-  const clearSelectedProjet = () => {
+  const clearSelectedProjet = useCallback(() => {
+    console.log("Explicitly clearing selected project");
     setSelectedProjet(null);
     localStorage.removeItem('selectedProjet');
-    console.log("Selected project cleared");
-  };
+  }, []);
+
+
+
+  useEffect(() => {
+  
+    if (initialized && projetLoadAttempted && !selectedProjet) {
+      const savedProjet = localStorage.getItem('selectedProjet');
+      if (savedProjet) {
+        try {
+          const parsedProjet = JSON.parse(savedProjet);
+          if (parsedProjet && parsedProjet.id) {
+            console.log("POST-INIT: Restoring project from localStorage as fallback", parsedProjet.id);
+            setSelectedProjet(parsedProjet);
+          }
+        } catch (err) {
+          console.error('Error parsing saved projet during post-init:', err);
+        }
+      }
+    }
+  }, [initialized, projetLoadAttempted, selectedProjet]);
 
   return (
     <ProjetContext.Provider
