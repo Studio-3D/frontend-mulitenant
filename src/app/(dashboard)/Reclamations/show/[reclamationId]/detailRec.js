@@ -211,6 +211,12 @@ export default function ReclamationFullPage({ reclamationId }) {
             </Typography>
             <Typography variant="body1">{Details.code_reservation || "-"}</Typography>
           </Box>
+          <Box>
+            <Typography variant="body1" sx={{ fontWeight: "bold" }}>
+              Service :
+            </Typography>
+            <Typography variant="body1">{Details.nom_service || "-"}</Typography>
+          </Box>
 
          
 
@@ -270,6 +276,12 @@ export default function ReclamationFullPage({ reclamationId }) {
               <Calendar color="#009FFF" size={24} />
               <Typography variant="body1" sx={{ fontWeight: 600 }}>
                 <b>Date Traitement :</b> {formatDate(Details.date_traitement)}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Calendar color="#009FFF" size={24} />
+              <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                <b>Date Fin Traitement :</b> {formatDate(Details.date_fin_traitement)}
               </Typography>
             </Box>
 

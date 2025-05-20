@@ -41,7 +41,6 @@ const RemiseCleForm = ({ id = null }) => {
   const [loadingData, setLoadingData] = useState(false);
   const { user } = useAuth();
     const accessToken = localStorage.getItem('accessToken');
- ///const [selectedProjet] = useState({ id: '1', description: 'Salle de Bain' });
   const [formData, setFormData] = useState(null);
   const [existingFileUrl, setExistingFileUrl] = useState(null);
 
@@ -67,6 +66,24 @@ const RemiseCleForm = ({ id = null }) => {
   });
 
   const isEditing = Boolean(id);
+
+  const [newFile, setNewFile] = useState(null);
+const [newFileUrl, setNewFileUrl] = useState(null);
+
+const handleReplaceFile = (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    const tempUrl = URL.createObjectURL(file);
+    setNewFile(file);         // pour envoi backend
+    setNewFileUrl(tempUrl);   // pour affichage immédiat
+    setExistingFileUrl(null); // efface image backend si remplacement
+  }
+};
+
+const handleDeleteFile = () => {
+  setExistingFileUrl(null); // ou déclenche suppression côté backend
+  // Optionnel : setSelectedFile(null);
+};
 
   // Fonction utilitaire pour afficher le nom complet du bien
   
@@ -244,19 +261,20 @@ const fetchbiens = async () => {
           </div>
         </div>
         <div className="p-6 mt-4 bg-white shadow-md rounded-md">
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
- 
-              <Input
-                label="Date Remise :"
-                name="date_remise"
-                type="date"
-                value={watch("date_remise")}
-                onChange={(e) => setValue("date_remise", e.target.value)}
-                required
-                error={errors?.date_remise?.message || backendErrors?.date_remise?.[0]}
-              />
-                <InputSelect
+          <form onSubmit={handleSubmit(onSubmit)} className="p-6 bg-white rounded-xl space-y-6">
+  {/* Ligne 1 : Date, Bien, Responsable */}
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <Input
+      label="Date Remise :"
+      name="date_remise"
+      type="date"
+      value={watch("date_remise")}
+      onChange={(e) => setValue("date_remise", e.target.value)}
+      required
+      error={errors?.date_remise?.message || backendErrors?.date_remise?.[0]}
+    />
+
+    <InputSelect
                   label="Bien"
                   name="bien_id"
                   value={watch('bien_id')}
@@ -277,7 +295,7 @@ const fetchbiens = async () => {
               {user?.role <= 2 && (
 
                 <InputSelect
-                  label="Commercial"
+                  label="Responsable"
                   name="user_id_remise"
                   value={watch('user_id_remise') || null}
                   onChange={(val) => {
@@ -293,78 +311,89 @@ const fetchbiens = async () => {
                   error={errors?.user_id_remise}
                   required
                 />
+    )}
+  </div>
+
+  {/* Séparateur */}
+  <hr className="border-gray-300 my-4" />
+
+  {/* Ligne 2 : Fichier + Aperçu */}
+   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-start">
+    {!isEditing &&<Input
+      label="Pièce Jointe :"
+      name="fichier"
+      type="file"
+      accept="image/*"
+      onChange={handleFileChange}
+      onClick={(e) => (e.target.value = null)} // permet de re-sélectionner le même fichier
+      error={errors?.fichier?.message || backendErrors?.fichier?.[0]}
+      required
+    /> }
+
+{(existingFileUrl || newFileUrl) && (
+  <div className="relative w-28 h-28 mt-2 group">
+    <img
+      src={
+        newFileUrl
+          ? newFileUrl
+          : `${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/remise_cles/${existingFileUrl}`
+      }
+      alt="Aperçu pièce jointe"
+      className="w-full h-full object-cover rounded shadow cursor-pointer hover:scale-105 transition-transform"
+      onClick={() =>
+        window.open(
+          newFileUrl
+            ? newFileUrl
+            : `${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/remise_cles/${existingFileUrl}`,
+          '_blank'
+        )
+      }
+      title="Cliquer pour agrandir"
+    />
+
+    <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      {/* Remplacer */}
+      <label className="bg-white p-1 rounded-full shadow hover:bg-gray-100 cursor-pointer" title="Remplacer">
+        <input
+          type="file"
+          className="hidden"
+          accept="image/*"
+          onChange={handleReplaceFile}
+        />
+        ✏️
+      </label>
+
+      {/* Supprimer */}
+      {/* <button
+        type="button"
+        className="bg-white p-1 rounded-full shadow hover:bg-gray-100"
+        onClick={() => {
+          setExistingFileUrl(null);
+          setNewFile(null);
+          setNewFileUrl(null);
+        }}
+        title="Supprimer"
+      >
+        🗑️
+      </button> */}
+    </div>
+  </div>
+)}
 
 
-              )}
-          
-                      
-            </div>
+  </div>
 
-      <div className="w-full sm:col-span-2 md:col-span-4 mt-4 mb-2 border-t border-gray-300" />
-      <div className="mt-6">
-        <Grid container spacing={2} alignItems="flex-start">
-          <Grid item xs={12} sm={4}>
-                <Input
-                  label="Pièce Jointe :"
-                  name="fichier"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  onClick={(e) => (e.target.value = null)} // permet de re-sélectionner le même fichier
-                  error={errors?.fichier?.message || backendErrors?.fichier?.[0]}
-                />
-          </Grid>
-    <Grid item xs={12} sm={4}>
+  {/* Boutons */}
+  <div className="flex justify-center gap-4 mt-6">
+    <Button type="button" onClick={() => router.back()} >
+      Annuler
+    </Button>
+    <Button type="submit" loading={loading} disabled={loading}>
+      Enregistrer
+    </Button>
+  </div>
+</form>
 
-      {existingFileUrl && (
-        <div style={{ marginTop: 8 }}>
-          <p style={{ marginBottom: 4, fontSize: 14, color: '#555' }}>
-            Pièce jointe actuelle :
-          </p>
-          <img
-            src={`${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/remise_cles/${existingFileUrl}`}
-            alt="Aperçu pièce jointe"
-            style={{
-              width: 100,
-              height: 100,
-              objectFit: 'cover',
-              borderRadius: 6,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-              cursor: 'pointer',
-            }}
-            onClick={() =>
-              window.open(
-                `${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/remise_cles/${existingFileUrl}`,
-                '_blank'
-              )
-            }
-            title="Cliquer pour agrandir"
-          />
-        </div>
-      )}
-      </Grid>
-      </Grid>
-      </div>
-
-
-
-
-
-    
-
-       
-              
-            
-            <div className="flex justify-center gap-4 items-center mt-6 mb-6">
-              <Button type="button" onClick={() => router.back()}>
-                Annuler
-              </Button>
-  
-              <Button type="submit" >
-                Enregistrer
-              </Button>
-            </div>
-          </form>
           
         </div>
       </>

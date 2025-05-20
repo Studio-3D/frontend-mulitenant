@@ -182,7 +182,7 @@ const openTraitement = (row) => {
     key: "date_reclamation",
     label: "Date Réclamation",
     sortable: true,
-    render: row => row.created_at ? format(new Date(row.created_at), 'dd/MM/yyyy H:m') : ''
+    render: row => row.created_at ? format(new Date(row.created_at), 'dd/MM/yyyy') : ''
   },
   {
     key: "client",
@@ -196,6 +196,8 @@ const openTraitement = (row) => {
           textDecoration: 'none',
           color:  'rgb(102 104 128)'
         }}
+        className="text-[#666880] inline-block min-w-[200px]" // min-w élargit la colonne
+
       >
         <strong>{row.client_nom + ' ' + row.client_prenom}</strong>
       </Link>
@@ -220,30 +222,42 @@ const openTraitement = (row) => {
   },
  
   {
-    key: "objet",
-    label: "Objet",
+    key: "nom_service",
+    label: "Service",
     sortable: true,
-    render: row => row.objet
+    render: row => row.nom_service
   },
   
   
   {
-    key: "etat",
-    label: "Etat",
-    sortable: true,
-    render: row => {
-      if (row.etat === 3) {
-        return <span className='text-red-500'>Non traité</span>;
-      } else if (row.etat === 2) {
-        return <span className='text-green-500'>Traité</span>;
-      } else if (row.etat === 1) {
-        return <span className='text-yellow-500'>En cours</span>;
-      } else if (row.etat === 0) {
-        return <span className='text-blue-500'>En Attente</span>;
-      }
-      return null;
-    } 
-  },
+  key: 'etat',
+  label: 'Statut',
+  render: (row) => {
+    const etatStyles = {
+      0: "bg-blue-200 text-blue-800",     // En Attente
+      1: "bg-yellow-200 text-yellow-800", // En cours
+      2: "bg-green-200 text-green-800",   // Traité
+      3: "bg-red-200 text-red-800",       // Non traité
+    };
+
+    const etatLabels = {
+      0: "En Attente",
+      1: "En cours",
+      2: "Traité",
+      3: "Non traité",
+    };
+
+    return (
+      <span
+        className={`px-2 py-1 rounded text-sm font-semibold ${etatStyles[row.etat] || "bg-gray-200 text-gray-800"}`}
+      >
+        {etatLabels[row.etat] || "Inconnu"}
+      </span>
+    );
+  }
+},
+
+
   
   
   {
@@ -251,7 +265,8 @@ const openTraitement = (row) => {
     label: "Actions",
     render: row => (
       <>
-      <div className="flex gap-3 items-center">
+      <div className="text-[#666880] inline-block min-w-[80px]" // min-w élargit la colonne
+>
 
       <Eye
         className="w-4 h-4 text-blue-500 hover:text-yellow-700 cursor-pointer"
@@ -300,7 +315,7 @@ const formatData = () => {
     user_id_traite: rec.user_id_traite,
     users_traite_nom: rec.users_traite_nom,
     users_traite_prenom: rec.users_traite_prenom,
-    objet: rec.objet,
+    nom_service: rec.nom_service,
     message: rec.message,
     piece_jointe: rec.piece_jointe,
     etat: rec.etat,
@@ -315,7 +330,7 @@ const data_to_export = () => {
   return reclamations.map((rec) => ({
     "ID": rec.id,
     "Date Réclamation": rec.created_at
-      ? format(new Date(rec.created_at), 'dd/MM/yyyy H:mm')
+      ? format(new Date(rec.created_at), 'dd/MM/yyyy')
       : '',
     "ID Client": rec.client_id,
     "Nom Client": rec.client_nom || '',

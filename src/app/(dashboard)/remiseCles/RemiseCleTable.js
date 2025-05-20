@@ -5,8 +5,6 @@ import Modal from "@/components/Modal";
 import Table from "@/components/Table";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { FaEdit } from "react-icons/fa";
-import { RiDeleteBin6Line, RiEyeLine } from "react-icons/ri";
 import axios from "axios";
 import Select from 'react-select';
 import { APIURL, ENDPOINTS, RESOURCE_URL } from "@/configs/api";
@@ -19,8 +17,9 @@ import { Box, Typography } from "@mui/material";
 import { Pencil, Trash2, Eye, Check, Wrench, File } from "lucide-react";
 import PieceJointeViewer from "@/components/PieceJointeViewer";
 import { format } from "date-fns";
+import { useProjet } from "@/context/ProjetContext";
 
-const RemiseCleTable = (serviceId) => {
+const RemiseCleTable = ({}) => {
   const [remisecles, setRemiseCles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -34,6 +33,11 @@ const RemiseCleTable = (serviceId) => {
   const accessToken = localStorage.getItem("accessToken");
   const { user, token } = useAuth();
   const accesstoken = token || localStorage.getItem("accessToken");
+  const [biens, setBiens] = useState([]);
+  const [cc, setCC] = useState([]);
+    const { selectedProjet } = useProjet();
+  
+  
   const router = useRouter();
   const [filters, setFilters] = useState({
     bien: "",
@@ -50,7 +54,50 @@ const RemiseCleTable = (serviceId) => {
     searchFields: ["nom"],
   };
 
- 
+ const fetch_cc = async () => {
+  try {
+    if (!accessToken) {
+      console.warn("Pas de token d'accès");
+      return;
+    }
+    const response = await axios.get(
+      `${APIURL.ROOTV1}/commerciaux/${selectedProjet?.id}`,
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }
+    );
+      const { data } = response
+      setCC(data.data)  } 
+      catch (error) {
+  }
+};
+
+const fetchbiens = async () => {
+  try {
+    if (!accessToken) {
+      console.warn("Pas de token d'accès");
+      return;
+    }
+    setLoading(true);
+    const response = await axios.get(
+      `${APIURL.ROOTV1}/getBiens_Vendu_ByProjet_Concat/${selectedProjet?.id}/BiensVendu`,
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }
+    );
+    setBiens(response.data.biens || []);
+  } catch (error) {
+    console.error("Erreur fetchbiens:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+
+useEffect(() => {
+
+    fetch_cc()
+    fetchbiens()
+  }, []);
 
     function handleShow(Id) {
       router.push(`/reservations/show/${Id}`);
@@ -124,19 +171,21 @@ const RemiseCleTable = (serviceId) => {
     bien: cp.bien,
     fichier: cp.fichier,
     id_res: cp.id_res,
+    code_reservation: cp.code_reservation,
   }));
 };
 
   const columns = [
   {
       key: 'date_remise',
-      label: 'date Remise',
+      label: 'Date Remise',
       render: (row) => {
         const date = new Date(row.date_remise);
         const formattedDate = date.toLocaleDateString('fr-FR'); // jj/mm/aaaa
-        return <strong>{formattedDate}</strong>; // en gras
+        return formattedDate; // en gras
       },
-    },     {
+    },     
+    {
     key: "responsable",
     label: "Responsable",
     render: (row) =>
@@ -144,12 +193,27 @@ const RemiseCleTable = (serviceId) => {
         <Link
           target="_blank"
           href={`/Utilisateurs/afficher-utilisateur/${row.user_id_remis}`}
-          style={{ textDecoration: 'none', color: 'rgb(102 104 128)' }}
+          style={{ textDecoration: 'underline', color: 'rgb(102 104 128)' }}
         >
           <strong>{row.user_remis?.name} {row.user_remis?.prenom}</strong>
         </Link>
       ) : null
   },
+  {
+      key: "code_reservation",
+      label: "Code reservation",
+      sortable: true,
+      render: row => (
+        <Link
+          target='_blank'
+          href={'/reservations/show/' + row.id_res}
+          style={{ textDecoration: 'underline', color: 'rgb(102 104 128)' }}
+
+        >
+          <strong>{row.code_reservation}</strong>
+        </Link>
+      )
+    },
   {
     key: "bien",
     label: "Bien",
@@ -157,39 +221,24 @@ const RemiseCleTable = (serviceId) => {
       <Link
         target="_blank"
         href={`/biens/show/${row.bien_id}`}
-        style={{ textDecoration: 'none', color: 'rgb(102 104 128)' }}
+        style={{ textDecoration: 'underline', color: 'rgb(102 104 128)' }}
       >
         <strong>{NomBienComplet(row.bien)}</strong>
       </Link>
     )
   },
-  {
-    key: "piece_jointe",
-    label: "Pièce Jointe",
-    render: (row) => (
-  row.fichier ? (
-    <Box
-      component="img"
-      src={`${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/remise_cles/${row.fichier}`}
-      alt="Pièce jointe"
-      onClick={() => handleFileClick(row.fichier)}
-      sx={{
-        width: 40,
-        height: 40,
-        objectFit: 'cover',
-        cursor: 'pointer',
-        boxShadow: 2,
-        transition: 'transform 0.2s ease-in-out',
-        '&:hover': {
-          transform: 'scale(1.05)',
-        },
-      }}
-    />
-  ) : null
-)
-
-
-  },
+  { 
+      key: 'fichier', 
+      label: 'Pièce Jointe',
+      render: (row) => row.fichier ? (
+        <span 
+          className=" hover:underline cursor-pointer"
+          onClick={() => handleFileClick(row.fichier)}
+        >
+          {row.fichier}
+        </span>
+      ) : '-'
+    },
   {
     key: "actions",
     label: "Actions",
@@ -209,7 +258,8 @@ const RemiseCleTable = (serviceId) => {
               setSelectedId(row.id);
               setShowDeleteModal(true);
             }}
-          />      </div>
+          />      
+          </div>
     )
   }
 ];
@@ -244,7 +294,7 @@ const columns_export = [
         onFilterToggle={handleFilterToggle}
         data={formatData()}
         filterComponent={
-          <div className="space-y-4 p-4 rounded-lg shadow-md">
+          <div className="space-y-4 p-4 rounded-lg">
             <div
               className="grid gap-3"
               style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}
@@ -258,20 +308,53 @@ const columns_export = [
                 onChange={(e) => handleFilterChange("date_remise", e.target.value)}
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />  
-              <Input
-                type="text"
-                placeholder="Bien..."
-                value={tempFilters.bien}
-                onChange={(e) => handleFilterChange("bien", e.target.value)}
-                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-              />
-              <Input
-                type="text"
-                placeholder="CC..."
-                value={tempFilters.cc}
-                onChange={(e) => handleFilterChange("cc", e.target.value)}
-                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-              />
+              
+                <Select
+                  isClearable
+                  value={
+                  cc
+                  .map(cc => ({
+                  value: cc.user.id,
+                  label: cc.user.name+" "+cc.user.prenom,
+                  id: cc.user.id
+                  }))
+                  .find(option => option.value === tempFilters.cc) || null
+                  }
+                  onChange={selected =>
+                  handleFilterChange("cc", selected?.value || null)
+                  }
+                  options={cc.map(cc => ({
+                  value: cc.user.id,
+                  label: cc.user.name+" "+cc.user.prenom,
+                  id: cc.user.id
+                  }))}
+                  isLoading={loading}
+                  placeholder="Choisir un comercial..."
+                  className="text-sm"
+                />
+                <Select
+                  isClearable
+                  value={
+                  biens
+                  .map(bien => ({
+                  value: bien.id,
+                  label: bien.propriete_dite_bien,
+                  id: bien.id
+                  }))
+                  .find(option => option.value === tempFilters.bien) || null
+                  }
+                  onChange={selected =>
+                  handleFilterChange("bien", selected?.value || null)
+                  }
+                  options={biens.map(bien => ({
+                  value: bien.id,
+                  label: bien.propriete_dite_bien,
+                  id: bien.id
+                  }))}
+                  isLoading={loading}
+                  placeholder="Choisir un bien..."
+                  className="text-sm"
+                />              
         
               
              
