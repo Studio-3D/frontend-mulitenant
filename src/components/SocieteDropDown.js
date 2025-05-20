@@ -1,12 +1,12 @@
 'use client';
-import { BiChevronDown } from "react-icons/bi";
-import { AiOutlineSearch } from "react-icons/ai";
+import { ChevronDown } from "lucide-react";
+import { Search } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useSociete } from "../context/SocieteContext";
 import { useAuth } from "../context/AuthContext";
 import Link from "next/link";
 import classNames from "classnames";
-import { FaRegEye } from 'react-icons/fa';
+import { Eye } from 'lucide-react';
 
 export default function SocieteDropDown() {
   const { selectedSociete, societes, selectSociete, loading } = useSociete();
@@ -58,7 +58,7 @@ export default function SocieteDropDown() {
               ? selectedSociete.nom || selectedSociete.raison_sociale 
               : "Sélectionner une société"}
         </span>
-        <BiChevronDown 
+        <ChevronDown 
           size={20} 
           className={classNames({ 'rotate-180': isSelectorOpened })} 
         />
@@ -71,7 +71,7 @@ export default function SocieteDropDown() {
         {isSelectorOpened && (
           <div className="sticky top-0 bg-white py-4 px-2">
             <div className="flex items-center gap-2 p-2 bg-white border rounded-lg shadow-sm">
-              <AiOutlineSearch size={18} />
+              <Search size={18} />
               <input 
                 type="text" 
                 value={inputValue} 
@@ -119,7 +119,7 @@ export default function SocieteDropDown() {
             >
               <div className="flex items-center gap-2">
                 <span>Gérer les sociétés</span>
-                <FaRegEye className="w-4 h-4" />
+                <Eye className="w-4 h-4" />
               </div>
             </Link>
           </li>

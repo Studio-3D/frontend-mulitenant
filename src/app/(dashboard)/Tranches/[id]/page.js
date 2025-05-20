@@ -5,13 +5,13 @@ import axios from "axios";
 import { APIURL } from "@/configs/api";
 import { useAuth } from "@/context/AuthContext";
 import { 
-  MdOutlineViewInAr, 
-  MdApartment, 
-  MdHome,
-  MdEdit,
-  MdDelete,
-  MdArrowBack
-} from "react-icons/md";
+  Box, 
+  Building, 
+  Home,
+  Edit,
+  Trash,
+  ArrowLeft
+} from "lucide-react";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import Link from "next/link";
@@ -270,9 +270,9 @@ export default function TrancheDetailsPage() {
 
   // Define tabs for this view
   const tabs = [
-    { id: "blocs", label: "Blocs", icon: <MdOutlineViewInAr className="w-5 h-5"/> },
-    { id: "immeubles", label: "Immeubles", icon: <MdApartment className="w-5 h-5"/> },
-    { id: "biens", label: "Biens", icon: <MdHome className="w-5 h-5"/> }
+    { id: "blocs", label: "Blocs", icon: <Box className="w-5 h-5"/> },
+    { id: "immeubles", label: "Immeubles", icon: <Building className="w-5 h-5"/> },
+    { id: "biens", label: "Biens", icon: <Home className="w-5 h-5"/> }
   ];
 
   return (
@@ -283,7 +283,7 @@ export default function TrancheDetailsPage() {
           href={tranche.projet_id ? `/Projets/${tranche.projet_id}?tab=tranches` : "/Projets"}
           className="inline-flex items-center text-[#009FFF] hover:text-blue-800"
         >
-          <MdArrowBack className="mr-1" /> Retour au projet
+          <ArrowLeft className="mr-1" /> Retour au projet
         </Link>
       </div>
       
@@ -310,7 +310,7 @@ export default function TrancheDetailsPage() {
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div className="p-2">
                   <div className="flex flex-col items-center">
-                    <MdOutlineViewInAr className="w-6 h-6 text-orange-500 mb-1" />
+                    <Box className="w-6 h-6 text-orange-500 mb-1" />
                     <span className="text-xl font-medium">
                       {countsLoading ? "0" : counts.blocs}
                     </span>
@@ -320,7 +320,7 @@ export default function TrancheDetailsPage() {
                 
                 <div className="p-2">
                   <div className="flex flex-col items-center">
-                    <MdApartment className="w-6 h-6 text-red-500 mb-1" />
+                    <Building className="w-6 h-6 text-red-500 mb-1" />
                     <span className="text-xl font-medium">
                       {countsLoading ? "0" : counts.immeubles}
                     </span>
@@ -330,7 +330,7 @@ export default function TrancheDetailsPage() {
                 
                 <div className="p-2">
                   <div className="flex flex-col items-center">
-                    <MdHome className="w-6 h-6 text-blue-500 mb-1" />
+                    <Home className="w-6 h-6 text-blue-500 mb-1" />
                     <span className="text-xl font-medium">
                       {countsLoading ? "0" : counts.biens}
                     </span>
@@ -389,7 +389,7 @@ export default function TrancheDetailsPage() {
                     href={`/Tranches/${id}/modifier`}
                     className="flex-1 flex items-center justify-center gap-2 py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
                   >
-                    <MdEdit className="w-5 h-5" />
+                    <Edit className="w-5 h-5" />
                     <span>Modifier</span>
                   </Link>
                   
@@ -398,7 +398,7 @@ export default function TrancheDetailsPage() {
                     disabled={confirming}
                     className="flex-1 flex items-center justify-center gap-2 py-2 px-4 bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors disabled:bg-red-300"
                   >
-                    <MdDelete className="w-5 h-5" />
+                    <Trash className="w-5 h-5" />
                     <span>Supprimer</span>
                   </button>
                 </div>

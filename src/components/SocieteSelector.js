@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSociete } from "../context/SocieteContext";
-import { FaBuilding } from "react-icons/fa";
+import { Building } from "lucide-react";
 
 export default function SocieteSelector({ returnPath = "/" }) {
   const { societes, selectSociete, loading } = useSociete();
@@ -48,7 +48,7 @@ export default function SocieteSelector({ returnPath = "/" }) {
         </label>
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <FaBuilding className="h-5 w-5 text-gray-400" />
+            <Building className="h-5 w-5 text-gray-400" />
           </div>
           <select
             id="societe"

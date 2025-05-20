@@ -5,7 +5,7 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { RiEditLine } from "react-icons/ri";
+import { Pencil } from "lucide-react";
 import Input from "../../../../components/Input";
 import { APIURL } from '../../../../configs/api';
 import { useSociete } from "../../../../context/SocieteContext"; 
@@ -111,7 +111,7 @@ const Page = () => {
               className="w-full h-full rounded-full object-cover border-8 border-gray-100 shadow-md"
             />
             <div className="absolute top-1 right-1 bg-white p-1 rounded-full shadow-md">
-              <RiEditLine className="text-gray-600 text-lg" />
+              <Pencil className="text-gray-600 w-5 h-5" />
             </div>
           </div>
   

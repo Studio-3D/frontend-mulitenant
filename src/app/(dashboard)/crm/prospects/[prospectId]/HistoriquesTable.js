@@ -6,7 +6,7 @@ import { useAuth } from '../../../../../context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { fetchData_table_by_id } from '../../../../../../src/configs/api-utils';
 import format from 'date-fns/format';
-import { FaRegEye } from 'react-icons/fa';
+import { Eye } from 'lucide-react';
 
 import { Statuts_Prospect } from '../../../../../../src/configs/enum';
 
@@ -149,14 +149,14 @@ const HistoriquesTable = (id) => {
       render: (row) => (
         <div className="flex gap-3 items-center">
           {row.visite_id != null && (
-            <FaRegEye
+            <Eye
               className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
               title="Voir Visite"
               onClick={() => handleShow(row.visite_id)}
             />
           )}
           {row.appel_id != null && (
-            <FaRegEye
+            <Eye
               className="w-4 h-4 text-green-500 hover:text-green-700 cursor-pointer"
               title="Voir Visite"
               onClick={() => handleShowAppel(row.appel_id)}

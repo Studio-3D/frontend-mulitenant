@@ -1,5 +1,5 @@
 'use client';
-import { IoAlertCircleOutline } from "react-icons/io5";
+import { AlertCircle } from "lucide-react";
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { APIURL } from '../../../configs/api';
@@ -36,7 +36,7 @@ export default function DeleteSociete({ societeId, accessToken, onClose }) {
 
   return (
     <div className="w-[500px] p-4">
-      <IoAlertCircleOutline className="text-[#FF4E4E] text-6xl mx-auto mt-2 mb-4" />
+      <AlertCircle className="text-[#FF4E4E] text-6xl mx-auto mt-2 mb-4" />
       <h2 className="text-xl font-semibold text-center">Supprimer Société</h2>
       <p className="text-center text-[#878484] mt-2">
         Êtes-vous sûr de vouloir supprimer cette société ?

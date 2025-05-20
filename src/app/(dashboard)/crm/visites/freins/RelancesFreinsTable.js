@@ -2,9 +2,10 @@
 
 import React, { useEffect, useState } from 'react';
 import Table from '@/components/Table';
-import { FaRegEye, FaDownload, FaEdit } from 'react-icons/fa';
+import { Eye, Pencil, Download } from 'lucide-react';
 
 import { useAuth } from '../../../../../context/AuthContext';
+import { useProjet } from '../../../../../context/ProjetContext';
 import { useRouter } from 'next/navigation';
 import { fetchData_table_by_projet } from '../../../../../../src/configs/api-utils';
 import { format } from 'date-fns';
@@ -21,6 +22,7 @@ const RelancesFreinsTable = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const { token } = useAuth();
+  const { selectedProjet } = useProjet();
   const accesstoken = token || localStorage.getItem('accessToken');
 
   const router = useRouter();
@@ -63,7 +65,7 @@ const RelancesFreinsTable = () => {
       setData,
       setTotalRows
     );
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters]);
+  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters, selectedProjet]);
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
@@ -131,12 +133,12 @@ const RelancesFreinsTable = () => {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <FaRegEye
+          <Eye
             className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
             title="Voir détails"
             onClick={() => handleShow(row.frein_id_origin)}
           />
-          <FaEdit
+          <Pencil
             className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
             title="Traiter les Biens Disponibles"
             onClick={() => handle_Bien(row.id, row.nomComplet)}

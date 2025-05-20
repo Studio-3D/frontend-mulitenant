@@ -15,6 +15,7 @@ const TextField = ({
   backendErrors,
   width = 'w-full',
   height = 'h-[38px]',
+
   min = null,
   max = null,
   accept = null, // Add accept prop
@@ -22,6 +23,7 @@ const TextField = ({
   return (
     <div className="mb-2">
       <label htmlFor={name} className="block text-[15px] font-medium text-gray-700">
+
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
@@ -75,6 +77,7 @@ const TextField = ({
               name={name}
               type={type}
               className={`block ${width} ${height} px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none hover:border-gray-500 focus:border-gray-500 ${
+
                 disabled ? 'bg-gray-100 cursor-not-allowed' : ''
               } ${errors[name] || backendErrors[name] ? 'border-red-500' : ''}`}
               required={required}

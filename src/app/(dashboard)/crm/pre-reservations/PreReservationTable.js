@@ -2,9 +2,10 @@
 
 import React, { useEffect, useState } from 'react';
 import Table from '@/components/Table';
-import { FaRegEye, FaDownload, FaEdit } from 'react-icons/fa';
+import { Eye, Download } from 'lucide-react';
 
 import { useAuth } from '../../../../context/AuthContext';
+import { useProjet } from '../../../../context/ProjetContext';
 import { useRouter } from 'next/navigation';
 import { fetchData_table_by_projet } from '../../../../../src/configs/api-utils';
 import Link from 'next/link';
@@ -45,6 +46,7 @@ const PreReservationTable = () => {
   };
 
   const { token } = useAuth();
+  const { selectedProjet } = useProjet();
   const accesstoken = token || localStorage.getItem('accessToken');
 
   const router = useRouter();
@@ -71,7 +73,7 @@ const PreReservationTable = () => {
       setData,
       setTotalRows
     );
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters]);
+  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters, selectedProjet]);
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
@@ -204,7 +206,7 @@ const PreReservationTable = () => {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <FaRegEye
+          <Eye
             className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
             title="Voir détails"
             onClick={() => handleShow(row)}
@@ -243,7 +245,7 @@ const PreReservationTable = () => {
             fileName="bon_pre_reservation.pdf"
           >
             {({ loading }) =>
-              loading ? 'Loading document...' : <FaDownload />
+              loading ? 'Loading document...' : <Download className="w-4 h-4" />
             }
           </PDFDownloadLink>
         </div>

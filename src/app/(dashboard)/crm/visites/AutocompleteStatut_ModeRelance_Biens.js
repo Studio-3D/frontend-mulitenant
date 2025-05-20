@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { ChevronDown } from 'lucide-react';
 
 const AutocompleteStatut_ModeRelance_Biens = ({
   label = null,
@@ -10,25 +11,46 @@ const AutocompleteStatut_ModeRelance_Biens = ({
   required = false,
   showAllOnFocus = true,
   width = 'w-full',
-  height = 'h-10',
+  height = 'h-[38px]',
   code = 'code',
   labelKey = 'label',
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [inputValue, setInputValue] = useState('');
+  const dropdownRef = useRef(null);
+
+  // Initialize with current value
+  useEffect(() => {
+    const selected = options.find((opt) => opt[code] === value);
+    setInputValue(selected ? selected[labelKey] : '');
+    setSearchQuery('');
+  }, [value, options, code, labelKey]);
+
+  // Click outside handler
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   // Filter options based on search query
   const filteredOptions = options.filter((option) =>
     option[labelKey]?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Get the selected option based on the provided value
-  const selectedOption = options.find((opt) => opt[code] === value);
-
-  // Handle input focus
-  const handleFocus = () => {
-    if (showAllOnFocus) setSearchQuery('');
-    setIsOpen(true);
+  const toggleDropdown = () => {
+    setIsOpen(!isOpen);
+    if (!isOpen && showAllOnFocus) {
+      setSearchQuery('');
+    }
   };
 
   // Handle option selection
@@ -39,16 +61,18 @@ const AutocompleteStatut_ModeRelance_Biens = ({
         value: option[code],
       },
     });
-    setSearchQuery(option[labelKey]); // Set input field to selected label
-    setIsOpen(false); // Close dropdown
+    setInputValue(option[labelKey]);
+    setSearchQuery('');
+    setIsOpen(false);
   };
 
   // Handle input change
   const handleChange = (e) => {
     const inputValue = e.target.value;
+    setInputValue(inputValue);
     setSearchQuery(inputValue);
+    setIsOpen(true);
 
-    // Clear the input if it's empty
     if (inputValue === '') {
       onChange({
         target: {
@@ -57,60 +81,66 @@ const AutocompleteStatut_ModeRelance_Biens = ({
         },
       });
     }
-
-    setIsOpen(true); // Show dropdown
   };
 
-  // Effect to clear input when no options match
-  useEffect(() => {
-    if (filteredOptions.length === 0 && searchQuery) {
-      setSearchQuery(''); // Clear input
-      onChange({
-        target: {
-          name,
-          value: '',
-        },
-      }); // Notify parent that value is cleared
+  // Handle input focus
+  const handleFocus = () => {
+    setIsOpen(true);
+    if (showAllOnFocus) {
+      setSearchQuery('');
     }
-  }, [filteredOptions, searchQuery, onChange, name]);
+  };
 
   return (
-    <div className={`relative ${width}`}>
+    <div className={`relative ${width}`} ref={dropdownRef}>
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block font-medium text-gray-700">
           {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
 
-      <input
-        type="text"
-        name={name}
-        value={searchQuery || (selectedOption ? selectedOption[labelKey] : '')}
-        onChange={handleChange}
-        onFocus={handleFocus}
-        onBlur={() => setTimeout(() => setIsOpen(false), 100)} // Delay closing dropdown to allow clicks
-        placeholder={placeholder}
-        className={`w-full ${height} p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm`}
-        required={required}
-      />
+      <div className="relative">
+        <input
+          type="text"
+          name={name}
+          value={inputValue}
+          onChange={handleChange}
+          onFocus={handleFocus}
+          placeholder={placeholder}
+          className={`w-full ${height} p-2 border border-gray-300 rounded-md focus:outline-none hover:border-gray-500 focus:border-gray-500 pr-8`}
+          required={required}
+        />
 
-      {isOpen && (
-        <div className="absolute top-full left-0 w-full bg-white shadow-lg rounded-md mt-1 max-h-60 overflow-y-auto border border-gray-300 z-10">
-          {filteredOptions.length === 0 ? (
-            <div className="p-2 text-gray-500 text-sm">Aucun résultat trouvé</div>
+        {/* Dropdown toggle icon */}
+        <div 
+          className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer"
+          onClick={toggleDropdown}
+        >
+          {isOpen ? (
+            <ChevronDown className="h-4 w-4 m-2 text-gray-400 rotate-180" />
           ) : (
-            filteredOptions.map((option) => (
-              <div
-                key={option[code]}
-                className="p-2 text-sm cursor-pointer hover:bg-indigo-100"
-                onClick={() => handleSelect(option)}
-              >
-                {option[labelKey]}
-              </div>
-            ))
+            <ChevronDown className="h-4 w-4 m-2 text-gray-400" />
           )}
         </div>
-      )}
+
+        {isOpen && (
+          <div className="absolute top-full left-0 w-full bg-white shadow-lg rounded-md mt-1 max-h-60 overflow-y-auto border border-gray-300 z-10">
+            {filteredOptions.length === 0 ? (
+              <div className="p-2 text-gray-500 text-[15px]">Aucun résultat trouvé</div>
+            ) : (
+              filteredOptions.map((option) => (
+                <div
+                  key={option[code]}
+                  className="p-2 text-[15px] cursor-pointer m-2 hover:bg-indigo-50 rounded-md"
+                  onClick={() => handleSelect(option)}
+                >
+                  {option[labelKey]}
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -4,41 +4,30 @@ import { useEffect, useRef, useState } from 'react';
 
 import AutocompleteMultiple from '@/components/AutocompleteMultiple';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import * as yup from 'yup';
 import { APIURL, ENDPOINTS } from '../../../../configs/api';
 import { useAuth } from '../../../../context/AuthContext';
 import BreadCrumb from '../../navigation/BreadCrumb';
 
-import Autocomplete from '@/components/Autocomplete';
-
 import Button from '@/components/Button'; // adjust the path as needed
 import LoadingSpin from '@/components/LoadingSpin';
-import TextField from '@/components/Textfield'; // Import the component
-//import { useProjet } from '@/context/ProjetContext';
 
 import ConfirmDialog from '@/components/dialog-File';
 import { useProjet } from '@/context/ProjetContext';
-import {
-  Box,
-  CircularProgress,
-  Grid,
-  IconButton,
-  TextField as TextField1,
-  Typography,
-} from '@mui/material';
+import { Box, CircularProgress, Grid, IconButton, TextField as TextField1, Typography, Autocomplete as Autocomplete1 } from '@mui/material';
+import InputSelect from '@/components/inputSelect';
+import Input from '@/components/Input';
 
 export default function ReclamationForm({ id }) {
   const { token } = useAuth();
   const router = useRouter();
   const [services, setServices] = useState([]);
-  const [prestataires, setPrestataires] = useState([]);
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
   const accessToken = token || localStorage.getItem('accessToken');
   const { user } = useAuth();
-  const [problemes] = useState([
+  const [emplacements] = useState([
     { id: '1', description: 'Salle de Bain' },
     { id: '2', description: 'Cuisine' },
     { id: '3', description: 'Chambre' },
@@ -46,11 +35,16 @@ export default function ReclamationForm({ id }) {
     { id: '5', description: 'Couloir' },
     { id: '6', description: 'Fuite' },
     { id: '7', description: 'Buanderie' },
-    { id: '8', description: 'Placard' },
-  ]);
-  //dialog
-  const [info_client, setInfo_client] = useState(null);
-  const [disabled_var, setDisabled_var] = useState(false);
+    { id: '8', description: 'Placard' }
+  ])
+
+  const emplacementOptions = emplacements.map(s => ({
+    value: s.description,
+    label: s.description,
+  }));
+
+  
+  
 
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [formData, setFormData] = useState(null);
@@ -58,17 +52,14 @@ export default function ReclamationForm({ id }) {
 
   const [loading, setLoading] = useState({ form: false });
   const [backendErrors, setBackendErrors] = useState({});
-  const [problemes_value, setProblems_value] = useState([]);
 
-  const [PROJETS, setProjets] = useState([]);
-  const [CLIENTSS, setClientss] = useState([]);
-  const [clients, setClients] = useState('');
-  const [loading_list, setLoading_list] = useState(false);
-  const [filesList, setfilesList] = useState(null);
-  const [selectedFiles_rsv, setSelectedFiles_rsv] = useState([]);
-  const [validerfile, setValiderfile] = useState(false);
-  const [myfile, setMyfile] = useState(false);
-  const [myfile_1, setMyfile_1] = useState(false);
+  const [clients, setClients] = useState([]);
+  const [loading_list, setLoading_list] = useState(false)
+  const [filesList, setfilesList] = useState(null)
+  const [selectedFiles_rsv, setSelectedFiles_rsv] = useState([])
+  const [validerfile, setValiderfile] = useState(false)
+  const [myfile, setMyfile] = useState(false)
+  const [myfile_1, setMyfile_1] = useState(false)
   const { selectedProjet } = useProjet();
 
   //edit
@@ -87,6 +78,7 @@ export default function ReclamationForm({ id }) {
       );
       const { data } = response;
       setServices(data.services);
+
       setLoading(false);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -94,38 +86,40 @@ export default function ReclamationForm({ id }) {
   };
 
   useEffect(() => {
-    fetchServices();
-    fetchbiens();
+    fetchbiens()
+    fetchServices()
   }, []);
 
   const defaultValues = {
     bien_id: '',
-    client_id: '',
+    client_id: 1,
     service_id: '',
-    prestataire_id: '',
     date_reclamation: '',
-    date_intervention: '',
-    date_fin_intervention: '',
-    problemes: '',
+    emplacements: '',
     projet_id: selectedProjet?.id,
-  };
+    commentaires: '',
+    problemes: ''
+  }
 
   const validationSchemaRef = useRef(
     yup.object().shape({
-      date_reclamation: yup
-        .string()
-        .required('la date reclamation est Obligatoire'),
-      date_fin_intervention: yup
-        .string()
-        .required('la date Intervention est Obligatoire'),
-      date_intervention: yup
-        .string()
-        .required('la date Fin Intervention est Obligatoire'),
+      date_reclamation: yup.string().required('la date reclamation est Obligatoire'),
       bien_id: yup.string().required('le Bien est Obligatoire'),
       client_id: yup.string().required('le Client est Obligatoire'),
-      prestataire_id: yup.string().required('le Prestataire est Obligatoire'),
     })
-  );
+  )
+
+  function NomBienComplet(bien) {
+    const noms = [];
+  
+    if (bien.tranche?.nom) noms.push(bien.tranche.nom);
+    if (bien.bloc?.nom) noms.push(bien.bloc.nom);
+    if (bien.immeuble?.nom) noms.push(bien.immeuble.nom);
+  
+    noms.push(bien.propriete_dite_bien);
+  
+    return noms.join(' - ');
+  }
 
   const {
     control,
@@ -156,48 +150,16 @@ export default function ReclamationForm({ id }) {
               nom: aq.client.nom,
               prenom: aq.client.prenom,
             }))
-          );
-          setPrestataires(
-            res.data.prestataires.map((p) => ({
-              id: p.id,
-              nom: p.nom,
-              prenom: p.prenom,
-            }))
-          );
-          setValue('bien_id', rec.bien_id || '');
-          setValue('client_id', rec.client_id || '');
-          setValue('service_id', rec.prestataire.service_id || '');
-          setValue('prestataire_id', rec.prestataire_id || '');
-          setValue('date_reclamation', rec.date_reclamation || '');
-          setValue('date_intervention', rec.date_intervention || '');
-          setValue('date_fin_intervention', rec.date_fin_intervention || '');
-          setValue('problemes', rec.problemes || '');
+          )
+          setValue('bien_id', rec.bien_id || '')
+          setValue('client_id', rec.client_id || '')
+          setValue('service_id', rec.service_id || '')
+          setValue('date_reclamation', rec.date_reclamation || '')
+          setValue('problemes', rec.problemes || '')
+          const emplacementsArray = rec.emplacements.split(',').map((emplacement) => emplacement.trim());
+          setValue('emplacements', emplacementsArray);
 
-          if (rec.problemes.includes('Cuisine')) {
-            setProblems_value((current) => [...current, 'Cuisine']);
-          }
-          if (rec.problemes.includes('Salle de Bain')) {
-            setProblems_value((current) => [...current, 'Salle de Bain']);
-          }
-          if (rec.problemes.includes('Chambre')) {
-            setProblems_value((current) => [...current, 'Chambre']);
-          }
-          if (rec.problemes.includes('Balcon')) {
-            setProblems_value((current) => [...current, 'Balcon']);
-          }
-          if (rec.problemes.includes('Couloir')) {
-            setProblems_value((current) => [...current, 'Couloir']);
-          }
-          if (rec.problemes.includes('Fuite')) {
-            setProblems_value((current) => [...current, 'Fuite']);
-          }
-          if (rec.problemes.includes('Buanderie')) {
-            setProblems_value((current) => [...current, 'Buanderie']);
-          }
-          if (rec.problemes.includes('Placard')) {
-            setProblems_value((current) => [...current, 'Placard']);
-          }
-          setSelectedFiles_rsv(rec.piece_jointe);
+          setSelectedFiles_rsv(rec.piece_jointe)
 
           setFormData({});
         })
@@ -228,11 +190,13 @@ export default function ReclamationForm({ id }) {
             Authorization: `Bearer ${accessToken}`,
           },
         }
-      );
-      const { data } = response;
-      setbiens(data.biens);
-      setLoading(false);
+      )
+      //const { data } = response
+      setbiens(response.data.biens||[])
+      console.log(response.data.biens)
+      setLoading(false)
     } catch (error) {
+      setLoading(false)
       console.error('Error fetching data:', error);
     }
   };
@@ -486,256 +450,215 @@ export default function ReclamationForm({ id }) {
       </div>
       <div className="p-6 mt-4 bg-white shadow-md rounded-md">
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-            <Autocomplete
-              label="Biens:"
-              required
-              name="bien_id"
-              options={BIENS}
-              loading={loading}
-              value={
-                BIENS.find((opt) => opt.id === Number(watch('bien_id'))) || null
-              }
-              getOptionLabel={(option) => option.propriete_dite_bien} // toujours getOptionLabel
-              control={control}
-              errors={errors}
-              backendErrors={backendErrors}
-              onChange={(newValue) => {
-                setValue('bien_id', newValue ? newValue.id : '');
-              }}
-            />
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            
+     
+      <InputSelect
+        label="Bien"
+        name="bien_id"
+        value={watch('bien_id')}
+        onChange={(val) => {
+          setValue('bien_id', val?.value || null);
 
-            <Autocomplete
-              label="Clients:"
-              required
-              name="clients"
-              options={CLIENTSS}
-              loading={loading}
-              value={
-                CLIENTSS.find((opt) => opt.id === Number(watch('clients'))) ||
-                null
-              }
-              getOptionLabel={(option) => `${option.nom} ${option.prenom}`} // toujours getOptionLabel
-              control={control}
-              errors={errors}
-              backendErrors={backendErrors}
-              onChange={(newValue) => {
-                setClients(newValue ? newValue.clients : '');
-                setValue('clients', newValue ? newValue.id : '');
-              }}
-            />
+          const newValue = BIENS.find(s => s.id === val?.value);
+          
+          // Réinitialiser les clients si aucun bien n'est sélectionné
+          if (newValue?.clients?.length) {
+            setClients(
+              newValue.clients.map(aq => ({
+                id: aq.client.id,
+                nom: aq.client.nom,
+                prenom: aq.client.prenom
+              }))
+            );
+          } else {
+            setClients([]);
+          }
 
-            <Autocomplete
-              label="Service:"
-              name="service_id"
-              options={services}
-              loading={loading}
-              required
-              value={
-                services.find(
-                  (opt) => opt.id === Number(watch('service_id'))
-                ) || null
-              }
-              getOptionLabel={(option) => option.nom} // getOptionLabel
-              control={control}
-              errors={errors}
-              backendErrors={backendErrors}
-              onChange={(newValue) => {
-                setValue('service_id', newValue ? newValue.id : '');
-                setPrestataires(
-                  newValue?.prestataires?.map((p) => ({
-                    id: p.id,
-                    nom: p.nom,
-                    prenom: p.prenom,
-                  })) || []
-                );
-              }}
-            />
+          // Éventuellement, réinitialiser le champ client sélectionné
+          setValue('client_id', null);
+        }}
+        options={BIENS.map(s => ({
+          value: s.id,
+          label: NomBienComplet(s)
+        }))}
+        placeholder="Choisir un bien..."
+        isLoading={loading}
+        error={errors?.bien_id}
+        required
+      />
 
-            <Autocomplete
-              label="Prestataire:"
-              name="prestataire_id"
-              options={prestataires}
-              loading={loading}
-              required
-              value={
-                prestataires.find(
-                  (opt) => opt.id === Number(watch('prestataire_id'))
-                ) || null
-              }
-              getOptionLabel={(option) => `${option.nom} ${option.prenom}`} // toujours getOptionLabel
-              control={control}
-              errors={errors}
-              backendErrors={backendErrors}
-              onChange={(newValue) => {
-                setValue('prestataire_id', newValue ? newValue.id : '');
-              }}
-            />
-            <TextField
-              label="Date_reclamation:"
-              name="date_reclamation"
-              control={control}
-              type="datetime-local"
-              errors={errors}
-              backendErrors={backendErrors}
-              defaultValues={defaultValues}
-            />
-            <TextField
-              label="Date intervention:"
-              name="date_intervention"
-              type="date"
-              control={control}
-              errors={errors}
-              backendErrors={backendErrors}
-              defaultValues={defaultValues}
-            />
-            <TextField
-              label="Date fin intervention:"
-              name="date_fin_intervention"
-              type="date"
-              control={control}
-              errors={errors}
-              backendErrors={backendErrors}
-              defaultValues={defaultValues}
-            />
 
-            <AutocompleteMultiple
-              label="Probleme :"
-              nFame="probleme_id"
-              value={watch('problemes')} // e.g. [12, 17]
-              valueKey="id"
-              required={true}
-              options={problemes}
-              choiceKey="description"
-              onChange={(newValue) => {
-                try {
-                  console.log('Selected tranches:', newValue);
+      <InputSelect
+        label="Client"
+        name="client_id"
+        value={watch('client_id')}
+        onChange={(val) => {
+          setValue('client_id', val?.value || null);
+        }}
+        options={clients.map(c => ({
+          value: c.id,
+          label: `${c.prenom} ${c.nom}` // plus lisible
+        }))}
+        placeholder="Choisir un client..."
+        isLoading={loading}
+        error={errors?.client_id}
+        required
+      />
+  
 
-                  if (Array.isArray(newValue)) {
-                    const selectedIds = newValue.map((option) => option?.id);
-                    console.log('ids probleme', selectedIds);
-                    setValue('problemes', selectedIds); // Set only IDs to the form field
-                  } else {
-                    console.error(
-                      'Expected newValue to be an array of selected options, but received:',
-                      newValue
-                    );
-                  }
-                } catch (error) {
-                  console.error('Error in probleme onChange handler:', error);
-                }
-              }}
-              placeholder="sélectionnez un ou plusieurs Probleme"
-              errors={{ errors }}
-              backendErrors={backendErrors}
-              loading={loading}
-            />
+             
 
-            <Grid item xs={12} sm={3} mt={2}>
-              {loading_list ? (
-                <CircularProgress />
-              ) : (
-                <TextField1
-                  label="Piéces Jointes"
-                  fullWidth
-                  sx={{ mt: 1 }}
-                  type="file"
-                  onChange={(event) => handleFileChange(event)}
-                  size="small"
-                  variant="outlined"
-                  inputProps={{
-                    accept: 'image/*, application/pdf',
-                  }}
-                  InputLabelProps={{ shrink: true }}
-                />
-              )}
-            </Grid>
+      <InputSelect
+        label="Service"
+        name="service_id"
+        value={watch('service_id')}
+        onChange={(val) => {
+          setValue('service_id', val?.value || null);
+          const newValue = services.find(s => s.id === val?.value);
+        }}
+        options={services.map(s => ({ value: s.id, label: s.nom }))}
+        placeholder="Choisir un service..."
+        isLoading={loading}
+        error={errors?.service_id}
+        required
+      />
 
-            {selectedFiles_rsv?.length !== 0 ? (
-              <>
-                <Grid item ml={10}>
-                  <Typography variant="subtitle2" color={'primary'}>
-                    Piéces jointes selectionnés
-                  </Typography>
 
-                  <Grid
-                    container
-                    spacing={2}
-                    mt={1}
+      <Input
+        label="Date réclamation :"
+        type="datetime-local"
+        name="date_reclamation"
+        value={watch('date_reclamation')}
+        onChange={(e) => setValue('date_reclamation', e.target.value)}
+        placeholder=""
+        error={errors?.date_reclamation?.message || backendErrors?.date_reclamation}
+        required
+      />
+
+              
+              
+
+      <div className="w-full sm:col-span-2 md:col-span-2"> 
+        <Input
+          label="Problème(s) :"
+          name="problemes"
+          value={watch('problemes') || ''}
+          onChange={(e) => setValue('problemes', e.target.value)}
+          required
+          multiline
+          error={errors?.problemes?.message || backendErrors?.problemes?.[0]}
+        />
+      </div>
+      <div className="w-full sm:col-span-2 md:col-span-2"> 
+      <InputSelect
+        label="Emplacement :"
+        name="emplacements"
+        value={watch('emplacements') || []}
+        onChange={(selectedOptions) => {
+          const selectedDescriptions = selectedOptions.map(opt => opt.value);
+          setValue('emplacements', selectedDescriptions);
+        }}
+        options={emplacementOptions}
+        placeholder="Sélectionnez un ou plusieurs emplacements"
+        error={errors?.emplacements?.message}
+        required={true}
+        isLoading={loading}
+        isMulti={true}
+      />
+      </div>
+
+
+             
+             </div>
+             <div className="w-full sm:col-span-2 md:col-span-4 mt-4 mb-2 border-t border-gray-300" />
+
+             <div className="mt-6">
+  <Grid container spacing={2} alignItems="flex-start">
+    {/* Input Fichier */}
+    <Grid item xs={12} sm={4}>
+      {loading_list ? (
+        <CircularProgress />
+      ) : (
+        <Input
+          label="Pièce jointe"
+          type="file"
+          name="piece_jointe"
+          onChange={handleFileChange}
+          error={errors?.piece_jointe}
+          accept="image/*,application/pdf"
+        />
+
+      )}
+    </Grid>
+
+          {/* Fichiers sélectionnés */}
+          {selectedFiles_rsv?.length > 0 && (
+            <Grid item xs={12} sm={8}>
+              <Typography variant="subtitle2" color="primary" sx={{ mb: 1 }}>
+                Piéces jointes sélectionnées :
+              </Typography>
+              <Grid
+                container
+                spacing={1}
+                sx={{
+                  p: 1,
+                  border: theme => `0.5px solid ${theme.palette.divider}`,
+                  borderRadius: 1,
+                  width: '100%',
+                  flexWrap: 'wrap',
+                }}
+              >
+                {selectedFiles_rsv.map((data, index) => (
+                  <Box
+                    key={index}
                     sx={{
-                      pl: 2,
-                      pt: 0.5,
-                      pb: 0.5,
-                      pr: 2,
-                      width: '40vw',
-                      height: 'auto',
-                      borderRadius: 0.3,
-                      cursor: 'pointer',
+                      display: 'flex',
                       alignItems: 'center',
-                      border: (theme) => `2px solid ${theme.palette.divider}`,
+                      backgroundColor: '#e0e0e0',
+                      borderRadius: 1,
+                      
                     }}
                   >
-                    {selectedFiles_rsv.map((data, index) => (
-                      <Box key={data}>
-                        <Typography
-                          sx={{
-                            p: 0.3,
-                            width: 'auto',
-                            height: 'auto',
-                            borderRadius: 0.5,
-                            cursor: 'pointer',
-                            alignItems: 'center',
-                            border: (theme) =>
-                              `2px solid ${theme.palette.divider}`,
-                            mr: 0.48,
-                            color: 'black',
-                            fontWeight: 408,
-                            fontSize: 11,
-                            '&:hover': { color: 'blue' },
-                          }}
-                          style={{ backgroundColor: '#e0e0e0' }}
-                          variant="body"
-                        >
-                          {data.fichier ? (
-                            <span onClick={() => handleFileClick(data.fichier)}>
-                              {data.fichier}
-                            </span>
-                          ) : (
-                            <span onClick={() => handleDownload(data)}>
-                              {data.name}
-                            </span>
-                          )}
-                          <IconButton
-                            color="error"
-                            onClick={() => handleDeleteFile(index)}
-                            sx={{ mb: 0.4 }}
-                            title="supprimer"
-                          >
-                            <Typography
-                              variant="body"
-                              style={{ color: 'error' }}
-                              sx={{ fontSize: 12, fontWeight: 510 }}
-                            >
-                              x
-                            </Typography>
-                          </IconButton>
-                        </Typography>
-                      </Box>
-                    ))}
-                  </Grid>
-                </Grid>
-              </>
-            ) : (
-              ''
-            )}
-          </div>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontSize: 12,
+                        mr: 1,
+                        cursor: 'pointer',
+                        '&:hover': { color: 'blue' },
+                      }}
+                      onClick={() =>
+                        data.fichier
+                          ? handleFileClick(data.fichier)
+                          : handleDownload(data)
+                      }
+                    >
+                      {data.fichier || data.name}
+                    </Typography>
+                    <IconButton
+                      color="error"
+                      size="small"
+                      onClick={() => handleDeleteFile(index)}
+                    >
+                      <Typography sx={{ fontSize: 14 }}>×</Typography>
+                    </IconButton>
+                  </Box>
+                ))}
+              </Grid>
+            </Grid>
+          )}
+        </Grid>
+      </div>
 
+            
+          
           <div className="flex justify-center gap-4 items-center mt-6 mb-6">
             <Button type="button" onClick={() => router.back()}>
               Annuler
             </Button>
 
-            <Button type="submit" disabled={loading.form || disabled_var}>
+            <Button type="submit" >
               Enregistrer
             </Button>
           </div>

@@ -1,15 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { CiFilter, CiSearch } from 'react-icons/ci';
-import { IoAddOutline } from 'react-icons/io5';
-import { MdImportExport } from 'react-icons/md';
+import { Filter, Search, Plus, Download, Upload } from 'lucide-react';
 import Link from 'next/link';
 import Modal from './Modal';
 import { handleExportExcel } from '../../src/configs/export';
 import Modal_Import from './Modal_Import';
 
 const Table = ({
+  onFilterToggle = () => {},
+  title,
   name_file_export,
   data_to_export,
   columns_export,
@@ -19,7 +19,7 @@ const Table = ({
   addLink,
   loading,
   error,
-  emptyMessage,
+  emptyMessage = "Aucune donnée trouvée",
   onPageChange = () => {},
   onRowsPerPageChange,
   onSearchChange = () => {},
@@ -36,6 +36,12 @@ const Table = ({
   const [showFilter, setShowFilter] = useState(false);
   const [showModal_Import, setShowModal_Import] = useState(false);
 
+  const toggleFilter = () => {
+    const newState = !showFilter;
+    setShowFilter(newState);
+    onFilterToggle(newState); // <--- Appelle le parent
+  };
+  
   useEffect(() => {
     const timer = setTimeout(() => {
       onSearchChange(localSearchTerm);
@@ -77,7 +83,11 @@ const Table = ({
   );
 
   return (
-    <div className="mx-auto px-6 py-4 mt-2 mb-4 bg-white rounded-lg ">
+    <div className="mx-auto px-6 py-4 mt-2 mb-4 bg-white rounded-lg shadow-md">
+      {title && (
+        <h2 className="text-xl font-semibold text-gray-700 mb-2">{title}</h2>
+      )}
+
       {/* Table Controls */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-6">
         <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -86,14 +96,14 @@ const Table = ({
               className={`border rounded-lg p-1.5 cursor-pointer flex items-center ${
                 showFilter ? 'bg-[#009FFF] text-white' : 'border-gray-300 bg-transparent'
               }`}
-              onClick={() => setShowFilter(!showFilter)}
-            >
-              <CiFilter className="w-6 h-6" />
+              onClick={toggleFilter}
+              >
+              <Filter className="w-6 h-6" />
             </button>
           )}
 
           <div className="flex-1 sm:flex-none flex items-center border border-gray-300 rounded-lg p-1.5 bg-transparent gap-2 w-full sm:w-[300px]">
-            <CiSearch className="w-6 h-6" />
+            <Search className="w-6 h-6" />
             <input
               className="bg-transparent outline-none text-gray-600 w-full"
               type="text"
@@ -111,7 +121,7 @@ const Table = ({
               href={addLink}
               className="flex gap-1 items-center bg-green-600 text-white font-medium rounded-lg px-3 py-1.5"
             >
-              <IoAddOutline className="w-5 h-5" />
+              <Plus className="w-5 h-5" />
               <span>Ajouter</span>
             </Link>
           )}
@@ -121,7 +131,7 @@ const Table = ({
               className="flex gap-1 items-center bg-[#009FFF] text-white font-medium rounded-lg px-3 py-1.5"
               onClick={handleExport}
             >
-              <MdImportExport className="w-5 h-5" />
+              <Download className="w-5 h-5" />
               <span>Exporter</span>
             </button>
           )}
@@ -130,7 +140,7 @@ const Table = ({
               className="flex gap-1 items-center bg-[#231651] text-white font-medium rounded-lg px-3 py-1.5"
               onClick={() => setShowModal_Import(true)}
             >
-              <MdImportExport className="w-5 h-5" />
+              <Upload className="w-5 h-5" />
               <span>Importer</span>
             </button>
           )}

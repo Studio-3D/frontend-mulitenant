@@ -1,9 +1,10 @@
 'use client';
 import React, { useEffect, useState, useCallback } from 'react';
 import Table from '@/components/Table';
-import { FaRegEye } from 'react-icons/fa';
+import { Eye } from 'lucide-react';
 
 import { useAuth } from '../../../../context/AuthContext';
+import { useProjet } from '../../../../context/ProjetContext';
 import { ENDPOINTS } from '../../../../configs/api';
 import { useRouter } from 'next/navigation';
 import { fetchData_table_by_projet } from '../../../../../src/configs/api-utils';
@@ -28,6 +29,7 @@ const VisiteTable = (dataProspect, dataClient) => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const { user, token } = useAuth();
+  const { selectedProjet } = useProjet();
   const accesstoken = token || localStorage.getItem('accessToken');
 
   // Declare the entity object in the component scope
@@ -81,6 +83,7 @@ const VisiteTable = (dataProspect, dataClient) => {
     clientId,
     prospectId,
     filters,
+    selectedProjet,
   ]);
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
@@ -192,7 +195,7 @@ const VisiteTable = (dataProspect, dataClient) => {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <FaRegEye
+          <Eye
             className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
             title="Voir détails"
             onClick={() => handleShow(row.origin_id)}

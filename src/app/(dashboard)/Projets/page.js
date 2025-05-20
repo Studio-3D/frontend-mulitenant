@@ -5,8 +5,7 @@ import { useSociete } from '@/context/SocieteContext';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Table from '@/components/Table';
-import { FaRegEye, FaEdit } from "react-icons/fa";
-import { RiDeleteBin6Line } from "react-icons/ri";
+import { Eye, Pencil, Trash2 } from "lucide-react";
 import * as XLSX from 'xlsx';
 
 export default function ProjetsPage() {
@@ -42,21 +41,21 @@ export default function ProjetsPage() {
             onClick={() => handleAction('view', row.id)}
             title="Voir"
           >
-            <FaRegEye className="w-4 h-4" />
+            <Eye className="w-4 h-4" />
           </button>
           <button
             className="text-blue-500 hover:text-blue-700"
             onClick={() => handleAction('edit', row.id)}
             title="Modifier"
           >
-            <FaEdit className="w-4 h-4" />
+            <Pencil className="w-4 h-4" />
           </button>
           <button
             className="text-red-500 hover:text-red-700"
             onClick={() => handleAction('delete', row.id)}
             title="Supprimer"
           >
-            <RiDeleteBin6Line className="w-4 h-4" />
+            <Trash2 className="w-4 h-4" />
           </button>
         </div>
       )

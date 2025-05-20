@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { ChevronDown } from "lucide-react";
+
 
 const Autocomplete = ({
   label,
@@ -9,7 +11,7 @@ const Autocomplete = ({
   choix = 'nom',
   loading = false,
   width = 'w-full',
-  height = 'h-10',
+  height = 'h-[38px]',
   required = false,
   errors,
   backendErrors,
@@ -17,6 +19,13 @@ const Autocomplete = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Initialize searchQuery with the current value
+  useEffect(() => {
+    if (value && value[choix]) {
+      setSearchQuery(value[choix]);
+    }
+  }, [value, choix]);
 
   // Filter options based on search query
   const filteredOptions =
@@ -37,29 +46,30 @@ const Autocomplete = ({
   // Effect to clear input when no options match
   useEffect(() => {
     if (!loading && filteredOptions.length === 0 && searchQuery) {
-      setSearchQuery(''); // Clear search query
-      onChange(null); // Notify parent of cleared value
+      setSearchQuery('');
+      onChange(null);
     }
   }, [filteredOptions, loading, searchQuery, onChange]);
 
-  // Handle selecting an option from the dropdown
   const handleSelect = (option) => {
-    onChange(option); // Notify parent with selected option
-    setSearchQuery(option[choix]); // Update input value with selected option
-    setIsOpen(false); // Close dropdown
+    onChange(option);
+    setSearchQuery(option[choix]);
+    setIsOpen(false);
   };
 
-  // Handle input changes
   const handleChange = (e) => {
     const inputValue = e.target.value;
     setSearchQuery(inputValue);
     if (inputValue === '') {
-      onChange(null); // Clear parent value if input is empty
+      onChange(null);
     }
-    setIsOpen(true); // Open dropdown on input
+    setIsOpen(true);
   };
 
-  // Handle errors passed via props
+  const toggleDropdown = () => {
+    setIsOpen(!isOpen);
+  };
+
   const rawError = errors[name] || backendErrors[name];
   const errorMessage =
     rawError?.message ??
@@ -68,30 +78,39 @@ const Autocomplete = ({
   return (
     <div className={`relative ${width}`}>
       {/* Label */}
-      <label className="block text-sm font-medium text-gray-700">
+      <label className="block font-medium text-gray-700">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
 
       {/* Input Field */}
-      <div className="relative mt-1">
+      <div className="relative">
         <input
           type="text"
-          value={searchQuery || (value ? value[choix] : '')}
+          value={searchQuery || ''}
           onChange={handleChange}
-          onFocus={() => {
-            setIsOpen(true);
-            setSearchQuery(''); // Force display of all options
-          }}
-          onBlur={() => setTimeout(() => setIsOpen(false), 200)} // Delay closing dropdown to allow clicks
+          onFocus={() => setIsOpen(true)}
+          onBlur={() => setTimeout(() => setIsOpen(false), 200)}
           placeholder={placeholder}
-          className={`w-full ${height} p-2 border ${
+          className={`w-full  ${height} p-2 border ${
             errorMessage ? 'border-red-500' : 'border-gray-300'
-          } rounded-md focus:outline-none focus:ring-2 ${
-            errorMessage ? 'focus:ring-red-500' : 'focus:ring-indigo-500'
-          }`}
+          } rounded-md focus:outline-none ${
+            errorMessage ? 'focus:ring-red-500' : 'focus:border-gray-500'
+          } pr-8`}  // Added pr-8 for icon spacing
           required={required}
         />
+        
+        {/* Dropdown Toggle Icon */}
+        <div 
+          className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer"
+          onClick={toggleDropdown}
+        >
+          {isOpen ? (
+            <ChevronDown className="h-4 w-4 m-2 text-gray-400 rotate-180" />
+          ) : (
+            <ChevronDown className="h-4 w-4 m-2 text-gray-400" />
+          )}
+        </div>
 
         {/* Dropdown Options */}
         {isOpen && (
@@ -107,7 +126,7 @@ const Autocomplete = ({
               filteredOptions.map((option) => (
                 <div
                   key={option.id}
-                  className="p-2 cursor-pointer hover:bg-indigo-100"
+                  className="p-2 cursor-pointer hover:bg-indigo-50 m-1 rounded-md"
                   onClick={() => handleSelect(option)}
                 >
                   {option[choix]}

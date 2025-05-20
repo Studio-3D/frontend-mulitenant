@@ -2,8 +2,7 @@
 import { useState, useEffect } from "react"
 import axios from "axios"
 import { APIURL } from "@/configs/api"
-import { IoAddOutline } from "react-icons/io5"
-import { RiDeleteBin6Line } from "react-icons/ri"
+import { Plus, Trash2 } from "lucide-react"
 
 export default function GeneralParameterForm({ state, setState, onNext, onBack, errors, loading }) {
   const [users, setUsers] = useState([])
@@ -256,7 +255,7 @@ export default function GeneralParameterForm({ state, setState, onNext, onBack, 
                 onClick={() => handleRemoveBien(index)}
                 className="ml-2 text-red-500 hover:text-red-700"
               >
-                <RiDeleteBin6Line className="h-4 w-4" />
+                <Trash2 className="h-4 w-4" />
               </button>
             </div>
           ))}
@@ -275,7 +274,7 @@ export default function GeneralParameterForm({ state, setState, onNext, onBack, 
             onClick={handleAddBien}
             className="bg-blue-500 text-white rounded-md p-2 hover:bg-blue-600"
           >
-            <IoAddOutline className="h-5 w-5" />
+            <Plus className="h-5 w-5" />
           </button>
         </div>
       </div>
@@ -298,7 +297,7 @@ export default function GeneralParameterForm({ state, setState, onNext, onBack, 
                 onClick={() => handleRemoveVue(index)}
                 className="ml-2 text-red-500 hover:text-red-700"
               >
-                <RiDeleteBin6Line className="h-4 w-4" />
+                <Trash2 className="h-4 w-4" />
               </button>
             </div>
           ))}
@@ -317,7 +316,7 @@ export default function GeneralParameterForm({ state, setState, onNext, onBack, 
             onClick={handleAddVue}
             className="bg-blue-500 text-white rounded-md p-2 hover:bg-blue-600"
           >
-            <IoAddOutline className="h-5 w-5" />
+            <Plus className="h-5 w-5" />
           </button>
         </div>
       </div>
@@ -340,7 +339,7 @@ export default function GeneralParameterForm({ state, setState, onNext, onBack, 
                 onClick={() => handleRemoveTypologie(index)}
                 className="ml-2 text-red-500 hover:text-red-700"
               >
-                <RiDeleteBin6Line className="h-4 w-4" />
+                <Trash2 className="h-4 w-4" />
               </button>
             </div>
           ))}
@@ -359,7 +358,7 @@ export default function GeneralParameterForm({ state, setState, onNext, onBack, 
             onClick={handleAddTypologie}
             className="bg-blue-500 text-white rounded-md p-2 hover:bg-blue-600"
           >
-            <IoAddOutline className="h-5 w-5" />
+            <Plus className="h-5 w-5" />
           </button>
         </div>
       </div>
@@ -385,7 +384,7 @@ export default function GeneralParameterForm({ state, setState, onNext, onBack, 
                 onClick={() => handleRemovePartner(index)}
                 className="text-red-500 hover:text-red-700"
               >
-                <RiDeleteBin6Line className="h-4 w-4" />
+                <Trash2 className="h-4 w-4" />
               </button>
             </div>
           ))}
@@ -418,7 +417,7 @@ export default function GeneralParameterForm({ state, setState, onNext, onBack, 
                 onClick={handleAddPartner}
                 className="bg-blue-500 text-white rounded-md p-2 hover:bg-blue-600"
               >
-                <IoAddOutline className="h-5 w-5" />
+                <Plus className="h-5 w-5" />
               </button>
             </div>
           </div>

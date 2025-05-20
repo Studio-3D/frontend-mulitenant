@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { VisitCard } from './VisitCard';
 import { VisitTimeline } from './VisitTimeline';
 import { useAuth } from '../../context/AuthContext';
-import { FaDownload } from 'react-icons/fa';
 import Modal from '@/components/Modal';
 import DeleteWarningModal from '@/components/visites/DeleteWarningModal';
 import DeleteData from '@/components/DeleteData';
@@ -801,7 +800,7 @@ export function VisitDetails({
                                           loading ? (
                                             'Loading document...'
                                           ) : (
-                                            <FaDownload />
+                                            <DownloadIcon className="h-5 w-5" />
                                           )
                                         }
                                       </PDFDownloadLink>

@@ -2,8 +2,7 @@
 import { useState, useEffect } from "react";
 import { APIURL, RESOURCE_URL } from '../../../configs/api';
 import axios from 'axios';
-import { HiCalendarDateRange } from "react-icons/hi2";
-import { IoLocationSharp } from "react-icons/io5";
+import { Calendar, MapPin } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function AfficherSociete({ societeId, onClose }) {
@@ -86,11 +85,11 @@ export default function AfficherSociete({ societeId, onClose }) {
                     {/* Date & Location */}
                     <div className="grid grid-cols-2 gap-4 text-lg pb-2 font-semibold">
                         <div className="flex gap-1 items-center">
-                            <HiCalendarDateRange className="text-[#009FFF] w-6 h-6" />
+                            <Calendar className="text-[#009FFF] w-6 h-6" />
                             <span>Rejoint {new Date(societe.created_at).toLocaleString("fr-FR", { month: "long", year: "numeric" })}</span>
                         </div>
                         <div className="flex gap-1 items-center">
-                            <IoLocationSharp className="text-[#009FFF] w-6 h-6" />
+                            <MapPin className="text-[#009FFF] w-6 h-6" />
                             <p>{societe.adresse}</p>
                         </div>
                     </div>

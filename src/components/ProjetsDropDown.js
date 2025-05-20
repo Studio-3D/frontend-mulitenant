@@ -1,11 +1,11 @@
 'use client';
-import { BiChevronDown } from "react-icons/bi";
-import { AiOutlineSearch } from "react-icons/ai";
+import { ChevronDown } from "lucide-react";
+import { Search } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useProjet } from "../context/ProjetContext";
 import Link from "next/link";
 import classNames from "classnames";
-import { FaRegEye } from 'react-icons/fa';
+import { Eye } from 'lucide-react';
 
 export default function ProjetsDropDown() {
     const { selectedProjet, projets, selectProjet, loading, fetchProjets } = useProjet();
@@ -22,6 +22,24 @@ export default function ProjetsDropDown() {
             fetchProjets();
         }
     }, [isSelectorOpened, projets.length, loading, fetchProjets, hasFetchAttempted]);
+
+    // Attempt to restore project from localStorage on component mount
+    useEffect(() => {
+        if (!selectedProjet) {
+            const savedProject = localStorage.getItem('selectedProjet');
+            if (savedProject) {
+                try {
+                    const parsedProject = JSON.parse(savedProject);
+                    if (parsedProject && parsedProject.id) {
+                        console.log("ProjetsDropDown: Restoring project from localStorage", parsedProject.id);
+                        selectProjet(parsedProject);
+                    }
+                } catch (error) {
+                    console.error("Error parsing saved project in dropdown:", error);
+                }
+            }
+        }
+    }, [selectedProjet, selectProjet]);
 
     // Reset fetch tracking when dropdown closes
     useEffect(() => {
@@ -50,14 +68,17 @@ export default function ProjetsDropDown() {
     const handleSelectProjet = async (projet) => {
         if (isSubmitting) return;
 
+        // Close the dropdown immediately before doing anything else
+        setIsSelectorOpened(false);
+        setInputValue("");
+        
         setIsSubmitting(true);
-        const success = selectProjet(projet);
+        
+        // Update localStorage before context update to ensure API calls use the new project
+        localStorage.setItem("selectedProjet", JSON.stringify(projet));
+        
+        const success = await selectProjet(projet);
         setIsSubmitting(false);
-
-        if (success) {
-            setIsSelectorOpened(false);
-            setInputValue("");
-        }
     };
 
     // Filter projets based on search input
@@ -80,7 +101,7 @@ export default function ProjetsDropDown() {
                 <span className={`px-2 ${selectedProjet ? "text-gray-800" : "text-gray-500"}`}>
                     {isSubmitting ? "Chargement..." : selectedProjet?.nom || "Sélectionner un projet"}
                 </span>
-                <BiChevronDown 
+                <ChevronDown 
                     size={20} 
                     className={classNames({ 'rotate-180': isSelectorOpened })} 
                 />
@@ -98,7 +119,7 @@ export default function ProjetsDropDown() {
                 {isSelectorOpened && (
                     <div className="sticky top-0 z-10 p-2">
                         <div className="flex items-center gap-2 p-2 bg-white border rounded-lg shadow-sm">
-                            <AiOutlineSearch size={18} />
+                            <Search size={18} />
                             <input 
                                 type="text" 
                                 value={inputValue} 
@@ -150,7 +171,7 @@ export default function ProjetsDropDown() {
                         >
                             <div className="flex items-center gap-2">
                                 <span>Gérer les Projets</span>
-                                <FaRegEye className="w-4 h-4" />
+                                <Eye className="w-4 h-4" />
                             </div>
                         </Link>
                     </li>
