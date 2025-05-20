@@ -308,7 +308,7 @@ const Page = () => {
 
   return (
     <>
-      <div className="relative ">
+      <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
         <Table
           columns={columns}
           filterComponent={
