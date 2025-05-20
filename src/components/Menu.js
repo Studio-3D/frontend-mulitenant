@@ -243,7 +243,7 @@ const Menu = () => {
     {
       label: "Calendrier",
       icon: <Calendar />,
-      href: "/Calendrier",
+      href: "/calendrier",
       needsSociete: user.role === 1,
       needsProjet: true,
     },

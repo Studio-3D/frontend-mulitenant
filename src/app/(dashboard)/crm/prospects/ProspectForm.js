@@ -30,6 +30,7 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
   const id = searchParams.get('id');*/
 
   const [formData, setFormData] = useState();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState({ form: false });
   const [backendErrors, setBackendErrors] = useState({});
   const [sources, setSources] = useState([]);
@@ -163,30 +164,22 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
     }
   }, [formData, setValue]);
 
-  const onSubmit = (data) => {
-    console.log(data);
+  // Replace your existing onSubmit function with this:
+const onSubmit = async (data) => {
+  console.log(data);
+  
+  setIsSubmitting(true); // Set manual loading state
+  setBackendErrors({});
 
-    setLoading({ ...loading, form: true });
-    setBackendErrors({});
-
+  try {
     const dataToSend = new FormData();
     let url = APIURL.PROSPECTS;
     let method = 'post';
 
     // Convert "null" string to actual null before appending to FormData
     Object.entries(data).forEach(([key, value]) => {
-      // If value is "null" (string), replace it with null
-      if (value === 'null') {
-        value = null; // Convert string "null" to null
-      }
-
-      // Append value to FormData
-      // If the value is null, append it as null (FormData will automatically handle null values)
-      if (value === null) {
-        dataToSend.append(key, ''); // Sending an empty string is equivalent to sending null in form data
-      } else {
-        dataToSend.append(key, value);
-      }
+      if (value === 'null') value = null;
+      dataToSend.append(key, value === null ? '' : value);
     });
 
     if (isEditing) {
@@ -194,48 +187,42 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
       method = 'put';
     }
 
-    axios({
-      method: method,
-      url: url,
+    const res = await axios({
+      method,
+      url,
       data: dataToSend,
       headers: {
         'content-type': 'application/json',
         Accept: 'application/json',
         Authorization: `Bearer ${accessToken}`,
       },
-    })
-      .then((res) => {
-        let message = 'Quelque chose ne va pas bien';
-        if (res.status === 200 || res.status === 201) {
-          message = `Le prospect a été ${
-            isEditing ? 'modifiée' : 'créée'
-          } avec succès`;
-          reset(defaultValues);
-          toast.success(message);
-          localStorage.setItem('visite_fetch_show',1 );
+    });
 
-          if (onSuccess) onSuccess();
-          if (onClose) onClose();
-          else router.push(ENDPOINTS.PROSPECTS);
-        } else if (res.status === 422) {
-          message = res.data.message;
-          setBackendErrors(res.data.errors);
+    let message = 'Quelque chose ne va pas bien';
+    if (res.status === 200 || res.status === 201) {
+      message = `Le prospect a été ${isEditing ? 'modifiée' : 'créée'} avec succès`;
+      reset(defaultValues);
+      toast.success(message);
+      localStorage.setItem('visite_fetch_show', 1);
 
-          // Effacer les erreurs après 5 secondes
-          setTimeout(() => setBackendErrors({}), 5000);
-        }
-      })
-      .catch((error) => {
-        const response = error.response;
-        if (response && response.status === 422) {
-          setBackendErrors(response.data.errors);
-
-          // Effacer les erreurs après 5 secondes
-          setTimeout(() => setBackendErrors({}), 5000);
-        }
-      })
-      .finally(() => setLoading({ ...loading, form: false }));
-  };
+      if (onSuccess) onSuccess();
+      if (onClose) onClose();
+      else router.push(ENDPOINTS.PROSPECTS);
+    } else if (res.status === 422) {
+      message = res.data.message;
+      setBackendErrors(res.data.errors);
+      setTimeout(() => setBackendErrors({}), 5000);
+    }
+  } catch (error) {
+    const response = error.response;
+    if (response && response.status === 422) {
+      setBackendErrors(response.data.errors);
+      setTimeout(() => setBackendErrors({}), 5000);
+    }
+  } finally {
+    setIsSubmitting(false); // Reset manual loading state
+  }
+};
 
   const handleChange_email = (event) => {
     const inputText = event.target.value || ''; // Ensure inputText is at least an empty string
@@ -557,26 +544,41 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
 
             </div>
               <div className="flex justify-center items-center gap-4 xl:mt-32">
-                <Button
-                  type="button"
-                  onClick={() => {
-                    if (onClose) {
-                      onClose();
-                    } else {
-                      router.back();
-                    }
-                  }}
-                >
-                  Annuler
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={loading.form || check || check_p}
-                  loading={loading.form}
-                >
-                  Enregistrer
-                </Button>
-              </div>
+              <Button
+                type="button"
+                onClick={() => {
+                  if (onClose) {
+                    onClose();
+                  } else {
+                    router.back();
+                  }
+                }}
+                disabled={isSubmitting} // Disable cancel during submit
+              >
+                Annuler
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting || check || check_p}
+              >
+                {isSubmitting ? (
+                  <div className="flex items-center gap-2">
+                    <svg 
+                      className="animate-spin h-5 w-5 text-white" 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      fill="none" 
+                      viewBox="0 0 24 24"
+                    >
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Enregistrement...
+                  </div>
+                ) : (
+                  "Enregistrer"
+                )}
+              </Button>
+            </div>
           </form>
         </div>
       </div>

@@ -193,7 +193,7 @@ export default function ProjetsPage() {
         totalRows={filteredProjets.length}
         loading={loading}
         error={error}
-        addUserLink={canCreateProjet ? "/Projets/ajouter" : undefined}
+        addLink={canCreateProjet ? "/Projets/ajouter" : undefined}
         onSearchChange={handleSearchChange}
         currentPage={currentPage}
         rowsPerPage={rowsPerPage}
