@@ -12,21 +12,21 @@ export const DetailTab = () => {
         <div className="space-y-4">
           {/* General Information Section */}
           <div>
-            <h3 className="text-sm font-medium text-gray-500">
+            <h3 className="text-md font-medium text-gray-500">
               Informations générales
             </h3>
             <div className="mt-2 bg-gray-50 rounded-lg p-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs text-gray-500">Code</p>
+                  <p className="text-sm text-gray-500">Code</p>
                   <p className="font-medium">RES-2023-05678</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Date</p>
+                  <p className="text-sm text-gray-500">Date</p>
                   <p className="font-medium">12/06/2023</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Statut</p>
+                  <p className="text-sm text-gray-500">Statut</p>
                   <p className="font-medium">
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                       Actif
@@ -34,7 +34,7 @@ export const DetailTab = () => {
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Agent</p>
+                  <p className="text-sm text-gray-500">Agent</p>
                   <p className="font-medium">Marie Dupont</p>
                 </div>
               </div>
@@ -71,7 +71,7 @@ export const DetailTab = () => {
         <div className="space-y-4">
           {/* Financial Information Section */}
           <div>
-            <h3 className="text-sm font-medium text-gray-500">
+            <h3 className="text-md font-medium text-gray-500">
               Informations financières
             </h3>
             <div className="mt-2 bg-gray-50 rounded-lg p-4">
