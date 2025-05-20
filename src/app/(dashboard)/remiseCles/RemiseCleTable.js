@@ -72,6 +72,7 @@ const RemiseCleTable = ({}) => {
   }
 };
 
+
 const fetchbiens = async () => {
   try {
     if (!accessToken) {
