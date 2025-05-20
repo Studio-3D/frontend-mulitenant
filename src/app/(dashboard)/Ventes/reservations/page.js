@@ -9,7 +9,7 @@ import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { isAdmin, isSuperAdmin, isCommercial } from '../../../../configs/enum';
 import { useAuth } from '../../../../context/AuthContext';
-import CRMNavbar from '@/components/CRMNavbar';
+import VenteNavbar from '@/components/VenteNavbar';
 
 export default function Page(dataClient) {
   const ACTION = { EDIT: 'edit', ADD: 'add' };
@@ -60,7 +60,7 @@ export default function Page(dataClient) {
           <div>
             {!clientId && (
               <>
-                
+                 <VenteNavbar /> 
               </>
             )}
             <ReservaionTable dataClient={dataClient}  />

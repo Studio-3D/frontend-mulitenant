@@ -8,7 +8,6 @@ export default function Input({
   type = 'text',
   name,
   value,
-  defaultValue = '', // Set default empty string
   placeholder,
   onChange,
   error,
@@ -20,15 +19,16 @@ export default function Input({
   required,
   inputMode,
 }) {
-  // Ensure value is never null
-  const safeValue = value == null ? '' : value;
+  // For uncontrolled components, we'll use defaultValue internally if value is undefined
+  const isControlled = value !== undefined;
+  const inputValue = isControlled ? (value == null ? '' : value) : undefined;
 
   if (control) {
     return (
       <Controller
         name={name}
         control={control}
-        defaultValue={defaultValue}
+        defaultValue=""
         render={({ field }) => (
           <div className="flex flex-col w-full">
             <label className="font-medium text-gray-700">
@@ -39,7 +39,7 @@ export default function Input({
               <input
                 {...field}
                 type={type}
-                value={field.value == null ? '' : field.value} // Handle null values
+                value={field.value == null ? '' : field.value}
                 placeholder={placeholder}
                 readOnly={readOnly}
                 disabled={disabled}
@@ -62,8 +62,8 @@ export default function Input({
                 onChange={(e) => {
                   if (type == 'file') {
                     const files = e.target.files;
-                    field.onChange(files); // Update React Hook Form state
-                    onChange?.(e, files); // Call your custom handler with event and files
+                    field.onChange(files);
+                    onChange?.(e, files);
                   } else {
                     field.onChange(e);
                     onChange?.(e);
@@ -97,8 +97,7 @@ export default function Input({
         <input
           type={type}
           name={name}
-          value={type == 'file' ? undefined : safeValue} // Don't set value for file inputs
-          defaultValue={defaultValue}
+          value={inputValue}
           onChange={onChange}
           readOnly={readOnly}
           disabled={disabled}

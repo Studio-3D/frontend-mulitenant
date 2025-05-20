@@ -81,7 +81,7 @@ const ProspectTable = () => {
     //Implementing the setInterval method
     const interval = setInterval(() => {
       if (localStorage.getItem('load_data_prospect') == 1) {
-        localStorage.setItem('load_data_prospect', 0);
+        localStorage.removeItem('load_data_prospect');
 
         fetchData_table_by_projet(
           entity,

@@ -194,3 +194,15 @@ export const getTypeAppelLabel = (number) => {
     return TYPES_APPELS[number].label;
   }
 };
+
+export const TYPE_CLIENT = {
+  1: { code: '1', label: 'Particulier' },
+  2: { code: '2', label: 'Société' },
+}
+
+export const SITUATION_FAMILIALLE = {
+  1: { code: 1, label: 'Célibataire' },
+  2: { code: 2, label: 'Marié' },
+  3: { code: 3, label: 'Divorcé' },
+  4: { code: 4, label: 'Veuf' }
+};
