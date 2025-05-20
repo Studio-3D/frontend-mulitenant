@@ -99,6 +99,7 @@ export const HistoriquesTab = () => {
        <Table
           columns={columns}
           data={historiqueData}
+          enableExport
        />
       </div>
     
