@@ -77,19 +77,19 @@ export const DetailTab = () => {
             <div className="mt-2 bg-gray-50 rounded-lg p-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs text-gray-500">Prix de vente</p>
+                  <p className="text-sm text-gray-500">Prix de vente</p>
                   <p className="font-medium">320 000 €</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Dépôt de garantie</p>
+                  <p className="text-sm text-gray-500">Dépôt de garantie</p>
                   <p className="font-medium">32 000 €</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Avances versées</p>
+                  <p className="text-sm text-gray-500">Avances versées</p>
                   <p className="font-medium">16 000 €</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Reste à payer</p>
+                  <p className="text-sm text-gray-500">Reste à payer</p>
                   <p className="font-medium">304 000 €</p>
                 </div>
               </div>
