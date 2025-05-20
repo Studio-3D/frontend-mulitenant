@@ -58,7 +58,7 @@ const PieceJointeViewer = ({ Details, getFileUrl, url }) => {
         ))}
       </Stack>
 
-      <Dialog open={open} onClose={handleClose} maxWidth="md">
+      <Dialog open={open} onClose={handleClose} >
         <Box sx={{ position: 'relative', p: 1 }}>
           <IconButton
             onClick={handleClose}
