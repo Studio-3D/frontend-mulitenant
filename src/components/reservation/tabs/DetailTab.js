@@ -43,23 +43,23 @@ export const DetailTab = () => {
 
           {/* Property Information Section */}
           <div>
-            <h3 className="text-sm font-medium text-gray-500">Propriété</h3>
+            <h3 className="text-md font-medium text-gray-500">Propriété</h3>
             <div className="mt-2 bg-gray-50 rounded-lg p-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs text-gray-500">Type</p>
+                  <p className="text-sm text-gray-500">Type</p>
                   <p className="font-medium">Appartement</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Surface</p>
+                  <p className="text-sm text-gray-500">Surface</p>
                   <p className="font-medium">85 m²</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Pièces</p>
+                  <p className="text-sm text-gray-500">Pièces</p>
                   <p className="font-medium">3</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Étage</p>
+                  <p className="text-sm text-gray-500">Étage</p>
                   <p className="font-medium">2ème</p>
                 </div>
               </div>
