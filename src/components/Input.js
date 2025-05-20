@@ -7,7 +7,7 @@ export default function Input({
   type = 'text',
   name,
   value, // Only for uncontrolled components
-  defaultValue = '', // Default for both controlled and uncontrolled
+  defaultValue,
   placeholder,
   onChange,
   error,
@@ -18,7 +18,9 @@ export default function Input({
   disabled,
   required,
   inputMode,
+  multiline = false, // Ajout du support multiline
 }) {
+
   // Ensure value is never null
   const safeValue = value == null ? '' : value;
 
@@ -30,7 +32,6 @@ export default function Input({
         control={control}
         defaultValue={defaultValue}
         render={({ field, fieldState }) => {
-          // Ensure field.value is never null for controlled components
           const fieldValue = field.value === null ? '' : field.value;
           const combinedError = fieldState.error?.message || error || backendErrors;
 
@@ -41,28 +42,61 @@ export default function Input({
                 {required && <span className="text-red-500 ml-1">*</span>}
               </label>
               <div className="relative">
-                <input
-                  {...field}
-                  value={fieldValue}
-                  type={type}
-                  placeholder={placeholder}
-                  readOnly={readOnly}
-                  disabled={disabled}
-                  required={required}
-                  inputMode={inputMode}
-                  className={`h-[38px] text-[15px] px-4 py-2 outline-none border rounded-md w-full
-                    ${
-                      readOnly || disabled
-                        ? 'cursor-default bg-gray-50 border-[#b7daf6]'
-                        : 'border-gray-300 hover:border-gray-500 focus:border-gray-500'
-                    }
-                    ${combinedError ? 'border-red-500 focus:border-red-500 hover:border-red-500' : ''}
-                  `}
-                  onChange={(e) => {
-                    field.onChange(e);
-                    onChange?.(e);
-                  }}
-                />
+                {multiline ? (
+                  <textarea
+                    {...field}
+                    value={fieldValue}
+                    placeholder={placeholder}
+                    readOnly={readOnly}
+                    disabled={disabled}
+                    required={required}
+                    inputMode={inputMode}
+                    className={`text-[15px] px-4 py-2 outline-none border rounded-md w-full min-h-[100px]
+                      ${
+                        readOnly || disabled
+                          ? 'cursor-default bg-gray-50 border-[#b7daf6]'
+                          : 'border-gray-300 hover:border-gray-500 focus:border-gray-500'
+                      }
+                      ${
+                        combinedError
+                          ? 'border-red-500 focus:border-red-500 hover:border-red-500'
+                          : ''
+                      }
+                    `}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      onChange?.(e);
+                    }}
+                  />
+                ) : (
+                  <input
+                    {...field}
+                    value={fieldValue}
+                    type={type}
+                    placeholder={placeholder}
+                    readOnly={readOnly}
+                    disabled={disabled}
+                    required={required}
+                    inputMode={inputMode}
+                    className={`h-[38px] text-[15px] px-4 py-2 outline-none border rounded-md w-full
+                      ${
+                        readOnly || disabled
+                          ? 'cursor-default bg-gray-50 border-[#b7daf6]'
+                          : 'border-gray-300 hover:border-gray-500 focus:border-gray-500'
+                      }
+                      ${
+                        combinedError
+                          ? 'border-red-500 focus:border-red-500 hover:border-red-500'
+                          : ''
+                      }
+                    `}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      onChange?.(e);
+                    }}
+                  />
+                )}
+
                 {children && (
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer">
                     {children}
@@ -70,9 +104,7 @@ export default function Input({
                 )}
               </div>
               {combinedError && (
-                <p className="text-red-500 text-sm mt-1">
-                  {combinedError}
-                </p>
+                <p className="text-red-500 text-sm mt-1">{combinedError}</p>
               )}
             </div>
           );
@@ -81,7 +113,7 @@ export default function Input({
     );
   }
 
-  // For uncontrolled components
+  // Uncontrolled input
   return (
     <div className="flex flex-col w-full">
       <label className="font-medium text-gray-700">
@@ -89,27 +121,57 @@ export default function Input({
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
       <div className="relative">
-        <input
-          type={type}
-          name={name}
-          value={safeValue}
-          defaultValue={defaultValue}
-          onChange={onChange}
-          readOnly={readOnly}
-          disabled={disabled}
-          required={required}
-          inputMode={inputMode}
-          accept={type == 'file' ? 'image/*,application/pdf' : undefined}
-          className={`h-[38px] text-[15px] px-4 py-2 outline-none border rounded-md w-full
-            ${
-              readOnly || disabled
-                ? 'cursor-default bg-gray-50 border-[#b7daf6]'
-                : 'border-gray-300 hover:border-gray-500 focus:border-gray-500'
-            }
-            ${error || backendErrors ? 'border-red-500 focus:border-red-500 hover:border-red-500' : ''}
-          `}
-          placeholder={placeholder}
-        />
+        {multiline ? (
+          <textarea
+            name={name}
+            value={safeValue}
+            defaultValue={defaultValue}
+            onChange={onChange}
+            readOnly={readOnly}
+            disabled={disabled}
+            required={required}
+            inputMode={inputMode}
+            placeholder={placeholder}
+            className={`text-[15px] px-4 py-2 outline-none border rounded-md w-full min-h-[100px]
+              ${
+                readOnly || disabled
+                  ? 'cursor-default bg-gray-50 border-[#b7daf6]'
+                  : 'border-gray-300 hover:border-gray-500 focus:border-gray-500'
+              }
+              ${
+                error || backendErrors
+                  ? 'border-red-500 focus:border-red-500 hover:border-red-500'
+                  : ''
+              }
+            `}
+          />
+        ) : (
+          <input
+            type={type}
+            name={name}
+            value={safeValue}
+            defaultValue={defaultValue}
+            onChange={onChange}
+            readOnly={readOnly}
+            disabled={disabled}
+            required={required}
+            inputMode={inputMode}
+            placeholder={placeholder}
+            className={`h-[38px] text-[15px] px-4 py-2 outline-none border rounded-md w-full
+              ${
+                readOnly || disabled
+                  ? 'cursor-default bg-gray-50 border-[#b7daf6]'
+                  : 'border-gray-300 hover:border-gray-500 focus:border-gray-500'
+              }
+              ${
+                error || backendErrors
+                  ? 'border-red-500 focus:border-red-500 hover:border-red-500'
+                  : ''
+              }
+            `}
+          />
+        )}
+
         {children && (
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer">
             {children}

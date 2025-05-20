@@ -1,9 +1,9 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import RemiseCleTable from './RemiseCleTable'
+import RemiseCleForm from './RemiseCleForm'
 import { useSearchParams } from 'next/navigation'
-import ServiceForm from './ReclamationClientForm'
-import ServiceTable from './ReclamationClientTable'
 
 export default function Page() {
   const ACTION = { EDIT: 'edit', ADD: 'add' }
@@ -23,9 +23,9 @@ export default function Page() {
   // Fonction pour déterminer le composant enfant en fonction de l'action et de l'id
   const determineChildComponent = (action, id) => {
     if (action === ACTION.ADD) {
-      return <ServiceForm />
+      return <RemiseCleForm />
     } else if (!isNaN(parseInt(id)) && action === ACTION.EDIT) {
-      return <ServiceForm id={id} />
+      return <RemiseCleForm id={id} />
     } else {
       console.warn('Invalid action or missing id:', action, id) // Debugging
 
@@ -40,7 +40,7 @@ export default function Page() {
       ) : (
         <>
           <div>
-            <ServiceTable />
+            <RemiseCleTable  />
           </div>
         </>
       )}

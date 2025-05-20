@@ -24,6 +24,7 @@ import LoadingSpin from '@/components/LoadingSpin';
 import { useRouter } from 'next/navigation';
 import Button from '@/components/Button'; // adjust the path as needed
 import { IconButton, Tooltip } from '@mui/material';
+import PieceJointeViewer from "@/components/PieceJointeViewer";
 
 function formatDate(dateStr) {
   if (!dateStr) return "-";
@@ -248,26 +249,9 @@ export default function ViewReclamationFullPage({ reclamationId }) {
           </Box>
 
           {/* Pièces jointes */}
-          {Details?.piece_jointe && Details?.piece_jointe.length > 0 && (
-            <>
-              <Divider />
-              <Typography variant="h6" sx={{ color: "#009FFF", fontWeight: "bold", mb: 1 }}>
-                Pièce(s) jointe(s) :
-              </Typography>
-              <Stack direction="row" spacing={1}>
-                {Details.piece_jointe.map((pj, i) => (
-                  <Tooltip title={`Pièce ${i + 1}`} key={i}>
-                    <IconButton
-                      onClick={() => window.open(getFileUrl(pj.fichier), '_blank')}
-                      color="primary"
-                    >
-                      <Paperclip size={18} />{i + 1}
-                    </IconButton>
-                  </Tooltip>
-                ))}
-              </Stack>
-            </>
-          )}
+         <PieceJointeViewer Details={Details} getFileUrl={getFileUrl} />
+
+
         </Paper>
 
         {/* Colonne droite - Dates et commentaires */}

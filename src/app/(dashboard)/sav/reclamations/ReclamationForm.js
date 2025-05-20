@@ -196,6 +196,7 @@ export default function ReclamationForm({ id }) {
       console.log(response.data.biens)
       setLoading(false)
     } catch (error) {
+      setLoading(false)
       console.error('Error fetching data:', error);
     }
   };
