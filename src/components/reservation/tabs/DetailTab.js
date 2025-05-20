@@ -98,9 +98,9 @@ export const DetailTab = () => {
 
           {/* Notes Section */}
           <div>
-            <h3 className="text-sm font-medium text-gray-500">Notes</h3>
-            <div className="mt-2 bg-gray-50 rounded-lg p-4 h-48 overflow-y-auto">
-              <p className="text-sm text-gray-700">
+            <h3 className="text-md font-medium text-gray-500">Notes</h3>
+            <div className="mt-2 bg-gray-50 rounded-lg p-4 h-36 overflow-y-auto">
+              <p className="text-md text-gray-700">
                 Le client souhaite finaliser l'achat avant la fin du mois.
                 Prévoir une visite supplémentaire pour vérifier les travaux
                 effectués. Contact préféré par email.
