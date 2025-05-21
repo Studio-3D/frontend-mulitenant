@@ -30,6 +30,7 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
   const id = searchParams.get('id');*/
 
   const [formData, setFormData] = useState();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState({ form: false });
   const [backendErrors, setBackendErrors] = useState({});
   const [sources, setSources] = useState([]);
@@ -163,30 +164,22 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
     }
   }, [formData, setValue]);
 
-  const onSubmit = (data) => {
-    console.log(data);
+  // Replace your existing onSubmit function with this:
+const onSubmit = async (data) => {
+  console.log(data);
+  
+  setIsSubmitting(true); // Set manual loading state
+  setBackendErrors({});
 
-    setLoading({ ...loading, form: true });
-    setBackendErrors({});
-
+  try {
     const dataToSend = new FormData();
     let url = APIURL.PROSPECTS;
     let method = 'post';
 
     // Convert "null" string to actual null before appending to FormData
     Object.entries(data).forEach(([key, value]) => {
-      // If value is "null" (string), replace it with null
-      if (value === 'null') {
-        value = null; // Convert string "null" to null
-      }
-
-      // Append value to FormData
-      // If the value is null, append it as null (FormData will automatically handle null values)
-      if (value === null) {
-        dataToSend.append(key, ''); // Sending an empty string is equivalent to sending null in form data
-      } else {
-        dataToSend.append(key, value);
-      }
+      if (value === 'null') value = null;
+      dataToSend.append(key, value === null ? '' : value);
     });
 
     if (isEditing) {
@@ -194,48 +187,42 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
       method = 'put';
     }
 
-    axios({
-      method: method,
-      url: url,
+    const res = await axios({
+      method,
+      url,
       data: dataToSend,
       headers: {
         'content-type': 'application/json',
         Accept: 'application/json',
         Authorization: `Bearer ${accessToken}`,
       },
-    })
-      .then((res) => {
-        let message = 'Quelque chose ne va pas bien';
-        if (res.status === 200 || res.status === 201) {
-          message = `Le prospect a été ${
-            isEditing ? 'modifiée' : 'créée'
-          } avec succès`;
-          reset(defaultValues);
-          toast.success(message);
-          localStorage.setItem('visite_fetch_show',1 );
+    });
 
-          if (onSuccess) onSuccess();
-          if (onClose) onClose();
-          else router.push(ENDPOINTS.PROSPECTS);
-        } else if (res.status === 422) {
-          message = res.data.message;
-          setBackendErrors(res.data.errors);
+    let message = 'Quelque chose ne va pas bien';
+    if (res.status === 200 || res.status === 201) {
+      message = `Le prospect a été ${isEditing ? 'modifiée' : 'créée'} avec succès`;
+      reset(defaultValues);
+      toast.success(message);
+      localStorage.setItem('visite_fetch_show', 1);
 
-          // Effacer les erreurs après 5 secondes
-          setTimeout(() => setBackendErrors({}), 5000);
-        }
-      })
-      .catch((error) => {
-        const response = error.response;
-        if (response && response.status === 422) {
-          setBackendErrors(response.data.errors);
-
-          // Effacer les erreurs après 5 secondes
-          setTimeout(() => setBackendErrors({}), 5000);
-        }
-      })
-      .finally(() => setLoading({ ...loading, form: false }));
-  };
+      if (onSuccess) onSuccess();
+      if (onClose) onClose();
+      else router.push(ENDPOINTS.PROSPECTS);
+    } else if (res.status === 422) {
+      message = res.data.message;
+      setBackendErrors(res.data.errors);
+      setTimeout(() => setBackendErrors({}), 5000);
+    }
+  } catch (error) {
+    const response = error.response;
+    if (response && response.status === 422) {
+      setBackendErrors(response.data.errors);
+      setTimeout(() => setBackendErrors({}), 5000);
+    }
+  } finally {
+    setIsSubmitting(false); // Reset manual loading state
+  }
+};
 
   const handleChange_email = (event) => {
     const inputText = event.target.value || ''; // Ensure inputText is at least an empty string
@@ -366,14 +353,14 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
 
   return (
     <>
-      <div className="p-3">
+      <div className="">
         <div className="flex items-center justify-start">
           <BreadCrumb
             baseUrl={ENDPOINTS.PROSPECTS}
             step={`${isEditing ? 'Modifier' : 'Ajouter'} un prospect`}
           />
         </div>
-        <div className="p-6 mt-4 bg-white shadow-md rounded-md">
+        <div className="p-6 mt-4 min-h-[89vh] bg-white shadow-md rounded-md">
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="space-y-4">
               {check && info_client && (
@@ -383,12 +370,17 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
               )}
 
               {check_p && info_prospect && (
-                <div className="bg-blue-100 text-blue-700 p-3 rounded-md border-l-4 border-blue-500 p-4 text-center rounded">
+                <div className="bg-blue-100 text-blue-700 border-l-4 border-blue-500 p-4 text-center rounded">
                   <p>{info_prospect}</p>
                 </div>
               )}
 
               {/* First set of fields (Responsive grid) */}
+              <div>
+                  <h2 className="text-xl font-medium border-b pb-2">
+                    Informations du prospect
+                  </h2>
+                </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
                 <div>
                   <TextField
@@ -452,7 +444,7 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
                 </div>
                 <div>
                   <TextField
-                    label="Telephone num2:"
+                    label="Telephone 2:"
                     name="telephone_num2"
                     type="number"
                     control={control}
@@ -462,40 +454,7 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
                     onChange={handleChange_tele}
                   />
                 </div>
-              </div>
-
-              {/* Third set of fields (Responsive grid) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
-                {/* Accepte d'être contacté */}
-                <div className="flex items-center space-x-2">
-                  <Controller
-                    name="notifie"
-                    control={control}
-                    defaultValue={defaultValues['notifie'] || 0}
-                    render={({ field }) => (
-                      <label className="flex items-center space-x-2">
-                        <span
-                          className={`text-sm font-medium ${
-                            field.value === 1 ? 'text-purple-600' : ''
-                          }`}
-                        >
-                          Accepte être contacté:
-                        </span>
-                        <input
-                          type="checkbox"
-                          {...field}
-                          checked={field.value === 1}
-                          onChange={(e) =>
-                            field.onChange(e.target.checked ? 1 : 0)
-                          }
-                          className="h-5 w-10 rounded-full bg-gray-300 transition-all duration-300"
-                        />
-                      </label>
-                    )}
-                  />
-                </div>
-
-                {/* Source Select */}
+              {/* Source Select */}
                 <div className="">
                   <Autocomplete
                     name="source"
@@ -509,8 +468,41 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
                     errors={errors}
                     backendErrors={backendErrors}
                     onChange={handleSourceChange}
-                  />
+                    />
                 </div>
+
+              {/* Third set of fields (Responsive grid) */}
+                {/* Accepte d'être contacté */}
+                <div className="flex items-center justify-between w-full mt-4">
+                  <Controller
+                    name="notifie"
+                    control={control}
+                    defaultValue={defaultValues['notifie'] || 0}
+                    render={({ field }) => (
+                      <label className="flex justify-center items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          {...field}
+                          checked={field.value === 1}
+                          onChange={(e) =>
+                            field.onChange(e.target.checked ? 1 : 0)
+                          }
+                          className="h-5 w-10 rounded-full bg-gray-300 transition-all duration-300"
+                          />
+                        <span
+                          className={`text-sm font-medium ${
+                            field.value === 1 ? 'text-[#009FFF]' : ''
+                          }`}
+                          >
+                          Accepte être contacté:
+                        </span>
+                      </label>
+                    )}
+                    />
+                    </div>
+               
+
+                
 
                 {/* Partenaire Select (conditionally rendered) */}
                 <div className="">
@@ -533,7 +525,7 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
               </div>
 
               {/* Message field in the next row */}
-              <div className="flex-1 mt-4">
+              <div className="flex-1 mt-4 ">
                 <TextField
                   label="Message:"
                   name="message"
@@ -550,27 +542,42 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
 
               {/* Buttons */}
 
-              <div className="flex justify-center gap-4 items-center mt-6 mb-6">
-                <Button
-                  type="button"
-                  onClick={() => {
-                    if (onClose) {
-                      onClose();
-                    } else {
-                      router.back();
-                    }
-                  }}
-                >
-                  Annuler
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={loading.form || check || check_p}
-                  loading={loading.form}
-                >
-                  Enregistrer
-                </Button>
-              </div>
+            </div>
+              <div className="flex justify-center items-center gap-4 xl:mt-32">
+              <Button
+                type="button"
+                onClick={() => {
+                  if (onClose) {
+                    onClose();
+                  } else {
+                    router.back();
+                  }
+                }}
+                disabled={isSubmitting} // Disable cancel during submit
+              >
+                Annuler
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting || check || check_p}
+              >
+                {isSubmitting ? (
+                  <div className="flex items-center gap-2">
+                    <svg 
+                      className="animate-spin h-5 w-5 text-white" 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      fill="none" 
+                      viewBox="0 0 24 24"
+                    >
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Enregistrement...
+                  </div>
+                ) : (
+                  "Enregistrer"
+                )}
+              </Button>
             </div>
           </form>
         </div>

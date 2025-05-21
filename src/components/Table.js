@@ -83,13 +83,13 @@ const Table = ({
   );
 
   return (
-    <div className="mx-auto px-6 py-4 mt-2 mb-4 bg-white rounded-lg shadow-md">
+    <div className="mb-4 rounded-lg">
       {title && (
         <h2 className="text-xl font-semibold text-gray-700 mb-2">{title}</h2>
       )}
 
       {/* Table Controls */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex items-center gap-2 w-full sm:w-auto">
           {filterComponent && (
             <button
@@ -163,7 +163,7 @@ const Table = ({
             <thead>
               <tr className="bg-[#009FFF] text-white">
                 {columns.map((column) => (
-                  <th key={column.key} className="py-3 px-2 text-left w-[15.3%]">
+                  <th key={column.key} className="py-3 px-2 text-left">
                     {column.label}
                   </th>
                 ))}
