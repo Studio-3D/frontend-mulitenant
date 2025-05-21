@@ -1,5 +1,7 @@
 import React from 'react';
 import { UsersIcon, PlusIcon, EditIcon, TrashIcon } from 'lucide-react';
+import Table from '@/components/Table';
+import { Eye, UserCog, UserX, User, Trash2 } from "lucide-react";
 
 // Mock data for acquéreurs
 const acquereursData = [
@@ -24,83 +26,73 @@ const acquereursData = [
 ];
 
 export const AcquereursTab = () => {
+  const columns = [
+      {
+        key: "nom",
+        label: "Nom",
+      },
+      {
+        key: "prenom",
+        label: "Prénom",
+    
+      },
+      {
+        key: "email",
+        label: "Email",
+      },
+      {
+        key: "telephone",
+        label: "Téléphone",
+        
+      },
+      {
+        key: "adresse",
+        label: "Adresse",
+      },
+      {
+        key: "statut",
+        label: "Statut",
+      },
+      {
+        key: "actions",
+        label: "Actions",
+        render: (row) => (
+          <div className="flex gap-3 items-center">
+              <Eye
+                className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
+                title="Voir détails"
+              />
+              <UserCog
+                className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
+                title="Modifier"
+              />
+            {row.status === "Actif" ? (
+              <User
+                className="w-4 h-4 text-green-500 hover:text-green-700 cursor-pointer"
+                title="Bloquer utilisateur"
+              />
+            ) : (
+              <UserX
+                className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
+                title="Débloquer utilisateur"
+              />
+            )}
+            <Trash2
+              className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
+              title="Supprimer utilisateur"
+            />
+          </div>
+        ),
+      },
+    ];
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-800 flex items-center">
-          <UsersIcon className="h-5 w-5 mr-2 text-blue-500" />
-          Acquéreurs
-        </h2>
-        <button className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm flex items-center">
-          <PlusIcon className="h-4 w-4 mr-1" />
-          Ajouter un acquéreur
-        </button>
-      </div>
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Nom
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Prénom
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Email
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Téléphone
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Adresse
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Statut
-              </th>
-              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {acquereursData.map(acquereur => (
-              <tr key={acquereur.id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {acquereur.nom}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {acquereur.prenom}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {acquereur.email}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {acquereur.telephone}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {acquereur.adresse}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {acquereur.principal && (
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                      Principal
-                    </span>
-                  )}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button className="text-blue-600 hover:text-blue-900 mr-3">
-                    <EditIcon className="h-4 w-4" />
-                  </button>
-                  <button className="text-red-600 hover:text-red-900">
-                    <TrashIcon className="h-4 w-4" />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <Table 
+      columns={columns} 
+      data={acquereursData}
+      enableExport
+      />
     </div>
   );
 };
