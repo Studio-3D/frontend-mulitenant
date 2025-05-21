@@ -52,6 +52,15 @@ export const AcquereursTab = () => {
       {
         key: "statut",
         label: "Statut",
+        render: (row) => (
+          <span
+            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+              row.principal ? "bg-green-100 text-green-800" : "bg-cyan-100 text-cyan-800"
+            }`}
+          >
+            {row.principal ? "Principal" : "Secondaire"}
+          </span>
+        ),
       },
       {
         key: "actions",
