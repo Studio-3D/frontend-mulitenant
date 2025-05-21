@@ -36,13 +36,16 @@ import {
   FileIcon,
   Building2,
   FolderCog,
+  Receipt,
 } from "lucide-react";
+import { TbLayoutDashboardFilled } from 'react-icons/tb';
 
 import { User_roles } from "../configs/enum";
 import { useSociete } from "@/context/SocieteContext";
 import SocieteDialog from "./SocieteDialog";
 import { useProjet } from "@/context/ProjetContext";
 import ProjetDialog from "./ProjetDialog";
+import { FaFileInvoiceDollar } from "react-icons/fa";
 
 const Menu = () => {
   const [menuItems, setMenuItems] = useState([]);
@@ -252,25 +255,29 @@ const Menu = () => {
   const getAdditionalAdminItems = () => [
     {
       label: "Remise Des Clés",
-      icon: <Percent />,
-      href: "/remise-des-cles",
+      icon: <Percent size={20} />,
+      href: "/remiseCles",
+      needsSociete: user.role === 1,
+      needsProjet: true,
     },
     {
       label: "Sav",
-      icon: <FolderCog />, // Replace FolderUser with FolderCog which exists in lucide-react
+      icon: <FolderCog />,
       children: [
         {
           label: "Services prestataire",
-          icon: <Wrench />, // outil = services
+          icon: <Wrench />,
           href: "/sav/services",
           needsSociete: user.role === 1,
+          needsProjet: true,
+
           
         },
         {
           label: "Prestataires",
-          icon: <Users />, // groupe de personnes = prestataires
+          icon: <Users />,
           href: "/sav/prestataires",
-          //needsProjet: true,
+          needsProjet: true,
           needsSociete: user.role === 1,
         },
         {
@@ -287,7 +294,7 @@ const Menu = () => {
     { label: "Reclamations", icon: <FileText />, href: "/Reclamations" },
     {
       label: "Encaissments",
-      icon: <Landmark />,
+      icon: <Receipt />,
       href: "/encaissements",
       needsSociete: user.role === 1,
       needsProjet: true,

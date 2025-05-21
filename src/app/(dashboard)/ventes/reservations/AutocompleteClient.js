@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 const AutocompleteClient = ({
-  label = "Choisir un client si déjà exist *",
+  label = "Choisir un client si déjà exist",
   options = [],
   value,
   onChange,
@@ -9,13 +9,13 @@ const AutocompleteClient = ({
   loading = false,
   width = "w-full",
   height = "h-10",
-  required = true,
+  required = false,
   errors,
   backendErrors,
   name = "id",
   index,
   selectedClient,
-  disabled = false,
+  disabled = false, // This now includes both loading and disabled states
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -26,7 +26,7 @@ const AutocompleteClient = ({
   // Find the selected client object
   const selectedOption = options.find(option => option.id === currentValue);
 
-  // Filter options based on search query
+  // Filter options based on search query and disabled status
   const filteredOptions = searchQuery
     ? options.filter(option => {
         if (!option) return false;
@@ -41,8 +41,8 @@ const AutocompleteClient = ({
 
   // Handle selecting an option
   const handleSelect = (option) => {
-    // Don't select if option is disabled or if it's the selectedClient in another field
-    if (option.disabled || (selectedClient && option.id === selectedClient && index !== 0)) {
+    // Don't select if option is disabled, component is disabled, or if it's the selectedClient in another field
+    if (option.disabled || disabled || (selectedClient && option.id === selectedClient && index !== 0)) {
       return;
     }
     onChange({ target: { name: 'id', value: option.id } }, index, 'select_client');
@@ -86,29 +86,23 @@ const AutocompleteClient = ({
           type="text"
           value={searchQuery}
           onChange={handleChange}
-          onFocus={() => setIsOpen(true)}
+          onFocus={() => !disabled && setIsOpen(true)}
           onBlur={() => setTimeout(() => setIsOpen(false), 200)}
           placeholder={placeholder}
           disabled={disabled || loading}
-          className={`${width} px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-            disabled || loading ? 'opacity-50 cursor-not-allowed' : 'border-gray-300'
-          } ${errorMessage ? 'border-red-500' : ''}`}
+          className={`${width} ${height} px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+            disabled || loading ? 'bg-gray-100 opacity-50 cursor-not-allowed' : 'bg-white'
+          } ${errorMessage ? 'border-red-500' : 'border-gray-300'}`}
           required={required}
         />
 
         {/* Dropdown Options */}
-        {isOpen && !disabled && (
+        {isOpen && !disabled && !loading && (
           <div className="absolute top-full left-0 w-full bg-white shadow-lg rounded-md mt-1 max-h-60 overflow-y-auto border border-gray-300 z-10">
-            {loading ? (
-              <div className="flex items-center justify-center p-4">
-                <div className="w-4 h-4 border-2 border-t-2 border-gray-500 rounded-full animate-spin mr-2"></div>
-                <span>Loading...</span>
-              </div>
-            ) : filteredOptions.length === 0 ? (
+            {filteredOptions.length === 0 ? (
               <div className="p-2 text-gray-500">Aucun client trouvé</div>
             ) : (
               filteredOptions.map((option) => {
-                // Determine if the option should be disabled
                 const isOptionDisabled = option.disabled || 
                   (selectedClient && option.id === selectedClient && index !== 0);
                 
@@ -117,12 +111,15 @@ const AutocompleteClient = ({
                     key={option.id}
                     className={`p-2 ${
                       isOptionDisabled 
-                        ? 'opacity-50 cursor-not-allowed text-gray-400' 
-                        : 'cursor-pointer hover:bg-blue-100'
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                        : 'cursor-pointer hover:bg-blue-50'
                     }`}
-                    onClick={() => !isOptionDisabled && handleSelect(option)}
+                    onClick={() => handleSelect(option)}
                   >
                     {option.nom} {option.prenom}
+                    {isOptionDisabled && (
+                      <span className="ml-2 text-xs text-gray-500">(Déjà sélectionné)</span>
+                    )}
                   </div>
                 );
               })

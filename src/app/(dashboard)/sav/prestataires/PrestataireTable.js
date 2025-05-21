@@ -5,19 +5,19 @@ import Modal from "@/components/Modal";
 import Table from "@/components/Table";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Pencil, Trash2, Eye } from "lucide-react";
+import { FaEdit } from "react-icons/fa";
+import { RiDeleteBin6Line, RiEyeLine } from "react-icons/ri";
 import axios from "axios";
 import { APIURL, ENDPOINTS } from "@/configs/api";
 import { fetchData_table_by_projet } from "@/configs/api-utils";
 import { isAdmin, isSuperAdmin } from "@/configs/enum";
 import { useAuth } from "@/context/AuthContext";
-import SelectInput from "@/components/SelectInput";
 import Input from "@/components/Input";
 import InputSelect from "@/components/inputSelect";
 import { useProjet } from "@/context/ProjetContext"; // Import ProjetContext
 import ProjetDialog from "@/components/ProjetDialog"; // Import ProjetDialog
 
-const PrestataireTable = ({ service_id }) => {
+const PrestataireTable = (serviceId) => {
   const [prestataires, setPrestataires] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -40,9 +40,8 @@ const PrestataireTable = ({ service_id }) => {
     telephone: "",
     serviceId: serviceId?.service?.id == null ? "" : serviceId?.service?.id, 
     
-
   });
-console.log("serviceId", serviceId?.service?.id)
+
   const [tempFilters, setTempFilters] = useState({ ...filters });
   const { selectedProjet, projets, fetchProjets } = useProjet(); // Get data from ProjetContext
   const [showProjetModal, setShowProjetModal] = useState(false); // State for project modal
@@ -87,17 +86,18 @@ console.log("serviceId", serviceId?.service?.id)
     }
   }, [selectedProjet]);
 
-  function handleShow(Id) {
-    router.push(`/sav/prestataires/show/${Id}`);
-  }
+    function handleShow(Id) {
+      router.push(`/sav/prestataires/show/${Id}`);
+    }
 
-  const handleFilterToggle = (isOpen) => {
-    if (!isOpen) resetFilters(); // Si on ferme, on réinitialise
-  };
+    const handleFilterToggle = (isOpen) => {
+      if (!isOpen) resetFilters(); // Si on ferme, on réinitialise
+    };
 
   useEffect(() => {
-    if (selectedProjet || service_id) {
-      fetchData_table_by_projet(
+
+    fetchData_table_by_projet(
+
         entity,
         filters,       
         searchTerm,
@@ -109,12 +109,12 @@ console.log("serviceId", serviceId?.service?.id)
         setPrestataires,
         setTotalRows
       );
-    }
-  }, [searchTerm, currentPage, rowsPerPage, accesstoken, filters, selectedProjet, service_id]);
+    }, [searchTerm, currentPage, rowsPerPage, accesstoken,filters]);
+
     
-  const handleFilterChange = (field, value) => {
-    setTempFilters((prev) => ({ ...prev, [field]: value }));
-  };
+    const handleFilterChange = (field, value) => {
+      setTempFilters((prev) => ({ ...prev, [field]: value }));
+    };
   
 
     const applyFilters = () => {
@@ -127,11 +127,12 @@ console.log("serviceId", serviceId?.service?.id)
         cin: "",
         email: "",
         telephone: "",
-        serviceId: serviceId?.service?.id == null ? "" : serviceId?.service?.id, 
+        serviceId: serviceId?.service?.id == null ? "" : serviceId?.service?.id, // n'inclut que si null
       };
       setFilters(reset);
       setTempFilters(reset);
-  };
+    };
+
 
   const handleEdit = (id) =>
     router.push(`${ENDPOINTS.Prestataires}?id=${id}&action=edit`);
@@ -145,7 +146,7 @@ console.log("serviceId", serviceId?.service?.id)
       key: "service",
       label: "Service",
       render: (row) => {
-        return row.service?.nom || "-"
+        return  row.service.nom 
       },
     },    
     { key: "telephone", label: "Téléphone" },
@@ -154,24 +155,22 @@ console.log("serviceId", serviceId?.service?.id)
       label: "Actions",
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <Pencil
+           <FaEdit
             className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
             onClick={() => handleEdit(row.id)}
           />
-          {row.reclamations?.length > 0 ? (
-            <Eye
+            <RiEyeLine
               className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
               onClick={() => handleShow(row.id)}
             />
-          ) : (
-            <Trash2
+         
+            <RiDeleteBin6Line
               className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
               onClick={() => {
                 setSelectedId(row.id);
                 setShowDeleteModal(true);
               }}
             />
-          )}
         </div>
       ),
     },
@@ -180,7 +179,6 @@ console.log("serviceId", serviceId?.service?.id)
   const columns = !serviceId?.service?.id 
   ? allColumns
   : allColumns.filter(col => col.key !== "service");
-
   
   const formatData = () => {
     return prestataires.map((pre) => ({
@@ -254,8 +252,7 @@ console.log("serviceId", serviceId?.service?.id)
       )}
       
       <Table
-        title={`Prestataires liées à service: ${serviceId?.service?.nom}` }
-
+        title={serviceId?.service?.nom && `Prestataires liées à ${serviceId?.service?.nom}`} 
         data_to_export={data_to_export()}
         columns_export={columns_export}
         name_file_export={"prestataire_export"}
@@ -263,7 +260,7 @@ console.log("serviceId", serviceId?.service?.id)
         onFilterToggle={handleFilterToggle}
         data={formatData()}
         filterComponent={
-          <div className="space-y-4 rounded-lg">
+          <div className="space-y-4 p-4 rounded-lg shadow-md">
             <div
               className="grid gap-3"
               style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}
@@ -306,25 +303,37 @@ console.log("serviceId", serviceId?.service?.id)
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
               
-              {!service_id && selectedProjet && (
-                <InputSelect
-                  label="Service"
-                  name="serviceId"
-                  value={tempFilters.serviceId}
-                  onChange={(selected) => handleFilterChange("serviceId", selected?.value || null)}
+              {!serviceId?.service?.id && (
+                <Select
+                  isClearable
+                  value={
+                  services
+                  .map(service => ({
+                  value: service.id,
+                  label: service.nom,
+                  id: service.id
+                  }))
+                  .find(option => option.value === tempFilters.serviceId) || null
+                  }
+                  onChange={selected =>
+                  handleFilterChange("serviceId", selected?.value || null)
+                  }
                   options={services.map(service => ({
-
-                    value: service.id,
-                    label: service.nom
+                  value: service.id,
+                  label: service.nom,
+                  id: service.id
                   }))}
-                  placeholder="Choisir un service..."
                   isLoading={loading}
-                  isClearable={true}
+                  placeholder="Choisir un service..."
+                  className="text-sm"
                 />
               )}
+             
+
             </div>
         
             <div className="flex justify-end gap-3 pt-2">
+              
               <button
                 type="button"
                 onClick={resetFilters}
