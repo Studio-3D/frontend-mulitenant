@@ -12,7 +12,7 @@ import {
 import Modal from "@/components/Modal"
 import toast from "react-hot-toast"
 
-export default function CompositionForm({ state, setState, onNext, errors }) {
+export default function CompositionForm({ state, setState, onNext, errors, isEdit = false }) {
   const [typeOptions, setTypeOptions] = useState([])
   const [loading, setLoading] = useState(false)
   const [showAddTypeModal, setShowAddTypeModal] = useState(false)
@@ -23,7 +23,7 @@ export default function CompositionForm({ state, setState, onNext, errors }) {
   const [hasTranches, setHasTranches] = useState(state.tranches > 0)
   const [hasBlocks, setHasBlocks] = useState(state.blocks > 0)
   const [hasBuilding, setHasBuilding] = useState(state.building > 0)
-  const [hasBien, setHasBien] = useState(true) // Set Bien checked by default
+  const [hasBien, setHasBien] = useState(state.bienCount > 0 || !isEdit) // Set Bien checked by default for new projects
 
   // Initialize bien count if it exists in state, otherwise default to 0
   useEffect(() => {
@@ -139,8 +139,8 @@ export default function CompositionForm({ state, setState, onNext, errors }) {
   }
 
   // Composition card component
-  const CompositionCard = ({ icon, title, description, isChecked, onCheckChange, colorClass }) => (
-    <div className={`border rounded-lg p-4 flex flex-col items-center transition-all duration-200 hover:shadow-md ${isChecked ? `border-${colorClass}-500` : 'border-gray-200'}`}>
+  const CompositionCard = ({ icon, title, description, isChecked, onCheckChange, colorClass, disabled = false }) => (
+    <div className={`border rounded-lg p-4 flex flex-col items-center transition-all duration-200 hover:shadow-md ${isChecked ? `border-${colorClass}-500` : 'border-gray-200'} ${disabled ? 'opacity-70' : ''}`}>
       <div className={`text-4xl mb-3 ${isChecked ? `text-${colorClass}-500` : 'text-gray-400'}`}>
         {icon}
       </div>
@@ -151,8 +151,9 @@ export default function CompositionForm({ state, setState, onNext, errors }) {
           <input
             type="checkbox"
             checked={isChecked}
-            onChange={(e) => onCheckChange(e.target.checked)}
+            onChange={(e) => !disabled && onCheckChange(e.target.checked)}
             className={`form-checkbox h-5 w-5 text-${colorClass}-500 rounded focus:ring-${colorClass}-500`}
+            disabled={disabled}
           />
         </label>
       </div>
@@ -191,6 +192,7 @@ export default function CompositionForm({ state, setState, onNext, errors }) {
                       handleChange("typeId", selectedId)
                       handleChange("type", selectedOption ? selectedOption.type : "")
                     }}
+                    disabled={isEdit} // Disable type change in edit mode
                   >
                     <option value="">Sélectionnez un type</option>
                     {typeOptions.length > 0 ? (
@@ -216,15 +218,17 @@ export default function CompositionForm({ state, setState, onNext, errors }) {
               {errors?.type_id && <p className="mt-1 text-sm text-red-600">{errors.type_id[0]}</p>}
             </div>
             
-            {/* Add Type Project Button */}
-            <button
-              type="button"
-              onClick={() => setShowAddTypeModal(true)}
-              className="mb-0.5 h-10 px-3 py-2 flex items-center justify-center bg-green-500 hover:bg-green-600 text-white rounded-md text-sm transition-colors"
-            >
-              <Plus className="h-5 w-5 mr-1" />
-              <span>Nouveau</span>
-            </button>
+            {/* Add Type Project Button - Hide in edit mode */}
+            {!isEdit && (
+              <button
+                type="button"
+                onClick={() => setShowAddTypeModal(true)}
+                className="mb-0.5 h-10 px-3 py-2 flex items-center justify-center bg-green-500 hover:bg-green-600 text-white rounded-md text-sm transition-colors"
+              >
+                <Plus className="h-5 w-5 mr-1" />
+                <span>Nouveau</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -233,7 +237,7 @@ export default function CompositionForm({ state, setState, onNext, errors }) {
         <h3 className="text-lg font-medium mb-6">Composition de projet</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-          {/* Bien - Added as first card and checked by default */}
+          {/* Bien */}
           <CompositionCard
             icon={<Home />}
             title="Bien"
@@ -241,6 +245,7 @@ export default function CompositionForm({ state, setState, onNext, errors }) {
             isChecked={hasBien}
             onCheckChange={handleBienChange}
             colorClass="blue"
+            disabled={isEdit} // Disable changes in edit mode
           />
           
           {/* Tranches */}
@@ -251,6 +256,7 @@ export default function CompositionForm({ state, setState, onNext, errors }) {
             isChecked={hasTranches}
             onCheckChange={handleTranchesChange}
             colorClass="green"
+            disabled={isEdit} // Disable changes in edit mode
           />
           
           {/* Blocs */}
@@ -261,6 +267,7 @@ export default function CompositionForm({ state, setState, onNext, errors }) {
             isChecked={hasBlocks}
             onCheckChange={handleBlocksChange}
             colorClass="orange"
+            disabled={isEdit} // Disable changes in edit mode
           />
           
           {/* Immeubles */}
@@ -271,6 +278,7 @@ export default function CompositionForm({ state, setState, onNext, errors }) {
             isChecked={hasBuilding}
             onCheckChange={handleBuildingChange}
             colorClass="red"
+            disabled={isEdit} // Disable changes in edit mode
           />
         </div>
         
@@ -288,6 +296,7 @@ export default function CompositionForm({ state, setState, onNext, errors }) {
                 value={state.bienCount || ""}
                 onChange={(e) => handleChange("bienCount", parseInt(e.target.value) || 0)}
                 required={hasBien}
+                disabled={isEdit} // Disable changes in edit mode
               />
             </div>
           )}
@@ -305,6 +314,7 @@ export default function CompositionForm({ state, setState, onNext, errors }) {
                 value={state.tranches || ""}
                 onChange={(e) => handleChange("tranches", parseInt(e.target.value) || 0)}
                 required={hasTranches}
+                disabled={isEdit} // Disable changes in edit mode
               />
             </div>
           )}
@@ -322,6 +332,7 @@ export default function CompositionForm({ state, setState, onNext, errors }) {
                 value={state.blocks || ""}
                 onChange={(e) => handleChange("blocks", parseInt(e.target.value) || 0)}
                 required={hasBlocks}
+                disabled={isEdit} // Disable changes in edit mode
               />
             </div>
           )}
@@ -339,6 +350,7 @@ export default function CompositionForm({ state, setState, onNext, errors }) {
                 value={state.building || ""}
                 onChange={(e) => handleChange("building", parseInt(e.target.value) || 0)}
                 required={hasBuilding}
+                disabled={isEdit} // Disable changes in edit mode
               />
             </div>
           )}
@@ -366,7 +378,7 @@ export default function CompositionForm({ state, setState, onNext, errors }) {
           Suivant
         </button>
       </div>
-
+      
       {/* Modal for adding new project type */}
       <Modal isVisible={showAddTypeModal} onClose={() => setShowAddTypeModal(false)}>
         <div className="p-6">

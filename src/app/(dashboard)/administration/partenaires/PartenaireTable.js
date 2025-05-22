@@ -144,7 +144,7 @@ const PartenaireTable = ({
         }
         totalRows={filteredData.length}
         loading={loading}
-        addUserLink="/administration/partenaires?action=add"
+        addLink="/administration/partenaires?action=add"
         onSearchChange={handleSearchChange}
         currentPage={currentPage}
         rowsPerPage={rowsPerPage}

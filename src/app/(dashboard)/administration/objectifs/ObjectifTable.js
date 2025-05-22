@@ -244,7 +244,7 @@ const ObjectifTable = ({
         }
         totalRows={filteredData.length}
         loading={loading}
-        addUserLink={canAddObjectifs ? "/administration/objectifs?action=add" : undefined}
+        addLink={canAddObjectifs ? "/administration/objectifs?action=add" : undefined}
         onSearchChange={handleSearchChange}
         currentPage={currentPage}
         rowsPerPage={rowsPerPage}

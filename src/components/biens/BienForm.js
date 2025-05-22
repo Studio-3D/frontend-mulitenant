@@ -72,6 +72,7 @@ export default function BienForm({ id, projetId, blocId, immeubleId }) {
     tranche_id: "",
     bloc_id: blocId || "",
     immeuble_id: immeubleId || "",
+    etat: "disponible", // Explicitly set default etat
     // ...other fields with defaults...
   });
 
@@ -312,7 +313,182 @@ export default function BienForm({ id, projetId, blocId, immeubleId }) {
 
   // Fetch property data for editing
   const fetchBienData = async (bienId) => {
-    // Implementation for editing existing property...
+    setFetchingData(true);
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await axios.get(`${APIURL.BIENS}/${bienId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.data && response.data.bien) {
+        const bienData = response.data.bien;
+        
+        // Set project ID
+        if (bienData.projet_id) {
+          fetchProjectData(bienData.projet_id);
+        }
+        
+        // Convert checkbox values from 0/1 to boolean
+        bienData.conventionne = !!bienData.conventionne;
+        
+        // Format nested objects to their IDs for form fields
+        if (bienData.immeuble) {
+          setSelectedImmeuble(bienData.immeuble);
+        }
+        
+        if (bienData.bloc) {
+          setSelectedBloc(bienData.bloc);
+        }
+        
+        if (bienData.tranche) {
+          setSelectedTranche(bienData.tranche);
+        }
+        
+        // Set form data
+        setFormData({
+          ...bienData,
+          // Convert nulls to empty strings for form fields
+          ...Object.fromEntries(
+            Object.entries(bienData).map(([key, value]) => [key, value === null ? "" : value])
+          ),
+          // Explicitly set these IDs for dropdowns
+          tranche_id: bienData.tranche_id || "",
+          bloc_id: bienData.bloc_id || "",
+          immeuble_id: bienData.immeuble_id || "",
+          type_id: bienData.type_id || "",
+          vue_id: bienData.vue_id || "",
+          typologie_id: bienData.typologie_id || "",
+          // Ensure etat has a valid value
+          etat: bienData.etat || "disponible"
+        });
+        
+        // After setting basic form data, also trigger area calculations
+        if (bienData.superficie_terrasse) {
+          handleTerraceChange(bienData.superficie_terrasse);
+        }
+        
+        if (bienData.superficie_balcon) {
+          handleBalconChange(bienData.superficie_balcon);
+        }
+        
+        if (bienData.superficie_jardin) {
+          handleJardinChange(bienData.superficie_jardin);
+        }
+        
+        // Trigger cascade dropdowns if needed
+        if (bienData.tranche_id) {
+          fetchBlocsByTranche(bienData.tranche_id);
+        }
+        
+        if (bienData.bloc_id) {
+          fetchImmeublesByBloc(bienData.bloc_id);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching bien data:", error);
+      toast.error("Erreur lors du chargement des données du bien");
+    } finally {
+      setFetchingData(false);
+    }
+  };
+
+  // Calculate derived values
+  const handleTerraceChange = (value) => {
+    const terraceValue = parseFloat(value) || 0;
+    // Calculate 50% of the terrace area for the calculated field
+    const terraceCalculated = terraceValue * 0.5;
+    
+    setFormData(prev => ({
+      ...prev,
+      superficie_terrasse_calculer: terraceCalculated
+    }));
+    
+    // Also update the vendable and total areas
+    updateVendableAndTotalArea({
+      ...formData,
+      superficie_terrasse: terraceValue,
+      superficie_terrasse_calculer: terraceCalculated
+    });
+  };
+
+  // New function to handle balcon changes
+  const handleBalconChange = (value) => {
+    const balconValue = parseFloat(value) || 0;
+    // Calculate 50% of the balcon area (adjust calculation as needed)
+    const balconCalculated = balconValue * 0.5;
+    
+    setFormData(prev => ({
+      ...prev,
+      superficie_balcon_calculer: balconCalculated
+    }));
+    
+    // Update vendable and total areas
+    updateVendableAndTotalArea({
+      ...formData,
+      superficie_balcon: balconValue,
+      superficie_balcon_calculer: balconCalculated
+    });
+  };
+
+  // New function to handle jardin changes
+  const handleJardinChange = (value) => {
+    const jardinValue = parseFloat(value) || 0;
+    // Calculate 25% of the garden area (adjust calculation as needed)
+    const jardinCalculated = jardinValue * 0.25;
+    
+    setFormData(prev => ({
+      ...prev,
+      superficie_jardin_calculer: jardinCalculated
+    }));
+    
+    // Update vendable and total areas
+    updateVendableAndTotalArea({
+      ...formData,
+      superficie_jardin: jardinValue,
+      superficie_jardin_calculer: jardinCalculated
+    });
+  };
+
+  // Calculate vendable and total areas based on all fields
+  const updateVendableAndTotalArea = (data) => {
+    const habitable = parseFloat(data.superficie_habitable) || 0;
+    const terraceCalc = parseFloat(data.superficie_terrasse_calculer) || 0;
+    const balconCalc = parseFloat(data.superficie_balcon_calculer) || 0;
+    const jardinCalc = parseFloat(data.superficie_jardin_calculer) || 0;
+    
+    // Calculate vendable area
+    const vendable = habitable + terraceCalc + balconCalc + jardinCalc;
+    
+    // Calculate total area - this needs to match the backend's expectation
+    // According to BienController.php and database schema, superficie_total exists
+    const total = habitable + 
+      (parseFloat(data.superficie_terrasse) || 0) + 
+      (parseFloat(data.superficie_balcon) || 0) + 
+      (parseFloat(data.superficie_jardin) || 0);
+    
+    setFormData(prev => ({
+      ...prev,
+      superficie_vendable: vendable,
+      superficie_total: total
+    }));
+    
+    // Also recalculate price when areas change
+    if (data.prix_unitaire) {
+      recalculatePrice(data.prix_unitaire);
+    }
+  };
+
+  const recalculatePrice = (unitPrice) => {
+    const unitPriceValue = parseFloat(unitPrice) || 0;
+    const superficieVendable = parseFloat(formData.superficie_vendable) || 0;
+    
+    // Calculate price based on unit price and vendable area
+    const calculatedPrice = unitPriceValue * superficieVendable;
+    
+    setFormData(prev => ({
+      ...prev,
+      prix: calculatedPrice
+    }));
   };
 
   // Handle form input changes with special calculations
@@ -322,6 +498,16 @@ export default function BienForm({ id, projetId, blocId, immeubleId }) {
     // Special field handlers
     if (field === "superficie_terrasse") {
       handleTerraceChange(value);
+    } else if (field === "superficie_balcon") {
+      handleBalconChange(value);
+    } else if (field === "superficie_jardin") {
+      handleJardinChange(value);
+    } else if (field === "superficie_habitable") {
+      // When habitable area changes, update vendable and total
+      updateVendableAndTotalArea({
+        ...formData,
+        superficie_habitable: value
+      });
     } else if (field === "prix_unitaire") {
       recalculatePrice(value);
     }
@@ -374,15 +560,6 @@ export default function BienForm({ id, projetId, blocId, immeubleId }) {
     }
   };
 
-  // Calculate derived values
-  const handleTerraceChange = (value) => {
-    // Implementation...
-  };
-
-  const recalculatePrice = (unitPrice) => {
-    // Implementation...
-  };
-
   // Step navigation
   const handleNext = () => {
     if (validateCurrentStep()) {
@@ -429,19 +606,61 @@ export default function BienForm({ id, projetId, blocId, immeubleId }) {
     setLoading(true);
     try {
       const token = localStorage.getItem("accessToken");
-      const dataToSubmit = {
-        ...formData,
-        conventionne: formData.conventionne ? 1 : 0,
-        // Format other fields as needed...
-      };
+      
+      // Create a clean copy with only the necessary fields for submission
+      const requiredFields = [
+        "id", "projet_id", "propriete_dite_bien", "numero", "niveau", "orientation",
+        "conventionne", "prix_unitaire", "prix", "tranche_id", "bloc_id", "immeuble_id",
+        "etat", "nbre_facades", "avance_minimale", "titre_foncier", "type_id", "vue_id", 
+        "typologie_id", "superficie_habitable", "superficie_architecte", "superficie_terrasse",
+        "superficie_terrasse_calculer", "superficie_balcon", "superficie_balcon_calculer",
+        "superficie_jardin", "superficie_jardin_calculer", "superficie_vendable", 
+        "superficie_total", "num_parking", "prix_parking", "superficie_parking",
+        "num_box", "prix_box", "superficie_box", "nbre_chambres", "nbre_salons", 
+        "nbre_sdb", "nbre_cuisines", "nbre_terasses", "nbre_balcons", "nbre_halls",
+        "nbre_receptions", "nbre_buanderies", "nbre_placards"
+      ];
+      
+      // Extract only needed fields from formData
+      const dataToSubmit = {};
+      requiredFields.forEach(field => {
+        if (formData[field] !== undefined) {
+          dataToSubmit[field] = formData[field];
+        }
+      });
+      
+      // Convert checkbox value to 1/0
+      dataToSubmit.conventionne = dataToSubmit.conventionne ? 1 : 0;
+      
+      // Ensure numeric fields are actually numbers
+      const numericFields = [
+        "prix_unitaire", "prix", "superficie_habitable", "superficie_architecte", 
+        "superficie_terrasse", "superficie_terrasse_calculer", "superficie_balcon", 
+        "superficie_balcon_calculer", "superficie_jardin", "superficie_jardin_calculer", 
+        "superficie_vendable", "superficie_total", "prix_parking", "superficie_parking",
+        "prix_box", "superficie_box", "avance_minimale"
+      ];
+      
+      numericFields.forEach(field => {
+        if (dataToSubmit[field] !== undefined) {
+          dataToSubmit[field] = parseFloat(dataToSubmit[field]) || 0;
+        }
+      });
+      
+      // Ensure etat is lowercase if it's not already (API expects lowercase)
+      if (dataToSubmit.etat) {
+        dataToSubmit.etat = dataToSubmit.etat.toLowerCase();
+      } else {
+        dataToSubmit.etat = "disponible"; // Default value
+      }
+      
+      console.log("Submitting data:", dataToSubmit);
 
       const response = id ?
         await axios.put(`${APIURL.BIENS}/${id}`, dataToSubmit, { headers: { Authorization: `Bearer ${token}` } }) :
         await axios.post(APIURL.BIENS, dataToSubmit, { headers: { Authorization: `Bearer ${token}` } });
 
       toast.success(id ? "Bien mis à jour avec succès" : "Bien créé avec succès");
-
-      // Handle composition data for third step if needed
 
       // Redirect appropriately
       if (formData.projet_id) {
@@ -454,6 +673,21 @@ export default function BienForm({ id, projetId, blocId, immeubleId }) {
       if (error.response?.data?.errors) {
         setErrors(error.response.data.errors);
       }
+      
+      // Add more detailed error information to help debug database field issues
+      if (error.response?.data?.message) {
+        console.error("Backend error message:", error.response.data.message);
+        
+        // If the error message mentions a column name, show it in the toast
+        if (error.response.data.message.includes("Unknown column")) {
+          const columnMatch = error.response.data.message.match(/Unknown column '([^']+)'/);
+          if (columnMatch && columnMatch[1]) {
+            toast.error(`Erreur: La colonne "${columnMatch[1]}" n'existe pas dans la base de données`);
+            return;
+          }
+        }
+      }
+      
       toast.error("Erreur lors de l'enregistrement du bien");
     } finally {
       setLoading(false);
@@ -546,7 +780,7 @@ export default function BienForm({ id, projetId, blocId, immeubleId }) {
           >
             <option value="">Sélectionner</option>
             {typeBiens.map(type => (
-              <option key={type.id} value={type.id}>{type.value}</option>
+              <option key={type.id} value={type.id}>{type.type}</option>
             ))}
           </select>
         </div>
@@ -562,7 +796,7 @@ export default function BienForm({ id, projetId, blocId, immeubleId }) {
           >
             <option value="">Sélectionner</option>
             {vues.map(vue => (
-              <option key={vue.id} value={vue.id}>{vue.value}</option>
+              <option key={vue.id} value={vue.id}>{vue.vue}</option>
             ))}
           </select>
         </div>
@@ -578,7 +812,7 @@ export default function BienForm({ id, projetId, blocId, immeubleId }) {
           >
             <option value="">Sélectionner</option>
             {typologies.map(typologie => (
-              <option key={typologie.id} value={typologie.id}>{typologie.value}</option>
+              <option key={typologie.id} value={typologie.id}>{typologie.typologie}</option>
             ))}
           </select>
         </div>
@@ -765,19 +999,21 @@ export default function BienForm({ id, projetId, blocId, immeubleId }) {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            État
+            État <span className="text-red-500">*</span>
           </label>
           <select
             value={formData.etat || 'disponible'}
             onChange={(e) => handleChange("etat", e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            className={`w-full px-3 py-2 border ${errors.etat ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
+            required
           >
             {etatOptions.map(option => (
               <option key={option.id} value={option.id}>{option.label}</option>
             ))}
           </select>
+          {errors.etat && <p className="mt-1 text-sm text-red-600">{errors.etat[0]}</p>}
         </div>
-
+        
         <div className="flex items-center">
           <input
             type="checkbox"

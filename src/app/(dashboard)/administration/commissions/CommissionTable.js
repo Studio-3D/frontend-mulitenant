@@ -157,7 +157,7 @@ const CommissionTable = ({
           </div>
         }
         loading={loading}
-        addUserLink="/administration/commissions?action=add"
+        addLink="/administration/commissions?action=add"
         onSearchChange={handleSearchChange}
         currentPage={currentPage}
         rowsPerPage={rowsPerPage}

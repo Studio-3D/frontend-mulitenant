@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from "@/context/AuthContext";
 import { Pencil, Trash2 } from "lucide-react";
 import * as XLSX from 'xlsx';
+import { getEtatLabel } from '@/configs/enum'; // Import the helper function
 
 export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
   const [biens, setBiens] = useState([]);
@@ -20,14 +21,9 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
   const router = useRouter();
   const { user } = useAuth();
 
-  // Format property status
+  // Format property status using the helper function from enum.js
   const formatEtat = (etat) => {
-    switch(etat) {
-      case 'disponible': return 'Disponible';
-      case 'reserve': return 'Réservé';
-      case 'vendu': return 'Vendu';
-      default: return etat;
-    }
+    return getEtatLabel(etat);
   };
 
   // Define table columns with action buttons
@@ -266,7 +262,7 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
       totalRows={formattedBiens.length}
       loading={loading}
       error={error}
-      addUserLink={addButtonUrl}
+      addLink={addButtonUrl}
       onSearchChange={handleSearchChange}
       currentPage={currentPage}
       rowsPerPage={rowsPerPage}

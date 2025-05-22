@@ -134,7 +134,7 @@ const TypeBienTable = ({
         }
         totalRows={filteredData.length}
         loading={loading}
-        addUserLink="/administration/typesBiens?action=add"
+        addLink="/administration/typesBiens?action=add"
         onSearchChange={handleSearchChange}
         currentPage={currentPage}
         rowsPerPage={rowsPerPage}

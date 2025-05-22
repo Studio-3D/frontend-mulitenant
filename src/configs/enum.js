@@ -194,3 +194,27 @@ export const getTypeAppelLabel = (number) => {
     return TYPES_APPELS[number].label;
   }
 };
+
+// Property status options
+export const BIEN_ETAT = {
+  disponible: {
+    id: 'disponible',
+    label: 'Disponible',
+    color: 'bg-green-100 text-green-800',
+  },
+  reserve: {
+    id: 'reserve',
+    label: 'Réservé',
+    color: 'bg-blue-100 text-blue-800',
+  },
+  vendu: {
+    id: 'vendu',
+    label: 'Vendu',
+    color: 'bg-purple-100 text-purple-800',
+  },
+};
+
+// Helper function to get property status label
+export const getEtatLabel = (etatId) => {
+  return BIEN_ETAT[etatId]?.label || 'Disponible';
+};

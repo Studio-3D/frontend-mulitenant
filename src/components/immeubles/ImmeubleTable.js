@@ -230,7 +230,7 @@ export default function ImmeubleTable({ projetId, blocId, trancheId }) {
       totalRows={formattedImmeubles.length}
       loading={loading}
       error={error}
-      addUserLink={addButtonUrl}
+      addLink={addButtonUrl}
       onSearchChange={handleSearchChange}
       currentPage={currentPage}
       rowsPerPage={rowsPerPage}
