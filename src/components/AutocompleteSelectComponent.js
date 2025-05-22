@@ -21,7 +21,7 @@ const AutocompleteSelectComponent = ({
 
   useEffect(() => {
     // Initialize with the current value - checks for both code and id
-    const matchedOption = optionsArray.find((opt) => opt.code === value || opt.id === value);
+    const matchedOption = optionsArray.find((opt) => opt.code == value || opt.id == value);
     setInputValue(matchedOption ? matchedOption.label : '');
     setSearchQuery('');
   }, [value]);
