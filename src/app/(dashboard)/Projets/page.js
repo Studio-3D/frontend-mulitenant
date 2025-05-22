@@ -185,7 +185,7 @@ export default function ProjetsPage() {
   );
 
   return (
-    <div className="relative ">
+    <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
       {/* Table with projects */}
       <Table 
         columns={columns}

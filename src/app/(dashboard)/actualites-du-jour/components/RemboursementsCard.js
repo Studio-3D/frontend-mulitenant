@@ -1,9 +1,6 @@
 import React from 'react';
 
 export default function RemboursementsCard({ remboursements = [], sumRemb = 0 }) {
-  // Array of avatar images
-  const avatarSources = ['/images/immobilie.png', '/images/imm.png', '/images/fav.jpg'];
-
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden h-full">
       <div className="px-6 py-4 border-b">
@@ -28,14 +25,7 @@ export default function RemboursementsCard({ remboursements = [], sumRemb = 0 })
         <div className="space-y-4">
           {remboursements.map((item, index) => (
             <div key={index} className="flex items-center">
-              <div className="bg-gray-100 rounded-lg w-12 h-8 flex items-center justify-center mr-3 flex-shrink-0">
-                <img 
-                  src={avatarSources[index % avatarSources.length]} 
-                  alt="Property" 
-                  className="w-5 h-5"
-                />
-              </div>
-              
+              {/* Remove Home icon */}
               <div className="flex-1">
                 <div className="font-medium">{item.propriete_dite_bien}</div>
                 <div className="text-xs text-gray-500">

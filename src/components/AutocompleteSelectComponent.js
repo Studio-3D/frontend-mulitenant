@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaChevronDown } from "react-icons/fa";
+import { ChevronDown } from "lucide-react";
 
 const AutocompleteSelectComponent = ({
   label,
@@ -20,8 +20,8 @@ const AutocompleteSelectComponent = ({
   const optionsArray = Object.values(options);
 
   useEffect(() => {
-    // Initialize with the current value
-    const matchedOption = optionsArray.find((opt) => opt.code === value);
+    // Initialize with the current value - checks for both code and id
+    const matchedOption = optionsArray.find((opt) => opt.code == value || opt.id == value);
     setInputValue(matchedOption ? matchedOption.label : '');
     setSearchQuery('');
   }, [value]);
@@ -51,7 +51,9 @@ const AutocompleteSelectComponent = ({
   };
 
   const handleSelect = (option) => {
-    onChange(option.code);
+    // Use code if available, otherwise fall back to id
+    const selectedValue = option.code !== undefined ? option.code : option.id;
+    onChange(selectedValue);
     setInputValue(option.label);
     setSearchQuery('');
     setIsOpen(false);
@@ -94,9 +96,9 @@ const AutocompleteSelectComponent = ({
             onClick={toggleDropdown}
           >
             {isOpen ? (
-              <FaChevronDown className="h-4 w-4 m-2 text-gray-400 rotate-180" />
+              <ChevronDown className="h-4 w-4 m-2 text-gray-400 rotate-180" />
             ) : (
-              <FaChevronDown className="h-4 w-4 m-2 text-gray-400" />
+              <ChevronDown className="h-4 w-4 m-2 text-gray-400" />
             )}
           </div>
         )}
@@ -108,7 +110,7 @@ const AutocompleteSelectComponent = ({
             ) : (
               filteredOptions.map((option) => (
                 <div
-                  key={option.code}
+                  key={option.code || option.id}
                   className="p-2 m-1 cursor-pointer hover:bg-indigo-50 rounded-md"
                   onClick={() => handleSelect(option)}
                 >

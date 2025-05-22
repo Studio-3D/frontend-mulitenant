@@ -2,14 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Table from '@/components/Table';
-import {
-  Eye,
-  Edit,
-  X,
-  Check,
-  Clock,
-} from 'lucide-react';
-import { Trash2 } from 'lucide-react';
+import { Edit, ThumbsDown, ThumbsUp, Clock, Eye ,X} from 'lucide-react';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
 import { useAuth } from '../../../../context/AuthContext';
@@ -20,10 +13,13 @@ import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
 import { fetchData_table_by_projet } from '../../../../configs/api-utils';
 import Link from 'next/link';
 import Input from '@/components/Input';
-import SelectInput from '@/components/SelectInput';
 
 import { MODE_FINANCE } from '../../../../configs/enum';
 import Modal_Valider_Reservation from './Modal_Valider_Reservation';
+
+import Modal_Rejeter_Reservation from './Modal_Rejeter_Reservation';
+
+import Modal_show_info from './Modal_show_info';
 
 const ReservationTable = ({ dataClient }) => {
   const { user, token } = useAuth();
@@ -40,21 +36,24 @@ const ReservationTable = ({ dataClient }) => {
   const [totalRows, setTotalRows] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [ID, setID] = useState(0)
-  const [action, setAction] = useState(null)
-  const [first_num_recu, set_first_num_recu] = useState(null)
-  const [first_av_statut, set_first_av_statut] = useState(null)
-  const [av_id, setav_id] = useState(0)
-  const [open_v_reservation, setOpen_v_reservation] = useState(false)
-  const [open_r, setOpen_r] = useState(false)
-  const [confirm_r, setConfirm_r] = useState(false)
-  const [code_reservation, setCode_reservation] = useState(null)
-  const [Commentaire_av, setCommentaire_av] = useState(null)
-  const [date_encaissement, set_date_encaissement] = useState(null)
-  const [num_remise, set_num_remise] = useState(null)
-  const [open_v_avances, setOpen_v_avances] = useState(false)
-  const [Commentaire_res, setCommentaire_res] = useState(null)
-  const [loading_v, setLoading_v] = useState(false)
+  const [ID, setID] = useState(0);
+  // validation /rejet
+  const [first_num_recu, set_first_num_recu] = useState(null);
+  const [first_av_statut, set_first_av_statut] = useState(null);
+  const [av_id, setav_id] = useState(0);
+  const [open_v_reservation, setOpen_v_reservation] = useState(false);
+  const [open_r, setOpen_r] = useState(false);
+  const [code_reservation, setCode_reservation] = useState(null);
+  const [dst_id, set_dst_id] = useState(null);
+  const [statut_dst, setStatut_des] = useState(0);
+  const [cc, setCC] = useState(null);
+  const [aquereurs, setAquereurs] = useState([]);
+  const [date_res, setDate_res] = useState(null);
+  const [prix, setPrix] = useState(null);
+  const [avance, setAvance] = useState(null);
+
+  const [open_info, setOpen_info] = useState(false);
+  const [txt_info, set_txt_info] = useState(null);
 
   const [filters, setFilters] = useState({
     code_reservation: '',
@@ -90,7 +89,6 @@ const ReservationTable = ({ dataClient }) => {
     const params_url = clientId ? { client_id: clientId } : {};
     const combinedFilters = { ...filters, ...params_url };
 
-   
     fetchData_table_by_projet(
       entity,
       combinedFilters,
@@ -115,6 +113,68 @@ const ReservationTable = ({ dataClient }) => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
+  function NomBienComplet(bien) {
+    const noms = [];
+
+    if (bien.tranche?.nom) noms.push(bien.tranche.nom);
+    if (bien.bloc?.nom) noms.push(bien.bloc.nom);
+    if (bien.immeuble?.nom) noms.push(bien.immeuble.nom);
+
+    noms.push(bien.propriete_dite_bien);
+
+    return noms.join(' - ');
+  }
+  useEffect(() => {
+    //Implementing the setInterval method
+    const interval = setInterval(() => {
+      if (localStorage.getItem('load_data_reservation') == 1) {
+        localStorage.removeItem('load_data_reservation');
+
+        fetchData_table_by_projet(
+          entity,
+          {},
+          searchTerm,
+          currentPage,
+          rowsPerPage,
+          accesstoken,
+          setLoading,
+          setError,
+          setData,
+          setTotalRows
+        );
+      }
+    }, 1000);
+
+    //Clearing the interval
+    return () => clearInterval(interval);
+  }, [accesstoken, currentPage, rowsPerPage, searchTerm]);
+
+  function handleEdit(resId) {
+    router.push(`${ENDPOINTS.RESERVATIONS}?id=${resId}&action=edit`);
+  }
+
+  const handleShow = (resId) => {
+    router.push(`/ventes/reservations/${resId}`);
+  };
+
+  const handleDesiste = (res_id, desistement_id, statut_dstt, msg_rejete) => {
+    if (desistement_id == null) {
+      //aucun desistement
+      router.push(`/ventes/desistements/ajouter_desistement/${res_id}`);
+    } else {
+      set_dst_id(desistement_id);
+      if (statut_dstt == 0) {
+        //attend validation
+        setStatut_des(0);
+        set_txt_info('Le Désistement est en Attente de validation');
+      } else {
+        setStatut_des(2);
+        set_txt_info('Le Désistement est rejeté en raison  de ' + msg_rejete);
+      }
+      setOpen_info(true);
+    }
+  };
+
   const formatData = () => {
     return data.map((pro) => {
       return {
@@ -125,6 +185,7 @@ const ReservationTable = ({ dataClient }) => {
         date_reservation: pro.date_reservation,
         aquereurs: pro.aquereurs,
         bien_id: pro.bien_id,
+        bien: pro.bien,
         propriete_dite_bien: pro.bien?.propriete_dite_bien,
         prix: pro.prix,
         avances_sum_montant: pro.avances_sum_montant,
@@ -134,6 +195,30 @@ const ReservationTable = ({ dataClient }) => {
     });
   };
 
+  /*
+      key: 'nomComplet',
+      label: 'Nom Complet',
+      render: (row) => {
+        return row.data_res?.aquereurs
+          ? Object.keys(row.data_res.aquereurs).map((key) => (
+              <div key={key}>
+                {' '}
+                {/* Added a keyed wrapper (React requires keys in lists) 
+                <Link
+                  target="_blank"
+                  href={`/ventes/clients/${row.data_res.aquereurs[key].client.id}`}
+                >
+                  <strong>
+                    {row.data_res.aquereurs[key].client.nom}{' '}
+                    {row.data_res.aquereurs[key].client.prenom}
+                  </strong>
+                </Link>
+              </div>
+            ))
+          : null; // Return `null` instead of empty string for cleaner React rendering
+      },
+    */
+  // Dynamically build columns based on type
   const columns = [
     {
       key: 'cc',
@@ -157,12 +242,14 @@ const ReservationTable = ({ dataClient }) => {
 
     {
       key: 'date_reservation',
-      label: 'Date Réservation',
+      label: 'Date',
       render: (row) => (
         <div className="flex items-center gap-3">
           <span>
             {row.date_reservation
-              ? format(new Date(row.date_reservation), 'dd/MM/yyyy ', { timeZone: 'UTC' })
+              ? format(new Date(row.date_reservation), 'dd/MM/yyyy ', {
+                  timeZone: 'UTC',
+                })
               : ''}
           </span>
         </div>
@@ -170,32 +257,13 @@ const ReservationTable = ({ dataClient }) => {
     },
     { key: 'code_reservation', label: 'Code' },
     {
-      key: 'nomComplet',
-      label: 'Nom Complet',
-      render: (row) => {
-        return row.data_res?.aquereurs
-          ? Object.keys(row.data_res.aquereurs).map((key) => (
-              <div key={key}>
-                <Link
-                  target="_blank"
-                  href={`/ventes/clients/${row.data_res.aquereurs[key].client.id}`}
-                >
-                  <strong>
-                    {row.data_res.aquereurs[key].client.nom}{' '}
-                    {row.data_res.aquereurs[key].client.prenom}
-                  </strong>
-                </Link>
-              </div>
-            ))
-          : null;
-      },
-    },
-    {
       key: 'propriete_dite_bien',
       label: 'Bien',
       render: (row) => (
         <Link target="_blank" href={`/biens/${row.bien_id}`}>
-          <strong style={{ fontWeight: 600 }}>{row.propriete_dite_bien}</strong>
+          <strong style={{ fontWeight: 600 }}>
+            {NomBienComplet(row.bien)}
+          </strong>
         </Link>
       ),
     },
@@ -231,56 +299,10 @@ const ReservationTable = ({ dataClient }) => {
       ),
     },
     {
-      key: 'date_validation',
-      label: 'Date Validation',
-      render: (row) => (
-        <div className="flex items-center gap-3">
-          <span>
-            {row.data_res.last_statut != null &&
-              row.data_res.last_statut.statut == 1 &&
-              (row.data_res.last_statut.date_validation
-                ? format(
-                    new Date(row.data_res.last_statut.date_validation),
-                    'dd/MM/yyyy kk:mm'
-                  )
-                : '')}
-          </span>
-        </div>
-      ),
-    },
-    {
-      key: 'respo_validation',
-      label: 'Responsable Validation',
-      render: (row) => (
-        <div className="flex items-center gap-3">
-          <span>
-            {row.data_res.last_statut != null &&
-              row.data_res.last_statut.statut == 1 &&
-              row.data_res.last_statut.user.name +
-                ' ' +
-                row.data_res.last_statut.user.name}
-          </span>
-        </div>
-      ),
-    },
-    {
       key: 'actions',
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <Check
-            className="w-4 h-4 text-green-500 hover:text-green-700 cursor-pointer"
-            title="Valider"
-            onClick={() =>
-              handle_valider(
-                row.id,
-                row.code_reservation,
-                row.data_res.first_avance?.num_recu,
-                row.data_res.first_avance?.id,
-                row.data_res.first_avance?.statut
-              )
-            }
-          />
           <Eye
             className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
             title="Voir détails"
@@ -295,7 +317,8 @@ const ReservationTable = ({ dataClient }) => {
             <>
               {isSuperAdmin(userRole) || isAdmin(userRole) ? (
                 <>
-                  <Check
+                  {/* Approve Button */}
+                  <ThumbsUp
                     className="w-4 h-4 text-green-500 hover:text-green-700 cursor-pointer"
                     title="Valider"
                     onClick={() =>
@@ -304,11 +327,18 @@ const ReservationTable = ({ dataClient }) => {
                         row.code_reservation,
                         row.data_res.first_avance?.num_recu,
                         row.data_res.first_avance?.id,
-                        row.data_res.first_avance?.statut
+                        row.data_res.first_avance?.statut,
+                        row.data_res.user.name + ' ' + row.data_res.user.prenom,
+                        row.data_res.aquereurs,
+                        row.data_res.date_reservation,
+                        row.data_res.prix,
+                        row.avances_sum_montant
                       )
                     }
                   />
-                  <X
+
+                  {/* Reject Button */}
+                  <ThumbsDown
                     className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
                     title="Refuser"
                     onClick={() => handle_rejeter(row.id, row.code_reservation)}
@@ -333,7 +363,7 @@ const ReservationTable = ({ dataClient }) => {
                 )
               }
             />
-          ) : row.statut == 1 && row.first_avance?.statut == 3 ? (
+          ) : row.statut == 1 && row.data_res.first_avance?.statut == 3 ? (
             <Clock
               className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
               title="Premier avance en attente de validation"
@@ -374,16 +404,6 @@ const ReservationTable = ({ dataClient }) => {
                 }
               />
             )}
-          {(isSuperAdmin(userRole) || isAdmin(userRole)) && (
-            <Trash2
-              className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
-              onClick={() => {
-                setSelectedId(row.id);
-                setShowDeleteModal(true);
-              }}
-              title="Supprimer la réservation"
-            />
-          )}
         </div>
       ),
     },
@@ -470,23 +490,52 @@ const ReservationTable = ({ dataClient }) => {
     { key: 'tele_acquereurs', label: 'Tele client' },
   ];
 
-  const handle_valider = (Id, code, num_recu, av_id, av_statut) => {
-    setAction(null)
-    setOpen_v_reservation(!open_v_reservation)
-    setID(Id)
-    setCode_reservation(code)
-    set_first_num_recu(num_recu)
-    set_first_av_statut(av_statut)
-    setav_id(av_id)
-  }
+  const handle_valider = (
+    Id,
+    code,
+    num_recu,
+    av_id,
+    av_statut,
+    cc,
+    aquereurs,
+    date_res,
+    prix,
+    avance
+  ) => {
+    setOpen_v_reservation(!open_v_reservation);
+    setID(Id);
+    setCode_reservation(code);
+    set_first_num_recu(num_recu);
+    set_first_av_statut(av_statut);
+    setav_id(av_id);
+    setCC(cc);
+    setAquereurs(aquereurs);
+    setDate_res(date_res);
+    setPrix(prix);
+    setAvance(avance);
+  };
 
   const handle_rejeter = (Id, code) => {
-    setConfirm_r(false)
-    setOpen_r(!open_r)
-    setID(Id)
-    setCode_reservation(code)
-  }
+    setOpen_r(!open_r);
+    setID(Id);
+    setCode_reservation(code);
+  };
+  const handle_show_info_2 = (code) => {
+    set_txt_info('La Réservation ' + code + ' est  en attente de validation !');
+    setOpen_info(true);
+  };
 
+  const handle_show_comment_rejete = (code, msg) => {
+    set_txt_info('La Réservation ' + code + ' est rejeté en raison  de ' + msg);
+    setOpen_info(true);
+  };
+
+  const handle_show_info = (code) => {
+    set_txt_info(
+      'Premier avance du Réservation ' + code + ' en attente de validation !'
+    );
+    setOpen_info(true);
+  };
   return (
     <>
       <div className="reflative">
@@ -530,21 +579,24 @@ const ReservationTable = ({ dataClient }) => {
                   }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-                <Input
-                  type="date"
+                <input
+                  type={tempFilters.date_start ? 'date' : 'text'}
                   placeholder="Date début"
                   value={tempFilters.date_start}
+                  onFocus={(e) => (e.target.type = 'date')}
                   onChange={(e) =>
                     handleFilterChange('date_start', e.target.value)
                   }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-                <Input
-                  type="date"
+
+                <input
+                  type={tempFilters.date_fin ? 'date' : 'text'}
                   placeholder="Date Fin"
-                  value={tempFilters.date_end}
+                  value={tempFilters.date_fin}
+                  onFocus={(e) => (e.target.type = 'date')}
                   onChange={(e) =>
-                    handleFilterChange('date_end', e.target.value)
+                    handleFilterChange('date_fin', e.target.value)
                   }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
@@ -555,13 +607,13 @@ const ReservationTable = ({ dataClient }) => {
                   onChange={(e) => handleFilterChange('bien', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-                <Input
+                {/*<Input
                   type="text"
                   placeholder="Client"
                   value={tempFilters.client}
                   onChange={(e) => handleFilterChange('client', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-                />
+                />*/}
                 <Input
                   type="text"
                   placeholder="Commercial"
@@ -619,15 +671,47 @@ const ReservationTable = ({ dataClient }) => {
         </Modal>
       )}
       {open_v_reservation && (
-        <Modal isVisible={true} onClose={() => setOpen_v_reservation(false)}>
-          <Modal_Valider_Reservation
-            code_reservation={code_reservation}
-            first_av_statut={first_av_statut}
-            first_num_recu={first_num_recu}
-            id={ID}
-            onClose={() => setOpen_v_reservation(false)}
-          />
-        </Modal>
+        <>
+          <Modal isVisible={true} onClose={() => setOpen_v_reservation(false)}>
+            <Modal_Valider_Reservation
+              prix={prix}
+              avance={avance}
+              aquereurs={aquereurs}
+              date_res={date_res}
+              commercial={cc}
+              code_reservation={code_reservation}
+              first_av_statut={first_av_statut}
+              first_num_recu={first_num_recu}
+              id={ID}
+              av_id={av_id}
+              onClose={() => setOpen_v_reservation(false)}
+              closeParentModal={() => setOpen_v_reservation(false)} // Add this prop
+            />
+          </Modal>
+        </>
+      )}
+      {open_r && (
+        <>
+          <Modal isVisible={true} onClose={() => setOpen_r(false)}>
+            <Modal_Rejeter_Reservation
+              code_reservation={code_reservation}
+              id={ID}
+              onClose={() => setOpen_r(false)}
+            />
+          </Modal>
+        </>
+      )}
+      {open_info && (
+        <>
+          <Modal isVisible={true} onClose={() => setOpen_info(false)}>
+            <Modal_show_info
+              dst_id={dst_id}
+              text={txt_info}
+              statut_dst={statut_dst}
+              onClose={() => setOpen_info(false)}
+            />
+          </Modal>
+        </>
       )}
     </>
   );

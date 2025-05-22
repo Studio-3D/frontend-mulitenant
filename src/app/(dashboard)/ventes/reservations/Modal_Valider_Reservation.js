@@ -1,15 +1,13 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
+import { useState, useRef } from 'react';
 import Button from '@/components/Button';
-import toast from 'react-hot-toast';
-import { APIURL } from '../../../../configs/api';
-import { useAuth } from '../../../../context/AuthContext';
+
+import Modal from '@/components/Modal'; // Make sure you import the Modal component
+import Modal_valider_avance from './Modal_valider_avance'; // Import your Modal_Traite component
 import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import Modal from '@/components/Modal'; // Make sure you import the Modal component
-import Modal_valider_avance from './Modal_valider_avance'; // Import your Modal_Traite component
+import format from 'date-fns/format';
 
 export default function Modal_Valider_Reservation({
   onClose,
@@ -17,68 +15,89 @@ export default function Modal_Valider_Reservation({
   first_av_statut,
   first_num_recu,
   id,
+  av_id,
+  closeParentModal,
+  commercial,
+  aquereurs,
+  date_res,
+  prix,
+  avance,
 }) {
-  const [Commentaire_av, setCommentaire_av] = useState(null);
-  const [action, setAction] = useState(null);
-  const [date_encaissement, set_date_encaissement] = useState(null);
-  const [num_remise, set_num_remise] = useState(null);
   const [open_v_avances, setOpen_v_avances] = useState(false);
-  const [Commentaire_res, setCommentaire_res] = useState(null);
-  const [loading_v, setLoading_v] = useState(false);
 
-  const { token } = useAuth();
-  const accessToken = token || localStorage.getItem('accessToken');
   const [loading, setLoading] = useState({ form: false });
 
+  const closeAllModals = () => {
+    onClose(); // Close current modal
+    closeParentModal(); // Close parent modal
+  };
+
   const handle_oui = () => {
-    //3
-    if (first_av_statut == 1) {
+    if (first_av_statut == 3) {
       setOpen_v_avances(true);
-    } else {
-      handle_annuler_avance();
     }
   };
-
-  const onSubmit = (data) => {
-    console.log(id);
-    setLoading({ ...loading, form: true });
-    setBackendErrors();
-    //1 traiter_rdv_relance_appel 2/traite visites
-    let url = `${APIURL.ROOTV1}/traiter_relance_rdv_visite/${Number(id)}`;
-
-    let method = 'put';
-
-    axios({
-      method: method,
-      url: url,
-      data: data,
-      headers: {
-        'content-type': 'application/json',
-        Accept: 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
-    })
-      .then((res) => {
-        setLoading({ ...loading, form: false });
-
-        if (res.status === 200) {
-          toast.success(`Réservation Validé avec succès`);
-          onClose();
-        }
-      })
-      .catch((error) => {
-        setLoading({ ...loading, form: false });
-
-        const response = error.response;
-        if (response?.status === 422) {
-          setBackendErrors(response.data.message || {});
-          toast.error(response.data.message || 'Erreur de validation.');
-          setTimeout(() => setBackendErrors(null), 5000);
-        } else {
-          toast.error("Une erreur s'est produite.");
-        }
-      });
+  const defaultValues = {
+    cc: commercial,
+    date_res: format(new Date(date_res), 'yyyy-MM-dd'), // Format for date input
   };
+
+  const TextField = ({
+    label,
+    name,
+    type = 'text',
+    required = false,
+    control,
+    errors,
+    width = 'w-full',
+    height = 'h-10',
+    disabled = false,
+    value, // Add value prop
+  }) => {
+    return (
+      <div className="mb-4">
+        <label
+          htmlFor={name}
+          className="block text-sm font-medium text-gray-700"
+        >
+          {label}
+          {required && <span className="text-red-500 ml-1">*</span>}
+        </label>
+        <Controller
+          name={name}
+          control={control}
+          render={({ field }) => (
+            <input
+              {...field}
+              id={name}
+              name={name}
+              type={type}
+              className={`block ${width} ${height} px-3 py-2 mt-1 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                errors[name] ? 'border-red-500' : ''
+              }`}
+              required={required}
+              disabled={disabled}
+              value={value || field.value || ''} // Use the passed value prop
+            />
+          )}
+        />
+        {errors[name] && (
+          <div className="mt-1 text-xs text-red-600">
+            <p>{errors[name]?.message}</p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const validationSchemaRef = useRef(yup.object().shape({}));
+  const {
+    control,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(validationSchemaRef.current),
+    defaultValues,
+  });
 
   return (
     <>
@@ -86,12 +105,61 @@ export default function Modal_Valider_Reservation({
         <div className="w-full h-[60px] bg-blue-600 px-4">
           <div className="flex items-center justify-center h-full">
             <h1 className="text-3xl font-bold text-center text-white">
-              Validation Réservation
+            Etape 1 :  Validation Réservation
             </h1>
           </div>
         </div>
 
-        <div className="p-4 w-[600px]">
+        {/* Centered content container */}
+
+        <div className="flex flex-col items-center justify-center w-full mt-10">
+          <div className="w-full max-w-md">
+            {' '}
+            {/* Control width of the content */}
+            <TextField
+              type="text"
+              label="Commercial:"
+              disabled={true}
+              name="cc"
+              control={control}
+              errors={errors}
+              width="w-full" // Make it take full width of its container
+            />
+          </div>
+        </div>
+        <div className="flex flex-col items-center justify-center  w-full">
+          <div className="w-full max-w-md">
+            {Object.values(aquereurs).map((aquereur, index) => (
+              <div key={index}>
+                <TextField
+                  type="text"
+                  label={`client ${index + 1} :`}
+                  disabled={true}
+                  name={`client_${index}`}
+                  control={control}
+                  errors={errors}
+                  width="w-full"
+                  value={`${aquereur.client.nom} ${aquereur.client.prenom}`}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-col items-center justify-center  w-full">
+          <div className="w-full max-w-md">
+            <TextField
+              type="date"
+              label="Date Réservation:"
+              disabled={true}
+              name="date_res"
+              control={control}
+              errors={errors}
+              width="w-full" // Make it take full width of its container
+            />
+          </div>
+        </div>
+        <div className="p-3 w-[600px]">
           <h1 style={{ textAlign: 'center', marginTop: '15px' }}>
             Etes-vous sûr de Valider la Réservation Code:{code_reservation}?
           </h1>
@@ -102,6 +170,8 @@ export default function Modal_Valider_Reservation({
               variant="contained"
               color="success"
               onClick={handle_oui}
+              disabled={loading.form}
+              loading={loading.form}
             >
               OUI
             </Button>
@@ -119,11 +189,20 @@ export default function Modal_Valider_Reservation({
       </div>
 
       {open_v_avances && (
-        <Modal isVisible={open_v_avances} onClose={() => setOpen_v_avances(false)}>
+        <Modal
+          isVisible={open_v_avances}
+          onClose={() => setOpen_v_avances(false)}
+        >
           <Modal_valider_avance
+            onload_res_true={() => setLoading({ ...loading, form: true })}
+            onload_res_false={() => setLoading({ ...loading, form: false })}
+            prix={prix}
+            avance={avance}
             first_num_recu={first_num_recu}
             id={id}
+            av_id={av_id}
             onClose={() => setOpen_v_avances(false)}
+            onClose_all={closeAllModals} // Pass the combined close function
           />
         </Modal>
       )}

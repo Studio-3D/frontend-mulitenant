@@ -795,6 +795,7 @@ const renderDetailsStep = () => (
         </select>
       </div>
 
+
       {/* Project structure selectors based on project composition */}
       {projet && projet.nbre_tranches > 0 && (
         <div>
@@ -828,6 +829,7 @@ const renderDetailsStep = () => (
               Tranche sélectionnée: {selectedTranche.nom}
             </p>
           )}
+
         </div>
       )}
 

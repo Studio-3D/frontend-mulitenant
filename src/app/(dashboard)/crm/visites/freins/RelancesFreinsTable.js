@@ -183,12 +183,8 @@ const RelancesFreinsTable = () => {
 
   return (
     <>
-     
-      <div className="reflative">
-      <h1 style={{ fontWeight: 'bold', fontSize: '19px', color: '#231651' }}>
-      
-          {'Freins Clients'}
-        </h1>
+
+      <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
         <Table
           data_to_export={data_to_export()}
           columns_export={columns_export}

@@ -10,6 +10,7 @@ import {
   LayoutDashboard, 
   Building, 
   Folder, 
+  Landmark,
   FolderOpen, 
   ChevronRight, 
   ChevronDown, 
@@ -37,12 +38,14 @@ import {
   FolderCog,
   Receipt,
 } from "lucide-react";
+import { TbLayoutDashboardFilled } from 'react-icons/tb';
 
 import { User_roles } from "../configs/enum";
 import { useSociete } from "@/context/SocieteContext";
 import SocieteDialog from "./SocieteDialog";
 import { useProjet } from "@/context/ProjetContext";
 import ProjetDialog from "./ProjetDialog";
+import { FaFileInvoiceDollar } from "react-icons/fa";
 
 const Menu = () => {
   const [menuItems, setMenuItems] = useState([]);
@@ -235,15 +238,15 @@ const Menu = () => {
     },
     {
       label: "Actualités du Jour",
-      icon: <Timer size={20} />,
+      icon: <Timer />,
       href: "/actualites-du-jour",
       needsSociete: user.role === 1,
       needsProjet: true,
     },
     {
       label: "Calendrier",
-      icon: <Calendar size={20} />,
-      href: "/Calendrier",
+      icon: <Calendar />,
+      href: "/calendrier",
       needsSociete: user.role === 1,
       needsProjet: true,
     },
@@ -253,7 +256,9 @@ const Menu = () => {
     {
       label: "Remise Des Clés",
       icon: <Percent size={20} />,
-      href: "/remise-des-cles",
+      href: "/remiseCles",
+      needsSociete: user.role === 1,
+      needsProjet: true,
     },
     {
       label: "Sav",
@@ -264,13 +269,15 @@ const Menu = () => {
           icon: <Wrench />,
           href: "/sav/services",
           needsSociete: user.role === 1,
+          needsProjet: true,
+
           
         },
         {
           label: "Prestataires",
           icon: <Users />,
           href: "/sav/prestataires",
-          //needsProjet: true,
+          needsProjet: true,
           needsSociete: user.role === 1,
         },
         {
@@ -295,7 +302,7 @@ const Menu = () => {
     },
     {
       label: "Comptabilité",
-      icon: <Calculator size={20} />,
+      icon: <Calculator  />,
       href: "/comptabilite",
     },
     { 

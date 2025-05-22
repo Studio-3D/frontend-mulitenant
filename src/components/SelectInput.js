@@ -11,7 +11,8 @@ export default function SelectInput({
   value='',
   backendErrors, 
   onChange = () => {}, 
-  error
+  error,
+  width = 'w-full',
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -64,12 +65,12 @@ export default function SelectInput({
   const errorMessage = getErrorMessage();
 
   // Safely find the selected option using the safeOptions array
-  const selectedOption = safeOptions.find(option => 
-    String(option.value) === String(value)
-  );
+  const selectedOption = typeof value === 'object' 
+  ? value 
+  : safeOptions.find(option => String(option.value) === String(value));
   return (
-    <div className="flex flex-col w-full" ref={dropdownRef}>
-      {label && <label className="font-medium text-gray-700 ">{label}</label>}
+    <div className= {`flex flex-col ${width}`} ref={dropdownRef}>
+      {label && <label className="font-medium text-gray-700 mb-1">{label}</label>}
       <div className="relative">
         <div
           className={classNames(

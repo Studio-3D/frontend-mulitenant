@@ -58,7 +58,7 @@ export const fetchData_table_by_projet = async (
   currentPage,
   rowsPerPage,
   accesstoken,
-  setLoading = () => {},      // default to no-op function if not provided
+  setLoading = () => {},
   setError = () => {},
   setData = () => {},
   setTotalRows = () => {}
@@ -84,15 +84,17 @@ export const fetchData_table_by_projet = async (
       ...params_url
     };
 
-    const response = await axios.get(
-      `${APIURL.ROOT}/v1/projets/${selectedProjet?.id}/${entity.API_URL}/`,
-      {
-        headers: {
-          Authorization: `Bearer ${accesstoken}`,
-        },
-        params,
-      }
-    );
+    // URL conditionnelle selon l'entité
+    const baseUrl = entity.API_URL === 'ReclamationsClients'
+      ? `${APIURL.ROOT}/v1/${entity.API_URL}/`  // URL sans projet
+      : `${APIURL.ROOT}/v1/projets/${selectedProjet?.id}/${entity.API_URL}/`; // URL avec projet
+
+    const response = await axios.get(baseUrl, {
+      headers: {
+        Authorization: `Bearer ${accesstoken}`,
+      },
+      params,
+    });
 
     if (response.data && Array.isArray(response.data[entity.dataKey])) {
       let filteredData = response.data[entity.dataKey];
@@ -129,8 +131,8 @@ export const fetchData_table_by_projet = async (
 
       setData(filteredData);
       setTotalRows(response.data.pagination?.totalItems || filteredData.length);
-    } else {   
-     setData([])
+    } else {
+      setData([]);
     }
   } catch (err) {
     setError(err.response?.data?.message || 'Error loading data');
@@ -357,3 +359,23 @@ export const fetchDataByProjet_2 = async (items,datakey, setData, setLoading) =>
     toast.error('Failed to fetch data');
   }
 };
+export const data_by_projet_and_params = async (entityName, setData, setLoading, items, selectedProjet, params) => {
+  const accessToken = localStorage.getItem('accessToken')
+  try {
+    const response = await axios.get(`${APIURL.ROOTV1}/${entityName}/` + selectedProjet + '/' + params, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    })
+    const dataKey = items
+
+    setData(response.data[dataKey])
+
+    setLoading(false)
+
+    // console.log('data', data[dataKey]);
+  } catch (error) {
+    console.error('Error fetching data:', error)
+    setLoading(false)
+  }
+}

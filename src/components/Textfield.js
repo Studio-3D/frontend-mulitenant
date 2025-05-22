@@ -39,7 +39,7 @@ const TextField = ({
               {...field}
               id={name}
               name={name}
-              className={`block ${width} ${height} px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+              className={`block ${width} ${height} px-3 py-2 mt-1 border border-gray-300 rounded-md focus:outline-none hover:border-gray-500 focus:border-gray-500 ${
                 disabled ? 'bg-gray-100 cursor-not-allowed' : ''
               } ${errors[name] || backendErrors[name] ? 'border-red-500' : ''}`}
               required={required}
@@ -56,7 +56,7 @@ const TextField = ({
               id={name}
               name={name}
               type="file"
-              className={`block ${width} ${height} px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none hover:border-gray-500 focus:border-gray-500 ${
+              className={`block ${width} ${height} px-3 py-2  border border-gray-300 rounded-md focus:outline-none hover:border-gray-500 focus:border-gray-500 ${
                 disabled ? 'bg-gray-100 cursor-not-allowed' : ''
               } ${errors[name] || backendErrors[name] ? 'border-red-500' : ''}`}
               required={required}
@@ -76,7 +76,7 @@ const TextField = ({
               id={name}
               name={name}
               type={type}
-              className={`block ${width} ${height} px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none hover:border-gray-500 focus:border-gray-500 ${
+              className={`block ${width} ${height} px-3 py-2  border border-gray-300 rounded-md focus:outline-none hover:border-gray-500 focus:border-gray-500 ${
 
                 disabled ? 'bg-gray-100 cursor-not-allowed' : ''
               } ${errors[name] || backendErrors[name] ? 'border-red-500' : ''}`}
