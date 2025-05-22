@@ -2,9 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Table from '@/components/Table';
-
-import { Eye, Edit, ThumbsUp,ThumbsDown ,Clock ,X} from "lucide-react";
-
+import { Edit, ThumbsDown, ThumbsUp, Clock, Eye ,X} from 'lucide-react';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
 import { useAuth } from '../../../../context/AuthContext';
@@ -320,7 +318,7 @@ const ReservationTable = ({ dataClient }) => {
               {isSuperAdmin(userRole) || isAdmin(userRole) ? (
                 <>
                   {/* Approve Button */}
-                  <ThumbsUp 
+                  <ThumbsUp
                     className="w-4 h-4 text-green-500 hover:text-green-700 cursor-pointer"
                     title="Valider"
                     onClick={() =>
@@ -540,7 +538,7 @@ const ReservationTable = ({ dataClient }) => {
   };
   return (
     <>
-      <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
+      <div className="reflative">
         <Table
           data_to_export={data_to_export()}
           columns_export={columns_export}
