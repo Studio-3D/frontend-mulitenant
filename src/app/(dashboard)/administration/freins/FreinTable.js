@@ -139,7 +139,7 @@ const FreinTable = ({
         }
         totalRows={filteredData.length}
         loading={loading}
-        addUserLink="/administration/freins?action=add"
+        addLink="/administration/freins?action=add"
         onSearchChange={handleSearchChange}
         currentPage={currentPage}
         rowsPerPage={rowsPerPage}

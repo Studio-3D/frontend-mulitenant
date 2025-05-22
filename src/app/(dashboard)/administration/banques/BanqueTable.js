@@ -134,7 +134,7 @@ const BanqueTable = ({ data = [], loading = false, onAction,onFilterSubmit  }) =
         }
         totalRows={filteredData.length}
         loading={loading}
-        addUserLink="/administration/banques?action=add"
+        addLink="/administration/banques?action=add"
         onSearchChange={handleSearchChange}
         currentPage={currentPage}
         rowsPerPage={rowsPerPage}

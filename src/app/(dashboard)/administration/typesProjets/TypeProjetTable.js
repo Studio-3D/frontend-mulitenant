@@ -134,7 +134,7 @@ const TypeProjetTable = ({
         }
         totalRows={filteredData.length}
         loading={loading}
-        addUserLink="/administration/typesProjets?action=add"
+        addLink="/administration/typesProjets?action=add"
         onSearchChange={handleSearchChange}
         currentPage={currentPage}
         rowsPerPage={rowsPerPage}
