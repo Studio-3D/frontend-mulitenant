@@ -178,8 +178,7 @@ export default function ReservationForm({ id }) {
     const finalList =
       updatedList.length > 0 ? updatedList : [{ id: '', pourcentage: '' }];
 
-    // Get the ID of the removed client (if needed)
-    const get_id_selected = inputList1[index]?.id || 0;
+
     // Update state first
     setinputList1(finalList);
 
@@ -326,6 +325,7 @@ export default function ReservationForm({ id }) {
         .then((response) => {
           if (response.status !== 200) router.back();
           const reservation = response.data.reservation;
+          console.log('le mode finance==>'+reservation?.mode_financement)
           setFormData({
             code_reservation: reservation.code_reservation,
             date_reservation: reservation?.date_reservation || '',
@@ -1588,7 +1588,7 @@ const isButtonDisabled = () => {
         {currentStep == 1 && (
           <div className="space-y-6 mt-[50px]">
             <h2 className="text-xl font-medium text-gray-700 mb-4">
-              Ajouter les clients participer à cette Réservation
+              Ajouter les clients participer à cette Réservation 999
             </h2>
             <div className="space-y-4">
               {inputList1.map((entry, index) => (

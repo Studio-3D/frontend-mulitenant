@@ -1,157 +1,139 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 
-const AutocompleteBien = ({
-  label = 'Bien',
-  name = 'bien_id',
-  user,
-  biensByProjet = [],
-  value = null,
+const AutocompleteClient = ({
+  label = "Choisir un client si déjà exist",
+  options = [],
+  value,
   onChange,
-  disabled = false,
+  placeholder = "Choisissez un Client",
   loading = false,
-  error = false,
+  width = "w-full",
+  height = "h-10",
+  required = false,
+  errors,
+  backendErrors,
+  name = "id",
+  index,
+  selectedClient,
+  disabled = false, // This now includes both loading and disabled states
 }) => {
-    const [isTyping, setIsTyping] = useState(false);
-
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const selectedOption = biensByProjet?.find(b => b.id === value);
+  // Determine the current value
+  const currentValue = selectedClient && index === 0 ? selectedClient : value || '';
 
-  useEffect(() => {
-    if (selectedOption) {
-      setSearchQuery(selectedOption.propriete_dite_bien); // Keep the selected value in the input
-    } else {
-      setSearchQuery('');
-    }
-  }, [value, biensByProjet,selectedOption]);
+  // Find the selected client object
+  const selectedOption = options.find(option => option.id === currentValue);
 
-  const filteredOptions = !isTyping
-  ? biensByProjet // 👈 Show all if not typing
-  : biensByProjet?.filter(option => {
-      const labelText = option.propriete_dite_bien.toLowerCase();
-      return labelText.includes(searchQuery.toLowerCase());
-    });
+  // Filter options based on search query and disabled status
+  const filteredOptions = searchQuery
+    ? options.filter(option => {
+        if (!option) return false;
+        
+        const nom = option.nom ? String(option.nom) : '';
+        const prenom = option.prenom ? String(option.prenom) : '';
+        const fullName = `${nom} ${prenom}`.toLowerCase().trim();
+        
+        return fullName.includes(searchQuery.toLowerCase().trim());
+      })
+    : options;
 
+  // Handle selecting an option
   const handleSelect = (option) => {
-    if (onChange) {
-      onChange(null, option); // Send full Bien object like MUI
+    // Don't select if option is disabled, component is disabled, or if it's the selectedClient in another field
+    if (option.disabled || disabled || (selectedClient && option.id === selectedClient && index !== 0)) {
+      return;
     }
-    setSearchQuery(option.propriete_dite_bien); // Keep the selected value in the input
+    onChange({ target: { name: 'id', value: option.id } }, index, 'select_client');
+    setSearchQuery(`${option.nom} ${option.prenom}`);
     setIsOpen(false);
   };
 
-  const handleInputChange = (e) => {
-    const inputValue = e.target.value;
-    setSearchQuery(inputValue);
-    setIsTyping(true); // 👈 User is typing
-  
-    if (!inputValue) {
-      onChange({
-        target: {
-          name,
-          value: '',
-        },
-      });
+  // Handle input changes
+  const handleChange = (e) => {
+    setSearchQuery(e.target.value);
+    setIsOpen(true);
+    if (e.target.value === '') {
+      onChange({ target: { name: 'id', value: '' } }, index, 'select_client');
     }
-  
-    setIsOpen(true);
   };
-  
 
-  const handleFocus = () => {
-    setIsOpen(true);
-    setIsTyping(false); // 👈 Reset typing on focus
-  };
+  // Set initial search query when value changes
+  useEffect(() => {
+    if (selectedOption) {
+      setSearchQuery(`${selectedOption.nom} ${selectedOption.prenom}`);
+    } else {
+      setSearchQuery('');
+    }
+  }, [currentValue, options]);
+
+  // Handle errors
+  const rawError = errors?.[name] || backendErrors?.[name];
+  const errorMessage = rawError?.message ?? (typeof rawError === 'string' ? rawError : '');
+
   return (
-    <div className="relative w-full">
-      {label && (
-        <label className="block text-sm font-medium mb-1">
-          {label} <span className="text-red-500">*</span>
-        </label>
-      )}
+    <div className={`relative ${width} mb-2`}>
+      {/* Label */}
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+      </label>
 
-      <input
-        type="text"
-        value={searchQuery || (selectedOption ? selectedOption.propriete_dite_bien : '')} // Display selected value or search query
-        onChange={handleInputChange}
-        onFocus={handleFocus} // This is where we show all options
-        onBlur={() => setTimeout(() => setIsOpen(false), 100)}
-        placeholder="Sélectionner un bien"
-        disabled={disabled}
-        className={`w-full h-10 p-2 border ${
-          error ? 'border-red-500' : 'border-gray-300'
-        } rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm ${
-          disabled ? 'bg-gray-100 cursor-not-allowed' : ''
-        }`}
-        required
-      />
+      {/* Input Field */}
+      <div className="relative">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={handleChange}
+          onFocus={() => !disabled && setIsOpen(true)}
+          onBlur={() => setTimeout(() => setIsOpen(false), 200)}
+          placeholder={placeholder}
+          disabled={disabled || loading}
+          className={`${width} ${height} px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+            disabled || loading ? 'bg-gray-100 opacity-50 cursor-not-allowed' : 'bg-white'
+          } ${errorMessage ? 'border-red-500' : 'border-gray-300'}`}
+          required={required}
+        />
 
-      {isOpen && filteredOptions?.length > 0 && (
-        <div className="absolute top-full left-0 w-full bg-white shadow-lg rounded-md mt-1 max-h-60 overflow-y-auto border border-gray-300 z-10">
-          {loading ? (
-            <div className="p-4 flex justify-center items-center">
-              <svg
-                className="animate-spin h-5 w-5 text-indigo-500"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                />
-              </svg>
-            </div>
-          ) : (
-            filteredOptions.map(option => {
-              const isDisabled =
-                option.etat === 'ENCOURS_DE_PROPOSITION' &&
-                option.is_proposed !== null &&
-                user?.id !== option.is_proposed.user_id;
+        {/* Dropdown Options */}
+        {isOpen && !disabled && !loading && (
+          <div className="absolute top-full left-0 w-full bg-white shadow-lg rounded-md mt-1 max-h-60 overflow-y-auto border border-gray-300 z-10">
+            {filteredOptions.length === 0 ? (
+              <div className="p-2 text-gray-500">Aucun client trouvé</div>
+            ) : (
+              filteredOptions.map((option) => {
+                const isOptionDisabled = option.disabled || 
+                  (selectedClient && option.id === selectedClient && index !== 0);
+                
+                return (
+                  <div
+                    key={option.id}
+                    className={`p-2 ${
+                      isOptionDisabled 
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                        : 'cursor-pointer hover:bg-blue-50'
+                    }`}
+                    onClick={() => handleSelect(option)}
+                  >
+                    {option.nom} {option.prenom}
+                    {isOptionDisabled && (
+                      <span className="ml-2 text-xs text-gray-500">(Déjà sélectionné)</span>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
+        )}
+      </div>
 
-              const labelText =
-                option.propriete_dite_bien +
-                (option.etat === 'ENCOURS_DE_PROPOSITION'
-                  ? option.is_proposed
-                    ? user?.id !== option.is_proposed.user_id
-                      ? ` Proposé par ${option.is_proposed.user?.name} ${option.is_proposed.user?.prenom}`
-                      : ' Proposé par Moi Même'
-                    : ''
-                  : '');
-
-              return (
-                <div
-                  key={option.id}
-                  className={`p-2 text-sm cursor-pointer hover:bg-indigo-100 ${
-                    isDisabled ? 'opacity-50 pointer-events-none' : ''
-                  }`}
-                  onClick={() => !isDisabled && handleSelect(option)}
-                >
-                  {labelText}
-                </div>
-              );
-            })
-          )}
-        </div>
-      )}
-
-      {isOpen && !loading && filteredOptions?.length === 0 && (
-        <div className="absolute top-full left-0 w-full bg-white border border-gray-300 z-10 rounded-md mt-1 p-2 text-sm text-gray-500">
-          Aucun bien trouvé
-        </div>
+      {/* Error Message */}
+      {errorMessage && (
+        <div className="text-red-500 text-sm mt-1">{errorMessage}</div>
       )}
     </div>
   );
 };
 
-export default AutocompleteBien;
+export default AutocompleteClient;
