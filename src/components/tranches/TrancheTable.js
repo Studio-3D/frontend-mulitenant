@@ -195,7 +195,7 @@ export default function TrancheTable({ projetId }) {
       totalRows={formattedTranches.length}
       loading={loading}
       error={error}
-      addUserLink={addButtonUrl}
+      addLink={addButtonUrl}
       onSearchChange={handleSearchChange}
       currentPage={currentPage}
       rowsPerPage={rowsPerPage}

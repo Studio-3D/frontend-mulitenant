@@ -1,5 +1,6 @@
 import React from 'react';
-import { CoinsIcon, PlusIcon } from 'lucide-react';
+import { Eye, UserCog, UserX, User, Trash2 } from "lucide-react";
+import Table from '@/components/Table';
 
 // Mock data for avances
 const avancesData = [
@@ -33,20 +34,75 @@ const avancesData = [
 ];
 
 export const AvancesTab = () => {
+  const columns = [
+    {
+      key: "date",
+      label: "Date",
+    },
+    {
+      key: "type",
+      label: "Type",
+    },
+    {
+      key: "montant",
+      label: "Montant",
+    },
+    {
+      key: "methode",
+      label: "Méthode de paiement",
+    },
+    {
+      key: "reference",
+      label: "Référence",
+    },
+    {
+      key: "status",
+      label: "Statut",
+      render: (row) => (
+        <span
+          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+            row.status === 'Confirmé' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+          }`}
+        >
+          {row.status}
+        </span>
+      ),
+    },
+    {
+      key: "actions",
+      label: "Actions",
+      render: (row) => (
+        <div className="flex gap-3 items-center">
+            <Eye
+              className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
+              title="Voir détails"
+            />
+            <UserCog
+              className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
+              title="Modifier"
+            />
+          {row.status === "Actif" ? (
+            <User
+              className="w-4 h-4 text-green-500 hover:text-green-700 cursor-pointer"
+              title="Bloquer utilisateur"
+            />
+          ) : (
+            <UserX
+              className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
+              title="Débloquer utilisateur"
+            />
+          )}
+          <Trash2
+            className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
+            title="Supprimer utilisateur"
+          />
+        </div>
+      ),
+    },
+  ];
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-800 flex items-center">
-          <CoinsIcon className="h-5 w-5 mr-2 text-blue-500" />
-          Avances
-        </h2>
-        <button className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm flex items-center">
-          <PlusIcon className="h-4 w-4 mr-1" />
-          Ajouter un paiement
-        </button>
-      </div>
-      
-      <div className="bg-gray-50 rounded-lg p-4 mb-6">
+      <div className="bg-cyan-50 rounded-lg p-4 mb-6">
         <div className="flex justify-between items-center">
           <div>
             <p className="text-sm text-gray-500">Total versé</p>
@@ -64,57 +120,11 @@ export const AvancesTab = () => {
       </div>
       
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Date
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Type
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Montant
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Méthode
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Référence
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Statut
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {avancesData.map(avance => (
-              <tr key={avance.id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {avance.date}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {avance.type}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {avance.montant}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {avance.methode}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {avance.reference}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                    ${avance.status === 'Confirmé' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                    {avance.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <Table
+          columns={columns}
+          data={avancesData}
+          enableExport
+        />
       </div>
     </div>
   );

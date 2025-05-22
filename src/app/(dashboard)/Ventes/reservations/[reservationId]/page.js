@@ -11,6 +11,9 @@ import { RendezVousTab } from '../../../../../components/reservation/tabs/Rendez
 import { CompromisVentesTab } from '../../../../../components/reservation/tabs/CompromisVentesTab';
 import { ContractTab } from '../../../../../components/reservation/tabs/ContractTab';
 
+import { useParams } from 'next/navigation';
+
+
 // Mock reservation data
 const reservationData = {
   code: 'RES-2023-05678',
@@ -39,6 +42,8 @@ const TAB_COMPONENTS = {
 
 const ShowReservation = () => {
   const [activeTab, setActiveTab] = useState('detail');
+  const { reservationId } = useParams();
+  const step = {'Détail Reservation': reservationId};
 
   const renderTabContent = () => {
     const TabComponent = TAB_COMPONENTS[activeTab] || DetailTab;
@@ -47,6 +52,7 @@ const ShowReservation = () => {
 
   return (
     <div className="">
+      <p>{step['Détail Reservation']}</p>
       <ReservationHeader reservationData={reservationData} />
       
       <div className="bg-white min-h-[66vh] rounded-lg shadow-md mt-6">

@@ -58,7 +58,7 @@ const StatusBadge = ({ status }) => {
     },
     'À venir': {
       icon: <ClockIcon className="h-4 w-4 mr-1" />,
-      color: 'text-blue-600',
+      color: 'text-cyan-600',
       bgColor: 'bg-blue-100'
     }
   };
@@ -95,8 +95,8 @@ export const RendezVousTab = () => {
             {/* Appointment header */}
             <div className="flex justify-between items-start">
               <div className="flex items-center">
-                <div className={`p-2 rounded-full mr-3 ${rdv.status === 'Terminé' ? 'bg-green-100' : 'bg-blue-100'}`}>
-                  <CalendarIcon className={`h-5 w-5 ${rdv.status === 'Terminé' ? 'text-green-600' : 'text-blue-600'}`} />
+                <div className={`p-2 rounded-full mr-3 ${rdv.status === 'Terminé' ? 'bg-green-50' : 'bg-cyan-50'}`}>
+                  <CalendarIcon className={`h-5 w-5 ${rdv.status === 'Terminé' ? 'text-green-500' : 'text-cyan-500'}`} />
                 </div>
                 <div>
                   <h3 className="font-medium text-gray-900">{rdv.type}</h3>
@@ -107,13 +107,13 @@ export const RendezVousTab = () => {
               </div>
               <div className="flex">
                 <button 
-                  className="text-gray-500 hover:text-blue-600 mr-2 transition-colors"
+                  className="text-blue-500 mr-2 transition-colors"
                   aria-label="Modifier le rendez-vous"
                 >
                   <EditIcon className="h-4 w-4" />
                 </button>
                 <button 
-                  className="text-gray-500 hover:text-red-600 transition-colors"
+                  className="text-red-500 transition-colors"
                   aria-label="Supprimer le rendez-vous"
                 >
                   <TrashIcon className="h-4 w-4" />
@@ -131,20 +131,10 @@ export const RendezVousTab = () => {
                 <span className="font-medium w-24">Responsable:</span>
                 <span className="flex-1">{rdv.responsable}</span>
               </p>
-              <p className="flex items-center text-gray-600">
+              <p className="flex items-center text-gray-500">
                 <span className="font-medium w-24">Statut:</span>
                 <StatusBadge status={rdv.status} />
               </p>
-            </div>
-
-            {/* Action buttons */}
-            <div className="mt-4 pt-3 border-t border-gray-100 flex justify-end space-x-2">
-              <button className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 transition-colors">
-                Modifier
-              </button>
-              <button className="px-3 py-1 bg-red-600 text-white rounded-md text-sm hover:bg-red-700 transition-colors">
-                Supprimer
-              </button>
             </div>
           </div>
         ))}
