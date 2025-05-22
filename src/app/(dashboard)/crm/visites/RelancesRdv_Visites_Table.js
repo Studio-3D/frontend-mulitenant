@@ -200,9 +200,9 @@ const RelancesRdv_Visites_Table = (type) => {
       label: 'Bien',
       render: (row) => {
         return (
-          <Link target="_blank" href={`/biens/${row?.bien.id}`}>
+          <Link target="_blank" href={`/biens/${row?.bien?.id}`}>
             <strong style={{ fontWeight: 600 }}>
-              {row.bien.propriete_dite_bien}
+              {row.bien?.propriete_dite_bien}
             </strong>
           </Link>
         );
@@ -301,7 +301,7 @@ const RelancesRdv_Visites_Table = (type) => {
               : '') || 'Non spécifié',
         interet: VISITE_INTERETS[pro.visite?.interet]?.label,
 
-        bien: pro.visite?.bien.proriete_dite_bien,
+        bien: pro.visite?.bien?.proriete_dite_bien,
         mode_relance: pro.mode_relance,
 
         date_relance:

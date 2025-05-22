@@ -2,15 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import Table from '@/components/Table';
-import {
-  FaRegEye,
-  FaEdit,
-  FaThumbsDown,
-  FaThumbsUp,
-  FaClock,
-  FaEye,
-  FaTimes,
-} from 'react-icons/fa';
+
+import { Eye, Edit, ThumbsUp,ThumbsDown ,Clock ,X} from "lucide-react";
+
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
 import { useAuth } from '../../../../context/AuthContext';
@@ -311,7 +305,7 @@ const ReservationTable = ({ dataClient }) => {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <FaRegEye
+          <Eye
             className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
             title="Voir détails"
             onClick={() => handleShow(row.id)}
@@ -326,7 +320,7 @@ const ReservationTable = ({ dataClient }) => {
               {isSuperAdmin(userRole) || isAdmin(userRole) ? (
                 <>
                   {/* Approve Button */}
-                  <FaThumbsUp
+                  <ThumbsUp 
                     className="w-4 h-4 text-green-500 hover:text-green-700 cursor-pointer"
                     title="Valider"
                     onClick={() =>
@@ -346,7 +340,7 @@ const ReservationTable = ({ dataClient }) => {
                   />
 
                   {/* Reject Button */}
-                  <FaThumbsDown
+                  <ThumbsDown
                     className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
                     title="Refuser"
                     onClick={() => handle_rejeter(row.id, row.code_reservation)}
@@ -372,7 +366,7 @@ const ReservationTable = ({ dataClient }) => {
               }
             />
           ) : row.statut == 1 && row.data_res.first_avance?.statut == 3 ? (
-            <FaClock
+            <Clock
               className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
               title="Premier avance en attente de validation"
               onClick={() => handle_show_info(row.code_reservation)}

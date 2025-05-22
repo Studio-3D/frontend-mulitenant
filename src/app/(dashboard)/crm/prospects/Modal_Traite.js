@@ -21,7 +21,7 @@ export default function Modal_Traite({ onClose, id, num_tel, nom_prenom }) {
     date_rappel: '',
     commentaire: '',
     nom_prenom: nom_prenom,
-    telephone:num_tel
+    telephone: num_tel,
   };
   const validationSchemaRef = useRef(
     yup.object().shape({
@@ -41,7 +41,8 @@ export default function Modal_Traite({ onClose, id, num_tel, nom_prenom }) {
   });
   // First select: Source
   const handleStatutChange = (newValue) => {
-    setValue('statut', newValue ? newValue.id : '');
+    // You can access newValue.id or newValue.label here
+    console.log('Selected option:', newValue);
   };
 
   const onSubmit = (data) => {
@@ -94,7 +95,7 @@ export default function Modal_Traite({ onClose, id, num_tel, nom_prenom }) {
     errors,
     width = 'w-full',
     height = 'h-10',
-    disabled=false,
+    disabled = false,
     isTextarea = false, // New prop for handling textareas
   }) => {
     return (
@@ -153,7 +154,6 @@ export default function Modal_Traite({ onClose, id, num_tel, nom_prenom }) {
 
   return (
     <div className="w-full max-w-[90%] sm:max-w-[500px] md:max-w-[600px] lg:max-w-[800px] h-auto bg-white flex flex-col mx-auto">
-
       <div className="w-full h-[60px] bg-[#009FFF] px-4">
         <div className="flex items-center justify-center h-full">
           <h1 className="text-3xl font-bold text-center text-white">
@@ -162,7 +162,7 @@ export default function Modal_Traite({ onClose, id, num_tel, nom_prenom }) {
         </div>
       </div>
 
-      <div className="p-4 w-[600px] " >
+      <div className="p-4 w-[600px] ">
         <form
           onSubmit={handleSubmit(onSubmit)}
           className="mt-4 mx-auto w-full max-w-[360px] flex flex-col items-center"
@@ -199,18 +199,30 @@ export default function Modal_Traite({ onClose, id, num_tel, nom_prenom }) {
             }
           </div>
           <div className="flex items-center space-x-2 w-full">
-            {
-              <Autocomplete
-                required={true}
-                label="Statut:"
-                options={Object.values(Statuts_Prospect).filter(
-                  (option) => option.id !== '4'
-                )} // ['active', 'inactive', 'pending']
-                choix="label"
-                onChange={handleStatutChange}
-                width="w-80"
-              />
-            }
+            <Controller
+              name="statut"
+              control={control}
+              render={({ field }) => (
+                <Autocomplete
+                  label="Statut:"
+                  required={true}
+                  options={Object.values(Statuts_Prospect).filter(
+                    (option) => option.id !== '4'
+                  )}
+                  choix="label"
+                  value={field.value}
+                  onChange={(selectedOption) => {
+                    // Update the form value with just the ID
+                    field.onChange(selectedOption?.id || '');
+                    // Call your custom handler if needed
+                    handleStatutChange(selectedOption);
+                  }}
+                  errors={errors}
+                  width="w-80"
+                  name="statut"
+                />
+              )}
+            />
           </div>
           {watch('statut') == 1 && (
             <div className="flex items-center space-x-2 w-full">

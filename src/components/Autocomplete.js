@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronDown } from "lucide-react";
 
-
 const Autocomplete = ({
   label,
   options = [],
-  value,
+  value, // Can be either the full object or just the ID
   onChange,
   placeholder = 'Choisissez un élément',
   choix = 'nom',
@@ -20,12 +19,19 @@ const Autocomplete = ({
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Find the selected option based on the value
+  const selectedOption = typeof value === 'object' 
+    ? value 
+    : options.find(opt => opt.id === value);
+
   // Initialize searchQuery with the current value
   useEffect(() => {
-    if (value && value[choix]) {
-      setSearchQuery(value[choix]);
+    if (selectedOption && selectedOption[choix]) {
+      setSearchQuery(selectedOption[choix]);
+    } else {
+      setSearchQuery('');
     }
-  }, [value, choix]);
+  }, [selectedOption, choix]);
 
   // Filter options based on search query
   const filteredOptions =
@@ -70,10 +76,19 @@ const Autocomplete = ({
     setIsOpen(!isOpen);
   };
 
-  const rawError = errors[name] || backendErrors[name];
-  const errorMessage =
-    rawError?.message ??
-    (typeof rawError === 'string' ? rawError : '');
+  // Handle both errors and backendErrors
+  const getErrorMessage = () => {
+    if (errors && errors[name]) {
+      return errors[name]?.message || (typeof errors[name] === 'string' ? errors[name] : '');
+    }
+    if (backendErrors && backendErrors[name]) {
+      return backendErrors[name]?.message || (typeof backendErrors[name] === 'string' ? backendErrors[name] : '');
+    }
+    return '';
+  };
+
+  const errorMessage = getErrorMessage();
+  const hasError = Boolean(errorMessage);
 
   return (
     <div className={`relative ${width}`}>
@@ -92,11 +107,11 @@ const Autocomplete = ({
           onFocus={() => setIsOpen(true)}
           onBlur={() => setTimeout(() => setIsOpen(false), 200)}
           placeholder={placeholder}
-          className={`w-full  ${height} p-2 border ${
-            errorMessage ? 'border-red-500' : 'border-gray-300'
+          className={`w-full ${height} p-2 border ${
+            hasError ? 'border-red-500' : 'border-gray-300'
           } rounded-md focus:outline-none ${
-            errorMessage ? 'focus:ring-red-500' : 'focus:border-gray-500'
-          } pr-8`}  // Added pr-8 for icon spacing
+            hasError ? 'focus:ring-red-500' : 'focus:border-gray-500'
+          } pr-8`}
           required={required}
         />
         
@@ -138,7 +153,7 @@ const Autocomplete = ({
       </div>
 
       {/* Error Message */}
-      {errorMessage && (
+      {hasError && (
         <div className="text-red-500 text-sm mt-1">{errorMessage}</div>
       )}
     </div>

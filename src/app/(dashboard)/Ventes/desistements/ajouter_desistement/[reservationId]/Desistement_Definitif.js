@@ -1,10 +1,22 @@
 import React from 'react';
 import { CalendarIcon } from 'lucide-react';
+import { motif, motif_desistements } from '@/configs/enum';
+import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
+import { Controller, useFormContext } from 'react-hook-form';
+import { RadioGroup } from '@radix-ui/react-dropdown-menu';
 
-export function Desistement_Definitif({ formData, updateFormData,isEditing  }) {
+export function Desistement_Definitif({ isEditing, formData }) {
+   const { 
+    control, 
+    watch, 
+    setValue, 
+    formState: { errors }  // Destructure errors from formState
+  } = useFormContext();
+  const modeRemboursement = watch('modeRemboursement');
+  const pourCompte = watch('pourCompte');
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
-    
+
     if (type === 'file') {
       updateFormData({ [name]: files[0] });
     } else if (type === 'radio' || type === 'checkbox') {
@@ -23,54 +35,63 @@ export function Desistement_Definitif({ formData, updateFormData,isEditing  }) {
 
   return (
     <div className="p-6">
-        {isEditing && (
+      {isEditing && (
         <div className="mb-4 p-3 bg-yellow-50 text-yellow-800 rounded-md">
-          <p className="font-medium">Mode Édition: Vous modifiez un désistement existant</p>
+          <p className="font-medium">
+            Mode Édition: Vous modifiez un désistement existant
+          </p>
         </div>
       )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Motif <span className="text-red-500">*</span>
-          </label>
-          <div className="relative">
-            <select
-              name="motif"
-              value={formData.motif || ''}
-              onChange={handleChange}
-              className="block w-full rounded-md border border-gray-300 py-2 px-3 bg-white shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              <option value="Incapacité financière">Incapacité financière</option>
-              <option value="Changement d'avis">Changement d'avis</option>
-              <option value="Problème personnel">Problème personnel</option>
-            </select>
-          </div>
-        </div>
+        <AutocompleteSelectComponent
+          label="Motif :"
+          name="motif"
+          value={isEditing&&formData.motif}
+          control={control}
+          options={motif_desistements}
+          errors={errors.motif?.message}
+          required
+          onChange={(value) => setValue('motif', value)}
+        />
+       
       </div>
-      
+
       <div className="border-t border-gray-200 py-4">
-        <div className="flex flex-wrap gap-6">
-          {['Rem.immediat', 'Rem.Après Vente', 'Transfert dossier', 'Transfert et Remboursement'].map((option) => (
-            <label key={option} className="flex items-center">
-              <input
-                type="radio"
-                name="remboursement"
-                value={option}
-                checked={formData.remboursement === option}
-                onChange={handleChange}
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded-full"
-              />
-              <span className="ml-2 text-sm text-gray-700">{option}</span>
-            </label>
-          ))}
-        </div>
+        <Controller
+          name="remboursement"
+          control={control}
+          render={({ field }) => (
+            <RadioGroup
+              value={field.value}
+              onChange={field.onChange}
+              options={[
+                'Rem.immediat',
+                'Rem.Après Vente',
+                'Transfert dossier',
+                'Transfert et Remboursement',
+              ]}
+            />
+          )}
+        />
       </div>
 
       <div className="border-t border-gray-200 py-4">
         <h3 className="text-md font-medium text-indigo-600 mb-4">
           Remboursement du Client : {formData.clientName || 'nnn_1 ppp_1'}
         </h3>
-        
+        {/*<Controller
+          name="dateOperation"
+          control={control}
+          render={({ field, fieldState: { error } }) => (
+            <DatePicker
+              label="Date de remboursement"
+              selected={field.value ? new Date(field.value) : null}
+              onChange={(date) => field.onChange(date)}
+              error={error?.message}
+              required
+            />
+          )}
+        />*/}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -89,7 +110,43 @@ export function Desistement_Definitif({ formData, updateFormData,isEditing  }) {
               </span>
             </div>
           </div>
-          
+          {/*{/* Mode Remboursement 
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <Controller
+          name="modeRemboursement"
+          control={control}
+          render={({ field, fieldState: { error } }) => (
+            <RadioGroup
+              label="Mode Remboursement"
+              value={field.value}
+              onChange={field.onChange}
+              options={['Chèque', 'Virement']}
+              error={error?.message}
+              required
+            />
+          )}
+        />
+
+        {modeRemboursement === 'Chèque' && (
+          <Controller
+            name="chequeFile"
+            control={control}
+            render={({ field, fieldState: { error } }) => (
+              <FileInput
+                label="Chèque/Reçu"
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  field.onChange(file);
+                  setValue('chequeFile', file);
+                }}
+                value={field.value}
+                error={error?.message}
+                required
+              />
+            )}
+          />
+        )}
+      </div>*/}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Mode Remboursement: <span className="text-red-500">*</span>
@@ -125,7 +182,7 @@ export function Desistement_Definitif({ formData, updateFormData,isEditing  }) {
               className="block w-full rounded-md border border-gray-300 py-2 px-3 bg-white shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Chèque/Reçu:
@@ -163,7 +220,7 @@ export function Desistement_Definitif({ formData, updateFormData,isEditing  }) {
               ))}
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Fichier Authorisation: <span className="text-red-500">*</span>
@@ -189,11 +246,21 @@ export function Desistement_Definitif({ formData, updateFormData,isEditing  }) {
               type="checkbox"
               name="avecPenalite"
               checked={formData.avecPenalite || false}
-              onChange={(e) => updateFormData({ avecPenalite: e.target.checked })}
+              onChange={(e) =>
+                updateFormData({ avecPenalite: e.target.checked })
+              }
               className="sr-only"
             />
-            <div className={`block h-6 rounded-full w-12 ${formData.avecPenalite ? 'bg-indigo-600' : 'bg-gray-300'}`}></div>
-            <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition ${formData.avecPenalite ? 'transform translate-x-6' : ''}`}></div>
+            <div
+              className={`block h-6 rounded-full w-12 ${
+                formData.avecPenalite ? 'bg-indigo-600' : 'bg-gray-300'
+              }`}
+            ></div>
+            <div
+              className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition ${
+                formData.avecPenalite ? 'transform translate-x-6' : ''
+              }`}
+            ></div>
           </label>
         </div>
       </div>
@@ -206,11 +273,21 @@ export function Desistement_Definitif({ formData, updateFormData,isEditing  }) {
               type="checkbox"
               name="avecPiecesJointes"
               checked={formData.avecPiecesJointes || false}
-              onChange={(e) => updateFormData({ avecPiecesJointes: e.target.checked })}
+              onChange={(e) =>
+                updateFormData({ avecPiecesJointes: e.target.checked })
+              }
               className="sr-only"
             />
-            <div className={`block h-6 rounded-full w-12 ${formData.avecPiecesJointes ? 'bg-indigo-600' : 'bg-gray-300'}`}></div>
-            <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition ${formData.avecPiecesJointes ? 'transform translate-x-6' : ''}`}></div>
+            <div
+              className={`block h-6 rounded-full w-12 ${
+                formData.avecPiecesJointes ? 'bg-indigo-600' : 'bg-gray-300'
+              }`}
+            ></div>
+            <div
+              className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition ${
+                formData.avecPiecesJointes ? 'transform translate-x-6' : ''
+              }`}
+            ></div>
           </label>
         </div>
       </div>
