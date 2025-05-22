@@ -1,9 +1,18 @@
-import React from 'react'
-import { CalendarIcon, TrendingUpIcon, BarChart3Icon } from 'lucide-react'
-export function Changement_De_Bien({ formData, updateFormData }) {
+import React from 'react';
+import { CalendarIcon, TrendingUpIcon, BarChart3Icon } from 'lucide-react';
+import { Controller, useFormContext } from 'react-hook-form';
+import TextField from '@/components/Textfield'; // Import the component
+
+export function Changement_De_Bien({ reservationData, isEditing }) {
+  const {
+    control,
+    watch,
+    setValue,
+    formState: { errors }, // Destructure errors from formState
+  } = useFormContext();
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
-    
+
     if (type === 'file') {
       updateFormData({ [name]: files[0] });
     } else if (type === 'radio' || type === 'checkbox') {
@@ -11,21 +20,25 @@ export function Changement_De_Bien({ formData, updateFormData }) {
     } else {
       updateFormData({ [name]: value });
     }
-  };  return (
+  };
+  return (
     <div className="p-6">
-     
+      {isEditing && (
+        <div className="mb-4 p-3 bg-yellow-50 text-yellow-800 rounded-md">
+          <p className="font-medium">Mode Édition</p>
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Type d'Investissement <span className="text-red-500">*</span>
-          </label>
-          <div className="relative">
-            <select className="block w-full rounded-md border border-gray-300 py-2 px-3 bg-white shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-              <option>Investissement locatif</option>
-              <option>Projet de développement</option>
-              <option>Fond immobilier</option>
-            </select>
-          </div>
+          <TextField
+            label="Ancien Bien:"
+            name="ancien_bien"
+            disabled
+            value={bien_ancien}
+            control={control}
+            errors={errors}
+            backendErrors={[]}
+          />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -98,5 +111,5 @@ export function Changement_De_Bien({ formData, updateFormData }) {
         </div>
       </div>
     </div>
-  )
+  );
 }

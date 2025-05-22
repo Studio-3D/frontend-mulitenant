@@ -118,6 +118,38 @@ export const MODE_PAIEMENT = {
   6: { code: 6, label: 'Versement' },
 };
 
+export const type_dst = {
+  1: { id: 1, label: 'Désistement Définitif' },
+  2: { id: 2, label: 'Désistement au Profit' },
+  3: { id: 3, label: 'Changement de Bien' },
+};
+export const type_dst_dp = {
+  1: { id: 1, label: 'Désistement au Profit d\'un Proche' },
+  2: { id: 2, label: 'Désistement au Profit d\'un Co-Reservataire' },
+  3: { id: 3, label: 'Désistement Partiel' },
+};
+
+export const motif_desistements = {
+  1: { id: 1, label: 'Incapacité Financière' },
+  2: { id: 2, label: 'Décès' },
+  3: { id: 3, label: 'Problème familier' },
+  4: { id: 4, label: 'Mutation' },
+  5: { id: 5, label: 'Licenciement' },
+  6: { id: 6, label: 'Insatisfaction' },
+  7: { id: 7, label: 'Echange' },
+  8: { id: 8, label: 'Crédit Bancaire non accordé' },
+  9: { id: 9, label: 'Client imposé à la TSC' },
+  10: { id: 10, label: 'Autre investissement' },
+  11: { id: 11, label: 'Problème de santé' },
+};
+
+export const lien_parentes = {
+  1: { id: 1, label: 'Parents' },
+  2: { id: 2, label: 'Fils' },
+  3: { id: 3, label: 'Frères' },  // Note: Fixed accent on "Frères"
+  4: { id: 4, label: 'Sœurs' },   // Note: Fixed accent on "Sœurs"
+  5: { id: 5, label: 'Autre' },
+};
 //desistement
 export const MODE_PAIEMENT_with_transfert = {
   1: { code: 1, label: 'Espèce' },
