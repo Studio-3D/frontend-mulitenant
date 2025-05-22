@@ -11,6 +11,7 @@ export default function FilterDialog({ onClose, onSubmit, initialValues, projetI
   const [commercial, setCommercial] = useState(initialValues?.commercial || null);
   const [commercials, setCommercials] = useState([]);
   const [loadingCommercials, setLoadingCommercials] = useState(false);
+  const [error, setError] = useState(null);
 
   // Fetch commercials when dialog opens
   useEffect(() => {
@@ -54,24 +55,17 @@ export default function FilterDialog({ onClose, onSubmit, initialValues, projetI
                 user: user
               });
             }
-  const [error, setError] = useState(null);
-
-// In the try-catch block:
-  try {
-    // existing code
-  } catch (error) {
-    console.error('Error fetching commercials:', error);
-   setError('Unable to load commercials. Please try again later.');
-  } finally {
-    setLoadingCommercials(false);
-  }
-
-// Then in the render, add error display:
-  {error && (
-    <div className="text-red-500 mb-4">
-      {error}
-    </div>
-  )}
+          });
+        }
+        setCommercials(commercialsList);
+      } catch (error) {
+        console.error('Error fetching commercials:', error);
+        setError('Unable to load commercials. Please try again later.');
+      } finally {
+        setLoadingCommercials(false);
+      }
+    };
+    
     fetchCommercials();
   }, [projetId]);
 
@@ -100,6 +94,12 @@ export default function FilterDialog({ onClose, onSubmit, initialValues, projetI
             <X className="h-5 w-5" />
           </button>
         </div>
+        
+        {error && (
+          <div className="text-red-500 mb-4">
+            {error}
+          </div>
+        )}
         
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-2 gap-4 mb-4">

@@ -10,6 +10,7 @@ import {
   LayoutDashboard, 
   Building, 
   Folder, 
+  Landmark,
   FolderOpen, 
   ChevronRight, 
   ChevronDown, 
@@ -237,15 +238,15 @@ const Menu = () => {
     },
     {
       label: "Actualités du Jour",
-      icon: <Timer size={20} />,
+      icon: <Timer />,
       href: "/actualites-du-jour",
       needsSociete: user.role === 1,
       needsProjet: true,
     },
     {
       label: "Calendrier",
-      icon: <Calendar size={20} />,
-      href: "/Calendrier",
+      icon: <Calendar />,
+      href: "/calendrier",
       needsSociete: user.role === 1,
       needsProjet: true,
     },
@@ -301,7 +302,7 @@ const Menu = () => {
     },
     {
       label: "Comptabilité",
-      icon: <Calculator size={20} />,
+      icon: <Calculator  />,
       href: "/comptabilite",
     },
     { 

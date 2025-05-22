@@ -302,6 +302,7 @@ const RelancesRdv_Visites_Table = (type) => {
         interet: VISITE_INTERETS[pro.visite?.interet]?.label,
 
         bien: pro.visite?.bien?.proriete_dite_bien,
+
         mode_relance: pro.mode_relance,
 
         date_relance:
@@ -329,15 +330,10 @@ const RelancesRdv_Visites_Table = (type) => {
   ];
   return (
     <div>
-      <div className="reflative">
+      <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
         <Table
           data_to_export={data_to_export()}
           columns_export={columns_export}
-          name_file_export={
-            Number(type.type) === 1
-              ? 'relances_visites_exports'
-              : 'Rendez-Vous_visites_exports'
-          }
           columns={columns}
           data={formatData()}
           totalRows={totalRows}

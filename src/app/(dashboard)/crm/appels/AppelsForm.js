@@ -60,6 +60,7 @@ export default function AppelsForm({ id }) {
   const [info_sup, setInfo_sup] = useState(null);
   const [formData, setFormData] = useState(null);
   const [formData_check, setFormData_check] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [loading, setLoading] = useState({ form: false });
   const [backendErrors, setBackendErrors] = useState({});
@@ -487,6 +488,8 @@ export default function AppelsForm({ id }) {
       return;
     }
     setLoading({ ...loading, form: true });
+
+    setIsSubmitting(true); // Set manual loading state
     setBackendErrors({});
     const preparedData = { ...data };
     // Convert [34, 7] → "34,7"
@@ -592,7 +595,9 @@ export default function AppelsForm({ id }) {
           );
         }
       })
-      .finally(() => setLoading({ ...loading, form: false }));
+      .finally(() => {
+            setIsSubmitting(false); // Reset manual loading state
+      });
   };
 
   const fetch_event_by_param = async (route, value, param) => {
@@ -875,7 +880,7 @@ export default function AppelsForm({ id }) {
           </Modal>
         </>
       )}
-      <div className="p-3">
+      <div className="">
         <div className="flex items-center justify-start">
           <BreadCrumb
             baseUrl={ENDPOINTS.APPELS}
@@ -883,7 +888,7 @@ export default function AppelsForm({ id }) {
           />
         </div>
       </div>
-      <div className="p-6 mt-4 bg-white shadow-md rounded-md">
+      <div className="p-6  mt-4 min-h-[89vh] bg-white shadow-md rounded-md">
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="space-y-4">
             {info_cin && (
@@ -902,22 +907,6 @@ export default function AppelsForm({ id }) {
             {/* First set of fields (Responsive grid) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               <TextField
-                label="Cin:"
-                name="cin"
-                required={Number(watch('interet')) == 1}
-                control={control}
-                errors={{
-                  ...errors,
-                  cin:
-                    formSubmitted && (Number(watch('interet')) == 1) == 1
-                      ? 'Ce champ est obligatoire lorsque interet est interessé.'
-                      : null,
-                }}
-                backendErrors={backendErrors}
-                defaultValues={defaultValues}
-                onChange={handleChange_event('cin')}
-              />
-              <TextField
                 label="Nom:"
                 name="nom"
                 control={control}
@@ -932,6 +921,22 @@ export default function AppelsForm({ id }) {
                 errors={errors}
                 backendErrors={backendErrors}
                 defaultValues={defaultValues}
+              />
+              <TextField
+                label="Cin:"
+                name="cin"
+                required={Number(watch('interet')) == 1}
+                control={control}
+                errors={{
+                  ...errors,
+                  cin:
+                    formSubmitted && (Number(watch('interet')) == 1) == 1
+                      ? 'Ce champ est obligatoire lorsque interet est interessé.'
+                      : null,
+                }}
+                backendErrors={backendErrors}
+                defaultValues={defaultValues}
+                onChange={handleChange_event('cin')}
               />
               <TextField
                 label="Telephone:"
@@ -1549,7 +1554,7 @@ export default function AppelsForm({ id }) {
                       <div>
                         {info_prix != null && (
                           <div className="w-full">
-                          <div className="bg-blue-100 text-blue-700 p-3 rounded-md border-l-4 border-blue-500 p-4 text-center rounded">
+                          <div className="bg-blue-100 text-blue-700 border-l-4 border-blue-500 p-4 text-center rounded">
                           {info_prix}
                             </div>
                           </div>
@@ -1703,13 +1708,36 @@ export default function AppelsForm({ id }) {
               height="h-full" // Optionally set height, default is 'h-10'
             />
           </div>
-          <div className="flex justify-center gap-4 items-center mt-6 mb-6">
-            <Button type="button" onClick={() => router.back()}>
+          <div className="flex justify-center gap-4 items-center xl:mt-32">
+            <Button type="button" 
+            onClick={() => {
+                  if (onClose) {
+                    onClose();
+                  } else {
+                    router.back();
+                  }
+                }} disabled={isSubmitting} // Disable cancel during submit
+            >
               Annuler
             </Button>
 
-            <Button type="submit" disabled={loading.form || disabled_var}>
-              Enregistrer
+            <Button type="submit" disabled={isSubmitting || disabled_var}>
+             {isSubmitting ? (
+                  <div className="flex items-center gap-2">
+                    <svg 
+                      className="animate-spin h-5 w-5 text-white" 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      fill="none" 
+                      viewBox="0 0 24 24"
+                    >
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Enregistrement...
+                  </div>
+                ) : (
+                  "Enregistrer"
+                )}
             </Button>
           </div>
         </form>

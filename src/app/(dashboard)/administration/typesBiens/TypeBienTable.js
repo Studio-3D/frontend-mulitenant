@@ -94,7 +94,7 @@ const TypeBienTable = ({
   };
   
   return (
-    <div>
+    <div className="bg-white p-6 rounded-lg shadow-md">
       <Table 
         columns={columns}
         data={currentItems}
@@ -134,7 +134,7 @@ const TypeBienTable = ({
         }
         totalRows={filteredData.length}
         loading={loading}
-        addUserLink="/administration/typesBiens?action=add"
+        addLink="/administration/typesBiens?action=add"
         onSearchChange={handleSearchChange}
         currentPage={currentPage}
         rowsPerPage={rowsPerPage}

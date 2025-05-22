@@ -542,11 +542,11 @@ export default function BienForm({ id, projetId, blocId, immeubleId }) {
           <select
             value={formData.type_id || ''}
             onChange={(e) => handleChange("type_id", e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-3  py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           >
-            <option value="">Sélectionner</option>
+            <option className="text-gray-800" value="">Sélectionner</option>
             {typeBiens.map(type => (
-              <option key={type.id} value={type.id}>{type.value}</option>
+              <option key={type.id} value={type.id}>{type.type}</option>
             ))}
           </select>
         </div>
@@ -562,7 +562,7 @@ export default function BienForm({ id, projetId, blocId, immeubleId }) {
           >
             <option value="">Sélectionner</option>
             {vues.map(vue => (
-              <option key={vue.id} value={vue.id}>{vue.value}</option>
+              <option key={vue.id} value={vue.id}>{vue.vue}</option>
             ))}
           </select>
         </div>
@@ -578,7 +578,7 @@ export default function BienForm({ id, projetId, blocId, immeubleId }) {
           >
             <option value="">Sélectionner</option>
             {typologies.map(typologie => (
-              <option key={typologie.id} value={typologie.id}>{typologie.value}</option>
+              <option key={typologie.id} value={typologie.id}>{typologie.typologie}</option>
             ))}
           </select>
         </div>

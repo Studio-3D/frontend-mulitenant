@@ -266,7 +266,7 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
       totalRows={formattedBiens.length}
       loading={loading}
       error={error}
-      addUserLink={addButtonUrl}
+      addLink={addButtonUrl}
       onSearchChange={handleSearchChange}
       currentPage={currentPage}
       rowsPerPage={rowsPerPage}

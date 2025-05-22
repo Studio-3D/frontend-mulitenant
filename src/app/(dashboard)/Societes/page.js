@@ -164,7 +164,7 @@ export default function Societes() {
   ];
 
   return (
-    <div>
+    <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
       {/* Table */}
       <Table 
         columns={columns}
