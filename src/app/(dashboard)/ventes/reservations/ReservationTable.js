@@ -538,7 +538,7 @@ const ReservationTable = ({ dataClient }) => {
   };
   return (
     <>
-      <div className="reflative">
+      <div className="reflative bg-white shadow-md rounded-lg p-4">
         <Table
           data_to_export={data_to_export()}
           columns_export={columns_export}
