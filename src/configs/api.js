@@ -57,6 +57,7 @@ export const APIURL = {
   FACTURES_BY_DECOMPTE: `${APIBASEURL}/v1/factures_by_decompte`,
   DOCUMENTS_FACTURES: `${BASERESOURCEURL}/Docs/factures`,
   DOCUMENTS_CPS: `${BASERESOURCEURL}/Docs/cps`,
+  HISTOIMPORTATION:`${APIBASEURL}/v1/delete_fichier_import`,
 }
 
 export const ENDPOINTS = {
@@ -100,7 +101,7 @@ export const ENDPOINTS = {
   ReclamationsClients:'/reclamationsClients',
   REMISECLES:'/remiseCles',
   ECHEANCESTRANCE:'/echeancesTranche/home',
-  HISTOIMPORTATION:'/histoImportation/home',
+  HISTOIMPORTATION:'/histoImportation',
   ETAPESPROJET:'/etapesProjet/home',
 }
 
