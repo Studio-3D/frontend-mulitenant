@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDown } from "lucide-react";
+import { ChevronDown } from 'lucide-react';
 
 const AutocompleteSelectComponent = ({
   label,
@@ -8,7 +8,6 @@ const AutocompleteSelectComponent = ({
   required = false,
   onChange,
   value = null,
-  defaultValue = null,
   width = 'w-full',
   height = 'h-[38px]',
   disabled = false,
@@ -20,9 +19,15 @@ const AutocompleteSelectComponent = ({
   const optionsArray = Object.values(options);
 
   useEffect(() => {
-    // Initialize with the current value - checks for both code and id
-    const matchedOption = optionsArray.find((opt) => opt.code == value || opt.id == value);
-    setInputValue(matchedOption ? matchedOption.label : '');
+    // Only set input value if there's a valid value provided
+    if (value !== null) {
+      const matchedOption = optionsArray.find(
+        (opt) => opt.code == value || opt.id == value
+      );
+      setInputValue(matchedOption ? matchedOption.label : '');
+    } else {
+      setInputValue(''); // Ensure it's blank when value is null
+    }
     setSearchQuery('');
   }, [value]);
 
@@ -51,7 +56,6 @@ const AutocompleteSelectComponent = ({
   };
 
   const handleSelect = (option) => {
-    // Use code if available, otherwise fall back to id
     const selectedValue = option.code !== undefined ? option.code : option.id;
     onChange(selectedValue);
     setInputValue(option.label);
@@ -76,7 +80,6 @@ const AutocompleteSelectComponent = ({
           onFocus={() => {
             if (disabled) return;
             setIsOpen(true);
-            // Don't clear the input value here
           }}
           onBlur={() => setTimeout(() => setIsOpen(false), 150)}
           placeholder="Choisissez un élément"
@@ -91,7 +94,7 @@ const AutocompleteSelectComponent = ({
         />
 
         {!disabled && (
-          <div 
+          <div
             className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer"
             onClick={toggleDropdown}
           >
