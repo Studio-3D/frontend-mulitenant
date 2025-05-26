@@ -290,7 +290,12 @@ const Menu = () => {
     },
     
     
-    { label: "Reclamations", icon: <FileText />, href: "/Reclamations" },
+    { label: "Reclamations", 
+      icon: <FileText />, 
+      href: "/Reclamations" ,
+      needsSociete: user.role === 1,
+      needsProjet: true,
+    },
     {
       label: "Encaissments",
       icon: <Receipt />,
@@ -312,7 +317,9 @@ const Menu = () => {
     {
       label: "Historique Importation",
       icon: <History size={20} />,
-      href: "/Historique-Importation",
+      href: "/historique-importation",
+      needsSociete: user.role === 1,
+      needsProjet: true,
     },
   ];
 

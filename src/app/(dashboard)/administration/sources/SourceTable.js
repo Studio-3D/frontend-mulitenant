@@ -137,7 +137,7 @@ const SourceTable = ({
         }
         totalRows={filteredData.length}
         loading={loading}
-        addUserLink="/administration/sources?action=add"
+        addLink="/administration/sources?action=add"
         onSearchChange={handleSearchChange}
         currentPage={currentPage}
         rowsPerPage={rowsPerPage}

@@ -4,11 +4,14 @@ import { APIURL, ENDPOINTS } from "@/configs/api";
 import axios from "axios";
 import toast from "react-hot-toast";
 import BreadCrumb from "../../navigation/BreadCrumb";
+import Button from "@/components/Button";
+import { useRouter } from "next/navigation";
 
 const TypologieForm = ({ id = null, onComplete }) => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const { selectedProjet } = useProjet();
+  const router = useRouter();
 
   // Form state
   const [formData, setFormData] = useState({
@@ -156,28 +159,28 @@ const TypologieForm = ({ id = null, onComplete }) => {
       <div className="flex items-center justify-start">
         <BreadCrumb
           baseUrl={ENDPOINTS.TYPOLOGIES}
-          step={`${id ? "Modifier" : "Ajouter"} une  banque`}
+          step={`${id ? "Modifier" : "Ajouter"} une typologie`}
         />
       </div>
       <div className="p-6 mt-4 bg-white shadow-md rounded-md">
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2">
-              Nom de la banque <span className="text-red-500">*</span>
+              Typologie <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
-              name="nom"
-              value={formData.nom}
+              name="typologie"
+              value={formData.typologie}
               onChange={handleChange}
               className={`shadow appearance-none border ${
-                errors.nom ? "border-red-500" : "border-gray-300"
+                errors.typologie ? "border-red-500" : "border-gray-300"
               } rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
-              placeholder="Saisir le nom de la banque"
+              placeholder="Saisir la typologie"
             />
-            {errors.nom && (
+            {errors.typologie && (
               <p className="text-red-500 text-xs italic">
-                {typeof errors.nom === "string" ? errors.nom : errors.nom[0]}
+                {typeof errors.typologie === "string" ? errors.typologie : errors.typologie[0]}
               </p>
             )}
           </div>
@@ -185,7 +188,7 @@ const TypologieForm = ({ id = null, onComplete }) => {
             <Button type="button" onClick={() => router.back()}>
               Annuler
             </Button>
-            <Button type="submit" disabled={submitting} loading={loading.form}>
+            <Button type="submit" disabled={submitting} loading={submitting}>
               {submitting ? "Chargement..." : id ? "Modifier" : "Ajouter"}
             </Button>
           </div>
