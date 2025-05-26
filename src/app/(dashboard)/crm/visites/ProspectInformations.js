@@ -163,7 +163,7 @@ const ProspectInformations = ({
       </div>
       {selectedProspect?.source || disabled_var_source ? (
          <div>
-           <SelectInput
+           <Autocomplete
              options={sources}
              label="Source:"
              name="source_txt"

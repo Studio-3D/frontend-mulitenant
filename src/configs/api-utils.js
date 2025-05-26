@@ -359,3 +359,23 @@ export const fetchDataByProjet_2 = async (items,datakey, setData, setLoading) =>
     toast.error('Failed to fetch data');
   }
 };
+export const data_by_projet_and_params = async (entityName, setData, setLoading, items, selectedProjet, params) => {
+  const accessToken = localStorage.getItem('accessToken')
+  try {
+    const response = await axios.get(`${APIURL.ROOTV1}/${entityName}/` + selectedProjet + '/' + params, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    })
+    const dataKey = items
+
+    setData(response.data[dataKey])
+
+    setLoading(false)
+
+    // console.log('data', data[dataKey]);
+  } catch (error) {
+    console.error('Error fetching data:', error)
+    setLoading(false)
+  }
+}

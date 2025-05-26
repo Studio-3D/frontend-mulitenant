@@ -272,7 +272,7 @@ const AppelsTable = () => {
 
   return (
     <>
-      <div className="reflative">
+      <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
         <Table
           data_to_export={data_to_export()}
           columns_export={columns_export}

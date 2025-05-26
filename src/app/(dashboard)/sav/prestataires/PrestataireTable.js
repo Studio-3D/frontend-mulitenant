@@ -240,7 +240,7 @@ const PrestataireTable = (serviceId) => {
   };
   
   return (
-    <>
+    < div className="relative bg-white shadow-md rounded-lg px-4 py-4">
       {/* Project Selection Modal */}
       {!service_id && (
         <ProjetDialog
@@ -250,7 +250,6 @@ const PrestataireTable = (serviceId) => {
           onSelect={handleProjectSelected}
         />
       )}
-      
       <Table
         title={serviceId?.service?.nom && `Prestataires liées à ${serviceId?.service?.nom}`} 
         data_to_export={data_to_export()}
@@ -368,7 +367,6 @@ const PrestataireTable = (serviceId) => {
             : undefined
         }
       />
-
       {showDeleteModal && selectedId && (
         <Modal isVisible={true} onClose={() => setShowDeleteModal(false)}>
           <DeleteData
@@ -399,7 +397,7 @@ const PrestataireTable = (serviceId) => {
           />
         </Modal>
       )}
-    </>
+    </div>
   );
 };
 
