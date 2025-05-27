@@ -122,7 +122,6 @@ const JournalTable = (id) => {
     //Implementing the setInterval method
     const interval = setInterval(() => {
       if (localStorage.getItem('load_data_journaux') == 1) {
-        localStorage.setItem('load_data_journaux', 0);
 
         fetchData_table_by_id(
           entity,
@@ -135,6 +134,8 @@ const JournalTable = (id) => {
           setJournaux,
           setTotalRows
         );
+                localStorage.removeItem('load_data_journaux');
+
       }
     }, 1000);
 

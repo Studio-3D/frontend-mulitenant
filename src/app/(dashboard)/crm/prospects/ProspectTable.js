@@ -66,7 +66,14 @@ const ProspectTable = () => {
       setProspects,
       setTotalRows
     );
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters, selectedProjet]);
+  }, [
+    accesstoken,
+    currentPage,
+    rowsPerPage,
+    searchTerm,
+    filters,
+    selectedProjet,
+  ]);
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
@@ -82,8 +89,6 @@ const ProspectTable = () => {
     //Implementing the setInterval method
     const interval = setInterval(() => {
       if (localStorage.getItem('load_data_prospect') == 1) {
-        localStorage.removeItem('load_data_prospect');
-
         fetchData_table_by_projet(
           entity,
           filters,
@@ -96,12 +101,20 @@ const ProspectTable = () => {
           setProspects,
           setTotalRows
         );
+        localStorage.removeItem('load_data_prospect');
       }
     }, 1000);
 
     //Clearing the interval
     return () => clearInterval(interval);
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters, selectedProjet]);
+  }, [
+    accesstoken,
+    currentPage,
+    rowsPerPage,
+    searchTerm,
+    filters,
+    selectedProjet,
+  ]);
 
   const handleShow = (prospectId) => {
     router.push(`/crm/prospects/${prospectId}`);

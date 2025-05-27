@@ -27,6 +27,8 @@ import AutocompleteBien from './AutocompleteBien'; // adjust path if needed
 import AutocompleteStatut_ModeRelance_Biens from './AutocompleteStatut_ModeRelance_Biens';
 import InputField_Biens from './InputField_Biens'; // adjust path if needed
 import ProspectInformations from './ProspectInformations'; // Adjust path as needed
+import useClearProspect from '../hook/useClearProspect'; // Adjust path as needed
+
 import {
   VISITE_INTERETS,
   VISITE_STATUT_FORM,
@@ -43,11 +45,9 @@ import SelectInput from '@/components/SelectInput';
 import Input from '@/components/Input';
 import DateInput from '@/components/DateInput';
 
-
-
-
 const VisiteForm = (id, origin) => {
-
+  const router = useRouter();
+  useClearProspect();
   const { user } = useAuth();
   const [email_required, setEmail_required] = useState(false);
 
@@ -66,7 +66,6 @@ const VisiteForm = (id, origin) => {
   const [loading, setLoading] = useState(false);
   const [loading_tp_frein, setLoading_tp_frein] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
 
   const [loading_form, setLoading_form] = useState(false);
 
@@ -218,19 +217,14 @@ const VisiteForm = (id, origin) => {
     resolver: yupResolver(validationSchemaRef.current),
     defaultValues,
   });
-  //selectedProjet?.max_etages insted of 1
-  if (list_etages.length === 0 && 1 > 0) {
-    for (let i = 0; i <= 1; i++) {
-      list_etages.push({ id: i + 1, value: i });
-    }
-  }
-  /*
- if (list_etages.length === 0 && selectedProjet?.max_etages > 0) {
+
+  
+ if (list_etages.length == 0 && selectedProjet?.max_etages > 0) {
     for (let i = 0; i <= selectedProjet?.max_etages; i++) {
       list_etages.push({ id: i + 1, value: i });
     }
   }
-*/
+
 
   const pusher_function = async () => {
     console.log('je suis en pusher');
@@ -717,7 +711,7 @@ const VisiteForm = (id, origin) => {
       // there were validation errors → bail out
       return;
     }
-    
+
     //si exist visites Perdu il faut repondre au dialog apres enregristrer sera activer
     if (old_visites_perdu.length > 0) {
       setOpen_D_P(true);
@@ -1898,7 +1892,8 @@ const VisiteForm = (id, origin) => {
                                   nb_bien_added:
                                     formSubmitted &&
                                     Number(watch('interet')) === 1 &&
-                                    (!watch('nb_bien_added') && watch('nb_bien_added') !== 0)
+                                    !watch('nb_bien_added') &&
+                                    watch('nb_bien_added') !== 0
                                       ? 'Ce champ est obligatoire lorsque interet est Intéressé.'
                                       : Number(watch('nb_bien_added')) < 0
                                       ? 'Veuillez entrer un nombre positif.'
@@ -1915,7 +1910,10 @@ const VisiteForm = (id, origin) => {
                                   let value = e.target.value;
 
                                   // Remove leading 0 when user starts typing
-                                  if (value.length > 1 && value.startsWith('0')) {
+                                  if (
+                                    value.length > 1 &&
+                                    value.startsWith('0')
+                                  ) {
                                     value = value.replace(/^0+/, '');
                                   }
 
@@ -2043,7 +2041,7 @@ const VisiteForm = (id, origin) => {
                                 <div>
                                   {/* Replace with your own Autocomplete or HeadlessUI */}
                                   {x.bien_id != null && (
-                                    <InputField_Biens 
+                                    <InputField_Biens
                                       label="Bien"
                                       name=""
                                       type="text"
@@ -3037,34 +3035,39 @@ const VisiteForm = (id, origin) => {
                 )}
               </div>
               <div className="flex justify-center items-center gap-4 xl:mt-32">
-              <Button 
-                type="button" 
-                onClick={() => router.back()}
-              >
-                Annuler
-              </Button>
-              <Button
-                type="submit"
-                disabled={isDisabled || isSubmitting}
-              >
-                {isSubmitting ? (
-                  <div className="flex items-center gap-2">
-                    <svg 
-                      className="animate-spin h-5 w-5 text-white" 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      fill="none" 
-                      viewBox="0 0 24 24"
-                    >
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Enregistrement...
-                  </div>
-                ) : (
-                  "Enregistrer"
-                )}
-              </Button>
-            </div>
+                <Button type="button" onClick={() => router.back()}>
+                  Annuler
+                </Button>
+                <Button type="submit" disabled={isDisabled || isSubmitting}>
+                  {isSubmitting ? (
+                    <div className="flex items-center gap-2">
+                      <svg
+                        className="animate-spin h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Enregistrement...
+                    </div>
+                  ) : (
+                    'Enregistrer'
+                  )}
+                </Button>
+              </div>
             </form>
           </div>
         )}

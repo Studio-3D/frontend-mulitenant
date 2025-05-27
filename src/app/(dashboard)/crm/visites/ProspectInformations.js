@@ -58,8 +58,8 @@ const ProspectInformations = ({
             required: true,
             pattern: {
               value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-              message: 'Email invalide'
-            }
+              message: 'Email invalide',
+            },
           }}
           error={errors?.email?.message || backendErrors?.email}
           defaultValue={defaultValues?.email}
@@ -80,77 +80,82 @@ const ProspectInformations = ({
                 return 'Ce champ est obligatoire lorsque interet est intéressé.';
               }
               return true;
-            }
+            },
           }}
           defaultValue={defaultValues?.cin}
         />
       </div>
       <div>
-      <Input
-  label="Telephone:"
-  required
-  name="telephone"
-  type="text"
-  control={control}
-  error={errors?.telephone?.message || backendErrors?.telephone}
-  defaultValue={defaultValues?.telephone}
-  inputMode="numeric"
-  onKeyDown={(e) => {
-    const allowedKeys = [
-      'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab',
-    ];
+        <Input
+          label="Telephone:"
+          required
+          name="telephone"
+          type="text"
+          control={control}
+          error={errors?.telephone?.message || backendErrors?.telephone}
+          defaultValue={defaultValues?.telephone}
+          inputMode="numeric"
+          onKeyDown={(e) => {
+            const allowedKeys = [
+              'Backspace',
+              'Delete',
+              'ArrowLeft',
+              'ArrowRight',
+              'Tab',
+            ];
 
-    if (allowedKeys.includes(e.key)) return;
+            if (allowedKeys.includes(e.key)) return;
 
-    if (!/^[0-9]$/.test(e.key)) {
-      e.preventDefault();
-    }
-  }}
-  onChange={(e) => {
-    const numericValue = e.target.value.replace(/[^0-9]/g, '');
+            if (!/^[0-9]$/.test(e.key)) {
+              e.preventDefault();
+            }
+          }}
+          onChange={(e) => {
+            const numericValue = e.target.value.replace(/[^0-9]/g, '');
 
-    // If using react-hook-form's setValue method:
-    if (control.setValue) {
-      control.setValue('telephone', numericValue, {
-        shouldValidate: true,
-        shouldDirty: true,
-      });
-    }
+            // If using react-hook-form's setValue method:
+            if (control.setValue) {
+              control.setValue('telephone', numericValue, {
+                shouldValidate: true,
+                shouldDirty: true,
+              });
+            }
 
-    // Trigger your custom handler
-    handleChange_event('Téléphone')({
-      ...e,
-      target: { ...e.target, value: numericValue },
-    });
-  }}
-/>
-
+            // Trigger your custom handler
+            handleChange_event('Téléphone')({
+              ...e,
+              target: { ...e.target, value: numericValue },
+            });
+          }}
+        />
       </div>
       <div>
-      <Input
-        label="Telephone 2:"
-        name="telephone_num2"
-        type="text" // Keep as text input
-        control={control}
-        error={errors?.telephone_num2?.message || backendErrors?.telephone_num2}
-        defaultValue={defaultValues?.telephone_num2}
-        onKeyPress={(e) => {
-          // Only allow numbers (0-9) to be pressed
-          if (!/[0-9]/.test(e.key)) {
-            e.preventDefault();
+        <Input
+          label="Telephone 2:"
+          name="telephone_num2"
+          type="text" // Keep as text input
+          control={control}
+          error={
+            errors?.telephone_num2?.message || backendErrors?.telephone_num2
           }
-        }}
-        onChange={(e) => {
-          // Filter out any non-numeric characters that might get through (like paste)
-          const numericValue = e.target.value.replace(/[^0-9]/g, '');
-          // Update the input value
-          e.target.value = numericValue;
-          // Pass to form handlers
-          control?.register('telephone_num2').onChange(e);
-          handleChange_event('Téléphone2')(e);
-        }}
-        inputMode="numeric" // Shows numeric keyboard on mobile
-      />
+          defaultValue={defaultValues?.telephone_num2}
+          onKeyPress={(e) => {
+            // Only allow numbers (0-9) to be pressed
+            if (!/[0-9]/.test(e.key)) {
+              e.preventDefault();
+            }
+          }}
+          onChange={(e) => {
+            // Filter out any non-numeric characters that might get through (like paste)
+            const numericValue = e.target.value.replace(/[^0-9]/g, '');
+            // Update the input value
+            e.target.value = numericValue;
+            // Pass to form handlers
+            control?.register('telephone_num2').onChange(e);
+            handleChange_event('Téléphone2')(e);
+          }}
+          inputMode="numeric" // Shows numeric keyboard on mobile
+        />
       </div>
       <div>
         <Input
@@ -162,35 +167,37 @@ const ProspectInformations = ({
         />
       </div>
       {selectedProspect?.source || disabled_var_source ? (
-         <div>
-           <Autocomplete
-             options={sources}
-             label="Source:"
-             name="source_txt"
-             disabled
-             control={control}
-             errors={errors}
-             backendErrors={backendErrors}
-             defaultValues={defaultValues}
-           />
-         </div>
-       ) : (
-         <div>
-           <Autocomplete
-             label="Source:"
-             required
-             name="source_id"
-             value={sourceValue}
-             options={sources}
-             loading={loading}
-             control={control}
-             errors={errors}
-             backendErrors={backendErrors}
-             onChange={handleSourceChange}
-             choix="source"
-           />
-         </div>
-       )}
+        <div>
+          <Autocomplete
+            options={sources}
+            label="Source:"
+            name="source_id"
+            disabled
+            control={control}
+            errors={errors}
+            backendErrors={backendErrors}
+            value={watch('source_id')} // Should be the full object or ID
+            onChange={handleSourceChange}
+            choix="source" // This tells the Autocomplete to use the "source" property
+          />
+        </div>
+      ) : (
+        <div>
+          <Autocomplete
+            label="Source:"
+            required
+            name="source_id"
+            value={sourceValue}
+            options={sources}
+            loading={loading}
+            control={control}
+            errors={errors}
+            backendErrors={backendErrors}
+            onChange={handleSourceChange}
+            choix="source"
+          />
+        </div>
+      )}
       {watch('source_txt') === 'Partenaire' &&
         (partenaire_txt != null ? (
           <div>
@@ -199,7 +206,9 @@ const ProspectInformations = ({
               name="partenaire_txt"
               disabled
               control={control}
-              error={errors?.partenaire_txt?.message || backendErrors?.partenaire_txt}
+              error={
+                errors?.partenaire_txt?.message || backendErrors?.partenaire_txt
+              }
               defaultValue={defaultValues?.partenaire_txt}
             />
           </div>
