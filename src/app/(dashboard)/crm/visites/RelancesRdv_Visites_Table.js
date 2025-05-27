@@ -102,7 +102,6 @@ const RelancesRdv_Visites_Table = (type) => {
     //Implementing the setInterval method
     const interval = setInterval(() => {
       if (localStorage.getItem('load_data_rdv_relance_visites') == 1) {
-        localStorage.setItem('load_data_rdv_relance_visites', 0);
 
         fetchData_table_by_projet(
           entity,
@@ -116,6 +115,8 @@ const RelancesRdv_Visites_Table = (type) => {
           setData,
           setTotalRows
         );
+                localStorage.removeItem('load_data_rdv_relance_visites');
+
       }
     }, 1000);
 
