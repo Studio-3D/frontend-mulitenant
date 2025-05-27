@@ -399,7 +399,7 @@ const rows = formatData();
         onFilterToggle={handleFilterToggle}
         data={formatData()}
         filterComponent={
-          <div className="space-y-4 p-4 rounded-lg shadow-md">
+          <div className="space-y-4 p-4 rounded-lg ">
       <div
         className="grid gap-3"
         style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}

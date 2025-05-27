@@ -27,7 +27,7 @@ import {
   AreaChartIcon,
   ImageIcon,
   WalletIcon,
-  FileTextIcon,
+  FileTextIcon,DownloadIcon
 } from 'lucide-react';
 import format from 'date-fns/format';
 import {

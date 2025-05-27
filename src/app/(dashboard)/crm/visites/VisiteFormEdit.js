@@ -49,7 +49,7 @@ export default function VisiteFormEdit({ id }) {
   const pusher_key_proposition = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_PROP;
   const [loading, setLoading] = useState({ form: false, visites: false });
   const selectedProjet =
-    JSON.parse(localStorage.getItem('selectedProjet')) || 1;
+    JSON.parse(localStorage.getItem('selectedProjet')) ;
   const [backendErrors, setBackendErrors] = useState({});
   const [sources, setSources] = useState([]);
   const [partenaires, setPartenaires] = useState([]);
@@ -159,16 +159,12 @@ export default function VisiteFormEdit({ id }) {
     })
   );
 
-  if (list_etages.length === 0 && (selectedProjet.max_etages || 1) > 0) {
-    for (var i = 0; i <= (selectedProjet?.max_etages || 1); i++) {
+  if (list_etages.length == 0 && (selectedProjet.max_etages ) > 0) {
+    for (var i = 0; i <= (selectedProjet?.max_etages ); i++) {
       list_etages.push({ value: i });
     }
   }
-  /*if (list_etages.length === 0) {
-    for (let i = 0; i <= (selectedProjet.max_etages||1); i++) {
-      list_etages.push({ id: i + 1, value: i });
-    }
-  }*/
+
 
   //fin multiple bien
 
