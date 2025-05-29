@@ -16,6 +16,7 @@ import Input from "@/components/Input";
 import InputSelect from "@/components/inputSelect";
 import { useProjet } from "@/context/ProjetContext"; // Import ProjetContext
 import ProjetDialog from "@/components/ProjetDialog"; // Import ProjetDialog
+import Select from 'react-select';
 
 const PrestataireTable = (serviceId) => {
   const [prestataires, setPrestataires] = useState([]);
