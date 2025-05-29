@@ -126,7 +126,7 @@ export default function ImmeubleTable({ projetId,trancheId, blocId }) {
   API_URL: "immeubles",
   dataKey: "data",
   name: "immeuble",
-  searchFields: ['bloc'],
+  searchFields: ['nom', 'titre_foncier'],
 };
 
  const loadData = () => {
@@ -159,17 +159,17 @@ useEffect(() => {
   const formattedImmeubles = immeubles
     .filter(immeuble => 
       searchTerm === '' || 
-      immeuble.nom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      immeuble.bloc?.nom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      immeuble.titre_foncier?.toLowerCase().includes(searchTerm.toLowerCase())
+      immeuble?.nom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      immeuble?.bloc?.nom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      immeuble?.titre_foncier?.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .map(immeuble => ({
-      id: immeuble.id,
-      nom: immeuble.nom || '',
-      bloc_nom: immeuble.bloc?.nom || '',
-      tranche_nom: immeuble.tranche?.nom || '',
-      titre_foncier: immeuble.titre_foncier || '',
-      nbre_biens: immeuble.nbre_biens || '0'
+      id: immeuble?.id,
+      nom: immeuble?.nom || '',
+      bloc_nom: immeuble?.bloc?.nom || '',
+      tranche_nom: immeuble?.tranche?.nom || '',
+      titre_foncier: immeuble?.titre_foncier || '',
+      nbre_biens: immeuble?.nbre_biens || '0'
     }));
 
   // Calculate paginated data
@@ -260,7 +260,7 @@ useEffect(() => {
     <div>
     <Table 
       columns={columns}
-      data={formattedImmeubles}
+      data={paginatedData}
       totalRows={totalRows}
       loading={loading}
       error={error}
