@@ -93,20 +93,7 @@ export default function EditImmeublePage() {
   }
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold">Modifier l'immeuble</h1>
-        {immeuble && (
-          <p className="text-gray-500">
-            Immeuble: <span className="font-medium">{immeuble.nom}</span>
-            {immeuble.bloc && (
-              <span> - Bloc: <span className="font-medium">{immeuble.bloc.nom}</span></span>
-            )}
-          </p>
-        )}
-      </div>
-      
-      <ImmeubleForm id={id} projetId={immeuble?.projet_id} blocId={immeuble?.bloc_id} />
-    </div>
+    
+      <ImmeubleForm id={id} projetId={immeuble?.projet_id} blocId={immeuble?.bloc_id} trancheId={immeuble?.tranche_id} />
   );
 }

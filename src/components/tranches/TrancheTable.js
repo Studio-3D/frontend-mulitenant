@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { useAuth } from "@/context/AuthContext";
 import { Eye, Edit, Trash2 } from "lucide-react";
-import * as XLSX from 'xlsx';
 import Input from '../Input';
 import { fetchData_table_by_projet } from '@/configs/api-utils';
 import Modal from '../Modal';
@@ -20,7 +19,6 @@ export default function TrancheTable({ projetId }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [refreshFlag, setRefreshFlag] = useState(false);
   const router = useRouter();
   const { user } = useAuth();
   const [filters, setFilters] = useState({nom: '', niveau_etages: '', });
@@ -127,7 +125,7 @@ export default function TrancheTable({ projetId }) {
 useEffect(() => {
   loadData();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [searchTerm, accessToken, projetId, filters]);
+}, [searchTerm, accessToken, projetId, filters,currentPage,rowsPerPage    ]);
 
   // Format tranches data for table
   const formattedTranches = tranches
@@ -163,7 +161,6 @@ useEffect(() => {
   // Handle rows per page change
   const handleRowsPerPageChange = (newSize) => {
     setRowsPerPage(newSize);
-    setCurrentPage(1); // Reset to first page when changing rows per page
   };
 
   // Handle export
@@ -193,30 +190,12 @@ useEffect(() => {
       case 'edit':
         router.push(`/Tranches/${id}/modifier`);
         break;
-      case 'delete':
-        if (confirm("Êtes-vous sûr de vouloir supprimer cette tranche ? Cette action est irréversible.")) {
-          deleteTrancheById(id);
-        }
-        break;
+     
       default:
         console.log(`Action ${action} for tranche ${id}`);
     }
   };
 
-  // Delete tranche
-  const deleteTrancheById = async (id) => {
-    try {
-      const token = localStorage.getItem("accessToken");
-      await axios.delete(`${APIURL.TRANCHES}/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      toast.success("Tranche supprimée avec succès");
-      setRefreshFlag(prev => !prev); // Trigger a refresh
-    } catch (err) {
-      console.error("Failed to delete tranche:", err);
-      toast.error("Erreur lors de la suppression de la tranche");
-    }
-  };
   
   // Create URL for add button with appropriate query params
   const addButtonUrl = canManageTranches ? `/Tranches/ajouter?projet=${projetId}` : "";

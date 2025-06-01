@@ -73,17 +73,7 @@ export default function AddBlocPage() {
   }
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold">Ajouter un bloc</h1>
-        {projet && (
-          <p className="text-gray-500">
-            Projet: <span className="font-medium">{projet.nom}</span>
-          </p>
-        )}
-      </div>
-      
+    
       <BlocForm projetId={projetId} trancheId={trancheId} />
-    </div>
   );
 }

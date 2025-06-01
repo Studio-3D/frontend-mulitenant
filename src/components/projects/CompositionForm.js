@@ -132,10 +132,14 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
 
   // Validate form before proceeding
   const handleFormSubmit = () => {
-    if (!state.typeId) {
-      return // Don't proceed if no type selected
-    }
+    if (!state.typeId) return
+    if (hasBien && !state.bienCount) return
+    if (hasTranches && !state.tranches) return
+    if (hasBlocks && !state.blocks) return
+    if (hasBuilding && !state.building) return
+
     onNext()
+
   }
 
   // Composition card component
@@ -369,11 +373,22 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
           type="button"
           onClick={handleFormSubmit}
           className={`ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white ${
-            !state.typeId 
+            !state.typeId ||
+            (hasBuilding && (!state.building || state.building.length === 0)) || 
+            (hasBlocks && (!state.blocks || state.blocks.length === 0)) || 
+            (hasTranches && (!state.tranches || state.tranches.length === 0)) || 
+            (hasBien && (!state.bienCount || state.bienCount === 0))
               ? "bg-blue-300 cursor-not-allowed" 
               : "bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           }`}
-          disabled={!state.typeId || loading}
+          disabled={
+            !state.typeId || 
+            loading ||
+            (hasBlocks && (!state.blocks || state.blocks.length === 0)) || 
+            (hasBuilding && (!state.building || state.building.length === 0)) || 
+            (hasTranches && (!state.tranches || state.tranches.length === 0)) || 
+            (hasBien && (!state.bienCount || state.bienCount === 0))
+          }
         >
           Suivant
         </button>

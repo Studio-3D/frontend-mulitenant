@@ -93,17 +93,7 @@ export default function EditTranchePage() {
   }
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold">Modifier la tranche</h1>
-        {tranche && (
-          <p className="text-gray-500">
-            Tranche: <span className="font-medium">{tranche.nom}</span>
-          </p>
-        )}
-      </div>
-      
+    
       <TrancheForm id={id} projetId={tranche?.projet_id} />
-    </div>
   );
 }

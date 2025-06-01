@@ -6,10 +6,8 @@ import Table from '@/components/Table';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { useAuth } from "@/context/AuthContext";
-import { Pencil, Trash2 } from "lucide-react";
-import * as XLSX from 'xlsx';
+import { Eye, Pencil, Trash2 } from "lucide-react";
 import BienFilter from './BienFilter';
-import { useProjet } from '@/context/ProjetContext';
 import { fetchData_table_by_projet } from '@/configs/api-utils';
 import Modal from '../Modal';
 import DeleteData from '../DeleteData';
@@ -22,8 +20,6 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [refreshFlag, setRefreshFlag] = useState(false);
-  const { selectedProjet } = useProjet();
   const accessToken = localStorage.getItem("accessToken");
   const [totalRows, setTotalRows] = useState(0);
   const [selectedId, setSelectedId] = useState(null);
@@ -82,17 +78,13 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
       if (!isOpen) resetFilters(); // Si on ferme, on réinitialise
     };
 
-  // Format property status using the helper function from enum.js
-  const formatEtat = (etat) => {
-    return getEtatLabel(etat);
-  };
-
+ 
   // Define table columns with action buttons
   const columns = [
     { key: 'propriete_dite_bien', label: 'Désignation' },
     { key: 'numero', label: 'Numéro' },
     { key: 'niveau', label: 'Niveau' },
-    { key: 'immeuble_nom', label: 'Immeuble' },
+    { key: 'type', label: 'Type' },
     { key: 'prix', label: 'Prix (Dhs)' },
     {
         key: 'etat',
@@ -121,6 +113,13 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
           <div className="flex gap-4 items-center">
             {canManageBiens && (
               <>
+               <button
+                  className="text-teal-500 hover:text-teal-700"
+                  //onClick={() => handleAction('view', row.id)}
+                  title="Voir"
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
                 <button
                   className="text-blue-500 hover:text-blue-700"
                   onClick={() => handleAction('edit', row.id)}
@@ -150,7 +149,7 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
    API_URL: "biens",
    dataKey: "data",
    name: "bien",
-   searchFields: ['nom','tranche','bloc','immeuble'],
+   searchFields: ['propriete_dite_bien', 'numero'],
  };
  
   const loadData = () => {
@@ -179,7 +178,26 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
 useEffect(() => {
   loadData();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [searchTerm, accessToken, projetId, trancheId, blocId, immeubleId, filters]);
+}, [searchTerm,
+  accessToken,
+  projetId,
+  trancheId,
+  blocId,
+  immeubleId,
+  filters,
+  currentPage,    
+  rowsPerPage     
+]);
+
+  const handlePageChange = (page) => {
+  setCurrentPage(page);
+};
+
+const handleRowsPerPageChange = (rows) => {
+  setRowsPerPage(rows);
+  setCurrentPage(1); // Reset to first page when changing rows per page
+
+};
 
   // Format biens data for table
   const formattedBiens = biens
@@ -196,7 +214,8 @@ useEffect(() => {
       niveau: bien.niveau?.toString() || '',
       immeuble_nom: bien.immeuble?.nom || '',
       prix: bien.prix?.toLocaleString('fr-FR') || '0',
-      etat: bien.etat 
+      etat: bien.etat ,
+      type: bien?.type_bien?.type 
     }));
 
   // Calculate paginated data
@@ -211,23 +230,19 @@ useEffect(() => {
     setCurrentPage(1);
   };
 
-  // Handle pagination
-  const handlePageChange = (newPage) => {
-    setCurrentPage(newPage);
-  };
 
   // Handle rows per page change
-  const handleRowsPerPageChange = (newSize) => {
-    setRowsPerPage(newSize);
-    setCurrentPage(1);
-  };
+  
 
 const data_to_export = () => {
     return formattedBiens.map((bien) => ({
       Désignation: bien.propriete_dite_bien,
       Numéro: bien.numero,
       Niveau: bien.niveau,
-      Immeuble: bien.immeuble_nom,
+      Immeuble: bien?.immeuble_nom,
+      tranche: bien?.tranche?.nom,
+      bloc: bien?.bloc?.nom,
+      type: bien?.type_bien?.type,
       Prix: bien.prix,
       État: bien.etat
     }));
@@ -238,6 +253,9 @@ const data_to_export = () => {
   { key: "Numéro", label: "Numéro" },
   { key: "Niveau", label: "Niveau" },
   { key: "Immeuble", label: "Immeuble" },
+  { key: "tranche", label: "Tranche" },
+  { key: "bloc", label: "Bloc" },
+  { key: "type", label: "Type bien" },
   { key: "Prix", label: "Prix" },
   { key: "État", label: "État" },
 ];
@@ -249,30 +267,13 @@ const data_to_export = () => {
       case 'edit':
         router.push(`/Biens/${id}/modifier`);
         break;
-      case 'delete':
-        if (confirm("Êtes-vous sûr de vouloir supprimer ce bien ? Cette action est irréversible.")) {
-          deleteBienById(id);
-        }
-        break;
+      
       default:
         console.log(`Action ${action} for bien ${id}`);
     }
   };
 
-  // Delete bien
-  const deleteBienById = async (id) => {
-    try {
-      const token = localStorage.getItem("accessToken");
-      await axios.delete(`${APIURL.BIENS}/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      toast.success("Bien supprimé avec succès");
-      setRefreshFlag(prev => !prev); // Trigger a refresh
-    } catch (err) {
-      console.error("Failed to delete bien:", err);
-      toast.error("Erreur lors de la suppression du bien");
-    }
-  };
+  
 
   // Check user permissions for managing biens
   const canManageBiens = user?.role === 1 || user?.role === 2; // Superadmin or Admin
@@ -287,7 +288,6 @@ const data_to_export = () => {
 
     <Table 
       columns={columns}
-      data={paginatedData}
       totalRows={totalRows}
       loading={loading}
       filterComponent={
@@ -314,24 +314,25 @@ const data_to_export = () => {
       data_to_export={data_to_export()}
       columns_export={columns_export}
       name_file_export={"bien_export"}
+      data={paginatedData}
       
     />
     {showDeleteModal && selectedId && (
-            <Modal isVisible={true} onClose={() => setShowDeleteModal(false)}>
-              <DeleteData
-                route={APIURL.BIENS}
-                Id={selectedId}
-                type="Bien"
-                message={`Êtes-vous sûr de vouloir supprimer ce bien ?`
-                }
-                accessToken={accessToken}
-                onClose={() => {
-                  setShowDeleteModal(false);
-                  loadData(); // Recharge les données après suppression
+      <Modal isVisible={true} onClose={() => setShowDeleteModal(false)}>
+        <DeleteData
+          route={APIURL.BIENS}
+          Id={selectedId}
+          type="Bien"
+          message={`Êtes-vous sûr de vouloir supprimer ce bien ?`
+          }
+          accessToken={accessToken}
+          onClose={() => {
+            setShowDeleteModal(false);
+            loadData(); // Recharge les données après suppression
 
-                }}
-              />
-            </Modal>
+          }}
+        />
+      </Modal>
     )}
   </div>
     

@@ -104,17 +104,7 @@ export default function EditBienPage() {
   }
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold">Modifier un bien</h1>
-        {bien && (
-          <p className="text-gray-500">
-            Bien: <span className="font-medium">{bien.propriete_dite_bien}</span>
-          </p>
-        )}
-      </div>
-      
+    
       <BienForm id={id} projetId={bien?.projet_id} />
-    </div>
   );
 }

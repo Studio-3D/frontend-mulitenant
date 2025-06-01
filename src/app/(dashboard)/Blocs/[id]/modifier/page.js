@@ -93,20 +93,7 @@ export default function EditBlocPage() {
   }
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold">Modifier le bloc</h1>
-        {bloc && (
-          <p className="text-gray-500">
-            Bloc: <span className="font-medium">{bloc.nom}</span>
-            {bloc.tranche && (
-              <span> - Tranche: <span className="font-medium">{bloc.tranche.nom}</span></span>
-            )}
-          </p>
-        )}
-      </div>
-      
+    
       <BlocForm id={id} projetId={bloc?.projet_id} trancheId={bloc?.tranche_id} />
-    </div>
   );
 }

@@ -15,6 +15,7 @@ export default function InputSelect({
   isMulti=false,
   isClearable = true,
   readOnly = false,
+  isDisabled=false,
 }) {
   return (
     <div className="flex flex-col w-full">
@@ -40,7 +41,6 @@ export default function InputSelect({
               onChange(selected || null); // retourne un objet {value, label}
             }
           }}
-          
           options={options}
           placeholder={placeholder}
           isLoading={isLoading}

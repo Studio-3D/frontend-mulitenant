@@ -6,7 +6,7 @@ import classNames from "classnames";
 
 export default function SelectInput({ 
   label, 
-  placeholder = "Select an option", 
+  placeholder = "choisissez un element...", 
   options = [], 
   value='',
   backendErrors, 
