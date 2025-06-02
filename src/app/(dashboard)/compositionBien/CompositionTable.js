@@ -34,60 +34,47 @@ const PrestataireTable = (serviceId) => {
   const { user, token } = useAuth();
   const accesstoken = token || localStorage.getItem("accessToken");
   const router = useRouter();
-  const [filters, setFilters] = useState({
-    nom: "",
-    prenom: "",
-    cin: "",
-    email: "",
-    telephone: "",
-    serviceId: serviceId?.service?.id == null ? "" : serviceId?.service?.id, 
-    
-  });
-
   const [tempFilters, setTempFilters] = useState({ ...filters });
   const { selectedProjet, projets, fetchProjets } = useProjet(); // Get data from ProjetContext
   const [showProjetModal, setShowProjetModal] = useState(false); // State for project modal
+  const [selectedCompositionBien, setSelectedCompositionBien] = useState(null);
+  const selectedBien= localStorage.getItem('selectedBien')
 
-  const entity = {
-    API_URL: "Prestataires",
-    dataKey: "data",
-    name: "Prestataire",
-    searchFields: ["nom"],
-  };
+  const [filters, setFilters] = useState({
+    nbre_balcons: '',
+    nbre_buanderies: '',
+    nbre_chambres: '',
+    nbre_cuisines: '',
+    nbre_salons: '',
 
-  // Check if a project is selected
-  useEffect(() => {
-    if (!selectedProjet && !showProjetModal && !serviceId) {
-      fetchProjets(); // Fetch projects if not already done
-      setShowProjetModal(true);
-    }
-  }, [selectedProjet, showProjetModal, fetchProjets, serviceId]);
-
-  const fetchServices = async () => {
-    if (!selectedProjet) return;
-    
-    try {
-      const response = await axios.get(
-        `${APIURL.ROOT}/v1/projets/${selectedProjet.id}/ServicesPrestataires/`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      const { data } = response;
-      setServices(data.services);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
+  })
+  const fetchCompositionBiensFromApi = pageNumber => {
+    setLoading(true)
+    const selectedBienId = bien ? bien : selectedBien
+    axios
+      .get(APIURL.COMPOSITIONBIENS, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        },
+        params: { page: pageNumber + 1, size,bien_id: selectedBienId, ...filterValues } // Increment page number by 1 for API
+      })
+      .then(response => {
+        const { compositionBiens, pagination } = response.data
+        setPaginatedData({
+          compositionBiens,
+          ...pagination,
+          currentPage: pageNumber + 1 // Increment page number by 1 for display
+        })
+      })
+      .catch(error => {
+        console.error('Error fetching users:', error)
+      })
+      .finally(() => {
+        setLoading(false)
+      })
+  }
   
-  useEffect(() => {
-    if (selectedProjet) {
-      fetchServices();
-    }
-  }, [selectedProjet]);
-
+ 
     function handleShow(Id) {
       router.push(`/sav/prestataires/show/${Id}`);
     }
@@ -97,20 +84,8 @@ const PrestataireTable = (serviceId) => {
     };
 
   useEffect(() => {
-
-    fetchData_table_by_projet(
-
-        entity,
-        filters,       
-        searchTerm,
-        currentPage,
-        rowsPerPage,
-        accesstoken,
-        setLoading,
-        setError,
-        setPrestataires,
-        setTotalRows
-      );
+     fetchCompositionBiensFromApi(0); // Fetch initial data for the first page 
+   
     }, [searchTerm, currentPage, rowsPerPage, accesstoken,filters]);
 
     
@@ -139,92 +114,67 @@ const PrestataireTable = (serviceId) => {
   const handleEdit = (id) =>
     router.push(`${ENDPOINTS.Prestataires}?id=${id}&action=edit`);
 
-  const allColumns  = [
-    { key: "cin", label: "CIN" },
-    { key: "nom", label: "Nom" },
-    { key: "prenom", label: "Prénom" },
-    { key: "email", label: "Email" },
-    {
-      key: "service",
-      label: "Service",
-      render: (row) => {
-        return  row.service.nom 
-      },
-    },    
-    { key: "telephone", label: "Téléphone" },
-    {
-      key: "actions",
-      label: "Actions",
-      render: (row) => (
-        <div className="flex gap-3 items-center">
-           <button
-              className="text-teal-500 hover:text-teal-700"
-              onClick={() => handleShow(row.id)}
-              title="Voir"
-            >
-              <Eye className="w-4 h-4" />
-            </button>
-            <button
-              className="text-blue-500 hover:text-blue-700"
-              onClick={() => handleEdit(row.id)}
-              title="Modifier"
-            >
-            <Pencil className="w-4 h-4" />
-          </button>
-          <button
-            className="text-red-500 hover:text-red-700"
-            onClick={() => {
-              setSelectedId(row.id);
-              setShowDeleteModal(true);
-            }}  
-            title="Supprimer"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
-        </div>
-      ),
-    },
-  ];
-  
-  const columns = !serviceId?.service?.id 
-  ? allColumns
-  : allColumns.filter(col => col.key !== "service");
-  
-  const formatData = () => {
-    return prestataires.map((pre) => ({
-      id: pre.id,
-      cin: pre.cin,
-      nom: pre.nom,
-      prenom: pre.prenom,
-      email: pre.email,
-      service: pre.service || '',
-      telephone: pre.telephone,
-      reclamations: pre.reclamations || [],
-    }));
-  };
+  const columns = [
+  {
+    key: 'index',
+    label: '#',
+    render: (row, idx) => (
+      <CustomAvatar
+        skin="light"
+        color={
+          ['success', 'error', 'warning', 'info', 'primary', 'secondary'][Math.floor(Math.random() * 6)]
+        }
+        sx={{ mr: 3, fontSize: '.8rem', width: '1.875rem', height: '1.875rem' }}
+      >
+        {idx + 1}
+      </CustomAvatar>
+    ),
+  },
+  { key: 'nbre_balcons', label: 'Nbre balcons' },
+  { key: 'nbre_buanderies', label: 'Nbre buanderies' },
+  { key: 'nbre_chambres', label: 'Nbre chambres' },
+  { key: 'nbre_cuisines', label: 'Nbre cuisines' },
+  { key: 'nbre_halls', label: 'Nbre halls' },
+  { key: 'nbre_placards', label: 'Nbre placards' },
+  {
+    key: 'actions',
+    label: 'Actions',
+    render: (row) => (
+      <>
+        <ShowButton onClick={() => handleShow(row)} />
+        <EditButton onClick={() => handleEdit(row.id)} />
+        <DeleteButton onClick={() => handleDelete(row.id)} />
+      </>
+    ),
+  },
+];
+
+const formattedData = compositionbiens.map((c, index) => ({
+  ...c,
+  index, // pour le render du numéro
+}));
+
   
   const data_to_export = () => {
-    return prestataires?.map((pre) => ({
-      CIN: pre.cin,
-      Nom: pre.nom,
-      Prénom: pre.prenom,
-      Email: pre.email,
-      Service: pre.service?.nom || '',
-      Téléphone: pre.telephone,
-      Adresse: pre.adresse,
-    }));
-  };
-  
-  const selectedPrestataire = prestataires.find((prestataire) => prestataire.id === selectedId);
+  return paginatedData.items.map(item => ({
+    'Nbre balcons': item.nbre_balcons,
+    'Nbre buanderies': item.nbre_buanderies,
+    'Nbre chambres': item.nbre_chambres,
+    'Nbre cuisines': item.nbre_cuisines,
+    'Nbre halls': item.nbre_halls,
+    'Nbre placards': item.nbre_placards
+  }));
+};
 
-  const columns_export = [
-    { key: "CIN", label: "CIN" },
-    { key: "Nom", label: "Nom" },
-    { key: "Prénom", label: "Prénom" },
-    { key: "Email", label: "Email" },
-    { key: "Service", label: "Service" },
-    { key: "Téléphone", label: "Téléphone" },
-  ];
+const columns_export = [
+  { key: 'Nbre balcons', label: 'Nbre balcons' },
+  { key: 'Nbre buanderies', label: 'Nbre buanderies' },
+  { key: 'Nbre chambres', label: 'Nbre chambres' },
+  { key: 'Nbre cuisines', label: 'Nbre cuisines' },
+  { key: 'Nbre halls', label: 'Nbre halls' },
+  { key: 'Nbre placards', label: 'Nbre placards' }
+];
+
   
   // Handle project selection
   const handleProjectSelected = () => {
@@ -383,10 +333,7 @@ const PrestataireTable = (serviceId) => {
             route={APIURL.Prestataires}
             Id={selectedId}
             type="Prestataire"
-            message={
-              selectedPrestataire && selectedPrestataire.reclamations && selectedPrestataire.reclamations.length > 0
-                ? `Attention : la suppression de ce prestataire entraînera également la suppression de tous les réclamations associés. Êtes-vous sûr de vouloir le supprimer ?`
-                : `Êtes-vous sûr de vouloir supprimer ce prestataire ?`
+            message={`Êtes-vous sûr de vouloir supprimer ce prestataire ?`
             }
             accessToken={accesstoken}
             onClose={() => {

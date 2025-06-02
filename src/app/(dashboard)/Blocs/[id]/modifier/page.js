@@ -6,6 +6,7 @@ import BlocForm from "@/components/blocs/BlocForm";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { APIURL } from "@/configs/api";
+import LoadingSpin from '@/components/LoadingSpin';
 
 export default function EditBlocPage() {
   const { id } = useParams();
@@ -68,8 +69,8 @@ export default function EditBlocPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpin /> 
       </div>
     );
   }

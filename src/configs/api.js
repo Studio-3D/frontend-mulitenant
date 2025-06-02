@@ -58,6 +58,8 @@ export const APIURL = {
   DOCUMENTS_FACTURES: `${BASERESOURCEURL}/Docs/factures`,
   DOCUMENTS_CPS: `${BASERESOURCEURL}/Docs/cps`,
   HISTOIMPORTATION:`${APIBASEURL}/v1/delete_fichier_import`,
+  COMPOSITIONBIENS: `${APIBASEURL}/v1/compositionBiens`,
+
 }
 
 export const ENDPOINTS = {

@@ -284,8 +284,7 @@ const data_to_export = () => {
     : "";
 
   return (
-    <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
-
+    <div>
     <Table 
       columns={columns}
       totalRows={totalRows}

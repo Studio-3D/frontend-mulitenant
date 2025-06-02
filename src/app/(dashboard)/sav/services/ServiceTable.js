@@ -148,11 +148,13 @@ const ServiceTable = () => {
     }));
   };
 
+  const columns_export = [{ key: "nom", label: "Nom" }];
+
+
   const handleFilterToggle = (isOpen) => {
     if (!isOpen) resetFilters(); // Si on ferme, on réinitialise
   };
 
-  const columns_export = [{ key: "nom", label: "Nom" }];
 
   // Handle project selection
   const handleProjectSelected = () => {

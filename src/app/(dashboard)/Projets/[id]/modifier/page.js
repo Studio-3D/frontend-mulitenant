@@ -13,6 +13,7 @@ import GeneralParameterForm from '@/components/projects/GeneralParameterForm';
 import { APIURL } from '@/configs/api';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import LoadingSpin from '@/components/LoadingSpin';
 
 export default function EditProjectPage() {
   const router = useRouter();
@@ -162,17 +163,7 @@ export default function EditProjectPage() {
         errors={errors}
       />
     },
-    {
-      title: "Paramètres généraux",
-      component: <GeneralParameterForm 
-        state={formState} 
-        setState={setFormState} 
-        onNext={() => handleSubmit()} 
-        onBack={() => handleBack()}
-        errors={errors}
-        loading={loading}
-      />
-    }
+    
   ];
 
   const handleNext = () => {
@@ -292,8 +283,8 @@ export default function EditProjectPage() {
 
   if (fetching) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpin /> 
       </div>
     );
   }

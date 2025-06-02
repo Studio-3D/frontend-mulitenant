@@ -12,11 +12,15 @@ import LoadingSpin from '@/components/LoadingSpin';
 import BreadCrumb from "@/app/(dashboard)/navigation/BreadCrumb";
 import InputSelect from "../inputSelect";
 import Button from "../Button";
+import { Switch } from '@headlessui/react'; // ou votre composant Switch habituel
 
 import { Button as Button1, Checkbox, CircularProgress, FormControl, FormControlLabel, Grid, InputLabel, MenuItem, Select } from '@mui/material'
 import Input from "../Input";
 import Modal from "../Modal";
 export default function BienForm({ id,  }) {
+  const [hasJardin, setHasJardin] = useState(false);
+const [hasParking, setHasParking] = useState(false);
+const [hasBox, setHasBox] = useState(false);
   const router = useRouter();
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -56,40 +60,12 @@ const immeubleId = searchParams.get("immeuble");
     }
   }
 
-
-
   // Loading states
   const [loadingTranches, setLoadingTranches] = useState(false);
   const [loadingBlocs, setLoadingBlocs] = useState(false);
   const [loadingImmeubles, setLoadingImmeubles] = useState(false);
   const [showCompositionModal, setShowCompositionModal] = useState(false);
   const [bienCreeId, setBienCreeId] = useState(null); // Pour stocker l'id du bien créé
-
-  
-  // Property status options
-  const etatOptions = [
-    { id: "disponible", label: "Disponible" },
-    { id: "reserve", label: "Réservé" },
-    { id: "vendu", label: "Vendu" }
-  ];
-
- const handleAddComposition = async (compositionData) => {
-  setLoading(true);
-  try {
-    const token = localStorage.getItem("accessToken");
-    const response = await axios.post(`${APIURL.BIENS}/${bienCreeId}/composition`, compositionData, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    toast.success("Composition ajoutée avec succès !");
-    setShowCompositionModal(true)
-    setCompositionModalMessage("Voulez-vous ajouter d'autre composition pour ce bien?")
-    //router.push(router.back()); // Redirige ou autre action
-  } catch (err) {
-    toast.error("Erreur lors de l'ajout de la composition");
-  } finally {
-    setLoading(false);
-  }
-};
 
   // Steps
   const steps = ["Détails du bien", "Superficies du bien", "Composition du bien"];
@@ -109,7 +85,15 @@ const immeubleId = searchParams.get("immeuble");
     bloc_id: blocId || "",
     immeuble_id: immeubleId || "",
     etat: "DISPONIBLE", 
+    num_box: "",
+    superficie_jardin: "",
+    prix_box: "",
+    prix_parking: "",
+    num_parking: "",
+    superficie_box: "",
+    superficie_parking:"",
   });
+
   const [formDataComp, setFormDataComp] = useState({
     nbre_chambres: 0,
     nbre_salons: 0,
@@ -147,7 +131,6 @@ const immeubleId = searchParams.get("immeuble");
   // Fetch reference data and initial data on component mount
   useEffect(() => {
     if (id) fetchBienData(id);
-
     if (!id) {
       if (projet.nbre_tranches !== 0 && !trancheId &&!blocId && !immeubleId&& tranches.length === 0&&!formData.tranche_id) {
         fetchDataByProjet_params('tranches', setTranches, setLoadingTranches);
@@ -536,12 +519,7 @@ const validateStep0 = () => {
   if (!formData.type_id) {
     errors.type_id = ["Le type de bien est requis"];
   }
-  if (!formData.vue_id) {
-    errors.vue_id = ["La vue est requise"];
-  }
-  if (!formData.typologie_id) {
-    errors.typologie_id = ["La typologie est requise"];
-  }
+  
   if (!formData.nbre_facades) {
     errors.nbre_facades = ["Le nombre de façades est requis"];
   }
@@ -560,11 +538,43 @@ const validateStep0 = () => {
 
 const validateStep1 = () => {
   const errors = {};
-  if (!formData.superficie_habitable ) {
+  if (formData.superficie_habitable === null || formData.superficie_habitable === undefined ) {
     errors.superficie_habitable = ["La  superficie habitable est requise"];
   }
-  if (!formData.superficie_architecte) {
+  if (formData.superficie_architecte === null || formData.superficie_architecte === undefined) {
     errors.superficie_architecte = ["La  superficie architecte est requise"];
+  }
+  // Si jardin activé
+  if (hasJardin) {
+    if (!formData.superficie_jardin) {
+      errors.superficie_jardin = ["La superficie du jardin est requise"];
+    }
+  }
+
+  // Si parking activé
+  if (hasParking) {
+    if (!formData.num_parking) {
+      errors.num_parking = ["Le numéro de parking est requis"];
+    }
+    if (!formData.prix_parking) {
+      errors.prix_parking = ["Le prix du parking est requis"];
+    }
+    if (!formData.superficie_parking) {
+      errors.superficie_parking = ["La superficie du parking est requise"];
+    }
+  }
+
+  // Si box activé
+  if (hasBox) {
+    if (!formData.num_box) {
+      errors.num_box = ["Le numéro du box est requis"];
+    }
+    if (!formData.prix_box) {
+      errors.prix_box = ["Le prix du box est requis"];
+    }
+    if (!formData.superficie_box) {
+      errors.superficie_box = ["La superficie du box est requise"];
+    }
   }
   return errors;
 };
@@ -786,80 +796,7 @@ if (id && fetchingData) {
 // Render details step with corrected bloc dropdown
 const renderDetailsStep = () => (
   <div className="bg-white p-6 rounded-md shadow-sm">
-    <h3 className="text-lg font-medium mb-6">Détails du bien</h3>
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <Input
-        label="Propriété dite bien"
-        type="text"
-        name="propriete_dite_bien"
-        value={formData.propriete_dite_bien}
-        onChange={(e) => handleChange("propriete_dite_bien", e.target.value)}
-        error={errors.propriete_dite_bien }
-        required
-      />
-      <Input
-        label="Numéro"
-        type="text"
-        name="numero"
-        value={formData.numero}
-        onChange={(e) => handleChange("numero", e.target.value)}
-        error={errors.numero }
-        required
-      />
-      <SelectInput
-        label="Niveau"
-        name="niveau"
-        value={etages.find(e => e.value === formData.niveau)}
-        options={etages.map(t => ({ label: t.label, value: t.value }))}
-        onChange={(selected) => handleChange("niveau", selected)}
-        required
-      />
-
-
-
-      
-      <div>
-         <SelectInput
-            label='Orientation'
-            name="orientation"
-            value={formData.orientation}
-            options={Object.entries(ORIENTATIONS).map(([key, val]) => ({
-              label: val.label,
-              value: key,
-            }))}
-            onChange={(value) => handleChange("orientation", value)}
-          />
-        {errors.orientation && <p className="mt-1 text-sm text-red-600">{errors.orientation[0]}</p>}
-      </div>
-
-      <InputSelect
-        label="Type de bien"
-        options={typeBiens.map(t => ({ label: t.type, value: t.id }))}
-        value={formData.type_id}
-        onChange={(option) => handleselectChange("type_id", option?.value || null)}
-        error={errors.type_id }
-        isLoading={loading}
-        required
-      />
-     
-      <InputSelect
-        label="Vue"
-        options={vues.map(t => ({ label: t.vue, value: t.id }))}
-        value={formData.vue_id}
-        onChange={(option) => handleselectChange("vue_id", option?.value || null)}
-        error={errors.vue_id }
-        isLoading={loading}
-        required
-      />
-      <InputSelect
-        label="Typologie"
-        options={typologies.map(t => ({ label: t.typologie, value: t.id }))}
-        value={formData.typologie_id}
-        onChange={(option) => handleselectChange("typologie_id", option?.value || null)}
-        error={errors.typologie_id }
-        isLoading={loading}
-        required
-      />
       {id && projet.nbre_tranches !== 0 && (
         <Input
           label='Tranche'
@@ -1017,6 +954,75 @@ const renderDetailsStep = () => (
                     required
                   />
                 ) : null)}
+      <Input
+        label="Propriété dite bien"
+        type="text"
+        name="propriete_dite_bien"
+        value={formData.propriete_dite_bien}
+        onChange={(e) => handleChange("propriete_dite_bien", e.target.value)}
+        error={errors.propriete_dite_bien }
+        required
+      />
+      <Input
+        label="Numéro"
+        type="text"
+        name="numero"
+        value={formData.numero}
+        onChange={(e) => handleChange("numero", e.target.value)}
+        error={errors.numero }
+        required
+      />
+      <SelectInput
+        label="Niveau"
+        name="niveau"
+        value={etages.find(e => e.value === formData.niveau)}
+        options={etages.map(t => ({ label: t.label, value: t.value }))}
+        onChange={(selected) => handleChange("niveau", selected)}
+        required
+      />
+
+      
+      <div>
+         <SelectInput
+            label='Orientation'
+            name="orientation"
+            value={formData.orientation}
+            options={Object.entries(ORIENTATIONS).map(([key, val]) => ({
+              label: val.label,
+              value: key,
+            }))}
+            onChange={(value) => handleChange("orientation", value)}
+          />
+        {errors.orientation && <p className="mt-1 text-sm text-red-600">{errors.orientation[0]}</p>}
+      </div>
+
+      <InputSelect
+        label="Type de bien"
+        options={typeBiens.map(t => ({ label: t.type, value: t.id }))}
+        value={formData.type_id}
+        onChange={(option) => handleselectChange("type_id", option?.value || null)}
+        error={errors.type_id }
+        isLoading={loading}
+        required
+      />
+     
+      <InputSelect
+        label="Vue"
+        options={vues.map(t => ({ label: t.vue, value: t.id }))}
+        value={formData.vue_id}
+        onChange={(option) => handleselectChange("vue_id", option?.value || null)}
+        error={errors.vue_id }
+        isLoading={loading}
+      />
+      <InputSelect
+        label="Typologie"
+        options={typologies.map(t => ({ label: t.typologie, value: t.id }))}
+        value={formData.typologie_id}
+        onChange={(option) => handleselectChange("typologie_id", option?.value || null)}
+        error={errors.typologie_id }
+        isLoading={loading}
+      />
+      
     
       <Input
         label="Nombre de façades"
@@ -1036,13 +1042,7 @@ const renderDetailsStep = () => (
         error={errors.prix_unitaire }
         required
       />
-      <Input
-        label="Prix (Dhs)"
-        type="text"
-        name="prix"
-        value={formData.prix}
-        disabled
-      />
+      
       <Input
         label="Avance minimale (Dhs)"
         type="number"
@@ -1113,11 +1113,11 @@ const renderDetailsStep = () => (
     </div>
   </div>
 );
+
 const renderAreasStep = () => (
   <div className="bg-white p-6 rounded-md shadow-sm">
-    <h3 className="text-lg font-medium mb-6">Superficies du bien</h3>
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <Input
         label="Superficie habitable (m²)"
         name="superficie_habitable"
@@ -1138,53 +1138,175 @@ const renderAreasStep = () => (
         required
       />
 
-      <Input
-        label="Superficie terrasse (m²)"
-        name="superficie_terrasse"
-        type="number"
-        value={formData.superficie_terrasse}
-        onChange={(e) => handleChange("superficie_terrasse", e.target.value)}
-      />
+      {/* Terrasse */}
+      <div className="col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Input
+          label="Superficie terrasse (m²)"
+          name="superficie_terrasse"
+          type="number"
+          value={formData.superficie_terrasse}
+          onChange={(e) => handleChange("superficie_terrasse", e.target.value)}
+        />
+        <Input
+          label="Terrasse calculée (m²)"
+          name="superficie_terrasse_calculer"
+          type="number"
+          value={formData.superficie_terrasse_calculer}
+          readOnly
+        />
+      </div>
 
-      <Input
-        label="Superficie terrasse calculée (m²)"
-        name="superficie_terrasse_calculer"
-        type="number"
-        value={formData.superficie_terrasse_calculer}
-        readOnly
-      />
+      {/* Balcon */}
+      <div className="col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Input
+          label="Superficie balcon (m²)"
+          name="superficie_balcon"
+          type="number"
+          value={formData.superficie_balcon}
+          onChange={(e) => handleChange("superficie_balcon", e.target.value)}
+        />
+        <Input
+          label="Balcon calculé (m²)"
+          name="superficie_balcon_calculer"
+          type="number"
+          value={formData.superficie_balcon_calculer}
+          readOnly
+        />
+      </div>
 
-      <Input
-        label="Superficie balcon (m²)"
-        name="superficie_balcon"
-        type="number"
-        value={formData.superficie_balcon}
-        onChange={(e) => handleChange("superficie_balcon", e.target.value)}
-      />
+      {/* Titre général + Switchs sur une ligne */}
+<div className="col-span-2 mb-4">
+  <div className="flex flex-col md:flex-row md:items-center ">
+    <label className="font-medium text-lg whitespace-nowrap">Le bien contient :</label>
 
-      <Input
-        label="Superficie balcon calculée (m²)"
-        name="superficie_balcon_calculer"
-        type="number"
-        value={formData.superficie_balcon_calculer}
-        readOnly
-      />
+    <div className="flex flex-wrap items-center gap-8">
+      {/* Switch Jardin */}
+      <div className="flex items-center space-x-3">
+        <label className="font-medium">Jardin ?</label>
+        <Switch
+          checked={hasJardin}
+          onChange={setHasJardin}
+          className={`${hasJardin ? 'bg-green-500' : 'bg-gray-300'} relative inline-flex h-6 w-11 items-center rounded-full`}
+        >
+          <span className="sr-only">Jardin</span>
+          <span className={`${hasJardin ? 'translate-x-6' : 'translate-x-1'} inline-block h-4 w-4 transform rounded-full bg-white transition`} />
+        </Switch>
+      </div>
 
-      <Input
-        label="Superficie jardin (m²)"
-        name="superficie_jardin"
-        type="number"
-        value={formData.superficie_jardin}
-        onChange={(e) => handleChange("superficie_jardin", e.target.value)}
-      />
+      {/* Switch Parking */}
+      <div className="flex items-center space-x-3">
+        <label className="font-medium">Parking ?</label>
+        <Switch
+          checked={hasParking}
+          onChange={setHasParking}
+          className={`${hasParking ? 'bg-green-500' : 'bg-gray-300'} relative inline-flex h-6 w-11 items-center rounded-full`}
+        >
+          <span className="sr-only">Parking</span>
+          <span className={`${hasParking ? 'translate-x-6' : 'translate-x-1'} inline-block h-4 w-4 transform rounded-full bg-white transition`} />
+        </Switch>
+      </div>
 
-      <Input
-        label="Superficie jardin calculée (m²)"
-        name="superficie_jardin_calculer"
-        type="number"
-        value={formData.superficie_jardin_calculer}
-        readOnly
-      />
+      {/* Switch Box */}
+      <div className="flex items-center space-x-3">
+        <label className="font-medium">Box ?</label>
+        <Switch
+          checked={hasBox}
+          onChange={setHasBox}
+          className={`${hasBox ? 'bg-green-500' : 'bg-gray-300'} relative inline-flex h-6 w-11 items-center rounded-full`}
+        >
+          <span className="sr-only">Box</span>
+          <span className={`${hasBox ? 'translate-x-6' : 'translate-x-1'} inline-block h-4 w-4 transform rounded-full bg-white transition`} />
+        </Switch>
+      </div>
+    </div>
+  </div>
+</div>
+
+{/* Inputs Jardin */}
+{hasJardin && (
+  <div className="col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+    <Input
+      label="Superficie jardin (m²)"
+      name="superficie_jardin"
+      type="number"
+      value={formData.superficie_jardin}
+      onChange={(e) => handleChange("superficie_jardin", e.target.value)}
+      error={errors.superficie_jardin}
+
+    />
+    <Input
+      label="Jardin calculé (m²)"
+      name="superficie_jardin_calculer"
+      type="number"
+      value={formData.superficie_jardin_calculer}
+      readOnly
+    />
+  </div>
+)}
+
+{/* Inputs Parking */}
+{hasParking && (
+  <div className="col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+    <Input
+      label="Numéro parking"
+      name="num_parking"
+      type="text"
+      value={formData.num_parking}
+      onChange={(e) => handleChange("num_parking", e.target.value)}
+      error={errors.num_parking}
+
+    />
+    <Input
+      label="Prix parking (Dhs)"
+      name="prix_parking"
+      type="number"
+      value={formData.prix_parking}
+      onChange={(e) => handleChange("prix_parking", e.target.value)}
+      error={errors.prix_parking}
+    />
+    <Input
+      label="Superficie parking (m²)"
+      name="superficie_parking"
+      type="number"
+      value={formData.superficie_parking}
+      onChange={(e) => handleChange("superficie_parking", e.target.value)}
+      error={errors.superficie_parking}
+    />
+  </div>
+)}
+
+{/* Inputs Box */}
+{hasBox && (
+  <div className="col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+    <Input
+      label="Numéro box"
+      name="num_box"
+      type="text"
+      value={formData.num_box}
+      onChange={(e) => handleChange("num_box", e.target.value)}
+      error={errors.num_box}
+    />
+    <Input
+      label="Prix box (Dhs)"
+      name="prix_box"
+      type="number"
+      value={formData.prix_box}
+      onChange={(e) => handleChange("prix_box", e.target.value)}
+      error={errors.prix_box}
+    />
+    <Input
+      label="Superficie box (m²)"
+      name="superficie_box"
+      type="number"
+      value={formData.superficie_box}
+      onChange={(e) => handleChange("superficie_box", e.target.value)}
+      error={errors.superficie_box}
+    />
+  </div>
+)}
+
+
+<div className="col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
 
       <Input
         label="Superficie vendable (m²)"
@@ -1193,7 +1315,6 @@ const renderAreasStep = () => (
         value={formData.superficie_vendable}
         readOnly
       />
-
       <Input
         label="Superficie totale (m²)"
         name="superficie_total"
@@ -1203,52 +1324,13 @@ const renderAreasStep = () => (
       />
 
       <Input
-        label="Numéro parking"
-        name="num_parking"
+        label="Prix (Dhs)"
         type="text"
-        value={formData.num_parking}
-        onChange={(e) => handleChange("num_parking", e.target.value)}
+        name="prix"
+        value={formData.prix}
+        disabled
       />
-
-      <Input
-        label="Prix parking (Dhs)"
-        name="prix_parking"
-        type="number"
-        value={formData.prix_parking}
-        onChange={(e) => handleChange("prix_parking", e.target.value)}
-      />
-
-      <Input
-        label="Superficie parking (m²)"
-        name="superficie_parking"
-        type="number"
-        value={formData.superficie_parking}
-        onChange={(e) => handleChange("superficie_parking", e.target.value)}
-      />
-
-      <Input
-        label="Numéro box"
-        name="num_box"
-        type="text"
-        value={formData.num_box}
-        onChange={(e) => handleChange("num_box", e.target.value)}
-      />
-
-      <Input
-        label="Prix box (Dhs)"
-        name="prix_box"
-        type="number"
-        value={formData.prix_box}
-        onChange={(e) => handleChange("prix_box", e.target.value)}
-      />
-
-      <Input
-        label="Superficie box (m²)"
-        name="superficie_box"
-        type="number"
-        value={formData.superficie_box}
-        onChange={(e) => handleChange("superficie_box", e.target.value)}
-      />
+    </div>
 
     </div>
   </div>
@@ -1257,9 +1339,7 @@ const renderAreasStep = () => (
 
 const renderCompositionStep = () => (
   <div className="bg-white p-6 rounded-md shadow-sm">
-    <h3 className="text-lg font-medium mb-6">Composition du bien</h3>
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
       <Input
         label="Nombre de chambres"
         name="nbre_chambres"
@@ -1367,9 +1447,9 @@ return (
     <div className="p-6 mt-4 bg-white shadow-md rounded-md">
 
       <ProjectStepper
-  steps={stepsToShow}
-  activeStep={activeStep}
-/>
+        steps={stepsToShow}
+        activeStep={activeStep}
+      />
 
 
       <div className="mt-8">

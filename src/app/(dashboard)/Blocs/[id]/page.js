@@ -17,6 +17,7 @@ import toast from "react-hot-toast";
 import Link from "next/link";
 import BienTable from "@/components/biens/BienTable";
 import ImmeubleTable from "@/components/immeubles/ImmeubleTable";
+import LoadingSpin from '@/components/LoadingSpin';
 
 export default function BlocDetailsPage() {
   const { id } = useParams();
@@ -210,8 +211,8 @@ export default function BlocDetailsPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpin /> 
       </div>
     );
   }
