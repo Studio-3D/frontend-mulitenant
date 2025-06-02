@@ -117,8 +117,6 @@ export default function TypeProjetsPage() {
           <p>{error}</p>
         </div>
       )}
-      
-      
       <DeleteConfirmationModal
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
