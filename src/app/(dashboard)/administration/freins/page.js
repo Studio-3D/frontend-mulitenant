@@ -120,10 +120,7 @@ export default function FreinsPage() {
 
   // Main view with table
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Gestion des Freins</h1>
-      
-      
+    <div className="p-4 bg-white rounded-lg shadow-md">
       <FreinTable
         data={freins}
         loading={loading}
