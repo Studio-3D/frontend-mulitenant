@@ -100,7 +100,7 @@ const VueTable = ({
         columns={columns}
         data={currentItems}
         filterComponent={
-          <div className="space-y-4 p-4 rounded-lg shadow-md">
+          <div className="space-y-4">
             <div
               className="grid gap-3"
               style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}
@@ -113,9 +113,7 @@ const VueTable = ({
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
               
-            </div>
-        
-            <div className="flex justify-end gap-3 pt-2">
+            <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={applyFilters}
@@ -131,6 +129,8 @@ const VueTable = ({
                 Réinitialiser
               </button>
             </div>
+            </div>
+
           </div>
         }
         totalRows={filteredData.length}
@@ -145,14 +145,14 @@ const VueTable = ({
         enableExport={data.length > 0}
       />
       
-      <div className="flex justify-end mt-4">
+      {/* <div className="flex justify-end mt-4">
         <button 
           onClick={onRefresh}
           className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
         >
           Actualiser
         </button>
-      </div>
+      </div> */}
     </div>
   );
 };
