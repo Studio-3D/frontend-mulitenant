@@ -1,8 +1,10 @@
 'use client'
 import React from 'react'
-import { EncaissementChart } from '../../../components/TableauDeBord/EncaissementChart'
+import { VentesChart } from '../../../components/TableauDeBord/VentesChart'
 import { VisitesChart } from '../../../components/TableauDeBord/VisitesChart'
 import { AppelsChart } from '../../../components/TableauDeBord/AppelsChart'
+import { Desistement} from '../../../components/TableauDeBord/Desistement'
+import { EncaissementChart } from '@/components/TableauDeBord/EncaissementChart'
 
 const page = () => {
   return (
@@ -11,9 +13,12 @@ const page = () => {
       <div className='grid grid-cols-1 lg:grid-cols-3 gap-4'>
         {/* Left column (2/3 width on lg screens) */}
         <div className='lg:col-span-2 space-y-4'>
-          {/* Encaissement Chart */}
+          {/* Ventes Chart */}
           <div className=''>
-              <EncaissementChart/>
+            <EncaissementChart/>
+          </div>
+          <div className=''>
+              <VentesChart/>
           </div>
           
           {/* Visites Chart */}
@@ -43,9 +48,14 @@ const page = () => {
           </div>
         </div>
 
-          {/* Appels Section */}
+          
+          {/* Appels Chart */}
           <div className='flex justify-between lg:h-[100%] bg-white rounded-lg shadow-md p-4 '>
           <AppelsChart/>
+          </div>
+          {/* Desistement Chart */}
+          <div className='flex justify-between lg:h-[100%] bg-white rounded-lg shadow-md p-4 '>
+            <Desistement/>
           </div>
         </div>
       </div>
