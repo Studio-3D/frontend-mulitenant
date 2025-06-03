@@ -1325,10 +1325,11 @@ const renderAreasStep = () => (
 
       <Input
         label="Prix (Dhs)"
-        type="text"
+        type="number"
         name="prix"
         value={formData.prix}
-        disabled
+        onChange={(e) => handleChange("prix", e.target.value)}
+
       />
     </div>
 

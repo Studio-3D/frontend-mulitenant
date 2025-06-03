@@ -12,7 +12,7 @@ import Button from "../Button";
 export default function TrancheForm({ id, projetId }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [backe ndErrors, setBackendErrors] = useState({});
+  const [backendErrors, setBackendErrors] = useState({});
   const [validationErrors, setValidationErrors] = useState({});
   
   // Get selected project from localStorage if not provided via props

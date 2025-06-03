@@ -1,7 +1,7 @@
 "use client"
 import { useState, useEffect } from "react"
 import axios from "axios"
-import { APIURL } from "@/configs/api"
+import { APIURL, BASERESOURCEURL } from "@/configs/api"
 import { Plus, Trash2 } from "lucide-react"
 import Button from "@/components/Button";
 
@@ -22,70 +22,72 @@ export default function GeneralParameterForm({ state, setState, onNext, onBack, 
   const [userIdMapping, setUserIdMapping] = useState({})
 
   useEffect(() => {
-    async function fetchUsers() {
-      setFetchingUsers(true)
-      try {
-        const token = localStorage.getItem("accessToken")
+  async function fetchUsers() {
+    setFetchingUsers(true)
+    try {
+      const token = localStorage.getItem("accessToken")
+      const response = await axios.get(`${APIURL.ROOT}/get_users`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
 
-        // Make sure we're fetching users specific to the selected société
-        // These users will have the correct IDs for that société's database
-        const response = await axios.get(APIURL.UTILISATEURS, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+      console.log("API response for users:", response.data)
 
-        console.log("API response for users:", response.data)
+      const fetchedUsers = response.data.users || []
 
-        // Create a mapping of global IDs to local IDs (1-based index)
-        const fetchedUsers = response.data.users || []
-        const mapping = {}
+      const newUsers = fetchedUsers.map((user, index) => ({
+  ...user,
+  localId: index + 1, // uniquement pour clé React
+}))
+setUsers(newUsers)
+      console.log("Created user ID mapping:", newUsers) // Affiche bien les users avec localId
 
-        // Create a local ID mapping (1, 2, 3, etc.)
-        fetchedUsers.forEach((user, index) => {
-          // Store original ID in a separate property
-          user.originalId = user.id
-          // Create mapping from original to local ID
-          mapping[user.id] = index + 1
-          // Assign a local ID property (this is what we'll use for the database)
-          user.localId = index + 1
-        })
-
-        setUserIdMapping(mapping)
-        setUsers(fetchedUsers)
-
-        console.log("Created user ID mapping:", mapping)
-      } catch (error) {
-        console.error("Error fetching users:", error)
-      } finally {
-        setFetchingUsers(false)
-      }
+    } catch (error) {
+      console.error("Error fetching users:", error)
+    } finally {
+      setFetchingUsers(false)
     }
+  }
 
-    fetchUsers()
-  }, [])
+  fetchUsers()
+}, [])
+
 
   const handleChange = (field, value) => {
     setState((prev) => ({ ...prev, [field]: value }))
   }
 
-  // Modified user selection functions
-  const toggleSelectAllUsers = () => {
-    if (selectAllUsers) {
-      // If all were selected, now we deselect all
-      setState(prev => ({ ...prev, selectedUsers: [] }))
-      setSelectAllUsers(false)
-    } else {
-      // Select all users
-      setState(prev => ({ 
-        ...prev, 
-        selectedUsers: users.map(user => ({ 
-          ...user, 
-          originalId: user.id, 
-          localId: user.localId 
-        }))
-      }))
-      setSelectAllUsers(true)
-    }
+ const toggleSelectAllUsers = () => {
+  if (selectAllUsers) {
+    setState(prev => ({ ...prev, selectedUsers: [] }))
+    setSelectAllUsers(false)
+  } else {
+    setState(prev => ({ 
+      ...prev, 
+      selectedUsers: users // utilisateurs complets avec vrai id
+    }))
+    setSelectAllUsers(true)
   }
+}
+
+
+// handleUserChange
+const handleUserChange = (userId) => {
+  const user = users.find((u) => u.id === userId)
+  const isSelected = state.selectedUsers.some((u) => u.id === userId)
+
+  if (isSelected) {
+    setState(prev => ({
+      ...prev,
+      selectedUsers: prev.selectedUsers.filter(u => u.id !== userId),
+    }))
+  } else if (user) {
+    setState(prev => ({
+      ...prev,
+      selectedUsers: [...prev.selectedUsers, user],
+    }))
+  }
+}
+
 
   // Check if all users are selected
   useEffect(() => {
@@ -96,29 +98,13 @@ export default function GeneralParameterForm({ state, setState, onNext, onBack, 
     }
   }, [state.selectedUsers, users])
 
-  // Modify user selection to work with dropdown
-  const handleUserChange = (userId) => {
-    const user = users.find((u) => u.id === userId)
-    const isSelected = state.selectedUsers.some((u) => u.id === userId)
+ 
 
-    if (isSelected) {
-      setState((prev) => ({
-        ...prev,
-        selectedUsers: prev.selectedUsers.filter((u) => u.id !== userId),
-      }))
-    } else if (user) {
-      // When adding a user, include both original and local IDs
-      setState((prev) => ({
-        ...prev,
-        selectedUsers: [...prev.selectedUsers, { ...user, originalId: user.id, localId: user.localId }],
-      }))
-    }
-  }
+// isUserSelected
+const isUserSelected = (userId) => {
+  return state.selectedUsers.some(selectedUser => selectedUser.id === userId)
+}
 
-  // Fix user checkbox selection logic
-  const isUserSelected = (userId) => {
-    return state.selectedUsers.some((selectedUser) => selectedUser.id === userId)
-  }
 
   // Filter users by search term
   const filteredUsers = users.filter(user => 
@@ -530,8 +516,8 @@ export default function GeneralParameterForm({ state, setState, onNext, onBack, 
         {errors?.selectedUsers && <p className="mt-1 text-sm text-red-600">{errors.selectedUsers[0]}</p>}
       </div>
 
-      <DebugPanel />
-
+      {/* <DebugPanel />
+ */}
       <div className="flex justify-between pt-8">
         <Button
           type="button"
