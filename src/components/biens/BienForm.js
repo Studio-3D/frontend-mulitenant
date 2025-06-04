@@ -13,10 +13,10 @@ import BreadCrumb from "@/app/(dashboard)/navigation/BreadCrumb";
 import InputSelect from "../inputSelect";
 import Button from "../Button";
 import { Switch } from '@headlessui/react'; // ou votre composant Switch habituel
-
 import { Button as Button1, Checkbox, CircularProgress, FormControl, FormControlLabel, Grid, InputLabel, MenuItem, Select } from '@mui/material'
 import Input from "../Input";
 import Modal from "../Modal";
+import Composition from "@/app/(dashboard)/compositionBien/CompositionTable";
 export default function BienForm({ id,  }) {
   const [hasJardin, setHasJardin] = useState(false);
 const [hasParking, setHasParking] = useState(false);
@@ -66,6 +66,7 @@ const immeubleId = searchParams.get("immeuble");
   const [loadingImmeubles, setLoadingImmeubles] = useState(false);
   const [showCompositionModal, setShowCompositionModal] = useState(false);
   const [bienCreeId, setBienCreeId] = useState(null); // Pour stocker l'id du bien créé
+  const [dataReloadTrigger, setDataReloadTrigger] = useState(0)
 
   // Steps
   const steps = ["Détails du bien", "Superficies du bien", "Composition du bien"];
@@ -681,7 +682,9 @@ const handleSubmit = async () => {
       //router.push(projet?.id ? `/Projets/${projet.id}?tab=biens` : "/Projets");
 
     }
+    console.log("Bien créé ou mis à jour avec succès:",bienCreeId);
 
+console.log("Bien créé ou mis à jour avec succès:", response.data.bien.id);
   } catch (error) {
     console.error("Error submitting property:", error);
     if (error.response?.data?.errors) {
@@ -741,9 +744,14 @@ const onSubmit_comp = () => {
         setLoading(false);
 
         toast.success('La composition du bien a été créée avec succès');
+        console.log("Bien créé avec succès:", res.data.message);
+
         resetFormDataComp();
         setShowCompositionModal(true)
-        setCompositionModalMessage("Voulez-vous ajouter d'autre composition pour ce bien?")      } else if (res.status === 422) {
+        setCompositionModalMessage("Voulez-vous ajouter d'autre composition pour ce bien?")
+        setDataReloadTrigger(prev => prev + 1);
+      
+      } else if (res.status === 422) {
         
       }
     })
@@ -992,6 +1000,7 @@ const renderDetailsStep = () => (
               value: key,
             }))}
             onChange={(value) => handleChange("orientation", value)}
+            required
           />
         {errors.orientation && <p className="mt-1 text-sm text-red-600">{errors.orientation[0]}</p>}
       </div>
@@ -1431,7 +1440,10 @@ const renderCompositionStep = () => (
         onChange={(e) => handleChange("nbre_placards", e.target.value, "comp")}
       />
 
+
     </div>
+    
+    
   </div>
 );
 
@@ -1441,133 +1453,135 @@ return (
   <div className="p-3">
     <div className="flex items-center justify-start">
       <BreadCrumb
-        baseUrl={projetId ?`/Projets/${projetId}?tab=biens` : "/Projets"}
+        baseUrl={projetId ? `/Projets/${projetId}?tab=biens` : "/Projets"}
         step={`${id ? "Modifier" : "Ajouter"} un bien`}
       />
     </div>
+
     <div className="p-6 mt-4 bg-white shadow-md rounded-md">
-
-      <ProjectStepper
-        steps={stepsToShow}
-        activeStep={activeStep}
-      />
-
+      <ProjectStepper steps={stepsToShow} activeStep={activeStep} />
 
       <div className="mt-8">
         {renderStepContent()}
       </div>
 
-      <div className="flex justify-between mt-6">
-  <button
-    type="button"
-    onClick={activeStep === 0 ? () => router.back() : handleBack}
-    className="px-4 py-2 border border-gray-300 rounded-md"
-  >
-    {activeStep === 0 ? "Annuler" : "Précédent"}
-  </button>
+      {/* Boutons navigation */}
+      <div className="flex justify-between mt-6 items-center">
+        {/* Bouton "Annuler" ou "Précédent" */}
+        <button
+          type="button"
+          onClick={activeStep === 0 ? () => router.back() : handleBack}
+          className="px-4 py-2 border border-gray-300 rounded-md"
+        >
+          {(activeStep === 0||activeStep === 1) ? "Annuler" : "Précédent"}
+        </button>
 
-  {/* Bouton pour étape 1 (ou dernière étape si id) */}
-  {(activeStep === 1) && (
-    <Button
-      type="submit"
-      onClick={handleSubmit}
-      disabled={loading}
-    >
-      {loading
-        ? (id ? "Modification en cours..." : "Enregistrement...")
-        : (id ? "Modifier le bien" : "Enregistrer le bien")}
-    </Button>
-  )}
-
-  {/* Bouton pour étape 2 (uniquement si pas d'id) */}
-  {(!id && activeStep === 2) && (
-    <Button
-      type="submit"
-      onClick={() => onSubmit_comp()}
-      disabled={loading}
-      className="px-4 py-2 bg-green-600 text-white rounded-md"
-    >
-      {loading ? "Enregistrement..." : "Enregistrer la composition"}
-    </Button>
-  )}
-
-  {/* Bouton Suivant pour les autres étapes */}
-  {!(activeStep === 1 || activeStep === 2) && (
-    <button
-      type="button"
-      onClick={handleNext}
-      disabled={loading}
-      className="px-4 py-2 bg-blue-600 text-white rounded-md"
-    >
-      Suivant
-    </button>
-  )}
-</div>
-</div>
-
-{showCompositionModal && (
-  <Modal
-    isVisible={true}
-    onClose={() => setShowCompositionModal(false)} // important pour permettre la fermeture en cliquant hors du modal
-  >
-    <div className="p-6 rounded-lg">
-      <p className="mb-4 font-semibold">{compositionModalMessage}</p>
-      <div className="flex gap-4 justify-end">
-
-        {compositionModalMessage === "Voulez-vous ajouter une composition pour ce bien?" ? (
-          <>
-            <Button
-              type="button"
-              onClick={() => {
-                setShowCompositionModal(false);
-                router.push(router.back());
-              }}
-            >
-              Non
-            </Button>
-            <Button
-              type={'submit'}
-              className="bg-blue-600 text-white"
-              onClick={() => {
-                setShowCompositionModal(false);
-                setActiveStep(2);
-              }}
-            >
-              Oui
-            </Button>
-          </>
-        ) : (
-          <>
-            <Button
-              type={'button'}
-              onClick={() => {
-                setShowCompositionModal(false);
-                router.push(router.back());
-              }}
-            >
-              Quitter
-            </Button>
-            <Button
-              type="submit"
-              className="bg-blue-600 text-white"
-              onClick={() => {
-                setShowCompositionModal(false);
-                // L’utilisateur reste pour remplir
-              }}
-            >
-              Remplir
-            </Button>
-          </>
+        {/* Étape 1 : Soumettre bien */}
+        {activeStep === 1 && (
+          <Button
+            type="submit"
+            onClick={handleSubmit}
+            disabled={loading}
+          >
+            {loading
+              ? (id ? "Modification en cours..." : "Enregistrement...")
+              : (id ? "Modifier le bien" : "Enregistrer le bien")}
+          </Button>
         )}
 
+        {/* Étape 2 : Soumettre composition (si pas d'id) */}
+        {!id && activeStep === 2 && (
+          <Button
+            type="submit"
+            onClick={() => onSubmit_comp()}
+            disabled={loading}
+            className="px-4 py-2 bg-green-600 text-white rounded-md"
+          >
+            {loading ? "Enregistrement..." : "Enregistrer la composition"}
+          </Button>
+        )}
+
+        {/* Autres étapes : bouton Suivant */}
+        {!(activeStep === 1 || (activeStep === 2 && !id)) && (
+          <button
+            type="button"
+            onClick={handleNext}
+            disabled={loading}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md"
+          >
+            Suivant
+          </button>
+        )}
       </div>
+
+      {/* Étape 2 : affichage de la composition */}
+      {!id && activeStep === 2 && (
+        <div className="mt-6">
+          <Composition bien={bienCreeId} reloadTrigger={dataReloadTrigger} />
+        </div>
+      )}
     </div>
-  </Modal>
-)}
 
-
-
+    {/* Modal de composition */}
+    {showCompositionModal && (
+      <Modal
+        isVisible={true}
+        onClose={() => setShowCompositionModal(false)}
+      >
+        <div className="p-6 rounded-lg">
+          <p className="mb-4 font-semibold">{compositionModalMessage}</p>
+          <div className="flex gap-4 justify-end">
+            {compositionModalMessage === "Voulez-vous ajouter une composition pour ce bien?" ? (
+              <>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setShowCompositionModal(false);
+                    router.push(router.back());
+                  }}
+                >
+                  Non
+                </Button>
+                <Button
+                  type="submit"
+                  className="bg-blue-600 text-white"
+                  onClick={() => {
+                    setShowCompositionModal(false);
+                    setActiveStep(2);
+                  }}
+                >
+                  Oui
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setShowCompositionModal(false);
+                    router.push(router.back());
+                  }}
+                >
+                  Quitter
+                </Button>
+                <Button
+                  type="submit"
+                  className="bg-blue-600 text-white"
+                  onClick={() => {
+                    setShowCompositionModal(false);
+                    // reste sur la même page pour remplir
+                  }}
+                >
+                  Remplir
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      </Modal>
+    )}
   </div>
 );
+
 }
 

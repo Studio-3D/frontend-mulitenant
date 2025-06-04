@@ -13,6 +13,8 @@ export default function SelectInput({
   onChange = () => {}, 
   error,
   width = 'w-full',
+  required = false,
+
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -39,6 +41,9 @@ export default function SelectInput({
   
   // Get the error message in the same way as Input component
   const getErrorMessage = () => {
+    if (required && (value === '' || value == null)) {
+      return 'Ce champ est obligatoire';
+    }
     if (error) {
       if (typeof error === 'object' && error.message) {
         return error.message;
@@ -70,8 +75,13 @@ export default function SelectInput({
   : safeOptions.find(option => String(option.value) === String(value));
   return (
     <div className= {`flex flex-col ${width}`} ref={dropdownRef}>
-      {label && <label className="font-medium text-gray-700 mb-1">{label}</label>}
-      <div className="relative">
+      {label && (
+              <label className="font-medium text-gray-700 mb-1">
+                {label}
+                {required && <span className="text-red-500 ml-1">*</span>}
+              </label>
+            )}      
+        <div className="relative">
         <div
           className={classNames(
             "h-[38px] text-[15px] px-4 py-2 border rounded-md cursor-pointer flex items-center justify-between w-full",
