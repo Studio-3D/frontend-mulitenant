@@ -111,7 +111,7 @@ export default function UpdateSociete() {
             <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-50 rounded-full translate-y-1/2 -translate-x-1/2 blur-3xl opacity-50" />
 
             <div className="flex items-center gap-3 mb-8">
-                <BuildingIcon className="w-8 h-8 text-blue-500" />
+                <BuildingIcon className="w-8 h-8 !text-blue-500" />
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                     Modifier les informations de l'entreprise
                 </h1>
@@ -126,17 +126,17 @@ export default function UpdateSociete() {
                               : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
                           } 
                         />
-                        <p className="text-sm text-gray-500 text-center mt-4">
+                        <p className="text-sm !text-gray-500 text-center mt-4">
                             Téléchargez le logo de votre entreprise 
                         </p>
                     </div>
                     
                     <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                        <div className="flex items-center gap-2 text-blue-500 mb-2">
+                        <div className="flex items-center gap-2 !text-blue-500 mb-2">
                             <SparklesIcon className="w-4 h-4" />
                             <h3 className="font-medium">Pro Tip</h3>
                         </div>
-                        <p className="text-sm text-blue-600/80">
+                        <p className="text-sm !text-blue-600/80">
                             A professional company profile helps build trust with your customers and partners.
                         </p>
                     </div>
@@ -145,7 +145,7 @@ export default function UpdateSociete() {
                 <div className="space-y-6">
                     <div className="grid grid-cols-2 gap-6">
                         <div className="col-span-2">
-                            <label htmlFor="raison_sociale" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="raison_sociale" className="block text-sm font-medium !text-gray-700 mb-1">
                                 Raison Sociale:
                             </label>
                             <input 
@@ -159,7 +159,7 @@ export default function UpdateSociete() {
                         </div>
 
                         <div>
-                            <label htmlFor="nom_contact" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="nom_contact" className="block text-sm font-medium !text-gray-700 mb-1">
                                 Nom:
                             </label>
                             <input 
@@ -173,7 +173,7 @@ export default function UpdateSociete() {
                         </div>
 
                         <div>
-                            <label htmlFor="prenom_contact" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="prenom_contact" className="block text-sm font-medium !text-gray-700 mb-1">
                                 Prénom:
                             </label>
                             <input 
@@ -187,7 +187,7 @@ export default function UpdateSociete() {
                         </div>
 
                         <div className="col-span-2">
-                            <label htmlFor="adresse" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="adresse" className="block text-sm font-medium !text-gray-700 mb-1">
                                 Adresse:
                             </label>
                             <input 
@@ -201,7 +201,7 @@ export default function UpdateSociete() {
                         </div>
 
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="email" className="block text-sm font-medium !text-gray-700 mb-1">
                                 Email:
                             </label>
                             <input 
@@ -215,7 +215,7 @@ export default function UpdateSociete() {
                         </div>
 
                         <div>
-                            <label htmlFor="tel" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="tel" className="block text-sm font-medium !text-gray-700 mb-1">
                                 Téléphone:
                             </label>
                             <input 
@@ -229,7 +229,7 @@ export default function UpdateSociete() {
                         </div>
 
                         <div className="col-span-2">
-                            <label htmlFor="registre_commerce" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="registre_commerce" className="block text-sm font-medium !text-gray-700 mb-1">
                                 Registre de commerce:
                             </label>
                             <input 
@@ -243,7 +243,7 @@ export default function UpdateSociete() {
                         </div>
 
                         <div>
-                            <label htmlFor="id_fiscal" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="id_fiscal" className="block text-sm font-medium !text-gray-700 mb-1">
                                 ID fiscal:
                             </label>
                             <input 
@@ -257,7 +257,7 @@ export default function UpdateSociete() {
                         </div>
 
                         <div>
-                            <label htmlFor="capital" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="capital" className="block text-sm font-medium !text-gray-700 mb-1">
                                 Capital:
                             </label>
                             <input 

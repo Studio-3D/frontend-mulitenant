@@ -36,7 +36,7 @@ export function Desistement_Definitif({ isEditing, formData }) {
   return (
     <div className="p-6">
       {isEditing && (
-        <div className="mb-4 p-3 bg-yellow-50 text-yellow-800 rounded-md">
+        <div className="mb-4 p-3 bg-yellow-50 !text-yellow-800 rounded-md">
           <p className="font-medium">
             Mode Édition: Vous modifiez un désistement existant
           </p>
@@ -94,7 +94,7 @@ export function Desistement_Definitif({ isEditing, formData }) {
         />*/}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               Date Remboursement: <span className="text-red-500">*</span>
             </label>
             <div className="relative">
@@ -148,7 +148,7 @@ export function Desistement_Definitif({ isEditing, formData }) {
         )}
       </div>*/}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               Mode Remboursement: <span className="text-red-500">*</span>
             </label>
             <div className="flex gap-6">
@@ -162,7 +162,7 @@ export function Desistement_Definitif({ isEditing, formData }) {
                     onChange={handleChange}
                     className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded-full"
                   />
-                  <span className="ml-2 text-sm text-gray-700">{mode}</span>
+                  <span className="ml-2 text-sm !text-gray-700">{mode}</span>
                 </label>
               ))}
             </div>
@@ -171,7 +171,7 @@ export function Desistement_Definitif({ isEditing, formData }) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               N° Paiement: <span className="text-red-500">*</span>
             </label>
             <input
@@ -184,10 +184,10 @@ export function Desistement_Definitif({ isEditing, formData }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               Chèque/Reçu:
             </label>
-            <label className="block w-full rounded-md border border-gray-300 py-2 px-3 bg-white shadow-sm text-left text-gray-700 cursor-pointer">
+            <label className="block w-full rounded-md border border-gray-300 py-2 px-3 bg-white shadow-sm text-left !text-gray-700 cursor-pointer">
               <input
                 type="file"
                 name="chequeFile"
@@ -201,7 +201,7 @@ export function Desistement_Definitif({ isEditing, formData }) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               Pour le Compte: <span className="text-red-500">*</span>
             </label>
             <div className="flex gap-6">
@@ -215,17 +215,17 @@ export function Desistement_Definitif({ isEditing, formData }) {
                     onChange={handleChange}
                     className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded-full"
                   />
-                  <span className="ml-2 text-sm text-gray-700">{option}</span>
+                  <span className="ml-2 text-sm !text-gray-700">{option}</span>
                 </label>
               ))}
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               Fichier Authorisation: <span className="text-red-500">*</span>
             </label>
-            <label className="block w-full rounded-md border border-gray-300 py-2 px-3 bg-white shadow-sm text-left text-gray-700 cursor-pointer">
+            <label className="block w-full rounded-md border border-gray-300 py-2 px-3 bg-white shadow-sm text-left !text-gray-700 cursor-pointer">
               <input
                 type="file"
                 name="autorisationFile"

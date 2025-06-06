@@ -259,9 +259,9 @@ const JournalTable = (id) => {
   const getAppelBadge = (type_appel) => {
     let color = null;
     if (type_appel == 1) {
-      color = 'bg-green-100 text-green-800';
+      color = 'bg-green-100 !text-green-800';
     } else {
-      color = 'bg-red-100 text-red-800';
+      color = 'bg-red-100 !text-red-800';
     }
     return (
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${color}`}>
@@ -305,13 +305,13 @@ const JournalTable = (id) => {
       render: (row) => (
         <div className="flex gap-3 items-center">
           <Edit
-            className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
+            className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
             title="Modifier"
             onClick={() => handleEdit(row.id)}
           />
           {VISITE_INTERETS[row.interet]?.label != 'Injoignable' && (
             <Eye
-              className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
+              className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
               title="Voir détails"
               onClick={() =>
                 handleShow(
@@ -341,7 +341,7 @@ const JournalTable = (id) => {
             row.relance.deleted_at == null &&
             row.user?.user_id_origin == user.id && (
               <CheckCircle
-                className="w-4 h-4 text-green-500 hover:text-green-700 cursor-pointer"
+                className="w-4 h-4 !text-green-500 hover:text-green-700 cursor-pointer"
                 title="Traiter Relance"
                 onClick={() => handleValider(row.relance?.id, 'Relance')}
               />
@@ -358,7 +358,7 @@ const JournalTable = (id) => {
             )}
 
           <Trash2
-            className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
+            className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
             onClick={() => {
               setSelectedId(row.id);
               setShowDeleteModal(true);

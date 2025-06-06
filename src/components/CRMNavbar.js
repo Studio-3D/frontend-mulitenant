@@ -179,7 +179,7 @@ const CRMNavbar = () => {
     <div className="bg-white rounded-lg shadow-md p-4 mb-4" ref={navRef}>
       {/* Collapsible Menu Button */}
       <button
-        className="block md:hidden text-gray-700 focus:outline-none"
+        className="block md:hidden !text-gray-700 focus:outline-none"
         onClick={() => setMenuOpen(!menuOpen)}
       >
         <Menu className="w-6 h-6" />
@@ -233,7 +233,7 @@ const CRMNavbar = () => {
                     <Link
                       key={subItem.name}
                       href={subItem.path}
-                      className={`flex items-center justify-between px-4 py-2 m-1 text-gray-700 hover:bg-gray-100 hover:rounded-md ${
+                      className={`flex items-center justify-between px-4 py-2 m-1 !text-gray-700 hover:bg-gray-100 hover:rounded-md ${
                         isActive(subItem.path) ? 'bg-blue-50 rounded-md' : ''
                       }`}
                     >

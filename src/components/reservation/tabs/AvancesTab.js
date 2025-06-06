@@ -61,7 +61,7 @@ export const AvancesTab = () => {
       render: (row) => (
         <span
           className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-            row.status === 'Confirmé' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+            row.status === 'Confirmé' ? 'bg-green-100 !text-green-800' : 'bg-yellow-100 !text-yellow-800'
           }`}
         >
           {row.status}
@@ -74,26 +74,26 @@ export const AvancesTab = () => {
       render: (row) => (
         <div className="flex gap-3 items-center">
             <Eye
-              className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
+              className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
               title="Voir détails"
             />
             <UserCog
-              className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
+              className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
               title="Modifier"
             />
           {row.status === "Actif" ? (
             <User
-              className="w-4 h-4 text-green-500 hover:text-green-700 cursor-pointer"
+              className="w-4 h-4 !text-green-500 hover:text-green-700 cursor-pointer"
               title="Bloquer utilisateur"
             />
           ) : (
             <UserX
-              className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
+              className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
               title="Débloquer utilisateur"
             />
           )}
           <Trash2
-            className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
+            className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
             title="Supprimer utilisateur"
           />
         </div>
@@ -105,15 +105,15 @@ export const AvancesTab = () => {
       <div className="bg-cyan-50 rounded-lg p-4 mb-6">
         <div className="flex justify-between items-center">
           <div>
-            <p className="text-sm text-gray-500">Total versé</p>
+            <p className="text-sm !text-gray-500">Total versé</p>
             <p className="text-2xl font-bold">16 000 €</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Reste à payer</p>
+            <p className="text-sm !text-gray-500">Reste à payer</p>
             <p className="text-2xl font-bold">304 000 €</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Pourcentage versé</p>
+            <p className="text-sm !text-gray-500">Pourcentage versé</p>
             <p className="text-2xl font-bold">5%</p>
           </div>
         </div>

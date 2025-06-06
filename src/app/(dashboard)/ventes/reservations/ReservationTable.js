@@ -304,12 +304,12 @@ const ReservationTable = ({ dataClient }) => {
       render: (row) => (
         <div className="flex gap-3 items-center">
           <Eye
-            className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
+            className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
             title="Voir détails"
             onClick={() => handleShow(row.id)}
           />
           <Edit
-            className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
+            className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
             title="Modifier"
             onClick={() => handleEdit(row.id)}
           />
@@ -319,7 +319,7 @@ const ReservationTable = ({ dataClient }) => {
                 <>
                   {/* Approve Button */}
                   <ThumbsUp
-                    className="w-4 h-4 text-green-500 hover:text-green-700 cursor-pointer"
+                    className="w-4 h-4 !text-green-500 hover:text-green-700 cursor-pointer"
                     title="Valider"
                     onClick={() =>
                       handle_valider(
@@ -339,14 +339,14 @@ const ReservationTable = ({ dataClient }) => {
 
                   {/* Reject Button */}
                   <ThumbsDown
-                    className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
+                    className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
                     title="Refuser"
                     onClick={() => handle_rejeter(row.id, row.code_reservation)}
                   />
                 </>
               ) : (
                 <Clock
-                  className="w-4 h-4 text-gray-500 hover:text-gray-700 cursor-pointer"
+                  className="w-4 h-4 !text-gray-500 hover:text-gray-700 cursor-pointer"
                   title="La Réservation est en Attente de Validation"
                   onClick={() => handle_show_info_2(row.code_reservation)}
                 />
@@ -354,7 +354,7 @@ const ReservationTable = ({ dataClient }) => {
             </>
           ) : row.statut == 2 ? (
             <Eye
-              className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
+              className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
               title="Détail du Rejet"
               onClick={() =>
                 handle_show_comment_rejete(
@@ -365,7 +365,7 @@ const ReservationTable = ({ dataClient }) => {
             />
           ) : row.statut == 1 && row.data_res.first_avance?.statut == 3 ? (
             <Clock
-              className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
+              className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
               title="Premier avance en attente de validation"
               onClick={() => handle_show_info(row.code_reservation)}
             />

@@ -67,7 +67,7 @@ export function SideBar({
         <div className="col-span-3 grid grid-cols-3 gap-6">
           <div className="space-y-4">
             <div>
-              <div className="text-sm text-gray-500">Code Réservation:</div>
+              <div className="text-sm !text-gray-500">Code Réservation:</div>
               <div className="font-medium">
                 {' '}
                 <Link
@@ -81,7 +81,7 @@ export function SideBar({
               </div>
             </div>
             <div>
-              <div className="text-sm text-gray-500">Bien:</div>
+              <div className="text-sm !text-gray-500">Bien:</div>
               <div className="font-medium">
                 {' '}
                 <Link href={'/biens/' + bien_id} target="_blank">
@@ -90,7 +90,7 @@ export function SideBar({
               </div>
             </div>
             <div>
-              <div className="text-sm text-gray-500">Prix:</div>
+              <div className="text-sm !text-gray-500">Prix:</div>
               <div className="font-medium text-indigo-600">
                 {formatPrice(prix)}
               </div>
@@ -98,22 +98,22 @@ export function SideBar({
           </div>
           <div className="space-y-4">
             <div>
-              <div className="text-sm text-gray-500">Avances:</div>
-              <div className="font-medium text-green-600">
+              <div className="text-sm !text-gray-500">Avances:</div>
+              <div className="font-medium !text-green-600">
                 {formatPrice(sum_avances_valides)}
               </div>
             </div>
             <div>
-              <div className="text-sm text-gray-500">Date Réservation:</div>
+              <div className="text-sm !text-gray-500">Date Réservation:</div>
               <div className="font-medium">{formatDate(date_reservation)}</div>
             </div>
             <div>
-              <div className="text-sm text-gray-500">Responsable:</div>
+              <div className="text-sm !text-gray-500">Responsable:</div>
               <div className="font-medium">{respo}</div>
             </div>
           </div>
           <div>
-            <div className="text-sm text-gray-500">Client(s):</div>
+            <div className="text-sm !text-gray-500">Client(s):</div>
             <div className="font-medium"> {renderDesisteurs()}</div>
           </div>
         </div>

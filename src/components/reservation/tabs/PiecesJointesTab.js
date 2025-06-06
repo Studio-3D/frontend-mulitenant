@@ -78,9 +78,9 @@ const piecesJointesData = [
 
 const DocumentIcon = ({ type }) => {
   return type === 'document' ? (
-    <FileTextIcon className="h-8 w-8 text-blue-500 mr-2" />
+    <FileTextIcon className="h-8 w-8 !text-blue-500 mr-2" />
   ) : (
-    <ImageIcon className="h-8 w-8 text-green-500 mr-2" />
+    <ImageIcon className="h-8 w-8 !text-green-500 mr-2" />
   );
 };
 
@@ -89,8 +89,8 @@ export const PiecesJointesTab = () => {
     <div className="space-y-6">
       {/* Header with search and add button */}
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-800 flex items-center">
-          <PaperclipIcon className="h-5 w-5 mr-2 text-blue-500" />
+        <h2 className="text-xl font-semibold !text-gray-800 flex items-center">
+          <PaperclipIcon className="h-5 w-5 mr-2 !text-blue-500" />
           Pièces jointes
         </h2>
         <div className="flex space-x-2">
@@ -115,8 +115,8 @@ export const PiecesJointesTab = () => {
               <div className="flex items-center">
                 <DocumentIcon type={document.type} />
                 <div>
-                  <h3 className="font-medium text-gray-900 line-clamp-1">{document.nom}</h3>
-                  <p className="text-xs text-gray-500">
+                  <h3 className="font-medium !text-gray-900 line-clamp-1">{document.nom}</h3>
+                  <p className="text-xs !text-gray-500">
                     Ajouté le {document.date}
                   </p>
                 </div>
@@ -138,7 +138,7 @@ export const PiecesJointesTab = () => {
             </div>
 
             {/* Document footer with metadata */}
-            <div className="mt-auto pt-2 border-t border-gray-100 flex justify-between items-center text-xs text-gray-500">
+            <div className="mt-auto pt-2 border-t border-gray-100 flex justify-between items-center text-xs !text-gray-500">
               <span>{document.taille}</span>
               <span>Par {document.ajoutePar}</span>
             </div>

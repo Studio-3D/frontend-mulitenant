@@ -27,7 +27,7 @@ const SidebarSubItem = ({
   text
 }) => {
   return <div className="flex items-center p-2 pl-6 rounded-md hover:bg-gray-50 cursor-pointer">
-      <span className="mr-2 text-gray-500">{icon}</span>
+      <span className="mr-2 !text-gray-500">{icon}</span>
       <span className="text-gray-700">{text}</span>
     </div>;
 };

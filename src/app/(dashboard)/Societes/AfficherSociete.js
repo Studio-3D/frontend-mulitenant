@@ -42,7 +42,7 @@ export default function AfficherSociete({ societeId, onClose }) {
     if (loading) {
         return (
             <div className="flex justify-center items-center w-[800px] h-[500px]">
-                <p className="text-lg text-gray-500">Chargement...</p>
+                <p className="text-lg !text-gray-500">Chargement...</p>
             </div>
         );
     }
@@ -50,7 +50,7 @@ export default function AfficherSociete({ societeId, onClose }) {
     if (!societe) {
         return (
             <div className="flex justify-center items-center w-[800px] h-[500px]">
-                <p className="text-lg text-red-500">Données non disponibles</p>
+                <p className="text-lg !text-red-500">Données non disponibles</p>
             </div>
         );
     }

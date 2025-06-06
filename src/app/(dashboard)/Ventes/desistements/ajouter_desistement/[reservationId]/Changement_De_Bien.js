@@ -24,7 +24,7 @@ export function Changement_De_Bien({ reservationData, isEditing }) {
   return (
     <div className="p-6">
       {isEditing && (
-        <div className="mb-4 p-3 bg-yellow-50 text-yellow-800 rounded-md">
+        <div className="mb-4 p-3 bg-yellow-50 !text-yellow-800 rounded-md">
           <p className="font-medium">Mode Édition</p>
         </div>
       )}
@@ -41,7 +41,7 @@ export function Changement_De_Bien({ reservationData, isEditing }) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium !text-gray-700 mb-1">
             Portefeuille Total (DH) <span className="text-red-500">*</span>
           </label>
           <input
@@ -56,7 +56,7 @@ export function Changement_De_Bien({ reservationData, isEditing }) {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               ROI Prévu (%) <span className="text-red-500">*</span>
             </label>
             <input
@@ -65,7 +65,7 @@ export function Changement_De_Bien({ reservationData, isEditing }) {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               Durée d'Investissement <span className="text-red-500">*</span>
             </label>
             <select className="block w-full rounded-md border border-gray-300 py-2 px-3 bg-white shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
@@ -76,7 +76,7 @@ export function Changement_De_Bien({ reservationData, isEditing }) {
           </div>
         </div>
         <div className="space-y-4">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-medium !text-gray-700">
             Options de Réallocation
           </label>
           <div className="space-y-2">
@@ -85,7 +85,7 @@ export function Changement_De_Bien({ reservationData, isEditing }) {
                 type="checkbox"
                 className="h-4 w-4 text-indigo-600 rounded"
               />
-              <span className="ml-2 text-sm text-gray-700">
+              <span className="ml-2 text-sm !text-gray-700">
                 Transfert vers autre projet
               </span>
             </label>
@@ -94,7 +94,7 @@ export function Changement_De_Bien({ reservationData, isEditing }) {
                 type="checkbox"
                 className="h-4 w-4 text-indigo-600 rounded"
               />
-              <span className="ml-2 text-sm text-gray-700">
+              <span className="ml-2 text-sm !text-gray-700">
                 Report sur phase suivante
               </span>
             </label>
@@ -103,7 +103,7 @@ export function Changement_De_Bien({ reservationData, isEditing }) {
                 type="checkbox"
                 className="h-4 w-4 text-indigo-600 rounded"
               />
-              <span className="ml-2 text-sm text-gray-700">
+              <span className="ml-2 text-sm !text-gray-700">
                 Conversion en parts
               </span>
             </label>

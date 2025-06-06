@@ -192,7 +192,7 @@ export default function PartenairesPage() {
         <>
           {/* Header */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-800">Gestion des Partenaires</h1>
+            <h1 className="text-2xl font-bold !text-gray-800">Gestion des Partenaires</h1>
             <p className="text-gray-600">
               Projet: <span className="font-medium">{selectedProjet.nom}</span>
             </p>
@@ -200,7 +200,7 @@ export default function PartenairesPage() {
 
           {/* Error message */}
           {error && (
-            <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
+            <div className="bg-red-100 border-l-4 border-red-500 !text-red-700 p-4 mb-4" role="alert">
               <p>{error}</p>
             </div>
           )}

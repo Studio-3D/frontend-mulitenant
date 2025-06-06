@@ -84,21 +84,21 @@ const DecomptesDetailsPage = () => {
             
             <div>
               <span className="text-gray-600 font-medium">Montant:</span>
-              <span className="font-semibold ml-2 text-blue-600">
+              <span className="font-semibold ml-2 !text-blue-600">
                 {decompteDetails.montant.toLocaleString()} DH
               </span>
             </div>
             
             <div>
               <span className="text-gray-600 font-medium">Montant Payé:</span>
-              <span className="font-semibold ml-2 text-green-600">
+              <span className="font-semibold ml-2 !text-green-600">
                 {decompteDetails.factures_sum_montant ? decompteDetails.factures_sum_montant.toLocaleString() : 0} DH
               </span>
             </div>
             
             <div>
               <span className="text-gray-600 font-medium">Reste:</span>
-              <span className="font-semibold ml-2 text-red-600">
+              <span className="font-semibold ml-2 !text-red-600">
                 {decompteDetails.factures_sum_montant
                   ? (decompteDetails.montant - decompteDetails.factures_sum_montant).toLocaleString()
                   : decompteDetails.montant.toLocaleString()

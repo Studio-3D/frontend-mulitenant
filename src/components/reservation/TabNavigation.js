@@ -83,7 +83,7 @@ export const TabNavigation = ({
               <span className={`ml-2 px-2 py-0.5 text-xs rounded-full 
                 ${activeTab === tab.id 
                   ? 'bg-blue-100 text-[#009FFF]' 
-                  : 'bg-gray-100 text-gray-600'}`
+                  : 'bg-gray-100 !text-gray-600'}`
                 }
               >
                 {tab.count}

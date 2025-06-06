@@ -152,7 +152,7 @@ const ServiceForm = ({ id = null }) => {
       <div className="p-6 mt-4 bg-white shadow-md rounded-md">
   <form onSubmit={handleSubmit}>
     <div className="mb-3">
-      <label className="block text-gray-700 text-sm font-bold mb-2">
+      <label className="block !text-gray-700 text-sm font-bold mb-2">
         Service <span className="text-red-500">*</span>
       </label>
       <input
@@ -163,7 +163,7 @@ const ServiceForm = ({ id = null }) => {
         onChange={handleChange}
         className={`shadow appearance-none border ${
           errors.nom ? "border-red-500" : "border-gray-300"
-        } rounded w-[500px] py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
+        } rounded w-[500px] py-2 px-3 !text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
         placeholder="Saisir le nom de service"
       />
       {errors.nom && (

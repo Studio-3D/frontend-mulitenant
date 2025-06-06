@@ -63,7 +63,7 @@ export const Calendar = () => {
       default:
         return <div className="calendar-grid">
             <div className="grid grid-cols-7 border-b">
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => <div key={index} className="py-2 text-center text-sm font-medium text-blue-500">
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => <div key={index} className="py-2 text-center text-sm font-medium !text-blue-500">
                     {day}
                   </div>)}
             </div>
@@ -94,7 +94,7 @@ export const Calendar = () => {
                 today
               </button>
             </div>
-            <h2 className="text-xl font-semibold text-gray-800">
+            <h2 className="text-xl font-semibold !text-gray-800">
               {format(currentDate, 'MMMM yyyy')}
             </h2>
             <div className="flex rounded-lg overflow-hidden bg-gray-100">

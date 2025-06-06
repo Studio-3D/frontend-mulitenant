@@ -136,7 +136,7 @@ const DecomptesManager = ({ userRole }) => {
     { 
       key: 'montant', 
       label: 'Montant',
-      render: (row) => <span className="font-medium text-gray-800">{row.montant.toLocaleString()} DH</span>
+      render: (row) => <span className="font-medium !text-gray-800">{row.montant.toLocaleString()} DH</span>
     },
     { 
       key: 'montant_paye', 

@@ -171,7 +171,7 @@ const CreditsForm = ({ credit, onSave, onCancel }) => {
       <h2 className="text-2xl font-bold mb-6">{credit ? 'Modifier' : 'Ajouter'} un crédit</h2>
       
       {!numeroUnique && (
-        <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 text-red-700 flex items-center gap-2">
+        <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 !text-red-700 flex items-center gap-2">
           <AlertTriangle size={20} />
           <p>Le numéro que vous avez saisi appartient à un autre crédit</p>
         </div>
@@ -181,7 +181,7 @@ const CreditsForm = ({ credit, onSave, onCancel }) => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Banque */}
           <div>
-            <label htmlFor="banque_id" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="banque_id" className="block text-sm font-medium !text-gray-700 mb-1">
               Banque <span className="text-red-500">*</span>
             </label>
             <select
@@ -194,12 +194,12 @@ const CreditsForm = ({ credit, onSave, onCancel }) => {
                 <option key={banque.id} value={banque.id}>{banque.nom}</option>
               ))}
             </select>
-            {errors.banque_id && <p className="mt-1 text-xs text-red-500">{errors.banque_id.message}</p>}
+            {errors.banque_id && <p className="mt-1 text-xs !text-red-500">{errors.banque_id.message}</p>}
           </div>
 
           {/* N° Contrat */}
           <div>
-            <label htmlFor="num_contrat" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="num_contrat" className="block text-sm font-medium !text-gray-700 mb-1">
               N° Contrat <span className="text-red-500">*</span>
             </label>
             <input
@@ -210,12 +210,12 @@ const CreditsForm = ({ credit, onSave, onCancel }) => {
               })}
               className={`w-full px-3 py-2 border rounded-md ${errors.num_contrat || !numeroUnique ? 'border-red-500' : 'border-gray-300'}`}
             />
-            {errors.num_contrat && <p className="mt-1 text-xs text-red-500">{errors.num_contrat.message}</p>}
+            {errors.num_contrat && <p className="mt-1 text-xs !text-red-500">{errors.num_contrat.message}</p>}
           </div>
 
           {/* Date */}
           <div>
-            <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="date" className="block text-sm font-medium !text-gray-700 mb-1">
               Date <span className="text-red-500">*</span>
             </label>
             <input
@@ -224,12 +224,12 @@ const CreditsForm = ({ credit, onSave, onCancel }) => {
               {...register('date')}
               className={`w-full px-3 py-2 border rounded-md ${errors.date ? 'border-red-500' : 'border-gray-300'}`}
             />
-            {errors.date && <p className="mt-1 text-xs text-red-500">{errors.date.message}</p>}
+            {errors.date && <p className="mt-1 text-xs !text-red-500">{errors.date.message}</p>}
           </div>
 
           {/* Pièce Jointe */}
           <div>
-            <label htmlFor="piece_jointe" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="piece_jointe" className="block text-sm font-medium !text-gray-700 mb-1">
               Pièce Jointe
             </label>
             <input
@@ -239,13 +239,13 @@ const CreditsForm = ({ credit, onSave, onCancel }) => {
               className="w-full px-3 py-2 border border-gray-300 rounded-md"
             />
             {credit && credit.piece_jointe && (
-              <p className="mt-1 text-xs text-blue-600">Fichier actuel: {credit.piece_jointe}</p>
+              <p className="mt-1 text-xs !text-blue-600">Fichier actuel: {credit.piece_jointe}</p>
             )}
           </div>
 
           {/* Montant Capital */}
           <div>
-            <label htmlFor="montant_capital" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="montant_capital" className="block text-sm font-medium !text-gray-700 mb-1">
               Montant Capital <span className="text-red-500">*</span>
             </label>
             <input
@@ -255,12 +255,12 @@ const CreditsForm = ({ credit, onSave, onCancel }) => {
               {...register('montant_capital')}
               className={`w-full px-3 py-2 border rounded-md ${errors.montant_capital ? 'border-red-500' : 'border-gray-300'}`}
             />
-            {errors.montant_capital && <p className="mt-1 text-xs text-red-500">{errors.montant_capital.message}</p>}
+            {errors.montant_capital && <p className="mt-1 text-xs !text-red-500">{errors.montant_capital.message}</p>}
           </div>
 
           {/* Frais Dossier */}
           <div>
-            <label htmlFor="frais_dossier" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="frais_dossier" className="block text-sm font-medium !text-gray-700 mb-1">
               Frais Dossier <span className="text-red-500">*</span>
             </label>
             <input
@@ -270,12 +270,12 @@ const CreditsForm = ({ credit, onSave, onCancel }) => {
               {...register('frais_dossier')}
               className={`w-full px-3 py-2 border rounded-md ${errors.frais_dossier ? 'border-red-500' : 'border-gray-300'}`}
             />
-            {errors.frais_dossier && <p className="mt-1 text-xs text-red-500">{errors.frais_dossier.message}</p>}
+            {errors.frais_dossier && <p className="mt-1 text-xs !text-red-500">{errors.frais_dossier.message}</p>}
           </div>
 
           {/* Période - De */}
           <div>
-            <label htmlFor="de" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="de" className="block text-sm font-medium !text-gray-700 mb-1">
               Période - De <span className="text-red-500">*</span>
             </label>
             <input
@@ -284,12 +284,12 @@ const CreditsForm = ({ credit, onSave, onCancel }) => {
               {...register('de')}
               className={`w-full px-3 py-2 border rounded-md ${errors.de ? 'border-red-500' : 'border-gray-300'}`}
             />
-            {errors.de && <p className="mt-1 text-xs text-red-500">{errors.de.message}</p>}
+            {errors.de && <p className="mt-1 text-xs !text-red-500">{errors.de.message}</p>}
           </div>
 
           {/* Période - A */}
           <div>
-            <label htmlFor="a" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="a" className="block text-sm font-medium !text-gray-700 mb-1">
               Période - À <span className="text-red-500">*</span>
             </label>
             <input
@@ -298,12 +298,12 @@ const CreditsForm = ({ credit, onSave, onCancel }) => {
               {...register('a')}
               className={`w-full px-3 py-2 border rounded-md ${errors.a ? 'border-red-500' : 'border-gray-300'}`}
             />
-            {errors.a && <p className="mt-1 text-xs text-red-500">{errors.a.message}</p>}
+            {errors.a && <p className="mt-1 text-xs !text-red-500">{errors.a.message}</p>}
           </div>
 
           {/* Nombre de Mois */}
           <div>
-            <label htmlFor="nb_mois" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="nb_mois" className="block text-sm font-medium !text-gray-700 mb-1">
               Nombre de Mois <span className="text-red-500">*</span>
             </label>
             <input
@@ -312,12 +312,12 @@ const CreditsForm = ({ credit, onSave, onCancel }) => {
               {...register('nb_mois')}
               className={`w-full px-3 py-2 border rounded-md ${errors.nb_mois ? 'border-red-500' : 'border-gray-300'}`}
             />
-            {errors.nb_mois && <p className="mt-1 text-xs text-red-500">{errors.nb_mois.message}</p>}
+            {errors.nb_mois && <p className="mt-1 text-xs !text-red-500">{errors.nb_mois.message}</p>}
           </div>
 
           {/* Taux Intérêt */}
           <div>
-            <label htmlFor="taux_interet" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="taux_interet" className="block text-sm font-medium !text-gray-700 mb-1">
               Taux Intérêt <span className="text-red-500">*</span>
             </label>
             <input
@@ -327,12 +327,12 @@ const CreditsForm = ({ credit, onSave, onCancel }) => {
               {...register('taux_interet')}
               className={`w-full px-3 py-2 border rounded-md ${errors.taux_interet ? 'border-red-500' : 'border-gray-300'}`}
             />
-            {errors.taux_interet && <p className="mt-1 text-xs text-red-500">{errors.taux_interet.message}</p>}
+            {errors.taux_interet && <p className="mt-1 text-xs !text-red-500">{errors.taux_interet.message}</p>}
           </div>
 
           {/* Montant Intérêt */}
           <div>
-            <label htmlFor="montant_interet" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="montant_interet" className="block text-sm font-medium !text-gray-700 mb-1">
               Montant Intérêt <span className="text-red-500">*</span>
             </label>
             <input
@@ -342,7 +342,7 @@ const CreditsForm = ({ credit, onSave, onCancel }) => {
               {...register('montant_interet')}
               className={`w-full px-3 py-2 border rounded-md ${errors.montant_interet ? 'border-red-500' : 'border-gray-300'}`}
             />
-            {errors.montant_interet && <p className="mt-1 text-xs text-red-500">{errors.montant_interet.message}</p>}
+            {errors.montant_interet && <p className="mt-1 text-xs !text-red-500">{errors.montant_interet.message}</p>}
           </div>
         </div>
 
@@ -350,7 +350,7 @@ const CreditsForm = ({ credit, onSave, onCancel }) => {
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+            className="px-4 py-2 bg-gray-300 !text-gray-700 rounded-md hover:bg-gray-400"
           >
             Annuler
           </button>

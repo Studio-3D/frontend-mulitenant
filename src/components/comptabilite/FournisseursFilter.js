@@ -47,7 +47,7 @@ const FournisseursFilter = ({ onSubmit, initialValues = {} }) => {
     <form onSubmit={handleSubmit} className="bg-white p-4 rounded-lg shadow-sm border">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div>
-          <label htmlFor="ice" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="ice" className="block text-sm font-medium !text-gray-700 mb-1">
             ICE
           </label>
           <input
@@ -61,7 +61,7 @@ const FournisseursFilter = ({ onSubmit, initialValues = {} }) => {
         </div>
         
         <div>
-          <label htmlFor="nom" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="nom" className="block text-sm font-medium !text-gray-700 mb-1">
             Nom
           </label>
           <input
@@ -75,7 +75,7 @@ const FournisseursFilter = ({ onSubmit, initialValues = {} }) => {
         </div>
         
         <div>
-          <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="code" className="block text-sm font-medium !text-gray-700 mb-1">
             Code
           </label>
           <input
@@ -89,7 +89,7 @@ const FournisseursFilter = ({ onSubmit, initialValues = {} }) => {
         </div>
         
         <div>
-          <label htmlFor="rc" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="rc" className="block text-sm font-medium !text-gray-700 mb-1">
             RC
           </label>
           <input
@@ -107,7 +107,7 @@ const FournisseursFilter = ({ onSubmit, initialValues = {} }) => {
         <button
           type="button"
           onClick={handleClear}
-          className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center"
+          className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium !text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center"
         >
           <XCircle className="mr-2" size={18} />
           Vider

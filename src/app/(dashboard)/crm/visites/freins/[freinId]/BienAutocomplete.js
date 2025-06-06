@@ -41,7 +41,7 @@ const BienAutocomplete = ({
 
   return (
     <div className="w-full sm:w-96 relative">
-      <label className="block text-sm font-medium text-gray-700 mb-1">
+      <label className="block text-sm font-medium !text-gray-700 mb-1">
         Bien {required && <span className="text-red-500">*</span>}
       </label>
 
@@ -68,7 +68,7 @@ const BienAutocomplete = ({
       {isOpen && (
         <div className="absolute z-10 w-full bg-white shadow-lg border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto">
           {filteredBiens.length === 0 ? (
-            <div className="p-2 text-gray-500">Aucun bien trouvé</div>
+            <div className="p-2 !text-gray-500">Aucun bien trouvé</div>
           ) : (
             filteredBiens.map((bien) => (
               <div

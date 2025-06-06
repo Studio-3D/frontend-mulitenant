@@ -151,10 +151,10 @@ const fetchBiens = async () => {
     
    
 const typeEncaissementMap = {
-  '1': { label: 'Avances', color: 'bg-green-100 text-green-800' },
-  '2': { label: 'Restitution', color: 'bg-red-100 text-red-800' },
-  '3': { label: 'Remboursement', color: 'bg-yellow-100 text-yellow-800' },
-  '4': { label: 'Décharge Reliquat', color: 'bg-blue-100 text-blue-800' },
+  '1': { label: 'Avances', color: 'bg-green-100 !text-green-800' },
+  '2': { label: 'Restitution', color: 'bg-red-100 !text-red-800' },
+  '3': { label: 'Remboursement', color: 'bg-yellow-100 !text-yellow-800' },
+  '4': { label: 'Décharge Reliquat', color: 'bg-blue-100 !text-blue-800' },
   '5': { label: 'Déblocage Crédit', color: 'bg-purple-100 text-purple-800' },
   '6': { label: 'Pénalité', color: 'bg-pink-100 text-pink-800' },
 };
@@ -275,7 +275,7 @@ const getTypeEncaissementBadge = (type) => {
       <div className="flex gap-3 items-center">
         
         <Eye
-          className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
+          className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
           onClick={() => handleShow(row.type_encaissement, row.reservation_id, row.remboursement?.desistement_id, row.penalite?.desistement_id)}
         />
       </div>

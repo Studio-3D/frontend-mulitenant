@@ -57,11 +57,11 @@ export default function ProjetSelector({ onSelect }) {
       {/* Search input */}
       <div className="relative mb-4">
         <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-          <Search className="w-5 h-5 text-gray-400" />
+          <Search className="w-5 h-5 !text-gray-400" />
         </div>
         <input
           type="text"
-          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full pl-10 p-2.5"
+          className="bg-gray-50 border border-gray-300 !text-gray-900 text-sm rounded-lg block w-full pl-10 p-2.5"
           placeholder="Rechercher un projet..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -70,7 +70,7 @@ export default function ProjetSelector({ onSelect }) {
 
       {/* Display error message if there is one */}
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 text-red-700">
+        <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 !text-red-700">
           {error}
         </div>
       )}
@@ -81,11 +81,11 @@ export default function ProjetSelector({ onSelect }) {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
         </div>
       ) : projets?.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 !text-gray-500">
           Aucun projet disponible
         </div>
       ) : filteredProjects.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 !text-gray-500">
           Aucun projet trouvé pour "{searchTerm}"
         </div>
       ) : (
@@ -101,7 +101,7 @@ export default function ProjetSelector({ onSelect }) {
               onClick={() => handleSelect(project)}
             >
               <h3 className="font-medium">{project.nom}</h3>
-              <div className="text-sm text-gray-500 mt-1">
+              <div className="text-sm !text-gray-500 mt-1">
                 <p>Code: {project.code}</p>
                 <p>Adresse: {project.adresse}</p>
               </div>

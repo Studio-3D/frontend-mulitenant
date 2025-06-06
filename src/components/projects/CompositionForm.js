@@ -145,7 +145,7 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
         {icon}
       </div>
       <h3 className="font-medium text-lg mb-1">{title}</h3>
-      <p className="text-sm text-center text-gray-600 mb-4">{description}</p>
+      <p className="text-sm text-center !text-gray-600 mb-4">{description}</p>
       <div className="mt-auto">
         <label className="inline-flex items-center cursor-pointer">
           <input
@@ -170,14 +170,14 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex items-end gap-2">
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium !text-gray-700 mb-1">
                 Type de projet <span className="text-red-500">*</span>
               </label>
 
               {loading ? (
                 <div className="flex items-center space-x-2">
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
-                  <span className="text-sm text-gray-500">Chargement des types de projet...</span>
+                  <span className="text-sm !text-gray-500">Chargement des types de projet...</span>
                 </div>
               ) : (
                 <>
@@ -215,7 +215,7 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
                 </>
               )}
 
-              {errors?.type_id && <p className="mt-1 text-sm text-red-600">{errors.type_id[0]}</p>}
+              {errors?.type_id && <p className="mt-1 text-sm !text-red-600">{errors.type_id[0]}</p>}
             </div>
             
             {/* Add Type Project Button - Hide in edit mode */}
@@ -286,7 +286,7 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
           {/* Bien number input - show when checked */}
           {hasBien && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium !text-gray-700 mb-1">
                 Nombre de biens <span className="text-red-500">*</span>
               </label>
               <input
@@ -304,7 +304,7 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
           {/* Tranches number input - only show when checked */}
           {hasTranches && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium !text-gray-700 mb-1">
                 Nombre de tranches <span className="text-red-500">*</span>
               </label>
               <input
@@ -322,7 +322,7 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
           {/* Blocks number input - only show when checked */}
           {hasBlocks && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium !text-gray-700 mb-1">
                 Nombre de blocs <span className="text-red-500">*</span>
               </label>
               <input
@@ -340,7 +340,7 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
           {/* Buildings number input - only show when checked */}
           {hasBuilding && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium !text-gray-700 mb-1">
                 Nombre d'immeubles <span className="text-red-500">*</span>
               </label>
               <input
@@ -361,7 +361,7 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
         <button
           type="button"
           onClick={() => window.history.back()}
-          className="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium !text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
           Précédent
         </button>
@@ -385,7 +385,7 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
           <h3 className="text-lg font-medium mb-4">Ajouter un type de projet</h3>
           <form onSubmit={handleAddTypeProjet}>
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium !text-gray-700 mb-1">
                 Type <span className="text-red-500">*</span>
               </label>
               <input
@@ -401,7 +401,7 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
               <button
                 type="button"
                 onClick={() => setShowAddTypeModal(false)}
-                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium !text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 Annuler
               </button>

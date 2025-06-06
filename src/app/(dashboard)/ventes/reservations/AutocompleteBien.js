@@ -146,7 +146,7 @@ const AutocompleteBien = ({
       )}
 
       {isOpen && !loading && filteredOptions?.length === 0 && (
-        <div className="absolute top-full left-0 w-full bg-white border border-gray-300 z-10 rounded-md mt-1 p-2 text-sm text-gray-500">
+        <div className="absolute top-full left-0 w-full bg-white border border-gray-300 z-10 rounded-md mt-1 p-2 text-sm !text-gray-500">
           Aucun bien trouvé
         </div>
       )}

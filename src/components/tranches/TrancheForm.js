@@ -164,7 +164,7 @@ export default function TrancheForm({ id, projetId }) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Nom */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               Nom <span className="text-red-500">*</span>
             </label>
             <div>
@@ -178,7 +178,7 @@ export default function TrancheForm({ id, projetId }) {
                 } px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
               />
               {(validationErrors.nom || backendErrors.nom) && (
-                <p className="mt-1 text-sm text-red-500">
+                <p className="mt-1 text-sm !text-red-500">
                   {validationErrors.nom || (backendErrors.nom && backendErrors.nom[0])}
                 </p>
               )}
@@ -187,7 +187,7 @@ export default function TrancheForm({ id, projetId }) {
 
           {/* Date Lancement */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               Date de lancement
             </label>
             <input
@@ -201,7 +201,7 @@ export default function TrancheForm({ id, projetId }) {
 
           {/* Date Livraison */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               Date de livraison
             </label>
             <input
@@ -215,7 +215,7 @@ export default function TrancheForm({ id, projetId }) {
 
           {/* Niveau d'étages */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               Niveau d'étages
             </label>
             <input
@@ -230,7 +230,7 @@ export default function TrancheForm({ id, projetId }) {
           {/* Nombre de blocs */}
           {selectedProjet?.nbre_blocs !== 0 && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium !text-gray-700 mb-1">
                 Nombre de blocs
               </label>
               <input
@@ -246,7 +246,7 @@ export default function TrancheForm({ id, projetId }) {
           {/* Nombre d'immeubles */}
           {selectedProjet?.nbre_immeubles !== 0 && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium !text-gray-700 mb-1">
                 Nombre d'immeubles
               </label>
               <input
@@ -261,7 +261,7 @@ export default function TrancheForm({ id, projetId }) {
 
           {/* Nombre de biens */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               Nombre de biens
             </label>
             <input
@@ -278,7 +278,7 @@ export default function TrancheForm({ id, projetId }) {
         <div className="flex justify-end space-x-4 pt-4">
           <Link
             href={selectedProjet?.id ? `/Projets/${selectedProjet.id}?tab=tranches` : "/Projets"}
-            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium !text-gray-700 bg-white hover:bg-gray-50"
           >
             Annuler
           </Link>
@@ -286,7 +286,7 @@ export default function TrancheForm({ id, projetId }) {
           <button
             type="button"
             onClick={handleClear}
-            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium !text-gray-700 bg-white hover:bg-gray-50"
           >
             Vider
           </button>

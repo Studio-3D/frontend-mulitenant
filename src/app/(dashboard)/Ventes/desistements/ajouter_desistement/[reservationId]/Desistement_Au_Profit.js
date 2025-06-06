@@ -25,7 +25,7 @@ export function Desistement_Au_Profit({ isEditing, formData }) {
   return (
     <div className="p-6">
       {isEditing && (
-        <div className="mb-4 p-3 bg-yellow-50 text-yellow-800 rounded-md">
+        <div className="mb-4 p-3 bg-yellow-50 !text-yellow-800 rounded-md">
           <p className="font-medium">Mode Édition</p>
         </div>
       )}
@@ -47,7 +47,7 @@ export function Desistement_Au_Profit({ isEditing, formData }) {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               Chiffre d'affaires prévu <span className="text-red-500">*</span>
             </label>
             <input
@@ -56,7 +56,7 @@ export function Desistement_Au_Profit({ isEditing, formData }) {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               Secteur d'activité <span className="text-red-500">*</span>
             </label>
             <select className="block w-full rounded-md border border-gray-300 py-2 px-3 bg-white shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
@@ -78,7 +78,7 @@ export function Desistement_Au_Profit({ isEditing, formData }) {
               className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded-full"
               checked
             />
-            <span className="ml-2 text-sm text-gray-700">Rem.immediat</span>
+            <span className="ml-2 text-sm !text-gray-700">Rem.immediat</span>
           </label>
           <label className="flex items-center">
             <input
@@ -86,7 +86,7 @@ export function Desistement_Au_Profit({ isEditing, formData }) {
               name="remboursement"
               className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded-full"
             />
-            <span className="ml-2 text-sm text-gray-700">Rem.Après Vente</span>
+            <span className="ml-2 text-sm !text-gray-700">Rem.Après Vente</span>
           </label>
         </div>
       </div>

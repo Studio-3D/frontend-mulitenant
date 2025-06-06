@@ -610,7 +610,7 @@ export function VisitDetails({
                                 {currentVisitOrder}
                               </div>
                               <div>
-                                <h3 className="text-xl font-bold text-gray-900">
+                                <h3 className="text-xl font-bold !text-gray-900">
                                   VISITE {currentVisitOrder}
                                 </h3>
                                 <p className="text-gray-500">
@@ -764,7 +764,7 @@ export function VisitDetails({
                                           visite?.reservation?.id
                                         )
                                       }
-                                      className="ml-2 text-red hover:text-red transition-colors mt-1"
+                                      className="ml-2 !text-red hover:text-red transition-colors mt-1"
                                     >
                                       <EyeIcon className="h-5 w-5" />
                                     </button>
@@ -1244,7 +1244,7 @@ function InfoCard(props) {
         <div className="text-[#2563eb] group-hover:scale-110 transition-transform">
           {icon}
         </div>
-        <h4 className="font-medium text-gray-600">{title}</h4>
+        <h4 className="font-medium !text-gray-600">{title}</h4>
       </div>
       <div className="text-gray-900 font-medium flex items-center justify-between">
         <div className="flex items-center space-x-2">

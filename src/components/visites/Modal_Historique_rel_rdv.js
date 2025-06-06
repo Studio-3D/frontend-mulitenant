@@ -73,7 +73,7 @@ export default function Modal_Historique_rel_rdv({
             <td colSpan={8} className="p-0 bg-gray-50">
               <div className={`overflow-hidden transition-all duration-300 ease-in-out ${open_r ? 'max-h-96' : 'max-h-0'}`}>
                 <div className="p-4">
-                  <h6 className="text-md font-semibold mb-3 text-gray-700 flex items-center">
+                  <h6 className="text-md font-semibold mb-3 !text-gray-700 flex items-center">
                     <span className="w-1.5 h-5 bg-blue-600 rounded-sm mr-2"></span>
                     Détails supplémentaires
                   </h6>
@@ -83,15 +83,15 @@ export default function Modal_Historique_rel_rdv({
                         <tr>
                           {row.type === 'Relance' ? (
                             <>
-                              <th className="text-center px-3 py-2 border-b border-gray-200 font-medium text-gray-700">
+                              <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
                                 Mode Relance
                               </th>
-                              <th className="text-center px-3 py-2 border-b border-gray-200 font-medium text-gray-700">
+                              <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
                                 Date de Relance
                               </th>
                             </>
                           ) : (
-                            <th className="text-center px-3 py-2 border-b border-gray-200 font-medium text-gray-700">
+                            <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
                               RDV
                             </th>
                           )}
@@ -154,25 +154,25 @@ export default function Modal_Historique_rel_rdv({
               <thead className="bg-blue-50 sticky top-0">
                 <tr style={{ background: '#bfdbfe' }} >
                   <th scope="col" className="px-4 py-3 w-12"></th>
-                  <th scope="col" className="px-4 py-3 text-center text-xs font-medium text-gray-70 uppercase tracking-wider">
+                  <th scope="col" className="px-4 py-3 text-center text-xs font-medium !text-gray-70 uppercase tracking-wider">
                     VISITE
                   </th>
-                  <th scope="col" className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th scope="col" className="px-4 py-3 text-center text-xs font-medium !text-gray-700 uppercase tracking-wider">
                     TYPE
                   </th>
-                  <th scope="col" className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th scope="col" className="px-4 py-3 text-center text-xs font-medium !text-gray-700 uppercase tracking-wider">
                     RESPONSABLE
                   </th>
-                  <th scope="col" className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th scope="col" className="px-4 py-3 text-center text-xs font-medium !text-gray-700 uppercase tracking-wider">
                     TYPE TRAITEMENT
                   </th>
-                  <th scope="col" className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th scope="col" className="px-4 py-3 text-center text-xs font-medium !text-gray-700 uppercase tracking-wider">
                     RESPONSABLE TRAITEMENT
                   </th>
-                  <th scope="col" className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th scope="col" className="px-4 py-3 text-center text-xs font-medium !text-gray-700 uppercase tracking-wider">
                     DATE TRAITEMENT
                   </th>
-                  <th scope="col" className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th scope="col" className="px-4 py-3 text-center text-xs font-medium !text-gray-700 uppercase tracking-wider">
                     COMMENTAIRE
                   </th>
                 </tr>

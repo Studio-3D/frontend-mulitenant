@@ -134,14 +134,14 @@ export default function ProjetsDropDown() {
 
                 {/* Loading State */}
                 {isSelectorOpened && loading && (
-                    <li className="p-4 text-center text-gray-500">
+                    <li className="p-4 text-center !text-gray-500">
                         Chargement des projets...
                     </li>
                 )}
 
                 {/* Empty State */}
                 {isSelectorOpened && !loading && filteredProjets.length === 0 && (
-                    <li className="p-4 text-center text-gray-500">
+                    <li className="p-4 text-center !text-gray-500">
                         {inputValue ? "Aucun projet trouvé" : "Aucun projet disponible"}
                     </li>
                 )}

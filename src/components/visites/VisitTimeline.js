@@ -22,10 +22,10 @@ export function VisitTimeline(props) {
         <button onClick={() => handleAdd(origin_id)} className="w-full group">
           <div className="relative flex items-center">
             <div className="relative z-10 w-16 h-16 rounded-2xl border-2 border-dashed border-blue-300 bg-white flex items-center justify-center group-hover:border-blue-400 transition-all duration-300 group-hover:scale-105">
-              <PlusIcon className="h-8 w-8 text-blue-400" />
+              <PlusIcon className="h-8 w-8 !text-blue-400" />
             </div>
             <div className="ml-6">
-              <span className="font-medium text-gray-600 group-hover:text-blue-600 transition-colors">
+              <span className="font-medium !text-gray-600 group-hover:text-blue-600 transition-colors">
                 Nouvelle Visite
               </span>
             </div>
@@ -46,7 +46,7 @@ export function VisitTimeline(props) {
                   ${
                     visit.related_show_id == activeVisit
                       ? 'bg-gradient-to-br from-blue-500 to-indigo-500 text-white shadow-lg shadow-blue-200'
-                      : 'bg-white/80 backdrop-blur-sm border border-white/20 text-gray-600 group-hover:bg-white'
+                      : 'bg-white/80 backdrop-blur-sm border border-white/20 !text-gray-600 group-hover:bg-white'
                   }
                 `}
               >
@@ -65,7 +65,7 @@ export function VisitTimeline(props) {
                 >
                   {'V' + (visites_all_show.length - i)}
                 </span>
-                <p className="text-sm text-gray-500 mt-0.5">
+                <p className="text-sm !text-gray-500 mt-0.5">
                   {format(new Date(visit.created_at), 'dd/MM/yyyy')}
                 </p>
               </div>

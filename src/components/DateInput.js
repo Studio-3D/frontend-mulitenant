@@ -11,7 +11,7 @@ export default function DateInput({ label, value, onChange, placeholderText, err
 
   return (
     <div className="flex flex-col">
-      <label className="font-medium text-gray-700">{label}</label>
+      <label className="font-medium !text-gray-700">{label}</label>
       <DatePicker
         selected={value ? new Date(value) : null}
         onChange={handleDateChange}

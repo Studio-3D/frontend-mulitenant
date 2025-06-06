@@ -113,7 +113,7 @@ export function VisitesChart() {
       <CardFooter className="flex-col items-start gap-2 text-sm px-4 sm:px-6">
         <div className="flex items-center gap-2 font-medium leading-none">
           Trending up by 5.2% this month 
-          <TrendingUp className="h-4 w-4 text-green-500" />
+          <TrendingUp className="h-4 w-4 !text-green-500" />
         </div>
         <div className="leading-none text-muted-foreground text-xs sm:text-sm">
           Showing total visitors for the last year

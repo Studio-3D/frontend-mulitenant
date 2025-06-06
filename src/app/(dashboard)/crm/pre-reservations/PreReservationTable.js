@@ -207,7 +207,7 @@ const PreReservationTable = () => {
       render: (row) => (
         <div className="flex gap-3 items-center">
           <Eye
-            className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
+            className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
             title="Voir détails"
             onClick={() => handleShow(row)}
           />

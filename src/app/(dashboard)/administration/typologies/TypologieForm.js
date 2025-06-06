@@ -165,7 +165,7 @@ const TypologieForm = ({ id = null, onComplete }) => {
       <div className="p-6 mt-4 bg-white shadow-md rounded-md">
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2">
+            <label className="block !text-gray-700 text-sm font-bold mb-2">
               Typologie <span className="text-red-500">*</span>
             </label>
             <input
@@ -175,7 +175,7 @@ const TypologieForm = ({ id = null, onComplete }) => {
               onChange={handleChange}
               className={`shadow appearance-none border ${
                 errors.typologie ? "border-red-500" : "border-gray-300"
-              } rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
+              } rounded w-full py-2 px-3 !text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
               placeholder="Saisir la typologie"
             />
             {errors.typologie && (

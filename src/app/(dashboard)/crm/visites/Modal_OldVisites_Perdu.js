@@ -68,7 +68,7 @@ const OldVisites_Perdu_Dialog = ({
                           className={`px-4 py-2 rounded-md text-sm ${
                             x.action === '1'
                               ? 'bg-green-600 text-white'
-                              : 'bg-gray-200 text-gray-700'
+                              : 'bg-gray-200 !text-gray-700'
                           }`}
                           onClick={() => handleChange({ target: { value: '1' } }, i, 'action')}
                         >
@@ -79,7 +79,7 @@ const OldVisites_Perdu_Dialog = ({
                           className={`px-4 py-2 rounded-md text-sm ${
                             x.action === '2'
                               ? 'bg-red-600 text-white'
-                              : 'bg-gray-200 text-gray-700'
+                              : 'bg-gray-200 !text-gray-700'
                           }`}
                           onClick={() => handleChange({ target: { value: '2' } }, i, 'action')}
                         >
@@ -107,7 +107,7 @@ const OldVisites_Perdu_Dialog = ({
                 <button
                   type="button"
                   onClick={resetActions}
-                  className="border border-gray-400 px-6 py-2 rounded-md text-gray-700 hover:bg-gray-100"
+                  className="border border-gray-400 px-6 py-2 rounded-md !text-gray-700 hover:bg-gray-100"
                 >
                   RÉINITIALISER
                 </button>

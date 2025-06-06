@@ -70,14 +70,14 @@ const ObjectifFilter = ({ onSubmit, onClose, initialValues = {} }) => {
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-gray-700 text-sm font-medium mb-2">
+            <label className="block !text-gray-700 text-sm font-medium mb-2">
               Commercial :
             </label>
             <select
               name="user"
               value={filterValues.user}
               onChange={handleChange}
-              className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 !text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             >
               <option value="">Tous les commerciaux</option>
               {users.map(user => (
@@ -89,7 +89,7 @@ const ObjectifFilter = ({ onSubmit, onClose, initialValues = {} }) => {
           </div>
           
           <div>
-            <label className="block text-gray-700 text-sm font-medium mb-2">
+            <label className="block !text-gray-700 text-sm font-medium mb-2">
               Date :
             </label>
             <input
@@ -97,7 +97,7 @@ const ObjectifFilter = ({ onSubmit, onClose, initialValues = {} }) => {
               name="date"
               value={filterValues.date}
               onChange={handleChange}
-              className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 !text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             />
           </div>
         </div>
