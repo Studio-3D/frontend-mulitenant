@@ -246,7 +246,7 @@ export default function PrivacyPolicy() {
 
               <section id="children" className="mb-10">
                 <h2 className="text-xl font-semibold mb-4 text-gray-800">Protection des Enfants</h2>
-                <p>
+                <p> 
                   Notre service ne s'adresse pas aux personnes de moins de 18 ans. Nous ne collectons pas sciemment 
                   des données personnelles auprès d'enfants de moins de 18 ans. Si vous êtes un parent ou un tuteur et 
                   que vous savez que votre enfant nous a fourni des données personnelles, veuillez nous contacter. 
