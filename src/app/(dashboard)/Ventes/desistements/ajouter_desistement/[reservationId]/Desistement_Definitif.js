@@ -1,38 +1,96 @@
-import React from 'react';
-import { CalendarIcon } from 'lucide-react';
-import { motif, motif_desistements } from '@/configs/enum';
+import React, { useState, useEffect, useRef } from 'react';
+import { motif_desistements } from '@/configs/enum';
 import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
 import { Controller, useFormContext } from 'react-hook-form';
-import { RadioGroup } from '@radix-ui/react-dropdown-menu';
-
-export function Desistement_Definitif({ isEditing, formData }) {
-   const { 
-    control, 
-    watch, 
-    setValue, 
-    formState: { errors }  // Destructure errors from formState
+import TextField from '@/components/Textfield'; // Import the component
+import Autocomplete from '@/components/Autocomplete';
+import { data_by_projet_and_params } from '../../../../../../../src/configs/api-utils';
+import { APIURL } from '../../../../../../configs/api';
+import axios from 'axios';
+import { User, Home, Box, DollarSign, HandCoins, Wallet } from 'lucide-react';
+export function Desistement_Definitif({
+  isEditing,
+  formData,
+  accessToken,
+  selectedProjet_id,
+}) {
+  const {
+    control,
+    watch,
+    setValue,
+    formState: { errors }, // Destructure errors from formState
   } = useFormContext();
-  const modeRemboursement = watch('modeRemboursement');
-  const pourCompte = watch('pourCompte');
-  const handleChange = (e) => {
-    const { name, value, type, checked, files } = e.target;
+  const [info, setInfo] = useState(null);
 
-    if (type === 'file') {
-      updateFormData({ [name]: files[0] });
-    } else if (type === 'radio' || type === 'checkbox') {
-      updateFormData({ [name]: value }); // For radios, we want the value not checked status
-    } else {
-      updateFormData({ [name]: value });
+  const [loading_info_doss, setLoading_info_doss] = useState(false);
+  const [loading_dos, setLoading_dos] = useState();
+  const [dossiers, setDossiers] = useState([]);
+  const [dossierInfo, setDossierInfo] = useState(null);
+
+  const type_remb = watch('type_remb');
+
+  // This will update the form data when inputs change
+  const handleInputChange = (index, fieldName, value) => {
+    setValue(`inputList_remb.${index}.${fieldName}`, value);
+  };
+
+  const handleFileChange = (index, fieldName, event) => {
+    if (event.target.files && event.target.files[0]) {
+      setValue(`inputList_remb.${index}.${fieldName}`, event.target.files[0]);
+    }
+  };
+  const inputListRemb = watch('inputList_remb');
+  // Fetch dossier data (only for model 1)
+  const fetchDossierData = async () => {
+    try {
+      setLoading_dos(true);
+      await data_by_projet_and_params(
+        'getDossiers',
+        setDossiers,
+        setLoading_dos,
+        'reservations',
+        selectedProjet_id,
+        watch('reservationId')
+      );
+    } catch (error) {
+      console.error('Error fetching dossiers:', error);
+    } finally {
+      setLoading_dos(false);
     }
   };
 
-  const handleFileChange = (e) => {
-    const { name, files } = e.target;
-    if (files && files.length > 0) {
-      updateFormData({ [name]: files[0] });
+  // Fetch all initial data
+  useEffect(() => {
+    fetchDossierData();
+  }, []);
+
+  const get_info_dossier_id = async (dos_id) => {
+    try {
+      if (dos_id) {
+        setLoading_info_doss(true);
+        const response = await axios.get(
+          `${APIURL.ROOTV1}/reservations/${dos_id}`,
+          {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          }
+        );
+
+        const { reservation, sum_avances_valides } = response.data;
+        setDossierInfo({
+          clients: reservation.aquereurs,
+          bien: reservation.bien.propriete_dite_bien,
+          type: reservation.bien.type_bien.type,
+          prix: reservation.prix,
+          sum_avances: sum_avances_valides,
+          reste: reservation.prix - sum_avances_valides,
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching reservation details:', error);
+    } finally {
+      setLoading_info_doss(false);
     }
   };
-
   return (
     <div className="p-6">
       {isEditing && (
@@ -46,251 +104,932 @@ export function Desistement_Definitif({ isEditing, formData }) {
         <AutocompleteSelectComponent
           label="Motif :"
           name="motif"
-          value={isEditing&&formData.motif}
+          value={isEditing && formData.motif}
           control={control}
           options={motif_desistements}
-          errors={errors.motif?.message}
+          errors={{}}
           required
           onChange={(value) => setValue('motif', value)}
         />
-       
       </div>
+      {watch('sum_avances_valides' > 0) && (
+        <div className="border-t border-gray-200 py-4">
+          <div className="flex flex-row space-x-4">
+            <Controller
+              name="type_remb"
+              control={control}
+              render={({ field }) => (
+                <div>
+                  <div className="flex flex-row space-x-4">
+                    <label className="inline-flex items-center">
+                      <input
+                        type="radio"
+                        {...field}
+                        value="direct"
+                        checked={field.value == 'direct'}
+                        className="text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="ml-2">Rem.immediat</span>
+                    </label>
 
-      <div className="border-t border-gray-200 py-4">
-        <Controller
-          name="remboursement"
-          control={control}
-          render={({ field }) => (
-            <RadioGroup
-              value={field.value}
-              onChange={field.onChange}
-              options={[
-                'Rem.immediat',
-                'Rem.Après Vente',
-                'Transfert dossier',
-                'Transfert et Remboursement',
-              ]}
-            />
-          )}
-        />
-      </div>
+                    <label className="inline-flex items-center">
+                      <input
+                        type="radio"
+                        {...field}
+                        value="apres_vente"
+                        checked={field.value == 'apres_vente'}
+                        className="text-purple-600 focus:ring-purple-500"
+                      />
+                      <span className="ml-2">Rem.Aprés Vente</span>
+                    </label>
 
-      <div className="border-t border-gray-200 py-4">
-        <h3 className="text-md font-medium text-indigo-600 mb-4">
-          Remboursement du Client : {formData.clientName || 'nnn_1 ppp_1'}
-        </h3>
-        {/*<Controller
-          name="dateOperation"
-          control={control}
-          render={({ field, fieldState: { error } }) => (
-            <DatePicker
-              label="Date de remboursement"
-              selected={field.value ? new Date(field.value) : null}
-              onChange={(date) => field.onChange(date)}
-              error={error?.message}
-              required
+                    <label className="inline-flex items-center">
+                      <input
+                        type="radio"
+                        {...field}
+                        value="transfert"
+                        checked={field.value == 'transfert'}
+                        className="text-green-600 focus:ring-green-500"
+                      />
+                      <span className="ml-2">Transfert dossier</span>
+                    </label>
+
+                    <label className="inline-flex items-center">
+                      <input
+                        type="radio"
+                        {...field}
+                        value="transfert_remb"
+                        checked={field.value == 'transfert_remb'}
+                        className="text-red-600 focus:ring-red-500"
+                      />
+                      <span className="ml-2">Transfert et Remboursement</span>
+                    </label>
+                  </div>
+                  {errors.type_remb && (
+                    <p style={{ color: 'red' }}>{errors.type_remb.message}</p>
+                  )}
+                </div>
+              )}
             />
-          )}
-        />*/}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div>
-            <label className="block text-sm font-medium !text-gray-700 mb-1">
-              Date Remboursement: <span className="text-red-500">*</span>
-            </label>
-            <div className="relative">
-              <input
-                type="date"
-                name="dateRemboursement"
-                value={formData.dateRemboursement || ''}
-                onChange={handleChange}
-                className="block w-full rounded-md border border-gray-300 py-2 pl-3 pr-10 bg-white shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-              <span className="absolute right-3 top-2">
-                <CalendarIcon size={20} className="text-gray-400" />
-              </span>
-            </div>
           </div>
-          {/*{/* Mode Remboursement 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <Controller
-          name="modeRemboursement"
-          control={control}
-          render={({ field, fieldState: { error } }) => (
-            <RadioGroup
-              label="Mode Remboursement"
-              value={field.value}
-              onChange={field.onChange}
-              options={['Chèque', 'Virement']}
-              error={error?.message}
-              required
-            />
-          )}
-        />
+        </div>
+      )}
 
-        {modeRemboursement === 'Chèque' && (
-          <Controller
-            name="chequeFile"
-            control={control}
-            render={({ field, fieldState: { error } }) => (
-              <FileInput
-                label="Chèque/Reçu"
-                onChange={(e) => {
-                  const file = e.target.files[0];
-                  field.onChange(file);
-                  setValue('chequeFile', file);
-                }}
-                value={field.value}
-                error={error?.message}
+      {type_remb == 'direct' && (
+        <>
+          <div className="border-t border-gray-300 my-4"></div>
+          <div className="w-full">
+            {inputListRemb?.map((item, index) => (
+              <div
+                key={`${item.aq_id}-${index}`}
+                className="mb-6 p-4 border border-gray-200 rounded-lg"
+              >
+                <p className="text-indigo-600 font-semibold mb-4">
+                  Remboursement du Client: {item.nom} {item.prenom}
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Date Remboursement */}
+                  <>
+                    <div className="w-full">
+                      {' '}
+                      {/* This wrapper ensures proper layout */}
+                      <TextField
+                        label="Date Remboursement"
+                        name={`inputList_remb.${index}.date_rembourse`}
+                        required
+                        type="date"
+                        control={control}
+                        errors={{}}
+                        backendErrors={{}}
+                        onChange={(e) =>
+                          handleInputChange(
+                            index,
+                            'date_rembourse',
+                            e.target.value
+                          )
+                        }
+                        width="w-full"
+                        height="h-[38px]"
+                      />
+                      {errors.inputList_remb?.[index]?.date_rembourse && (
+                        <p style={{ color: 'red' }} className="mt-1 text-xs">
+                          {' '}
+                          {/* Added margin and text styling */}
+                          {errors.inputList_remb[index].date_rembourse.message}
+                        </p>
+                      )}
+                    </div>
+                  </>
+                  {/* Mode Remboursement */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Mode Remboursement:{' '}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <Controller
+                      name={`inputList_remb.${index}.mode_rembourse`}
+                      control={control}
+                      rules={{
+                        required: {
+                          value: true,
+                          message: 'Vous devez choisir une option',
+                        },
+                      }}
+                      render={({ field, fieldState: { error } }) => (
+                        <>
+                          <div className="flex gap-4">
+                            <label className="inline-flex items-center">
+                              <input
+                                type="radio"
+                                checked={field.value == 'cheque'}
+                                onChange={() => {
+                                  handleInputChange(
+                                    index,
+                                    'mode_rembourse',
+                                    'cheque'
+                                  );
+                                  field.onChange('cheque');
+                                }}
+                                className="text-blue-600 focus:ring-blue-500"
+                              />
+                              <span className="ml-2">Chèque</span>
+                            </label>
+                            <label className="inline-flex items-center">
+                              <input
+                                type="radio"
+                                checked={field.value == 'virement'}
+                                onChange={() => {
+                                  handleInputChange(
+                                    index,
+                                    'mode_rembourse',
+                                    'virement'
+                                  );
+                                  field.onChange('virement');
+                                }}
+                                className="text-purple-600 focus:ring-purple-500"
+                              />
+                              <span className="ml-2">Virement</span>
+                            </label>
+                          </div>
+                          {error && (
+                            <p style={{ color: 'red' }}>{error.message}</p>
+                          )}
+                        </>
+                      )}
+                    />
+                  </div>
+
+                  {/* Conditional fields - only show if mode_rembourse is set */}
+                  {watch(`inputList_remb.${index}.mode_rembourse`) && (
+                    <>
+                      {/* Numéro Paiement */}
+                      <div className="w-full">
+                        {' '}
+                        {/* This wrapper ensures proper layout */}
+                        <TextField
+                          label="N° Paiement"
+                          name={`inputList_remb.${index}.num_paiement`}
+                          required
+                          type="number"
+                          control={control}
+                          errors={{}}
+                          backendErrors={{}}
+                          onChange={(e) =>
+                            handleInputChange(
+                              index,
+                              'num_paiement',
+                              e.target.value
+                            )
+                          }
+                          width="w-full"
+                          height="h-[38px]"
+                        />
+                        {errors.inputList_remb?.[index]?.num_paiement && (
+                          <p style={{ color: 'red' }} className="mt-1 text-xs">
+                            {' '}
+                            {/* Added margin and text styling */}
+                            {errors.inputList_remb[index].num_paiement.message}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Chèque/Reçu */}
+
+                      <div className="w-full">
+                        {' '}
+                        {/* This wrapper ensures proper layout */}
+                        <TextField
+                          label="Chéque/Reçu"
+                          name={`inputList_remb.${index}.cheque_recu`}
+                          required={
+                            watch(`inputList_remb.${index}.mode_rembourse`) ==
+                            'cheque'
+                          }
+                          type="file"
+                          control={control}
+                          errors={{}}
+                          backendErrors={{}}
+                          onChange={(e) =>
+                            handleFileChange(index, 'cheque_recu', e)
+                          }
+                          width="w-full"
+                          height="h-[38px]"
+                          accept="image/*, application/pdf"
+                        />
+                        {errors.inputList_remb?.[index]?.cheque_recu && (
+                          <p style={{ color: 'red' }} className="mt-1 text-xs">
+                            {' '}
+                            {/* Added margin and text styling */}
+                            {errors.inputList_remb[index].cheque_recu.message}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Pour le Compte */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Pour le Compte:{' '}
+                          <span className="text-red-500">*</span>
+                        </label>
+                        <Controller
+                          name={`inputList_remb.${index}.pour_le_compte`}
+                          control={control}
+                          rules={{
+                            required: {
+                              value: true,
+                              message: 'Vous devez choisir une option',
+                            },
+                          }}
+                          defaultValue={undefined} // ESSENTIEL: ne pas mettre de valeur par défaut
+                          render={({ field, fieldState: { error } }) => (
+                            <div>
+                              <div className="flex gap-4">
+                                <label className="inline-flex items-center">
+                                  <input
+                                    type="radio"
+                                    {...field} // Utilise les props de field directement
+                                    value="lui_meme"
+                                    checked={field.value == 'lui_meme'}
+                                    onChange={(e) => {
+                                      field.onChange(e.target.value);
+                                      handleInputChange(
+                                        index,
+                                        'pour_le_compte',
+                                        e.target.value
+                                      );
+                                    }}
+                                    className="text-red-600 focus:ring-red-500"
+                                  />
+                                  <span className="ml-2">lui même</span>
+                                </label>
+                                <label className="inline-flex items-center">
+                                  <input
+                                    type="radio"
+                                    {...field}
+                                    value="autre"
+                                    checked={field.value == 'autre'}
+                                    onChange={(e) => {
+                                      field.onChange(e.target.value);
+                                      handleInputChange(
+                                        index,
+                                        'pour_le_compte',
+                                        e.target.value
+                                      );
+                                    }}
+                                    className="text-yellow-600 focus:ring-yellow-500"
+                                  />
+                                  <span className="ml-2">Autre</span>
+                                </label>
+                              </div>
+                              {error && (
+                                <p className="mt-1 text-sm text-red-600">
+                                  {error.message}
+                                </p>
+                              )}
+                            </div>
+                          )}
+                        />
+                      </div>
+
+                      {/* Fichier Autorisation (conditional) */}
+                      {watch(`inputList_remb.${index}.pour_le_compte`) ==
+                        'autre' && (
+                        <div>
+                          <TextField
+                            label="Fichier Autorisation"
+                            name={`inputList_remb.${index}.fichier_autorisation`}
+                            required={true}
+                            type="file"
+                            control={control}
+                            errors={{}}
+                            backendErrors={{}}
+                            onChange={(e) =>
+                              handleFileChange(index, 'fichier_autorisation', e)
+                            }
+                            width="w-full"
+                            height="h-[38px]"
+                            accept="image/*, application/pdf"
+                          />
+                          {errors.inputList_remb?.[index]
+                            ?.fichier_autorisation && (
+                            <p
+                              style={{ color: 'red' }}
+                              className="mt-1 text-xs"
+                            >
+                              {' '}
+                              {/* Added margin and text styling */}
+                              {
+                                errors.inputList_remb[index]
+                                  .fichier_autorisation.message
+                              }
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {(type_remb == 'transfert' || type_remb == 'transfert_remb') && (
+        <div className="border-t border-gray-200 py-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {/* Left Column - Autocomplete */}
+            <div>
+              <Autocomplete
+                label="Dossiers:"
                 required
+                name="dossier_id"
+                options={dossiers}
+                loading={loading_dos}
+                choix="code_reservation"
+                control={control}
+                errors={{}}
+                backendErrors={{}}
+                onChange={(newValue) => {
+                  setValue('dossier_id', newValue?.id || '');
+                  get_info_dossier_id(newValue?.id);
+                }}
               />
+
+              {errors.dossier_id && (
+                <p style={{ color: 'red' }} className="mt-1 text-xs">
+                  {' '}
+                  {/* Added margin and text styling */}
+                  {errors.dossier_id}
+                </p>
+              )}
+            </div>
+
+            {/* Right Column - Dossier Info or Loading Spinner */}
+            {loading_info_doss ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+              </div>
+            ) : dossierInfo ? (
+              <>
+                <div className="border border-gray-200 rounded-lg p-4 min-h-[300px]">
+                  <h2 className="text-xl font-bold text-green-600 mb-4">
+                    Information Du Dossier :
+                  </h2>
+
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        <tr>
+                          <td className="px-4 py-2 whitespace-nowrap">
+                            <div className="flex items-center text-sm text-gray-900">
+                              <User className="w-5 h-5 mr-2 text-blue-500" />
+                              Clients :
+                            </div>
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">
+                              {dossierInfo.clients.map((client, index) => (
+                                <div key={index}>
+                                  {client.client.nom} {client.client.prenom}{' '}
+                                  {client.pourcentage}%
+                                </div>
+                              ))}
+                            </div>
+                          </td>
+                        </tr>
+
+                        <tr>
+                          <td className="px-4 py-2 whitespace-nowrap">
+                            <div className="flex items-center text-sm text-gray-900">
+                              <Home className="w-5 h-5 mr-2 text-red-500" />
+                              Bien:
+                            </div>
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">
+                              {dossierInfo.bien}
+                            </div>
+                          </td>
+                        </tr>
+
+                        <tr>
+                          <td className="px-4 py-2 whitespace-nowrap">
+                            <div className="flex items-center text-sm text-gray-900">
+                              <Box className="w-5 h-5 mr-2 text-gray-600" />
+                              Type Bien :
+                            </div>
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">
+                              {dossierInfo.type}
+                            </div>
+                          </td>
+                        </tr>
+
+                        <tr>
+                          <td className="px-4 py-2 whitespace-nowrap">
+                            <div className="flex items-center text-sm text-gray-900">
+                              <DollarSign className="w-5 h-5 mr-2 text-blue-400" />
+                              Prix :
+                            </div>
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">
+                              {dossierInfo.prix.toLocaleString()} DH
+                            </div>
+                          </td>
+                        </tr>
+
+                        <tr>
+                          <td className="px-4 py-2 whitespace-nowrap">
+                            <div className="flex items-center text-sm text-gray-900">
+                              <HandCoins className="w-5 h-5 mr-2 text-green-500" />
+                              Montant :
+                            </div>
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">
+                              {dossierInfo.sum_avances.toLocaleString()} DH
+                            </div>
+                          </td>
+                        </tr>
+
+                        <tr>
+                          <td className="px-4 py-2 whitespace-nowrap">
+                            <div className="flex items-center text-sm text-gray-900">
+                              <Wallet className="w-5 h-5 mr-2 text-red-500" />
+                              Reste :
+                            </div>
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">
+                              {dossierInfo.reste.toLocaleString()} DH
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
+            ) : null}
+          </div>
+          <div>
+            {type_remb == 'transfert_remb' && watch('dossier_id') && (
+              <>
+                <div className="border-t border-gray-200 my-4 ">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    {/* Montant à Transférer */}
+                    <div className="flex items-center">
+                      <TextField
+                        label="Montant à Transférer"
+                        name="montant_transferer"
+                        required
+                        type="number"
+                        defaultValue={0}
+                        control={control}
+                        errors={{}}
+                        backendErrors={{}}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setValue('montant_transferer', value);
+                          if (value > watch('sum_avances_valides')) {
+                            setInfo(
+                              'Le montant transféré ne doit pas dépasser la somme des avances'
+                            );
+                          } else {
+                            setInfo(null);
+                          }
+                          setValue(
+                            'reste_a_rembourse',
+                            watch('sum_avances_valides') - value
+                          );
+                        }}
+                        
+                      />
+                      {info && <p style={{ color: 'red' }}>{info}</p>}
+                    </div>
+
+                    {/* Reste à Rembourser */}
+                    <div className="flex items-center">
+                      <TextField
+                        label="Reste à Rembourser"
+                        name="reste_a_rembourse"
+                        required
+                        type="number"
+                        value={watch('reste_a_rembourse') || 0}
+                        disabled
+                        control={control}
+                        errors={{}}
+                        backendErrors={{}}
+                       
+                      />
+                    </div>
+                  </div>
+
+                  {/* Remboursement Options */}
+
+                  <div className="mb-6">
+                    <Controller
+                      name="type_remb_transfere"
+                      control={control}
+                      render={({ field }) => (
+                        <div className="flex flex-row space-x-4">
+                          <label className="inline-flex items-center">
+                            <input
+                              type="radio"
+                              {...field}
+                              value="immediat"
+                              checked={field.value == 'immediat'}
+                              className="text-blue-600 focus:ring-blue-500"
+                              onChange={(e) => {
+                                field.onChange(e.target.value);
+                                setValue('type_remb_transfere', e.target.value);
+                              }}
+                            />
+                            <span className="ml-2">Immédiat</span>
+                          </label>
+
+                          <label className="inline-flex items-center">
+                            <input
+                              type="radio"
+                              {...field}
+                              value="apres_vente"
+                              checked={field.value == 'apres_vente'}
+                              className="text-purple-600 focus:ring-purple-500"
+                              onChange={(e) => {
+                                field.onChange(e.target.value);
+                                setValue('type_remb_transfere', e.target.value);
+                              }}
+                            />
+                            <span className="ml-2">Après Vente</span>
+                          </label>
+                        </div>
+                      )}
+                    />
+                  </div>
+
+                  {/* Immediate Refund Section */}
+                  {watch('type_remb_transfere') == 'immediat' && (
+                    <>
+                      <div className="border-t border-gray-200 my-4"></div>
+                      <div className="space-y-6">
+                        {inputListRemb?.map((item, index) => (
+                          <div
+                            key={`${item.aq_id}-${index}`}
+                            className="mb-6 p-4 border border-gray-200 rounded-lg"
+                          >
+                            <p className="text-indigo-600 font-semibold mb-4">
+                              Remboursement du Client: {item.nom} {item.prenom}
+                            </p>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              {/* Date Remboursement */}
+                              <>
+                                <div className="w-full">
+                                  {' '}
+                                  {/* This wrapper ensures proper layout */}
+                                  <TextField
+                                    label="Date Remboursement"
+                                    name={`inputList_remb.${index}.date_rembourse`}
+                                    required
+                                    type="date"
+                                    control={control}
+                                    errors={{}}
+                                    backendErrors={{}}
+                                    onChange={(e) =>
+                                      handleInputChange(
+                                        index,
+                                        'date_rembourse',
+                                        e.target.value
+                                      )
+                                    }
+                                    width="w-full"
+                                    height="h-[38px]"
+                                  />
+                                  {errors.inputList_remb?.[index]
+                                    ?.date_rembourse && (
+                                    <p
+                                      style={{ color: 'red' }}
+                                      className="mt-1 text-xs"
+                                    >
+                                      {' '}
+                                      {/* Added margin and text styling */}
+                                      {
+                                        errors.inputList_remb[index]
+                                          .date_rembourse.message
+                                      }
+                                    </p>
+                                  )}
+                                </div>
+                              </>
+                              {/* Mode Remboursement */}
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                  Mode Remboursement:{' '}
+                                  <span className="text-red-500">*</span>
+                                </label>
+                                <Controller
+                                  name={`inputList_remb.${index}.mode_rembourse`}
+                                  control={control}
+                                  rules={{
+                                    required: {
+                                      value: true,
+                                      message: 'Vous devez choisir une option',
+                                    },
+                                  }}
+                                  render={({
+                                    field,
+                                    fieldState: { error },
+                                  }) => (
+                                    <>
+                                      <div className="flex gap-4">
+                                        <label className="inline-flex items-center">
+                                          <input
+                                            type="radio"
+                                            checked={field.value == 'cheque'}
+                                            onChange={() => {
+                                              handleInputChange(
+                                                index,
+                                                'mode_rembourse',
+                                                'cheque'
+                                              );
+                                              field.onChange('cheque');
+                                            }}
+                                            className="text-blue-600 focus:ring-blue-500"
+                                          />
+                                          <span className="ml-2">Chèque</span>
+                                        </label>
+                                        <label className="inline-flex items-center">
+                                          <input
+                                            type="radio"
+                                            checked={field.value == 'virement'}
+                                            onChange={() => {
+                                              handleInputChange(
+                                                index,
+                                                'mode_rembourse',
+                                                'virement'
+                                              );
+                                              field.onChange('virement');
+                                            }}
+                                            className="text-purple-600 focus:ring-purple-500"
+                                          />
+                                          <span className="ml-2">Virement</span>
+                                        </label>
+                                      </div>
+                                      {error && (
+                                        <p style={{ color: 'red' }}>
+                                          {error.message}
+                                        </p>
+                                      )}
+                                    </>
+                                  )}
+                                />
+                              </div>
+
+                              {/* Conditional fields - only show if mode_rembourse is set */}
+                              {watch(
+                                `inputList_remb.${index}.mode_rembourse`
+                              ) && (
+                                <>
+                                  {/* Numéro Paiement */}
+                                  <div className="w-full">
+                                    {' '}
+                                    {/* This wrapper ensures proper layout */}
+                                    <TextField
+                                      label="N° Paiement"
+                                      name={`inputList_remb.${index}.num_paiement`}
+                                      required
+                                      type="number"
+                                      control={control}
+                                      errors={{}}
+                                      backendErrors={{}}
+                                      onChange={(e) =>
+                                        handleInputChange(
+                                          index,
+                                          'num_paiement',
+                                          e.target.value
+                                        )
+                                      }
+                                      width="w-full"
+                                      height="h-[38px]"
+                                    />
+                                    {errors.inputList_remb?.[index]
+                                      ?.num_paiement && (
+                                      <p
+                                        style={{ color: 'red' }}
+                                        className="mt-1 text-xs"
+                                      >
+                                        {' '}
+                                        {/* Added margin and text styling */}
+                                        {
+                                          errors.inputList_remb[index]
+                                            .num_paiement.message
+                                        }
+                                      </p>
+                                    )}
+                                  </div>
+
+                                  {/* Chèque/Reçu */}
+
+                                  <div className="w-full">
+                                    {' '}
+                                    {/* This wrapper ensures proper layout */}
+                                    <TextField
+                                      label="Chéque/Reçu"
+                                      name={`inputList_remb.${index}.cheque_recu`}
+                                      required={
+                                        watch(
+                                          `inputList_remb.${index}.mode_rembourse`
+                                        ) == 'cheque'
+                                      }
+                                      type="file"
+                                      control={control}
+                                      errors={{}}
+                                      backendErrors={{}}
+                                      onChange={(e) =>
+                                        handleFileChange(
+                                          index,
+                                          'cheque_recu',
+                                          e
+                                        )
+                                      }
+                                      width="w-full"
+                                      height="h-[38px]"
+                                      accept="image/*, application/pdf"
+                                    />
+                                    {errors.inputList_remb?.[index]
+                                      ?.cheque_recu && (
+                                      <p
+                                        style={{ color: 'red' }}
+                                        className="mt-1 text-xs"
+                                      >
+                                        {' '}
+                                        {/* Added margin and text styling */}
+                                        {
+                                          errors.inputList_remb[index]
+                                            .cheque_recu.message
+                                        }
+                                      </p>
+                                    )}
+                                  </div>
+
+                                  {/* Pour le Compte */}
+                                  <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                      Pour le Compte:{' '}
+                                      <span className="text-red-500">*</span>
+                                    </label>
+                                    <Controller
+                                      name={`inputList_remb.${index}.pour_le_compte`}
+                                      control={control}
+                                      rules={{
+                                        required: {
+                                          value: true,
+                                          message:
+                                            'Vous devez choisir une option',
+                                        },
+                                      }}
+                                      defaultValue={undefined} // ESSENTIEL: ne pas mettre de valeur par défaut
+                                      render={({
+                                        field,
+                                        fieldState: { error },
+                                      }) => (
+                                        <div>
+                                          <div className="flex gap-4">
+                                            <label className="inline-flex items-center">
+                                              <input
+                                                type="radio"
+                                                {...field} // Utilise les props de field directement
+                                                value="lui_meme"
+                                                checked={
+                                                  field.value == 'lui_meme'
+                                                }
+                                                onChange={(e) => {
+                                                  field.onChange(
+                                                    e.target.value
+                                                  );
+                                                  handleInputChange(
+                                                    index,
+                                                    'pour_le_compte',
+                                                    e.target.value
+                                                  );
+                                                }}
+                                                className="text-red-600 focus:ring-red-500"
+                                              />
+                                              <span className="ml-2">
+                                                lui même
+                                              </span>
+                                            </label>
+                                            <label className="inline-flex items-center">
+                                              <input
+                                                type="radio"
+                                                {...field}
+                                                value="autre"
+                                                checked={field.value == 'autre'}
+                                                onChange={(e) => {
+                                                  field.onChange(
+                                                    e.target.value
+                                                  );
+                                                  handleInputChange(
+                                                    index,
+                                                    'pour_le_compte',
+                                                    e.target.value
+                                                  );
+                                                }}
+                                                className="text-yellow-600 focus:ring-yellow-500"
+                                              />
+                                              <span className="ml-2">
+                                                Autre
+                                              </span>
+                                            </label>
+                                          </div>
+                                          {error && (
+                                            <p className="mt-1 text-sm text-red-600">
+                                              {error.message}
+                                            </p>
+                                          )}
+                                        </div>
+                                      )}
+                                    />
+                                  </div>
+
+                                  {/* Fichier Autorisation (conditional) */}
+                                  {watch(
+                                    `inputList_remb.${index}.pour_le_compte`
+                                  ) == 'autre' && (
+                                    <div>
+                                      <TextField
+                                        label="Fichier Autorisation"
+                                        name={`inputList_remb.${index}.fichier_autorisation`}
+                                        required={true}
+                                        type="file"
+                                        control={control}
+                                        errors={{}}
+                                        backendErrors={{}}
+                                        onChange={(e) =>
+                                          handleFileChange(
+                                            index,
+                                            'fichier_autorisation',
+                                            e
+                                          )
+                                        }
+                                        width="w-full"
+                                        height="h-[38px]"
+                                        accept="image/*, application/pdf"
+                                      />
+                                      {errors.inputList_remb?.[index]
+                                        ?.fichier_autorisation && (
+                                        <p
+                                          style={{ color: 'red' }}
+                                          className="mt-1 text-xs"
+                                        >
+                                          {' '}
+                                          {/* Added margin and text styling */}
+                                          {
+                                            errors.inputList_remb[index]
+                                              .fichier_autorisation.message
+                                          }
+                                        </p>
+                                      )}
+                                    </div>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </>
             )}
-          />
-        )}
-      </div>*/}
-          <div>
-            <label className="block text-sm font-medium !text-gray-700 mb-1">
-              Mode Remboursement: <span className="text-red-500">*</span>
-            </label>
-            <div className="flex gap-6">
-              {['Chèque', 'Virement'].map((mode) => (
-                <label key={mode} className="flex items-center">
-                  <input
-                    type="radio"
-                    name="modeRemboursement"
-                    value={mode}
-                    checked={formData.modeRemboursement === mode}
-                    onChange={handleChange}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded-full"
-                  />
-                  <span className="ml-2 text-sm !text-gray-700">{mode}</span>
-                </label>
-              ))}
-            </div>
           </div>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div>
-            <label className="block text-sm font-medium !text-gray-700 mb-1">
-              N° Paiement: <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              name="numeroPaiement"
-              value={formData.numeroPaiement || ''}
-              onChange={handleChange}
-              className="block w-full rounded-md border border-gray-300 py-2 px-3 bg-white shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium !text-gray-700 mb-1">
-              Chèque/Reçu:
-            </label>
-            <label className="block w-full rounded-md border border-gray-300 py-2 px-3 bg-white shadow-sm text-left !text-gray-700 cursor-pointer">
-              <input
-                type="file"
-                name="chequeFile"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-              {formData.chequeFile?.name || 'Choisir un fichier'}
-            </label>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div>
-            <label className="block text-sm font-medium !text-gray-700 mb-1">
-              Pour le Compte: <span className="text-red-500">*</span>
-            </label>
-            <div className="flex gap-6">
-              {['lui même', 'Autre'].map((option) => (
-                <label key={option} className="flex items-center">
-                  <input
-                    type="radio"
-                    name="pourCompte"
-                    value={option}
-                    checked={formData.pourCompte === option}
-                    onChange={handleChange}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded-full"
-                  />
-                  <span className="ml-2 text-sm !text-gray-700">{option}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium !text-gray-700 mb-1">
-              Fichier Authorisation: <span className="text-red-500">*</span>
-            </label>
-            <label className="block w-full rounded-md border border-gray-300 py-2 px-3 bg-white shadow-sm text-left !text-gray-700 cursor-pointer">
-              <input
-                type="file"
-                name="autorisationFile"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-              {formData.autorisationFile?.name || 'Choisir un fichier'}
-            </label>
-          </div>
-        </div>
-      </div>
-
-      <div className="border-t border-gray-200 py-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-md font-medium">Ajouter Pénalité</h3>
-          <label className="relative inline-block w-12 align-middle select-none">
-            <input
-              type="checkbox"
-              name="avecPenalite"
-              checked={formData.avecPenalite || false}
-              onChange={(e) =>
-                updateFormData({ avecPenalite: e.target.checked })
-              }
-              className="sr-only"
-            />
-            <div
-              className={`block h-6 rounded-full w-12 ${
-                formData.avecPenalite ? 'bg-indigo-600' : 'bg-gray-300'
-              }`}
-            ></div>
-            <div
-              className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition ${
-                formData.avecPenalite ? 'transform translate-x-6' : ''
-              }`}
-            ></div>
-          </label>
-        </div>
-      </div>
-
-      <div className="border-t border-gray-200 py-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-md font-medium">Ajouter Pièces Jointes</h3>
-          <label className="relative inline-block w-12 align-middle select-none">
-            <input
-              type="checkbox"
-              name="avecPiecesJointes"
-              checked={formData.avecPiecesJointes || false}
-              onChange={(e) =>
-                updateFormData({ avecPiecesJointes: e.target.checked })
-              }
-              className="sr-only"
-            />
-            <div
-              className={`block h-6 rounded-full w-12 ${
-                formData.avecPiecesJointes ? 'bg-indigo-600' : 'bg-gray-300'
-              }`}
-            ></div>
-            <div
-              className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition ${
-                formData.avecPiecesJointes ? 'transform translate-x-6' : ''
-              }`}
-            ></div>
-          </label>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

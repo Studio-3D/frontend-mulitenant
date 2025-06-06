@@ -128,7 +128,6 @@ const ReservationTable = ({ dataClient }) => {
     //Implementing the setInterval method
     const interval = setInterval(() => {
       if (localStorage.getItem('load_data_reservation') == 1) {
-        localStorage.removeItem('load_data_reservation');
 
         fetchData_table_by_projet(
           entity,
@@ -142,6 +141,8 @@ const ReservationTable = ({ dataClient }) => {
           setData,
           setTotalRows
         );
+                localStorage.removeItem('load_data_reservation');
+
       }
     }, 1000);
 
@@ -538,7 +539,7 @@ const ReservationTable = ({ dataClient }) => {
   };
   return (
     <>
-      <div className="reflative">
+      <div className="reflative bg-white shadow-md rounded-lg p-4">
         <Table
           data_to_export={data_to_export()}
           columns_export={columns_export}

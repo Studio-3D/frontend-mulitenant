@@ -39,28 +39,15 @@ export default function Modal_Traite({ onClose, id, text, client, type_menu }) {
     console.log(id);
     setLoading({ ...loading, form: true });
     setBackendErrors();
-    //1 traiter_rdv_relance_appel 2/traite visites
-    let url;
-  /*  if(type_menu == 3){
-      url = `${APIURL.ROOTV1}/traiter_relance_rdv_visite/${Number(id)}`;
 
-    }else{
-      if (!client || type_menu == 1) {
-        url = `${APIURL.ROOTV1}/traiter_relance_rdv_appel/${Number(id)}`;
-      } else {
-        url = `${APIURL.ROOTV1}/traiter_relance_rdv_visite/${Number(id)}`;
-      }
-    }*/
-    if (type_menu === 1 || (!client && type_menu != 3)) {
-      url = `${APIURL.ROOTV1}/traiter_relance_rdv_appel/${Number(id)}`;
-    } else {
-      url = `${APIURL.ROOTV1}/traiter_relance_rdv_visite/${Number(id)}`;
-    }
-   
-    let method = 'put';
+    // Simplified URL logic
+    const isAppel = type_menu === 1 || (!client && type_menu !== 3);
+    const url = isAppel
+      ? `${APIURL.ROOTV1}/traiter_relance_rdv_appel/${Number(id)}`
+      : `${APIURL.ROOTV1}/traiter_relance_rdv_visite/${Number(id)}`;
 
     axios({
-      method: method,
+      method: 'put',
       url: url,
       data: data,
       headers: {
@@ -71,34 +58,30 @@ export default function Modal_Traite({ onClose, id, text, client, type_menu }) {
     })
       .then((res) => {
         setLoading({ ...loading, form: false });
+        console.log('type_menu==>', type_menu); // Verify this shows 3
 
         if (res.status === 200) {
           const action = watch('date') != null ? 'Modifié' : 'Traité';
           const entity = text === 'RDV' ? 'Le Rendez Vous' : 'La Relance';
-
           toast.success(`${entity} est ${action} avec succès`);
           onClose();
-          if (!client) {
-            //props client not exist
-            localStorage.setItem('load_data_journaux', 1);
-          } else {
-            //1 appels 2//visites
-          ///  const key = type_menu === 1 ? 'load_data_rdv_relance_appels' : 'load_data_rdv_relance_visites';
-          let key = null;
-          if (type_menu == 1) {
-            key = 'load_data_rdv_relance_appels';
-          } else if (type_menu == 2) {
-            key = 'load_data_rdv_relance_visites';
-          } else {
-            key = 'visite_fetch_show';
-          }
+          const key =
+            type_menu == 1
+              ? 'load_data_rdv_relance_appels'
+              : type_menu == 2
+              ? 'load_data_rdv_relance_visites'
+              : type_menu == 3
+              ? 'visite_fetch_show'
+              : 'load_data_journaux';
+
           localStorage.setItem(key, 1);
-          }
+                  console.log('final key==>', key); // Should now show correct value
+
         }
+
       })
       .catch((error) => {
         setLoading({ ...loading, form: false });
-
         const response = error.response;
         if (response?.status === 422) {
           setBackendErrors(response.data.message || {});

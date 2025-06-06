@@ -67,10 +67,10 @@ export function ClientDetailsPage(visiteId) {
   useEffect(() => {
     //Implementing the setInterval method
     const interval = setInterval(() => {
+     // console.log('cron visite fetch shoow',localStorage.getItem('visite_fetch_show'))
       if (localStorage.getItem('visite_fetch_show') == 1) {
-        localStorage.removeItem('visite_fetch_show');
-
         fetch_visite();
+        localStorage.removeItem('visite_fetch_show');
       }
     }, 1000);
 

@@ -1,6 +1,18 @@
 import React from 'react';
 
-export const DetailTab = () => {
+export const DetailTab = ({ reservationData }) => {
+  // Add null checks and default values
+  if (!reservationData) {
+    return <div className="bg-white rounded-lg shadow-md p-6">Loading reservation data...</div>;
+  }
+
+  // Destructure the nested reservation object
+  const { reservation } = reservationData;
+  const lastUpdated = reservation?.updated_at 
+    ? new Date(reservation.updated_at).toLocaleDateString('fr-FR') 
+    : 'N/A';
+
+
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-semibold !text-gray-800">

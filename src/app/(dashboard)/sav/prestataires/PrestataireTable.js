@@ -13,8 +13,10 @@ import { isAdmin, isSuperAdmin } from "@/configs/enum";
 import { useAuth } from "@/context/AuthContext";
 import Input from "@/components/Input";
 import InputSelect from "@/components/inputSelect";
-import { useProjet } from "@/context/ProjetContext"; 
-import ProjetDialog from "@/components/ProjetDialog"; 
+
+import { useProjet } from "@/context/ProjetContext"; // Import ProjetContext
+import ProjetDialog from "@/components/ProjetDialog"; // Import ProjetDialog
+import Select from 'react-select';
 
 const PrestataireTable = (serviceId) => {
   const [prestataires, setPrestataires] = useState([]);
@@ -255,7 +257,7 @@ const PrestataireTable = (serviceId) => {
         onFilterToggle={handleFilterToggle}
         data={formatData()}
         filterComponent={
-          <div className="space-y-4 p-4 rounded-lg shadow-md">
+          <div className="space-y-4 p-4 rounded-lg ">
             <div
               className="grid gap-3"
               style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}

@@ -486,17 +486,19 @@ const fetchPrestataires= async (service_id) => {
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
 
-              {/* Pour Statut, puisque c'est un Select, on garde un <select> simple */}
-              <select
+              <SelectInput
+                label="Statut"
+                name="statut"
+                placeholder="Sélectionnez un statut"
+                options={[
+                  { label: 'En cours', value: '1' },
+                  { label: 'Résolu', value: '2' },
+                  { label: 'Non Résolu', value: '3' }
+                ]}
                 value={tempFilters.statut}
-                onChange={(e) => handleFilterChange("statut", e.target.value)}
-                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-              >
-                <option value="" disabled>Statut</option>
-                <option value={1}>En cours</option>
-                <option value={2}>Résolu</option>
-                <option value={3}>Non Résolu</option>
-              </select>
+                onChange={(value) => handleFilterChange('statut', value)}
+              />
+
 
             </div>
         

@@ -68,10 +68,7 @@ const RelancesRdvAppelsTable = (type) => {
   const entity = {
     API_URL: 'relances_rdv_appels',
     dataKey: 'data',
-    searchFields: [
-      'date_relance',
-      'rdv',
-    ],
+    searchFields: ['date_relance', 'rdv'],
   };
 
   useEffect(() => {
@@ -90,7 +87,14 @@ const RelancesRdvAppelsTable = (type) => {
       setData,
       setTotalRows
     );
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters, selectedProjet]);
+  }, [
+    accesstoken,
+    currentPage,
+    rowsPerPage,
+    searchTerm,
+    filters,
+    selectedProjet,
+  ]);
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
@@ -106,8 +110,6 @@ const RelancesRdvAppelsTable = (type) => {
     //Implementing the setInterval method
     const interval = setInterval(() => {
       if (localStorage.getItem('load_data_rdv_relance_appels') == 1) {
-        localStorage.setItem('load_data_rdv_relance_appels', 0);
-
         fetchData_table_by_projet(
           entity,
           { type: Number(type.type) },
@@ -120,6 +122,7 @@ const RelancesRdvAppelsTable = (type) => {
           setData,
           setTotalRows
         );
+        localStorage.removeItem('load_data_rdv_relance_appels');
       }
     }, 1000);
 
@@ -389,7 +392,9 @@ const RelancesRdvAppelsTable = (type) => {
 
                     <SelectInput
                       value={tempFilters.mode_relance}
-                      onChange={(value) => handleFilterChange('mode_relance', value)}
+                      onChange={(value) =>
+                        handleFilterChange('mode_relance', value)
+                      }
                       options={Object.values(MODES_RELANCES).map((data) => ({
                         value: data.code,
                         label: data.label,
@@ -397,7 +402,6 @@ const RelancesRdvAppelsTable = (type) => {
                       placeholder="Choisir un Mode Relance"
                       className="h-10 text-sm w-full"
                     />
-                    
                   </>
                 ) : (
                   <input
@@ -405,9 +409,7 @@ const RelancesRdvAppelsTable = (type) => {
                     placeholder="Rendez Vous"
                     value={tempFilters.rdv}
                     onFocus={(e) => (e.target.type = 'date')}
-                    onChange={(e) =>
-                      handleFilterChange('rdv', e.target.value)
-                    }
+                    onChange={(e) => handleFilterChange('rdv', e.target.value)}
                     className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                   />
                 )}

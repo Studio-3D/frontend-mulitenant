@@ -911,7 +911,7 @@ const isButtonDisabled = () => {
     if (isTransferPayment) {
       if (!banque_id || !num_paiement) return true;
     }
-
+   
     // Comment validation when check_montant is true
     if (check_montant && !commentaireAvance) return true;
 
@@ -2178,7 +2178,7 @@ const isButtonDisabled = () => {
                                   </label>
                                   <input
                                     type="text"
-                                    value={form.nom_mari}
+                                    value={form.nom_mari|| ""}
                                     onChange={(e) =>
                                       updateFormField(
                                         formIndex,
@@ -2189,7 +2189,7 @@ const isButtonDisabled = () => {
                                     className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                       formSubmitted_client &&
                                       form.situation_familliale == '2' &&
-                                      form.nom_mari?.trim() === ''
+                                   (form.nom_mari || "").trim() === ''  // Also handle null check here
                                         ? 'border-red-500'
                                         : 'border-gray-300'
                                     } rounded-md focus:outline-none focus:border-gray-500`}
@@ -2209,7 +2209,7 @@ const isButtonDisabled = () => {
                                   </label>
                                   <input
                                     type="date"
-                                    value={form.date_mariage}
+                                    value={form.date_mariage||''}
                                     onChange={(e) =>
                                       updateFormField(
                                         formIndex,
@@ -2220,7 +2220,7 @@ const isButtonDisabled = () => {
                                     className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                       formSubmitted_client &&
                                       form.situation_familliale == '2' &&
-                                      !form.date_mariage
+                                     (form.date_mariage || "").trim() === ''
                                         ? 'border-red-500'
                                         : 'border-gray-300'
                                     } rounded-md focus:outline-none focus:border-gray-500`}
@@ -2240,7 +2240,7 @@ const isButtonDisabled = () => {
                                   </label>
                                   <input
                                     type="text"
-                                    value={form.lieu_mariage}
+                                    value={form.lieu_mariage||''}
                                     onChange={(e) =>
                                       updateFormField(
                                         formIndex,
@@ -2251,7 +2251,7 @@ const isButtonDisabled = () => {
                                     className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                       formSubmitted_client &&
                                       form.situation_familliale == '2' &&
-                                      form.lieu_mariage?.trim() === ''
+                                     (form.lieu_mariage || "").trim() === ''
                                         ? 'border-red-500'
                                         : 'border-gray-300'
                                     } rounded-md focus:outline-none focus:border-gray-500`}
@@ -3083,6 +3083,7 @@ const isButtonDisabled = () => {
                                 </label>
                                 <input
                                   type="text"
+                                 
                                   value={clientToEdit.lieu_mariage || ''}
                                   onChange={(e) =>
                                     setClientToEdit({
