@@ -85,7 +85,7 @@ const Table = ({
   return (
     <div className="mb-4 rounded-lg">
       {title && (
-        <h2 className="text-xl font-semibold text-gray-700 mb-2">{title}</h2>
+        <h2 className="text-xl font-semibold !text-gray-700 mb-2">{title}</h2>
       )}
 
       {/* Table Controls */}
@@ -105,7 +105,7 @@ const Table = ({
           <div className="flex-1 sm:flex-none flex items-center border border-gray-300 rounded-lg p-1.5 bg-transparent gap-2 w-full sm:w-[300px]">
             <Search className="w-6 h-6" />
             <input
-              className="bg-transparent outline-none text-gray-600 w-full"
+              className="bg-transparent outline-none !text-gray-600 w-full"
               type="text"
               placeholder="Rechercher..."
               value={localSearchTerm}
@@ -157,7 +157,7 @@ const Table = ({
       {/* Table */}
       <div className="overflow-auto mt-4 h-[72vh]">
         {error ? (
-          <div className="text-center text-red-500 py-4">{error}</div>
+          <div className="text-center !text-red-500 py-4">{error}</div>
         ) : (
           <table className="w-full border-collapse">
             <thead>
@@ -184,7 +184,7 @@ const Table = ({
                 <tr>
                   <td
                     colSpan={columns.length}
-                    className="py-4 text-center text-gray-500"
+                    className="py-4 text-center !text-gray-500"
                   >
                     {emptyMessage}
                   </td>

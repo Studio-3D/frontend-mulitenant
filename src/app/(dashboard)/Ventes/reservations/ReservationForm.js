@@ -927,7 +927,7 @@ const isButtonDisabled = () => {
   // Helper functions (add these outside your component)
   const getFileIcon = (filename) => {
     const extension = filename.split('.').pop().toLowerCase();
-    const iconClass = 'w-5 h-5 flex-shrink-0 text-gray-400';
+    const iconClass = 'w-5 h-5 flex-shrink-0 !text-gray-400';
 
     switch (extension) {
       case 'pdf':
@@ -1501,7 +1501,7 @@ const isButtonDisabled = () => {
                     onChange={(e) => handleFileChange(e, 1)}
                     accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" // Specify accepted file types
                   />
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p className="mt-1 text-xs !text-gray-500">
                     Formats acceptés: PDF, JPG, PNG, DOC (Taille max: 10MB)
                   </p>
                 </div>
@@ -1509,7 +1509,7 @@ const isButtonDisabled = () => {
                 {/* Selected Files Preview */}
                 {selectedFiles_rsv.length > 0 && (
                   <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                    <h3 className="text-sm font-semibold !text-gray-700 mb-3 flex items-center">
                       <svg
                         className="w-4 h-4 mr-2 text-primary-500"
                         fill="none"
@@ -1543,7 +1543,7 @@ const isButtonDisabled = () => {
                                     ? handleFileClick(data.fichier)
                                     : handleDownloadFile(data)
                                 }
-                                className="ml-2 text-sm font-medium text-gray-700 hover:text-blue-600 truncate flex-1 text-left"
+                                className="ml-2 text-sm font-medium !text-gray-700 hover:text-blue-600 truncate flex-1 text-left"
                                 title={data.fichier || data.name}
                               >
                                 {data.fichier || data.name}
@@ -1551,12 +1551,12 @@ const isButtonDisabled = () => {
                             </div>
 
                             <div className="flex items-center justify-between mt-auto">
-                              <span className="text-xs text-gray-500">
+                              <span className="text-xs !text-gray-500">
                                 {formatFileSize(data.size)}
                               </span>
                               <button
                                 onClick={() => handleDeleteFile(index, 'rsv')}
-                                className="p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 transition-colors"
+                                className="p-1 !text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 transition-colors"
                                 title="Supprimer"
                               >
                                 <svg
@@ -1587,8 +1587,8 @@ const isButtonDisabled = () => {
 
         {currentStep == 1 && (
           <div className="space-y-6 mt-[50px]">
-            <h2 className="text-xl font-medium text-gray-700 mb-4">
-              Ajouter les clients participer à cette Réservation
+            <h2 className="text-xl font-medium !text-gray-700 mb-4">
+              Ajouter les clients participer à cette Réservation 999
             </h2>
             <div className="space-y-4">
               {inputList1.map((entry, index) => (
@@ -1610,7 +1610,7 @@ const isButtonDisabled = () => {
                     <div>
                       <label
                         htmlFor={`percentage-${index}`}
-                        className="block text-sm font-medium text-gray-700 mb-1"
+                        className="block text-sm font-medium !text-gray-700 mb-1"
                       >
                         Pourcentage:
                       </label>
@@ -1640,7 +1640,7 @@ const isButtonDisabled = () => {
                       onClick={() =>
                         removeClientEntry(index, 'without_new_client')
                       }
-                      className="mt-7 p-2 text-red-600 hover:text-red-700 hover:bg-red rounded-md transition-colors bg-[red]"
+                      className="mt-7 p-2 !text-red-600 hover:text-red-700 hover:bg-red rounded-md transition-colors bg-[red]"
                     >
                       <XIcon className="w-5 h-5" />
                     </button>
@@ -1651,7 +1651,7 @@ const isButtonDisabled = () => {
             <div className="flex justify-center space-x-4">
               <button
                 onClick={addClientEntry}
-                className="flex items-center justify-center gap-2 px-4 py-2  text-blue-600 rounded-full hover:bg-blue-100 bg-[#2563eb]"
+                className="flex items-center justify-center gap-2 px-4 py-2  !text-blue-600 rounded-full hover:bg-blue-100 bg-[#2563eb]"
               >
                 <PlusIcon className="w-5 h-5" />
                 <UsersIcon className="w-5 h-5" />
@@ -1685,7 +1685,7 @@ const isButtonDisabled = () => {
                     },
                   ]);
                 }}
-                className="flex items-center justify-center gap-2 px-4 py-2 bg-green-50 text-green-600 rounded-full hover:bg-green-100"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-green-50 !text-green-600 rounded-full hover:bg-green-100"
               >
                 <UserPlusIcon className="w-5 h-5" />
                 <span>Nouveau Client</span>
@@ -1696,7 +1696,7 @@ const isButtonDisabled = () => {
               <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
                 <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
                   <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-lg font-medium text-gray-900">
+                    <h3 className="text-lg font-medium !text-gray-900">
                       Nouveau Client
                     </h3>
                     <button
@@ -1733,7 +1733,7 @@ const isButtonDisabled = () => {
                     </button>
                   </div>
                   <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium !text-gray-700 mb-1">
                       Nombre de formulaires:
                     </label>
                     <input
@@ -1754,14 +1754,14 @@ const isButtonDisabled = () => {
                           key={formIndex}
                           className="border-t pt-6 first:border-t-0 first:pt-0"
                         >
-                          <h4 className="text-md font-medium text-gray-900 mb-4">
+                          <h4 className="text-md font-medium !text-gray-900 mb-4">
                             Client {formIndex + 1}
                           </h4>
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Type Client Select */}
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                              <label className="block text-sm font-medium !text-gray-700 mb-1">
                                 Type Client{' '}
                                 <span className="text-red-500 ml-1">*</span>
                               </label>
@@ -1811,7 +1811,7 @@ const isButtonDisabled = () => {
                             {/* Conditional Partenaire Select (only shows when type_client === 2) */}
                             {form.type_client == '2' && (
                               <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium !text-gray-700 mb-1">
                                   Partenaire{' '}
                                   <span className="text-red-500 ml-1">*</span>
                                 </label>
@@ -1854,7 +1854,7 @@ const isButtonDisabled = () => {
                               </div>
                             )}
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                              <label className="block text-sm font-medium !text-gray-700 mb-1">
                                 CIN <span className="text-red-500 ml-1">*</span>
                               </label>
                               <input
@@ -1904,7 +1904,7 @@ const isButtonDisabled = () => {
                             </div>
 
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                              <label className="block text-sm font-medium !text-gray-700 mb-1">
                                 Nom <span className="text-red-500 ml-1">*</span>
                               </label>
                               <input
@@ -1932,7 +1932,7 @@ const isButtonDisabled = () => {
                             </div>
 
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                              <label className="block text-sm font-medium !text-gray-700 mb-1">
                                 Prénom{' '}
                                 <span className="text-red-500 ml-1">*</span>
                               </label>
@@ -1961,7 +1961,7 @@ const isButtonDisabled = () => {
                                 )}
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                              <label className="block text-sm font-medium !text-gray-700 mb-1">
                                 Civilité{' '}
                                 <span className="text-red-500 ml-1">*</span>
                               </label>
@@ -2003,7 +2003,7 @@ const isButtonDisabled = () => {
                               )}
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                              <label className="block text-sm font-medium !text-gray-700 mb-1">
                                 Pourcentage{' '}
                                 <span className="text-red-500 ml-1">*</span>
                               </label>
@@ -2050,7 +2050,7 @@ const isButtonDisabled = () => {
                             </div>
 
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                              <label className="block text-sm font-medium !text-gray-700 mb-1">
                                 Téléphone{' '}
                                 <span className="text-red-500 ml-1">*</span>
                               </label>
@@ -2112,7 +2112,7 @@ const isButtonDisabled = () => {
 
                             {/* Situation Familiale Select */}
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                              <label className="block text-sm font-medium !text-gray-700 mb-1">
                                 Situation Familiale{' '}
                                 <span className="text-red-500 ml-1">*</span>
                               </label>
@@ -2173,7 +2173,7 @@ const isButtonDisabled = () => {
                             {form.situation_familliale == '2' && (
                               <>
                                 <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                                  <label className="block text-sm font-medium !text-gray-700 mb-1">
                                     Marié(e) à M/MME
                                   </label>
                                   <input
@@ -2204,7 +2204,7 @@ const isButtonDisabled = () => {
                                 </div>
 
                                 <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                                  <label className="block text-sm font-medium !text-gray-700 mb-1">
                                     Date de Mariage
                                   </label>
                                   <input
@@ -2235,7 +2235,7 @@ const isButtonDisabled = () => {
                                 </div>
 
                                 <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                                  <label className="block text-sm font-medium !text-gray-700 mb-1">
                                     Lieu de Mariage
                                   </label>
                                   <input
@@ -2268,7 +2268,7 @@ const isButtonDisabled = () => {
                             )}
 
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                              <label className="block text-sm font-medium !text-gray-700 mb-1">
                                 Accepte être contacté{' '}
                                 <span className="text-red-500 ml-1">*</span>
                               </label>
@@ -2292,9 +2292,9 @@ const isButtonDisabled = () => {
                                         e.target.value
                                       );
                                     }}
-                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                                    className="h-4 w-4 !text-blue-600 focus:ring-blue-500 border-gray-300"
                                   />
-                                  <span className="ml-2 text-sm text-gray-700">
+                                  <span className="ml-2 text-sm !text-gray-700">
                                     Oui
                                   </span>
                                 </label>
@@ -2317,9 +2317,9 @@ const isButtonDisabled = () => {
                                         e.target.value
                                       );
                                     }}
-                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                                    className="h-4 w-4 !text-blue-600 focus:ring-blue-500 border-gray-300"
                                   />
-                                  <span className="ml-2 text-sm text-gray-700">
+                                  <span className="ml-2 text-sm !text-gray-700">
                                     Non
                                   </span>
                                 </label>
@@ -2333,7 +2333,7 @@ const isButtonDisabled = () => {
                             </div>
 
                             <div className="md:col-span-2">
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                              <label className="block text-sm font-medium !text-gray-700 mb-1">
                                 Adresse
                               </label>
                               <textarea
@@ -2385,7 +2385,7 @@ const isButtonDisabled = () => {
                             },
                           ]);
                         }}
-                        className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                        className="px-4 py-2 border border-gray-300 rounded-md !text-gray-700 hover:bg-gray-50"
                       >
                         Annuler
                       </button>
@@ -2450,7 +2450,7 @@ const isButtonDisabled = () => {
             <>
               {addedClients.length > 0 && (
                 <div className="mt-8 border-t pt-6">
-                  <h3 className="text-lg font-medium text-gray-700 mb-4">
+                  <h3 className="text-lg font-medium !text-gray-700 mb-4">
                     Clients ajoutés
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -2463,20 +2463,20 @@ const isButtonDisabled = () => {
                           <div className="flex justify-between items-start">
                             <div className="flex-1">
                               <div className="flex items-center mb-2">
-                                <Mail className="w-4 h-4 text-gray-500 mr-2" />
-                                <h4 className="font-medium text-gray-900 truncate">
+                                <Mail className="w-4 h-4 !text-gray-500 mr-2" />
+                                <h4 className="font-medium !text-gray-900 truncate">
                                   {client.cin}
                                 </h4>
                               </div>
                               <div className="flex items-center mb-2">
-                                <User className="w-4 h-4 text-gray-500 mr-2" />
-                                <h4 className="font-medium text-gray-900 truncate">
+                                <User className="w-4 h-4 !text-gray-500 mr-2" />
+                                <h4 className="font-medium !text-gray-900 truncate">
                                   {client.nom} {client.prenom}
                                 </h4>
                               </div>
                               <div className="space-y-1.5">
-                                <div className="flex items-center text-sm text-gray-600">
-                                  <Percent className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
+                                <div className="flex items-center text-sm !text-gray-600">
+                                  <Percent className="w-4 h-4 !text-gray-400 mr-2 flex-shrink-0" />
                                   <span
                                     className="truncate "
                                     style={{
@@ -2489,25 +2489,25 @@ const isButtonDisabled = () => {
                                   </span>
                                 </div>
                                 {client.telephone_num1 && (
-                                  <div className="flex items-center text-sm text-gray-600">
-                                    <Phone className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
+                                  <div className="flex items-center text-sm !text-gray-600">
+                                    <Phone className="w-4 h-4 !text-gray-400 mr-2 flex-shrink-0" />
                                     <span>{client.telephone_num1}</span>
                                   </div>
                                 )}
                                 {client.address && (
-                                  <div className="flex items-center text-sm text-gray-600">
-                                    <MapPin className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
+                                  <div className="flex items-center text-sm !text-gray-600">
+                                    <MapPin className="w-4 h-4 !text-gray-400 mr-2 flex-shrink-0" />
                                     <span className="truncate">
                                       {client.address}
                                     </span>
                                   </div>
                                 )}
                                 {client.type_client && (
-                                  <div className="flex items-center text-sm text-gray-600">
-                                    <Briefcase className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
+                                  <div className="flex items-center text-sm !text-gray-600">
+                                    <Briefcase className="w-4 h-4 !text-gray-400 mr-2 flex-shrink-0" />
                                     <span className="truncate">
                                       {client.type_client && (
-                                        <div className="flex items-center text-sm text-gray-600">
+                                        <div className="flex items-center text-sm !text-gray-600">
                                           <span className="truncate">
                                             {client.type_client === '1'
                                               ? 'Particulier'
@@ -2528,17 +2528,17 @@ const isButtonDisabled = () => {
                                 {/* Situation Familiale Display */}
                                 {client.situation_familliale && (
                                   <div className="space-y-1.5">
-                                    <div className="flex items-center text-sm text-gray-600">
+                                    <div className="flex items-center text-sm !text-gray-600">
                                       {client.situation_familliale === '1' ? (
-                                        <User className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
+                                        <User className="w-4 h-4 !text-gray-400 mr-2 flex-shrink-0" />
                                       ) : client.situation_familliale ===
                                         '2' ? (
-                                        <Heart className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
+                                        <Heart className="w-4 h-4 !text-gray-400 mr-2 flex-shrink-0" />
                                       ) : client.situation_familliale ===
                                         '3' ? (
-                                        <UserX className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
+                                        <UserX className="w-4 h-4 !text-gray-400 mr-2 flex-shrink-0" />
                                       ) : (
-                                        <UserCog className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
+                                        <UserCog className="w-4 h-4 !text-gray-400 mr-2 flex-shrink-0" />
                                       )}
                                       <span>
                                         {SITUATION_FAMILIALLE[
@@ -2551,16 +2551,16 @@ const isButtonDisabled = () => {
                                     {client.situation_familliale === '2' && (
                                       <>
                                         {client.nom_mari && (
-                                          <div className="flex items-center text-sm text-gray-600 ml-6">
-                                            <User className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
+                                          <div className="flex items-center text-sm !text-gray-600 ml-6">
+                                            <User className="w-4 h-4 !text-gray-400 mr-2 flex-shrink-0" />
                                             <span>
                                               Conjoint: {client.nom_mari}
                                             </span>
                                           </div>
                                         )}
                                         {client.date_mariage && (
-                                          <div className="flex items-center text-sm text-gray-600 ml-6">
-                                            <Calendar className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
+                                          <div className="flex items-center text-sm !text-gray-600 ml-6">
+                                            <Calendar className="w-4 h-4 !text-gray-400 mr-2 flex-shrink-0" />
                                             <span>
                                               Marié depuis:{' '}
                                               {new Date(
@@ -2570,8 +2570,8 @@ const isButtonDisabled = () => {
                                           </div>
                                         )}
                                         {client.lieu_mariage && (
-                                          <div className="flex items-center text-sm text-gray-600 ml-6">
-                                            <MapPin className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
+                                          <div className="flex items-center text-sm !text-gray-600 ml-6">
+                                            <MapPin className="w-4 h-4 !text-gray-400 mr-2 flex-shrink-0" />
                                             <span>
                                               Lieu: {client.lieu_mariage}
                                             </span>
@@ -2593,7 +2593,7 @@ const isButtonDisabled = () => {
                                   });
                                   setShowEditModal(true);
                                 }}
-                                className="p-1 text-gray-400 hover:text-blue-500 rounded-full hover:bg-blue-50 transition-colors duration-200"
+                                className="p-1 !text-gray-400 hover:text-blue-500 rounded-full hover:bg-blue-50 transition-colors duration-200"
                                 aria-label="Modifier le client"
                               >
                                 <Pencil className="w-5 h-5" />
@@ -2613,7 +2613,7 @@ const isButtonDisabled = () => {
                                   setAddedClients(updatedClients);
                                   setValue('clients', updatedClients);
                                 }}
-                                className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-red-50 transition-colors duration-200"
+                                className="p-1 !text-gray-400 hover:text-red-500 rounded-full hover:bg-red-50 transition-colors duration-200"
                                 aria-label="Supprimer le client"
                               >
                                 <XIcon className="w-5 h-5" />
@@ -2632,7 +2632,7 @@ const isButtonDisabled = () => {
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
                   <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
                     <div className="flex justify-between items-center mb-6">
-                      <h3 className="text-lg font-medium text-gray-900">
+                      <h3 className="text-lg font-medium !text-gray-900">
                         Modifier Client
                       </h3>
                       <button
@@ -2646,7 +2646,7 @@ const isButtonDisabled = () => {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Type Client Select */}
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                          <label className="block text-sm font-medium !text-gray-700 mb-1">
                             Type Client{' '}
                             <span className="text-red-500 ml-1">*</span>
                           </label>
@@ -2687,7 +2687,7 @@ const isButtonDisabled = () => {
                         {/* Conditional Partenaire Select - only shows when type_client === "2" */}
                         {clientToEdit.type_client == '2' && (
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="block text-sm font-medium !text-gray-700 mb-1">
                               Partenaire{' '}
                               <span className="text-red-500 ml-1">*</span>
                             </label>
@@ -2727,7 +2727,7 @@ const isButtonDisabled = () => {
                           </div>
                         )}
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                          <label className="block text-sm font-medium !text-gray-700 mb-1">
                             Cin<span className="text-red-500 ml-1">*</span>
                           </label>
                           <input
@@ -2779,7 +2779,7 @@ const isButtonDisabled = () => {
 
                         {/* NOM */}
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                          <label className="block text-sm font-medium !text-gray-700 mb-1">
                             Nom <span className="text-red-500 ml-1">*</span>
                           </label>
                           <input
@@ -2806,7 +2806,7 @@ const isButtonDisabled = () => {
 
                         {/* PRÉNOM */}
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                          <label className="block text-sm font-medium !text-gray-700 mb-1">
                             Prénom <span className="text-red-500 ml-1">*</span>
                           </label>
                           <input
@@ -2832,7 +2832,7 @@ const isButtonDisabled = () => {
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                          <label className="block text-sm font-medium !text-gray-700 mb-1">
                             Civilité{' '}
                             <span className="text-red-500 ml-1">*</span>
                           </label>
@@ -2870,7 +2870,7 @@ const isButtonDisabled = () => {
 
                         {/* POURCENTAGE */}
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                          <label className="block text-sm font-medium !text-gray-700 mb-1">
                             Pourcentage{' '}
                             <span className="text-red-500 ml-1">*</span>
                           </label>
@@ -2911,7 +2911,7 @@ const isButtonDisabled = () => {
 
                         {/* TÉLÉPHONE */}
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                          <label className="block text-sm font-medium !text-gray-700 mb-1">
                             Téléphone{' '}
                             <span className="text-red-500 ml-1">*</span>
                           </label>
@@ -2965,7 +2965,7 @@ const isButtonDisabled = () => {
                           )}
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                          <label className="block text-sm font-medium !text-gray-700 mb-1">
                             Situation Familiale{' '}
                             <span className="text-red-500 ml-1">*</span>
                           </label>
@@ -3014,7 +3014,7 @@ const isButtonDisabled = () => {
                           <div className="mt-4 space-y-4">
                             {/* Spouse Name */}
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                              <label className="block text-sm font-medium !text-gray-700 mb-1">
                                 Marié(e) à M/MME
                               </label>
                               <input
@@ -3047,7 +3047,7 @@ const isButtonDisabled = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               {/* Marriage Date */}
                               <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium !text-gray-700 mb-1">
                                   Date de Mariage
                                 </label>
                                 <input
@@ -3078,7 +3078,7 @@ const isButtonDisabled = () => {
 
                               {/* Marriage Location */}
                               <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium !text-gray-700 mb-1">
                                   Lieu de Mariage
                                 </label>
                                 <input
@@ -3112,7 +3112,7 @@ const isButtonDisabled = () => {
                         )}
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                          <label className="block text-sm font-medium !text-gray-700 mb-1">
                             Accepte être contacté{' '}
                             <span className="text-red-500 ml-1">*</span>
                           </label>
@@ -3143,9 +3143,9 @@ const isButtonDisabled = () => {
                                       notifie: e.target.value,
                                     });
                                   }}
-                                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                                  className="h-4 w-4 !text-blue-600 focus:ring-blue-500 border-gray-300"
                                 />
-                                <span className="ml-2 text-sm text-gray-700">
+                                <span className="ml-2 text-sm !text-gray-700">
                                   Oui
                                 </span>
                               </label>
@@ -3167,9 +3167,9 @@ const isButtonDisabled = () => {
                                       notifie: e.target.value,
                                     });
                                   }}
-                                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                                  className="h-4 w-4 !text-blue-600 focus:ring-blue-500 border-gray-300"
                                 />
-                                <span className="ml-2 text-sm text-gray-700">
+                                <span className="ml-2 text-sm !text-gray-700">
                                   Non
                                 </span>
                               </label>
@@ -3185,7 +3185,7 @@ const isButtonDisabled = () => {
                         </div>
                         {/* ADDRESS (Optional) */}
                         <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                          <label className="block text-sm font-medium !text-gray-700 mb-1">
                             Adresse
                           </label>
                           <textarea
@@ -3205,7 +3205,7 @@ const isButtonDisabled = () => {
                       <div className="mt-6 flex justify-end space-x-3">
                         <button
                           onClick={() => setShowEditModal(false)}
-                          className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                          className="px-4 py-2 border border-gray-300 rounded-md !text-gray-700 hover:bg-gray-50"
                         >
                           Annuler
                         </button>
@@ -3336,11 +3336,11 @@ const isButtonDisabled = () => {
                         onChange={(e) =>
                           field.onChange(e.target.checked ? '1' : '0')
                         }
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        className="h-4 w-4 !text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
                       <label
                         htmlFor="sr"
-                        className="ml-2 block text-sm text-gray-700"
+                        className="ml-2 block text-sm !text-gray-700"
                       >
                         Sr
                       </label>
@@ -3554,11 +3554,11 @@ const isButtonDisabled = () => {
                             onChange={(e) =>
                               field.onChange(e.target.checked ? true : false)
                             }
-                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            className="h-4 w-4 !text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                           />
                           <label
                             htmlFor="sr"
-                            className="ml-2 block text-sm text-gray-700"
+                            className="ml-2 block text-sm !text-gray-700"
                           >
                             Voulez vous Enregistrer la Réservation sans montant
                             (Prière de saisir un commentaire)
@@ -3594,7 +3594,7 @@ const isButtonDisabled = () => {
                           onChange={(e) => handleFileChange(e, 2)}
                           accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" // Specify accepted file types
                         />
-                        <p className="mt-1 text-xs text-gray-500">
+                        <p className="mt-1 text-xs !text-gray-500">
                           Formats acceptés: PDF, JPG, PNG, DOC (Taille max:
                           10MB)
                         </p>
@@ -3603,7 +3603,7 @@ const isButtonDisabled = () => {
                       {/* Selected Files Preview */}
                       {selectedFiles_avc.length > 0 && (
                         <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                          <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                          <h3 className="text-sm font-semibold !text-gray-700 mb-3 flex items-center">
                             <svg
                               className="w-4 h-4 mr-2 text-primary-500"
                               fill="none"
@@ -3637,7 +3637,7 @@ const isButtonDisabled = () => {
                                           ? handleFileClick(data.fichier)
                                           : handleDownloadFile(data)
                                       }
-                                      className="ml-2 text-sm font-medium text-gray-700 hover:text-blue-600 truncate flex-1 text-left"
+                                      className="ml-2 text-sm font-medium !text-gray-700 hover:text-blue-600 truncate flex-1 text-left"
                                       title={data.fichier || data.name}
                                     >
                                       {data.fichier || data.name}
@@ -3645,14 +3645,14 @@ const isButtonDisabled = () => {
                                   </div>
 
                                   <div className="flex items-center justify-between mt-auto">
-                                    <span className="text-xs text-gray-500">
+                                    <span className="text-xs !text-gray-500">
                                       {formatFileSize(data.size)}
                                     </span>
                                     <button
                                       onClick={() =>
                                         handleDeleteFile(index, 'avc')
                                       }
-                                      className="p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 transition-colors"
+                                      className="p-1 !text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 transition-colors"
                                       title="Supprimer"
                                     >
                                       <svg
@@ -3724,7 +3724,7 @@ const isButtonDisabled = () => {
           <button
             type="button" // Prevent accidental form submission
             onClick={goToPrevStep}
-            className={`px-6 py-2 rounded-md border border-gray-300 text-gray-700 ${
+            className={`px-6 py-2 rounded-md border border-gray-300 !text-gray-700 ${
               currentStep == 0
                 ? 'opacity-50 cursor-not-allowed'
                 : 'hover:bg-gray-50'

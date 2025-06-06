@@ -141,7 +141,7 @@ export default function Societes() {
       label: 'Actions',
       render: row => (
         <div className="flex gap-3 items-center cursor-pointer">
-            <Eye className="w-4 h-4 text-blue-500 hover:text-blue-700" 
+            <Eye className="w-4 h-4 !text-blue-500 hover:text-blue-700" 
             onClick={()=>
               {
                 setSelectedSocieteId(row.id); // Set the selected société ID
@@ -149,10 +149,10 @@ export default function Societes() {
               }
             }/>
           <Link href={`/Societes/${row.id}/edit`}>
-            <UserCog className="w-4 h-4 text-green-500 hover:text-green-700"/>
+            <UserCog className="w-4 h-4 !text-green-500 hover:text-green-700"/>
           </Link>
           <Trash2
-            className="w-4 h-4 text-red-500 hover:text-red-700"
+            className="w-4 h-4 !text-red-500 hover:text-red-700"
             onClick={() => {
               setSelectedSocieteId(row.id); // Set the selected société ID
               setShowDelete(true); // Open the modal

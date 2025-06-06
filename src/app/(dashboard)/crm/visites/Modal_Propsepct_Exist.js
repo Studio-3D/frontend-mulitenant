@@ -50,7 +50,7 @@ export default function Modal_Propsepct_Exist({
                 {'A Déja fait un Appel'}
                 <div className="ml-2">
                   <Eye
-                    className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
+                    className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
                     title="Voir détails"
                     onClick={() => handle_click_appel(id_appel)}
                   />
@@ -66,7 +66,7 @@ export default function Modal_Propsepct_Exist({
                 {'A Déja fait une Visite'}
                 <div className="ml-2">
                   <Eye
-                    className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
+                    className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
                     title="Voir détails"
                     onClick={() => handle_click_visite(id_visite)}
                   />

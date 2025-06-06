@@ -45,13 +45,13 @@ export default function ForgotPassword() {
         
         {/* Real estate related text */}
         <div className="absolute bottom-16 left-0 right-0 text-center">
-          <h2 className="text-2xl font-bold text-gray-800">Gestion Immobilière Professionnelle</h2>
+          <h2 className="text-2xl font-bold !text-gray-800">Gestion Immobilière Professionnelle</h2>
           <p className="text-gray-600 mt-2">Solutions complètes pour votre entreprise</p>
         </div>
       </div>
 
       {/* Right side */}
-      <div className="w-full md:w-2/5 lg:w-2/5 xl:w-[450px] flex items-center justify-center border-l border-gray-200 text-gray-500">
+      <div className="w-full md:w-2/5 lg:w-2/5 xl:w-[450px] flex items-center justify-center border-l border-gray-200 !text-gray-500">
         <div className="p-7 w-full max-w-[450px]">
           {/* Logo */}
           <div className="absolute top-8 left-8 flex items-center">
@@ -70,7 +70,7 @@ export default function ForgotPassword() {
 
           {success ? (
             <div className="mb-6">
-              <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-4 text-green-700">
+              <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-4 !text-green-700">
                 <p>{success}</p>
               </div>
               <Link 
@@ -104,7 +104,7 @@ export default function ForgotPassword() {
                     required
                   />
                 </div>
-                {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+                {error && <p className="mt-1 text-xs !text-red-500">{error}</p>}
               </div>
 
               <div className="flex flex-col space-y-4">

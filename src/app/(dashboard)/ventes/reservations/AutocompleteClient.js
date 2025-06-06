@@ -75,7 +75,7 @@ const AutocompleteClient = ({
   return (
     <div className={`relative ${width} mb-2`}>
       {/* Label */}
-      <label className="block text-sm font-medium text-gray-700 mb-1">
+      <label className="block text-sm font-medium !text-gray-700 mb-1">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
@@ -100,7 +100,7 @@ const AutocompleteClient = ({
         {isOpen && !disabled && !loading && (
           <div className="absolute top-full left-0 w-full bg-white shadow-lg rounded-md mt-1 max-h-60 overflow-y-auto border border-gray-300 z-10">
             {filteredOptions.length === 0 ? (
-              <div className="p-2 text-gray-500">Aucun client trouvé</div>
+              <div className="p-2 !text-gray-500">Aucun client trouvé</div>
             ) : (
               filteredOptions.map((option) => {
                 const isOptionDisabled = option.disabled || 
@@ -111,14 +111,14 @@ const AutocompleteClient = ({
                     key={option.id}
                     className={`p-2 ${
                       isOptionDisabled 
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                        ? 'bg-gray-100 !text-gray-400 cursor-not-allowed' 
                         : 'cursor-pointer hover:bg-blue-50'
                     }`}
                     onClick={() => handleSelect(option)}
                   >
                     {option.nom} {option.prenom}
                     {isOptionDisabled && (
-                      <span className="ml-2 text-xs text-gray-500">(Déjà sélectionné)</span>
+                      <span className="ml-2 text-xs !text-gray-500">(Déjà sélectionné)</span>
                     )}
                   </div>
                 );

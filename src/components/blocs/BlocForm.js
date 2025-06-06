@@ -231,7 +231,7 @@ export default function BlocForm({ id, projetId, trancheId }) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Nom */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               Nom <span className="text-red-500">*</span>
             </label>
             <div>
@@ -245,7 +245,7 @@ export default function BlocForm({ id, projetId, trancheId }) {
                 } px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
               />
               {(validationErrors.nom || backendErrors.nom) && (
-                <p className="mt-1 text-sm text-red-500">
+                <p className="mt-1 text-sm !text-red-500">
                   {validationErrors.nom || (backendErrors.nom && backendErrors.nom[0])}
                 </p>
               )}
@@ -254,7 +254,7 @@ export default function BlocForm({ id, projetId, trancheId }) {
 
           {/* Tranche selection - Always show it */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               Tranche <span className="text-red-500">*</span>
             </label>
             
@@ -264,7 +264,7 @@ export default function BlocForm({ id, projetId, trancheId }) {
                 <span className="text-gray-500 text-sm">Chargement des tranches...</span>
               </div>
             ) : tranches.length === 0 ? (
-              <div className="w-full rounded-md border border-yellow-300 bg-yellow-50 px-3 py-2 text-yellow-700 text-sm">
+              <div className="w-full rounded-md border border-yellow-300 bg-yellow-50 px-3 py-2 !text-yellow-700 text-sm">
                 Aucune tranche disponible pour ce projet. Veuillez créer une tranche d'abord.
               </div>
             ) : (
@@ -292,7 +292,7 @@ export default function BlocForm({ id, projetId, trancheId }) {
                 )}
                 
                 {(validationErrors.tranche_id || backendErrors.tranche_id) && (
-                  <p className="mt-1 text-sm text-red-500">
+                  <p className="mt-1 text-sm !text-red-500">
                     {validationErrors.tranche_id || (backendErrors.tranche_id && backendErrors.tranche_id[0])}
                   </p>
                 )}
@@ -302,7 +302,7 @@ export default function BlocForm({ id, projetId, trancheId }) {
 
           {/* Titre foncier */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               Titre foncier
             </label>
             <input
@@ -317,7 +317,7 @@ export default function BlocForm({ id, projetId, trancheId }) {
           {/* Nombre d'immeubles - only show if project has immeubles */}
           {selectedProjet?.nbre_immeubles > 0 && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium !text-gray-700 mb-1">
                 Nombre d'immeubles
               </label>
               <input
@@ -332,7 +332,7 @@ export default function BlocForm({ id, projetId, trancheId }) {
 
           {/* Nombre de biens */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               Nombre de biens
             </label>
             <input
@@ -349,7 +349,7 @@ export default function BlocForm({ id, projetId, trancheId }) {
         <div className="flex justify-end space-x-4 pt-4">
           <Link
             href={selectedProjet?.id ? `/Projets/${selectedProjet.id}?tab=blocs` : "/Projets"}
-            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium !text-gray-700 bg-white hover:bg-gray-50"
           >
             Annuler
           </Link>
@@ -357,7 +357,7 @@ export default function BlocForm({ id, projetId, trancheId }) {
           <button
             type="button"
             onClick={handleClear}
-            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium !text-gray-700 bg-white hover:bg-gray-50"
           >
             Vider
           </button>

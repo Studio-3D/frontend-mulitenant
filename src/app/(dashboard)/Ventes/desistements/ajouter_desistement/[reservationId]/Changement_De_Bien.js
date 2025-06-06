@@ -260,12 +260,13 @@ export function Changement_De_Bien({
   return (
     <div className="p-6">
       {isEditing && (
-        <div className="mb-4 p-3 bg-yellow-50 text-yellow-800 rounded-md">
+        <div className="mb-4 p-3 bg-yellow-50 !text-yellow-800 rounded-md">
           <p className="font-medium">Mode Édition</p>
         </div>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+
         <TextField
           label="Ancien Bien:"
           name="bien_ancien"
@@ -291,6 +292,7 @@ export function Changement_De_Bien({
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+
           <AutocompleteBien
             name="bien_id"
             user={user}

@@ -234,7 +234,7 @@ export default function Modal_Traite_Frein({ onClose, id, biens }) {
       <div className="mb-4">
         <label
           htmlFor={name}
-          className="block text-sm font-medium text-gray-700"
+          className="block text-sm font-medium !text-gray-700"
         >
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
@@ -276,7 +276,7 @@ export default function Modal_Traite_Frein({ onClose, id, biens }) {
           }
         />
         {errors[name] && (
-          <div className="mt-1 text-xs text-red-600">
+          <div className="mt-1 text-xs !text-red-600">
             <p>{errors[name]?.message}</p>
           </div>
         )}
@@ -807,7 +807,7 @@ export default function Modal_Traite_Frein({ onClose, id, biens }) {
                   <div>
                     {info_sup != null && (
                       <div className="w-full">
-                        <div className="bg-blue-100 text-blue-700 p-3 rounded-md border-l-4 border-blue-500 p-4 text-center rounded">
+                        <div className="bg-blue-100 !text-blue-700 p-3 rounded-md border-l-4 border-blue-500 p-4 text-center rounded">
                           {info_sup}
                         </div>
                       </div>

@@ -1773,7 +1773,7 @@ export default function VisiteFormEdit({ id }) {
               Annuler
             </Button>
             {/*isDisabled && (
-              <ul className="text-sm text-red-500 mt-2 list-disc ml-5">
+              <ul className="text-sm !text-red-500 mt-2 list-disc ml-5">
                 {loading_form && <li>Chargement du formulaire</li>}
                 {info_prix && <li>Conflit avec les informations de prix</li>}
                 {info_sup && (

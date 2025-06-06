@@ -73,7 +73,7 @@ const AutocompleteBien = ({ x, i, user, biensByProjet, handleinputchange, loadin
 
   return (
     <div className="relative w-full" ref={dropdownRef}>
-      <label className="block font-medium text-gray-700">
+      <label className="block font-medium !text-gray-700">
         Bien <span className="text-red-500">*</span>
       </label>
 
@@ -94,9 +94,9 @@ const AutocompleteBien = ({ x, i, user, biensByProjet, handleinputchange, loadin
           onClick={toggleDropdown}
         >
           {isOpen ? (
-            <ChevronDown className="h-4 w-4 m-2 text-gray-400 rotate-180" />
+            <ChevronDown className="h-4 w-4 m-2 !text-gray-400 rotate-180" />
           ) : (
-            <ChevronDown className="h-4 w-4 m-2 text-gray-400" />
+            <ChevronDown className="h-4 w-4 m-2 !text-gray-400" />
           )}
         </div>
 
@@ -126,7 +126,7 @@ const AutocompleteBien = ({ x, i, user, biensByProjet, handleinputchange, loadin
                 </svg>
               </div>
             ) : filteredOptions?.length === 0 ? (
-              <div className="p-2 text-gray-500 text-[15px]">Aucun bien trouvé</div>
+              <div className="p-2 !text-gray-500 text-[15px]">Aucun bien trouvé</div>
             ) : (
               filteredOptions?.map((option) => {
                 const isDisabled =

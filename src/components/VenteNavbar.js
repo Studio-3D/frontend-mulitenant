@@ -3,17 +3,17 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
-  FiUser,
-  FiCalendar,
-  FiPhoneCall,
-  FiHome,
-  FiClock,
-  FiUsers,
-  FiMenu,
-  FiPause,
-  FiChevronDown,
-  FiChevronUp,
-} from 'react-icons/fi';
+  User,
+  Calendar,
+  Phone,
+  Home,
+  Clock,
+  Users,
+  Menu,
+  Pause,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
 import Pusher from 'pusher-js';
 import FetchNotifMenu from '../../src/configs/FetchNotifMenu';
 
@@ -44,12 +44,12 @@ const VenteNavbar = () => {
     {
       name: 'Reservations',
       path: '/ventes/reservations',
-      icon: <FiUser className="w-5 h-5" />,
+      icon: <User className="w-5 h-5" />,
     },
     {
       name: 'Clients',
       path: '/ventes/clients',
-      icon: <FiUsers className="w-5 h-5" />,
+      icon: <Users className="w-5 h-5" />,
     },
       
   ];
@@ -71,10 +71,10 @@ const VenteNavbar = () => {
     <div className="bg-white rounded-lg shadow-md p-4 mb-4" ref={navRef}>
       {/* Collapsible Menu Button */}
       <button
-        className="block md:hidden text-gray-700 focus:outline-none"
+        className="block md:hidden !text-gray-700 focus:outline-none"
         onClick={() => setMenuOpen(!menuOpen)}
       >
-        <FiMenu className="w-6 h-6" />
+        <Menu className="w-6 h-6" />
       </button>
 
       {/* Responsive Navigation */}
@@ -110,9 +110,9 @@ const VenteNavbar = () => {
                 {item.subItems && (
                   <span className="ml-auto">
                     {openSubmenu === item.name ? (
-                      <FiChevronUp className="w-4 h-4" />
+                      <ChevronUp className="w-4 h-4" />
                     ) : (
-                      <FiChevronDown className="w-4 h-4" />
+                      <ChevronDown className="w-4 h-4" />
                     )}
                   </span>
                 )}
@@ -123,7 +123,7 @@ const VenteNavbar = () => {
                     <Link
                       key={subItem.name}
                       href={subItem.path}
-                      className={`flex items-center justify-between px-4 py-2 m-1 text-gray-700 hover:bg-gray-100 hover:rounded-md ${
+                      className={`flex items-center justify-between px-4 py-2 m-1 !text-gray-700 hover:bg-gray-100 hover:rounded-md ${
                         isActive(subItem.path) ? 'bg-blue-50 rounded-md' : ''
                       }`}
                     >

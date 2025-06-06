@@ -174,7 +174,7 @@ export default function ObjectifForm({ id = null }) {
         <form onSubmit={handleSubmit}>
           {/* User selection */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               Commercial <span className="text-red-500">*</span>
             </label>
             {id ? (
@@ -209,10 +209,10 @@ export default function ObjectifForm({ id = null }) {
                   ))}
                 </select>
                 {errors.user_id && (
-                  <p className="mt-1 text-sm text-red-600">{errors.user_id}</p>
+                  <p className="mt-1 text-sm !text-red-600">{errors.user_id}</p>
                 )}
                 {fetchingUsers && (
-                  <p className="mt-1 text-sm text-blue-500">
+                  <p className="mt-1 text-sm !text-blue-500">
                     Chargement des utilisateurs...
                   </p>
                 )}
@@ -223,11 +223,11 @@ export default function ObjectifForm({ id = null }) {
           {/* Visites section */}
           <div className="mb-6">
             <div className="bg-blue-50 p-3 rounded-t-md border-l-4 border-blue-500">
-              <h3 className="font-medium text-blue-700">Visites</h3>
+              <h3 className="font-medium !text-blue-700">Visites</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3 mb-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium !text-gray-700 mb-1">
                   Jours
                 </label>
                 <input
@@ -241,7 +241,7 @@ export default function ObjectifForm({ id = null }) {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium !text-gray-700 mb-1">
                   Semaine
                 </label>
                 <input
@@ -255,7 +255,7 @@ export default function ObjectifForm({ id = null }) {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium !text-gray-700 mb-1">
                   Mois
                 </label>
                 <input
@@ -274,11 +274,11 @@ export default function ObjectifForm({ id = null }) {
           {/* Appels section */}
           <div className="mb-6">
             <div className="bg-blue-50 p-3 rounded-t-md border-l-4 border-blue-500">
-              <h3 className="font-medium text-blue-700">Appels</h3>
+              <h3 className="font-medium !text-blue-700">Appels</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3 mb-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium !text-gray-700 mb-1">
                   Jours
                 </label>
                 <input
@@ -292,7 +292,7 @@ export default function ObjectifForm({ id = null }) {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium !text-gray-700 mb-1">
                   Semaine
                 </label>
                 <input
@@ -306,7 +306,7 @@ export default function ObjectifForm({ id = null }) {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium !text-gray-700 mb-1">
                   Mois
                 </label>
                 <input
@@ -329,7 +329,7 @@ export default function ObjectifForm({ id = null }) {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3 mb-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium !text-gray-700 mb-1">
                   Jours
                 </label>
                 <input
@@ -343,7 +343,7 @@ export default function ObjectifForm({ id = null }) {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium !text-gray-700 mb-1">
                   Semaine
                 </label>
                 <input
@@ -361,7 +361,7 @@ export default function ObjectifForm({ id = null }) {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium !text-gray-700 mb-1">
                   Mois
                 </label>
                 <input

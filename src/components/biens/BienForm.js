@@ -688,7 +688,7 @@ const renderDetailsStep = () => (
     <h3 className="text-lg font-medium mb-6">Détails du bien</h3>
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Propriété dite bien <span className="text-red-500">*</span>
         </label>
         <input
@@ -698,11 +698,11 @@ const renderDetailsStep = () => (
           className={`w-full px-3 py-2 border ${errors.propriete_dite_bien ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
           required
         />
-        {errors.propriete_dite_bien && <p className="mt-1 text-sm text-red-600">{errors.propriete_dite_bien[0]}</p>}
+        {errors.propriete_dite_bien && <p className="mt-1 text-sm !text-red-600">{errors.propriete_dite_bien[0]}</p>}
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Numéro <span className="text-red-500">*</span>
         </label>
         <input
@@ -712,11 +712,11 @@ const renderDetailsStep = () => (
           className={`w-full px-3 py-2 border ${errors.numero ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
           required
         />
-        {errors.numero && <p className="mt-1 text-sm text-red-600">{errors.numero[0]}</p>}
+        {errors.numero && <p className="mt-1 text-sm !text-red-600">{errors.numero[0]}</p>}
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Niveau <span className="text-red-500">*</span>
         </label>
         <input
@@ -726,11 +726,11 @@ const renderDetailsStep = () => (
           className={`w-full px-3 py-2 border ${errors.niveau ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
           required
         />
-        {errors.niveau && <p className="mt-1 text-sm text-red-600">{errors.niveau[0]}</p>}
+        {errors.niveau && <p className="mt-1 text-sm !text-red-600">{errors.niveau[0]}</p>}
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Orientation <span className="text-red-500">*</span>
         </label>
         <select
@@ -744,11 +744,11 @@ const renderDetailsStep = () => (
             <option key={option.id} value={option.id}>{option.label}</option>
           ))}
         </select>
-        {errors.orientation && <p className="mt-1 text-sm text-red-600">{errors.orientation[0]}</p>}
+        {errors.orientation && <p className="mt-1 text-sm !text-red-600">{errors.orientation[0]}</p>}
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Type de bien
         </label>
         <select
@@ -764,7 +764,7 @@ const renderDetailsStep = () => (
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Vue
         </label>
         <select
@@ -780,7 +780,7 @@ const renderDetailsStep = () => (
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Typologie
         </label>
         <select
@@ -799,7 +799,7 @@ const renderDetailsStep = () => (
       {/* Project structure selectors based on project composition */}
       {projet && projet.nbre_tranches > 0 && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium !text-gray-700 mb-1">
             Tranche <span className="text-red-500">*</span>
           </label>
           {loadingTranches ? (
@@ -808,7 +808,7 @@ const renderDetailsStep = () => (
               <span className="text-gray-500 text-sm">Chargement des tranches...</span>
             </div>
           ) : tranches.length === 0 ? (
-            <div className="w-full rounded-md border border-yellow-300 bg-yellow-50 px-3 py-2 text-yellow-700 text-sm">
+            <div className="w-full rounded-md border border-yellow-300 bg-yellow-50 px-3 py-2 !text-yellow-700 text-sm">
               Aucune tranche disponible pour ce projet.
             </div>
           ) : (
@@ -823,7 +823,7 @@ const renderDetailsStep = () => (
               ))}
             </select>
           )}
-          {errors.tranche_id && <p className="mt-1 text-sm text-red-600">{errors.tranche_id}</p>}
+          {errors.tranche_id && <p className="mt-1 text-sm !text-red-600">{errors.tranche_id}</p>}
           {selectedTranche && (
             <p className="mt-1 text-xs text-[#009FFF]">
               Tranche sélectionnée: {selectedTranche.nom}
@@ -835,7 +835,7 @@ const renderDetailsStep = () => (
 
       {projet && projet.nbre_blocs > 0 && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium !text-gray-700 mb-1">
             Bloc <span className="text-red-500">*</span>
           </label>
           {loadingBlocs ? (
@@ -844,11 +844,11 @@ const renderDetailsStep = () => (
               <span className="text-gray-500 text-sm">Chargement des blocs...</span>
             </div>
           ) : !formData.tranche_id ? (
-            <div className="w-full rounded-md border border-gray-300 px-3 py-2 bg-gray-50 text-gray-500 text-sm">
+            <div className="w-full rounded-md border border-gray-300 px-3 py-2 bg-gray-50 !text-gray-500 text-sm">
               Veuillez d'abord sélectionner une tranche
             </div>
           ) : filteredBlocs.length === 0 ? (
-            <div className="w-full rounded-md border border-yellow-300 bg-yellow-50 px-3 py-2 text-yellow-700 text-sm">
+            <div className="w-full rounded-md border border-yellow-300 bg-yellow-50 px-3 py-2 !text-yellow-700 text-sm">
               Aucun bloc disponible pour cette tranche.
             </div>
           ) : (
@@ -863,7 +863,7 @@ const renderDetailsStep = () => (
               ))}
             </select>
           )}
-          {errors.bloc_id && <p className="mt-1 text-sm text-red-600">{errors.bloc_id}</p>}
+          {errors.bloc_id && <p className="mt-1 text-sm !text-red-600">{errors.bloc_id}</p>}
           {selectedBloc && (
             <p className="mt-1 text-xs text-[#009FFF]">
               Bloc sélectionné: {selectedBloc.nom}
@@ -874,7 +874,7 @@ const renderDetailsStep = () => (
 
       {projet && projet.nbre_immeubles > 0 && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium !text-gray-700 mb-1">
             Immeuble <span className="text-red-500">*</span>
           </label>
           {loadingImmeubles ? (
@@ -883,11 +883,11 @@ const renderDetailsStep = () => (
               <span className="text-gray-500 text-sm">Chargement des immeubles...</span>
             </div>
           ) : !formData.bloc_id ? (
-            <div className="w-full rounded-md border border-gray-300 px-3 py-2 bg-gray-50 text-gray-500 text-sm">
+            <div className="w-full rounded-md border border-gray-300 px-3 py-2 bg-gray-50 !text-gray-500 text-sm">
               Veuillez d'abord sélectionner un bloc
             </div>
           ) : filteredImmeubles.length === 0 ? (
-            <div className="w-full rounded-md border border-yellow-300 bg-yellow-50 px-3 py-2 text-yellow-700 text-sm">
+            <div className="w-full rounded-md border border-yellow-300 bg-yellow-50 px-3 py-2 !text-yellow-700 text-sm">
               Aucun immeuble disponible pour ce bloc.
             </div>
           ) : (
@@ -902,7 +902,7 @@ const renderDetailsStep = () => (
               ))}
             </select>
           )}
-          {errors.immeuble_id && <p className="mt-1 text-sm text-red-600">{errors.immeuble_id}</p>}
+          {errors.immeuble_id && <p className="mt-1 text-sm !text-red-600">{errors.immeuble_id}</p>}
           {selectedImmeuble && (
             <p className="mt-1 text-xs text-[#009FFF]">
               Immeuble sélectionné: {selectedImmeuble.nom}
@@ -912,7 +912,7 @@ const renderDetailsStep = () => (
       )}
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Nombre de façades <span className="text-red-500">*</span>
         </label>
         <input
@@ -922,11 +922,11 @@ const renderDetailsStep = () => (
           className={`w-full px-3 py-2 border ${errors.nbre_facades ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
           required
         />
-        {errors.nbre_facades && <p className="mt-1 text-sm text-red-600">{errors.nbre_facades[0]}</p>}
+        {errors.nbre_facades && <p className="mt-1 text-sm !text-red-600">{errors.nbre_facades[0]}</p>}
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Prix unitaire (Dhs) <span className="text-red-500">*</span>
         </label>
         <input
@@ -936,11 +936,11 @@ const renderDetailsStep = () => (
           className={`w-full px-3 py-2 border ${errors.prix_unitaire ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
           required
         />
-        {errors.prix_unitaire && <p className="mt-1 text-sm text-red-600">{errors.prix_unitaire[0]}</p>}
+        {errors.prix_unitaire && <p className="mt-1 text-sm !text-red-600">{errors.prix_unitaire[0]}</p>}
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Prix (Dhs)
         </label>
         <input
@@ -952,7 +952,7 @@ const renderDetailsStep = () => (
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Avance minimale (Dhs) <span className="text-red-500">*</span>
         </label>
         <input
@@ -962,11 +962,11 @@ const renderDetailsStep = () => (
           className={`w-full px-3 py-2 border ${errors.avance_minimale ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
           required
         />
-        {errors.avance_minimale && <p className="mt-1 text-sm text-red-600">{errors.avance_minimale[0]}</p>}
+        {errors.avance_minimale && <p className="mt-1 text-sm !text-red-600">{errors.avance_minimale[0]}</p>}
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Titre foncier
         </label>
         <input
@@ -978,7 +978,7 @@ const renderDetailsStep = () => (
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           État <span className="text-red-500">*</span>
         </label>
         <select
@@ -991,7 +991,7 @@ const renderDetailsStep = () => (
             <option key={option.id} value={option.id}>{option.label}</option>
           ))}
         </select>
-        {errors.etat && <p className="mt-1 text-sm text-red-600">{errors.etat[0]}</p>}
+        {errors.etat && <p className="mt-1 text-sm !text-red-600">{errors.etat[0]}</p>}
       </div>
 
       <div className="flex items-center">
@@ -1002,7 +1002,7 @@ const renderDetailsStep = () => (
           onChange={(e) => handleChange("conventionne", e.target.checked)}
           className="h-4 w-4 text-[#009FFF] border-gray-300 rounded focus:ring-blue-500"
         />
-        <label htmlFor="conventionne" className="ml-2 block text-sm text-gray-700">
+        <label htmlFor="conventionne" className="ml-2 block text-sm !text-gray-700">
           Conventionné
         </label>
       </div>
@@ -1016,7 +1016,7 @@ const renderAreasStep = () => (
     <h3 className="text-lg font-medium mb-6">Superficies du bien</h3>
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Superficie habitable (m²) <span className="text-red-500">*</span>
         </label>
         <input
@@ -1026,11 +1026,11 @@ const renderAreasStep = () => (
           className={`w-full px-3 py-2 border ${errors.superficie_habitable ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
           required
         />
-        {errors.superficie_habitable && <p className="mt-1 text-sm text-red-600">{errors.superficie_habitable[0]}</p>}
+        {errors.superficie_habitable && <p className="mt-1 text-sm !text-red-600">{errors.superficie_habitable[0]}</p>}
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Superficie architecte (m²)
         </label>
         <input
@@ -1042,7 +1042,7 @@ const renderAreasStep = () => (
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Superficie terrasse (m²)
         </label>
         <input
@@ -1054,7 +1054,7 @@ const renderAreasStep = () => (
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Superficie terrasse calculée (m²)
         </label>
         <input
@@ -1066,7 +1066,7 @@ const renderAreasStep = () => (
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Superficie balcon (m²)
         </label>
         <input
@@ -1078,7 +1078,7 @@ const renderAreasStep = () => (
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Superficie balcon calculée (m²)
         </label>
         <input
@@ -1090,7 +1090,7 @@ const renderAreasStep = () => (
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Superficie jardin (m²)
         </label>
         <input
@@ -1102,7 +1102,7 @@ const renderAreasStep = () => (
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Superficie jardin calculée (m²)
         </label>
         <input
@@ -1114,7 +1114,7 @@ const renderAreasStep = () => (
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Superficie vendable (m²)
         </label>
         <input
@@ -1126,7 +1126,7 @@ const renderAreasStep = () => (
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Superficie totale (m²)
         </label>
         <input
@@ -1138,7 +1138,7 @@ const renderAreasStep = () => (
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Numéro parking
         </label>
         <input
@@ -1150,7 +1150,7 @@ const renderAreasStep = () => (
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Prix parking (Dhs)
         </label>
         <input
@@ -1162,7 +1162,7 @@ const renderAreasStep = () => (
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Superficie parking (m²)
         </label>
         <input
@@ -1174,7 +1174,7 @@ const renderAreasStep = () => (
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Numéro box
         </label>
         <input
@@ -1186,7 +1186,7 @@ const renderAreasStep = () => (
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Prix box (Dhs)
         </label>
         <input
@@ -1198,7 +1198,7 @@ const renderAreasStep = () => (
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Superficie box (m²)
         </label>
         <input
@@ -1218,7 +1218,7 @@ const renderCompositionStep = () => (
     <h3 className="text-lg font-medium mb-6">Composition du bien</h3>
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Nombre de chambres
         </label>
         <input
@@ -1231,7 +1231,7 @@ const renderCompositionStep = () => (
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Nombre de salons
         </label>
         <input
@@ -1244,7 +1244,7 @@ const renderCompositionStep = () => (
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Nombre de salles de bain
         </label>
         <input
@@ -1257,7 +1257,7 @@ const renderCompositionStep = () => (
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Nombre de cuisines
         </label>
         <input
@@ -1270,7 +1270,7 @@ const renderCompositionStep = () => (
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Nombre de terrasses
         </label>
         <input
@@ -1283,7 +1283,7 @@ const renderCompositionStep = () => (
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Nombre de balcons
         </label>
         <input
@@ -1296,7 +1296,7 @@ const renderCompositionStep = () => (
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Nombre de halls
         </label>
         <input
@@ -1309,7 +1309,7 @@ const renderCompositionStep = () => (
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Nombre de réceptions
         </label>
         <input
@@ -1322,7 +1322,7 @@ const renderCompositionStep = () => (
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Nombre de buanderies
         </label>
         <input
@@ -1335,7 +1335,7 @@ const renderCompositionStep = () => (
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Nombre de placards
         </label>
         <input

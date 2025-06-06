@@ -175,7 +175,7 @@ const FournisseursForm = ({ fournisseur, onSave, onCancel }) => {
       <h2 className="text-2xl font-bold mb-6">{fournisseur ? 'Modifier' : 'Ajouter'} un fournisseur</h2>
       
       {!iceUnique && (
-        <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 text-red-700">
+        <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 !text-red-700">
           Cet ICE appartient déjà à un autre fournisseur
         </div>
       )}
@@ -183,7 +183,7 @@ const FournisseursForm = ({ fournisseur, onSave, onCancel }) => {
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
           <div>
-            <label htmlFor="ice" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="ice" className="block text-sm font-medium !text-gray-700 mb-1">
               ICE <span className="text-red-500">*</span>
             </label>
             <input
@@ -194,11 +194,11 @@ const FournisseursForm = ({ fournisseur, onSave, onCancel }) => {
               onChange={handleChange}
               className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${errors.ice ? 'border-red-500' : 'border-gray-300'}`}
             />
-            {errors.ice && <p className="mt-1 text-xs text-red-500">{errors.ice}</p>}
+            {errors.ice && <p className="mt-1 text-xs !text-red-500">{errors.ice}</p>}
           </div>
           
           <div>
-            <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="code" className="block text-sm font-medium !text-gray-700 mb-1">
               Code <span className="text-red-500">*</span>
             </label>
             <input
@@ -209,11 +209,11 @@ const FournisseursForm = ({ fournisseur, onSave, onCancel }) => {
               onChange={handleChange}
               className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${errors.code ? 'border-red-500' : 'border-gray-300'}`}
             />
-            {errors.code && <p className="mt-1 text-xs text-red-500">{errors.code}</p>}
+            {errors.code && <p className="mt-1 text-xs !text-red-500">{errors.code}</p>}
           </div>
           
           <div>
-            <label htmlFor="nom" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="nom" className="block text-sm font-medium !text-gray-700 mb-1">
               Nom <span className="text-red-500">*</span>
             </label>
             <input
@@ -224,11 +224,11 @@ const FournisseursForm = ({ fournisseur, onSave, onCancel }) => {
               onChange={handleChange}
               className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${errors.nom ? 'border-red-500' : 'border-gray-300'}`}
             />
-            {errors.nom && <p className="mt-1 text-xs text-red-500">{errors.nom}</p>}
+            {errors.nom && <p className="mt-1 text-xs !text-red-500">{errors.nom}</p>}
           </div>
           
           <div>
-            <label htmlFor="rc" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="rc" className="block text-sm font-medium !text-gray-700 mb-1">
               RC <span className="text-red-500">*</span>
             </label>
             <input
@@ -239,11 +239,11 @@ const FournisseursForm = ({ fournisseur, onSave, onCancel }) => {
               onChange={handleChange}
               className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${errors.rc ? 'border-red-500' : 'border-gray-300'}`}
             />
-            {errors.rc && <p className="mt-1 text-xs text-red-500">{errors.rc}</p>}
+            {errors.rc && <p className="mt-1 text-xs !text-red-500">{errors.rc}</p>}
           </div>
           
           <div>
-            <label htmlFor="fichier_rc" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="fichier_rc" className="block text-sm font-medium !text-gray-700 mb-1">
               Fichier RC
             </label>
             <input
@@ -254,15 +254,15 @@ const FournisseursForm = ({ fournisseur, onSave, onCancel }) => {
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
             {fournisseur && fournisseur.fichier_rc && (
-              <p className="mt-1 text-xs text-blue-500">
+              <p className="mt-1 text-xs !text-blue-500">
                 Fichier actuel: {fournisseur.fichier_rc}
               </p>
             )}
-            {errors.fichier_rc && <p className="mt-1 text-xs text-red-500">{errors.fichier_rc}</p>}
+            {errors.fichier_rc && <p className="mt-1 text-xs !text-red-500">{errors.fichier_rc}</p>}
           </div>
           
           <div className="md:col-span-2">
-            <label htmlFor="adresse" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="adresse" className="block text-sm font-medium !text-gray-700 mb-1">
               Adresse
             </label>
             <textarea
@@ -273,7 +273,7 @@ const FournisseursForm = ({ fournisseur, onSave, onCancel }) => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
-            {errors.adresse && <p className="mt-1 text-xs text-red-500">{errors.adresse}</p>}
+            {errors.adresse && <p className="mt-1 text-xs !text-red-500">{errors.adresse}</p>}
           </div>
         </div>
         
@@ -281,7 +281,7 @@ const FournisseursForm = ({ fournisseur, onSave, onCancel }) => {
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium !text-gray-700 hover:bg-gray-50"
           >
             Annuler
           </button>

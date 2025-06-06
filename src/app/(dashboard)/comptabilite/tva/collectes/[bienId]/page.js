@@ -183,17 +183,17 @@ const TvaCollectesPage = () => {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code Réservation</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Montant</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type Encaissement</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mode Encaissement</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avance Terrain</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avance Bien TTC</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avance Bien HT</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TVA à Déclarer</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium !text-gray-500 uppercase tracking-wider">Date</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium !text-gray-500 uppercase tracking-wider">Code Réservation</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium !text-gray-500 uppercase tracking-wider">Client</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium !text-gray-500 uppercase tracking-wider">Montant</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium !text-gray-500 uppercase tracking-wider">Type Encaissement</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium !text-gray-500 uppercase tracking-wider">Mode Encaissement</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium !text-gray-500 uppercase tracking-wider">Avance Terrain</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium !text-gray-500 uppercase tracking-wider">Avance Bien TTC</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium !text-gray-500 uppercase tracking-wider">Avance Bien HT</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium !text-gray-500 uppercase tracking-wider">TVA à Déclarer</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium !text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -245,13 +245,13 @@ const TvaCollectesPage = () => {
                           <td className="px-4 py-3 whitespace-nowrap">
                             {item.encaissement ? (
                               <span className={`inline-flex px-2 py-1 text-xs rounded-full
-                                ${item.encaissement.type_encaissement == '1' ? 'bg-green-100 text-green-800' : 
-                                 item.encaissement.type_encaissement == '2' ? 'bg-red-100 text-red-800' :
-                                 item.encaissement.type_encaissement == '3' ? 'bg-yellow-100 text-yellow-800' :
-                                 item.encaissement.type_encaissement == '4' ? 'bg-blue-100 text-blue-800' :
+                                ${item.encaissement.type_encaissement == '1' ? 'bg-green-100 !text-green-800' : 
+                                 item.encaissement.type_encaissement == '2' ? 'bg-red-100 !text-red-800' :
+                                 item.encaissement.type_encaissement == '3' ? 'bg-yellow-100 !text-yellow-800' :
+                                 item.encaissement.type_encaissement == '4' ? 'bg-blue-100 !text-blue-800' :
                                  item.encaissement.type_encaissement == '5' ? 'bg-purple-100 text-purple-800' :
                                  item.encaissement.type_encaissement == '6' ? 'bg-pink-100 text-pink-800' : 
-                                'bg-gray-100 text-gray-800'}`}
+                                'bg-gray-100 !text-gray-800'}`}
                               >
                                 {item.encaissement.type_encaissement == '1' ? 'Avances' : 
                                  item.encaissement.type_encaissement == '2' ? 'Restitution' :
@@ -283,7 +283,7 @@ const TvaCollectesPage = () => {
                             <button
                               onClick={() => handleShowReservation(item.reservation_id)}
                               title="Détail Réservation"
-                              className="p-1.5 bg-green-100 text-green-700 rounded-full hover:bg-green-200"
+                              className="p-1.5 bg-green-100 !text-green-700 rounded-full hover:bg-green-200"
                             >
                               <Eye size={16} strokeWidth={2.5} />
                             </button>
@@ -301,21 +301,21 @@ const TvaCollectesPage = () => {
                   <button
                     onClick={() => setPage(Math.max(0, page - 1))}
                     disabled={page === 0}
-                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md !text-gray-700 bg-white hover:bg-gray-50"
                   >
                     Précédent
                   </button>
                   <button
                     onClick={() => setPage(Math.min(paginatedData.totalPages - 1, page + 1))}
                     disabled={page >= paginatedData.totalPages - 1}
-                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md !text-gray-700 bg-white hover:bg-gray-50"
                   >
                     Suivant
                   </button>
                 </div>
                 <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                   <div>
-                    <p className="text-sm text-gray-700">
+                    <p className="text-sm !text-gray-700">
                       Affichage de <span className="font-medium">{page * size + 1}</span> à{' '}
                       <span className="font-medium">
                         {Math.min((page + 1) * size, paginatedData.totalItems)}
@@ -328,7 +328,7 @@ const TvaCollectesPage = () => {
                       <button
                         onClick={() => setPage(0)}
                         disabled={page === 0}
-                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium !text-gray-500 hover:bg-gray-50"
                       >
                         <span className="sr-only">Premier</span>
                         &laquo;
@@ -336,7 +336,7 @@ const TvaCollectesPage = () => {
                       <button
                         onClick={() => setPage(Math.max(0, page - 1))}
                         disabled={page === 0}
-                        className="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+                        className="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium !text-gray-500 hover:bg-gray-50"
                       >
                         <span className="sr-only">Précédent</span>
                         &lsaquo;
@@ -350,8 +350,8 @@ const TvaCollectesPage = () => {
                             onClick={() => setPage(pageNumber)}
                             className={`relative inline-flex items-center px-4 py-2 border ${
                               page === pageNumber
-                                ? 'bg-blue-50 border-blue-500 text-blue-600 z-10'
-                                : 'border-gray-300 bg-white text-gray-500 hover:bg-gray-50'
+                                ? 'bg-blue-50 border-blue-500 !text-blue-600 z-10'
+                                : 'border-gray-300 bg-white !text-gray-500 hover:bg-gray-50'
                             } text-sm font-medium`}
                           >
                             {pageNumber + 1}
@@ -361,7 +361,7 @@ const TvaCollectesPage = () => {
                       <button
                         onClick={() => setPage(Math.min(paginatedData.totalPages - 1, page + 1))}
                         disabled={page >= paginatedData.totalPages - 1}
-                        className="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+                        className="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium !text-gray-500 hover:bg-gray-50"
                       >
                         <span className="sr-only">Suivant</span>
                         &rsaquo;
@@ -369,7 +369,7 @@ const TvaCollectesPage = () => {
                       <button
                         onClick={() => setPage(paginatedData.totalPages - 1)}
                         disabled={page >= paginatedData.totalPages - 1}
-                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium !text-gray-500 hover:bg-gray-50"
                       >
                         <span className="sr-only">Dernier</span>
                         &raquo;

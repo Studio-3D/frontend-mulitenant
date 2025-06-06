@@ -227,8 +227,8 @@ const TvaBiensPage = () => {
             title={row.tva_collectes?.length > 0 ? 'TVA Collectés' : 'Anciens TVA Collectés'}
             className={`p-1.5 rounded-full ${
               row.tva_collectes?.length > 0
-                ? 'bg-blue-100 text-blue-600 hover:bg-blue-200'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? 'bg-blue-100 !text-blue-600 hover:bg-blue-200'
+                : 'bg-gray-100 !text-gray-600 hover:bg-gray-200'
             }`}
           >
             <Eye size={16} strokeWidth={2.5} />

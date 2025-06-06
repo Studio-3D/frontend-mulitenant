@@ -50,7 +50,7 @@ const TvaBiensFilter = ({ onSubmit, initialValues = {} }) => {
     <form onSubmit={handleSubmit} className="bg-white p-4 rounded-lg shadow-sm border">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label htmlFor="nom" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="nom" className="block text-sm font-medium !text-gray-700 mb-1">
             Propriété Dite Bien
           </label>
           <input
@@ -64,7 +64,7 @@ const TvaBiensFilter = ({ onSubmit, initialValues = {} }) => {
         </div>
         
         <div>
-          <label htmlFor="code_reservation" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="code_reservation" className="block text-sm font-medium !text-gray-700 mb-1">
             Code Réservation
           </label>
           <input
@@ -78,7 +78,7 @@ const TvaBiensFilter = ({ onSubmit, initialValues = {} }) => {
         </div>
         
         <div>
-          <label htmlFor="superficie" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="superficie" className="block text-sm font-medium !text-gray-700 mb-1">
             Superficie
           </label>
           <input
@@ -92,7 +92,7 @@ const TvaBiensFilter = ({ onSubmit, initialValues = {} }) => {
         </div>
         
         <div>
-          <label htmlFor="prix_ttc" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="prix_ttc" className="block text-sm font-medium !text-gray-700 mb-1">
             Prix TTC
           </label>
           <input
@@ -106,7 +106,7 @@ const TvaBiensFilter = ({ onSubmit, initialValues = {} }) => {
         </div>
         
         <div>
-          <label htmlFor="tva" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="tva" className="block text-sm font-medium !text-gray-700 mb-1">
             TVA
           </label>
           <input
@@ -124,7 +124,7 @@ const TvaBiensFilter = ({ onSubmit, initialValues = {} }) => {
         <button
           type="button"
           onClick={handleClear}
-          className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center"
+          className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium !text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center"
         >
           <XCircle className="mr-2" size={18} />
           Vider

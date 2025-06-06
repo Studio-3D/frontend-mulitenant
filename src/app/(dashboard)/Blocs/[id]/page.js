@@ -273,7 +273,7 @@ export default function BlocDetailsPage() {
               <h1 className="text-xl font-semibold">{bloc.nom}</h1>
               
               {bloc.tranche && (
-                <div className="inline-block px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm mt-2">
+                <div className="inline-block px-3 py-1 bg-green-100 !text-green-700 rounded-full text-sm mt-2">
                   Tranche: {bloc.tranche.nom}
                 </div>
               )}
@@ -283,21 +283,21 @@ export default function BlocDetailsPage() {
               <div className="grid grid-cols-2 gap-4 text-center">
                 <div className="p-2">
                   <div className="flex flex-col items-center">
-                    <Building2 className="w-6 h-6 text-red-500 mb-1" />
+                    <Building2 className="w-6 h-6 !text-red-500 mb-1" />
                     <span className="text-xl font-medium">
                       {countsLoading ? "0" : counts.immeubles}
                     </span>
-                    <span className="text-sm text-gray-500">Immeubles</span>
+                    <span className="text-sm !text-gray-500">Immeubles</span>
                   </div>
                 </div>
                 
                 <div className="p-2">
                   <div className="flex flex-col items-center">
-                    <Home className="w-6 h-6 text-blue-500 mb-1" />
+                    <Home className="w-6 h-6 !text-blue-500 mb-1" />
                     <span className="text-xl font-medium">
                       {countsLoading ? "0" : counts.biens}
                     </span>
-                    <span className="text-sm text-gray-500">Biens</span>
+                    <span className="text-sm !text-gray-500">Biens</span>
                   </div>
                 </div>
               </div>

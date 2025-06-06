@@ -124,14 +124,14 @@ const HistoriquesTable = (id) => {
         const roleColors = {
           'Planification Rendez Vous': 'bg-blue-100 text-[#009FFF]',
           Injoignable: 'bg-purple-100 text-purple-600',
-          Rappel: 'bg-yellow-100 text-yellow-600',
-          'Nouveau Appel': 'bg-green-100 text-green-600',
+          Rappel: 'bg-yellow-100 !text-yellow-600',
+          'Nouveau Appel': 'bg-green-100 !text-green-600',
         };
 
         return (
           <span
             className={`px-2 py-1 rounded text-sm font-semibold ${
-              roleColors[row.statut] || 'bg-gray-100 text-gray-600'
+              roleColors[row.statut] || 'bg-gray-100 !text-gray-600'
             }`}
           >
             {row.statut}
@@ -150,14 +150,14 @@ const HistoriquesTable = (id) => {
         <div className="flex gap-3 items-center">
           {row.visite_id != null && (
             <Eye
-              className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
+              className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
               title="Voir Visite"
               onClick={() => handleShow(row.visite_id)}
             />
           )}
           {row.appel_id != null && (
             <Eye
-              className="w-4 h-4 text-green-500 hover:text-green-700 cursor-pointer"
+              className="w-4 h-4 !text-green-500 hover:text-green-700 cursor-pointer"
               title="Voir Visite"
               onClick={() => handleShowAppel(row.appel_id)}
             />

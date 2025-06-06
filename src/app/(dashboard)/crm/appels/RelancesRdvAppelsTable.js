@@ -250,19 +250,19 @@ const RelancesRdvAppelsTable = (type) => {
     render: (row) => (
       <div className="flex gap-3 items-center">
         <Eye
-          className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
+          className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
           title="Voir détails"
           onClick={() => handleShow(row.appel_id)}
         />
         {Number(type.type) == 1 ? (
           <CheckCircle
-            className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
+            className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
             title="Traiter Relance"
             onClick={() => handleValider(row.id, 'Relance', row.nomComplet)}
           />
         ) : (
           <CheckCircle
-            className="w-4 h-4 text-green-500 hover:text-green-700 cursor-pointer"
+            className="w-4 h-4 !text-green-500 hover:text-green-700 cursor-pointer"
             title="Traiter Rendez Vous"
             onClick={() => handleValider(row.id, 'RDV', row.nomComplet)}
           />

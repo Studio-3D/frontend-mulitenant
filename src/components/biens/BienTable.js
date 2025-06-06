@@ -6,7 +6,7 @@ import Table from '@/components/Table';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { useAuth } from "@/context/AuthContext";
-import { Pencil, Trash2 } from "lucide-react";
+import { Eye, Pencil, Trash2 } from "lucide-react";
 import * as XLSX from 'xlsx';
 import BienFilter from './BienFilter';
 import { useProjet } from '@/context/ProjetContext';
@@ -119,6 +119,15 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
         
         return (
           <div className="flex gap-4 items-center">
+            {/* View button - available to all users */}
+            <button
+              className="text-gray-500 hover:text-blue-500"
+              onClick={() => handleAction('view', row.id)}
+              title="Voir détails"
+            >
+              <Eye className="w-4 h-4" />
+            </button>
+            
             {canManageBiens && (
               <>
                 <button
@@ -246,6 +255,9 @@ const data_to_export = () => {
   // Handle table row actions
   const handleAction = (action, id) => {
     switch (action) {
+      case 'view':
+        router.push(`/Biens/${id}`);
+        break;
       case 'edit':
         router.push(`/Biens/${id}/modifier`);
         break;

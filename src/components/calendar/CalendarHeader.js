@@ -18,7 +18,7 @@ const StatCard = ({
       <div className="p-2 mr-3 rounded-full bg-white">{icon}</div>
       <div>
         <div className="text-2xl font-bold">{count}</div>
-        <div className="text-sm text-gray-600">{title}</div>
+        <div className="text-sm !text-gray-600">{title}</div>
       </div>
     </div>;
 };

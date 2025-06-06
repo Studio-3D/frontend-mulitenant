@@ -44,7 +44,7 @@ const DecomptesFilter = ({ onSubmit, initialValues = {} }) => {
     <form onSubmit={handleSubmit} className="bg-white p-4 rounded-lg shadow-sm border">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label htmlFor="numero" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="numero" className="block text-sm font-medium !text-gray-700 mb-1">
             Numéro
           </label>
           <input
@@ -58,7 +58,7 @@ const DecomptesFilter = ({ onSubmit, initialValues = {} }) => {
         </div>
         
         <div>
-          <label htmlFor="montant" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="montant" className="block text-sm font-medium !text-gray-700 mb-1">
             Montant
           </label>
           <input
@@ -72,7 +72,7 @@ const DecomptesFilter = ({ onSubmit, initialValues = {} }) => {
         </div>
         
         <div>
-          <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="date" className="block text-sm font-medium !text-gray-700 mb-1">
             Date
           </label>
           <input
@@ -90,7 +90,7 @@ const DecomptesFilter = ({ onSubmit, initialValues = {} }) => {
         <button
           type="button"
           onClick={handleClear}
-          className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center"
+          className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium !text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center"
         >
           <XCircle className="mr-2" size={18} />
           Vider
