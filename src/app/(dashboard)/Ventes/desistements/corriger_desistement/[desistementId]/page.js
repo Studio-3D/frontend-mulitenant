@@ -15,11 +15,11 @@ import { Changement_De_Bien } from '../../ajouter_desistement/[reservationId]/Ch
 import LoadingSpin from '@/components/LoadingSpin';
 
 // Schemas
-import {
-  desistementDefinitifSchema,
-  desistementAuProfitSchema,
-  changementDeBienSchema,
-} from '../../ajouter_desistement/[reservationId]/schemas';
+// import {
+//   desistementDefinitifSchema,
+//   desistementAuProfitSchema,
+//   changementDeBienSchema,
+// } from '../../ajouter_desistement/[reservationId]/schemas';
 
 export default function Page() {
   const router = useRouter();
@@ -77,20 +77,20 @@ export default function Page() {
         };
 
         // Set the appropriate schema based on desistement type
-        let schema;
-        switch(desistement.type) {
-          case 'Desistement_Definitif':
-            schema = desistementDefinitifSchema;
-            break;
-          case 'Desistement_Au_Profit':
-            schema = desistementAuProfitSchema;
-            break;
-          case 'Changement_De_Bien':
-            schema = changementDeBienSchema;
-            break;
-          default:
-            schema = desistementDefinitifSchema;
-        }
+        // let schema;
+        // switch(desistement.type) {
+        //   case 'Desistement_Definitif':
+        //     schema = desistementDefinitifSchema;
+        //     break;
+        //   case 'Desistement_Au_Profit':
+        //     schema = desistementAuProfitSchema;
+        //     break;
+        //   case 'Changement_De_Bien':
+        //     schema = changementDeBienSchema;
+        //     break;
+        //   default:
+        //     schema = desistementDefinitifSchema;
+        // }
 
         // Update form methods with the correct schema
         methods.reset(formData);
