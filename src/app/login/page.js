@@ -208,11 +208,11 @@ export default function Login() {
             <div className="text-center text-gray-500 text-sm mt-8">
               <p>© 2023 Immo Gestion. Tous droits réservés.</p>
               <div className="mt-2 space-x-4">
-                <Link href="/terms-conditions" className="text-blue-600 hover:text-blue-800">
+                <Link href="/conditions-generales" className="!text-blue-600 hover:text-blue-800">
                   Conditions Générales
                 </Link>
                 <span>•</span>
-                <Link href="/privacy-policy" className="text-blue-600 hover:text-blue-800">
+                <Link href="/politique-confidentialite" className="!text-blue-600 hover:text-blue-800">
                   Politique de Confidentialité
                 </Link>
               </div>
