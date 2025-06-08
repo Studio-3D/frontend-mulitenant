@@ -5,6 +5,7 @@ import { Sparkles, Copy, RefreshCw, Instagram, Facebook, Image, X, FileVideo, Up
 import toast from "react-hot-toast";
 import axios from "axios";
 import { APIURL } from "@/configs/api";
+import { LinkedInConfig } from "@/configs/linkedin";
 
 
 // Modify the BienDescriptionGenerator to accept initialMediaUrl and initialMediaType props
@@ -257,6 +258,18 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
     }
   };
 
+  // Format and sanitize a description for social media to remove sensitive information
+  const sanitizeDescriptionForSocialMedia = (description) => {
+    // Remove potential contact information (emails, phone numbers)
+    let sanitized = description.replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '[EMAIL REMOVED]')
+                              .replace(/(\+\d{1,3})?[\s.-]?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/g, '[PHONE REMOVED]');
+    
+    // Remove any mentions of children or family demographics
+    sanitized = sanitized.replace(/\b(enfants?|children|famille avec \d+ enfants?|kids)\b/gi, '[FAMILY INFO REMOVED]');
+    
+    return sanitized;
+  };
+
   // Share to Instagram with media using Instagram_FacebookController
   const shareToInstagram = () => {
     if (!description) {
@@ -277,24 +290,21 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
       // Prepare hashtags
       const hashtags = "#immobilier #realestate #property #home #maison #vente";
       
-      // Format Instagram post content
-      const postContent = `🏡 ${propertyTitle}\n\n${description}\n\n📍 ${propertyLocation}\n💰 ${propertyPrice}\n\n${hashtags}`;
+      // Format Instagram post content with sanitized description
+      const sanitizedDescription = sanitizeDescriptionForSocialMedia(description);
+      const postContent = `🏡 ${propertyTitle}\n\n${sanitizedDescription}\n\n📍 ${propertyLocation}\n💰 ${propertyPrice}\n\n${hashtags}`;
       
       const token = localStorage.getItem("accessToken");
       
-      if (uploadedMediaUrl) {  // Changed from checking selectedMedia to just checking uploadedMediaUrl
+      if (uploadedMediaUrl) {
         // Use the Facebook_InstagramController to post with media
         const formData = new FormData();
-        // Fix the parameter to match exactly what the API expects
-        formData.append('reseaux_sociaux', 2); // Integer value instead of string '2'
+        formData.append('reseaux_sociaux', 2); // Value for Instagram
         formData.append('description', postContent);
         
         // If we have already uploaded media, use mode 'existante'
         formData.append('mode', 'existante');
         formData.append('img_existant_url', uploadedMediaUrl);
-        
-        // Log formData for debugging
-        console.log('Sending to Instagram:', Array.from(formData.entries()));
         
         const apiUrl = `${APIURL.ROOTV1}/postTo_Social_Network`;
         
@@ -383,7 +393,8 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
       
       // Format title and description for TikTok
       const title = `${propertyTitle} - ${propertyLocation}`;
-      const postText = `${description}\n\n📍 ${propertyLocation}\n💰 ${propertyPrice}\n\n#immobilier #realestate #property #maison`;
+      const sanitizedDescription = sanitizeDescriptionForSocialMedia(description);
+      const postText = `${sanitizedDescription}\n\n📍 ${propertyLocation}\n💰 ${propertyPrice}\n\n#immobilier #realestate #property #maison`;
       
       // Check if we have a media URL, either from upload or pre-selected
       if (!uploadedMediaUrl) {
@@ -398,16 +409,8 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
       // Get token for API request
       const token = localStorage.getItem("accessToken");
       
-      // Updated API URL with correct path
+      // API URL
       const apiUrl = `${APIURL.ROOTV1}/tiktok/publish`;
-      
-      console.log("Sending to TikTok API:", {
-        title,
-        description: postText,
-        media_url: uploadedMediaUrl,
-        media_type: tikTokMediaType,
-        apiUrl
-      });
       
       const response = await axios.post(
         apiUrl,
@@ -450,21 +453,18 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
       if (error.response?.status === 401) {
         toast.error("Authentification TikTok échouée. Veuillez reconnecter votre compte.");
       } else if (error.response?.status === 404) {
-        toast.error("API TikTok non disponible. Utilisation de la méthode manuelle.");
-        fallbackToManualTikTokShare();
+        toast.error("API TikTok non disponible.");
       } else if (error.response?.data?.error) {
         toast.error(`Erreur TikTok: ${error.response.data.error}`);
-        fallbackToManualTikTokShare();
       } else {
-        toast.error("Erreur lors du partage sur TikTok. Essayez la méthode manuelle.");
-        fallbackToManualTikTokShare();
+        toast.error("Erreur lors du partage sur TikTok.");
       }
     } finally {
       setIsSharingTikTok(false);
     }
   };
   
-  // Improved verification of TikTok post success
+  // Verify TikTok post success
   const verifyTikTokPost = async (publishId) => {
     try {
       const token = localStorage.getItem("accessToken");
@@ -496,30 +496,23 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
           const postUrl = responseData.data?.data?.tiktok_post_url;
           
           if (status === 'PUBLISH_COMPLETE' && postUrl) {
-            if (postUrl.includes('@user/video/example')) {
-              // This is a mock URL, not a real TikTok post
-              toast.success("Publication envoyée à TikTok avec succès!");
-              toast.info("Note: En mode développement, les publications ne sont pas réellement envoyées à TikTok");
-            } else {
-              // This looks like a real TikTok post URL
-              toast.success("Publication confirmée sur TikTok!");
-              
-              // Offer button to view the post
-              toast((t) => (
-                <div>
-                  <p>Votre vidéo est en ligne!</p>
-                  <button 
-                    onClick={() => {
-                      window.open(postUrl, '_blank');
-                      toast.dismiss(t.id);
-                    }}
-                    className="mt-2 px-4 py-2 bg-gradient-to-r from-black to-[#00f2ea] text-white rounded-md"
-                  >
-                    Voir sur TikTok
-                  </button>
-                </div>
-              ), { duration: 10000 });
-            }
+            toast.success("Publication confirmée sur TikTok!");
+            
+            // Offer button to view the post
+            toast((t) => (
+              <div>
+                <p>Votre vidéo est en ligne!</p>
+                <button 
+                  onClick={() => {
+                    window.open(postUrl, '_blank');
+                    toast.dismiss(t.id);
+                  }}
+                  className="mt-2 px-4 py-2 bg-gradient-to-r from-black to-[#00f2ea] text-white rounded-md"
+                >
+                  Voir sur TikTok
+                </button>
+              </div>
+            ), { duration: 10000 });
           } else if (status === 'PUBLISH_FAILED') {
             toast.error("La publication TikTok a échoué. Veuillez réessayer.");
           } else if (status === 'PUBLISH_PROCESSING') {
@@ -541,7 +534,7 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
       toast.error("Erreur lors de la vérification de la publication TikTok");
     }
   };
-  
+
   // Share to Facebook with media using the Facebook_InstagramController
   const shareToFacebook = () => {
     if (!description) {
@@ -655,7 +648,7 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
     }
   };
 
-  // Share to LinkedIn with description
+  // Share to LinkedIn with API integration
   const shareToLinkedin = () => {
     if (!description) {
       toast.error("Veuillez générer une description d'abord");
@@ -663,45 +656,71 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
     }
     
     setIsSharingLinkedin(true);
+    
     try {
       // Format the property information for LinkedIn
       const propertyTitle = bien?.propriete_dite_bien || "Propriété";
       const propertyLocation = bien?.immeuble?.nom || bien?.bloc?.nom || bien?.tranche?.nom || bien?.projet?.nom || "Emplacement";
       const propertyPrice = bien?.prix ? bien.prix.toLocaleString() + " DH" : "Prix sur demande";
       
-      // Format LinkedIn post content
-      const postContent = `🏡 ${propertyTitle}\n\n${description}\n\n📍 ${propertyLocation}\n💰 ${propertyPrice}`;
+      // Format LinkedIn post content with sanitized description
+      const sanitizedDescription = sanitizeDescriptionForSocialMedia(description);
+      const postContent = `🏡 ${propertyTitle}\n\n${sanitizedDescription}\n\n📍 ${propertyLocation}\n💰 ${propertyPrice}\n\n#immobilier #realestate #property`;
       
-      // Copy text to clipboard
-      navigator.clipboard.writeText(postContent);
+      // Save content for the callback to use
+      const state = LinkedInConfig.generateState();
+      localStorage.setItem('linkedin_state', state);
+      localStorage.setItem('linkedin_share_content', postContent);
       
-      // LinkedIn sharing approach: copy content and open LinkedIn
-      // Use LinkedIn's share dialog
-      const shareUrl = 'https://www.linkedin.com/sharing/share-offsite/';
-      const url = new URL(shareUrl);
-      url.searchParams.append('url', window.location.href);
-      
-      window.open(url.toString(), '_blank', 'width=600,height=600');
-      
-      toast.success("Description copiée. Collez-la dans votre publication LinkedIn");
-      
-      // Notify parent component if needed
-      if (onDescriptionSaved) {
-        onDescriptionSaved(description);
+      // Include media URL if available
+      if (uploadedMediaUrl) {
+        localStorage.setItem('linkedin_share_media_url', uploadedMediaUrl);
       }
       
-      // Close modal after short delay
-      setTimeout(() => {
-        setIsModalOpen(false);
-      }, 2000);
+      // Initiate LinkedIn OAuth flow
+      const authUrl = LinkedInConfig.getAuthUrl(state);
+      window.open(authUrl, 'linkedin-auth-popup', 'width=600,height=600');
+      
+      // The rest happens in the callback window and via window.postMessage
+    
+      // Save description to server
+      saveDescriptionToServer();
     } catch (error) {
       console.error("Failed to share to LinkedIn:", error);
       toast.error("Erreur lors du partage sur LinkedIn");
-    } finally {
       setIsSharingLinkedin(false);
     }
   };
-  
+
+  // Add event listener for LinkedIn OAuth callback
+  useEffect(() => {
+    const handleLinkedInCallback = (event) => {
+      if (event.origin !== window.location.origin) {
+        return;
+      }
+      
+      switch(event.data.type) {
+        case 'LINKEDIN_SHARE_SUCCESS':
+          toast.success(`Publication partagée sur LinkedIn avec succès!`);
+          setTimeout(() => setIsModalOpen(false), 2000);
+          break;
+          
+        case 'LINKEDIN_SHARE_ERROR':
+          toast.error(`Erreur lors du partage sur LinkedIn: ${event.data.error}`);
+          break;
+          
+        case 'LINKEDIN_AUTH_ERROR':
+          toast.error(`Erreur d'authentification LinkedIn: ${event.data.error}`);
+          break;
+      }
+      
+      setIsSharingLinkedin(false);
+    };
+    
+    window.addEventListener('message', handleLinkedInCallback);
+    return () => window.removeEventListener('message', handleLinkedInCallback);
+  }, []);
+
   // Copy text to clipboard
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text).then(() => {
@@ -789,7 +808,6 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
                   </>
                 )}
               </button>
-              {/* Add LinkedIn Share Button */}
               <button
                 onClick={shareToLinkedin}
                 disabled={!description || isSharingLinkedin}
