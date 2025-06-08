@@ -155,5 +155,5 @@ button.bg-blue-600 *,
 button.bg-green-500 *, 
 button.bg-green-600 *,
 button.bg-red-500 * {
-  color: white !important;
+  color: white;
 }
