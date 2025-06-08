@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { format, addMonths, subMonths, getDaysInMonth, startOfMonth, getDay } from 'date-fns';
+import { fr } from 'date-fns/locale';
 import { CalendarHeader } from './CalendarHeader';
 import { CalendarSidebar } from './CalendarSidebar';
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
@@ -10,13 +11,13 @@ import axios from 'axios';
 import { APIURL } from '../../configs/api';
 
 
-// Helper functions (should be defined or imported)
+// Fonctions utilitaires (devraient être définies ou importées)
 const toTitleCase = (str) => str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
 const getColor = (type) => {
   const colors = {
     1: '#FF5733',
     27: '#33FF57',
-    // Add other type-color mappings
+    // Ajouter d'autres correspondances type-couleur
   };
   return colors[type] || '#3385FF';
 };
@@ -48,17 +49,17 @@ export const Calendar = () => {
 
   const accessToken = localStorage.getItem('accessToken');
   const selectedProjet_id = JSON.parse(localStorage.getItem('selectedProjet'))?.id || 0;
-  console.log('Access token:', accessToken);
-  console.log('Selected project ID:', selectedProjet_id);
+  console.log('Token d\'accès:', accessToken);
+  console.log('ID du projet sélectionné:', selectedProjet_id);
 
   useEffect(() => {
     fetchData();
-  }, [selectedProjet_id, currentDate]); // Refetch when project or month changes
+  }, [selectedProjet_id, currentDate]); // Recharge les données quand le projet ou le mois change
 
   const fetchData = async () => {
   setLoading(true);
   try {
-    console.log('Making request to:', `${APIURL.ROOTV1}/fullcalendar/${selectedProjet_id}/0`);
+    console.log('Requête envoyée à:', `${APIURL.ROOTV1}/fullcalendar/${selectedProjet_id}/0`);
     
     const response = await axios.get(
       `${APIURL.ROOTV1}/fullcalendar/${selectedProjet_id}/0`, 
@@ -67,17 +68,17 @@ export const Calendar = () => {
       }
     );
     
-    console.log('Full API response:', response);
+    console.log('Réponse complète de l\'API:', response);
     
     if (!response.data) {
-      throw new Error('Empty response data');
+      throw new Error('Données de réponse vides');
     }
 
     const { data, ...statsData } = response.data;
-    console.log('Calendar events data:', data);
-    console.log('Calendar stats data:', statsData);
+    console.log('Données des événements du calendrier:', data);
+    console.log('Statistiques du calendrier:', statsData);
 
-    // Rest of your code...
+    // Reste du code...
      setEvents(
         data.map(dt => ({
           type: dt.type,
@@ -108,16 +109,16 @@ export const Calendar = () => {
       setNb_Reservations_month(response.data.nb_reservations_month)
       setNb_Desistement_month(response.data.nb_des_month)
 
-      setLoading(false) // Data is loaded, set loading to false
+      setLoading(false) // Les données sont chargées, désactive le loading
     
   } catch (error) {
-    console.error('Detailed fetch error:', {
+    console.error('Erreur détaillée du fetch:', {
       message: error.message,
       response: error.response,
       config: error.config
     });
     
-    // Set some error state to display to the user
+    // Définit un état d'erreur à afficher à l'utilisateur
     setStats({
       calls: { current: -1, month: -1, objective: -1 },
       visits: { current: -1, month: -1, objective: -1 },
@@ -129,7 +130,7 @@ export const Calendar = () => {
   }
 };
 
-  // Navigation handlers
+  // Gestionnaires de navigation
   const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
   const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
   const goToToday = () => setCurrentDate(new Date());
@@ -143,8 +144,8 @@ export const Calendar = () => {
     
     const days = [];
     
-    // Previous month's days
-    const prevMonthDays = startDay === 0 ? 6 : startDay; // Handle Sunday start
+    // Jours du mois précédent
+    const prevMonthDays = startDay === 0 ? 6 : startDay; // Gère le début dimanche
     for (let i = prevMonthDays; i > 0; i--) {
       days.push({
         date: new Date(currentYear, currentMonth, -i + 1),
@@ -152,7 +153,7 @@ export const Calendar = () => {
       });
     }
     
-    // Current month's days
+    // Jours du mois actuel
     for (let i = 1; i <= daysInMonth; i++) {
       days.push({
         date: new Date(currentYear, currentMonth, i),
@@ -163,7 +164,7 @@ export const Calendar = () => {
       });
     }
     
-    // Next month's days to complete grid
+    // Jours du mois suivant pour compléter la grille
     const remainingDays = 42 - days.length;
     for (let i = 1; i <= remainingDays; i++) {
       days.push({
@@ -176,23 +177,22 @@ export const Calendar = () => {
   };
 
   const renderDayCell = (day, index) => (
-    <div 
-      key={index} 
-      className={`
-        min-h-[100px] p-2 border-b border-r hover:bg-gray-50 transition-colors
-        ${!day.isCurrentMonth ? 'text-gray-400' : 'text-gray-800'}
-        ${format(day.date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd') ? 'bg-blue-50' : ''}
-      `}
-    >
-      <div className="text-right font-medium">
-        {format(day.date, 'd')}
-        {day.hasEvents && (
-          <span className="ml-1 w-2 h-2 inline-block rounded-full bg-blue-500"></span>
-        )}
-      </div>
-      {/* Add event indicators here */}
+  <div 
+    key={index} 
+    className={`
+      min-h-[100px] p-2 border-b border-r hover:bg-gray-50 transition-colors
+      ${!day.isCurrentMonth ? 'text-gray-400' : 'text-gray-800'}
+      ${format(day.date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd') ? 'bg-blue-50' : ''}
+    `}
+  >
+    <div className="text-right font-medium">
+      {format(day.date, 'd')} {/* Day number doesn't need locale */}
+      {day.hasEvents && (
+        <span className="ml-1 w-2 h-2 inline-block rounded-full bg-blue-500"></span>
+      )}
     </div>
-  );
+  </div>
+);
 
   const renderView = () => {
     const views = {
@@ -202,7 +202,7 @@ export const Calendar = () => {
       month: (
         <div className="calendar-grid">
           <div className="grid grid-cols-7 border-b">
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, i) => (
+            {['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'].map((day, i) => (
               <div key={i} className="py-2 text-center text-sm font-medium text-blue-500">
                 {day}
               </div>
@@ -222,7 +222,7 @@ export const Calendar = () => {
     <div className="bg-white rounded-xl shadow-lg overflow-hidden p-4">
       {loading && (
         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="text-white">Loading...</div>
+          <div className="text-white">Chargement...</div>
         </div>
       )}
       
@@ -240,17 +240,17 @@ export const Calendar = () => {
               <button onClick={nextMonth} className="p-2 rounded-full hover:bg-gray-100 transition-colors">
                 <ChevronRightIcon size={20} />
               </button>
-              <button onClick={goToToday} className="px-3 py-1 text-sm bg-cyan-100 rounded-md hover:bg-gray-300 transition-colors">
+              <button onClick={goToToday} className="px-3 py-1 text-sm bg-cyan-100 rounded-md hover:bg-cyan-200 transition-colors">
                 Aujourd'hui
               </button>
             </div>
             
             <h2 className="text-xl font-semibold text-gray-800">
-              {format(currentDate, 'MMMM yyyy')}
+              {format(currentDate, 'MMMM yyyy', { locale: fr })}
             </h2>
             
             <div className="flex rounded-lg overflow-hidden bg-gray-100">
-              {['Mois', 'Semaine', 'Jour', 'Liste'].map(view => (
+              {['month', 'week', 'day', 'list'].map(view => (
                 <button
                   key={view}
                   className={`px-4 py-1 text-sm capitalize ${
@@ -260,7 +260,9 @@ export const Calendar = () => {
                   }`}
                   onClick={() => setActiveView(view)}
                 >
-                  {view}
+                  {view === 'month' ? 'Mois' : 
+                  view === 'week' ? 'Semaine' : 
+                  view === 'day' ? 'Jour' : 'Liste'}
                 </button>
               ))}
             </div>
