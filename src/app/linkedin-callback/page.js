@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import axios from 'axios';
 import { APIURL } from '@/configs/api';
-import toast from 'react-hot-toast';
 
-export default function LinkedInCallback() {
+// Create a separate client component to handle the search params
+function LinkedInCallbackHandler() {
   const searchParams = useSearchParams();
   
   useEffect(() => {
@@ -84,6 +84,11 @@ export default function LinkedInCallback() {
     handleCallback();
   }, [searchParams]);
   
+  return null;
+}
+
+// Loading UI component
+function LoadingUI() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-md text-center">
@@ -92,5 +97,14 @@ export default function LinkedInCallback() {
         <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto"></div>
       </div>
     </div>
+  );
+}
+
+export default function LinkedInCallback() {
+  return (
+    <Suspense fallback={<LoadingUI />}>
+      <LinkedInCallbackHandler />
+      <LoadingUI />
+    </Suspense>
   );
 }
