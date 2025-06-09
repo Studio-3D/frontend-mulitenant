@@ -63,9 +63,11 @@ function LinkedInCallbackHandler() {
         // Notify the opener about successful share
         window.opener.postMessage({ 
           type: 'LINKEDIN_SHARE_SUCCESS',
-          profileName: `${profile?.localizedFirstName || ''} ${profile?.localizedLastName || ''}`
+          // Updated to use OpenID Connect profile fields
+          profileName: profile?.name || profile?.given_name || 'LinkedIn User'
         }, window.location.origin);
       } catch (error) {
+        console.error("LinkedIn share error:", error);
         window.opener.postMessage({ 
           type: 'LINKEDIN_SHARE_ERROR', 
           error: error.response?.data?.message || error.message 
