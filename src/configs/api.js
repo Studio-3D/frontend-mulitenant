@@ -1,5 +1,5 @@
-const APIBASEURL = process.env.NEXT_PUBLIC_API_URL || 'http://ec2-16-16-56-93.eu-north-1.compute.amazonaws.com/api';
-const BASERESOURCEURL =  'http://ec2-16-16-56-93.eu-north-1.compute.amazonaws.com';
+const APIBASEURL = process.env.NEXT_PUBLIC_API_URL || 'https://ec2-16-16-56-93.eu-north-1.compute.amazonaws.com/api';
+const BASERESOURCEURL =  'https://ec2-16-16-56-93.eu-north-1.compute.amazonaws.com';
 
 export const RESOURCE_URL = {
   DOCS: `${BASERESOURCEURL}/Docs`,
