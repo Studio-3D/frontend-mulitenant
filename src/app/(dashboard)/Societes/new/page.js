@@ -37,7 +37,7 @@ export default function CreateSociete() {
       
       // Create the societe (this will trigger database creation)
       const response = await axios.post(
-        "http://localhost:8000/api/societe",
+        "http://ec2-16-16-56-93.eu-north-1.compute.amazonaws.com/api/societe",
         societe,
         { headers: { Authorization: `Bearer ${token}` } }
       );
