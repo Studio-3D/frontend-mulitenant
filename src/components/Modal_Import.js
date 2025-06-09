@@ -15,7 +15,7 @@ export default function Modal_Import({ onClose, title, route }) {
   const accessToken = token || localStorage.getItem('accessToken');
   const [loading, setLoading] = useState({ form: false });
   const fileInputRef = useRef(null);
-  const FileUrl = 'http://ec2-16-16-56-93.eu-north-1.compute.amazonaws.com/';
+  const FileUrl = 'https://ec2-16-16-56-93.eu-north-1.compute.amazonaws.com/';
   const [file, setFile] = useState(null);
   const [backendErrors, setBackendErrors] = useState(null);
 

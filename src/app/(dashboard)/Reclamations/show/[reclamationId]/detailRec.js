@@ -237,7 +237,7 @@ export default function ReclamationFullPage({ reclamationId }) {
                 Pièce jointe :
               </Typography>
               <PieceJointeViewer
-                url={`http://ec2-16-16-56-93.eu-north-1.compute.amazonaws.com/Docs/bss_292/reclamations/Capture.PNG`}
+                url={`https://ec2-16-16-56-93.eu-north-1.compute.amazonaws.com/Docs/bss_292/reclamations/Capture.PNG`}
                 filename={Details}
               />
             </Box>
