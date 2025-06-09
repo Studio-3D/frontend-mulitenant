@@ -5,7 +5,7 @@ export const LinkedInConfig = {
   clientId: process.env.NEXT_PUBLIC_LINKEDIN_CLIENT_ID || '',
   redirectUri: process.env.NEXT_PUBLIC_LINKEDIN_REDIRECT_URI || 
     `${window.location.origin}/linkedin-callback`,
-  scope: 'r_liteprofile r_emailaddress w_member_social',
+  scope: 'openid profile email w_member_social',
   
   // Generate a random state for CSRF protection
   generateState() {
