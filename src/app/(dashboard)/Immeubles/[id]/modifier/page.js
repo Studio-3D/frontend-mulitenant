@@ -77,7 +77,7 @@ export default function EditImmeublePage() {
 
   if (error) {
     return (
-      <div className="bg-red-50 p-4 rounded-md border-l-4 border-red-500 text-red-700">
+      <div className="bg-red-50 p-4 rounded-md border-l-4 border-red-500 !text-red-700">
         <p className="font-medium">Erreur</p>
         <p>{error}</p>
       </div>
@@ -86,7 +86,7 @@ export default function EditImmeublePage() {
 
   if (!canEditImmeuble) {
     return (
-      <div className="bg-red-50 p-4 rounded-md border-l-4 border-red-500 text-red-700">
+      <div className="bg-red-50 p-4 rounded-md border-l-4 border-red-500 !text-red-700">
         <p className="font-medium">Accès refusé</p>
         <p>Vous n'avez pas les droits nécessaires pour modifier un immeuble.</p>
       </div>

@@ -14,17 +14,17 @@ export const WeekView = ({
       <div className="grid grid-cols-8 border-b">
         <div className="w-20" /> {/* Empty corner cell */}
         {weekDays.map((day, i) => <div key={i} className={`p-4 text-center border-l ${format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd') ? 'bg-blue-50' : ''}`}>
-            <div className="font-medium text-gray-900">
+            <div className="font-medium !text-gray-900">
               {format(day, 'EEE')}
             </div>
-            <div className="text-2xl font-bold text-gray-600">
+            <div className="text-2xl font-bold !text-gray-600">
               {format(day, 'd')}
             </div>
           </div>)}
       </div>
       <div className="grid grid-cols-8">
         <div className="">
-          {hours.map(hour => <div key={hour} className="h-20 border-b text-right pr-2 pt-1 text-sm text-gray-500">
+          {hours.map(hour => <div key={hour} className="h-20 border-b text-right pr-2 pt-1 text-sm !text-gray-500">
               {format(new Date().setHours(hour), 'ha')}
             </div>)}
         </div>

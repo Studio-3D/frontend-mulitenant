@@ -85,7 +85,7 @@ export default function EditBienPage() {
 
   if (error) {
     return (
-      <div className="bg-red-50 p-4 rounded-md border-l-4 border-red-500 text-red-700">
+      <div className="bg-red-50 p-4 rounded-md border-l-4 border-red-500 !text-red-700">
         <p className="font-medium">Erreur</p>
         <p>{error}</p>
         <Link href="/Biens" className="text-blue-500 hover:underline mt-2 inline-block">
@@ -97,7 +97,7 @@ export default function EditBienPage() {
 
   if (!canEditBien) {
     return (
-      <div className="bg-red-50 p-4 rounded-md border-l-4 border-red-500 text-red-700">
+      <div className="bg-red-50 p-4 rounded-md border-l-4 border-red-500 !text-red-700">
         <p className="font-medium">Accès refusé</p>
         <p>Vous n'avez pas les droits nécessaires pour modifier un bien.</p>
       </div>

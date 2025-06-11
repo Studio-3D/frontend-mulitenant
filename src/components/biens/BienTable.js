@@ -301,6 +301,15 @@ const fetchStatsByType = (typeId) => {
         
         return (
           <div className="flex gap-4 items-center">
+            {/* View button - available to all users */}
+            <button
+              className="text-gray-500 hover:text-blue-500"
+              onClick={() => handleAction('view', row.id)}
+              title="Voir détails"
+            >
+              <Eye className="w-4 h-4" />
+            </button>
+            
             {canManageBiens && (
               <>
                <button
@@ -456,6 +465,9 @@ const handleImportClick = () => {
   // Handle table row actions
   const handleAction = (action, id) => {
     switch (action) {
+      case 'view':
+        router.push(`/Biens/${id}`);
+        break;
       case 'edit':
         router.push(`/Biens/${id}/modifier`);
         break;

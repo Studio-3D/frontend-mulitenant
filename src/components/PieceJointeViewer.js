@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Stack, Typography, Divider, Tooltip, Dialog, IconButton } from '@mui/material';
-import { RiCloseLine, RiDownload2Line } from "react-icons/ri";
+import { X, Download } from "lucide-react";
 
 const PieceJointeViewer = ({ Details, getFileUrl, url }) => {
   const [open, setOpen] = useState(false);
@@ -65,7 +65,7 @@ const PieceJointeViewer = ({ Details, getFileUrl, url }) => {
             sx={{ position: 'absolute', top: 8, right: 8, zIndex: 10 }}
             aria-label="fermer"
           >
-            <RiCloseLine size={24} />
+            <X size={24} />
           </IconButton>
 
           <IconButton
@@ -76,7 +76,7 @@ const PieceJointeViewer = ({ Details, getFileUrl, url }) => {
             sx={{ position: 'absolute', top: 8, right: 48, zIndex: 10 }}
             aria-label="télécharger"
           >
-            <RiDownload2Line size={24} />
+            <Download size={24} />
           </IconButton>
 
           <Box

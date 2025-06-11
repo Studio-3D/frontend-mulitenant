@@ -1118,7 +1118,6 @@ const renderDetailsStep = () => (
   </label>
 </div>
 
-
     </div>
   </div>
 );

@@ -332,6 +332,7 @@ export default function EditProjectPage() {
             baseUrl={"/Projets"}
             step={`${id ? "Modifier" : "Ajouter"} un projet`}
           />
+
         </div>
         <div className="p-6 mt-4 bg-white shadow-md rounded-md">
     

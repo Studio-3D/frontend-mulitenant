@@ -111,16 +111,12 @@ export default function TypeProjetsPage() {
 
   // Main view with table
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Gestion des Types de Projets</h1>
-      
+    <div className="p-4 bg-white rounded-lg shadow-md">
       {error && (
-        <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
+        <div className="bg-red-100 border-l-4 border-red-500 !text-red-700 p-4 mb-4" role="alert">
           <p>{error}</p>
         </div>
       )}
-      
-      
       <DeleteConfirmationModal
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}

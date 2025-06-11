@@ -22,14 +22,14 @@ export default function ConfirmDialog({ open, onClose, onConfirm, title, confirm
         {/* Bouton fermer */}
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+          className="absolute top-2 right-2 !text-gray-500 hover:text-gray-700"
         >
           <X size={24} />
         </button>
 
         {/* Titre */}
         <div className="text-center mb-4">
-          <h2 className="text-lg font-bold text-gray-800">{title}</h2>
+          <h2 className="text-lg font-bold !text-gray-800">{title}</h2>
         </div>
 
         {/* Boutons de confirmation */}

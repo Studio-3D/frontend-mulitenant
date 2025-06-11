@@ -1653,7 +1653,7 @@ export default function Page() {
                 <button
                   type="button"
                   onClick={() => router.back()}
-                  className="px-4 py-2 mr-3 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                  className="px-4 py-2 mr-3 border border-gray-300 rounded-md !text-gray-700 hover:bg-gray-50"
                 >
                   Annuler
                 </button>

@@ -225,7 +225,7 @@ export default function AddProjectPage() {
         </div>
         
         {errors && errors.general && (
-          <div className="mt-4 bg-red-50 border-l-4 border-red-500 p-4 text-red-700">
+          <div className="mt-4 bg-red-50 border-l-4 border-red-500 p-4 !text-red-700">
             {errors.general.map((error, index) => (
               <p key={index}>{error}</p>
             ))}

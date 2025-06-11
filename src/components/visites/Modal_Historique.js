@@ -75,7 +75,7 @@ const Modal_Historique = ({ onClose, rows, loading_histo }) => {
                 }`}
               >
                 <div className="p-4">
-                  <h6 className="text-md font-semibold mb-3 text-gray-700 flex items-center">
+                  <h6 className="text-md font-semibold mb-3 !text-gray-700 flex items-center">
                     <span className="w-1.5 h-5 bg-blue-600 rounded-sm mr-2"></span>
                     Détails supplémentaires
                   </h6>
@@ -85,44 +85,44 @@ const Modal_Historique = ({ onClose, rows, loading_histo }) => {
                         <tr>
                           {row.interet == '3' ? (
                             <>
-                              <th className="text-center px-3 py-2 border-b border-gray-200 font-medium text-gray-700">
+                              <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
                                 Freins
                               </th>
-                              <th className="text-center px-3 py-2 border-b border-gray-200 font-medium text-gray-700">
+                              <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
                                 Tranches
                               </th>
-                              <th className="text-center px-3 py-2 border-b border-gray-200 font-medium text-gray-700">
+                              <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
                                 Etages
                               </th>
-                              <th className="text-center px-3 py-2 border-b border-gray-200 font-medium text-gray-700">
+                              <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
                                 Orientations
                               </th>
-                              <th className="text-center px-3 py-2 border-b border-gray-200 font-medium text-gray-700">
+                              <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
                                 Typologies
                               </th>
-                              <th className="text-center px-3 py-2 border-b border-gray-200 font-medium text-gray-700">
+                              <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
                                 Vues
                               </th>
-                              <th className="text-center px-3 py-2 border-b border-gray-200 font-medium text-gray-700">
+                              <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
                                 Prix
                               </th>
-                              <th className="text-center px-3 py-2 border-b border-gray-200 font-medium text-gray-700">
+                              <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
                                 Superficie
                               </th>
-                              <th className="text-center px-3 py-2 border-b border-gray-200 font-medium text-gray-700">
+                              <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
                                 Avance
                               </th>
                             </>
                           ) : (
                             <>
-                              <th className="text-center px-3 py-2 border-b border-gray-200 font-medium text-gray-700">
+                              <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
                                 Mode Relance
                               </th>
-                              <th className="text-center px-3 py-2 border-b border-gray-200 font-medium text-gray-700">
+                              <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
                                 Date de Relance
                               </th>
                               {row.interet === '1' && (
-                                <th className="text-center px-3 py-2 border-b border-gray-200 font-medium text-gray-700">
+                                <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
                                   RDV
                                 </th>
                               )}

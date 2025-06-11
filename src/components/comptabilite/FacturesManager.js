@@ -204,7 +204,7 @@ const FacturesManager = ({ userRole, decompteId, montantDecompte, montantPaye })
     { 
       key: 'montant', 
       label: 'Montant',
-      render: (row) => <span className="font-medium text-green-600">{row.montant?.toLocaleString()} DH</span>
+      render: (row) => <span className="font-medium !text-green-600">{row.montant?.toLocaleString()} DH</span>
     },
     { 
       key: 'date_paiement', 
@@ -215,7 +215,7 @@ const FacturesManager = ({ userRole, decompteId, montantDecompte, montantPaye })
       key: 'mode_paiement', 
       label: 'Mode Paiement',
       render: (row) => (
-        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+        <span className="px-2 py-1 bg-blue-100 !text-blue-800 rounded-full text-xs">
           {getModePaiementLabel(row.mode_paiement)}
         </span>
       )

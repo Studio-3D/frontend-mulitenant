@@ -141,7 +141,7 @@ export default function ProjectDetailsPage() {
                 </span>
               </div>
               <h1 className="text-xl font-semibold">{projet.nom}</h1>
-              <div className="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm mt-2">
+              <div className="inline-block px-3 py-1 bg-blue-100 !text-blue-700 rounded-full text-sm mt-2">
                 {projet.code}
               </div>
             </div>
@@ -151,9 +151,9 @@ export default function ProjectDetailsPage() {
                 {showTrancheTab && (
                   <div className="p-2">
                     <div className="flex flex-col items-center">
-                      <Database className="w-6 h-6 text-green-500 mb-1" />
+                      <Database className="w-6 h-6 !text-green-500 mb-1" />
                       <span className="text-xl font-medium">{projet.tranche_count || 0}</span>
-                      <span className="text-sm text-gray-500">Tranches</span>
+                      <span className="text-sm !text-gray-500">Tranches</span>
                     </div>
                   </div>
                 )}
@@ -163,7 +163,7 @@ export default function ProjectDetailsPage() {
                     <div className="flex flex-col items-center">
                       <Layers className="w-6 h-6 text-orange-500 mb-1" />
                       <span className="text-xl font-medium">{projet.bloc_count || 0}</span>
-                      <span className="text-sm text-gray-500">Blocs</span>
+                      <span className="text-sm !text-gray-500">Blocs</span>
                     </div>
                   </div>
                 )}
@@ -171,18 +171,18 @@ export default function ProjectDetailsPage() {
                 {showImmeubleTab && (
                   <div className="p-2">
                     <div className="flex flex-col items-center">
-                      <Building className="w-6 h-6 text-red-500 mb-1" />
+                      <Building className="w-6 h-6 !text-red-500 mb-1" />
                       <span className="text-xl font-medium">{projet.immeuble_count || 0}</span>
-                      <span className="text-sm text-gray-500">Immeubles</span>
+                      <span className="text-sm !text-gray-500">Immeubles</span>
                     </div>
                   </div>
                 )}
 
                 <div className="p-2">
                   <div className="flex flex-col items-center">
-                    <Home className="w-6 h-6 text-blue-500 mb-1" />
+                    <Home className="w-6 h-6 !text-blue-500 mb-1" />
                     <span className="text-xl font-medium">{projet.bien_count || 0}</span>
-                    <span className="text-sm text-gray-500">Biens</span>
+                    <span className="text-sm !text-gray-500">Biens</span>
                   </div>
                 </div>
               </div>
@@ -273,7 +273,7 @@ export default function ProjectDetailsPage() {
                   {projet.user_projet.map((assignment) => (
                     <div key={assignment.id} className="flex items-center p-2 bg-gray-50 rounded-md">
                       <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-                        <span className="text-sm font-medium text-blue-700">
+                        <span className="text-sm font-medium !text-blue-700">
                           {assignment.user?.name?.charAt(0) || 'U'}
                         </span>
                       </div>

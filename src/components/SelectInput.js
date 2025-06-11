@@ -120,7 +120,7 @@ export default function SelectInput({
                 </li>
               ))
             ) : (
-              <li className="px-4 py-2 text-gray-500">No options available</li>
+              <li className="px-4 py-2 !text-gray-500">No options available</li>
             )}
           </ul>
         )}

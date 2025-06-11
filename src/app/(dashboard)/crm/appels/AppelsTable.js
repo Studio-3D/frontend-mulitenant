@@ -166,18 +166,18 @@ const AppelsTable = () => {
       render: (row) => (
         <div className="flex gap-3 items-center">
           <Eye
-            className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
+            className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
             title="Voir détails"
             onClick={() => handleShow(row.id)}
           />
           <Pencil
-            className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
+            className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
             title="Modifier"
             onClick={() => handleEdit(row.last_traitement_id)}
           />
 
           <Trash2
-            className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
+            className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
             onClick={() => {
               setSelectedId(row.id);
               setShowDeleteModal(true);
@@ -186,13 +186,13 @@ const AppelsTable = () => {
           />
           {row.last_traitement_visite_id == null ? (
             <RefreshCw
-              className="w-4 h-4 text-green-500  cursor-pointer"
+              className="w-4 h-4 !text-green-500  cursor-pointer"
               title="Convertir en visite"
               onClick={() => handle_convert_to_visite(row.prospect)}
             />
           ) : (
             <CreditCard
-              className="w-4 h-4 text-blue-500 cursor-pointer"
+              className="w-4 h-4 !text-blue-500 cursor-pointer"
               onClick={() => voir_visite(row.last_traitement_visite_id)}
             />
           )}

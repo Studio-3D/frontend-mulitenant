@@ -37,7 +37,7 @@ export default function Input({
 
           return (
             <div className="flex flex-col w-full">
-              <label className="font-medium text-gray-700">
+              <label className="font-medium !text-gray-700">
                 {label}
                 {required && <span className="text-red-500 ml-1">*</span>}
               </label>
@@ -116,7 +116,7 @@ export default function Input({
   // Uncontrolled input
   return (
     <div className="flex flex-col w-full">
-      <label className="font-medium text-gray-700">
+      <label className="font-medium !text-gray-700">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>

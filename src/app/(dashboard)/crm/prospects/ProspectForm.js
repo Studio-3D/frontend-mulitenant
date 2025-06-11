@@ -370,7 +370,7 @@ const onSubmit = async (data) => {
               )}
 
               {check_p && info_prospect && (
-                <div className="bg-blue-100 text-blue-700 border-l-4 border-blue-500 p-4 text-center rounded">
+                <div className="bg-blue-100 !text-blue-700 border-l-4 border-blue-500 p-4 text-center rounded">
                   <p>{info_prospect}</p>
                 </div>
               )}

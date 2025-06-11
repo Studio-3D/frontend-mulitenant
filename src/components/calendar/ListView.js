@@ -11,12 +11,12 @@ export const ListView = ({
   return <div className="divide-y">
       {days.map((day, index) => <div key={index} className={`p-4 hover:bg-gray-50 transition-colors ${format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd') ? 'bg-blue-50' : ''}`}>
           <div className="flex items-center">
-            <CalendarIcon className="mr-3 text-gray-400" size={20} />
+            <CalendarIcon className="mr-3 !text-gray-400" size={20} />
             <div>
-              <div className="font-medium text-gray-900">
+              <div className="font-medium !text-gray-900">
                 {format(day, 'EEEE')}
               </div>
-              <div className="text-sm text-gray-500">
+              <div className="text-sm !text-gray-500">
                 {format(day, 'd MMMM yyyy')}
               </div>
             </div>

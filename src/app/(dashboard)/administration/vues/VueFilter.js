@@ -37,7 +37,7 @@ const VueFilter = ({ onSubmit, onClose, initialValues = {} }) => {
       
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2">
+          <label className="block !text-gray-700 text-sm font-bold mb-2">
             Vue :
           </label>
           <input
@@ -45,7 +45,7 @@ const VueFilter = ({ onSubmit, onClose, initialValues = {} }) => {
             name="vue"
             value={filterValues.vue}
             onChange={handleChange}
-            className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 !text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             placeholder="Filtrer par vue"
           />
         </div>

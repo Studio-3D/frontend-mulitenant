@@ -67,7 +67,7 @@ const TvaDialog = ({ isOpen, onClose, onSave, tranche, action, projet }) => {
           <form onSubmit={handleSubmit} className="p-6">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium !text-gray-700 mb-1">
                   Tranche
                 </label>
                 <input
@@ -79,7 +79,7 @@ const TvaDialog = ({ isOpen, onClose, onSave, tranche, action, projet }) => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium !text-gray-700 mb-1">
                   Prix Acquisition du Projet
                 </label>
                 <input
@@ -91,7 +91,7 @@ const TvaDialog = ({ isOpen, onClose, onSave, tranche, action, projet }) => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium !text-gray-700 mb-1">
                   Coefficient de Réévaluation <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -107,7 +107,7 @@ const TvaDialog = ({ isOpen, onClose, onSave, tranche, action, projet }) => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium !text-gray-700 mb-1">
                   QP Terrain Bati <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -128,7 +128,7 @@ const TvaDialog = ({ isOpen, onClose, onSave, tranche, action, projet }) => {
                 type="button"
                 onClick={onClose}
                 disabled={isSubmitting}
-                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium !text-gray-700 bg-white hover:bg-gray-50"
               >
                 Annuler
               </button>

@@ -1,30 +1,33 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Printer } from 'lucide-react'; // Replace MdPrint
+import { Printer } from 'lucide-react';
 import Button from './Button';
 import toast from 'react-hot-toast';
 import { APIURL, RESOURCE_URL } from '../configs/api';
 import { useAuth } from '../context/AuthContext';
+import { useSociete } from '../context/SocieteContext';
 
 export default function Modal_Import({ onClose, title, route }) {
-  //JSON.parse(localStorage.getItem('selectedProjet')) ||
-  const projet_id = 1;
-  const { token } = useAuth();
+  const projet_id = JSON.parse(localStorage.getItem('selectedProjet'))?.id || 1;
+  const { token, user } = useAuth();
+  const { selectedSociete } = useSociete();
 
   const accessToken = token || localStorage.getItem('accessToken');
   const [loading, setLoading] = useState({ form: false });
   const fileInputRef = useRef(null);
-  const FileUrl = 'http://localhost:8000/';
   const [file, setFile] = useState(null);
   const [backendErrors, setBackendErrors] = useState(null);
 
-  
-  const handleFileClick = file => {
-    window.open(
-      `${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/reclamations/${file}`,
-      '_blank'
-    )
+  const handleFileClick = () => {
+    if (selectedSociete?.raison_sociale_concatene && selectedSociete?.id) {
+      window.open(
+        `${RESOURCE_URL.DOCS}/${selectedSociete.raison_sociale_concatene}_${selectedSociete.id}/reclamations/exemple.xlsx`,
+        '_blank'
+      );
+    } else {
+      toast.error('Société non sélectionnée');
+    }
   }
 
   const onSubmit_file = (e) => {

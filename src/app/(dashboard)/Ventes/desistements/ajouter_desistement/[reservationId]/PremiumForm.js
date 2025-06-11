@@ -8,7 +8,7 @@ export function PremiumForm() {
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium !text-gray-700 mb-1">
             Type de Bien Premium <span className="text-red-500">*</span>
           </label>
           <div className="relative">
@@ -20,7 +20,7 @@ export function PremiumForm() {
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium !text-gray-700 mb-1">
             Services Inclus <span className="text-red-500">*</span>
           </label>
           <div className="space-y-2">
@@ -29,7 +29,7 @@ export function PremiumForm() {
                 type="checkbox"
                 className="h-4 w-4 text-indigo-600 rounded"
               />
-              <span className="ml-2 text-sm text-gray-700">
+              <span className="ml-2 text-sm !text-gray-700">
                 Conciergerie 24/7
               </span>
             </label>
@@ -38,7 +38,7 @@ export function PremiumForm() {
                 type="checkbox"
                 className="h-4 w-4 text-indigo-600 rounded"
               />
-              <span className="ml-2 text-sm text-gray-700">
+              <span className="ml-2 text-sm !text-gray-700">
                 Service voiturier
               </span>
             </label>
@@ -47,7 +47,7 @@ export function PremiumForm() {
                 type="checkbox"
                 className="h-4 w-4 text-indigo-600 rounded"
               />
-              <span className="ml-2 text-sm text-gray-700">
+              <span className="ml-2 text-sm !text-gray-700">
                 Accès spa & fitness
               </span>
             </label>
@@ -60,7 +60,7 @@ export function PremiumForm() {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               Mode de Remboursement <span className="text-red-500">*</span>
             </label>
             <select className="block w-full rounded-md border border-gray-300 py-2 px-3 bg-white shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
@@ -70,7 +70,7 @@ export function PremiumForm() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               Délai de Traitement Prioritaire
             </label>
             <select className="block w-full rounded-md border border-gray-300 py-2 px-3 bg-white shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">

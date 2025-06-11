@@ -118,7 +118,7 @@ const DecomptesForm = ({ decompte, onSave, onCancel }) => {
       <h2 className="text-2xl font-bold mb-6">{decompte ? 'Modifier' : 'Ajouter'} un décompte</h2>
       
       {!numeroUnique && (
-        <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 text-red-700">
+        <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 !text-red-700">
           Ce numéro appartient déjà à un autre décompte
         </div>
       )}
@@ -126,7 +126,7 @@ const DecomptesForm = ({ decompte, onSave, onCancel }) => {
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4">
           <div>
-            <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="date" className="block text-sm font-medium !text-gray-700 mb-1">
               Date <span className="text-red-500">*</span>
             </label>
             <input
@@ -135,11 +135,11 @@ const DecomptesForm = ({ decompte, onSave, onCancel }) => {
               {...register("date")}
               className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${errors.date ? 'border-red-500' : 'border-gray-300'}`}
             />
-            {errors.date && <p className="mt-1 text-xs text-red-500">{errors.date.message}</p>}
+            {errors.date && <p className="mt-1 text-xs !text-red-500">{errors.date.message}</p>}
           </div>
           
           <div>
-            <label htmlFor="numero" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="numero" className="block text-sm font-medium !text-gray-700 mb-1">
               Numéro <span className="text-red-500">*</span>
             </label>
             <input
@@ -150,11 +150,11 @@ const DecomptesForm = ({ decompte, onSave, onCancel }) => {
               })}
               className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${errors.numero || !numeroUnique ? 'border-red-500' : 'border-gray-300'}`}
             />
-            {errors.numero && <p className="mt-1 text-xs text-red-500">{errors.numero.message}</p>}
+            {errors.numero && <p className="mt-1 text-xs !text-red-500">{errors.numero.message}</p>}
           </div>
           
           <div>
-            <label htmlFor="montant" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="montant" className="block text-sm font-medium !text-gray-700 mb-1">
               Montant <span className="text-red-500">*</span>
             </label>
             <input
@@ -164,7 +164,7 @@ const DecomptesForm = ({ decompte, onSave, onCancel }) => {
               {...register("montant")}
               className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${errors.montant ? 'border-red-500' : 'border-gray-300'}`}
             />
-            {errors.montant && <p className="mt-1 text-xs text-red-500">{errors.montant.message}</p>}
+            {errors.montant && <p className="mt-1 text-xs !text-red-500">{errors.montant.message}</p>}
           </div>
         </div>
         
@@ -172,7 +172,7 @@ const DecomptesForm = ({ decompte, onSave, onCancel }) => {
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium !text-gray-700 hover:bg-gray-50"
           >
             Annuler
           </button>

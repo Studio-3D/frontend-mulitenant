@@ -17,8 +17,10 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useSociete } from "@/context/SocieteContext";
 import LoadingSpin from "@/components/LoadingSpin";
 import PieceJointeViewer from "@/components/PieceJointeViewer";
+import { RESOURCE_URL } from "@/configs/api";
 
 function formatDate(dateStr) {
   if (!dateStr) return "-";
@@ -78,6 +80,7 @@ export default function ReclamationFullPage({ reclamationId }) {
   const [Details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const { selectedSociete } = useSociete();
 
   useEffect(() => {
     const storedData = sessionStorage.getItem("reclamationData");
@@ -237,8 +240,8 @@ export default function ReclamationFullPage({ reclamationId }) {
                 Pièce jointe :
               </Typography>
               <PieceJointeViewer
-                url={`http://localhost:8000/Docs/bss_292/reclamations/Capture.PNG`}
-                filename={Details}
+                url={`${RESOURCE_URL.DOCS}/${selectedSociete?.raison_sociale_concatene || 'default'}_${selectedSociete?.id || 0}/reclamations/${Details.piece_jointe}`}
+                filename={Details.piece_jointe}
               />
             </Box>
           )}

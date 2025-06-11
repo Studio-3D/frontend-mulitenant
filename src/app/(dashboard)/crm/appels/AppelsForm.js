@@ -1554,7 +1554,7 @@ export default function AppelsForm({ id }) {
                       <div>
                         {info_prix != null && (
                           <div className="w-full">
-                          <div className="bg-blue-100 text-blue-700 border-l-4 border-blue-500 p-4 text-center rounded">
+                          <div className="bg-blue-100 !text-blue-700 border-l-4 border-blue-500 p-4 text-center rounded">
                           {info_prix}
                             </div>
                           </div>

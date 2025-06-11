@@ -227,14 +227,14 @@ const Page = () => {
         const roleColors = {
           "Super Admin": "bg-blue-100 text-[#009FFF]",
           Admin: "bg-purple-100 text-purple-600",
-          Commercial: "bg-yellow-100 text-yellow-600",
-          Utilisateur: "bg-gray-100 text-gray-600",
+          Commercial: "bg-yellow-100 !text-yellow-600",
+          Utilisateur: "bg-gray-100 !text-gray-600",
         };
 
         return (
           <span
             className={`px-2 py-1 rounded text-sm font-semibold ${
-              roleColors[row.role] || "bg-gray-100 text-gray-600"
+              roleColors[row.role] || "bg-gray-100 !text-gray-600"
             }`}
           >
             {row.role}
@@ -249,7 +249,7 @@ const Page = () => {
         <span
           className={`px-2 py-1 rounded text-sm font-semibold ${
             row.status === "Actif"
-              ? "bg-green-100 text-green-600"
+              ? "bg-green-100 !text-green-600"
               : "bg-red-100 text-[#E53935]"
           }`}
         >
@@ -264,19 +264,19 @@ const Page = () => {
         <div className="flex gap-3 items-center">
           <Link href={`/Utilisateurs/afficher-utilisateur/${row.id}`}>
             <Eye
-              className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
+              className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
               title="Voir détails"
             />
           </Link>
           <Link href={`/Utilisateurs/afficher-utilisateur/${row.id}?edit=true`}>
             <UserCog
-              className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
+              className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
               title="Modifier"
             />
           </Link>
           {row.status === "Actif" ? (
             <User
-              className="w-4 h-4 text-green-500 hover:text-green-700 cursor-pointer"
+              className="w-4 h-4 !text-green-500 hover:text-green-700 cursor-pointer"
               onClick={() => {
                 setSelectedUserId(row.id);
                 setShowBlockModal(true);
@@ -285,7 +285,7 @@ const Page = () => {
             />
           ) : (
             <UserX
-              className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
+              className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
               onClick={() => {
                 setSelectedUserId(row.id);
                 setShowUnblockModal(true);
@@ -294,7 +294,7 @@ const Page = () => {
             />
           )}
           <Trash2
-            className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
+            className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
             onClick={() => {
               setSelectedUserId(row.id);
               setShowDeleteModal(true);

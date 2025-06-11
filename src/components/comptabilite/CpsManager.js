@@ -124,7 +124,7 @@ const CpsManager = ({ userRole }) => {
     { 
       key: 'nature_travaux', 
       label: 'Nature Travaux',
-      render: (row) => <span className="font-medium text-gray-800">{row.nature_travaux}</span>
+      render: (row) => <span className="font-medium !text-gray-800">{row.nature_travaux}</span>
     },
     { 
       key: 'cout', 
