@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Link from "next/link";
+import { APIURL } from "../../../../configs/api";
 
 export default function CreateSociete() {
   const [societe, setSociete] = useState({
@@ -37,7 +38,7 @@ export default function CreateSociete() {
       
       // Create the societe (this will trigger database creation)
       const response = await axios.post(
-        "https://ec2-16-16-56-93.eu-north-1.compute.amazonaws.com/api/societe",
+        APIURL.SOCIETE,
         societe,
         { headers: { Authorization: `Bearer ${token}` } }
       );

@@ -38,7 +38,7 @@ const Res_Show = () => {
       }
 
       // Construct the proper API URL
-      const apiUrl = `https://ec2-16-16-56-93.eu-north-1.compute.amazonaws.com/api/v1/reservations/${reservationId}`;
+      const apiUrl = `${APIURL.RESERVATIONS}/${reservationId}`;
       console.log('Making request to:', apiUrl); // Debug log
 
       const response = await axios.get(apiUrl, {

@@ -1,9 +1,14 @@
 import React from 'react';
+import { Grid, Typography, Card, CardContent, Chip, Divider } from '@mui/material';
 
 export const DetailTab = ({ reservationData }) => {
   // Add null checks and default values
   if (!reservationData) {
-    return <div className="bg-white rounded-lg shadow-md p-6">Loading reservation data...</div>;
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Typography color="textSecondary">Aucune donnée disponible</Typography>
+      </div>
+    );
   }
 
   // Destructure the nested reservation object
@@ -12,114 +17,143 @@ export const DetailTab = ({ reservationData }) => {
     ? new Date(reservation.updated_at).toLocaleDateString('fr-FR') 
     : 'N/A';
 
+  const details = [
+    {
+      label: 'Code réservation',
+      value: reservation?.code_reservation || 'N/A'
+    },
+    {
+      label: 'Date de réservation',
+      value: reservation?.date_reservation 
+        ? new Date(reservation.date_reservation).toLocaleDateString('fr-FR')
+        : 'N/A'
+    },
+    {
+      label: 'Statut',
+      value: reservation?.statut || 'En cours',
+      type: 'chip'
+    },
+    {
+      label: 'Mode de financement',
+      value: reservation?.mode_financement || 'N/A'
+    },
+    {
+      label: 'Prix total',
+      value: reservation?.prix 
+        ? `${reservation.prix.toLocaleString('fr-FR')} €`
+        : 'N/A'
+    },
+    {
+      label: 'Prix remisé',
+      value: reservation?.prix_remise 
+        ? `${reservation.prix_remise.toLocaleString('fr-FR')} €`
+        : 'N/A'
+    },
+    {
+      label: 'Prix forfaitaire',
+      value: reservation?.prix_forfetaire 
+        ? `${reservation.prix_forfetaire.toLocaleString('fr-FR')} €`
+        : 'N/A'
+    },
+    {
+      label: 'Commentaire',
+      value: reservation?.commentaire || 'Aucun commentaire',
+      type: 'text'
+    },
+    {
+      label: 'Dernière mise à jour',
+      value: lastUpdated
+    }
+  ];
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold !text-gray-800">
-        Détail de la réservation
-      </h2>
+      <Typography variant="h6" className="font-semibold text-gray-800">
+        Informations détaillées
+      </Typography>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Left Column */}
-        <div className="space-y-4">
-          {/* General Information Section */}
-          <div>
-            <h3 className="text-md font-medium !text-gray-500">
-              Informations générales
-            </h3>
-            <div className="mt-2 bg-gray-50 rounded-lg p-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm !text-gray-500">Code</p>
-                  <p className="font-medium">RES-2023-05678</p>
-                </div>
-                <div>
-                  <p className="text-sm !text-gray-500">Date</p>
-                  <p className="font-medium">12/06/2023</p>
-                </div>
-                <div>
-                  <p className="text-sm !text-gray-500">Statut</p>
-                  <p className="font-medium">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 !text-green-800">
-                      Actif
-                    </span>
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm !text-gray-500">Agent</p>
-                  <p className="font-medium">Marie Dupont</p>
-                </div>
-              </div>
-            </div>
-          </div>
+      <Grid container spacing={3}>
+        {details.map((detail, index) => (
+          <Grid item xs={12} sm={6} key={index}>
+            <Card variant="outlined" className="h-full">
+              <CardContent>
+                <Typography variant="caption" color="textSecondary" className="mb-1 block">
+                  {detail.label}
+                </Typography>
+                {detail.type === 'chip' ? (
+                  <Chip 
+                    label={detail.value}
+                    color={detail.value === 'Validé' ? 'success' : 'warning'}
+                    size="small"
+                  />
+                ) : detail.type === 'text' ? (
+                  <Typography variant="body2" className="break-words">
+                    {detail.value}
+                  </Typography>
+                ) : (
+                  <Typography variant="body1" className="font-medium">
+                    {detail.value}
+                  </Typography>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
 
-          {/* Property Information Section */}
-          <div>
-            <h3 className="text-md font-medium !text-gray-500">Propriété</h3>
-            <div className="mt-2 bg-gray-50 rounded-lg p-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm !text-gray-500">Type</p>
-                  <p className="font-medium">Appartement</p>
-                </div>
-                <div>
-                  <p className="text-sm !text-gray-500">Surface</p>
-                  <p className="font-medium">85 m²</p>
-                </div>
-                <div>
-                  <p className="text-sm !text-gray-500">Pièces</p>
-                  <p className="font-medium">3</p>
-                </div>
-                <div>
-                  <p className="text-sm !text-gray-500">Étage</p>
-                  <p className="font-medium">2ème</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <Divider />
 
-        {/* Right Column */}
-        <div className="space-y-4">
-          {/* Financial Information Section */}
-          <div>
-            <h3 className="text-md font-medium !text-gray-500">
-              Informations financières
-            </h3>
-            <div className="mt-2 bg-gray-50 rounded-lg p-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm !text-gray-500">Prix de vente</p>
-                  <p className="font-medium">320 000 €</p>
-                </div>
-                <div>
-                  <p className="text-sm !text-gray-500">Dépôt de garantie</p>
-                  <p className="font-medium">32 000 €</p>
-                </div>
-                <div>
-                  <p className="text-sm !text-gray-500">Avances versées</p>
-                  <p className="font-medium">16 000 €</p>
-                </div>
-                <div>
-                  <p className="text-sm !text-gray-500">Reste à payer</p>
-                  <p className="font-medium">304 000 €</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Notes Section */}
-          <div>
-            <h3 className="text-md font-medium !text-gray-500">Notes</h3>
-            <div className="mt-2 bg-gray-50 rounded-lg p-4 h-36 overflow-y-auto">
-              <p className="text-md !text-gray-700">
-                Le client souhaite finaliser l'achat avant la fin du mois.
-                Prévoir une visite supplémentaire pour vérifier les travaux
-                effectués. Contact préféré par email.
-              </p>
-            </div>
-          </div>
-        </div>
+      <div>
+        <Typography variant="h6" className="font-semibold text-gray-800 mb-4">
+          Informations sur le bien
+        </Typography>
+        <Card variant="outlined">
+          <CardContent>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="caption" color="textSecondary">
+                  Propriété
+                </Typography>
+                <Typography variant="body1" className="font-medium">
+                  {reservation?.bien?.propriete_dite_bien || 'N/A'}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="caption" color="textSecondary">
+                  Prix unitaire
+                </Typography>
+                <Typography variant="body1" className="font-medium">
+                  {reservation?.bien?.prix_unitaire 
+                    ? `${reservation.bien.prix_unitaire.toLocaleString('fr-FR')} €`
+                    : 'N/A'
+                  }
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="caption" color="textSecondary">
+                  Superficie habitable
+                </Typography>
+                <Typography variant="body1" className="font-medium">
+                  {reservation?.bien?.superficie_habitable 
+                    ? `${reservation.bien.superficie_habitable} m²`
+                    : 'N/A'
+                  }
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="caption" color="textSecondary">
+                  Avance minimale
+                </Typography>
+                <Typography variant="body1" className="font-medium">
+                  {reservation?.bien?.avance_minimale 
+                    ? `${reservation.bien.avance_minimale.toLocaleString('fr-FR')} €`
+                    : 'N/A'
+                  }
+                </Typography>
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

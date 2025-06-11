@@ -74,25 +74,30 @@ export const AvancesTab = () => {
       render: (row) => (
         <div className="flex gap-3 items-center">
             <Eye
+              key={`eye-${row.id}`}
               className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
               title="Voir détails"
             />
             <UserCog
+              key={`edit-${row.id}`}
               className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
               title="Modifier"
             />
           {row.status === "Actif" ? (
             <User
+              key={`activate-${row.id}`}
               className="w-4 h-4 !text-green-500 hover:text-green-700 cursor-pointer"
               title="Bloquer utilisateur"
             />
           ) : (
             <UserX
+              key={`deactivate-${row.id}`}
               className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
               title="Débloquer utilisateur"
             />
           )}
           <Trash2
+            key={`delete-${row.id}`}
             className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
             title="Supprimer utilisateur"
           />
