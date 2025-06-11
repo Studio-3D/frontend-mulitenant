@@ -29,7 +29,15 @@ const Table = ({
   onExport = null,
   enableExport = false,
   enableImport = false,
-  filterComponent = null, // New prop for custom filter component
+  filterComponent = null,
+  // New props for expandable rows
+  renderExpandedRow = null,
+  onRowClick = null,
+  rowClassName = () => "",
+  expandedRows = {},
+  showPagination = true,
+  showSearch = true,
+  compact = false, // New prop for compact nested tables
 }) => {
   const [showModal, setShowModal] = useState(null);
   const [localSearchTerm, setLocalSearchTerm] = useState('');
@@ -39,17 +47,19 @@ const Table = ({
   const toggleFilter = () => {
     const newState = !showFilter;
     setShowFilter(newState);
-    onFilterToggle(newState); // <--- Appelle le parent
+    onFilterToggle(newState);
   };
   
   useEffect(() => {
+    if (!showSearch) return;
+    
     const timer = setTimeout(() => {
       onSearchChange(localSearchTerm);
       onPageChange(1);
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [localSearchTerm, onSearchChange, onPageChange]);
+  }, [localSearchTerm, onSearchChange, onPageChange, showSearch]);
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
@@ -102,17 +112,19 @@ const Table = ({
             </button>
           )}
 
-          <div className="flex-1 sm:flex-none flex items-center border border-gray-300 rounded-lg p-1.5 bg-transparent gap-2 w-full sm:w-[300px]">
-            <Search className="w-6 h-6" />
-            <input
-              className="bg-transparent outline-none !text-gray-600 w-full"
-              type="text"
-              placeholder="Rechercher..."
-              value={localSearchTerm}
-              onChange={(e) => setLocalSearchTerm(e.target.value)}
-              aria-label="Rechercher"
-            />
-          </div>
+          {showSearch && (
+            <div className="flex-1 sm:flex-none flex items-center border border-gray-300 rounded-lg p-1.5 bg-transparent gap-2 w-full sm:w-[300px]">
+              <Search className="w-6 h-6" />
+              <input
+                className="bg-transparent outline-none !text-gray-600 w-full"
+                type="text"
+                placeholder="Rechercher..."
+                value={localSearchTerm}
+                onChange={(e) => setLocalSearchTerm(e.target.value)}
+                aria-label="Rechercher"
+              />
+            </div>
+          )}
         </div>
 
         <div className="flex gap-2 items-center">
@@ -154,8 +166,8 @@ const Table = ({
         </div>
       )}
 
-      {/* Table */}
-      <div className="overflow-auto mt-6 h-[72vh]">
+      {/* Table - adjust height based on context */}
+      <div className={`overflow-auto mt-4 ${showPagination ? 'h-[72vh]' : 'max-h-96'}`}>
         {error ? (
           <div className="text-center !text-red-500 py-4">{error}</div>
         ) : (
@@ -163,7 +175,7 @@ const Table = ({
             <thead>
               <tr className="bg-[#009FFF] text-white">
                 {columns.map((column) => (
-                  <th key={column.key} className="py-3 px-2 text-left">
+                  <th key={column.key} className={`py-3 px-2 text-left ${showPagination ? '' : 'text-sm'}`}>
                     {column.label}
                   </th>
                 ))}
@@ -190,15 +202,34 @@ const Table = ({
                   </td>
                 </tr>
               ) : (
-                data.map((row, index) => (
-                  <tr key={index} className="hover:bg-gray-50">
-                    {columns.map((column) => (
-                      <td key={column.key} className="py-4 px-2 border-b">
-                        {column.render ? column.render(row) : row[column.key]}
-                      </td>
-                    ))}
-                  </tr>
-                ))
+                data.map((row, index) => {
+                  const rowId = row.id || index;
+                  const isExpanded = expandedRows[rowId];
+                  
+                  return (
+                    <>
+                      <tr 
+                        key={index} 
+                        className={`hover:bg-gray-50 ${rowClassName(row)} ${onRowClick ? 'cursor-pointer' : ''}`}
+                        onClick={() => onRowClick && onRowClick(row, index)}
+                      >
+                        {columns.map((column) => (
+                          <td key={column.key} className={`py-4 px-2 border-b ${showPagination ? '' : 'py-2 text-sm'}`}>
+                            {column.render ? column.render(row, index) : row[column.key]}
+                          </td>
+                        ))}
+                      </tr>
+                      {/* Expanded row content */}
+                      {isExpanded && renderExpandedRow && (
+                        <tr key={`expanded-${index}`}>
+                          <td colSpan={columns.length} className="p-0 border-b">
+                            {renderExpandedRow(row, index)}
+                          </td>
+                        </tr>
+                      )}
+                    </>
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -206,41 +237,43 @@ const Table = ({
       </div>
 
       {/* Pagination */}
-      <div className="flex gap-4 justify-end mt-4">
-        <div className="flex items-center gap-2">
-          <span className="text-gray-600">Lignes par page:</span>
-          <select
-            className="border px-2 py-1 rounded-lg"
-            value={rowsPerPage}
-            onChange={handleRowsPerPageChange}
-          >
-            {[10, 20, 30].map((num) => (
-              <option key={num} value={num}>
-                {num}
-              </option>
-            ))}
-          </select>
+      {showPagination && (
+        <div className="flex gap-4 justify-end mt-4">
+          <div className="flex items-center gap-2">
+            <span className="text-gray-600">Lignes par page:</span>
+            <select
+              className="border px-2 py-1 rounded-lg"
+              value={rowsPerPage}
+              onChange={handleRowsPerPageChange}
+            >
+              {[10, 20, 30].map((num) => (
+                <option key={num} value={num}>
+                  {num}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex gap-2 items-center">
+            <button
+              disabled={currentPage === 1}
+              onClick={handlePreviousPage}
+              className="border px-3 py-1 rounded-lg disabled:opacity-50"
+            >
+              Préc
+            </button>
+            <span>
+              {currentPage} / {totalPages}
+            </span>
+            <button
+              disabled={currentPage >= totalPages}
+              onClick={handleNextPage}
+              className="border px-3 py-1 rounded-lg disabled:opacity-50"
+            >
+              Suiv
+            </button>
+          </div>
         </div>
-        <div className="flex gap-2 items-center">
-          <button
-            disabled={currentPage === 1}
-            onClick={handlePreviousPage}
-            className="border px-3 py-1 rounded-lg disabled:opacity-50"
-          >
-            Préc
-          </button>
-          <span>
-            {currentPage} / {totalPages}
-          </span>
-          <button
-            disabled={currentPage >= totalPages}
-            onClick={handleNextPage}
-            className="border px-3 py-1 rounded-lg disabled:opacity-50"
-          >
-            Suiv
-          </button>
-        </div>
-      </div>
+      )}
 
       {/* Dynamic Modals */}
       {showModal && (

@@ -142,8 +142,6 @@ export default function BienDetails({ id }) {
     }
   };
   
-  // Removed renderDescriptionTab function as it's no longer needed
-  
   // Helper function to render avatar with icon
   const renderIconAvatar = (icon, bgColor = "bg-blue-100") => (
     <div className={`flex items-center justify-center w-10 h-10 rounded-full ${bgColor} !text-blue-600 mr-3 flex-shrink-0`}>
@@ -153,19 +151,19 @@ export default function BienDetails({ id }) {
 
   return (
     <div className="space-y-6">
-      {/* Header with actions and banner background */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-lg p-6 shadow-lg">
+      {/* Header with actions - Redesigned with professional white background */}
+      <div className="bg-white rounded-lg p-6 shadow border border-gray-200">
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-2">
             <Link 
               href={bien.projet_id ? `/Projets/${bien.projet_id}` : "/Biens"}
-              className="text-white hover:text-blue-100"
+              className="text-gray-600 hover:text-gray-800"
             >
               <ArrowLeft className="w-5 h-5" />
             </Link>
             <div>
-              <h1 className="text-2xl font-bold">{bien.propriete_dite_bien}</h1>
-              <p className="text-blue-100">
+              <h1 className="text-2xl font-bold text-gray-800">{bien.propriete_dite_bien}</h1>
+              <p className="text-gray-500">
                 {[
                   bien.projet?.nom,
                   bien.tranche?.nom,
@@ -195,7 +193,7 @@ export default function BienDetails({ id }) {
             {canEditBien && (
               <Link 
                 href={`/Biens/${id}/modifier`} 
-                className="flex items-center gap-2 px-4 py-2 bg-white !text-blue-700 rounded-md hover:bg-blue-50"
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
               >
                 <Pencil className="w-4 h-4" />
                 Modifier
@@ -207,8 +205,8 @@ export default function BienDetails({ id }) {
 
       {/* General info section */}
       <div className="bg-white shadow-sm rounded-lg">
-        <div className="border-b border-blue-500 px-6 py-4 bg-gradient-to-r from-blue-50 to-indigo-50">
-          <h2 className="text-lg font-medium !text-blue-700">Informations générales</h2>
+        <div className="border-b border-gray-200 px-6 py-4">
+          <h2 className="text-lg font-medium text-gray-800">Informations générales</h2>
         </div>
         
         <div className="p-6">
@@ -354,31 +352,6 @@ export default function BienDetails({ id }) {
               </div>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Description section */}
-      <div className="mt-8 border-t border-blue-200 pt-6 col-span-1 md:col-span-2 lg:col-span-3">
-        <h3 className="text-lg font-medium mb-4 !text-blue-700 flex items-center">
-          <AlignLeft className="mr-2 w-5 h-5" />
-          Description
-        </h3>
-        
-        <div className="bg-white p-4 rounded-md border border-gray-100">
-          {bienDescription ? (
-            <div className="prose max-w-none">
-              <p className="whitespace-pre-wrap">{bienDescription}</p>
-            </div>
-          ) : (
-            <div className="text-center py-4 !text-gray-500">
-              <p>Aucune description disponible pour ce bien.</p>
-              {canEditBien && (
-                <p className="mt-2 text-sm">
-                  Utilisez le bouton "Partager" pour créer une description.
-                </p>
-              )}
-            </div>
-          )}
         </div>
       </div>
 

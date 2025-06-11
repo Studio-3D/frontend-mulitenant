@@ -70,6 +70,8 @@ export default function BienEncaissements({ bienId }) {
       } catch (err) {
         console.error("Error fetching encaissements:", err);
         setError("Impossible de charger les encaissements");
+        setEncaissements([]);
+        setTotalRows(0);
       } finally {
         setLoading(false);
       }

@@ -1,144 +1,158 @@
 import React from 'react';
-import { 
-  CalendarIcon, 
-  PlusIcon, 
-  EditIcon, 
-  TrashIcon, 
-  CheckCircleIcon, 
-  XCircleIcon, 
-  ClockIcon 
-} from 'lucide-react';
+import { Typography, Card, CardContent, Button, Chip, IconButton } from '@mui/material';
+import { CalendarIcon, ClockIcon, UserIcon, PlusIcon, EditIcon, TrashIcon } from 'lucide-react';
 
 // Mock data for rendez-vous
 const rendezVousData = [
   {
     id: 1,
-    date: '15/06/2023',
+    date: '2023-06-25',
     heure: '10:00',
-    type: 'Visite initiale',
-    responsable: 'Marie Dupont',
-    lieu: '15 Rue des Lilas, 75001 Paris',
-    status: 'Terminé'
+    type: 'Visite du bien',
+    statut: 'Confirmé',
+    responsable: 'Marie Dubois',
+    commentaire: 'Première visite avec les clients'
   },
   {
     id: 2,
-    date: '22/06/2023',
+    date: '2023-07-02',
     heure: '14:30',
-    type: 'Visite technique',
-    responsable: 'Pierre Lemoine',
-    lieu: '15 Rue des Lilas, 75001 Paris',
-    status: 'Terminé'
-  },
-  {
-    id: 3,
-    date: '05/07/2023',
-    heure: '11:15',
     type: 'Signature compromis',
-    responsable: 'Sophie Bernard',
-    lieu: 'Cabinet notaire, 8 Avenue Victor Hugo, 75016 Paris',
-    status: 'À venir'
-  },
-  {
-    id: 4,
-    date: '20/07/2023',
-    heure: '16:00',
-    type: 'Remise des clés',
+    statut: 'Planifié',
     responsable: 'Jean Martin',
-    lieu: '15 Rue des Lilas, 75001 Paris',
-    status: 'À venir'
+    commentaire: 'Rendez-vous pour la signature du compromis de vente'
   }
 ];
 
-const StatusBadge = ({ status }) => {
-  const statusConfig = {
-    'Terminé': {
-      icon: <CheckCircleIcon className="h-4 w-4 mr-1" />,
-      color: 'text-green-600',
-      bgColor: 'bg-green-100'
-    },
-    'À venir': {
-      icon: <ClockIcon className="h-4 w-4 mr-1" />,
-      color: 'text-cyan-600',
-      bgColor: 'bg-blue-100'
+export const RendezVousTab = () => {
+  const getStatusColor = (statut) => {
+    switch (statut) {
+      case 'Confirmé':
+        return 'success';
+      case 'Planifié':
+        return 'warning';
+      case 'Annulé':
+        return 'error';
+      default:
+        return 'default';
     }
   };
 
-  const config = statusConfig[status] || statusConfig['À venir'];
+  const handleEdit = (id) => {
+    console.log('Modifier rendez-vous:', id);
+  };
 
-  return (
-    <span className={`flex items-center ${config.color}`}>
-      {config.icon}
-      {status}
-    </span>
-  );
-};
+  const handleDelete = (id) => {
+    console.log('Supprimer rendez-vous:', id);
+  };
 
-export const RendezVousTab = () => {
   return (
     <div className="space-y-6">
-      {/* Header section */}
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold !text-gray-800 flex items-center">
-          <CalendarIcon className="h-5 w-5 mr-2 !text-blue-500" />
+        <Typography variant="h6" className="font-semibold text-gray-800">
           Rendez-vous
-        </h2>
-        <button className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm flex items-center hover:bg-blue-700 transition-colors">
-          <PlusIcon className="h-4 w-4 mr-1" />
-          Ajouter un rendez-vous
-        </button>
+        </Typography>
+        <Button 
+          variant="contained" 
+          startIcon={<PlusIcon className="h-4 w-4" />}
+          size="small"
+        >
+          Planifier un rendez-vous
+        </Button>
       </div>
 
-      {/* Appointments grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {rendezVousData.map(rdv => (
-          <div key={rdv.id} className="border border-gray-200 rounded-lg p-4 bg-white hover:shadow-md transition-shadow">
-            {/* Appointment header */}
-            <div className="flex justify-between items-start">
-              <div className="flex items-center">
-                <div className={`p-2 rounded-full mr-3 ${rdv.status === 'Terminé' ? 'bg-green-50' : 'bg-cyan-50'}`}>
-                  <CalendarIcon className={`h-5 w-5 ${rdv.status === 'Terminé' ? 'text-green-500' : 'text-cyan-500'}`} />
-                </div>
-                <div>
-                  <h3 className="font-medium !text-gray-900">{rdv.type}</h3>
-                  <p className="text-sm !text-gray-500">
-                    {rdv.date} à {rdv.heure}
-                  </p>
-                </div>
-              </div>
-              <div className="flex">
-                <button 
-                  className="text-blue-500 mr-2 transition-colors"
-                  aria-label="Modifier le rendez-vous"
-                >
-                  <EditIcon className="h-4 w-4" />
-                </button>
-                <button 
-                  className="text-red-500 transition-colors"
-                  aria-label="Supprimer le rendez-vous"
-                >
-                  <TrashIcon className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
+      {rendezVousData.length > 0 ? (
+        <div className="space-y-4">
+          {rendezVousData.map((rdv) => (
+            <Card key={rdv.id} variant="outlined">
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-2">
+                        <CalendarIcon className="h-4 w-4 text-blue-500" />
+                        <Typography variant="body1" className="font-medium">
+                          {new Date(rdv.date).toLocaleDateString('fr-FR', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </Typography>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <ClockIcon className="h-4 w-4 text-green-500" />
+                        <Typography variant="body2">
+                          {rdv.heure}
+                        </Typography>
+                      </div>
+                      <Chip 
+                        label={rdv.statut}
+                        color={getStatusColor(rdv.statut)}
+                        size="small"
+                      />
+                    </div>
 
-            {/* Appointment details */}
-            <div className="mt-4 text-sm">
-              <p className="flex items-center !text-gray-600 mb-1">
-                <span className="font-medium w-24">Lieu:</span> 
-                <span className="flex-1">{rdv.lieu}</span>
-              </p>
-              <p className="flex items-center !text-gray-600 mb-1">
-                <span className="font-medium w-24">Responsable:</span>
-                <span className="flex-1">{rdv.responsable}</span>
-              </p>
-              <p className="flex items-center !text-gray-500">
-                <span className="font-medium w-24">Statut:</span>
-                <StatusBadge status={rdv.status} />
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
+                    <Typography variant="h6" className="font-semibold">
+                      {rdv.type}
+                    </Typography>
+
+                    <div className="flex items-center space-x-2">
+                      <UserIcon className="h-4 w-4 text-gray-500" />
+                      <Typography variant="body2" color="textSecondary">
+                        Responsable: {rdv.responsable}
+                      </Typography>
+                    </div>
+
+                    {rdv.commentaire && (
+                      <Typography variant="body2" color="textSecondary">
+                        {rdv.commentaire}
+                      </Typography>
+                    )}
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <IconButton
+                      size="small"
+                      onClick={() => handleEdit(rdv.id)}
+                      title="Modifier"
+                    >
+                      <EditIcon className="h-4 w-4" />
+                    </IconButton>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleDelete(rdv.id)}
+                      title="Supprimer"
+                      color="error"
+                    >
+                      <TrashIcon className="h-4 w-4" />
+                    </IconButton>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <Card variant="outlined" className="border-dashed">
+          <CardContent className="text-center py-12">
+            <CalendarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <Typography variant="h6" color="textSecondary" className="mb-2">
+              Aucun rendez-vous
+            </Typography>
+            <Typography variant="body2" color="textSecondary" className="mb-4">
+              Aucun rendez-vous n'a été planifié pour cette réservation.
+            </Typography>
+            <Button 
+              variant="contained" 
+              startIcon={<PlusIcon className="h-4 w-4" />}
+              size="small"
+            >
+              Planifier le premier rendez-vous
+            </Button>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
