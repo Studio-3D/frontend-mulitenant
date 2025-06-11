@@ -47,7 +47,7 @@ export default function UserDetailsPage() { // Renamed to PascalCase
               onClick={() => setSelectedMenu(item.label)}
             >
               <div className='flex items-center'>
-                <span className="w-8 h-8 flex items-center text-gray-400">{item.icon}</span>
+                <span className="w-8 h-8 flex items-center !text-gray-400">{item.icon}</span>
                 <span className="font-medium">{item.label}</span>
               </div>
             </div>

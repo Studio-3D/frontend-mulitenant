@@ -113,7 +113,7 @@ const CpsForm = ({ cps, onSave, onCancel }) => {
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
           <div className="md:col-span-2">
-            <label htmlFor="nature_travaux" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="nature_travaux" className="block text-sm font-medium !text-gray-700 mb-1">
               Nature des Travaux <span className="text-red-500">*</span>
             </label>
             <input
@@ -122,11 +122,11 @@ const CpsForm = ({ cps, onSave, onCancel }) => {
               {...register("nature_travaux")}
               className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${errors.nature_travaux ? 'border-red-500' : 'border-gray-300'}`}
             />
-            {errors.nature_travaux && <p className="mt-1 text-xs text-red-500">{errors.nature_travaux.message}</p>}
+            {errors.nature_travaux && <p className="mt-1 text-xs !text-red-500">{errors.nature_travaux.message}</p>}
           </div>
 
           <div>
-            <label htmlFor="date_validation" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="date_validation" className="block text-sm font-medium !text-gray-700 mb-1">
               Date de Validation <span className="text-red-500">*</span>
             </label>
             <input
@@ -135,11 +135,11 @@ const CpsForm = ({ cps, onSave, onCancel }) => {
               {...register("date_validation")}
               className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${errors.date_validation ? 'border-red-500' : 'border-gray-300'}`}
             />
-            {errors.date_validation && <p className="mt-1 text-xs text-red-500">{errors.date_validation.message}</p>}
+            {errors.date_validation && <p className="mt-1 text-xs !text-red-500">{errors.date_validation.message}</p>}
           </div>
 
           <div>
-            <label htmlFor="cout" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="cout" className="block text-sm font-medium !text-gray-700 mb-1">
               Coût Marché <span className="text-red-500">*</span>
             </label>
             <input
@@ -149,11 +149,11 @@ const CpsForm = ({ cps, onSave, onCancel }) => {
               {...register("cout")}
               className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${errors.cout ? 'border-red-500' : 'border-gray-300'}`}
             />
-            {errors.cout && <p className="mt-1 text-xs text-red-500">{errors.cout.message}</p>}
+            {errors.cout && <p className="mt-1 text-xs !text-red-500">{errors.cout.message}</p>}
           </div>
 
           <div className="md:col-span-2">
-            <label htmlFor="piece_jointe" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="piece_jointe" className="block text-sm font-medium !text-gray-700 mb-1">
               Pièce Jointe
             </label>
             <input
@@ -163,7 +163,7 @@ const CpsForm = ({ cps, onSave, onCancel }) => {
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
             {cps && cps.piece_jointe && (
-              <p className="mt-1 text-xs text-blue-600">Fichier actuel: {cps.piece_jointe}</p>
+              <p className="mt-1 text-xs !text-blue-600">Fichier actuel: {cps.piece_jointe}</p>
             )}
           </div>
         </div>
@@ -172,7 +172,7 @@ const CpsForm = ({ cps, onSave, onCancel }) => {
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium !text-gray-700 hover:bg-gray-50"
           >
             Annuler
           </button>

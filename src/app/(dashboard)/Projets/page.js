@@ -7,10 +7,19 @@ import { useAuth } from '@/context/AuthContext';
 import Table from '@/components/Table';
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import * as XLSX from 'xlsx';
+import { APIURL } from '@/configs/api';
+import Modal from '@/components/Modal';
+import DeleteData from '@/components/DeleteData';
+import { fetchData_Select, fetchData_table_by_projet } from '@/configs/api-utils';
+import Input from '@/components/Input';
+import { isAdmin, isSuperAdmin } from '@/configs/enum';
+import Select from 'react-select';
+import InputSelect from '@/components/inputSelect';
+import ProjetFilter from './ProjetFilter';
 
 export default function ProjetsPage() {
   const { selectedSociete } = useSociete();
-  const { fetchProjets, loading, projets } = useProjet();
+  const { fetchProjets } = useProjet();
   const { user } = useAuth();
   const [hasFetched, setHasFetched] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -19,9 +28,60 @@ export default function ProjetsPage() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [error, setError] = useState(null);
   const router = useRouter();
+  const [selectedId, setSelectedId] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const accessToken = localStorage.getItem("accessToken");
+  const [projets, setProjets] = useState([]);
+  const [Typeprojets, setTypeProjets] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [totalRows, setTotalRows] = useState(0);
+  const [filters, setFilters] = useState({nom: '', code: '', type: '', adresse: '',date:''});
+  const [tempFilters, setTempFilters] = useState({ ...filters });
 
-  // Only super admins and admin users can create projects
-  const canCreateProjet = user?.role === 1 || user?.role === 2;
+  const handleFilterChange = (field, value) => {
+    setTempFilters((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const applyFilters = () => {
+    setFilters(tempFilters); // C'est ici que fetchUsers va être déclenché
+  };
+  const resetFilters = () => {
+    const reset = {
+      nom: '', code: '', type: '', adresse: '',date:''
+    };
+    setFilters(reset);
+    setTempFilters(reset);
+  };
+
+   const handleFilterToggle = (isOpen) => {
+      if (!isOpen) resetFilters(); // Si on ferme, on réinitialise
+    };
+
+ const entity = {
+  API_URL: "projets",
+  dataKey: "projets",
+  name: "Projet",
+  searchFields: ['nom','code','type','adresse'],
+};
+  
+    useEffect(() => {
+      fetchData_table_by_projet(
+        entity,
+        filters, 
+        searchTerm,
+        currentPage,
+        rowsPerPage,
+        accessToken,
+        setLoading,
+        setError,
+        setProjets,
+        setTotalRows
+      );
+    }, [searchTerm, currentPage, rowsPerPage, accessToken,filters]);
+    
+    useEffect(() => {
+        fetchData_Select('typeProjets', setTypeProjets, setLoading);
+      }, []);
 
   // Define table columns with actions
   const columns = [
@@ -30,7 +90,6 @@ export default function ProjetsPage() {
     { key: 'type', label: 'Type' },
     { key: 'adresse', label: 'Adresse' },
     { key: 'date', label: 'Date création' },
-    { key: 'statut', label: 'Statut' },
     { 
       key: 'actions', 
       label: 'Actions',
@@ -52,7 +111,10 @@ export default function ProjetsPage() {
           </button>
           <button
             className="text-red-500 hover:text-red-700"
-            onClick={() => handleAction('delete', row.id)}
+            onClick={() => {
+              setSelectedId(row.id);
+              setShowDeleteModal(true);
+            }}            
             title="Supprimer"
           >
             <Trash2 className="w-4 h-4" />
@@ -61,7 +123,8 @@ export default function ProjetsPage() {
       )
     }
   ];
-
+  
+  
   // Get the société from localStorage as a fallback
   useEffect(() => {
     // Log the context value
@@ -93,38 +156,24 @@ export default function ProjetsPage() {
   }, [selectedSociete, loading, hasFetched, fetchProjets]);
 
   // Format projects data for table
-  useEffect(() => {
-    if (!projets) return;
-    
-    // Apply search filter
-    const filtered = projets.filter(projet => 
-      searchTerm === '' || 
-      projet.nom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      projet.code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      projet.adresse?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    
-    // Format data for table with all required fields
-    const formattedProjets = filtered.map(projet => {
-      // Properly handle type based on the correct property path
-      let typeValue = 'N/A';
-      if (projet.type_projet && projet.type_projet.type) {
-        typeValue = projet.type_projet.type;
-      }
-      
-      return {
-        id: projet.id,
-        nom: projet.nom || 'Sans nom',
-        code: projet.code || 'N/A',
-        type: typeValue,
-        adresse: projet.adresse || 'N/A',
-        date: new Date(projet.created_at).toLocaleDateString('fr-FR') || 'N/A',
-        statut: projet.statut || 'Actif'
-      };
-    });
-    
-    setFilteredProjets(formattedProjets);
-  }, [projets, searchTerm]);
+  // 1. Quand tu reçois les données de l'API (déjà paginées)
+useEffect(() => {
+  // Applique seulement le formatage, pas de filtre ni de pagination locale
+  if (!projets) return;
+
+  const formattedProjets = projets.map(projet => ({
+    id: projet.id,
+    nom: projet.nom || 'Sans nom',
+    code: projet.code || '',
+    type: projet.type_projet?.type || '',
+    adresse: projet.adresse || '',
+    date: new Date(projet.created_at).toLocaleDateString('fr-FR') || '',
+  }));
+
+  setFilteredProjets(formattedProjets);
+}, [projets]);
+
+
 
   // Handle search
   const handleSearchChange = (term) => {
@@ -161,22 +210,25 @@ export default function ProjetsPage() {
     }
   };
 
-  // Handle export to Excel
-  const handleExportExcel = () => {
-    const dataToExport = filteredProjets.map(projet => ({
+  const data_to_export = () => {
+    return filteredProjets.map((projet) => ({
       'Nom du projet': projet.nom,
       'Code': projet.code,
       'Type': projet.type,
       'Adresse': projet.adresse,
       'Date création': projet.date,
-      'Statut': projet.statut
     }));
-    
-    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Projets");
-    XLSX.writeFile(workbook, "projets_export.xlsx");
   };
+    const columns_export = [
+  { key: "Nom du projet", label: "Nom" },
+  { key: "Code", label: "Code" },
+  { key: "Type", label: "Type" },
+  { key: "Adresse", label: "Adresse" },
+  { key: "Date création", label: "Date de création" },
+];
+
+
+    
 
   // Calculate paginated data
   const paginatedData = filteredProjets.slice(
@@ -186,22 +238,62 @@ export default function ProjetsPage() {
 
   return (
     <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
-      {/* Table with projects */}
       <Table 
+        data_to_export={data_to_export()}
+        columns_export={columns_export}
+        name_file_export={"projet_export"}
         columns={columns}
-        data={paginatedData}
-        totalRows={filteredProjets.length}
+        filterComponent={
+          <ProjetFilter
+            tempFilters={tempFilters}
+            handleFilterChange={handleFilterChange}
+            resetFilters={resetFilters}
+            applyFilters={applyFilters}
+            typeProjets={Typeprojets}
+            loading={loading}
+          />
+        }
+        data={paginatedData || []}        
+        totalRows={totalRows}
         loading={loading}
         error={error}
-        addLink={canCreateProjet ? "/Projets/ajouter" : undefined}
+        onFilterToggle={handleFilterToggle}
+        addLink={(isSuperAdmin(user.role) || isAdmin(user.role)) ? "/Projets/ajouter" : undefined}
         onSearchChange={handleSearchChange}
         currentPage={currentPage}
         rowsPerPage={rowsPerPage}
         onPageChange={handlePageChange}
         onRowsPerPageChange={handleRowsPerPageChange}
-        onExport={handleExportExcel}
         enableExport={filteredProjets.length > 0}
       />
+      {showDeleteModal && selectedId && (
+        <Modal isVisible={true} onClose={() => setShowDeleteModal(false)}>
+          <DeleteData
+            route={APIURL.PROJETS}
+            Id={selectedId}
+            type="Projet"
+            message={`Êtes-vous sûr de vouloir supprimer ce projet ?`
+            }
+            accessToken={accessToken}
+            onClose={() => {
+              setShowDeleteModal(false);
+              fetchData_table_by_projet(
+                entity,
+                filters, 
+                searchTerm,
+                1,
+                rowsPerPage,
+                accessToken,
+                setLoading,
+                setError,
+                setProjets,
+                setTotalRows
+              );
+            }}
+          />
+        </Modal>
+      )}
     </div>
+    
   );
 }

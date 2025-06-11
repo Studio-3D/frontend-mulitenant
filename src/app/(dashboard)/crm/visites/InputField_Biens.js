@@ -22,7 +22,7 @@ const InputField_Biens = ({
     <div className="mb-4">
       <label
         htmlFor={name}
-        className="block text-[15px] font-medium text-gray-700"
+        className="block text-[15px] font-medium !text-gray-700"
       >
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}

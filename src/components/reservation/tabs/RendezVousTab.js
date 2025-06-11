@@ -78,8 +78,8 @@ export const RendezVousTab = () => {
     <div className="space-y-6">
       {/* Header section */}
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-800 flex items-center">
-          <CalendarIcon className="h-5 w-5 mr-2 text-blue-500" />
+        <h2 className="text-xl font-semibold !text-gray-800 flex items-center">
+          <CalendarIcon className="h-5 w-5 mr-2 !text-blue-500" />
           Rendez-vous
         </h2>
         <button className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm flex items-center hover:bg-blue-700 transition-colors">
@@ -99,8 +99,8 @@ export const RendezVousTab = () => {
                   <CalendarIcon className={`h-5 w-5 ${rdv.status === 'Terminé' ? 'text-green-500' : 'text-cyan-500'}`} />
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-900">{rdv.type}</h3>
-                  <p className="text-sm text-gray-500">
+                  <h3 className="font-medium !text-gray-900">{rdv.type}</h3>
+                  <p className="text-sm !text-gray-500">
                     {rdv.date} à {rdv.heure}
                   </p>
                 </div>
@@ -123,15 +123,15 @@ export const RendezVousTab = () => {
 
             {/* Appointment details */}
             <div className="mt-4 text-sm">
-              <p className="flex items-center text-gray-600 mb-1">
+              <p className="flex items-center !text-gray-600 mb-1">
                 <span className="font-medium w-24">Lieu:</span> 
                 <span className="flex-1">{rdv.lieu}</span>
               </p>
-              <p className="flex items-center text-gray-600 mb-1">
+              <p className="flex items-center !text-gray-600 mb-1">
                 <span className="font-medium w-24">Responsable:</span>
                 <span className="flex-1">{rdv.responsable}</span>
               </p>
-              <p className="flex items-center text-gray-500">
+              <p className="flex items-center !text-gray-500">
                 <span className="font-medium w-24">Statut:</span>
                 <StatusBadge status={rdv.status} />
               </p>

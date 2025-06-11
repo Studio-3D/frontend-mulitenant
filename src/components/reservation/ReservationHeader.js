@@ -25,26 +25,26 @@ export const ReservationHeader = ({ reservationData }) => {
     <div className="bg-white rounded-lg shadow-md p-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center">
-          <FileTextIcon className="h-8 w-8 text-blue-500 mr-3" />
+          <FileTextIcon className="h-8 w-8 !text-blue-500 mr-3" />
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">
+            <h1 className="text-2xl font-bold !text-gray-800">
               Détails de réservation
             </h1>
             <p className="text-gray-600">Code: {reservation?.code_reservation || 'N/A'}</p>
           </div>
         </div>
         <div className="flex items-center space-x-2">
-          <InfoIcon className="h-5 w-5 text-blue-500" />
-          <span className="text-gray-600">
-            Dernière mise à jour: {lastUpdated}
+          <InfoIcon className="h-5 w-5 !text-blue-500" />
+          <span className=" !text-gray-600">
+            Dernière mise à jour: 12/06/2023
           </span>
         </div>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
         <div className="bg-green-50 p-3 rounded-md">
           <div className="flex items-center gap-2">
-            <CalendarIcon className="h-5 w-5 text-green-500" />
-            <p className="text-gray-600">Rendez-vous</p>
+          <CalendarIcon className="h-5 w-5 !text-green-500" />
+          <p className=" !text-gray-600">Rendez-vous</p>
           </div>
           <p className="text-lg font-semibold">
             {reservation?.nb_rendez_vous || 0}
@@ -52,17 +52,18 @@ export const ReservationHeader = ({ reservationData }) => {
         </div>
         <div className="bg-cyan-50 p-3 rounded-md">
           <div className="flex items-center gap-2">
-            <UsersIcon className="h-5 w-5 text-cyan-500" />
-            <p className="text-gray-600">Acquéreurs</p>
+          <UsersIcon className="h-5 w-5 text-cyan-500" />
+          <p className=" !text-gray-600">Acquéreurs</p>
           </div>
           <p className="text-lg font-semibold">
             {reservation?.nb_acquereurs || 0}
           </p>
         </div>
         <div className="bg-blue-50 p-3 rounded-md">
-          <div className="flex items-center gap-2">
-            <PaperclipIcon className="h-5 w-5 text-blue-500" />
-            <p className="text-gray-600">Pièces jointes</p>
+           <div className="flex items-center gap-2">
+          <PaperclipIcon className="h-5 w-5 !text-blue-500" />
+          <p className=" !text-gray-600">Pièces jointes</p>
+
           </div>
           <p className="text-lg font-semibold">
             {reservation?.nb_pieces_jointes || 0}
@@ -70,8 +71,8 @@ export const ReservationHeader = ({ reservationData }) => {
         </div>
         <div className="bg-red-50 p-3 rounded-md">
           <div className="flex items-center gap-2">
-            <HistoryIcon className="h-5 w-5 text-red-500" />
-            <p className="text-gray-600">Historiques</p>
+          <HistoryIcon className="h-5 w-5 !text-red-500" />
+          <p className=" !text-gray-600">Historiques</p>
           </div>
           <p className="text-lg font-semibold">
             {reservation?.nb_historiques || 0}

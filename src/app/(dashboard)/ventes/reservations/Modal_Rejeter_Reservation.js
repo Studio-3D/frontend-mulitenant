@@ -37,7 +37,7 @@ export default function Modal_Rejeter_Reservation({
       <div className="mb-4">
         <label
           htmlFor={name}
-          className="block text-sm font-medium text-gray-700"
+          className="block text-sm font-medium !text-gray-700"
         >
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
@@ -79,7 +79,7 @@ export default function Modal_Rejeter_Reservation({
           }
         />
         {errors[name] && (
-          <div className="mt-1 text-xs text-red-600">
+          <div className="mt-1 text-xs !text-red-600">
             <p>{errors[name]?.message}</p>
           </div>
         )}

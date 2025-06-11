@@ -6,9 +6,14 @@ import Table from '@/components/Table';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { useAuth } from "@/context/AuthContext";
-import { Pencil, Trash2 } from "lucide-react";
+import { Eye, Pencil, Trash2 } from "lucide-react";
 import * as XLSX from 'xlsx';
-import { getEtatLabel } from '@/configs/enum'; // Import the helper function
+import BienFilter from './BienFilter';
+import { useProjet } from '@/context/ProjetContext';
+import { fetchData_table_by_projet } from '@/configs/api-utils';
+import Modal from '../Modal';
+import DeleteData from '../DeleteData';
+import { decryptBienEtat, getEtatLabel, rowBienBackgroundColors } from '../bien-utils';
 
 export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
   const [biens, setBiens] = useState([]);
@@ -18,8 +23,64 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [refreshFlag, setRefreshFlag] = useState(false);
+  const { selectedProjet } = useProjet();
+  const accessToken = localStorage.getItem("accessToken");
+  const [totalRows, setTotalRows] = useState(0);
+  const [selectedId, setSelectedId] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  
+
   const router = useRouter();
   const { user } = useAuth();
+  const [filters, setFilters] = useState({propriete_dite_bien: '',
+      immeuble:'',
+      bloc:'',
+      tranche:'',
+      type_id:'',
+      vue:'',
+      typologie:'',
+      etat:'',
+      orientation:'',
+      niveau:'',
+      prix_min:'',
+      prix_max:'',
+      superficie_min:'',
+      superficie_max:'',
+    });
+  const [tempFilters, setTempFilters] = useState({ ...filters });
+
+  const handleFilterChange = (field, value) => {
+    setTempFilters((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const applyFilters = () => {
+    setFilters(tempFilters); // C'est ici que fetchUsers va être déclenché
+  };
+  const resetFilters = () => {
+    const reset = {
+      propriete_dite_bien: '',
+      num:'',
+      immeuble:'',
+      bloc:'',
+      tranche:'',
+      type_id:'',
+      vue:'',
+      typologie:'',
+      etat:'',
+      orientation:'',
+      niveau:'',
+      prix_min:'',
+      prix_max:'',
+      superficie_min:'',
+      superficie_max:'',
+    };
+    setFilters(reset);
+    setTempFilters(reset);
+  };
+
+   const handleFilterToggle = (isOpen) => {
+      if (!isOpen) resetFilters(); // Si on ferme, on réinitialise
+    };
 
   // Format property status using the helper function from enum.js
   const formatEtat = (etat) => {
@@ -33,7 +94,22 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
     { key: 'niveau', label: 'Niveau' },
     { key: 'immeuble_nom', label: 'Immeuble' },
     { key: 'prix', label: 'Prix (Dhs)' },
-    { key: 'etat', label: 'État' },
+    {
+        key: 'etat',
+        label: 'État',
+        render: (row) => {
+          const label = getEtatLabel(row.etat);
+          const color = rowBienBackgroundColors[decryptBienEtat(row.etat)];
+          return (
+            <span
+              className="text-xs font-medium px-2.5 py-0.5 rounded"
+              style={{ backgroundColor: color }}
+            >
+              {label}
+            </span>
+          );
+        }
+      },    
     {
       key: 'actions',
       label: 'Actions',
@@ -43,6 +119,15 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
         
         return (
           <div className="flex gap-4 items-center">
+            {/* View button - available to all users */}
+            <button
+              className="text-gray-500 hover:text-blue-500"
+              onClick={() => handleAction('view', row.id)}
+              title="Voir détails"
+            >
+              <Eye className="w-4 h-4" />
+            </button>
+            
             {canManageBiens && (
               <>
                 <button
@@ -54,7 +139,10 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
                 </button>
                 <button
                   className="text-red-500 hover:text-red-700"
-                  onClick={() => handleAction('delete', row.id)}
+                  onClick={() => {
+                    setSelectedId(row.id);
+                    setShowDeleteModal(true);
+                  }}  
                   title="Supprimer"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -67,94 +155,40 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
     }
   ];
 
-  // Fetch biens data
-  useEffect(() => {
-    const fetchBiens = async () => {
-      if (!projetId) return;
-      
-      setLoading(true);
-      try {
-        const token = localStorage.getItem("accessToken");
-        const params = { projet_id: projetId };
-        
-        // Add optional filter parameters if provided
-        if (immeubleId) {
-          params.immeuble_id = immeubleId;
-        } else if (blocId) {
-          params.bloc_id = blocId;
-        } else if (trancheId) {
-          params.tranche_id = trancheId;
-        }
-        
-        console.log("Fetching biens with params:", params);
-        
-        const response = await axios.get(APIURL.BIENS, {
-          headers: { Authorization: `Bearer ${token}` },
-          params
-        });
-        
-        let biensData = [];
-        
-        if (response.data && response.data.data) {
-          biensData = response.data.data;
-        } else if (response.data && response.data.biens) {
-          biensData = response.data.biens;
-        }
-        
-        // Additional client-side filtering for tranche
-        if (trancheId && !blocId && !immeubleId && biensData.length > 0) {
-          // First try direct tranche_id filtering if the API supports it
-          const biensWithTrancheId = biensData.filter(bien => 
-            bien.tranche_id && bien.tranche_id.toString() === trancheId.toString()
-          );
-          
-          if (biensWithTrancheId.length > 0) {
-            // If we found biens with direct tranche_id, use those
-            biensData = biensWithTrancheId;
-          } else {
-            // Otherwise, we need to get blocs and immeubles for this tranche
-            const blocsResponse = await axios.get(`${APIURL.BLOCS}`, {
-              headers: { Authorization: `Bearer ${token}` },
-              params: { tranche_id: trancheId }
-            });
-            
-            if (blocsResponse.data && blocsResponse.data.data) {
-              // Get bloc IDs for this tranche
-              const trancheBlocIds = blocsResponse.data.data
-                .filter(bloc => bloc.tranche_id && bloc.tranche_id.toString() === trancheId.toString())
-                .map(bloc => bloc.id.toString());
-              
-              // Filter biens to only include those from these blocs or their immeubles
-              biensData = biensData.filter(bien => {
-                if (bien.bloc_id && trancheBlocIds.includes(bien.bloc_id.toString())) {
-                  return true;
-                }
-                
-                // For biens with immeuble_id, check if the immeuble belongs to one of our blocs
-                if (bien.immeuble_id) {
-                  // We might need to fetch the immeuble to check its bloc_id
-                  // For now, we'll assume the API is handling this correctly
-                  return true;
-                }
-                
-                return false;
-              });
-            }
-          }
-        }
-        
-        setBiens(biensData);
-      } catch (err) {
-        console.error("Failed to load biens:", err);
-        setError("Erreur lors du chargement des biens");
-        setBiens([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const entity = {
+   API_URL: "biens",
+   dataKey: "data",
+   name: "bien",
+   searchFields: ['nom','tranche','bloc','immeuble'],
+ };
+ 
+  const loadData = () => {
+  const filtersToUse = {
+    ...filters,
+    ...(projetId ? { projet_id: projetId } : {}),
+    ...(trancheId ? { tranche_id: trancheId } : {}),
+    ...(blocId ? { bloc_id: blocId } : {}),
+    ...(immeubleId ? { immeuble_id: immeubleId } : {})
+  };
 
-    fetchBiens();
-  }, [projetId, immeubleId, blocId, trancheId, refreshFlag]);
+  fetchData_table_by_projet(
+    entity,
+    filtersToUse,
+    searchTerm,
+    currentPage,
+    rowsPerPage,
+    accessToken,
+    setLoading,
+    setError,
+    setBiens,
+    setTotalRows
+  );
+};
+
+useEffect(() => {
+  loadData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [searchTerm, accessToken, projetId, trancheId, blocId, immeubleId, filters]);
 
   // Format biens data for table
   const formattedBiens = biens
@@ -167,11 +201,11 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
     .map(bien => ({
       id: bien.id,
       propriete_dite_bien: bien.propriete_dite_bien || 'Sans nom',
-      numero: bien.numero || 'N/A',
-      niveau: bien.niveau?.toString() || 'N/A',
-      immeuble_nom: bien.immeuble?.nom || 'N/A',
+      numero: bien.numero || '',
+      niveau: bien.niveau?.toString() || '',
+      immeuble_nom: bien.immeuble?.nom || '',
       prix: bien.prix?.toLocaleString('fr-FR') || '0',
-      etat: formatEtat(bien.etat || 'disponible')
+      etat: bien.etat 
     }));
 
   // Calculate paginated data
@@ -197,9 +231,8 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
     setCurrentPage(1);
   };
 
-  // Handle export
-  const handleExport = () => {
-    const dataToExport = formattedBiens.map(bien => ({
+const data_to_export = () => {
+    return formattedBiens.map((bien) => ({
       Désignation: bien.propriete_dite_bien,
       Numéro: bien.numero,
       Niveau: bien.niveau,
@@ -207,18 +240,24 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
       Prix: bien.prix,
       État: bien.etat
     }));
+  };  
 
-    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Biens");
-    XLSX.writeFile(workbook, "biens_export.xlsx");
-    
-    toast.success("Export réalisé avec succès");
-  };
+  const columns_export = [
+  { key: "Désignation", label: "Désignation" },
+  { key: "Numéro", label: "Numéro" },
+  { key: "Niveau", label: "Niveau" },
+  { key: "Immeuble", label: "Immeuble" },
+  { key: "Prix", label: "Prix" },
+  { key: "État", label: "État" },
+];
+
 
   // Handle table row actions
   const handleAction = (action, id) => {
     switch (action) {
+      case 'view':
+        router.push(`/Biens/${id}`);
+        break;
       case 'edit':
         router.push(`/Biens/${id}/modifier`);
         break;
@@ -256,11 +295,25 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
     : "";
 
   return (
+    <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
+
     <Table 
       columns={columns}
       data={paginatedData}
-      totalRows={formattedBiens.length}
+      totalRows={totalRows}
       loading={loading}
+      filterComponent={
+        <BienFilter
+          tempFilters={tempFilters}
+          handleFilterChange={handleFilterChange}
+          resetFilters={resetFilters}
+          applyFilters={applyFilters}
+          loading_T={loading}
+          trancheId={trancheId}
+          blocId={blocId}
+          immeubleId={immeubleId}
+        />
+      }
       error={error}
       addLink={addButtonUrl}
       onSearchChange={handleSearchChange}
@@ -269,7 +322,30 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
       onPageChange={handlePageChange}
       onRowsPerPageChange={handleRowsPerPageChange}
       enableExport={formattedBiens.length > 0}
-      onExport={handleExport}
+      onFilterToggle={handleFilterToggle}
+      data_to_export={data_to_export()}
+      columns_export={columns_export}
+      name_file_export={"bien_export"}
+      
     />
+    {showDeleteModal && selectedId && (
+            <Modal isVisible={true} onClose={() => setShowDeleteModal(false)}>
+              <DeleteData
+                route={APIURL.BIENS}
+                Id={selectedId}
+                type="Bien"
+                message={`Êtes-vous sûr de vouloir supprimer ce bien ?`
+                }
+                accessToken={accessToken}
+                onClose={() => {
+                  setShowDeleteModal(false);
+                  loadData(); // Recharge les données après suppression
+
+                }}
+              />
+            </Modal>
+    )}
+  </div>
+    
   );
 }

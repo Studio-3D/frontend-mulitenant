@@ -216,7 +216,7 @@ export default function CommissionForm({ id = null, onComplete }) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="md:col-span-1"></div>
             <div className="md:col-span-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium !text-gray-700 mb-1">
                 Montant Fixe <span className="text-red-500">*</span>
               </label>
               <input
@@ -250,12 +250,12 @@ export default function CommissionForm({ id = null, onComplete }) {
               className="grid grid-cols-1 md:grid-cols-7 gap-4 mb-4 items-end"
             >
               <div className="md:col-span-1 flex items-center justify-end h-[38px]">
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-sm font-medium !text-gray-700">
                   Configuration {index + 1}
                 </span>
               </div>
               <div className="md:col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium !text-gray-700 mb-1">
                   De
                 </label>
                 <input
@@ -270,7 +270,7 @@ export default function CommissionForm({ id = null, onComplete }) {
                 />
               </div>
               <div className="md:col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium !text-gray-700 mb-1">
                   A
                 </label>
                 <input
@@ -285,7 +285,7 @@ export default function CommissionForm({ id = null, onComplete }) {
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium !text-gray-700 mb-1">
                   Commission (%)
                 </label>
                 <input

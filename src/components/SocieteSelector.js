@@ -43,12 +43,12 @@ export default function SocieteSelector({ returnPath = "/" }) {
       <h3 className="text-lg font-semibold mb-4 text-center">Sélectionner une société</h3>
       
       <div className="mb-4">
-        <label htmlFor="societe" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="societe" className="block text-sm font-medium !text-gray-700 mb-1">
           Société
         </label>
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Building className="h-5 w-5 text-gray-400" />
+            <Building className="h-5 w-5 !text-gray-400" />
           </div>
           <select
             id="societe"

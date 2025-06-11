@@ -18,7 +18,7 @@ export default function InputSelect({
 }) {
   return (
     <div className="flex flex-col w-full">
-        <label htmlFor={name} className="font-medium text-gray-700 text-[15px]">
+        <label htmlFor={name} className="font-medium !text-gray-700 text-[15px]">
             {label}
             {required && <span className="text-red-500 ml-1">*</span>}
         </label>

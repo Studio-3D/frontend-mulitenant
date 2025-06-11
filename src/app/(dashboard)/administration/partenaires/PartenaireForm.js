@@ -141,7 +141,7 @@ export default function PartenaireForm({ id = null, onComplete }) {
       <div className="p-6 mt-4 bg-white shadow-md rounded-md">
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2">
+            <label className="block !text-gray-700 text-sm font-bold mb-2">
               Partenaire <span className="text-red-500">*</span>
             </label>
             <input
@@ -151,7 +151,7 @@ export default function PartenaireForm({ id = null, onComplete }) {
               onChange={handleChange}
               className={`shadow appearance-none border ${
                 errors.description ? "border-red-500" : "border-gray-300"
-              } rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
+              } rounded w-full py-2 px-3 !text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
               placeholder="Saisir la description"
             />
             {errors.description && (
@@ -164,7 +164,7 @@ export default function PartenaireForm({ id = null, onComplete }) {
           </div>
 
           <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2">
+            <label className="block !text-gray-700 text-sm font-bold mb-2">
               Remise (%)
             </label>
             <input
@@ -177,7 +177,7 @@ export default function PartenaireForm({ id = null, onComplete }) {
               onChange={handleChange}
               className={`shadow appearance-none border ${
                 errors.remise ? "border-red-500" : "border-gray-300"
-              } rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
+              } rounded w-full py-2 px-3 !text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
               placeholder="Saisir la remise"
             />
             {errors.remise && (

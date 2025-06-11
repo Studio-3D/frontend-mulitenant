@@ -104,7 +104,7 @@ const AutocompleteMultiple = ({
   return (
     <div id={`dropdown-${name}`} className="w-full relative">
       {label && (
-        <label htmlFor={name} className="block font-medium text-gray-700">
+        <label htmlFor={name} className="block font-medium !text-gray-700">
           {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
@@ -125,7 +125,7 @@ const AutocompleteMultiple = ({
                 <button
                   type="button"
                   onClick={() => handleRemoveOption(opt)}
-                  className=" text-gray-100 hover:text-gray-300"
+                  className=" !text-gray-100 hover:text-gray-300"
                 >
                   ×
                 </button>
@@ -148,9 +148,9 @@ const AutocompleteMultiple = ({
             onClick={toggleDropdown}
           >
             {isDropdownOpen ? (
-              <ChevronDown className="h-4 w-4 m-2 text-gray-400 rotate-180" />
+              <ChevronDown className="h-4 w-4 m-2 !text-gray-400 rotate-180" />
             ) : (
-              <ChevronDown className="h-4 w-4 m-2 text-gray-400" />
+              <ChevronDown className="h-4 w-4 m-2 !text-gray-400" />
             )}
           </div>
         </div>
@@ -175,8 +175,8 @@ const AutocompleteMultiple = ({
                     selectedOptions.some(
                       sel => sel[choiceKey] === opt[choiceKey]
                     )
-                      ? 'bg-gray-200 text-gray-500'
-                      : 'hover:bg-gray-100 text-gray-800'
+                      ? 'bg-gray-200 !text-gray-500'
+                      : 'hover:bg-gray-100 !text-gray-800'
                   }`}
                   onClick={() => handleOptionSelect(opt)}
                 >
@@ -184,17 +184,17 @@ const AutocompleteMultiple = ({
                 </div>
               ))
             ) : (
-              <div className="p-2 text-sm text-gray-500">Aucun résultat trouvé</div>
+              <div className="p-2 text-sm !text-gray-500">Aucun résultat trouvé</div>
             )}
           </div>
         )}
       </div>
 
       {errors[name] && (
-        <div className="mt-1 text-xs text-red-600">{errors[name]}</div>
+        <div className="mt-1 text-xs !text-red-600">{errors[name]}</div>
       )}
       {backendErrors[name] && backendErrors[name].length > 0 && (
-        <div className="mt-1 text-xs text-red-600">
+        <div className="mt-1 text-xs !text-red-600">
           {backendErrors[name][0]}
         </div>
       )}

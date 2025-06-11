@@ -220,7 +220,7 @@ export default function ImmeubleDetailsPage() {
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="text-center p-6 border-b border-gray-200">
               <div className="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-red-600">
+                <span className="text-2xl font-bold !text-red-600">
                   {immeuble.nom ? immeuble.nom.charAt(0).toUpperCase() : "I"}
                 </span>
               </div>
@@ -237,11 +237,11 @@ export default function ImmeubleDetailsPage() {
               <div className="grid grid-cols-1 gap-4 text-center">
                 <div className="p-2">
                   <div className="flex flex-col items-center">
-                    <Home className="w-6 h-6 text-blue-500 mb-1" />
+                    <Home className="w-6 h-6 !text-blue-500 mb-1" />
                     <span className="text-xl font-medium">
                       {countLoading ? "0" : count.biens}
                     </span>
-                    <span className="text-sm text-gray-500">Biens</span>
+                    <span className="text-sm !text-gray-500">Biens</span>
                   </div>
                 </div>
               </div>
@@ -307,8 +307,8 @@ export default function ImmeubleDetailsPage() {
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="border-b border-gray-200 p-4 flex justify-between items-center">
               <h2 className="text-lg font-semibold flex items-center">
-                <Home className="w-5 h-5 mr-2 text-blue-500" />
-                Biens <span className="ml-1 text-xs text-gray-500">({countLoading ? "0" : count.biens})</span>
+                <Home className="w-5 h-5 mr-2 !text-blue-500" />
+                Biens <span className="ml-1 text-xs !text-gray-500">({countLoading ? "0" : count.biens})</span>
               </h2>
             </div>
 

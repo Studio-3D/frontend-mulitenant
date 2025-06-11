@@ -1,5 +1,5 @@
 'use client';
-import { IoAlertCircleOutline } from 'react-icons/io5';
+import { AlertCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function Modal_show_info({ onClose, text, statut_dst, dst_id }) {

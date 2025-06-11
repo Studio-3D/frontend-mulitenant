@@ -23,7 +23,7 @@ export default function StatCard({ title, value, trend, trendUp = true, subtitle
         {title}
       </div>
       
-      <div className="text-xs text-gray-500 bg-gray-100 py-1 px-2 rounded-full inline-block">
+      <div className="text-xs !text-gray-500 bg-gray-100 py-1 px-2 rounded-full inline-block">
         {subtitle}
       </div>
     </div>

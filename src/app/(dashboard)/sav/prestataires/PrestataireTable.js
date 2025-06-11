@@ -5,8 +5,7 @@ import Modal from "@/components/Modal";
 import Table from "@/components/Table";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { FaEdit } from "react-icons/fa";
-import { RiDeleteBin6Line, RiEyeLine } from "react-icons/ri";
+import { Pencil, Trash2, Eye } from "lucide-react";
 import axios from "axios";
 import { APIURL, ENDPOINTS } from "@/configs/api";
 import { fetchData_table_by_projet } from "@/configs/api-utils";
@@ -14,8 +13,10 @@ import { isAdmin, isSuperAdmin } from "@/configs/enum";
 import { useAuth } from "@/context/AuthContext";
 import Input from "@/components/Input";
 import InputSelect from "@/components/inputSelect";
+
 import { useProjet } from "@/context/ProjetContext"; // Import ProjetContext
 import ProjetDialog from "@/components/ProjetDialog"; // Import ProjetDialog
+import Select from 'react-select';
 
 const PrestataireTable = (serviceId) => {
   const [prestataires, setPrestataires] = useState([]);
@@ -43,8 +44,8 @@ const PrestataireTable = (serviceId) => {
   });
 
   const [tempFilters, setTempFilters] = useState({ ...filters });
-  const { selectedProjet, projets, fetchProjets } = useProjet(); // Get data from ProjetContext
-  const [showProjetModal, setShowProjetModal] = useState(false); // State for project modal
+  const { selectedProjet, projets, fetchProjets } = useProjet(); 
+  const [showProjetModal, setShowProjetModal] = useState(false); 
 
   const entity = {
     API_URL: "Prestataires",
@@ -53,10 +54,9 @@ const PrestataireTable = (serviceId) => {
     searchFields: ["nom"],
   };
 
-  // Check if a project is selected
   useEffect(() => {
     if (!selectedProjet && !showProjetModal && !service_id) {
-      fetchProjets(); // Fetch projects if not already done
+      fetchProjets(); 
       setShowProjetModal(true);
     }
   }, [selectedProjet, showProjetModal, fetchProjets, service_id]);
@@ -91,7 +91,7 @@ const PrestataireTable = (serviceId) => {
     }
 
     const handleFilterToggle = (isOpen) => {
-      if (!isOpen) resetFilters(); // Si on ferme, on réinitialise
+      if (!isOpen) resetFilters(); 
     };
 
   useEffect(() => {
@@ -118,7 +118,7 @@ const PrestataireTable = (serviceId) => {
   
 
     const applyFilters = () => {
-      setFilters(tempFilters); // C’est ici que fetchUsers va être déclenché
+      setFilters(tempFilters); 
     };
     const resetFilters = () => {
       const reset = {
@@ -127,7 +127,7 @@ const PrestataireTable = (serviceId) => {
         cin: "",
         email: "",
         telephone: "",
-        serviceId: serviceId?.service?.id == null ? "" : serviceId?.service?.id, // n'inclut que si null
+        serviceId: serviceId?.service?.id == null ? "" : serviceId?.service?.id, 
       };
       setFilters(reset);
       setTempFilters(reset);
@@ -155,17 +155,17 @@ const PrestataireTable = (serviceId) => {
       label: "Actions",
       render: (row) => (
         <div className="flex gap-3 items-center">
-           <FaEdit
-            className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
+           <Pencil
+            className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
             onClick={() => handleEdit(row.id)}
           />
-            <RiEyeLine
-              className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
+            <Eye
+              className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
               onClick={() => handleShow(row.id)}
             />
          
-            <RiDeleteBin6Line
-              className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
+            <Trash2
+              className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
               onClick={() => {
                 setSelectedId(row.id);
                 setShowDeleteModal(true);
@@ -216,12 +216,10 @@ const PrestataireTable = (serviceId) => {
     { key: "Téléphone", label: "Téléphone" },
   ];
   
-  // Handle project selection
   const handleProjectSelected = () => {
     setShowProjetModal(false);
-    setCurrentPage(1); // Reset to first page
+    setCurrentPage(1); 
     
-    // Fetch services and data with the newly selected project
     if (selectedProjet) {
       fetchServices();
       fetchData_table_by_projet(

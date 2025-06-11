@@ -85,13 +85,13 @@ export default function SocieteDropDown() {
         )}
 
         {isSelectorOpened && loading && (
-          <li className="p-4 text-center text-gray-500">
+          <li className="p-4 text-center !text-gray-500">
             Chargement des sociétés...
           </li>
         )}
 
         {isSelectorOpened && !loading && filteredSocietes.length === 0 && (
-          <li className="p-4 text-center text-gray-500">
+          <li className="p-4 text-center !text-gray-500">
             Aucune société trouvée
           </li>
         )}
@@ -100,7 +100,7 @@ export default function SocieteDropDown() {
           <li 
             key={societe.id} 
             className={`p-2 mt-1 ml-2 hover:bg-gray-100 hover:rounded-md cursor-pointer flex items-center ${
-              selectedSociete?.id === societe.id ? 'bg-blue-50 ml-2 text-blue-500 rounded-md' : ''
+              selectedSociete?.id === societe.id ? 'bg-blue-50 ml-2 !text-blue-500 rounded-md' : ''
             }`}
             onClick={() => handleSelectSociete(societe)}
           >
@@ -114,7 +114,7 @@ export default function SocieteDropDown() {
           <li className="p-2 mt-2 border-t border-gray-100">
             <Link 
               href="/Societes"
-              className="flex items-center justify-center gap-2 w-full text-center text-blue-500 hover:text-blue-800 p-2 hover:bg-blue-50 rounded-md transition-colors"
+              className="flex items-center justify-center gap-2 w-full text-center !text-blue-500 hover:text-blue-800 p-2 hover:bg-blue-50 rounded-md transition-colors"
               onClick={() => setIsSelectorOpened(false)}
             >
               <div className="flex items-center gap-2">

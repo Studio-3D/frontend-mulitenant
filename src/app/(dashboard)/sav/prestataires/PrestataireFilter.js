@@ -38,7 +38,7 @@ const PartenaireFilter = ({ onSubmit, onClose, initialValues = {} }) => {
       
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2">
+          <label className="block !text-gray-700 text-sm font-bold mb-2">
             Partenaire :
           </label>
           <input
@@ -46,13 +46,13 @@ const PartenaireFilter = ({ onSubmit, onClose, initialValues = {} }) => {
             name="description"
             value={filterValues.description}
             onChange={handleChange}
-            className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 !text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             placeholder="Filtrer par description"
           />
         </div>
         
         <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2">
+          <label className="block !text-gray-700 text-sm font-bold mb-2">
             Remise (%) :
           </label>
           <input
@@ -60,7 +60,7 @@ const PartenaireFilter = ({ onSubmit, onClose, initialValues = {} }) => {
             name="remise"
             value={filterValues.remise}
             onChange={handleChange}
-            className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            className="shadow appearance-none border border-gray-300 rounded w-full py-2 px-3 !text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             placeholder="Filtrer par remise"
           />
         </div>

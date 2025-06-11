@@ -45,10 +45,10 @@ export default function DesistementsCard({ desistements = [], sumPenalites = 0, 
 
 
   const chipColors = [
-    'bg-green-100 text-green-800',
-    'bg-red-100 text-red-800',
-    'bg-blue-100 text-blue-800',
-    'bg-yellow-100 text-yellow-800',
+    'bg-green-100 !text-green-800',
+    'bg-red-100 !text-red-800',
+    'bg-blue-100 !text-blue-800',
+    'bg-yellow-100 !text-yellow-800',
     'bg-purple-100 text-purple-800'
   ];
   
@@ -90,25 +90,25 @@ export default function DesistementsCard({ desistements = [], sumPenalites = 0, 
               <tr className="border-b">
                 {activeTab === 'DD' && (
                   <>
-                    <th className="py-2 text-left text-sm font-medium text-gray-500">Code Réservation</th>
-                    <th className="py-2 text-left text-sm font-medium text-gray-500">Bien</th>
-                    <th className="py-2 text-left text-sm font-medium text-gray-500">Motif</th>
-                    <th className="py-2 text-left text-sm font-medium text-gray-500">Pénalité</th>
+                    <th className="py-2 text-left text-sm font-medium !text-gray-500">Code Réservation</th>
+                    <th className="py-2 text-left text-sm font-medium !text-gray-500">Bien</th>
+                    <th className="py-2 text-left text-sm font-medium !text-gray-500">Motif</th>
+                    <th className="py-2 text-left text-sm font-medium !text-gray-500">Pénalité</th>
                   </>
                 )}
                 {(activeTab === 'DP PROCHE' || activeTab === 'DP CO' || activeTab === 'DP PARTIEL') && (
                   <>
-                    <th className="py-2 text-left text-sm font-medium text-gray-500">Bien</th>
-                    <th className="py-2 text-left text-sm font-medium text-gray-500">Lien de Parenté</th>
-                    <th className="py-2 text-left text-sm font-medium text-gray-500">Pénalité</th>
+                    <th className="py-2 text-left text-sm font-medium !text-gray-500">Bien</th>
+                    <th className="py-2 text-left text-sm font-medium !text-gray-500">Lien de Parenté</th>
+                    <th className="py-2 text-left text-sm font-medium !text-gray-500">Pénalité</th>
                   </>
                 )}
                 {activeTab === 'CHANGE' && (
                   <>
-                    <th className="py-2 text-left text-sm font-medium text-gray-500">Ancien Bien</th>
-                    <th className="py-2 text-left text-sm font-medium text-gray-500">Nouveau Bien</th>
-                    <th className="py-2 text-left text-sm font-medium text-gray-500">Montant à Ajouter</th>
-                    <th className="py-2 text-left text-sm font-medium text-gray-500">Pénalité</th>
+                    <th className="py-2 text-left text-sm font-medium !text-gray-500">Ancien Bien</th>
+                    <th className="py-2 text-left text-sm font-medium !text-gray-500">Nouveau Bien</th>
+                    <th className="py-2 text-left text-sm font-medium !text-gray-500">Montant à Ajouter</th>
+                    <th className="py-2 text-left text-sm font-medium !text-gray-500">Pénalité</th>
                   </>
                 )}
               </tr>
@@ -127,7 +127,7 @@ export default function DesistementsCard({ desistements = [], sumPenalites = 0, 
                       </td>
                       <td className="py-3">
                         {item.penalite && (
-                          <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
+                          <span className="bg-red-100 !text-red-800 text-xs px-2 py-1 rounded-full">
                             {item.penalite} DH
                           </span>
                         )}
@@ -145,7 +145,7 @@ export default function DesistementsCard({ desistements = [], sumPenalites = 0, 
                       </td>
                       <td className="py-3">
                         {item.penalite && (
-                          <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
+                          <span className="bg-red-100 !text-red-800 text-xs px-2 py-1 rounded-full">
                             {item.penalite} DH
                           </span>
                         )}
@@ -158,13 +158,13 @@ export default function DesistementsCard({ desistements = [], sumPenalites = 0, 
                       <td className="py-3 text-sm">{item.bien}</td>
                       <td className="py-3 text-sm">{item.new_bien}</td>
                       <td className="py-3">
-                        <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                        <span className="bg-green-100 !text-green-800 text-xs px-2 py-1 rounded-full">
                           {item.montant_a_ajouter} DH
                         </span>
                       </td>
                       <td className="py-3">
                         {item.penalite && (
-                          <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
+                          <span className="bg-red-100 !text-red-800 text-xs px-2 py-1 rounded-full">
                             {item.penalite} DH
                           </span>
                         )}
@@ -176,7 +176,7 @@ export default function DesistementsCard({ desistements = [], sumPenalites = 0, 
               
               {categorizedData[tabToDataMap[activeTab]].length === 0 && (
                 <tr>
-                  <td colSpan={activeTab === 'CHANGE' ? 4 : activeTab === 'DD' ? 4 : 3} className="py-4 text-center text-gray-500">
+                  <td colSpan={activeTab === 'CHANGE' ? 4 : activeTab === 'DD' ? 4 : 3} className="py-4 text-center !text-gray-500">
                     Aucun désistement trouvé
                   </td>
                 </tr>

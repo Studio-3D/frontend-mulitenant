@@ -104,7 +104,7 @@ export default function FilterDialog({ onClose, onSubmit, initialValues, projetI
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="block font-medium text-gray-700 mb-1">
+              <label className="block font-medium !text-gray-700 mb-1">
                 De:
               </label>
               <input
@@ -117,7 +117,7 @@ export default function FilterDialog({ onClose, onSubmit, initialValues, projetI
             </div>
             
             <div>
-              <label className="block font-medium text-gray-700 mb-1">
+              <label className="block font-medium !text-gray-700 mb-1">
                 à:
               </label>
               <input

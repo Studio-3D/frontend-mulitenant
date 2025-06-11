@@ -21,7 +21,8 @@ const TextField = ({
 }) => {
   return (
     <div className="mb-2">
-      <label htmlFor={name} className="block text-[15px] font-medium text-gray-700">
+      <label htmlFor={name} className="block text-[15px] font-medium !text-gray-700">
+
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
@@ -105,12 +106,12 @@ const TextField = ({
 
       {/* Error messages */}
       {errors[name]?.message && (
-        <div className="mt-1 text-xs text-red-600">
+        <div className="mt-1 text-xs !text-red-600">
           <p style={{ color: 'red' }}>{errors[name].message}</p>
         </div>
       )}
       {backendErrors[name] && backendErrors[name].length > 0 && (
-        <div className="mt-1 text-xs text-red-600">
+        <div className="mt-1 text-xs !text-red-600">
           <p style={{ color: 'red' }}>{backendErrors[name][0]}</p>
         </div>
       )}

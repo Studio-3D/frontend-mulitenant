@@ -14,7 +14,7 @@ export default function ExpiredLink() {
         </div>
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-100 opacity-60"></div>
         <div className="absolute bottom-16 left-0 right-0 text-center">
-          <h2 className="text-2xl font-bold text-gray-800">Gestion Immobilière Professionnelle</h2>
+          <h2 className="text-2xl font-bold !text-gray-800">Gestion Immobilière Professionnelle</h2>
           <p className="text-gray-600 mt-2">Solutions complètes pour votre entreprise</p>
         </div>
       </div>

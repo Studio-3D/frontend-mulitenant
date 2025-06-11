@@ -88,7 +88,7 @@ const ProspectDetails = () => {
                         ' ' +
                         (prospectDetails?.prenom || '')}
                     </h1>
-                    <div className="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm mt-2">
+                    <div className="inline-block px-3 py-1 bg-blue-100 !text-blue-700 rounded-full text-sm mt-2">
                       {`Cin: ${prospectDetails?.cin || ''}`}
                     </div>
                   </div>

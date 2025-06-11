@@ -74,7 +74,7 @@ export function VisitSlider(props) {
           onClick={() => scroll('left')} 
           className="p-2 rounded-full hover:bg-gray-100 transition-colors z-20"
         >
-          <ChevronLeftIcon className="h-6 w-6 text-gray-500" />
+          <ChevronLeftIcon className="h-6 w-6 !text-gray-500" />
         </button>
         
         <div 
@@ -96,9 +96,9 @@ export function VisitSlider(props) {
                 {visit.isNew ? (
                   <div className="flex flex-col items-center group">
                     <div className="w-16 h-16 rounded-2xl border-2 border-dashed border-blue-300 flex items-center justify-center bg-white group-hover:border-blue-400 transition-all duration-300 group-hover:scale-105">
-                      <PlusIcon className="h-8 w-8 text-blue-400" />
+                      <PlusIcon className="h-8 w-8 !text-blue-400" />
                     </div>
-                    <span className="text-sm text-blue-500 font-medium mt-2">
+                    <span className="text-sm !text-blue-500 font-medium mt-2">
                       {visit.label}
                     </span>
                   </div>
@@ -107,7 +107,7 @@ export function VisitSlider(props) {
                     <div className={`
                       w-16 h-16 rounded-2xl flex items-center justify-center
                       transition-all duration-300 hover:scale-105
-                      ${visit.id === activeVisit ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}
+                      ${visit.id === activeVisit ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-gray-100 !text-gray-600 hover:bg-gray-200'}
                     `}>
                       <span className="text-2xl font-bold">
                         {visit.label.replace('V', '')}
@@ -130,7 +130,7 @@ export function VisitSlider(props) {
           onClick={() => scroll('right')} 
           className="p-2 rounded-full hover:bg-gray-100 transition-colors z-20"
         >
-          <ChevronRightIcon className="h-6 w-6 text-gray-500" />
+          <ChevronRightIcon className="h-6 w-6 !text-gray-500" />
         </button>
       </div>
     </div>

@@ -134,12 +134,12 @@ const RelancesFreinsTable = () => {
       render: (row) => (
         <div className="flex gap-3 items-center">
           <Eye
-            className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
+            className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
             title="Voir détails"
             onClick={() => handleShow(row.frein_id_origin)}
           />
           <Pencil
-            className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
+            className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
             title="Traiter les Biens Disponibles"
             onClick={() => handle_Bien(row.id, row.nomComplet)}
           />

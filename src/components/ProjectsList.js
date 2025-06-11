@@ -31,7 +31,7 @@ export default function ProjectsList() {
 
   if (error) {
     return (
-      <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4" role="alert">
+      <div className="bg-red-100 border-l-4 border-red-500 !text-red-700 p-4" role="alert">
         <p className="font-bold">Erreur</p>
         <p>{error}</p>
       </div>
@@ -41,8 +41,8 @@ export default function ProjectsList() {
   if (projets.length === 0) {
     return (
       <div className="text-center py-10">
-        <Home className="mx-auto text-gray-400 text-5xl mb-4" />
-        <h3 className="text-xl font-medium text-gray-500">Aucun projet disponible</h3>
+        <Home className="mx-auto !text-gray-400 text-5xl mb-4" />
+        <h3 className="text-xl font-medium !text-gray-500">Aucun projet disponible</h3>
         <p className="text-gray-400 mt-2">Commencez par créer un nouveau projet</p>
       </div>
     );
@@ -70,18 +70,18 @@ export default function ProjectsList() {
           >
             <div className="p-5">
               <div className="flex justify-between items-start mb-2">
-                <h3 className="text-lg font-semibold text-gray-800">{projet.nom}</h3>
-                <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded">
+                <h3 className="text-lg font-semibold !text-gray-800">{projet.nom}</h3>
+                <span className="bg-blue-100 !text-blue-800 text-xs font-medium px-2 py-0.5 rounded">
                   {projet.type_projet?.type || 'Non défini'}
                 </span>
               </div>
               
-              <div className="text-sm text-gray-500 mb-4">
+              <div className="text-sm !text-gray-500 mb-4">
                 <p className="mb-1"><span className="font-medium">Code:</span> {projet.code}</p>
                 <p className="mb-1"><span className="font-medium">Adresse:</span> {projet.adresse}</p>
               </div>
               
-              <div className="text-sm text-gray-600 mb-3">
+              <div className="text-sm !text-gray-600 mb-3">
                 <span className="inline-flex items-center mr-3">
                   <span className="mr-1 font-medium">Tranches:</span> {projet.nbre_tranches || 0}
                 </span>

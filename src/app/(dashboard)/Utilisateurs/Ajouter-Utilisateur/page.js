@@ -267,12 +267,12 @@ const Page = () => {
             error={formik.errors.password}>
             {showPassword ? (
                 <EyeOff
-                  className="w-6 h-6 text-gray-600"
+                  className="w-6 h-6 !text-gray-600"
                   onClick={() => setShowPassword(false)}
                 />
               ) : (
                 <Eye
-                  className="w-6 h-6 text-gray-500"
+                  className="w-6 h-6 !text-gray-500"
                   onClick={() => setShowPassword(true)}
                 />
               )}
@@ -284,12 +284,12 @@ const Page = () => {
             error={formik.errors.password_confirmation}>
             {showPasswordConfirmation ? (
                 <EyeOff
-                  className="w-6 h-6 text-gray-600"
+                  className="w-6 h-6 !text-gray-600"
                   onClick={() => setShowPasswordConfirmation(false)}
                 />
               ) : (
                 <Eye
-                  className="w-6 h-6 text-gray-500"
+                  className="w-6 h-6 !text-gray-500"
                   onClick={() => setShowPasswordConfirmation(true)}
                 />
               )}

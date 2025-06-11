@@ -44,15 +44,15 @@ const historiqueData = [
 const getTypeBadgeClass = (type) => {
   switch (type) {
     case 'Création':
-      return 'bg-green-100 text-green-800';
+      return 'bg-green-100 !text-green-800';
     case 'Modification':
-      return 'bg-yellow-100 text-yellow-800';
+      return 'bg-yellow-100 !text-yellow-800';
     case 'Document':
-      return 'bg-blue-100 text-blue-800';
+      return 'bg-blue-100 !text-blue-800';
     case 'Rendez-vous':
       return 'bg-purple-100 text-purple-800';
     default:
-      return 'bg-gray-100 text-gray-800';
+      return 'bg-gray-100 !text-gray-800';
   }
 };
 
@@ -68,26 +68,26 @@ export const HistoriquesTab = () => {
       render: (row) => (
         <div className="flex gap-3 items-center">
             <Eye
-              className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
+              className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
               title="Voir détails"
             />
             <UserCog
-              className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
+              className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
               title="Modifier"
             />
           {row.status === "Actif" ? (
             <User
-              className="w-4 h-4 text-green-500 hover:text-green-700 cursor-pointer"
+              className="w-4 h-4 !text-green-500 hover:text-green-700 cursor-pointer"
               title="Bloquer utilisateur"
             />
           ) : (
             <UserX
-              className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
+              className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
               title="Débloquer utilisateur"
             />
           )}
           <Trash2
-            className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
+            className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
             title="Supprimer utilisateur"
           />
         </div>

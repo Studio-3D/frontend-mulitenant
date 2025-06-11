@@ -314,7 +314,7 @@ export default function EditProjectPage() {
       <div className="p-6">
         <div className="flex items-center mb-6">
           <Link href={`/Projets/${id}`} className="mr-4">
-            <ArrowLeft className="h-5 w-5 text-gray-500 hover:text-gray-700" />
+            <ArrowLeft className="h-5 w-5 !text-gray-500 hover:text-gray-700" />
           </Link>
           <h1 className="text-2xl font-semibold">Modifier le projet: {originalProject.nom}</h1>
         </div>
@@ -330,7 +330,7 @@ export default function EditProjectPage() {
         </div>
         
         {errors && errors.general && (
-          <div className="mt-4 bg-red-50 border-l-4 border-red-500 p-4 text-red-700">
+          <div className="mt-4 bg-red-50 border-l-4 border-red-500 p-4 !text-red-700">
             {errors.general.map((error, index) => (
               <p key={index}>{error}</p>
             ))}

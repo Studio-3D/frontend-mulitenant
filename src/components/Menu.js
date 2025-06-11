@@ -33,19 +33,19 @@ import {
   UsersRound,
   Eye,
   Wrench,
-  FileIcon,
+  File,
   Building2,
   FolderCog,
   Receipt,
+  LayoutDashboard as LayoutDashboardFilled, // Replacement for TbLayoutDashboardFilled
+  DollarSign, // Replacement for FaFileInvoiceDollar
 } from "lucide-react";
-import { TbLayoutDashboardFilled } from 'react-icons/tb';
 
 import { User_roles } from "../configs/enum";
 import { useSociete } from "@/context/SocieteContext";
 import SocieteDialog from "./SocieteDialog";
 import { useProjet } from "@/context/ProjetContext";
 import ProjetDialog from "./ProjetDialog";
-import { FaFileInvoiceDollar } from "react-icons/fa";
 
 const Menu = () => {
   const [menuItems, setMenuItems] = useState([]);
@@ -329,7 +329,7 @@ const Menu = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-4rem)] mt-5 text-sm font-semibold text-gray-200">
+    <div className="h-[calc(100vh-4rem)] mt-5 text-sm font-semibold !text-gray-200">
       {menuItems.map((item, index) => (
         <div key={index}>
           {/* Si l'item a des enfants, on affiche un menu déroulant */}

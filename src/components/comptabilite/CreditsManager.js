@@ -153,7 +153,7 @@ const CreditsManager = ({ userRole }) => {
     { 
       key: 'montant_capital', 
       label: 'Montant Capital',
-      render: (row) => <span className="font-semibold text-blue-700">{row.montant_capital.toLocaleString()} DH</span>
+      render: (row) => <span className="font-semibold !text-blue-700">{row.montant_capital.toLocaleString()} DH</span>
     },
     { 
       key: 'frais_dossier', 
@@ -180,7 +180,7 @@ const CreditsManager = ({ userRole }) => {
     { 
       key: 'montant_interet', 
       label: 'Montant Intérêt',
-      render: (row) => <span className="font-medium text-green-600">{row.montant_interet.toLocaleString()} DH</span>
+      render: (row) => <span className="font-medium !text-green-600">{row.montant_interet.toLocaleString()} DH</span>
     },
     { 
       key: 'actions', 

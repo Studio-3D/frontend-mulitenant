@@ -69,13 +69,13 @@ export default function Login() {
         
         {/* Real estate related text */}
         <div className="absolute bottom-16 left-0 right-0 text-center">
-          <h2 className="text-2xl font-bold text-gray-800">Gestion Immobilière Professionnelle</h2>
+          <h2 className="text-2xl font-bold !text-gray-800">Gestion Immobilière Professionnelle</h2>
           <p className="text-gray-600 mt-2">Solutions complètes pour votre entreprise</p>
         </div>
       </div>
 
       {/* Right side - Login Form - exactly like MUI version */}
-      <div className="w-full md:w-2/5 lg:w-2/5 xl:w-[450px] flex items-center justify-center border-l border-gray-200 text-gray-500">
+      <div className="w-full md:w-2/5 lg:w-2/5 xl:w-[450px] flex items-center justify-center border-l border-gray-200 !text-gray-500">
         <div className="p-7 w-full max-w-[450px]">
           {/* Logo */}
           <div className="absolute top-8 left-8 flex items-center">
@@ -112,7 +112,7 @@ export default function Login() {
                     focus:outline-none focus:border-[#666cff] focus:border-2`}
                 />
               </div>
-              {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+              {error && <p className="mt-1 text-xs !text-red-500">{error}</p>}
             </div>
 
             {/* Password field - Styled exactly like MUI */}
@@ -137,7 +137,7 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 !text-gray-500"
                 >
                   {showPassword ? (
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -176,7 +176,7 @@ export default function Login() {
                     )}
                   </div>
                 </div>
-                <label htmlFor="remember-me" className="ml-2 text-sm text-gray-600">
+                <label htmlFor="remember-me" className="ml-2 text-sm !text-gray-600">
                   Remember Me
                 </label>
               </div>
@@ -200,7 +200,21 @@ export default function Login() {
                 <div className="w-full border-t border-gray-200"></div>
               </div>
               <div className="relative flex justify-center">
-                <span className="px-4 bg-white text-sm text-gray-500"></span>
+                <span className="px-4 bg-white text-sm !text-gray-500"></span>
+              </div>
+            </div>
+
+            {/* Footer with legal links */}
+            <div className="text-center text-gray-500 text-sm mt-8">
+              <p>© 2023 Immo Gestion. Tous droits réservés.</p>
+              <div className="mt-2 space-x-4">
+                <Link href="/conditions-generales" className="!text-blue-600 hover:text-blue-800">
+                  Conditions Générales
+                </Link>
+                <span>•</span>
+                <Link href="/politique-confidentialite" className="!text-blue-600 hover:text-blue-800">
+                  Politique de Confidentialité
+                </Link>
               </div>
             </div>
           </form>

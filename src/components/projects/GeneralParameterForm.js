@@ -240,9 +240,9 @@ export default function GeneralParameterForm({ state, setState, onNext, onBack, 
       {/* NEW SECTION: Property Types - Now clearly marked as optional */}
       <div className="mt-8 border-t pt-6">
         <h3 className="text-lg font-medium mb-4">
-          Types de bien <span className="text-sm font-normal text-gray-500">(optionnel)</span>
+          Types de bien <span className="text-sm font-normal !text-gray-500">(optionnel)</span>
         </h3>
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-sm !text-gray-500 mb-4">
           Vous pourrez ajouter ou modifier des types de bien après la création du projet.
         </p>
 
@@ -253,7 +253,7 @@ export default function GeneralParameterForm({ state, setState, onNext, onBack, 
               <button
                 type="button"
                 onClick={() => handleRemoveBien(index)}
-                className="ml-2 text-red-500 hover:text-red-700"
+                className="ml-2 !text-red-500 hover:text-red-700"
               >
                 <Trash2 className="h-4 w-4" />
               </button>
@@ -282,9 +282,9 @@ export default function GeneralParameterForm({ state, setState, onNext, onBack, 
       {/* NEW SECTION: Views - Now clearly marked as optional */}
       <div className="mt-8 border-t pt-6">
         <h3 className="text-lg font-medium mb-4">
-          Vues <span className="text-sm font-normal text-gray-500">(optionnel)</span>
+          Vues <span className="text-sm font-normal !text-gray-500">(optionnel)</span>
         </h3>
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-sm !text-gray-500 mb-4">
           Vous pourrez ajouter ou modifier des vues après la création du projet.
         </p>
 
@@ -295,7 +295,7 @@ export default function GeneralParameterForm({ state, setState, onNext, onBack, 
               <button
                 type="button"
                 onClick={() => handleRemoveVue(index)}
-                className="ml-2 text-red-500 hover:text-red-700"
+                className="ml-2 !text-red-500 hover:text-red-700"
               >
                 <Trash2 className="h-4 w-4" />
               </button>
@@ -324,9 +324,9 @@ export default function GeneralParameterForm({ state, setState, onNext, onBack, 
       {/* NEW SECTION: Typologies - Now clearly marked as optional */}
       <div className="mt-8 border-t pt-6">
         <h3 className="text-lg font-medium mb-4">
-          Typologies <span className="text-sm font-normal text-gray-500">(optionnel)</span>
+          Typologies <span className="text-sm font-normal !text-gray-500">(optionnel)</span>
         </h3>
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-sm !text-gray-500 mb-4">
           Vous pourrez ajouter ou modifier des typologies après la création du projet.
         </p>
 
@@ -337,7 +337,7 @@ export default function GeneralParameterForm({ state, setState, onNext, onBack, 
               <button
                 type="button"
                 onClick={() => handleRemoveTypologie(index)}
-                className="ml-2 text-red-500 hover:text-red-700"
+                className="ml-2 !text-red-500 hover:text-red-700"
               >
                 <Trash2 className="h-4 w-4" />
               </button>
@@ -366,9 +366,9 @@ export default function GeneralParameterForm({ state, setState, onNext, onBack, 
       {/* NEW SECTION: Partners - Now clearly marked as optional */}
       <div className="mt-8 border-t pt-6">
         <h3 className="text-lg font-medium mb-4">
-          Partenaires <span className="text-sm font-normal text-gray-500">(optionnel)</span>
+          Partenaires <span className="text-sm font-normal !text-gray-500">(optionnel)</span>
         </h3>
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-sm !text-gray-500 mb-4">
           Vous pourrez ajouter ou modifier des partenaires après la création du projet.
         </p>
 
@@ -377,7 +377,7 @@ export default function GeneralParameterForm({ state, setState, onNext, onBack, 
             <div key={index} className="flex items-center justify-between bg-gray-100 rounded-md px-3 py-2">
               <div>
                 <span className="font-medium">{partner.description}</span>
-                <span className="ml-2 text-sm text-gray-600">- Remise: {partner.remise}%</span>
+                <span className="ml-2 text-sm !text-gray-600">- Remise: {partner.remise}%</span>
               </div>
               <button
                 type="button"
@@ -392,7 +392,7 @@ export default function GeneralParameterForm({ state, setState, onNext, onBack, 
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-end mb-8">
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <label className="block text-sm font-medium !text-gray-700 mb-1">Description</label>
             <input
               type="text"
               value={newPartner.description}
@@ -402,7 +402,7 @@ export default function GeneralParameterForm({ state, setState, onNext, onBack, 
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Remise (%)</label>
+            <label className="block text-sm font-medium !text-gray-700 mb-1">Remise (%)</label>
             <div className="flex items-center gap-2">
               <input
                 type="number"
@@ -426,7 +426,7 @@ export default function GeneralParameterForm({ state, setState, onNext, onBack, 
 
       {/* User Access - Replaced with dropdown */}
       <div className="mt-8 border-t pt-6">
-        <label className="block text-sm font-medium text-gray-700 mb-3">
+        <label className="block text-sm font-medium !text-gray-700 mb-3">
           Utilisateurs avec accès au projet <span className="text-red-500">*</span>
         </label>
 
@@ -482,7 +482,7 @@ export default function GeneralParameterForm({ state, setState, onNext, onBack, 
                 {/* User list */}
                 <div className="py-1">
                   {filteredUsers.length === 0 ? (
-                    <div className="px-4 py-2 text-sm text-gray-500">Aucun utilisateur trouvé</div>
+                    <div className="px-4 py-2 text-sm !text-gray-500">Aucun utilisateur trouvé</div>
                   ) : (
                     filteredUsers.map((user) => (
                       <div key={user.id} className="px-2 py-1">
@@ -510,12 +510,12 @@ export default function GeneralParameterForm({ state, setState, onNext, onBack, 
         {state.selectedUsers.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-2">
             {state.selectedUsers.map((user) => (
-              <div key={user.id} className="flex items-center bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-sm">
+              <div key={user.id} className="flex items-center bg-blue-50 !text-blue-700 px-2 py-1 rounded-md text-sm">
                 <span>{user.name} {user.prenom}</span>
                 <button 
                   type="button" 
                   onClick={() => handleUserChange(user.id)}
-                  className="ml-1 text-blue-500 hover:text-blue-700"
+                  className="ml-1 !text-blue-500 hover:text-blue-700"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -526,7 +526,7 @@ export default function GeneralParameterForm({ state, setState, onNext, onBack, 
           </div>
         )}
 
-        {errors?.selectedUsers && <p className="mt-1 text-sm text-red-600">{errors.selectedUsers[0]}</p>}
+        {errors?.selectedUsers && <p className="mt-1 text-sm !text-red-600">{errors.selectedUsers[0]}</p>}
       </div>
 
       <DebugPanel />
@@ -535,7 +535,7 @@ export default function GeneralParameterForm({ state, setState, onNext, onBack, 
         <button
           type="button"
           onClick={onBack}
-          className="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium !text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
           Précédent
         </button>
