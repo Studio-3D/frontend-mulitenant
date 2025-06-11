@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { format, addMonths, subMonths, getDaysInMonth, startOfMonth, getDay } from 'date-fns';
+import { format, addMonths, subMonths, getDaysInMonth, startOfMonth, getDay, addDays, addWeeks, subDays, subWeeks, startOfWeek, endOfWeek, isSameDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { CalendarHeader } from './CalendarHeader';
 import { CalendarSidebar } from './CalendarSidebar';
@@ -10,14 +10,12 @@ import { ListView } from './ListView';
 import axios from 'axios';
 import { APIURL } from '../../configs/api';
 
-
-// Fonctions utilitaires (devraient être définies ou importées)
 const toTitleCase = (str) => str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
 const getColor = (type) => {
   const colors = {
     1: '#FF5733',
     27: '#33FF57',
-    // Ajouter d'autres correspondances type-couleur
+    // Add other type-color mappings as needed
   };
   return colors[type] || '#3385FF';
 };
@@ -27,6 +25,7 @@ export const Calendar = () => {
   const [activeView, setActiveView] = useState('month');
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
+  // ... (keep your existing state declarations)
   const [numbre_appels, setNb_Appels] = useState(0)
   const [numbre_visites, setNb_Visites] = useState(0)
   const [numbre_reservations, setNb_Reservations] = useState(0)
@@ -129,12 +128,30 @@ export const Calendar = () => {
     setLoading(false);
   }
 };
+  // Navigation handlers for all views
+  const nextPeriod = () => {
+    if (activeView === 'day') {
+      setCurrentDate(addDays(currentDate, 1));
+    } else if (activeView === 'week') {
+      setCurrentDate(addWeeks(currentDate, 1));
+    } else {
+      setCurrentDate(addMonths(currentDate, 1));
+    }
+  };
 
-  // Gestionnaires de navigation
-  const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
-  const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
+  const prevPeriod = () => {
+    if (activeView === 'day') {
+      setCurrentDate(subDays(currentDate, 1));
+    } else if (activeView === 'week') {
+      setCurrentDate(subWeeks(currentDate, 1));
+    } else {
+      setCurrentDate(subMonths(currentDate, 1));
+    }
+  };
+
   const goToToday = () => setCurrentDate(new Date());
 
+  // Enhanced renderCalendarDays function to include events
   const renderCalendarDays = () => {
     const daysInMonth = getDaysInMonth(currentDate);
     const startDate = startOfMonth(currentDate);
@@ -144,60 +161,106 @@ export const Calendar = () => {
     
     const days = [];
     
-    // Jours du mois précédent
-    const prevMonthDays = startDay === 0 ? 6 : startDay; // Gère le début dimanche
+    // Previous month days
+    const prevMonthDays = startDay === 0 ? 6 : startDay;
     for (let i = prevMonthDays; i > 0; i--) {
+      const date = new Date(currentYear, currentMonth, -i + 1);
       days.push({
-        date: new Date(currentYear, currentMonth, -i + 1),
-        isCurrentMonth: false
-      });
-    }
-    
-    // Jours du mois actuel
-    for (let i = 1; i <= daysInMonth; i++) {
-      days.push({
-        date: new Date(currentYear, currentMonth, i),
-        isCurrentMonth: true,
-        hasEvents: events.some(event => 
-          format(new Date(event.start), 'yyyy-MM-dd') === format(new Date(currentYear, currentMonth, i), 'yyyy-MM-dd')
+        date,
+        isCurrentMonth: false,
+        events: events.filter(event => 
+          format(new Date(event.start), 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')
         )
       });
     }
     
-    // Jours du mois suivant pour compléter la grille
+    // Current month days
+    for (let i = 1; i <= daysInMonth; i++) {
+      const date = new Date(currentYear, currentMonth, i);
+      days.push({
+        date,
+        isCurrentMonth: true,
+        events: events.filter(event => 
+          format(new Date(event.start), 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')
+        )
+      });
+    }
+    
+    // Next month days
     const remainingDays = 42 - days.length;
     for (let i = 1; i <= remainingDays; i++) {
+      const date = new Date(currentYear, currentMonth + 1, i);
       days.push({
-        date: new Date(currentYear, currentMonth + 1, i),
-        isCurrentMonth: false
+        date,
+        isCurrentMonth: false,
+        events: events.filter(event => 
+          format(new Date(event.start), 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')
+        )
       });
     }
     
     return days;
   };
 
-  const renderDayCell = (day, index) => (
-  <div 
-    key={index} 
-    className={`
-      min-h-[100px] p-2 border-b border-r hover:bg-gray-50 transition-colors
-      ${!day.isCurrentMonth ? 'text-gray-400' : 'text-gray-800'}
-      ${format(day.date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd') ? 'bg-blue-50' : ''}
-    `}
-  >
-    <div className="text-right font-medium">
-      {format(day.date, 'd')} {/* Day number doesn't need locale */}
-      {day.hasEvents && (
-        <span className="ml-1 w-2 h-2 inline-block rounded-full bg-blue-500"></span>
-      )}
-    </div>
-  </div>
-);
+  // Enhanced day cell rendering with event names and colors
+  const renderDayCell = (day, index) => {
+    const isToday = isSameDay(day.date, new Date());
+    
+    return (
+      <div 
+        key={index} 
+        className={`
+          min-h-[100px] p-2 border-b border-r hover:bg-gray-50 transition-colors
+          ${!day.isCurrentMonth ? 'text-gray-400 bg-gray-50' : 'text-gray-800'}
+          ${isToday ? 'bg-blue-50 font-bold' : ''}
+          relative
+        `}
+      >
+        <div className="text-right font-medium mb-1">
+          {format(day.date, 'd')}
+        </div>
+        
+        <div className="overflow-y-auto max-h-[80px]">
+          {day.events.map((event, i) => (
+            <div 
+              key={i} 
+              className="text-xs p-1 mb-1 rounded truncate"
+              style={{ 
+                backgroundColor: `${event.backgroundColor}20`, // Add opacity
+                borderLeft: `3px solid ${event.backgroundColor}`,
+                color: '#333'
+              }}
+              title={event.title}
+            >
+              {event.title}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
+  // Enhanced view rendering with proper navigation
   const renderView = () => {
     const views = {
-      week: <WeekView currentDate={currentDate} events={events} />,
-      day: <DayView currentDate={currentDate} events={events} />,
+      week: (
+        <WeekView 
+          currentDate={currentDate} 
+          events={events} 
+          onNext={nextPeriod}
+          onPrev={prevPeriod}
+          onToday={goToToday}
+        />
+      ),
+      day: (
+        <DayView 
+          currentDate={currentDate} 
+          events={events}
+          onNext={nextPeriod}
+          onPrev={prevPeriod}
+          onToday={goToToday}
+        />
+      ),
       list: <ListView currentDate={currentDate} events={events} />,
       month: (
         <div className="calendar-grid">
@@ -215,7 +278,7 @@ export const Calendar = () => {
       )
     };
     
-    return views[activeView] || views.month;
+    return views[activeView] || [views.month];
   };
 
   return (
@@ -234,10 +297,10 @@ export const Calendar = () => {
           
           <div className="flex flex-col sm:flex-row justify-between items-center px-6 py-4 border-b gap-4">
             <div className="flex items-center space-x-2">
-              <button onClick={prevMonth} className="p-2 rounded-full hover:bg-gray-100 transition-colors">
+              <button onClick={prevPeriod} className="p-2 rounded-full hover:bg-gray-100 transition-colors">
                 <ChevronLeftIcon size={20} />
               </button>
-              <button onClick={nextMonth} className="p-2 rounded-full hover:bg-gray-100 transition-colors">
+              <button onClick={nextPeriod} className="p-2 rounded-full hover:bg-gray-100 transition-colors">
                 <ChevronRightIcon size={20} />
               </button>
               <button onClick={goToToday} className="px-3 py-1 text-sm bg-cyan-100 rounded-md hover:bg-cyan-200 transition-colors">
@@ -246,7 +309,9 @@ export const Calendar = () => {
             </div>
             
             <h2 className="text-xl font-semibold text-gray-800">
-              {format(currentDate, 'MMMM yyyy', { locale: fr })}
+              {activeView === 'month' && format(currentDate, 'MMMM yyyy', { locale: fr })}
+              {activeView === 'week' && `${format(startOfWeek(currentDate), 'd MMM')} - ${format(endOfWeek(currentDate), 'd MMM yyyy')}`}
+              {activeView === 'day' && format(currentDate, 'EEEE d MMMM yyyy', { locale: fr })}
             </h2>
             
             <div className="flex rounded-lg overflow-hidden bg-gray-100">
@@ -261,8 +326,8 @@ export const Calendar = () => {
                   onClick={() => setActiveView(view)}
                 >
                   {view === 'month' ? 'Mois' : 
-                  view === 'week' ? 'Semaine' : 
-                  view === 'day' ? 'Jour' : 'Liste'}
+                   view === 'week' ? 'Semaine' : 
+                   view === 'day' ? 'Jour' : 'Liste'}
                 </button>
               ))}
             </div>

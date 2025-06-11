@@ -248,7 +248,7 @@ const Menu = () => {
       icon: <Calendar />,
       href: "/calendrier",
       needsSociete: user.role === 1,
-      needsProjet: true,
+      // needsProjet: true,
     },
   ];
 
