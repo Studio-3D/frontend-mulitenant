@@ -104,10 +104,7 @@ export default function TypologiesPage() {
 
   // Main view with table
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Gestion des Typologies</h1>
-
-
+    <div className="p-4 bg-white rounded-lg shadow-md">
       <TypologieTable
         data={typologies}
         loading={loading}

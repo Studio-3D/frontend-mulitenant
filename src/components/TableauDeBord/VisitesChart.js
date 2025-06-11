@@ -50,26 +50,26 @@ const chartConfig = {
 export function VisitesChart() {
   return (
     <Card className="bg-white">
-  <CardHeader className="flex flex-row items-center justify-between px-4 sm:px-6">
-    <div className="flex flex-col space-y-1">
-      <CardTitle className="text-lg sm:text-2xl">Visites</CardTitle>
-      <CardDescription className="text-sm sm:text-base">January - December 2024</CardDescription>
-    </div>
-    
-    {/* Custom Legend - moved to the right side */}
-    <div className="flex gap-4">
-      {Object.entries(chartConfig).map(([key, config]) => (
-        <div key={key} className="flex items-center gap-1">
-          <div 
-            className="w-3 h-3 rounded-full" 
-            style={{ backgroundColor: config.color }}
-          />
-          <span className="text-xs sm:text-sm">{config.label}</span>
+      <CardHeader className="flex flex-row items-center justify-between px-4 sm:px-6">
+        <div className="flex flex-col space-y-2">
+          <CardTitle className="text-lg sm:text-2xl">Visites</CardTitle>
+          <CardDescription className="text-sm sm:text-base">Janvier - Décembre 2024</CardDescription>
         </div>
-      ))}
-    </div>
-  </CardHeader>
-      
+        
+        {/* Légende personnalisée - déplacée à droite */}
+        <div className="flex gap-4">
+          {Object.entries(chartConfig).map(([key, config]) => (
+            <div key={key} className="flex items-center gap-1">
+              <div 
+                className="w-3 h-3 rounded-full" 
+                style={{ backgroundColor: config.color }}
+              />
+              <span className="text-xs sm:text-sm">{config.label}</span>
+            </div>
+          ))}
+        </div>
+      </CardHeader>
+          
 
       <CardContent className="px-2 sm:px-4">
         <ChartContainer config={chartConfig} className="xl:h-[250px] w-full">
@@ -112,11 +112,11 @@ export function VisitesChart() {
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm px-4 sm:px-6">
         <div className="flex items-center gap-2 font-medium leading-none">
-          Trending up by 5.2% this month 
-          <TrendingUp className="h-4 w-4 !text-green-500" />
+          Tendance à la hausse de 5,2% ce mois-ci 
+          <TrendingUp className="h-4 w-4 text-green-500" />
         </div>
         <div className="leading-none text-muted-foreground text-xs sm:text-sm">
-          Showing total visitors for the last year
+          Affichage du total des visiteurs pour l'année écoulée
         </div>
       </CardFooter>
     </Card>

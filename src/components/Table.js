@@ -155,7 +155,7 @@ const Table = ({
       )}
 
       {/* Table */}
-      <div className="overflow-auto mt-4 h-[72vh]">
+      <div className="overflow-auto mt-6 h-[72vh]">
         {error ? (
           <div className="text-center !text-red-500 py-4">{error}</div>
         ) : (
