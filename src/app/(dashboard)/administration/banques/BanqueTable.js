@@ -101,7 +101,7 @@ const BanqueTable = ({ data = [], loading = false, onAction,onFilterSubmit  }) =
         data={currentItems}
         onFilterToggle={handleFilterToggle}
         filterComponent={
-          <div className="space-y-4 p-4 rounded-lg shadow-md">
+          <div className="space-y-4">
             <div
               className="grid gap-3"
               style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}
@@ -113,8 +113,7 @@ const BanqueTable = ({ data = [], loading = false, onAction,onFilterSubmit  }) =
                 onChange={(e) => handleFilterChange("nom", e.target.value)}
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
-            </div>
-            <div className="flex justify-end gap-3 pt-2">
+            <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={applyFilters}
@@ -129,6 +128,7 @@ const BanqueTable = ({ data = [], loading = false, onAction,onFilterSubmit  }) =
               >
                 Réinitialiser
               </button>
+            </div>
             </div>
           </div>
         }

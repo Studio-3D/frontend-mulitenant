@@ -43,10 +43,9 @@ const chartConfig = {
 export function AppelsChart() {
   return (
     <Card className="flex flex-col w-full border-0 shadow-none bg-transparent">
-      <CardHeader className=" pb-2">
-        <CardTitle>Nombre Des Appels</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
-
+      <CardHeader className=" pb-0">
+        <CardTitle>Nombre d'appels</CardTitle>
+        <CardDescription>Janvier - Juin 2024</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
         <ChartContainer
@@ -61,13 +60,13 @@ export function AppelsChart() {
       </CardContent>
       <CardFooter className="flex-col  gap-2 text-sm">
         <div className="flex  gap-2 font-medium leading-none">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
+          Tendance à la hausse de 5,2% ce mois-ci <TrendingUp className="h-4 w-4 text-green-500" />
         </div>
         <div className="leading-none text-muted-foreground">
-          Showing total visitors for the last 6 months
+          Affichage du total des appels des 6 derniers mois
         </div>
       </CardFooter>
-      {/* Custom Legend - moved to the right side */}
+      {/* Légende personnalisée - déplacée sur le côté droit */}
         <div className="flex justify-center gap-4">
           {Object.entries(chartConfig).map(([key, config]) => (
             <div key={key} className="flex items-center gap-1">

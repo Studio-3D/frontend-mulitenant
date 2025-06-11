@@ -116,20 +116,12 @@ export default function TypeBiensPage() {
 
   // Main view with table
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">
-        Gestion des Types de Biens
-{/*         {selectedProjet ? ` - Projet: ${selectedProjet.nom}` : ''}
- */}      </h1>
-      
+    <div className="">
       {error && (
         <div className="bg-red-100 border-l-4 border-red-500 !text-red-700 p-4 mb-4" role="alert">
           <p>{error}</p>
         </div>
       )}
-      
-      
-      
       <TypeBienTable
         data={typeBiens}
         loading={loading || societeLoading || projetLoading}
