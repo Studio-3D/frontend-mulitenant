@@ -87,87 +87,69 @@ export default function ImportDetail() {
   return (
     <div className="min-h-screen bg-gray-50 p-6 flex justify-center">
       <div className="max-w-4xl w-full bg-white rounded-lg shadow-lg p-8 space-y-8">
-        <h1 className="text-3xl font-bold text-blue-700">Détails de l'importation</h1>
+        <h1 className="text-3xl font-bold text-blue-700">Détails de l'import</h1>
 
-        {/* Ligne de statut large et claire */}
-<div
-  className={`w-full px-6 py-3 rounded-lg font-semibold text-center text-lg ${
+     <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+ 
+  
+</div>
+<div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+  <div className={`ml-auto px-4 py-1 rounded-full font-semibold text-sm ${
     importInfo.statut === "2"
-      ? "bg-red-600 text-white"
-      : "bg-green-600 text-white"
-  }`}
->
-  {importInfo.statut === "2" ? "Importation échouée" : "Importation réussie"}
+      ? "bg-red-200 text-red-900"
+      : "bg-green-200 text-green-900"
+  }`}>
+    {importInfo.statut === "2" ? "Échec" : "Succès"}
+  </div>
 </div>
 
-
-<hr className="border-gray-400" />
+<hr className="border-gray-500" />
 
 {/* Fichier importé */}
 <div>
-  <h2 className="text-xl font-semibold text-gray-800 mb-2">Fichier importé</h2>
+  <h2 className="text-xl font-semibold text-gray-900 mb-2">Fichier importé</h2>
   <button
     onClick={() => handleFileClick(importInfo.fichier)}
-    className="text-orange-700 underline hover:text-orange-900 transition"
+    className="text-blue-700 underline hover:text-blue-900 transition"
     title="Ouvrir le fichier importé"
   >
     {importInfo.fichier}
   </button>
 </div>
 
-{/* Dates */}
-<div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
-  <div className="flex items-center space-x-3">
-    <svg className="w-6 h-6 text-orange-800" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-      {/* ... */}
-    </svg>
-    <div>
-      <p className="text-sm text-gray-800">Date d'importation</p>
-      <p className="text-gray-900 font-medium">{new Date(importInfo.created_at).toLocaleString()}</p>
-    </div>
-  </div>
-
-  <div className="flex items-center space-x-3">
-    <svg className="w-6 h-6 text-orange-800" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-      {/* ... */}
-    </svg>
-    <div>
-      <p className="text-sm text-gray-800">Date de l'échec</p>
-      <p className={`font-medium ${importInfo.statut === "2" ? "text-red-500" : "text-gray-900"}`}>
-        {importInfo.date_echou
-          ? new Date(new Date(importInfo.date_echou).getTime() + 60 * 60 * 1000).toLocaleString()
-          : "N/A"}
+<div>
+  <h2 className="text-xl font-semibold text-gray-900 mb-2">Date d'import</h2>
+      <p className="text-gray-900 font-medium">
+        {new Date(importInfo.created_at).toLocaleString()}
       </p>
-    </div>
-  </div>
 </div>
 
-{/* Message d'erreur */}
+
 {importInfo.statut === "2" && (
   <div
     role="alert"
-    className="bg-orange-100 border border-red-700 text-red-500 px-4 py-3 rounded relative my-6"
+    className="bg-orange-100 border border-red-400 px-4 py-3 rounded relative mb-6"
   >
-    <strong className="font-bold">Message d'erreur :
-    <span className="whitespace-pre-line">
+    <p className="text-black-900 font-bold mb-1">Message d'erreur :</p>
+    <p className="text-red-800 whitespace-pre-line">
       {importInfo.message_echou || "Aucun message d'erreur disponible."}
-    </span>
-    </strong>
+    </p>
   </div>
 )}
 
 
+
 {/* Lignes traitées et restantes */}
-<div className="flex flex-col sm:flex-row gap-6 mt-6">
-  <div className="flex-1 bg-orange-100 p-4 rounded-md text-center">
-    <p className="text-gray-900 font-semibold">Lignes traitées</p>
-    <p className="text-2xl font-bold text-orange-800">
+<div className="flex flex-col sm:flex-row gap-6">
+  <div className="flex-1 bg-blue-200 p-4 rounded-md text-center">
+    <p className="text-black-900 font-semibold">Lignes traitées</p>
+    <p className="text-2xl font-bold text-blue-900">
       {lignesTraitees} / {totalLignes}
     </p>
   </div>
   <div className="flex-1 bg-yellow-200 p-4 rounded-md text-center">
-    <p className="text-gray-900 font-semibold">Lignes restantes</p>
-    <p className="text-2xl font-bold text-yellow-800">{lignesRestantes}</p>
+    <p className="text-yellow-900 font-semibold">Lignes restantes</p>
+    <p className="text-2xl font-bold text-yellow-900">{lignesRestantes}</p>
   </div>
 </div>
 </div>
