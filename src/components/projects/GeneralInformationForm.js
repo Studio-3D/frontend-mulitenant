@@ -22,7 +22,7 @@ export default function GeneralInformationForm({ state, setState, onNext, onBack
   return (
     
     <div className="bg-white p-6 rounded-md">
-      <h2 className="text-xl font-medium mb-6">Informations générales</h2>
+      {/* <h2 className="text-xl font-medium mb-6">Informations générales</h2> */}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Left Column */}

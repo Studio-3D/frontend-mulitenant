@@ -166,7 +166,7 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
 
   return (
     <div className="bg-white p-6 rounded-md">
-      <h2 className="text-xl font-medium mb-6">Type de projet et Composition</h2>
+      {/* <h2 className="text-xl font-medium mb-6">Type de projet et Composition</h2> */}
 
       <div className="mb-6 bg-white p-6 rounded-lg shadow-sm border border-gray-100">
         <h3 className="text-lg font-medium mb-4">Type de projet</h3>

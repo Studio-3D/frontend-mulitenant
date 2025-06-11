@@ -222,8 +222,8 @@ const isUserSelected = (userId) => {
 
   return (
     <div className="bg-white p-6 rounded-md">
-      <h2 className="text-xl font-medium mb-6">Paramètres généraux</h2>
-
+      {/* <h2 className="text-xl font-medium mb-6">Paramètres généraux</h2>
+ */}
       {/* NEW SECTION: Property Types - Now clearly marked as optional */}
       <div className="mt-8 border-t pt-6">
         <h3 className="text-lg font-medium mb-4">

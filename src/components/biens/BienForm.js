@@ -1473,7 +1473,7 @@ return (
           onClick={activeStep === 0 ? () => router.back() : handleBack}
           className="px-4 py-2 border border-gray-300 rounded-md"
         >
-          {(activeStep === 0||activeStep === 1) ? "Annuler" : "Précédent"}
+          {activeStep === 0 ? "Annuler" :activeStep === 1 ? "Précédent":undefined}
         </button>
 
         {/* Étape 1 : Soumettre bien */}
