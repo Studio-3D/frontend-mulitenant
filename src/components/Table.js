@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { Filter, Search, Plus, Download, Upload } from 'lucide-react';
 import Link from 'next/link';
 import Modal from './Modal';
@@ -207,9 +207,8 @@ const Table = ({
                   const isExpanded = expandedRows[rowId];
                   
                   return (
-                    <>
+                    <Fragment key={rowId}>
                       <tr 
-                        key={index} 
                         className={`hover:bg-gray-50 ${rowClassName(row)} ${onRowClick ? 'cursor-pointer' : ''}`}
                         onClick={() => onRowClick && onRowClick(row, index)}
                       >
@@ -221,13 +220,13 @@ const Table = ({
                       </tr>
                       {/* Expanded row content */}
                       {isExpanded && renderExpandedRow && (
-                        <tr key={`expanded-${index}`}>
+                        <tr>
                           <td colSpan={columns.length} className="p-0 border-b">
                             {renderExpandedRow(row, index)}
                           </td>
                         </tr>
                       )}
-                    </>
+                    </Fragment>
                   );
                 })
               )}
