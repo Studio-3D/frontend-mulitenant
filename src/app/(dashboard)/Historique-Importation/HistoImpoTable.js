@@ -13,8 +13,9 @@ import Input from "@/components/Input";
 import { useProjet } from "@/context/ProjetContext"; // Import ProjetContext
 import ProjetDialog from "@/components/ProjetDialog"; // Import ProjetDialog
 import { format } from "date-fns";
-import { Trash2 , File } from "lucide-react";
+import { Trash2 , File, Eye } from "lucide-react";
 import SelectInput from "@/components/SelectInput";
+import { FiDownload } from "react-icons/fi";
 
 const HistoImpoTable = () => {
   const [histoImportations, sethistoImportations] = useState([]);
@@ -79,6 +80,10 @@ const getStatutBadge = (statutValue) => {
     const handleFilterToggle = (isOpen) => {
       if (!isOpen) resetFilters(); // Si on ferme, on réinitialise
     };
+
+    function handleShow(Id) {
+      router.push(`/historique-importation/${Id}`);
+  }
 
     const handleFileClick = file => {
     window.open(
@@ -151,8 +156,14 @@ const getStatutBadge = (statutValue) => {
     render: (row) => (
       <div className="flex gap-2 items-center">
         <button title="visualiser" onClick={() => handleFileClick(row.fichier)}>
-          <File className="w-5 h-5" />
+          <FiDownload className="w-5 h-5" />
         </button>
+        {row.statut == 2 && (
+          <Eye
+            className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
+            onClick={() => handleShow(row.id)}
+          />        
+        )}
         {row.statut == 0 && (
           <button
             className="text-red-500 hover:text-red-700"
@@ -219,7 +230,8 @@ const getStatutBadge = (statutValue) => {
           onSelect={handleProjectSelected}
         />
       
-      
+      <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
+
       <Table
         //data_to_export={data_to_export()}
         //columns_export={columns_export}
@@ -295,8 +307,10 @@ const getStatutBadge = (statutValue) => {
         onSearchChange={setSearchTerm}
         //enableExport={true}
         //enableImport={true}
+        enableSearch={false}
         
       />
+      </div>
 
       {showDeleteModal && selectedId && (
         <Modal isVisible={true} onClose={() => setShowDeleteModal(false)}>

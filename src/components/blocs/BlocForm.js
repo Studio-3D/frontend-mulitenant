@@ -5,6 +5,12 @@ import axios from "axios";
 import { APIURL } from "@/configs/api";
 import toast from "react-hot-toast";
 import Link from "next/link";
+import LoadingSpin from '@/components/LoadingSpin';
+import BreadCrumb from "@/app/(dashboard)/navigation/BreadCrumb";
+import Button from "../Button";
+import InputSelect from "../inputSelect";
+import Input from "../Input";
+import { fetchDataByProjet_params } from "@/configs/api-utils";
 
 export default function BlocForm({ id, projetId, trancheId }) {
   const router = useRouter();
@@ -35,6 +41,7 @@ export default function BlocForm({ id, projetId, trancheId }) {
   // Fetch bloc data if editing
   useEffect(() => {
     if (isEditing) {
+      setLoading(true)
       const fetchBlocData = async () => {
         try {
           const token = localStorage.getItem("accessToken");
@@ -43,6 +50,7 @@ export default function BlocForm({ id, projetId, trancheId }) {
           });
           
           if (response.data && response.data.bloc) {
+            setLoading(false)
             const bloc = response.data.bloc;
             setFormData({
               nom: bloc.nom || "",
@@ -59,6 +67,7 @@ export default function BlocForm({ id, projetId, trancheId }) {
             }
           }
         } catch (error) {
+          setLoading(false)
           console.error("Failed to fetch bloc:", error);
           toast.error("Erreur lors du chargement du bloc");
         }
@@ -77,47 +86,12 @@ export default function BlocForm({ id, projetId, trancheId }) {
   // Always fetch tranches for the project, regardless of nbre_tranches
   useEffect(() => {
     if (selectedProjet?.id) {
-      const fetchTranches = async () => {
-        setLoadingTranches(true);
-        try {
-          const token = localStorage.getItem("accessToken");
-          const response = await axios.get(`${APIURL.TRANCHES}`, {
-            headers: { Authorization: `Bearer ${token}` },
-            params: { projet_id: selectedProjet.id }
-          });
-          
-          if (response.data && response.data.data) {
-            setTranches(response.data.data);
-            
-            // If we have a trancheId (either from editing or passed as prop),
-            // find and set the selected tranche object
-            if (formData.tranche_id && !selectedTranche) {
-              const found = response.data.data.find(t => t.id.toString() === formData.tranche_id.toString());
-              if (found) {
-                setSelectedTranche(found);
-              }
-            }
-          } else if (response.data && response.data.tranches) {
-            // Alternative response format
-            setTranches(response.data.tranches);
-            
-            if (formData.tranche_id && !selectedTranche) {
-              const found = response.data.tranches.find(t => t.id.toString() === formData.tranche_id.toString());
-              if (found) {
-                setSelectedTranche(found);
-              }
-            }
-          }
-        } catch (err) {
-          console.error("Failed to load tranches:", err);
-        } finally {
-          setLoadingTranches(false);
-        }
-      };
+      if (selectedProjet.nbre_tranches!==0 &&  tranches.length===0 && !trancheId)  {
+        fetchDataByProjet_params('tranches', setTranches, setLoadingTranches);
+      }
       
-      fetchTranches();
     }
-  }, [selectedProjet?.id, formData.tranche_id, selectedTranche]);
+  }, [selectedProjet?.id,  trancheId]);
 
   // Handle form input changes
   const handleChange = (e) => {
@@ -142,13 +116,11 @@ export default function BlocForm({ id, projetId, trancheId }) {
     }
   };
 
-  // Clear form handler
-  const handleClear = () => {
-    setFormData(defaultValues);
-    setSelectedTranche(null);
-    setBackendErrors({});
-    setValidationErrors({});
+ const handleselectChange = (field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
+
+
 
   // Validate form
   const validateForm = () => {
@@ -220,167 +192,111 @@ export default function BlocForm({ id, projetId, trancheId }) {
       setLoading(false);
     }
   };
+  if (isEditing && loading) {
+      return (
+          <div className="flex items-center justify-center min-h-screen">
+            <LoadingSpin /> 
+          </div>
+        );
+  }
+  
+
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-xl font-semibold mb-6">
-        {isEditing ? "Modifier le bloc" : "Ajouter un nouveau bloc"}
-      </h2>
+    <div className="p-3">
+      <div className="flex items-center justify-start">
+        <BreadCrumb
+          baseUrl={selectedProjet?.id ? `/Projets/${selectedProjet.id}?tab=blocs` : "/Projets"}
+          step={`${id ? "Modifier" : "Ajouter"} un bloc`}
+        />
+      </div>
+      <div className="p-6 mt-4 bg-white shadow-md rounded-md">
+  
       
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Nom */}
-          <div>
-            <label className="block text-sm font-medium !text-gray-700 mb-1">
-              Nom <span className="text-red-500">*</span>
-            </label>
-            <div>
-              <input
+              <Input
+                label="Nom"
                 type="text"
                 name="nom"
                 value={formData.nom}
                 onChange={handleChange}
-                className={`w-full rounded-md border ${
-                  validationErrors.nom || backendErrors.nom ? "border-red-500" : "border-gray-300"
-                } px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                error={validationErrors.nom || (backendErrors.nom )}
+                required
               />
-              {(validationErrors.nom || backendErrors.nom) && (
-                <p className="mt-1 text-sm !text-red-500">
-                  {validationErrors.nom || (backendErrors.nom && backendErrors.nom[0])}
-                </p>
-              )}
-            </div>
-          </div>
+              
+          {isEditing && selectedProjet.nbre_tranches !== 0 && (
+              
+                <Input
+                  label="Tranche"
+                  value={selectedTranche?.nom}
+                  fullWidth
+                  size="small"
+                  variant="outlined"
+                  disabled={true}
+                  
 
-          {/* Tranche selection - Always show it */}
-          <div>
-            <label className="block text-sm font-medium !text-gray-700 mb-1">
-              Tranche <span className="text-red-500">*</span>
-            </label>
-            
-            {loadingTranches ? (
-              <div className="w-full rounded-md border border-gray-300 px-3 py-2 bg-gray-50 flex items-center">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-2"></div>
-                <span className="text-gray-500 text-sm">Chargement des tranches...</span>
-              </div>
-            ) : tranches.length === 0 ? (
-              <div className="w-full rounded-md border border-yellow-300 bg-yellow-50 px-3 py-2 !text-yellow-700 text-sm">
-                Aucune tranche disponible pour ce projet. Veuillez créer une tranche d'abord.
-              </div>
-            ) : (
-              <>
-                <select
-                  name="tranche_id"
-                  value={formData.tranche_id}
-                  onChange={handleChange}
-                  className={`w-full rounded-md border ${
-                    validationErrors.tranche_id || backendErrors.tranche_id ? "border-red-500" : "border-gray-300"
-                  } px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
-                >
-                  <option value="">Sélectionner une tranche</option>
-                  {tranches.map(tranche => (
-                    <option key={tranche.id} value={tranche.id}>
-                      {tranche.nom}
-                    </option>
-                  ))}
-                </select>
-                
-                {selectedTranche && (
-                  <p className="mt-1 text-xs text-[#009FFF]">
-                    Tranche sélectionnée: {selectedTranche.nom}
-                  </p>
-                )}
-                
-                {(validationErrors.tranche_id || backendErrors.tranche_id) && (
-                  <p className="mt-1 text-sm !text-red-500">
-                    {validationErrors.tranche_id || (backendErrors.tranche_id && backendErrors.tranche_id[0])}
-                  </p>
-                )}
-              </>
+                />
+              
             )}
-          </div>
+            {!isEditing && selectedProjet.nbre_tranches!==0 && !trancheId && (
+              <InputSelect
+                label="Tranche"
+                options={tranches.map(t => ({ label: t.nom, value: t.id }))}
+                value={formData.tranche_id}
+                onChange={(option) => handleselectChange("tranche_id", option?.value || null)}
+                error={validationErrors.tranche_id || backendErrors.tranche_id}
+                isLoading={loadingTranches}
+                required
+              />
+            )}
 
-          {/* Titre foncier */}
-          <div>
-            <label className="block text-sm font-medium !text-gray-700 mb-1">
-              Titre foncier
-            </label>
-            <input
+         
+         
+            <Input
+              label={'Titre foncier'}
               type="text"
               name="titre_foncier"
               value={formData.titre_foncier}
               onChange={handleChange}
               className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              error={validationErrors.titre_foncier || backendErrors.titre_foncier}
+              
             />
-          </div>
 
           {/* Nombre d'immeubles - only show if project has immeubles */}
-          {selectedProjet?.nbre_immeubles > 0 && (
-            <div>
-              <label className="block text-sm font-medium !text-gray-700 mb-1">
-                Nombre d'immeubles
-              </label>
-              <input
-                type="number"
-                name="nbre_immeubles"
-                value={formData.nbre_immeubles}
-                onChange={handleChange}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
-            </div>
-          )}
+          {selectedProjet.nbre_immeubles > 0 && (
+            <Input
+              label={'Nombre d\'immeuble'}
+              type="number"
+              name="nbre_immeubles"
+              value={formData.nbre_immeubles}
+              onChange={handleChange}
+            />
+        )}
 
           {/* Nombre de biens */}
-          <div>
-            <label className="block text-sm font-medium !text-gray-700 mb-1">
-              Nombre de biens
-            </label>
-            <input
+           <Input
+              label={'Nombre de biens '}
               type="number"
               name="nbre_biens"
               value={formData.nbre_biens}
               onChange={handleChange}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
-          </div>
         </div>
 
         {/* Form actions */}
-        <div className="flex justify-end space-x-4 pt-4">
-          <Link
-            href={selectedProjet?.id ? `/Projets/${selectedProjet.id}?tab=blocs` : "/Projets"}
-            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium !text-gray-700 bg-white hover:bg-gray-50"
-          >
+        <div className="flex justify-center gap-4 items-center mt-6 mb-6">
+          <Button type="button" onClick={() => router.back()}>
             Annuler
-          </Link>
-          
-          <button
-            type="button"
-            onClick={handleClear}
-            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium !text-gray-700 bg-white hover:bg-gray-50"
-          >
-            Vider
-          </button>
-          
-          <button
-            type="submit"
-            disabled={loading || (tranches.length === 0)}
-            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300"
-          >
-            {loading ? (
-              <span className="flex items-center">
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Enregistrement...
-              </span>
-            ) : (
-              "Enregistrer"
-            )}
-          </button>
+          </Button>
+          <Button type="submit" disabled={loading}  loading={loading}>
+            {loading ? "Chargement..." : id ? "Modifier" : "Ajouter"}
+          </Button>
         </div>
       </form>
+    </div>
     </div>
   );
 }
