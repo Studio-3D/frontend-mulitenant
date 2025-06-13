@@ -15,7 +15,6 @@ export default function Modal_Import({ onClose, title, route }) {
   const accessToken = token || localStorage.getItem('accessToken');
   const [loading, setLoading] = useState({ form: false });
   const fileInputRef = useRef(null);
-  const FileUrl = 'http://localhost:8000/';
   const [file, setFile] = useState(null);
   const [backendErrors, setBackendErrors] = useState(null);
 

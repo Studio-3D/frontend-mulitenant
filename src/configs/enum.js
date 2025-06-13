@@ -117,6 +117,22 @@ export const MODE_PAIEMENT = {
   5: { code: 5, label: 'Virement' },
   6: { code: 6, label: 'Versement' },
 };
+// Penalty modes
+export const modes_penalites = {
+  1: { code: 1, label: '10%' },
+  2: { code: 2, label: '15% (gros oeuvre)' },
+  3: { code: 3, label: '20% (Finition)' },
+  4: { code: 4, label: '25%' },
+  5: { code: 5, label: '30%' },
+  6: { code: 6, label: '40%' },
+  7: { code: 7, label: '50%' },
+  8: { code: 8, label: '60%' },
+  9: { code: 9, label: '70%' },
+  10: { code: 10, label: '80%' },
+  11: { code: 11, label: '90%' },
+  12: { code: 12, label: '100%' },
+  13: { code: 13, label: 'Montant' },
+};
 
 export const type_dst = {
   1: { id: 1, label: 'Désistement Définitif' },
@@ -124,8 +140,8 @@ export const type_dst = {
   3: { id: 3, label: 'Changement de Bien' },
 };
 export const type_dst_dp = {
-  1: { id: 1, label: 'Désistement au Profit d\'un Proche' },
-  2: { id: 2, label: 'Désistement au Profit d\'un Co-Reservataire' },
+  1: { id: 1, label: "Désistement au Profit d'un Proche" },
+  2: { id: 2, label: "Désistement au Profit d'un Co-Reservataire" },
   3: { id: 3, label: 'Désistement Partiel' },
 };
 
@@ -146,10 +162,21 @@ export const motif_desistements = {
 export const lien_parentes = {
   1: { id: 1, label: 'Parents' },
   2: { id: 2, label: 'Fils' },
-  3: { id: 3, label: 'Frères' },  // Note: Fixed accent on "Frères"
-  4: { id: 4, label: 'Sœurs' },   // Note: Fixed accent on "Sœurs"
+  3: { id: 3, label: 'Frères' }, // Note: Fixed accent on "Frères"
+  4: { id: 4, label: 'Sœurs' }, // Note: Fixed accent on "Sœurs"
   5: { id: 5, label: 'Autre' },
 };
+
+// Financing modes
+export const MODE_FINANCE = {
+  1: { code: 1, label: 'Comptant' },
+  2: { code: 2, label: 'Crédit' },
+  3: { code: 3, label: 'Indécis' },
+};
+export const getModeFinanceLabel = (code) => {
+  return MODE_FINANCE[code]?.label || 'Unknown';
+};
+
 //desistement
 export const MODE_PAIEMENT_with_transfert = {
   1: { code: 1, label: 'Espèce' },
@@ -160,13 +187,15 @@ export const MODE_PAIEMENT_with_transfert = {
   6: { code: 6, label: 'Versement' },
   7: { code: 7, label: 'Transfert Dossier' },
 };
-
-// Financing modes
-export const MODE_FINANCE = {
-  1: { code: 1, label: 'Comptant' },
-  2: { code: 2, label: 'Crédit' },
-  3: { code: 3, label: 'Indécis' },
+export const getModePaiementLabel = (code) => {
+  return MODE_PAIEMENT_with_transfert[code]?.label || 'Unknown';
 };
+export const Avance_Statut = {
+  1: { label: 'Validé', color: 'success' },
+  3: { label: 'En Attente', color: 'info' },
+  2: { label: 'Refusé', color: 'error' },
+};
+
 // Orientations
 export const ORIENTATIONS = {
   1: { code: 1, label: 'Nord', description: 'Orientation Nord' },
@@ -253,11 +282,11 @@ export const getEtatLabel = (etatId) => {
 export const TYPE_CLIENT = {
   1: { code: '1', label: 'Particulier' },
   2: { code: '2', label: 'Société' },
-}
+};
 
 export const SITUATION_FAMILIALLE = {
   1: { code: 1, label: 'Célibataire' },
   2: { code: 2, label: 'Marié' },
   3: { code: 3, label: 'Divorcé' },
-  4: { code: 4, label: 'Veuf' }
+  4: { code: 4, label: 'Veuf' },
 };

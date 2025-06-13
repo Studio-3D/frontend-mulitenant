@@ -357,7 +357,6 @@ export function Changement_De_Bien({
                   Sr
                 </label>
               </div>
-              <p>{JSON.stringify(filesList_avc)}</p>
               <AutocompleteSelectComponent
                 label="Mode de Paiement"
                 required

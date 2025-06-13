@@ -1,13 +1,16 @@
 'use client';
 import { useState, useRef } from 'react';
 import Button from '@/components/Button';
-
+import axios from 'axios';
+import toast from 'react-hot-toast';
+import { APIURL } from '../../../../configs/api';
 import Modal from '@/components/Modal'; // Make sure you import the Modal component
 import Modal_valider_avance from './Modal_valider_avance'; // Import your Modal_Traite component
 import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import format from 'date-fns/format';
+import { useAuth } from '../../../../context/AuthContext';
 
 export default function Modal_Valider_Reservation({
   onClose,
@@ -26,7 +29,8 @@ export default function Modal_Valider_Reservation({
   const [open_v_avances, setOpen_v_avances] = useState(false);
 
   const [loading, setLoading] = useState({ form: false });
-
+  const { token } = useAuth();
+  const accessToken = token || localStorage.getItem('accessToken');
   const closeAllModals = () => {
     onClose(); // Close current modal
     closeParentModal(); // Close parent modal
@@ -35,8 +39,40 @@ export default function Modal_Valider_Reservation({
   const handle_oui = () => {
     if (first_av_statut == 3) {
       setOpen_v_avances(true);
+    } else {
+      handle_annuler_avance();
     }
   };
+
+  //valider reservation sans avance
+  const handle_annuler_avance = () => {
+     setLoading({ ...loading, form: true })
+    const formData = new FormData();
+    formData.append('statut_res', 1);
+    formData.append('with_avance', 0);
+    axios({
+      method: 'put',
+      url: `${APIURL.ROOTV1}/traiter_reservation/${id}`,
+      data: formData,
+      headers: {
+        'content-type': 'application/json',
+        Accept: 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+      .then(() => {
+             setLoading({ ...loading, form: false })
+
+        onClose();
+        setOpen_v_avances(false);
+        toast.success('Réservation Validé avec succès');
+          localStorage.setItem('load_data_reservation', 1);
+      })
+      .catch(() => {
+        console.log('err');
+      });
+  };
+
   const defaultValues = {
     cc: commercial,
     date_res: format(new Date(date_res), 'yyyy-MM-dd'), // Format for date input
@@ -105,7 +141,7 @@ export default function Modal_Valider_Reservation({
         <div className="w-full h-[60px] bg-blue-600 px-4">
           <div className="flex items-center justify-center h-full">
             <h1 className="text-3xl font-bold text-center text-white">
-            Etape 1 :  Validation Réservation
+              Etape 1 : Validation Réservation
             </h1>
           </div>
         </div>

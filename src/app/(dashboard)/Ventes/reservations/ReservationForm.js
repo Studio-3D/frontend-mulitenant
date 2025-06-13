@@ -43,6 +43,7 @@ import {
   fetchData_Select,
   fetchDataByProjet_2,
   fetchList_fichier_exist,
+  fetchList_fichier_exist_by_Code,
 } from '../../../../../src/configs/api-utils';
 //import Modal from '@/components/Modal';
 //import Modal_File from './Modal_file';
@@ -101,7 +102,9 @@ export default function ReservationForm({ id }) {
 
   const [addedClients, setAddedClients] = useState([]);
 
-  const [currentStep, setCurrentStep] = useState(0);
+  const step_ = window.localStorage.getItem('step_res_edit');
+
+  const [currentStep, setCurrentStep] = useState(isEditing ? Number(step_) : 0);
 
   //clients select
   const [inputList1, setinputList1] = useState([
@@ -177,7 +180,6 @@ export default function ReservationForm({ id }) {
     const updatedList = inputList1.filter((_, i) => i !== index);
     const finalList =
       updatedList.length > 0 ? updatedList : [{ id: '', pourcentage: '' }];
-
 
     // Update state first
     setinputList1(finalList);
@@ -325,7 +327,7 @@ export default function ReservationForm({ id }) {
         .then((response) => {
           if (response.status !== 200) router.back();
           const reservation = response.data.reservation;
-          console.log('le mode finance==>'+reservation?.mode_financement)
+          console.log('le mode finance==>' + reservation?.mode_financement);
           setFormData({
             code_reservation: reservation.code_reservation,
             date_reservation: reservation?.date_reservation || '',
@@ -398,6 +400,19 @@ export default function ReservationForm({ id }) {
 
           setSelectedFiles_rsv(reservation.piece_jointe);
           setLoading(false);
+          fetchList_fichier_exist_by_Code(
+            setfilesList,
+            'rsv',
+            reservation.code_reservation,
+            setLoading_list
+          );
+
+          fetchList_fichier_exist_by_Code(
+            setfilesList_avc,
+            'avc',
+            reservation.code_reservation,
+            setLoading_list
+          );
         })
         .catch((error) => {
           setLoading(false);
@@ -516,28 +531,38 @@ export default function ReservationForm({ id }) {
   };
 
   const fetch_code_reservation = async (event) => {
-    console.log('le code est==>' + event.target.value);
-    let val = event.target.value;
-    if (val.length >= 3) {
+    const val = event.target.value;
+
+    // First check for invalid characters
+    if (/[\\/]/.test(val)) {
+      setInfo_reservation('Les caractères / et \\ ne sont pas autorisés');
+      return; // Exit early if invalid characters found
+    } else {
       setInfo_reservation(null);
-      await axios
-        .get(`${APIURL.ROOTV1}/search_reservation_by_code/` + val, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        })
-        .then((res) => {
+      console.log('le code est==>' + val);
+
+      if (val.length >= 3) {
+        try {
+          const res = await axios.get(
+            `${APIURL.ROOTV1}/search_reservation_by_code/` + val,
+            {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+            }
+          );
+
           if (res.data.reservation != null) {
             setInfo_reservation(
-              'Le Code Réservation  :' + val + ' est déjà existant '
+              'Le Code Réservation : ' + val + ' est déjà existant'
             );
           } else {
             setInfo_reservation(null);
           }
-        })
-        .catch(() => {
+        } catch (error) {
           setInfo_reservation(null);
-        });
+        }
+      }
     }
   };
 
@@ -713,20 +738,14 @@ export default function ReservationForm({ id }) {
       if (banques.length == 0) {
         fetchData_Select('banques', setBanques, setLoading_1);
       }
-
-      if (filesList_avc.length == 0) {
-        fetchList_fichier_exist(setfilesList_avc, 'avc', setLoading_list);
-      }
     }
+
     if (partenaires.length == 0) {
       fetchData_Select('partenaires', setPartenaires, setLoading_1);
     }
 
     if (clientsExist.length == 0) {
       fetchDataClients();
-    }
-    if (filesList.length == 0) {
-      fetchList_fichier_exist(setfilesList, 'rsv', setLoading_list);
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -819,111 +838,57 @@ export default function ReservationForm({ id }) {
     });
   };
 
-  const handleaddFile = () => {
-    var selectedFiles =
-      addOreditPopup == 1
-        ? selectedFiles_rsv
-        : addOreditPopup == 2
-        ? selectedFiles_avc
-        : null;
+  const isButtonDisabled = () => {
+    // Cache all watched values at start
+    const {
+      avance,
+      avance_minimale,
+      mode_paiement,
+      mode_financement,
+      check_montant,
+      commentaireAvance,
+      banque_id,
+      num_paiement,
+      date_echeance,
+    } = watch();
 
-    if (myfile !== null && Array.isArray(myfile)) {
-      myfile.forEach((file) => {
-        const updatedFiles = selectedFiles.filter(
-          (selectedFile) =>
-            selectedFile.fichier !== file.name &&
-            selectedFile.name !== file.name
-        );
-
-        if (addOreditPopup == 1) {
-          setSelectedFiles_rsv([...updatedFiles, ...myfile]);
-        } else if (addOreditPopup == 2) {
-          setSelectedFiles_avc([...updatedFiles, ...myfile]);
-        }
-      });
-    } else if (myfile !== null && !Array.isArray(myfile)) {
-      // If myfile is not an array (i.e., a single file)
-      const updatedFiles = selectedFiles.filter(
-        (selectedFile) =>
-          selectedFile.fichier !== myfile.name &&
-          selectedFile.name !== myfile.name
-      );
-      if (addOreditPopup == 1) {
-        setSelectedFiles_rsv([...updatedFiles, myfile]);
-      } else if (addOreditPopup == 2) {
-        setSelectedFiles_avc([...updatedFiles, myfile]);
-      }
-    } else if (myfile_1 !== null) {
-      // If myfile_1 exists (for handling the case when a file already exists in the list)
-      const updatedFiles = selectedFiles.filter(
-        (selectedFile) =>
-          selectedFile.fichier !== myfile_1.name &&
-          selectedFile.name !== myfile_1.name
-      );
-
-      if (addOreditPopup == 1) {
-        setSelectedFiles_rsv([...updatedFiles, myfile_1]);
-      } else if (addOreditPopup == 2) {
-        setSelectedFiles_avc([...updatedFiles, myfile_1]);
-      }
+    // Always disabled conditions
+    if (info_reservation || loading.form || !mode_financement) {
+      return true;
     }
 
-    setMyfile(null);
-    setMyfile_1(null);
-    setValiderfile(false);
-    setAddOreditPopup(null);
+    // Non-editing validations
+    if (!isEditing) {
+      // Basic amount validations
+      if (avance < 0 || avance === '') return true;
+
+      // Payment method validation
+      if (!mode_paiement) return true;
+
+      // Check payment method specific rules
+      const isCheckPayment = [2, 3, 4].includes(mode_paiement?.code); // Chèque types
+      const isTransferPayment = [5, 6].includes(mode_paiement?.code); // Virement/Versement
+
+      if (isCheckPayment) {
+        if (!banque_id || !num_paiement || !date_echeance) return true;
+      }
+
+      if (isTransferPayment) {
+        if (!banque_id || !num_paiement) return true;
+      }
+
+      // Comment validation when check_montant is true
+      if (check_montant && !commentaireAvance) return true;
+
+      // Special role validation for zero amount
+      if (user?.role > 2 && avance === 0 && !check_montant) return true;
+    }
+
+    // Minimum amount validation
+    if (avance > 0 && avance < avance_minimale) return true;
+
+    return false;
   };
-const isButtonDisabled = () => {
-  // Cache all watched values at start
-  const {
-    avance,
-    avance_minimale,
-    mode_paiement,
-    mode_financement,
-    check_montant,
-    commentaireAvance,
-    banque_id,
-    num_paiement,
-    date_echeance
-  } = watch();
-
-  // Always disabled conditions
-  if (info_reservation || loading.form || !mode_financement) {
-    return true;
-  }
-
-  // Non-editing validations
-  if (!isEditing) {
-    // Basic amount validations
-    if (avance < 0 || avance === '') return true;
-
-    // Payment method validation
-    if (!mode_paiement) return true;
-
-    // Check payment method specific rules
-    const isCheckPayment = [2, 3, 4].includes(mode_paiement?.code); // Chèque types
-    const isTransferPayment = [5, 6].includes(mode_paiement?.code); // Virement/Versement
-
-    if (isCheckPayment) {
-      if (!banque_id || !num_paiement || !date_echeance) return true;
-    }
-
-    if (isTransferPayment) {
-      if (!banque_id || !num_paiement) return true;
-    }
-   
-    // Comment validation when check_montant is true
-    if (check_montant && !commentaireAvance) return true;
-
-    // Special role validation for zero amount
-    if (user?.role > 2 && avance === 0 && !check_montant) return true;
-  }
-
-  // Minimum amount validation
-  if (avance > 0 && avance < avance_minimale) return true;
-
-  return false;
-};
   // Helper functions (add these outside your component)
   const getFileIcon = (filename) => {
     const extension = filename.split('.').pop().toLowerCase();
@@ -2178,7 +2143,7 @@ const isButtonDisabled = () => {
                                   </label>
                                   <input
                                     type="text"
-                                    value={form.nom_mari|| ""}
+                                    value={form.nom_mari || ''}
                                     onChange={(e) =>
                                       updateFormField(
                                         formIndex,
@@ -2189,7 +2154,7 @@ const isButtonDisabled = () => {
                                     className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                       formSubmitted_client &&
                                       form.situation_familliale == '2' &&
-                                   (form.nom_mari || "").trim() === ''  // Also handle null check here
+                                      (form.nom_mari || '').trim() === '' // Also handle null check here
                                         ? 'border-red-500'
                                         : 'border-gray-300'
                                     } rounded-md focus:outline-none focus:border-gray-500`}
@@ -2209,7 +2174,7 @@ const isButtonDisabled = () => {
                                   </label>
                                   <input
                                     type="date"
-                                    value={form.date_mariage||''}
+                                    value={form.date_mariage || ''}
                                     onChange={(e) =>
                                       updateFormField(
                                         formIndex,
@@ -2220,7 +2185,7 @@ const isButtonDisabled = () => {
                                     className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                       formSubmitted_client &&
                                       form.situation_familliale == '2' &&
-                                     (form.date_mariage || "").trim() === ''
+                                      (form.date_mariage || '').trim() === ''
                                         ? 'border-red-500'
                                         : 'border-gray-300'
                                     } rounded-md focus:outline-none focus:border-gray-500`}
@@ -2240,7 +2205,7 @@ const isButtonDisabled = () => {
                                   </label>
                                   <input
                                     type="text"
-                                    value={form.lieu_mariage||''}
+                                    value={form.lieu_mariage || ''}
                                     onChange={(e) =>
                                       updateFormField(
                                         formIndex,
@@ -2251,7 +2216,7 @@ const isButtonDisabled = () => {
                                     className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                       formSubmitted_client &&
                                       form.situation_familliale == '2' &&
-                                     (form.lieu_mariage || "").trim() === ''
+                                      (form.lieu_mariage || '').trim() === ''
                                         ? 'border-red-500'
                                         : 'border-gray-300'
                                     } rounded-md focus:outline-none focus:border-gray-500`}
@@ -3083,7 +3048,6 @@ const isButtonDisabled = () => {
                                 </label>
                                 <input
                                   type="text"
-                                 
                                   value={clientToEdit.lieu_mariage || ''}
                                   onChange={(e) =>
                                     setClientToEdit({
@@ -3321,33 +3285,35 @@ const isButtonDisabled = () => {
         {currentStep == 2 && (
           <div className="space-y-6 mt-[50px]">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="flex items-center">
-                <Controller
-                  name="sr"
-                  control={control}
-                  defaultValue={defaultValues?.sr || ''}
-                  render={({ field }) => (
-                    <div className="flex items-center">
-                      <input
-                        {...field}
-                        id="sr"
-                        type="checkbox"
-                        checked={field.value == '1'} // Or whatever string value you use
-                        onChange={(e) =>
-                          field.onChange(e.target.checked ? '1' : '0')
-                        }
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <label
-                        htmlFor="sr"
-                        className="ml-2 block text-sm text-gray-700"
-                      >
-                        Sr
-                      </label>
-                    </div>
-                  )}
-                />
-              </div>
+              {!isEditing && (
+                <div className="flex items-center">
+                  <Controller
+                    name="sr"
+                    control={control}
+                    defaultValue={defaultValues?.sr || ''}
+                    render={({ field }) => (
+                      <div className="flex items-center">
+                        <input
+                          {...field}
+                          id="sr"
+                          type="checkbox"
+                          checked={field.value == '1'} // Or whatever string value you use
+                          onChange={(e) =>
+                            field.onChange(e.target.checked ? '1' : '0')
+                          }
+                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        />
+                        <label
+                          htmlFor="sr"
+                          className="ml-2 block text-sm text-gray-700"
+                        >
+                          Sr
+                        </label>
+                      </div>
+                    )}
+                  />
+                </div>
+              )}
 
               <TextField
                 label="Prix:"
@@ -3468,21 +3434,32 @@ const isButtonDisabled = () => {
                   />
                 </>
               )}
+              {isEditing && (
+                <AutocompleteSelectComponent
+                  label="Mode Financement :"
+                  name="mode_financement"
+                  value={watch('mode_financement')}
+                  required={true}
+                  options={MODE_FINANCE}
+                  onChange={(e) => {
+                    setValue('mode_financement', e);
+                  }}
+                />
+              )}
             </div>
+            {!isEditing && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <AutocompleteSelectComponent
+                  label="Mode Financement :"
+                  name="mode_financement"
+                  value={watch('mode_financement')}
+                  required={true}
+                  options={MODE_FINANCE}
+                  onChange={(e) => {
+                    setValue('mode_financement', e);
+                  }}
+                />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <AutocompleteSelectComponent
-                label="Mode Financement :"
-                name="mode_financement"
-                value={watch('mode_financement')}
-                required={true}
-                options={MODE_FINANCE}
-                onChange={(e) => {
-                  setValue('mode_financement', e);
-                }}
-              />
-
-              {!isEditing && (
                 <>
                   <AutocompleteSelectComponent
                     label="Mode Paiement :"
@@ -3580,7 +3557,7 @@ const isButtonDisabled = () => {
                     height="h-full" // Optionally set height, default is 'h-10'
                   />
                   <div>
-                    <div className="space-y-4">
+                    <div className="space-y-4F">
                       {/* File Input */}
                       <div className="relative">
                         <TextField
@@ -3715,8 +3692,8 @@ const isButtonDisabled = () => {
                     </div>
                   </div>
                 </>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -3774,16 +3751,6 @@ const isButtonDisabled = () => {
           )}
         </div>
       </div>
-      {/*validerfile == true && (
-        <>
-          <Modal isVisible={true} onClose={() => setValiderfile(false)}>
-            <Modal_File
-              onConfirm={handleaddFile}
-              onClose={() => setValiderfile(false)}
-            />
-          </Modal>
-        </>
-      )*/}
     </>
   );
 }

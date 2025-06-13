@@ -19,6 +19,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import LoadingSpin from "@/components/LoadingSpin";
 import PieceJointeViewer from "@/components/PieceJointeViewer";
+import { RESOURCE_URL } from "@/configs/api";
 
 function formatDate(dateStr) {
   if (!dateStr) return "-";
@@ -237,7 +238,7 @@ export default function ReclamationFullPage({ reclamationId }) {
                 Pièce jointe :
               </Typography>
               <PieceJointeViewer
-                url={`http://localhost:8000/Docs/bss_292/reclamations/Capture.PNG`}
+                url={`${RESOURCE_URL.DOCS}/bss_292/reclamations/Capture.PNG`}
                 filename={Details}
               />
             </Box>

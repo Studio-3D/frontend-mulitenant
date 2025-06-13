@@ -334,6 +334,27 @@ export const fetchList_fichier_exist = async (
     setLoading_list(false);
   }
 };
+export const fetchList_fichier_exist_by_Code = async (
+  setFichier,
+  item,
+  code,
+  setLoading_list
+) => {
+  const accessToken = localStorage.getItem('accessToken');
+  setLoading_list(true);
+  try {
+    const res = await axios.get(`${APIURL.ROOTV1}/files_docs_by_code/${item}/${code}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    setFichier(res.data);
+  } catch (erreur) {
+    toast.error(erreur?.response?.data?.message || 'Failed to load files');
+  } finally {
+    setLoading_list(false);
+  }
+};
 
 export const fetchDataByProjet_2 = async (items,datakey, setData, setLoading) => {
   const accessToken = localStorage.getItem('accessToken');

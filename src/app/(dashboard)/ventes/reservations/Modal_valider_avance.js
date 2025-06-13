@@ -100,7 +100,7 @@ export default function Modal_valider_avance({
     })
       .then((res) => {
         setLoading({ ...loading, form: false });
-        if (res.status === 200) {
+        if (res.status == 200) {
           toast.success("La Réservation et l'avance sont Traités avec succès");
           onClose_all();
           localStorage.setItem('load_data_reservation', 1);
