@@ -13,6 +13,9 @@ export function Desistement_Definitif({
   formData,
   accessToken,
   selectedProjet_id,
+  inputListRemb,
+  sum_avances_valides,
+  reservationId
 }) {
   const {
     control,
@@ -39,7 +42,6 @@ export function Desistement_Definitif({
       setValue(`inputList_remb.${index}.${fieldName}`, event.target.files[0]);
     }
   };
-  const inputListRemb = watch('inputList_remb');
   // Fetch dossier data (only for model 1)
   const fetchDossierData = async () => {
     try {
@@ -50,7 +52,7 @@ export function Desistement_Definitif({
         setLoading_dos,
         'reservations',
         selectedProjet_id,
-        watch('reservationId')
+        reservationId
       );
     } catch (error) {
       console.error('Error fetching dossiers:', error);
@@ -112,7 +114,7 @@ export function Desistement_Definitif({
           onChange={(value) => setValue('motif', value)}
         />
       </div>
-      {watch('sum_avances_valides' > 0) && (
+      {sum_avances_valides > 0 && (
         <div className="border-t border-gray-200 py-4">
           <div className="flex flex-row space-x-4">
             <Controller
@@ -174,7 +176,6 @@ export function Desistement_Definitif({
           </div>
         </div>
       )}
-
       {type_remb == 'direct' && (
         <>
           <div className="border-t border-gray-300 my-4"></div>
@@ -615,7 +616,7 @@ export function Desistement_Definitif({
                         onChange={(e) => {
                           const value = e.target.value;
                           setValue('montant_transferer', value);
-                          if (value > watch('sum_avances_valides')) {
+                          if (value > sum_avances_valides) {
                             setInfo(
                               'Le montant transféré ne doit pas dépasser la somme des avances'
                             );
@@ -624,10 +625,9 @@ export function Desistement_Definitif({
                           }
                           setValue(
                             'reste_a_rembourse',
-                            watch('sum_avances_valides') - value
+                            sum_avances_valides - value
                           );
                         }}
-                        
                       />
                       {info && <p style={{ color: 'red' }}>{info}</p>}
                     </div>
@@ -644,7 +644,6 @@ export function Desistement_Definitif({
                         control={control}
                         errors={{}}
                         backendErrors={{}}
-                       
                       />
                     </div>
                   </div>

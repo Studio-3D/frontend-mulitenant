@@ -62,7 +62,6 @@ export function ClientDetailsPage(visiteId) {
     localStorage.setItem('v_id_org', null);
     fetch_visite();
   }, []);
-  useEffect(() => {});
 
   useEffect(() => {
     //Implementing the setInterval method

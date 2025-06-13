@@ -240,8 +240,11 @@ export default function ReclamationFullPage({ reclamationId }) {
                 Pièce jointe :
               </Typography>
               <PieceJointeViewer
+
+
                 url={`${RESOURCE_URL.DOCS}/${selectedSociete?.raison_sociale_concatene || 'default'}_${selectedSociete?.id || 0}/reclamations/${Details.piece_jointe}`}
                 filename={Details.piece_jointe}
+
               />
             </Box>
           )}

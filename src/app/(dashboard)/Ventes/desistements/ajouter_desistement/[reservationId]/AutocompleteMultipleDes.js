@@ -18,17 +18,31 @@ const AutocompleteMultipleDes = ({
   const actualValueKey = valueKey || choiceKey;
   const [inputValue, setInputValue] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [selectedOptions, setSelectedOptions] = useState([]);
 
-  // Initialize with only the actually selected options
-  const [selectedOptions, setSelectedOptions] = useState(() => {
-    return value.map(val => {
-      if (typeof val === 'object') {
-        return options.find(opt => String(opt[actualValueKey]) === String(val[actualValueKey])) || val;
-      }
-      return options.find(opt => String(opt[actualValueKey]) === String(val));
-    }).filter(Boolean);
-  });
+  // Sync with external value changes
+ // Better synchronization with external value changes
+  useEffect(() => {
+    if (!Array.isArray(value)) {
+      setSelectedOptions([]);
+      return;
+    }
 
+    const newSelected = value
+      .map(val => {
+        if (typeof val == 'object') {
+          return options.find(opt => 
+            String(opt[actualValueKey]) === String(val[actualValueKey])
+          ) || val;
+        }
+        return options.find(opt => 
+          String(opt[actualValueKey]) == String(val)
+        );
+      })
+      .filter(Boolean);
+
+    setSelectedOptions(newSelected);
+  }, [value, options, actualValueKey]);
   // Filter options to exclude currently selected ones
   const availableOptions = options.filter(option => 
     !selectedOptions.some(selected => 
@@ -63,19 +77,16 @@ const AutocompleteMultipleDes = ({
   };
 
   const formatDisplay = (opt) => {
-  // If object has client property (nested structure)
-  if (opt.client) {
-    return `${opt.client.nom} ${opt.client.prenom}`;
-  }
-  // If object has direct nom and prenom properties
-  else if (opt.nom && opt.prenom) {
-    return `${opt.nom} ${opt.prenom}`;
-  }
-  // Fallback to choiceKey if provided, or default toString
-  else {
-    return opt[choiceKey] || opt.toString();
-  }
-};
+    if (opt.client) {
+      return `${opt.client.nom} ${opt.client.prenom}`;
+    }
+    else if (opt.nom && opt.prenom) {
+      return `${opt.nom} ${opt.prenom}`;
+    }
+    else {
+      return opt[choiceKey] || opt.toString();
+    }
+  };
 
   return (
     <div className="w-full relative">

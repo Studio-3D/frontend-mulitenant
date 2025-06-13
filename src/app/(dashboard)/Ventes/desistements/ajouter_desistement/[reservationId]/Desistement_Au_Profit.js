@@ -1,16 +1,19 @@
 'use client';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
 import { lien_parentes, type_dst_dp } from '@/configs/enum';
 import TextField from '@/components/Textfield'; // Import the component
-import Autocomplete from '@/components/Autocomplete';
-import { Eye } from 'lucide-react';
 import { InformationCircleIcon } from '@heroicons/react/24/outline';
-import AutocompleteMultiple from '@/components/AutocompleteMultiple';
 import AutocompleteMultipleDes from './AutocompleteMultipleDes';
 import Inputs_des_Profit from './Inputs_des_Profit';
-export function Desistement_Au_Profit({ isEditing, formData }) {
+export function Desistement_Au_Profit({
+  isEditing,
+  formData,
+  desisteurs_testt,
+  desisteurs,
+  desisteutrs_profit_dp_partiell,
+}) {
   const {
     control,
     watch,
@@ -28,6 +31,7 @@ export function Desistement_Au_Profit({ isEditing, formData }) {
   //dp profi co reservataire
   const [profit_dp_co_reser, set_profit_dp_co_reser] = useState([]);
   const [clients_profit_de, set_clients_profit_de] = useState();
+  const [autocompleteKey, setAutocompleteKey] = useState(0);
 
   const [desisteur_dp_proche, set_desisteur_dp_proche] = useState([]);
 
@@ -42,9 +46,6 @@ export function Desistement_Au_Profit({ isEditing, formData }) {
     totalPercentage: false,
   });
   const type_dp = watch('type_dp');
-  const desisteurs_testt = watch('desisteurs_testt');
-  const desisteurs = watch('desisteurs');
-  const desisteutrs_profit_dp_partiel = watch('desisteutrs_profit_dp_partiel');
   const [errors_dp_co, setErrors_dp_co] = useState({
     new_pourcentage: {},
     totalPercentage: '',
@@ -57,7 +58,30 @@ export function Desistement_Au_Profit({ isEditing, formData }) {
   //dp_co
   const [nb_aqu_part, set_nb_aqu_part] = useState(0);
   const [new_clients_dp_partiel, set_new_clients_dp_partiel] = useState([]);
+  const desisteutrs_profit_dp_partiel =
+    watch('desisteutrs_profit_dp_partiel') || [];
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
+  useEffect(() => {
+    if (
+      desisteutrs_profit_dp_partiell &&
+      desisteutrs_profit_dp_partiell.length > 0 &&
+      !isDataLoaded
+    ) {
+      setValue('desisteutrs_profit_dp_partiel', desisteutrs_profit_dp_partiell);
+      setIsDataLoaded(true);
+    }
+  }, [desisteutrs_profit_dp_partiell, isDataLoaded, setValue]);
 
+  // Reset when type_dp changes
+  useEffect(() => {
+    if (
+      type_dp == 3 &&
+      desisteutrs_profit_dp_partiell &&
+      desisteutrs_profit_dp_partiell.length > 0
+    ) {
+      setValue('desisteutrs_profit_dp_partiel', desisteutrs_profit_dp_partiell);
+    }
+  }, [type_dp, desisteutrs_profit_dp_partiell, setValue]);
   const [errors_new_dp_part, setErrors_new_dp_part] = useState({
     telephone: false,
     percentage: false,
@@ -272,10 +296,9 @@ export function Desistement_Au_Profit({ isEditing, formData }) {
     console.log('type_dp changed, resetting all fields');
 
     // Clear ALL dynamic fields regardless of current state
-    const clearAllDynamicFields = () => {
+    /*const clearAllDynamicFields = () => {
       // Clear inputList fields (type_dp 1)
       for (let i = 0; i < 20; i++) {
-        // Use a high enough number to cover all possible fields
         setValue(`cin_${i}`, '');
         setValue(`nom_${i}`, '');
         setValue(`prenom_${i}`, '');
@@ -294,18 +317,19 @@ export function Desistement_Au_Profit({ isEditing, formData }) {
         setValue(`prenom_${i}`, '');
         setValue(`new_pourcentage_${i}`, '');
       }
-    };
+    };*/
 
     // First clear all fields
-    clearAllDynamicFields();
+    // clearAllDynamicFields();
 
     // Then reset all states
     set_nb_aqu(0);
     setinputList([]);
     set_nb_aqu_part(0);
     set_new_clients_dp_partiel([]);
-    set_desisteur_dp_proche([]);
+    set_desisteur_dp_proche([]); // Clear selected desisteurs
     set_profit_dp_co_reser([]);
+    setValue('desisteur_dp_proche_co', []); // Clear form value for desisteurs
 
     // Reset all form array values
     setValue('inputList', []);
@@ -314,7 +338,6 @@ export function Desistement_Au_Profit({ isEditing, formData }) {
     setValue('nb_aquereurs_dp', '');
     setValue('nb_aquereurs_dp_proche', '');
     setValue('profit_dp_co_reser', []);
-    setValue('desisteur_dp_proche_co', []);
     setValue('somme_percent', 0);
     setValue('somme_percent_dp_patiel_old', 0);
     setValue('somme_percent_dp_patiel_new', 0);
@@ -339,7 +362,9 @@ export function Desistement_Au_Profit({ isEditing, formData }) {
       pourcentage_: {},
       totalPercentage: '',
     });
-  }, [type_dp]); // Only depend on type_dp
+    // Force remount of autocomplete by changing its key
+    setAutocompleteKey((prev) => prev + 1);
+  }, [type_dp, setValue]); // Add setValue to dependencies
   return (
     <div className="p-6">
       {isEditing && (
@@ -363,6 +388,8 @@ export function Desistement_Au_Profit({ isEditing, formData }) {
             set_nb_aqu_part(0);
             set_new_clients_dp_partiel([]);
             setValue('type_dp', value);
+            setValue('desisteur_dp_proche_co', []); // Clear the selected desisteurs
+            set_desisteur_dp_proche([]); // Clear local state
           }}
         />
       </div>
@@ -383,12 +410,13 @@ export function Desistement_Au_Profit({ isEditing, formData }) {
                   rules={{ required: 'Ce champ est requis' }}
                   render={({ field }) => (
                     <AutocompleteMultipleDes
+                      key={`desisteur-${autocompleteKey}`} // This forces complete remount
                       label=""
-                      name="desisteurs"
+                      name="desisteur_dp_proche_co"
                       required
+                      value={field || []}
                       options={desisteurs}
                       choiceKey="id" // Used for unique identification
-                      value={field.value || []}
                       onChange={(newValue) => {
                         let totalPercent = 0;
                         const selectedDesisteurs = [];
@@ -610,12 +638,13 @@ export function Desistement_Au_Profit({ isEditing, formData }) {
                           rules={{ required: 'Ce champ est requis' }}
                           render={({ field }) => (
                             <AutocompleteMultipleDes
+                              key={`pro-${autocompleteKey}`} // This forces complete remount
                               label=""
-                              name="desisteurs"
+                              name="client_pro"
                               required
                               options={clients_profit_de}
                               choiceKey="id" // Used for unique identification
-                              value={field.value || []}
+                              value={field || []}
                               onChange={(newValue) => {
                                 const selectedProfit = newValue.map((item) => ({
                                   id: item.id,
@@ -798,7 +827,6 @@ export function Desistement_Au_Profit({ isEditing, formData }) {
                         fullWidth
                       />
                     </div>
-
                     {/* Pourcentage */}
                     <div className="md:col-span-3">
                       <Inputs_des_Profit
