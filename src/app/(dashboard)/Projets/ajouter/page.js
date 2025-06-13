@@ -166,7 +166,7 @@ export default function AddProjectPage() {
         max_etages: Number(formState.max_etages),
         
         // IMPORTANT: Stringify all arrays
-        selectedUsers: JSON.stringify(formState.selectedUsers.map(user => user.localId || user.id)),
+        selectedUsers: JSON.stringify(formState.selectedUsers.map(user => user.id)),
         
         donneesTypeBien: JSON.stringify((formState.biens || []).map(x => x.value)),
         donneesVue: JSON.stringify((formState.vues || []).map(x => x.value)),

@@ -29,15 +29,10 @@ const Table = ({
   onExport = null,
   enableExport = false,
   enableImport = false,
-  filterComponent = null,
-  // New props for expandable rows
-  renderExpandedRow = null,
-  onRowClick = null,
-  rowClassName = () => "",
-  expandedRows = {},
-  showPagination = true,
-  showSearch = true,
-  compact = false, // New prop for compact nested tables
+  filterComponent = null, 
+  enableSearch = true,
+  onImportClick = () => {},
+
 }) => {
   const [showModal, setShowModal] = useState(null);
   const [localSearchTerm, setLocalSearchTerm] = useState('');
@@ -112,19 +107,17 @@ const Table = ({
             </button>
           )}
 
-          {showSearch && (
-            <div className="flex-1 sm:flex-none flex items-center border border-gray-300 rounded-lg p-1.5 bg-transparent gap-2 w-full sm:w-[300px]">
-              <Search className="w-6 h-6" />
-              <input
-                className="bg-transparent outline-none !text-gray-600 w-full"
-                type="text"
-                placeholder="Rechercher..."
-                value={localSearchTerm}
-                onChange={(e) => setLocalSearchTerm(e.target.value)}
-                aria-label="Rechercher"
-              />
-            </div>
-          )}
+          {enableSearch &&<div className="flex-1 sm:flex-none flex items-center border border-gray-300 rounded-lg p-1.5 bg-transparent gap-2 w-full sm:w-[300px]">
+            <Search className="w-6 h-6" />
+            <input
+              className="bg-transparent outline-none text-gray-600 w-full"
+              type="text"
+              placeholder="Rechercher..."
+              value={localSearchTerm}
+              onChange={(e) => setLocalSearchTerm(e.target.value)}
+              aria-label="Rechercher"
+            />
+          </div>}
         </div>
 
         <div className="flex gap-2 items-center">
@@ -150,8 +143,8 @@ const Table = ({
           {enableImport && (
             <button
               className="flex gap-1 items-center bg-[#231651] text-white font-medium rounded-lg px-3 py-1.5"
-              onClick={() => setShowModal_Import(true)}
-            >
+              onClick={onImportClick}            
+              >
               <Upload className="w-5 h-5" />
               <span>Importer</span>
             </button>

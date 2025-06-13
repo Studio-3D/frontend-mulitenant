@@ -6,6 +6,7 @@ import BlocForm from "@/components/blocs/BlocForm";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { APIURL } from "@/configs/api";
+import LoadingSpin from '@/components/LoadingSpin';
 
 export default function AddBlocPage() {
   const { user } = useAuth();
@@ -57,8 +58,8 @@ export default function AddBlocPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpin /> 
       </div>
     );
   }
@@ -73,17 +74,7 @@ export default function AddBlocPage() {
   }
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold">Ajouter un bloc</h1>
-        {projet && (
-          <p className="text-gray-500">
-            Projet: <span className="font-medium">{projet.nom}</span>
-          </p>
-        )}
-      </div>
-      
+    
       <BlocForm projetId={projetId} trancheId={trancheId} />
-    </div>
   );
 }
