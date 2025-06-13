@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Link from "next/link";
+import { APIURL } from "../../../../configs/api";
 
 export default function CreateSociete() {
   const [societe, setSociete] = useState({
@@ -37,7 +38,7 @@ export default function CreateSociete() {
       
       // Create the societe (this will trigger database creation)
       const response = await axios.post(
-        "http://localhost:8000/api/societe",
+        APIURL.SOCIETE,
         societe,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -66,13 +67,13 @@ export default function CreateSociete() {
       </div>
 
       {error && (
-        <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
+        <div className="bg-red-100 border-l-4 border-red-500 !text-red-700 p-4 mb-4" role="alert">
           <p>{error}</p>
         </div>
       )}
 
       {success && (
-        <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert">
+        <div className="bg-green-100 border-l-4 border-green-500 !text-green-700 p-4 mb-4" role="alert">
           <p>Société créée avec succès! Base de données en cours de création...</p>
         </div>
       )}
@@ -80,7 +81,7 @@ export default function CreateSociete() {
       <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow-md">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="mb-4">
-            <label className="block text-gray-700 mb-2" htmlFor="nom_contact">Nom du contact: <span className="text-red-500">*</span></label>
+            <label className="block !text-gray-700 mb-2" htmlFor="nom_contact">Nom du contact: <span className="text-red-500">*</span></label>
             <input
               type="text"
               id="nom_contact"
@@ -93,7 +94,7 @@ export default function CreateSociete() {
           </div>
           
           <div className="mb-4">
-            <label className="block text-gray-700 mb-2" htmlFor="prenom_contact">Prénom du contact: <span className="text-red-500">*</span></label>
+            <label className="block !text-gray-700 mb-2" htmlFor="prenom_contact">Prénom du contact: <span className="text-red-500">*</span></label>
             <input
               type="text"
               id="prenom_contact"
@@ -106,7 +107,7 @@ export default function CreateSociete() {
           </div>
 
           <div className="mb-4">
-            <label className="block text-gray-700 mb-2" htmlFor="raison_sociale">Raison Sociale: <span className="text-red-500">*</span></label>
+            <label className="block !text-gray-700 mb-2" htmlFor="raison_sociale">Raison Sociale: <span className="text-red-500">*</span></label>
             <input
               type="text"
               id="raison_sociale"
@@ -119,7 +120,7 @@ export default function CreateSociete() {
           </div>
           
           <div className="mb-4">
-            <label className="block text-gray-700 mb-2" htmlFor="ice">ICE:</label>
+            <label className="block !text-gray-700 mb-2" htmlFor="ice">ICE:</label>
             <input
               type="text"
               id="ice"
@@ -131,7 +132,7 @@ export default function CreateSociete() {
           </div>
           
           <div className="mb-4">
-            <label className="block text-gray-700 mb-2" htmlFor="if">IF:</label>
+            <label className="block !text-gray-700 mb-2" htmlFor="if">IF:</label>
             <input
               type="text"
               id="if"
@@ -143,7 +144,7 @@ export default function CreateSociete() {
           </div>
           
           <div className="mb-4">
-            <label className="block text-gray-700 mb-2" htmlFor="rc">RC:</label>
+            <label className="block !text-gray-700 mb-2" htmlFor="rc">RC:</label>
             <input
               type="text"
               id="rc"
@@ -155,7 +156,7 @@ export default function CreateSociete() {
           </div>
           
           <div className="mb-4">
-            <label className="block text-gray-700 mb-2" htmlFor="adresse">Adresse:</label>
+            <label className="block !text-gray-700 mb-2" htmlFor="adresse">Adresse:</label>
             <input
               type="text"
               id="adresse"
@@ -167,7 +168,7 @@ export default function CreateSociete() {
           </div>
           
           <div className="mb-4">
-            <label className="block text-gray-700 mb-2" htmlFor="telephone">Téléphone:</label>
+            <label className="block !text-gray-700 mb-2" htmlFor="telephone">Téléphone:</label>
             <input
               type="text"
               id="telephone"
@@ -179,7 +180,7 @@ export default function CreateSociete() {
           </div>
           
           <div className="mb-4">
-            <label className="block text-gray-700 mb-2" htmlFor="email">Email:</label>
+            <label className="block !text-gray-700 mb-2" htmlFor="email">Email:</label>
             <input
               type="email"
               id="email"
@@ -191,7 +192,7 @@ export default function CreateSociete() {
           </div>
           
           <div className="mb-4">
-            <label className="block text-gray-700 mb-2" htmlFor="site_web">Site Web:</label>
+            <label className="block !text-gray-700 mb-2" htmlFor="site_web">Site Web:</label>
             <input
               type="text"
               id="site_web"
@@ -213,7 +214,7 @@ export default function CreateSociete() {
           </button>
           <Link 
             href="/Societes"
-            className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+            className="px-4 py-2 bg-gray-300 !text-gray-800 rounded hover:bg-gray-400"
           >
             Annuler
           </Link>

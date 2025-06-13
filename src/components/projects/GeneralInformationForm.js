@@ -13,7 +13,7 @@ export default function GeneralInformationForm({ state, setState, onNext, onBack
         {/* Left Column */}
         {/* Nom du projet */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium !text-gray-700 mb-1">
             Nom du projet <span className="text-red-500">*</span>
           </label>
           <input
@@ -25,13 +25,13 @@ export default function GeneralInformationForm({ state, setState, onNext, onBack
             onChange={(e) => handleChange("nom", e.target.value)}
             required
           />
-          {errors?.nom && <p className="mt-1 text-sm text-red-600">{errors.nom[0]}</p>}
+          {errors?.nom && <p className="mt-1 text-sm !text-red-600">{errors.nom[0]}</p>}
         </div>
 
         {/* Right Column */}
         {/* Code du projet */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium !text-gray-700 mb-1">
             Code du projet <span className="text-red-500">*</span>
           </label>
           <input
@@ -43,12 +43,12 @@ export default function GeneralInformationForm({ state, setState, onNext, onBack
             onChange={(e) => handleChange("code", e.target.value)}
             required
           />
-          {errors?.code && <p className="mt-1 text-sm text-red-600">{errors.code[0]}</p>}
+          {errors?.code && <p className="mt-1 text-sm !text-red-600">{errors.code[0]}</p>}
         </div>
 
         {/* Address */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium !text-gray-700 mb-1">
             Adresse <span className="text-red-500">*</span>
           </label>
           <input
@@ -60,12 +60,12 @@ export default function GeneralInformationForm({ state, setState, onNext, onBack
             onChange={(e) => handleChange("adresse", e.target.value)}
             required
           />
-          {errors?.adresse && <p className="mt-1 text-sm text-red-600">{errors.adresse[0]}</p>}
+          {errors?.adresse && <p className="mt-1 text-sm !text-red-600">{errors.adresse[0]}</p>}
         </div>
 
         {/* Land Title */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Titre foncier</label>
+          <label className="block text-sm font-medium !text-gray-700 mb-1">Titre foncier</label>
           <input
             type="text"
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -76,7 +76,7 @@ export default function GeneralInformationForm({ state, setState, onNext, onBack
 
         {/* Construction Authorization Date */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium !text-gray-700 mb-1">
             Date autorisation construction <span className="text-red-500">*</span>
           </label>
           <input
@@ -90,7 +90,7 @@ export default function GeneralInformationForm({ state, setState, onNext, onBack
 
         {/* Habitation Permit Date */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Date permis habiter</label>
+          <label className="block text-sm font-medium !text-gray-700 mb-1">Date permis habiter</label>
           <input
             type="date"
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -101,7 +101,7 @@ export default function GeneralInformationForm({ state, setState, onNext, onBack
 
         {/* Land Surface */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium !text-gray-700 mb-1">
             Surface terrain (m²) <span className="text-red-500">*</span>
           </label>
           <input
@@ -118,7 +118,7 @@ export default function GeneralInformationForm({ state, setState, onNext, onBack
 
         {/* Acquisition Price */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium !text-gray-700 mb-1">
             Prix acquisition <span className="text-red-500">*</span>
           </label>
           <input
@@ -135,7 +135,7 @@ export default function GeneralInformationForm({ state, setState, onNext, onBack
 
         {/* Reservation Cancellation Limit */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium !text-gray-700 mb-1">
             Limite annulation réservation (jours) <span className="text-red-500">*</span>
           </label>
           <input
@@ -150,7 +150,7 @@ export default function GeneralInformationForm({ state, setState, onNext, onBack
 
         {/* Reservation Extension */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Prolongation réservation (jours)</label>
+          <label className="block text-sm font-medium !text-gray-700 mb-1">Prolongation réservation (jours)</label>
           <input
             type="number"
             min="0"
@@ -162,7 +162,7 @@ export default function GeneralInformationForm({ state, setState, onNext, onBack
 
         {/* Max Floors - Moved to a single column at the bottom */}
         <div className="md:col-span-1">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium !text-gray-700 mb-1">
             Nombre d'étages maximum <span className="text-red-500">*</span>
           </label>
           <input
@@ -182,7 +182,7 @@ export default function GeneralInformationForm({ state, setState, onNext, onBack
         <button
           type="button"
           onClick={onBack}
-          className="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium !text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
           Précédent
         </button>

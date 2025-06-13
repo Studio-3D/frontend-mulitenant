@@ -228,10 +228,10 @@ const fetchPrestataires= async (service_id) => {
     router.push(`${ENDPOINTS.ReclamationsSav}?id=${id}&action=edit`);
 
  const statut = {
-    1: { code: 1, label: 'En Attente', color: 'bg-blue-100 text-blue-800' },
-    2: { code: 2, label: 'En Cours', color: 'bg-blue-100 text-blue-800' },
-    3: { code: 3, label: 'Resolu', color: 'bg-green-100 text-green-800' },
-    4: { code: 4, label: 'Non Resolu', color: 'bg-red-100 text-red-800' },
+    1: { code: 1, label: 'En Attente', color: 'bg-blue-100 !text-blue-800' },
+    2: { code: 2, label: 'En Cours', color: 'bg-blue-100 !text-blue-800' },
+    3: { code: 3, label: 'Resolu', color: 'bg-green-100 !text-green-800' },
+    4: { code: 4, label: 'Non Resolu', color: 'bg-red-100 !text-red-800' },
   };
 
   
@@ -292,17 +292,17 @@ const fetchPrestataires= async (service_id) => {
       render: (row) => (
         <div className="flex gap-3 items-center">
           <Eye
-            className="w-4 h-4 text-blue-500 hover:text-yellow-700 cursor-pointer"
+            className="w-4 h-4 !text-blue-500 hover:text-yellow-700 cursor-pointer"
             onClick={() => handleShow(row.id)}
           />
           <Pencil
-            className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
+            className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
             onClick={() => handleEdit(row.id)}
           />
           {row.statut_raw === 1 && (
             <>
               <Wrench
-                className="w-5 h-5 text-red-500 hover:text-red-700 cursor-pointer"
+                className="w-5 h-5 !text-red-500 hover:text-red-700 cursor-pointer"
                 title="Traiter"
                 onClick={() => openTraitement(row, row.bien)}
               />
@@ -311,7 +311,7 @@ const fetchPrestataires= async (service_id) => {
           {row.statut_raw === 2 && (
             <>
             <Check
-              className="w-4 h-4 text-green-600 hover:text-green-800 cursor-pointer"
+              className="w-4 h-4 !text-green-600 hover:text-green-800 cursor-pointer"
               title="Résoudre"
               onClick={() => openResolution(row.id, row.bien)}
             />
@@ -320,7 +320,7 @@ const fetchPrestataires= async (service_id) => {
           )}
 
           <Trash2
-            className="w-4 h-4 text-red-1000 hover:text-red-700 cursor-pointer"
+            className="w-4 h-4 !text-red-1000 hover:text-red-700 cursor-pointer"
             onClick={() => {
               setSelectedId(row.id);
               setShowDeleteModal(true);

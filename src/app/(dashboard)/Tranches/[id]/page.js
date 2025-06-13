@@ -293,14 +293,14 @@ export default function TrancheDetailsPage() {
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="text-center p-6 border-b border-gray-200">
               <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-green-600">
+                <span className="text-2xl font-bold !text-green-600">
                   {tranche.nom ? tranche.nom.charAt(0).toUpperCase() : "T"}
                 </span>
               </div>
               <h1 className="text-xl font-semibold">{tranche.nom}</h1>
               
               {tranche.projet && (
-                <div className="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm mt-2">
+                <div className="inline-block px-3 py-1 bg-blue-100 !text-blue-700 rounded-full text-sm mt-2">
                   {tranche.projet.nom}
                 </div>
               )}
@@ -314,27 +314,27 @@ export default function TrancheDetailsPage() {
                     <span className="text-xl font-medium">
                       {countsLoading ? "0" : counts.blocs}
                     </span>
-                    <span className="text-sm text-gray-500">Blocs</span>
+                    <span className="text-sm !text-gray-500">Blocs</span>
                   </div>
                 </div>
                 
                 <div className="p-2">
                   <div className="flex flex-col items-center">
-                    <Building className="w-6 h-6 text-red-500 mb-1" />
+                    <Building className="w-6 h-6 !text-red-500 mb-1" />
                     <span className="text-xl font-medium">
                       {countsLoading ? "0" : counts.immeubles}
                     </span>
-                    <span className="text-sm text-gray-500">Immeubles</span>
+                    <span className="text-sm !text-gray-500">Immeubles</span>
                   </div>
                 </div>
                 
                 <div className="p-2">
                   <div className="flex flex-col items-center">
-                    <Home className="w-6 h-6 text-blue-500 mb-1" />
+                    <Home className="w-6 h-6 !text-blue-500 mb-1" />
                     <span className="text-xl font-medium">
                       {countsLoading ? "0" : counts.biens}
                     </span>
-                    <span className="text-sm text-gray-500">Biens</span>
+                    <span className="text-sm !text-gray-500">Biens</span>
                   </div>
                 </div>
               </div>

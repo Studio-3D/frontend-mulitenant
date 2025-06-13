@@ -67,8 +67,10 @@ export const fetchData_table_by_projet = async (
   setError('');
 
   const selectedProjet = JSON.parse(localStorage.getItem('selectedProjet')) || {};
-  
-  // If no project is selected, return early
+  const urlsSansProjet = ['ReclamationsClients', 'projets'];
+
+// Si l'entité nécessite un projet sélectionné (pas dans urlsSansProjet), on vérifie selectedProjet
+if (!urlsSansProjet.includes(entity.API_URL)) {
   if (!selectedProjet || !selectedProjet.id) {
     setError('Veuillez sélectionner un projet');
     setLoading(false);
@@ -76,6 +78,7 @@ export const fetchData_table_by_projet = async (
     setTotalRows(0);
     return;
   }
+}
 
   try {
     const params = {
@@ -85,9 +88,11 @@ export const fetchData_table_by_projet = async (
     };
 
     // URL conditionnelle selon l'entité
-    const baseUrl = entity.API_URL === 'ReclamationsClients'
-      ? `${APIURL.ROOT}/v1/${entity.API_URL}/`  // URL sans projet
-      : `${APIURL.ROOT}/v1/projets/${selectedProjet?.id}/${entity.API_URL}/`; // URL avec projet
+    const urlsSansProjet = ['ReclamationsClients', 'projets'];
+
+    const baseUrl = urlsSansProjet.includes(entity.API_URL)
+      ? `${APIURL.ROOT}/v1/${entity.API_URL}/`
+      : `${APIURL.ROOT}/v1/projets/${selectedProjet?.id}/${entity.API_URL}/`;
 
     const response = await axios.get(baseUrl, {
       headers: {
@@ -400,3 +405,25 @@ export const data_by_projet_and_params = async (entityName, setData, setLoading,
     setLoading(false)
   }
 }
+
+export const fetchDataByProjet_params = async (items, setData, setLoading, params = {}) => {
+  const accessToken = localStorage.getItem('accessToken');
+  const selectedProjet = JSON.parse(localStorage.getItem('selectedProjet'));
+  setLoading(true);
+  
+  try {
+    const response = await axios.get(`${APIURL.ROOT}/v1/projets/${selectedProjet.id}/${items}/`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      },
+      params: params
+    });
+
+    setLoading(false);
+    setData(response.data[items]);
+    
+  } catch (error) {
+    setLoading(false);
+    console.error('Error fetching data:', error);
+  }
+};

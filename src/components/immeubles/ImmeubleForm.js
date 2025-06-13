@@ -346,7 +346,7 @@ export default function ImmeubleForm({ id, projetId, blocId }) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Nom */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               Nom <span className="text-red-500">*</span>
             </label>
             <div>
@@ -360,7 +360,7 @@ export default function ImmeubleForm({ id, projetId, blocId }) {
                 } px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
               />
               {(validationErrors.nom || backendErrors.nom) && (
-                <p className="mt-1 text-sm text-red-500">
+                <p className="mt-1 text-sm !text-red-500">
                   {validationErrors.nom || (backendErrors.nom && backendErrors.nom[0])}
                 </p>
               )}
@@ -369,7 +369,7 @@ export default function ImmeubleForm({ id, projetId, blocId }) {
 
           {/* Tranche selection dropdown */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               Tranche <span className="text-red-500">*</span>
             </label>
             
@@ -379,7 +379,7 @@ export default function ImmeubleForm({ id, projetId, blocId }) {
                 <span className="text-gray-500 text-sm">Chargement des tranches...</span>
               </div>
             ) : tranches.length === 0 ? (
-              <div className="w-full rounded-md border border-yellow-300 bg-yellow-50 px-3 py-2 text-yellow-700 text-sm">
+              <div className="w-full rounded-md border border-yellow-300 bg-yellow-50 px-3 py-2 !text-yellow-700 text-sm">
                 Aucune tranche disponible pour ce projet. Veuillez créer une tranche d'abord.
               </div>
             ) : (
@@ -407,7 +407,7 @@ export default function ImmeubleForm({ id, projetId, blocId }) {
                 )}
                 
                 {(validationErrors.tranche_id || backendErrors.tranche_id) && (
-                  <p className="mt-1 text-sm text-red-500">
+                  <p className="mt-1 text-sm !text-red-500">
                     {validationErrors.tranche_id || (backendErrors.tranche_id && backendErrors.tranche_id[0])}
                   </p>
                 )}
@@ -417,7 +417,7 @@ export default function ImmeubleForm({ id, projetId, blocId }) {
 
           {/* Bloc selection - Only enabled if a tranche is selected */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               Bloc <span className="text-red-500">*</span>
             </label>
             
@@ -427,11 +427,11 @@ export default function ImmeubleForm({ id, projetId, blocId }) {
                 <span className="text-gray-500 text-sm">Chargement des blocs...</span>
               </div>
             ) : !formData.tranche_id ? (
-              <div className="w-full rounded-md border border-gray-300 px-3 py-2 bg-gray-50 text-gray-500 text-sm">
+              <div className="w-full rounded-md border border-gray-300 px-3 py-2 bg-gray-50 !text-gray-500 text-sm">
                 Veuillez d'abord sélectionner une tranche
               </div>
             ) : filteredBlocs.length === 0 ? (
-              <div className="w-full rounded-md border border-yellow-300 bg-yellow-50 px-3 py-2 text-yellow-700 text-sm">
+              <div className="w-full rounded-md border border-yellow-300 bg-yellow-50 px-3 py-2 !text-yellow-700 text-sm">
                 Aucun bloc disponible pour cette tranche. Veuillez créer un bloc d'abord.
               </div>
             ) : (
@@ -459,7 +459,7 @@ export default function ImmeubleForm({ id, projetId, blocId }) {
                 )}
                 
                 {(validationErrors.bloc_id || backendErrors.bloc_id) && (
-                  <p className="mt-1 text-sm text-red-500">
+                  <p className="mt-1 text-sm !text-red-500">
                     {validationErrors.bloc_id || (backendErrors.bloc_id && backendErrors.bloc_id[0])}
                   </p>
                 )}
@@ -469,7 +469,7 @@ export default function ImmeubleForm({ id, projetId, blocId }) {
 
           {/* Titre foncier */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               Titre foncier
             </label>
             <input
@@ -483,7 +483,7 @@ export default function ImmeubleForm({ id, projetId, blocId }) {
 
           {/* Nombre de biens */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               Nombre de biens
             </label>
             <input
@@ -500,7 +500,7 @@ export default function ImmeubleForm({ id, projetId, blocId }) {
         <div className="flex justify-end space-x-4 pt-4">
           <Link
             href={selectedProjet?.id ? `/Projets/${selectedProjet.id}?tab=immeubles` : "/Projets"}
-            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium !text-gray-700 bg-white hover:bg-gray-50"
           >
             Annuler
           </Link>
@@ -508,7 +508,7 @@ export default function ImmeubleForm({ id, projetId, blocId }) {
           <button
             type="button"
             onClick={handleClear}
-            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium !text-gray-700 bg-white hover:bg-gray-50"
           >
             Vider
           </button>

@@ -66,6 +66,7 @@ export const ReservationHeader = ({ reservationData }) => {
             <span className="text-gray-600">
               Dernière mise à jour: {lastUpdated}
             </span>
+
           </div>
         </div>
         {reservation.statut == 2 && (
@@ -112,6 +113,7 @@ export const ReservationHeader = ({ reservationData }) => {
             <p className="text-lg font-semibold">
               {reservation?.historiques?.length || 0}
             </p>
+
           </div>
         </div>
       </div>

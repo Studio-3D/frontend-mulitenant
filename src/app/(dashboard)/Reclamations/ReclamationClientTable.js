@@ -160,10 +160,10 @@ const openTraitement = (row) => {
   
  
  const statut = {
-    1: { code: 1, label: 'En Attente', color: 'bg-blue-100 text-blue-800' },
-    2: { code: 2, label: 'En Cours', color: 'bg-blue-100 text-blue-800' },
-    3: { code: 3, label: 'Resolu', color: 'bg-green-100 text-green-800' },
-    4: { code: 4, label: 'Non Resolu', color: 'bg-red-100 text-red-800' },
+    1: { code: 1, label: 'En Attente', color: 'bg-blue-100 !text-blue-800' },
+    2: { code: 2, label: 'En Cours', color: 'bg-blue-100 !text-blue-800' },
+    3: { code: 3, label: 'Resolu', color: 'bg-green-100 !text-green-800' },
+    4: { code: 4, label: 'Non Resolu', color: 'bg-red-100 !text-red-800' },
   };
 
   
@@ -234,10 +234,10 @@ const openTraitement = (row) => {
   label: 'Statut',
   render: (row) => {
     const etatStyles = {
-      0: "bg-blue-200 text-blue-800",     // En Attente
-      1: "bg-yellow-200 text-yellow-800", // En cours
-      2: "bg-green-200 text-green-800",   // Traité
-      3: "bg-red-200 text-red-800",       // Non traité
+      0: "bg-blue-200 !text-blue-800",     // En Attente
+      1: "bg-yellow-200 !text-yellow-800", // En cours
+      2: "bg-green-200 !text-green-800",   // Traité
+      3: "bg-red-200 !text-red-800",       // Non traité
     };
 
     const etatLabels = {
@@ -249,7 +249,7 @@ const openTraitement = (row) => {
 
     return (
       <span
-        className={`px-2 py-1 rounded text-sm font-semibold ${etatStyles[row.etat] || "bg-gray-200 text-gray-800"}`}
+        className={`px-2 py-1 rounded text-sm font-semibold ${etatStyles[row.etat] || "bg-gray-200 !text-gray-800"}`}
       >
         {etatLabels[row.etat] || "Inconnu"}
       </span>
@@ -269,12 +269,12 @@ const openTraitement = (row) => {
 >
 
       <Eye
-        className="w-4 h-4 text-blue-500 hover:text-yellow-700 cursor-pointer"
+        className="w-4 h-4 !text-blue-500 hover:text-yellow-700 cursor-pointer"
         onClick={() => handleShow(row)}
       />
         {row.etat == 0 && (
           <Wrench
-            className="w-5 h-5 text-red-500 hover:text-red-700 cursor-pointer"
+            className="w-5 h-5 !text-red-500 hover:text-red-700 cursor-pointer"
             title="Traiter"
             onClick={() => {
               setDialogType("traiter_client");
@@ -285,7 +285,7 @@ const openTraitement = (row) => {
         {row.etat == 1 && (
           <>
           <Check
-            className="w-4 h-4 text-green-600 hover:text-green-800 cursor-pointer"
+            className="w-4 h-4 !text-green-600 hover:text-green-800 cursor-pointer"
             title="Résoudre"
             onClick={() => {
               setDialogType("resoudre_client");

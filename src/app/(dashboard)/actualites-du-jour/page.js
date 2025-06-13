@@ -8,22 +8,24 @@ import { toast } from 'react-hot-toast';
 import ProjetSelector from '@/components/ProjetSelector';
 
 // Components
-import VisitesCard from './components/VisitesCard';
-import AvancesCard from './components/AvancesCard';
-import MeetingCard from './components/MeetingCard';
-import RemboursementsCard from './components/RemboursementsCard';
-import DesistementsCard from './components/DesistementsCard';
-import StatCard from './components/StatCard';
-import FilterDialog from './components/FilterDialog';
+import VisitesCard from '@/components/actualites/VisitesCard';
+import MeetingCalendar from '@/components/actualites/MeetingCalendar'; // Replace MeetingCard with MeetingCalendar
+import RemboursementsCard from '@/components/actualites/RemboursementsCard';
+import DesistementsCard from '@/components/actualites/DesistementsCard';
+import Modal from '@/components/Modal';
+import VentesCard from '@/components/actualites/VentesCard';
 
 export default function ActualitesPage() {
   const { selectedProjet } = useProjet();
   const [loading, setLoading] = useState(true);
-  const [showFilterDialog, setShowFilterDialog] = useState(false);
   const [dateRange, setDateRange] = useState({ from: null, to: null });
   const [commercialId, setCommercialId] = useState('tous');
   const [commercialName, setCommercialName] = useState('Tous les Commerciaux');
   const [filterActive, setFilterActive] = useState(false);
+  const [commercials, setCommercials] = useState([]);
+  const [loadingCommercials, setLoadingCommercials] = useState(false);
+  const [showDateFilterDialog, setShowDateFilterDialog] = useState(false);
+  const [dateFilterActive, setDateFilterActive] = useState(false);
 
   // Data states
   const [visites, setVisites] = useState([]);
@@ -38,6 +40,8 @@ export default function ActualitesPage() {
   const [sumMontantAAjouter, setSumMontantAAjouter] = useState(0);
   const [visitesLastDays, setVisitesLastDays] = useState(0);
   const [avancesLastDays, setAvancesLastDays] = useState(0);
+  const [ventes, setVentes] = useState([]);
+  const [sumVentes, setSumVentes] = useState(0);
 
   const mockData = {
     visites: [10, 5, 3, 8, 12, 6, 2, 4],
@@ -137,7 +141,31 @@ export default function ActualitesPage() {
     sum_penalites: 15000,
     sum_mont_a_ajouter: 75000,
     nb_visite_last_5_days: 15,
-    avances_last_5_days: 250000
+    avances_last_5_days: 250000,
+    ventes: [
+      { 
+        propriete_dite_bien: "Villa Premium V101", 
+        montant: 2500000, 
+        tranche_nom: "Tranche 1", 
+        bloc_nom: "Bloc A", 
+        immeuble_nom: null 
+      },
+      { 
+        propriete_dite_bien: "Appartement Deluxe A202", 
+        montant: 1200000, 
+        tranche_nom: "Tranche 2", 
+        bloc_nom: "Bloc B", 
+        immeuble_nom: "Imm 2" 
+      },
+      { 
+        propriete_dite_bien: "Studio S505", 
+        montant: 750000, 
+        tranche_nom: "Tranche 1", 
+        bloc_nom: "Bloc C", 
+        immeuble_nom: "Imm 5" 
+      }
+    ],
+    sum_ventes: 4450000,
   };
 
   // Get user information
@@ -147,6 +175,64 @@ export default function ActualitesPage() {
   useEffect(() => {
     console.log("Current user:", user);
   }, [user]);
+
+  // Effect to fetch commercials when project changes
+  useEffect(() => {
+    if (!selectedProjet?.id) return;
+    
+    const fetchCommercials = async () => {
+      setLoadingCommercials(true);
+      const accessToken = localStorage.getItem('accessToken');
+      
+      try {
+        const response = await axios.get(
+          `${APIURL.ROOTV1}/get_commerciaux/${selectedProjet.id}`, 
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`
+            }
+          }
+        );
+        
+        // Add "All commercials" option
+        const commercialsList = [
+          { id: 'tous', name: 'Tous les Commerciaux', prenom: '', tout: 1 }
+        ];
+        
+        // Format commercials data
+        if (response.data.users && Array.isArray(response.data.users)) {
+          response.data.users.forEach(user => {
+            if (user.user) {
+              commercialsList.push({
+                id: user.user.id,
+                name: user.user.name || '',
+                prenom: user.user.prenom || '',
+                user: user.user
+              });
+            } else {
+              commercialsList.push({
+                id: user.id,
+                name: user.name || '',
+                prenom: user.prenom || '',
+                user: user
+              });
+            }
+          });
+        }
+        setCommercials(commercialsList);
+        
+      } catch (error) {
+        console.error('Error fetching commercials:', error);
+        toast.error('Erreur lors du chargement des commerciaux');
+        // Set default option on error
+        setCommercials([{ id: 'tous', name: 'Tous les Commerciaux', prenom: '', tout: 1 }]);
+      } finally {
+        setLoadingCommercials(false);
+      }
+    };
+    
+    fetchCommercials();
+  }, [selectedProjet?.id]);
 
   // Fetch data based on filters
   const fetchData = async () => {
@@ -183,6 +269,8 @@ export default function ActualitesPage() {
       setDesistements(data.desistements || mockData.desistements);
       setSumPenalites(data.sum_penalites || mockData.sum_penalites);
       setSumMontantAAjouter(data.sum_mont_a_ajouter || mockData.sum_mont_a_ajouter);
+      setVentes(data.ventes || mockData.ventes);
+      setSumVentes(data.sum_ventes || mockData.sum_ventes);
 
       setLoading(false);
     } catch (error) {
@@ -202,12 +290,14 @@ export default function ActualitesPage() {
       setDesistements(mockData.desistements);
       setSumPenalites(mockData.sum_penalites);
       setSumMontantAAjouter(mockData.sum_mont_a_ajouter);
+      setVentes(mockData.ventes);
+      setSumVentes(mockData.sum_ventes);
       
       setLoading(false);
     }
   };
 
-  // Effect to fetch data when project changes or filters are applied
+  // Update effect to fetch data when commercial changes or project changes
   useEffect(() => {
     // Set mock data immediately for faster testing
     setVisites(mockData.visites);
@@ -222,23 +312,39 @@ export default function ActualitesPage() {
     setDesistements(mockData.desistements);
     setSumPenalites(mockData.sum_penalites);
     setSumMontantAAjouter(mockData.sum_mont_a_ajouter);
+    setVentes(mockData.ventes);
+    setSumVentes(mockData.sum_ventes);
     
     // Still try to fetch real data if project is selected
     if (selectedProjet?.id) {
       fetchData();
     }
-  }, []);
+  }, [selectedProjet?.id, commercialId]); // Add commercialId as dependency
 
-  // Handle filter submission
-  const handleFilterSubmit = (filters) => {
-    setDateRange({ from: filters.fromDate, to: filters.toDate });
-    setCommercialId(filters.commercial?.id || 'tous');
+  // Handle commercial selection change
+  const handleCommercialChange = (e) => {
+    const selectedId = e.target.value;
+    const selectedCommercial = commercials.find(c => c.id.toString() === selectedId);
+    
+    if (selectedCommercial) {
+      setCommercialId(selectedCommercial.id);
+      setCommercialName(selectedCommercial.name + (selectedCommercial.prenom ? ' ' + selectedCommercial.prenom : ''));
+      setFilterActive(selectedId !== 'tous');
+    }
+  };
 
-    // Use default "Tous les Commerciaux" if no commercial is selected
-    setCommercialName(filters.commercial?.name || 'Tous les Commerciaux');
+  // Handle date filter submission
+  const handleDateFilterSubmit = (fromDate, toDate) => {
+    setDateRange({ from: fromDate, to: toDate });
+    setDateFilterActive(true);
+    setShowDateFilterDialog(false);
+    fetchData();
+  };
 
-    setFilterActive(true);
-    setShowFilterDialog(false);
+  // Reset date filter
+  const resetDateFilter = () => {
+    setDateRange({ from: null, to: null });
+    setDateFilterActive(false);
     fetchData();
   };
 
@@ -258,35 +364,30 @@ export default function ActualitesPage() {
       {/* Header section */}
       <div className="flex flex-wrap justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Actualités</h1>
-
-        {/* Remove the icon from the button */}
-        <button 
-          onClick={() => setShowFilterDialog(true)}
-          className="flex items-center gap-2 bg-blue-100 text-blue-700 hover:bg-blue-200 px-4 py-2 rounded-md"
-          title="Actualités Par commerciaux"
+        
+        {/* Date Filter Button - remove the parent div and the inspect button */}
+        <button
+          onClick={() => setShowDateFilterDialog(true)}
+          className="flex items-center gap-2 bg-blue-100 !text-blue-700 hover:bg-blue-200 px-4 py-2 rounded-md"
         >
-          <span>Actualités Par commerciaux</span>
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <span>Filtrer par date</span>
         </button>
       </div>
 
-      {/* Filter indicators */}
-      {filterActive && (
+      {/* Date Filter Indicator */}
+      {dateFilterActive && (
         <div className="mb-4 p-3 bg-blue-50 border-l-4 border-blue-500 flex justify-between items-center">
           <div>
-            <p className="font-medium">Filtres actifs:</p>
+            <p className="font-medium">Filtre de date actif:</p>
             <p className="text-sm">
-              {commercialName && <span className="font-medium">{commercialName}</span>}
-              {dateRange.from && <>, Période: <span className="font-medium">{dateRange.from} à {dateRange.to}</span></>}
+              Période: <span className="font-medium">{dateRange.from} à {dateRange.to}</span>
             </p>
           </div>
           <button 
-            onClick={() => {
-              setDateRange({ from: null, to: null });
-              setCommercialId('tous');
-              setCommercialName('Tous les Commerciaux');
-              setFilterActive(false);
-              fetchData();
-            }}
+            onClick={resetDateFilter}
             className="!text-blue-600 hover:underline"
           >
             Réinitialiser
@@ -294,12 +395,39 @@ export default function ActualitesPage() {
         </div>
       )}
 
+      {/* Commercial Selection Tabs */}
+      <div className="mb-6 border-b border-gray-200">
+        {loadingCommercials ? (
+          <div className="py-3 px-4 text-sm !text-gray-500">Chargement des commerciaux...</div>
+        ) : (
+          <div className="flex overflow-x-auto pb-1 -mb-px">
+            {commercials.map((commercial) => (
+              <button
+                key={commercial.id}
+                onClick={() => {
+                  setCommercialId(commercial.id);
+                  setCommercialName(commercial.name + (commercial.prenom ? ' ' + commercial.prenom : ''));
+                  setFilterActive(commercial.id !== 'tous');
+                }}
+                className={`whitespace-nowrap py-3 px-5 text-sm font-medium transition-colors border-b-2 mr-1 ${
+                  commercialId === commercial.id.toString() 
+                    ? 'border-blue-500 !text-blue-600' 
+                    : 'border-transparent !text-gray-600 hover:text-gray-800 hover:border-gray-300'
+                }`}
+              >
+                {commercial.name}{commercial.prenom ? ' ' + commercial.prenom : ''}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* Main content */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-        {/* Welcome card */}
-        <div className="md:col-span-8 bg-gradient-to-r from-blue-500 to-[#009FFF] text-white p-6 rounded-lg shadow">
+        {/* Welcome card - expand to full width */}
+        <div className="md:col-span-12 bg-gradient-to-r from-blue-500 to-[#009FFF] text-white p-6 rounded-lg shadow">
           <h2 className="text-xl font-bold mb-4">
-            {commercialId === 'tous' ? 'Tous les Commerciaux' : commercialName}
+            {commercialName}
           </h2>
           <p className="mb-2">
             Vous avez réalisé <span className="font-bold">{sumAvances} DH</span> en plus aujourd'hui.
@@ -310,40 +438,23 @@ export default function ActualitesPage() {
           </button>
         </div>
 
-        {/* Stats cards - remove the icon prop */}
-        <div className="md:col-span-2">
-          <StatCard 
-            title="Total des Visites"
-            value={visitesLastDays}
-            trend={`+${(visitesLastDays * 100 / 100).toFixed(0)}%`}
-            trendUp={true}
-            subtitle="5 derniers jours"
-            color="bg-blue-500"
+        {/* Main content cards - Remove AvancesCard and pass avances data to VentesCard */}
+        <div className="md:col-span-6">
+          <VentesCard 
+            ventes={ventes} 
+            sumVentes={sumVentes} 
+            avances={avances} 
+            sumAvances={sumAvances} 
           />
         </div>
 
-        <div className="md:col-span-2">
-          <StatCard 
-            title="Ventes totales"
-            value={`${avancesLastDays} DH`}
-            trend="38%"
-            trendUp={true}
-            subtitle="5 derniers jours"
-            color="bg-red-500"
-          />
-        </div>
-
-        {/* Main content cards */}
-        <div className="md:col-span-4">
-          <AvancesCard avances={avances} sumAvances={sumAvances} commercial={commercialId} />
-        </div>
-
-        <div className="md:col-span-4">
+        <div className="md:col-span-6">
           <VisitesCard visites={visites} sumVisites={sumVisites} />
         </div>
 
+        {/* Replace MeetingCard with MeetingCalendar */}
         <div className="md:col-span-4">
-          <MeetingCard meetings={meeting} />
+          <MeetingCalendar meetings={meeting} />
         </div>
 
         <div className="md:col-span-8">
@@ -359,18 +470,75 @@ export default function ActualitesPage() {
         </div>
       </div>
 
-      {/* Filter Dialog */}
-      {showFilterDialog && (
-        <FilterDialog 
-          onClose={() => setShowFilterDialog(false)}
-          onSubmit={handleFilterSubmit}
-          initialValues={{
-            fromDate: dateRange.from,
-            toDate: dateRange.to,
-            commercialId: commercialId
-          }}
-          projetId={selectedProjet?.id}
-        />
+      {/* Date Filter Dialog */}
+      {showDateFilterDialog && (
+        <Modal isVisible={true} onClose={() => setShowDateFilterDialog(false)}>
+          <div className="w-[400px] p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Filtrer par date</h2>
+              <button 
+                onClick={() => setShowDateFilterDialog(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+            
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              handleDateFilterSubmit(
+                e.target.elements.fromDate.value,
+                e.target.elements.toDate.value
+              );
+            }}>
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block font-medium !text-gray-700 mb-1">
+                    De:
+                  </label>
+                  <input
+                    type="date"
+                    name="fromDate"
+                    defaultValue={dateRange.from || ''}
+                    className="w-full h-[38px] p-2 border border-gray-300 rounded-md focus:outline-none hover:border-gray-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="block font-medium !text-gray-700 mb-1">
+                    à:
+                  </label>
+                  <input
+                    type="date"
+                    name="toDate"
+                    defaultValue={dateRange.to || ''}
+                    className="w-full h-[38px] p-2 border border-gray-300 rounded-md focus:outline-none hover:border-gray-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+              </div>
+              
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setShowDateFilterDialog(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                >
+                  Appliquer
+                </button>
+              </div>
+            </form>
+          </div>
+        </Modal>
       )}
     </div>
   );

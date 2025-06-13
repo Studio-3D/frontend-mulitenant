@@ -1,6 +1,4 @@
-/**
- * Utility for wrapping event handlers with debug information
- */
+//Utility for wrapping event handlers with debug information
 
 export const withDebugLog = (func, name) => {
   if (process.env.NODE_ENV !== 'production') {

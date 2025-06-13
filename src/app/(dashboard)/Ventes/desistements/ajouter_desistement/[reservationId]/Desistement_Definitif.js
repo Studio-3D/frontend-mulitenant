@@ -96,7 +96,7 @@ export function Desistement_Definitif({
   return (
     <div className="p-6">
       {isEditing && (
-        <div className="mb-4 p-3 bg-yellow-50 text-yellow-800 rounded-md">
+        <div className="mb-4 p-3 bg-yellow-50 !text-yellow-800 rounded-md">
           <p className="font-medium">
             Mode Édition: Vous modifiez un désistement existant
           </p>
@@ -477,6 +477,7 @@ export function Desistement_Definitif({
                   get_info_dossier_id(newValue?.id);
                 }}
               />
+
               {errors.dossier_id && (
                 <p style={{ color: 'red' }} className="mt-1 text-xs">
                   {' '}

@@ -100,7 +100,7 @@ export default function ResetPassword({ params }) {
             <span className="ml-2 text-xl font-bold leading-6">Immo Gestion</span>
           </div>
           
-          <h5 className="text-2xl font-semibold mb-4 text-red-500">Lien expiré 🔒</h5>
+          <h5 className="text-2xl font-semibold mb-4 !text-red-500">Lien expiré 🔒</h5>
           <p className="text-gray-500 mb-6">Le lien de réinitialisation est invalide ou a expiré.</p>
           
           <Link 
@@ -144,7 +144,7 @@ export default function ResetPassword({ params }) {
 
         {success ? (
           <div className="mb-6">
-            <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-4 text-green-700">
+            <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-4 !text-green-700">
               <p>{success}</p>
               <p className="mt-1 text-sm">Redirection vers la page de connexion...</p>
             </div>
@@ -168,7 +168,7 @@ export default function ResetPassword({ params }) {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 !text-gray-500"
                   >
                     {showPassword ? (
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -203,7 +203,7 @@ export default function ResetPassword({ params }) {
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 !text-gray-500"
                   >
                     {showConfirmPassword ? (
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -218,7 +218,7 @@ export default function ResetPassword({ params }) {
                     )}
                   </button>
                 </div>
-                {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+                {error && <p className="mt-1 text-xs !text-red-500">{error}</p>}
               </div>
             </div>
 

@@ -311,7 +311,7 @@ const FacturesForm = ({ facture, decompteId, montantDecompte, onSave, onCancel }
   const renderFournisseurDropdown = () => {
     return (
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium !text-gray-700 mb-1">
           Fournisseur <span className="text-red-500">*</span>
         </label>
         <select
@@ -330,7 +330,7 @@ const FacturesForm = ({ facture, decompteId, montantDecompte, onSave, onCancel }
           )}
         </select>
         {formErrors.fournisseur_id && (
-          <p className="mt-1 text-sm text-red-600">{formErrors.fournisseur_id.message}</p>
+          <p className="mt-1 text-sm !text-red-600">{formErrors.fournisseur_id.message}</p>
         )}
       </div>
     );
@@ -341,7 +341,7 @@ const FacturesForm = ({ facture, decompteId, montantDecompte, onSave, onCancel }
       <h2 className="text-2xl font-bold mb-6">{facture ? 'Modifier' : 'Ajouter'} une facture</h2>
       
       {alert && (
-        <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 text-red-700">
+        <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 !text-red-700">
           {alert}
         </div>
       )}
@@ -353,7 +353,7 @@ const FacturesForm = ({ facture, decompteId, montantDecompte, onSave, onCancel }
           
           {/* Décompte */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               Décompte <span className="text-red-500">*</span>
             </label>
             {facture && facture.decompte_id ? (
@@ -375,12 +375,12 @@ const FacturesForm = ({ facture, decompteId, montantDecompte, onSave, onCancel }
                 ))}
               </select>
             )}
-            {formErrors.decompte_id && <p className="mt-1 text-sm text-red-600">{formErrors.decompte_id.message}</p>}
+            {formErrors.decompte_id && <p className="mt-1 text-sm !text-red-600">{formErrors.decompte_id.message}</p>}
           </div>
           
           {/* Montant Décompte */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Montant Décompte</label>
+            <label className="block text-sm font-medium !text-gray-700 mb-1">Montant Décompte</label>
             <input
               type="text"
               value={watch('montant_decompte') || ''}
@@ -391,7 +391,7 @@ const FacturesForm = ({ facture, decompteId, montantDecompte, onSave, onCancel }
           
           {/* Déjà Facturé */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Déjà Facturé</label>
+            <label className="block text-sm font-medium !text-gray-700 mb-1">Déjà Facturé</label>
             <input
               type="text"
               value={watch('deja_facture') || ''}
@@ -402,7 +402,7 @@ const FacturesForm = ({ facture, decompteId, montantDecompte, onSave, onCancel }
           
           {/* Date Facture */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               Date Facture <span className="text-red-500">*</span>
             </label>
             <input
@@ -410,12 +410,12 @@ const FacturesForm = ({ facture, decompteId, montantDecompte, onSave, onCancel }
               {...register('date_facture')}
               className={`w-full px-3 py-2 border rounded-md ${formErrors.date_facture ? 'border-red-500' : 'border-gray-300'}`}
             />
-            {formErrors.date_facture && <p className="mt-1 text-sm text-red-600">{formErrors.date_facture.message}</p>}
+            {formErrors.date_facture && <p className="mt-1 text-sm !text-red-600">{formErrors.date_facture.message}</p>}
           </div>
           
           {/* N° Facture */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               N° Facture <span className="text-red-500">*</span>
             </label>
             <input
@@ -427,12 +427,12 @@ const FacturesForm = ({ facture, decompteId, montantDecompte, onSave, onCancel }
               }}
               className={`w-full px-3 py-2 border rounded-md ${formErrors.num_facture ? 'border-red-500' : 'border-gray-300'}`}
             />
-            {formErrors.num_facture && <p className="mt-1 text-sm text-red-600">{formErrors.num_facture.message}</p>}
+            {formErrors.num_facture && <p className="mt-1 text-sm !text-red-600">{formErrors.num_facture.message}</p>}
           </div>
           
           {/* Pièce Jointe */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               Pièce Jointe <span className="text-red-500">*</span>
             </label>
             <input
@@ -441,14 +441,14 @@ const FacturesForm = ({ facture, decompteId, montantDecompte, onSave, onCancel }
               className={`w-full px-3 py-2 border rounded-md ${formErrors.piece_jointe ? 'border-red-500' : 'border-gray-300'}`}
             />
             {facture && facture.piece_jointe && (
-              <p className="mt-1 text-xs text-blue-600">Fichier actuel: {facture.piece_jointe}</p>
+              <p className="mt-1 text-xs !text-blue-600">Fichier actuel: {facture.piece_jointe}</p>
             )}
-            {formErrors.piece_jointe && <p className="mt-1 text-sm text-red-600">{formErrors.piece_jointe.message}</p>}
+            {formErrors.piece_jointe && <p className="mt-1 text-sm !text-red-600">{formErrors.piece_jointe.message}</p>}
           </div>
           
           {/* HT */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               HT <span className="text-red-500">*</span>
             </label>
             <input
@@ -458,12 +458,12 @@ const FacturesForm = ({ facture, decompteId, montantDecompte, onSave, onCancel }
               onChange={handleHtChange}
               className={`w-full px-3 py-2 border rounded-md ${formErrors.ht ? 'border-red-500' : 'border-gray-300'}`}
             />
-            {formErrors.ht && <p className="mt-1 text-sm text-red-600">{formErrors.ht.message}</p>}
+            {formErrors.ht && <p className="mt-1 text-sm !text-red-600">{formErrors.ht.message}</p>}
           </div>
           
           {/* Taux TVA */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               Taux TVA <span className="text-red-500">*</span>
             </label>
             <select
@@ -478,12 +478,12 @@ const FacturesForm = ({ facture, decompteId, montantDecompte, onSave, onCancel }
               <option value="0.14">14%</option>
               <option value="0.20">20%</option>
             </select>
-            {formErrors.taux_tva && <p className="mt-1 text-sm text-red-600">{formErrors.taux_tva.message}</p>}
+            {formErrors.taux_tva && <p className="mt-1 text-sm !text-red-600">{formErrors.taux_tva.message}</p>}
           </div>
           
           {/* TVA */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">TVA</label>
+            <label className="block text-sm font-medium !text-gray-700 mb-1">TVA</label>
             <input
               type="number"
               step="0.01"
@@ -495,7 +495,7 @@ const FacturesForm = ({ facture, decompteId, montantDecompte, onSave, onCancel }
           
           {/* Retenue de Garantie */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Retenue de Garantie</label>
+            <label className="block text-sm font-medium !text-gray-700 mb-1">Retenue de Garantie</label>
             <input
               type="number"
               step="0.01"
@@ -507,7 +507,7 @@ const FacturesForm = ({ facture, decompteId, montantDecompte, onSave, onCancel }
           
           {/* TTC */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">TTC</label>
+            <label className="block text-sm font-medium !text-gray-700 mb-1">TTC</label>
             <input
               type="number"
               step="0.01"
@@ -519,7 +519,7 @@ const FacturesForm = ({ facture, decompteId, montantDecompte, onSave, onCancel }
           
           {/* Montant */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               Montant <span className="text-red-500">*</span>
             </label>
             <input
@@ -529,12 +529,12 @@ const FacturesForm = ({ facture, decompteId, montantDecompte, onSave, onCancel }
               onChange={handleMontantChange}
               className={`w-full px-3 py-2 border rounded-md ${formErrors.montant ? 'border-red-500' : 'border-gray-300'}`}
             />
-            {formErrors.montant && <p className="mt-1 text-sm text-red-600">{formErrors.montant.message}</p>}
+            {formErrors.montant && <p className="mt-1 text-sm !text-red-600">{formErrors.montant.message}</p>}
           </div>
           
           {/* Date Paiement */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               Date Paiement <span className="text-red-500">*</span>
             </label>
             <input
@@ -542,12 +542,12 @@ const FacturesForm = ({ facture, decompteId, montantDecompte, onSave, onCancel }
               {...register('date_paiement')}
               className={`w-full px-3 py-2 border rounded-md ${formErrors.date_paiement ? 'border-red-500' : 'border-gray-300'}`}
             />
-            {formErrors.date_paiement && <p className="mt-1 text-sm text-red-600">{formErrors.date_paiement.message}</p>}
+            {formErrors.date_paiement && <p className="mt-1 text-sm !text-red-600">{formErrors.date_paiement.message}</p>}
           </div>
           
           {/* Mode Paiement */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium !text-gray-700 mb-1">
               Mode Paiement <span className="text-red-500">*</span>
             </label>
             <select
@@ -559,7 +559,7 @@ const FacturesForm = ({ facture, decompteId, montantDecompte, onSave, onCancel }
                 <option key={key} value={code}>{label}</option>
               ))}
             </select>
-            {formErrors.mode_paiement && <p className="mt-1 text-sm text-red-600">{formErrors.mode_paiement.message}</p>}
+            {formErrors.mode_paiement && <p className="mt-1 text-sm !text-red-600">{formErrors.mode_paiement.message}</p>}
           </div>
           
           {/* Conditional Fields Based on Mode Paiement */}
@@ -567,7 +567,7 @@ const FacturesForm = ({ facture, decompteId, montantDecompte, onSave, onCancel }
             <>
               {/* Banque */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium !text-gray-700 mb-1">
                   Banque <span className="text-red-500">*</span>
                 </label>
                 <select
@@ -583,7 +583,7 @@ const FacturesForm = ({ facture, decompteId, montantDecompte, onSave, onCancel }
               
               {/* N° Paiement */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium !text-gray-700 mb-1">
                   N° Paiement <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -595,7 +595,7 @@ const FacturesForm = ({ facture, decompteId, montantDecompte, onSave, onCancel }
               
               {/* PJ Paiement */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium !text-gray-700 mb-1">
                   PJ Paiement
                 </label>
                 <input
@@ -604,7 +604,7 @@ const FacturesForm = ({ facture, decompteId, montantDecompte, onSave, onCancel }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 />
                 {facture && facture.pj_paiement && (
-                  <p className="mt-1 text-xs text-blue-600">Fichier actuel: {facture.pj_paiement}</p>
+                  <p className="mt-1 text-xs !text-blue-600">Fichier actuel: {facture.pj_paiement}</p>
                 )}
               </div>
             </>
@@ -613,7 +613,7 @@ const FacturesForm = ({ facture, decompteId, montantDecompte, onSave, onCancel }
           {/* Date Echéance (only for certain payment modes) */}
           {showEcheanceField && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium !text-gray-700 mb-1">
                 Date Echéance <span className="text-red-500">*</span>
               </label>
               <input
@@ -629,7 +629,7 @@ const FacturesForm = ({ facture, decompteId, montantDecompte, onSave, onCancel }
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+            className="px-4 py-2 bg-gray-300 !text-gray-700 rounded-md hover:bg-gray-400"
           >
             Annuler
           </button>

@@ -71,6 +71,7 @@ const AutocompleteSelectComponent = ({
       >
         {' '}
         {/* Added mb-1 and text-[15px] */}
+
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
@@ -104,9 +105,9 @@ const AutocompleteSelectComponent = ({
             onClick={toggleDropdown}
           >
             {isOpen ? (
-              <ChevronDown className="h-4 w-4 m-2 text-gray-400 rotate-180" />
+              <ChevronDown className="h-4 w-4 m-2 !text-gray-400 rotate-180" />
             ) : (
-              <ChevronDown className="h-4 w-4 m-2 text-gray-400" />
+              <ChevronDown className="h-4 w-4 m-2 !text-gray-400" />
             )}
           </div>
         )}
@@ -114,7 +115,7 @@ const AutocompleteSelectComponent = ({
         {isOpen && (
           <div className="absolute top-full left-0 w-full bg-white shadow-md rounded-md mt-1 max-h-60 overflow-y-auto border border-gray-300 z-10">
             {filteredOptions.length === 0 ? (
-              <div className="p-2 text-gray-500">No options found</div>
+              <div className="p-2 !text-gray-500">No options found</div>
             ) : (
               filteredOptions.map((option) => (
                 <div

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import ReservaionTable from './ReservationTable';
+import ReservationTable from './ReservationTable';
 import ReservationForm from './ReservationForm';
 
 
@@ -63,7 +63,7 @@ export default function Page(dataClient) {
                  <VenteNavbar /> 
               </>
             )}
-            <ReservaionTable dataClient={dataClient}  />
+            <ReservationTable dataClient={dataClient}  />
           </div>
         </>
       )}

@@ -118,9 +118,7 @@ export default function PartenairesPage() {
 
   // Main view with table
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Gestion des Partenaires</h1>
-      
+    <div className="p-4 bg-white rounded-lg shadow-md">
       <PartenaireTable 
         data={partenaires}
         loading={loading}

@@ -368,7 +368,7 @@ export function Desistement_Au_Profit({
   return (
     <div className="p-6">
       {isEditing && (
-        <div className="mb-4 p-3 bg-yellow-50 text-yellow-800 rounded-md">
+        <div className="mb-4 p-3 bg-yellow-50 !text-yellow-800 rounded-md">
           <p className="font-medium">Mode Édition</p>
         </div>
       )}
@@ -393,6 +393,7 @@ export function Desistement_Au_Profit({
           }}
         />
       </div>
+
       {(type_dp == 1 || type_dp == 2) && (
         <div className="border-t border-gray-200 py-4">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6">

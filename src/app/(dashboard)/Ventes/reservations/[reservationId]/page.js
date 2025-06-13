@@ -57,6 +57,7 @@ const Res_Show = () => {
       // Construct the proper API URL
       const apiUrl = `${APIURL.RESERVATIONS}/${reservationId}`;
 
+
       const response = await axios.get(apiUrl, {
         headers: {
           Authorization: `Bearer ${accessToken}`,

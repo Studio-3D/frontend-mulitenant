@@ -19,18 +19,24 @@ export const metadata = {
   title: "ERP Immobilier",
   description: "ERP Immobilier",
   image: "/images/logo.PNG",
+  verification: {
+    // Adding TikTok verification meta tag that will apply to all pages
+    other: {
+      "tiktok-developers-site-verification": "CnPAeCjgGzOwhN6F7NcsIBkKB7I4dvuB",
+    },
+  },
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
         <Toaster position="top-center" reverseOrder={false} />
-        <AuthProvider> 
-          <SocieteProvider> 
-            <ProjetProvider> 
-              {children}
-            </ProjetProvider>
+        <AuthProvider>
+          <SocieteProvider>
+            <ProjetProvider>{children}</ProjetProvider>
           </SocieteProvider>
         </AuthProvider>
       </body>

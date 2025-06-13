@@ -40,7 +40,7 @@ const DropdownMenuDemo = () => {
             <DropdownMenuLabel>
               <div className="flex flex-col">
               <span className="font-bold">{user.name}</span>
-              <span className="text-sm text-gray-500">{user.email}</span>
+              <span className="text-sm !text-gray-500">{user.email}</span>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
@@ -53,7 +53,7 @@ const DropdownMenuDemo = () => {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className=" p-2 mt-1 hover:bg-gray-100 hover:rounded-md cursor-pointer text-red-500" onClick={handleLogout}>
+            <DropdownMenuItem className=" p-2 mt-1 hover:bg-gray-100 hover:rounded-md cursor-pointer !text-red-500" onClick={handleLogout}>
               Se déconnecter
             </DropdownMenuItem>
           </DropdownMenuContent>

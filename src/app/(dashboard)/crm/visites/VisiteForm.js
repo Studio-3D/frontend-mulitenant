@@ -2678,7 +2678,7 @@ const VisiteForm = (id, origin) => {
                                   {expanded.includes(`panel_res${i + 1}`) && (
                                     <div className="p-4 space-y-4 bg-white">
                                       {info_reservation && (
-                                        <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 text-center rounded">
+                                        <div className="bg-red-100 border-l-4 border-red-500 !text-red-700 p-4 text-center rounded">
                                           {info_reservation}
                                         </div>
                                       )}

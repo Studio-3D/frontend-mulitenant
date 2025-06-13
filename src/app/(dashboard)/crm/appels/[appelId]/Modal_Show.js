@@ -95,23 +95,23 @@ export default function Modal_Show({
       <div className="p-6 space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <InfoCard
-            icon={<PhoneCallIcon className="h-5 w-5 text-blue-500" />}
+            icon={<PhoneCallIcon className="h-5 w-5 !text-blue-500" />}
             label="Type Appel"
             value={type_appel}
           />
           <InfoCard
-            icon={<UserIcon className="h-5 w-5 text-blue-500" />}
+            icon={<UserIcon className="h-5 w-5 !text-blue-500" />}
             label="Responsable"
             value={responsable}
           />
           <InfoCard
-            icon={<MessageSquareIcon className="h-5 w-5 text-blue-500" />}
+            icon={<MessageSquareIcon className="h-5 w-5 !text-blue-500" />}
             label="L'Intérêt"
             value={getInteret_label(interet)}
           />
         </div>
         <div className="mt-6 pt-6 border-t border-gray-100">
-          <h3 className="text-sm font-medium text-gray-500 mb-2">
+          <h3 className="text-sm font-medium !text-gray-500 mb-2">
             Informations
           </h3>
           <div className="grid grid-cols-2 gap-4 text-sm">
@@ -242,7 +242,7 @@ export default function Modal_Show({
                           className="inline"
                         >
                           {i !== 0 && (
-                            <span className="inline ml-1 text-gray-500">,</span>
+                            <span className="inline ml-1 !text-gray-500">,</span>
                           )}
                           <span className="inline whitespace-nowrap tracking-tight">
                             {getFullOrientation(fr_orientation.orientation)}
@@ -335,32 +335,32 @@ export default function Modal_Show({
           </div>
         </div>
         <div className="mt-6 bg-gray-50 p-4 rounded-lg">
-          <h3 className="text-sm font-medium text-gray-500 mb-2">
+          <h3 className="text-sm font-medium !text-gray-500 mb-2">
             Commentaire
           </h3>
-          <p className="text-sm text-gray-700">{commentaire}</p>
+          <p className="text-sm !text-gray-700">{commentaire}</p>
         </div>
         {commentaire_rel != null && (
           <div className="mt-6 bg-gray-50 p-4 rounded-lg">
-            <h3 className="text-sm font-medium text-gray-500 mb-2">
+            <h3 className="text-sm font-medium !text-gray-500 mb-2">
               Commentaire du Relance
             </h3>
-            <p className="text-sm text-gray-700">{commentaire_rel}</p>
+            <p className="text-sm !text-gray-700">{commentaire_rel}</p>
           </div>
         )}
         {commentaire_rdv != null && (
           <div className="mt-6 bg-gray-50 p-4 rounded-lg">
-            <h3 className="text-sm font-medium text-gray-500 mb-2">
+            <h3 className="text-sm font-medium !text-gray-500 mb-2">
               Commentaire du Rendez-Vous
             </h3>
-            <p className="text-sm text-gray-700">{commentaire_rdv}</p>
+            <p className="text-sm !text-gray-700">{commentaire_rdv}</p>
           </div>
         )}
       </div>
       <div className="px-6 py-4 bg-gray-50 rounded-b-2xl border-t border-gray-100">
         <button
           onClick={onClose}
-          className="w-full bg-white text-gray-600 py-2 px-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors duration-200"
+          className="w-full bg-white !text-gray-600 py-2 px-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors duration-200"
         >
           Annuler
         </button>
@@ -373,9 +373,9 @@ function InfoCard({ icon, label, value }) {
     <div className="bg-gray-50 p-4 rounded-lg hover:bg-gray-100 transition-colors duration-200">
       <div className="flex items-center space-x-3 mb-2">
         {icon}
-        <span className="text-sm text-gray-500">{label}</span>
+        <span className="text-sm !text-gray-500">{label}</span>
       </div>
-      <div className="text-sm font-medium text-gray-900">{value}</div>
+      <div className="text-sm font-medium !text-gray-900">{value}</div>
     </div>
   );
 }

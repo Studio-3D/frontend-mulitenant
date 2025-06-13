@@ -18,7 +18,7 @@ const PrestataireDetail = ({ Details }) => {
 
   if (!Details) {
     return (
-      <div className="p-8 text-center text-gray-300">
+      <div className="p-8 text-center !text-gray-300">
         Chargement des informations du prestataire...
       </div>
     );
@@ -31,10 +31,10 @@ const PrestataireDetail = ({ Details }) => {
         {/* Nom & Prénom */}
         <div className="flex items-center space-x-4">
           <div className="bg-white/20 p-3 rounded-lg">
-            <UserIcon className="h-7 w-7 text-blue-100" />
+            <UserIcon className="h-7 w-7 !text-blue-100" />
           </div>
           <div>
-            <p className="text-sm text-blue-200">Nom & Prénom :</p>
+            <p className="text-sm !text-blue-200">Nom & Prénom :</p>
             <h2 className="text-xl font-bold text-white">
               {Details.nom || '-'} {Details.prenom || '-'}
             </h2>
@@ -44,10 +44,10 @@ const PrestataireDetail = ({ Details }) => {
         {/* Cin */}
         <div className="flex items-center space-x-4">
           <div>
-            <ImageIcon className="h-6 w-6 text-blue-100" />
+            <ImageIcon className="h-6 w-6 !text-blue-100" />
           </div>
           <div>
-            <p className="text-sm text-blue-200">Cin :</p>
+            <p className="text-sm !text-blue-200">Cin :</p>
             <p className="font-medium text-white">{Details.cin || '-'}</p>
           </div>
         </div>
@@ -55,10 +55,10 @@ const PrestataireDetail = ({ Details }) => {
         {/* Téléphone */}
         <div className="flex items-center space-x-4">
           <div>
-            <PhoneIcon className="h-6 w-6 text-blue-100" />
+            <PhoneIcon className="h-6 w-6 !text-blue-100" />
           </div>
           <div>
-            <p className="text-sm text-blue-200">Téléphone :</p>
+            <p className="text-sm !text-blue-200">Téléphone :</p>
             <p className="font-medium text-white">{Details.telephone || '-'}</p>
           </div>
         </div>
@@ -66,10 +66,10 @@ const PrestataireDetail = ({ Details }) => {
         {/* Email */}
         <div className="flex items-center space-x-4">
           <div>
-            <MailIcon className="h-6 w-6 text-blue-100" />
+            <MailIcon className="h-6 w-6 !text-blue-100" />
           </div>
           <div>
-            <p className="text-sm text-blue-200">Email :</p>
+            <p className="text-sm !text-blue-200">Email :</p>
             <p className="font-medium text-white">{Details.email || '-'}</p>
           </div>
         </div>
@@ -77,10 +77,10 @@ const PrestataireDetail = ({ Details }) => {
         {/* Adresse */}
         <div className="flex items-center space-x-4">
           <div>
-            <MapPinIcon className="h-6 w-6 text-blue-100" />
+            <MapPinIcon className="h-6 w-6 !text-blue-100" />
           </div>
           <div>
-            <p className="text-sm text-blue-200">Adresse :</p>
+            <p className="text-sm !text-blue-200">Adresse :</p>
             <p className="font-medium text-white">{Details.adresse || '-'}</p>
           </div>
         </div>
@@ -88,10 +88,10 @@ const PrestataireDetail = ({ Details }) => {
         {/* Service */}
         <div className="flex items-center space-x-4">
           <div>
-            <InfoIcon className="h-6 w-6 text-blue-100" />
+            <InfoIcon className="h-6 w-6 !text-blue-100" />
           </div>
           <div>
-            <p className="text-sm text-blue-200">Service :</p>
+            <p className="text-sm !text-blue-200">Service :</p>
             <p className="font-medium text-white">{Details.service?.nom || '-'}</p>
           </div>
         </div>

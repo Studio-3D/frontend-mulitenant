@@ -158,7 +158,7 @@ const ProfileContent = ({ userId }) => {
             </div>
           </div>
           <div className="flex flex-col p-4 mt-8">
-            <div className="font-bold text-2xl text-gray-900">
+            <div className="font-bold text-2xl !text-gray-900">
               {`${userData.name} ${userData.prenom}`}
             </div>
             <div className="text-gray-400 text-md font-medium">
@@ -186,7 +186,7 @@ const ProfileContent = ({ userId }) => {
       {/* Navigation Tabs */}
       <div className="flex flex-col p-4 mt-24 ml-4 rounded-lg">
         <div className="flex items-center gap-8">
-          <button className="text-lg font-medium text-blue-500 border-b-2 border-blue-500">
+          <button className="text-lg font-medium !text-blue-500 border-b-2 border-blue-500">
             Informations Personnelles
           </button>
         </div>
@@ -297,7 +297,7 @@ const ProfileContent = ({ userId }) => {
             <button
               type="button"
               onClick={resetForm}
-              className="bg-gray-200 text-gray-700 py-2 px-6 rounded-lg hover:bg-gray-400 hover:text-white transition-colors"
+              className="bg-gray-200 !text-gray-700 py-2 px-6 rounded-lg hover:bg-gray-400 hover:text-white transition-colors"
             >
               Annuler
             </button>

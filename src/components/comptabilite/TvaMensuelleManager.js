@@ -234,12 +234,12 @@ const TvaMensuelleManager = ({ userRole }) => {
       label: 'Type Encaissement',
       render: (row) => (
         <span className={`px-2 py-1 rounded-full text-xs font-medium
-          ${row.encaissement?.type_encaissement === '1' ? 'bg-green-100 text-green-800' : 
-            row.encaissement?.type_encaissement === '2' ? 'bg-red-100 text-red-800' :
-            row.encaissement?.type_encaissement === '3' ? 'bg-yellow-100 text-yellow-800' :
-            row.encaissement?.type_encaissement === '4' ? 'bg-blue-100 text-blue-800' :
+          ${row.encaissement?.type_encaissement === '1' ? 'bg-green-100 !text-green-800' : 
+            row.encaissement?.type_encaissement === '2' ? 'bg-red-100 !text-red-800' :
+            row.encaissement?.type_encaissement === '3' ? 'bg-yellow-100 !text-yellow-800' :
+            row.encaissement?.type_encaissement === '4' ? 'bg-blue-100 !text-blue-800' :
             row.encaissement?.type_encaissement === '5' ? 'bg-purple-100 text-purple-800' :
-            'bg-gray-100 text-gray-800'}`
+            'bg-gray-100 !text-gray-800'}`
         }>
           {getTypeEncaissementLabel(row.encaissement?.type_encaissement)}
         </span>
@@ -257,7 +257,7 @@ const TvaMensuelleManager = ({ userRole }) => {
           <div>
             <div className="font-medium">{getModePaiementLabel(mode)}</div>
             {bank && paymentNumber && 
-              <div className="text-xs text-gray-500">{`${bank.nom} N°P: ${paymentNumber}`}</div>
+              <div className="text-xs !text-gray-500">{`${bank.nom} N°P: ${paymentNumber}`}</div>
             }
           </div>
         );

@@ -29,14 +29,14 @@ export const isAdmin = (role) => {
 };
 
 export const VISITE_STATUT = {
-  1: { code: 1, label: 'Pré-Réservation', color: 'bg-blue-100 text-blue-800' },
-  2: { code: 2, label: 'Vendu', color: 'bg-green-100 text-green-800' },
+  1: { code: 1, label: 'Pré-Réservation', color: 'bg-blue-100 !text-blue-800' },
+  2: { code: 2, label: 'Vendu', color: 'bg-green-100 !text-green-800' },
   3: {
     code: 3,
     label: 'Pré-Réservation-Perdu',
-    color: 'bg-yellow-100 text-yellow-800',
+    color: 'bg-yellow-100 !text-yellow-800',
   },
-  4: { code: 4, label: 'Réservation-Perdu', color: 'bg-red-100 text-red-800' },
+  4: { code: 4, label: 'Réservation-Perdu', color: 'bg-red-100 !text-red-800' },
   5: {
     code: 5,
     label: 'Pré-Réservation-Vendu',
@@ -46,9 +46,9 @@ export const VISITE_STATUT = {
 
 // Visite interest levels
 export const VISITE_INTERETS = {
-  1: { code: 1, label: 'Intéressé', color: 'bg-green-100 text-green-800' },
-  2: { code: 2, label: 'Réceptif', color: 'bg-blue-100 text-blue-800' },
-  3: { code: 3, label: 'Perdu', color: 'bg-red-100 text-red-800' },
+  1: { code: 1, label: 'Intéressé', color: 'bg-green-100 !text-green-800' },
+  2: { code: 2, label: 'Réceptif', color: 'bg-blue-100 !text-blue-800' },
+  3: { code: 3, label: 'Perdu', color: 'bg-red-100 !text-red-800' },
   4: { code: 4, label: 'Injoignable', color: 'bg-gray-100 text-white-800' },
 };
 
@@ -261,12 +261,12 @@ export const BIEN_ETAT = {
   disponible: {
     id: 'disponible',
     label: 'Disponible',
-    color: 'bg-green-100 text-green-800',
+    color: 'bg-green-100 !text-green-800',
   },
   reserve: {
     id: 'reserve',
     label: 'Réservé',
-    color: 'bg-blue-100 text-blue-800',
+    color: 'bg-blue-100 !text-blue-800',
   },
   vendu: {
     id: 'vendu',

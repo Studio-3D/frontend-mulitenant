@@ -246,15 +246,15 @@ useEffect(() => {
     render: (row) => (
       <div className="flex gap-3 items-center">
           <Pencil
-            className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
+            className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
             onClick={() => handleEdit(row.id)}
           />        
           <Eye
-            className="w-4 h-4 text-blue-500 hover:text-yellow-700 cursor-pointer"
+            className="w-4 h-4 !text-blue-500 hover:text-yellow-700 cursor-pointer"
             onClick={() => handleShow(row.id_res)}
           />
           <Trash2
-            className="w-4 h-4 text-red-1000 hover:text-red-700 cursor-pointer"
+            className="w-4 h-4 !text-red-1000 hover:text-red-700 cursor-pointer"
             onClick={() => {
               setSelectedId(row.id);
               setShowDeleteModal(true);

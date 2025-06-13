@@ -38,7 +38,7 @@ export function VisitTabs() {
   return (
     <div className="relative">
       <div className="flex items-center">
-        <button className="p-2 text-gray-500 hover:text-gray-700">
+        <button className="p-2 !text-gray-500 hover:text-gray-700">
           <ChevronLeftIcon className="h-5 w-5" />
         </button>
         
@@ -49,10 +49,10 @@ export function VisitTabs() {
               className={`
                 min-w-[120px] h-[100px] flex items-center justify-center rounded-lg border
                 ${visit.isNew 
-                  ? 'border-dashed border-blue-300 text-blue-500' 
+                  ? 'border-dashed border-blue-300 !text-blue-500' 
                   : visit.active 
                     ? 'bg-blue-600 text-white border-blue-600' 
-                    : 'bg-white border-gray-200 text-gray-700'
+                    : 'bg-white border-gray-200 !text-gray-700'
                 }
               `}
             >
@@ -68,7 +68,7 @@ export function VisitTabs() {
           ))}
         </div>
         
-        <button className="p-2 text-gray-500 hover:text-gray-700">
+        <button className="p-2 !text-gray-500 hover:text-gray-700">
           <ChevronRightIcon className="h-5 w-5" />
         </button>
       </div>

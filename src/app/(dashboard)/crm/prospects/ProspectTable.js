@@ -198,13 +198,13 @@ const ProspectTable = () => {
         const roleColors = {
           'Planification Rendez Vous': 'bg-blue-100 text-[#009FFF]',
           Injoignable: 'bg-purple-100 text-purple-600',
-          Rappel: 'bg-yellow-100 text-yellow-600',
+          Rappel: 'bg-yellow-100 !text-yellow-600',
         };
 
         return (
           <span
             className={`px-2 py-1 rounded text-sm font-semibold ${
-              roleColors[row.statut] || 'bg-gray-100 text-gray-600'
+              roleColors[row.statut] || 'bg-gray-100 !text-gray-600'
             }`}
           >
             {row.statut}
@@ -218,12 +218,12 @@ const ProspectTable = () => {
       render: (row) => (
         <div className="flex gap-3 items-center">
           <Eye
-            className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
+            className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
             title="Voir détails"
             onClick={() => handleShow(row.id)}
           />
           <Pencil
-            className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
+            className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
             title="Modifier"
             onClick={() => handleEdit(row.id)}
           />
@@ -234,7 +234,7 @@ const ProspectTable = () => {
             onClick={() => handleraiter(row.id, row.telephone, row.nomComplet)}
           />
           <RefreshCw
-            className="w-4 h-4 text-green-500  cursor-pointer"
+            className="w-4 h-4 !text-green-500  cursor-pointer"
             title="Convertir en visite"
             onClick={() => handle_convert_to_visite(row.prospect)}
           />
@@ -243,7 +243,7 @@ const ProspectTable = () => {
             row.visites.length == 0 &&
             row.appels == null && (
               <Trash2
-                className="w-4 h-4 text-red-500 hover:text-red-700 cursor-pointer"
+                className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
                 onClick={() => {
                   setSelectedId(row.id);
                   setShowDeleteModal(true);
@@ -310,7 +310,7 @@ const ProspectTable = () => {
 
   return (
     <>
-      <div className="reflative">
+      <div className="reflative bg-white rounded-lg shadow-md p-4">
         <Table
           data_to_export={data_to_export()}
           columns_export={columns_export}
