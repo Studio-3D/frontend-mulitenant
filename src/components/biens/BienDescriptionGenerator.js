@@ -296,79 +296,53 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
       
       const token = localStorage.getItem("accessToken");
       
+      // Prepare form data to match backend expectations
+      const formData = new FormData();
+      formData.append('reseaux_sociaux', '2'); // Instagram only
+      formData.append('description', postContent);
+      
       if (uploadedMediaUrl) {
-        // Use the Facebook_InstagramController to post with media
-        const formData = new FormData();
-        formData.append('reseaux_sociaux', 2); // Value for Instagram
-        formData.append('description', postContent);
-        
-        // If we have already uploaded media, use mode 'existante'
+        // Use existing media mode
         formData.append('mode', 'existante');
         formData.append('img_existant_url', uploadedMediaUrl);
-        
-        const apiUrl = `${APIURL.ROOTV1}/postTo_Social_Network`;
-        
-        axios.post(
-          apiUrl, 
-          formData,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'multipart/form-data'
-            }
-          }
-        )
-        .then(response => {
-          if (response.data && response.data.success) {
-            toast.success("Publication partagée sur Instagram avec succès!");
-          } else {
-            // Fall back to the clipboard method if API call fails
-            navigator.clipboard.writeText(postContent);
-            
-            if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-              window.location.href = "instagram://camera";
-              toast.success("Méthode manuelle: description copiée. Importez le média manuellement.");
-            } else {
-              window.open('https://www.instagram.com/', '_blank');
-              toast.success("Méthode manuelle: description copiée. Importez le média manuellement.");
-            }
-          }
-          
-          // Close modal after delay
-          setTimeout(() => {
-            setIsModalOpen(false);
-          }, 2000);
-        }).catch(error => {
-          console.error("Failed to post to Instagram API:", error);
-          toast.error("Erreur lors de la publication sur Instagram. Utilisation de la méthode manuelle.");
-          
-          // Fallback to manual method
-          navigator.clipboard.writeText(postContent);
-          if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-            window.location.href = "instagram://camera";
-          } else {
-            window.open('https://www.instagram.com/', '_blank');
-          }
-        }).finally(() => {
-          setIsSharing(false);
-        });
+      } else if (selectedMedia) {
+        // Use file upload mode
+        formData.append('mode', 'parcourir');
+        formData.append('mediaFile', selectedMedia);
       } else {
-        // No media, just copy text and open Instagram
-        navigator.clipboard.writeText(postContent);
-        
-        if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-          window.location.href = "instagram://camera";
-        } else {
-          window.open('https://www.instagram.com/', '_blank');
+        // No media, text only - use null mode
+        formData.append('mode', 'null');
+      }
+      
+      const apiUrl = `${APIURL.ROOTV1}/postTo_Social_Network`;
+      
+      axios.post(
+        apiUrl, 
+        formData,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
         }
-        toast.success("Description copiée pour Instagram");
+      )
+      .then(response => {
+        if (response.data && response.data.success) {
+          toast.success("Publication partagée sur Instagram avec succès!");
+        } else {
+          toast.error("Erreur lors de la publication sur Instagram.");
+        }
         
         // Close modal after delay
         setTimeout(() => {
-          setIsModalOpen(false);
+          handleModalClose();
         }, 2000);
+      }).catch(error => {
+        console.error("Failed to post to Instagram API:", error);
+        toast.error("Erreur lors de la publication sur Instagram.");
+      }).finally(() => {
         setIsSharing(false);
-      }
+      });
     } catch (error) {
       console.error("Failed to share to Instagram:", error);
       toast.error("Erreur lors du partage sur Instagram");
@@ -551,96 +525,62 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
       const propertyPrice = bien?.prix ? bien.prix.toLocaleString() + " DH" : "Prix sur demande";
       
       // Prepare post content with emojis and formatting
-      const postContent = `🏡 ${propertyTitle}\n\n${description}\n\n📍 ${propertyLocation}\n💰 ${propertyPrice}`;
+      const sanitizedDescription = sanitizeDescriptionForSocialMedia(description);
+      const postContent = `🏡 ${propertyTitle}\n\n${sanitizedDescription}\n\n📍 ${propertyLocation}\n💰 ${propertyPrice}`;
       
       const token = localStorage.getItem("accessToken");
       
-      if (uploadedMediaUrl) {  // Changed from checking selectedMedia to just checking uploadedMediaUrl
-        // Use the Facebook_InstagramController to post with media
-        const formData = new FormData();
-        // Fix the parameter to match exactly what the API expects
-        formData.append('reseaux_sociaux', 3); // Integer value instead of string '3'
-        formData.append('description', postContent);
-        
-        // If we have already uploaded media, use mode 'existante'
+      // Prepare form data to match backend expectations
+      const formData = new FormData();
+      formData.append('reseaux_sociaux', '3'); // Facebook only
+      formData.append('description', postContent);
+      
+      if (uploadedMediaUrl) {
+        // Use existing media mode
         formData.append('mode', 'existante');
         formData.append('img_existant_url', uploadedMediaUrl);
-        
-        // Log formData for debugging
-        console.log('Sending to Facebook:', Array.from(formData.entries()));
-        
-        const apiUrl = `${APIURL.ROOTV1}/postTo_Social_Network`;
-        
-        axios.post(
-          apiUrl,
-          formData,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'multipart/form-data'
-            }
+      } else if (selectedMedia) {
+        // Use file upload mode
+        formData.append('mode', 'parcourir');
+        formData.append('mediaFile', selectedMedia);
+      } else {
+        // No media, text only - use null mode
+        formData.append('mode', 'null');
+      }
+      
+      const apiUrl = `${APIURL.ROOTV1}/postTo_Social_Network`;
+      
+      axios.post(
+        apiUrl,
+        formData,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
           }
-        )
-        .then(response => {
-          if (response.data && response.data.success) {
-            toast.success("Publication partagée sur Facebook avec succès!");
-          } else {
-            // Fall back to the direct method if API call fails
-            navigator.clipboard.writeText(postContent);
-            
-            // Use Facebook's Feed Dialog for sharing
-            const shareUrl = 'https://www.facebook.com/dialog/share';
-            const url = new URL(shareUrl);
-            url.searchParams.append('app_id', '694112455807575'); 
-            url.searchParams.append('display', 'popup');
-            url.searchParams.append('href', window.location.href);
-            url.searchParams.append('quote', postContent);
-            url.searchParams.append('hashtag', '#immobilier');
-            
-            window.open(url.toString(), '_blank', 'width=626,height=436');
-            toast.success("Méthode manuelle: description copiée pour Facebook");
-          }
+        }
+      )
+      .then(response => {
+        if (response.data && response.data.success) {
+          toast.success("Publication partagée sur Facebook avec succès!");
+          
+          // Save description to server
+          saveDescriptionToServer();
           
           // Close modal after delay
           setTimeout(() => {
-            setIsModalOpen(false);
+            handleModalClose();
           }, 2000);
-        }).catch(error => {
-          console.error("Failed to post to Facebook API:", error);
-          toast.error("Erreur lors de la publication sur Facebook. Utilisation de la méthode manuelle.");
-          
-          // Fallback to manual share
-          navigator.clipboard.writeText(postContent);
-          const shareUrl = 'https://www.facebook.com/dialog/share';
-          const url = new URL(shareUrl);
-          url.searchParams.append('app_id', '694112455807575');
-          url.searchParams.append('display', 'popup');
-          url.searchParams.append('href', window.location.href);
-          url.searchParams.append('quote', postContent);
-          window.open(url.toString(), '_blank', 'width=626,height=436');
-        }).finally(() => {
-          setIsSharingFacebook(false);
-        });
-      } else {
-        // No media, use Facebook share dialog directly
-        navigator.clipboard.writeText(postContent);
-        const shareUrl = 'https://www.facebook.com/dialog/share';
-        const url = new URL(shareUrl);
-        url.searchParams.append('app_id', '694112455807575');
-        url.searchParams.append('display', 'popup');
-        url.searchParams.append('href', window.location.href);
-        url.searchParams.append('quote', postContent);
-        url.searchParams.append('hashtag', '#immobilier');
-        
-        window.open(url.toString(), '_blank', 'width=626,height=436');
-        toast.success("Description copiée pour Facebook");
-        
-        // Close modal after delay
-        setTimeout(() => {
-          setIsModalOpen(false);
-        }, 2000);
+        } else {
+          toast.error("Erreur lors de la publication sur Facebook.");
+        }
+      }).catch(error => {
+        console.error("Failed to post to Facebook API:", error);
+        const errorMessage = error.response?.data?.message || "Erreur lors de la publication sur Facebook.";
+        toast.error(errorMessage);
+      }).finally(() => {
         setIsSharingFacebook(false);
-      }
+      });
     } catch (error) {
       console.error("Failed to share to Facebook:", error);
       toast.error("Erreur lors du partage sur Facebook");
@@ -720,16 +660,6 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
     window.addEventListener('message', handleLinkedInCallback);
     return () => window.removeEventListener('message', handleLinkedInCallback);
   }, []);
-
-  // Copy text to clipboard
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text).then(() => {
-      toast.success("Copié dans le presse-papiers");
-    }).catch(err => {
-      console.error("Failed to copy:", err);
-      toast.error("Erreur lors de la copie");
-    });
-  };
 
   return (
     <>
