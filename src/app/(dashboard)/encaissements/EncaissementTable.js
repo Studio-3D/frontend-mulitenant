@@ -135,9 +135,11 @@ const fetchBiens = async () => {
   useEffect(() => { 
     fetchBiens()
     fetchClients()
+    const params_url = dataClient_id ? { client_id: dataClient_id } : {};
+    const combinedFilters = { ...filters, ...params_url };
     fetchData_table_by_projet(
         entity,
-        filters,       
+        combinedFilters,       
         searchTerm,
         currentPage,
         rowsPerPage,

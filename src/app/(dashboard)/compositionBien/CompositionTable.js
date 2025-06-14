@@ -356,7 +356,7 @@ const formatData = compositionBiens.map((c, index) => ({
         onPageChange={setCurrentPage}
         onRowsPerPageChange={setRowsPerPage}
         onSearchChange={setSearchTerm}
-        enableSearch={false}
+        showSearch={false}
       />
       {showDeleteModal && selectedId && (
         <Modal isVisible={true} onClose={() => setShowDeleteModal(false)}>

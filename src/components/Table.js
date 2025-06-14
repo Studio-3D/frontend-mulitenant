@@ -5,7 +5,6 @@ import { Filter, Search, Plus, Download, Upload } from 'lucide-react';
 import Link from 'next/link';
 import Modal from './Modal';
 import { handleExportExcel } from '../../src/configs/export';
-import Modal_Import from './Modal_Import';
 
 const Table = ({
   onFilterToggle = () => {},
@@ -37,7 +36,9 @@ const Table = ({
   expandedRows = {},
   showPagination = true,
   showSearch = true,
-  compact = false, // New prop for compact nested tables
+  compact = false, 
+  onImportClick = () => {},
+
 }) => {
   const [showModal, setShowModal] = useState(null);
   const [localSearchTerm, setLocalSearchTerm] = useState('');
@@ -150,7 +151,7 @@ const Table = ({
           {enableImport && (
             <button
               className="flex gap-1 items-center bg-[#231651] text-white font-medium rounded-lg px-3 py-1.5"
-              onClick={() => setShowModal_Import(true)}
+              onClick={onImportClick}
             >
               <Upload className="w-5 h-5" />
               <span>Importer</span>
@@ -280,16 +281,7 @@ const Table = ({
           {showModal}
         </Modal>
       )}
-      {showModal_Import && (
-        <Modal isVisible={true} onClose={() => setShowModal_Import(false)}>
-          <Modal_Import
-            title='Prospects'
-            route='upload_excel_prospect'
-            localstorage='load_data_prospect'
-            onClose={() => setShowModal_Import(false)}
-          />
-        </Modal>
-      )}
+      
     </div>
   );
 };
