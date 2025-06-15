@@ -133,7 +133,7 @@ export function SocieteProvider({ children }) {
       }
       
       await axios.put(
-        "https://ec2-16-16-56-93.eu-north-1.compute.amazonaws.com/api/Switch_Societes",
+        "http://localhost:8000/api/Switch_Societes",
         { societe_id: societe.id },
         { headers: { Authorization: `Bearer ${token}` } }
       );
