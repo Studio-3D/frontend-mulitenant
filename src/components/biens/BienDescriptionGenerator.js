@@ -350,7 +350,7 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
     }
   };
 
-  // Share to TikTok with media using TikTok's official API
+  // Share to TikTok with OAuth flow and media using TikTok's official API
   const shareToTikTok = async () => {
     if (!description) {
       toast.error("Veuillez générer une description d'abord");
@@ -360,6 +360,13 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
     setIsSharingTikTok(true);
     
     try {
+      // Check if we have a media URL, either from upload or pre-selected
+      if (!uploadedMediaUrl) {
+        toast.error("Veuillez sélectionner une image ou une vidéo à partager");
+        setIsSharingTikTok(false);
+        return;
+      }
+      
       // Format the property information for TikTok
       const propertyTitle = bien?.propriete_dite_bien || "Propriété";
       const propertyLocation = bien?.immeuble?.nom || bien?.bloc?.nom || bien?.tranche?.nom || bien?.projet?.nom || "Emplacement";
@@ -370,29 +377,102 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
       const sanitizedDescription = sanitizeDescriptionForSocialMedia(description);
       const postText = `${sanitizedDescription}\n\n📍 ${propertyLocation}\n💰 ${propertyPrice}\n\n#immobilier #realestate #property #maison`;
       
-      // Check if we have a media URL, either from upload or pre-selected
-      if (!uploadedMediaUrl) {
-        toast.error("Veuillez sélectionner une image ou une vidéo à partager");
-        setIsSharingTikTok(false);
-        return;
-      }
-      
       // Determine the media type for the API
       const tikTokMediaType = mediaType === 'image' ? 'PHOTO' : 'VIDEO';
       
       // Get token for API request
       const token = localStorage.getItem("accessToken");
       
-      // API URL
+      // First, initiate TikTok OAuth flow
+      const authResponse = await axios.get(
+        `${APIURL.ROOTV1}/tiktok/auth-url`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      if (!authResponse.data.success) {
+        throw new Error('Failed to get TikTok authorization URL');
+      }
+      
+      // Store content data for after OAuth
+      const contentData = {
+        title: title.substring(0, 150),
+        description: postText.substring(0, 2200),
+        media_url: uploadedMediaUrl,
+        media_type: tikTokMediaType
+      };
+      
+      // Store content in localStorage for the callback
+      localStorage.setItem('tiktok_content_data', JSON.stringify(contentData));
+      localStorage.setItem('tiktok_oauth_state', authResponse.data.state);
+      
+      // Open TikTok OAuth in popup
+      const popup = window.open(
+        authResponse.data.auth_url, 
+        'tiktok-oauth', 
+        'width=600,height=700,scrollbars=yes,resizable=yes'
+      );
+      
+      // Listen for OAuth completion
+      const checkClosed = setInterval(() => {
+        if (popup.closed) {
+          clearInterval(checkClosed);
+          
+          // Check if we have access token after OAuth
+          const accessToken = localStorage.getItem('tiktok_access_token_temp');
+          
+          if (accessToken) {
+            // Proceed with posting content
+            publishToTikTokWithToken(contentData, accessToken);
+            localStorage.removeItem('tiktok_access_token_temp');
+          } else {
+            toast.error("Authentification TikTok annulée ou échouée");
+            setIsSharingTikTok(false);
+          }
+          
+          // Clean up
+          localStorage.removeItem('tiktok_content_data');
+          localStorage.removeItem('tiktok_oauth_state');
+        }
+      }, 1000);
+      
+      // Fallback timeout
+      setTimeout(() => {
+        if (!popup.closed) {
+          popup.close();
+          clearInterval(checkClosed);
+          toast.error("Authentification TikTok expirée");
+          setIsSharingTikTok(false);
+        }
+      }, 300000); // 5 minutes timeout
+      
+    } catch (error) {
+      console.error("Failed to initiate TikTok OAuth:", error);
+      
+      if (error.response?.status === 401) {
+        toast.error("Authentification requise. Veuillez vous reconnecter.");
+      } else {
+        toast.error("Erreur lors de l'initialisation du partage TikTok.");
+      }
+      setIsSharingTikTok(false);
+    }
+  };
+  
+  // Publish content to TikTok with access token
+  const publishToTikTokWithToken = async (contentData, accessToken) => {
+    try {
+      const token = localStorage.getItem("accessToken");
       const apiUrl = `${APIURL.ROOTV1}/tiktok/publish`;
       
       const response = await axios.post(
         apiUrl,
         {
-          title: title.substring(0, 150), // TikTok title limit
-          description: postText.substring(0, 2200), // TikTok description limit
-          media_url: uploadedMediaUrl,
-          media_type: tikTokMediaType
+          ...contentData,
+          access_token: accessToken
         },
         {
           headers: {
@@ -408,9 +488,9 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
         // Save description to server
         saveDescriptionToServer();
         
-        // If we have a publish_id, we can poll for status and verify the post
+        // If we have a publish_id, we can poll for status
         if (response.data.publish_id) {
-          verifyTikTokPost(response.data.publish_id);
+          verifyTikTokPost(response.data.publish_id, accessToken);
         }
         
         // Close modal after successful publishing
@@ -421,13 +501,10 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
         throw new Error(response.data?.message || "Erreur lors de la publication sur TikTok");
       }
     } catch (error) {
-      console.error("Failed to share to TikTok API:", error);
+      console.error("Failed to publish to TikTok API:", error);
       
-      // Handle different error scenarios
-      if (error.response?.status === 401) {
-        toast.error("Authentification TikTok échouée. Veuillez reconnecter votre compte.");
-      } else if (error.response?.status === 404) {
-        toast.error("API TikTok non disponible.");
+      if (error.response?.data?.requires_auth) {
+        toast.error("Authentification TikTok expirée. Veuillez réessayer.");
       } else if (error.response?.data?.error) {
         toast.error(`Erreur TikTok: ${error.response.data.error}`);
       } else {
@@ -438,8 +515,8 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
     }
   };
   
-  // Verify TikTok post success
-  const verifyTikTokPost = async (publishId) => {
+  // Verify TikTok post success with access token
+  const verifyTikTokPost = async (publishId, accessToken) => {
     try {
       const token = localStorage.getItem("accessToken");
       let attempts = 0;
@@ -458,7 +535,10 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
         const statusResponse = await axios.get(
           apiUrl,
           {
-            params: { publish_id: publishId },
+            params: { 
+              publish_id: publishId,
+              access_token: accessToken 
+            },
             headers: { 'Authorization': `Bearer ${token}` }
           }
         );
@@ -472,7 +552,6 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
           if (status === 'PUBLISH_COMPLETE' && postUrl) {
             toast.success("Publication confirmée sur TikTok!");
             
-            // Offer button to view the post
             toast((t) => (
               <div>
                 <p>Votre vidéo est en ligne!</p>
@@ -490,7 +569,6 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
           } else if (status === 'PUBLISH_FAILED') {
             toast.error("La publication TikTok a échoué. Veuillez réessayer.");
           } else if (status === 'PUBLISH_PROCESSING') {
-            // Still processing, check again after a delay
             setTimeout(checkStatus, 3000);
           } else {
             toast.warning("État de la publication inconnu. Vérifiez votre compte TikTok.");
@@ -500,7 +578,6 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
         }
       };
       
-      // Start the first check after a short delay
       setTimeout(checkStatus, 2000);
       
     } catch (error) {
