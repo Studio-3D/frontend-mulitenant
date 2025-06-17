@@ -277,40 +277,32 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
       return;
     }
     
-    // Save description to server
     saveDescriptionToServer();
     
     setIsSharing(true);
     try {
-      // Format property information
       const propertyTitle = bien?.propriete_dite_bien || "Propriété";
       const propertyLocation = bien?.immeuble?.nom || bien?.bloc?.nom || bien?.tranche?.nom || bien?.projet?.nom || "Emplacement";
       const propertyPrice = bien?.prix ? bien.prix.toLocaleString() + " DH" : "Prix sur demande";
       
-      // Prepare hashtags
       const hashtags = "#immobilier #realestate #property #home #maison #vente";
       
-      // Format Instagram post content with sanitized description
       const sanitizedDescription = sanitizeDescriptionForSocialMedia(description);
       const postContent = `🏡 ${propertyTitle}\n\n${sanitizedDescription}\n\n📍 ${propertyLocation}\n💰 ${propertyPrice}\n\n${hashtags}`;
       
       const token = localStorage.getItem("accessToken");
       
-      // Prepare form data to match backend expectations
       const formData = new FormData();
-      formData.append('reseaux_sociaux', '2'); // Instagram only
+      formData.append('reseaux_sociaux', '2');
       formData.append('description', postContent);
       
       if (uploadedMediaUrl) {
-        // Use existing media mode
         formData.append('mode', 'existante');
         formData.append('img_existant_url', uploadedMediaUrl);
       } else if (selectedMedia) {
-        // Use file upload mode
         formData.append('mode', 'parcourir');
         formData.append('mediaFile', selectedMedia);
       } else {
-        // No media, text only - use null mode
         formData.append('mode', 'null');
       }
       
@@ -596,32 +588,26 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
     setIsSharingFacebook(true);
     
     try {
-      // Format the property information for Facebook
       const propertyTitle = bien?.propriete_dite_bien || "Propriété";
       const propertyLocation = bien?.immeuble?.nom || bien?.bloc?.nom || bien?.tranche?.nom || bien?.projet?.nom || "Emplacement";
       const propertyPrice = bien?.prix ? bien.prix.toLocaleString() + " DH" : "Prix sur demande";
       
-      // Prepare post content with emojis and formatting
       const sanitizedDescription = sanitizeDescriptionForSocialMedia(description);
       const postContent = `🏡 ${propertyTitle}\n\n${sanitizedDescription}\n\n📍 ${propertyLocation}\n💰 ${propertyPrice}`;
       
       const token = localStorage.getItem("accessToken");
       
-      // Prepare form data to match backend expectations
       const formData = new FormData();
-      formData.append('reseaux_sociaux', '3'); // Facebook only
+      formData.append('reseaux_sociaux', '3');
       formData.append('description', postContent);
       
       if (uploadedMediaUrl) {
-        // Use existing media mode
         formData.append('mode', 'existante');
         formData.append('img_existant_url', uploadedMediaUrl);
       } else if (selectedMedia) {
-        // Use file upload mode
         formData.append('mode', 'parcourir');
         formData.append('mediaFile', selectedMedia);
       } else {
-        // No media, text only - use null mode
         formData.append('mode', 'null');
       }
       
