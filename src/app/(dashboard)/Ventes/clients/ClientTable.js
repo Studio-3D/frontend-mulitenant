@@ -11,14 +11,11 @@ import { APIURL, ENDPOINTS } from '../../../../configs/api';
 import { useRouter } from 'next/navigation';
 import { fetchData_table_by_projet } from '../../../../../src/configs/api-utils';
 import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
-import Modal_Traite from './Modal_Traite';
-import { Statuts_Prospect } from '../../../../../src/configs/enum';
 import Input from '@/components/Input';
-import SelectInput from '@/components/SelectInput';
-import Modal_Import from '@/components/Modal_Import';
+import { Typography } from '@mui/material';
 
-const ProspectTable = () => {
-  const [prospects, setProspects] = useState([]);
+const ClientTable = () => {
+  const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -27,12 +24,6 @@ const ProspectTable = () => {
   const [totalRows, setTotalRows] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [open_traite, setOpen_traite] = useState(false);
-  const [traite_id, setId_traite] = useState(null);
-  const [num_tel, setTel_num] = useState(null);
-  const [nom_prenom, setNomPrenom] = useState(null);
-  const [showImportModal, setShowImportModal] = useState(false);
-
   const { user, token } = useAuth();
   const { selectedProjet } = useProjet();
   const accesstoken = token || localStorage.getItem('accessToken');
@@ -45,14 +36,13 @@ const ProspectTable = () => {
     cin: '',
     telephone: '',
     email: '',
-    statut: '',
   });
   const [tempFilters, setTempFilters] = useState({ ...filters });
 
   const entity = {
-    API_URL: 'prospects',
-    dataKey: 'prospects',
-    searchFields: ['nom', 'prenom', 'email', 'telephone', 'cin'],
+    API_URL: 'clients',
+    dataKey: 'data',
+    searchFields: ['nom', 'prenom', 'email', 'telephone_num1', 'cin'],
   };
 
   useEffect(() => {
@@ -65,7 +55,7 @@ const ProspectTable = () => {
       accesstoken,
       setLoading,
       setError,
-      setProspects,
+      setClients,
       setTotalRows
     );
   }, [
@@ -90,7 +80,7 @@ const ProspectTable = () => {
   useEffect(() => {
     //Implementing the setInterval method
     const interval = setInterval(() => {
-      if (localStorage.getItem('load_data_prospect') == 1) {
+      if (localStorage.getItem('load_data_client') == 1) {
         fetchData_table_by_projet(
           entity,
           filters,
@@ -100,10 +90,10 @@ const ProspectTable = () => {
           accesstoken,
           setLoading,
           setError,
-          setProspects,
+          setClients,
           setTotalRows
         );
-        localStorage.removeItem('load_data_prospect');
+        localStorage.removeItem('load_data_client');
       }
     }, 1000);
 
@@ -118,56 +108,44 @@ const ProspectTable = () => {
     selectedProjet,
   ]);
 
-  const handleImportClick = () => {
-    setShowImportModal(true)  // ouvrir la modale d'import
-  }
-
-  const handleShow = (prospectId) => {
-    router.push(`/crm/prospects/${prospectId}`);
+  const handleShow = (clientId) => {
+    router.push(`/ventes/clients/${clientId}`);
   };
 
-  function handleEdit(ProspectId) {
-    console.log(`Editing Prospect ID: ${ProspectId}`); // Debugging
-    router.push(`${ENDPOINTS.PROSPECTS}?id=${ProspectId}&action=edit`);
+  function handleEdit(ClientId) {
+    console.log(`Editing Client ID: ${ClientId}`); // Debugging
+    router.push(`${ENDPOINTS.CLIENTS}?id=${ClientId}&action=edit`);
   }
 
-  const handleraiter = (Id, num_tel, nom_prenom) => {
-    setOpen_traite(!open_traite);
-    setId_traite(Id);
-    setTel_num(num_tel);
-    setNomPrenom(nom_prenom);
+  const handleFilterToggle = (isOpen) => {
+    if (!isOpen) resetFilters(); // Si on ferme, on réinitialise
   };
 
-  function handle_convert_to_visite(row) {
-    localStorage.setItem(
-      'selectedProspect',
-      JSON.stringify({ dataProspect: row })
-    );
-    router.push(`${ENDPOINTS.VISITES}?action=add`);
-  }
+
+
+  
   // Format users data for table display
   const formatData = () => {
-    return prospects.map((pro) => ({
-      id: pro.id,
-      nom: `${pro.nom || ''}`.trim(),
-      prenom: `${pro.prenom || ''}`.trim(),
-      nomComplet: `${pro.nom || ''} ${pro.prenom || ''}`.trim(),
-      email: pro.email,
-      telephone:
-        (pro.telephone ? pro.telephone : '') +
-          (pro.telephone && pro.telephone_num2 && pro.telephone_num2 !== 'null'
-            ? ' / ' + pro.telephone_num2
-            : '') || 'Non spécifié',
-      cin: pro.cin,
-      client: pro.client,
-      visites: pro.visites,
-      appels: pro.appels,
-      origin: pro.origin,
-      statut:
-        pro.last_statut != null
-          ? Statuts_Prospect[pro.last_statut?.statut]?.label
-          : '',
-      prospect: pro,
+    return clients.map((cl) => ({
+      id: cl.id,
+      nom: `${cl.nom || ''}`.trim(),
+      prenom: `${cl.prenom || ''}`.trim(),
+      nomComplet: `${cl.nom || ''} ${cl.prenom || ''}`.trim(),
+      email: cl.email,
+      cin: cl.cin,
+      telephone_num1:
+        (cl.telephone_num1 ? cl.telephone_num1 : '') +
+          (cl.telephone_num1 && cl.telephone_num2 && cl.telephone_num2 !== 'null'
+            ? ' / ' + cl.telephone_num2
+            : '') || '',
+      
+      type_client: cl.partenaire_id,
+      partenaire: cl?.partenaire,
+      aquereur: cl.aquereur,
+      aquereur_desistement: cl.aquereur_desistement,
+      prospect: cl.prospect,
+      reclamation: cl.reclamation,
+      
     }));
   };
 
@@ -191,72 +169,55 @@ const ProspectTable = () => {
         </div>
       ),
     },
-    { key: 'telephone', label: 'Téléphone' },
+    { key: 'telephone_num1', label: 'Téléphone' },
     { key: 'cin', label: 'Cin' },
     { key: 'email', label: 'Email' },
-
     {
-      key: 'statut',
-      label: 'Statut',
-      render: (row) => {
-        if (!row.statut) return ''; // or return null;
-
-        const roleColors = {
-          'Planification Rendez Vous': 'bg-blue-100 text-[#009FFF]',
-          Injoignable: 'bg-purple-100 text-purple-600',
-          Rappel: 'bg-yellow-100 !text-yellow-600',
-        };
-
-        return (
-          <span
-            className={`px-2 py-1 rounded text-sm font-semibold ${
-              roleColors[row.statut] || 'bg-gray-100 !text-gray-600'
-            }`}
-          >
-            {row.statut}
-          </span>
-        );
-      },
+      key: 'type_client',
+      label: 'Type client',
+      render: (row) => (
+        <Typography
+          variant="body2"
+          style={{ color: row.type_client == null ? 'green' : 'red' }}
+          title={row.type_client !== null ? `Partenaire : ${row.partenaire?.description || ''}` : 'Client particulier'}
+        >
+          {row.type_client === null ? 'Particulier' : 'Professionnel'}
+        </Typography>
+      ),
     },
+    
     {
       key: 'actions',
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
           <Eye
-            className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
+            className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
             title="Voir détails"
             onClick={() => handleShow(row.id)}
           />
           <Pencil
-            className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
+            className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
             title="Modifier"
             onClick={() => handleEdit(row.id)}
           />
-
-          <Check
-            className="w-4 h-4  hover:text-['rgb(87,80,129)']-700 text-['rgb(87,80,129)'] cursor-pointer"
-            title="Traiter"
-            onClick={() => handleraiter(row.id, row.telephone, row.nomComplet)}
-          />
-          <RefreshCw
-            className="w-4 h-4 !text-green-500  cursor-pointer"
-            title="Convertir en visite"
-            onClick={() => handle_convert_to_visite(row.prospect)}
-          />
-
-          {row.client == null &&
-            row.visites.length == 0 &&
-            row.appels == null && (
-              <Trash2
-                className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
+          {row?.aquereur?.length === 0 &&
+            row?.aquereur_desistement.length === 0 &&
+            row.prospect == null &&
+            row.reclamation.length === 0 && (
+              <button
+                className="text-red-500 hover:text-red-700"
                 onClick={() => {
                   setSelectedId(row.id);
                   setShowDeleteModal(true);
                 }}
-                title="Supprimer utilisateur"
-              />
+                title="Supprimer"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
             )}
+          
+            
         </div>
       ),
     },
@@ -269,29 +230,27 @@ const ProspectTable = () => {
   //EXPORT
 
   const data_to_export = () => {
-    return prospects.map((pro) => ({
-      nomComplet: `${pro.nom || ''} ${pro.prenom || ''}`.trim(),
-      email: pro.email,
-      telephone:
-        (pro.telephone ? pro.telephone : '') +
-          (pro.telephone && pro.telephone_num2 && pro.telephone_num2 !== 'null'
-            ? ' / ' + pro.telephone_num2
-            : '') || 'Non spécifié',
-      cin: pro.cin,
+    return clients.map((cl) => ({
+      nomComplet: `${cl.nom || ''} ${cl.prenom || ''}`.trim(),
+      email: cl.email,
+      telephone_num1:
+        (cl.telephone_num1 ? cl.telephone_num1 : '') +
+          (cl.telephone_num1 && cl.telephone_num2 && cl.telephone_num2 !== 'null'
+            ? ' / ' + cl.telephone_num2
+            : '') || '',
+      cin: cl.cin,
 
-      type_client: pro.partenaire_id === null ? 'Particulier' : 'professionnel',
-      partenaire: pro.partenaire_id ? pro.partenaire?.description : '',
-      source: pro?.source?.source,
+      type_client: cl.partenaire_id === null ? 'Particulier' : 'professionnel',
+      partenaire: cl.partenaire_id ? cl.partenaire?.description : '',
     }));
   };
 
   const columns_export = [
     { key: 'nomComplet', label: 'nomComplet' },
-    { key: 'telephone', label: 'Telephone' },
+    { key: 'telephone_num1', label: 'Telephone' },
     { key: 'cin', label: 'Cin' },
     { key: 'email', label: 'Email' },
-    { key: 'type_client', label: 'Type Prospect' },
-    { key: 'source', label: 'Source' },
+    { key: 'type_client', label: 'Type Client' },
     { key: 'partenaire', label: 'Partenaire' },
   ];
 
@@ -308,7 +267,6 @@ const ProspectTable = () => {
       cin: '',
       telephone: '',
       email: '',
-      statut: '',
     };
     setFilters(reset);
     setTempFilters(reset);
@@ -316,11 +274,11 @@ const ProspectTable = () => {
 
   return (
     <>
-      <div className="reflative bg-white rounded-lg shadow-md p-4">
+      <div className="reflative">
         <Table
           data_to_export={data_to_export()}
           columns_export={columns_export}
-          name_file_export={'propects_export'}
+          name_file_export={'clients_export'}
           columns={columns}
           data={formatData()}
           totalRows={totalRows}
@@ -332,13 +290,12 @@ const ProspectTable = () => {
           onRowsPerPageChange={setRowsPerPage}
           onSearchChange={setSearchTerm}
           enableExport={true}
-          enableImport={true}
-          onImportClick={handleImportClick}
+          onFilterToggle={handleFilterToggle}
           addLink={
             isSuperAdmin(user.role) ||
             isAdmin(user.role) ||
             isCommercial(user.role)
-              ? `${ENDPOINTS.PROSPECTS}?action=add`
+              ? `${ENDPOINTS.CLIENTS}?action=add`
               : undefined
           }
           filterComponent={
@@ -349,8 +306,8 @@ const ProspectTable = () => {
                   gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
                 }}
               >
-                {/* Champs de recherche */}
                 <Input
+                label={'Cin'}
                   type="text"
                   placeholder="Cin"
                   value={tempFilters.cin}
@@ -358,6 +315,7 @@ const ProspectTable = () => {
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
                 <Input
+                label={'Nom'}
                   type="text"
                   placeholder="Nom"
                   value={tempFilters.nom}
@@ -365,6 +323,7 @@ const ProspectTable = () => {
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
                 <Input
+                  label={'Prénom'}
                   type="text"
                   placeholder="Prénom"
                   value={tempFilters.prenom}
@@ -373,6 +332,7 @@ const ProspectTable = () => {
                 />
 
                 <Input
+                  label={'Téléphone'}
                   type="number"
                   placeholder="Téléphone"
                   value={tempFilters.telephone}
@@ -382,22 +342,14 @@ const ProspectTable = () => {
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
                 <Input
+                  label={'Email'}
                   type="email"
                   placeholder="Email"
                   value={tempFilters.email}
                   onChange={(e) => handleFilterChange('email', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-                <SelectInput
-                  value={tempFilters.statut}
-                  onChange={(value) => handleFilterChange('statut', value)}
-                  options={Object.values(Statuts_Prospect).map((data) => ({
-                    value: data.id,
-                    label: data.label,
-                  }))}
-                  placeholder="Choisir un Statut"
-                  className="h-10 text-sm w-full"
-                />
+                
               </div>
 
               {/* Boutons */}
@@ -428,9 +380,9 @@ const ProspectTable = () => {
           onClose={() => setShowDeleteModal(false)}
         >
           <DeleteData
-            route={APIURL.PROSPECTS}
+            route={APIURL.CLIENTS}
             Id={selectedId}
-            message={'Etes-vous sûr de vouloir supprimer ce Prospect ?'}
+            message={'Etes-vous sûr de vouloir supprimer ce Client ?'}
             accessToken={accesstoken}
             onClose={() => {
               setShowDeleteModal(false);
@@ -443,7 +395,7 @@ const ProspectTable = () => {
                 accesstoken,
                 setLoading,
                 setError,
-                setProspects,
+                setClients,
                 setTotalRows
               );
             }}
@@ -451,30 +403,9 @@ const ProspectTable = () => {
         </Modal>
       )}
 
-      {open_traite == true && (
-        <>
-          <Modal isVisible={true} onClose={() => setOpen_traite(false)}>
-            <Modal_Traite
-              nom_prenom={nom_prenom}
-              num_tel={num_tel}
-              id={traite_id}
-              onClose={() => setOpen_traite(false)}
-            />
-          </Modal>
-        </>
-      )}
-      {showImportModal && (
-        <Modal isVisible={true} onClose={() => setShowImportModal(false)}>
-          <Modal_Import
-            title='Prospects'
-            route='upload_excel_prospect'
-            localstorage='load_data_prospect'
-            onClose={() => setShowImportModal(false)}
-          />
-        </Modal>
-      )}
+     
     </>
   );
 };
 
-export default ProspectTable;
+export default ClientTable;

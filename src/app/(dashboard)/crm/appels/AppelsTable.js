@@ -14,7 +14,7 @@ import Input from '@/components/Input';
 import SelectInput from '@/components/SelectInput';
 
 import { VISITE_INTERETS } from '../../../../../src/configs/enum';
-const AppelsTable = () => {
+const AppelsTable = ({dataClient}) => {
   const { user, token } = useAuth();
   const accesstoken = token || localStorage.getItem('accessToken');
 
@@ -45,9 +45,12 @@ const AppelsTable = () => {
   };
 
   useEffect(() => {
+    const params_url = dataClient ? { client_id: dataClient } : {};
+    const combinedFilters = { ...filters, ...params_url };
+
     fetchData_table_by_projet(
       entity,
-      filters,
+      combinedFilters,
       searchTerm,
       currentPage,
       rowsPerPage,

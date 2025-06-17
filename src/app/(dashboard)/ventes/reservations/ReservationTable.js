@@ -84,9 +84,8 @@ const ReservationTable = ({ dataClient }) => {
     searchFields: [],
   };
 
-  const clientId = dataClient?.dataClient?.id;
   useEffect(() => {
-    const params_url = clientId ? { client_id: clientId } : {};
+    const params_url = dataClient ? { client_id: dataClient } : {};
     const combinedFilters = { ...filters, ...params_url };
 
     fetchData_table_by_projet(
@@ -540,7 +539,7 @@ const ReservationTable = ({ dataClient }) => {
   };
   return (
     <>
-      <div className="reflative bg-white shadow-md rounded-lg p-4">
+      <div className="reflative bg-white rounded-lg p-4">
         <Table
           data_to_export={data_to_export()}
           columns_export={columns_export}

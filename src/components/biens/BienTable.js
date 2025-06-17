@@ -549,7 +549,7 @@ const handleImportClick = () => {
       columns_export={columns_export}
       name_file_export={"bien_export"}
       data={paginatedData}
-      enableSearch={false}
+      showSearch={false}
       enableImport={true}
       onImportClick={handleImportClick}
     />
