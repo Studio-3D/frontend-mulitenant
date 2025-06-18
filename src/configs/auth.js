@@ -1,6 +1,7 @@
 import { APIURL } from './api';
 
 export default {
+
   dashboardEndpoint: APIURL.ME,
   loginEndpoint: APIURL.LOGIN,
   registerEndpoint: APIURL.REGISTER,
@@ -8,4 +9,5 @@ export default {
   forgotPasswordEndpoint: APIURL.FORGOT_PASSWORD,
   validateTokenEndpoint: APIURL.VALIDATE_TOKEN,
   resetPasswordEndpoint: APIURL.RESET_PASSWORD
+
 }
