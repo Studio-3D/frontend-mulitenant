@@ -14,12 +14,16 @@ import { type_dst } from '@/configs/enum';
 import { useAuth } from '../../../../../../context/AuthContext';
 import {
   fetchData_Select,
-  fetchList_fichier_exist,
+  fetchList_fichier_exist_by_Code,
 } from '../../../../../../../src/configs/api-utils';
+
 import LoadingSpin from '@/components/LoadingSpin';
 import { useForm, FormProvider } from 'react-hook-form';
 import TextField from '@/components/Textfield';
 import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
+import { modes_penalites } from '@/configs/enum';
+import { MODE_PAIEMENT } from '@/configs/enum';
+import Autocomplete from '@/components/Autocomplete';
 
 export default function Page() {
   const router = useRouter();
@@ -63,21 +67,6 @@ export default function Page() {
     plt: null,
   });
 
-  const modes_penalites = [
-    { value: '10%' },
-    { value: '15% (gros oeuvre)' },
-    { value: '20% (Finition)' },
-    { value: '25%' },
-    { value: '30%' },
-    { value: '40%' },
-    { value: '50%' },
-    { value: '60%' },
-    { value: '70%' },
-    { value: '80%' },
-    { value: '90%' },
-    { value: '100%' },
-    { value: 'Montant' },
-  ];
   const [avecPenalite, setAvecPenalite] = useState(false);
   const [avecPiecesJointes, setAvecPiecesJointes] = useState(false);
   const [penaliteAmount, setPenaliteAmount] = useState(0);
@@ -99,7 +88,12 @@ export default function Page() {
 
   // Form methods
   const methods = useForm({
-    defaultValues, // Just use defaultValues without resolver
+    defaultValues: {
+      mode_penalite: '',
+      penalite_montant: 0, // or your preferred default value
+      penalite_par: 'avance',
+      // other default values...
+    },
   });
 
   const {
@@ -118,6 +112,7 @@ export default function Page() {
   // Set default values based on active model
   useEffect(() => {
     if (!reservationData.inputListRemb) return; // Wait for data to load
+
     if (!reservationData.bien) return; // Wait for bien data to load
     console.log('im here ');
     let newDefaultValues = {};
@@ -127,10 +122,10 @@ export default function Page() {
         newDefaultValues = {
           motif: '',
           type_remb: '',
-          sum_avances_valides: reservationData.sumAvances || 0,
-          inputList_remb: reservationData.inputListRemb || [],
+          /*sum_avances_valides: reservationData.sumAvances || 0,
+          inputList_remb: reservationData.inputListRemb || [],*/
           dossier_id: '',
-          reservationId: reservationId,
+          // reservationId: reservationId,
         };
         break;
       case 2:
@@ -138,15 +133,15 @@ export default function Page() {
           type_dp: '',
           desisteurs: reservationData.desisteurs,
           desisteurs_testt: reservationData.desisteursTest,
-          desisteutrs_profit_dp_partiel: reservationData.desisteursProfit,
+          desisteutrs_profit_dp_partiel: reservationData.desisteursProfit || [],
         };
         break;
       case 3:
         newDefaultValues = {
-          bien_ancien: reservationData.bien || '',
+          /*  bien_ancien: reservationData.bien || '',
           sum_avances_valides: reservationData.sumAvances || 0,
           banques: banques,
-          filesList_avc: filesList_avc,
+          filesList_avc: filesList_avc,*/
         };
         break;
       default:
@@ -217,7 +212,7 @@ export default function Page() {
       console.log('Fetched rembourseList:', rembourseList); // Should show your array
 
       setReservationData({
-        bien: bien.propriete_dite_bien,
+        bien: bien,
         bienIdAncien: bien.id,
         codeRes: code_reservation,
         respo: `${respoUser.name} ${respoUser.prenom}`,
@@ -245,11 +240,26 @@ export default function Page() {
     try {
       const filesPromises = [
         !files.avc &&
-          fetchList_fichier_exist(setFilesList_avc, 'avc', setLoading_list),
+          fetchList_fichier_exist_by_Code(
+            setFilesList_avc,
+            'avc',
+            reservationData?.codeRes,
+            setLoading_list
+          ),
         !files.dst &&
-          fetchList_fichier_exist(setFilesList_dst, 'dst', setLoading_list),
+          fetchList_fichier_exist_by_Code(
+            setFilesList_dst,
+            'dst',
+            reservationData?.codeRes,
+            setLoading_list
+          ),
         !files.plt &&
-          fetchList_fichier_exist(setFilesList_plt, 'plt', setLoading_list),
+          fetchList_fichier_exist_by_Code(
+            setFilesList_plt,
+            'plt',
+            reservationData?.codeRes,
+            setLoading_list
+          ),
       ];
 
       await Promise.all(filesPromises);
@@ -311,6 +321,25 @@ export default function Page() {
       //on utiliser pour store desistement premier fois
       formData.append('desistement_id_rejete', null);
       formData.append('sum_avances_valides', reservationData.sumAvances);
+      //penalite
+      formData.append('sr_pen', watch('sr_pen'));
+      formData.append('checked_penalite', avecPenalite);
+      formData.append('penalite_par', watch('penalite_par'));
+      formData.append('mode_penalite', watch('mode_penalite'));
+      formData.append('penalite_montant', watch('penalite_montant'));
+      formData.append('mode_paiement_pen', watch('mode_paiement_pen'));
+      formData.append('banque_id_pen', watch('banque_pen'));
+      formData.append('numero_paiement_pen', watch('numero_paiement_pen'));
+      formData.append('echeance_pen', watch('echeance_pen'));
+
+      // Create an array of desistement files
+      const desistementFiles = selectedFiles_dst.map((file) => file);
+      formData.append('files_desistement', JSON.stringify(desistementFiles));
+
+      // Create an array of penalite files
+      const penaliteFiles = selectedFiles_plt.map((file) => file);
+      formData.append('files_penalite', JSON.stringify(penaliteFiles));
+
       if (data.type == 1) {
         data.inputList_remb.forEach((item, index) => {
           if (item.fichier_autorisation) {
@@ -324,6 +353,13 @@ export default function Page() {
           if (item.cheque_recu) {
             formData.append(`cheque_recu_${index}`, item.cheque_recu);
           }
+        });
+      }
+
+      // Handle files for type 3 (Changement de Bien)
+      if (data.type == 3 && data.files_avance) {
+        data.files_avance.forEach((file, index) => {
+          formData.append(`files_avance_${index}`, file);
         });
       }
 
@@ -398,28 +434,21 @@ export default function Page() {
     return {
       type: 3,
       bien_id_new: data.new_bien_id,
-      /* date_operation: data.dateOperation,
-      ancien_bien_id: reservationData.bienIdAncien,
-      nouveau_bien_id: data.nouveauBienId,
-      client_id: reservationData.desisteurs[0]?.cl_id,
-      reservation_id: reservationId,
-      contrat_file: data.contratFile,
-      autorisation_file: data.fichierAutorisation,
-      created_by: JSON.parse(localStorage.getItem('user')).id,*/
+      bien_ancien: data.bien_ancien,
+      //new_avance: data.new_avance,
+      montant_a_ajouter: data.montant_a_ajouter,
+      // Payment information (if montant_a_ajouter > 0)
+      ...(data.montant_a_ajouter > 0 && {
+        sr: data.sr || false,
+        mode_paiement: data.mode_paiement,
+        banque_id: data.banque_id,
+        numero_paiement: data.numero_paiement,
+        echeance: data.echeance,
+        files_avance: data.files_avance, // Array of files
+      }),
     };
   };
 
-  // Helper functions
-  const calculateRemboursementAmount = (totalAvances, formData) => {
-    return formData.avecPenalite ? totalAvances * 0.9 : totalAvances;
-  };
-
-  // Ajoutez cette fonction pour calculer la pénalité
-  const calculatePenalite = (prixBien) => {
-    const amount = prixBien * 0.1;
-    setPenaliteAmount(amount);
-    return amount;
-  };
   const handleModelChange = (selectedId) => {
     setActiveModel(selectedId);
   };
@@ -427,230 +456,6 @@ export default function Page() {
   if (loading.form || loading.general) {
     return <LoadingSpin />;
   }
-
-  const isFormValid = () => {
-    const formValues = methods.getValues();
-
-    if (activeModel == 1) {
-      // Désistement Définitif
-      // Validation de base
-      if (!formValues.motif || !formValues.type_remb) {
-        return false;
-      }
-
-      // Validation selon le type de remboursement
-      if (formValues.type_remb == 'direct') {
-        if (
-          !formValues.inputList_remb ||
-          formValues.inputList_remb.length == 0
-        ) {
-          return false;
-        }
-
-        // Valider chaque élément de inputList_remb
-        for (const item of formValues.inputList_remb) {
-          if (
-            !item.date_rembourse ||
-            !item.num_paiement ||
-            !item.mode_rembourse ||
-            !item.pour_le_compte ||
-            (item.mode_rembourse == 'cheque' && !item.cheque_recu) ||
-            (item.pour_le_compte == 'autre' && !item.fichier_autorisation)
-          ) {
-            return false;
-          }
-        }
-      } else if (formValues.type_remb == 'transfert_remb') {
-        if (!formValues.dossier_id) {
-          return false;
-        }
-        if (formValues.montant_transferer == '') {
-          return false;
-        }
-        if (formValues.reste_a_rembourse < 0) {
-          return false;
-        }
-
-        if (formValues.type_remb_transfere == undefined) {
-          return false;
-        } else if (formValues.type_remb_transfere == 'immediat') {
-          if (
-            !formValues.inputList_remb ||
-            formValues.inputList_remb.length == 0
-          ) {
-            return false;
-          }
-
-          for (const item of formValues.inputList_remb) {
-            if (
-              !item.num_paiement ||
-              !item.date_rembourse ||
-              !item.mode_rembourse ||
-              !item.pour_le_compte ||
-              (item.mode_rembourse == 'cheque' && !item.cheque_recu) ||
-              (item.pour_le_compte == 'autre' && !item.fichier_autorisation)
-            ) {
-              return false;
-            }
-          }
-        }
-        // No validation needed for 'apres_vente' case
-      } else if (['transfert'].includes(formValues.type_remb)) {
-        if (!formValues.dossier_id) {
-          return false;
-        }
-      }
-    } else if (activeModel == 2) {
-      // Désistement au Profit
-      if (!formValues.type_dp) {
-        return false;
-      }
-      // Validate based on type_dp
-      if (formValues.type_dp == 1) {
-        // Désistement au profit d'un proche
-        // Check if new clients are added
-        if (!formValues.inputList || formValues.inputList.length == 0)
-          return false;
-
-        // Check each new client's information
-        for (const client of formValues.inputList) {
-          if (
-            !client.cin ||
-            !client.nom ||
-            !client.prenom ||
-            !client.telephone_num1 ||
-            !client.pourcentage
-          ) {
-            return false;
-          }
-
-          // Validate telephone length
-          if (
-            client.telephone_num1.length < 10 ||
-            client.telephone_num1.length > 14
-          ) {
-            return false;
-          }
-
-          // Validate percentage
-          const percent = parseInt(client.pourcentage);
-          if (isNaN(percent)) return false;
-          if (percent <= 0 || percent > 100) return false;
-        }
-
-        // Validate total percentage matches somme_percent
-        const totalPercentage = formValues.inputList.reduce((sum, client) => {
-          return sum + (parseInt(client.pourcentage) || 0);
-        }, 0);
-
-        if (totalPercentage !== parseInt(formValues.somme_percent)) {
-          return false;
-        }
-      } else if (formValues.type_dp == 2) {
-        // Désistement au profit d'un co-réservataire
-        // Désistement au profit d'un co-réservataire
-        if (
-          !formValues.profit_dp_co_reser ||
-          formValues.profit_dp_co_reser.length == 0
-        ) {
-          return false;
-        }
-
-        // Check each beneficiary's percentage
-        let totalPercentage = 0;
-        for (const beneficiary of formValues.profit_dp_co_reser) {
-          const percent = parseInt(beneficiary.pourcentage);
-
-          // Validate percentage is a number between 0 and 100
-          if (isNaN(percent)) return false;
-          if (percent < 0 || percent > 100) return false;
-
-          totalPercentage += percent;
-        }
-
-        // Validate total percentage matches somme_percent
-        if (totalPercentage != parseInt(formValues.somme_percent || 0)) {
-          return false;
-        }
-      } else if (formValues.type_dp == 3) {
-        // Désistement Partiel
-
-        // Validate desisteurs are selected
-        if (
-          !formValues.desisteutrs_profit_dp_partiel ||
-          formValues.desisteutrs_profit_dp_partiel.length == 0
-        ) {
-          return false;
-        }
-
-        // Validate each desisteur's percentage
-        let totalOldPercentage = 0;
-        for (const desisteur of formValues.desisteutrs_profit_dp_partiel) {
-          const percent = parseFloat(desisteur.pourcentage_);
-
-          // Validate percentage is a number between 0 and 100
-          if (isNaN(percent)) return false;
-          if (percent < 0 || percent > 100) return false;
-
-          totalOldPercentage += percent;
-        }
-
-        // Validate new clients if any
-        if (
-          formValues.new_clients_dp_partiel &&
-          formValues.new_clients_dp_partiel.length > 0
-        ) {
-          let totalNewPercentage = 0;
-
-          for (const client of formValues.new_clients_dp_partiel) {
-            // Validate required fields for new clients
-            if (
-              !client.cin ||
-              !client.nom ||
-              !client.prenom ||
-              !client.telephone_num1 ||
-              client.pourcentage == undefined
-            ) {
-              return false;
-            }
-
-            // Validate telephone length
-            if (
-              client.telephone_num1.length < 10 ||
-              client.telephone_num1.length > 14
-            ) {
-              return false;
-            }
-
-            // Validate percentage
-            const percent = parseFloat(client.pourcentage);
-            if (isNaN(percent)) return false;
-            if (percent < 0 || percent > 100) return false;
-
-            totalNewPercentage += percent;
-          }
-
-          // Validate combined percentages equal 100%
-          const combinedPercentage = totalOldPercentage + totalNewPercentage;
-          if (Math.abs(combinedPercentage - 100) > 0.01) {
-            return false;
-          }
-        } else {
-          // If no new clients, old percentages must equal 100%
-          if (Math.abs(totalOldPercentage - 100) > 0.01) {
-            return false;
-          }
-        }
-      }
-    } else if (activeModel == 3) {
-      // Changement de Bien
-      if (!formValues.bien_ancien) {
-        return false;
-      }
-    }
-
-    return true;
-  };
 
   const getFormErrors = () => {
     const formValues = methods.getValues();
@@ -979,10 +784,94 @@ export default function Page() {
           }
         }
       }
-    } else if (activeModel == 3) {
-      // Changement de Bien
+    }
+    // Validation for Changement de Bien (activeModel == 3)
+    if (activeModel == 3) {
+      // Basic validation
       if (!formValues.bien_ancien) {
         errors.push("L'ancien bien est requis");
+      }
+      if (!formValues.new_bien_id) {
+        errors.push('Le nouveau bien est requis');
+      }
+
+      // Validate payment section if montant_a_ajouter > 0
+      if (formValues.montant_a_ajouter > 0) {
+        if (!formValues.mode_paiement) {
+          errors.push('Le mode de paiement est requis');
+        } else {
+          // Validate payment details based on payment method
+          if (formValues.mode_paiement != 1) {
+            // If not cash
+            if (!formValues.banque_id) {
+              errors.push('La banque est requise pour ce mode de paiement');
+            }
+            if (!formValues.numero_paiement) {
+              errors.push('Le numéro de paiement est requis');
+            }
+
+            // Validate echeance for certain payment methods
+            if (
+              formValues.mode_paiement != 5 &&
+              formValues.mode_paiement != 6 &&
+              !formValues.echeance
+            ) {
+              errors.push("L'échéance est requise pour ce mode de paiement");
+            }
+          }
+        }
+        // Validate files if required (uncomment if needed)
+        // if (formValues.files_avance?.length === 0) {
+        //     errors.push("Au moins un fichier de paiement doit être ajouté");
+        // }
+      }
+    }
+    // Penalty validation (applies to all activeModel cases if avecPenalite is true)
+    if (avecPenalite) {
+      if (!formValues.mode_penalite) {
+        errors.push('Le mode de pénalité est requis');
+      } else {
+        if (!formValues.penalite_montant || formValues.penalite_montant <= 0) {
+          errors.push('Le montant de la pénalité doit être supérieur à 0');
+        }
+
+        if (formValues.mode_penalite !== 'Montant') {
+          if (!formValues.penalite_par) {
+            errors.push(
+              'Le type de calcul de pénalité est requis (Prix/Avance)'
+            );
+          }
+        }
+
+        // Payment method validation if penalty amount is set
+        if (formValues.penalite_montant > 0) {
+          if (!formValues.mode_paiement_pen) {
+            errors.push('Le mode de paiement de la pénalité est requis');
+          } else {
+            if (formValues.mode_paiement_pen != 1) {
+              // If not cash
+              if (!formValues.banque_pen) {
+                errors.push(
+                  'La banque pour le paiement de la pénalité est requise'
+                );
+              }
+              if (!formValues.numero_paiement_pen) {
+                errors.push('Le numéro de paiement de la pénalité est requis');
+              }
+
+              // Validate echeance for certain payment methods
+              if (
+                formValues.mode_paiement_pen != 5 &&
+                formValues.mode_paiement_pen != 6 &&
+                !formValues.echeance_pen
+              ) {
+                errors.push(
+                  "L'échéance pour le paiement de la pénalité est requise"
+                );
+              }
+            }
+          }
+        }
       }
     }
 
@@ -991,64 +880,91 @@ export default function Page() {
 
   const errors_s = getFormErrors();
 
-  const handleFileChange = (event, param) => {
+  const handleFileChange = (event, fileType) => {
     const files = Array.from(event.target.files);
-    event.target.value = null; // Reset input to allow selecting same file again
+    event.target.value = null; // Reset input
 
-    // Early return if no files selected
-    if (files.length === 0) return;
+    if (files.length == 0) return;
 
-    const updatedFiles = [...selectedFiles_dst];
-    const existingFileNames = new Set(Object.values(filesList_dst));
+    // Determine which state variables to use based on fileType
+    const isDst = fileType == 1;
+    const selectedFiles = isDst ? selectedFiles_dst : selectedFiles_plt;
+    const filesList = isDst ? filesList_dst : filesList_plt;
+    const setSelectedFiles = isDst
+      ? setSelectedFiles_dst
+      : setSelectedFiles_plt;
+    const formField = isDst ? 'files_desistement' : 'files_penalite';
+
+    const updatedFiles = [...selectedFiles];
+    const existingFileNames = new Set(Object.values(filesList));
     const existingSelectedNames = new Set(
-      selectedFiles_dst.map((f) => f.name || f.fichier)
+      selectedFiles.map((f) => f.name || f.fichier)
     );
 
     for (const file of files) {
       const fileName = file.name;
-      const [baseName, extension] = fileName.split(/(?<=.)(?=[^.]+$)/); // Better split for filename and extension
+      const lastDotIndex = fileName.lastIndexOf('.');
+      const baseName =
+        lastDotIndex == -1 ? fileName : fileName.substring(0, lastDotIndex);
+      const extension =
+        lastDotIndex == -1 ? '' : fileName.substring(lastDotIndex + 1);
 
-      // Check if file exists in file list (needs renaming)
-      if (existingFileNames.has(fileName)) {
-        let newFileName = fileName;
+      let finalFileName = fileName;
+
+      if (
+        existingFileNames.has(fileName) ||
+        existingSelectedNames.has(fileName)
+      ) {
         let counter = 1;
+        while (true) {
+          finalFileName = extension
+            ? `${baseName} (${counter}).${extension}`
+            : `${baseName} (${counter})`;
 
-        while (
-          existingFileNames.has(newFileName) ||
-          existingSelectedNames.has(newFileName)
-        ) {
-          newFileName = `${baseName} (${counter}).${extension}`;
+          if (
+            !existingFileNames.has(finalFileName) &&
+            !existingSelectedNames.has(finalFileName)
+          ) {
+            break;
+          }
           counter++;
         }
-
-        const renamedFile = new File([file], newFileName, { type: file.type });
-        updatedFiles.push(renamedFile);
-        existingSelectedNames.add(newFileName); // Track the new name
-      } else {
-        updatedFiles.push(file);
-        existingSelectedNames.add(fileName);
       }
+
+      const finalFile =
+        finalFileName == fileName
+          ? file
+          : new File([file], finalFileName, { type: file.type });
+
+      updatedFiles.push(finalFile);
+      existingSelectedNames.add(finalFileName);
     }
 
-    // Only update state once at the end
-    if (updatedFiles.length > selectedFiles_dst.length) {
-      setSelectedFiles_dst(updatedFiles);
-      setValue('files_desistement', updatedFiles);
+    if (updatedFiles.length > selectedFiles.length) {
+      setSelectedFiles(updatedFiles);
+      setValue(formField, updatedFiles);
     }
   };
 
   const handleDownloadFile = (file) => {
     const fileURL = URL.createObjectURL(file);
-
     window.open(fileURL);
   };
 
-  const handleDeleteFile = async (index) => {
-    const updatedFiles = selectedFiles_dst.filter((_, i) => i !== index);
-    setSelectedFiles_dst(updatedFiles);
+  const handleDeleteFile = async (index, fileType) => {
+    const isDst = fileType == 1;
+    const selectedFiles = isDst ? selectedFiles_dst : selectedFiles_plt;
+    const setSelectedFiles = isDst
+      ? setSelectedFiles_dst
+      : setSelectedFiles_plt;
+    const formField = isDst ? 'files_desistement' : 'files_penalite';
+
+    const updatedFiles = selectedFiles.filter((_, i) => i !== index);
+    setSelectedFiles(updatedFiles);
     await Promise.resolve(); // Ensures state is updated
-    setValue('files_desistement', updatedFiles);
+    setValue(formField, updatedFiles);
   };
+
   // Helper functions (add these outside your component)
   const getFileIcon = (filename) => {
     const extension = filename.split('.').pop().toLowerCase();
@@ -1106,6 +1022,47 @@ export default function Page() {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / 1048576).toFixed(1)} MB`;
+  };
+
+  const handlechange_penalite = (event) => {
+    const selectedType = event.target.value; // "prix" or "avance"
+    setValue('penalite_par', selectedType);
+
+    // Recalculate only if a penalty mode is selected and it's not "Montant"
+    const currentMode = watch('mode_penalite');
+    if (currentMode && currentMode != 'Montant') {
+      const percentage = parseFloat(currentMode);
+      const amount =
+        selectedType == 'prix'
+          ? reservationData.prix
+          : reservationData.sumAvances;
+
+      setValue('penalite_montant', (amount * percentage) / 100);
+    }
+  };
+
+  const handlechange_mode_penalite = (code) => {
+    const selectedMode = modes_penalites[code];
+    if (selectedMode) {
+      console.log('Selected Mode:', selectedMode.label);
+      setValue('mode_penalite', selectedMode.label);
+
+      // Calculate penalty amount
+      if (selectedMode.label != 'Montant') {
+        const percentage = parseFloat(selectedMode.label);
+        if (watch('penalite_par') == 'prix') {
+          setValue(
+            'penalite_montant',
+            (reservationData.prix * percentage) / 100
+          );
+        } else {
+          setValue(
+            'penalite_montant',
+            (reservationData.sumAvances * percentage) / 100
+          );
+        }
+      }
+    }
   };
 
   return (
@@ -1185,7 +1142,15 @@ export default function Page() {
                 />
               )}
               {activeModel == 2 && (
-                <Desistement_Au_Profit formData={formData} isEditing={false} />
+                <Desistement_Au_Profit
+                  formData={formData}
+                  isEditing={false}
+                  desisteurs_testt={reservationData.desisteursTest}
+                  desisteurs={reservationData.desisteurs}
+                  desisteutrs_profit_dp_partiell={
+                    reservationData.desisteursProfit
+                  }
+                />
               )}
               {activeModel == 1 && (
                 <Desistement_Definitif
@@ -1193,6 +1158,9 @@ export default function Page() {
                   isEditing={false}
                   accessToken={accessToken}
                   selectedProjet_id={selectedProjet_id}
+                  sum_avances_valides={reservationData.sumAvances}
+                  inputListRemb={reservationData.inputListRemb}
+                  reservationId={reservationId}
                 />
               )}
 
@@ -1206,7 +1174,12 @@ export default function Page() {
                     <input
                       type="checkbox"
                       checked={avecPenalite}
-                      onChange={() => setAvecPenalite(!avecPenalite)}
+                      onChange={() => {
+                        setAvecPenalite(!avecPenalite);
+                        if (watch('penalite_montant') != null) {
+                          setValue('penalite_montant', 0);
+                        }
+                      }}
                       className="sr-only peer"
                     />
                     <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
@@ -1215,304 +1188,309 @@ export default function Page() {
               </div>
               {avecPenalite && (
                 <div className="border-t border-gray-200 py-4 px-6 space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {/* Mode Pénalité */}
-                    <div>
+                  <div className="flex flex-col md:flex-row gap-4 items-center">
+                    {' '}
+                    {/* Ensures alignment */}
+                    {/* Mode Pénalité Dropdown */}
+                    <div className="flex-1 min-w-[200px] mt-1">
+                      {' '}
+                      {/* Added mt-1 */}
                       <AutocompleteSelectComponent
-                        label="Mode Pénalité:"
+                        label="Mode Pénalité"
                         name="mode_penalite"
                         control={control}
-                        options={modes_penalites.map((mode) => ({
-                          value: mode.value,
-                          label: mode.value.toUpperCase(),
-                        }))}
+                        options={modes_penalites}
                         errors={errors}
-                        required
-                        onChange={(value) => setValue('mode_penalite', value)}
+                        onChange={(value) => handlechange_mode_penalite(value)}
                       />
                     </div>
-
+                    {/* Conditional Fields (aligned at the same height) */}
                     {watch('mode_penalite') && (
                       <>
                         {watch('mode_penalite') == 'Montant' ? (
-                          <div>
+                          /* Manual Penalty Amount Input (same height as other fields) */
+                          <div className="flex-1 min-w-[180px]">
                             <TextField
-                              label="Pénalité Montant:"
+                              label="Pénalité Montant"
                               name="penalite_montant"
                               type="number"
                               control={control}
-                              errors={errors}
+                              errors={{}}
+                              backendErrors={{}}
                               required
                               onChange={(e) =>
                                 setValue('penalite_montant', e.target.value)
                               }
-                              disabled={watch('mode_penalite') !== 'Montant'}
                             />
                           </div>
                         ) : (
-                          <>
-                            <div className="md:col-span-2">
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Pénalité Par:{' '}
-                                <span className="text-red-500">*</span>
-                              </label>
-                              <div className="flex gap-4">
-                                <label className="inline-flex items-center">
-                                  <input
-                                    type="radio"
-                                    name="penalite_par"
-                                    value="prix"
-                                    checked={watch('penalite_par') == 'prix'}
-                                    onChange={(e) =>
-                                      setValue('penalite_par', e.target.value)
-                                    }
-                                    className="text-blue-600 focus:ring-blue-500"
-                                  />
-                                  <span className="ml-2">Prix</span>
+                          /* Percentage-based Penalty (keeps same height) */
+                          <div className="flex flex-1 flex-col md:flex-row gap-4 items-center">
+                            {' '}
+                            {/* Ensures inner alignment */}
+                            {/* Radio Buttons (Prix/Avance) */}
+                            <div className="min-w-[220px]">
+                              <div className="flex flex-col">
+                                <label className="text-sm font-medium text-gray-700 mb-1">
+                                  Pénalité Par
                                 </label>
-                                <label className="inline-flex items-center">
-                                  <input
-                                    type="radio"
-                                    name="penalite_par"
-                                    value="avance"
-                                    checked={watch('penalite_par') == 'avance'}
-                                    onChange={(e) =>
-                                      setValue('penalite_par', e.target.value)
-                                    }
-                                    className="text-purple-600 focus:ring-purple-500"
-                                  />
-                                  <span className="ml-2">Avance</span>
-                                </label>
+                                <div className="flex space-x-4">
+                                  <label className="inline-flex items-center">
+                                    <input
+                                      type="radio"
+                                      name="penalite_par"
+                                      value="prix"
+                                      checked={watch('penalite_par') == 'prix'}
+                                      onChange={handlechange_penalite}
+                                      className="h-4 w-4 text-blue-600 focus:ring-blue-500"
+                                    />
+                                    <span className="ml-2">Prix</span>
+                                  </label>
+                                  <label className="inline-flex items-center">
+                                    <input
+                                      type="radio"
+                                      name="penalite_par"
+                                      value="avance"
+                                      checked={
+                                        watch('penalite_par') == 'avance'
+                                      }
+                                      onChange={handlechange_penalite}
+                                      className="h-4 w-4 text-purple-600 focus:ring-purple-500"
+                                    />
+                                    <span className="ml-2">Avance</span>
+                                  </label>
+                                </div>
                               </div>
-                              {errors.penalite_par && (
-                                <p className="mt-1 text-sm text-red-600">
-                                  {errors.penalite_par.message}
-                                </p>
-                              )}
                             </div>
-                            <div>
+                            {/* Auto-Calculated Penalty Amount (same height) */}
+                            <div className="min-w-[180px]">
                               <TextField
-                                label="Pénalité Montant:"
+                                label="Montant"
                                 name="penalite_montant"
                                 type="number"
                                 control={control}
                                 errors={errors}
+                                backendErrors={{}}
                                 required
-                                onChange={(e) =>
-                                  setValue('penalite_montant', e.target.value)
-                                }
-                                disabled={watch('mode_penalite') === 'Montant'}
+                                disabled
+                                value={watch('penalite_montant') || ''}
                               />
                             </div>
-                          </>
+                          </div>
                         )}
                       </>
                     )}
                   </div>
+                  <div className="border-t border-gray-200 py-4">
+                    {/* Only show penalty payment section if mode_penalite is selected AND penalite_montant has a valid value */}
+                    {watch('mode_penalite') &&
+                      watch('penalite_montant') &&
+                      watch('penalite_montant') > 0 && (
+                        <>
+                          <div className="mt-4">
+                            <h3 className="text-md font-medium text-gray-900">
+                              Mode Paiement Pénalité:
+                            </h3>
+                          </div>
 
-                  {watch('penalite_montant') && (
-                    <>
-                      <div className="mt-4">
-                        <h3 className="text-md font-medium text-gray-900">
-                          Mode Paiement Pénalité:
-                        </h3>
-                      </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="inline-flex items-center">
+                                <input
+                                  type="checkbox"
+                                  name="sr_pen"
+                                  checked={watch('sr_pen') || false}
+                                  onChange={(e) =>
+                                    setValue('sr_pen', e.target.checked)
+                                  }
+                                  className="text-blue-600 focus:ring-blue-500"
+                                />
+                                <span className="ml-2">Sr</span>
+                              </label>
+                            </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="inline-flex items-center">
-                            <input
-                              type="checkbox"
-                              name="sr_pen"
-                              checked={watch('sr_pen') || false}
-                              onChange={(e) =>
-                                setValue('sr_pen', e.target.checked)
-                              }
-                              className="text-blue-600 focus:ring-blue-500"
-                            />
-                            <span className="ml-2">Sr</span>
-                          </label>
-                        </div>
-
-                        <div>
-                          <AutocompleteSelectComponent
-                            label="Modalité de Paiement:"
-                            name="mode_paiement_pen"
-                            control={control}
-                            options={list_mode_paiement.map((mode) => ({
-                              value: mode.id,
-                              label: toTitleCase(mode.title),
-                            }))}
-                            errors={errors}
-                            required
-                            onChange={(value) =>
-                              setValue('mode_paiement_pen', value)
-                            }
-                          />
-                        </div>
-                      </div>
-
-                      {watch('mode_paiement_pen') &&
-                        watch('mode_paiement_pen') !== 1 && (
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                             <div>
                               <AutocompleteSelectComponent
-                                label="Banque:"
-                                name="banque_pen"
-                                control={control}
-                                options={banques.map((banque) => ({
-                                  value: banque.id,
-                                  label: banque.nom,
-                                }))}
-                                errors={errors}
+                                label="Mode de Paiement"
                                 required
-                                onChange={(value) => {
-                                  setValue('banque_id_pen', value);
-                                  setValue(
-                                    'banque_pen',
-                                    banques.find((b) => b.id === value)
-                                  );
-                                }}
-                                loading={loading_bnqu}
-                              />
-                            </div>
-
-                            <div>
-                              <TextField
-                                label="N° Paiement:"
-                                name="numero_paiement_pen"
-                                type="number"
+                                name="mode_paiement_pen"
                                 control={control}
+                                options={MODE_PAIEMENT}
                                 errors={errors}
-                                required
-                                onChange={(e) =>
-                                  setValue(
-                                    'numero_paiement_pen',
-                                    e.target.value
-                                  )
+                                onChange={(value) =>
+                                  setValue('mode_paiement_pen', value)
                                 }
                               />
                             </div>
                           </div>
-                        )}
 
-                      {watch('mode_paiement_pen') &&
-                        watch('mode_paiement_pen') !== 1 &&
-                        watch('mode_paiement_pen') !== '6' &&
-                        watch('mode_paiement_pen') !== '5' && (
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                            <div>
-                              <TextField
-                                label="Echéance:"
-                                name="echeance_pen"
-                                type="date"
-                                control={control}
-                                errors={errors}
-                                required
-                                onChange={(e) =>
-                                  setValue('echeance_pen', e.target.value)
-                                }
-                                InputLabelProps={{ shrink: true }}
-                              />
-                            </div>
-                          </div>
-                        )}
-
-                      <div className="mt-6">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Fichiers de pénalité:
-                        </label>
-                        <div className="space-y-4">
-                          <TextField
-                            fullWidth
-                            type="file"
-                            inputProps={{
-                              accept: 'image/*, application/pdf',
-                              multiple: true,
-                            }}
-                            onChange={(event) => handleFileChange(event, 3)}
-                            size="small"
-                            variant="outlined"
-                          />
-
-                          {selectedFiles_plt.length > 0 && (
-                            <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                              <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                                <svg
-                                  className="w-4 h-4 mr-2 text-primary-500"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                          {watch('mode_paiement_pen') &&
+                            watch('mode_paiement_pen') != 1 && (
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                <div>
+                                  <Autocomplete
+                                    label="Banque:"
+                                    name="banque_pen"
+                                    required={watch('mode_paiement_pen') != '1'}
+                                    options={banques}
+                                    value={watch('banque_pen')}
+                                    control={control}
+                                    errors={{}}
+                                    backendErrors={{}}
+                                    onChange={(e) => {
+                                      setValue('banque_pen', e.id);
+                                    }}
+                                    choix="nom"
                                   />
-                                </svg>
-                                Fichiers sélectionnés (
-                                {selectedFiles_plt.length})
-                              </h3>
+                                </div>
 
-                              <div className="space-y-2">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                                  {selectedFiles_plt.map((data, index) => (
-                                    <div
-                                      key={data.id || data.name || index}
-                                      className="flex flex-col p-3 bg-white rounded-md border border-gray-200 hover:border-blue-200 transition-colors h-full"
-                                    >
-                                      <div className="flex items-center mb-2">
-                                        {getFileIcon(data.name || data.fichier)}
-                                        <button
-                                          onClick={() =>
-                                            data.fichier
-                                              ? handleFileClick(data.fichier)
-                                              : handleDownloadFile(data)
-                                          }
-                                          className="ml-2 text-sm font-medium text-gray-700 hover:text-blue-600 truncate flex-1 text-left"
-                                          title={data.fichier || data.name}
-                                        >
-                                          {data.fichier || data.name}
-                                        </button>
-                                      </div>
-
-                                      <div className="flex items-center justify-between mt-auto">
-                                        <span className="text-xs text-gray-500">
-                                          {formatFileSize(data.size)}
-                                        </span>
-                                        <button
-                                          onClick={() =>
-                                            handleDeleteFile(index, 3)
-                                          }
-                                          className="p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 transition-colors"
-                                          title="Supprimer"
-                                        >
-                                          <svg
-                                            className="w-4 h-4"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                          >
-                                            <path
-                                              strokeLinecap="round"
-                                              strokeLinejoin="round"
-                                              strokeWidth={2}
-                                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                            />
-                                          </svg>
-                                        </button>
-                                      </div>
-                                    </div>
-                                  ))}
+                                <div>
+                                  <TextField
+                                    label="N° Paiement:"
+                                    name="numero_paiement_pen"
+                                    type="number"
+                                    control={control}
+                                    errors={errors}
+                                    backendErrors={{}}
+                                    required
+                                    onChange={(e) =>
+                                      setValue(
+                                        'numero_paiement_pen',
+                                        e.target.value
+                                      )
+                                    }
+                                  />
                                 </div>
                               </div>
+                            )}
+                          {watch('mode_paiement_pen') &&
+                            watch('mode_paiement_pen') != 1 &&
+                            watch('mode_paiement_pen') != 5 &&
+                            watch('mode_paiement_pen') != 6 && (
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                <div>
+                                  <TextField
+                                    label="Echéance:"
+                                    name="echeance_pen"
+                                    type="date"
+                                    control={control}
+                                    errors={errors}
+                                    backendErrors={{}}
+                                    required
+                                    onChange={(e) =>
+                                      setValue('echeance_pen', e.target.value)
+                                    }
+                                    InputLabelProps={{ shrink: true }}
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                          <div className="border-t border-gray-200 py-4 mt-2">
+                            <div className="mt-6">
+                              <div className="space-y-4">
+                                <TextField
+                                  label="Fichiers de Pénalités:"
+                                  control={control}
+                                  errors={{}}
+                                  backendErrors={{}}
+                                  defaultValues={{}}
+                                  name=""
+                                  type="file"
+                                  onChange={(e) => handleFileChange(e, 3)}
+                                  accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                                />
+
+                                {selectedFiles_plt.length > 0 && (
+                                  <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                    <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                                      <svg
+                                        className="w-4 h-4 mr-2 text-primary-500"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                        />
+                                      </svg>
+                                      Fichiers sélectionnés (
+                                      {selectedFiles_plt.length})
+                                    </h3>
+
+                                    <div className="space-y-2">
+                                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                                        {selectedFiles_plt.map(
+                                          (data, index) => (
+                                            <div
+                                              key={
+                                                data.id || data.name || index
+                                              }
+                                              className="flex flex-col p-3 bg-white rounded-md border border-gray-200 hover:border-blue-200 transition-colors h-full"
+                                            >
+                                              <div className="flex items-center mb-2">
+                                                {getFileIcon(
+                                                  data.name || data.fichier
+                                                )}
+                                                <button
+                                                  onClick={() =>
+                                                    data.fichier
+                                                      ? handleFileClick(
+                                                          data.fichier
+                                                        )
+                                                      : handleDownloadFile(data)
+                                                  }
+                                                  className="ml-2 text-sm font-medium text-gray-700 hover:text-blue-600 truncate flex-1 text-left"
+                                                  title={
+                                                    data.fichier || data.name
+                                                  }
+                                                >
+                                                  {data.fichier || data.name}
+                                                </button>
+                                              </div>
+
+                                              <div className="flex items-center justify-between mt-auto">
+                                                <span className="text-xs text-gray-500">
+                                                  {formatFileSize(data.size)}
+                                                </span>
+                                                <button
+                                                  onClick={() =>
+                                                    handleDeleteFile(index, 3)
+                                                  }
+                                                  className="p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 transition-colors"
+                                                  title="Supprimer"
+                                                >
+                                                  <svg
+                                                    className="w-4 h-4"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                  >
+                                                    <path
+                                                      strokeLinecap="round"
+                                                      strokeLinejoin="round"
+                                                      strokeWidth={2}
+                                                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                                    />
+                                                  </svg>
+                                                </button>
+                                              </div>
+                                            </div>
+                                          )
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                          )}
-                        </div>
-                      </div>
-                    </>
-                  )}
+                          </div>
+                        </>
+                      )}
+                  </div>
                 </div>
               )}
               {/* Section Pénalité */}
@@ -1608,7 +1586,7 @@ export default function Page() {
                                       {formatFileSize(data.size)}
                                     </span>
                                     <button
-                                      onClick={() => handleDeleteFile(index)}
+                                      onClick={() => handleDeleteFile(index, 1)}
                                       className="p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 transition-colors"
                                       title="Supprimer"
                                     >
@@ -1638,7 +1616,7 @@ export default function Page() {
                 )}
               </div>
               <div>
-                {errors_s.length > 0 && (
+                {/*errors_s.length > 0 && (
                   <div className="error-messages">
                     <p>Veuillez corriger les erreurs suivantes :</p>
                     <ul>
@@ -1647,7 +1625,7 @@ export default function Page() {
                       ))}
                     </ul>
                   </div>
-                )}
+                )*/}
               </div>
               <div className="p-6 border-t border-gray-200 flex justify-end">
                 <button

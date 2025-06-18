@@ -7,6 +7,7 @@ import axios from "axios";
 import { APIURL } from "@/configs/api";
 import toast from "react-hot-toast";
 import Link from "next/link";
+import LoadingSpin from '@/components/LoadingSpin';
 
 export default function EditBienPage() {
   const { id } = useParams();
@@ -76,8 +77,8 @@ export default function EditBienPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpin /> 
       </div>
     );
   }
@@ -104,17 +105,7 @@ export default function EditBienPage() {
   }
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold">Modifier un bien</h1>
-        {bien && (
-          <p className="text-gray-500">
-            Bien: <span className="font-medium">{bien.propriete_dite_bien}</span>
-          </p>
-        )}
-      </div>
-      
+    
       <BienForm id={id} projetId={bien?.projet_id} />
-    </div>
   );
 }

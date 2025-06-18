@@ -61,6 +61,16 @@ export function SideBar({
       return 'N/A';
     }
   };
+   function NomBienComplet(bien) {
+    const noms = [];
+    if (bien.tranche?.nom) noms.push(bien.tranche.nom);
+    if (bien.bloc?.nom) noms.push(bien.bloc.nom);
+    if (bien.immeuble?.nom) noms.push(bien.immeuble.nom);
+
+    noms.push(bien.propriete_dite_bien);
+
+    return noms.join(' - ');
+  }
   return (
     <div className="bg-white rounded-lg shadow">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4">
@@ -85,7 +95,7 @@ export function SideBar({
               <div className="font-medium">
                 {' '}
                 <Link href={'/biens/' + bien_id} target="_blank">
-                  <strong style={{ fontWeight: 600 }}>{bien}</strong>
+                  <strong style={{ fontWeight: 600 }}>{NomBienComplet(bien)}</strong>
                 </Link>
               </div>
             </div>

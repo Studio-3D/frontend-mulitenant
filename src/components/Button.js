@@ -19,7 +19,7 @@ const Button = ({ type, onClick, disabled, loading, children, className }) => {
       ? `bg-[rgb(61,158,206)] ${baseStyle}`
       : type == 'delete'
       ? `bg-[red] ${baseStyle}` // Color for edit button (you can adjust the color as needed)
-      : `bg-gray-400 ${baseStyle}`; // Default color for other types (non-submit/edit)
+      : `bg-gray-300 ${baseStyle}`; // Default color for other types (non-submit/edit)
   return (
     <button
       type={type}

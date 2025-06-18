@@ -65,12 +65,18 @@ const AutocompleteSelectComponent = ({
 
   return (
     <div className={`relative ${width}`}>
-      <label htmlFor={name} className="block font-medium !text-gray-700">
+      <label
+        htmlFor={name}
+        className="block text-[15px] font-medium text-gray-700 mb-1"
+      >
+        {' '}
+        {/* Added mb-1 and text-[15px] */}
+
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
 
-      <div className="relative">
+      <div className="relative mt-1">
         <input
           id={name}
           name={name}

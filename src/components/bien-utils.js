@@ -30,9 +30,9 @@ export const getEtatLabel= etat => BIEN_ETATS[etat]?.label || 'État inconnu';
 
 
 const BIEN_ETAT_COLORS = {
-  DISPONIBLE: 'white',
+  DISPONIBLE: 'success',
   PRE_RESERVATION: 'info',
-  RESERVATION: 'success',
+  RESERVATION: 'move',
   BLOQUE: 'error',
   VENDU: 'default',
   ENCOURS_DE_PROPOSITION: 'warning'
@@ -48,5 +48,5 @@ export const rowBienBackgroundColors = {
   error: '#f8d7da',
   default: '#f8f9fa',
   warning: '#fff3cd',
-  white:'#ff3f3f3'
+  move:'#f3f4f6'
 }

@@ -6,6 +6,7 @@ import BlocForm from "@/components/blocs/BlocForm";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { APIURL } from "@/configs/api";
+import LoadingSpin from '@/components/LoadingSpin';
 
 export default function EditBlocPage() {
   const { id } = useParams();
@@ -68,8 +69,8 @@ export default function EditBlocPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpin /> 
       </div>
     );
   }
@@ -93,20 +94,7 @@ export default function EditBlocPage() {
   }
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold">Modifier le bloc</h1>
-        {bloc && (
-          <p className="text-gray-500">
-            Bloc: <span className="font-medium">{bloc.nom}</span>
-            {bloc.tranche && (
-              <span> - Tranche: <span className="font-medium">{bloc.tranche.nom}</span></span>
-            )}
-          </p>
-        )}
-      </div>
-      
+    
       <BlocForm id={id} projetId={bloc?.projet_id} trancheId={bloc?.tranche_id} />
-    </div>
   );
 }

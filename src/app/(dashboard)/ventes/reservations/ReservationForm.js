@@ -43,6 +43,7 @@ import {
   fetchData_Select,
   fetchDataByProjet_2,
   fetchList_fichier_exist,
+  fetchList_fichier_exist_by_Code,
 } from '../../../../../src/configs/api-utils';
 //import Modal from '@/components/Modal';
 //import Modal_File from './Modal_file';
@@ -101,7 +102,9 @@ export default function ReservationForm({ id }) {
 
   const [addedClients, setAddedClients] = useState([]);
 
-  const [currentStep, setCurrentStep] = useState(0);
+  const step_ = window.localStorage.getItem('step_res_edit');
+
+  const [currentStep, setCurrentStep] = useState(isEditing ? Number(step_) : 0);
 
   //clients select
   const [inputList1, setinputList1] = useState([
@@ -177,7 +180,6 @@ export default function ReservationForm({ id }) {
     const updatedList = inputList1.filter((_, i) => i !== index);
     const finalList =
       updatedList.length > 0 ? updatedList : [{ id: '', pourcentage: '' }];
-
 
     // Update state first
     setinputList1(finalList);
@@ -325,7 +327,7 @@ export default function ReservationForm({ id }) {
         .then((response) => {
           if (response.status !== 200) router.back();
           const reservation = response.data.reservation;
-          console.log('le mode finance==>'+reservation?.mode_financement)
+          console.log('le mode finance==>' + reservation?.mode_financement);
           setFormData({
             code_reservation: reservation.code_reservation,
             date_reservation: reservation?.date_reservation || '',
@@ -398,6 +400,19 @@ export default function ReservationForm({ id }) {
 
           setSelectedFiles_rsv(reservation.piece_jointe);
           setLoading(false);
+          fetchList_fichier_exist_by_Code(
+            setfilesList,
+            'rsv',
+            reservation.code_reservation,
+            setLoading_list
+          );
+
+          fetchList_fichier_exist_by_Code(
+            setfilesList_avc,
+            'avc',
+            reservation.code_reservation,
+            setLoading_list
+          );
         })
         .catch((error) => {
           setLoading(false);
@@ -516,28 +531,38 @@ export default function ReservationForm({ id }) {
   };
 
   const fetch_code_reservation = async (event) => {
-    console.log('le code est==>' + event.target.value);
-    let val = event.target.value;
-    if (val.length >= 3) {
+    const val = event.target.value;
+
+    // First check for invalid characters
+    if (/[\\/]/.test(val)) {
+      setInfo_reservation('Les caractères / et \\ ne sont pas autorisés');
+      return; // Exit early if invalid characters found
+    } else {
       setInfo_reservation(null);
-      await axios
-        .get(`${APIURL.ROOTV1}/search_reservation_by_code/` + val, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        })
-        .then((res) => {
+      console.log('le code est==>' + val);
+
+      if (val.length >= 3) {
+        try {
+          const res = await axios.get(
+            `${APIURL.ROOTV1}/search_reservation_by_code/` + val,
+            {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+            }
+          );
+
           if (res.data.reservation != null) {
             setInfo_reservation(
-              'Le Code Réservation  :' + val + ' est déjà existant '
+              'Le Code Réservation : ' + val + ' est déjà existant'
             );
           } else {
             setInfo_reservation(null);
           }
-        })
-        .catch(() => {
+        } catch (error) {
           setInfo_reservation(null);
-        });
+        }
+      }
     }
   };
 
@@ -713,20 +738,14 @@ export default function ReservationForm({ id }) {
       if (banques.length == 0) {
         fetchData_Select('banques', setBanques, setLoading_1);
       }
-
-      if (filesList_avc.length == 0) {
-        fetchList_fichier_exist(setfilesList_avc, 'avc', setLoading_list);
-      }
     }
+
     if (partenaires.length == 0) {
       fetchData_Select('partenaires', setPartenaires, setLoading_1);
     }
 
     if (clientsExist.length == 0) {
       fetchDataClients();
-    }
-    if (filesList.length == 0) {
-      fetchList_fichier_exist(setfilesList, 'rsv', setLoading_list);
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -819,115 +838,61 @@ export default function ReservationForm({ id }) {
     });
   };
 
-  const handleaddFile = () => {
-    var selectedFiles =
-      addOreditPopup == 1
-        ? selectedFiles_rsv
-        : addOreditPopup == 2
-        ? selectedFiles_avc
-        : null;
+  const isButtonDisabled = () => {
+    // Cache all watched values at start
+    const {
+      avance,
+      avance_minimale,
+      mode_paiement,
+      mode_financement,
+      check_montant,
+      commentaireAvance,
+      banque_id,
+      num_paiement,
+      date_echeance,
+    } = watch();
 
-    if (myfile !== null && Array.isArray(myfile)) {
-      myfile.forEach((file) => {
-        const updatedFiles = selectedFiles.filter(
-          (selectedFile) =>
-            selectedFile.fichier !== file.name &&
-            selectedFile.name !== file.name
-        );
-
-        if (addOreditPopup == 1) {
-          setSelectedFiles_rsv([...updatedFiles, ...myfile]);
-        } else if (addOreditPopup == 2) {
-          setSelectedFiles_avc([...updatedFiles, ...myfile]);
-        }
-      });
-    } else if (myfile !== null && !Array.isArray(myfile)) {
-      // If myfile is not an array (i.e., a single file)
-      const updatedFiles = selectedFiles.filter(
-        (selectedFile) =>
-          selectedFile.fichier !== myfile.name &&
-          selectedFile.name !== myfile.name
-      );
-      if (addOreditPopup == 1) {
-        setSelectedFiles_rsv([...updatedFiles, myfile]);
-      } else if (addOreditPopup == 2) {
-        setSelectedFiles_avc([...updatedFiles, myfile]);
-      }
-    } else if (myfile_1 !== null) {
-      // If myfile_1 exists (for handling the case when a file already exists in the list)
-      const updatedFiles = selectedFiles.filter(
-        (selectedFile) =>
-          selectedFile.fichier !== myfile_1.name &&
-          selectedFile.name !== myfile_1.name
-      );
-
-      if (addOreditPopup == 1) {
-        setSelectedFiles_rsv([...updatedFiles, myfile_1]);
-      } else if (addOreditPopup == 2) {
-        setSelectedFiles_avc([...updatedFiles, myfile_1]);
-      }
+    // Always disabled conditions
+    if (info_reservation || loading.form || !mode_financement) {
+      return true;
     }
 
-    setMyfile(null);
-    setMyfile_1(null);
-    setValiderfile(false);
-    setAddOreditPopup(null);
+    // Non-editing validations
+    if (!isEditing) {
+      // Basic amount validations
+      if (avance < 0 || avance === '') return true;
+
+      // Payment method validation
+      if (!mode_paiement) return true;
+
+      // Check payment method specific rules
+      const isCheckPayment = [2, 3, 4].includes(mode_paiement?.code); // Chèque types
+      const isTransferPayment = [5, 6].includes(mode_paiement?.code); // Virement/Versement
+
+      if (isCheckPayment) {
+        if (!banque_id || !num_paiement || !date_echeance) return true;
+      }
+
+      if (isTransferPayment) {
+        if (!banque_id || !num_paiement) return true;
+      }
+
+      // Comment validation when check_montant is true
+      if (check_montant && !commentaireAvance) return true;
+
+      // Special role validation for zero amount
+      if (user?.role > 2 && avance === 0 && !check_montant) return true;
+    }
+
+    // Minimum amount validation
+    if (avance > 0 && avance < avance_minimale) return true;
+
+    return false;
   };
-const isButtonDisabled = () => {
-  // Cache all watched values at start
-  const {
-    avance,
-    avance_minimale,
-    mode_paiement,
-    mode_financement,
-    check_montant,
-    commentaireAvance,
-    banque_id,
-    num_paiement,
-    date_echeance
-  } = watch();
-
-  // Always disabled conditions
-  if (info_reservation || loading.form || !mode_financement) {
-    return true;
-  }
-
-  // Non-editing validations
-  if (!isEditing) {
-    // Basic amount validations
-    if (avance < 0 || avance === '') return true;
-
-    // Payment method validation
-    if (!mode_paiement) return true;
-
-    // Check payment method specific rules
-    const isCheckPayment = [2, 3, 4].includes(mode_paiement?.code); // Chèque types
-    const isTransferPayment = [5, 6].includes(mode_paiement?.code); // Virement/Versement
-
-    if (isCheckPayment) {
-      if (!banque_id || !num_paiement || !date_echeance) return true;
-    }
-
-    if (isTransferPayment) {
-      if (!banque_id || !num_paiement) return true;
-    }
-
-    // Comment validation when check_montant is true
-    if (check_montant && !commentaireAvance) return true;
-
-    // Special role validation for zero amount
-    if (user?.role > 2 && avance === 0 && !check_montant) return true;
-  }
-
-  // Minimum amount validation
-  if (avance > 0 && avance < avance_minimale) return true;
-
-  return false;
-};
   // Helper functions (add these outside your component)
   const getFileIcon = (filename) => {
     const extension = filename.split('.').pop().toLowerCase();
-    const iconClass = 'w-5 h-5 flex-shrink-0 !text-gray-400';
+    const iconClass = 'w-5 h-5 flex-shrink-0 text-gray-400';
 
     switch (extension) {
       case 'pdf':
@@ -1501,7 +1466,7 @@ const isButtonDisabled = () => {
                     onChange={(e) => handleFileChange(e, 1)}
                     accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" // Specify accepted file types
                   />
-                  <p className="mt-1 text-xs !text-gray-500">
+                  <p className="mt-1 text-xs text-gray-500">
                     Formats acceptés: PDF, JPG, PNG, DOC (Taille max: 10MB)
                   </p>
                 </div>
@@ -1509,7 +1474,7 @@ const isButtonDisabled = () => {
                 {/* Selected Files Preview */}
                 {selectedFiles_rsv.length > 0 && (
                   <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <h3 className="text-sm font-semibold !text-gray-700 mb-3 flex items-center">
+                    <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
                       <svg
                         className="w-4 h-4 mr-2 text-primary-500"
                         fill="none"
@@ -1543,7 +1508,7 @@ const isButtonDisabled = () => {
                                     ? handleFileClick(data.fichier)
                                     : handleDownloadFile(data)
                                 }
-                                className="ml-2 text-sm font-medium !text-gray-700 hover:text-blue-600 truncate flex-1 text-left"
+                                className="ml-2 text-sm font-medium text-gray-700 hover:text-blue-600 truncate flex-1 text-left"
                                 title={data.fichier || data.name}
                               >
                                 {data.fichier || data.name}
@@ -1551,12 +1516,12 @@ const isButtonDisabled = () => {
                             </div>
 
                             <div className="flex items-center justify-between mt-auto">
-                              <span className="text-xs !text-gray-500">
+                              <span className="text-xs text-gray-500">
                                 {formatFileSize(data.size)}
                               </span>
                               <button
                                 onClick={() => handleDeleteFile(index, 'rsv')}
-                                className="p-1 !text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 transition-colors"
+                                className="p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 transition-colors"
                                 title="Supprimer"
                               >
                                 <svg
@@ -1587,8 +1552,8 @@ const isButtonDisabled = () => {
 
         {currentStep == 1 && (
           <div className="space-y-6 mt-[50px]">
-            <h2 className="text-xl font-medium !text-gray-700 mb-4">
-              Ajouter les clients participer à cette Réservation 999
+            <h2 className="text-xl font-medium text-gray-700 mb-4">
+              Ajouter les clients participer à cette Réservation
             </h2>
             <div className="space-y-4">
               {inputList1.map((entry, index) => (
@@ -1610,7 +1575,7 @@ const isButtonDisabled = () => {
                     <div>
                       <label
                         htmlFor={`percentage-${index}`}
-                        className="block text-sm font-medium !text-gray-700 mb-1"
+                        className="block text-sm font-medium text-gray-700 mb-1"
                       >
                         Pourcentage:
                       </label>
@@ -1640,7 +1605,7 @@ const isButtonDisabled = () => {
                       onClick={() =>
                         removeClientEntry(index, 'without_new_client')
                       }
-                      className="mt-7 p-2 !text-red-600 hover:text-red-700 hover:bg-red rounded-md transition-colors bg-[red]"
+                      className="mt-7 p-2 text-red-600 hover:text-red-700 hover:bg-red rounded-md transition-colors bg-[red]"
                     >
                       <XIcon className="w-5 h-5" />
                     </button>
@@ -1651,7 +1616,7 @@ const isButtonDisabled = () => {
             <div className="flex justify-center space-x-4">
               <button
                 onClick={addClientEntry}
-                className="flex items-center justify-center gap-2 px-4 py-2  !text-blue-600 rounded-full hover:bg-blue-100 bg-[#2563eb]"
+                className="flex items-center justify-center gap-2 px-4 py-2  text-blue-600 rounded-full hover:bg-blue-100 bg-[#2563eb]"
               >
                 <PlusIcon className="w-5 h-5" />
                 <UsersIcon className="w-5 h-5" />
@@ -1685,7 +1650,7 @@ const isButtonDisabled = () => {
                     },
                   ]);
                 }}
-                className="flex items-center justify-center gap-2 px-4 py-2 bg-green-50 !text-green-600 rounded-full hover:bg-green-100"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-green-50 text-green-600 rounded-full hover:bg-green-100"
               >
                 <UserPlusIcon className="w-5 h-5" />
                 <span>Nouveau Client</span>
@@ -1696,7 +1661,7 @@ const isButtonDisabled = () => {
               <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
                 <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
                   <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-lg font-medium !text-gray-900">
+                    <h3 className="text-lg font-medium text-gray-900">
                       Nouveau Client
                     </h3>
                     <button
@@ -1733,7 +1698,7 @@ const isButtonDisabled = () => {
                     </button>
                   </div>
                   <div className="mb-6">
-                    <label className="block text-sm font-medium !text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Nombre de formulaires:
                     </label>
                     <input
@@ -1754,14 +1719,14 @@ const isButtonDisabled = () => {
                           key={formIndex}
                           className="border-t pt-6 first:border-t-0 first:pt-0"
                         >
-                          <h4 className="text-md font-medium !text-gray-900 mb-4">
+                          <h4 className="text-md font-medium text-gray-900 mb-4">
                             Client {formIndex + 1}
                           </h4>
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Type Client Select */}
                             <div>
-                              <label className="block text-sm font-medium !text-gray-700 mb-1">
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Type Client{' '}
                                 <span className="text-red-500 ml-1">*</span>
                               </label>
@@ -1811,7 +1776,7 @@ const isButtonDisabled = () => {
                             {/* Conditional Partenaire Select (only shows when type_client === 2) */}
                             {form.type_client == '2' && (
                               <div>
-                                <label className="block text-sm font-medium !text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
                                   Partenaire{' '}
                                   <span className="text-red-500 ml-1">*</span>
                                 </label>
@@ -1854,7 +1819,7 @@ const isButtonDisabled = () => {
                               </div>
                             )}
                             <div>
-                              <label className="block text-sm font-medium !text-gray-700 mb-1">
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
                                 CIN <span className="text-red-500 ml-1">*</span>
                               </label>
                               <input
@@ -1904,7 +1869,7 @@ const isButtonDisabled = () => {
                             </div>
 
                             <div>
-                              <label className="block text-sm font-medium !text-gray-700 mb-1">
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Nom <span className="text-red-500 ml-1">*</span>
                               </label>
                               <input
@@ -1932,7 +1897,7 @@ const isButtonDisabled = () => {
                             </div>
 
                             <div>
-                              <label className="block text-sm font-medium !text-gray-700 mb-1">
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Prénom{' '}
                                 <span className="text-red-500 ml-1">*</span>
                               </label>
@@ -1961,7 +1926,7 @@ const isButtonDisabled = () => {
                                 )}
                             </div>
                             <div>
-                              <label className="block text-sm font-medium !text-gray-700 mb-1">
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Civilité{' '}
                                 <span className="text-red-500 ml-1">*</span>
                               </label>
@@ -2003,7 +1968,7 @@ const isButtonDisabled = () => {
                               )}
                             </div>
                             <div>
-                              <label className="block text-sm font-medium !text-gray-700 mb-1">
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Pourcentage{' '}
                                 <span className="text-red-500 ml-1">*</span>
                               </label>
@@ -2050,7 +2015,7 @@ const isButtonDisabled = () => {
                             </div>
 
                             <div>
-                              <label className="block text-sm font-medium !text-gray-700 mb-1">
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Téléphone{' '}
                                 <span className="text-red-500 ml-1">*</span>
                               </label>
@@ -2112,7 +2077,7 @@ const isButtonDisabled = () => {
 
                             {/* Situation Familiale Select */}
                             <div>
-                              <label className="block text-sm font-medium !text-gray-700 mb-1">
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Situation Familiale{' '}
                                 <span className="text-red-500 ml-1">*</span>
                               </label>
@@ -2173,12 +2138,12 @@ const isButtonDisabled = () => {
                             {form.situation_familliale == '2' && (
                               <>
                                 <div>
-                                  <label className="block text-sm font-medium !text-gray-700 mb-1">
+                                  <label className="block text-sm font-medium text-gray-700 mb-1">
                                     Marié(e) à M/MME
                                   </label>
                                   <input
                                     type="text"
-                                    value={form.nom_mari}
+                                    value={form.nom_mari || ''}
                                     onChange={(e) =>
                                       updateFormField(
                                         formIndex,
@@ -2189,7 +2154,7 @@ const isButtonDisabled = () => {
                                     className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                       formSubmitted_client &&
                                       form.situation_familliale == '2' &&
-                                      form.nom_mari?.trim() === ''
+                                      (form.nom_mari || '').trim() === '' // Also handle null check here
                                         ? 'border-red-500'
                                         : 'border-gray-300'
                                     } rounded-md focus:outline-none focus:border-gray-500`}
@@ -2204,12 +2169,12 @@ const isButtonDisabled = () => {
                                 </div>
 
                                 <div>
-                                  <label className="block text-sm font-medium !text-gray-700 mb-1">
+                                  <label className="block text-sm font-medium text-gray-700 mb-1">
                                     Date de Mariage
                                   </label>
                                   <input
                                     type="date"
-                                    value={form.date_mariage}
+                                    value={form.date_mariage || ''}
                                     onChange={(e) =>
                                       updateFormField(
                                         formIndex,
@@ -2220,7 +2185,7 @@ const isButtonDisabled = () => {
                                     className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                       formSubmitted_client &&
                                       form.situation_familliale == '2' &&
-                                      !form.date_mariage
+                                      (form.date_mariage || '').trim() === ''
                                         ? 'border-red-500'
                                         : 'border-gray-300'
                                     } rounded-md focus:outline-none focus:border-gray-500`}
@@ -2235,12 +2200,12 @@ const isButtonDisabled = () => {
                                 </div>
 
                                 <div>
-                                  <label className="block text-sm font-medium !text-gray-700 mb-1">
+                                  <label className="block text-sm font-medium text-gray-700 mb-1">
                                     Lieu de Mariage
                                   </label>
                                   <input
                                     type="text"
-                                    value={form.lieu_mariage}
+                                    value={form.lieu_mariage || ''}
                                     onChange={(e) =>
                                       updateFormField(
                                         formIndex,
@@ -2251,7 +2216,7 @@ const isButtonDisabled = () => {
                                     className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                       formSubmitted_client &&
                                       form.situation_familliale == '2' &&
-                                      form.lieu_mariage?.trim() === ''
+                                      (form.lieu_mariage || '').trim() === ''
                                         ? 'border-red-500'
                                         : 'border-gray-300'
                                     } rounded-md focus:outline-none focus:border-gray-500`}
@@ -2268,7 +2233,7 @@ const isButtonDisabled = () => {
                             )}
 
                             <div>
-                              <label className="block text-sm font-medium !text-gray-700 mb-1">
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Accepte être contacté{' '}
                                 <span className="text-red-500 ml-1">*</span>
                               </label>
@@ -2292,9 +2257,9 @@ const isButtonDisabled = () => {
                                         e.target.value
                                       );
                                     }}
-                                    className="h-4 w-4 !text-blue-600 focus:ring-blue-500 border-gray-300"
+                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
                                   />
-                                  <span className="ml-2 text-sm !text-gray-700">
+                                  <span className="ml-2 text-sm text-gray-700">
                                     Oui
                                   </span>
                                 </label>
@@ -2317,9 +2282,9 @@ const isButtonDisabled = () => {
                                         e.target.value
                                       );
                                     }}
-                                    className="h-4 w-4 !text-blue-600 focus:ring-blue-500 border-gray-300"
+                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
                                   />
-                                  <span className="ml-2 text-sm !text-gray-700">
+                                  <span className="ml-2 text-sm text-gray-700">
                                     Non
                                   </span>
                                 </label>
@@ -2333,7 +2298,7 @@ const isButtonDisabled = () => {
                             </div>
 
                             <div className="md:col-span-2">
-                              <label className="block text-sm font-medium !text-gray-700 mb-1">
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Adresse
                               </label>
                               <textarea
@@ -2385,7 +2350,7 @@ const isButtonDisabled = () => {
                             },
                           ]);
                         }}
-                        className="px-4 py-2 border border-gray-300 rounded-md !text-gray-700 hover:bg-gray-50"
+                        className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
                       >
                         Annuler
                       </button>
@@ -2450,7 +2415,7 @@ const isButtonDisabled = () => {
             <>
               {addedClients.length > 0 && (
                 <div className="mt-8 border-t pt-6">
-                  <h3 className="text-lg font-medium !text-gray-700 mb-4">
+                  <h3 className="text-lg font-medium text-gray-700 mb-4">
                     Clients ajoutés
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -2463,20 +2428,20 @@ const isButtonDisabled = () => {
                           <div className="flex justify-between items-start">
                             <div className="flex-1">
                               <div className="flex items-center mb-2">
-                                <Mail className="w-4 h-4 !text-gray-500 mr-2" />
-                                <h4 className="font-medium !text-gray-900 truncate">
+                                <Mail className="w-4 h-4 text-gray-500 mr-2" />
+                                <h4 className="font-medium text-gray-900 truncate">
                                   {client.cin}
                                 </h4>
                               </div>
                               <div className="flex items-center mb-2">
-                                <User className="w-4 h-4 !text-gray-500 mr-2" />
-                                <h4 className="font-medium !text-gray-900 truncate">
+                                <User className="w-4 h-4 text-gray-500 mr-2" />
+                                <h4 className="font-medium text-gray-900 truncate">
                                   {client.nom} {client.prenom}
                                 </h4>
                               </div>
                               <div className="space-y-1.5">
-                                <div className="flex items-center text-sm !text-gray-600">
-                                  <Percent className="w-4 h-4 !text-gray-400 mr-2 flex-shrink-0" />
+                                <div className="flex items-center text-sm text-gray-600">
+                                  <Percent className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
                                   <span
                                     className="truncate "
                                     style={{
@@ -2489,25 +2454,25 @@ const isButtonDisabled = () => {
                                   </span>
                                 </div>
                                 {client.telephone_num1 && (
-                                  <div className="flex items-center text-sm !text-gray-600">
-                                    <Phone className="w-4 h-4 !text-gray-400 mr-2 flex-shrink-0" />
+                                  <div className="flex items-center text-sm text-gray-600">
+                                    <Phone className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
                                     <span>{client.telephone_num1}</span>
                                   </div>
                                 )}
                                 {client.address && (
-                                  <div className="flex items-center text-sm !text-gray-600">
-                                    <MapPin className="w-4 h-4 !text-gray-400 mr-2 flex-shrink-0" />
+                                  <div className="flex items-center text-sm text-gray-600">
+                                    <MapPin className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
                                     <span className="truncate">
                                       {client.address}
                                     </span>
                                   </div>
                                 )}
                                 {client.type_client && (
-                                  <div className="flex items-center text-sm !text-gray-600">
-                                    <Briefcase className="w-4 h-4 !text-gray-400 mr-2 flex-shrink-0" />
+                                  <div className="flex items-center text-sm text-gray-600">
+                                    <Briefcase className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
                                     <span className="truncate">
                                       {client.type_client && (
-                                        <div className="flex items-center text-sm !text-gray-600">
+                                        <div className="flex items-center text-sm text-gray-600">
                                           <span className="truncate">
                                             {client.type_client === '1'
                                               ? 'Particulier'
@@ -2528,17 +2493,17 @@ const isButtonDisabled = () => {
                                 {/* Situation Familiale Display */}
                                 {client.situation_familliale && (
                                   <div className="space-y-1.5">
-                                    <div className="flex items-center text-sm !text-gray-600">
+                                    <div className="flex items-center text-sm text-gray-600">
                                       {client.situation_familliale === '1' ? (
-                                        <User className="w-4 h-4 !text-gray-400 mr-2 flex-shrink-0" />
+                                        <User className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
                                       ) : client.situation_familliale ===
                                         '2' ? (
-                                        <Heart className="w-4 h-4 !text-gray-400 mr-2 flex-shrink-0" />
+                                        <Heart className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
                                       ) : client.situation_familliale ===
                                         '3' ? (
-                                        <UserX className="w-4 h-4 !text-gray-400 mr-2 flex-shrink-0" />
+                                        <UserX className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
                                       ) : (
-                                        <UserCog className="w-4 h-4 !text-gray-400 mr-2 flex-shrink-0" />
+                                        <UserCog className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
                                       )}
                                       <span>
                                         {SITUATION_FAMILIALLE[
@@ -2551,16 +2516,16 @@ const isButtonDisabled = () => {
                                     {client.situation_familliale === '2' && (
                                       <>
                                         {client.nom_mari && (
-                                          <div className="flex items-center text-sm !text-gray-600 ml-6">
-                                            <User className="w-4 h-4 !text-gray-400 mr-2 flex-shrink-0" />
+                                          <div className="flex items-center text-sm text-gray-600 ml-6">
+                                            <User className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
                                             <span>
                                               Conjoint: {client.nom_mari}
                                             </span>
                                           </div>
                                         )}
                                         {client.date_mariage && (
-                                          <div className="flex items-center text-sm !text-gray-600 ml-6">
-                                            <Calendar className="w-4 h-4 !text-gray-400 mr-2 flex-shrink-0" />
+                                          <div className="flex items-center text-sm text-gray-600 ml-6">
+                                            <Calendar className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
                                             <span>
                                               Marié depuis:{' '}
                                               {new Date(
@@ -2570,8 +2535,8 @@ const isButtonDisabled = () => {
                                           </div>
                                         )}
                                         {client.lieu_mariage && (
-                                          <div className="flex items-center text-sm !text-gray-600 ml-6">
-                                            <MapPin className="w-4 h-4 !text-gray-400 mr-2 flex-shrink-0" />
+                                          <div className="flex items-center text-sm text-gray-600 ml-6">
+                                            <MapPin className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
                                             <span>
                                               Lieu: {client.lieu_mariage}
                                             </span>
@@ -2593,7 +2558,7 @@ const isButtonDisabled = () => {
                                   });
                                   setShowEditModal(true);
                                 }}
-                                className="p-1 !text-gray-400 hover:text-blue-500 rounded-full hover:bg-blue-50 transition-colors duration-200"
+                                className="p-1 text-gray-400 hover:text-blue-500 rounded-full hover:bg-blue-50 transition-colors duration-200"
                                 aria-label="Modifier le client"
                               >
                                 <Pencil className="w-5 h-5" />
@@ -2613,7 +2578,7 @@ const isButtonDisabled = () => {
                                   setAddedClients(updatedClients);
                                   setValue('clients', updatedClients);
                                 }}
-                                className="p-1 !text-gray-400 hover:text-red-500 rounded-full hover:bg-red-50 transition-colors duration-200"
+                                className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-red-50 transition-colors duration-200"
                                 aria-label="Supprimer le client"
                               >
                                 <XIcon className="w-5 h-5" />
@@ -2632,7 +2597,7 @@ const isButtonDisabled = () => {
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
                   <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
                     <div className="flex justify-between items-center mb-6">
-                      <h3 className="text-lg font-medium !text-gray-900">
+                      <h3 className="text-lg font-medium text-gray-900">
                         Modifier Client
                       </h3>
                       <button
@@ -2646,7 +2611,7 @@ const isButtonDisabled = () => {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Type Client Select */}
                         <div>
-                          <label className="block text-sm font-medium !text-gray-700 mb-1">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
                             Type Client{' '}
                             <span className="text-red-500 ml-1">*</span>
                           </label>
@@ -2687,7 +2652,7 @@ const isButtonDisabled = () => {
                         {/* Conditional Partenaire Select - only shows when type_client === "2" */}
                         {clientToEdit.type_client == '2' && (
                           <div>
-                            <label className="block text-sm font-medium !text-gray-700 mb-1">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
                               Partenaire{' '}
                               <span className="text-red-500 ml-1">*</span>
                             </label>
@@ -2727,7 +2692,7 @@ const isButtonDisabled = () => {
                           </div>
                         )}
                         <div>
-                          <label className="block text-sm font-medium !text-gray-700 mb-1">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
                             Cin<span className="text-red-500 ml-1">*</span>
                           </label>
                           <input
@@ -2779,7 +2744,7 @@ const isButtonDisabled = () => {
 
                         {/* NOM */}
                         <div>
-                          <label className="block text-sm font-medium !text-gray-700 mb-1">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
                             Nom <span className="text-red-500 ml-1">*</span>
                           </label>
                           <input
@@ -2806,7 +2771,7 @@ const isButtonDisabled = () => {
 
                         {/* PRÉNOM */}
                         <div>
-                          <label className="block text-sm font-medium !text-gray-700 mb-1">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
                             Prénom <span className="text-red-500 ml-1">*</span>
                           </label>
                           <input
@@ -2832,7 +2797,7 @@ const isButtonDisabled = () => {
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium !text-gray-700 mb-1">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
                             Civilité{' '}
                             <span className="text-red-500 ml-1">*</span>
                           </label>
@@ -2870,7 +2835,7 @@ const isButtonDisabled = () => {
 
                         {/* POURCENTAGE */}
                         <div>
-                          <label className="block text-sm font-medium !text-gray-700 mb-1">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
                             Pourcentage{' '}
                             <span className="text-red-500 ml-1">*</span>
                           </label>
@@ -2911,7 +2876,7 @@ const isButtonDisabled = () => {
 
                         {/* TÉLÉPHONE */}
                         <div>
-                          <label className="block text-sm font-medium !text-gray-700 mb-1">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
                             Téléphone{' '}
                             <span className="text-red-500 ml-1">*</span>
                           </label>
@@ -2965,7 +2930,7 @@ const isButtonDisabled = () => {
                           )}
                         </div>
                         <div>
-                          <label className="block text-sm font-medium !text-gray-700 mb-1">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
                             Situation Familiale{' '}
                             <span className="text-red-500 ml-1">*</span>
                           </label>
@@ -3014,7 +2979,7 @@ const isButtonDisabled = () => {
                           <div className="mt-4 space-y-4">
                             {/* Spouse Name */}
                             <div>
-                              <label className="block text-sm font-medium !text-gray-700 mb-1">
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Marié(e) à M/MME
                               </label>
                               <input
@@ -3047,7 +3012,7 @@ const isButtonDisabled = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               {/* Marriage Date */}
                               <div>
-                                <label className="block text-sm font-medium !text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
                                   Date de Mariage
                                 </label>
                                 <input
@@ -3078,7 +3043,7 @@ const isButtonDisabled = () => {
 
                               {/* Marriage Location */}
                               <div>
-                                <label className="block text-sm font-medium !text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
                                   Lieu de Mariage
                                 </label>
                                 <input
@@ -3111,7 +3076,7 @@ const isButtonDisabled = () => {
                         )}
 
                         <div>
-                          <label className="block text-sm font-medium !text-gray-700 mb-1">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
                             Accepte être contacté{' '}
                             <span className="text-red-500 ml-1">*</span>
                           </label>
@@ -3142,9 +3107,9 @@ const isButtonDisabled = () => {
                                       notifie: e.target.value,
                                     });
                                   }}
-                                  className="h-4 w-4 !text-blue-600 focus:ring-blue-500 border-gray-300"
+                                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
                                 />
-                                <span className="ml-2 text-sm !text-gray-700">
+                                <span className="ml-2 text-sm text-gray-700">
                                   Oui
                                 </span>
                               </label>
@@ -3166,9 +3131,9 @@ const isButtonDisabled = () => {
                                       notifie: e.target.value,
                                     });
                                   }}
-                                  className="h-4 w-4 !text-blue-600 focus:ring-blue-500 border-gray-300"
+                                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
                                 />
-                                <span className="ml-2 text-sm !text-gray-700">
+                                <span className="ml-2 text-sm text-gray-700">
                                   Non
                                 </span>
                               </label>
@@ -3184,7 +3149,7 @@ const isButtonDisabled = () => {
                         </div>
                         {/* ADDRESS (Optional) */}
                         <div className="md:col-span-2">
-                          <label className="block text-sm font-medium !text-gray-700 mb-1">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
                             Adresse
                           </label>
                           <textarea
@@ -3204,7 +3169,7 @@ const isButtonDisabled = () => {
                       <div className="mt-6 flex justify-end space-x-3">
                         <button
                           onClick={() => setShowEditModal(false)}
-                          className="px-4 py-2 border border-gray-300 rounded-md !text-gray-700 hover:bg-gray-50"
+                          className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
                         >
                           Annuler
                         </button>
@@ -3320,33 +3285,35 @@ const isButtonDisabled = () => {
         {currentStep == 2 && (
           <div className="space-y-6 mt-[50px]">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="flex items-center">
-                <Controller
-                  name="sr"
-                  control={control}
-                  defaultValue={defaultValues?.sr || ''}
-                  render={({ field }) => (
-                    <div className="flex items-center">
-                      <input
-                        {...field}
-                        id="sr"
-                        type="checkbox"
-                        checked={field.value == '1'} // Or whatever string value you use
-                        onChange={(e) =>
-                          field.onChange(e.target.checked ? '1' : '0')
-                        }
-                        className="h-4 w-4 !text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <label
-                        htmlFor="sr"
-                        className="ml-2 block text-sm !text-gray-700"
-                      >
-                        Sr
-                      </label>
-                    </div>
-                  )}
-                />
-              </div>
+              {!isEditing && (
+                <div className="flex items-center">
+                  <Controller
+                    name="sr"
+                    control={control}
+                    defaultValue={defaultValues?.sr || ''}
+                    render={({ field }) => (
+                      <div className="flex items-center">
+                        <input
+                          {...field}
+                          id="sr"
+                          type="checkbox"
+                          checked={field.value == '1'} // Or whatever string value you use
+                          onChange={(e) =>
+                            field.onChange(e.target.checked ? '1' : '0')
+                          }
+                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        />
+                        <label
+                          htmlFor="sr"
+                          className="ml-2 block text-sm text-gray-700"
+                        >
+                          Sr
+                        </label>
+                      </div>
+                    )}
+                  />
+                </div>
+              )}
 
               <TextField
                 label="Prix:"
@@ -3467,21 +3434,32 @@ const isButtonDisabled = () => {
                   />
                 </>
               )}
+              {isEditing && (
+                <AutocompleteSelectComponent
+                  label="Mode Financement :"
+                  name="mode_financement"
+                  value={watch('mode_financement')}
+                  required={true}
+                  options={MODE_FINANCE}
+                  onChange={(e) => {
+                    setValue('mode_financement', e);
+                  }}
+                />
+              )}
             </div>
+            {!isEditing && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <AutocompleteSelectComponent
+                  label="Mode Financement :"
+                  name="mode_financement"
+                  value={watch('mode_financement')}
+                  required={true}
+                  options={MODE_FINANCE}
+                  onChange={(e) => {
+                    setValue('mode_financement', e);
+                  }}
+                />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <AutocompleteSelectComponent
-                label="Mode Financement :"
-                name="mode_financement"
-                value={watch('mode_financement')}
-                required={true}
-                options={MODE_FINANCE}
-                onChange={(e) => {
-                  setValue('mode_financement', e);
-                }}
-              />
-
-              {!isEditing && (
                 <>
                   <AutocompleteSelectComponent
                     label="Mode Paiement :"
@@ -3553,11 +3531,11 @@ const isButtonDisabled = () => {
                             onChange={(e) =>
                               field.onChange(e.target.checked ? true : false)
                             }
-                            className="h-4 w-4 !text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                           />
                           <label
                             htmlFor="sr"
-                            className="ml-2 block text-sm !text-gray-700"
+                            className="ml-2 block text-sm text-gray-700"
                           >
                             Voulez vous Enregistrer la Réservation sans montant
                             (Prière de saisir un commentaire)
@@ -3579,7 +3557,7 @@ const isButtonDisabled = () => {
                     height="h-full" // Optionally set height, default is 'h-10'
                   />
                   <div>
-                    <div className="space-y-4">
+                    <div className="space-y-4F">
                       {/* File Input */}
                       <div className="relative">
                         <TextField
@@ -3593,7 +3571,7 @@ const isButtonDisabled = () => {
                           onChange={(e) => handleFileChange(e, 2)}
                           accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" // Specify accepted file types
                         />
-                        <p className="mt-1 text-xs !text-gray-500">
+                        <p className="mt-1 text-xs text-gray-500">
                           Formats acceptés: PDF, JPG, PNG, DOC (Taille max:
                           10MB)
                         </p>
@@ -3602,7 +3580,7 @@ const isButtonDisabled = () => {
                       {/* Selected Files Preview */}
                       {selectedFiles_avc.length > 0 && (
                         <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                          <h3 className="text-sm font-semibold !text-gray-700 mb-3 flex items-center">
+                          <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
                             <svg
                               className="w-4 h-4 mr-2 text-primary-500"
                               fill="none"
@@ -3636,7 +3614,7 @@ const isButtonDisabled = () => {
                                           ? handleFileClick(data.fichier)
                                           : handleDownloadFile(data)
                                       }
-                                      className="ml-2 text-sm font-medium !text-gray-700 hover:text-blue-600 truncate flex-1 text-left"
+                                      className="ml-2 text-sm font-medium text-gray-700 hover:text-blue-600 truncate flex-1 text-left"
                                       title={data.fichier || data.name}
                                     >
                                       {data.fichier || data.name}
@@ -3644,14 +3622,14 @@ const isButtonDisabled = () => {
                                   </div>
 
                                   <div className="flex items-center justify-between mt-auto">
-                                    <span className="text-xs !text-gray-500">
+                                    <span className="text-xs text-gray-500">
                                       {formatFileSize(data.size)}
                                     </span>
                                     <button
                                       onClick={() =>
                                         handleDeleteFile(index, 'avc')
                                       }
-                                      className="p-1 !text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 transition-colors"
+                                      className="p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 transition-colors"
                                       title="Supprimer"
                                     >
                                       <svg
@@ -3714,8 +3692,8 @@ const isButtonDisabled = () => {
                     </div>
                   </div>
                 </>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -3723,7 +3701,7 @@ const isButtonDisabled = () => {
           <button
             type="button" // Prevent accidental form submission
             onClick={goToPrevStep}
-            className={`px-6 py-2 rounded-md border border-gray-300 !text-gray-700 ${
+            className={`px-6 py-2 rounded-md border border-gray-300 text-gray-700 ${
               currentStep == 0
                 ? 'opacity-50 cursor-not-allowed'
                 : 'hover:bg-gray-50'
@@ -3773,16 +3751,6 @@ const isButtonDisabled = () => {
           )}
         </div>
       </div>
-      {/*validerfile == true && (
-        <>
-          <Modal isVisible={true} onClose={() => setValiderfile(false)}>
-            <Modal_File
-              onConfirm={handleaddFile}
-              onClose={() => setValiderfile(false)}
-            />
-          </Modal>
-        </>
-      )*/}
     </>
   );
 }

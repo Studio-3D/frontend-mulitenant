@@ -1,8 +1,10 @@
 const APIBASEURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-const BASERESOURCEURL =  'http://localhost:8000';
+
+const BASERESOURCEURL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:8000';
 
 export const RESOURCE_URL = {
   DOCS: `${BASERESOURCEURL}/Docs`,
+  BASE: BASERESOURCEURL,
 };
 
 export const APIURL = {
@@ -11,6 +13,11 @@ export const APIURL = {
   LOGIN: `${APIBASEURL}/login`,
   REGISTER: `${APIBASEURL}/register`,
   LOGOUT: `${APIBASEURL}/logout`,
+  FORGOT_PASSWORD: `${APIBASEURL}/sendEmail`,
+  VALIDATE_TOKEN: `${APIBASEURL}/validateToken`,
+  RESET_PASSWORD: `${APIBASEURL}/resetPassword`,
+  SWITCH_SOCIETES: `${APIBASEURL}/Switch_Societes`,
+  SOCIETE: `${APIBASEURL}/societe`,
   UTILISATEURS: `${APIBASEURL}/v1/utilisateurs`,
   SOCIETES: `${APIBASEURL}/v1/societes`,
   GETSOCIETES: `${APIBASEURL}/get_societes`,
@@ -58,6 +65,8 @@ export const APIURL = {
   DOCUMENTS_FACTURES: `${BASERESOURCEURL}/Docs/factures`,
   DOCUMENTS_CPS: `${BASERESOURCEURL}/Docs/cps`,
   HISTOIMPORTATION:`${APIBASEURL}/v1/delete_fichier_import`,
+  COMPOSITIONBIENS: `${APIBASEURL}/v1/compositionBiens`,
+
 }
 
 export const ENDPOINTS = {
@@ -82,7 +91,7 @@ export const ENDPOINTS = {
   VISITES: '/crm/visites',
   APPELS: '/crm/appels',
   PROSPECTS: '/crm/prospects',
-  CLIENTS: '/clients/home',
+  CLIENTS: '/ventes/clients',
 
   ENCAISSEMENTS: '/encaissements',
   RESERVATIONS: '/ventes/reservations',
