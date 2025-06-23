@@ -15,6 +15,8 @@ import ReservationTable from '../../reservations/ReservationTable';
 import format from 'date-fns/format'
 import { getSituationLabel } from "@/components/client-utils";
 import AppelsTable from '@/app/(dashboard)/crm/appels/AppelsTable';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import ClientPDF from '../ClientImprimer';
 
 
 const ClientDetails = () => {
@@ -219,15 +221,38 @@ const ClientDetails = () => {
                   
                 </div>
 
-                <div className="flex justify-end mt-6">
-                  <Button
-                    type="submit"
-                    onClick={() => handleEdit(clientDetails?.id)}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1 rounded text-sm"
-                  >
-                    Modifier
-                  </Button>
-                </div>
+                <div className="flex justify-end mt-6 gap-3">
+  <PDFDownloadLink
+    document={<ClientPDF /* client={clientDetails} reservations={clientDetails?.reservations} */ />}
+    fileName={`client_${clientId}.pdf`}
+    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition text-sm"
+  >
+    {({ loading }) => (loading ? 'Préparation...' : 'Imprimer')}
+  </PDFDownloadLink>
+ {/*  <PDFDownloadLink
+  document={
+    <ClientPDF 
+      client={clientDetails}
+      reservation={reservationDetails}
+      aquereur={aquereurDetails}
+      payments={paymentHistory}
+      visits={visitHistory}
+      calls={callHistory}
+      totalPayments={totalPayments}
+    />
+  }
+  fileName={`client_${clientId}.pdf`}
+>
+  {({ loading }) => (loading ? 'Préparation...' : 'Imprimer')}
+</PDFDownloadLink> */}
+  <button
+    type="button"
+    onClick={() => handleEdit(clientDetails?.id)}
+    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded transition text-sm"
+  >
+    Modifier
+  </button>
+</div>
               </div>
             </div>
 
@@ -272,27 +297,27 @@ const ClientDetails = () => {
 
                     {activeTab === 'visites' && (
                       <div className="min-h-[400px]">
-                     <VisiteTable dataProspect={null} dataClient={clientDetails.id} />
+                     <VisiteTable dataProspect={null} dataClient={clientDetails} />
                       </div>
                     )}
                     {activeTab === 'encaissements' && (
                       <div className="min-h-[400px]">
                         <div className="min-h-[400px]">
-                          <EncaissementTable dataClient_id={clientDetails.id} />
+                          <EncaissementTable dataClient_id={clientDetails} />
                         </div>
                       </div>
                     )}
                     {activeTab === 'appels' && (
                       <div className="min-h-[400px]">
                         <div className="min-h-[400px]">
-                          <AppelsTable dataClient={clientDetails.id} />
+                          <AppelsTable dataClient={clientDetails} />
                         </div>
                       </div>
                     )}
                     {activeTab === 'reservations' && (
                       <div className="min-h-[400px]">
                         <div className="min-h-[400px]">
-                          <ReservationTable dataClient={clientDetails.id} />
+                          <ReservationTable dataClient={clientDetails} />
                         </div>
                       </div>
                     )}

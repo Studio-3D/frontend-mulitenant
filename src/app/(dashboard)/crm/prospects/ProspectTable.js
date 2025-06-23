@@ -146,30 +146,7 @@ const ProspectTable = () => {
     router.push(`${ENDPOINTS.VISITES}?action=add`);
   }
   // Format users data for table display
-  const formatData = () => {
-    return prospects.map((pro) => ({
-      id: pro.id,
-      nom: `${pro.nom || ''}`.trim(),
-      prenom: `${pro.prenom || ''}`.trim(),
-      nomComplet: `${pro.nom || ''} ${pro.prenom || ''}`.trim(),
-      email: pro.email,
-      telephone:
-        (pro.telephone ? pro.telephone : '') +
-          (pro.telephone && pro.telephone_num2 && pro.telephone_num2 !== 'null'
-            ? ' / ' + pro.telephone_num2
-            : '') || 'Non spécifié',
-      cin: pro.cin,
-      client: pro.client,
-      visites: pro.visites,
-      appels: pro.appels,
-      origin: pro.origin,
-      statut:
-        pro.last_statut != null
-          ? Statuts_Prospect[pro.last_statut?.statut]?.label
-          : '',
-      prospect: pro,
-    }));
-  };
+ 
 
   // Table columns configuration
   const columns = [

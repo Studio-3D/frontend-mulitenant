@@ -274,7 +274,7 @@ const ClientTable = () => {
 
   return (
     <>
-      <div className="reflative">
+      <div className="reflative bg-white rounded-lg shadow-md p-4">
         <Table
           data_to_export={data_to_export()}
           columns_export={columns_export}

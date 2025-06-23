@@ -5,6 +5,7 @@ import { Filter, Search, Plus, Download, Upload } from 'lucide-react';
 import Link from 'next/link';
 import Modal from './Modal';
 import { handleExportExcel } from '../../src/configs/export';
+import { FiSettings } from 'react-icons/fi';
 
 const Table = ({
   onFilterToggle = () => {},
@@ -28,6 +29,7 @@ const Table = ({
   onExport = null,
   enableExport = false,
   enableImport = false,
+  enableConfig= false,
   filterComponent = null,
   // New props for expandable rows
   renderExpandedRow = null,
@@ -38,6 +40,7 @@ const Table = ({
   showSearch = true,
   compact = false, 
   onImportClick = () => {},
+  onConfigClick = () => {},
 
 }) => {
   const [showModal, setShowModal] = useState(null);
@@ -130,13 +133,24 @@ const Table = ({
 
         <div className="flex gap-2 items-center">
           {addLink && (
-            <Link
-              href={addLink}
-              className="flex gap-1 items-center bg-green-600 text-white font-medium rounded-lg px-3 py-1.5"
-            >
-              <Plus className="w-5 h-5" />
-              <span>Ajouter</span>
-            </Link>
+            typeof addLink === 'string' ? (
+              <Link
+                href={addLink}
+                className="flex gap-1 items-center bg-green-600 text-white font-medium rounded-lg px-3 py-1.5"
+              >
+                <Plus className="w-5 h-5" />
+                <span>Ajouter</span>
+              </Link>
+            ) : (
+              <Link
+                href={addLink.pathname}
+                onClick={addLink.onClick}
+                className="flex gap-1 items-center bg-green-600 text-white font-medium rounded-lg px-3 py-1.5"
+              >
+                <Plus className="w-5 h-5" />
+                <span>Ajouter</span>
+              </Link>
+            )
           )}
          
           {enableExport && (
@@ -155,6 +169,15 @@ const Table = ({
             >
               <Upload className="w-5 h-5" />
               <span>Importer</span>
+            </button>
+          )}
+          {enableConfig && (
+            <button
+              className="flex gap-1 items-center bg-orange-300 text-white font-medium rounded-lg px-3 py-1.5 hover:bg-orange-100 transition"
+              onClick={onConfigClick}
+            >
+              <FiSettings className="w-5 h-5" />
+              <span>Configuration</span>
             </button>
           )}
         </div>

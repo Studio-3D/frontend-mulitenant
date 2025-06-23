@@ -85,7 +85,7 @@ const ReservationTable = ({ dataClient }) => {
   };
 
   useEffect(() => {
-    const params_url = dataClient ? { client_id: dataClient } : {};
+    const params_url = dataClient ? { client_id: dataClient?.id } : {};
     const combinedFilters = { ...filters, ...params_url };
 
     fetchData_table_by_projet(
