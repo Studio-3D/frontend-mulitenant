@@ -29,7 +29,7 @@ import Pusher from 'pusher-js';
 import AutocompleteClient from './AutocompleteClient';
 import BreadCrumb from '../../navigation/BreadCrumb';
 import { APIURL, ENDPOINTS } from '../../../../configs/api';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import * as yup from 'yup';
 import toast from 'react-hot-toast';
 import { useForm, Controller } from 'react-hook-form';
@@ -39,7 +39,6 @@ import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponen
 import Autocomplete from '@/components/Autocomplete';
 import LoadingSpin from '@/components/LoadingSpin';
 
-  
 import {
   fetchData_Select,
   fetchDataByProjet_2,
@@ -57,9 +56,8 @@ import {
 import { CIVILITES } from '@/components/client-utils';
 export default function ReservationForm({ id }) {
   const [formSubmitted_client, setFormSubmitted_client] = useState(false);
-  
-  const current = new Date();
 
+  const current = new Date();
 
   const [loading, setLoading] = useState({ form: false, reservations: false });
   const [clientToEdit, setClientToEdit] = useState(null);
@@ -101,7 +99,7 @@ export default function ReservationForm({ id }) {
   const [filesList_avc, setfilesList_avc] = useState([]);
   const [loading_1, setLoading_1] = useState(false);
   const selectedClient = localStorage.getItem('selectedClient');
-  const { clientId } = useParams();
+
   const [addedClients, setAddedClients] = useState([]);
 
   const step_ = window.localStorage.getItem('step_res_edit');
