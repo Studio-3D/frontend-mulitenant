@@ -21,15 +21,13 @@ export default function ClientForm({ id, projetId, trancheId }) {
   const [loading, setLoading] = useState(false);
   const [backendErrors, setBackendErrors] = useState({});
   const [validationErrors, setValidationErrors] = useState({});
-  const [tranches, setTranches] = useState([]);
-  const [loadingTranches, setLoadingTranches] = useState(false);
-  const [selectedTranche, setSelectedTranche] = useState(null);
+  const [prospect_id, setProspect_id] = useState(null);
   const [info_client, setInfo_client] = useState('')
   const [info_prospect, setInfo_prospect] = useState('')
   const token = localStorage.getItem("accessToken");
-  const [disabled, setDisabled] = useState(false)
   const [disabled_var, setDisabled_var] = useState(false)
-    
+    const [isSubmitted, setIsSubmitted] = useState(false);
+
   // Get selected project from localStorage if not provided via props
   const selectedProjet = projetId ? 
     { id: projetId } : 
@@ -159,56 +157,115 @@ const handleChange_event = (type) => {
 };
 
 const fetch_cin_tel_email = async (value, type) => {
+  // Déterminer la route en fonction du type de recherche
   let route = '';
-  if (type === 'cin') route = 'search_client_by_cin';
-  else if (type === 'telephone') route = 'search_client_by_phone';
-  else route = 'search_client_by_email';
+  if (type === 'cin') {
+    route = 'search_client_by_cin';
+  } else if (type === 'telephone') {
+    route = 'search_client_by_phone';
+  } else if (type === 'email') {
+    route = 'search_client_by_email';
+  } else {
+    console.error('Type de recherche non valide');
+    return;
+  }
+
+  // Vérifier que la valeur n'est pas vide
+  if (!value || value.trim() === '') {
+    setInfo_client('');
+    setInfo_prospect('');
+    setDisabled_var(false);
+    return;
+  }
 
   try {
+    // Faire la requête API
     const res = await axios.get(`${APIURL.ROOT}/v1/${route}/${value}`, {
       headers: { Authorization: `Bearer ${token}` },
+      timeout: 5000 // Timeout après 5 secondes
     });
 
-    const client = res.data.client;
-    const prospect = res.data.prospect;
+    // Extraire les données de la réponse
+    const { client, prospect } = res.data;
 
-    if (client!=null) {
+    // Réinitialiser les états avant de traiter la réponse
+    setInfo_client('');
+    setInfo_prospect('');
+    setDisabled_var(false);
+
+    // 1. Vérifier d'abord si c'est un client existant
+    if (client) {
       setInfo_client(
         `${type}: ${value} appartient au Client ${client.nom} ${client.prenom}. Veuillez changer ce ${type}!`
       );
-      //set_check(true);
-      setFormData((prev) => ({
+      setDisabled_var(true);
+      
+      // Optionnel: Pré-remplir certains champs si nécessaire
+      /*setFormData(prev => ({
         ...prev,
         nom: client.nom,
         prenom: client.prenom,
         email: client.email,
         telephone_num1: client.telephone_num1,
         telephone_num2: client.telephone_num2,
-      }));
-    } else {
-      setInfo_client('');
-      //set_check(false);
-    }
-
-    if (prospect!=null) {
+      }));*/
+    } 
+    // 2. Si pas de client, vérifier si c'est un prospect
+    else if (prospect) {
       setInfo_prospect(
         `${type}: ${value} appartient au Prospect ${prospect.nom} ${prospect.prenom}`
       );
-      //set_check_p(true);
-      setFormData((prev) => ({
+      setProspect_id(prospect.id);
+      
+      // Pré-remplir les champs avec les infos du prospect
+      setFormData(prev => ({
         ...prev,
-        nom: prospect.nom,
-        prenom: prospect.prenom,
-        email: prospect.email,
-        telephone_num1: prospect.telephone,
-        telephone_num2: prospect.telephone_num2,
+        cin: prospect?.cin || '',
+        nom: prospect.nom || '',
+        prenom: prospect.prenom || '',
+        email: prospect.email || '',
+        telephone_num1: prospect.telephone || '',
+        telephone_num2: prospect.telephone_num2 || '',
+        partenaire_id: prospect.partenaire_id || null,
+        type_client: prospect.partenaire_id ? 2 : 1,
       }));
-    } else {
-      setInfo_prospect('');
-      //set_check_p(false);
+    }
+    // 3. Si ni client ni prospect trouvé
+    else {
+      // Réinitialiser les champs si on cherche à créer un nouveau client
+      if (type === 'cin') {
+        setFormData(prev => ({
+          ...prev,
+          cin: value, // Garder la valeur CIN entrée
+          nom: '',
+          prenom: '',
+        }));
+      }
     }
   } catch (error) {
     console.error('Erreur lors de la vérification du client/prospect', error);
+    
+    // Gestion spécifique des différents types d'erreurs
+    if (error.response) {
+      // Erreur de réponse du serveur (4xx, 5xx)
+      if (error.response.status === 404) {
+        // Aucun client/prospect trouvé - ce n'est pas vraiment une erreur
+        setInfo_client('');
+        setInfo_prospect('');
+      } else {
+        setInfo_client('Erreur lors de la vérification');
+      }
+    } else if (error.request) {
+      // La requête a été faite mais pas de réponse
+      setInfo_client('Problème de connexion au serveur');
+    } else {
+      // Erreur lors de la configuration de la requête
+      setInfo_client('Erreur de configuration');
+    }
+    
+    // Réinitialiser les états en cas d'erreur
+    setInfo_prospect('');
+    setDisabled_var(false);
   }
 };
 
@@ -253,14 +310,21 @@ const calculate_age = (dobString) => {
  const handleSelectChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
-  
-
 
   // Validate form
   const validateForm = () => {
     const errors = {};
     if (!formData.nom) {
       errors.nom = "Le nom du client est requis";
+    }
+    if (!formData.situation_familliale) {
+      errors.situation_familliale = "La situation familliale du client est requise";
+    }
+    if (!formData.civilite) { // Ajout de la validation pour la civilité
+      errors.civilite = "La civilité est requise";
+    }
+    if (!formData.type_client) { // Ajout de la validation pour la civilité
+      errors.type_client = "Le type de client est requis";
     }
     if (!formData.telephone_num1) {
       errors.telephone_num1 = "Le téléphone 1 est requis.";
@@ -283,6 +347,7 @@ const calculate_age = (dobString) => {
   // Form submission handler
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitted(true)
     
     if (!validateForm()) {
       return;
@@ -354,10 +419,29 @@ const calculate_age = (dobString) => {
         </Grid>
       )}
       {info_prospect != '' && (
-        <Grid style={{ marginTop: '10px', marginBottom: '10px' }}>
-          <Alert severity='warning'>{info_prospect}</Alert>
-        </Grid>
-      )}
+  <Grid style={{ marginTop: '10px', marginBottom: '10px' }}>
+    <Alert 
+      severity='warning'
+      action={
+        <Button
+          size="small"
+          color="inherit"
+          onClick={ () => {
+            setFormData((prev) => ({
+                ...prev,
+                prospect_id: prospect_id
+              }));            
+            setInfo_prospect('')
+          }}
+        >
+          Convertir en client
+        </Button>
+      }
+    >
+      {info_prospect}
+    </Alert>
+  </Grid>
+)}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <h4 className="text-xl font-bold text-blue-700 mb-4 border-b-2 border-blue-300 pb-2 flex items-center gap-2 bg-white px-2 rounded-sm shadow-sm">
@@ -397,6 +481,7 @@ const calculate_age = (dobString) => {
               handleChange({ target: { name: 'type_client', value } })                
             }
             error={validationErrors.type_client || backendErrors.type_client}
+            submitted={isSubmitted}
           />
 
           {formData.type_client == 2 && (
@@ -427,7 +512,7 @@ const calculate_age = (dobString) => {
               handleChange(e); // met à jour formData
               handleChange_event('cin')(e);
             }}
-            disabled={disabled_var}
+            //disabled={disabled_var}
             error={validationErrors.cin || backendErrors.cin}
             required
           />
@@ -461,7 +546,7 @@ const calculate_age = (dobString) => {
               handleChange(e);
               handleChange_event('telephone')(e);
             }}
-            error={validationErrors.telephone_num2 || backendErrors.telephone_num2} required />
+            error={validationErrors.telephone_num2 || backendErrors.telephone_num2} />
 
           <Input
             label="Email"
@@ -478,7 +563,7 @@ const calculate_age = (dobString) => {
               label="Civilité "
               name="civilite"
               required
-              placeholder="Sélectionner un type"
+              placeholder="Sélectionner une civilité"
               options={Object.values(CIVILITES).map((item) => ({
                 value: item.code,
                 label: item.label
@@ -488,6 +573,7 @@ const calculate_age = (dobString) => {
                 handleChange({ target: { name: 'civilite', value } })                
               }
               error={validationErrors.civilite || backendErrors.civilite}
+              submitted={isSubmitted}
             />
           <Input label="Adresse" type="text" name="adresse" value={formData.adresse} onChange={handleChange}
             error={validationErrors.adresse || backendErrors.adresse} />
@@ -592,6 +678,7 @@ const calculate_age = (dobString) => {
             }
             error={validationErrors.situation_familliale || backendErrors.situation_familliale}
             required
+            submitted={isSubmitted}
           />
 
           {formData.situation_familliale == 2 && (
@@ -652,7 +739,7 @@ const calculate_age = (dobString) => {
           <Button type="button" onClick={() => router.back()}>
             Annuler
           </Button>
-          <Button type="submit" disabled={loading}  loading={loading}>
+          <Button type="submit" disabled={loading||disabled_var}  loading={loading}>
             {loading ? "Chargement..." : id ? "Modifier" : "Ajouter"}
           </Button>
         </div>

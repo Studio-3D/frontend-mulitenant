@@ -135,7 +135,7 @@ const fetchBiens = async () => {
   useEffect(() => { 
     fetchBiens()
     fetchClients()
-    const params_url = dataClient_id ? { client_id: dataClient_id } : {};
+    const params_url = dataClient_id ? { client_id: dataClient_id?.id } : {};
     const combinedFilters = { ...filters, ...params_url };
     fetchData_table_by_projet(
         entity,
@@ -294,77 +294,52 @@ const rows = formatData();
   
 
    const data_to_export = () => {
-    return encaissements.map((item) => {
-      // Extraire les noms des acquéreurs et les séparer par "/"
-      const acquereursNames = item?.reservations.aquereurs
-        ? item.reservations.aquereurs
-            .map((acq) => acq.client?.nom+' '+acq.client?.prenom || "")
-            .join(" / ") // Sépare les noms par "/"
-        : "";
+  return encaissements.map((item) => {
+    const acquereursNames = item?.reservations?.aquereurs
+      ? item.reservations.aquereurs
+          .map((acq) => (acq.client?.nom || "") + " " + (acq.client?.prenom || ""))
+          .join(" / ")
+      : "";
 
-        const acquereursCin = item?.reservations.aquereurs
-        ? item.reservations.aquereurs
-            .map((acq) => acq.client?.cin|| "")
-            .join(" / ") // Sépare les noms par "/"
-        : "";
+    const acquereursCin = item?.reservations?.aquereurs
+      ? item.reservations.aquereurs.map((acq) => acq.client?.cin || "").join(" / ")
+      : "";
 
-        const acquereursTele = item?.reservations.aquereurs
-        ? item.reservations.aquereurs
-            .map((acq) => acq.client?.telephone_num1|| "")
-            .join(" / ") // Sépare les noms par "/"
-        : "";
-  
-      return {
-      cc: item?.avance.user.name+' '+item.avance.user.prenom || "",
-      bien: item.reservations.bien.propriete_dite_bien || "",
-      prix: item.reservations.prix || "",
-      avance: item.montant.toLocaleString() + ' DH',
-      mode_paiement: MODE_PAIEMENT[item.avance.statut]?.label ,
+    const acquereursTele = item?.reservations?.aquereurs
+      ? item.reservations.aquereurs.map((acq) => acq.client?.telephone_num1 || "").join(" / ")
+      : "";
+
+    return {
+      cc: ((item.avance?.user?.name || "") + " " + (item.avance?.user?.prenom || "")).trim(),
+      bien: item.reservations?.bien?.propriete_dite_bien || "",
+      prix: item.reservations?.prix || "",
+      avance: item.montant?.toLocaleString() + " DH" || "",
+      mode_paiement: MODE_PAIEMENT[item.avance?.statut]?.label || "",
       banque: item.avance?.banque?.nom || "",
-      num_pai: item.avance.numero_paiement || "",
-      date_reg:item.date_reglement != null ? format(new Date(item.date_reglement), 'dd/MM/yyyy') : null,
-      num_rem:item.type_encaissement == '1'
-      ? item.avance?.last_statut.num_remise
-      : item.type_encaissement == '6'
-      ? item.penalite?.last_statut.num_remise
-      : null,
-      date_encaissement:item.date_encaissement != null ? format(new Date(item.date_encaissement), 'dd/MM/yyyy') : null,
-      type_enc:item.type_encaissement == '1'
-                          ? 'Avances'
-                          : item.type_encaissement == '2'
-                          ? 'Restitution'
-                          : item.type_encaissement == '3'
-                          ? 'Remboursement'
-                          : item.type_encaissement == '4'
-                          ? 'Décharge Reliquat'
-                          : item.type_encaissement == '5'
-                          ? 'Déblocage Crédit'
-                          : item.type_encaissement == '6'
-                          ? 'Pénalité'
-                          : item.type_encaissement == '1'
-                          ? 'Avances'
-                          : item.type_encaissementt == '2'
-                          ? 'Restitution'
-                          : item.type_encaissement == '3'
-                          ? 'Remboursement'
-                          : item.type_encaissement == '4'
-                          ? 'Décharge Reliquat'
-                          : item.type_encaissement == '5'
-                          ? 'Déblocage Crédit'
-                          : item.type_encaissement == '6'
-                          ? 'Pénalité'
-                          : null,
-      code_res: item.reservations.code_reservation || "",
-      date_res: item.reservations.date_reservation?format(new Date(item.reservations.date_reservation), 'dd/MM/yyyy'):'' ,
-      aq_names: acquereursNames || "",
-      aq_cin: acquereursCin || "",
-      aq_tele: acquereursTele || "",
-
-
-
+      num_pai: item.avance?.numero_paiement || "",
+      date_reg:
+        item.date_reglement != null ? format(new Date(item.date_reglement), "dd/MM/yyyy") : null,
+      num_rem:
+        item.type_encaissement == "1"
+          ? item.avance?.last_statut?.num_remise
+          : item.type_encaissement == "6"
+          ? item.penalite?.last_statut?.num_remise
+          : null,
+      date_encaissement:
+        item.date_encaissement != null ? format(new Date(item.date_encaissement), "dd/MM/yyyy") : null,
+      // ... reste du code inchangé ...
+      code_res: item.reservations?.code_reservation || "",
+      date_res:
+        item.reservations?.date_reservation != null
+          ? format(new Date(item.reservations.date_reservation), "dd/MM/yyyy")
+          : "",
+      aq_names: acquereursNames,
+      aq_cin: acquereursCin,
+      aq_tele: acquereursTele,
     };
   });
 };
+
 
   const columns_export = [
     { key: 'code_res', label: 'Code reservation' },

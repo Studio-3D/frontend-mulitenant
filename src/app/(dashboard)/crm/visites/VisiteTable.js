@@ -53,7 +53,7 @@ const VisiteTable = ({dataProspect, dataClient}) => {
     searchFields: ['responsable', 'date', 'nom', 'prenom', 'telephone'],
   };
   // Prepare parameters based on conditions
-  const clientId = dataClient;
+  const clientId = dataClient?.id;
   const prospectId = dataProspect?.dataProspect?.id;
   useEffect(() => {
     const params_url = clientId
@@ -242,15 +242,23 @@ const VisiteTable = ({dataProspect, dataClient}) => {
   const canAddVisite =
     isSuperAdmin(user.role) || isAdmin(user.role) || isCommercial(user.role);
 
-  let handleAddClick;
-  if (canAddVisite) {
-    if (prospectId != null) {
-      localStorage.setItem('selectedProspect', JSON.stringify(dataProspect)); // Store prospect info
-    }
-    handleAddClick = `${ENDPOINTS.VISITES}?action=add`;
-  } else {
-    handleAddClick = undefined;
-  }
+   function getAddLinkForVisite(user) {
+     if (canAddVisite) {
+       if (dataClient) {
+         return {
+           pathname: `${ENDPOINTS.VISITES}?action=add`,
+           onClick: () => {
+             localStorage.setItem(
+                   'selectedClient',
+                   JSON.stringify({ dataClient: dataClient })
+                 );        
+           }
+         };
+       }
+       return `${ENDPOINTS.VISITES}?action=add`;
+     }
+     return undefined;
+   }
 
   const handleFilterChange = (field, value) => {
     setTempFilters((prev) => ({ ...prev, [field]: value }));
@@ -272,7 +280,7 @@ const VisiteTable = ({dataProspect, dataClient}) => {
   };
   return (
     <>
-      <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
+      <div className="relative bg-white rounded-lg px-4 py-4">
         <Table
           data_to_export={data_to_export()}
           columns_export={columns_export}
@@ -288,7 +296,7 @@ const VisiteTable = ({dataProspect, dataClient}) => {
           onRowsPerPageChange={setRowsPerPage}
           onSearchChange={setSearchTerm}
           enableExport={true}
-          addLink={handleAddClick}
+          addLink={getAddLinkForVisite(user)}
           filterComponent={
             <div className="space-y-4 p-4 rounded-lg ">
               <div
