@@ -287,7 +287,7 @@ export function VisitesChart({ dateRange }) {
       <CardHeader className="flex flex-row items-center justify-between px-4 sm:px-6">
         <div className="flex flex-col space-y-2">
           <CardTitle>
-            <h2 className=" font-semibold mb-4 text-gray-700 flex items-center">
+            <h2 className="font-semibold mb-4 text-gray-700 flex items-center">
               <span className="w-2 h-8 bg-purple-500 rounded-md mr-3"></span>
                 Visites
             </h2>
