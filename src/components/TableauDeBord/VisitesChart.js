@@ -17,8 +17,6 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 
-
-
 const chartConfig = {
   interesse: {
     label: "Interessé",
@@ -39,182 +37,261 @@ export function VisitesChart({ dateRange }) {
     "aujourd'hui": [
       {
         name: '8h',
-        interesses: 2,
-        Pérdu: 1,
-        receptifs: 2,
+        interesse: 2,  // Changed from 'interesses'
+        perdu: 1,      // Changed from 'Pérdu'
+        receptif: 2,   // Changed from 'receptifs'
       },
       {
         name: '10h',
-        interesses: 3,
-        Pérdu: 2,
-        receptifs: 3,
+        interesse: 3,
+        perdu: 2,
+        receptif: 3,
       },
       {
         name: '12h',
-        interesses: 4,
-        Pérdu: 1,
-        receptifs: 2,
+        interesse: 4,
+        perdu: 1,
+        receptif: 2,
       },
       {
         name: '14h',
-        interesses: 1,
-        Pérdu: 2,
-        receptifs: 1,
+        interesse: 1,
+        perdu: 2,
+        receptif: 1,
       },
       {
         name: '16h',
-        interesses: 3,
-        Pérdu: 1,
-        receptifs: 2,
+        interesse: 3,
+        perdu: 1,
+        receptif: 2,
       },
       {
         name: '18h',
-        interesses: 2,
-        Pérdu: 1,
-        receptifs: 0,
+        interesse: 2,
+        perdu: 1,
+        receptif: 0,
       },
     ],
     'cette semaine': [
       {
         name: 'Lun',
-        interesses: 8,
-        Pérdu: 4,
-        receptifs: 6,
+        interesse: 8,
+        perdu: 4,
+        receptif: 6,
       },
       {
         name: 'Mar',
-        interesses: 10,
-        Pérdu: 5,
-        receptifs: 8,
+        interesse: 10,
+        perdu: 5,
+        receptif: 8,
       },
       {
         name: 'Mer',
-        interesses: 7,
-        Pérdu: 6,
-        receptifs: 5,
+        interesse: 7,
+        perdu: 6,
+        receptif: 5,
       },
       {
         name: 'Jeu',
-        interesses: 12,
-        Pérdu: 4,
-        receptifs: 7,
+        interesse: 12,
+        perdu: 4,
+        receptif: 7,
       },
       {
         name: 'Ven',
-        interesses: 8,
-        Pérdu: 6,
-        receptifs: 4,
+        interesse: 8,
+        perdu: 6,
+        receptif: 4,
       },
     ],
     'ce mois': [
       {
         name: 'Sem 1',
-        interesses: 35,
-        Pérdu: 20,
-        receptifs: 25,
+        interesse: 35,
+        perdu: 20,
+        receptif: 25,
       },
       {
         name: 'Sem 2',
-        interesses: 40,
-        Pérdu: 18,
-        receptifs: 28,
+        interesse: 40,
+        perdu: 18,
+        receptif: 28,
       },
       {
         name: 'Sem 3',
-        interesses: 28,
-        Pérdu: 22,
-        receptifs: 24,
+        interesse: 28,
+        perdu: 22,
+        receptif: 24,
       },
       {
         name: 'Sem 4',
-        interesses: 45,
-        Pérdu: 15,
-        receptifs: 30,
+        interesse: 45,
+        perdu: 15,
+        receptif: 30,
       },
     ],
     'cette année': [
       {
         name: 'Jan',
-        interesses: 120,
-        Pérdu: 80,
-        receptifs: 90,
+        interesse: 120,
+        perdu: 80,
+        receptif: 90,
       },
       {
         name: 'Fév',
-        interesses: 135,
-        Pérdu: 75,
-        receptifs: 110,
+        interesse: 135,
+        perdu: 75,
+        receptif: 110,
       },
       {
         name: 'Mar',
-        interesses: 145,
-        Pérdu: 85,
-        receptifs: 95,
+        interesse: 145,
+        perdu: 85,
+        receptif: 95,
       },
       {
         name: 'Avr',
-        interesses: 162,
-        Pérdu: 68,
-        receptifs: 120,
+        interesse: 162,
+        perdu: 68,
+        receptif: 120,
       },
       {
         name: 'Mai',
-        interesses: 158,
-        Pérdu: 78,
-        receptifs: 105,
+        interesse: 158,
+        perdu: 78,
+        receptif: 105,
       },
       {
         name: 'Juin',
-        interesses: 195,
-        Pérdu: 65,
-        receptifs: 125,
+        interesse: 195,
+        perdu: 65,
+        receptif: 125,
+      },
+      {
+        name: 'Juil',
+        interesse: 180,
+        perdu: 70,
+        receptif: 130,
+      },
+      {
+        name: 'Août',
+        interesse: 200,
+        perdu: 60,
+        receptif: 140,
+      },
+      {
+        name: 'Sep',
+        interesse: 220,
+        perdu: 55,
+        receptif: 150,
+      },
+      {
+        name: 'Oct',
+        interesse: 210,
+        perdu: 65,
+        receptif: 160,
+      },
+      {
+        name: 'Nov',
+        interesse: 230,
+        perdu: 50,
+        receptif: 170,
+      },
+      {
+        name: 'Déc',
+        interesse: 240,
+        perdu: 45,
+        receptif: 180,
       },
     ],
     'dernière année': [
       {
         name: 'Jan',
-        interesses: 110,
-        Pérdu: 75,
-        receptifs: 85,
+        interesse: 110,
+        perdu: 75,
+        receptif: 85,
       },
       {
         name: 'Fév',
-        interesses: 125,
-        Pérdu: 70,
-        receptifs: 100,
+        interesse: 125,
+        perdu: 70,
+        receptif: 100,
       },
       {
         name: 'Mar',
-        interesses: 135,
-        Pérdu: 80,
-        receptifs: 90,
+        interesse: 135,
+        perdu: 80,
+        receptif: 90,
       },
       {
         name: 'Avr',
-        interesses: 150,
-        Pérdu: 65,
-        receptifs: 110,
+        interesse: 150,
+        perdu: 65,
+        receptif: 110,
       },
       {
         name: 'Mai',
-        interesses: 148,
-        Pérdu: 72,
-        receptifs: 95,
+        interesse: 148,
+        perdu: 72,
+        receptif: 95,
       },
       {
         name: 'Juin',
-        interesses: 180,
-        Pérdu: 60,
-        receptifs: 115,
+        interesse: 180,
+        perdu: 60,
+        receptif: 115,
+      },
+      {
+        name: 'Juil',
+        interesse: 170,
+        perdu: 55,
+        receptif: 120,
+      },
+      {
+        name: 'Août',
+        interesse: 190,
+        perdu: 50,
+        receptif: 130,
+      },
+      {
+        name: 'Sep',
+        interesse: 200,
+        perdu: 45,
+        receptif: 140,
+      },
+      {
+        name: 'Oct',
+        interesse: 210,
+        perdu: 40,
+        receptif: 150,
+      },
+      {
+        name: 'Nov',
+        interesse: 220,
+        perdu: 35,
+        receptif: 160,
+      },
+      {
+        name: 'Déc',
+        interesse: 230,
+        perdu: 30,
+        receptif: 170,
       },
     ],
   };
+  
   const data = dataSets[dateRange];
+  
   return (
-    <Card className="bg-white">
+    <Card className="">
       <CardHeader className="flex flex-row items-center justify-between px-4 sm:px-6">
         <div className="flex flex-col space-y-2">
-          <CardTitle className="text-lg sm:text-2xl">Visites</CardTitle>
+          <CardTitle>
+            <h2 className=" font-semibold mb-4 text-gray-700 flex items-center">
+              <span className="w-2 h-8 bg-purple-500 rounded-md mr-3"></span>
+                Visites
+            </h2>
+          </CardTitle>
           <CardDescription className="text-sm sm:text-base">Janvier - Décembre 2024</CardDescription>
         </div>
         
@@ -232,7 +309,6 @@ export function VisitesChart({ dateRange }) {
         </div>
       </CardHeader>
           
-
       <CardContent className="px-2 sm:px-4">
         <ChartContainer config={chartConfig} className="xl:h-[250px] w-full">
           <ResponsiveContainer width="100%" height="100%">
@@ -252,19 +328,19 @@ export function VisitesChart({ dateRange }) {
               />
               <Bar 
                 dataKey="interesse" 
-                fill="var(--color-interesse)" 
+                fill="#2CAFFE" 
                 radius={[4, 4, 0, 0]} 
                 barSize={14}
               />
               <Bar 
                 dataKey="perdu" 
-                fill="var(--color-perdu)" 
+                fill="#FE642C" 
                 radius={[4, 4, 0, 0]} 
                 barSize={14}
               />
               <Bar 
                 dataKey="receptif" 
-                fill="var(--color-receptif)" 
+                fill="#2CFE7F" 
                 radius={[4, 4, 0, 0]} 
                 barSize={14}
               />

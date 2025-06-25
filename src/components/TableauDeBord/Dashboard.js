@@ -159,11 +159,8 @@ export const Dashboard = () => {
             
             <VentesChart dateRange={dateRange} />
           </div>
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-50">
-            <h2 className="text-lg font-semibold mb-4 text-gray-700 flex items-center">
-              <span className="w-2 h-8 bg-purple-500 rounded-md mr-3"></span>
-              Visites
-            </h2>
+          <div className="bg-white  rounded-xl shadow-sm border border-gray-50">
+            
             <VisitesChart dateRange={dateRange} />
           </div>
         </div>
