@@ -131,14 +131,14 @@ export const DateFilter = ({ startDate, endDate, onChange }) => {
                 <button
                   key={preset.id}
                   onClick={() => handlePresetClick(preset)}
-                  className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-md transition-colors ${activePreset === preset.id ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}
+                  className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-md transition-colors ${activePreset === preset.id ? 'bg-blue-50 text-blue-500' : 'text-gray-700 hover:bg-gray-50'}`}
                 >
                   {preset.label}
                   {activePreset === preset.id && <CheckIcon size={16} />}
                 </button>
               ))}
               <div
-                className={`w-full px-3 py-2 text-sm rounded-md transition-colors cursor-pointer ${activePreset === 'custom' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}
+                className={`w-full px-3 py-2 text-sm rounded-md transition-colors cursor-pointer ${activePreset === 'custom' ? 'bg-blue-50 text-blue-500' : 'text-gray-700 hover:bg-gray-50'}`}
                 onClick={() => setActivePreset('custom')}
               >
                 <div className="flex items-center justify-between mb-1">

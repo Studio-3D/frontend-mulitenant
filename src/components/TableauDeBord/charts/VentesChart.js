@@ -1,42 +1,20 @@
-"use client"
-
-import * as React from "react"
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
-
+import React from 'react';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart"
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  Area,
+  ComposedChart,
+} from 'recharts';
 
-
-
-const chartConfig = {
-    ventes: {
-      label: "Ventes",
-      color: "#22c55e",
-    },
-  }  
-  const rangeDescriptions = {
-  "aujourd'hui": "Ventes aujourd'hui",
-  "cette semaine": "Ventes cette semaine",
-  "ce mois": "Ventes ce mois",
-  "cette année": "Ventes cette année",
-  "dernière année": "Ventes l'année dernière",
-}
-
-  export function VentesChart({ dateRange }) {
-    const dataSets = {
+export const VentesChart = ({ dateRange }) => {
+  // Data sets for different date ranges
+  const dataSets = {
     "aujourd'hui": [
       {
         name: '8h',
@@ -254,79 +232,69 @@ const chartConfig = {
     ],
   };
   const data = dataSets[dateRange];
-  const description = rangeDescriptions[dateRange] || "Ventes";
-
-    return (
-      <Card className='border-none shadow-none'>
-        <CardHeader className="flex items-center gap-2 py-5 sm:flex-row">
-          <div className="grid flex-1 gap-1 text-center sm:text-left">
-            <CardTitle>
-              <h2 className=" font-semibold mb-4 text-gray-700 flex items-center">
-                <span className="w-2 h-8 bg-green-500 rounded-md mr-3"></span>
-                  Ventes
-              </h2>
-            </CardTitle>
-            <CardDescription>
-              {`${description} : ${data.reduce((sum, d) => sum + d.ventes, 0).toLocaleString('fr-FR')} dhs`}
-            </CardDescription>
-          </div> 
-        </CardHeader>
-        <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-          <ChartContainer
-            config={chartConfig}
-            className="aspect-auto h-[250px] w-full"
-          >
-            <AreaChart data={data}>
-              <defs>
-                <linearGradient id="fillVentes" x1="0" y1="0" x2="0" y2="1">
-                  <stop
-                    offset="5%"
-                    stopColor="#22c55e"
-                    stopOpacity={0.8}
-                  />
-                  <stop
-                    offset="95%"
-                    stopColor="#22c55e"
-                    stopOpacity={0.1}
-                  />
-                </linearGradient>
-              </defs>
-              <CartesianGrid vertical={false} />
-              <XAxis
-                dataKey="name"
-                tickLine={false}
-                axisLine={false}
-                tickMargin={8}
-                minTickGap={32}
-                tickFormatter={(value) => value}
-              />
-              <ChartTooltip
-                
-                cursor={false}
-                content={
-                  <ChartTooltipContent
-                    labelFormatter={(value) => {
-                      return new Date(value).toLocaleDateString("fr-FR", {
-                          year: "numeric",
-                          month: "short",
-                      })
-                    }}
-                    
-                    indicator="dot"
-                  />
-                }
-              />
-              <Area
-                dataKey="ventes"
-                type="natural"
-                fill="url(#fillVentes)"
-                stroke="#22c55e"
-              />
-              
-              <ChartLegend content={<ChartLegendContent />} />
-            </AreaChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
-    )
-  }
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <ComposedChart
+        data={data}
+        margin={{
+          top: 5,
+          right: 30,
+          left: 20,
+          bottom: 5,
+        }}
+      >
+        <CartesianGrid
+          strokeDasharray="3 3"
+          vertical={false}
+          stroke="#f0f0f0"
+        />
+        <XAxis dataKey="name" axisLine={false} tickLine={false} />
+        <YAxis axisLine={false} tickLine={false} />
+        <Tooltip
+          contentStyle={{
+            backgroundColor: '#fff',
+            borderRadius: '8px',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+            border: 'none',
+          }}
+          labelStyle={{
+            fontWeight: 'bold',
+          }}
+        />
+        <Legend
+          wrapperStyle={{
+            paddingTop: 10,
+          }}
+        />
+        <defs>
+          <linearGradient id="colorVentes" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
+            <stop offset="95%" stopColor="#10b981" stopOpacity={0.2} />
+          </linearGradient>
+        </defs>
+        <Area
+          type="monotone"
+          dataKey="ventes"
+          name="Ventes"
+          stroke="#10b981"
+          fill="url(#colorVentes)"
+          strokeWidth={3}
+          activeDot={{
+            r: 6,
+          }}
+        />
+        <Line
+          type="monotone"
+          dataKey="objectif"
+          name="Objectif"
+          stroke="#6366f1"
+          strokeWidth={2}
+          strokeDasharray="5 5"
+          dot={{
+            r: 0,
+          }}
+        />
+      </ComposedChart>
+    </ResponsiveContainer>
+  );
+};
