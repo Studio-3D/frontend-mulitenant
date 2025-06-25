@@ -3,7 +3,7 @@ import { DateSelector } from './DateSelector';
 import { MetricsCard } from './MetricsCard';
 import { EncaissementChart } from './EncaissementChart';
 import { VentesChart } from './VentesChart';
-import { VisitesChart } from './charts/VisitesChart';
+import { VisitesChart } from './VisitesChart';
 import { AppelsChart } from './charts/AppelsChart';
 import { DesistementChart } from './charts/DesistementChart';
 import {
