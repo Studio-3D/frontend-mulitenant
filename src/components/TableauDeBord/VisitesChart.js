@@ -17,20 +17,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 
-const chartData = [
-  { month: "January", interesse: 186, perdu: 80, receptif: 120 },
-  { month: "February", interesse: 210, perdu: 200, receptif: 150 },
-  { month: "March", interesse: 237, perdu: 120, receptif: 180 },
-  { month: "April", interesse: 73, perdu: 190, receptif: 100 },
-  { month: "May", interesse: 209, perdu: 130, receptif: 160 },
-  { month: "June", interesse: 214, perdu: 140, receptif: 170 },
-  { month: "July", interesse: 200, perdu: 160, receptif: 150 },
-  { month: "August", interesse: 220, perdu: 180, receptif: 190 },
-  { month: "September", interesse: 250, perdu: 200, receptif: 220 },
-  { month: "October", interesse: 270, perdu: 220, receptif: 240 },
-  { month: "November", interesse: 290, perdu: 240, receptif: 260 },
-  { month: "December", interesse: 310, perdu: 260, receptif: 280 },
-]
+
 
 const chartConfig = {
   interesse: {
@@ -47,7 +34,182 @@ const chartConfig = {
   },
 }
 
-export function VisitesChart() {
+export function VisitesChart({ dateRange }) {
+  const dataSets = {
+    "aujourd'hui": [
+      {
+        name: '8h',
+        interesses: 2,
+        Pérdu: 1,
+        receptifs: 2,
+      },
+      {
+        name: '10h',
+        interesses: 3,
+        Pérdu: 2,
+        receptifs: 3,
+      },
+      {
+        name: '12h',
+        interesses: 4,
+        Pérdu: 1,
+        receptifs: 2,
+      },
+      {
+        name: '14h',
+        interesses: 1,
+        Pérdu: 2,
+        receptifs: 1,
+      },
+      {
+        name: '16h',
+        interesses: 3,
+        Pérdu: 1,
+        receptifs: 2,
+      },
+      {
+        name: '18h',
+        interesses: 2,
+        Pérdu: 1,
+        receptifs: 0,
+      },
+    ],
+    'cette semaine': [
+      {
+        name: 'Lun',
+        interesses: 8,
+        Pérdu: 4,
+        receptifs: 6,
+      },
+      {
+        name: 'Mar',
+        interesses: 10,
+        Pérdu: 5,
+        receptifs: 8,
+      },
+      {
+        name: 'Mer',
+        interesses: 7,
+        Pérdu: 6,
+        receptifs: 5,
+      },
+      {
+        name: 'Jeu',
+        interesses: 12,
+        Pérdu: 4,
+        receptifs: 7,
+      },
+      {
+        name: 'Ven',
+        interesses: 8,
+        Pérdu: 6,
+        receptifs: 4,
+      },
+    ],
+    'ce mois': [
+      {
+        name: 'Sem 1',
+        interesses: 35,
+        Pérdu: 20,
+        receptifs: 25,
+      },
+      {
+        name: 'Sem 2',
+        interesses: 40,
+        Pérdu: 18,
+        receptifs: 28,
+      },
+      {
+        name: 'Sem 3',
+        interesses: 28,
+        Pérdu: 22,
+        receptifs: 24,
+      },
+      {
+        name: 'Sem 4',
+        interesses: 45,
+        Pérdu: 15,
+        receptifs: 30,
+      },
+    ],
+    'cette année': [
+      {
+        name: 'Jan',
+        interesses: 120,
+        Pérdu: 80,
+        receptifs: 90,
+      },
+      {
+        name: 'Fév',
+        interesses: 135,
+        Pérdu: 75,
+        receptifs: 110,
+      },
+      {
+        name: 'Mar',
+        interesses: 145,
+        Pérdu: 85,
+        receptifs: 95,
+      },
+      {
+        name: 'Avr',
+        interesses: 162,
+        Pérdu: 68,
+        receptifs: 120,
+      },
+      {
+        name: 'Mai',
+        interesses: 158,
+        Pérdu: 78,
+        receptifs: 105,
+      },
+      {
+        name: 'Juin',
+        interesses: 195,
+        Pérdu: 65,
+        receptifs: 125,
+      },
+    ],
+    'dernière année': [
+      {
+        name: 'Jan',
+        interesses: 110,
+        Pérdu: 75,
+        receptifs: 85,
+      },
+      {
+        name: 'Fév',
+        interesses: 125,
+        Pérdu: 70,
+        receptifs: 100,
+      },
+      {
+        name: 'Mar',
+        interesses: 135,
+        Pérdu: 80,
+        receptifs: 90,
+      },
+      {
+        name: 'Avr',
+        interesses: 150,
+        Pérdu: 65,
+        receptifs: 110,
+      },
+      {
+        name: 'Mai',
+        interesses: 148,
+        Pérdu: 72,
+        receptifs: 95,
+      },
+      {
+        name: 'Juin',
+        interesses: 180,
+        Pérdu: 60,
+        receptifs: 115,
+      },
+    ],
+  };
+  const data = dataSets[dateRange];
   return (
     <Card className="bg-white">
       <CardHeader className="flex flex-row items-center justify-between px-4 sm:px-6">
@@ -74,10 +236,10 @@ export function VisitesChart() {
       <CardContent className="px-2 sm:px-4">
         <ChartContainer config={chartConfig} className="xl:h-[250px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData}>
+            <BarChart data={data}>
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
               <XAxis
-                dataKey="month"
+                dataKey="name"
                 tickLine={false}
                 tickMargin={10}
                 axisLine={false}
