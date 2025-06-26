@@ -307,7 +307,7 @@ const getStatutBadge = (statutValue) => {
         onSearchChange={setSearchTerm}
         //enableExport={true}
         //enableImport={true}
-        enableSearch={false}
+        showSearch={false}
         
       />
       </div>

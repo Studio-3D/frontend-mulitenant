@@ -1,29 +1,29 @@
-"use client"
-import { useState, useEffect } from "react"
-import axios from "axios"
-import { APIURL } from "@/configs/api"
-import { 
-  Database, 
-  Layers, 
-  Building2, 
-  Home, 
-  Plus 
-} from "lucide-react"
-import Modal from "@/components/Modal"
-import toast from "react-hot-toast"
+"use client";
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { APIURL } from "@/configs/api";
+import { Database, Layers, Building2, Home, Plus } from "lucide-react";
+import Modal from "@/components/Modal";
+import toast from "react-hot-toast";
 
-export default function CompositionForm({ state, setState, onNext, errors, isEdit = false }) {
-  const [typeOptions, setTypeOptions] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [showAddTypeModal, setShowAddTypeModal] = useState(false)
-  const [newTypeProjet, setNewTypeProjet] = useState("")
-  const [addingType, setAddingType] = useState(false)
-  
+export default function CompositionForm({
+  state,
+  setState,
+  onNext,
+  errors,
+  isEdit = false,
+}) {
+  const [typeOptions, setTypeOptions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [showAddTypeModal, setShowAddTypeModal] = useState(false);
+  const [newTypeProjet, setNewTypeProjet] = useState("");
+  const [addingType, setAddingType] = useState(false);
+
   // Checkbox states for toggling composition elements
-  const [hasTranches, setHasTranches] = useState(state.tranches > 0)
-  const [hasBlocks, setHasBlocks] = useState(state.blocks > 0)
-  const [hasBuilding, setHasBuilding] = useState(state.building > 0)
-  const [hasBien, setHasBien] = useState(state.bienCount > 0 || !isEdit) // Set Bien checked by default for new projects
+  const [hasTranches, setHasTranches] = useState(state.tranches > 0);
+  const [hasBlocks, setHasBlocks] = useState(state.blocks > 0);
+  const [hasBuilding, setHasBuilding] = useState(state.building > 0);
+  const [hasBien, setHasBien] = useState(state.bienCount > 0 || !isEdit); // Set Bien checked by default for new projects
 
   // Initialize bien count if it exists in state, otherwise default to 0
   useEffect(() => {
@@ -35,117 +35,135 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
   useEffect(() => {
     // Function to fetch project types
     async function fetchTypeProjects() {
-      setLoading(true)
+      setLoading(true);
       try {
-        const token = localStorage.getItem("accessToken")
+        const token = localStorage.getItem("accessToken");
         const response = await axios.get(APIURL.TYPEPROJETS, {
           headers: { Authorization: `Bearer ${token}` },
-        })
+        });
 
-        console.log("Type projects response:", response.data)
+        console.log("Type projects response:", response.data);
 
         // Make sure we're correctly parsing the response
-        const typesData = response.data.typeProjets || []
-        setTypeOptions(typesData)
+        const typesData = response.data.typeProjets || [];
+        setTypeOptions(typesData);
       } catch (error) {
-        console.error("Error fetching project types:", error)
+        console.error("Error fetching project types:", error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
 
-    fetchTypeProjects()
-  }, [])
+    fetchTypeProjects();
+  }, []);
 
   const handleChange = (field, value) => {
-    setState((prev) => ({ ...prev, [field]: value }))
-  }
-  
+    setState((prev) => ({ ...prev, [field]: value }));
+  };
+
   // Handle checkbox changes
   const handleTranchesChange = (checked) => {
-    setHasTranches(checked)
+    setHasTranches(checked);
     if (!checked) {
-      handleChange("tranches", 0)
+      handleChange("tranches", 0);
     }
-  }
-  
+  };
+
   const handleBlocksChange = (checked) => {
-    setHasBlocks(checked)
+    setHasBlocks(checked);
     if (!checked) {
-      handleChange("blocks", 0)
+      handleChange("blocks", 0);
     }
-  }
-  
+  };
+
   const handleBuildingChange = (checked) => {
-    setHasBuilding(checked)
+    setHasBuilding(checked);
     if (!checked) {
-      handleChange("building", 0)
+      handleChange("building", 0);
     }
-  }
-  
+  };
+
   const handleBienChange = (checked) => {
-    setHasBien(checked)
+    setHasBien(checked);
     if (!checked) {
-      handleChange("bienCount", 0)
+      handleChange("bienCount", 0);
     }
-  }
+  };
 
   // Create new type projet
   const handleAddTypeProjet = async (e) => {
-    e.preventDefault()
-    
+    e.preventDefault();
+
     if (!newTypeProjet.trim()) {
-      toast.error("Veuillez entrer un type de projet")
-      return
+      toast.error("Veuillez entrer un type de projet");
+      return;
     }
-    
-    setAddingType(true)
-    
+
+    setAddingType(true);
+
     try {
-      const token = localStorage.getItem("accessToken")
+      const token = localStorage.getItem("accessToken");
       const response = await axios.post(
         APIURL.TYPEPROJETS,
         { type: newTypeProjet.trim() },
         { headers: { Authorization: `Bearer ${token}` } }
-      )
-      
+      );
+
       // Handle successful creation
       if (response.data.typeProjet) {
-        const newType = response.data.typeProjet
-        setTypeOptions([...typeOptions, newType])
-        
+        const newType = response.data.typeProjet;
+        setTypeOptions([...typeOptions, newType]);
+
         // Automatically select the new type
-        handleChange("typeId", newType.id)
-        handleChange("type", newType.type)
-        
-        toast.success("Type de projet ajouté avec succès")
-        setShowAddTypeModal(false)
-        setNewTypeProjet("")
+        handleChange("typeId", newType.id);
+        handleChange("type", newType.type);
+
+        toast.success("Type de projet ajouté avec succès");
+        setShowAddTypeModal(false);
+        setNewTypeProjet("");
       }
     } catch (error) {
-      console.error("Error creating project type:", error)
-      toast.error(error.response?.data?.message || "Erreur lors de la création du type de projet")
+      console.error("Error creating project type:", error);
+      toast.error(
+        error.response?.data?.message ||
+          "Erreur lors de la création du type de projet"
+      );
     } finally {
-      setAddingType(false)
+      setAddingType(false);
     }
-  }
+  };
 
   // Validate form before proceeding
   const handleFormSubmit = () => {
-    if (!state.typeId) return
-    if (hasBien && !state.bienCount) return
-    if (hasTranches && !state.tranches) return
-    if (hasBlocks && !state.blocks) return
-    if (hasBuilding && !state.building) return
+    if (!state.typeId) return;
+    if (hasBien && !state.bienCount) return;
+    if (hasTranches && !state.tranches) return;
+    if (hasBlocks && !state.blocks) return;
+    if (hasBuilding && !state.building) return;
 
-    onNext()
-
-  }
+    onNext();
+  };
 
   // Composition card component
-  const CompositionCard = ({ icon, title, description, isChecked, onCheckChange, colorClass, disabled = false }) => (
-    <div className={`border rounded-lg p-4 flex flex-col items-center transition-all duration-200 hover:shadow-md ${isChecked ? `border-${colorClass}-500` : 'border-gray-200'} ${disabled ? 'opacity-70' : ''}`}>
-      <div className={`text-4xl mb-3 ${isChecked ? `text-${colorClass}-500` : 'text-gray-400'}`}>
+  const CompositionCard = ({
+    icon,
+    title,
+    description,
+    isChecked,
+    onCheckChange,
+    colorClass,
+    disabled = false,
+  }) => (
+    <div
+      className={`border rounded-lg p-4 flex flex-col items-center transition-all duration-200 hover:shadow-md ${
+        isChecked ? `border-${colorClass}-500` : "border-gray-200"
+      } ${disabled ? "opacity-70" : ""}`}
+    >
+      <div
+        className={`text-4xl mb-3 ${
+          isChecked ? `text-${colorClass}-500` : "text-gray-400"
+        }`}
+      >
         {icon}
       </div>
       <h3 className="font-medium text-lg mb-1">{title}</h3>
@@ -162,7 +180,7 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
         </label>
       </div>
     </div>
-  )
+  );
 
   return (
     <div className="bg-white p-6 rounded-md">
@@ -170,7 +188,7 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
 
       <div className="mb-6 bg-white p-6 rounded-lg shadow-sm border border-gray-100">
         <h3 className="text-lg font-medium mb-4">Type de projet</h3>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex items-end gap-2">
             <div className="flex-1">
@@ -181,7 +199,9 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
               {loading ? (
                 <div className="flex items-center space-x-2">
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
-                  <span className="text-sm !text-gray-500">Chargement des types de projet...</span>
+                  <span className="text-sm !text-gray-500">
+                    Chargement des types de projet...
+                  </span>
                 </div>
               ) : (
                 <>
@@ -191,10 +211,17 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
                     } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
                     value={state.typeId || ""}
                     onChange={(e) => {
-                      const selectedId = e.target.value ? Number.parseInt(e.target.value) : null
-                      const selectedOption = typeOptions.find((opt) => opt.id === selectedId)
-                      handleChange("typeId", selectedId)
-                      handleChange("type", selectedOption ? selectedOption.type : "")
+                      const selectedId = e.target.value
+                        ? Number.parseInt(e.target.value)
+                        : null;
+                      const selectedOption = typeOptions.find(
+                        (opt) => opt.id === selectedId
+                      );
+                      handleChange("typeId", selectedId);
+                      handleChange(
+                        "type",
+                        selectedOption ? selectedOption.type : ""
+                      );
                     }}
                     disabled={isEdit} // Disable type change in edit mode
                   >
@@ -213,15 +240,20 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
                   </select>
                   {typeOptions.length === 0 && !loading && (
                     <p className="mt-1 text-sm text-amber-600">
-                      Aucun type de projet trouvé. Veuillez d'abord créer des types de projets.
+                      Aucun type de projet trouvé. Veuillez d'abord créer des
+                      types de projets.
                     </p>
                   )}
                 </>
               )}
 
-              {errors?.type_id && <p className="mt-1 text-sm !text-red-600">{errors.type_id[0]}</p>}
+              {errors?.type_id && (
+                <p className="mt-1 text-sm !text-red-600">
+                  {errors.type_id[0]}
+                </p>
+              )}
             </div>
-            
+
             {/* Add Type Project Button - Hide in edit mode */}
             {!isEdit && (
               <button
@@ -239,19 +271,8 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
 
       <div className="mb-8 bg-white p-6 rounded-lg shadow-sm border border-gray-100">
         <h3 className="text-lg font-medium mb-6">Composition de projet</h3>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-          {/* Bien */}
-          <CompositionCard
-            icon={<Home />}
-            title="Bien"
-            description="Ce projet se compose des biens."
-            isChecked={hasBien}
-            onCheckChange={handleBienChange}
-            colorClass="blue"
-            disabled={isEdit} // Disable changes in edit mode
-          />
-          
           {/* Tranches */}
           <CompositionCard
             icon={<Database />}
@@ -262,7 +283,7 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
             colorClass="green"
             disabled={isEdit} // Disable changes in edit mode
           />
-          
+
           {/* Blocs */}
           <CompositionCard
             icon={<Layers />}
@@ -273,7 +294,7 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
             colorClass="orange"
             disabled={isEdit} // Disable changes in edit mode
           />
-          
+
           {/* Immeubles */}
           <CompositionCard
             icon={<Building2 />}
@@ -284,27 +305,20 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
             colorClass="red"
             disabled={isEdit} // Disable changes in edit mode
           />
+
+          {/* Bien */}
+          <CompositionCard
+            icon={<Home />}
+            title="Bien"
+            description="Ce projet se compose des biens."
+            isChecked={hasBien}
+            onCheckChange={handleBienChange}
+            colorClass="blue"
+            disabled={isEdit} // Disable changes in edit mode
+          />
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {/* Bien number input - show when checked */}
-          {hasBien && (
-            <div>
-              <label className="block text-sm font-medium !text-gray-700 mb-1">
-                Nombre de biens <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="number"
-                min="1"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                value={state.bienCount || ""}
-                onChange={(e) => handleChange("bienCount", parseInt(e.target.value) || 0)}
-                required={hasBien}
-                disabled={isEdit} // Disable changes in edit mode
-              />
-            </div>
-          )}
-          
           {/* Tranches number input - only show when checked */}
           {hasTranches && (
             <div>
@@ -316,13 +330,15 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
                 min="1"
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
                 value={state.tranches || ""}
-                onChange={(e) => handleChange("tranches", parseInt(e.target.value) || 0)}
+                onChange={(e) =>
+                  handleChange("tranches", parseInt(e.target.value) || 0)
+                }
                 required={hasTranches}
                 disabled={isEdit} // Disable changes in edit mode
               />
             </div>
           )}
-          
+
           {/* Blocks number input - only show when checked */}
           {hasBlocks && (
             <div>
@@ -334,13 +350,15 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
                 min="1"
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                 value={state.blocks || ""}
-                onChange={(e) => handleChange("blocks", parseInt(e.target.value) || 0)}
+                onChange={(e) =>
+                  handleChange("blocks", parseInt(e.target.value) || 0)
+                }
                 required={hasBlocks}
                 disabled={isEdit} // Disable changes in edit mode
               />
             </div>
           )}
-          
+
           {/* Buildings number input - only show when checked */}
           {hasBuilding && (
             <div>
@@ -352,8 +370,29 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
                 min="1"
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
                 value={state.building || ""}
-                onChange={(e) => handleChange("building", parseInt(e.target.value) || 0)}
+                onChange={(e) =>
+                  handleChange("building", parseInt(e.target.value) || 0)
+                }
                 required={hasBuilding}
+                disabled={isEdit} // Disable changes in edit mode
+              />
+            </div>
+          )}
+          {/* Bien number input - show when checked */}
+          {hasBien && (
+            <div>
+              <label className="block text-sm font-medium !text-gray-700 mb-1">
+                Nombre de biens <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                min="1"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                value={state.bienCount || ""}
+                onChange={(e) =>
+                  handleChange("bienCount", parseInt(e.target.value) || 0)
+                }
+                required={hasBien}
                 disabled={isEdit} // Disable changes in edit mode
               />
             </div>
@@ -374,30 +413,35 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
           onClick={handleFormSubmit}
           className={`ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white ${
             !state.typeId ||
-            (hasBuilding && (!state.building || state.building.length === 0)) || 
-            (hasBlocks && (!state.blocks || state.blocks.length === 0)) || 
-            (hasTranches && (!state.tranches || state.tranches.length === 0)) || 
+            (hasBuilding && (!state.building || state.building.length === 0)) ||
+            (hasBlocks && (!state.blocks || state.blocks.length === 0)) ||
+            (hasTranches && (!state.tranches || state.tranches.length === 0)) ||
             (hasBien && (!state.bienCount || state.bienCount === 0))
-              ? "bg-blue-300 cursor-not-allowed" 
+              ? "bg-blue-300 cursor-not-allowed"
               : "bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           }`}
           disabled={
-            !state.typeId || 
+            !state.typeId ||
             loading ||
-            (hasBlocks && (!state.blocks || state.blocks.length === 0)) || 
-            (hasBuilding && (!state.building || state.building.length === 0)) || 
-            (hasTranches && (!state.tranches || state.tranches.length === 0)) || 
+            (hasBlocks && (!state.blocks || state.blocks.length === 0)) ||
+            (hasBuilding && (!state.building || state.building.length === 0)) ||
+            (hasTranches && (!state.tranches || state.tranches.length === 0)) ||
             (hasBien && (!state.bienCount || state.bienCount === 0))
           }
         >
           Suivant
         </button>
       </div>
-      
+
       {/* Modal for adding new project type */}
-      <Modal isVisible={showAddTypeModal} onClose={() => setShowAddTypeModal(false)}>
+      <Modal
+        isVisible={showAddTypeModal}
+        onClose={() => setShowAddTypeModal(false)}
+      >
         <div className="p-6">
-          <h3 className="text-lg font-medium mb-4">Ajouter un type de projet</h3>
+          <h3 className="text-lg font-medium mb-4">
+            Ajouter un type de projet
+          </h3>
           <form onSubmit={handleAddTypeProjet}>
             <div className="mb-4">
               <label className="block text-sm font-medium !text-gray-700 mb-1">
@@ -427,9 +471,25 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
               >
                 {addingType ? (
                   <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
                     </svg>
                     Création...
                   </>
@@ -442,6 +502,5 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
         </div>
       </Modal>
     </div>
-  )
+  );
 }
-

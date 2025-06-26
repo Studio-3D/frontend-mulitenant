@@ -103,7 +103,18 @@ export default function BienDossiers({ bienId }) {
     if (typeDpId == 1) color = 'success';
     else if (typeDpId == 2) color = 'primary';
     else if (typeDpId == 3) color = 'info';
-    return { title: toTitleCase(typesDesistementsProfit[typeDpId]), color };
+    
+    // Get the formatted title and remove "Désistement" prefix for specific types
+    let title = toTitleCase(typesDesistementsProfit[typeDpId]);
+    
+    // Remove "Désistement " prefix from specific types
+    if (title.includes("Désistement Au Profit Un Proche")) {
+      title = title.replace("Désistement Au Profit Un Proche", "Au Profit Un Proche");
+    } else if (title.includes("Désistement Au Profit Un Co Reservataire")) {
+      title = title.replace("Désistement Au Profit Un Co Reservataire", "Au Profit Un Co Reservataire");
+    }
+    
+    return { title, color };
   };
 
   const getMotifTxt = (motifId) => {
@@ -263,9 +274,9 @@ export default function BienDossiers({ bienId }) {
     }
   ];
 
-  // Define desistement table columns for the nested table
-  const desistementColumns = [
-    {
+  // Define all possible desistement columns
+  const allDesistementColumns = {
+    type_desistement: {
       key: "type_desistement",
       label: "Type Désistement",
       render: (row) => {
@@ -288,17 +299,43 @@ export default function BienDossiers({ bienId }) {
         return "N/A";
       }
     },
-    {
+    motif: {
       key: "motif",
       label: "Motif",
       render: (row) => row.histo?.desistement ? getMotifTxt(row.histo.desistement.motif) : "N/A"
     },
-    {
+    lien_parente: {
       key: "lien_parente",
       label: "Lien de Parenté",
       render: (row) => row.histo?.desistement ? getLienParente(row.histo.desistement.lien_parente) : "N/A"
     },
-    {
+    ancien_acquereurs: {
+      key: "ancien_acquereurs",
+      label: "Anciens Acquéreurs",
+      render: (row) => {
+        if (row.histo?.reservation) {
+          const acquereurs = row.histo.reservation.aquereurs_ancien?.length > 0 
+            ? row.histo.reservation.aquereurs_ancien 
+            : row.histo.reservation.aquereurs || [];
+          
+          return acquereurs.map((acq, idx) => (
+            <div key={idx} className="mb-1">
+              <span className="font-medium">{acq.client?.nom || ''} {acq.client?.prenom || ''}</span>
+              <span className="text-gray-600 ml-2">({acq.pourcentage}%)</span>
+            </div>
+          ));
+        } else if (row.histo?.desistement?.reservation_ancien?.aquereurs_ancien) {
+          return Object.values(row.histo.desistement.reservation_ancien.aquereurs_ancien).map((acq, idx) => (
+            <div key={idx} className="mb-1">
+              <span className="font-medium">{acq.client?.nom || ''} {acq.client?.prenom || ''}</span>
+              <span className="text-gray-600 ml-2">({acq.pourcentage}%)</span>
+            </div>
+          ));
+        }
+        return "N/A";
+      }
+    },
+    desisteurs: {
       key: "desisteurs",
       label: "Désisteurs",
       render: (row) => {
@@ -317,7 +354,7 @@ export default function BienDossiers({ bienId }) {
         return "N/A";
       }
     },
-    {
+    au_profit: {
       key: "au_profit",
       label: "Au Profit",
       render: (row) => {
@@ -336,9 +373,9 @@ export default function BienDossiers({ bienId }) {
         return "N/A";
       }
     },
-    {
+    nouveau_acquereurs: {
       key: "nouveau_acquereurs",
-      label: "Nouveau Acquéreurs",
+      label: "Nouveaux Acquéreurs",
       render: (row) => {
         if (row.new_aquereur_desistement && Object.keys(row.new_aquereur_desistement).length > 0) {
           return (
@@ -355,12 +392,23 @@ export default function BienDossiers({ bienId }) {
         return "N/A";
       }
     },
-    {
+    ancien_bien: {
+      key: "ancien_bien",
+      label: "Ancien Bien",
+      render: (row) => {
+        if (row.histo?.reservation_id) {
+          return row.histo.reservation.bien?.propriete_dite_bien || "N/A";
+        } else {
+          return row.histo?.desistement?.bien_ancien?.propriete_dite_bien || "N/A";
+        }
+      }
+    },
+    nouveau_bien: {
       key: "nouveau_bien",
       label: "Nouveau Bien",
       render: (row) => row.bien_new_propriete || "N/A"
     },
-    {
+    montant_ajouter: {
       key: "montant_ajouter",
       label: "Montant à ajouter",
       render: (row) => {
@@ -370,7 +418,7 @@ export default function BienDossiers({ bienId }) {
         return "N/A";
       }
     },
-    {
+    penalite: {
       key: "penalite",
       label: "Pénalité",
       render: (row) => {
@@ -380,7 +428,67 @@ export default function BienDossiers({ bienId }) {
         return "N/A";
       }
     }
-  ];
+  };
+
+  // Function to get desistement columns based on type
+  const getDesistementColumns = (row) => {
+    const desistementType = row.histo?.desistement?.type;
+    const desistementTypeDp = row.histo?.desistement?.type_dp;
+    
+    // Always show type column first
+    let columns = [allDesistementColumns.type_desistement];
+    
+    // Convert to numbers for comparison (API might return strings)
+    const typeNum = parseInt(desistementType);
+    const typeDpNum = parseInt(desistementTypeDp);
+    
+    // Determine which additional columns to show based on type
+    if (typeNum === 1) {
+      // Désistement Définitif => motif / pénalité
+      columns.push(
+        allDesistementColumns.motif,
+        allDesistementColumns.penalite
+      );
+    } else if (typeNum === 2) {
+      // Based on type_dp for "Profit un proche" variations
+      if (typeDpNum === 1) {
+        // Profit un proche => lien de parenté / anciens acquéreurs / désisteurs / nouveaux acquéreurs / pénalité
+        columns.push(
+          allDesistementColumns.lien_parente,
+          allDesistementColumns.ancien_acquereurs,
+          allDesistementColumns.desisteurs,
+          allDesistementColumns.nouveau_acquereurs,
+          allDesistementColumns.penalite
+        );
+      } else if (typeDpNum === 2) {
+        // Désistement Partiel => lien de parenté / anciens acquéreurs / nouveaux acquéreurs / pénalité
+        columns.push(
+          allDesistementColumns.lien_parente,
+          allDesistementColumns.ancien_acquereurs,
+          allDesistementColumns.nouveau_acquereurs,
+          allDesistementColumns.penalite
+        );
+      } else if (typeDpNum === 3) {
+        // Désistement co Réservataire => anciens acquéreurs / désisteurs / au profit / pénalité
+        columns.push(
+          allDesistementColumns.ancien_acquereurs,
+          allDesistementColumns.desisteurs,
+          allDesistementColumns.au_profit,
+          allDesistementColumns.penalite
+        );
+      }
+    } else if (typeNum === 3) {
+      // Changement de Bien => ancien bien / nouveau bien / montant à ajouter / pénalité
+      columns.push(
+        allDesistementColumns.ancien_bien,
+        allDesistementColumns.nouveau_bien,
+        allDesistementColumns.montant_ajouter,
+        allDesistementColumns.penalite
+      );
+    }
+        
+    return columns;
+  };
 
   // Export columns configuration - now includes both main and desistement columns
   const columnsExport = [
@@ -415,7 +523,7 @@ export default function BienDossiers({ bienId }) {
     });
     
     // Add desistement columns data
-    desistementColumns.forEach(col => {
+    Object.values(allDesistementColumns).forEach(col => {
       if (col.render) {
         const rendered = col.render(dossier);
         row[col.key] = typeof rendered === 'string' ? rendered : 
@@ -426,16 +534,7 @@ export default function BienDossiers({ bienId }) {
     return row;
   });
 
-  // Handle export functionality
-  const handleExport = () => {
-    handleExportExcel(
-      exportData,
-      columnsExport,
-      'dossiers_bien.xlsx'
-    );
-  };
-
-  // Render the expanded row with optimized nested table
+  // Render the expanded row with dynamic columns based on desistement type
   const renderExpandedRow = (row, idx) => {
     const rowId = row.id || idx;
     
@@ -443,25 +542,62 @@ export default function BienDossiers({ bienId }) {
       return null;
     }
 
-    // Create single row data for the nested table
-    const desistementData = [row];
-
+    // Get dynamic columns based on desistement type
+    const dynamicColumns = getDesistementColumns(row);
+    
     return (
-      <div className="bg-gray-50 py-3 px-4">
-        <h4 className="font-medium text-gray-700 mb-2 text-sm">Détails du désistement</h4>
-        
-        {/* Nested Table component for desistement details - optimized for space */}
-        <div className="overflow-x-auto">
-          <Table
-            data={desistementData}
-            columns={desistementColumns}
-            showPagination={false}
-            showSearch={false}
-            loading={false}
-            emptyMessage="Aucun détail de désistement"
-          />
-        </div>
-      </div>
+      <tr className="border-b">
+        <td colSpan={columns.length} className="p-0 bg-gray-50">
+          <div className="overflow-hidden transition-all duration-300 ease-in-out">
+            <div className="p-4">
+              <h6 className="text-md font-semibold mb-3 !text-gray-700 flex items-center">
+                <span className="w-1.5 h-5 bg-blue-600 rounded-sm mr-2"></span>
+                Détails du désistement
+              </h6>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm border-collapse table-fixed">
+                  <thead className="bg-blue-50">
+                    <tr>
+                      {dynamicColumns.map((col, index) => (
+                        <th 
+                          key={col.key} 
+                          className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700 min-w-0"
+                          style={{ 
+                            width: `${100 / dynamicColumns.length}%` 
+                          }}
+                        >
+                          <div className="truncate" title={col.label}>
+                            {col.label}
+                          </div>
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="bg-white">
+                      {dynamicColumns.map((col) => (
+                        <td 
+                          key={col.key}
+                          className="text-center px-3 py-2 border-b border-gray-200 min-w-0 align-top"
+                          style={{ 
+                            width: `${100 / dynamicColumns.length}%`,
+                            wordWrap: 'break-word',
+                            maxWidth: '0'
+                          }}
+                        >
+                          <div className="w-full">
+                            {col.render ? col.render(row) : 'N/A'}
+                          </div>
+                        </td>
+                      ))}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>
     );
   };
 
@@ -477,19 +613,6 @@ export default function BienDossiers({ bienId }) {
     <div className="bg-white shadow-sm rounded-lg">
       <div className="border-b border-gray-200 px-6 py-4">
         <h2 className="text-lg font-medium">Historique des dossiers</h2>
-        
-        {/* Actions row */}
-        <div className="flex justify-end gap-2 mt-4">
-          {dossiers.length > 0 && (
-            <button
-              onClick={handleExport}
-              className="flex gap-1 items-center bg-[#009FFF] text-white font-medium rounded-lg px-3 py-1.5"
-            >
-              <Download className="w-5 h-5" />
-              <span>Exporter</span>
-            </button>
-          )}
-        </div>
       </div>
       
       <div className="p-6">
@@ -505,7 +628,10 @@ export default function BienDossiers({ bienId }) {
           onSearchChange={handleSearchChange}
           currentPage={currentPage}
           rowsPerPage={rowsPerPage}
-          enableExport={false} // We handle export manually now
+          enableExport={dossiers.length > 0}
+          name_file_export="dossiers_bien"
+          data_to_export={exportData}
+          columns_export={columnsExport}
           renderExpandedRow={renderExpandedRow}
           onRowClick={(row, idx) => {
             if (hasDesistementDetails(row)) {
@@ -514,6 +640,7 @@ export default function BienDossiers({ bienId }) {
           }}
           rowClassName={(row) => hasDesistementDetails(row) ? "cursor-pointer" : ""}
           expandedRows={expandedRows}
+          customTableStyle={true}
         />
       </div>
     </div>

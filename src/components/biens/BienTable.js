@@ -301,21 +301,12 @@ const fetchStatsByType = (typeId) => {
         
         return (
           <div className="flex gap-4 items-center">
-            {/* View button - available to all users */}
-            <button
-              className="text-gray-500 hover:text-blue-500"
-              onClick={() => handleAction('view', row.id)}
-              title="Voir détails"
-            >
-              <Eye className="w-4 h-4" />
-            </button>
-            
             {canManageBiens && (
               <>
-               <button
-                  className="text-teal-500 hover:text-teal-700"
-                  //onClick={() => handleAction('view', row.id)}
-                  title="Voir"
+                <button
+                  className="text-gray-500 hover:text-blue-500"
+                  onClick={() => handleAction('view', row.id)}
+                  title="Voir détails"
                 >
                   <Eye className="w-4 h-4" />
                 </button>
@@ -558,7 +549,7 @@ const handleImportClick = () => {
       columns_export={columns_export}
       name_file_export={"bien_export"}
       data={paginatedData}
-      enableSearch={false}
+      showSearch={false}
       enableImport={true}
       onImportClick={handleImportClick}
     />
