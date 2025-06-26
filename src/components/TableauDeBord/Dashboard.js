@@ -21,6 +21,44 @@ export const Dashboard = () => {
   const [error, setError] = useState(null);
   const [dateRange, setDateRange] = useState("cette année");
 
+  const getDateRangeParams = (range) => {
+    const today = new Date();
+    const startDate = new Date();
+    let endDate = new Date();
+    
+    switch (range) {
+      case "aujourd'hui":
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(23, 59, 59, 999);
+        break;
+      case "cette semaine":
+        startDate.setDate(today.getDate() - today.getDay());
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setDate(today.getDate() + (6 - today.getDay()));
+        endDate.setHours(23, 59, 59, 999);
+        break;
+      case "ce mois":
+        startDate.setDate(1);
+        startDate.setHours(0, 0, 0, 0);
+        endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        endDate.setHours(23, 59, 59, 999);
+        break;
+      case "cette année":
+        startDate.setMonth(0, 1);
+        startDate.setHours(0, 0, 0, 0);
+        endDate = new Date(today.getFullYear(), 11, 31);
+        endDate.setHours(23, 59, 59, 999);
+        break;
+      default:
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(23, 59, 59, 999);
+    }
+
+    return {
+      start_date: startDate.toISOString().split('T')[0],
+      end_date: endDate.toISOString().split('T')[0]
+    };
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -33,11 +71,13 @@ export const Dashboard = () => {
       try {
         setLoading(true);
         setError(null);
-  
-        const response = await axios.get(`${APIURL.ROOTV1}/dashboard/${selectedProjet.id}/null/null`, {
+
+        const dateParams = getDateRangeParams(dateRange);
+
+        const response = await axios.get(`${APIURL.ROOTV1}/dashboard/${selectedProjet.id}/${dateParams.start_date}/${dateParams.end_date}`, {
           headers: {
             Authorization: `Bearer ${accesstoken}`
-          }
+          },
         });
         
         setData(response.data);
@@ -52,7 +92,7 @@ export const Dashboard = () => {
     };
   
     fetchData();
-  }, [selectedProjet, accesstoken]);
+  }, [selectedProjet, accesstoken, dateRange]);
 
 
   if (loading) {
