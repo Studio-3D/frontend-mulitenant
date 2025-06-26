@@ -178,7 +178,6 @@ export default function ReservationForm({ id }) {
     const finalList =
       updatedList.length > 0 ? updatedList : [{ id: '', pourcentage: '' }];
 
-
     // Update state first
     setinputList1(finalList);
 
@@ -325,7 +324,7 @@ export default function ReservationForm({ id }) {
         .then((response) => {
           if (response.status !== 200) router.back();
           const reservation = response.data.reservation;
-          console.log('le mode finance==>'+reservation?.mode_financement)
+          console.log('le mode finance==>' + reservation?.mode_financement);
           setFormData({
             code_reservation: reservation.code_reservation,
             date_reservation: reservation?.date_reservation || '',
@@ -873,57 +872,57 @@ export default function ReservationForm({ id }) {
     setValiderfile(false);
     setAddOreditPopup(null);
   };
-const isButtonDisabled = () => {
-  // Cache all watched values at start
-  const {
-    avance,
-    avance_minimale,
-    mode_paiement,
-    mode_financement,
-    check_montant,
-    commentaireAvance,
-    banque_id,
-    num_paiement,
-    date_echeance
-  } = watch();
+  const isButtonDisabled = () => {
+    // Cache all watched values at start
+    const {
+      avance,
+      avance_minimale,
+      mode_paiement,
+      mode_financement,
+      check_montant,
+      commentaireAvance,
+      banque_id,
+      num_paiement,
+      date_echeance,
+    } = watch();
 
-  // Always disabled conditions
-  if (info_reservation || loading.form || !mode_financement) {
-    return true;
-  }
-
-  // Non-editing validations
-  if (!isEditing) {
-    // Basic amount validations
-    if (avance < 0 || avance === '') return true;
-
-    // Payment method validation
-    if (!mode_paiement) return true;
-
-    // Check payment method specific rules
-    const isCheckPayment = [2, 3, 4].includes(mode_paiement?.code); // Chèque types
-    const isTransferPayment = [5, 6].includes(mode_paiement?.code); // Virement/Versement
-
-    if (isCheckPayment) {
-      if (!banque_id || !num_paiement || !date_echeance) return true;
+    // Always disabled conditions
+    if (info_reservation || loading.form || !mode_financement) {
+      return true;
     }
 
-    if (isTransferPayment) {
-      if (!banque_id || !num_paiement) return true;
+    // Non-editing validations
+    if (!isEditing) {
+      // Basic amount validations
+      if (avance < 0 || avance === '') return true;
+
+      // Payment method validation
+      if (!mode_paiement) return true;
+
+      // Check payment method specific rules
+      const isCheckPayment = [2, 3, 4].includes(mode_paiement?.code); // Chèque types
+      const isTransferPayment = [5, 6].includes(mode_paiement?.code); // Virement/Versement
+
+      if (isCheckPayment) {
+        if (!banque_id || !num_paiement || !date_echeance) return true;
+      }
+
+      if (isTransferPayment) {
+        if (!banque_id || !num_paiement) return true;
+      }
+
+      // Comment validation when check_montant is true
+      if (check_montant && !commentaireAvance) return true;
+
+      // Special role validation for zero amount
+      if (user?.role > 2 && avance === 0 && !check_montant) return true;
     }
 
-    // Comment validation when check_montant is true
-    if (check_montant && !commentaireAvance) return true;
+    // Minimum amount validation
+    if (avance > 0 && avance < avance_minimale) return true;
 
-    // Special role validation for zero amount
-    if (user?.role > 2 && avance === 0 && !check_montant) return true;
-  }
-
-  // Minimum amount validation
-  if (avance > 0 && avance < avance_minimale) return true;
-
-  return false;
-};
+    return false;
+  };
   // Helper functions (add these outside your component)
   const getFileIcon = (filename) => {
     const extension = filename.split('.').pop().toLowerCase();
@@ -1588,7 +1587,7 @@ const isButtonDisabled = () => {
         {currentStep == 1 && (
           <div className="space-y-6 mt-[50px]">
             <h2 className="text-xl font-medium !text-gray-700 mb-4">
-              Ajouter les clients participer à cette Réservation 
+              Ajouter les clients participer à cette Réservation
             </h2>
             <div className="space-y-4">
               {inputList1.map((entry, index) => (
