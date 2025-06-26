@@ -101,7 +101,7 @@ export const Dashboard = () => {
             Aperçu de projet
           </h1>
           <div className="px-4 py-1.5 bg-gray-100 rounded-md text-gray-700 font-medium">
-            Résidence Les Jardins
+            {JSON.parse(localStorage.getItem('selectedProjet'))?.nom}
           </div>
         </div>
         <DateSelector selected={dateRange} onSelect={setDateRange} />
