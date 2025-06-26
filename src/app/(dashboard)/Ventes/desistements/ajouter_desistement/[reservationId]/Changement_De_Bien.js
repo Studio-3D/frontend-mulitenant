@@ -38,8 +38,49 @@ export function Changement_De_Bien({
   const [new_bien_id, set_new_bien_id] = useState(0);
   const [old_bien_id, set_old_bien_id] = useState(0);
 
-  // Options for banques (would normally come from API)
+  // Add this useEffect to pre-fill form data when in editing mode
+  useEffect(() => {
+    if (isEditing && formData) {
+      setValue('commentaire_rejete', formData.commentaire_rejete);
 
+      fetch_bien_ByProjet(formData?.bien_nouveau);
+      set_new_bien_id(formData.bien_id_new);
+      setValue('bien_id', formData.bien_id_new);
+      setValue('new_bien_id', formData.bien_id_new);
+      //  show_bien(formData.bien_id_new);
+      setValue('new_avance', formData?.bien_nouveau?.avance_minimale);
+      set_montant_a_ajouter(formData.montant_a_ajouter);
+      setValue('montant_a_ajouter', formData.montant_a_ajouter);
+      setValue('sr', formData.sr);
+      setValue('mode_paiement', formData.mode_paiement);
+      setValue('numero_paiement', formData.numero_paiement);
+      setValue('banque_id', formData.banque_id);
+      setValue('echeance', formData.echeance);
+      setSelectedFiles_avc(
+        formData?.piece_jointes_des_montant_a_ajouter
+          ? formData.piece_jointes_des_montant_a_ajouter
+          : []
+      );
+      setValue(
+        'files_avance',
+        formData?.piece_jointes_des_montant_a_ajouter
+          ? formData.piece_jointes_des_montant_a_ajouter
+          : []
+      );
+    }
+  }, [isEditing, formData, setValue]);
+
+  function NomBienComplet(bien) {
+    const noms = [];
+
+    if (bien.tranche?.nom) noms.push(bien.tranche.nom);
+    if (bien.bloc?.nom) noms.push(bien.bloc.nom);
+    if (bien.immeuble?.nom) noms.push(bien.immeuble.nom);
+
+    noms.push(bien.propriete_dite_bien);
+
+    return noms.join(' - ');
+  }
   // Helper functions (add these outside your component)
   const getFileIcon = (filename) => {
     const extension = filename.split('.').pop().toLowerCase();
@@ -100,13 +141,20 @@ export function Changement_De_Bien({
   };
 
   // Fetch biens by projet
-  const fetch_bien_ByProjet = async () => {
+  const fetch_bien_ByProjet = async (bien_new) => {
     setLoading_bien(true);
     try {
       const response = await axios.get(
         `${APIURL.ROOTV1}/getBiensByProjet_Concat/${selectedProjet_id}`,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
+      //add bien du desistement to res data biens(disponible)
+      if (bien_new != null && bien_new != undefined) {
+        response.data.biens.push({
+          propriete_dite_bien: NomBienComplet(bien_new),
+          id: bien_new?.id,
+        });
+      }
       setBiensByProjet(response.data.biens);
     } catch (error) {
       console.error('Error fetching biens:', error);
@@ -119,7 +167,11 @@ export function Changement_De_Bien({
     // Set initial values
     setValue('bien_ancien', bien_ancien);
     setValue('sum_avances_valides', sum_avances_valides);
-    fetch_bien_ByProjet();
+    if (!isEditing) {
+      fetch_bien_ByProjet(null);
+    } else {
+      fetch_bien_ByProjet(formData?.bien_nouveau);
+    }
   }, []);
 
   const handlechangeBien_id = (event, v) => {
@@ -180,50 +232,63 @@ export function Changement_De_Bien({
 
   const handleFileChange = (event, param) => {
     const files = Array.from(event.target.files);
-    event.target.value = null; // Reset input to allow selecting same file again
+    event.target.value = null; // Reset input
 
-    // Early return if no files selected
     if (files.length === 0) return;
 
     const updatedFiles = [...selectedFiles_avc];
-    const existingFileNames = new Set(Object.values(filesList_avc));
+    const existingFileNames = new Set(Object.values(filesList_avc || {}));
     const existingSelectedNames = new Set(
       selectedFiles_avc.map((f) => f.name || f.fichier)
     );
 
     for (const file of files) {
       const fileName = file.name;
-      const [baseName, extension] = fileName.split(/(?<=.)(?=[^.]+$)/); // Better split for filename and extension
+      const lastDotIndex = fileName.lastIndexOf('.');
+      const baseName =
+        lastDotIndex === -1 ? fileName : fileName.substring(0, lastDotIndex);
+      const extension =
+        lastDotIndex === -1 ? '' : fileName.substring(lastDotIndex + 1);
 
-    
+      let finalFileName = fileName;
 
-      // Check if file exists in file list (needs renaming)
-      if (existingFileNames.has(fileName)) {
-        let newFileName = fileName;
+      // Check if file exists in either the existing files list or already selected files
+      if (
+        existingFileNames.has(fileName) ||
+        existingSelectedNames.has(fileName)
+      ) {
         let counter = 1;
+        while (true) {
+          finalFileName = extension
+            ? `${baseName} (${counter}).${extension}`
+            : `${baseName} (${counter})`;
 
-        while (
-          existingFileNames.has(newFileName) ||
-          existingSelectedNames.has(newFileName)
-        ) {
-          newFileName = `${baseName} (${counter}).${extension}`;
+          if (
+            !existingFileNames.has(finalFileName) &&
+            !existingSelectedNames.has(finalFileName)
+          ) {
+            break;
+          }
           counter++;
         }
-
-        const renamedFile = new File([file], newFileName, { type: file.type });
-        updatedFiles.push(renamedFile);
-        existingSelectedNames.add(newFileName); // Track the new name
-      } else {
-        updatedFiles.push(file);
-        existingSelectedNames.add(fileName);
       }
+
+      const finalFile =
+        finalFileName === fileName
+          ? file
+          : new File([file], finalFileName, { type: file.type });
+
+      updatedFiles.push(finalFile);
+      existingSelectedNames.add(finalFileName);
     }
 
-    // Only update state once at the end
     if (updatedFiles.length > selectedFiles_avc.length) {
       setSelectedFiles_avc(updatedFiles);
       setValue('files_avance', updatedFiles);
     }
+  };
+  const handleFileClick = (filename) => {
+    window.open(`${APIURL.ROOTV1}/storage/${filename}`);
   };
 
   const handleDownloadFile = (file) => {
@@ -248,7 +313,11 @@ export function Changement_De_Bien({
     const channel = pusher.subscribe('proposition-updates');
     channel.bind('App\\Events\\PropositionUpdated', (data) => {
       console.log('Proposal status changed:', data);
-      fetch_bien_ByProjet();
+      if (!isEditing) {
+        fetch_bien_ByProjet(null);
+      } else {
+        fetch_bien_ByProjet(formData?.bien_nouveau);
+      }
     });
 
     return () => {
@@ -257,16 +326,21 @@ export function Changement_De_Bien({
     };
   };
 
+  // Assuming biensByProjet is an array of objects with an 'id' property
+  const uniqueBiens = biensByProjet.filter(
+    (bien, index, self) => index == self.findIndex((b) => b.id == bien.id)
+  );
+
   return (
     <div className="p-6">
       {isEditing && (
-        <div className="mb-4 p-3 bg-yellow-50 !text-yellow-800 rounded-md">
-          <p className="font-medium">Mode Édition</p>
+        <div className="mb-4 p-3 bg-red-50 !text-red-800 rounded-md">
+          <p className="font-medium">
+            le Désistement est Rejeté a cause de {watch('commentaire_rejete')}
+          </p>
         </div>
       )}
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-
         <TextField
           label="Ancien Bien:"
           name="bien_ancien"
@@ -292,17 +366,16 @@ export function Changement_De_Bien({
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-
           <AutocompleteBien
             name="bien_id"
             user={user}
             control={control}
-            biensByProjet={biensByProjet}
+            biensByProjet={uniqueBiens}
             value={watch('bien_id')}
             onChange={handlechangeBien_id}
             loading={loading_bien}
             error={errors.bien_id}
-            label="Nouveau Bien*"
+            label="Nouveau Bien"
           />
           {/* Show additional fields when a new bien is selected */}
           {new_bien_id != 0 && (
@@ -315,7 +388,6 @@ export function Changement_De_Bien({
                 backendErrors={{}}
                 disabled
               />
-
               <TextField
                 label="Montant à Ajouter:"
                 name="montant_a_ajouter"
@@ -349,8 +421,9 @@ export function Changement_De_Bien({
                 <input
                   type="checkbox"
                   id="sr-checkbox"
+                  checked={watch('sr') == 1} // This checks if sr equals 1
                   className="h-4 w-4 text-indigo-600 rounded"
-                  onChange={(e) => setValue('sr', e.target.checked)}
+                  onChange={(e) => setValue('sr', e.target.checked ? 1 : 0)} // Sets to 1 when checked, 0 when unchecked
                 />
                 <label
                   htmlFor="sr-checkbox"
@@ -362,6 +435,7 @@ export function Changement_De_Bien({
               <AutocompleteSelectComponent
                 label="Mode de Paiement"
                 required
+                value={watch('mode_paiement')}
                 name="mode_paiement"
                 control={control}
                 options={MODE_PAIEMENT}
@@ -372,8 +446,9 @@ export function Changement_De_Bien({
               {watch('mode_paiement') && watch('mode_paiement') !== 1 && (
                 <>
                   <TextField
-                    label="N° Paiement*"
+                    label="N° Paiement"
                     name="numero_paiement"
+                    value={watch('numero_paiement')}
                     required={watch('mode_paiement') != '1'}
                     control={control}
                     errors={errors}
@@ -400,6 +475,7 @@ export function Changement_De_Bien({
                       <TextField
                         label="Échéance"
                         name="echeance"
+                        value={watch('echeance')}
                         control={control}
                         required={
                           watch('mode_paiement') != 1 &&

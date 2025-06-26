@@ -1588,7 +1588,7 @@ const isButtonDisabled = () => {
         {currentStep == 1 && (
           <div className="space-y-6 mt-[50px]">
             <h2 className="text-xl font-medium !text-gray-700 mb-4">
-              Ajouter les clients participer à cette Réservation 999
+              Ajouter les clients participer à cette Réservation 
             </h2>
             <div className="space-y-4">
               {inputList1.map((entry, index) => (

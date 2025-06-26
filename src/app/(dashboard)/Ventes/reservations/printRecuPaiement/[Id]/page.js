@@ -9,6 +9,7 @@ import {
   Building2 as BusinessIcon,
   User as PersonIcon,
   Home as HomeIcon,
+  Upload,
   //Landmark as AccountBalanceIcon,
 } from 'lucide-react';
 import LoadingSpin from '@/components/LoadingSpin';
@@ -730,8 +731,8 @@ const PrevisualiserRecu = () => {
           {/* Add this NOTE BIEN section */}
 
           <div className="mb-4 rounded-md border-2 border-amber-400 bg-amber-50 p-3 text-center font-medium text-amber-800">
-            <span className="font-bold mt-10">NOTE :</span> Ces modifications seront
-            appliquées sur la quittance seulement sauf Client.
+            <span className="font-bold mt-10">NOTE :</span> Ces modifications
+            seront appliquées sur la quittance seulement sauf Client.
           </div>
           <div className="mt-10">
             <PDFDownloadLink
@@ -742,8 +743,14 @@ const PrevisualiserRecu = () => {
               }}
             >
               {({ loading }) => (
-                <button className="mr-4 rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600">
-                  {loading ? 'Chargement du document...' : 'Enregistrer'}
+                <button
+                  className={`text-indigo-500 hover:text-indigo-700 ${
+                    loading ? 'opacity-50' : ''
+                  }`}
+                  title="Télécharger PDF"
+                  disabled={loading}
+                >
+                  {loading ? '...' : <Upload className="w-4 h-4" />}
                 </button>
               )}
             </PDFDownloadLink>

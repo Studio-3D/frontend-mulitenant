@@ -370,10 +370,14 @@ const Compromis_show = ({
                         }.pdf`}
                       >
                         {({ loading }) => (
-                          <button className="flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                            {loading
-                              ? 'Chargement du document...'
-                              : 'Télécharger le PDF'}
+                          <button
+                            className={`text-indigo-500 hover:text-indigo-700 ${
+                              loading ? 'opacity-50' : ''
+                            }`}
+                            title="Télécharger PDF"
+                            disabled={loading}
+                          >
+                            {loading ? '...' : <Upload className="w-4 h-4" />}
                           </button>
                         )}
                       </PDFDownloadLink>

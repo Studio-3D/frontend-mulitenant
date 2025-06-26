@@ -26,8 +26,6 @@ import { MODE_PAIEMENT } from '@/configs/enum';
 import Autocomplete from '@/components/Autocomplete';
 
 export default function Page() {
-  const [dossierInfos, setDossierInfos] = useState({});
-
   const router = useRouter();
   const params = useParams();
   const { user, token } = useAuth();
@@ -46,6 +44,7 @@ export default function Page() {
   const [activeModel, setActiveModel] = useState(0);
   const [defaultValues, setDefaultValues] = useState({});
   const [showTypeModal, setShowTypeModal] = useState(true);
+  const [formData, setFormData] = useState({});
   const [messageAlert, setMessageAlert] = useState(null);
 
   // Loading states
@@ -62,16 +61,15 @@ export default function Page() {
   const [filesList_dst, setFilesList_dst] = useState(null);
   const [filesList_plt, setFilesList_plt] = useState(null);
   const [banques, setBanques] = useState([]);
-  const files = [
-    {
-      avc: null,
-      dst: null,
-      plt: null,
-    },
-  ];
+  const [files, setFiles] = useState({
+    avc: null,
+    dst: null,
+    plt: null,
+  });
 
   const [avecPenalite, setAvecPenalite] = useState(false);
   const [avecPiecesJointes, setAvecPiecesJointes] = useState(false);
+  const [penaliteAmount, setPenaliteAmount] = useState(0);
 
   const [reservationData, setReservationData] = useState({
     bien: null,
@@ -94,8 +92,6 @@ export default function Page() {
       mode_penalite: '',
       penalite_montant: 0, // or your preferred default value
       penalite_par: 'avance',
-      sr_pen: false,
-      commentaire: '',
       // other default values...
     },
   });
@@ -156,8 +152,6 @@ export default function Page() {
     reset(newDefaultValues);
   }, [activeModel, reset, reservationData]);
 
-  const codeResRef = useRef();
-
   // Fetch reservation data
   const fetchReservation = async () => {
     if (!reservationId) return;
@@ -166,9 +160,7 @@ export default function Page() {
       const response = await axios.get(
         `${APIURL.ROOTV1}/reservations/${reservationId}`,
         {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
+          headers: { Authorization: `Bearer ${accessToken}` },
         }
       );
 
@@ -181,8 +173,6 @@ export default function Page() {
         user: respoUser,
         aquereurs,
       } = reservation;
-
-      codeResRef.current = code_reservation; // Update the ref
 
       if (reservation.desistements_ancien) {
         const messages = {
@@ -214,13 +204,6 @@ export default function Page() {
         pourcentage: aq.pourcentage,
         date_rembourse: '',
         mode_rembourse: '',
-        type_remb: 'direct',
-        dossier_id: '',
-        montant_transferer: '',
-        reste_a_rembourse: (
-          sum_avances_valides *
-          (aq.pourcentage / 100)
-        ).toFixed(2),
         num_paiement: '',
         cheque_recu: null,
         pour_le_compte: '',
@@ -248,12 +231,11 @@ export default function Page() {
       setLoading((prev) => ({ ...prev, form: false }));
     }
   };
-  console.log('code ress==>' + reservationData?.codeRes);
+
   // Fetch files
   const fetchFiles = async () => {
     if (hasFetchedFiles.current) return;
     hasFetchedFiles.current = true;
-    if (!codeResRef.current) return; // Check the ref instead of reservationData
 
     try {
       const filesPromises = [
@@ -261,21 +243,21 @@ export default function Page() {
           fetchList_fichier_exist_by_Code(
             setFilesList_avc,
             'avc',
-            codeResRef.current,
+            reservationData?.codeRes,
             setLoading_list
           ),
         !files.dst &&
           fetchList_fichier_exist_by_Code(
             setFilesList_dst,
             'dst',
-            codeResRef.current,
+            reservationData?.codeRes,
             setLoading_list
           ),
         !files.plt &&
           fetchList_fichier_exist_by_Code(
             setFilesList_plt,
             'plt',
-            codeResRef.current,
+            reservationData?.codeRes,
             setLoading_list
           ),
       ];
@@ -328,33 +310,35 @@ export default function Page() {
       formData.append('projet_id', selectedProjet_id);
       formData.append('bien_id_ancien', reservationData.bienIdAncien);
 
+      // Ajoutez les fichiers globaux
+      if (files.avc) formData.append('autorisation_file', files.avc);
+      if (files.dst) formData.append('contrat_file', files.dst);
+
       // Ajoutez les données globales
+      formData.append('avec_penalite', avecPenalite);
+      formData.append('penalite_amount', penaliteAmount);
       formData.append('avec_pieces_jointes', avecPiecesJointes);
       //on utiliser pour store desistement premier fois
       formData.append('desistement_id_rejete', null);
       formData.append('sum_avances_valides', reservationData.sumAvances);
-      formData.append('commentaire', watch('commentaire'));
-
       //penalite
-      if (avecPenalite) {
-        formData.append('sr_pen', watch('sr_pen'));
-        formData.append('checked_penalite', avecPenalite);
-        formData.append('penalite_par', watch('penalite_par'));
-        formData.append('mode_penalite', watch('mode_penalite'));
-        formData.append('penalite_montant', watch('penalite_montant'));
-        formData.append('mode_paiement_pen', watch('mode_paiement_pen'));
-        formData.append('banque_id_pen', watch('banque_pen'));
-        formData.append('numero_paiement_pen', watch('numero_paiement_pen'));
-        formData.append('echeance_pen', watch('echeance_pen'));
-      }
-      // Append files as binary data with array notation
-      selectedFiles_dst.forEach((file, index) => {
-        formData.append(`files_desistement[${index}]`, file);
-      });
+      formData.append('sr_pen', watch('sr_pen'));
+      formData.append('checked_penalite', avecPenalite);
+      formData.append('penalite_par', watch('penalite_par'));
+      formData.append('mode_penalite', watch('mode_penalite'));
+      formData.append('penalite_montant', watch('penalite_montant'));
+      formData.append('mode_paiement_pen', watch('mode_paiement_pen'));
+      formData.append('banque_id_pen', watch('banque_pen'));
+      formData.append('numero_paiement_pen', watch('numero_paiement_pen'));
+      formData.append('echeance_pen', watch('echeance_pen'));
 
-      selectedFiles_plt.forEach((file, index) => {
-        formData.append(`files_penalite[${index}]`, file);
-      });
+      // Create an array of desistement files
+      const desistementFiles = selectedFiles_dst.map((file) => file);
+      formData.append('files_desistement', JSON.stringify(desistementFiles));
+
+      // Create an array of penalite files
+      const penaliteFiles = selectedFiles_plt.map((file) => file);
+      formData.append('files_penalite', JSON.stringify(penaliteFiles));
 
       if (data.type == 1) {
         data.inputList_remb.forEach((item, index) => {
@@ -373,43 +357,29 @@ export default function Page() {
       }
 
       // Handle files for type 3 (Changement de Bien)
+      if (data.type == 3 && data.files_avance) {
+        data.files_avance.forEach((file, index) => {
+          formData.append(`files_avance_${index}`, file);
+        });
+      }
 
       let processedData = data;
       if (activeModel == 1) {
         processedData = processDefinitifData(data);
-        // Append remboursement files with correct field names
-        data.inputList_remb.forEach((item, index) => {
-          if (item.fichier_autorisation instanceof File) {
-            formData.append(
-              `fichier_autorisation_${index}`,
-              item.fichier_autorisation
-            );
-          }
-          if (item.cheque_recu instanceof File) {
-            formData.append(`cheque_recu_${index}`, item.cheque_recu);
-          }
-        });
-
-        // Append the remboursement list as JSON
-        formData.append('inputlist_remb', JSON.stringify(data.inputList_remb));
       } else if (activeModel == 2) {
         processedData = processAuProfitData(data);
       } else if (activeModel == 3) {
         processedData = processChangementBienData(data);
-        // DATA TYPE 3
-        for (let i = 0; i < data?.files_avance?.length; i++) {
-          formData.append(`files_avance[${i}]`, data.files_avance[i]);
-        }
       }
 
       Object.entries(processedData).forEach(([key, value]) => {
-        if (value !== null && value !== undefined && !(value instanceof File)) {
-          formData.append(
-            key,
-            typeof value === 'object' ? JSON.stringify(value) : value
-          );
+        if (value instanceof File) {
+          formData.append(key, value);
+        } else if (value !== null && value !== undefined) {
+          formData.append(key, String(value));
         }
       });
+      console.log('data=>' + JSON.stringify(formData));
 
       const response = await axios.post(APIURL.DESISTEMENT, formData, {
         headers: {
@@ -418,9 +388,9 @@ export default function Page() {
         },
       });
 
-      if (response.status == 201) {
-        router.push('/ventes/desistements');
-      }
+      /* if (response.status == 201) {
+        router.push('/ventes/desistements?success=created');
+      }*/
     } catch (error) {
       console.error('Error submitting form:', error);
     } finally {
@@ -434,11 +404,11 @@ export default function Page() {
       type: 1,
       motif: data.motif,
       type_remb: data.type_remb,
-      //   inputList_remb:JSON.stringify(data.inputList_remb),
-      /*  dossier_id: data.dossier_id,
+      inputList_remb: JSON.stringify(data.inputList_remb),
+      dossier_id: data.dossier_id,
       montant_transferer: data.montant_transferer,
       reste_a_rembourse: data.reste_a_rembourse,
-      type_remb_transfere: data.type_remb_transfere,*/
+      type_remb_transfere: data.type_remb_transfere,
     };
   };
 
@@ -448,7 +418,7 @@ export default function Page() {
       type_dp: data.type_dp,
       lien_parente: data.lien_parente,
       //dp_proche // et dp_co
-      desisteur_dp_proche_co: JSON.stringify(data.desisteur_dp_proche_co),
+      desisteur_dp_proche_co: JSON.stringify(data.desisteur_dp_proche),
       new_clients_dp_proche: JSON.stringify(data.inputList),
       //dp_co
       profit_dp_co_reser: JSON.stringify(data.profit_dp_co_reser),
@@ -487,240 +457,116 @@ export default function Page() {
     return <LoadingSpin />;
   }
 
-  const handleDossierInfosChange = (index, info) => {
-    setDossierInfos((prev) => ({
-      ...prev,
-      [index]: info,
-    }));
-  };
-
   const getFormErrors = () => {
     const formValues = methods.getValues();
     const errors = [];
 
-    if (activeModel == 1) {
-      // Basic form validations
-      if (!formValues.motif) errors.push('Le motif est requis');
-      if (reservationData.sumAvances > 0) {
-        if (!formValues.type_remb)
-          errors.push('Le type de remboursement est requis');
+    /* console.log('Form values:', formValues);
+    console.log('inputList exists:', !!formValues.inputList);
+    console.log('inputList length:', formValues.inputList?.length);
+    console.log('inputList content:', formValues.inputList);*/
 
-        // Validate based on remboursement type
+    if (activeModel == 1) {
+      // Désistement Définitif
+      if (!formValues.motif) errors.push('Le motif est requis');
+      if (!formValues.type_remb)
+        errors.push('Le type de remboursement est requis');
+
+      if (formValues.type_remb == 'direct') {
         if (
-          formValues.type_remb === 'direct'
+          !formValues.inputList_remb ||
+          formValues.inputList_remb.length == 0
         ) {
+          errors.push('Au moins un remboursement direct doit être ajouté');
+        } else {
+          formValues.inputList_remb.forEach((item, index) => {
+            if (!item.date_rembourse)
+              errors.push(`Remboursement ${index + 1}: La date est requise`);
+            if (!item.num_paiement)
+              errors.push(
+                `Remboursement ${index + 1}: Le numéro de paiement est requis`
+              );
+            if (!item.mode_rembourse)
+              errors.push(
+                `Remboursement ${
+                  index + 1
+                }: Le mode de remboursement est requis`
+              );
+            if (!item.pour_le_compte)
+              errors.push(`Remboursement ${index + 1}: Le compte est requis`);
+            if (item.mode_rembourse == 'cheque' && !item.cheque_recu) {
+              errors.push(
+                `Remboursement ${index + 1}: Le reçu de chèque est requis`
+              );
+            }
+            if (item.pour_le_compte == 'autre' && !item.fichier_autorisation) {
+              errors.push(
+                `Remboursement ${
+                  index + 1
+                }: Le fichier d'autorisation est requis`
+              );
+            }
+          });
+        }
+      } else if (formValues.type_remb == 'transfert_remb') {
+        if (!formValues.dossier_id) errors.push('Le dossier ID est requis');
+        if (formValues.montant_transferer == '')
+          errors.push('Le montant à transférer est requis');
+        if (formValues.reste_a_rembourse < 0)
+          errors.push('Le reste à rembourser ne peut pas être négatif');
+
+        if (formValues.type_remb_transfere == undefined) {
+          errors.push('Le type de transfert est requis');
+        } else if (formValues.type_remb_transfere == 'immediat') {
           if (
             !formValues.inputList_remb ||
-            formValues.inputList_remb.length === 0
+            formValues.inputList_remb.length == 0
           ) {
-            errors.push('Au moins un remboursement doit être configuré');
+            errors.push('Au moins un remboursement immédiat doit être ajouté');
           } else {
             formValues.inputList_remb.forEach((item, index) => {
-              const clientPrefix = `Client ${index + 1}:`;
-              const currentMode = item.type_remb;
-
-              // Common validations for all modes
-              if (!currentMode) {
+              if (!item.num_paiement)
                 errors.push(
-                  `${clientPrefix} Le mode de remboursement est requis`
+                  `Remboursement immédiat ${
+                    index + 1
+                  }: Le numéro de paiement est requis`
+                );
+              if (!item.date_rembourse)
+                errors.push(
+                  `Remboursement immédiat ${index + 1}: La date est requise`
+                );
+              if (!item.mode_rembourse)
+                errors.push(
+                  `Remboursement immédiat ${
+                    index + 1
+                  }: Le mode de remboursement est requis`
+                );
+              if (!item.pour_le_compte)
+                errors.push(
+                  `Remboursement immédiat ${index + 1}: Le compte est requis`
+                );
+              if (item.mode_rembourse == 'cheque' && !item.cheque_recu) {
+                errors.push(
+                  `Remboursement immédiat ${
+                    index + 1
+                  }: Le reçu de chèque est requis`
                 );
               }
-
-              // Validate transfer section if mode is transfert or transfert_remb
               if (
-                currentMode === 'transfert' ||
-                currentMode === 'transfert_remb'
+                item.pour_le_compte == 'autre' &&
+                !item.fichier_autorisation
               ) {
-                if (!item.dossier_id) {
-                  errors.push(
-                    `${clientPrefix} Le dossier de transfert est requis`
-                  );
-                }
-
-                // Additional validation for transfert_remb mode
-                if (currentMode === 'transfert_remb') {
-                  const sum_avance_by_aq_percent =
-                    (item.pourcentage / 100) * reservationData.sumAvances;
-
-                  // Validate montant_transferer
-                  if (
-                    item.montant_transferer === '' ||
-                    item.montant_transferer === null
-                  ) {
-                    errors.push(
-                      `${clientPrefix} Le montant à transférer est requis`
-                    );
-                  } else if (isNaN(parseFloat(item.montant_transferer))) {
-                    errors.push(
-                      `${clientPrefix} Le montant à transférer doit être un nombre valide`
-                    );
-                  } else if (parseFloat(item.montant_transferer) <= 0) {
-                    errors.push(
-                      `${clientPrefix} Le montant à transférer doit être positif`
-                    );
-                  } else if (item.dossier_info) {
-                    // Check if dossier info exists
-                    if (
-                      parseFloat(item.montant_transferer) >
-                        sum_avance_by_aq_percent &&
-                      parseFloat(item.montant_transferer) >
-                        item.dossier_info.reste
-                    ) {
-                      errors.push(
-                        `${clientPrefix} Le montant transféré ne doit pas dépasser le reste de dossier (${item.dossier_info.reste.toFixed(
-                          2
-                        )} DH) ni le reste à rembourser (${sum_avance_by_aq_percent.toFixed(
-                          2
-                        )} DH)`
-                      );
-                    } else if (
-                      parseFloat(item.montant_transferer) >
-                      sum_avance_by_aq_percent
-                    ) {
-                      errors.push(
-                        `${clientPrefix} Le montant transféré ne doit pas dépasser le reste à rembourser (${sum_avance_by_aq_percent.toFixed(
-                          2
-                        )} DH)`
-                      );
-                    } else if (
-                      parseFloat(item.montant_transferer) >
-                      item.dossier_info.reste
-                    ) {
-                      errors.push(
-                        `${clientPrefix} Le montant transféré ne doit pas dépasser le reste de dossier (${item.dossier_info.reste.toFixed(
-                          2
-                        )} DH)`
-                      );
-                    }
-                  }
-
-                  // Validate reste_a_rembourse
-                  if (
-                    item.reste_a_rembourse === '' ||
-                    item.reste_a_rembourse === null
-                  ) {
-                    errors.push(
-                      `${clientPrefix} Le reste à rembourser est requis`
-                    );
-                  } else if (isNaN(parseFloat(item.reste_a_rembourse))) {
-                    errors.push(
-                      `${clientPrefix} Le reste à rembourser doit être un nombre valide`
-                    );
-                  } else if (parseFloat(item.reste_a_rembourse) < 0) {
-                    errors.push(
-                      `${clientPrefix} Le reste à rembourser ne peut pas être négatif`
-                    );
-                  }
-
-                  // Validate type_remb_transfere if there's a remaining amount
-                  if (
-                    parseFloat(item.reste_a_rembourse) > 0 &&
-                    !item.type_remb_transfere
-                  ) {
-                    errors.push(
-                      `${clientPrefix} Le type de remboursement du transfert est requis`
-                    );
-                  }
-
-                  // Validate direct remboursement fields if type_remb_transfere is immediat
-                  if (item.type_remb_transfere === 'immediat') {
-                    if (!item.date_rembourse) {
-                      errors.push(
-                        `${clientPrefix} La date de remboursement est requise pour le remboursement immédiat`
-                      );
-                    }
-                    if (!item.mode_rembourse) {
-                      errors.push(
-                        `${clientPrefix} Le mode de remboursement est requis pour le remboursement immédiat`
-                      );
-                    }
-                    if (item.mode_rembourse && !item.num_paiement) {
-                      errors.push(
-                        `${clientPrefix} Le numéro de paiement est requis pour le remboursement immédiat`
-                      );
-                    }
-                    if (!item.pour_le_compte) {
-                      errors.push(
-                        `${clientPrefix} Le compte bénéficiaire est requis pour le remboursement immédiat`
-                      );
-                    }
-                    if (item.mode_rembourse === 'cheque' && !item.cheque_recu) {
-                      errors.push(
-                        `${clientPrefix} Le reçu de chèque est requis pour le remboursement immédiat`
-                      );
-                    }
-                    if (
-                      item.pour_le_compte === 'autre' &&
-                      !item.fichier_autorisation
-                    ) {
-                      errors.push(
-                        `${clientPrefix} Le fichier d'autorisation est requis pour le remboursement immédiat`
-                      );
-                    }
-                  }
-                }
-              }
-
-              // Validate direct remboursement fields if mode is direct
-              if (currentMode === 'direct') {
-                if (!item.date_rembourse) {
-                  errors.push(
-                    `${clientPrefix} La date de remboursement est requise`
-                  );
-                }
-                if (!item.mode_rembourse) {
-                  errors.push(
-                    `${clientPrefix} Le mode de remboursement est requis`
-                  );
-                }
-                if (item.mode_rembourse && !item.num_paiement) {
-                  errors.push(
-                    `${clientPrefix} Le numéro de paiement est requis`
-                  );
-                }
-                if (!item.pour_le_compte) {
-                  errors.push(
-                    `${clientPrefix} Le compte bénéficiaire est requis`
-                  );
-                }
-                if (item.mode_rembourse === 'cheque' && !item.cheque_recu) {
-                  errors.push(`${clientPrefix} Le reçu de chèque est requis`);
-                }
-                if (
-                  item.pour_le_compte === 'autre' &&
-                  !item.fichier_autorisation
-                ) {
-                  errors.push(
-                    `${clientPrefix} Le fichier d'autorisation est requis`
-                  );
-                }
-              }
-
-              // Validate the sum makes sense for transfert_remb
-              if (currentMode === 'transfert_remb') {
-                const montantTransferer =
-                  parseFloat(item.montant_transferer) || 0;
-                const resteARembourser =
-                  parseFloat(item.reste_a_rembourse) || 0;
-                const expectedTotal =
-                  (item.pourcentage / 100) * reservationData.sumAvances;
-                const actualTotal = montantTransferer + resteARembourser;
-
-                if (Math.abs(actualTotal - expectedTotal) > 0.01) {
-                  errors.push(
-                    `${clientPrefix} La somme du montant transféré (${montantTransferer.toFixed(
-                      2
-                    )} DH) ` +
-                      `et du reste à rembourser (${resteARembourser.toFixed(
-                        2
-                      )} DH) doit être égale ` +
-                      `à ${expectedTotal.toFixed(2)} DH`
-                  );
-                }
+                errors.push(
+                  `Remboursement immédiat ${
+                    index + 1
+                  }: Le fichier d'autorisation est requis`
+                );
               }
             });
           }
         }
+      } else if (['transfert'].includes(formValues.type_remb)) {
+        if (!formValues.dossier_id) errors.push('Le dossier ID est requis');
       }
     } else if (activeModel == 2) {
       // Désistement au Profit
@@ -792,6 +638,7 @@ export default function Page() {
         }
       } else if (formValues.type_dp == 2) {
         // Désistement au profit d'un co-réservataire
+        console.log('dp_co_r==>' + formValues.profit_dp_co_reser);
         if (
           !formValues.profit_dp_co_reser ||
           formValues.profit_dp_co_reser.length == 0
@@ -825,6 +672,9 @@ export default function Page() {
               `La somme des pourcentages (${totalPercentage}%) doit être égale à ${expectedTotal}%`
             );
           }
+          console.log(
+            'total==>' + totalPercentage + 'expet==>' + expectedTotal
+          );
         }
       } else if (formValues.type_dp == 3) {
         // Désistement Partiel
@@ -936,7 +786,7 @@ export default function Page() {
       }
     }
     // Validation for Changement de Bien (activeModel == 3)
-    else if (activeModel == 3) {
+    if (activeModel == 3) {
       // Basic validation
       if (!formValues.bien_ancien) {
         errors.push("L'ancien bien est requis");
@@ -970,6 +820,10 @@ export default function Page() {
             }
           }
         }
+        // Validate files if required (uncomment if needed)
+        // if (formValues.files_avance?.length === 0) {
+        //     errors.push("Au moins un fichier de paiement doit être ajouté");
+        // }
       }
     }
     // Penalty validation (applies to all activeModel cases if avecPenalite is true)
@@ -1278,9 +1132,10 @@ export default function Page() {
             >
               {activeModel == 3 && (
                 <Changement_De_Bien
+                  formData={formData}
                   isEditing={false}
                   selectedProjet_id={selectedProjet_id}
-                  bien_ancien={reservationData.bien?.propriete_dite_bien}
+                  bien_ancien={reservationData.bien}
                   sum_avances_valides={reservationData.sumAvances}
                   banques={banques}
                   filesList_avc={filesList_avc}
@@ -1288,6 +1143,7 @@ export default function Page() {
               )}
               {activeModel == 2 && (
                 <Desistement_Au_Profit
+                  formData={formData}
                   isEditing={false}
                   desisteurs_testt={reservationData.desisteursTest}
                   desisteurs={reservationData.desisteurs}
@@ -1298,13 +1154,13 @@ export default function Page() {
               )}
               {activeModel == 1 && (
                 <Desistement_Definitif
+                  formData={formData}
                   isEditing={false}
                   accessToken={accessToken}
                   selectedProjet_id={selectedProjet_id}
                   sum_avances_valides={reservationData.sumAvances}
-                  inputListRemb_get={reservationData.inputListRemb}
+                  inputListRemb={reservationData.inputListRemb}
                   reservationId={reservationId}
-                  onDossierInfosChange={handleDossierInfosChange}
                 />
               )}
 
@@ -1758,33 +1614,19 @@ export default function Page() {
                     </div>
                   </div>
                 )}
-                <div className="flex-1 mt-4">
-                  <TextField
-                    label="Commentaire:"
-                    name="commentaire"
-                    type="text"
-                    multi={true} // Set this to true if you want a multi-line textarea, else leave it out or false
-                    control={control} // Passed from useForm hook
-                    errors={errors} // Validation errors from React Hook Form
-                    backendErrors={{}} // Backend error messages if any
-                    defaultValues={{}} // Default values for the form
-                    width="w-full" // Optionally set width, default is 'w-80'
-                    height="h-full" // Optionally set height, default is 'h-10'
-                  />
-                </div>
               </div>
-              {errors_s.length > 0 && (
-                <div className="bg-red-50 border-l-4 border-red-500 text-red-500 p-4 mb-4">
-                  <p className="font-semibold">
-                    Veuillez corriger les erreurs suivantes :
-                  </p>
-                  <ul className="list-disc pl-5 mt-2">
-                    {errors_s.map((error, index) => (
-                      <li key={index}>{error}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+              <div>
+                {/*errors_s.length > 0 && (
+                  <div className="error-messages">
+                    <p>Veuillez corriger les erreurs suivantes :</p>
+                    <ul>
+                      {errors_s.map((error, index) => (
+                        <li key={index}>{error}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )*/}
+              </div>
               <div className="p-6 border-t border-gray-200 flex justify-end">
                 <button
                   type="button"

@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
 import { lien_parentes, type_dst_dp } from '@/configs/enum';
@@ -13,6 +13,7 @@ export function Desistement_Au_Profit({
   desisteurs_testt,
   desisteurs,
   desisteutrs_profit_dp_partiell,
+  desisteur_dp_proche_co, //editing
 }) {
   const {
     control,
@@ -28,12 +29,15 @@ export function Desistement_Au_Profit({
       });
     });
   }
+
   //dp profi co reservataire
   const [profit_dp_co_reser, set_profit_dp_co_reser] = useState([]);
   const [clients_profit_de, set_clients_profit_de] = useState();
   const [autocompleteKey, setAutocompleteKey] = useState(0);
-
-  const [desisteur_dp_proche, set_desisteur_dp_proche] = useState([]);
+  const [desisteur_dp_proche, set_desisteur_dp_proche] = useState(() => {
+    // Initialize with data if in editing mode
+    return isEditing && formData ? desisteur_dp_proche_co : [];
+  });
 
   //dp proche
 
@@ -58,30 +62,165 @@ export function Desistement_Au_Profit({
   //dp_co
   const [nb_aqu_part, set_nb_aqu_part] = useState(0);
   const [new_clients_dp_partiel, set_new_clients_dp_partiel] = useState([]);
-  const desisteutrs_profit_dp_partiel =
-    watch('desisteutrs_profit_dp_partiel') || [];
+  const [desisteutrs_profit_dp_partiel, set_desisteurs_partiel] = useState(
+    !isEditing ? watch('desisteutrs_profit_dp_partiel') : []
+  );
   const [isDataLoaded, setIsDataLoaded] = useState(false);
+
+  // Add this useEffect to pre-fill form data when in editing mode
   useEffect(() => {
-    if (
-      desisteutrs_profit_dp_partiell &&
-      desisteutrs_profit_dp_partiell.length > 0 &&
-      !isDataLoaded
-    ) {
-      setValue('desisteutrs_profit_dp_partiel', desisteutrs_profit_dp_partiell);
+    if (isEditing && formData && !isDataLoaded) {
+      setValue('commentaire_rejete', formData.commentaire_rejete);
+
+      // Make sure formData has the expected structure
+      if (!formData.type_dp) {
+        console.error('Missing type_dp in formData');
+        return;
+      }
+
+      // Pre-fill form based on desistement type
+      setValue('type_dp', formData.type_dp);
+      switch (formData.type_dp) {
+        case '1': // Désistement au profit d'un proche
+          setValue('desisteur_dp_proche_co', desisteur_dp_proche_co);
+          setValue(
+            'nb_aquereurs_dp_proche',
+            formData.nouvel_aquereurs_desistements?.length || 0
+          );
+
+          // Transform the nouvel_aquereurs_desistements data to match your inputList structure
+          const transformedList =
+            formData.nouvel_aquereurs_desistements?.map((item) => ({
+              cin: item.cin,
+              nom: item.nom,
+              prenom: item.prenom,
+              telephone_num1: item.telephone,
+              pourcentage: item.pourcentage || 0, // Add default if missing
+              // Keep the id if needed for updates
+            })) || [];
+
+          // Calculate sum of percentages from transformedList
+          const sommePercent = transformedList.reduce((sum, item) => {
+            return sum + Number(item.pourcentage) || 0;
+          }, 0);
+          // Set both state and form value
+
+          setinputList(transformedList);
+          setValue('inputList', transformedList);
+          // Set the count of new aquereurs
+          set_nb_aqu(transformedList.length);
+
+          // Set the total percentage (calculated from transformedList)
+          setValue('somme_percent', sommePercent);
+          break;
+
+        case '2': // Désistement au profit d'un co-réservataire
+          setValue('desisteur_dp_proche_co', desisteur_dp_proche_co);
+          const sommePercent_des = desisteur_dp_proche_co.reduce(
+            (sum, item) => {
+              return sum + Number(item.pourcentage) || 0;
+            },
+            0
+          );
+          setValue('somme_percent', sommePercent_des);
+          const profit_dp_co_res =
+            formData.aquereurs_profits?.map((item) => ({
+              prenom: item.aquereur?.client?.prenom,
+              nom: item.aquereur?.client?.nom,
+              new_pourcentage: item.pourcentage,
+            })) || [];
+          setValue('profit_dp_co_reser', profit_dp_co_res || []);
+          set_profit_dp_co_reser(profit_dp_co_res || []);
+          set_clients_profit_de(profit_dp_co_res || []);
+          //nkmaaaal clietn profit de
+          break;
+
+        case '3': // Désistement partiel
+          const dp_partiel =
+            formData.aquereurs_partiel?.map((item) => ({
+              cin: item?.aquereur?.client?.cin,
+              nom: item?.aquereur?.client?.nom,
+              prenom: item?.aquereur?.client?.prenom,
+              telephone_num1: item?.aquereur?.client?.telephone_num1,
+              pourcentage_: item.pourcentage || 0,
+            })) || [];
+
+          set_desisteurs_partiel(dp_partiel);
+          setValue('desisteutrs_profit_dp_partiel', dp_partiel);
+
+          const new_client_dp_partiel =
+            formData.nouvel_aquereurs_desistements?.map((item, index) => {
+              // Set individual form fields for each new client
+              setValue(`new_clients_dp_partiel[${index}].cin`, item.cin);
+              setValue(`new_clients_dp_partiel[${index}].nom`, item.nom);
+              setValue(`new_clients_dp_partiel[${index}].prenom`, item.prenom);
+              setValue(
+                `new_clients_dp_partiel[${index}].telephone_num1`,
+                item.telephone
+              );
+              setValue(
+                `new_clients_dp_partiel[${index}].pourcentage`,
+                item.pourcentage || 0
+              );
+
+              return {
+                cin: item.cin,
+                nom: item.nom,
+                prenom: item.prenom,
+                telephone_num1: item.telephone,
+                pourcentage: item.pourcentage || 0,
+              
+              };
+            }) || [];
+
+          console.log(
+            'les nex client==>' + JSON.stringify(new_client_dp_partiel)
+          );
+
+          // Set the array value
+          setValue('new_clients_dp_partiel', new_client_dp_partiel);
+          set_new_clients_dp_partiel(new_client_dp_partiel);
+          setValue('nb_aquereurs_dp', new_client_dp_partiel.length);
+          set_nb_aqu_part(new_client_dp_partiel.length);
+
+          // Calculate percentages
+          const sommePercent_old = dp_partiel.reduce(
+            (sum, item) => sum + Number(item.pourcentage_) || 0,
+            0
+          );
+          setValue('somme_percent_dp_patiel_old', sommePercent_old);
+
+          const sommePercent_new = new_client_dp_partiel.reduce(
+            (sum, item) => sum + Number(item.pourcentage) || 0,
+            0
+          );
+          setValue('somme_percent_dp_patiel_new', sommePercent_new);
+          break;
+      }
+
+      // Pre-fill common fields
+      setValue('lien_parente', formData.lien_parente);
       setIsDataLoaded(true);
+    }
+  }, [isEditing, formData, isDataLoaded, setValue, desisteurs_testt]);
+
+  useEffect(() => {
+    if (!isEditing) {
+      if (
+        desisteutrs_profit_dp_partiell &&
+        desisteutrs_profit_dp_partiell.length > 0 &&
+        !isDataLoaded
+      ) {
+        set_desisteurs_partiel(desisteutrs_profit_dp_partiell);
+        setValue(
+          'desisteutrs_profit_dp_partiel',
+          desisteutrs_profit_dp_partiell
+        );
+        setIsDataLoaded(true);
+      }
     }
   }, [desisteutrs_profit_dp_partiell, isDataLoaded, setValue]);
 
-  // Reset when type_dp changes
-  useEffect(() => {
-    if (
-      type_dp == 3 &&
-      desisteutrs_profit_dp_partiell &&
-      desisteutrs_profit_dp_partiell.length > 0
-    ) {
-      setValue('desisteutrs_profit_dp_partiel', desisteutrs_profit_dp_partiell);
-    }
-  }, [type_dp, desisteutrs_profit_dp_partiell, setValue]);
   const [errors_new_dp_part, setErrors_new_dp_part] = useState({
     telephone: false,
     percentage: false,
@@ -90,72 +229,127 @@ export function Desistement_Au_Profit({
   const handleinputchange = (e, index) => {
     const { name, value } = e.target;
 
-    // Reconstruct the original field name by joining parts after splitting
-    const parts = name.split('_');
-    const fieldName = parts.slice(0, -1).join('_'); // Join all parts except the last one (index)
-
-    // Update only the specific field in the specific row
-    const updatedList = inputList.map((item, i) =>
-      i == index ? { ...item, [fieldName]: value } : item
-    );
-
-    // Calculate errors
     const newErrors = {
       telephone: false,
       percentage: false,
       totalPercentage: false,
     };
 
-    // Validate telephone
-    if (fieldName == 'telephone_num1') {
-      newErrors.telephone = value.length < 10 || value.length > 14;
+    if (isEditing) {
+      // For edit mode - better field name extraction
+      const fieldMatch = name.match(/inputList\[(\d+)\]\.(\w+)/);
+      if (fieldMatch) {
+        const fieldIndex = fieldMatch[1];
+        const fieldName = fieldMatch[2];
+
+        // Update form and local state
+        setValue(`inputList[${fieldIndex}].${fieldName}`, value);
+
+        const updatedList = [...inputList];
+        updatedList[fieldIndex][fieldName] = value;
+        setinputList(updatedList);
+
+        // Edit mode specific validation
+        if (fieldName == 'telephone_num1') {
+          newErrors.telephone = value.length < 10 || value.length > 14;
+        }
+
+        if (fieldName == 'pourcentage') {
+          const percentValue = parseInt(value) || 0;
+          newErrors.percentage = percentValue < 0 || percentValue > 100;
+
+          const totalPercentage = updatedList.reduce((sum, item) => {
+            return sum + parseInt(item.pourcentage) || 0;
+          }, 0);
+
+          const targetPercentage = parseInt(watch('somme_percent')) || 0;
+          newErrors.totalPercentage = totalPercentage !== targetPercentage;
+        }
+      }
+    } else {
+      // For non-edit mode - original behavior
+      const parts = name.split('_');
+      const fieldName = parts.slice(0, -1).join('_');
+
+      const updatedList = inputList.map((item, i) =>
+        i == index ? { ...item, [fieldName]: value } : item
+      );
+
+      setinputList(updatedList);
+      setValue('inputList', updatedList);
+
+      if (fieldName == 'telephone_num1') {
+        newErrors.telephone = value.length < 10 || value.length > 14;
+      }
+
+      if (fieldName == 'pourcentage') {
+        const percentValue = parseInt(value) || 0;
+        newErrors.percentage = percentValue < 0 || percentValue > 100;
+        const totalPercentage = updatedList.reduce((sum, item) => {
+          return sum + parseInt(item.pourcentage) || 0;
+        }, 0);
+        const targetPercentage = parseInt(watch('somme_percent')) || 0;
+        newErrors.totalPercentage = totalPercentage !== targetPercentage;
+      }
     }
 
-    // Validate percentage
-    if (fieldName == 'pourcentage') {
-      const percentValue = parseInt(value) || 0;
-      newErrors.percentage = percentValue < 0 || percentValue > 100;
-      // Calculate total percentage
-      const totalPercentage = updatedList.reduce((sum, item) => {
-        return sum + (parseInt(item.pourcentage) || 0);
-      }, 0);
-
-      const targetPercentage = parseInt(watch('somme_percent')) || 0;
-      newErrors.totalPercentage = totalPercentage != targetPercentage;
-    }
-
-    // Update state
-    setinputList(updatedList);
-    setValue('inputList', updatedList);
     setErrors_dp_proche(newErrors);
   };
 
   const handleinputchange_dp_co = (e, index) => {
     const { name, value } = e.target;
 
-    // Extract the base field name (removing the index suffix)
-    const parts = name.split('_');
-    const fieldName = parts.slice(0, -1).join('_');
+    // Editing mode handling
+    if (isEditing && name.startsWith('profit_dp_co_reser')) {
+      // Handle array-style field names (profit_dp_co_reser[index].new_pourcentage)
+      const fieldMatch = name.match(/profit_dp_co_reser\[(\d+)\]\.(.+)/);
+      if (fieldMatch) {
+        const [, idx, fieldName] = fieldMatch;
+        const numericIndex = parseInt(idx);
 
-    // Update the specific field in the specific row
-    const updatedList = profit_dp_co_reser.map((item, i) =>
-      i == index ? { ...item, [fieldName]: value } : item
-    );
+        const updatedList = profit_dp_co_reser.map((item, i) => {
+          if (i == numericIndex) {
+            return {
+              ...item,
+              [fieldName]: value,
+              // Ensure pourcentage remains unchanged while editing new_pourcentage
+              pourcentage: item.new_pourcentage,
+            };
+          }
+          return item;
+        });
+        // Validate and update state
+        validateAndUpdate(updatedList);
+      }
+    } else {
+      // Handle simple field names (for non-editing mode if needed)
+      const parts = name.split('_');
+      const fieldName = parts.slice(0, -1).join('_');
 
-    // Calculate errors
+      const updatedList = profit_dp_co_reser.map((item, i) =>
+        i == index ? { ...item, [fieldName]: value } : item
+      );
+
+      // Validate and update state
+      validateAndUpdate(updatedList);
+    }
+  };
+
+  // Separate validation logic
+  const validateAndUpdate = (updatedList) => {
     const newErrors = {
       new_pourcentage: {},
       totalPercentage: '',
     };
 
-    // Validate percentage
-    if (fieldName == 'new_pourcentage') {
-      const percentValue = parseInt(value) || 0;
+    // Validate each percentage
+    updatedList.forEach((item, index) => {
+      const percentValue = parseInt(item.new_pourcentage) || 0;
       if (percentValue < 0 || percentValue > 100) {
         newErrors.new_pourcentage[index] =
           'Le pourcentage doit être entre 0 et 100';
       }
-    }
+    });
 
     // Calculate total percentage
     const totalPercentage = updatedList.reduce((sum, item) => {
@@ -169,214 +363,310 @@ export function Desistement_Au_Profit({
 
     // Update state
     set_profit_dp_co_reser(updatedList);
-    setValue('profit_dp_co_reser', updatedList); // Update form value if using react-hook-form
+    setValue('profit_dp_co_reser', updatedList);
     setErrors_dp_co(newErrors);
   };
   const handleinputchange_dp_part = (e, index) => {
     const { name, value } = e.target;
 
-    // Extract the base field name
-    const parts = name.split('_');
-    const fieldName = parts.slice(0, -1).join('_');
+    if (isEditing) {
+      // Editing mode - handle array structure
+      const fieldMatch = name.match(/dp_part\[(\d+)\]\.(\w+)/);
+      if (fieldMatch) {
+        const fieldIndex = fieldMatch[1];
+        const fieldName = fieldMatch[2];
 
-    // Update the specific field
-    const updatedList = [...desisteutrs_profit_dp_partiel].map((item, i) =>
-      i === index ? { ...item, [fieldName]: value } : item
-    );
+        // Update form and local state
+        setValue(`dp_part[${fieldIndex}].${fieldName}`, value);
 
-    // Calculate total percentage for old clients
-    let totalOldPercentage = 0;
-    updatedList.forEach((item) => {
-      totalOldPercentage += parseFloat(item.pourcentage_) || 0;
-    });
+        const updatedList = [...desisteutrs_profit_dp_partiel];
+        updatedList[fieldIndex][fieldName] = value;
+        set_desisteurs_partiel(updatedList);
 
-    // Calculate errors
-    const newErrors = {
-      pourcentage_: {},
-      totalPercentage: '',
-    };
+        // Calculate total percentage for old clients
+        let totalOldPercentage = 0;
+        updatedList.forEach((item) => {
+          totalOldPercentage += parseFloat(item.pourcentage_) || 0;
+        });
 
-    // Validate individual percentage
-    if (fieldName === 'pourcentage_') {
-      const percentValue = parseFloat(value) || 0;
-      if (percentValue < 0 || percentValue > 100) {
-        newErrors.pourcentage_[index] =
-          'Le pourcentage doit être entre 0 et 100';
+        // Calculate errors
+        const newErrors = {
+          pourcentage_: {},
+          totalPercentage: '',
+        };
+
+        // Validate individual percentage
+        if (fieldName == 'pourcentage_') {
+          const percentValue = parseFloat(value) || 0;
+          if (percentValue < 0 || percentValue > 100) {
+            newErrors.pourcentage_[fieldIndex] =
+              'Le pourcentage doit être entre 0 et 100';
+          }
+        }
+
+        // Calculate combined percentage (old + new)
+        const totalNewPercentage =
+          parseFloat(watch('somme_percent_dp_patiel_new')) || 0;
+        const combinedPercentage = totalOldPercentage + totalNewPercentage;
+
+        // Validate total percentage
+        if (Math.abs(combinedPercentage - 100) > 0.01) {
+          newErrors.totalPercentage = `La somme des pourcentages (${combinedPercentage.toFixed(
+            2
+          )}%) doit être égale à 100%`;
+        }
+
+        if (combinedPercentage == 100) {
+          setErrors_new_dp_part((prevState) => ({
+            ...prevState,
+            totalPercentage: '',
+          }));
+        }
+
+        // Update states
+        setValue('somme_percent_dp_patiel_old', totalOldPercentage);
+        setErrors_dp_part(newErrors);
       }
-    }
+    } else {
+      // Non-editing mode - original behavior
+      const parts = name.split('_');
+      const fieldName = parts.slice(0, -1).join('_');
 
-    // Calculate combined percentage (old + new)
-    const totalNewPercentage =
-      parseFloat(watch('somme_percent_dp_patiel_new')) || 0;
-    const combinedPercentage = totalOldPercentage + totalNewPercentage;
+      const updatedList = [...desisteutrs_profit_dp_partiel].map((item, i) =>
+        i == index ? { ...item, [fieldName]: value } : item
+      );
 
-    // Validate total percentage
-    if (Math.abs(combinedPercentage - 100) > 0.01) {
-      newErrors.totalPercentage = `La somme des pourcentages (${combinedPercentage.toFixed(
-        2
-      )}%) doit être égale à 100%`;
-    }
+      // Calculate total percentage for old clients
+      let totalOldPercentage = 0;
+      updatedList.forEach((item) => {
+        totalOldPercentage += parseFloat(item.pourcentage_) || 0;
+      });
 
-    if (combinedPercentage === 100) {
-      setErrors_new_dp_part((prevState) => ({
-        ...prevState,
+      // Calculate errors
+      const newErrors = {
+        pourcentage_: {},
         totalPercentage: '',
-      }));
+      };
+
+      // Validate individual percentage
+      if (fieldName == 'pourcentage_') {
+        const percentValue = parseFloat(value) || 0;
+        if (percentValue < 0 || percentValue > 100) {
+          newErrors.pourcentage_[index] =
+            'Le pourcentage doit être entre 0 et 100';
+        }
+      }
+
+      // Calculate combined percentage (old + new)
+      const totalNewPercentage =
+        parseFloat(watch('somme_percent_dp_patiel_new')) || 0;
+      const combinedPercentage = totalOldPercentage + totalNewPercentage;
+
+      // Validate total percentage
+      if (Math.abs(combinedPercentage - 100) > 0.01) {
+        newErrors.totalPercentage = `La somme des pourcentages (${combinedPercentage.toFixed(
+          2
+        )}%) doit être égale à 100%`;
+      }
+
+      if (combinedPercentage == 100) {
+        setErrors_new_dp_part((prevState) => ({
+          ...prevState,
+          totalPercentage: '',
+        }));
+      }
+      // Update states
+      setValue('desisteutrs_profit_dp_partiel', updatedList);
+      setValue('somme_percent_dp_patiel_old', totalOldPercentage);
+      setErrors_dp_part(newErrors);
     }
-    // Update states
-    setValue('desisteutrs_profit_dp_partiel', updatedList);
-    setValue('somme_percent_dp_patiel_old', totalOldPercentage);
-    setErrors_dp_part(newErrors);
   };
 
   const handleinputchange_dp_partiel_new = (e, index) => {
     const { name, value } = e.target;
 
-    // Reconstruct the original field name
-    const parts = name.split('_');
-    const fieldName = parts.slice(0, -1).join('_');
+    if (isEditing) {
+      // Editing mode - handle array structure
+      const fieldMatch = name.match(/new_clients_dp_partiel\[(\d+)\]\.(\w+)/);
+      if (fieldMatch) {
+        const fieldIndex = fieldMatch[1];
+        const fieldName = fieldMatch[2];
 
-    // Update the specific field
-    const updatedList = new_clients_dp_partiel.map((item, i) =>
-      i === index ? { ...item, [fieldName]: value } : item
-    );
+        // Update form and local state
+        setValue(`new_clients_dp_partiel[${fieldIndex}].${fieldName}`, value);
 
-    // Calculate errors
-    const newErrors = {
-      telephone: false,
-      percentage: false,
-      totalPercentage: false,
-    };
+        const updatedList = [...new_clients_dp_partiel];
+        updatedList[fieldIndex][fieldName] = value;
+        set_new_clients_dp_partiel(updatedList);
 
-    // Validate telephone
-    if (fieldName === 'telephone_num1') {
-      const isValid = value.length >= 10 && value.length <= 14;
-      newErrors.telephone = !isValid;
-    }
+        // Calculate errors
+        const newErrors = {
+          telephone: false,
+          percentage: false,
+          totalPercentage: false,
+        };
 
-    // Validate percentage
-    if (fieldName === 'pourcentage') {
-      const percentValue = parseFloat(value) || 0;
-      newErrors.percentage = percentValue < 0 || percentValue > 100;
+        // Validate telephone
+        if (fieldName == 'telephone_num1') {
+          const isValid = value.length >= 10 && value.length <= 14;
+          newErrors.telephone = !isValid;
+        }
 
-      // Calculate total percentage for new clients
-      let totalNewPercentage = 0;
-      updatedList.forEach((item) => {
-        totalNewPercentage += parseFloat(item.pourcentage) || 0;
-      });
+        // Validate percentage
+        if (fieldName == 'pourcentage') {
+          const percentValue = parseFloat(value) || 0;
+          newErrors.percentage = percentValue < 0 || percentValue > 100;
 
-      // Calculate combined percentage (old + new)
-      const totalOldPercentage =
-        parseFloat(watch('somme_percent_dp_patiel_old')) || 0;
-      const combinedPercentage = totalNewPercentage + totalOldPercentage;
+          // Calculate total percentage for new clients
+          let totalNewPercentage = 0;
+          updatedList.forEach((item) => {
+            totalNewPercentage += parseFloat(item.pourcentage) || 0;
+          });
 
-      // Update values
-      setValue('somme_percent_dp_patiel_new', totalNewPercentage);
-      setValue('targetPercentage_part_new', 100 - totalOldPercentage);
+          // Calculate combined percentage (old + new)
+          const totalOldPercentage =
+            parseFloat(watch('somme_percent_dp_patiel_old')) || 0;
+          const combinedPercentage = totalNewPercentage + totalOldPercentage;
 
-      // Validate total percentage
-      if (Math.abs(combinedPercentage - 100) > 0.01) {
-        newErrors.totalPercentage = true;
-      } else {
-        newErrors.totalPercentage = false;
+          // Update values
+          setValue('somme_percent_dp_patiel_new', totalNewPercentage);
+          setValue('targetPercentage_part_new', 100 - totalOldPercentage);
+          // Validate total percentage
+          if (Math.abs(combinedPercentage - 100) > 0.01) {
+            newErrors.totalPercentage = true;
+          } else {
+            newErrors.totalPercentage = false;
+          }
+          if (combinedPercentage == 100) {
+            setErrors_dp_part((prevState) => ({
+              ...prevState,
+              totalPercentage: '',
+            }));
+          }
+        }
+
+        // Update state
+        setErrors_new_dp_part(newErrors);
       }
-      if (combinedPercentage == 100) {
-        setErrors_dp_part((prevState) => ({
-          ...prevState,
-          totalPercentage: '',
-        }));
+    } else {
+      // Non-editing mode - original behavior
+      const parts = name.split('_');
+      const fieldName = parts.slice(0, -1).join('_');
+
+      const updatedList = new_clients_dp_partiel.map((item, i) =>
+        i == index ? { ...item, [fieldName]: value } : item
+      );
+
+      // Calculate errors
+      const newErrors = {
+        telephone: false,
+        percentage: false,
+        totalPercentage: false,
+      };
+
+      // Validate telephone
+      if (fieldName == 'telephone_num1') {
+        const isValid = value.length >= 10 && value.length <= 14;
+        newErrors.telephone = !isValid;
       }
+
+      // Validate percentage
+      if (fieldName == 'pourcentage') {
+        const percentValue = parseFloat(value) || 0;
+        newErrors.percentage = percentValue < 0 || percentValue > 100;
+
+        // Calculate total percentage for new clients
+        let totalNewPercentage = 0;
+        updatedList.forEach((item) => {
+          totalNewPercentage += parseFloat(item.pourcentage) || 0;
+        });
+
+        // Calculate combined percentage (old + new)
+        const totalOldPercentage =
+          parseFloat(watch('somme_percent_dp_patiel_old')) || 0;
+        const combinedPercentage = totalNewPercentage + totalOldPercentage;
+
+        // Update values
+        setValue('somme_percent_dp_patiel_new', totalNewPercentage);
+        setValue('targetPercentage_part_new', 100 - totalOldPercentage);
+
+        // Validate total percentage
+        if (Math.abs(combinedPercentage - 100) > 0.01) {
+          newErrors.totalPercentage = true;
+        } else {
+          newErrors.totalPercentage = false;
+        }
+        if (combinedPercentage == 100) {
+          setErrors_dp_part((prevState) => ({
+            ...prevState,
+            totalPercentage: '',
+          }));
+        }
+      }
+      // Update state
+      set_new_clients_dp_partiel(updatedList);
+      setValue('new_clients_dp_partiel', updatedList);
+      setErrors_new_dp_part(newErrors);
     }
-    // Update state
-    set_new_clients_dp_partiel(updatedList);
-    setValue('new_clients_dp_partiel', updatedList);
-    setErrors_new_dp_part(newErrors);
   };
   useEffect(() => {
-    console.log('type_dp changed, resetting all fields');
+    if (!isEditing) {
+      set_nb_aqu(0);
+      setinputList([]);
+      set_nb_aqu_part(0);
+      set_new_clients_dp_partiel([]);
+      //set_desisteur_dp_proche([]); // Clear selected desisteurs
+      set_profit_dp_co_reser([]);
+      setValue('desisteur_dp_proche_co', []); // Clear form value for desisteurs
 
-    // Clear ALL dynamic fields regardless of current state
-    /*const clearAllDynamicFields = () => {
-      // Clear inputList fields (type_dp 1)
-      for (let i = 0; i < 20; i++) {
-        setValue(`cin_${i}`, '');
-        setValue(`nom_${i}`, '');
-        setValue(`prenom_${i}`, '');
-        setValue(`telephone_num1_${i}`, '');
-        setValue(`pourcentage_${i}`, '');
+      // Reset all form array values
+      setValue('inputList', []);
+      setValue('new_clients_dp_partiel', []);
+      setValue('nb_aquereurs', '');
+      setValue('nb_aquereurs_dp', '');
+      setValue('profit_dp_co_reser', []);
+      setValue('somme_percent', 0);
+      setValue('somme_percent_dp_patiel_old', 0);
+      setValue('somme_percent_dp_patiel_new', 0);
+      setValue('targetPercentage_part_new', 0);
 
-        // Clear new_clients_dp_partiel fields (type_dp 3)
-        setValue(`cin_p${i}`, '');
-        setValue(`nom_p${i}`, '');
-        setValue(`prenom_p${i}`, '');
-        setValue(`telephone_num1_p${i}`, '');
-        setValue(`pourcentage_p${i}`, '');
-
-        // Clear profit_dp_co_reser fields (type_dp 2)
-        setValue(`nom_${i}`, '');
-        setValue(`prenom_${i}`, '');
-        setValue(`new_pourcentage_${i}`, '');
-      }
-    };*/
-
-    // First clear all fields
-    // clearAllDynamicFields();
-
-    // Then reset all states
-    set_nb_aqu(0);
-    setinputList([]);
-    set_nb_aqu_part(0);
-    set_new_clients_dp_partiel([]);
-    set_desisteur_dp_proche([]); // Clear selected desisteurs
-    set_profit_dp_co_reser([]);
-    setValue('desisteur_dp_proche_co', []); // Clear form value for desisteurs
-
-    // Reset all form array values
-    setValue('inputList', []);
-    setValue('new_clients_dp_partiel', []);
-    setValue('nb_aquereurs', '');
-    setValue('nb_aquereurs_dp', '');
-    setValue('nb_aquereurs_dp_proche', '');
-    setValue('profit_dp_co_reser', []);
-    setValue('somme_percent', 0);
-    setValue('somme_percent_dp_patiel_old', 0);
-    setValue('somme_percent_dp_patiel_new', 0);
-    setValue('targetPercentage_part_new', 0);
-
-    // Reset errors
-    setErrors_dp_proche({
-      telephone: false,
-      percentage: false,
-      totalPercentage: false,
-    });
-    setErrors_new_dp_part({
-      telephone: false,
-      percentage: false,
-      totalPercentage: false,
-    });
-    setErrors_dp_co({
-      new_pourcentage: {},
-      totalPercentage: '',
-    });
-    setErrors_dp_part({
-      pourcentage_: {},
-      totalPercentage: '',
-    });
-    // Force remount of autocomplete by changing its key
-    setAutocompleteKey((prev) => prev + 1);
+      // Reset errors
+      setErrors_dp_proche({
+        telephone: false,
+        percentage: false,
+        totalPercentage: false,
+      });
+      setErrors_new_dp_part({
+        telephone: false,
+        percentage: false,
+        totalPercentage: false,
+      });
+      setErrors_dp_co({
+        new_pourcentage: {},
+        totalPercentage: '',
+      });
+      setErrors_dp_part({
+        pourcentage_: {},
+        totalPercentage: '',
+      });
+      // Force remount of autocomplete by changing its key
+      setAutocompleteKey((prev) => prev + 1);
+    }
   }, [type_dp, setValue]); // Add setValue to dependencies
   return (
     <div className="p-6">
       {isEditing && (
-        <div className="mb-4 p-3 bg-yellow-50 !text-yellow-800 rounded-md">
-          <p className="font-medium">Mode Édition</p>
+        <div className="mb-4 p-3 bg-red-50 !text-red-800 rounded-md">
+          <p className="font-medium">
+            le Désistement est Rejeté a cause de {watch('commentaire_rejete')}
+          </p>
         </div>
       )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <AutocompleteSelectComponent
           label="Type Désistement Au Profit :"
           name="type_dp"
-          value={isEditing && formData.typ_dp}
+          value={isEditing && watch('type_dp')}
           control={control}
           options={type_dst_dp}
           errors={{}}
@@ -390,10 +680,11 @@ export function Desistement_Au_Profit({
             setValue('type_dp', value);
             setValue('desisteur_dp_proche_co', []); // Clear the selected desisteurs
             set_desisteur_dp_proche([]); // Clear local state
+            setValue('nb_aquereurs_dp_proche', '');
+            setValue('somme_percent', '');
           }}
         />
       </div>
-
       {(type_dp == 1 || type_dp == 2) && (
         <div className="border-t border-gray-200 py-4">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6">
@@ -411,32 +702,39 @@ export function Desistement_Au_Profit({
                   render={({ field }) => (
                     <AutocompleteMultipleDes
                       key={`desisteur-${autocompleteKey}`} // This forces complete remount
-                      label=""
                       name="desisteur_dp_proche_co"
                       required
-                      value={field || []}
-                      options={desisteurs}
+                      value={desisteur_dp_proche}
+                      // This should be your array of selected items
+                      options={desisteurs.filter(
+                        (desisteur) =>
+                          !profit_dp_co_reser.some(
+                            (profit) =>
+                              profit.id ==
+                              (isEditing ? desisteur.id : desisteur.client.id)
+                          )
+                      )}
                       choiceKey="id" // Used for unique identification
                       onChange={(newValue) => {
                         let totalPercent = 0;
                         const selectedDesisteurs = [];
 
                         set_desisteur_dp_proche([]);
-
                         newValue.forEach((item) => {
                           totalPercent += item.pourcentage;
                           selectedDesisteurs.push({
                             id: item.id,
-                            cl_id: item.client.id,
-                            nom: item.client.nom,
-                            prenom: item.client.prenom,
+                            cl_id: isEditing ? item.cl_id : item.client.id,
+                            nom: isEditing ? item.nom : item.client.nom,
+                            prenom: isEditing
+                              ? item.prenom
+                              : item.client.prenom,
                             pourcentage: item.pourcentage,
                           });
                         });
 
                         set_desisteur_dp_proche(selectedDesisteurs);
 
-                        console.log('total percent=>' + totalPercent);
                         setValue('desisteur_dp_proche_co', selectedDesisteurs);
                         setValue('somme_percent', totalPercent);
                         set_clients_profit_de(
@@ -532,85 +830,171 @@ export function Desistement_Au_Profit({
                             <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
                               {/* CIN */}
                               <div className="md:col-span-2">
-                                <TextField
-                                  label={'CIN:'}
-                                  size="small"
-                                  fullWidth
-                                  required
-                                  control={control}
-                                  name={`cin_${index}`}
-                                  // value={watch(`cin_${index}`) || ''}
-                                  errors={{}}
-                                  backendErrors={{}}
-                                  value={inputList[index].cin}
-                                  onChange={(e) => handleinputchange(e, index)}
-                                />
+                                {isEditing ? (
+                                  <TextField
+                                    name={`inputList[${index}].cin`}
+                                    label={'CIN:'}
+                                    size="small"
+                                    fullWidth
+                                    required
+                                    onChange={(e) =>
+                                      handleinputchange(e, index)
+                                    }
+                                    errors={{}}
+                                    backendErrors={{}}
+                                  />
+                                ) : (
+                                  <TextField
+                                    label={'CIN:'}
+                                    size="small"
+                                    fullWidth
+                                    required
+                                    control={control}
+                                    name={`cin_${index}`}
+                                    errors={{}}
+                                    backendErrors={{}}
+                                    value={inputList[index].cin}
+                                    onChange={(e) =>
+                                      handleinputchange(e, index)
+                                    }
+                                  />
+                                )}
                               </div>
 
                               {/* Nom */}
                               <div className="md:col-span-3">
-                                <TextField
-                                  label={'Nom'}
-                                  size="small"
-                                  fullWidth
-                                  required
-                                  control={control}
-                                  name={`nom_${index}`}
-                                  errors={{}}
-                                  backendErrors={{}}
-                                  value={inputList[index].nom}
-                                  onChange={(e) => handleinputchange(e, index)}
-                                />
+                                {isEditing ? (
+                                  <TextField
+                                    name={`inputList[${index}].nom`}
+                                    label={'Nom'}
+                                    size="small"
+                                    fullWidth
+                                    required
+                                    onChange={(e) =>
+                                      handleinputchange(e, index)
+                                    }
+                                    errors={{}}
+                                    backendErrors={{}}
+                                  />
+                                ) : (
+                                  <TextField
+                                    label={'Nom'}
+                                    size="small"
+                                    fullWidth
+                                    required
+                                    control={control}
+                                    name={`nom_${index}`}
+                                    errors={{}}
+                                    backendErrors={{}}
+                                    value={inputList[index].nom}
+                                    onChange={(e) =>
+                                      handleinputchange(e, index)
+                                    }
+                                  />
+                                )}
                               </div>
 
                               {/* Prénom */}
                               <div className="md:col-span-3">
-                                <TextField
-                                  label={'Prénom'}
-                                  size="small"
-                                  fullWidth
-                                  required
-                                  control={control}
-                                  name={`prenom_${index}`}
-                                  errors={{}}
-                                  backendErrors={{}}
-                                  value={inputList[index].prenom}
-                                  onChange={(e) => handleinputchange(e, index)}
-                                />
+                                {isEditing ? (
+                                  <TextField
+                                    name={`inputList[${index}].prenom`}
+                                    label={'Prénom'}
+                                    size="small"
+                                    fullWidth
+                                    required
+                                    errors={{}}
+                                    onChange={(e) =>
+                                      handleinputchange(e, index)
+                                    }
+                                    backendErrors={{}}
+                                  />
+                                ) : (
+                                  <TextField
+                                    label={'Prénom'}
+                                    size="small"
+                                    fullWidth
+                                    required
+                                    control={control}
+                                    name={`prenom_${index}`}
+                                    errors={{}}
+                                    backendErrors={{}}
+                                    value={inputList[index].prenom}
+                                    onChange={(e) =>
+                                      handleinputchange(e, index)
+                                    }
+                                  />
+                                )}
                               </div>
 
                               {/* Téléphone */}
                               <div className="md:col-span-2">
-                                <TextField
-                                  label={'Téléphone:'}
-                                  size="small"
-                                  fullWidth
-                                  required
-                                  control={control}
-                                  placeholder="06XXXXXXXX"
-                                  name={`telephone_num1_${index}`}
-                                  errors={{}}
-                                  backendErrors={{}}
-                                  value={inputList[index].telephone_num1}
-                                  onChange={(e) => handleinputchange(e, index)}
-                                />
+                                {isEditing ? (
+                                  <TextField
+                                    name={`inputList[${index}].telephone_num1`}
+                                    label={'Téléphone:'}
+                                    size="small"
+                                    fullWidth
+                                    required
+                                    placeholder="06XXXXXXXX"
+                                    onChange={(e) =>
+                                      handleinputchange(e, index)
+                                    }
+                                    errors={{}}
+                                    backendErrors={{}}
+                                  />
+                                ) : (
+                                  <TextField
+                                    label={'Téléphone:'}
+                                    size="small"
+                                    fullWidth
+                                    required
+                                    control={control}
+                                    placeholder="06XXXXXXXX"
+                                    name={`telephone_num1_${index}`}
+                                    errors={{}}
+                                    backendErrors={{}}
+                                    value={inputList[index].telephone_num1}
+                                    onChange={(e) =>
+                                      handleinputchange(e, index)
+                                    }
+                                  />
+                                )}
                               </div>
 
                               {/* Pourcentage */}
                               <div className="md:col-span-2">
-                                <TextField
-                                  label={'Pourcentage:'}
-                                  size="small"
-                                  fullWidth
-                                  required
-                                  control={control}
-                                  name={`pourcentage_${index}`}
-                                  errors={{}}
-                                  backendErrors={{}}
-                                  value={inputList[index].pourcentage}
-                                  onChange={(e) => handleinputchange(e, index)}
-                                  type="number"
-                                />
+                                {isEditing ? (
+                                  <TextField
+                                    name={`inputList[${index}].pourcentage`}
+                                    label={'Pourcentage:'}
+                                    size="small"
+                                    fullWidth
+                                    required
+                                    type="number"
+                                    onChange={(e) =>
+                                      handleinputchange(e, index)
+                                    }
+                                    errors={{}}
+                                    backendErrors={{}}
+                                  />
+                                ) : (
+                                  <TextField
+                                    label={'Pourcentage:'}
+                                    size="small"
+                                    fullWidth
+                                    required
+                                    control={control}
+                                    name={`pourcentage_${index}`}
+                                    errors={{}}
+                                    backendErrors={{}}
+                                    value={inputList[index].pourcentage}
+                                    onChange={(e) =>
+                                      handleinputchange(e, index)
+                                    }
+                                    type="number"
+                                  />
+                                )}
                                 {errors_dp_proche.percentage && (
                                   <p className="text-red-500">
                                     Percentage must be between 0-100
@@ -636,6 +1020,7 @@ export function Desistement_Au_Profit({
                           name=""
                           control={control}
                           rules={{ required: 'Ce champ est requis' }}
+                          defaultValue={profit_dp_co_reser || []} // Initialize with your selected values
                           render={({ field }) => (
                             <AutocompleteMultipleDes
                               key={`pro-${autocompleteKey}`} // This forces complete remount
@@ -644,7 +1029,7 @@ export function Desistement_Au_Profit({
                               required
                               options={clients_profit_de}
                               choiceKey="id" // Used for unique identification
-                              value={field || []}
+                              value={profit_dp_co_reser}
                               onChange={(newValue) => {
                                 const selectedProfit = newValue.map((item) => ({
                                   id: item.id,
@@ -682,7 +1067,6 @@ export function Desistement_Au_Profit({
                         </div>
                       </div>
                     )}
-
                     {profit_dp_co_reser?.map((item, index) => (
                       <div
                         key={index}
@@ -725,22 +1109,49 @@ export function Desistement_Au_Profit({
 
                           {/* Pourcentage */}
                           <div className="md:col-span-3">
-                            <Inputs_des_Profit
-                              label={'Pourcentage:'}
-                              name={`new_pourcentage_${index}`}
-                              value={item?.new_pourcentage || 0}
-                              onChange={(e) =>
-                                handleinputchange_dp_co(e, index)
-                              }
-                              type="number"
-                              required
-                              errors={errors_dp_co?.new_pourcentage?.[index]}
-                              helperText={
-                                errors_dp_co?.new_pourcentage?.[index] ? '' : ''
-                              }
-                              size="small"
-                              fullWidth
-                            />
+                            {isEditing ? (
+                              <Inputs_des_Profit
+                                label={'Pourcentage:'}
+                                name={`profit_dp_co_reser[${index}].new_pourcentage`}
+                                value={
+                                  item?.new_pourcentage ??
+                                  item?.pourcentage ??
+                                  0
+                                } // Use new_pourcentage first, fallback to pourcentage
+                                onChange={(e) =>
+                                  handleinputchange_dp_co(e, index)
+                                }
+                                type="number"
+                                required
+                                errors={errors_dp_co?.new_pourcentage?.[index]}
+                                helperText={
+                                  errors_dp_co?.new_pourcentage?.[index]
+                                    ? ''
+                                    : ''
+                                }
+                                size="small"
+                                fullWidth
+                              />
+                            ) : (
+                              <Inputs_des_Profit
+                                label={'Pourcentage:'}
+                                name={`new_pourcentage_${index}`}
+                                value={item?.new_pourcentage || 0}
+                                onChange={(e) =>
+                                  handleinputchange_dp_co(e, index)
+                                }
+                                type="number"
+                                required
+                                errors={errors_dp_co?.new_pourcentage?.[index]}
+                                helperText={
+                                  errors_dp_co?.new_pourcentage?.[index]
+                                    ? ''
+                                    : ''
+                                }
+                                size="small"
+                                fullWidth
+                              />
+                            )}
                           </div>
                         </div>
                       </div>
@@ -829,20 +1240,37 @@ export function Desistement_Au_Profit({
                     </div>
                     {/* Pourcentage */}
                     <div className="md:col-span-3">
-                      <Inputs_des_Profit
-                        label={'Pourcentage Ancien Client:'}
-                        name={`pourcentage__${index}`}
-                        value={item?.pourcentage_ || 0}
-                        onChange={(e) => handleinputchange_dp_part(e, index)}
-                        type="number"
-                        required
-                        errors={errors_dp_part?.pourcentage_?.[index]}
-                        helperText={
-                          errors_dp_part?.pourcentage_?.[index] ? '' : ''
-                        }
-                        size="small"
-                        fullWidth
-                      />
+                      {isEditing ? (
+                        <Inputs_des_Profit
+                          label={'Pourcentage Ancien mm Client:'}
+                          name={`dp_part[${index}].pourcentage_`}
+                          value={item?.pourcentage_ || 0}
+                          onChange={(e) => handleinputchange_dp_part(e, index)}
+                          type="number"
+                          required
+                          errors={errors_dp_part?.pourcentage_?.[index]}
+                          helperText={
+                            errors_dp_part?.pourcentage_?.[index] ? '' : ''
+                          }
+                          size="small"
+                          fullWidth
+                        />
+                      ) : (
+                        <Inputs_des_Profit
+                          label={'Pourcentage Ancien Client:'}
+                          name={`pourcentage__${index}`}
+                          value={item?.pourcentage_ || 0}
+                          onChange={(e) => handleinputchange_dp_part(e, index)}
+                          type="number"
+                          required
+                          errors={errors_dp_part?.pourcentage_?.[index]}
+                          helperText={
+                            errors_dp_part?.pourcentage_?.[index] ? '' : ''
+                          }
+                          size="small"
+                          fullWidth
+                        />
+                      )}
                       {errors_dp_part?.pourcentage_[index] && (
                         <p className="text-red-500">
                           {errors_dp_part.pourcentage_[index]}
@@ -862,53 +1290,122 @@ export function Desistement_Au_Profit({
           <>
             {/* Nb Des Nouveaux Acquéreurs */}
             <div className="md:col-span-1 mt-2">
-              <TextField
-                label={'Nombre Des Nouveaux Acquéreurs:'}
-                name="nb_aquereurs_dp"
-                size="small"
-                type="number"
-                fullWidth
-                required
-                errors={{}}
-                backendErrors={{}}
-                onChange={(e) => {
-                  const value = parseInt(e.target.value) || 0;
-                  set_nb_aqu_part(value);
+              <div className="md:col-span-1 mt-2">
+                <TextField
+                  label={'Nombre Des Nouveaux Acquéreurs:'}
+                  name="nb_aquereurs_dp"
+                  size="small"
+                  type="number"
+                  fullWidth
+                  required
+                  errors={{}}
+                  backendErrors={{}}
+                  onChange={(e) => {
+                    const newCount = parseInt(e.target.value) || 0;
+                    const currentCount = nb_aqu_part;
+                    set_nb_aqu_part(newCount);
 
-                  // Clear the existing new_clients_dp_partiel
-                  const newList = [];
-                  for (let i = 0; i < value; i++) {
-                    newList.push({
-                      cin: '',
-                      nom: '',
-                      prenom: '',
-                      telephone_num1: '',
-                      pourcentage: 0,
+                    if (isEditing) {
+                      // Editing mode handling
+                      if (newCount > currentCount) {
+                        // Adding more clients - append empty fields
+                        const additionalClients = Array(newCount - currentCount)
+                          .fill()
+                          .map(() => ({
+                            cin: '',
+                            nom: '',
+                            prenom: '',
+                            telephone_num1: '',
+                            pourcentage: 0,
+                            id: null, // Keep as null for new entries
+                          }));
+
+                        const updatedList = [
+                          ...new_clients_dp_partiel,
+                          ...additionalClients,
+                        ];
+                        set_new_clients_dp_partiel(updatedList);
+
+                        // Initialize new form fields
+                        for (let i = currentCount; i < newCount; i++) {
+                          setValue(`new_clients_dp_partiel[${i}].cin`, '');
+                          setValue(`new_clients_dp_partiel[${i}].nom`, '');
+                          setValue(`new_clients_dp_partiel[${i}].prenom`, '');
+                          setValue(
+                            `new_clients_dp_partiel[${i}].telephone_num1`,
+                            ''
+                          );
+                          setValue(
+                            `new_clients_dp_partiel[${i}].pourcentage`,
+                            0
+                          );
+                        }
+                      } else if (newCount < currentCount) {
+                        // Reducing count - keep only the first newCount clients
+                        const updatedList = new_clients_dp_partiel.slice(
+                          0,
+                          newCount
+                        );
+                        set_new_clients_dp_partiel(updatedList);
+
+                        // Clear any extra fields (optional)
+                        for (let i = newCount; i < currentCount; i++) {
+                          setValue(`new_clients_dp_partiel[${i}].cin`, '');
+                          setValue(`new_clients_dp_partiel[${i}].nom`, '');
+                          setValue(`new_clients_dp_partiel[${i}].prenom`, '');
+                          setValue(
+                            `new_clients_dp_partiel[${i}].telephone_num1`,
+                            ''
+                          );
+                          setValue(
+                            `new_clients_dp_partiel[${i}].pourcentage`,
+                            0
+                          );
+                        }
+                      }
+
+                      // Always update the array form value
+                      setValue(
+                        'new_clients_dp_partiel',
+                        new_clients_dp_partiel.slice(0, newCount)
+                      );
+                    } else {
+                      // Non-editing mode (original behavior)
+                      const newList = Array(newCount)
+                        .fill()
+                        .map(() => ({
+                          cin: '',
+                          nom: '',
+                          prenom: '',
+                          telephone_num1: '',
+                          pourcentage: 0,
+                        }));
+
+                      set_new_clients_dp_partiel(newList);
+                      setValue('new_clients_dp_partiel', newList);
+
+                      // Set individual fields for non-editing mode
+                      newList.forEach((item, index) => {
+                        setValue(`cin_p${index}`, item.cin);
+                        setValue(`nom_p${index}`, item.nom);
+                        setValue(`prenom_p${index}`, item.prenom);
+                        setValue(
+                          `telephone_num1_p${index}`,
+                          item.telephone_num1
+                        );
+                        setValue(`pourcentage_p${index}`, item.pourcentage);
+                      });
+                    }
+
+                    setErrors_new_dp_part({
+                      telephone: false,
+                      percentage: false,
+                      totalPercentage: false,
                     });
-                  }
-
-                  // Reset both state and form values
-                  set_new_clients_dp_partiel(newList);
-                  setValue('new_clients_dp_partiel', newList);
-
-                  // Also reset individual fields in the form
-                  for (let i = 0; i < new_clients_dp_partiel.length; i++) {
-                    setValue(`cin_p${i}`, '');
-                    setValue(`nom_p${i}`, '');
-                    setValue(`prenom_p${i}`, '');
-                    setValue(`telephone_num1_p${i}`, '');
-                    setValue(`pourcentage_p${i}`, 0);
-                  }
-
-                  setErrors_new_dp_part({
-                    telephone: false,
-                    percentage: false,
-                    totalPercentage: false,
-                  });
-                }}
-              />
+                  }}
+                />
+              </div>
             </div>
-
             {nb_aqu_part > 0 && (
               <div className="md:col-span-12 space-y-4 mt-4">
                 <h3 className="text-[rgb(55,65,81)] font-semibold">
@@ -922,94 +1419,176 @@ export function Desistement_Au_Profit({
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
                       {/* CIN */}
                       <div className="md:col-span-2">
-                        <TextField
-                          label={'CIN:'}
-                          size="small"
-                          fullWidth
-                          required
-                          control={control}
-                          name={`cin_p${index}`}
-                          errors={{}}
-                          backendErrors={{}}
-                          value={new_clients_dp_partiel[index].cin}
-                          onChange={(e) =>
-                            handleinputchange_dp_partiel_new(e, index)
-                          }
-                        />
+                        {isEditing ? (
+                          <TextField
+                            name={`new_clients_dp_partiel[${index}].cin`}
+                            label={'CIN:'}
+                            size="small"
+                            fullWidth
+                            required
+                            value={item.cin || ''}
+                            onChange={(e) =>
+                              handleinputchange_dp_partiel_new(e, index)
+                            }
+                            errors={{}}
+                            backendErrors={{}}
+                          />
+                        ) : (
+                          <TextField
+                            label={'CIN:'}
+                            size="small"
+                            fullWidth
+                            required
+                            control={control}
+                            name={`cin_p${index}`}
+                            errors={{}}
+                            backendErrors={{}}
+                            value={item.cin || ''}
+                            onChange={(e) =>
+                              handleinputchange_dp_partiel_new(e, index)
+                            }
+                          />
+                        )}
                       </div>
 
                       {/* Nom */}
                       <div className="md:col-span-3">
-                        <TextField
-                          label={'Nom'}
-                          size="small"
-                          fullWidth
-                          control={control}
-                          required
-                          name={`nom_p${index}`}
-                          errors={{}}
-                          backendErrors={{}}
-                          value={new_clients_dp_partiel[index].nom}
-                          onChange={(e) =>
-                            handleinputchange_dp_partiel_new(e, index)
-                          }
-                        />
+                        {isEditing ? (
+                          <TextField
+                            name={`new_clients_dp_partiel[${index}].nom`}
+                            label={'Nom:'}
+                            size="small"
+                            fullWidth
+                            required
+                            value={item.nom || ''}
+                            onChange={(e) =>
+                              handleinputchange_dp_partiel_new(e, index)
+                            }
+                            errors={{}}
+                            backendErrors={{}}
+                          />
+                        ) : (
+                          <TextField
+                            label={'Nom'}
+                            size="small"
+                            fullWidth
+                            control={control}
+                            required
+                            name={`nom_p${index}`}
+                            errors={{}}
+                            backendErrors={{}}
+                            value={item.nom || ''}
+                            onChange={(e) =>
+                              handleinputchange_dp_partiel_new(e, index)
+                            }
+                          />
+                        )}
                       </div>
 
                       {/* Prénom */}
                       <div className="md:col-span-3">
-                        <TextField
-                          label={'Prénom'}
-                          size="small"
-                          fullWidth
-                          required
-                          control={control}
-                          name={`prenom_p${index}`}
-                          errors={{}}
-                          backendErrors={{}}
-                          value={new_clients_dp_partiel[index].prenom}
-                          onChange={(e) =>
-                            handleinputchange_dp_partiel_new(e, index)
-                          }
-                        />
+                        {isEditing ? (
+                          <TextField
+                            name={`new_clients_dp_partiel[${index}].prenom`}
+                            label={'Prénom'}
+                            size="small"
+                            fullWidth
+                            required
+                            value={item.prenom || ''}
+                            onChange={(e) =>
+                              handleinputchange_dp_partiel_new(e, index)
+                            }
+                            errors={{}}
+                            backendErrors={{}}
+                          />
+                        ) : (
+                          <TextField
+                            label={'Prénom'}
+                            size="small"
+                            fullWidth
+                            required
+                            control={control}
+                            name={`prenom_p${index}`}
+                            errors={{}}
+                            backendErrors={{}}
+                            value={item.prenom || ''}
+                            onChange={(e) =>
+                              handleinputchange_dp_partiel_new(e, index)
+                            }
+                          />
+                        )}
                       </div>
 
                       {/* Téléphone */}
                       <div className="md:col-span-2">
-                        <TextField
-                          label={'Téléphone:'}
-                          size="small"
-                          fullWidth
-                          required
-                          control={control}
-                          placeholder="06XXXXXXXX"
-                          name={`telephone_num1_p${index}`}
-                          errors={{}}
-                          backendErrors={{}}
-                          value={new_clients_dp_partiel[index].telephone_num1}
-                          onChange={(e) =>
-                            handleinputchange_dp_partiel_new(e, index)
-                          }
-                        />
+                        {isEditing ? (
+                          <TextField
+                            name={`new_clients_dp_partiel[${index}].telephone_num1`}
+                            label={'Téléphone:'}
+                            size="small"
+                            fullWidth
+                            required
+                            placeholder="06XXXXXXXX"
+                            value={item.telephone_num1 || ''}
+                            onChange={(e) =>
+                              handleinputchange_dp_partiel_new(e, index)
+                            }
+                            errors={{}}
+                            backendErrors={{}}
+                          />
+                        ) : (
+                          <TextField
+                            label={'Téléphone:'}
+                            size="small"
+                            fullWidth
+                            required
+                            control={control}
+                            placeholder="06XXXXXXXX"
+                            name={`telephone_num1_p${index}`}
+                            errors={{}}
+                            backendErrors={{}}
+                            value={item.telephone_num1 || ''}
+                            onChange={(e) =>
+                              handleinputchange_dp_partiel_new(e, index)
+                            }
+                          />
+                        )}
                       </div>
 
                       {/* Pourcentage */}
                       <div className="md:col-span-2">
-                        <TextField
-                          label={'Pourcentage:'}
-                          size="small"
-                          fullWidth
-                          required
-                          control={control}
-                          name={`pourcentage_p${index}`}
-                          errors={{}}
-                          backendErrors={{}}
-                          value={new_clients_dp_partiel[index].pourcentage}
-                          onChange={(e) =>
-                            handleinputchange_dp_partiel_new(e, index)
-                          }
-                          type="number"
-                        />
+                        {isEditing ? (
+                          <TextField
+                            name={`new_clients_dp_partiel[${index}].pourcentage`}
+                            label={'Pourcentage:'}
+                            size="small"
+                            fullWidth
+                            required
+                            type="number"
+                            value={item.pourcentage || 0}
+                            onChange={(e) =>
+                              handleinputchange_dp_partiel_new(e, index)
+                            }
+                            errors={{}}
+                            backendErrors={{}}
+                          />
+                        ) : (
+                          <TextField
+                            label={'Pourcentage:'}
+                            size="small"
+                            fullWidth
+                            required
+                            control={control}
+                            name={`pourcentage_p${index}`}
+                            errors={{}}
+                            backendErrors={{}}
+                            value={item.pourcentage || 0}
+                            onChange={(e) =>
+                              handleinputchange_dp_partiel_new(e, index)
+                            }
+                            type="number"
+                          />
+                        )}
                         {errors_new_dp_part.percentage && (
                           <p className="text-red-500">
                             Percentage must be between 0-100
