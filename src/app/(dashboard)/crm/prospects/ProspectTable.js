@@ -15,6 +15,7 @@ import Modal_Traite from './Modal_Traite';
 import { Statuts_Prospect } from '../../../../../src/configs/enum';
 import Input from '@/components/Input';
 import SelectInput from '@/components/SelectInput';
+import Modal_Import from '@/components/Modal_Import';
 
 const ProspectTable = () => {
   const [prospects, setProspects] = useState([]);
@@ -30,6 +31,7 @@ const ProspectTable = () => {
   const [traite_id, setId_traite] = useState(null);
   const [num_tel, setTel_num] = useState(null);
   const [nom_prenom, setNomPrenom] = useState(null);
+  const [showImportModal, setShowImportModal] = useState(false);
 
   const { user, token } = useAuth();
   const { selectedProjet } = useProjet();
@@ -115,6 +117,10 @@ const ProspectTable = () => {
     filters,
     selectedProjet,
   ]);
+
+  const handleImportClick = () => {
+    setShowImportModal(true)  // ouvrir la modale d'import
+  }
 
   const handleShow = (prospectId) => {
     router.push(`/crm/prospects/${prospectId}`);
@@ -327,6 +333,7 @@ const ProspectTable = () => {
           onSearchChange={setSearchTerm}
           enableExport={true}
           enableImport={true}
+          onImportClick={handleImportClick}
           addLink={
             isSuperAdmin(user.role) ||
             isAdmin(user.role) ||
@@ -455,6 +462,16 @@ const ProspectTable = () => {
             />
           </Modal>
         </>
+      )}
+      {showImportModal && (
+        <Modal isVisible={true} onClose={() => setShowImportModal(false)}>
+          <Modal_Import
+            title='Prospects'
+            route='upload_excel_prospect'
+            localstorage='load_data_prospect'
+            onClose={() => setShowImportModal(false)}
+          />
+        </Modal>
       )}
     </>
   );

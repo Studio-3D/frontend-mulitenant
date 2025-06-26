@@ -19,7 +19,7 @@ import {
 import Link from 'next/link';
 import SelectInput from '@/components/SelectInput';
 
-const VisiteTable = (dataProspect, dataClient) => {
+const VisiteTable = ({dataProspect, dataClient}) => {
   const [visites, setVisites] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -53,7 +53,7 @@ const VisiteTable = (dataProspect, dataClient) => {
     searchFields: ['responsable', 'date', 'nom', 'prenom', 'telephone'],
   };
   // Prepare parameters based on conditions
-  const clientId = dataClient?.dataClient?.id;
+  const clientId = dataClient;
   const prospectId = dataProspect?.dataProspect?.id;
   useEffect(() => {
     const params_url = clientId

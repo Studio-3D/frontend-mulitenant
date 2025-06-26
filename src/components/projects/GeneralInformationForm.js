@@ -5,9 +5,24 @@ export default function GeneralInformationForm({ state, setState, onNext, onBack
     setState((prev) => ({ ...prev, [field]: value }))
   }
 
+  const isFormIncomplete = (state) => {
   return (
+    state.nom?.trim() === "" ||
+    state.code?.trim() === "" ||
+    state.adresse?.trim() === "" ||
+    !state.date_autorisation_construction ||
+    state.surface_terrain === "" ||
+    state.prix_acquisition === "" ||
+    state.limite_annulation_reservation === "" ||
+    state.max_etages === ""
+  );
+}
+
+
+  return (
+    
     <div className="bg-white p-6 rounded-md">
-      <h2 className="text-xl font-medium mb-6">Informations générales</h2>
+      {/* <h2 className="text-xl font-medium mb-6">Informations générales</h2> */}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Left Column */}
@@ -189,10 +204,16 @@ export default function GeneralInformationForm({ state, setState, onNext, onBack
         <button
           type="button"
           onClick={onNext}
-          className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className={`ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white ${
+            isFormIncomplete(state)
+              ? "bg-blue-300 cursor-not-allowed" 
+              : "bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          }`}          
+          disabled={isFormIncomplete(state)}
         >
           Suivant
         </button>
+
       </div>
     </div>
   )

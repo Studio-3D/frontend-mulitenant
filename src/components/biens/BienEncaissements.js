@@ -4,7 +4,7 @@ import axios from "axios";
 import { APIURL } from "@/configs/api";
 import { format } from "date-fns";
 import { useAuth } from "@/context/AuthContext";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Eye } from "lucide-react";
 import Table from "@/components/Table";
 
 export default function BienEncaissements({ bienId }) {
@@ -70,6 +70,8 @@ export default function BienEncaissements({ bienId }) {
       } catch (err) {
         console.error("Error fetching encaissements:", err);
         setError("Impossible de charger les encaissements");
+        setEncaissements([]);
+        setTotalRows(0);
       } finally {
         setLoading(false);
       }
@@ -169,9 +171,10 @@ export default function BienEncaissements({ bienId }) {
           href={`/reservations/show/${row.reservation_id}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
+          className="inline-flex items-center justify-center w-8 h-8 rounded-full !text-blue-600 hover:bg-blue-100 transition-colors duration-200"
+          onClick={(e) => e.stopPropagation()}
         >
-          <ExternalLink size={14} />
+          <Eye size={16} />
         </a>
       )
     }

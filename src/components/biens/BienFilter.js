@@ -138,10 +138,9 @@ const BienFilter = ({ tempFilters, handleFilterChange, resetFilters, applyFilter
         />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Orientation</label>
-          
+        
         <SelectInput
+          label='Orientation'
           name="orientation"
           value={tempFilters.orientation}
           options={Object.entries(ORIENTATIONS).map(([key, val]) => ({
@@ -150,7 +149,6 @@ const BienFilter = ({ tempFilters, handleFilterChange, resetFilters, applyFilter
           }))}
           onChange={(value) => handleFilterChange("orientation", value)}
         />
-        </div>
 
         {/* <InputSelect
           label="Niveau"

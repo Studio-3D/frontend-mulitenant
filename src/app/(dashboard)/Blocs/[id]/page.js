@@ -9,13 +9,15 @@ import {
   Home,
   Edit,
   Trash2,
-  ArrowLeft
+  ArrowLeft,
+  Building
 } from "lucide-react";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import Link from "next/link";
 import BienTable from "@/components/biens/BienTable";
 import ImmeubleTable from "@/components/immeubles/ImmeubleTable";
+import LoadingSpin from '@/components/LoadingSpin';
 
 export default function BlocDetailsPage() {
   const { id } = useParams();
@@ -26,7 +28,7 @@ export default function BlocDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState(() => {
-    return searchParams.get("tab") || "immeubles";
+    return searchParams.get("tab") || "biens";
   });
   const [confirming, setConfirming] = useState(false);
   const [counts, setCounts] = useState({
@@ -35,7 +37,8 @@ export default function BlocDetailsPage() {
   });
   const [refreshFlag, setRefreshFlag] = useState(false);
   const [countsLoading, setCountsLoading] = useState(true);
-  
+  const projet = JSON.parse(localStorage.getItem("selectedProjet") || "{}");
+
   // Add a ref to track if we've already fetched data
   const hasInitiallyFetched = useRef(false);
 
@@ -208,8 +211,8 @@ export default function BlocDetailsPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpin /> 
       </div>
     );
   }
@@ -227,10 +230,14 @@ export default function BlocDetailsPage() {
   }
 
   // Define tabs for this view - only immeubles and biens
-  const tabs = [
-    { id: "immeubles", label: "Immeubles", icon: <Building2 className="w-5 h-5"/> },
-    { id: "biens", label: "Biens", icon: <Home className="w-5 h-5"/> }
-  ];
+  
+
+      const showImmeubleTab = projet.nbre_immeubles > 0;
+    
+      const tabs = [];
+      if (showImmeubleTab) tabs.push({ id: "immeubles", label: "Immeubles", icon: <Building className="w-5 h-5"/> });
+      tabs.push({ id: "biens", label: "Biens", icon: <Home className="w-5 h-5"/> });
+    
 
   return (
     <div className="container mx-auto">
@@ -281,7 +288,7 @@ export default function BlocDetailsPage() {
 
             <div className="p-4 border-b border-gray-200">
               <div className="grid grid-cols-2 gap-4 text-center">
-                <div className="p-2">
+                {showImmeubleTab && (<div className="p-2">
                   <div className="flex flex-col items-center">
                     <Building2 className="w-6 h-6 !text-red-500 mb-1" />
                     <span className="text-xl font-medium">
@@ -290,6 +297,7 @@ export default function BlocDetailsPage() {
                     <span className="text-sm !text-gray-500">Immeubles</span>
                   </div>
                 </div>
+                )}
                 
                 <div className="p-2">
                   <div className="flex flex-col items-center">

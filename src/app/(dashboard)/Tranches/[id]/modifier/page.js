@@ -6,6 +6,7 @@ import TrancheForm from "@/components/tranches/TrancheForm";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { APIURL } from "@/configs/api";
+import LoadingSpin from '@/components/LoadingSpin';
 
 export default function EditTranchePage() {
   const { id } = useParams();
@@ -68,8 +69,8 @@ export default function EditTranchePage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpin /> 
       </div>
     );
   }
@@ -93,17 +94,7 @@ export default function EditTranchePage() {
   }
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold">Modifier la tranche</h1>
-        {tranche && (
-          <p className="text-gray-500">
-            Tranche: <span className="font-medium">{tranche.nom}</span>
-          </p>
-        )}
-      </div>
-      
+    
       <TrancheForm id={id} projetId={tranche?.projet_id} />
-    </div>
   );
 }

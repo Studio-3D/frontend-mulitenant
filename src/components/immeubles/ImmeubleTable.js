@@ -22,7 +22,6 @@ export default function ImmeubleTable({ projetId,trancheId, blocId }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [refreshFlag, setRefreshFlag] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   
@@ -126,7 +125,7 @@ export default function ImmeubleTable({ projetId,trancheId, blocId }) {
   API_URL: "immeubles",
   dataKey: "data",
   name: "immeuble",
-  searchFields: ['bloc'],
+  searchFields: ['nom', 'titre_foncier'],
 };
 
  const loadData = () => {
@@ -154,22 +153,22 @@ export default function ImmeubleTable({ projetId,trancheId, blocId }) {
 useEffect(() => {
   loadData();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [searchTerm, accessToken, projetId, trancheId, blocId, filters]);
+}, [searchTerm, accessToken, projetId, trancheId, blocId, filters,currentPage,rowsPerPage  ]);
 
   const formattedImmeubles = immeubles
     .filter(immeuble => 
       searchTerm === '' || 
-      immeuble.nom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      immeuble.bloc?.nom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      immeuble.titre_foncier?.toLowerCase().includes(searchTerm.toLowerCase())
+      immeuble?.nom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      immeuble?.bloc?.nom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      immeuble?.titre_foncier?.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .map(immeuble => ({
-      id: immeuble.id,
-      nom: immeuble.nom || '',
-      bloc_nom: immeuble.bloc?.nom || '',
-      tranche_nom: immeuble.tranche?.nom || '',
-      titre_foncier: immeuble.titre_foncier || '',
-      nbre_biens: immeuble.nbre_biens || '0'
+      id: immeuble?.id,
+      nom: immeuble?.nom || '',
+      bloc_nom: immeuble?.bloc?.nom || '',
+      tranche_nom: immeuble?.tranche?.nom || '',
+      titre_foncier: immeuble?.titre_foncier || '',
+      nbre_biens: immeuble?.nbre_biens || '0'
     }));
 
   // Calculate paginated data
@@ -192,7 +191,6 @@ useEffect(() => {
   // Handle rows per page change
   const handleRowsPerPageChange = (newSize) => {
     setRowsPerPage(newSize);
-    setCurrentPage(1); // Reset to first page when changing rows per page
   };
 
   const data_to_export = () => {
@@ -226,30 +224,13 @@ useEffect(() => {
       case 'edit':
         router.push(`/Immeubles/${id}/modifier`);
         break;
-      case 'delete':
-        if (confirm("Êtes-vous sûr de vouloir supprimer cet immeuble ? Cette action est irréversible.")) {
-          deleteImmeubleById(id);
-        }
-        break;
+      
       default:
         console.log(`Action ${action} for immeuble ${id}`);
     }
   };
 
-  // Delete immeuble
-  const deleteImmeubleById = async (id) => {
-    try {
-      const token = localStorage.getItem("accessToken");
-      await axios.delete(`${APIURL.IMMEUBLES}/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      toast.success("Immeuble supprimé avec succès");
-      setRefreshFlag(prev => !prev); // Trigger a refresh
-    } catch (err) {
-      console.error("Failed to delete immeuble:", err);
-      toast.error("Erreur lors de la suppression de l'immeuble");
-    }
-  };
+  
   
   // Create URL for add button with appropriate query params
   const addButtonUrl = canManageImmeubles 
@@ -260,7 +241,7 @@ useEffect(() => {
     <div>
     <Table 
       columns={columns}
-      data={formattedImmeubles}
+      data={paginatedData}
       totalRows={totalRows}
       loading={loading}
       error={error}

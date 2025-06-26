@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Table from '@/components/Table';
-import { Edit, ThumbsDown, ThumbsUp, Clock, Eye ,X} from 'lucide-react';
+import { Edit, ThumbsDown, ThumbsUp, Clock, Eye, X } from 'lucide-react';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
 import { useAuth } from '../../../../context/AuthContext';
@@ -84,9 +84,8 @@ const ReservationTable = ({ dataClient }) => {
     searchFields: [],
   };
 
-  const clientId = dataClient?.dataClient?.id;
   useEffect(() => {
-    const params_url = clientId ? { client_id: clientId } : {};
+    const params_url = dataClient ? { client_id: dataClient } : {};
     const combinedFilters = { ...filters, ...params_url };
 
     fetchData_table_by_projet(
@@ -128,7 +127,6 @@ const ReservationTable = ({ dataClient }) => {
     //Implementing the setInterval method
     const interval = setInterval(() => {
       if (localStorage.getItem('load_data_reservation') == 1) {
-
         fetchData_table_by_projet(
           entity,
           {},
@@ -141,8 +139,7 @@ const ReservationTable = ({ dataClient }) => {
           setData,
           setTotalRows
         );
-                localStorage.removeItem('load_data_reservation');
-
+        localStorage.removeItem('load_data_reservation');
       }
     }, 1000);
 
@@ -223,7 +220,7 @@ const ReservationTable = ({ dataClient }) => {
   const columns = [
     {
       key: 'cc',
-      label: 'Commercial',
+      label: 'Responsable',
       render: (row) => {
         return isSuperAdmin(userRole) || isAdmin(userRole) ? (
           <>
@@ -309,11 +306,14 @@ const ReservationTable = ({ dataClient }) => {
             title="Voir détails"
             onClick={() => handleShow(row.id)}
           />
-          <Edit
-            className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
-            title="Modifier"
-            onClick={() => handleEdit(row.id)}
-          />
+          {row.data_res.contrat_vente == null && (
+            <Edit
+              className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
+              title="Modifier"
+              onClick={() => handleEdit(row.id)}
+            />
+          )}
+
           {row.statut == 3 ? (
             <>
               {isSuperAdmin(userRole) || isAdmin(userRole) ? (
@@ -539,7 +539,7 @@ const ReservationTable = ({ dataClient }) => {
   };
   return (
     <>
-      <div className="reflative bg-white shadow-md rounded-lg p-4">
+      <div className="reflative bg-white rounded-lg p-4">
         <Table
           data_to_export={data_to_export()}
           columns_export={columns_export}
