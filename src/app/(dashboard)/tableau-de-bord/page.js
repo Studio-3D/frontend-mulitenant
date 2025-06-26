@@ -29,40 +29,40 @@ const DashboardPage = () => {
     setEndDate(end);
   };
 
-  useEffect(() => {
-  const fetchData = async () => {
-    if (!accesstoken || !selectedProjet?.id) {
-      setError('Missing authentication or project selection');
-      setLoading(false);
-      return;
-    }
+//   useEffect(() => {
+//   const fetchData = async () => {
+//     if (!accesstoken || !selectedProjet?.id) {
+//       setError('Missing authentication or project selection');
+//       setLoading(false);
+//       return;
+//     }
 
-    try {
-      setLoading(true);
-      setError(null);
+//     try {
+//       setLoading(true);
+//       setError(null);
 
-      const formattedStart = format(startDate, 'yyyy-MM-dd');
-      const formattedEnd = format(endDate, 'yyyy-MM-dd');
+//       const formattedStart = format(startDate, 'yyyy-MM-dd');
+//       const formattedEnd = format(endDate, 'yyyy-MM-dd');
 
-      const response = await axios.get(`${APIURL.ROOTV1}/dashboard/${selectedProjet.id}/null/null`, {
-        headers: {
-          Authorization: `Bearer ${accesstoken}`
-        }
-      });
+//       const response = await axios.get(`${APIURL.ROOTV1}/dashboard/${selectedProjet.id}/null/null`, {
+//         headers: {
+//           Authorization: `Bearer ${accesstoken}`
+//         }
+//       });
       
-      setData(response.data);
-      console.log('Dashboard data:', response.data);
-    } catch (err) {
-      const errorDetails = err.response?.data?.message || err.message;
-      setError(`Failed to fetch dashboard data: ${errorDetails}`);
-      console.error('API Error:', err.response?.data || err);
-    } finally {
-      setLoading(false);
-    }
-  }
+//       setData(response.data);
+//       console.log('Dashboard data:', response.data);
+//     } catch (err) {
+//       const errorDetails = err.response?.data?.message || err.message;
+//       setError(`Failed to fetch dashboard data: ${errorDetails}`);
+//       console.error('API Error:', err.response?.data || err);
+//     } finally {
+//       setLoading(false);
+//     }
+//   }
 
-  fetchData();
-}, [selectedProjet, accesstoken, startDate, endDate]);
+//   fetchData();
+// }, [selectedProjet, accesstoken, startDate, endDate]);
 
   return (
     // <div className=''>

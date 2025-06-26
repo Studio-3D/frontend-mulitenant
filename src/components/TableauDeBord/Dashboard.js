@@ -1,4 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios'
+import { useAuth } from "@/context/AuthContext";
+import { useProjet } from '@/context/ProjetContext';
+import { APIURL } from '../../configs/api';
 import { DateSelector } from './DateSelector';
 import { MetricsCard } from './MetricsCard';
 import { EncaissementChart } from './EncaissementChart';
@@ -16,7 +20,14 @@ import {
 } from 'lucide-react';
 
 export const Dashboard = () => {
+  const { token } = useAuth();
+  const accesstoken = token || localStorage.getItem("accessToken");
+  const { selectedProjet } = useProjet();
+  const [data, setData] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [dateRange, setDateRange] = useState("cette année");
+
   const [metrics, setMetrics] = useState({
     clients: '152',
     prospects: '64',
@@ -31,6 +42,41 @@ export const Dashboard = () => {
     const newMetrics = getMetricsForDateRange(dateRange);
     setMetrics(newMetrics);
   }, [dateRange]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!accesstoken || !selectedProjet?.id) {
+        setError('Missing authentication or project selection');
+        setLoading(false);
+        return;
+      }
+  
+      try {
+        setLoading(true);
+        setError(null);
+  
+        // const formattedStart = format(startDate, 'yyyy-MM-dd');
+        // const formattedEnd = format(endDate, 'yyyy-MM-dd');
+  
+        const response = await axios.get(`${APIURL.ROOTV1}/dashboard/${selectedProjet.id}/null/null`, {
+          headers: {
+            Authorization: `Bearer ${accesstoken}`
+          }
+        });
+        
+        setData(response.data);
+        console.log('Dashboard data:', response.data);
+      } catch (err) {
+        const errorDetails = err.response?.data?.message || err.message;
+        setError(`Failed to fetch dashboard data: ${errorDetails}`);
+        console.error('API Error:', err.response?.data || err);
+      } finally {
+        setLoading(false);
+      }
+    }
+  
+    fetchData();
+  }, [selectedProjet, accesstoken]);
 
   // Function to simulate different metrics for different date ranges
   const getMetricsForDateRange = (range) => {
@@ -100,7 +146,7 @@ export const Dashboard = () => {
           <h1 className="text-2xl font-bold text-gray-800 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
             Aperçu de projet
           </h1>
-          <div className="px-4 py-1.5 bg-gray-100 rounded-md text-gray-700 font-medium">
+          <div className="px-4 py-1.5 bg-cyan-50 rounded-md text-gray-800 font-medium">
             {JSON.parse(localStorage.getItem('selectedProjet'))?.nom}
           </div>
         </div>
