@@ -151,7 +151,7 @@ export const CompromisVentesTab = ({
               </svg>
             </div>
             <div className="ml-3">
-              <p className="text-sm text-red-700">
+              <p className="text-sm text-red-500">
                 Le dossier est désisté. Vous ne pouvez pas ajouter un Compromis
                 de Vente.
               </p>

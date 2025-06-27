@@ -12,7 +12,7 @@ export const fetchDataByProjet = async (items, setData, setLoading) => {
   setLoading(true);
   try {
     const response = await axios.get(
-      `${APIURL.ROOT}/v1/projets/${selectedProjet?.id || 1}/${items}/`,
+      `${APIURL.ROOT}/v1/projets/${selectedProjet?.id}/${items}/`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,

@@ -5,7 +5,9 @@ import { Filter, Search, Plus, Download, Upload } from 'lucide-react';
 import Link from 'next/link';
 import Modal from './Modal';
 import { handleExportExcel } from '../../src/configs/export';
+
 import { FiSettings } from 'react-icons/fi';
+
 
 const Table = ({
   onFilterToggle = () => {},
@@ -29,7 +31,9 @@ const Table = ({
   onExport = null,
   enableExport = false,
   enableImport = false,
+
   enableConfig= false,
+
   filterComponent = null,
   // New props for expandable rows
   renderExpandedRow = null,

@@ -20,6 +20,7 @@ import Modal_Valider_Reservation from './Modal_Valider_Reservation';
 import Modal_Rejeter_Reservation from './Modal_Rejeter_Reservation';
 
 import Modal_show_info from './Modal_show_info';
+import DateRangePicker from '@/components/DateRangePicker';
 
 const ReservationTable = ({ dataClient }) => {
   const { user, token } = useAuth();
@@ -556,6 +557,7 @@ const ReservationTable = ({ dataClient }) => {
           onSearchChange={setSearchTerm}
           enableExport={true}
           enableImport={true}
+          showSearch={false}
           addLink={
             isSuperAdmin(user.role) ||
             isAdmin(user.role) ||
@@ -580,27 +582,17 @@ const ReservationTable = ({ dataClient }) => {
                   }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-                <input
-                  type={tempFilters.date_start ? 'date' : 'text'}
-                  placeholder="Date début"
-                  value={tempFilters.date_start}
-                  onFocus={(e) => (e.target.type = 'date')}
-                  onChange={(e) =>
-                    handleFilterChange('date_start', e.target.value)
-                  }
-                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-                />
-
-                <input
-                  type={tempFilters.date_fin ? 'date' : 'text'}
-                  placeholder="Date Fin"
-                  value={tempFilters.date_fin}
-                  onFocus={(e) => (e.target.type = 'date')}
-                  onChange={(e) =>
-                    handleFilterChange('date_fin', e.target.value)
-                  }
-                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-                />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                  <DateRangePicker
+                    startName="date_start"
+                    endName="date_fin"
+                    startValue={tempFilters.date_start}
+                    endValue={tempFilters.date_fin}
+                    onChange={handleFilterChange}
+                    placeholder="Choisir une Date"
+                    label="Date"
+                  />
+                </div>
                 <Input
                   type="text"
                   placeholder="Bien"
