@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   BarChart as RechartsBarChart,
   Bar,
@@ -10,50 +10,9 @@ import {
   Cell,
 } from 'recharts';
 
-export const BarChart = ({ startDate, endDate }) => {
-  const [data, setData] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+export const BarChart = ({ data, startDate, endDate }) => {
   const [activeIndex, setActiveIndex] = useState(null);
-
-  useEffect(() => {
-    setIsLoading(true);
-    // Generate data based on selected date range
-    const generateData = () => {
-      return [
-        {
-          name: 'Direct',
-          value: Math.floor(Math.random() * 1000) + 500,
-          color: '#3B82F6',
-        },
-        {
-          name: 'Réseaux Sociaux',
-          value: Math.floor(Math.random() * 800) + 300,
-          color: '#8B5CF6',
-        },
-        {
-          name: 'Email',
-          value: Math.floor(Math.random() * 600) + 200,
-          color: '#EC4899',
-        },
-        {
-          name: 'Référencement',
-          value: Math.floor(Math.random() * 900) + 400,
-          color: '#10B981',
-        },
-        {
-          name: 'Autres',
-          value: Math.floor(Math.random() * 400) + 100,
-          color: '#F59E0B',
-        },
-      ];
-    };
-    // Simulate API call
-    const timer = setTimeout(() => {
-      setData(generateData());
-      setIsLoading(false);
-    }, 800);
-    return () => clearTimeout(timer);
-  }, [startDate, endDate]);
+  const isLoading = !data || data.length === 0;
 
   const handleMouseEnter = (_, index) => {
     setActiveIndex(index);
@@ -84,8 +43,7 @@ export const BarChart = ({ startDate, endDate }) => {
     }
     return null;
   };
-
-  if (isLoading) {
+   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-pulse flex flex-col items-center">
@@ -93,6 +51,17 @@ export const BarChart = ({ startDate, endDate }) => {
           <p className="mt-2 text-sm text-gray-500">
             Chargement des données...
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data || data.length === 0) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-center text-gray-500">
+          <p>Aucune donnée disponible</p>
+          <p className="text-sm">Aucune source d'utilisateurs trouvée pour cette période</p>
         </div>
       </div>
     );

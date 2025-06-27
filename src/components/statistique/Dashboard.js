@@ -32,12 +32,12 @@ export const Dashboard = () => {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
+        setError(null);
         
         // Validate dates
         const isValidDate = (d) => d instanceof Date && !isNaN(d);
         if (!isValidDate(startDate) || !isValidDate(endDate)) {
-          setError('Invalid date range');
-          return;
+          throw new Error('Invalid date range');
         }
 
         // Format dates
@@ -46,8 +46,7 @@ export const Dashboard = () => {
 
         // Check if project is selected
         if (!selectedProjet?.id) {
-          setError('No project selected');
-          return;
+          throw new Error('No project selected');
         }
 
         const response = await axios.get(
@@ -59,16 +58,15 @@ export const Dashboard = () => {
             params: {
               start_date: formattedStart,
               end_date: formattedEnd,
-              projet_id: selectedProjet.id
+              projet_id: selectedProjet.id,
+              with_details: true // Ensure the API returns detailed cancellation data
             }
           }
         );
         console.log('API Response:', response.data);
-        
         setDashboardData(response.data);
-        setError(null);
       } catch (err) {
-        setError('Failed to fetch dashboard data');
+        setError(err.message || 'Failed to fetch dashboard data');
         console.error('API Error:', err);
       } finally {
         setLoading(false);
@@ -78,63 +76,119 @@ export const Dashboard = () => {
     fetchDashboardData();
   }, [startDate, endDate, selectedProjet, accesstoken]);
 
-  
-
+  // Default values if data is not loaded yet
   const {
-    penalties = dashboardData?.sum_penalites ?? 0, // Use 'penalities' from response if available
-    Bien_vendu = dashboardData?.nb_biens_vendu ?? 0,
-    encaissement = dashboardData?.sum_encaissements ?? 0,
-    visits = dashboardData?.nb_visites ?? 0,
-    prospects = dashboardData?.nb_prospects ?? 0,
-    Appels = dashboardData?.nb_appels ?? 0,
+    sum_penalites: penalties = 0,
+    nb_biens_vendu: Bien_vendu = 0,
+    sum_encaissements: encaissement = 0,
+    nb_visites: visits = 0,
+    nb_prospects: prospects = 0,
+    nb_appels: Appels = 0,
     encaissements = [],
-    userSources = [],
-    visites = dashboardData?.visites ?? 0,
+    visites = {},
+    array_type_date_desistement: cancellationsRaw = [],
+    chartData_sources = [],
   } = dashboardData || {};
 
-  // In your Dashboard component
+  // Visit categories data
+  const visitCategories = [
+    { id: 0, name: 'Réceptif', color: '#3B82F6' },
+    { id: 1, name: 'Pré Réservation', color: '#8B5CF6' },
+    { id: 2, name: 'Pré Réservation Perdu', color: '#EF4444' },
+    { id: 3, name: 'Pré Réservation Vendu', color: '#10B981' },
+    { id: 4, name: 'Vente 1er visite', color: '#F59E0B' },
+    { id: 5, name: 'Vente En n visite', color: '#06B6D4' },
+    { id: 6, name: 'Vente Perdu', color: '#F43F5E' },
+    { id: 7, name: 'Perdu', color: '#6B7280' }
+  ];
 
-const visitCategories = [
-  { id: 0, name: 'Réceptif', color: '#3B82F6' },
-  { id: 1, name: 'Pré Réservation', color: '#8B5CF6' },
-  { id: 2, name: 'Pré Réservation Perdu', color: '#EF4444' },
-  { id: 3, name: 'Pré Réservation Vendu', color: '#10B981' },
-  { id: 4, name: 'Vente 1er visite', color: '#F59E0B' },
-  { id: 5, name: 'Vente En n visite', color: '#06B6D4' },
-  { id: 6, name: 'Vente Perdu', color: '#F43F5E' },
-  { id: 7, name: 'Perdu', color: '#6B7280' }
-];
-
-const visitData = visitCategories.map(category => ({
-  name: category.name,
-  value: visites[category.id] || 0,
-  color: category.color
-})).filter(item => item.value > 0); // Only show categories with visits 
-
-const cancellationCategories = [
-  { id: '1', name: 'Désistement Définitif', color: '#EF4444' }, // Red
-  { id: '2', name: 'Désistements Au Profit', color: '#F59E0B' }, // Orange
-  { id: '3', name: 'Changement de Bien', color: '#3B82F6' }, // Blue
-  { id: '4', name: 'Autre motif', color: '#6B7280' } // Gray
-];
-
-// Process the cancellation data from API
-const processCancellationData = (rawData) => {
-  const counts = rawData?.reduce((acc, item) => {
-    const type = item[2]; // The cancellation type is at index 2
-    acc[type] = (acc[type] || 0) + 1;
-    return acc;
-  }, {});
-
-  return cancellationCategories.map(category => ({
-    reason: category.name,
-    count: counts?.[category.id] || 0,
-    change: 0, // You can calculate changes if you have historical data
+  // Process visit data
+  const visitData = visitCategories.map(category => ({
+    name: category.name,
+    value: visites[category.id] || 0,
     color: category.color
-  })).filter(item => item.count > 0); // Only show categories with cancellations
-};
+  })).filter(item => item.value > 0);
 
-const cancellations = processCancellationData(dashboardData?.array_type_date_desistement) || [];
+  // User sources data
+  const userSourcesData = [
+  { id: '0', name: 'Avito', color: '#3B82F6' },
+  { id: '1', name: 'Kekemonos', color: '#8B5CF6' },
+  { id: '2', name: 'Palissade', color: '#EC4899' },
+  { id: '3', name: 'Panneaux 4*3', color: '#10B981' },
+  { id: '4', name: 'Flyer', color: '#F59E0B' },
+  { id: '5', name: 'Caravane', color: '#10B981' },
+  { id: '6', name: 'Bouche à Oreille', color: '#06B6D4' }, // Note the accent
+  { id: '7', name: 'Site Web', color: '#FCD34D' },
+  { id: '8', name: 'Facebook', color: '#EF4444' },
+  { id: '9', name: 'Smsing', color: '#FBBF24' },
+  { id: '10', name: 'Phoning BDD', color: '#A78BFA' },
+  { id: '11', name: 'Youtube', color: '#F472B6' },
+  { id: '12', name: 'Partenaire', color: '#34D399' },
+  { id: '13', name: 'Sarouty', color: '#F59E0B' }
+];
+
+const sourceData = chartData_sources
+  .map(([name, value]) => {
+    // Find matching source definition
+    const source = userSourcesData.find(s => 
+      s.name.toLowerCase() === name.toLowerCase().replace(' a ', ' à ')
+    );
+    
+    return source ? {
+      name: source.name,
+      value,
+      color: source.color
+    } : null;
+  })
+  .filter(Boolean) // Remove null entries
+  .filter(item => item.value > 0); // Only show sources with data
+
+  // Cancellation categories
+  const cancellationCategories = [
+    { id: '1', name: 'Désistement Définitif', color: '#EF4444' },
+    { id: '2', name: 'Désistements Au Profit', color: '#F59E0B' },
+    { id: '3', name: 'Changement de Bien', color: '#3B82F6' },
+    { id: '4', name: 'Autre motif', color: '#6B7280' }
+  ];
+
+// Process cancellation data to include dates and proper formatting
+const cancellations = (cancellationsRaw || []).map(item => {
+  const category = cancellationCategories.find(cat => cat.id === item[2]);
+  return {
+    date: new Date(item[0]), // Assuming item[0] is the date string
+    reason: category ? category.name : 'Unknown',
+    count: 1,
+    color: category ? category.color : '#6B7280',
+    // Include any other relevant data from the item array
+  };
+}).filter(item => !isNaN(item.date.getTime())); // Filter out invalid dates
+
+const filteredCancellations = cancellations.filter(item => {
+  return item.date >= startDate && item.date <= endDate;
+});
+
+  if (loading) {
+    return (
+      <div className="min-h-screen p-4 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Chargement des données...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen p-4 flex items-center justify-center">
+        <div className="text-center text-red-500">
+          <AlertCircleIcon className="w-12 h-12 mx-auto mb-2" />
+          <p className="text-lg font-medium">{error}</p>
+          <p className="text-sm">Veuillez réessayer plus tard</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen p-4">
@@ -151,11 +205,11 @@ const cancellations = processCancellationData(dashboardData?.array_type_date_des
       
       <div className="relative mb-6">
         <div className="flex overflow-x-auto pb-4 -mx-4 px-4 gap-4 snap-x scrollbar-none">
-          <div className="flex gap-3  min-w-max">
+          <div className="flex gap-3 min-w-max">
             <div className="xl:w-[255px] sm:w-auto snap-start">
               <StatCard
                 title="Pénalité"
-                value={penalties.toString()}
+                value={penalties.toLocaleString()}
                 change="+12.5%"
                 isPositive={false}
                 icon={<AlertCircleIcon className="w-5 h-5" />}
@@ -165,7 +219,7 @@ const cancellations = processCancellationData(dashboardData?.array_type_date_des
             <div className="xl:w-[255px] sm:w-auto snap-start">
               <StatCard
                 title="Bien Vendu"
-                value={Bien_vendu.toString()}
+                value={Bien_vendu.toLocaleString()}
                 change="+8.2%"
                 isPositive={true}
                 icon={<ThumbsUpIcon className="w-5 h-5" />}
@@ -182,20 +236,20 @@ const cancellations = processCancellationData(dashboardData?.array_type_date_des
                 color="bg-gradient-to-r from-blue-400 to-blue-500"
               />
             </div>
-            <div className=" xl:w-[255px] sm:w-auto snap-start">
+            <div className="xl:w-[255px] sm:w-auto snap-start">
               <StatCard
                 title="Visites"
-                value={visits.toString()}
+                value={visits.toLocaleString()}
                 change="+1.1%"
                 isPositive={true}
                 icon={<UsersIcon className="w-5 h-5" />}
                 color="bg-gradient-to-r from-purple-400 to-purple-500"
               />
             </div>
-            <div className=" xl:w-[255px] sm:w-auto snap-start">
+            <div className="xl:w-[255px] sm:w-auto snap-start">
               <StatCard
                 title="Prospects"
-                value={prospects.toString()}
+                value={prospects.toLocaleString()}
                 change="+2.3%"
                 isPositive={true}
                 icon={<UserPlusIcon className="w-5 h-5" />}
@@ -205,7 +259,7 @@ const cancellations = processCancellationData(dashboardData?.array_type_date_des
             <div className="xl:w-[255px] sm:w-auto snap-start">
               <StatCard
                 title="Appels"
-                value={Appels.toString()}
+                value={Appels.toLocaleString()}
                 change="+5.7%"
                 isPositive={true}
                 icon={<PhoneCallIcon className="w-5 h-5" />}
@@ -233,7 +287,7 @@ const cancellations = processCancellationData(dashboardData?.array_type_date_des
             Utilisateurs par Source
           </h3>
           <BarChart 
-            data={userSources} 
+            data={sourceData} 
             startDate={startDate} 
             endDate={endDate} 
           />
@@ -253,7 +307,7 @@ const cancellations = processCancellationData(dashboardData?.array_type_date_des
         </div>
         <div className="bg-white rounded-lg shadow p-4 md:p-6 lg:col-span-2">
           <h3 className="text-lg font-medium text-gray-800 mb-4">
-            Enaissements - Remboursement
+            Encaissements - Remboursement
           </h3>
           <AreaChart 
             data={encaissements} 
@@ -263,57 +317,62 @@ const cancellations = processCancellationData(dashboardData?.array_type_date_des
         </div>
       </div>
       
-      <div className="bg-white rounded-lg shadow p-4 md:p-6">
+ <div className="bg-white rounded-lg shadow p-4 md:p-6">
   <div className="flex items-center justify-between mb-4">
     <h3 className="text-lg font-medium text-gray-800">Désistement</h3>
-    <span className="text-sm text-gray-500">
-      Total: {cancellations.reduce((sum, item) => sum + item.count, 0)} cas
-    </span>
-  </div>
-  <div className="space-y-4">
-    {cancellations.map((item, index) => (
-      <div
-        key={index}
-        className="flex items-center justify-between p-3 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors"
-      >
-        <div className="flex items-center">
-          <div
-            className="w-10 h-10 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: `${item.color}20` }} // 20% opacity
-          >
-            <ArrowDownIcon
-              className="w-5 h-5"
-              style={{ color: item.color }}
-            />
-          </div>
-          <div className="ml-4">
-            <p className="text-sm font-medium text-gray-800">
-              {item.reason}
-            </p>
-            <p className="text-xs text-gray-500">
-              {format(subDays(new Date(), index + 1), 'PPp')}
-            </p>
-          </div>
-        </div>
-        <div className="text-right">
-          <p className="text-sm font-medium text-gray-800">
-            {item.count} cas
-          </p>
-          <p
-            className={`text-xs ${item.change > 0 ? 'text-green-500' : 'text-red-500'}`}
-          >
-            {item.change > 0 ? '+' : ''}{item.change}%
-          </p>
-        </div>
-      </div>
-    ))}
-    {cancellations.length === 0 && (
-      <div className="text-center py-4 text-gray-500">
-        Aucun désistement enregistré
-      </div>
-    )}
-  </div>
-</div>
+    <div className="flex items-center">
+      <span className="text-sm text-gray-500 mr-2">
+        Période: {format(startDate, 'dd/MM/yyyy')} - {format(endDate, 'dd/MM/yyyy')}
+      </span>
+      <span className="text-sm font-medium text-gray-800">
+        {filteredCancellations.length} cas
+      </span>
     </div>
+  </div>
+  
+  {filteredCancellations.length > 0 ? (
+    <div className="space-y-3">
+      {filteredCancellations
+        .sort((a, b) => b.date - a.date) // Newest first
+        .map((item, index) => (
+          <div
+            key={index}
+            className="flex items-center justify-between p-3 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <div className="flex items-center flex-1 min-w-0">
+              <div
+                className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center"
+                style={{ backgroundColor: `${item.color}20` }}
+              >
+                <ArrowDownIcon
+                  className="w-5 h-5"
+                  style={{ color: item.color }}
+                />
+              </div>
+              <div className="ml-4 min-w-0">
+                <p className="text-sm font-medium text-gray-800 truncate">
+                  {item.reason}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {format(item.date, 'dd/MM/yyyy')}
+                </p>
+              </div>
+            </div>
+            <div className="ml-4 text-right flex-shrink-0">
+              <p className="text-sm font-medium text-gray-800">
+                {item.count} cas
+              </p>
+            </div>
+          </div>
+        ))}
+    </div>
+  ) : (
+    <div className="text-center py-6 text-gray-500">
+      <AlertCircleIcon className="w-8 h-8 mx-auto mb-2" />
+      <p>Aucun désistement enregistré pour cette période</p>
+    </div>
+  )}
+</div>
+      </div>
   );
-}
+};

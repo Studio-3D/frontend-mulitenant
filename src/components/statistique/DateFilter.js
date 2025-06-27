@@ -13,12 +13,13 @@ import {
   isAfter,
   isBefore,
   parseISO,
+  isEqual
 } from 'date-fns';
 import { CalendarIcon, ChevronDownIcon, XIcon, CheckIcon } from 'lucide-react';
 
 export const DateFilter = ({ startDate, endDate, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [activePreset, setActivePreset] = useState('month');
+  const [activePreset, setActivePreset] = useState(null);
   const [customStart, setCustomStart] = useState(startDate);
   const [customEnd, setCustomEnd] = useState(endDate);
   const dropdownRef = useRef(null);
@@ -34,12 +35,8 @@ export const DateFilter = ({ startDate, endDate, onChange }) => {
       id: 'week',
       label: 'Cette semaine',
       getRange: () => [
-        startOfWeek(today, {
-          weekStartsOn: 1,
-        }),
-        endOfWeek(today, {
-          weekStartsOn: 1,
-        }),
+        startOfWeek(today, { weekStartsOn: 1 }),
+        endOfWeek(today, { weekStartsOn: 1 }),
       ],
     },
     {
@@ -64,6 +61,26 @@ export const DateFilter = ({ startDate, endDate, onChange }) => {
     },
   ];
 
+  // Detect which preset matches the current date range
+  useEffect(() => {
+    // Check if current range matches any preset
+    for (const preset of presets) {
+      const [presetStart, presetEnd] = preset.getRange();
+      if (
+        isEqual(startDate, presetStart) && 
+        isEqual(endDate, presetEnd)
+      ) {
+        setActivePreset(preset.id);
+        return;
+      }
+    }
+    
+    // If no preset matches, it's a custom range
+    setActivePreset('custom');
+    setCustomStart(startDate);
+    setCustomEnd(endDate);
+  }, [startDate, endDate]);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -78,20 +95,14 @@ export const DateFilter = ({ startDate, endDate, onChange }) => {
 
   const handlePresetClick = (preset) => {
     const [start, end] = preset.getRange();
-    setActivePreset(preset.id);
-    if (preset.id !== 'custom') {
-      onChange(start, end);
-      setCustomStart(start);
-      setCustomEnd(end);
-      setIsOpen(false);
-    }
+    onChange(start, end);
+    setIsOpen(false);
   };
 
   const handleCustomDateChange = () => {
     if (isAfter(customStart, customEnd)) {
       return; // Prevent invalid date ranges
     }
-    setActivePreset('custom');
     onChange(customStart, customEnd);
     setIsOpen(false);
   };
@@ -101,7 +112,7 @@ export const DateFilter = ({ startDate, endDate, onChange }) => {
       return `${format(startDate, 'd MMM')} - ${format(endDate, 'd MMM yyyy')}`;
     }
     const preset = presets.find((p) => p.id === activePreset);
-    return preset ? preset.label : '';
+    return preset ? preset.label : 'Sélectionner une période';
   };
 
   return (
