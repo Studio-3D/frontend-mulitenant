@@ -17,7 +17,7 @@ import Select from 'react-select';
 import InputSelect from '@/components/inputSelect';
 import ProjetFilter from './ProjetFilter';
 
-export default function ProjetsPage() {
+export default function ProjetsPage({user_id}) {
   const { selectedSociete } = useSociete();
   const { fetchProjets } = useProjet();
   const { user } = useAuth();
@@ -65,9 +65,13 @@ export default function ProjetsPage() {
 };
   
     useEffect(() => {
+      const params_url = user_id
+      ? { user_id: user_id }
+      : {};
+    const combinedFilters = { ...filters, ...params_url };
       fetchData_table_by_projet(
         entity,
-        filters, 
+        combinedFilters,
         searchTerm,
         currentPage,
         rowsPerPage,
@@ -238,7 +242,8 @@ useEffect(() => {
 
   return (
     <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
-      <Table 
+      <Table
+        title={user_id ? 'Liste des projets' : ''}
         data_to_export={data_to_export()}
         columns_export={columns_export}
         name_file_export={"projet_export"}
@@ -258,7 +263,7 @@ useEffect(() => {
         loading={loading}
         error={error}
         onFilterToggle={handleFilterToggle}
-        addLink={(isSuperAdmin(user.role) || isAdmin(user.role)) ? "/Projets/ajouter" : undefined}
+        addLink={((isSuperAdmin(user.role) || isAdmin(user.role))) && !user_id ? "/Projets/ajouter" : undefined}
         onSearchChange={handleSearchChange}
         currentPage={currentPage}
         rowsPerPage={rowsPerPage}

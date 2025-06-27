@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { APIURL, RESOURCE_URL } from '../../configs/api';
 import Image from 'next/image';
@@ -22,6 +22,9 @@ const ProfileContent = ({ userId }) => {
   const [isEditing, setIsEditing] = useState(searchParams.get('edit') === 'true');
   const accessToken = localStorage.getItem('accessToken');
   const { selectedSociete } = useSociete();
+const [previewUrl, setPreviewUrl] = useState('');
+const fileInputRef = useRef(null);
+const [selectedFile, setSelectedFile] = useState(null);
 
   useEffect(() => {
     if (!userId || !accessToken) {
@@ -71,23 +74,45 @@ const ProfileContent = ({ userId }) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleProfileSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      await axios.put(`${APIURL.UTILISATEURS}/${userId}`, formData, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-      toast.success('Profile updated successfully!');
-      setIsEditing(false);
-      
-      // If came from edit link, redirect back to table after save
-      if (searchParams.get('edit')) {
-        router.push('/Utilisateurs');
-      }
-    } catch (error) {
-      toast.error('Failed to update profile. Please check your inputs.');
+ const handleProfileSubmit = async (e) => {
+  e.preventDefault();
+
+  const formToSend = new FormData();
+
+  // Ajouter toutes les valeurs de formData dans le FormData final
+  for (const key in formData) {
+    const value = formData[key];
+    if (value !== undefined && value !== null && value !== '') {
+      formToSend.append(key, value);
     }
-  };
+  }
+
+  // Ajouter le fichier image si sélectionné
+  if (selectedFile) {
+    formToSend.append('photo', selectedFile);
+  }
+
+  try {
+    await axios.post(`${APIURL.UTILISATEURS}/${userId}`, formToSend, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    toast.success('Profile updated successfully!');
+    setIsEditing(false);
+
+    if (searchParams.get('edit')) {
+      router.push('/Utilisateurs');
+    }
+  } catch (error) {
+    toast.error('Failed to update profile. Please check your inputs.');
+    console.error(error); // pour déboguer plus facilement
+  }
+};
+
+
 
   const resetForm = () => {
     if (searchParams.get('edit')) {
@@ -134,28 +159,44 @@ const ProfileContent = ({ userId }) => {
       {/* Profile Avatar Section */}
       <div className="flex items-center absolute top-[17vh] left-4 w-full pr-20">
         <div className="flex items-center flex-grow">
-          <input type='file' accept='image/*' className='hidden' />
+<input
+  type="file"
+  accept="image/*"
+  className="hidden"
+  ref={fileInputRef}
+  onChange={(e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
+  }}
+/>
+
           <div className='relative w-32 h-32 cursor-pointer'>
           <img
-              src={
-                userData.photo
-                  ? `${RESOURCE_URL.DOCS}/${
-                      userData.societe
-                        ? userData?.societe?.raison_sociale_concatene
-                        : user?.societe?.raison_sociale_concatene
-                    }_${
-                      userData.societe_id
-                        ? userData.societe_id
-                        : user.societe_id
-                    }/users/${userData?.photo}`
-                  : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
-              }
-              alt="User Avatar"
-              className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
-            />
-            <div className="absolute top-1 right-1 bg-white p-1 rounded-full shadow-md">
-              <Edit className="text-gray-600 text-lg" />
-            </div>
+  src={
+    previewUrl
+      ? previewUrl
+      : userData.photo
+      ? `${RESOURCE_URL.DOCS}/${
+          userData.societe
+            ? userData.societe.raison_sociale_concatene
+            : user?.societe?.raison_sociale_concatene
+        }_${userData.societe_id || user.societe_id}/users/${userData.photo}`
+      : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
+  }
+  alt="User Avatar"
+  className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+/>
+
+            <div
+  className="absolute top-1 right-1 bg-white p-1 rounded-full shadow-md cursor-pointer"
+  onClick={() => fileInputRef.current?.click()} // 👈 CLIC SUR L’ICÔNE LANCE L’INPUT FILE
+>
+  <Edit className="text-gray-600 text-lg" />
+</div>
+
           </div>
           <div className="flex flex-col p-4 mt-8">
             <div className="font-bold text-2xl !text-gray-900">
@@ -202,6 +243,7 @@ const ProfileContent = ({ userId }) => {
             value={formData.name}
             onChange={handleProfileChange}
             readOnly={!isEditing}
+            required={isEditing}
           />
           <Input
             label="Prénom:"
@@ -209,6 +251,7 @@ const ProfileContent = ({ userId }) => {
             value={formData.prenom}
             onChange={handleProfileChange}
             readOnly={!isEditing}
+            required={isEditing}
           />
           <Input
             label="Email:"
@@ -217,6 +260,7 @@ const ProfileContent = ({ userId }) => {
             onChange={handleProfileChange}
             type="email"
             readOnly={!isEditing}
+            required={isEditing}
           />
           <Input
             label="Téléphone:"

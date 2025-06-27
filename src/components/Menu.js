@@ -155,13 +155,13 @@ const Menu = () => {
         {
           label: "Types Projets",
           icon: <Folder size={20} />,
-          href: "/administration/typesProjets",
+          href: "/administration/types-projets",
           needsSociete: user.role === 1,
         },
         {
           label: "Types Biens",
           icon: <FolderOpen size={20} />,
-          href: "/administration/typesBiens",
+          href: "/administration/types-biens",
           needsProjet: true, 
           needsSociete: user.role === 1,
         },

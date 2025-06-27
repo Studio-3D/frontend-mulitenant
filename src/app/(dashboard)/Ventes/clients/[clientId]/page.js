@@ -20,12 +20,14 @@ import ClientPDF from '../ClientImprimer';
 
 
 const ClientDetails = () => {
-  const { token } = useAuth();
+  const { token,user } = useAuth();
   const router = useRouter();
   const { clientId } = useParams(); // Use useParams() to access dynamic params
   const accessToken = token || localStorage.getItem('accessToken');
   const [loading, setLoading] = useState(false);
   const [clientDetails, setClientDetails] = useState([]);
+  const [reservationDetails, setReservationDetails] = useState([]);
+  const [visiteDetails, setVisiteDetails] = useState([]);
 
   const [activeTab, setActiveTab] = useState('visites'); // Default to 'historiques' if tab is not present
 
@@ -42,6 +44,8 @@ const ClientDetails = () => {
 ];
 
 
+
+
   useEffect(() => {
     if (clientId) {
       setLoading(true);
@@ -53,6 +57,8 @@ const ClientDetails = () => {
         })
         .then((response) => {
           setClientDetails(response.data.client);
+          setReservationDetails(response.data.reservations)
+          setVisiteDetails(response.data.visites)
           setLoading(false);
         })
         .catch(() => {
@@ -60,6 +66,10 @@ const ClientDetails = () => {
         });
     }
   }, [clientId, accessToken]);
+
+  
+
+
   const handleTabClick = (tab) => {
     // Set the active tab state
     setActiveTab(tab);
@@ -223,7 +233,7 @@ const ClientDetails = () => {
 
                 <div className="flex justify-end mt-6 gap-3">
   <PDFDownloadLink
-    document={<ClientPDF /* client={clientDetails} reservations={clientDetails?.reservations} */ />}
+    document={<ClientPDF client={clientDetails} reservations={reservationDetails} visites={visiteDetails} user={user}   />}
     fileName={`client_${clientId}.pdf`}
     className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition text-sm"
   >

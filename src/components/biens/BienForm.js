@@ -983,13 +983,13 @@ const renderDetailsStep = () => (
       <SelectInput
         label="Niveau"
         name="niveau"
-        value={etages.find(e => e.value === formData.niveau)}
+        value={formData.niveau}
         options={etages.map(t => ({ label: t.label, value: t.value }))}
         onChange={(selected) => handleChange("niveau", selected)}
         required
       />
 
-      
+
       <div>
          <SelectInput
             label='Orientation'
@@ -1258,7 +1258,7 @@ const renderAreasStep = () => (
     <Input
       label="Numéro parking"
       name="num_parking"
-      type="text"
+      type="number"      
       value={formData.num_parking}
       onChange={(e) => handleChange("num_parking", e.target.value)}
       error={errors.num_parking}
@@ -1289,7 +1289,7 @@ const renderAreasStep = () => (
     <Input
       label="Numéro box"
       name="num_box"
-      type="text"
+      type="number"
       value={formData.num_box}
       onChange={(e) => handleChange("num_box", e.target.value)}
       error={errors.num_box}

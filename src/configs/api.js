@@ -74,7 +74,7 @@ export const ENDPOINTS = {
   HOME: '/home',
   UTILISATEURS: '/utilisateurs/home',
   SOCIETES: '/societes/home',
-  TYPEPROJETS: '/administration/typeProjets',
+  TYPEPROJETS: '/administration/typesProjets',
   TYPEBIENS: '/administration/typeBiens',
   BANQUES: '/administration/banques',
   VUES: '/administration/vues',

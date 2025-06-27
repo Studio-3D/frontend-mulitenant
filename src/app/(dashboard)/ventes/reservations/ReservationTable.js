@@ -21,7 +21,7 @@ import Modal_Rejeter_Reservation from './Modal_Rejeter_Reservation';
 
 import Modal_show_info from './Modal_show_info';
 
-const ReservationTable = ({ dataClient }) => {
+const ReservationTable = ({ dataClient,user_id }) => {
   const { user, token } = useAuth();
   const userRole = user.role;
   const accesstoken = token || localStorage.getItem('accessToken');
@@ -86,7 +86,7 @@ const ReservationTable = ({ dataClient }) => {
 
   useEffect(() => {
     const params_url = dataClient ? { client_id: dataClient?.id } : {};
-    const combinedFilters = { ...filters, ...params_url };
+    const combinedFilters = { user_id,...filters, ...params_url };
 
     fetchData_table_by_projet(
       entity,
