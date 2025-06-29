@@ -1,11 +1,10 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
+import { APIURL } from '@/configs/api';
+import toast from 'react-hot-toast';
 import { LLMService } from "@/services/llmService";
 import Modal from "@/components/ui/Modal";
 import { Sparkles, Copy, RefreshCw, Instagram, Facebook, Image, X, FileVideo, UploadCloud } from "lucide-react";
-import toast from "react-hot-toast";
-import axios from "axios";
-import { APIURL } from "@/configs/api";
-import { LinkedInConfig } from "@/configs/linkedin";
 
 
 // Modify the BienDescriptionGenerator to accept initialMediaUrl and initialMediaType props
@@ -344,240 +343,81 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
 
   // Share to TikTok with OAuth flow and media using TikTok's official API
   const shareToTikTok = async () => {
-    if (!description) {
-      toast.error("Veuillez générer une description d'abord");
+    if (!bien?.projet_id) {
+      toast.error("ID du projet requis pour partager sur TikTok");
       return;
     }
-    
-    setIsSharingTikTok(true);
-    
-    try {
-      // Check if we have a media URL, either from upload or pre-selected
-      if (!uploadedMediaUrl) {
-        toast.error("Veuillez sélectionner une image ou une vidéo à partager");
-        setIsSharingTikTok(false);
-        return;
-      }
-      
-      // Format the property information for TikTok
-      const propertyTitle = bien?.propriete_dite_bien || "Propriété";
-      const propertyLocation = bien?.immeuble?.nom || bien?.bloc?.nom || bien?.tranche?.nom || bien?.projet?.nom || "Emplacement";
-      const propertyPrice = bien?.prix ? bien.prix.toLocaleString() + " DH" : "Prix sur demande";
-      
-      // Format title and description for TikTok
-      const title = `${propertyTitle} - ${propertyLocation}`;
-      const sanitizedDescription = sanitizeDescriptionForSocialMedia(description);
-      const postText = `${sanitizedDescription}\n\n📍 ${propertyLocation}\n💰 ${propertyPrice}\n\n#immobilier #realestate #property #maison`;
-      
-      // Determine the media type for the API
-      const tikTokMediaType = mediaType === 'image' ? 'PHOTO' : 'VIDEO';
-      
-      // Get token for API request
-      const token = localStorage.getItem("accessToken");
-      
-      // First, initiate TikTok OAuth flow
-      const authResponse = await axios.get(
-        `${APIURL.ROOTV1}/tiktok/auth-url`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-      
-      if (!authResponse.data.success) {
-        throw new Error('Failed to get TikTok authorization URL');
-      }
-      
-      // Store content data for after OAuth
-      const contentData = {
-        title: title.substring(0, 150),
-        description: postText.substring(0, 2200),
-        media_url: uploadedMediaUrl,
-        media_type: tikTokMediaType
-      };
-      
-      // Store content in localStorage for the callback
-      localStorage.setItem('tiktok_content_data', JSON.stringify(contentData));
-      localStorage.setItem('tiktok_oauth_state', authResponse.data.state);
-      
-      // Open TikTok OAuth in popup
-      const popup = window.open(
-        authResponse.data.auth_url, 
-        'tiktok-oauth', 
-        'width=600,height=700,scrollbars=yes,resizable=yes'
-      );
-      
-      // Listen for OAuth completion
-      const checkClosed = setInterval(() => {
-        if (popup.closed) {
-          clearInterval(checkClosed);
-          
-          // Check if we have access token after OAuth
-          const accessToken = localStorage.getItem('tiktok_access_token_temp');
-          
-          if (accessToken) {
-            // Proceed with posting content
-            publishToTikTokWithToken(contentData, accessToken);
-            localStorage.removeItem('tiktok_access_token_temp');
-          } else {
-            toast.error("Authentification TikTok annulée ou échouée");
-            setIsSharingTikTok(false);
-          }
-          
-          // Clean up
-          localStorage.removeItem('tiktok_content_data');
-          localStorage.removeItem('tiktok_oauth_state');
-        }
-      }, 1000);
-      
-      // Fallback timeout
-      setTimeout(() => {
-        if (!popup.closed) {
-          popup.close();
-          clearInterval(checkClosed);
-          toast.error("Authentification TikTok expirée");
-          setIsSharingTikTok(false);
-        }
-      }, 300000); // 5 minutes timeout
-      
-    } catch (error) {
-      console.error("Failed to initiate TikTok OAuth:", error);
-      
-      if (error.response?.status === 401) {
-        toast.error("Authentification requise. Veuillez vous reconnecter.");
-      } else {
-        toast.error("Erreur lors de l'initialisation du partage TikTok.");
-      }
-      setIsSharingTikTok(false);
+
+    if (!uploadedMediaUrl) {
+      toast.error("Veuillez d'abord télécharger un média avant de partager sur TikTok");
+      return;
     }
-  };
-  
-  // Publish content to TikTok with access token
-  const publishToTikTokWithToken = async (contentData, accessToken) => {
+
+    setIsSharingTikTok(true);
+    setErrorMessage("");
+
     try {
+      const sanitizedDescription = sanitizeDescriptionForSocialMedia(description);
       const token = localStorage.getItem("accessToken");
-      const apiUrl = `${APIURL.ROOTV1}/tiktok/publish`;
-      
-      const response = await axios.post(
-        apiUrl,
-        {
-          ...contentData,
-          access_token: accessToken
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
+
+      // Try to publish directly using saved configuration
+      const publishResponse = await axios.post(`${APIURL.TIKTOK_PUBLISH}`, {
+        title: `${bien.nom || 'Bien immobilier'} - ${bien.type_bien?.nom || ''}`,
+        description: sanitizedDescription,
+        media_url: uploadedMediaUrl,
+        media_type: mediaType === 'image' ? 'PHOTO' : 'VIDEO',
+        projet_id: bien.projet_id
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (publishResponse.data.success) {
+        if (publishResponse.data.requires_auth) {
+          // Configuration not found, need to authenticate
+          toast.error("TikTok n'est pas configuré pour ce projet. Veuillez contacter l'administrateur.");
+          return;
         }
-      );
-      
-      if (response.data && response.data.success) {
-        toast.success("Contenu envoyé à TikTok avec succès!");
+
+        toast.success("Contenu publié sur TikTok avec succès!");
         
-        // Save description to server
-        saveDescriptionToServer();
-        
-        // If we have a publish_id, we can poll for status
-        if (response.data.publish_id) {
-          verifyTikTokPost(response.data.publish_id, accessToken);
+        // Check publish status if we have a publish_id
+        if (publishResponse.data.publish_id) {
+          setTimeout(async () => {
+            try {
+              const statusResponse = await axios.post(`${APIURL.TIKTOK_STATUS}`, {
+                publish_id: publishResponse.data.publish_id,
+                projet_id: bien.projet_id
+              }, {
+                headers: { Authorization: `Bearer ${token}` }
+              });
+
+              if (statusResponse.data.success && statusResponse.data.status === 'PUBLISHED') {
+                toast.success("Publication TikTok confirmée!");
+              }
+            } catch (error) {
+              console.error("Error checking TikTok status:", error);
+            }
+          }, 5000); // Check after 5 seconds
         }
-        
-        // Close modal after successful publishing
-        setTimeout(() => {
-          setIsModalOpen(false);
-        }, 2000);
       } else {
-        throw new Error(response.data?.message || "Erreur lors de la publication sur TikTok");
+        throw new Error(publishResponse.data.message || 'Échec de la publication sur TikTok');
       }
+
     } catch (error) {
-      console.error("Failed to publish to TikTok API:", error);
+      console.error("TikTok share error:", error);
       
-      if (error.response?.data?.requires_auth) {
-        toast.error("Authentification TikTok expirée. Veuillez réessayer.");
-      } else if (error.response?.data?.error) {
-        toast.error(`Erreur TikTok: ${error.response.data.error}`);
+      if (error.response?.status === 400 && error.response?.data?.requires_auth) {
+        toast.error("TikTok n'est pas configuré pour ce projet. Veuillez contacter l'administrateur.");
       } else {
-        toast.error("Erreur lors du partage sur TikTok.");
+        const errorMessage = error.response?.data?.message || error.message || "Erreur lors du partage sur TikTok";
+        setErrorMessage(errorMessage);
+        toast.error(errorMessage);
       }
     } finally {
       setIsSharingTikTok(false);
     }
   };
   
-  // Verify TikTok post success with access token
-  const verifyTikTokPost = async (publishId, accessToken) => {
-    try {
-      const token = localStorage.getItem("accessToken");
-      let attempts = 0;
-      const maxAttempts = 5;
-      
-      const checkStatus = async () => {
-        if (attempts >= maxAttempts) {
-          toast.warning("Impossible de confirmer la publication. Vérifiez votre compte TikTok.");
-          return;
-        }
-        
-        attempts++;
-        
-        const apiUrl = `${APIURL.ROOTV1}/tiktok/status`;
-        
-        const statusResponse = await axios.get(
-          apiUrl,
-          {
-            params: { 
-              publish_id: publishId,
-              access_token: accessToken 
-            },
-            headers: { 'Authorization': `Bearer ${token}` }
-          }
-        );
-        
-        const responseData = statusResponse.data;
-        
-        if (responseData && responseData.success) {
-          const status = responseData.data?.data?.publish_status;
-          const postUrl = responseData.data?.data?.tiktok_post_url;
-          
-          if (status === 'PUBLISH_COMPLETE' && postUrl) {
-            toast.success("Publication confirmée sur TikTok!");
-            
-            toast((t) => (
-              <div>
-                <p>Votre vidéo est en ligne!</p>
-                <button 
-                  onClick={() => {
-                    window.open(postUrl, '_blank');
-                    toast.dismiss(t.id);
-                  }}
-                  className="mt-2 px-4 py-2 bg-gradient-to-r from-black to-[#00f2ea] text-white rounded-md"
-                >
-                  Voir sur TikTok
-                </button>
-              </div>
-            ), { duration: 10000 });
-          } else if (status === 'PUBLISH_FAILED') {
-            toast.error("La publication TikTok a échoué. Veuillez réessayer.");
-          } else if (status === 'PUBLISH_PROCESSING') {
-            setTimeout(checkStatus, 3000);
-          } else {
-            toast.warning("État de la publication inconnu. Vérifiez votre compte TikTok.");
-          }
-        } else {
-          toast.warning("Impossible de vérifier l'état de la publication. Vérifiez votre compte TikTok.");
-        }
-      };
-      
-      setTimeout(checkStatus, 2000);
-      
-    } catch (error) {
-      console.error("Error checking TikTok publish status:", error);
-      toast.error("Erreur lors de la vérification de la publication TikTok");
-    }
-  };
-
   // Share to Facebook with media using the Facebook_InstagramController
   const shareToFacebook = () => {
     if (!description) {
@@ -651,47 +491,76 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
     }
   };
 
-  // Share to LinkedIn with API integration
-  const shareToLinkedin = () => {
-    if (!description) {
-      toast.error("Veuillez générer une description d'abord");
+  // Share to LinkedIn with configuration check
+  const shareToLinkedin = async () => {
+    if (!bien?.projet_id) {
+      toast.error("ID du projet requis pour partager sur LinkedIn");
       return;
     }
-    
+
     setIsSharingLinkedin(true);
+    setErrorMessage("");
+
+    try {
+      const sanitizedDescription = sanitizeDescriptionForSocialMedia(description);
+      const token = localStorage.getItem("accessToken");
+
+      // Try to share directly using saved configuration
+      const shareResponse = await axios.post(`${APIURL.LINKEDIN_SHARE}`, {
+        content: sanitizedDescription,
+        visibility: 'PUBLIC',
+        mediaUrl: uploadedMediaUrl,
+        projet_id: bien.projet_id
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (shareResponse.data.success) {
+        const sharedTo = shareResponse.data.shared_to === 'company_page' 
+          ? `la page entreprise ${shareResponse.data.page_name}` 
+          : 'LinkedIn';
+        toast.success(`Contenu partagé sur ${sharedTo} avec succès!`);
+      } else {
+        throw new Error(shareResponse.data.message || 'Échec du partage sur LinkedIn');
+      }
+
+    } catch (error) {
+      console.error("LinkedIn share error:", error);
+      
+      if (error.response?.status === 400) {
+        toast.error("LinkedIn n'est pas configuré pour ce projet. Veuillez contacter l'administrateur.");
+      } else {
+        const errorMessage = error.response?.data?.message || error.message || "Erreur lors du partage sur LinkedIn";
+        setErrorMessage(errorMessage);
+        toast.error(errorMessage);
+      }
+    } finally {
+      setIsSharingLinkedin(false);
+    }
+  };
+
+  // Check if configurations exist for this project
+  const checkProjectConfigurations = async () => {
+    if (!bien?.projet_id) return;
+    
+    const token = localStorage.getItem("accessToken");
     
     try {
-      // Format the property information for LinkedIn
-      const propertyTitle = bien?.propriete_dite_bien || "Propriété";
-      const propertyLocation = bien?.immeuble?.nom || bien?.bloc?.nom || bien?.tranche?.nom || bien?.projet?.nom || "Emplacement";
-      const propertyPrice = bien?.prix ? bien.prix.toLocaleString() + " DH" : "Prix sur demande";
+      // Check LinkedIn config
+      const linkedinResponse = await axios.get(
+        `${APIURL.LINKEDIN_CONFIG}/project/${bien.projet_id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      console.log('LinkedIn config available:', !!linkedinResponse.data.configuration);
       
-      // Format LinkedIn post content with sanitized description
-      const sanitizedDescription = sanitizeDescriptionForSocialMedia(description);
-      const postContent = `🏡 ${propertyTitle}\n\n${sanitizedDescription}\n\n📍 ${propertyLocation}\n💰 ${propertyPrice}\n\n#immobilier #realestate #property`;
-      
-      // Save content for the callback to use
-      const state = LinkedInConfig.generateState();
-      localStorage.setItem('linkedin_state', state);
-      localStorage.setItem('linkedin_share_content', postContent);
-      
-      // Include media URL if available
-      if (uploadedMediaUrl) {
-        localStorage.setItem('linkedin_share_media_url', uploadedMediaUrl);
-      }
-      
-      // Initiate LinkedIn OAuth flow
-      const authUrl = LinkedInConfig.getAuthUrl(state);
-      window.open(authUrl, 'linkedin-auth-popup', 'width=600,height=600');
-      
-      // The rest happens in the callback window and via window.postMessage
-    
-      // Save description to server
-      saveDescriptionToServer();
+      // Check TikTok config
+      const tiktokResponse = await axios.get(
+        `${APIURL.TIKTOK_CONFIG}/project/${bien.projet_id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      console.log('TikTok config available:', !!tiktokResponse.data.configuration);
     } catch (error) {
-      console.error("Failed to share to LinkedIn:", error);
-      toast.error("Erreur lors du partage sur LinkedIn");
-      setIsSharingLinkedin(false);
+      console.log('Error checking configurations:', error);
     }
   };
 
@@ -723,6 +592,12 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
     window.addEventListener('message', handleLinkedInCallback);
     return () => window.removeEventListener('message', handleLinkedInCallback);
   }, []);
+
+  useEffect(() => {
+    if (isModalOpen && bien?.projet_id) {
+      checkProjectConfigurations();
+    }
+  }, [isModalOpen, bien?.projet_id]);
 
   return (
     <>
