@@ -5,22 +5,24 @@ import { APIURL, RESOURCE_URL } from '../../configs/api';
 import Image from 'next/image';
 import { useSociete } from '@/context/SocieteContext';
 import Input from "../Input";
-import toast from 'react-hot-toast';
+import toast from "react-hot-toast";
 import { Edit } from "lucide-react";
-import LoadingSpin from '../LoadingSpin';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { useAuth } from '../../context/AuthContext';
+import LoadingSpin from "../LoadingSpin";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useAuth } from "../../context/AuthContext";
 
 const ProfileContent = ({ userId }) => {
   const { user } = useAuth();
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({});
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [isEditing, setIsEditing] = useState(searchParams.get('edit') === 'true');
-  const accessToken = localStorage.getItem('accessToken');
+  const [isEditing, setIsEditing] = useState(
+    searchParams.get("edit") === "true"
+  );
+  const accessToken = localStorage.getItem("accessToken");
   const { selectedSociete } = useSociete();
 const [previewUrl, setPreviewUrl] = useState('');
 const fileInputRef = useRef(null);
@@ -28,7 +30,7 @@ const [selectedFile, setSelectedFile] = useState(null);
 
   useEffect(() => {
     if (!userId || !accessToken) {
-      setError('Authentication required.');
+      setError("Authentication required.");
       setLoading(false);
       return;
     }
@@ -41,25 +43,25 @@ const [selectedFile, setSelectedFile] = useState(null);
         const data = response.data.user || response.data;
         setUserData(data);
         setFormData({
-          name: data.name || '',
-          prenom: data.prenom || '',
-          email: data.email || '',
-          phone: data.phone || '',
-          adresse: data.adresse || '',
-          gender: data.gender || '',
-          role: data.role || '',
-          is_actif: data.is_actif || '',
-          fonction: data.fonction || '',
-          date_embauche: data.date_embauche || '',
-          cin: data.cin || '',
-          cnss: data.cnss || '',
-          solde_conge: data.solde_conge || ''
+          name: data.name || "",
+          prenom: data.prenom || "",
+          email: data.email || "",
+          phone: data.phone || "",
+          adresse: data.adresse || "",
+          gender: data.gender || "",
+          role: data.role || "",
+          is_actif: data.is_actif || "",
+          fonction: data.fonction || "",
+          date_embauche: data.date_embauche || "",
+          cin: data.cin || "",
+          cnss: data.cnss || "",
+          solde_conge: data.solde_conge || "",
         });
       } catch (err) {
         if (err.response?.status === 401) {
-          setError('Session expired. Please log in again.');
+          setError("Session expired. Please log in again.");
         } else {
-          setError('Failed to fetch user data.');
+          setError("Failed to fetch user data.");
         }
       } finally {
         setLoading(false);
@@ -71,7 +73,7 @@ const [selectedFile, setSelectedFile] = useState(null);
 
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
  const handleProfileSubmit = async (e) => {
@@ -115,9 +117,9 @@ const [selectedFile, setSelectedFile] = useState(null);
 
 
   const resetForm = () => {
-    if (searchParams.get('edit')) {
+    if (searchParams.get("edit")) {
       // Redirect back to user table if came from edit link
-      router.push('/Utilisateurs');
+      router.push("/Utilisateurs");
     } else {
       // Reset form if editing from profile view
       setFormData({
@@ -133,13 +135,18 @@ const [selectedFile, setSelectedFile] = useState(null);
         date_embauche: userData.date_embauche,
         cin: userData.cin,
         cnss: userData.cnss,
-        solde_conge: userData.solde_conge
+        solde_conge: userData.solde_conge,
       });
       setIsEditing(false);
     }
   };
 
-  if (loading) return <div className='absolute inset-0 flex justify-center items-center'><LoadingSpin/></div>;
+  if (loading)
+    return (
+      <div className="absolute inset-0 flex justify-center items-center">
+        <LoadingSpin />
+      </div>
+    );
   if (error) return <div>{error}</div>;
   if (!userData) return <div>No user data found.</div>;
 
@@ -203,19 +210,22 @@ const [selectedFile, setSelectedFile] = useState(null);
               {`${userData.name} ${userData.prenom}`}
             </div>
             <div className="text-gray-400 text-md font-medium">
-              {userData.role === 1 ? 'Super Admin' 
-                : userData.role === 2 ? 'Admin' 
-                : userData.role === 3 ? 'Commercial' 
-                : 'Utilisateur'}
+              {userData.role === 1
+                ? "Super Admin"
+                : userData.role === 2
+                ? "Admin"
+                : userData.role === 3
+                ? "Commercial"
+                : "Utilisateur"}
             </div>
           </div>
         </div>
 
         {/* Top Modifier Button */}
-        {!isEditing && !searchParams.get('edit') && (
-          <div className='mt-8'>
-            <button 
-              className='bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors'
+        {!isEditing && !searchParams.get("edit") && (
+          <div className="mt-8">
+            <button
+              className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
               onClick={() => setIsEditing(true)}
             >
               Modifier
@@ -231,11 +241,14 @@ const [selectedFile, setSelectedFile] = useState(null);
             Informations Personnelles
           </button>
         </div>
-        <div className='border-b border-[#b7daf6] mr-8'></div> 
+        <div className="border-b border-[#b7daf6] mr-8"></div>
       </div>
 
       {/* Profile Information Form */}
-      <form onSubmit={handleProfileSubmit} className="flex flex-col px-4 ml-4 py-2">
+      <form
+        onSubmit={handleProfileSubmit}
+        className="flex flex-col px-4 ml-4 py-2"
+      >
         <div className="w-full grid grid-cols-1 md:grid-cols-1 xl:grid-cols-3 md:gap-8 xl:gap-x-16 xl:gap-y-4">
           <Input
             label="Nom:"
@@ -280,20 +293,40 @@ const [selectedFile, setSelectedFile] = useState(null);
           <Input
             label="Role:"
             name="role"
-            value={formData.role === 1 ? 'Super Admin' : formData.role === 2 ? 'Admin' : formData.role === 3 ? 'Commercial' : 'Utilisateur'}
+            value={
+              formData.role === 1
+                ? "Super Admin"
+                : formData.role === 2
+                ? "Admin"
+                : formData.role === 3
+                ? "Commercial"
+                : "Utilisateur"
+            }
             readOnly
           />
           <Input
             label="Genre:"
             name="gender"
-            value={formData.gender == 1 ? 'Homme' : formData.gender == 2 ? 'Femme' : ''}
+            value={
+              formData.gender == 1
+                ? "Homme"
+                : formData.gender == 2
+                ? "Femme"
+                : ""
+            }
             onChange={handleProfileChange}
             readOnly={!isEditing}
           />
           <Input
             label="Is Actif:"
             name="is_actif"
-            value={formData.is_actif == 1 ? 'Oui' : formData.is_actif == 2 ? 'Non' : ''}
+            value={
+              formData.is_actif == 1
+                ? "Oui"
+                : formData.is_actif == 2
+                ? "Non"
+                : ""
+            }
             onChange={handleProfileChange}
             readOnly={!isEditing}
           />
@@ -345,8 +378,8 @@ const [selectedFile, setSelectedFile] = useState(null);
             >
               Annuler
             </button>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors"
             >
               Enregistrer

@@ -70,7 +70,7 @@ const ProspectInformations = ({
       </div>
       <div>
         <Input
-          label="CNI:"
+          label="CIN:"
           name="cin"
           required={Number(watch('interet')) === 1}
           control={control}
