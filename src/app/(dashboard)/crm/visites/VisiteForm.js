@@ -27,7 +27,8 @@ import AutocompleteBien from './AutocompleteBien'; // adjust path if needed
 import AutocompleteStatut_ModeRelance_Biens from './AutocompleteStatut_ModeRelance_Biens';
 import InputField_Biens from './InputField_Biens'; // adjust path if needed
 import ProspectInformations from './ProspectInformations'; // Adjust path as needed
-import useClearProspect from '../hook/useClearProspect'; // Adjust path as needed
+import { getStoredPerson } from '@/components/storageHelpers';
+import useClearProspect from '../hook/useClearProspect';
 
 import {
   VISITE_INTERETS,
@@ -60,8 +61,7 @@ const VisiteForm = (id, origin) => {
   const [id_visite, setId_visite] = useState(null);
 
   const accessToken = localStorage.getItem('accessToken');
-  const stored = JSON.parse(localStorage.getItem('selectedProspect'));
-  const selectedProspect = stored?.dataProspect;
+  const { person: selectedPerson, type: personType } = getStoredPerson();
   const pusher_key_proposition = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_PROP;
   const [loading, setLoading] = useState(false);
   const [loading_tp_frein, setLoading_tp_frein] = useState(false);
@@ -131,26 +131,27 @@ const VisiteForm = (id, origin) => {
   const isEditing = id && Object.keys(id).length > 0;
   const isOrigin = !!origin;
   const [partenaire_txt, setPartenaire_txt] = useState(
-    selectedProspect?.partenaire?.description
-      ? selectedProspect.partenaire.description
+    selectedPerson?.partenaire?.description
+      ? selectedPerson.partenaire.description
       : null
   );
   const defaultValues = {
     interet: '',
     selectedProjet: selectedProjet?.id || 1,
-    id_t_appel: selectedProspect?.id_t_appel || '',
-    prospect_id: selectedProspect?.id || '',
-    cin: selectedProspect?.cin || '',
-    nom: selectedProspect?.nom || '',
-    email: selectedProspect?.email || '',
-    prenom: selectedProspect?.prenom || '',
-    telephone: selectedProspect?.telephone || '',
-    telephone_num2: selectedProspect?.telephone_num2 || null,
-    ville: selectedProspect?.ville || '',
-    notifie: selectedProspect?.notifie || '',
-    source_id: selectedProspect?.source?.id || '',
-    source_txt: selectedProspect?.source?.source || '',
-    partenaire_id: selectedProspect?.partenaire_id || '',
+    client_id: personType === 'client' ? selectedPerson?.id : '',
+    id_t_appel: selectedPerson?.id_t_appel || '',
+    prospect_id: selectedPerson?.id || '',
+    cin: selectedPerson?.cin || '',
+    nom: selectedPerson?.nom || '',
+    email: selectedPerson?.email || '',
+    prenom: selectedPerson?.prenom || '',
+    telephone: personType === 'prospect' ? selectedPerson?.telephone : personType === 'client' ? selectedPerson?.telephone_num1 : '',
+    telephone_num2: selectedPerson?.telephone_num2 || null,
+    ville: selectedPerson?.ville || '',
+    notifie: selectedPerson?.notifie || '',
+    source_id: selectedPerson?.source?.id || '',
+    source_txt: selectedPerson?.source?.source || '',
+    partenaire_id: selectedPerson?.partenaire_id || '',
     partenaire_txt: partenaire_txt,
     interet: '',
     date_relance: '',
@@ -792,7 +793,7 @@ const VisiteForm = (id, origin) => {
             toast.success(message);
             router.push(ENDPOINTS.VISITES);
             localStorage.removeItem('selectedProspect');
-            reset(defaultValues);
+          localStorage.removeItem('selectedClient');            reset(defaultValues);
           } else if (res.status === 422) {
             message = res.data.message;
             setBackendErrors(res.data.errors);
@@ -1840,7 +1841,7 @@ const VisiteForm = (id, origin) => {
                       partenaires={partenaires}
                       handlePartenaireChange={handlePartenaireChange}
                       disabled_var={disabled_var}
-                      selectedProspect={selectedProspect}
+                      selectedPerson={selectedPerson}
                       disabled_var_source={disabled_var_source}
                       partenaire_txt={partenaire_txt}
                       handleChange_event={handleChange_event}

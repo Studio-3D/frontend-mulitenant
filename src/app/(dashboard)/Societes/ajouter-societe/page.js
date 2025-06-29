@@ -36,11 +36,11 @@ const Page = () => {
       nom_contact: Yup.string().required("Nom est obligatoire"),
       prenom_contact: Yup.string().required("Prénom est obligatoire"),
       email: Yup.string().email("Email invalide").required("Email est obligatoire"),
-      tel: Yup.string().required("Téléphone est obligatoire"),
-      adresse: Yup.string().required("Adresse est obligatoire"),
-      registre_commerce: Yup.number().required("Registre de commerce est obligatoire"),
-      id_fiscal: Yup.number().required("ID Fiscal est obligatoire"),
-      capital: Yup.number().required("Capital est obligatoire"),
+      //tel: Yup.string().required("Téléphone est obligatoire"),
+      //adresse: Yup.string().required("Adresse est obligatoire"),
+      //registre_commerce: Yup.number().required("Registre de commerce est obligatoire"),
+      //id_fiscal: Yup.number().required("ID Fiscal est obligatoire"),
+      //capital: Yup.number().required("Capital est obligatoire"),
     }),
     onSubmit: async (values, { resetForm }) => {
       setLoading(true);
@@ -128,6 +128,7 @@ const Page = () => {
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               error={formik.touched.raison_sociale && formik.errors.raison_sociale}
+              required
             />
             <Input
               label="Email"
@@ -137,6 +138,7 @@ const Page = () => {
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               error={formik.touched.email && formik.errors.email}
+              required
             />
             <Input
               label="Nom"
@@ -146,6 +148,7 @@ const Page = () => {
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               error={formik.touched.nom_contact && formik.errors.nom_contact}
+              required
             />
             <Input
               label="Prénom"
@@ -155,6 +158,7 @@ const Page = () => {
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               error={formik.touched.prenom_contact && formik.errors.prenom_contact}
+              required
             />
             <Input
               label="Téléphone"

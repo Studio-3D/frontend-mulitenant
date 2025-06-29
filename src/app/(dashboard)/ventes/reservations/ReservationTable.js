@@ -20,8 +20,9 @@ import Modal_Valider_Reservation from './Modal_Valider_Reservation';
 import Modal_Rejeter_Reservation from './Modal_Rejeter_Reservation';
 
 import Modal_show_info from './Modal_show_info';
+import DateRangePicker from '@/components/DateRangePicker';
 
-const ReservationTable = ({ dataClient }) => {
+const ReservationTable = ({ dataClient,user_id }) => {
   const { user, token } = useAuth();
   const userRole = user.role;
   const accesstoken = token || localStorage.getItem('accessToken');
@@ -84,11 +85,13 @@ const ReservationTable = ({ dataClient }) => {
     searchFields: [],
   };
 
-  const clientId = dataClient?.dataClient?.id;
   useEffect(() => {
-    const params_url = clientId ? { client_id: clientId } : {};
-    const combinedFilters = { ...filters, ...params_url };
-
+    const params_url = dataClient ? { client_id: dataClient?.id } : {};
+    const combinedFilters = {
+      ...(user_id ? { user_id } : {}),
+      ...filters,
+      ...params_url
+    };
     fetchData_table_by_projet(
       entity,
       combinedFilters,
@@ -540,8 +543,9 @@ const ReservationTable = ({ dataClient }) => {
   };
   return (
     <>
-      <div className="reflative bg-white shadow-md rounded-lg p-4">
+      <div className="reflative bg-white rounded-lg p-4">
         <Table
+          title={user_id ? 'Liste des Ventes' : ''}
           data_to_export={data_to_export()}
           columns_export={columns_export}
           name_file_export={'reservations_export'}
@@ -557,10 +561,11 @@ const ReservationTable = ({ dataClient }) => {
           onSearchChange={setSearchTerm}
           enableExport={true}
           enableImport={true}
+          showSearch={false}
           addLink={
-            isSuperAdmin(user.role) ||
+            (isSuperAdmin(user.role) ||
             isAdmin(user.role) ||
-            isCommercial(user.role)
+            isCommercial(user.role)) && !user_id 
               ? `${ENDPOINTS.RESERVATIONS}?action=add`
               : undefined
           }
@@ -581,27 +586,17 @@ const ReservationTable = ({ dataClient }) => {
                   }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-                <input
-                  type={tempFilters.date_start ? 'date' : 'text'}
-                  placeholder="Date début"
-                  value={tempFilters.date_start}
-                  onFocus={(e) => (e.target.type = 'date')}
-                  onChange={(e) =>
-                    handleFilterChange('date_start', e.target.value)
-                  }
-                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-                />
-
-                <input
-                  type={tempFilters.date_fin ? 'date' : 'text'}
-                  placeholder="Date Fin"
-                  value={tempFilters.date_fin}
-                  onFocus={(e) => (e.target.type = 'date')}
-                  onChange={(e) =>
-                    handleFilterChange('date_fin', e.target.value)
-                  }
-                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-                />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                  <DateRangePicker
+                    startName="date_start"
+                    endName="date_fin"
+                    startValue={tempFilters.date_start}
+                    endValue={tempFilters.date_fin}
+                    onChange={handleFilterChange}
+                    placeholder="Choisir une Date"
+                    label="Date"
+                  />
+                </div>
                 <Input
                   type="text"
                   placeholder="Bien"

@@ -40,6 +40,9 @@ import {
   LayoutDashboard as LayoutDashboardFilled, // Replacement for TbLayoutDashboardFilled
   DollarSign, // Replacement for FaFileInvoiceDollar
   Share2 // Added for social networks
+  Coins,
+  CheckCircle2,
+  Clock, // Replacement for FaFileInvoiceDollar
 } from "lucide-react";
 
 import { User_roles } from "../configs/enum";
@@ -153,13 +156,13 @@ const Menu = () => {
         {
           label: "Types Projets",
           icon: <Folder size={20} />,
-          href: "/administration/typesProjets",
+          href: "/administration/types-projets",
           needsSociete: user.role === 1,
         },
         {
           label: "Types Biens",
           icon: <FolderOpen size={20} />,
-          href: "/administration/typesBiens",
+          href: "/administration/types-biens",
           needsProjet: true, 
           needsSociete: user.role === 1,
         },
@@ -170,13 +173,14 @@ const Menu = () => {
           needsProjet: true, 
           needsSociete: user.role === 1,
         },
-        {
+        
+        /* {
           label: "Commissions",
           icon: <CreditCard size={20} />,
           href: "/administration/commissions",
           needsProjet: true, 
           needsSociete: user.role === 1,
-        },
+        }, */
         {
           label: "Freins",
           icon: <AlertCircle size={20} />,
@@ -204,6 +208,7 @@ const Menu = () => {
           needsProjet: true, 
           needsSociete: user.role === 1,
         },
+        
         {
           label: "Typologies",
           icon: <FolderOpen size={20} />,
@@ -223,11 +228,19 @@ const Menu = () => {
           href: "/administration/config-socials",
           needsSociete: user.role === 1,
         },
+        {
+          label: "Commision",
+          icon: <Eye size={20} />,
+          href: "/administration/commissions/configuration",
+          needsProjet: true, 
+          needsSociete: user.role === 1,
+        },
       ],
     },
   ];
 
   const getCommercialItems = () => [
+  
     {
       label: "CRM",
       icon: <CreditCard size={20} />,
@@ -242,6 +255,33 @@ const Menu = () => {
 
       needsSociete: user.role === 1,
       needsProjet: true,
+    },
+    {
+      label: "Commissions",
+      icon: <Coins size={20} />, 
+      children: [
+        {
+          label: "En Attente",
+          icon: <Clock size={20} />, 
+          href: "/commissions/commissionMensuelleAtt",
+          needsProjet: true, 
+          needsSociete: user.role === 1,
+        },
+        {
+          label: "Mensuelle Traité",
+          icon: <CheckCircle2 size={20} />, 
+          href: "/commissions/commissionMensuelleTraite",
+          needsProjet: true, 
+          needsSociete: user.role === 1,
+        },
+        {
+          label: "Cumul",
+          icon: <BarChart3 size={20} />, // 📊 Cumul
+          href: "/commissions/commissionCumul",
+          needsProjet: true, 
+          needsSociete: user.role === 1,
+        },
+      ]
     },
     {
       label: "Actualités du Jour",

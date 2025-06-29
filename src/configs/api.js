@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 const APIBASEURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+
 const BASERESOURCEURL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:8000';
 
 // Import axios for helper functions
@@ -86,7 +87,7 @@ export const ENDPOINTS = {
   HOME: '/home',
   UTILISATEURS: '/utilisateurs/home',
   SOCIETES: '/societes/home',
-  TYPEPROJETS: '/administration/typeProjets',
+  TYPEPROJETS: '/administration/typesProjets',
   TYPEBIENS: '/administration/typeBiens',
   BANQUES: '/administration/banques',
   VUES: '/administration/vues',
@@ -103,7 +104,7 @@ export const ENDPOINTS = {
   VISITES: '/crm/visites',
   APPELS: '/crm/appels',
   PROSPECTS: '/crm/prospects',
-  CLIENTS: '/clients/home',
+  CLIENTS: '/ventes/clients',
 
   ENCAISSEMENTS: '/encaissements',
   RESERVATIONS: '/ventes/reservations',

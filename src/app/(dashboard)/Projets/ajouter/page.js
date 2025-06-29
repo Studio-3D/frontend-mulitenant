@@ -125,6 +125,23 @@ export default function AddProjectPage() {
         setErrors({ nom: ['Le nom du projet est requis'] });
         return false;
       }
+      if (formState.surface_terrain==0) {
+        setErrors({ surface_terrain: ['surface terrain est requis'] });
+        return false;
+      }
+      if (formState.limite_annulation_reservation===0 ) {
+        setErrors({ limite_annulation_reservation: ['limite annulation reservation est requis'] });
+        return false;
+      }
+       if (formState.prix_acquisition==0) {
+        setErrors({ prix_acquisition: ['prix acquisition est requis'] });
+        return false;
+      }
+      if (formState.max_etages===0 ) {
+        setErrors({ max_etages: ['max etages est requis'] });
+        return false;
+      }
+      
       if (!formState.code) {
         setErrors({ code: ['Le code du projet est requis'] });
         return false;

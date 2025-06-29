@@ -163,10 +163,33 @@ export default function Societes() {
     },
   ];
 
+   const data_to_export = () => {
+    return societes.map((ste) => ({
+      raison_sociale: ste.raison_sociale,
+      nom_contact:ste.nom_contact,
+      prenom_contact:ste.prenom_contact,
+      telephone: ste.tel || "",
+      date: new Date(ste.created_at).toLocaleDateString(),
+      adresse:ste.adresse,
+      registre_commerce:ste.registre_commerce,
+      id_fiscal:ste.id_fiscal,
+      capital:ste.capital,
+      
+    }));
+  };
+
+  const columns_export = Object.keys(data_to_export()[0] || {}).map((key) => ({
+  key,
+  label: key
+}));
+
   return (
     <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
       {/* Table */}
       <Table 
+        data_to_export={data_to_export()}
+        columns_export={columns_export}
+        name_file_export={"societe_export"}
         columns={columns}
         filterComponent={
           <div className="space-y-4">
@@ -277,7 +300,10 @@ export default function Societes() {
           message={`Êtes-vous sûr de vouloir supprimer cette société ?`}
           societeId={selectedSocieteId}
           accessToken={localStorage.getItem('accessToken')}
-          onClose={() => setShowDelete(false)}
+          onClose={() => {
+            setShowDelete(false);
+            fetchSocietes(); // Refresh the list after deletion
+          }}
           onDeleteSuccess={handleDeleteSuccess}
         />
       </Modal>

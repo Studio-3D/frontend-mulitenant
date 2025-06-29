@@ -36,9 +36,13 @@ import {
   getOrientationCode,
   ORIENTATION_ABBREVIATIONS,
 } from '@/configs/enum';
+import { getStoredPerson } from '@/components/storageHelpers';
+import useClearProspect from '../hook/useClearProspect';
 export default function AppelsForm({ id }) {
   const { token } = useAuth();
   const router = useRouter();
+  useClearProspect();
+
   const [info_cin, setInfo_cin] = useState(null);
   const [loading_tp_frein, setLoading_tp_frein] = useState(false);
   const [prospect_id, setProspect_id] = useState(null);
@@ -91,7 +95,7 @@ export default function AppelsForm({ id }) {
   const [list_orientation_value, setListOrientations_value] = useState([]);
   const [list_vues_value, setListVues_value] = useState([]);
   const [list_typologies_value, setList_Typologies_value] = useState([]);
-
+  const { person: selectedPerson, type: personType } = getStoredPerson();
   const orientationOptions = Object.keys(ORIENTATIONS).map((key) => ({
     code: ORIENTATIONS[key].code,
     label: ORIENTATIONS[key].label,
@@ -100,13 +104,21 @@ export default function AppelsForm({ id }) {
   }));
 
   const defaultValues = {
-    prospect_id: null,
-    cin: '',
-    nom: '',
-    prenom: '',
-    telephone: '',
-    telephone_num2: '',
-    ville: '',
+    id_t_appel: '',
+    prospect_id: personType === 'prospect' ? selectedPerson?.id : personType === 'client' ? selectedPerson?.prospect_id : '',
+    client_id: personType === 'client' ? selectedPerson?.id : '',
+    cin: selectedPerson?.cin || '',
+    nom: selectedPerson?.nom || '',
+    email: selectedPerson?.email || '',
+    prenom: selectedPerson?.prenom || '',
+    telephone: personType === 'prospect' ? selectedPerson?.telephone : personType === 'client' ? selectedPerson?.telephone_num1 : '',
+    telephone_num2: selectedPerson?.telephone_num2 || null,
+    ville: selectedPerson?.ville || '',
+    notifie: selectedPerson?.notifie || '',
+    source_id: selectedPerson?.source?.id || '',
+    source_txt: selectedPerson?.source?.source || '',
+    partenaire_id: selectedPerson?.partenaire_id || '',
+    partenaire_txt: selectedPerson?.partenaire?.description || '',
     interet: '',
     type_appel: '',
     type_biens: '',
@@ -578,6 +590,8 @@ export default function AppelsForm({ id }) {
           reset(defaultValues);
           toast.success(message);
           router.push(ENDPOINTS.APPELS);
+          localStorage.removeItem('selectedProspect');
+          localStorage.removeItem('selectedClient');
         } else if (res.status == 422) {
           message = res.data.message;
           setBackendErrors(res.data.errors);

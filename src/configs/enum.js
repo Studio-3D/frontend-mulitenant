@@ -133,16 +133,28 @@ export const modes_penalites = {
   12: { code: 12, label: '100%' },
   13: { code: 13, label: 'Montant' },
 };
+export const getModePenaliteCode = (percentage) => {
+  const mode = Object.values(modes_penalites).find(
+    (m) => m.label.startsWith(percentage) // Checks if label starts with "15%", etc.
+  );
+  return mode ? mode.code : null; // Returns the code (1, 2, 3...) or null if not found
+};
+export const getModePenaliteLabel = (percentage) => {
+  const mode = Object.values(modes_penalites).find(
+    (m) => m.label.startsWith(percentage) // Checks if label starts with "15%", etc.
+  );
+  return mode ? mode.label : null; // Returns the code (1, 2, 3...) or null if not found
+};
 
 export const type_dst = {
-  1: { id: 1, label: 'Désistement Définitif' },
-  2: { id: 2, label: 'Désistement au Profit' },
+  1: { id: 1, label: 'Définitif' },
+  2: { id: 2, label: 'au Profit' },
   3: { id: 3, label: 'Changement de Bien' },
 };
 export const type_dst_dp = {
-  1: { id: 1, label: "Désistement au Profit d'un Proche" },
-  2: { id: 2, label: "Désistement au Profit d'un Co-Reservataire" },
-  3: { id: 3, label: 'Désistement Partiel' },
+  1: { id: 1, label: "au Profit d'un Proche" },
+  2: { id: 2, label: "au Profit d'un Co-Reservataire" },
+  3: { id: 3, label: 'Partiel' },
 };
 
 export const motif_desistements = {
@@ -157,6 +169,9 @@ export const motif_desistements = {
   9: { id: 9, label: 'Client imposé à la TSC' },
   10: { id: 10, label: 'Autre investissement' },
   11: { id: 11, label: 'Problème de santé' },
+};
+export const getMotifLabel = (code) => {
+  return motif_desistements[code]?.label || 'Unknown';
 };
 
 export const lien_parentes = {
