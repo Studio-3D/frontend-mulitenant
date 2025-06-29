@@ -87,8 +87,11 @@ const ReservationTable = ({ dataClient,user_id }) => {
 
   useEffect(() => {
     const params_url = dataClient ? { client_id: dataClient?.id } : {};
-    const combinedFilters = { user_id,...filters, ...params_url };
-
+    const combinedFilters = {
+      ...(user_id ? { user_id } : {}),
+      ...filters,
+      ...params_url
+    };
     fetchData_table_by_projet(
       entity,
       combinedFilters,
@@ -542,6 +545,7 @@ const ReservationTable = ({ dataClient,user_id }) => {
     <>
       <div className="reflative bg-white rounded-lg p-4">
         <Table
+          title={user_id ? 'Liste des Ventes' : ''}
           data_to_export={data_to_export()}
           columns_export={columns_export}
           name_file_export={'reservations_export'}
@@ -559,9 +563,9 @@ const ReservationTable = ({ dataClient,user_id }) => {
           enableImport={true}
           showSearch={false}
           addLink={
-            isSuperAdmin(user.role) ||
+            (isSuperAdmin(user.role) ||
             isAdmin(user.role) ||
-            isCommercial(user.role)
+            isCommercial(user.role)) && !user_id 
               ? `${ENDPOINTS.RESERVATIONS}?action=add`
               : undefined
           }

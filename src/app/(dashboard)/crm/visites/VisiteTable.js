@@ -61,8 +61,11 @@ const VisiteTable = ({user_id,dataProspect, dataClient}) => {
       : prospectId
       ? { prospect_id: prospectId }
       : {};
-    const combinedFilters = { user_id, ...filters, ...params_url };
-
+    const combinedFilters = {
+      ...(user_id ? { user_id } : {}),
+      ...filters,
+      ...params_url
+    };
     fetchData_table_by_projet(
       entity,
       combinedFilters,
@@ -282,6 +285,7 @@ const VisiteTable = ({user_id,dataProspect, dataClient}) => {
     <>
       <div className="relative bg-white rounded-lg px-4 py-4">
         <Table
+          title={user_id ? 'Liste des visites' : ''}
           data_to_export={data_to_export()}
           columns_export={columns_export}
           name_file_export={'visites_export'}
@@ -296,7 +300,7 @@ const VisiteTable = ({user_id,dataProspect, dataClient}) => {
           onRowsPerPageChange={setRowsPerPage}
           onSearchChange={setSearchTerm}
           enableExport={true}
-          addLink={getAddLinkForVisite(user)}
+          addLink={!user_id && getAddLinkForVisite(user)}
           filterComponent={
             <div className="space-y-4 p-4 rounded-lg ">
               <div
