@@ -19,7 +19,7 @@ import {
 import Link from 'next/link';
 import SelectInput from '@/components/SelectInput';
 
-const VisiteTable = ({dataProspect, dataClient}) => {
+const VisiteTable = ({user_id,dataProspect, dataClient}) => {
   const [visites, setVisites] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -61,7 +61,7 @@ const VisiteTable = ({dataProspect, dataClient}) => {
       : prospectId
       ? { prospect_id: prospectId }
       : {};
-    const combinedFilters = { ...filters, ...params_url };
+    const combinedFilters = { user_id, ...filters, ...params_url };
 
     fetchData_table_by_projet(
       entity,

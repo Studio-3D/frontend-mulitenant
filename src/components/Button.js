@@ -1,31 +1,45 @@
 import React from 'react';
 
-const Button = ({ type, onClick, disabled, loading, children, className }) => {
-  const baseStyle =
-    'text-white font-medium rounded-lg px-6 py-2 flex items-center justify-center transition-all';
+const Button = ({ type = 'button', onClick, disabled, loading, children, className = '' }) => {
+  const baseStyle = `text-white font-medium rounded-lg px-6 py-2 flex items-center justify-center transition-all duration-200`;
 
-  const disabledStyle = disabled || loading ? 'cursor-not-allowed' : '';
+  const isDisabled = disabled || loading;
 
-  const buttonStyle =
-    type == 'submit'
-      ? `${
-          loading || disabled ? 'bg-green-500' : 'bg-[#2D8548]'
-        } ${baseStyle} ${disabledStyle}`
-      : type == 'edit'
-      ? `bg-[orange] ${baseStyle}`
-      : type == 'traite_relance'
-      ? `bg-[#3b82f6] ${baseStyle}`
-       : type == 'traite_rdv'
-      ? `bg-[rgb(61,158,206)] ${baseStyle}`
-      : type == 'delete'
-      ? `bg-[red] ${baseStyle}` // Color for edit button (you can adjust the color as needed)
-      : `bg-gray-300 ${baseStyle}`; // Default color for other types (non-submit/edit)
+  let buttonStyle = '';
+
+  switch (type) {
+    case 'submit':
+      buttonStyle = isDisabled
+        ? 'bg-green-500'
+        : 'bg-[#2D8548] hover:bg-green-600';
+      break;
+    case 'edit':
+      buttonStyle = 'bg-orange-500 hover:bg-orange-600';
+      break;
+    case 'traite_relance':
+      buttonStyle = 'bg-[#3b82f6] hover:bg-[#2563eb]';
+      break;
+    case 'traite_rdv':
+      buttonStyle = 'bg-[rgb(61,158,206)] hover:bg-[rgb(50,140,185)]';
+      break;
+    case 'delete':
+      buttonStyle = 'bg-red-500 hover:bg-red-600';
+      break;
+    default: // for "annuler" or unknown types
+      buttonStyle = 'bg-gray-400 hover:bg-gray-500 text-white';
+      break;
+  }
+
+  if (isDisabled) {
+    buttonStyle += ' opacity-70 cursor-not-allowed';
+  }
+
   return (
     <button
       type={type}
       onClick={onClick}
-      disabled={disabled || loading}
-      className={`${buttonStyle} ${className}`}
+      disabled={isDisabled}
+      className={`${baseStyle} ${buttonStyle} ${className}`}
     >
       {loading ? (
         <svg

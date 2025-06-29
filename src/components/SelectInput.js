@@ -8,7 +8,7 @@ export default function SelectInput({
   label,
   placeholder = "Sélectionner un élément...",
   options = [],
-  value = '',
+  value,
   backendErrors,
   onChange = () => {},
   error,
@@ -26,12 +26,12 @@ export default function SelectInput({
     if (!isTouched) setIsTouched(true);
   };
 
-  const handleSelect = (option) => {
-    onChange(option);
+  const handleSelect = (optionValue) => {
+    onChange(optionValue);
     setIsOpen(false);
     setIsTouched(true);
-    
-    // Clear error when selecting an option
+
+    // Clear error if error is a callback
     if (error && typeof error === 'function') {
       error(name, '');
     }
@@ -47,9 +47,10 @@ export default function SelectInput({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Get error message
+  const isEmpty = value === undefined || value === null || value === '';
+
   const getErrorMessage = () => {
-    if (required && !value && (isTouched || submitted)) {
+    if (required && isEmpty && (isTouched || submitted)) {
       return 'Ce champ est obligatoire';
     }
     if (error) {
@@ -66,7 +67,6 @@ export default function SelectInput({
   const errorMessage = getErrorMessage();
   const showError = !!errorMessage && (isTouched || submitted);
 
-  // Find selected option
   const selectedOption = options.find(opt => String(opt.value) === String(value));
 
   return (
@@ -85,15 +85,15 @@ export default function SelectInput({
             {
               "border-red-500": showError,
               "border-gray-300": !showError,
-              "bg-white": true, // Fond blanc forcé pour tous les états
-              "hover:border-gray-500": !showError, // Effet hover seulement si pas d'erreur
+              "bg-white": true,
+              "hover:border-gray-500": !showError,
             }
           )}
           onClick={toggleDropdown}
         >
           <span className={classNames({
-            "text-gray-800": value,
-            "text-gray-500": !value,
+            "text-gray-800": !isEmpty,
+            "text-gray-500": isEmpty,
             "text-red-500": showError,
           })}>
             {selectedOption?.label || placeholder}
@@ -138,11 +138,11 @@ export default function SelectInput({
         <p className="text-red-500 text-sm mt-1">{errorMessage}</p>
       )}
 
-      {/* Hidden input for HTML5 validation */}
+      {/* Pour valider HTML5 sans afficher un champ visible */}
       <input
         type="text"
         name={name}
-        value={value || ''}
+        value={String(value ?? '')}
         required={required}
         readOnly
         className="absolute opacity-0 h-0 w-0"

@@ -54,12 +54,12 @@ const Page = () => {
       )
       .notOneOf(["test@test.com", "example@example.com"], "Cet email est interdit")
       .required("L'email est requis"),
-    role: Yup.string().required('Le rôle est requis'),
-    gender: Yup.string().required('Le genre est requis'),
-    phone: Yup.string()
+    //role: Yup.string().required('Le rôle est requis'),
+    //gender: Yup.string().required('Le genre est requis'),
+    /* phone: Yup.string()
     .matches(/^[0-9]{10}$/, 'Le numéro doit contenir exactement 10 chiffres') // Match exactly 10 digits
-    .required('Le téléphone est requis'),
-    cin: Yup.string().required('CIN est requis'),
+    .required('Le téléphone est requis'), */
+    //cin: Yup.string().required('CIN est requis'),
     fonction: Yup.string(),
     date_embauche: Yup.date(),
     password: Yup.string()
@@ -261,7 +261,7 @@ const Page = () => {
             error={formik.errors.fonction} />
             <Input label="Solde de congé" type="number" name="solde_conge" value={formik.values.solde_conge} onChange={formik.handleChange} />
             {/* password input with toggle view hide */}
-            <Input label="Mot de passe" type={showPassword ? "text" : "password"} name="password" 
+            <Input label="Mot de passe" type={showPassword ? "text" : "password"} name="password" required
             value={formik.values.password}
             onChange={formik.handleChange}
             error={formik.errors.password}>
@@ -278,7 +278,7 @@ const Page = () => {
               )}
             </Input>
             {/* confirm password input with toggle view hide */}
-            <Input label="Confirmer le mot de passe" type={showPasswordConfirmation ? "text" : "password"} name="password_confirmation" 
+            <Input label="Confirmer le mot de passe" type={showPasswordConfirmation ? "text" : "password"} name="password_confirmation" required
             value={formik.values.password_confirmation}
             onChange={formik.handleChange}
             error={formik.errors.password_confirmation}>

@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import axios from "axios"
 import { APIURL, BASERESOURCEURL } from "@/configs/api"
 import { Plus, Trash2 } from "lucide-react"
@@ -17,6 +17,7 @@ export default function GeneralParameterForm({ state, setState, onNext, onBack, 
   const [newVue, setNewVue] = useState("")
   const [newTypologie, setNewTypologie] = useState("")
   const [newPartner, setNewPartner] = useState({ description: "", remise: 0 })
+  const dropdownRef = useRef(null);
 
   // Add state for mapping global to local IDs
   const [userIdMapping, setUserIdMapping] = useState({})
@@ -138,6 +139,23 @@ const isUserSelected = (userId) => {
     }))
     setNewVue("")
   }
+
+    useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowUserDropdown(false);
+      }
+    };
+
+    if (showUserDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showUserDropdown]);
+
 
   const handleRemoveVue = (index) => {
     setState((prev) => ({
@@ -422,8 +440,8 @@ const isUserSelected = (userId) => {
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
           </div>
         ) : (
-          <div className="relative">
-            {/* Dropdown toggle button */}
+          <div ref={dropdownRef} className="relative">
+                {/* Dropdown toggle button */}
             <button
               type="button"
               onClick={() => setShowUserDropdown(!showUserDropdown)}
