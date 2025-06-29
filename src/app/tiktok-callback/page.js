@@ -29,56 +29,79 @@ export default function TikTokCallback() {
           throw new Error('Paramètres d\'authentification manquants');
         }
 
-        // Verify state matches what we stored
-        const storedState = localStorage.getItem('tiktok_oauth_state');
-        if (state !== storedState) {
-          throw new Error('État OAuth invalide - possible attaque CSRF');
-        }
+        // Check if this is an admin configuration flow
+        const isAdminFlow = localStorage.getItem('tiktok_admin_flow') === 'true';
+        
+        if (isAdminFlow) {
+          // Handle admin configuration flow
+          setMessage('Configuration TikTok en cours...');
 
-        setMessage('Échange du code d\'autorisation...');
+          const token = localStorage.getItem("accessToken");
+          const response = await axios.post(
+            `${APIURL.ROOTV1}/tiktok/callback`,
+            { code: code, state: state },
+            { headers: { 'Authorization': `Bearer ${token}` } }
+          );
 
-        // Exchange code for access token
-        const token = localStorage.getItem("accessToken");
-        const response = await axios.post(
-          `${APIURL.ROOTV1}/tiktok/callback`,
-          {
-            code: code,
-            state: state
-          },
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
+          if (response.data && response.data.success) {
+            setStatus('success');
+            setMessage('Configuration TikTok réussie!');
+
+            // Notify parent window of success
+            if (window.opener) {
+              window.opener.postMessage({
+                type: 'TIKTOK_AUTH_SUCCESS',
+                access_token: response.data.access_token,
+                expires_in: response.data.expires_in
+              }, window.location.origin);
             }
+          } else {
+            throw new Error(response.data?.message || 'Échec de la configuration TikTok');
           }
-        );
-
-        if (response.data && response.data.success) {
-          setStatus('success');
-          setMessage('Authentification TikTok réussie!');
-
-          // Store access token temporarily for the parent window
-          if (response.data.access_token) {
-            localStorage.setItem('tiktok_access_token_temp', response.data.access_token);
-          }
-
-          // Notify parent window of success
-          if (window.opener) {
-            window.opener.postMessage({
-              type: 'TIKTOK_AUTH_SUCCESS',
-              access_token: response.data.access_token,
-              expires_in: response.data.expires_in
-            }, window.location.origin);
-          }
-
-          // Close the popup after a short delay
-          setTimeout(() => {
-            window.close();
-          }, 1500);
-
         } else {
-          throw new Error(response.data?.message || 'Échec de l\'authentification TikTok');
+          // Handle regular sharing flow (existing logic)
+          // Verify state matches what we stored
+          const storedState = localStorage.getItem('tiktok_oauth_state');
+          if (state !== storedState) {
+            throw new Error('État OAuth invalide - possible attaque CSRF');
+          }
+
+          setMessage('Échange du code d\'autorisation...');
+
+          // Exchange code for access token
+          const token = localStorage.getItem("accessToken");
+          const response = await axios.post(
+            `${APIURL.ROOTV1}/tiktok/callback`,
+            { code: code, state: state },
+            { headers: { 'Authorization': `Bearer ${token}` } }
+          );
+
+          if (response.data && response.data.success) {
+            setStatus('success');
+            setMessage('Authentification TikTok réussie!');
+
+            // Store access token temporarily for the parent window
+            if (response.data.access_token) {
+              localStorage.setItem('tiktok_access_token_temp', response.data.access_token);
+            }
+
+            // Notify parent window of success
+            if (window.opener) {
+              window.opener.postMessage({
+                type: 'TIKTOK_AUTH_SUCCESS',
+                access_token: response.data.access_token,
+                expires_in: response.data.expires_in
+              }, window.location.origin);
+            }
+          } else {
+            throw new Error(response.data?.message || 'Échec de l\'authentification TikTok');
+          }
         }
+
+        // Close the popup after a short delay
+        setTimeout(() => {
+          window.close();
+        }, 1500);
 
       } catch (error) {
         console.error('TikTok callback error:', error);
@@ -100,6 +123,7 @@ export default function TikTokCallback() {
       } finally {
         // Clean up stored state
         localStorage.removeItem('tiktok_oauth_state');
+        localStorage.removeItem('tiktok_admin_flow');
       }
     };
 

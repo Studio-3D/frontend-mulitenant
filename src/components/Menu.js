@@ -39,6 +39,7 @@ import {
   Receipt,
   LayoutDashboard as LayoutDashboardFilled, // Replacement for TbLayoutDashboardFilled
   DollarSign, // Replacement for FaFileInvoiceDollar
+  Share2 // Added for social networks
 } from "lucide-react";
 
 import { User_roles } from "../configs/enum";
@@ -214,6 +215,12 @@ const Menu = () => {
           label: "Banques",
           icon: <Building size={20} />,
           href: "/administration/banques",
+          needsSociete: user.role === 1,
+        },
+        {
+          label: "Config Réseaux Sociaux",
+          icon: <Share2 size={20} />,
+          href: "/administration/config-socials",
           needsSociete: user.role === 1,
         },
       ],
