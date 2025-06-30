@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import axios from 'axios';
 import { APIURL } from '@/configs/api';
 
-export default function TikTokCallback() {
+function TikTokCallbackContent() {
   const [status, setStatus] = useState('processing');
   const [message, setMessage] = useState('Traitement de l\'authentification TikTok...');
   const router = useRouter();
@@ -220,5 +220,45 @@ export default function TikTokCallback() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Loading component for Suspense fallback
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <div className="text-center">
+            <div className="mb-6">
+              <svg 
+                className="w-12 h-12 mx-auto text-black" 
+                viewBox="0 0 24 24" 
+                fill="currentColor"
+              >
+                <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64c.23 0 .47.03.7.08V9.4a6.17 6.17 0 00-1-.08 6.3 6.3 0 106.3 6.3c0-.23-.01-.46-.02-.7V9.49a8.32 8.32 0 004.13 1.09V7.14h-.01z" />
+              </svg>
+            </div>
+            <h2 className="text-lg font-medium text-gray-900 mb-4">
+              Authentification TikTok
+            </h2>
+            <div className="mb-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+            </div>
+            <p className="text-sm text-gray-600">
+              Chargement...
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function TikTokCallback() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <TikTokCallbackContent />
+    </Suspense>
   );
 }
