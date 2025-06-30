@@ -292,40 +292,7 @@ const formatData = compositionBiens.map((c, index) => ({
                 onChange={(e) => handleFilterChange("nom", e.target.value)}
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
-              <Input
-                type="text"
-                placeholder="Prénom..."
-                value={tempFilters.prenom}
-                onChange={(e) => handleFilterChange("prenom", e.target.value)}
-                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-              />
-              <Input
-                type="text"
-                placeholder="Cin..."
-                value={tempFilters.cin}
-                onChange={(e) => handleFilterChange("cin", e.target.value)}
-                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-              />
-        
-              <Input
-                type="text"
-                placeholder="Email..."
-                value={tempFilters.email}
-                onChange={(e) => handleFilterChange("email", e.target.value)}
-                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-              />
-        
-              <Input
-                type="text"
-                placeholder="Téléphone..."
-                value={tempFilters.telephone}
-                onChange={(e) => handleFilterChange("telephone", e.target.value)}
-                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-              />
-              
             
-             
-
             </div>
         
             <div className="flex justify-end gap-3 pt-2">
@@ -356,15 +323,15 @@ const formatData = compositionBiens.map((c, index) => ({
         onPageChange={setCurrentPage}
         onRowsPerPageChange={setRowsPerPage}
         onSearchChange={setSearchTerm}
-        enableSearch={false}
+        showSearch={false}
       />
       {showDeleteModal && selectedId && (
         <Modal isVisible={true} onClose={() => setShowDeleteModal(false)}>
           <DeleteData
-            route={APIURL.Prestataires}
+            route={APIURL.COMPOSITIONBIENS}
             Id={selectedId}
-            type="Prestataire"
-            message={`Êtes-vous sûr de vouloir supprimer ce prestataire ?`
+            type="composition"
+            message={`Êtes-vous sûr de vouloir supprimer cette composition ?`
             }
             accessToken={accesstoken}
             onClose={() => {
@@ -411,9 +378,9 @@ const formatData = compositionBiens.map((c, index) => ({
       </h2>
 
       <form onSubmit={(e) => {
-  e.preventDefault();
-  onUpdate(selectedRow); // 🔁 utilise onUpdate ici
-}}>
+          e.preventDefault();
+          onUpdate(selectedRow); // 🔁 utilise onUpdate ici
+        }}>
 
         <div className="grid grid-cols-2 gap-4">
           {Object.entries(selectedRow)

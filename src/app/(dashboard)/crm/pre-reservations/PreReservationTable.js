@@ -244,9 +244,15 @@ const PreReservationTable = () => {
             }
             fileName="bon_pre_reservation.pdf"
           >
-            {({ loading }) =>
-              loading ? 'Loading document...' : <Download className="w-4 h-4" />
-            }
+           {({ loading }) => (
+                <button
+                  className={`text-indigo-500 hover:text-indigo-700 ${loading ? 'opacity-50' : ''}`}
+                  title="Télécharger PDF"
+                  disabled={loading}
+                >
+                  {loading ? '...' : <Download className="w-4 h-4" />}
+                </button>
+              )}
           </PDFDownloadLink>
         </div>
       ),

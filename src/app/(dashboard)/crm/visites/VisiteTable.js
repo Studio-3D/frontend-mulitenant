@@ -19,7 +19,7 @@ import {
 import Link from 'next/link';
 import SelectInput from '@/components/SelectInput';
 
-const VisiteTable = (dataProspect, dataClient) => {
+const VisiteTable = ({user_id,dataProspect, dataClient}) => {
   const [visites, setVisites] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -53,7 +53,7 @@ const VisiteTable = (dataProspect, dataClient) => {
     searchFields: ['responsable', 'date', 'nom', 'prenom', 'telephone'],
   };
   // Prepare parameters based on conditions
-  const clientId = dataClient?.dataClient?.id;
+  const clientId = dataClient?.id;
   const prospectId = dataProspect?.dataProspect?.id;
   useEffect(() => {
     const params_url = clientId
@@ -61,8 +61,11 @@ const VisiteTable = (dataProspect, dataClient) => {
       : prospectId
       ? { prospect_id: prospectId }
       : {};
-    const combinedFilters = { ...filters, ...params_url };
-
+    const combinedFilters = {
+      ...(user_id ? { user_id } : {}),
+      ...filters,
+      ...params_url
+    };
     fetchData_table_by_projet(
       entity,
       combinedFilters,
@@ -242,15 +245,23 @@ const VisiteTable = (dataProspect, dataClient) => {
   const canAddVisite =
     isSuperAdmin(user.role) || isAdmin(user.role) || isCommercial(user.role);
 
-  let handleAddClick;
-  if (canAddVisite) {
-    if (prospectId != null) {
-      localStorage.setItem('selectedProspect', JSON.stringify(dataProspect)); // Store prospect info
-    }
-    handleAddClick = `${ENDPOINTS.VISITES}?action=add`;
-  } else {
-    handleAddClick = undefined;
-  }
+   function getAddLinkForVisite(user) {
+     if (canAddVisite) {
+       if (dataClient) {
+         return {
+           pathname: `${ENDPOINTS.VISITES}?action=add`,
+           onClick: () => {
+             localStorage.setItem(
+                   'selectedClient',
+                   JSON.stringify({ dataClient: dataClient })
+                 );        
+           }
+         };
+       }
+       return `${ENDPOINTS.VISITES}?action=add`;
+     }
+     return undefined;
+   }
 
   const handleFilterChange = (field, value) => {
     setTempFilters((prev) => ({ ...prev, [field]: value }));
@@ -272,8 +283,9 @@ const VisiteTable = (dataProspect, dataClient) => {
   };
   return (
     <>
-      <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
+      <div className="relative bg-white rounded-lg px-4 py-4">
         <Table
+          title={user_id ? 'Liste des visites' : ''}
           data_to_export={data_to_export()}
           columns_export={columns_export}
           name_file_export={'visites_export'}
@@ -288,7 +300,7 @@ const VisiteTable = (dataProspect, dataClient) => {
           onRowsPerPageChange={setRowsPerPage}
           onSearchChange={setSearchTerm}
           enableExport={true}
-          addLink={handleAddClick}
+          addLink={!user_id && getAddLinkForVisite(user)}
           filterComponent={
             <div className="space-y-4 p-4 rounded-lg ">
               <div

@@ -1,5 +1,10 @@
-const APIBASEURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-const BASERESOURCEURL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:8000';
+import axios from "axios";
+
+const APIBASEURL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+
+const BASERESOURCEURL =
+  process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8000";
 
 export const RESOURCE_URL = {
   DOCS: `${BASERESOURCEURL}/Docs`,
@@ -41,75 +46,136 @@ export const APIURL = {
   ROOTV1: `${APIBASEURL}/v1`,
   PROSPECTS: `${APIBASEURL}/v1/prospects`,
   CLIENTS: `${APIBASEURL}/v1/clients`,
-  PAIEMENTS:`${APIBASEURL}/v1/avances`,
-  DESISTEMENT:`${APIBASEURL}/v1/desistements`,
+  PAIEMENTS: `${APIBASEURL}/v1/avances`,
+  DESISTEMENT: `${APIBASEURL}/v1/desistements`,
   OBJECTIFS: `${APIBASEURL}/v1/objectifs`,
   RESERVATIONS: `${APIBASEURL}/v1/reservations`,
   FOURNISSEURS: `${APIBASEURL}/v1/fournisseurs`,
   DECOMPTES: `${APIBASEURL}/v1/decomptes`,
   FACTURES: `${APIBASEURL}/v1/factures`,
   CPS: `${APIBASEURL}/v1/cps`,
-  CREDITS:`${APIBASEURL}/v1/credits`,
-  ServicesPrestataires:`${APIBASEURL}/v1/ServicesPrestataires`,
-  Prestataires:`${APIBASEURL}/v1/Prestataires`,
-  ReclamationsSav:`${APIBASEURL}/v1/ReclamationsSav`,
-  ReclamationsClient:`${APIBASEURL}/v1/ReclamationsClients`,
-  REMISECLES:`${APIBASEURL}/v1/RemiseCles`,
-  ECHEANCESTRANCE:`${APIBASEURL}/v1/EcheancesTranche`,
-  ETAPESPROJET:`${APIBASEURL}/v1/etapesProjet`,
+  CREDITS: `${APIBASEURL}/v1/credits`,
+  ServicesPrestataires: `${APIBASEURL}/v1/ServicesPrestataires`,
+  Prestataires: `${APIBASEURL}/v1/Prestataires`,
+  ReclamationsSav: `${APIBASEURL}/v1/ReclamationsSav`,
+  ReclamationsClient: `${APIBASEURL}/v1/ReclamationsClients`,
+  REMISECLES: `${APIBASEURL}/v1/RemiseCles`,
+  ECHEANCESTRANCE: `${APIBASEURL}/v1/EcheancesTranche`,
+  ETAPESPROJET: `${APIBASEURL}/v1/etapesProjet`,
   COMMISSIONS: `${APIBASEURL}/v1/commissions`,
   COMMISSSIONCONFIG: `${APIBASEURL}/v1/commisssionConfig`,
   COMMISSIONSCONFIGURATIONS: `${APIBASEURL}/v1/commissionsConfigurations`,
   FACTURES_BY_DECOMPTE: `${APIBASEURL}/v1/factures_by_decompte`,
   DOCUMENTS_FACTURES: `${BASERESOURCEURL}/Docs/factures`,
   DOCUMENTS_CPS: `${BASERESOURCEURL}/Docs/cps`,
-  HISTOIMPORTATION:`${APIBASEURL}/v1/delete_fichier_import`,
+  HISTOIMPORTATION: `${APIBASEURL}/v1/delete_fichier_import`,
   COMPOSITIONBIENS: `${APIBASEURL}/v1/compositionBiens`,
 
-}
+  // Social Media Configuration APIs
+  LINKEDIN_CONFIG: `${APIBASEURL}/v1/linkedin-config`,
+  TIKTOK_CONFIG: `${APIBASEURL}/v1/tiktok-config`,
+
+  // Social Media Sharing APIs
+  LINKEDIN_SHARE: `${APIBASEURL}/v1/linkedin/share`,
+  TIKTOK_PUBLISH: `${APIBASEURL}/v1/tiktok/publish`,
+  TIKTOK_STATUS: `${APIBASEURL}/v1/tiktok/status`,
+};
 
 export const ENDPOINTS = {
   API: process.env.NEXT_PUBLIC_API_URL,
-  HOME: '/home',
-  UTILISATEURS: '/utilisateurs/home',
-  SOCIETES: '/societes/home',
-  TYPEPROJETS: '/administration/typeProjets',
-  TYPEBIENS: '/administration/typeBiens',
-  BANQUES: '/administration/banques',
-  VUES: '/administration/vues',
-  TYPOLOGIES: '/administration/typologies',
-  TYPEFREINS: '/administration/freins',
-  SOURCES: '/administration/sources',
-  PARTENAIRES: '/administration/partenaires',
-  PROJETS: '/projets/home',
-  TRANCHES: '/tranches/home',
-  BLOCS: '/blocs/home',
-  IMMEUBLES: '/immeubles/home',
-  BIENS: '/biens/home',
-  COMPOSITIONBIENS: '/compositionBiens/home',
-  VISITES: '/crm/visites',
-  APPELS: '/crm/appels',
-  PROSPECTS: '/crm/prospects',
-  CLIENTS: '/clients/home',
+  HOME: "/home",
+  UTILISATEURS: "/utilisateurs/home",
+  SOCIETES: "/societes/home",
+  TYPEPROJETS: "/administration/typesProjets",
+  TYPEBIENS: "/administration/typeBiens",
+  BANQUES: "/administration/banques",
+  VUES: "/administration/vues",
+  TYPOLOGIES: "/administration/typologies",
+  TYPEFREINS: "/administration/freins",
+  SOURCES: "/administration/sources",
+  PARTENAIRES: "/administration/partenaires",
+  PROJETS: "/projets/home",
+  TRANCHES: "/tranches/home",
+  BLOCS: "/blocs/home",
+  IMMEUBLES: "/immeubles/home",
+  BIENS: "/biens/home",
+  COMPOSITIONBIENS: "/compositionBiens/home",
+  VISITES: "/crm/visites",
+  APPELS: "/crm/appels",
+  PROSPECTS: "/crm/prospects",
+  CLIENTS: "/ventes/clients",
 
-  ENCAISSEMENTS: '/encaissements',
-  RESERVATIONS: '/ventes/reservations',
-  TVA: '/comptabilite',
-  DESISTEMENT:'/desistements/home',
-  PAIEMENTS:'/paiements/home',
-  OBJECTIFS:'/administration/objectifs',
-  FOURNISSEURS: '/comptabilite/fournisseurs',
-  DECOMPTES: '/comptabilite/decomptes',
-  FACTURES: '/comptabilite/factures',
-  CPS:'/comptabilite/cps',
-  CREDITS:'/comptabilite/credits',
-  ServicesPrestataires:'/sav/services',
-  Prestataires:'/sav/prestataires',
-  ReclamationsSav:'/sav/reclamations',
-  ReclamationsClients:'/reclamationsClients',
-  REMISECLES:'/remiseCles',
-  ECHEANCESTRANCE:'/echeancesTranche/home',
-  HISTOIMPORTATION:'/histoImportation',
-  ETAPESPROJET:'/etapesProjet/home',
-}
+  ENCAISSEMENTS: "/encaissements",
+  RESERVATIONS: "/ventes/reservations",
+  TVA: "/comptabilite",
+  DESISTEMENT: "/desistements/home",
+  PAIEMENTS: "/paiements/home",
+  OBJECTIFS: "/administration/objectifs",
+  FOURNISSEURS: "/comptabilite/fournisseurs",
+  DECOMPTES: "/comptabilite/decomptes",
+  FACTURES: "/comptabilite/factures",
+  CPS: "/comptabilite/cps",
+  CREDITS: "/comptabilite/credits",
+  ServicesPrestataires: "/sav/services",
+  Prestataires: "/sav/prestataires",
+  ReclamationsSav: "/sav/reclamations",
+  ReclamationsClients: "/reclamationsClients",
+  REMISECLES: "/remiseCles",
+  ECHEANCESTRANCE: "/echeancesTranche/home",
+  HISTOIMPORTATION: "/histoImportation",
+  ETAPESPROJET: "/etapesProjet/home",
+};
 
+// Add axios default configuration
+axios.defaults.baseURL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+
+// Add request interceptor to always include auth token
+axios.interceptors.request.use(
+  (config) => {
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("accessToken")
+        : null;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Helper functions to check social media configurations
+export const checkSocialMediaConfigurations = async (projectId) => {
+  const token = localStorage.getItem("accessToken");
+  const configurations = {
+    linkedin: false,
+    tiktok: false,
+    facebook: false,
+    instagram: false,
+  };
+
+  try {
+    // Check LinkedIn configuration
+    const linkedinResponse = await axios.get(
+      `${APIURL.LINKEDIN_CONFIG}/project/${projectId}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    configurations.linkedin = !!linkedinResponse.data.configuration;
+  } catch (error) {
+    console.log("No LinkedIn configuration found");
+  }
+
+  try {
+    // Check TikTok configuration
+    const tiktokResponse = await axios.get(
+      `${APIURL.TIKTOK_CONFIG}/project/${projectId}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    configurations.tiktok = !!tiktokResponse.data.configuration;
+  } catch (error) {
+    console.log("No TikTok configuration found");
+  }
+
+  return configurations;
+};

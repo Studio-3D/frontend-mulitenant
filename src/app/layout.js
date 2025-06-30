@@ -19,12 +19,6 @@ export const metadata = {
   title: "ERP Immobilier",
   description: "ERP Immobilier",
   image: "/images/logo.PNG",
-  verification: {
-    // Adding TikTok verification meta tag that will apply to all pages
-    other: {
-      "tiktok-developers-site-verification": "CnPAeCjgGzOwhN6F7NcsIBkKB7I4dvuB",
-    },
-  },
 };
 
 export default function RootLayout({ children }) {

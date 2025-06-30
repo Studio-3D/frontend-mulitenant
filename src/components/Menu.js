@@ -6,30 +6,30 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
 
-import { 
-  LayoutDashboard, 
-  Building, 
-  Folder, 
+import {
+  LayoutDashboard,
+  Building,
+  Folder,
   Landmark,
-  FolderOpen, 
-  ChevronRight, 
-  ChevronDown, 
-  FileText, 
-  ClipboardEdit, 
-  BarChart3, 
-  Briefcase, 
+  FolderOpen,
+  ChevronRight,
+  ChevronDown,
+  FileText,
+  ClipboardEdit,
+  BarChart3,
+  Briefcase,
   CreditCard,
-  Handshake, 
-  Timer, 
-  Calendar, 
-  Percent, 
-  Users, 
-  FileInput, 
-  Calculator, 
-  BarChart4, 
-  History, 
-  AlertCircle, 
-  Settings, 
+  Handshake,
+  Timer,
+  Calendar,
+  Percent,
+  Users,
+  FileInput,
+  Calculator,
+  BarChart4,
+  History,
+  AlertCircle,
+  Settings,
   UsersRound,
   Eye,
   Wrench,
@@ -39,6 +39,10 @@ import {
   Receipt,
   LayoutDashboard as LayoutDashboardFilled, // Replacement for TbLayoutDashboardFilled
   DollarSign, // Replacement for FaFileInvoiceDollar
+  Share2, // Added for social networks
+  Coins,
+  CheckCircle2,
+  Clock, // Replacement for FaFileInvoiceDollar
 } from "lucide-react";
 
 import { User_roles } from "../configs/enum";
@@ -60,7 +64,8 @@ const Menu = () => {
   const router = useRouter();
   const [isProjetDialogVisible, setIsProjetDialogVisible] = useState(false);
   const [selectedProjetId, setSelectedProjetId] = useState("");
-  const [requireProjetAfterSociete, setRequireProjetAfterSociete] =useState(false);
+  const [requireProjetAfterSociete, setRequireProjetAfterSociete] =
+    useState(false);
 
   const handleSocieteSelected = () => {
     const projet = localStorage.getItem("selectedProjet");
@@ -152,35 +157,36 @@ const Menu = () => {
         {
           label: "Types Projets",
           icon: <Folder size={20} />,
-          href: "/administration/typesProjets",
+          href: "/administration/types-projets",
           needsSociete: user.role === 1,
         },
         {
           label: "Types Biens",
           icon: <FolderOpen size={20} />,
-          href: "/administration/typesBiens",
-          needsProjet: true, 
+          href: "/administration/types-biens",
+          needsProjet: true,
           needsSociete: user.role === 1,
         },
         {
           label: "Objectifs",
           icon: <FileText size={20} />,
           href: "/administration/objectifs",
-          needsProjet: true, 
+          needsProjet: true,
           needsSociete: user.role === 1,
         },
-        {
+
+        /* {
           label: "Commissions",
           icon: <CreditCard size={20} />,
           href: "/administration/commissions",
           needsProjet: true, 
           needsSociete: user.role === 1,
-        },
+        }, */
         {
           label: "Freins",
           icon: <AlertCircle size={20} />,
           href: "/administration/freins",
-          needsProjet: true, 
+          needsProjet: true,
           needsSociete: user.role === 1,
         },
         {
@@ -193,27 +199,41 @@ const Menu = () => {
           label: "Partenaires",
           icon: <BarChart3 size={20} />,
           href: "/administration/partenaires",
-          needsProjet: true, 
+          needsProjet: true,
           needsSociete: user.role === 1,
         },
         {
           label: "Vues",
           icon: <Eye size={20} />,
           href: "/administration/vues",
-          needsProjet: true, 
+          needsProjet: true,
           needsSociete: user.role === 1,
         },
+
         {
           label: "Typologies",
           icon: <FolderOpen size={20} />,
           href: "/administration/typologies",
-          needsProjet: true, 
+          needsProjet: true,
           needsSociete: user.role === 1,
         },
         {
           label: "Banques",
           icon: <Building size={20} />,
           href: "/administration/banques",
+          needsSociete: user.role === 1,
+        },
+        {
+          label: "Config Réseaux Sociaux",
+          icon: <Share2 size={20} />,
+          href: "/administration/config-socials",
+          needsSociete: user.role === 1,
+        },
+        {
+          label: "Commision",
+          icon: <Eye size={20} />,
+          href: "/administration/commissions/configuration",
+          needsProjet: true,
           needsSociete: user.role === 1,
         },
       ],
@@ -225,7 +245,7 @@ const Menu = () => {
       label: "CRM",
       icon: <CreditCard size={20} />,
       href: "/crm",
-      needsProjet: true, 
+      needsProjet: true,
       needsSociete: user.role === 1,
     },
     {
@@ -235,6 +255,33 @@ const Menu = () => {
 
       needsSociete: user.role === 1,
       needsProjet: true,
+    },
+    {
+      label: "Commissions",
+      icon: <Coins size={20} />,
+      children: [
+        {
+          label: "En Attente",
+          icon: <Clock size={20} />,
+          href: "/commissions/commissionMensuelleAtt",
+          needsProjet: true,
+          needsSociete: user.role === 1,
+        },
+        {
+          label: "Mensuelle Traité",
+          icon: <CheckCircle2 size={20} />,
+          href: "/commissions/commissionMensuelleTraite",
+          needsProjet: true,
+          needsSociete: user.role === 1,
+        },
+        {
+          label: "Cumul",
+          icon: <BarChart3 size={20} />, // 📊 Cumul
+          href: "/commissions/commissionCumul",
+          needsProjet: true,
+          needsSociete: user.role === 1,
+        },
+      ],
     },
     {
       label: "Actualités du Jour",
@@ -270,8 +317,6 @@ const Menu = () => {
           href: "/sav/services",
           needsSociete: user.role === 1,
           needsProjet: true,
-
-          
         },
         {
           label: "Prestataires",
@@ -282,18 +327,18 @@ const Menu = () => {
         },
         {
           label: "Reclamations",
-          icon: <FileText />, 
+          icon: <FileText />,
           href: "/sav/reclamations",
           needsProjet: true,
           needsSociete: user.role === 1,
         },
       ],
     },
-    
-    
-    { label: "Reclamations", 
-      icon: <FileText />, 
-      href: "/Reclamations" ,
+
+    {
+      label: "Reclamations",
+      icon: <FileText />,
+      href: "/Reclamations",
       needsSociete: user.role === 1,
       needsProjet: true,
     },
@@ -303,17 +348,16 @@ const Menu = () => {
       href: "/encaissements",
       needsSociete: user.role === 1,
       needsProjet: true,
-
     },
     {
       label: "Comptabilité",
-      icon: <Calculator  />,
+      icon: <Calculator />,
       href: "/comptabilite",
     },
-    { 
-      label: "Statistiques", 
-      icon: <BarChart4 size={20} />, 
-      href: "/Statistiques" 
+    {
+      label: "Statistiques",
+      icon: <BarChart4 size={20} />,
+      href: "/Statistiques",
     },
     {
       label: "Historique Importation",

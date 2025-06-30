@@ -17,7 +17,6 @@ import InputSelect from "@/components/inputSelect";
 import { useProjet } from "@/context/ProjetContext"; // Import ProjetContext
 import ProjetDialog from "@/components/ProjetDialog"; // Import ProjetDialog
 import Select from 'react-select';
-import { Eye, Pencil, Trash2 } from "lucide-react";
 
 const PrestataireTable = (serviceId) => {
   const [prestataires, setPrestataires] = useState([]);

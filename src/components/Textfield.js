@@ -19,6 +19,7 @@ const TextField = ({
   min = null,
   max = null,
   accept = null,
+  existingFileName = null, // New optional prop
 }) => {
   // Common props for all input types
   const commonProps = {
@@ -65,7 +66,7 @@ const TextField = ({
               onChange={customOnChange}
             />
             <span className="text-gray-700">
-              {value?.name || 'Choisir un fichier'}
+              {value?.name || existingFileName || 'Choisir un fichier'}
             </span>
           </label>
         </div>
@@ -94,7 +95,6 @@ const TextField = ({
   return (
     <div className="mb-2">
       <label htmlFor={name} className="block text-[15px] font-medium text-gray-700 mb-1">
-
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
@@ -121,22 +121,29 @@ const TextField = ({
             );
           } else if (type === 'file') {
             return (
-              <label className={`${commonProps.className} cursor-pointer`}>
-                <input
-                  type="file"
-                  className="hidden"
-                  accept={accept}
-                  onChange={(event) => {
-                    const file = event.target.files?.[0];
-                    onChange(file);
-                    customOnChange(event);
-                  }}
-                  {...field}
-                />
-                <span className="text-gray-700">
-                  {value?.name || 'Choisir un fichier'}
-                </span>
-              </label>
+              <>
+                <label className={`${commonProps.className} cursor-pointer`}>
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept={accept}
+                    onChange={(event) => {
+                      const file = event.target.files?.[0];
+                      onChange(file);
+                      customOnChange(event);
+                    }}
+                    {...field}
+                  />
+                  <span className="text-gray-700">
+                    {value?.name || existingFileName || 'Choisir un fichier'}
+                  </span>
+                </label>
+                {existingFileName && !value?.name && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Fichier existant: {existingFileName}
+                  </p>
+                )}
+              </>
             );
           } else {
             return (
@@ -165,7 +172,6 @@ const TextField = ({
       )}
       {backendErrors?.[name] && backendErrors[name].length > 0 && (
         <div className="mt-1 text-xs text-red-600">
-
           <p style={{ color: 'red' }}>{backendErrors[name][0]}</p>
         </div>
       )}

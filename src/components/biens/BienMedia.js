@@ -12,6 +12,7 @@ export default function BienMedia({ bienId }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [bien, setBien] = useState(null);
+  const [hasLinkedInConfig, setHasLinkedInConfig] = useState(false);
   
   // States for upload functionality
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -26,26 +27,36 @@ export default function BienMedia({ bienId }) {
   useEffect(() => {
     const fetchMedia = async () => {
       try {
+        setLoading(true);
         const token = localStorage.getItem("accessToken");
-        const response = await axios.get(`${APIURL.BIENS}/${bienId}/media`, {
+        
+        // Fetch media
+        const mediaResponse = await axios.get(`${APIURL.BIENS}/${bienId}/media`, {
           headers: { Authorization: `Bearer ${token}` }
         });
+        setMedia(mediaResponse.data.media || []);
 
-        if (response.data && response.data.media) {
-          setMedia(response.data.media);
-        }
-        
-        // Also fetch the bien details to pass to the share modal
+        // Fetch bien details to get projet_id
         const bienResponse = await axios.get(`${APIURL.BIENS}/${bienId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
+        setBien(bienResponse.data.bien);
         
-        if (bienResponse.data && bienResponse.data.bien) {
-          setBien(bienResponse.data.bien);
+        // Check if LinkedIn is configured for this project
+        if (bienResponse.data.bien?.projet_id) {
+          try {
+            const configResponse = await axios.get(
+              `${APIURL.LINKEDIN_CONFIG}/project/${bienResponse.data.bien.projet_id}`,
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setHasLinkedInConfig(!!configResponse.data.configuration);
+          } catch (error) {
+            console.log("No LinkedIn configuration found for this project");
+            setHasLinkedInConfig(false);
+          }
         }
       } catch (error) {
-        console.error("Error fetching media:", error);
-        toast.error("Impossible de charger les médias");
+        console.error("Error fetching media or bien details:", error);
       } finally {
         setLoading(false);
       }
@@ -66,9 +77,10 @@ export default function BienMedia({ bienId }) {
 
   // Open share modal with the current media
   const openShareModal = () => {
-    if (selectedMedia && bien) {
+    if (selectedMedia && bien && bien.projet_id) {
       setIsShareModalOpen(true);
-      setModalOpen(false); // Close the preview modal
+    } else {
+      toast.error("Impossible d'ouvrir le modal de partage. Données manquantes.");
     }
   };
 
@@ -392,6 +404,25 @@ export default function BienMedia({ bienId }) {
       </div>
     );
   };
+
+  // Check LinkedIn configuration when bien data is loaded
+  useEffect(() => {
+    const checkLinkedInConfig = async () => {
+      if (bien?.projet_id) {
+        try {
+          const token = localStorage.getItem("accessToken");
+          const response = await axios.get(`${APIURL.ROOTV1}/linkedin-config/project/${bien.projet_id}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setHasLinkedInConfig(response.data.success);
+        } catch (error) {
+          setHasLinkedInConfig(false);
+        }
+      }
+    };
+
+    checkLinkedInConfig();
+  }, [bien]);
 
   // Render loading state
   if (loading) {

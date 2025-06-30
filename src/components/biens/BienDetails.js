@@ -144,7 +144,7 @@ export default function BienDetails({ id }) {
   
   // Helper function to render avatar with icon
   const renderIconAvatar = (icon, bgColor = "bg-blue-100") => (
-    <div className={`flex items-center justify-center w-10 h-10 rounded-full ${bgColor} !text-blue-600 mr-3 flex-shrink-0`}>
+    <div className={`flex items-center justify-center w-8 h-8 rounded-full ${bgColor} !text-blue-600 flex-shrink-0`}>
       {icon}
     </div>
   );
@@ -205,122 +205,122 @@ export default function BienDetails({ id }) {
 
       {/* General info section */}
       <div className="bg-white shadow-sm rounded-lg">
-        <div className="border-b border-gray-200 px-6 py-4">
-          <h2 className="text-lg font-medium text-gray-800">Informations générales</h2>
+        <div className="border-b border-gray-200 px-4 py-2">
+          <h2 className="text-base font-medium text-gray-800">Informations générales</h2>
         </div>
         
-        <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="p-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {/* Basic information */}
-            <div className="flex items-start gap-3">
-              {renderIconAvatar(<Home className="w-5 h-5" />, "bg-indigo-100")}
-              <div>
-                <h3 className="text-sm font-medium !text-gray-500">Numéro</h3>
-                <p className="mt-1 font-semibold">{bien.numero || 'N/A'}</p>
+            <div className="flex items-start gap-2">
+              {renderIconAvatar(<Home className="w-4 h-4" />, "bg-indigo-100")}
+              <div className="min-w-0">
+                <h3 className="text-xs font-medium !text-gray-500">Numéro</h3>
+                <p className="mt-0.5 font-semibold text-sm truncate">{bien.numero || 'N/A'}</p>
               </div>
             </div>
             
-            <div className="flex items-start gap-3">
-              {renderIconAvatar(<Building className="w-5 h-5" />, "bg-purple-100")}
-              <div>
-                <h3 className="text-sm font-medium !text-gray-500">Type de bien</h3>
-                <p className="mt-1 font-semibold">{bien.type?.type || 'N/A'}</p>
+            <div className="flex items-start gap-2">
+              {renderIconAvatar(<Building className="w-4 h-4" />, "bg-purple-100")}
+              <div className="min-w-0">
+                <h3 className="text-xs font-medium !text-gray-500">Type de bien</h3>
+                <p className="mt-0.5 font-semibold text-sm truncate">{bien.type_bien?.type || 'N/A'}</p>
               </div>
             </div>
             
-            <div className="flex items-start gap-3">
-              {renderIconAvatar(<Tag className="w-5 h-5" />, "bg-teal-100")}
-              <div>
-                <h3 className="text-sm font-medium !text-gray-500">Typologie</h3>
-                <p className="mt-1 font-semibold">{bien.typologie?.typologie || 'N/A'}</p>
+            <div className="flex items-start gap-2">
+              {renderIconAvatar(<Tag className="w-4 h-4" />, "bg-teal-100")}
+              <div className="min-w-0">
+                <h3 className="text-xs font-medium !text-gray-500">Typologie</h3>
+                <p className="mt-0.5 font-semibold text-sm truncate">{bien.typologie?.typologie || 'N/A'}</p>
               </div>
             </div>
 
-            <div className="flex items-start gap-3">
-              {renderIconAvatar(<MapPin className="w-5 h-5" />, "bg-amber-100")}
-              <div>
-                <h3 className="text-sm font-medium !text-gray-500">Niveau</h3>
-                <p className="mt-1 font-semibold">{bien.niveau !== null ? bien.niveau : 'N/A'}</p>
+            <div className="flex items-start gap-2">
+              {renderIconAvatar(<MapPin className="w-4 h-4" />, "bg-amber-100")}
+              <div className="min-w-0">
+                <h3 className="text-xs font-medium !text-gray-500">Niveau</h3>
+                <p className="mt-0.5 font-semibold text-sm">{bien.niveau !== null ? bien.niveau : 'N/A'}</p>
               </div>
             </div>
             
-            <div className="flex items-start gap-3">
-              {renderIconAvatar(<Euro className="w-5 h-5" />, "bg-green-200")}
-              <div>
-                <h3 className="text-sm font-medium !text-gray-500">Prix</h3>
-                <p className="mt-1 font-semibold !text-green-600">{formatPrice(bien.prix)}</p>
+            <div className="flex items-start gap-2">
+              {renderIconAvatar(<Euro className="w-4 h-4" />, "bg-green-200")}
+              <div className="min-w-0">
+                <h3 className="text-xs font-medium !text-gray-500">Prix</h3>
+                <p className="mt-0.5 font-semibold text-sm !text-green-600 truncate">{formatPrice(bien.prix)}</p>
               </div>
             </div>
             
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-2">
               {renderIconAvatar(
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                 </svg>, 
                 "bg-pink-100"
               )}
-              <div>
-                <h3 className="text-sm font-medium !text-gray-500">Orientation</h3>
-                <p className="mt-1 font-semibold">{bien.orientation ? getFullOrientation(bien.orientation) : 'N/A'}</p>
+              <div className="min-w-0">
+                <h3 className="text-xs font-medium !text-gray-500">Orientation</h3>
+                <p className="mt-0.5 font-semibold text-sm truncate">{bien.orientation ? getFullOrientation(bien.orientation) : 'N/A'}</p>
               </div>
             </div>
             
             {/* Prix unitaire */}
-            <div className="flex items-start gap-3">
-              {renderIconAvatar(<Euro className="w-5 h-5" />, "bg-purple-100")}
-              <div>
-                <h3 className="text-sm font-medium !text-gray-500">Prix unitaire</h3>
-                <p className="mt-1 font-semibold text-purple-600">{formatPrice(bien.prix_unitaire)}</p>
+            <div className="flex items-start gap-2">
+              {renderIconAvatar(<Euro className="w-4 h-4" />, "bg-purple-100")}
+              <div className="min-w-0">
+                <h3 className="text-xs font-medium !text-gray-500">Prix unitaire</h3>
+                <p className="mt-0.5 font-semibold text-sm text-purple-600 truncate">{formatPrice(bien.prix_unitaire)}</p>
               </div>
             </div>
             
             {/* Avance minimale */}
-            <div className="flex items-start gap-3">
-              {renderIconAvatar(<Euro className="w-5 h-5" />, "bg-amber-100")}
-              <div>
-                <h3 className="text-sm font-medium !text-gray-500">Avance minimale</h3>
-                <p className="mt-1 font-semibold text-amber-700">{formatPrice(bien.avance_minimale)}</p>
+            <div className="flex items-start gap-2">
+              {renderIconAvatar(<Euro className="w-4 h-4" />, "bg-amber-100")}
+              <div className="min-w-0">
+                <h3 className="text-xs font-medium !text-gray-500">Avance minimale</h3>
+                <p className="mt-0.5 font-semibold text-sm text-amber-700 truncate">{formatPrice(bien.avance_minimale)}</p>
               </div>
             </div>
             
             {/* Nombre de façades */}
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-2">
               {renderIconAvatar(
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
                   <rect x="3" y="3" width="18" height="18" rx="2" />
                   <path d="M3 9h18" />
                   <path d="M9 21V9" />
                 </svg>,
                 "bg-blue-100"
               )}
-              <div>
-                <h3 className="text-sm font-medium !text-gray-500">Nombre de façades</h3>
-                <p className="mt-1 font-semibold">{bien.nbre_facades || 'N/A'}</p>
+              <div className="min-w-0">
+                <h3 className="text-xs font-medium !text-gray-500">Nombre de façades</h3>
+                <p className="mt-0.5 font-semibold text-sm">{bien.nbre_facades || 'N/A'}</p>
               </div>
             </div>
             
             {/* Vue */}
             {bien.vue && (
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-2">
                 {renderIconAvatar(
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
                     <path d="M15 3h6v6" />
                     <path d="M10 14 21 3" />
                     <path d="M19 10v11H3V5h11" />
                   </svg>,
                   "bg-cyan-100"
                 )}
-                <div>
-                  <h3 className="text-sm font-medium !text-gray-500">Vue</h3>
-                  <p className="mt-1 font-semibold">{bien.vue.vue}</p>
+                <div className="min-w-0">
+                  <h3 className="text-xs font-medium !text-gray-500">Vue</h3>
+                  <p className="mt-0.5 font-semibold text-sm truncate">{bien.vue.vue}</p>
                 </div>
               </div>
             )}
             
             {bien.titre_foncier && (
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-2">
                 {renderIconAvatar(
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
                     <rect x="3" y="4" width="18" height="16" rx="2" />
                     <path d="M7 9h10" />
                     <path d="M7 13h10" />
@@ -328,25 +328,25 @@ export default function BienDetails({ id }) {
                   </svg>,
                   "bg-orange-100"
                 )}
-                <div>
-                  <h3 className="text-sm font-medium !text-gray-500">Titre foncier</h3>
-                  <p className="mt-1 font-semibold">{bien.titre_foncier}</p>
+                <div className="min-w-0">
+                  <h3 className="text-xs font-medium !text-gray-500">Titre foncier</h3>
+                  <p className="mt-0.5 font-semibold text-sm truncate">{bien.titre_foncier}</p>
                 </div>
               </div>
             )}
             
             {/* Conventionné */}
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-2">
               {renderIconAvatar(
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
                   <polyline points="9 11 12 14 22 4" />
                   <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
                 </svg>,
                 bien.conventionne ? "bg-green-200" : "bg-red-200"
               )}
-              <div>
-                <h3 className="text-sm font-medium !text-gray-500">Conventionné</h3>
-                <p className={`mt-1 font-semibold ${bien.conventionne ? "text-green-600" : "text-red-500"}`}>
+              <div className="min-w-0">
+                <h3 className="text-xs font-medium !text-gray-500">Conventionné</h3>
+                <p className={`mt-0.5 font-semibold text-sm ${bien.conventionne ? "text-green-600" : "text-red-500"}`}>
                   {bien.conventionne ? 'Oui' : 'Non'}
                 </p>
               </div>
@@ -363,7 +363,7 @@ export default function BienDetails({ id }) {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center px-4 py-3 font-medium text-sm border-b-2 whitespace-nowrap ${
+                className={`flex items-center px-3 py-2 font-medium text-sm border-b-2 whitespace-nowrap ${
                   activeTab === tab.id
                     ? "border-blue-500 !text-blue-600 bg-blue-50"
                     : "border-transparent !text-gray-500 hover:text-gray-700 hover:border-gray-300"
@@ -376,7 +376,7 @@ export default function BienDetails({ id }) {
           </div>
         </div>
         
-        <div className="p-6">
+        <div className="p-4">
           {renderTabContent()}
         </div>
       </div>
