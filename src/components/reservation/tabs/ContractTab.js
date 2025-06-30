@@ -15,7 +15,7 @@ import {
 } from 'react-icons/fi';
 import { FaFilePdf } from 'react-icons/fa';
 import { PDFDownloadLink } from '@react-pdf/renderer';
-import Document_Contrat from '../../../app/(dashboard)/Ventes/reservations/contrat_vente/recu';
+import Document_Contrat from '../../../app/(dashboard)/ventes/reservations/contrat_vente/recu';
 export const ContractTab = ({
   reservationData,
   user,

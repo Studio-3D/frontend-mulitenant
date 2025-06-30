@@ -3,7 +3,7 @@ import axios from 'axios';
 import format from 'date-fns/format';
 import TextField from '@/components/Textfield';
 import SelectInput from '@/components/SelectInput';
-import Compromis_show from '../../../app/(dashboard)/Ventes/reservations/compromis_ventes/show';
+import Compromis_show from '../../../app/(dashboard)/ventes/reservations/compromis_ventes/show';
 
 export const CompromisVentesTab = ({
   reservationData,
