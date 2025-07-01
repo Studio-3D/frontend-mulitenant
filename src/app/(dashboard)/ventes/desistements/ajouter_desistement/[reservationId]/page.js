@@ -418,7 +418,7 @@ export default function Page() {
         },
       });
 
-      if (response.status == 201) {
+      if (response.status == 201||response.status == 200) {
         router.push('/ventes/desistements');
       }
     } catch (error) {
