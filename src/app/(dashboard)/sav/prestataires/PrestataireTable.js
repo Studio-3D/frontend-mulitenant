@@ -257,7 +257,7 @@ const PrestataireTable = (serviceId) => {
         />
       )}
       <Table
-        title={serviceId?.service?.nom && `Prestataires liées à ${serviceId?.service?.nom}`} 
+        title={serviceId?.service?.nom  ? `Prestataires liées à ${serviceId?.service?.nom}`:'Prestataires'} 
         data_to_export={data_to_export()}
         columns_export={columns_export}
         name_file_export={"prestataire_export"}

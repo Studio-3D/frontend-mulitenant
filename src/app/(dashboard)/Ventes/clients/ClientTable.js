@@ -307,7 +307,7 @@ const ClientTable = () => {
                 }}
               >
                 <Input
-                label={'Cin'}
+                  label={'Cin'}
                   type="text"
                   placeholder="Cin"
                   value={tempFilters.cin}
@@ -315,7 +315,7 @@ const ClientTable = () => {
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
                 <Input
-                label={'Nom'}
+                  label={'Nom'}
                   type="text"
                   placeholder="Nom"
                   value={tempFilters.nom}

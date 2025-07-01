@@ -645,6 +645,7 @@ const ReservationTable = ({ dataClient,user_id }) => {
           onClose={() => setShowDeleteModal(false)}
         >
           <DeleteData
+            type='Client'
             route={APIURL.RESERVATIONS}
             Id={selectedId}
             message={'Etes-vous sûr de vouloir supprimer cete Réservation ?'}

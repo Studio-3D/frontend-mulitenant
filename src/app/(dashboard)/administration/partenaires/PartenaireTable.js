@@ -99,6 +99,7 @@ const PartenaireTable = ({
   return (
     <div>
       <Table 
+        title={'Partenaire'}
         columns={columns}
         data={currentItems}
         filterComponent={

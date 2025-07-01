@@ -97,6 +97,7 @@ const VueTable = ({
   return (
     <div>
       <Table 
+        title={"Vues"} 
         columns={columns}
         data={currentItems}
         filterComponent={

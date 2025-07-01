@@ -133,7 +133,7 @@ export default function FreinsPage() {
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
         entityName="TYPEFREINS"
-        itemLabel={rowToDelete?.label}
+        itemLabel={'Type frein'}
         entityId={rowToDelete?.id}
         data={freins}
         onDeleted={() => fetchFreins(filterParams)} // <- ici

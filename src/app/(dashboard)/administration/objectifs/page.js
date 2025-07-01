@@ -138,7 +138,7 @@ export default function ObjectifsPage() {
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
         entityName="OBJECTIFS"
-        itemLabel={rowToDelete?.user}
+        itemLabel={'Objectif'}
         entityId={rowToDelete?.id}
         data={objectifs}
         onDeleted={() => fetchObjectifs(filterParams)} // <- ici

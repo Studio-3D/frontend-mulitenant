@@ -362,17 +362,6 @@ const fetchPrestataires= async (service_id) => {
     }));
   };
   
-  function getAddLinkForReservation(user) {
-  if (!clientData) return undefined;
-
-  if (isSuperAdmin(user?.role) || isAdmin(user?.role)) {
-    return `${ENDPOINTS.RESERVATIONS}?action=add&clientId=${clientData.id}`;
-  }
-
-  return undefined;
-}
-
-
 
   const data_to_export = () => {
     return reclamations.map((rec) => ({
@@ -431,7 +420,7 @@ const fetchPrestataires= async (service_id) => {
   return (
     <>
       <Table
-        title={prestId.prestataire_id && "Reclamations liées"}
+        title={prestId.prestataire_id ? "Reclamations liées":'Reclamations'}
         data_to_export={data_to_export()}
         columns_export={columns_export}
         name_file_export={"reclamation_export"}
@@ -544,8 +533,11 @@ const fetchPrestataires= async (service_id) => {
         onSearchChange={setSearchTerm}
         enableExport={true}
         enableImport={true}
-        addLink={getAddLinkForReservation(user)}
-
+        addLink={
+          (isSuperAdmin(user?.role) || isAdmin(user?.role)) && isPrestIdEmpty
+            ? `${ENDPOINTS.ReclamationsSav}?action=add`
+            : undefined
+        }
         
       />
       <ReclamationDialog

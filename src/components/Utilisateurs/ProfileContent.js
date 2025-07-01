@@ -308,9 +308,9 @@ const [selectedFile, setSelectedFile] = useState(null);
             label="Genre:"
             name="gender"
             value={
-              formData.gender == 1
+              formData.gender == 'homme'
                 ? "Homme"
-                : formData.gender == 2
+                : formData.gender == 'femme'
                 ? "Femme"
                 : ""
             }

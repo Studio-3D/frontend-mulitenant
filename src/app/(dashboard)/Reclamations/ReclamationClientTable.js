@@ -379,7 +379,7 @@ const data_to_export = () => {
   return (
     <>
       <Table
-        title={prestId.prestataire_id && "Reclamations liées"}
+        title={prestId.prestataire_id ? "Reclamations liées":'Reclamations Client'}
         data_to_export={data_to_export()}
         columns_export={columns_export}
         name_file_export={"reclamation_client_export"}
@@ -408,8 +408,6 @@ const data_to_export = () => {
                 onChange={(e) => handleFilterChange("client", e.target.value)}
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
-
-             
 
               <Input
                 type="text"

@@ -346,7 +346,7 @@ const FacturesManager = ({ userRole, decompteId, montantDecompte, montantPaye })
             isOpen={deleteModalOpen}
             onClose={() => setDeleteModalOpen(false)}
             entityName="FACTURES"
-            itemLabel={`Facture N° ${factureToDelete.num_facture}`}
+            itemLabel={"Facture"}
             entityId={factureToDelete.id}
             onDeleted={() => {
               setRefreshData(prev => !prev);

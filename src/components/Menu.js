@@ -42,7 +42,9 @@ import {
   Share2, // Added for social networks
   Coins,
   CheckCircle2,
-  Clock, // Replacement for FaFileInvoiceDollar
+  Clock,
+  Bell,
+  BeakerIcon, // Replacement for FaFileInvoiceDollar
 } from "lucide-react";
 
 import { User_roles } from "../configs/enum";
@@ -231,7 +233,7 @@ const Menu = () => {
         },
         {
           label: "Commision",
-          icon: <Eye size={20} />,
+          icon: <BeakerIcon size={20} />,
           href: "/administration/commissions/configuration",
           needsProjet: true,
           needsSociete: user.role === 1,

@@ -85,7 +85,7 @@ export default function TypeBiensPage() {
 
   const handleAction = (actionType, row) => {
     if (actionType === 'edit') {
-      router.push(`/administration/typesBiens?action=edit&id=${row}`);
+      router.push(`/administration/types-biens?action=edit&id=${row}`);
     } else if (actionType === 'delete') {
       // Handle delete with confirmation
       setRowToDelete(row);
@@ -97,7 +97,7 @@ export default function TypeBiensPage() {
   // Handle form completion
   const handleFormComplete = () => {
     // Use router.replace instead of push to ensure a clean navigation
-    router.replace('/administration/typesBiens');
+    router.replace('/administration/types-biens');
   };
 
   
@@ -126,7 +126,7 @@ export default function TypeBiensPage() {
         data={typeBiens}
         loading={loading || societeLoading || projetLoading}
         onAction={handleAction}
-        onAddClick={() => router.push('/administration/typesBiens?action=add')}
+        onAddClick={() => router.push('/administration/types-biens?action=add')}
         onFilterSubmit={handleFilterSubmit} 
         onRefresh={() => fetchTypeBiens(filterParams)}
       />
@@ -134,7 +134,7 @@ export default function TypeBiensPage() {
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
         entityName="TYPEBIENS"
-        itemLabel={rowToDelete?.type}
+        itemLabel={'Type bien'}
         entityId={rowToDelete?.id}
         data={typeBiens}
         onDeleted={() => fetchTypeBiens(filterParams)}

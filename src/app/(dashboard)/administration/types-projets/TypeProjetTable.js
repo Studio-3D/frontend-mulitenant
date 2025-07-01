@@ -96,6 +96,7 @@ const TypeProjetTable = ({
   return (
     <div className=''>
       <Table 
+        title={'Type Projets'}
         columns={columns}
         data={currentItems}
         filterComponent={

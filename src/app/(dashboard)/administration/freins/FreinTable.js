@@ -100,7 +100,8 @@ const FreinTable = ({
   
   return (
     <div>
-      <Table 
+      <Table
+        title={"Freins"} 
         columns={columns}
         data={currentItems}
         filterComponent={

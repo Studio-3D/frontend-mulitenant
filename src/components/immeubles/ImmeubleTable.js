@@ -240,6 +240,7 @@ useEffect(() => {
   return (
     <div>
     <Table 
+      title={"Immeubles"}
       columns={columns}
       data={paginatedData}
       totalRows={totalRows}
