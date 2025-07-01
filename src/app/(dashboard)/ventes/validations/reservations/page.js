@@ -181,7 +181,7 @@ const PageTraitement_Validation_rejets = () => {
           <>
             {row.data_res.user && (
               <>
-                <Link target="_blank" href={'/utilisateurs/' + row.user_id}>
+                <Link target="_blank" href={'/Utilisateurs/afficher-utilisateur/' + row.user_id}>
                   <strong style={{ fontWeight: 600 }}>{row.cc}</strong>
                 </Link>
               </>
