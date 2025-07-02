@@ -12,7 +12,7 @@ const TypologieForm = ({ id = null, onComplete }) => {
   const [submitting, setSubmitting] = useState(false);
   const { selectedProjet } = useProjet();
   const router = useRouter();
-
+const [originalFormData, setOriginalFormData] = useState({});
   // Form state
   const [formData, setFormData] = useState({
     typologie: "",
@@ -48,6 +48,10 @@ const TypologieForm = ({ id = null, onComplete }) => {
           typologie: typologieData.typologie || "",
           projet_id: typologieData.projet_id || selectedProjet?.id || "",
         });
+        setOriginalFormData({
+      typologie: typologieData.typologie || "",
+      projet_id: typologieData.projet_id || selectedProjet?.id || "",
+    });
       }
     } catch (error) {
       console.error("Error fetching typologie data:", error);
@@ -61,6 +65,23 @@ const TypologieForm = ({ id = null, onComplete }) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+  const hasChanges = () => {
+  const normalizedForm = {
+    ...formData,
+    typologie: (formData.typologie ?? '').trim().toLowerCase(),
+  };
+
+  const normalizedOriginal = {
+    ...originalFormData,
+    typologie: (originalFormData.typologie ?? '').trim().toLowerCase(),
+  };
+
+  return JSON.stringify(normalizedForm) !== JSON.stringify(normalizedOriginal);
+};
+
+
+
 
   const validateForm = () => {
     const newErrors = {};
@@ -188,7 +209,7 @@ const TypologieForm = ({ id = null, onComplete }) => {
             <Button type="button" onClick={() => router.back()}>
               Annuler
             </Button>
-            <Button type="submit" disabled={submitting} loading={submitting}>
+            <Button type="submit" disabled={submitting ||!hasChanges()} loading={submitting}>
               {submitting ? "Chargement..." : id ? "Modifier" : "Ajouter"}
             </Button>
           </div>

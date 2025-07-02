@@ -96,6 +96,7 @@ const TypeBienTable = ({
   return (
     <div className="bg-white p-4 rounded-lg shadow-md">
       <Table 
+        title={"Type Biens"} 
         columns={columns}
         data={currentItems}
         filterComponent={
@@ -134,7 +135,7 @@ const TypeBienTable = ({
         }
         totalRows={filteredData.length}
         loading={loading}
-        addLink="/administration/typesBiens?action=add"
+        addLink="/administration/types-biens?action=add"
         onSearchChange={handleSearchChange}
         currentPage={currentPage}
         rowsPerPage={rowsPerPage}

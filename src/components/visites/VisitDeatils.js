@@ -1198,6 +1198,7 @@ export function VisitDetails({
           <DeleteData
             route={APIURL.VISITES}
             Id={selectedId}
+            type='Visite'
             message={'Etes-vous sûr de vouloir supprimer cette Visite ?'}
             accessToken={accessToken}
             onClose={() => {

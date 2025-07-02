@@ -407,6 +407,7 @@ const ProspectTable = () => {
           <DeleteData
             route={APIURL.PROSPECTS}
             Id={selectedId}
+            type='Prospect'
             message={'Etes-vous sûr de vouloir supprimer ce Prospect ?'}
             accessToken={accesstoken}
             onClose={() => {

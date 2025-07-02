@@ -520,7 +520,8 @@ const handleImportClick = () => {
   )}
 </Box>
 </Box>
-    <Table 
+    <Table
+      title={"Biens"} 
       columns={columns}
       totalRows={totalRows}
       loading={loading}

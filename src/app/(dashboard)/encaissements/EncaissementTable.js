@@ -369,6 +369,7 @@ const rows = formatData();
   return (
     <>
       <Table
+        title={"Encaissements"} 
         data_to_export={data_to_export()}
         columns_export={columns_export}
         name_file_export={"encaissement_export"}

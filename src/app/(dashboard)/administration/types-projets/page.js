@@ -80,7 +80,7 @@ export default function TypeProjetsPage() {
 
   const handleAction = (actionType, row) => {
     if (actionType === 'edit') {
-      router.push(`/administration/typesProjets?action=edit&id=${row}`);
+      router.push(`/administration/types-projets?action=edit&id=${row}`);
     } else if (actionType === 'delete') {
       // Handle delete with confirmation
       setRowToDelete(row);
@@ -93,7 +93,7 @@ export default function TypeProjetsPage() {
   // Handle form completion
   const handleFormComplete = () => {
     // Use router.replace instead of push to ensure a clean navigation
-    router.replace('/administration/typesProjets');
+    router.replace('/administration/types-projets');
   };
 
   // For superadmins without a selected société
@@ -121,7 +121,7 @@ export default function TypeProjetsPage() {
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
         entityName="TYPEPROJETS"
-        itemLabel={rowToDelete?.type}
+        itemLabel={'type projet'}
         entityId={rowToDelete?.id}
         data={typeProjets}
         onDeleted={() => fetchTypeProjets(filterParams)} // <- ici
@@ -130,7 +130,7 @@ export default function TypeProjetsPage() {
         data={typeProjets}
         loading={loading || societeLoading}
         onAction={handleAction}
-        onAddClick={() => router.push('/administration/typesProjets?action=add')}
+        onAddClick={() => router.push('/administration/types-projets?action=add')}
         onFilterSubmit={handleFilterSubmit} 
         onRefresh={() => fetchTypeProjets(filterParams)}
       />

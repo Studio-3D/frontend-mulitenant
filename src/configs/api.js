@@ -86,7 +86,7 @@ export const ENDPOINTS = {
   HOME: "/home",
   UTILISATEURS: "/utilisateurs/home",
   SOCIETES: "/societes/home",
-  TYPEPROJETS: "/administration/typesProjets",
+  TYPEPROJETS: "/administration/types-projets",
   TYPEBIENS: "/administration/typeBiens",
   BANQUES: "/administration/banques",
   VUES: "/administration/vues",
