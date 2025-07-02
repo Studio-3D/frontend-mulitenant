@@ -207,6 +207,7 @@ export default function PartenairesPage() {
 
           {/* Table with loading state */}
           <Table 
+            title={"Partenaires"} 
             columns={columns}
             data={formatPartenairesForTable()}
             onAction={handleTableAction}
@@ -225,7 +226,7 @@ export default function PartenairesPage() {
             isOpen={deleteModalOpen}
             onClose={() => setDeleteModalOpen(false)}
             entityName="PARTENAIRES"
-            itemLabel={rowToDelete?.label}
+            itemLabel={'Partenaire'}
             entityId={rowToDelete?.id}
             data={freins}
             onDeleted={() => fetchFreins(filterParams)} // <- ici

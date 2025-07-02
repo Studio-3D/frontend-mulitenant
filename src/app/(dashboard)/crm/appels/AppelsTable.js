@@ -299,6 +299,7 @@ const AppelsTable = ({dataClient}) => {
     <>
       <div className="relative bg-white rounded-lg px-4 py-4">
         <Table
+          title={"Appels"} 
           data_to_export={data_to_export()}
           columns_export={columns_export}
           name_file_export={'appels_export'}
@@ -406,6 +407,7 @@ const AppelsTable = ({dataClient}) => {
           <DeleteData
             route={APIURL.APPELS}
             Id={selectedId}
+            type='Appel'
             message={'Etes-vous sûr de vouloir supprimer cette Appel ?'}
             accessToken={accesstoken}
             onClose={() => {

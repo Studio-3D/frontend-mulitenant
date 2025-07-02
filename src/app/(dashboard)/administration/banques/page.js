@@ -127,7 +127,7 @@ export default function BanquesPage() {
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
         entityName="BANQUES"
-        itemLabel={banqueToDelete?.nom}
+        itemLabel={'Banque'}
         entityId={banqueToDelete?.id}
         data={banques}
         onDeleted={() => fetchBanques(filterParams)} // <- ici

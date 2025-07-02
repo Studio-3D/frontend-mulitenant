@@ -49,9 +49,9 @@ const Page = () => {
     telephone: "",
     societe: "",
     role: "",
-    genre: "",
+    gender: "",
     niveau: "",
-    statut: "",
+    status: "",
   });
 
   const [tempFilters, setTempFilters] = useState({ ...filters });
@@ -155,9 +155,9 @@ const Page = () => {
       telephone: "",
       societe: "",
       role: "",
-      genre: "",
+      gender: "",
       niveau: "",
-      statut: "",
+      status: "",
     };
     setFilters(reset);
     setTempFilters(reset);
@@ -355,6 +355,7 @@ const Page = () => {
     <>
       <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
         <Table
+          title={'Utilisateurs'}
           data_to_export={data_to_export()}
           columns_export={columns_export}
           name_file_export={"utilisateur_export"}
@@ -413,11 +414,9 @@ const Page = () => {
                   placeholder="Rôle"
                   //className="h-10 text-sm w-full"
                 />
-
-
                 <SelectInput
-                  value={tempFilters.genre}
-                  onChange={(value) => handleFilterChange("genre", value)}
+                  value={tempFilters.gender}
+                  onChange={(value) => handleFilterChange("gender", value)}
                   options={Object.values(GENDERS).map(({ code, label }) => ({
                     value: code,
                     label,
@@ -438,8 +437,8 @@ const Page = () => {
                 />
           
                 <SelectInput
-                  value={tempFilters.statut?.toString()}
-                  onChange={(value) => handleFilterChange("statut", Number(value))}
+                  value={tempFilters.status?.toString()}
+                  onChange={(value) => handleFilterChange("status", Number(value))}
                   options={Object.values(USER_STATUS).map(({ code, label }) => ({
                     value: code.toString(),
                     label,
@@ -544,6 +543,7 @@ const Page = () => {
           <DeleteData
             route={APIURL.UTILISATEURS}
             Id={selectedUserId}
+            type="Utilisateur"
             message={"vous êtes sûr de vouloir supprimer cet utilisateur?"}
             userId={selectedUserId}
             accessToken={accesstoken}

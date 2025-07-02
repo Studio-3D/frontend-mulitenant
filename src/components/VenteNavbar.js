@@ -21,7 +21,7 @@ import FetchNotifMenuVente from '@/configs/fetch_notif_menu_vente';
 
 const VenteNavbar = () => {
   const { user } = useAuth();
-  const userRole = user?.role || 3;
+  const userRole = user?.role;
   const router = useRouter();
   const navRef = useRef(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -209,42 +209,49 @@ const VenteNavbar = () => {
     {
       name: 'Remboursements',
       icon: <Handshake className="w-5 h-5" />,
-      badge: nb_demande_pre_remb,
+      //badge: nb_demande_pre_remb,
       subItems:
         userRole <= 2
           ? [
               {
-                name: 'Attente Accusé du chèque',
-                path: '/ventes/remboursements/AttAccuseCheque',
-                badge: nb_demande_pre_remb,
+                name: 'Aprés Vente',
+                path: '/ventes/remboursements/apres_ventes',
+               // badge: nb_demande_pre_remb,
+              },
+              {
+                name: ' Attente Accusé du chèque',
+                path: '/ventes/remboursements/att_accuse_cheque',
               },
               {
                 name: 'Attente Décaissement',
-                path: '/ventes/remboursements/AttDecaissement',
+                path: '/ventes/remboursements/att_decaissement',
               },
               {
                 name: 'Liste des Accusé',
-                path: '/ventes/remboursements/Accuses',
+                path: '/ventes/remboursements/accuses',
               },
               {
                 name: 'Dossiers Transférés',
-                path: '/ventes/remboursements/DossierTransfere',
-              },  
+                path: '/ventes/remboursements/dossiers_transferes',
+              },
             ]
           : [
               {
+                name: 'Aprés Vente',
+                path: '/ventes/remboursements/apres_ventes',
+               // badge: nb_demande_pre_remb,
+              },
+              {
                 name: ' Attente Accusé du chèque',
-                path: '/ventes/remboursements/AttAccuseCheque',
-                badge: nb_demande_pre_remb,
+                path: '/ventes/remboursements/att_accuse_cheque',
               },
               {
                 name: 'Accusé du chèque Traité',
-                path: '/ventes/remboursements',
-                onClick: (e) => handle_remboursement_attente_Click(e, '4'),
+                path: '/ventes/remboursements/accuses_cheque_traite',
               },
               {
                 name: 'Dossiers Transférés',
-                path: '/ventes/remboursements/DossierTransfere',
+                path: '/ventes/remboursements/dossiers_transferes',
               },
             ],
     },

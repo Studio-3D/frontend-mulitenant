@@ -103,7 +103,7 @@ const Table = ({
   return (
     <div className="mb-4 rounded-lg">
       {title && (
-        <h2 className="text-xl font-semibold !text-gray-700 mb-2">{title}</h2>
+        <h2 className="text-xl font-semibold !text-gray-700 mb-5">{title}</h2>
       )}
 
       {/* Table Controls */}

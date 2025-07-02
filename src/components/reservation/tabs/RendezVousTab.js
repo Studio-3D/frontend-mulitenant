@@ -705,6 +705,7 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange  }) => {
             route={`${apiUrl}/destroy_rdv_reservation`}
             message={`Êtes-vous sûr de vouloir supprimer le rendez-vous du ${selectedDate}`}
             Id={selectedId}
+            type='Rendez-vous'
             accessToken={accessToken}
             onClose={() => {
               setShowDeleteModal(false);

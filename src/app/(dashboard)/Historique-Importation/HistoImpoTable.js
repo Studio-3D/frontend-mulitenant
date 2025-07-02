@@ -233,6 +233,7 @@ const getStatutBadge = (statutValue) => {
       <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
 
       <Table
+        title={"Historique Imports"} 
         //data_to_export={data_to_export()}
         //columns_export={columns_export}
         name_file_export={"histoImportation_export"}

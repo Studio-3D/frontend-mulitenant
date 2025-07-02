@@ -276,7 +276,7 @@ const CreditsManager = ({ userRole }) => {
             isOpen={deleteModalOpen}
             onClose={() => setDeleteModalOpen(false)}
             entityName="CREDITS"
-            itemLabel={`Crédit N° ${creditToDelete.num_contrat}`}
+            itemLabel={"Credit"}
             entityId={creditToDelete.id}
             onDeleted={() => setRefreshData(prev => !prev)}
           />

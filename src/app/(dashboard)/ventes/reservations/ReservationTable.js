@@ -230,7 +230,7 @@ const ReservationTable = ({ dataClient,user_id }) => {
           <>
             {row.data_res.user && (
               <>
-                <Link target="_blank" href={'/utilisateurs/' + row.user_id}>
+                <Link target="_blank" href={'/Utilisateurs/afficher-utilisateur/' + row.user_id}>
                   <strong style={{ fontWeight: 600 }}>{row.cc}</strong>
                 </Link>
               </>
@@ -586,17 +586,7 @@ const ReservationTable = ({ dataClient,user_id }) => {
                   }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                  <DateRangePicker
-                    startName="date_start"
-                    endName="date_fin"
-                    startValue={tempFilters.date_start}
-                    endValue={tempFilters.date_fin}
-                    onChange={handleFilterChange}
-                    placeholder="Choisir une Date"
-                    label="Date"
-                  />
-                </div>
+                
                 <Input
                   type="text"
                   placeholder="Bien"
@@ -619,6 +609,17 @@ const ReservationTable = ({ dataClient,user_id }) => {
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
               </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                  <DateRangePicker
+                    startName="date_start"
+                    endName="date_end"
+                    startValue={tempFilters.date_start}
+                    endValue={tempFilters.date_end}
+                    onChange={handleFilterChange}
+                    placeholder="Choisir une Date"
+                    label="Date"
+                  />
+                </div>
               <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="button"
@@ -645,6 +646,7 @@ const ReservationTable = ({ dataClient,user_id }) => {
           onClose={() => setShowDeleteModal(false)}
         >
           <DeleteData
+            type='Client'
             route={APIURL.RESERVATIONS}
             Id={selectedId}
             message={'Etes-vous sûr de vouloir supprimer cete Réservation ?'}

@@ -87,7 +87,6 @@ export default function UpdateSociete() {
   setIsSubmitting(true);
   const accessToken = localStorage.getItem('accessToken');
 
-  // ✅ Crée une vraie instance FormData
   const formToSend = new FormData();
   Object.entries(formData).forEach(([key, value]) => {
     formToSend.append(key, value);

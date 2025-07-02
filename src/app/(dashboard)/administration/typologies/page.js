@@ -117,7 +117,7 @@ export default function TypologiesPage() {
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
         entityName="TYPOLOGIES"
-        itemLabel={rowToDelete?.typologie}
+        itemLabel={'Typologie'}
         entityId={rowToDelete?.id}
         data={typologies}
         onDeleted={() => fetchTypologies(filterParams)} // <- ici

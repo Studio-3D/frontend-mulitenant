@@ -131,7 +131,7 @@ export default function PartenairesPage() {
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
         entityName="PARTENAIRES"
-        itemLabel={rowToDelete?.description}
+        itemLabel={'Partenaire'}
         entityId={rowToDelete?.id}
         data={partenaires}
         onDeleted={() => fetchPartenaires(filterParams)} // <- ici
