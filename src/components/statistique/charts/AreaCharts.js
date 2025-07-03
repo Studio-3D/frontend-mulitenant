@@ -8,88 +8,118 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import {
-  format,
+import { 
+  format, 
+  isSameDay, 
+  startOfYear, 
+  endOfYear, 
+  eachMonthOfInterval,
   eachDayOfInterval,
   eachWeekOfInterval,
-  isSameDay,
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+  subMonths,
+  isSameWeek,
+  isSameMonth
 } from 'date-fns';
 
-export const AreaChart = ({ startDate, endDate }) => {
-  const [data, setData] = useState([]);
+export const AreaChart = ({ data = [], startDate, endDate }) => {
   const [isLoading, setIsLoading] = useState(true);
+  const [timePeriod, setTimePeriod] = useState('default');
 
   useEffect(() => {
-    setIsLoading(true);
-    // Generate data based on selected date range
-    const generateData = () => {
-      const interval = {
-        start: startDate,
-        end: endDate,
-      };
-      let dates = [];
-      // If range is more than 30 days, use weekly data points
-      if (eachDayOfInterval(interval).length > 30) {
-        dates = eachWeekOfInterval(interval);
-      } else {
-        dates = eachDayOfInterval(interval);
+    // Determine the time period type
+    const determineTimePeriod = () => {
+      const daysDifference = (endDate - startDate) / (1000 * 60 * 60 * 24);
+      
+      // Check for "Cette semaine" (this week)
+      const weekStart = startOfWeek(new Date());
+      const weekEnd = endOfWeek(new Date());
+      if (isSameDay(startDate, weekStart) && isSameDay(endDate, weekEnd)) {
+        return 'week';
       }
-      return dates.map((date) => {
-        // Generate realistic looking data
-        const dayOfMonth = date.getDate();
-        const baseValue = 1000 + Math.sin(dayOfMonth / 5) * 400;
-        const random = Math.random() * 200 - 100;
-        return {
-          date,
-          Ventes: Math.round(baseValue + random),
-          Prévisions: Math.round(baseValue * 1.1 + Math.random() * 100),
-        };
-      });
+      
+      // Check for "Ce mois" (this month)
+      const monthStart = startOfMonth(new Date());
+      const monthEnd = endOfMonth(new Date());
+      if (isSameDay(startDate, monthStart) && isSameDay(endDate, monthEnd)) {
+        return 'month';
+      }
+      
+      // Check for "Ce dernier mois" (last month)
+      const lastMonthStart = startOfMonth(subMonths(new Date(), 1));
+      const lastMonthEnd = endOfMonth(subMonths(new Date(), 1));
+      if (isSameDay(startDate, lastMonthStart) && isSameDay(endDate, lastMonthEnd)) {
+        return 'last-month';
+      }
+      
+      // Check for full year view
+      if (
+        startDate.getFullYear() === endDate.getFullYear() &&
+        startDate.getMonth() === 0 && 
+        startDate.getDate() === 1 &&
+        endDate.getMonth() === 11 &&
+        endDate.getDate() === 31
+      ) {
+        return 'year';
+      }
+      
+      return 'default';
     };
-    // Simulate API call
+    
+    setTimePeriod(determineTimePeriod());
     const timer = setTimeout(() => {
-      setData(generateData());
       setIsLoading(false);
-    }, 800);
+    }, 300);
     return () => clearTimeout(timer);
-  }, [startDate, endDate]);
+  }, [data, startDate, endDate]);
 
   const formatXAxis = (date) => {
-    // If today, show "Aujourd'hui"
     if (isSameDay(new Date(date), new Date())) {
       return "Aujourd'hui";
     }
-    // Format based on range length
-    const days = eachDayOfInterval({
-      start: startDate,
-      end: endDate,
-    }).length;
-    if (days > 30) {
-      return format(new Date(date), 'MMM yyyy');
-    } else if (days > 7) {
-      return format(new Date(date), 'd MMM');
-    } else {
-      return format(new Date(date), 'EEEE').substring(0, 3);
+    
+    switch (timePeriod) {
+      case 'week':
+        return format(new Date(date), 'EEEE').substring(0, 3); // Short day name (e.g., "Lun")
+      case 'month':
+      case 'last-month':
+        return format(new Date(date), 'd'); // Just day number (e.g., "15")
+      case 'year':
+        return format(new Date(date), 'MMM').toLowerCase(); // Short month name (e.g., "JAN")
+      default:
+        const days = (endDate - startDate) / (1000 * 60 * 60 * 24);
+        if (days > 30) {
+          return format(new Date(date), 'MMM yyyy');
+        } else if (days > 7) {
+          return format(new Date(date), 'd MMM');
+        } else {
+          return format(new Date(date), 'EEEE').substring(0, 3);
+        }
     }
   };
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white p-3 shadow-md rounded-md border border-gray-100">
+        <div className="bg-white p-3  shadow-md rounded-md border border-gray-100">
           <p className="text-xs text-gray-600 mb-1">
-            {format(new Date(label), 'PPP')}
+            {timePeriod === 'week' && format(new Date(label), 'EEEE d MMMM yyyy')}
+            {timePeriod === 'month' && format(new Date(label), 'd MMMM yyyy')}
+            {timePeriod === 'last-month' && format(new Date(label), 'd MMMM yyyy')}
+            {timePeriod === 'year' && format(new Date(label), 'MMMM yyyy')}
+            {timePeriod === 'default' && format(new Date(label), 'PPP')}
           </p>
           {payload.map((entry, index) => (
             <p
               key={index}
-              className="text-sm"
-              style={{
-                color: entry.color,
-              }}
+              className="text-sm "
+              style={{ color: entry.color }}
             >
               <span className="font-medium">{entry.name}: </span>
-              {entry.value.toLocaleString('fr-FR')} €
+              {entry.value.toLocaleString('fr-FR')} DH
             </p>
           ))}
         </div>
@@ -97,6 +127,69 @@ export const AreaChart = ({ startDate, endDate }) => {
     }
     return null;
   };
+
+  // Generate appropriate data points based on time period
+  const getPeriodData = () => {
+    switch (timePeriod) {
+      case 'week':
+        // Group by day for week view
+        const days = eachDayOfInterval({ start: startDate, end: endDate });
+        return days.map(day => {
+          const dayData = data.find(d => isSameDay(new Date(d.date), day));
+          return dayData || {
+            date: day,
+            Encaissements: 0,
+            Remboursements: 0
+          };
+        });
+        
+      case 'month':
+      case 'last-month':
+        // Group by day for month view
+        const monthDays = eachDayOfInterval({ start: startDate, end: endDate });
+        return monthDays.map(day => {
+          const dayData = data.find(d => isSameDay(new Date(d.date), day));
+          return dayData || {
+            date: day,
+            Encaissements: 0,
+            Remboursements: 0
+          };
+        });
+        
+      case 'year':
+        // Group by month for year view
+        const months = eachMonthOfInterval({ start: startDate, end: endDate });
+        return months.map(month => {
+          const monthData = data.find(d => 
+            isSameMonth(new Date(d.date), month) && 
+            new Date(d.date).getFullYear() === month.getFullYear()
+          );
+          return monthData || {
+            date: month,
+            Encaissements: 0,
+            Remboursements: 0
+          };
+        });
+        
+      default:
+        // Default behavior - use data as is
+        return data;
+    }
+  };
+
+  const chartData = getPeriodData();
+
+  if (!chartData || chartData.length === 0) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-center">
+          <p className="text-sm text-gray-500">
+            Aucune donnée disponible
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -112,73 +205,53 @@ export const AreaChart = ({ startDate, endDate }) => {
   }
 
   return (
-    <div className="h-64">
+    <div className="h-[300px]">
       <ResponsiveContainer width="100%" height="100%">
         <RechartsAreaChart
-          data={data}
-          margin={{
-            top: 10,
-            right: 10,
-            left: 0,
-            bottom: 0,
-          }}
+          data={chartData}
+          margin={{ top: 13, right: 10, left: 0, bottom: 0 }}
         >
           <defs>
-            <linearGradient id="colorVentes" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8} />
-              <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
-            </linearGradient>
-            <linearGradient id="colorPrevisions" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id="colorEncaissements" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#10B981" stopOpacity={0.8} />
               <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
             </linearGradient>
+            <linearGradient id="colorRemboursements" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#EF4444" stopOpacity={0.8} />
+              <stop offset="95%" stopColor="#EF4444" stopOpacity={0} />
+            </linearGradient>
           </defs>
-          <CartesianGrid
-            strokeDasharray="3 3"
-            vertical={false}
-            stroke="#f0f0f0"
-          />
+          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
           <XAxis
             dataKey="date"
             tickFormatter={formatXAxis}
-            tick={{
-              fontSize: 12,
-              fill: '#6B7280',
-            }}
-            axisLine={{
-              stroke: '#E5E7EB',
-            }}
+            tick={{ fontSize: 12, fill: '#6B7280' }}
+            axisLine={{ stroke: '#E5E7EB' }}
             tickLine={false}
+            interval={timePeriod === 'year' ? 0 : 'preserveStartEnd'}
           />
           <YAxis
-            tickFormatter={(value) => `${value}€`}
-            tick={{
-              fontSize: 12,
-              fill: '#6B7280',
-            }}
+            tickFormatter={(value) => `${value.toLocaleString('fr-FR')} DH`}
+            tick={{ fontSize: 12, fill: '#6B7280' }}
             axisLine={false}
             tickLine={false}
           />
           <Tooltip content={<CustomTooltip />} />
           <Area
             type="monotone"
-            dataKey="Ventes"
-            stroke="#3B82F6"
+            dataKey="Encaissements"
+            stroke="#10B981"
             fillOpacity={1}
-            fill="url(#colorVentes)"
+            fill="url(#colorEncaissements)"
             strokeWidth={2}
-            animationDuration={1000}
           />
           <Area
             type="monotone"
-            dataKey="Prévisions"
-            stroke="#10B981"
+            dataKey="Remboursements"
+            stroke="#EF4444"
             fillOpacity={1}
-            fill="url(#colorPrevisions)"
+            fill="url(#colorRemboursements)"
             strokeWidth={2}
-            strokeDasharray="5 5"
-            animationDuration={1000}
-            animationBegin={300}
           />
         </RechartsAreaChart>
       </ResponsiveContainer>

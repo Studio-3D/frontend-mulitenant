@@ -4,8 +4,34 @@ import { DateFilter } from './DateFilter';
 import { AreaChart } from './charts/AreaCharts';
 import { BarChart } from './charts/BarChart';
 import { PieChart } from './charts/PieChart';
-import { startOfMonth, endOfMonth, format, subDays } from 'date-fns';
-import { AlertCircleIcon, ThumbsUpIcon, BanknoteIcon, UsersIcon, UserPlusIcon, PhoneCallIcon, ArrowDownIcon } from 'lucide-react';
+import { MulBar } from './charts/MulBar';
+import { 
+  startOfMonth, 
+  endOfMonth, 
+  format, 
+  subDays, 
+  eachDayOfInterval, 
+  eachWeekOfInterval,
+  isSameDay,
+  startOfWeek,
+  endOfWeek,
+  subMonths,
+  isSameWeek,
+  isSameMonth,
+  startOfYear,
+  endOfYear,
+  eachMonthOfInterval,
+  isSameYear
+} from 'date-fns';
+import { 
+  AlertCircleIcon, 
+  ThumbsUpIcon, 
+  BanknoteIcon, 
+  UsersIcon, 
+  UserPlusIcon, 
+  PhoneCallIcon, 
+  ArrowDownIcon 
+} from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from "../../context/AuthContext";
 import { useProjet } from '@/context/ProjetContext';
@@ -18,10 +44,12 @@ export const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [timePeriod, setTimePeriod] = useState('month');
   
-  const handleDateChange = (start, end) => {
+  const handleDateChange = (start, end, period) => {
     setStartDate(start);
     setEndDate(end);
+    setTimePeriod(period || 'custom');
   };
   
   const { token } = useAuth();
@@ -34,17 +62,14 @@ export const Dashboard = () => {
         setLoading(true);
         setError(null);
         
-        // Validate dates
         const isValidDate = (d) => d instanceof Date && !isNaN(d);
         if (!isValidDate(startDate) || !isValidDate(endDate)) {
           throw new Error('Invalid date range');
         }
 
-        // Format dates
         const formattedStart = format(startDate, 'yyyy-MM-dd');
         const formattedEnd = format(endDate, 'yyyy-MM-dd');
 
-        // Check if project is selected
         if (!selectedProjet?.id) {
           throw new Error('No project selected');
         }
@@ -59,11 +84,10 @@ export const Dashboard = () => {
               start_date: formattedStart,
               end_date: formattedEnd,
               projet_id: selectedProjet.id,
-              with_details: true // Ensure the API returns detailed cancellation data
+              with_details: true
             }
           }
         );
-        console.log('API Response:', response.data);
         setDashboardData(response.data);
       } catch (err) {
         setError(err.message || 'Failed to fetch dashboard data');
@@ -76,96 +100,191 @@ export const Dashboard = () => {
     fetchDashboardData();
   }, [startDate, endDate, selectedProjet, accesstoken]);
 
-  // Default values if data is not loaded yet
+  // Extract data with defaults
   const {
     sum_penalites: penalties = 0,
     nb_biens_vendu: Bien_vendu = 0,
-    sum_encaissements: encaissement = 0,
+    sum_encaissements: encaissementTotal = 0,
+    sum_remb: remboursementTotal = 0,
     nb_visites: visits = 0,
     nb_prospects: prospects = 0,
     nb_appels: Appels = 0,
     encaissements = [],
+    remboursements = [],
     visites = {},
     array_type_date_desistement: cancellationsRaw = [],
     chartData_sources = [],
   } = dashboardData || {};
 
-  // Visit categories data
-  const visitCategories = [
-    { id: 0, name: 'Réceptif', color: '#3B82F6' },
-    { id: 1, name: 'Pré Réservation', color: '#8B5CF6' },
-    { id: 2, name: 'Pré Réservation Perdu', color: '#EF4444' },
-    { id: 3, name: 'Pré Réservation Vendu', color: '#10B981' },
-    { id: 4, name: 'Vente 1er visite', color: '#F59E0B' },
-    { id: 5, name: 'Vente En n visite', color: '#06B6D4' },
-    { id: 6, name: 'Vente Perdu', color: '#F43F5E' },
-    { id: 7, name: 'Perdu', color: '#6B7280' }
-  ];
+  // Prepare financial chart data based on time period
+  const prepareFinancialChartData = () => {
+    const processData = (items) => {
+      return (items || []).map(item => {
+        const date = Array.isArray(item) ? item[0] : item.date;
+        const amount = Array.isArray(item) ? item[1] : item.montant;
+        return {
+          date: new Date(date),
+          amount: parseFloat(amount) || 0
+        };
+      });
+    };
 
-  // Process visit data
-  const visitData = visitCategories.map(category => ({
-    name: category.name,
-    value: visites[category.id] || 0,
-    color: category.color
-  })).filter(item => item.value > 0);
+    const encaissementsData = processData(encaissements);
+    const remboursementsData = processData(remboursements);
 
-  // User sources data
-  const userSourcesData = [
-  { id: '0', name: 'Avito', color: '#3B82F6' },
-  { id: '1', name: 'Kekemonos', color: '#8B5CF6' },
-  { id: '2', name: 'Palissade', color: '#EC4899' },
-  { id: '3', name: 'Panneaux 4*3', color: '#10B981' },
-  { id: '4', name: 'Flyer', color: '#F59E0B' },
-  { id: '5', name: 'Caravane', color: '#10B981' },
-  { id: '6', name: 'Bouche à Oreille', color: '#06B6D4' }, // Note the accent
-  { id: '7', name: 'Site Web', color: '#FCD34D' },
-  { id: '8', name: 'Facebook', color: '#EF4444' },
-  { id: '9', name: 'Smsing', color: '#FBBF24' },
-  { id: '10', name: 'Phoning BDD', color: '#A78BFA' },
-  { id: '11', name: 'Youtube', color: '#F472B6' },
-  { id: '12', name: 'Partenaire', color: '#34D399' },
-  { id: '13', name: 'Sarouty', color: '#F59E0B' }
-];
+    switch (timePeriod) {
+      case 'week': {
+        const days = eachDayOfInterval({ start: startDate, end: endDate });
+        return days.map(day => {
+          const enc = encaissementsData
+            .filter(e => isSameDay(e.date, day))
+            .reduce((sum, e) => sum + e.amount, 0);
+          const rem = remboursementsData
+            .filter(r => isSameDay(r.date, day))
+            .reduce((sum, r) => sum + r.amount, 0);
+          return {
+            date: day,
+            Encaissements: enc,
+            Remboursements: rem
+          };
+        });
+      }
+      
+      case 'month':
+      case 'last-month': {
+        const days = eachDayOfInterval({ start: startDate, end: endDate });
+        return days.map(day => {
+          const enc = encaissementsData
+            .filter(e => isSameDay(e.date, day))
+            .reduce((sum, e) => sum + e.amount, 0);
+          const rem = remboursementsData
+            .filter(r => isSameDay(r.date, day))
+            .reduce((sum, r) => sum + r.amount, 0);
+          return {
+            date: day,
+            Encaissements: enc,
+            Remboursements: rem
+          };
+        });
+      }
+      
+      case 'year': {
+        const months = eachMonthOfInterval({ start: startDate, end: endDate });
+        return months.map(month => {
+          const enc = encaissementsData
+            .filter(e => isSameMonth(e.date, month))
+            .reduce((sum, e) => sum + e.amount, 0);
+          const rem = remboursementsData
+            .filter(r => isSameMonth(r.date, month))
+            .reduce((sum, r) => sum + r.amount, 0);
+          return {
+            date: month,
+            Encaissements: enc,
+            Remboursements: rem
+          };
+        });
+      }
+      
+      default: {
+        const allDates = [
+          ...new Set([
+            ...encaissementsData.map(e => e.date.getTime()),
+            ...remboursementsData.map(r => r.date.getTime())
+          ])
+        ].map(time => new Date(time));
 
-const sourceData = chartData_sources
-  .map(([name, value]) => {
-    // Find matching source definition
-    const source = userSourcesData.find(s => 
-      s.name.toLowerCase() === name.toLowerCase().replace(' a ', ' à ')
-    );
-    
-    return source ? {
-      name: source.name,
-      value,
-      color: source.color
-    } : null;
-  })
-  .filter(Boolean) // Remove null entries
-  .filter(item => item.value > 0); // Only show sources with data
+        return allDates.map(date => {
+          const enc = encaissementsData.find(e => isSameDay(e.date, date));
+          const rem = remboursementsData.find(r => isSameDay(r.date, date));
 
-  // Cancellation categories
-  const cancellationCategories = [
-    { id: '1', name: 'Désistement Définitif', color: '#EF4444' },
-    { id: '2', name: 'Désistements Au Profit', color: '#F59E0B' },
-    { id: '3', name: 'Changement de Bien', color: '#3B82F6' },
-    { id: '4', name: 'Autre motif', color: '#6B7280' }
-  ];
-
-// Process cancellation data to include dates and proper formatting
-const cancellations = (cancellationsRaw || []).map(item => {
-  const category = cancellationCategories.find(cat => cat.id === item[2]);
-  return {
-    date: new Date(item[0]), // Assuming item[0] is the date string
-    reason: category ? category.name : 'Unknown',
-    count: 1,
-    color: category ? category.color : '#6B7280',
-    // Include any other relevant data from the item array
+          return {
+            date,
+            Encaissements: enc ? enc.amount : 0,
+            Remboursements: rem ? rem.amount : 0
+          };
+        }).sort((a, b) => a.date - b.date);
+      }
+    }
   };
-}).filter(item => !isNaN(item.date.getTime())); // Filter out invalid dates
 
-const filteredCancellations = cancellations.filter(item => {
-  return item.date >= startDate && item.date <= endDate;
-});
+  // Prepare visit data
+  const prepareVisitData = () => {
+    const visitCategories = [
+      { id: 0, name: 'Réceptif', color: '#3B82F6' },
+      { id: 1, name: 'Pré Réservation', color: '#8B5CF6' },
+      { id: 2, name: 'Vente', color: '#EF4444' },
+      { id: 3, name: 'Perdu', color: '#6B7280' }
+    ];
+
+    return visitCategories.map(category => ({
+      name: category.name,
+      value: visites[category.id] || 0,
+      color: category.color
+    })).filter(item => item.value > 0);
+  };
+
+  // Prepare source data
+  const prepareSourceData = () => {
+    const userSourcesData = [
+      { id: '0', name: 'Avito', color: '#3B82F6' },
+      { id: '1', name: 'Kekemonos', color: '#8B5CF6' },
+      { id: '2', name: 'Palissade', color: '#EC4899' },
+      { id: '3', name: 'Panneaux 4*3', color: '#10B981' },
+      { id: '4', name: 'Flyer', color: '#F59E0B' },
+      { id: '5', name: 'Caravane', color: '#10B981' },
+      { id: '6', name: 'Bouche à Oreille', color: '#06B6D4' },
+      { id: '7', name: 'Site Web', color: '#FCD34D' },
+      { id: '8', name: 'Facebook', color: '#EF4444' },
+      { id: '9', name: 'Smsing', color: '#FBBF24' },
+      { id: '10', name: 'Phoning BDD', color: '#A78BFA' },
+      { id: '11', name: 'Youtube', color: '#F472B6' },
+      { id: '12', name: 'Partenaire', color: '#34D399' },
+      { id: '13', name: 'Sarouty', color: '#F59E0B' }
+    ];
+
+    return chartData_sources
+      .map(([name, value]) => {
+        const source = userSourcesData.find(s => 
+          s.name.toLowerCase() === name.toLowerCase().replace(' a ', ' à ')
+        );
+        return source ? {
+          name: source.name,
+          value,
+          color: source.color
+        } : null;
+      })
+      .filter(Boolean)
+      .filter(item => item.value > 0);
+  };
+
+  // Prepare cancellation data
+  const prepareCancellationData = () => {
+    const cancellationCategories = [
+      { id: '1', name: 'Désistement Définitif', color: '#EF4444' },
+      { id: '2', name: 'Désistements Au Profit', color: '#F59E0B' },
+      { id: '3', name: 'Changement de Bien', color: '#3B82F6' },
+      { id: '4', name: 'Autre motif', color: '#6B7280' }
+    ];
+
+    return (cancellationsRaw || []).map(item => {
+      const category = cancellationCategories.find(cat => cat.id === item[2]);
+      return {
+        date: new Date(item[0]),
+        reason: category ? category.name : 'Unknown',
+        count: 1,
+        color: category ? category.color : '#6B7280',
+      };
+    }).filter(item => !isNaN(item.date.getTime()));
+  };
+
+  const financialChartData = prepareFinancialChartData();
+  const visitData = prepareVisitData();
+  const sourceData = prepareSourceData();
+  const cancellations = prepareCancellationData();
+
+  const filteredCancellations = cancellations.filter(item => {
+    return item.date >= startDate && item.date <= endDate;
+  });
 
   if (loading) {
     return (
@@ -200,6 +319,7 @@ const filteredCancellations = cancellations.filter(item => {
           startDate={startDate}
           endDate={endDate}
           onChange={handleDateChange}
+          timePeriod={timePeriod}
         />
       </div>
       
@@ -209,7 +329,7 @@ const filteredCancellations = cancellations.filter(item => {
             <div className="xl:w-[255px] sm:w-auto snap-start">
               <StatCard
                 title="Pénalité"
-                value={penalties.toLocaleString()}
+                value={penalties.toLocaleString('fr-FR')}
                 change="+12.5%"
                 isPositive={false}
                 icon={<AlertCircleIcon className="w-5 h-5" />}
@@ -219,7 +339,7 @@ const filteredCancellations = cancellations.filter(item => {
             <div className="xl:w-[255px] sm:w-auto snap-start">
               <StatCard
                 title="Bien Vendu"
-                value={Bien_vendu.toLocaleString()}
+                value={Bien_vendu.toLocaleString('fr-FR')}
                 change="+8.2%"
                 isPositive={true}
                 icon={<ThumbsUpIcon className="w-5 h-5" />}
@@ -229,7 +349,7 @@ const filteredCancellations = cancellations.filter(item => {
             <div className="xl:w-[255px] sm:w-auto snap-start">
               <StatCard
                 title="Encaissement"
-                value={`${encaissement.toLocaleString()} dh`}
+                value={`${encaissementTotal.toLocaleString('fr-FR')} dh`}
                 change="+4.4%"
                 isPositive={true}
                 icon={<BanknoteIcon className="w-5 h-5" />}
@@ -239,7 +359,7 @@ const filteredCancellations = cancellations.filter(item => {
             <div className="xl:w-[255px] sm:w-auto snap-start">
               <StatCard
                 title="Visites"
-                value={visits.toLocaleString()}
+                value={visits.toLocaleString('fr-FR')}
                 change="+1.1%"
                 isPositive={true}
                 icon={<UsersIcon className="w-5 h-5" />}
@@ -249,7 +369,7 @@ const filteredCancellations = cancellations.filter(item => {
             <div className="xl:w-[255px] sm:w-auto snap-start">
               <StatCard
                 title="Prospects"
-                value={prospects.toLocaleString()}
+                value={prospects.toLocaleString('fr-FR')}
                 change="+2.3%"
                 isPositive={true}
                 icon={<UserPlusIcon className="w-5 h-5" />}
@@ -259,7 +379,7 @@ const filteredCancellations = cancellations.filter(item => {
             <div className="xl:w-[255px] sm:w-auto snap-start">
               <StatCard
                 title="Appels"
-                value={Appels.toLocaleString()}
+                value={Appels.toLocaleString('fr-FR')}
                 change="+5.7%"
                 isPositive={true}
                 icon={<PhoneCallIcon className="w-5 h-5" />}
@@ -276,10 +396,10 @@ const filteredCancellations = cancellations.filter(item => {
           <h3 className="text-lg font-medium text-gray-800 mb-4">
             Nombre de Biens Vendus
           </h3>
-          <AreaChart 
-            data={encaissements} 
+          <MulBar 
             startDate={startDate} 
-            endDate={endDate} 
+            endDate={endDate}
+            timePeriod={timePeriod}
           />
         </div>
         <div className="bg-white rounded-lg shadow p-4 md:p-6">
@@ -289,7 +409,8 @@ const filteredCancellations = cancellations.filter(item => {
           <BarChart 
             data={sourceData} 
             startDate={startDate} 
-            endDate={endDate} 
+            endDate={endDate}
+            timePeriod={timePeriod}
           />
         </div>
       </div>
@@ -301,7 +422,8 @@ const filteredCancellations = cancellations.filter(item => {
             <PieChart 
               data={visitData} 
               startDate={startDate} 
-              endDate={endDate} 
+              endDate={endDate}
+              timePeriod={timePeriod}
             />
           </div>
         </div>
@@ -309,70 +431,82 @@ const filteredCancellations = cancellations.filter(item => {
           <h3 className="text-lg font-medium text-gray-800 mb-4">
             Encaissements - Remboursement
           </h3>
+          {/* Legend Section */}
+          <div className="flex justify-end items-center mb-4 space-x-4">
+            <div className="flex items-center">
+              <div className="w-3 h-3 rounded-full bg-[#10B981] mr-2"></div>
+              <span className="text-sm text-gray-600">Encaissements</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-3 h-3 rounded-full bg-[#EF4444] mr-2"></div>
+              <span className="text-sm text-gray-600">Remboursements</span>
+            </div>
+          </div>
           <AreaChart 
-            data={encaissements} 
+            data={financialChartData}
             startDate={startDate} 
-            endDate={endDate} 
+            endDate={endDate}
+            timePeriod={timePeriod}
           />
         </div>
       </div>
       
- <div className="bg-white rounded-lg shadow p-4 md:p-6">
-  <div className="flex items-center justify-between mb-4">
-    <h3 className="text-lg font-medium text-gray-800">Désistement</h3>
-    <div className="flex items-center">
-      <span className="text-sm text-gray-500 mr-2">
-        Période: {format(startDate, 'dd/MM/yyyy')} - {format(endDate, 'dd/MM/yyyy')}
-      </span>
-      <span className="text-sm font-medium text-gray-800">
-        {filteredCancellations.length} cas
-      </span>
-    </div>
-  </div>
-  
-  {filteredCancellations.length > 0 ? (
-    <div className="space-y-3">
-      {filteredCancellations
-        .sort((a, b) => b.date - a.date) // Newest first
-        .map((item, index) => (
-          <div
-            key={index}
-            className="flex items-center justify-between p-3 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <div className="flex items-center flex-1 min-w-0">
-              <div
-                className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center"
-                style={{ backgroundColor: `${item.color}20` }}
-              >
-                <ArrowDownIcon
-                  className="w-5 h-5"
-                  style={{ color: item.color }}
-                />
-              </div>
-              <div className="ml-4 min-w-0">
-                <p className="text-sm font-medium text-gray-800 truncate">
-                  {item.reason}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {format(item.date, 'dd/MM/yyyy')}
-                </p>
-              </div>
-            </div>
-            <div className="ml-4 text-right flex-shrink-0">
-              <p className="text-sm font-medium text-gray-800">
-                {item.count} cas
-              </p>
-            </div>
+      <div className="bg-white rounded-lg shadow p-4 md:p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-medium text-gray-800">Désistement</h3>
+          <div className="flex items-center">
+            <span className="text-sm text-gray-500 mr-2">
+              Période: {format(startDate, 'dd/MM/yyyy')} - {format(endDate, 'dd/MM/yyyy')}
+            </span>
+            <span className="text-sm font-medium text-gray-800">
+              {filteredCancellations.length} cas
+            </span>
           </div>
-        ))}
-    </div>
-  ) : (
-    <div className="text-center py-6 text-gray-500">
-      <AlertCircleIcon className="w-8 h-8 mx-auto mb-2" />
-      <p>Aucun désistement enregistré pour cette période</p>
-    </div>
-  )}
-</div>
+        </div>
+        
+        {filteredCancellations.length > 0 ? (
+          <div className="space-y-3 overflow-auto max-h-96">
+            {filteredCancellations
+              .sort((a, b) => b.date - a.date)
+              .map((item, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-3 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-center flex-1 min-w-0">
+                    <div
+                      className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center"
+                      style={{ backgroundColor: `${item.color}20` }}
+                    >
+                      <ArrowDownIcon
+                        className="w-5 h-5"
+                        style={{ color: item.color }}
+                      />
+                    </div>
+                    <div className="ml-4 min-w-0">
+                      <p className="text-sm font-medium text-gray-800 truncate">
+                        {item.reason}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {format(item.date, 'dd/MM/yyyy')}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="ml-4 text-right flex-shrink-0">
+                    <p className="text-sm font-medium text-gray-800">
+                      {item.count} cas
+                    </p>
+                  </div>
+                </div>
+              ))}
+          </div>
+        ) : (
+          <div className="text-center py-6 text-gray-500">
+            <AlertCircleIcon className="w-8 h-8 mx-auto mb-2" />
+            <p>Aucun désistement enregistré pour cette période</p>
+          </div>
+        )}
       </div>
+    </div>
   );
 };
