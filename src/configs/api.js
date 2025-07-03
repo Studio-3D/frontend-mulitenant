@@ -173,4 +173,3 @@ export const checkSocialMediaConfigurations = async (projectId) => {
 
   return configurations;
 };
-
