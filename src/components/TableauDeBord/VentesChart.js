@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
-
 import {
   Card,
   CardContent,
@@ -19,15 +18,14 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 
-
-
 const chartConfig = {
-    ventes: {
-      label: "Ventes",
-      color: "#22c55e",
-    },
-  }  
-  const rangeDescriptions = {
+  ventes: {
+    label: "Ventes",
+    color: "#22c55e",
+  },
+}
+
+const rangeDescriptions = {
   "aujourd'hui": "Ventes aujourd'hui",
   "cette semaine": "Ventes cette semaine",
   "ce mois": "Ventes ce mois",
@@ -35,298 +33,101 @@ const chartConfig = {
   "dernière année": "Ventes l'année dernière",
 }
 
-  export function VentesChart({ dateRange }) {
-    const dataSets = {
-    "aujourd'hui": [
-      {
-        name: '8h',
-        ventes: 3,
-        objectif: 2,
-      },
-      {
-        name: '10h',
-        ventes: 4,
-        objectif: 4,
-      },
-      {
-        name: '12h',
-        ventes: 7,
-        objectif: 6,
-      },
-      {
-        name: '14h',
-        ventes: 5,
-        objectif: 8,
-      },
-      {
-        name: '16h',
-        ventes: 10,
-        objectif: 10,
-      },
-      {
-        name: '18h',
-        ventes: 12,
-        objectif: 12,
-      },
-    ],
-    'cette semaine': [
-      {
-        name: 'Lun',
-        ventes: 12,
-        objectif: 10,
-      },
-      {
-        name: 'Mar',
-        ventes: 19,
-        objectif: 15,
-      },
-      {
-        name: 'Mer',
-        ventes: 15,
-        objectif: 20,
-      },
-      {
-        name: 'Jeu',
-        ventes: 25,
-        objectif: 25,
-      },
-      {
-        name: 'Ven',
-        ventes: 32,
-        objectif: 30,
-      },
-      {
-        name: 'Sam',
-        ventes: 18,
-        objectif: 15,
-      },
-      {
-        name: 'Dim',
-        ventes: 8,
-        objectif: 5,
-      },
-    ],
-    'ce mois': [
-      {
-        name: 'Sem 1',
-        ventes: 45,
-        objectif: 40,
-      },
-      {
-        name: 'Sem 2',
-        ventes: 58,
-        objectif: 55,
-      },
-      {
-        name: 'Sem 3',
-        ventes: 52,
-        objectif: 60,
-      },
-      {
-        name: 'Sem 4',
-        ventes: 67,
-        objectif: 65,
-      },
-    ],
-    'cette année': [
-      {
-        name: 'Jan',
-        ventes: 120,
-        objectif: 100,
-      },
-      {
-        name: 'Fév',
-        ventes: 135,
-        objectif: 120,
-      },
-      {
-        name: 'Mar',
-        ventes: 145,
-        objectif: 140,
-      },
-      {
-        name: 'Avr',
-        ventes: 162,
-        objectif: 160,
-      },
-      {
-        name: 'Mai',
-        ventes: 158,
-        objectif: 180,
-      },
-      {
-        name: 'Juin',
-        ventes: 195,
-        objectif: 200,
-      },
-      {
-        name: 'Juil',
-        ventes: 210,
-        objectif: 220,
-      },
-      {
-        name: 'Août',
-        ventes: 185,
-        objectif: 190,
-      },
-      {
-        name: 'Sep',
-        ventes: 224,
-        objectif: 210,
-      },
-      {
-        name: 'Oct',
-        ventes: 245,
-        objectif: 230,
-      },
-      {
-        name: 'Nov',
-        ventes: 258,
-        objectif: 250,
-      },
-      {
-        name: 'Déc',
-        ventes: 278,
-        objectif: 270,
-      },
-    ],
-    'dernière année': [
-      {
-        name: 'Jan',
-        ventes: 110,
-        objectif: 90,
-      },
-      {
-        name: 'Fév',
-        ventes: 125,
-        objectif: 110,
-      },
-      {
-        name: 'Mar',
-        ventes: 135,
-        objectif: 130,
-      },
-      {
-        name: 'Avr',
-        ventes: 152,
-        objectif: 150,
-      },
-      {
-        name: 'Mai',
-        ventes: 148,
-        objectif: 170,
-      },
-      {
-        name: 'Juin',
-        ventes: 185,
-        objectif: 190,
-      },
-      {
-        name: 'Juil',
-        ventes: 200,
-        objectif: 210,
-      },
-      {
-        name: 'Août',
-        ventes: 175,
-        objectif: 180,
-      },
-      {
-        name: 'Sep',
-        ventes: 214,
-        objectif: 200,
-      },
-      {
-        name: 'Oct',
-        ventes: 235,
-        objectif: 220,
-      },
-      {
-        name: 'Nov',
-        ventes: 248,
-        objectif: 240,
-      },
-      {
-        name: 'Déc',
-        ventes: 265,
-        objectif: 260,
-      },
-    ],
-  };
-  const data = dataSets[dateRange];
-  const description = rangeDescriptions[dateRange] || "Ventes";
-
-    return (
-      <Card className='border-none shadow-none'>
-        <CardHeader className="flex items-center gap-2 py-5 sm:flex-row">
-          <div className="grid flex-1 gap-1 text-center sm:text-left">
-            <CardTitle>
-              <h2 className=" font-semibold mb-4 text-gray-700 flex items-center">
-                <span className="w-2 h-8 bg-green-500 rounded-md mr-3"></span>
-                  Ventes
-              </h2>
-            </CardTitle>
-            <CardDescription>
-              {`${description} : ${data.reduce((sum, d) => sum + d.ventes, 0).toLocaleString('fr-FR')} dhs`}
-            </CardDescription>
-          </div> 
-        </CardHeader>
-        <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-          <ChartContainer
-            config={chartConfig}
-            className="aspect-auto h-[250px] w-full"
-          >
-            <AreaChart data={data}>
-              <defs>
-                <linearGradient id="fillVentes" x1="0" y1="0" x2="0" y2="1">
-                  <stop
-                    offset="5%"
-                    stopColor="#22c55e"
-                    stopOpacity={0.8}
-                  />
-                  <stop
-                    offset="95%"
-                    stopColor="#22c55e"
-                    stopOpacity={0.1}
-                  />
-                </linearGradient>
-              </defs>
-              <CartesianGrid vertical={false} />
-              <XAxis
-                dataKey="name"
-                tickLine={false}
-                axisLine={false}
-                tickMargin={8}
-                minTickGap={32}
-                tickFormatter={(value) => value}
-              />
-              <ChartTooltip
-                
-                cursor={false}
-                content={
-                  <ChartTooltipContent
-                    labelFormatter={(value) => {
-                      return new Date(value).toLocaleDateString("fr-FR", {
-                          year: "numeric",
-                          month: "short",
-                      })
-                    }}
-                    
-                    indicator="dot"
-                  />
-                }
-              />
-              <Area
-                dataKey="ventes"
-                type="natural"
-                fill="url(#fillVentes)"
-                stroke="#22c55e"
-              />
-              
-              <ChartLegend content={<ChartLegendContent />} />
-            </AreaChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
-    )
+// Helper function to format dates based on range
+const formatDateLabel = (dateStr, range) => {
+  const date = new Date(dateStr);
+  
+  switch (range) {
+    case "aujourd'hui":
+      return date.toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' });
+    case "cette semaine":
+      return date.toLocaleDateString("fr-FR", { weekday: 'short' });
+    case "ce mois":
+      return date.getDate().toString();
+    case "cette année":
+    case "dernière année":
+      return date.toLocaleDateString("fr-FR", { month: 'short' });
+    default:
+      return dateStr;
   }
+}
+
+export function VentesChart({ dateRange, data }) {
+  const description = rangeDescriptions[dateRange] || "Ventes";
+  
+  // Transform the API data into the format expected by Recharts
+  const chartData = React.useMemo(() => {
+    if (!data) return [];
+    
+    return data.map(([date, ventes]) => ({
+      name: date,
+      ventes,
+      formattedName: formatDateLabel(date, dateRange)
+    }));
+  }, [data, dateRange]);
+
+  const totalVentes = chartData.reduce((sum, d) => sum + d.ventes, 0);
+
+  return (
+    <Card className='border-none shadow-none'>
+      <CardHeader className="flex items-center gap-2 py-5 sm:flex-row">
+        <div className="grid flex-1 gap-1 text-center sm:text-left">
+          <CardTitle>
+            <h2 className="font-semibold mb-4 text-gray-700 flex items-center">
+              <span className="w-2 h-8 bg-green-500 rounded-md mr-3"></span>
+              Ventes
+            </h2>
+          </CardTitle>
+          <CardDescription>
+            {`${description} : ${totalVentes.toLocaleString('fr-FR')} dhs`}
+          </CardDescription>
+        </div> 
+      </CardHeader>
+      <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
+        <ChartContainer
+          config={chartConfig}
+          className="aspect-auto h-[250px] w-full"
+        >
+          <AreaChart data={chartData}>
+            <defs>
+              <linearGradient id="fillVentes" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#22c55e" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="#22c55e" stopOpacity={0.1} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid vertical={false} />
+            <XAxis
+              dataKey="formattedName"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              minTickGap={32}
+            />
+            <ChartTooltip
+              cursor={false}
+              content={
+                <ChartTooltipContent
+                  labelFormatter={(value) => {
+                    return new Date(value).toLocaleDateString("fr-FR", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric"
+                    })
+                  }}
+                  indicator="dot"
+                />
+              }
+            />
+            <Area
+              dataKey="ventes"
+              type="natural"
+              fill="url(#fillVentes)"
+              stroke="#22c55e"
+            />
+            <ChartLegend content={<ChartLegendContent />} />
+          </AreaChart>
+        </ChartContainer>
+      </CardContent>
+    </Card>
+  )
+}

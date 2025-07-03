@@ -2,7 +2,6 @@
 
 import React, { useMemo } from "react";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
-
 import {
   Card,
   CardContent,
@@ -18,14 +17,12 @@ import {
 } from "@/components/ui/chart";
 
 const chartConfig = {
-  views: {
-    label: "Encaissement",
-  },
   encaissement: {
     label: "Encaissement",
     color: "#2CAFFE",
   },
 };
+
 const rangeDescriptions = {
   "aujourd'hui": "Affichage des encaissements pour aujourd'hui",
   "cette semaine": "Affichage des encaissements pour cette semaine",
@@ -34,194 +31,129 @@ const rangeDescriptions = {
   "dernière année": "Affichage des encaissements pour l'année dernière",
 };
 
-export function EncaissementChart({ dateRange }) {
-  const dataSets = {
-    "aujourd'hui": [
-      {
-        name: '8h',
-        amount: 1200,
-      },
-      {
-        name: '10h',
-        amount: 1800,
-      },
-      {
-        name: '12h',
-        amount: 2400,
-      },
-      {
-        name: '14h',
-        amount: 1500,
-      },
-      {
-        name: '16h',
-        amount: 2100,
-      },
-      {
-        name: '18h',
-        amount: 1900,
-      },
-    ],
-    'cette semaine': [
-      {
-        name: 'Lun',
-        amount: 4000,
-      },
-      {
-        name: 'Mar',
-        amount: 3500,
-      },
-      {
-        name: 'Mer',
-        amount: 5000,
-      },
-      {
-        name: 'Jeu',
-        amount: 2780,
-      },
-      {
-        name: 'Ven',
-        amount: 3890,
-      },
-      {
-        name: 'Sam',
-        amount: 2390,
-      },
-      {
-        name: 'Dim',
-        amount: 1490,
-      },
-    ],
-    'ce mois': [
-      {
-        name: 'Sem 1',
-        amount: 15000,
-      },
-      {
-        name: 'Sem 2',
-        amount: 18000,
-      },
-      {
-        name: 'Sem 3',
-        amount: 12000,
-      },
-      {
-        name: 'Sem 4',
-        amount: 21000,
-      },
-    ],
-    'cette année': [
-      {
-        name: 'Jan',
-        amount: 45000,
-      },
-      {
-        name: 'Fév',
-        amount: 38000,
-      },
-      {
-        name: 'Mar',
-        amount: 52000,
-      },
-      {
-        name: 'Avr',
-        amount: 37000,
-      },
-      {
-        name: 'Mai',
-        amount: 41000,
-      },
-      {
-        name: 'Juin',
-        amount: 47000,
-      },
-      {
-        name: 'Juil',
-        amount: 36000,
-      },
-      {
-        name: 'Août',
-        amount: 28000,
-      },
-      {
-        name: 'Sep',
-        amount: 49000,
-      },
-      {
-        name: 'Oct',
-        amount: 53000,
-      },
-      {
-        name: 'Nov',
-        amount: 48000,
-      },
-      {
-        name: 'Déc',
-        amount: 61000,
-      },
-    ],
-    'dernière année': [
-      {
-        name: 'Jan',
-        amount: 42000,
-      },
-      {
-        name: 'Fév',
-        amount: 35000,
-      },
-      {
-        name: 'Mar',
-        amount: 48000,
-      },
-      {
-        name: 'Avr',
-        amount: 32000,
-      },
-      {
-        name: 'Mai',
-        amount: 38000,
-      },
-      {
-        name: 'Juin',
-        amount: 44000,
-      },
-      {
-        name: 'Juil',
-        amount: 33000,
-      },
-      {
-        name: 'Août',
-        amount: 25000,
-      },
-      {
-        name: 'Sep',
-        amount: 45000,
-      },
-      {
-        name: 'Oct',
-        amount: 49000,
-      },
-      {
-        name: 'Nov',
-        amount: 43000,
-      },
-      {
-        name: 'Déc',
-        amount: 58000,
-      },
-    ],
-  };
+function parseDateWithoutTimezone(dateString) {
+  const [year, month, day] = dateString.split('-');
+  return new Date(year, month - 1, day);
+}
 
-  const data = dataSets[dateRange];
+export function EncaissementChart({ dateRange, data }) {
+  const { chartData, total } = useMemo(() => {
+    if (!data) return { chartData: [], total: 0 };
+
+    const today = new Date();
+    let startDate = new Date();
+    let endDate = new Date();
+
+    switch (dateRange) {
+      case "aujourd'hui":
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(23, 59, 59, 999);
+        break;
+      case "cette semaine":
+        startDate.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1));
+        endDate.setDate(startDate.getDate() + 6);
+        break;
+      case "ce mois":
+        startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        break;
+      case "cette année":
+        startDate = new Date(today.getFullYear(), 0, 1);
+        endDate = new Date(today.getFullYear(), 11, 31);
+        break;
+      case "dernière année":
+        startDate = new Date(today.getFullYear() - 1, 0, 1);
+        endDate = new Date(today.getFullYear() - 1, 11, 31);
+        break;
+      default:
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(23, 59, 59, 999);
+    }
+
+    // For monthly view
+    if (dateRange === "ce mois") {
+      const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+      const monthlyData = Array.from({ length: daysInMonth }, (_, i) => {
+        const day = i + 1;
+        const dateKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        
+        // Find matching data entry (using timezone-insensitive comparison)
+        const matchingEntry = data.find(([dateStr]) => {
+          const apiDate = parseDateWithoutTimezone(dateStr);
+          return (
+            apiDate.getFullYear() === today.getFullYear() &&
+            apiDate.getMonth() === today.getMonth() &&
+            apiDate.getDate() === day
+          );
+        });
+        
+        return {
+          name: day.toString(),
+          amount: matchingEntry ? matchingEntry[1] : 0,
+          fullDate: new Date(today.getFullYear(), today.getMonth(), day).toLocaleDateString('fr-FR')
+        };
+      });
+
+      return {
+        chartData: monthlyData,
+        total: monthlyData.reduce((sum, item) => sum + item.amount, 0)
+      };
+    }
+
+    // For yearly view
+    if (dateRange === "cette année" || dateRange === "dernière année") {
+      const year = dateRange === "cette année" ? today.getFullYear() : today.getFullYear() - 1;
+      const monthlyData = Array.from({ length: 12 }, (_, month) => {
+        // Filter data for this specific month
+        const monthData = data.filter(([dateStr]) => {
+          const apiDate = parseDateWithoutTimezone(dateStr);
+          return apiDate.getFullYear() === year && apiDate.getMonth() === month;
+        });
+        
+        const monthTotal = monthData.reduce((sum, [, amount]) => sum + amount, 0);
+        
+        return {
+          name: new Date(year, month, 1).toLocaleDateString('fr-FR', { month: 'short' }),
+          amount: monthTotal,
+          fullDate: new Date(year, month, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+        };
+      });
+
+      return {
+        chartData: monthlyData,
+        total: monthlyData.reduce((sum, item) => sum + item.amount, 0)
+      };
+    }
+
+    // For other date ranges (day, week)
+    const formattedData = data.map(([dateStr, amount]) => {
+      const date = parseDateWithoutTimezone(dateStr);
+      return {
+        name: formatDailyDisplay(date, dateRange),
+        amount,
+        fullDate: date.toLocaleDateString('fr-FR')
+      };
+    });
+
+    const totalAmount = formattedData.reduce((sum, item) => sum + item.amount, 0);
+
+    return {
+      chartData: formattedData,
+      total: totalAmount
+    };
+  }, [data, dateRange]);
+
+  function formatDailyDisplay(date, range) {
+    const d = new Date(date);
+    if (range === "cette semaine") return d.toLocaleDateString('fr-FR', { weekday: 'short' });
+    return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+  }
+
   const description = rangeDescriptions[dateRange] || "Affichage des encaissements";
-  const total = useMemo(
-    () => data.reduce((acc, curr) => acc + curr.amount, 0),
-    [data]
-  );
 
   return (
     <Card className="border-none shadow-none">
-      <CardHeader className="flex flex-col items-stretch space-y-0  p-0 sm:flex-row">
+      <CardHeader className="flex flex-col items-stretch space-y-0 p-0 sm:flex-row">
         <div className="flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-6">
           <CardTitle>
             <h2 className="font-semibold mb-4 text-gray-700 flex items-center">
@@ -234,12 +166,12 @@ export function EncaissementChart({ dateRange }) {
           </CardDescription>
         </div>
         <div className="flex">
-          <div className="relative z-30 flex flex-1 flex-col justify-center gap-1  px-6 py-4 text-left sm:px-8 sm:py-6">
-            <span className=" text-muted-foreground">
+          <div className="relative z-30 flex flex-1 flex-col justify-center gap-1 px-6 py-4 text-left sm:px-8 sm:py-6">
+            <span className="text-muted-foreground">
               Encaissement total
             </span>
             <span className="text-lg font-bold leading-none sm:text-3xl">
-              {total.toLocaleString()}
+              {total.toLocaleString('fr-FR')} DH
             </span>
           </div>
         </div>
@@ -251,7 +183,7 @@ export function EncaissementChart({ dateRange }) {
         >
           <BarChart
             accessibilityLayer
-            data={data}
+            data={chartData}
             margin={{
               left: 12,
               right: 12,
@@ -263,14 +195,21 @@ export function EncaissementChart({ dateRange }) {
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              minTickGap={32}
+              minTickGap={8}
             />
             <ChartTooltip
               content={
                 <ChartTooltipContent
                   className="w-[150px]"
-                  nameKey="views"
-                  labelFormatter={(value) => value}
+                  nameKey="name"
+                  valueKey="amount"
+                  valueFormatter={(value) => `${value.toLocaleString('fr-FR')} DH`}
+                  labelFormatter={(value, payload) => {
+                    if (payload && payload[0]?.payload?.fullDate) {
+                      return payload[0].payload.fullDate;
+                    }
+                    return value;
+                  }}
                 />
               }
             />

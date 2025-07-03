@@ -163,13 +163,22 @@ export const Dashboard = () => {
         {/* Left Column - Main Charts */}
         <div className="w-full lg:w-2/3 flex flex-col gap-6">
           <div className="bg-white rounded-xl shadow-sm border border-gray-50">
-            <EncaissementChart dateRange={dateRange} data={data} />
+            <EncaissementChart 
+            dateRange={dateRange}
+             data={data?.array_encaissement} 
+             />
           </div>
           <div className="bg-white rounded-xl shadow-sm border border-gray-50">
-            <VentesChart dateRange={dateRange} data={data} />
+            <VentesChart 
+              dateRange={dateRange} 
+              data={data?.array_ventes} 
+            />
           </div>
           <div className="bg-white rounded-xl shadow-sm border border-gray-50">
-            <VisitesChart dateRange={dateRange} data={data} />
+            <VisitesChart 
+              dateRange={dateRange} 
+              data={data} 
+            />
           </div>
         </div>
 
