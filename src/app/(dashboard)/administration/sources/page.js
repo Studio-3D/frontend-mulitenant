@@ -124,7 +124,7 @@ export default function SourcesPage() {
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
         entityName="SOURCES"
-        itemLabel={rowToDelete?.source}
+        itemLabel={'Source'}
         entityId={rowToDelete?.id}
         data={sources}
         onDeleted={() => fetchSources(filterParams)} // <- ici

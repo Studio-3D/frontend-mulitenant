@@ -12,6 +12,7 @@ import { Pencil, Eye, EyeOff } from "lucide-react";
 import Input from "../../../../components/Input";
 import SelectInput from "../../../../components/SelectInput";
 import DateInput from "../../../../components/DateInput";
+import { EDUCATION_LEVELS, GENDERS } from "@/components/user-utils";
 
 const Page = () => {
   const router = useRouter();
@@ -249,14 +250,15 @@ const Page = () => {
               label="Genre"
               name="gender"
               placeholder="Sélectionnez un genre"
-              options={[
-                { label: "Homme", value: "1" },
-                { label: "Femme", value: "2" },
-              ]}
-              value={formik.values.gender} // Explicitly set the value
-              onChange={(value) => formik.setFieldValue("gender", value)} // Handle change with Formik
-              error={formik.errors.gender} // Show error if validation fails
+              options={Object.values(GENDERS).map(({ code, label }) => ({
+                value: code,
+                label,
+              }))}
+              value={formik.values.gender}
+              onChange={(value) => formik.setFieldValue("gender", value)}
+              error={formik.errors.gender}
             />
+
             <Input
               label="Téléphone"
               type="text"
@@ -298,13 +300,10 @@ const Page = () => {
               label="Niveau d'étude"
               name="niveau_etude"
               placeholder="Sélectionnez un niveau d'étude"
-              options={[
-                { label: "Bac", value: "1" },
-                { label: "Bac+2", value: "2" },
-                { label: "Bac+3", value: "3" },
-                { label: "Bac+5", value: "4" },
-                { label: "Bac+8", value: "5" },
-              ]}
+              options={Object.entries(EDUCATION_LEVELS).map(([key, label]) => ({
+                value: label, // ce qu'on enregistre
+                label, // ce qu'on affiche
+              }))}
               value={formik.values.niveau_etude}
               onChange={(value) => formik.setFieldValue("niveau_etude", value)}
             />
@@ -317,7 +316,7 @@ const Page = () => {
             />
             <Input
               label="CNSS"
-              type="text"
+              type="number"
               name="cnss"
               value={formik.values.cnss}
               onChange={formik.handleChange}

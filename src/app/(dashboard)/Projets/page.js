@@ -243,7 +243,7 @@ useEffect(() => {
   return (
     <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
       <Table
-        title={user_id ? 'Liste des projets' : ''}
+        title={user_id ? 'Liste des projets' : 'Projets'}
         data_to_export={data_to_export()}
         columns_export={columns_export}
         name_file_export={"projet_export"}

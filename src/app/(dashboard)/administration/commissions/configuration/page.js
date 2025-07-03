@@ -173,7 +173,7 @@ export default function CommissionConfigForm({ onClose, onSuccess }) {
           </label>
           <input
             id="commission_montant"
-            type="text"
+            type="number"
             required
             className="w-full sm:w-[200px] border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             value={watch('commission_montant')}
@@ -277,12 +277,12 @@ export default function CommissionConfigForm({ onClose, onSuccess }) {
                 if (onClose) {
                   onClose()       // ferme le popup
                 } else {
-                  router.back()   // sinon revient en arrière
+                  router.push('/commissions/commissionMensuelleAtt')   // sinon revient en arrière
                 }
               }}            
             className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded"
           >
-            Quitter
+            Annuler
           </Button>
           <Button
             type="submit"
