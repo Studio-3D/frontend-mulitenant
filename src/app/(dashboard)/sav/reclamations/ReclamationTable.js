@@ -420,7 +420,7 @@ const fetchPrestataires= async (service_id) => {
   return (
     <>
       <Table
-        title={prestId.prestataire_id && "Reclamations liées"}
+        title={prestId.prestataire_id ? "Reclamations liées":'Reclamations'}
         data_to_export={data_to_export()}
         columns_export={columns_export}
         name_file_export={"reclamation_export"}

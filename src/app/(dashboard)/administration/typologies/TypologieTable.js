@@ -95,6 +95,7 @@ const TypologieTable = ({
   return (
     <div>
       <Table 
+        title={"Typologies"} 
         columns={columns}
         data={currentItems}
         filterComponent={

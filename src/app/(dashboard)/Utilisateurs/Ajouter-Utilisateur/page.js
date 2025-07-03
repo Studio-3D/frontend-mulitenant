@@ -12,6 +12,7 @@ import { Pencil, Eye, EyeOff } from "lucide-react";
 import Input from "../../../../components/Input";
 import SelectInput from "../../../../components/SelectInput";
 import DateInput from "../../../../components/DateInput";
+import { EDUCATION_LEVELS, GENDERS } from '@/components/user-utils';
 
 const Page = () => {
   const router = useRouter();
@@ -54,12 +55,12 @@ const Page = () => {
       )
       .notOneOf(["test@test.com", "example@example.com"], "Cet email est interdit")
       .required("L'email est requis"),
-    role: Yup.string().required('Le rôle est requis'),
-    gender: Yup.string().required('Le genre est requis'),
-    phone: Yup.string()
+    //role: Yup.string().required('Le rôle est requis'),
+    //gender: Yup.string().required('Le genre est requis'),
+    /* phone: Yup.string()
     .matches(/^[0-9]{10}$/, 'Le numéro doit contenir exactement 10 chiffres') // Match exactly 10 digits
-    .required('Le téléphone est requis'),
-    cin: Yup.string().required('CIN est requis'),
+    .required('Le téléphone est requis'), */
+    //cin: Yup.string().required('CIN est requis'),
     fonction: Yup.string(),
     date_embauche: Yup.date(),
     password: Yup.string()
@@ -193,11 +194,15 @@ const Page = () => {
               label="Genre" 
               name="gender"
               placeholder="Sélectionnez un genre"
-              options={[{ label: 'Homme', value: '1' }, { label: 'Femme', value: '2' }]}
-              value={formik.values.gender} // Explicitly set the value
-              onChange={(value) => formik.setFieldValue("gender", value)} // Handle change with Formik
-              error={formik.errors.gender} // Show error if validation fails
+              options={Object.values(GENDERS).map(({ code, label }) => ({
+                value: code,
+                label,
+              }))}
+              value={formik.values.gender}
+              onChange={(value) => formik.setFieldValue("gender", value)}
+              error={formik.errors.gender}
             />
+
             <Input
               label='Téléphone'
               type='text'
@@ -228,21 +233,18 @@ const Page = () => {
               error={formik.errors.date_embauche} // Pass validation error
             />
             <SelectInput
-              label="Niveau d'étude"
-              name="niveau_etude"
-              placeholder="Sélectionnez un niveau d'étude"
-              options={[
-                { label: 'Bac', value: '1' },
-                { label: 'Bac+2', value: '2' },
-                { label: 'Bac+3', value: '3' },
-                { label: 'Bac+5', value: '4' },
-                { label: 'Bac+8', value: '5' }
-              ]}
-              value={formik.values.niveau_etude}
-              onChange={(value) => formik.setFieldValue("niveau_etude", value)}
-            />
+                label="Niveau d'étude"
+                name="niveau_etude"
+                placeholder="Sélectionnez un niveau d'étude"
+                options={Object.entries(EDUCATION_LEVELS).map(([key, label]) => ({
+                  value: label, // ce qu'on enregistre
+                  label,        // ce qu'on affiche
+                }))}
+                value={formik.values.niveau_etude}
+                onChange={(value) => formik.setFieldValue("niveau_etude", value)}
+              />
             <Input label='Adresse' type='text' name="adresse" value={formik.values.adresse} onChange={formik.handleChange} />
-            <Input label='CNSS' type='text' name="cnss" value={formik.values.cnss} onChange={formik.handleChange} />
+            <Input label='CNSS' type='number' name="cnss" value={formik.values.cnss} onChange={formik.handleChange} />
             <SelectInput
               label="Actif"
               name="is_actif"
@@ -261,7 +263,7 @@ const Page = () => {
             error={formik.errors.fonction} />
             <Input label="Solde de congé" type="number" name="solde_conge" value={formik.values.solde_conge} onChange={formik.handleChange} />
             {/* password input with toggle view hide */}
-            <Input label="Mot de passe" type={showPassword ? "text" : "password"} name="password" 
+            <Input label="Mot de passe" type={showPassword ? "text" : "password"} name="password" required
             value={formik.values.password}
             onChange={formik.handleChange}
             error={formik.errors.password}>
@@ -278,7 +280,7 @@ const Page = () => {
               )}
             </Input>
             {/* confirm password input with toggle view hide */}
-            <Input label="Confirmer le mot de passe" type={showPasswordConfirmation ? "text" : "password"} name="password_confirmation" 
+            <Input label="Confirmer le mot de passe" type={showPasswordConfirmation ? "text" : "password"} name="password_confirmation" required
             value={formik.values.password_confirmation}
             onChange={formik.handleChange}
             error={formik.errors.password_confirmation}>

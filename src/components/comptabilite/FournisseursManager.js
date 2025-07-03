@@ -300,7 +300,7 @@ const FournisseursManager = ({ userRole }) => {
             isOpen={deleteModalOpen}
             onClose={() => setDeleteModalOpen(false)}
             entityName="FOURNISSEURS"
-            itemLabel={`${fournisseurToDelete.code} - ${fournisseurToDelete.nom}`}
+            itemLabel={"Fournisseur"}
             entityId={fournisseurToDelete.id}
             onDeleted={() => {
               setRefreshData(prev => !prev);

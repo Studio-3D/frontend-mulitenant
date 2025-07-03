@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useContext, useState, useEffect, useRef } from "react";
+import { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import authConfig from "../configs/auth";
@@ -98,14 +98,65 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const value = {
-    user,
-    loading,
-    login,
-    logout
-  };
+  // Override logout to prevent during LinkedIn flows
+  const protectedLogout = useCallback(() => {
+    // Check if we're in the middle of LinkedIn auth flow
+    const isLinkedInFlow = localStorage.getItem('linkedin_admin_flow') === 'true' ||
+                          localStorage.getItem('linkedin_state') !== null ||
+                          window.location.pathname.includes('linkedin-callback');
+    
+    // Don't logout during LinkedIn auth flows
+    if (isLinkedInFlow) {
+      console.log('Preventing logout during LinkedIn auth flow');
+      return;
+    }
+    
+    // Call original logout
+    logout();
+  }, [logout]);
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  // Use protected logout in context value
+  const contextValue = useMemo(() => ({
+    user,
+    login,
+    logout: protectedLogout,
+    isAuthenticated: !!user,
+    loading
+  }), [user, login, protectedLogout, loading]);
+
+  // Add window event listener to protect against logout during LinkedIn auth
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      const isLinkedInFlow = localStorage.getItem('linkedin_admin_flow') === 'true';
+      if (isLinkedInFlow) {
+        // Backup token before potential logout
+        const token = localStorage.getItem('accessToken');
+        if (token) {
+          sessionStorage.setItem('backup_token', token);
+        }
+      }
+    };
+
+    const handleLoad = () => {
+      // Restore token if it was backed up
+      const backupToken = sessionStorage.getItem('backup_token');
+      const currentToken = localStorage.getItem('accessToken');
+      if (backupToken && !currentToken) {
+        localStorage.setItem('accessToken', backupToken);
+        sessionStorage.removeItem('backup_token');
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('load', handleLoad);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('load', handleLoad);
+    };
+  }, []);
+
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

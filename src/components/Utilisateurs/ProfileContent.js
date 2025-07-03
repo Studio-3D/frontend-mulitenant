@@ -1,31 +1,36 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { APIURL, RESOURCE_URL } from '../../configs/api';
 import Image from 'next/image';
 import { useSociete } from '@/context/SocieteContext';
 import Input from "../Input";
-import toast from 'react-hot-toast';
+import toast from "react-hot-toast";
 import { Edit } from "lucide-react";
-import LoadingSpin from '../LoadingSpin';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { useAuth } from '../../context/AuthContext';
+import LoadingSpin from "../LoadingSpin";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useAuth } from "../../context/AuthContext";
 
 const ProfileContent = ({ userId }) => {
   const { user } = useAuth();
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({});
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [isEditing, setIsEditing] = useState(searchParams.get('edit') === 'true');
-  const accessToken = localStorage.getItem('accessToken');
+  const [isEditing, setIsEditing] = useState(
+    searchParams.get("edit") === "true"
+  );
+  const accessToken = localStorage.getItem("accessToken");
   const { selectedSociete } = useSociete();
+const [previewUrl, setPreviewUrl] = useState('');
+const fileInputRef = useRef(null);
+const [selectedFile, setSelectedFile] = useState(null);
 
   useEffect(() => {
     if (!userId || !accessToken) {
-      setError('Authentication required.');
+      setError("Authentication required.");
       setLoading(false);
       return;
     }
@@ -38,25 +43,25 @@ const ProfileContent = ({ userId }) => {
         const data = response.data.user || response.data;
         setUserData(data);
         setFormData({
-          name: data.name || '',
-          prenom: data.prenom || '',
-          email: data.email || '',
-          phone: data.phone || '',
-          adresse: data.adresse || '',
-          gender: data.gender || '',
-          role: data.role || '',
-          is_actif: data.is_actif || '',
-          fonction: data.fonction || '',
-          date_embauche: data.date_embauche || '',
-          cin: data.cin || '',
-          cnss: data.cnss || '',
-          solde_conge: data.solde_conge || ''
+          name: data.name || "",
+          prenom: data.prenom || "",
+          email: data.email || "",
+          phone: data.phone || "",
+          adresse: data.adresse || "",
+          gender: data.gender || "",
+          role: data.role || "",
+          is_actif: data.is_actif || "",
+          fonction: data.fonction || "",
+          date_embauche: data.date_embauche || "",
+          cin: data.cin || "",
+          cnss: data.cnss || "",
+          solde_conge: data.solde_conge || "",
         });
       } catch (err) {
         if (err.response?.status === 401) {
-          setError('Session expired. Please log in again.');
+          setError("Session expired. Please log in again.");
         } else {
-          setError('Failed to fetch user data.');
+          setError("Failed to fetch user data.");
         }
       } finally {
         setLoading(false);
@@ -68,31 +73,53 @@ const ProfileContent = ({ userId }) => {
 
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleProfileSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      await axios.put(`${APIURL.UTILISATEURS}/${userId}`, formData, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-      toast.success('Profile updated successfully!');
-      setIsEditing(false);
-      
-      // If came from edit link, redirect back to table after save
-      if (searchParams.get('edit')) {
-        router.push('/Utilisateurs');
-      }
-    } catch (error) {
-      toast.error('Failed to update profile. Please check your inputs.');
+ const handleProfileSubmit = async (e) => {
+  e.preventDefault();
+
+  const formToSend = new FormData();
+
+  // Ajouter toutes les valeurs de formData dans le FormData final
+  for (const key in formData) {
+    const value = formData[key];
+    if (value !== undefined && value !== null && value !== '') {
+      formToSend.append(key, value);
     }
-  };
+  }
+
+  // Ajouter le fichier image si sélectionné
+  if (selectedFile) {
+    formToSend.append('photo', selectedFile);
+  }
+
+  try {
+    await axios.post(`${APIURL.UTILISATEURS}/${userId}`, formToSend, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    toast.success('Profile updated successfully!');
+    setIsEditing(false);
+
+    if (searchParams.get('edit')) {
+      router.push('/Utilisateurs');
+    }
+  } catch (error) {
+    toast.error('Failed to update profile. Please check your inputs.');
+    console.error(error); // pour déboguer plus facilement
+  }
+};
+
+
 
   const resetForm = () => {
-    if (searchParams.get('edit')) {
+    if (searchParams.get("edit")) {
       // Redirect back to user table if came from edit link
-      router.push('/Utilisateurs');
+      router.push("/Utilisateurs");
     } else {
       // Reset form if editing from profile view
       setFormData({
@@ -108,13 +135,18 @@ const ProfileContent = ({ userId }) => {
         date_embauche: userData.date_embauche,
         cin: userData.cin,
         cnss: userData.cnss,
-        solde_conge: userData.solde_conge
+        solde_conge: userData.solde_conge,
       });
       setIsEditing(false);
     }
   };
 
-  if (loading) return <div className='absolute inset-0 flex justify-center items-center'><LoadingSpin/></div>;
+  if (loading)
+    return (
+      <div className="absolute inset-0 flex justify-center items-center">
+        <LoadingSpin />
+      </div>
+    );
   if (error) return <div>{error}</div>;
   if (!userData) return <div>No user data found.</div>;
 
@@ -134,47 +166,66 @@ const ProfileContent = ({ userId }) => {
       {/* Profile Avatar Section */}
       <div className="flex items-center absolute top-[17vh] left-4 w-full pr-20">
         <div className="flex items-center flex-grow">
-          <input type='file' accept='image/*' className='hidden' />
+<input
+  type="file"
+  accept="image/*"
+  className="hidden"
+  ref={fileInputRef}
+  onChange={(e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
+  }}
+/>
+
           <div className='relative w-32 h-32 cursor-pointer'>
           <img
-              src={
-                userData.photo
-                  ? `${RESOURCE_URL.DOCS}/${
-                      userData.societe
-                        ? userData?.societe?.raison_sociale_concatene
-                        : user?.societe?.raison_sociale_concatene
-                    }_${
-                      userData.societe_id
-                        ? userData.societe_id
-                        : user.societe_id
-                    }/users/${userData?.photo}`
-                  : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
-              }
-              alt="User Avatar"
-              className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
-            />
-            <div className="absolute top-1 right-1 bg-white p-1 rounded-full shadow-md">
-              <Edit className="text-gray-600 text-lg" />
-            </div>
+  src={
+    previewUrl
+      ? previewUrl
+      : userData.photo
+      ? `${RESOURCE_URL.DOCS}/${
+          userData.societe
+            ? userData.societe.raison_sociale_concatene
+            : user?.societe?.raison_sociale_concatene
+        }_${userData.societe_id || user.societe_id}/users/${userData.photo}`
+      : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
+  }
+  alt="User Avatar"
+  className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+/>
+
+            <div
+  className="absolute top-1 right-1 bg-white p-1 rounded-full shadow-md cursor-pointer"
+  onClick={() => fileInputRef.current?.click()} // 👈 CLIC SUR L’ICÔNE LANCE L’INPUT FILE
+>
+  <Edit className="text-gray-600 text-lg" />
+</div>
+
           </div>
           <div className="flex flex-col p-4 mt-8">
             <div className="font-bold text-2xl !text-gray-900">
               {`${userData.name} ${userData.prenom}`}
             </div>
             <div className="text-gray-400 text-md font-medium">
-              {userData.role === 1 ? 'Super Admin' 
-                : userData.role === 2 ? 'Admin' 
-                : userData.role === 3 ? 'Commercial' 
-                : 'Utilisateur'}
+              {userData.role === 1
+                ? "Super Admin"
+                : userData.role === 2
+                ? "Admin"
+                : userData.role === 3
+                ? "Commercial"
+                : "Utilisateur"}
             </div>
           </div>
         </div>
 
         {/* Top Modifier Button */}
-        {!isEditing && !searchParams.get('edit') && (
-          <div className='mt-8'>
-            <button 
-              className='bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors'
+        {!isEditing && !searchParams.get("edit") && (
+          <div className="mt-8">
+            <button
+              className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
               onClick={() => setIsEditing(true)}
             >
               Modifier
@@ -190,11 +241,14 @@ const ProfileContent = ({ userId }) => {
             Informations Personnelles
           </button>
         </div>
-        <div className='border-b border-[#b7daf6] mr-8'></div> 
+        <div className="border-b border-[#b7daf6] mr-8"></div>
       </div>
 
       {/* Profile Information Form */}
-      <form onSubmit={handleProfileSubmit} className="flex flex-col px-4 ml-4 py-2">
+      <form
+        onSubmit={handleProfileSubmit}
+        className="flex flex-col px-4 ml-4 py-2"
+      >
         <div className="w-full grid grid-cols-1 md:grid-cols-1 xl:grid-cols-3 md:gap-8 xl:gap-x-16 xl:gap-y-4">
           <Input
             label="Nom:"
@@ -202,6 +256,7 @@ const ProfileContent = ({ userId }) => {
             value={formData.name}
             onChange={handleProfileChange}
             readOnly={!isEditing}
+            required={isEditing}
           />
           <Input
             label="Prénom:"
@@ -209,6 +264,7 @@ const ProfileContent = ({ userId }) => {
             value={formData.prenom}
             onChange={handleProfileChange}
             readOnly={!isEditing}
+            required={isEditing}
           />
           <Input
             label="Email:"
@@ -217,6 +273,7 @@ const ProfileContent = ({ userId }) => {
             onChange={handleProfileChange}
             type="email"
             readOnly={!isEditing}
+            required={isEditing}
           />
           <Input
             label="Téléphone:"
@@ -236,20 +293,40 @@ const ProfileContent = ({ userId }) => {
           <Input
             label="Role:"
             name="role"
-            value={formData.role === 1 ? 'Super Admin' : formData.role === 2 ? 'Admin' : formData.role === 3 ? 'Commercial' : 'Utilisateur'}
+            value={
+              formData.role === 1
+                ? "Super Admin"
+                : formData.role === 2
+                ? "Admin"
+                : formData.role === 3
+                ? "Commercial"
+                : "Utilisateur"
+            }
             readOnly
           />
           <Input
             label="Genre:"
             name="gender"
-            value={formData.gender == 1 ? 'Homme' : formData.gender == 2 ? 'Femme' : ''}
+            value={
+              formData.gender == 'homme'
+                ? "Homme"
+                : formData.gender == 'femme'
+                ? "Femme"
+                : ""
+            }
             onChange={handleProfileChange}
             readOnly={!isEditing}
           />
           <Input
             label="Is Actif:"
             name="is_actif"
-            value={formData.is_actif == 1 ? 'Oui' : formData.is_actif == 2 ? 'Non' : ''}
+            value={
+              formData.is_actif == 1
+                ? "Oui"
+                : formData.is_actif == 2
+                ? "Non"
+                : ""
+            }
             onChange={handleProfileChange}
             readOnly={!isEditing}
           />
@@ -301,8 +378,8 @@ const ProfileContent = ({ userId }) => {
             >
               Annuler
             </button>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors"
             >
               Enregistrer

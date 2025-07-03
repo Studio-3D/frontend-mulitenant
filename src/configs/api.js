@@ -1,6 +1,8 @@
-const APIBASEURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+import axios from 'axios';
 
+const APIBASEURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 const BASERESOURCEURL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:8000';
+
 
 export const RESOURCE_URL = {
   DOCS: `${BASERESOURCEURL}/Docs`,
@@ -66,7 +68,15 @@ export const APIURL = {
   DOCUMENTS_CPS: `${BASERESOURCEURL}/Docs/cps`,
   HISTOIMPORTATION:`${APIBASEURL}/v1/delete_fichier_import`,
   COMPOSITIONBIENS: `${APIBASEURL}/v1/compositionBiens`,
-
+  
+  // Social Media Configuration APIs
+  LINKEDIN_CONFIG: `${APIBASEURL}/v1/linkedin-config`,
+  TIKTOK_CONFIG: `${APIBASEURL}/v1/tiktok-config`,
+  
+  // Social Media Sharing APIs
+  LINKEDIN_SHARE: `${APIBASEURL}/v1/linkedin/share`,
+  TIKTOK_PUBLISH: `${APIBASEURL}/v1/tiktok/publish`,
+  TIKTOK_STATUS: `${APIBASEURL}/v1/tiktok/status`,
 }
 
 export const ENDPOINTS = {
@@ -91,8 +101,7 @@ export const ENDPOINTS = {
   VISITES: '/crm/visites',
   APPELS: '/crm/appels',
   PROSPECTS: '/crm/prospects',
-  CLIENTS: '/ventes/clients',
-
+  CLIENTS: '/clients/home',
   ENCAISSEMENTS: '/encaissements',
   RESERVATIONS: '/ventes/reservations',
   TVA: '/comptabilite',
@@ -114,3 +123,52 @@ export const ENDPOINTS = {
   ETAPESPROJET:'/etapesProjet/home',
 }
 
+// Add axios default configuration
+axios.defaults.baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+
+// Add request interceptor to always include auth token
+axios.interceptors.request.use(
+  (config) => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Helper functions to check social media configurations
+export const checkSocialMediaConfigurations = async (projectId) => {
+  const token = localStorage.getItem("accessToken");
+  const configurations = {
+    linkedin: false,
+    tiktok: false,
+    facebook: false,
+    instagram: false
+  };
+
+  try {
+    // Check LinkedIn configuration
+    const linkedinResponse = await axios.get(
+      `${APIURL.LINKEDIN_CONFIG}/project/${projectId}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    configurations.linkedin = !!linkedinResponse.data.configuration;
+  } catch (error) {
+    console.log("No LinkedIn configuration found");
+  }
+
+  try {
+    // Check TikTok configuration
+    const tiktokResponse = await axios.get(
+      `${APIURL.TIKTOK_CONFIG}/project/${projectId}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    configurations.tiktok = !!tiktokResponse.data.configuration;
+  } catch (error) {
+    console.log("No TikTok configuration found");
+  }
+
+  return configurations;
+};

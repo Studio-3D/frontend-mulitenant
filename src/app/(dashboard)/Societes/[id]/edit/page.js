@@ -17,6 +17,8 @@ export default function UpdateSociete() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [loading, setLoading] = useState(true);
     const [initialData, setInitialData] = useState({});
+    const [selectedLogo, setSelectedLogo] = useState(null);
+
     const [formData, setFormData] = useState({
         raison_sociale: '',
         nom_contact: '',
@@ -68,33 +70,48 @@ export default function UpdateSociete() {
     }, [id]);
 
     const hasChanges = () => {
-        return Object.keys(initialData).some(key => {
-            return formData[key] !== initialData[key];
-        });
-    };
+  const logoChanged = selectedLogo !== null;
+  const fieldsChanged = Object.keys(initialData).some(key => formData[key] !== initialData[key]);
+  return logoChanged || fieldsChanged;
+};
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!hasChanges()) {
-            toast.error("Aucune modification détectée.");
-            return;
-        }
-        
-        setIsSubmitting(true);
-        const accessToken = localStorage.getItem('accessToken');
-        
-        try {
-            await axios.put(`${APIURL.SOCIETES}/${id}`, formData, {
-                headers: { Authorization: `Bearer ${accessToken}` }
-            });
-            toast.success("Informations de l'entreprise mises à jour avec succès.");
-            router.push('/Societes');
-        } catch (error) {
-            toast.error("Erreur lors de la mise à jour des informations de l'entreprise.");
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
+
+   const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  if (!hasChanges()) {
+    toast.error("Aucune modification détectée.");
+    return;
+  }
+
+  setIsSubmitting(true);
+  const accessToken = localStorage.getItem('accessToken');
+
+  const formToSend = new FormData();
+  Object.entries(formData).forEach(([key, value]) => {
+    formToSend.append(key, value);
+  });
+
+  if (selectedLogo) {
+    formToSend.append('logo', selectedLogo); // 'logo' est le nom attendu côté backend
+  }
+
+  try {
+    await axios.post(`${APIURL.SOCIETES}/${id}?_method=PUT`, formToSend, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    toast.success("Informations de l'entreprise mises à jour avec succès.");
+    router.push('/Societes');
+  } catch (error) {
+    toast.error("Erreur lors de la mise à jour des informations de l'entreprise.");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
     const handleChange = (e) => {
         setFormData({
@@ -120,12 +137,15 @@ export default function UpdateSociete() {
             <form onSubmit={handleSubmit} className="grid grid-cols-[500px_1fr] gap-12">
                 <div className="space-y-6">
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 transition-transform hover:scale-[1.02] duration-300">
-                        <AvatarUpload 
-                            currentLogo={societe?.logo 
-                              ? `${RESOURCE_URL.DOCS}/${societe.raison_sociale_concatene}_${societe.id}/logos/${societe.logo}`
-                              : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
-                          } 
-                        />
+                        <AvatarUpload
+  currentLogo={
+    societe?.logo
+      ? `${RESOURCE_URL.DOCS}/${societe.raison_sociale_concatene}_${societe.id}/logos/${societe.logo}`
+      : null
+  }
+  onFileChange={setSelectedLogo}
+/>
+
                         <p className="text-sm !text-gray-500 text-center mt-4">
                             Téléchargez le logo de votre entreprise 
                         </p>
@@ -155,6 +175,7 @@ export default function UpdateSociete() {
                                 value={formData.raison_sociale}
                                 onChange={handleChange}
                                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200" 
+                                required
                             />
                         </div>
 
@@ -169,6 +190,7 @@ export default function UpdateSociete() {
                                 value={formData.nom_contact}
                                 onChange={handleChange}
                                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200" 
+                                required
                             />
                         </div>
 
@@ -183,6 +205,7 @@ export default function UpdateSociete() {
                                 value={formData.prenom_contact}
                                 onChange={handleChange}
                                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200" 
+                                required
                             />
                         </div>
 
@@ -211,6 +234,7 @@ export default function UpdateSociete() {
                                 value={formData.email}
                                 onChange={handleChange}
                                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200" 
+                                required
                             />
                         </div>
 

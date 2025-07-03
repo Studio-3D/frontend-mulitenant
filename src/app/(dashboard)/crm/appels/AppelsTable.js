@@ -45,7 +45,7 @@ const AppelsTable = ({dataClient}) => {
   };
 
   useEffect(() => {
-    const params_url = dataClient ? { client_id: dataClient } : {};
+    const params_url = dataClient ? { client_id: dataClient?.id } : {};
     const combinedFilters = { ...filters, ...params_url };
 
     fetchData_table_by_projet(
@@ -80,6 +80,28 @@ const AppelsTable = ({dataClient}) => {
     // Navigate to /utilisateurs?id={id}&action=edit
     router.push(`${ENDPOINTS.APPELS}?id=${appelId}&action=edit`);
   }
+
+  const canAddAppel =
+      isSuperAdmin(user.role) || isAdmin(user.role) || isCommercial(user.role);
+  
+
+  function getAddLinkForAppel(user) {
+  if (canAddAppel) {
+    if (dataClient) {
+      return {
+        pathname: `${ENDPOINTS.APPELS}?action=add`,
+        onClick: () => {
+          localStorage.setItem(
+                'selectedClient',
+                JSON.stringify({ dataClient: dataClient })
+              );        
+        }
+      };
+    }
+    return `${ENDPOINTS.APPELS}?action=add`;
+  }
+  return undefined;
+}
 
   function handle_convert_to_visite(prospect) {
     localStorage.setItem(
@@ -275,8 +297,9 @@ const AppelsTable = ({dataClient}) => {
 
   return (
     <>
-      <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
+      <div className="relative bg-white rounded-lg px-4 py-4">
         <Table
+          title={"Appels"} 
           data_to_export={data_to_export()}
           columns_export={columns_export}
           name_file_export={'appels_export'}
@@ -292,13 +315,15 @@ const AppelsTable = ({dataClient}) => {
           onSearchChange={setSearchTerm}
           enableExport={true}
           enableImport={false}
-          addLink={
+          addLink={getAddLinkForAppel(user)}
+
+          /* addLink={
             isSuperAdmin(user.role) ||
             isAdmin(user.role) ||
             isCommercial(user.role)
               ? `${ENDPOINTS.APPELS}?action=add`
               : undefined
-          }
+          } */
           filterComponent={
             <div className="space-y-4 p-4 rounded-lg ">
               <div
@@ -382,6 +407,7 @@ const AppelsTable = ({dataClient}) => {
           <DeleteData
             route={APIURL.APPELS}
             Id={selectedId}
+            type='Appel'
             message={'Etes-vous sûr de vouloir supprimer cette Appel ?'}
             accessToken={accesstoken}
             onClose={() => {

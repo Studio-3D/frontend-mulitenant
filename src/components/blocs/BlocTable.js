@@ -226,7 +226,8 @@ const columns_export = [
 
   return (
     <div>
-    <Table 
+    <Table
+      title={"Blocs"} 
       data_to_export={data_to_export()}
       columns_export={columns_export}
       name_file_export={"bloc_export"}

@@ -99,6 +99,7 @@ const SourceTable = ({
   return (
     <div>
       <Table 
+        title={'Sources'}
         columns={columns}
         data={currentItems}
         filterComponent={

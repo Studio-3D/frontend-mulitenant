@@ -3,7 +3,13 @@
 import React, { useEffect, useState, useCallback } from "react";
 import Table from "@/components/Table";
 import Link from "next/link";
-import { Eye, UserCog, UserX, User, Trash2 } from "lucide-react";
+import {
+  Eye,
+  PencilSquare,
+  ShieldX,
+  ShieldCheck,
+  Trash2
+} from 'lucide-react';
 import Modal from "@/components/Modal";
 import BlockUser from "@/components/Utilisateurs/BlockUser";
 import UnblockUser from "@/components/Utilisateurs/UnblockUser";
@@ -23,6 +29,7 @@ import {
   USER_STATUS,
   USER_TYPES,
 } from "@/components/user-utils";
+import { PencilSquareIcon } from "@heroicons/react/24/outline";
 
 const Page = () => {
   const [users, setUsers] = useState([]);
@@ -42,9 +49,9 @@ const Page = () => {
     telephone: "",
     societe: "",
     role: "",
-    genre: "",
+    gender: "",
     niveau: "",
-    statut: "",
+    status: "",
   });
 
   const [tempFilters, setTempFilters] = useState({ ...filters });
@@ -148,9 +155,9 @@ const Page = () => {
       telephone: "",
       societe: "",
       role: "",
-      genre: "",
+      gender: "",
       niveau: "",
-      statut: "",
+      status: "",
     };
     setFilters(reset);
     setTempFilters(reset);
@@ -196,6 +203,33 @@ const Page = () => {
       status: us.is_actif ? "Actif" : "Inactif",
     }));
   };
+
+  const data_to_export = () => {
+    return users.map((us) => ({
+      nom: us.name,
+      prenom:us.prenom,
+      email: us.email,
+      telephone: us.phone || "",
+      role: getRoleText(us.role),
+      date: new Date(us.created_at).toLocaleDateString(),
+      status: us.is_actif ? "Actif" : "Inactif",
+      societe:us.societe.raison_sociale,
+      adresse:us.adresse,
+      gender:us.gender,
+      cin:us.cin,
+      fonction:us.fonction,
+      date_embauche:us.date_embauche,
+      niveau_etude:us.niveau_etude,
+      cnss:us.cnss,
+      solde_conge:us.solde_conge,
+    }));
+  };
+
+  const columns_export = Object.keys(data_to_export()[0] || {}).map((key) => ({
+  key,
+  label: key
+}));
+
 
   // Table columns configuration
   const columns = [
@@ -261,47 +295,58 @@ const Page = () => {
       key: "actions",
       label: "Actions",
       render: (row) => (
-        <div className="flex gap-3 items-center">
-          <Link href={`/Utilisateurs/afficher-utilisateur/${row.id}`}>
-            <Eye
-              className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
-              title="Voir détails"
-            />
-          </Link>
-          <Link href={`/Utilisateurs/afficher-utilisateur/${row.id}?edit=true`}>
-            <UserCog
-              className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
-              title="Modifier"
-            />
-          </Link>
-          {row.status === "Actif" ? (
-            <User
-              className="w-4 h-4 !text-green-500 hover:text-green-700 cursor-pointer"
-              onClick={() => {
-                setSelectedUserId(row.id);
-                setShowBlockModal(true);
-              }}
-              title="Bloquer utilisateur"
-            />
-          ) : (
-            <UserX
-              className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
-              onClick={() => {
-                setSelectedUserId(row.id);
-                setShowUnblockModal(true);
-              }}
-              title="Débloquer utilisateur"
-            />
-          )}
-          <Trash2
-            className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
-            onClick={() => {
-              setSelectedUserId(row.id);
-              setShowDeleteModal(true);
-            }}
-            title="Supprimer utilisateur"
-          />
-        </div>
+       <div className="flex gap-4 items-center text-sm">
+  <Link
+    href={`/Utilisateurs/afficher-utilisateur/${row.id}`}
+    className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+    title="Voir les détails"
+  >
+    <Eye className="w-4 h-4" />
+  </Link>
+
+  <Link
+    href={`/Utilisateurs/afficher-utilisateur/${row.id}?edit=true`}
+    className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
+    title="Modifier l'utilisateur"
+  >
+    <PencilSquareIcon className="w-4 h-4" />
+  </Link>
+
+  {row.status === "Actif" ? (
+    <button
+      onClick={() => {
+        setSelectedUserId(row.id);
+        setShowBlockModal(true);
+      }}
+      className="flex items-center gap-1 text-green-500 hover:text-green-700"
+      title="Bloquer l'utilisateur"
+    >
+      <ShieldX className="w-4 h-4" />
+    </button>
+  ) : (
+    <button
+      onClick={() => {
+        setSelectedUserId(row.id);
+        setShowUnblockModal(true);
+      }}
+      className="flex items-center gap-1 text-red-500 hover:text-red-700"
+      title="Débloquer l'utilisateur"
+    >
+      <ShieldCheck className="w-4 h-4" />
+    </button>
+  )}
+
+  <button
+    onClick={() => {
+      setSelectedUserId(row.id);
+      setShowDeleteModal(true);
+    }}
+    className="flex items-center gap-1 text-red-500 hover:text-red-700"
+    title="Supprimer l'utilisateur"
+  >
+    <Trash2 className="w-4 h-4" />
+  </button>
+</div>
       ),
     },
   ];
@@ -310,6 +355,10 @@ const Page = () => {
     <>
       <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
         <Table
+          title={'Utilisateurs'}
+          data_to_export={data_to_export()}
+          columns_export={columns_export}
+          name_file_export={"utilisateur_export"}
           columns={columns}
           filterComponent={
             <div className="space-y-4 ">
@@ -365,11 +414,9 @@ const Page = () => {
                   placeholder="Rôle"
                   //className="h-10 text-sm w-full"
                 />
-
-
                 <SelectInput
-                  value={tempFilters.genre}
-                  onChange={(value) => handleFilterChange("genre", value)}
+                  value={tempFilters.gender}
+                  onChange={(value) => handleFilterChange("gender", value)}
                   options={Object.values(GENDERS).map(({ code, label }) => ({
                     value: code,
                     label,
@@ -390,8 +437,8 @@ const Page = () => {
                 />
           
                 <SelectInput
-                  value={tempFilters.statut?.toString()}
-                  onChange={(value) => handleFilterChange("statut", Number(value))}
+                  value={tempFilters.status?.toString()}
+                  onChange={(value) => handleFilterChange("status", Number(value))}
                   options={Object.values(USER_STATUS).map(({ code, label }) => ({
                     value: code.toString(),
                     label,
@@ -496,6 +543,7 @@ const Page = () => {
           <DeleteData
             route={APIURL.UTILISATEURS}
             Id={selectedUserId}
+            type="Utilisateur"
             message={"vous êtes sûr de vouloir supprimer cet utilisateur?"}
             userId={selectedUserId}
             accessToken={accesstoken}

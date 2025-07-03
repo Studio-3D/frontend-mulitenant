@@ -129,6 +129,8 @@ export default function GeneralInformationForm({ state, setState, onNext, onBack
             onChange={(e) => handleChange("surface_terrain", e.target.value)}
             required
           />
+          {errors?.surface_terrain && <p className="mt-1 text-sm !text-red-600">{errors.surface_terrain[0]}</p>}
+
         </div>
 
         {/* Acquisition Price */}
@@ -146,6 +148,8 @@ export default function GeneralInformationForm({ state, setState, onNext, onBack
             onChange={(e) => handleChange("prix_acquisition", e.target.value)}
             required
           />
+          {errors?.prix_acquisition && <p className="mt-1 text-sm !text-red-600">{errors.prix_acquisition[0]}</p>}
+
         </div>
 
         {/* Reservation Cancellation Limit */}
@@ -161,6 +165,8 @@ export default function GeneralInformationForm({ state, setState, onNext, onBack
             onChange={(e) => handleChange("limite_annulation_reservation", e.target.value)}
             required
           />
+          {errors?.limite_annulation_reservation && <p className="mt-1 text-sm !text-red-600">{errors.limite_annulation_reservation[0]}</p>}
+
         </div>
 
         {/* Reservation Extension */}
@@ -190,6 +196,8 @@ export default function GeneralInformationForm({ state, setState, onNext, onBack
             onChange={(e) => handleChange("max_etages", e.target.value)}
             required
           />
+          {errors?.max_etages && <p className="mt-1 text-sm !text-red-600">{errors.max_etages[0]}</p>}
+
         </div>
       </div>
 

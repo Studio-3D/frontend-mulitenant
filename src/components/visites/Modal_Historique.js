@@ -81,7 +81,7 @@ const Modal_Historique = ({ onClose, rows, loading_histo }) => {
                   </h6>
                   <div className="overflow-hidden">
                     <table className="w-full text-sm border-collapse">
-                      <thead className="bg-blue-50">
+                      <thead style={{background:'#bcf7ff'}}>
                         <tr>
                           {row.interet == '3' ? (
                             <>

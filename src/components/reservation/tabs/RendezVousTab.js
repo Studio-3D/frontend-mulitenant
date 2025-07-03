@@ -13,7 +13,7 @@ import axios from 'axios';
 //import Swal from 'sweetalert2';
 import format from 'date-fns/format';
 import { PDFDownloadLink } from '@react-pdf/renderer';
-import Document from '../../../app/(dashboard)/Ventes/reservations/rdv/recu_rdv';
+import Document from '../../../app/(dashboard)/ventes/reservations/rdv/recu_rdv';
 import toast from 'react-hot-toast';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
@@ -705,6 +705,7 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange  }) => {
             route={`${apiUrl}/destroy_rdv_reservation`}
             message={`Êtes-vous sûr de vouloir supprimer le rendez-vous du ${selectedDate}`}
             Id={selectedId}
+            type='Rendez-vous'
             accessToken={accessToken}
             onClose={() => {
               setShowDeleteModal(false);

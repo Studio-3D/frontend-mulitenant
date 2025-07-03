@@ -196,7 +196,8 @@ const ObjectifTable = ({
   
   return (
     <div>
-      <Table 
+      <Table
+        title={"Objectifs"}  
         columns={columns}
         data={formattedObjectifs}
         filterComponent={

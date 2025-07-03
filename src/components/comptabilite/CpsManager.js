@@ -230,7 +230,7 @@ const CpsManager = ({ userRole }) => {
             isOpen={deleteModalOpen}
             onClose={() => setDeleteModalOpen(false)}
             entityName="CPS"
-            itemLabel={`CPS: ${cpsToDelete.nature_travaux}`}
+            itemLabel={'cps'}
             entityId={cpsToDelete.id}
             onDeleted={() => setRefreshData(prev => !prev)}
           />

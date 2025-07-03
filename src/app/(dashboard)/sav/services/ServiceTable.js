@@ -180,7 +180,7 @@ const ServiceTable = () => {
 
   return (
     <>
-      {/* Project Selection Modal */}
+    < div className="relative bg-white shadow-md rounded-lg px-4 py-4">
       <ProjetDialog
         open={showProjetModal}
         onClose={() => setShowProjetModal(false)}
@@ -189,6 +189,7 @@ const ServiceTable = () => {
       />
       
       <Table
+        title={'Services'}
         data_to_export={data_to_export()}
         columns_export={columns_export}
         name_file_export={"service_export"}
@@ -265,6 +266,8 @@ const ServiceTable = () => {
     />
   </Modal>
 )}
+  </div>
+
     </>
   );
 };

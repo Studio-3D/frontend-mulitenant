@@ -256,7 +256,7 @@ const DecomptesManager = ({ userRole }) => {
             isOpen={deleteModalOpen}
             onClose={() => setDeleteModalOpen(false)}
             entityName="DECOMPTES"
-            itemLabel={`Décompte N° ${decompteToDelete.numero}`}
+            itemLabel={"Décompte"}
             entityId={decompteToDelete.id}
             onDeleted={() => setRefreshData(prev => !prev)}
           />
