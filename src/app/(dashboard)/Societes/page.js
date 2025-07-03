@@ -187,6 +187,7 @@ export default function Societes() {
     <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
       {/* Table */}
       <Table 
+        title={'Societes'}
         data_to_export={data_to_export()}
         columns_export={columns_export}
         name_file_export={"societe_export"}
@@ -297,6 +298,7 @@ export default function Societes() {
         <DeleteData
           route={APIURL.SOCIETES}
           Id={selectedSocieteId}
+          type="Societé"
           message={`Êtes-vous sûr de vouloir supprimer cette société ?`}
           societeId={selectedSocieteId}
           accessToken={localStorage.getItem('accessToken')}

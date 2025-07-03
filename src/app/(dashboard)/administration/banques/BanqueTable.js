@@ -97,6 +97,7 @@ const BanqueTable = ({ data = [], loading = false, onAction,onFilterSubmit  }) =
   return (
     <div>
       <Table
+        title={'Banques'}
         columns={columns}
         data={currentItems}
         onFilterToggle={handleFilterToggle}

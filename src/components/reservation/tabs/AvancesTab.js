@@ -1557,6 +1557,7 @@ export const AvancesTab = ({
           <DeleteData
             route={APIURL.PAIEMENTS}
             Id={selectedId}
+            type='Avance'
             message={'Etes-vous sûr de vouloir supprimer cette Avance ?'}
             accessToken={accessToken}
             onClose={() => {

@@ -106,7 +106,7 @@ export default function VuesPage() {
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
         entityName="VUES"
-        itemLabel={rowToDelete?.vue}
+        itemLabel={"vue"}
         entityId={rowToDelete?.id}
         data={vues}
         onDeleted={() => fetchVues(filterParams)} // <- ici

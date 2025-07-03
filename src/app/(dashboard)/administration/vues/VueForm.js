@@ -5,11 +5,13 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import BreadCrumb from "../../navigation/BreadCrumb";
 import Button from "@/components/Button";
+import { useRouter } from "next/navigation";
 
 const VueForm = ({ id = null, onComplete }) => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const { selectedProjet } = useProjet();
+  const router = useRouter();
 
   // Form state
   const [formData, setFormData] = useState({
