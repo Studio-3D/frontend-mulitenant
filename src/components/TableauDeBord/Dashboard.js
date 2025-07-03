@@ -146,7 +146,7 @@ export const Dashboard = () => {
         />
         <MetricsCard
           title="Remboursement"
-          value={data?.sum_remboursements}
+          value={data?.sum_remboursements?.toFixed(2) }
           icon={<CreditCardIcon className="h-6 w-6 text-amber-500" />}
           color="amber"
         />
