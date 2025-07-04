@@ -432,6 +432,10 @@ const fetchPrestataires= async (service_id) => {
               className="grid gap-3"
               style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}
             >
+              <div className="mb-3">
+          <label className="block !text-gray-700 text-sm font-bold mb-1">
+            Date Reclamation 
+          </label> 
               <input
                 type="text"
                 placeholder="Date Reclamation"
@@ -441,15 +445,20 @@ const fetchPrestataires= async (service_id) => {
                 onChange={(e) => handleFilterChange("date_reclamation", e.target.value)}
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />              
-             
+              </div>
+
               <Input
                 type="text"
+                label='Client'
                 placeholder="Client"
                 value={tempFilters.client}
                 onChange={(e) => handleFilterChange("client", e.target.value)}
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
-
+        <div className="mb-3">
+          <label className="block !text-gray-700 text-sm font-bold mb-1">
+            Date Intervention 
+          </label> 
               <input
                 type="text"
                 placeholder="Date Intervention"
@@ -459,7 +468,12 @@ const fetchPrestataires= async (service_id) => {
                 onChange={(e) => handleFilterChange("date_intervention", e.target.value)}
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
+        </div>
 
+        <div className="mb-3">
+          <label className="block !text-gray-700 text-sm font-bold mb-1">
+            Date fin Intervention
+          </label> 
               <input
                 type="text"
                 placeholder="Date fin Intervention"
@@ -469,8 +483,10 @@ const fetchPrestataires= async (service_id) => {
                 onChange={(e) => handleFilterChange("date_fin_intervention", e.target.value)}
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
+        </div>
 
               <Input
+                label='Bien'
                 type="text"
                 placeholder="Bien"
                 value={tempFilters.propriete_dite_bien}
@@ -479,6 +495,7 @@ const fetchPrestataires= async (service_id) => {
               />
 
               <Input
+                label={'Prestataire'}
                 type="text"
                 placeholder="Prestataire"
                 value={tempFilters.prestataire}

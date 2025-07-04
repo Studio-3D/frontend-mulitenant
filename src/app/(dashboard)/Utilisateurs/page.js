@@ -368,6 +368,7 @@ const Page = () => {
               >
                 {/* Champs de recherche */}
                 <Input
+                  label={'Nom & prénom'}
                   type="text"
                   placeholder="Nom & prénom..."
                   value={tempFilters.nom}
@@ -376,6 +377,7 @@ const Page = () => {
                 />
           
                 <Input
+                  label={'Email'}
                   type="text"
                   placeholder="Email..."
                   value={tempFilters.email}
@@ -384,6 +386,7 @@ const Page = () => {
                 />
           
                 <Input
+                  label={'Téléphone'}
                   type="text"
                   placeholder="Téléphone..."
                   value={tempFilters.telephone}
@@ -393,6 +396,7 @@ const Page = () => {
           
                 {!selectedSociete && (
                   <Input
+                    label={'Société'}
                     type="text"
                     placeholder="Société..."
                     value={tempFilters.societe}
@@ -402,6 +406,7 @@ const Page = () => {
                 )}
           
                 <SelectInput
+                  label={'Role'}
                   value={tempFilters.role}
                   onChange={(value) => handleFilterChange("role", value)}
                   options={Object.entries(USER_TYPES)
@@ -415,6 +420,7 @@ const Page = () => {
                   //className="h-10 text-sm w-full"
                 />
                 <SelectInput
+                  label={'Genre'}
                   value={tempFilters.gender}
                   onChange={(value) => handleFilterChange("gender", value)}
                   options={Object.values(GENDERS).map(({ code, label }) => ({
@@ -426,6 +432,7 @@ const Page = () => {
                 />
           
                 <SelectInput
+                  label={'Niveau'}
                   value={tempFilters.niveau}
                   onChange={(value) => handleFilterChange("niveau", value)}
                   options={Object.entries(EDUCATION_LEVELS).map(([key, label]) => ({
@@ -437,6 +444,7 @@ const Page = () => {
                 />
           
                 <SelectInput
+                  label={'Status'}
                   value={tempFilters.status?.toString()}
                   onChange={(value) => handleFilterChange("status", Number(value))}
                   options={Object.values(USER_STATUS).map(({ code, label }) => ({

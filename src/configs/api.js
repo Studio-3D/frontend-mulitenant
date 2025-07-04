@@ -101,7 +101,7 @@ export const ENDPOINTS = {
   VISITES: '/crm/visites',
   APPELS: '/crm/appels',
   PROSPECTS: '/crm/prospects',
-  CLIENTS: '/clients/home',
+  CLIENTS: '/ventes/clients',
   ENCAISSEMENTS: '/encaissements',
   RESERVATIONS: '/ventes/reservations',
   TVA: '/comptabilite',

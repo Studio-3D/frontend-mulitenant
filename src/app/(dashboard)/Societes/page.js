@@ -199,6 +199,7 @@ export default function Societes() {
               style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}
             >
               <Input
+                label={'Raison sociale'}
                 type="text"
                 placeholder="Raison sociale..."
                 value={tempFilters.raison_sociale}
@@ -208,6 +209,7 @@ export default function Societes() {
         
               <Input
                 type="text"
+                label={'Nom contact'}
                 placeholder="Nom contact..."
                 value={tempFilters.nom_contact}
                 onChange={(e) => handleFilterChange("nom_contact", e.target.value)}
@@ -215,6 +217,7 @@ export default function Societes() {
               />
         
               <Input
+                label={'Prénom contact'}
                 type="text"
                 placeholder="Prénom contact..."
                 value={tempFilters.prenom_contact}
@@ -223,6 +226,7 @@ export default function Societes() {
               />
         
               <Input
+                label={'Email'}
                 type="text"
                 placeholder="Email..."
                 value={tempFilters.email}
@@ -231,6 +235,7 @@ export default function Societes() {
               />
         
               <Input
+                label={'Téléphone'}
                 type="text"
                 placeholder="Téléphone..."
                 value={tempFilters.tel}
@@ -239,6 +244,7 @@ export default function Societes() {
               />
         
               <Input
+                label={'Adresse'}
                 type="text"
                 placeholder="Adresse..."
                 value={tempFilters.adresse}

@@ -18,6 +18,7 @@ import format from 'date-fns/format'
 import Link from 'next/link'
 import { useProjet } from "@/context/ProjetContext";
 import InputSelect from "@/components/inputSelect";
+import DateRangePicker from "@/components/DateRangePicker";
 
 
 
@@ -368,6 +369,7 @@ const rows = formatData();
   
   return (
     <>
+    <div className="reflative bg-white rounded-lg p-4">
       <Table
         title={"Encaissements"} 
         data_to_export={data_to_export()}
@@ -384,13 +386,12 @@ const rows = formatData();
       >
         <Input
           type="text"
+          label={'Code Réservation'}
           placeholder="Code Réservation"
           value={tempFilters.code_reservation}
           onChange={e => handleFilterChange('code_reservation', e.target.value)}
           className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-        />
-
-        
+        /> 
       <InputSelect
         label="Client"
         name="cienId"
@@ -416,14 +417,17 @@ const rows = formatData();
 
 
         <Input
+          label="Montant"
           type="text"
           placeholder="Montant"
           value={tempFilters.montant}
           onChange={e => handleFilterChange('montant', e.target.value)}
           className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
         />
-
-        {/* Select natif stylisé */}
+        <div className="mb-3">
+          <label className="block !text-gray-700 text-sm font-bold mb-1">
+            Type Encaissement
+          </label>        
         <select
           value={tempFilters.type_encaissement}
           onChange={e => handleFilterChange('type_encaissement', e.target.value)}
@@ -437,8 +441,17 @@ const rows = formatData();
           <option value="5">Déblocage Crédit</option>
           <option value="6">Pénalités</option>
         </select>
-
-        <input
+        </div>
+        <DateRangePicker
+          startName="de"
+          endName="a"
+          startValue={tempFilters.de}
+          endValue={tempFilters.a}
+          onChange={handleFilterChange}
+          placeholder="Choisir une Date"
+          label="Date"
+        />
+        {/* <input
           type="date"
           placeholder="De"
           onFocus={(e) => (e.target.type = "de")}
@@ -456,7 +469,7 @@ const rows = formatData();
           value={tempFilters.a}
           onChange={(e) => handleFilterChange("a", e.target.value)}
           className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-        /> 
+        />  */}
       </div>
 
       <div className="flex justify-end gap-3 pt-2">
@@ -490,7 +503,7 @@ const rows = formatData();
         
       />
 
-      
+      </div>
     </>
   );
 };
