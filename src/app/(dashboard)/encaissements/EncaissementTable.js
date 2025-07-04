@@ -42,18 +42,14 @@ const EncaissementTable = ({dataClient_id, bien_id}) => {
   const [filters, setFilters] = useState({
   code_reservation: "",
   bienId: "",
-  clientId: "",
+  client_id: dataClient_id?.id?dataClient_id?.id:'' ,
   montant: "",
   type_encaissement: "",
   de: "",
   a: "",
 });
 const [tempFilters, setTempFilters] = useState({ ...filters });
-const [clientss] = useState([
-    { id: '1', nom: 'nabila',prenom:'nono' },
-    { id: '2', nom: 'nawal',prenom:'fofo' },
-    
-  ])
+
 const handleFilterChange = (field, value) => {
   setTempFilters((prev) => ({ ...prev, [field]: value }));
 };
@@ -67,7 +63,7 @@ const resetFilters = () => {
   const reset = {
     code_reservation: "",
     bienId: "",
-    clientId: "",
+    client_id: "",
     montant: "",
     type_encaissement: "",
     de: "",
@@ -136,11 +132,9 @@ const fetchBiens = async () => {
   useEffect(() => { 
     fetchBiens()
     fetchClients()
-    const params_url = dataClient_id ? { client_id: dataClient_id?.id } : {};
-    const combinedFilters = { ...filters, ...params_url };
     fetchData_table_by_projet(
         entity,
-        combinedFilters,       
+        filters,       
         searchTerm,
         currentPage,
         rowsPerPage,
@@ -394,12 +388,13 @@ const rows = formatData();
         /> 
       <InputSelect
         label="Client"
-        name="cienId"
-        onChange={(selected) => handleFilterChange("clientId", selected?.value || null)}
+        name="clienId"
         options={clients.map(s => ({
           value: s.id,
           label: s.nom + ' ' + s.prenom
         }))}
+        onChange={(selected) => handleFilterChange("client_id", selected?.value || null)}
+        value={tempFilters.client_id}
         placeholder="Choisir un client..."
         isLoading={loading}
       />
