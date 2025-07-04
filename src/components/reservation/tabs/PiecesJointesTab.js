@@ -8,9 +8,8 @@ import {
   PlusIcon,
 } from 'lucide-react';
 
-export const PiecesJointesTab = ({ reservationData, user }) => {
+export const PiecesJointesTab = ({ reservationData, user,piecesJointesData}) => {
   const { reservation } = reservationData;
-  const piecesJointesData = reservation?.piece_jointe || [];
   const FileUrl = process.env.NEXT_PUBLIC_IMG_URL;
 
   const handleEdit_PJ = () => {

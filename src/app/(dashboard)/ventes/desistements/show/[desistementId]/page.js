@@ -19,9 +19,11 @@ import format from 'date-fns/format';
 import LoadingSpin from '@/components/LoadingSpin';
 import { MODE_PAIEMENT, getModePenaliteLabel } from '@/configs/enum';
 import { Clipboard, FileSliders, Folder } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function Page() {
   const FileUrl = process.env.NEXT_PUBLIC_IMG_URL;
+  const router = useRouter();
 
   const params = useParams();
   const { user, token } = useAuth();
@@ -197,12 +199,12 @@ export default function Page() {
     try {
       setLoading((prev) => ({
         ...prev,
-        submit: statut === 1,
-        reject: statut === 2,
+        submit: statut == 1,
+        reject: statut == 2,
       }));
 
       const data = {
-        commentaire: statut === 2 ? commentaire_rejete : null,
+        commentaire: statut == 2 ? commentaire_rejete : null,
         statut: statut,
       };
 
@@ -217,7 +219,7 @@ export default function Page() {
         },
       }).then(() => {
         const message =
-          statut === 1
+          statut == 1
             ? 'Désistement validé avec succès'
             : 'Désistement rejeté avec succès';
 
@@ -227,7 +229,7 @@ export default function Page() {
     } catch (error) {
       console.error('Validation error:', error);
       toast.error(
-        `Erreur lors de ${statut === 1 ? 'la validation' : 'du rejet'}`
+        `Erreur lors de ${statut == 1 ? 'la validation' : 'du rejet'}`
       );
     } finally {
       setLoading((prev) => ({ ...prev, submit: false, reject: false }));
@@ -322,169 +324,18 @@ export default function Page() {
             bien_ancien={reservationData.bien?.propriete_dite_bien}
             sum_avances_valides={reservationData.sumAvances}
             banques={banques}
+            user={user}
+            code_reservation={reservationData.codeRes}
           />
-        )}
-
-        {/* Penalty section - converted to show only */}
-        <div className="border-t border-gray-200 py-4 px-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="text-md font-medium">Pénalité</h3>
-            </div>
-            <div
-              className={`px-3 py-1 rounded-full text-sm font-medium ${
-                penalite != null
-                  ? 'bg-green-100 text-green-800'
-                  : 'bg-gray-100 text-gray-800'
-              }`}
-            >
-              {penalite != null ? 'Appliquée' : 'Non appliquée'}
-            </div>
-          </div>
-        </div>
-
-        {penalite != null && (
-          <div className="border-t border-gray-200 py-4 px-6 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-500 mb-1">
-                  Mode Pénalité
-                </label>
-                <p className="text-gray-900">
-                  {getModePenaliteLabel(penalite.mode_penalite)}
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-500 mb-1">
-                  Montant
-                </label>
-                <p className="text-gray-900">
-                  {penalite.montant
-                    ? `${parseFloat(penalite.montant).toFixed(2)} DH`
-                    : 'N/A'}
-                </p>
-              </div>
-
-              {penalite.mode_penalite !== 'Montant' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">
-                    Calculé sur
-                  </label>
-                  <p className="text-gray-900">
-                    {penalite.penalite_par === 'prix' ? 'Prix' : 'Avance'}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            <div className="border-t border-gray-200 pt-4">
-              <h4 className="text-md font-medium text-gray-900 mb-3">
-                Détails de paiement
-              </h4>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">
-                    Mode de paiement
-                  </label>
-                  <p className="text-gray-900">
-                    {MODE_PAIEMENT[penalite.mode_paiement]?.label || ''}
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">
-                    SR
-                  </label>
-                  <p className="text-gray-900">{penalite.sr ? 'Oui' : 'Non'}</p>
-                </div>
-
-                {penalite.mode_paiement != 1 && (
-                  <>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-500 mb-1">
-                        Banque
-                      </label>
-                      <p className="text-gray-900">
-                        {banques.find((b) => b.id === penalite.banque_id)
-                          ?.nom || 'N/A'}
-                      </p>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-500 mb-1">
-                        N° Paiement
-                      </label>
-                      <p className="text-gray-900">
-                        {penalite.numero_paiement || 'N/A'}
-                      </p>
-                    </div>
-                  </>
-                )}
-
-                {penalite.mode_paiement != 1 &&
-                  penalite.mode_paiement != 5 &&
-                  penalite.mode_paiement != 6 && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-500 mb-1">
-                        Échéance
-                      </label>
-                      <p className="text-gray-900">
-                        {penalite?.echeance
-                          ? format(
-                              new Date(penalite?.echeance),
-                              'dd/MM/yyyy ',
-                              {
-                                timeZone: 'UTC',
-                              }
-                            )
-                          : ''}
-                      </p>
-                    </div>
-                  )}
-              </div>
-
-              {penalite.piece_jointes?.length > 0 && (
-                <div className="mt-6 border-t border-gray-200 pt-4">
-                  <h4 className="text-md font-medium text-gray-900 mb-3">
-                    Fichiers joints ({penalite.piece_jointes.length})
-                  </h4>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                    {penalite.piece_jointes.map((file, index) => (
-                      <div
-                        key={index}
-                        className="flex flex-col p-3 bg-white rounded-md border border-gray-200"
-                      >
-                        <div className="flex items-center mb-2">
-                          {getFileIcon(file.fichier)}
-                          <a
-                            href={`${FileUrl}/Docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/penalites/${reservationData.codeRes}/${file.fichier}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="ml-2 text-sm font-medium text-gray-700 hover:text-blue-600 truncate"
-                          >
-                            {file.fichier.split('/').pop()}
-                          </a>
-                        </div>
-                        <span className="text-xs text-gray-500 mt-auto">
-                          {formatFileSize(file.size)}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
         )}
 
         {/* Attachments section - converted to show only */}
         <div className="border-t border-gray-200 py-4 px-6">
           <div className="flex justify-between items-center">
             <div>
-              <h3 className="text-md font-medium">Pièces Jointes</h3>
+              <h3 className="text-xl font-medium text-[rgb(35,110,233)]">
+                Pièces Jointes
+              </h3>
             </div>
             <div
               className={`px-3 py-1 rounded-full text-sm font-medium ${
@@ -527,7 +378,6 @@ export default function Page() {
             </div>
           </div>
         )}
-
         {/* Comment field - kept editable for validation/rejection */}
         <div className="border-t border-gray-200 py-4 px-6">
           <div>
@@ -539,6 +389,226 @@ export default function Page() {
             </p>
           </div>
         </div>
+        {/* Penalty section - converted to show only */}
+        <div className="border-t border-gray-200 py-4 px-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-xl font-medium text-[rgb(35,110,233)]">
+                Pénalité
+              </h3>
+            </div>
+            <div
+              className={`px-3 py-1 rounded-full text-sm font-medium ${
+                penalite != null
+                  ? 'bg-green-100 text-green-800'
+                  : 'bg-gray-100 text-gray-800'
+              }`}
+            >
+              {penalite != null ? 'Appliquée' : 'Non appliquée'}
+            </div>
+          </div>
+        </div>
+        {penalite != null && (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+            <div className="p-6 space-y-6">
+              {/* Penalty Mode Section */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                  <svg
+                    className="w-5 h-5 text-blue-500 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    />
+                  </svg>
+                  Détails de la pénalité
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
+                      Mode Pénalité
+                    </label>
+                    <p className="text-gray-900 font-medium">
+                      {getModePenaliteLabel(penalite.mode_penalite)}
+                    </p>
+                  </div>
+
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
+                      Montant
+                    </label>
+                    <p className="text-gray-900 font-medium">
+                      {penalite.montant ? (
+                        <span className="text-red-500">
+                          {parseFloat(penalite.montant).toFixed(2)} DH
+                        </span>
+                      ) : (
+                        ''
+                      )}
+                    </p>
+                  </div>
+
+                  {penalite.mode_penalite !== 'Montant' && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
+                        Calculé sur
+                      </label>
+                      <p className="text-gray-900 font-medium">
+                        {penalite.penalite_par == 'prix' ? 'Prix' : 'Avance'}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Payment Details Section */}
+              <div className="space-y-4 pt-2">
+                <h4 className="text-lg font-semibold text-gray-800 flex items-center">
+                  <svg
+                    className="w-5 h-5 text-green-500 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
+                    />
+                  </svg>
+                  Détails de paiement
+                </h4>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
+                      Mode de paiement
+                    </label>
+                    <p className="text-gray-900 font-medium">
+                      {MODE_PAIEMENT[penalite.mode_paiement]?.label ||
+                        'Non spécifié'}
+                    </p>
+                  </div>
+
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
+                      SR
+                    </label>
+                    <p className="text-gray-900 font-medium">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          penalite.sr
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}
+                      >
+                        {penalite.sr ? 'Oui' : 'Non'}
+                      </span>
+                    </p>
+                  </div>
+
+                  {penalite.mode_paiement != 1 && (
+                    <>
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
+                          Banque
+                        </label>
+                        <p className="text-gray-900 font-medium">
+                          {banques.find((b) => b.id == penalite.banque_id)
+                            ?.nom || ''}
+                        </p>
+                      </div>
+
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
+                          N° Paiement
+                        </label>
+                        <p className="text-gray-900 font-medium">
+                          {penalite.numero_paiement || ''}
+                        </p>
+                      </div>
+                    </>
+                  )}
+
+                  {penalite.mode_paiement != 1 &&
+                    penalite.mode_paiement != 5 &&
+                    penalite.mode_paiement != 6 && (
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
+                          Échéance
+                        </label>
+                        <p className="text-gray-900 font-medium">
+                          {penalite?.echeance
+                            ? format(
+                                new Date(penalite?.echeance),
+                                'dd/MM/yyyy',
+                                {
+                                  timeZone: 'UTC',
+                                }
+                              )
+                            : 'Non spécifiée'}
+                        </p>
+                      </div>
+                    )}
+                </div>
+              </div>
+
+              {/* Attachments Section */}
+              {penalite.piece_jointes?.length > 0 && (
+                <div className="space-y-4 pt-2">
+                  <h4 className="text-lg font-semibold text-gray-800 flex items-center">
+                    <svg
+                      className="w-5 h-5 text-purple-500 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                      />
+                    </svg>
+                    Fichiers joints ({penalite.piece_jointes.length})
+                  </h4>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {penalite.piece_jointes.map((file, index) => (
+                      <div
+                        key={index}
+                        className="flex items-start p-3 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors duration-150"
+                      >
+                        <div className="flex-shrink-0 pt-1">
+                          {getFileIcon(file.fichier)}
+                        </div>
+                        <div className="ml-3 flex-1 min-w-0">
+                          <a
+                            href={`${FileUrl}/Docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/penalites/${reservationData.codeRes}/${file.fichier}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm font-medium text-gray-700 hover:text-blue-600 truncate block"
+                            title={file.fichier.split('/').pop()}
+                          >
+                            {file.fichier.split('/').pop()}
+                          </a>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Form actions - kept for validation/rejection */}
         {statut_des == 0 && user.role <= 2 && (

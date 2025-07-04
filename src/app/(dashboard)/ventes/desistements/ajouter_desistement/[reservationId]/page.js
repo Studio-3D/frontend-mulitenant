@@ -27,6 +27,7 @@ import Autocomplete from '@/components/Autocomplete';
 
 export default function Page() {
   const [dossierInfos, setDossierInfos] = useState({});
+  const [formSubmitted, setFormSubmitted] = useState(false);
 
   const router = useRouter();
   const params = useParams();
@@ -321,6 +322,12 @@ export default function Page() {
   };
 
   const onSubmit = async (data) => {
+    setFormSubmitted(true); // Set form as submitted
+    const errors = getFormErrors();
+
+    if (errors.length > 0) {
+      return; // Don't proceed with submission if there are errors
+    }
     try {
       setLoading((prev) => ({ ...prev, submit: true }));
       const formData = new FormData();
@@ -418,7 +425,7 @@ export default function Page() {
         },
       });
 
-      if (response.status == 201||response.status == 200) {
+      if (response.status == 201 || response.status == 200) {
         router.push('/ventes/desistements');
       }
     } catch (error) {
@@ -434,11 +441,6 @@ export default function Page() {
       type: 1,
       motif: data.motif,
       type_remb: data.type_remb,
-      //   inputList_remb:JSON.stringify(data.inputList_remb),
-      /*  dossier_id: data.dossier_id,
-      montant_transferer: data.montant_transferer,
-      reste_a_rembourse: data.reste_a_rembourse,
-      type_remb_transfere: data.type_remb_transfere,*/
     };
   };
 
@@ -506,9 +508,7 @@ export default function Page() {
           errors.push('Le type de remboursement est requis');
 
         // Validate based on remboursement type
-        if (
-          formValues.type_remb === 'direct'
-        ) {
+        if (formValues.type_remb === 'direct') {
           if (
             !formValues.inputList_remb ||
             formValues.inputList_remb.length === 0
@@ -1307,6 +1307,142 @@ export default function Page() {
                   onDossierInfosChange={handleDossierInfosChange}
                 />
               )}
+              {/* Section Pénalité */}
+              <div className="border-t border-gray-200 py-4 px-6">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-md font-medium">
+                      {' '}
+                      Ajouter Pièces Jointes
+                    </h3>
+                  </div>
+
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={avecPiecesJointes}
+                      onChange={() => setAvecPiecesJointes(!avecPiecesJointes)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                  </label>
+                </div>
+              </div>
+              <div className="border-t border-gray-200 py-4 px-6">
+                {avecPiecesJointes && (
+                  <div>
+                    <div className="space-y-4">
+                      {/* File Input */}
+                      <div className="relative">
+                        <TextField
+                          label="Fichiers de désistements:"
+                          control={control}
+                          errors={{}}
+                          backendErrors={{}}
+                          defaultValues={{}}
+                          name=""
+                          type="file"
+                          onChange={(e) => handleFileChange(e, 1)}
+                          accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" // Specify accepted file types
+                        />
+                        <p className="mt-1 text-xs text-gray-500">
+                          Formats acceptés: PDF, JPG, PNG, DOC (Taille max:
+                          10MB)
+                        </p>
+                      </div>
+
+                      {/* Selected Files Preview */}
+                      {selectedFiles_dst.length > 0 && (
+                        <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                          <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                            <svg
+                              className="w-4 h-4 mr-2 text-primary-500"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                              />
+                            </svg>
+                            Fichiers sélectionnés ({selectedFiles_dst.length})
+                          </h3>
+
+                          <div className="space-y-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                              {selectedFiles_dst.map((data, index) => (
+                                <div
+                                  key={data.id || data.name || index}
+                                  className="flex flex-col p-3 bg-white rounded-md border border-gray-200 hover:border-blue-200 transition-colors h-full"
+                                >
+                                  <div className="flex items-center mb-2">
+                                    {/* File icon based on type */}
+                                    {getFileIcon(data.name || data.fichier)}
+
+                                    <button
+                                      onClick={() =>
+                                        data.fichier
+                                          ? handleFileClick(data.fichier)
+                                          : handleDownloadFile(data)
+                                      }
+                                      className="ml-2 text-sm font-medium text-gray-700 hover:text-blue-600 truncate flex-1 text-left"
+                                      title={data.fichier || data.name}
+                                    >
+                                      {data.fichier || data.name}
+                                    </button>
+                                  </div>
+
+                                  <div className="flex items-center justify-between mt-auto">
+                                    <span className="text-xs text-gray-500">
+                                      {formatFileSize(data.size)}
+                                    </span>
+                                    <button
+                                      onClick={() => handleDeleteFile(index, 1)}
+                                      className="p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 transition-colors"
+                                      title="Supprimer"
+                                    >
+                                      <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                        />
+                                      </svg>
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                <div className="flex-1 mt-4">
+                  <TextField
+                    label="Commentaire:"
+                    name="commentaire"
+                    type="text"
+                    multi={true} // Set this to true if you want a multi-line textarea, else leave it out or false
+                    control={control} // Passed from useForm hook
+                    errors={errors} // Validation errors from React Hook Form
+                    backendErrors={{}} // Backend error messages if any
+                    defaultValues={{}} // Default values for the form
+                    width="w-full" // Optionally set width, default is 'w-80'
+                    height="h-full" // Optionally set height, default is 'h-10'
+                  />
+                </div>
+              </div>
 
               {/* Section Pénalité */}
               <div className="border-t border-gray-200 py-4 px-6">
@@ -1637,143 +1773,8 @@ export default function Page() {
                   </div>
                 </div>
               )}
-              {/* Section Pénalité */}
-              <div className="border-t border-gray-200 py-4 px-6">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="text-md font-medium">
-                      {' '}
-                      Ajouter Pièces Jointes
-                    </h3>
-                  </div>
 
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={avecPiecesJointes}
-                      onChange={() => setAvecPiecesJointes(!avecPiecesJointes)}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                  </label>
-                </div>
-              </div>
-              <div className="border-t border-gray-200 py-4 px-6">
-                {avecPiecesJointes && (
-                  <div>
-                    <div className="space-y-4">
-                      {/* File Input */}
-                      <div className="relative">
-                        <TextField
-                          label="Fichiers de désistements:"
-                          control={control}
-                          errors={{}}
-                          backendErrors={{}}
-                          defaultValues={{}}
-                          name=""
-                          type="file"
-                          onChange={(e) => handleFileChange(e, 1)}
-                          accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" // Specify accepted file types
-                        />
-                        <p className="mt-1 text-xs text-gray-500">
-                          Formats acceptés: PDF, JPG, PNG, DOC (Taille max:
-                          10MB)
-                        </p>
-                      </div>
-
-                      {/* Selected Files Preview */}
-                      {selectedFiles_dst.length > 0 && (
-                        <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                          <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                            <svg
-                              className="w-4 h-4 mr-2 text-primary-500"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                              />
-                            </svg>
-                            Fichiers sélectionnés ({selectedFiles_dst.length})
-                          </h3>
-
-                          <div className="space-y-2">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                              {selectedFiles_dst.map((data, index) => (
-                                <div
-                                  key={data.id || data.name || index}
-                                  className="flex flex-col p-3 bg-white rounded-md border border-gray-200 hover:border-blue-200 transition-colors h-full"
-                                >
-                                  <div className="flex items-center mb-2">
-                                    {/* File icon based on type */}
-                                    {getFileIcon(data.name || data.fichier)}
-
-                                    <button
-                                      onClick={() =>
-                                        data.fichier
-                                          ? handleFileClick(data.fichier)
-                                          : handleDownloadFile(data)
-                                      }
-                                      className="ml-2 text-sm font-medium text-gray-700 hover:text-blue-600 truncate flex-1 text-left"
-                                      title={data.fichier || data.name}
-                                    >
-                                      {data.fichier || data.name}
-                                    </button>
-                                  </div>
-
-                                  <div className="flex items-center justify-between mt-auto">
-                                    <span className="text-xs text-gray-500">
-                                      {formatFileSize(data.size)}
-                                    </span>
-                                    <button
-                                      onClick={() => handleDeleteFile(index, 1)}
-                                      className="p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 transition-colors"
-                                      title="Supprimer"
-                                    >
-                                      <svg
-                                        className="w-4 h-4"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                      >
-                                        <path
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          strokeWidth={2}
-                                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                        />
-                                      </svg>
-                                    </button>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-                <div className="flex-1 mt-4">
-                  <TextField
-                    label="Commentaire:"
-                    name="commentaire"
-                    type="text"
-                    multi={true} // Set this to true if you want a multi-line textarea, else leave it out or false
-                    control={control} // Passed from useForm hook
-                    errors={errors} // Validation errors from React Hook Form
-                    backendErrors={{}} // Backend error messages if any
-                    defaultValues={{}} // Default values for the form
-                    width="w-full" // Optionally set width, default is 'w-80'
-                    height="h-full" // Optionally set height, default is 'h-10'
-                  />
-                </div>
-              </div>
-              {errors_s.length > 0 && (
+              {formSubmitted && errors_s.length > 0 && (
                 <div className="bg-red-50 border-l-4 border-red-500 text-red-500 p-4 mb-4">
                   <p className="font-semibold">
                     Veuillez corriger les erreurs suivantes :
@@ -1793,19 +1794,21 @@ export default function Page() {
                 >
                   Annuler
                 </button>
+
                 <button
                   type="submit"
-                  disabled={loading.submit || errors_s.length > 0}
+                  disabled={
+                    loading.submit || (formSubmitted && errors_s.length > 0)
+                  }
                   className={`px-4 py-2 rounded-md focus:outline-none focus:ring-2 transition-colors ${
-                    loading.submit || errors_s.length > 0
-                      ? 'bg-indigo-100 text-indigo-600 cursor-not-allowed' // Transparent indigo when disabled
-                      : 'bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500' // Normal state
+                    loading.submit || (formSubmitted && errors_s.length > 0)
+                      ? 'bg-indigo-100 text-indigo-600 cursor-not-allowed'
+                      : 'bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500'
                   }`}
                 >
                   {loading.submit ? (
                     <span className="flex items-center">
-                      <LoadingSpin />{' '}
-                      {/* Adjust spinner color based on state */}
+                      <LoadingSpin />
                       Enregistrer
                     </span>
                   ) : (

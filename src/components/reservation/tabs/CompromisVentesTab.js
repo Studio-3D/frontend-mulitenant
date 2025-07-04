@@ -163,6 +163,7 @@ export const CompromisVentesTab = ({
   } else {
     return (
       <Compromis_show
+      etat_res={data.etat_res}
       user={user}
       reservationData={reservationData}
         data_c={data.compromis}

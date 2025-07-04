@@ -1,17 +1,22 @@
-import React from 'react';
-import { UsersIcon, PlusIcon, EditIcon, TrashIcon } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 import Table from '@/components/Table';
 import { Eye, Pencil } from 'lucide-react';
 import Button from '@/components/Button'; // adjust the path as needed
+import { APIURL } from '../../../configs/api';
+import axios from 'axios';
 
-export const AcquereursTab = ({ reservationData, user_role }) => {
+export const AcquereursTab = ({
+  etat,
+  contrat_vente,
+  aquereurs,
+  user_role,
+  reservationId,
+}) => {
   // Format users data for table
-  const aquereurs = reservationData?.reservation?.aquereurs || [];
 
-  const { reservation } = reservationData;
   const handleEdit_pourcentage = () => {
     window.localStorage.setItem('step_res_edit', 1);
-    const editUrl = `${window.location.origin}/ventes/reservations/?id=${reservation.id}&action=edit`;
+    const editUrl = `${window.location.origin}/ventes/reservations/?id=${reservationId}&action=edit`;
 
     window.open(editUrl, '_blank');
   };
@@ -23,6 +28,7 @@ export const AcquereursTab = ({ reservationData, user_role }) => {
   const handleEdit = (aqId) => {
     window.open(`/ventes/clients/edit/${aqId}`, '_blank');
   };
+ 
   // Format users data for table display
   const formatData = () => {
     return aquereurs.map((data) => ({
@@ -92,7 +98,7 @@ export const AcquereursTab = ({ reservationData, user_role }) => {
             title="Voir détails"
             onClick={() => handleShow(row.client_id)}
           />
-          {reservation.etat == 1 && (
+          {etat == 1 && (
             <>
               {user_role <= 3 && (
                 <Pencil
@@ -107,10 +113,11 @@ export const AcquereursTab = ({ reservationData, user_role }) => {
       ),
     },
   ];
+
   return (
     <>
       <div className="flex justify-end">
-        {reservation?.etat == 1 && reservation.contrat_vente == null && (
+        {etat == 1 && contrat_vente == null && (
           <Button
             className="mb-5"
             type="submit"
@@ -123,6 +130,7 @@ export const AcquereursTab = ({ reservationData, user_role }) => {
 
       <div className="space-y-6">
         <Table
+          showSearch={false}
           columns={columns}
           data={formatData()}
           enableExport

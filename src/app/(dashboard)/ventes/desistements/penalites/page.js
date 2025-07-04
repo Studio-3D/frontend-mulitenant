@@ -471,13 +471,15 @@ export default function PenalitesTable() {
                 />
               )}
 
-              <Input
-                type="date"
-                placeholder="Date"
-                value={tempFilters.date}
-                onChange={(e) => handleFilterChange('date', e.target.value)}
-                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-              />
+              
+              <input
+                  type={tempFilters.date ? 'date' : 'text'}
+                  placeholder="Date"
+                  value={tempFilters.date}
+                  onFocus={(e) => (e.target.type = 'date')}
+                  onChange={(e) => handleFilterChange('date', e.target.value)}
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
 
               <Input
                 type="number"

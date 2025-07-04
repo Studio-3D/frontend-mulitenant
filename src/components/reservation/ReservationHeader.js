@@ -66,7 +66,6 @@ export const ReservationHeader = ({ reservationData }) => {
             <span className="text-gray-600">
               Dernière mise à jour: {lastUpdated}
             </span>
-
           </div>
         </div>
         {reservation.statut == 2 && (
@@ -93,7 +92,9 @@ export const ReservationHeader = ({ reservationData }) => {
               <p className="text-gray-600">Acquéreurs</p>
             </div>
             <p className="text-lg font-semibold">
-              {reservation?.aquereurs?.length || 0}{' '}
+              {reservation?.etat == 1
+                ? reservation?.aquereurs?.length
+                : reservation?.aquereurs_ancien?.length || 0}
             </p>
           </div>
           <div className="bg-blue-50 p-3 rounded-md">
@@ -113,7 +114,6 @@ export const ReservationHeader = ({ reservationData }) => {
             <p className="text-lg font-semibold">
               {reservation?.historiques?.length || 0}
             </p>
-
           </div>
         </div>
       </div>
