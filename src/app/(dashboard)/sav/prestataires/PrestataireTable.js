@@ -271,6 +271,7 @@ const PrestataireTable = (serviceId) => {
               style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}
             >
               <Input
+                label={'Nom'}
                 type="text"
                 placeholder="Nom..."
                 value={tempFilters.nom}
@@ -278,6 +279,7 @@ const PrestataireTable = (serviceId) => {
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
               <Input
+                label={'Prénom'}
                 type="text"
                 placeholder="Prénom..."
                 value={tempFilters.prenom}
@@ -285,6 +287,7 @@ const PrestataireTable = (serviceId) => {
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
               <Input
+                label={'CIN'}
                 type="text"
                 placeholder="Cin..."
                 value={tempFilters.cin}
@@ -293,6 +296,7 @@ const PrestataireTable = (serviceId) => {
               />
         
               <Input
+                label={'Email'}
                 type="text"
                 placeholder="Email..."
                 value={tempFilters.email}
@@ -301,6 +305,7 @@ const PrestataireTable = (serviceId) => {
               />
         
               <Input
+                label={'Téléphone'}
                 type="text"
                 placeholder="Téléphone..."
                 value={tempFilters.telephone}
@@ -309,6 +314,10 @@ const PrestataireTable = (serviceId) => {
               />
               
               {!serviceId?.service?.id && (
+                <div className="mb-3">
+                  <label className="block !text-gray-700 text-sm font-bold mb-1">
+                    Service 
+                  </label>    
                 <Select
                   isClearable
                   value={
@@ -332,9 +341,9 @@ const PrestataireTable = (serviceId) => {
                   placeholder="Choisir un service..."
                   className="text-sm"
                 />
+                 </div>
               )}
              
-
             </div>
         
             <div className="flex justify-end gap-3 pt-2">

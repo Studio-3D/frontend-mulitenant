@@ -144,7 +144,6 @@ const ServiceTable = () => {
   const data_to_export = () => {
     return services.map((srv) => ({
       nom: srv.nom,
-      // Ajoute d'autres champs utiles si nécessaire
     }));
   };
 
@@ -204,6 +203,7 @@ const ServiceTable = () => {
             >
               <Input
                 type="text"
+                label={'Nom'}
                 placeholder="Nom..."
                 value={tempFilters.nom}
                 onChange={(e) => handleFilterChange("nom", e.target.value)}

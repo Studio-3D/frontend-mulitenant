@@ -378,6 +378,7 @@ const data_to_export = () => {
   
   return (
     <>
+      <div className="reflative bg-white rounded-lg shadow-md p-4">
       <Table
         title={prestId.prestataire_id ? "Reclamations liées":'Reclamations Client'}
         data_to_export={data_to_export()}
@@ -474,6 +475,7 @@ const data_to_export = () => {
         onSubmit={handleSubmitReclamation}
         disabled={disabled}
       />
+      </div>
 
       
     </>
