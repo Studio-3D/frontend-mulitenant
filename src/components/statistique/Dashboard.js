@@ -80,14 +80,9 @@ export const Dashboard = () => {
             headers: {
               Authorization: `Bearer ${accesstoken}`,
             },
-            params: {
-              start_date: formattedStart,
-              end_date: formattedEnd,
-              projet_id: selectedProjet.id,
-              with_details: true
-            }
           }
         );
+        console.log('stat Response:', response.data);
         setDashboardData(response.data);
       } catch (err) {
         setError(err.message || 'Failed to fetch dashboard data');

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useProjet } from "@/context/ProjetContext";
 import { useRouter } from "next/navigation";
 import { Autocomplete, TextField } from "@mui/material";
+import Link from "next/link";
 
 const ProjetDialog = ({
   open,
@@ -42,7 +43,7 @@ const ProjetDialog = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white xl:w-[530px] xl:h-[250px] rounded-xl">
+      <div className="bg-white xl:w-[530px] rounded-xl">
         {/* Header */}
         <div className="bg-[#009FFF] text-white p-4 rounded-t-xl">
           <h2 className="xl:text-xl text-center">Veuillez sélectionner un projet</h2>
@@ -73,7 +74,7 @@ const ProjetDialog = ({
         </div>
 
         {/* Actions */}
-        <div className="flex justify-center gap-2 px-4">
+        <div className="flex justify-center gap-2 px-4 pb-4">
           <button
             onClick={onClose}
             disabled={loading}
@@ -88,6 +89,17 @@ const ProjetDialog = ({
           >
             {loading ? "Chargement..." : "Confirmer"}
           </button>
+        </div>
+
+        {/* Create project link */}
+        <div className="text-center pb-4">
+          <Link 
+            href="/Projets/ajouter" 
+            className="text-[#009FFF] hover:underline text-sm"
+            onClick={onClose} // Close the dialog when clicking the link
+          >
+            Créer un nouveau projet
+          </Link>
         </div>
       </div>
     </div>

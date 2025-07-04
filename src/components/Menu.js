@@ -112,6 +112,7 @@ const Menu = () => {
         label: "Tableau de Bord",
         icon: <LayoutDashboard />,
         href: "/tableau-de-bord",
+        needsProjet: true,
       },
     ];
 

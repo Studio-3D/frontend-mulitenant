@@ -11,15 +11,29 @@ import { VisitesChart } from './VisitesChart';
 import { AppelsChart } from './charts/AppelsChart';
 import { DesistementChart } from './charts/DesistementChart';
 import {UsersIcon, UserPlusIcon, CalendarCheckIcon, AlertOctagonIcon, CreditCardIcon, PhoneIcon } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import ProjetDialog from '../../components/ProjetDialog';
 
 export const Dashboard = () => {
   const { token } = useAuth();
   const accesstoken = token || localStorage.getItem("accessToken");
-  const { selectedProjet } = useProjet();
+  const { selectedProjet, projets } = useProjet();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [dateRange, setDateRange] = useState("cette année");
+  const [showProjetDialog, setShowProjetDialog] = useState(false);
+  const router = useRouter();
+
+  // Check if project is selected on initial render
+  useEffect(() => {
+    if (!selectedProjet) {
+      const storedProjet = localStorage.getItem("selectedProjet");
+      if (!storedProjet) {
+        setShowProjetDialog(true);
+      }
+    }
+  }, [selectedProjet]);
 
   const getDateRangeParams = (range) => {
     const today = new Date();
@@ -62,19 +76,26 @@ export const Dashboard = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!accesstoken || !selectedProjet?.id) {
-        setError('Missing authentication or project selection');
+      if (!accesstoken) {
+        router.push('/login');
         setLoading(false);
         return;
       }
-  
+
+      // Don't fetch data if no project is selected
+      if (!selectedProjet && !localStorage.getItem("selectedProjet")) {
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
         setError(null);
 
         const dateParams = getDateRangeParams(dateRange);
+        const projetId = selectedProjet?.id || JSON.parse(localStorage.getItem("selectedProjet"))?.id;
 
-        const response = await axios.get(`${APIURL.ROOTV1}/dashboard/${selectedProjet.id}/${dateParams.start_date}/${dateParams.end_date}`, {
+        const response = await axios.get(`${APIURL.ROOTV1}/dashboard/${projetId}/${dateParams.start_date}/${dateParams.end_date}`, {
           headers: {
             Authorization: `Bearer ${accesstoken}`
           },
@@ -94,14 +115,21 @@ export const Dashboard = () => {
     fetchData();
   }, [selectedProjet, accesstoken, dateRange]);
 
-
   if (loading) {
     return <div className="flex justify-center items-center h-64">Loading...</div>;
   }
 
-  if (error) {
-    return <div className="text-red-500 p-4">Error: {error}</div>;
+  if (!selectedProjet && !localStorage.getItem("selectedProjet")) {
+    return (
+      <ProjetDialog
+        open={showProjetDialog}
+        onClose={() => setShowProjetDialog(false)}
+        projets={projets}
+        onSelect={() => setShowProjetDialog(false)}
+      />
+    );
   }
+ 
 
   return (
     <div className="">
