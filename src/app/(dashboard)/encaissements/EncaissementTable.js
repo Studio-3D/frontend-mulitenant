@@ -193,7 +193,7 @@ const getTypeEncaissementBadge = (type) => {
       !bien_id && (
         <Link
           target="_blank"
-          href={'/biens/show/' + row.reservations.bien_id}
+          href={'/Biens/' + row.reservations.bien_id}
         >
           <strong style={{ fontWeight: 600 }}>{row.reservations.bien.propriete_dite_bien}</strong>
         </Link>

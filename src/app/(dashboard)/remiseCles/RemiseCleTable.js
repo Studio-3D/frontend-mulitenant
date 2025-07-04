@@ -221,7 +221,7 @@ useEffect(() => {
     render: (row) => (
       <Link
         target="_blank"
-        href={`/biens/show/${row.bien_id}`}
+        href={`/Biens/${row.bien_id}`}
         style={{ textDecoration: 'underline', color: 'rgb(102 104 128)' }}
       >
         <strong>{NomBienComplet(row.bien)}</strong>

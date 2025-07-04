@@ -197,20 +197,20 @@ const HistoriquesPaiement = () => {
   };
 
   const columns_export = [
-  { key: 'N° Reçu', label: 'N° Reçu' },
-  { key: 'Date réglement', label: 'Date réglement' },
-  { key: 'CC', label: 'Responsable' },
-  { key: 'Montant', label: 'Montant' },
-  { key: 'Mode paiement', label: 'Mode paiement' },
-  { key: 'Banque', label: 'Banque' },
-  { key: 'Num paiement', label: 'Num paiement' },
-  { key: 'Echéance', label: 'Echéance' },
-  { key: 'Etat', label: 'Etat' },
-  { key: 'num_remise', label: 'N° Remise' },
-  { key: 'date_encaissement', label: 'Date Encaissement' },
-  { key: 'commentaireAvance', label: 'Commentaire' },
-  { key: 'commentaire_rejete', label: 'Commentaire Rejeté' },
-];
+    { key: 'N° Reçu', label: 'N° Reçu' },
+    { key: 'Date réglement', label: 'Date réglement' },
+    { key: 'CC', label: 'Responsable' },
+    { key: 'Montant', label: 'Montant' },
+    { key: 'Mode paiement', label: 'Mode paiement' },
+    { key: 'Banque', label: 'Banque' },
+    { key: 'Num paiement', label: 'Num paiement' },
+    { key: 'Echéance', label: 'Echéance' },
+    { key: 'Etat', label: 'Etat' },
+    { key: 'num_remise', label: 'N° Remise' },
+    { key: 'date_encaissement', label: 'Date Encaissement' },
+    { key: 'commentaireAvance', label: 'Commentaire' },
+    { key: 'commentaire_rejete', label: 'Commentaire Rejeté' },
+  ];
   const handleFilterChange = (field, value) => {
     setTempFilters((prev) => ({ ...prev, [field]: value }));
   };
@@ -238,6 +238,7 @@ const HistoriquesPaiement = () => {
   return (
     <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
       <Table
+        showSearch={false}
         data_to_export={data_to_export()}
         columns_export={columns_export}
         name_file_export={'historique_paiements_export'}
@@ -277,31 +278,35 @@ const HistoriquesPaiement = () => {
                 }
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
-              <Input
-                type="date"
+              <input
+                type={tempFilters.date_start ? 'date' : 'text'}
                 placeholder="Date début"
                 value={tempFilters.date_start}
+                onFocus={(e) => (e.target.type = 'date')}
                 onChange={(e) =>
                   handleFilterChange('date_start', e.target.value)
                 }
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
-              <Input
-                type="date"
+              <input
+                type={tempFilters.date_end ? 'date' : 'text'}
                 placeholder="Date fin"
                 value={tempFilters.date_end}
+                onFocus={(e) => (e.target.type = 'date')}
                 onChange={(e) => handleFilterChange('date_end', e.target.value)}
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
-              <Input
-                type="date"
+              <input
+                type={tempFilters.date_reglement ? 'date' : 'text'}
                 placeholder="Date règlement"
                 value={tempFilters.date_reglement}
+                onFocus={(e) => (e.target.type = 'date')}
                 onChange={(e) =>
                   handleFilterChange('date_reglement', e.target.value)
                 }
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
+
               <Input
                 type="number"
                 placeholder="Montant"

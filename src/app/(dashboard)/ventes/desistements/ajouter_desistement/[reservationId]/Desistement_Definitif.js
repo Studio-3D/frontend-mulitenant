@@ -645,15 +645,7 @@ export function Desistement_Definitif({
                                           );
                                         }}
                                       />
-                                      {watch(
-                                        `inputList_remb.${index}.error`
-                                      ) && (
-                                        <p className="text-red-500 text-sm mt-1">
-                                          {watch(
-                                            `inputList_remb.${index}.error`
-                                          )}
-                                        </p>
-                                      )}
+                                     
                                     </div>
 
                                     <div className="flex items-center">
@@ -667,6 +659,15 @@ export function Desistement_Definitif({
                                         disabled
                                       />
                                     </div>
+                                     {watch(
+                                        `inputList_remb.${index}.error`
+                                      ) && (
+                                        <p className="text-red-500 text-sm mt-1">
+                                          {watch(
+                                            `inputList_remb.${index}.error`
+                                          )}
+                                        </p>
+                                      )}
                                   </div>
                                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                                     <Controller

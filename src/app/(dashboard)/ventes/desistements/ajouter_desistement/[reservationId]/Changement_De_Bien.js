@@ -192,7 +192,7 @@ export function Changement_De_Bien({
   const show_bien = async (bien_id) => {
     setLoading_bien_id(true);
     try {
-      const response = await axios.get(`${APIURL.ROOTV1}/biens/${bien_id}`, {
+      const response = await axios.get(`${APIURL.ROOTV1}/Biens/${bien_id}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
       const avance_minimale = response.data.bien.avance_minimale;
