@@ -485,7 +485,7 @@ const Page = () => {
           }
           loading={loading}
           error={error}
-          addLink={user?.role === 1 ? `/Utilisateurs/Ajouter-Utilisateur` : undefined}
+          addLink={user?.role === 1 ? `/Utilisateurs/ajouter-utilisateur` : undefined}
           enableExport
           currentPage={currentPage}
           rowsPerPage={rowsPerPage}
