@@ -24,7 +24,14 @@ export const MulBar = ({ data, timePeriod, startDate, endDate }) => {
   // Extract all bien types from the data (excluding 'date')
   const bienTypes = data.length > 0 ? Object.keys(data[0]).filter(key => key !== 'date') : [];
 
- 
+  // Color mapping for each bien type
+  const colorMap = {
+    Mag: '#8884d8',
+    Appt: '#82ca9d',
+    Studio: '#ffc658',
+    Villa: '#ff8042',
+    default: '#8dd1e1'
+  };
 
   // Process data based on selected time period
   const processData = () => {
