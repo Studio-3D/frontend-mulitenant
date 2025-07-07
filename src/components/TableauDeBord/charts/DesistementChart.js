@@ -267,9 +267,12 @@ export const DesistementChart = ({ dateRange }) => {
           }}
         />
         <Legend
-          layout="vertical"
-          verticalAlign="middle"
-          align="right"
+          layout="horizontal"
+          verticalAlign="bottom"
+          align="center"  
+          wrapperStyle={{
+            paddingTop: '20px'  /* Add some padding if needed */
+          }}
           iconSize={10}
           iconType="circle"
         />
