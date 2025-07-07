@@ -1,31 +1,31 @@
-import React from 'react';
+import React from "react";
 
-import { useRouter } from 'next/navigation';
-import axios from 'axios';
-import { useState, useEffect, useRef } from 'react';
+import { useRouter } from "next/navigation";
+import axios from "axios";
+import { useState, useEffect, useRef } from "react";
 import {
   fetchData_Select,
   fetchDataByProjet,
-} from '../../../../../src/configs/api-utils';
+} from "../../../../../src/configs/api-utils";
 
-import BreadCrumb from '../../navigation/BreadCrumb';
-import { Controller, useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-import { APIURL, ENDPOINTS } from '../../../../configs/api';
-import toast from 'react-hot-toast';
-import { useAuth } from '../../../../context/AuthContext';
-import Autocomplete from '@/components/Autocomplete';
-import TextField from '@/components/Textfield'; // Import the component
-import Button from '@/components/Button'; // adjust the path as needed
-import LoadingSpin from '@/components/LoadingSpin';
+import BreadCrumb from "../../navigation/BreadCrumb";
+import { Controller, useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { APIURL, ENDPOINTS } from "../../../../configs/api";
+import toast from "react-hot-toast";
+import { useAuth } from "../../../../context/AuthContext";
+import Autocomplete from "@/components/Autocomplete";
+import TextField from "@/components/Textfield"; // Import the component
+import Button from "@/components/Button"; // adjust the path as needed
+import LoadingSpin from "@/components/LoadingSpin";
 export default function ProspectForm({ id, onClose, onSuccess }) {
   const { token } = useAuth();
   const router = useRouter();
 
-  const accessToken = token || localStorage.getItem('accessToken');
+  const accessToken = token || localStorage.getItem("accessToken");
   const selectedProjet =
-    JSON.parse(localStorage.getItem('selectedProjet')) || null;
+    JSON.parse(localStorage.getItem("selectedProjet")) || null;
   /*const searchParams = useSearchParams();
   const id = searchParams.get('id');*/
 
@@ -44,15 +44,15 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
   const [loading_auto, setLoading_auto] = useState(false);
 
   const defaultValues = {
-    nom: '', // Make sure all fields you need are present
-    prenom: '',
-    telephone: '',
-    telephone_num2: '',
-    email: '',
-    source: '',
-    cin: '',
-    partenaire_id: '',
-    message: '',
+    nom: "", // Make sure all fields you need are present
+    prenom: "",
+    telephone: "",
+    telephone_num2: "",
+    email: "",
+    source: "",
+    cin: "",
+    partenaire_id: "",
+    message: "",
     notifie: 0,
     projet_id: selectedProjet?.id || 1, //''
   };
@@ -61,10 +61,10 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
     yup.object().shape({
       telephone: yup
         .string()
-        .matches(/^\d*$/, 'Le numéro de téléphone doit être un nombre')
-        .required('Le numéro de téléphone est requis')
-        .min(10, 'Le numéro de téléphone doit avoir au moins 10 chiffres')
-        .max(14, 'Le numéro de téléphone ne doit pas dépasser 14 chiffres'),
+        .matches(/^\d*$/, "Le numéro de téléphone doit être un nombre")
+        .required("Le numéro de téléphone est requis")
+        .min(10, "Le numéro de téléphone doit avoir au moins 10 chiffres")
+        .max(14, "Le numéro de téléphone ne doit pas dépasser 14 chiffres"),
       /*  telephone_num2: yup
         .string()
         .matches(/^\d*$/, 'Le numéro de téléphone doit être un nombre')
@@ -89,11 +89,11 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
   const isEditing = !!id;
 
   useEffect(() => {
-    fetchData_Select('sources', setSources, setLoading_auto);
+    fetchData_Select("sources", setSources, setLoading_auto);
 
-    if (source_txt === 'Partenaire') {
+    if (source_txt === "Partenaire") {
       // Fetch partenaires when source_txt is 'Partenaire'
-      fetchDataByProjet('partenaires', setPartenaires, setLoading_auto);
+      fetchDataByProjet("partenaires", setPartenaires, setLoading_auto);
     }
   }, [source_txt]);
 
@@ -117,18 +117,18 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
 
           // Utility function to handle `null` values gracefully
           const getValue = (field) =>
-            field !== null && field !== undefined ? field : '';
+            field !== null && field !== undefined ? field : "";
 
           setFormData({
             telephone: getValue(prospect.telephone),
             nom: getValue(prospect.nom),
             prenom: getValue(prospect.prenom),
             telephone_num2:
-              prospect.telephone_num2 === 'null'
+              prospect.telephone_num2 === "null"
                 ? null
                 : getValue(prospect.telephone_num2),
 
-            email: prospect.email === 'null' ? null : getValue(prospect.email),
+            email: prospect.email === "null" ? null : getValue(prospect.email),
             notifie: getValue(prospect.notifie),
             cin: getValue(prospect.cin),
             message: getValue(prospect.message),
@@ -136,14 +136,14 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
           });
           // Handling source and partenaire if they exist
           if (prospect.source) {
-            setValue('source', prospect.source.id || '');
-            setSource_txt(prospect.source.source || '');
+            setValue("source", prospect.source.id || "");
+            setSource_txt(prospect.source.source || "");
           } else {
-            setValue('source', '');
-            setSource_txt('');
+            setValue("source", "");
+            setSource_txt("");
           }
 
-          setPartenaire(prospect.partenaire?.id || '');
+          setPartenaire(prospect.partenaire?.id || "");
         })
         .catch((error) => console.log(error.message))
         .finally(() => {
@@ -165,71 +165,73 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
   }, [formData, setValue]);
 
   // Replace your existing onSubmit function with this:
-const onSubmit = async (data) => {
-  console.log(data);
-  
-  setIsSubmitting(true); // Set manual loading state
-  setBackendErrors({});
+  const onSubmit = async (data) => {
+    console.log(data);
 
-  try {
-    const dataToSend = new FormData();
-    let url = APIURL.PROSPECTS;
-    let method = 'post';
+    setIsSubmitting(true); // Set manual loading state
+    setBackendErrors({});
 
-    // Convert "null" string to actual null before appending to FormData
-    Object.entries(data).forEach(([key, value]) => {
-      if (value === 'null') value = null;
-      dataToSend.append(key, value === null ? '' : value);
-    });
+    try {
+      const dataToSend = new FormData();
+      let url = APIURL.PROSPECTS;
+      let method = "post";
 
-    if (isEditing) {
-      url = `${url}/${id}`;
-      method = 'put';
+      // Convert "null" string to actual null before appending to FormData
+      Object.entries(data).forEach(([key, value]) => {
+        if (value === "null") value = null;
+        dataToSend.append(key, value === null ? "" : value);
+      });
+
+      if (isEditing) {
+        url = `${url}/${id}`;
+        method = "put";
+      }
+
+      const res = await axios({
+        method,
+        url,
+        data: dataToSend,
+        headers: {
+          "content-type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      let message = "Quelque chose ne va pas bien";
+      if (res.status === 200 || res.status === 201) {
+        message = `Le prospect a été ${
+          isEditing ? "modifiée" : "créée"
+        } avec succès`;
+        reset(defaultValues);
+        toast.success(message);
+        localStorage.setItem("visite_fetch_show", 1);
+
+        if (onSuccess) onSuccess();
+        if (onClose) onClose();
+        else router.push(ENDPOINTS.PROSPECTS);
+      } else if (res.status === 422) {
+        message = res.data.message;
+        setBackendErrors(res.data.errors);
+        setTimeout(() => setBackendErrors({}), 5000);
+      }
+    } catch (error) {
+      const response = error.response;
+      if (response && response.status === 422) {
+        setBackendErrors(response.data.errors);
+        setTimeout(() => setBackendErrors({}), 5000);
+      }
+    } finally {
+      setIsSubmitting(false); // Reset manual loading state
     }
-
-    const res = await axios({
-      method,
-      url,
-      data: dataToSend,
-      headers: {
-        'content-type': 'application/json',
-        Accept: 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-
-    let message = 'Quelque chose ne va pas bien';
-    if (res.status === 200 || res.status === 201) {
-      message = `Le prospect a été ${isEditing ? 'modifiée' : 'créée'} avec succès`;
-      reset(defaultValues);
-      toast.success(message);
-      localStorage.setItem('visite_fetch_show', 1);
-
-      if (onSuccess) onSuccess();
-      if (onClose) onClose();
-      else router.push(ENDPOINTS.PROSPECTS);
-    } else if (res.status === 422) {
-      message = res.data.message;
-      setBackendErrors(res.data.errors);
-      setTimeout(() => setBackendErrors({}), 5000);
-    }
-  } catch (error) {
-    const response = error.response;
-    if (response && response.status === 422) {
-      setBackendErrors(response.data.errors);
-      setTimeout(() => setBackendErrors({}), 5000);
-    }
-  } finally {
-    setIsSubmitting(false); // Reset manual loading state
-  }
-};
+  };
 
   const handleChange_email = (event) => {
-    const inputText = event.target.value || ''; // Ensure inputText is at least an empty string
+    const inputText = event.target.value || ""; // Ensure inputText is at least an empty string
 
     if (inputText.length >= 3) {
       const timeout = setTimeout(() => {
-        fetch_cin_tel_email(inputText, 'email');
+        fetch_cin_tel_email(inputText, "email");
       }, 3000);
 
       return () => clearTimeout(timeout); // Clear timeout on subsequent calls
@@ -237,12 +239,12 @@ const onSubmit = async (data) => {
   };
 
   const handleChange_cin = (event) => {
-    console.log('le evenet==>' + event);
-    const inputText = event.target.value || ''; // Ensure inputText is at least an empty string
+    console.log("le evenet==>" + event);
+    const inputText = event.target.value || ""; // Ensure inputText is at least an empty string
 
     if (inputText.length >= 3) {
       const timeout = setTimeout(() => {
-        fetch_cin_tel_email(inputText, 'cin');
+        fetch_cin_tel_email(inputText, "cin");
       }, 3000);
 
       return () => clearTimeout(timeout); // Clear timeout on subsequent calls
@@ -250,10 +252,10 @@ const onSubmit = async (data) => {
   };
 
   const handleChange_tele = (event) => {
-    const inputText = event.target.value || ''; // Ensure inputText is at least an empty string
+    const inputText = event.target.value || ""; // Ensure inputText is at least an empty string
     if (inputText.length >= 10) {
       const timeout = setTimeout(() => {
-        fetch_cin_tel_email(event.target.value, 'tel');
+        fetch_cin_tel_email(event.target.value, "tel");
       }, 2000);
 
       return () => clearTimeout(timeout);
@@ -261,13 +263,13 @@ const onSubmit = async (data) => {
   };
 
   const fetch_cin_tel_email = async (v, text) => {
-    var route = ' ';
-    if (text == 'cin') {
-      route = 'search_client_by_cin';
-    } else if (text == 'tel') {
-      route = 'search_client_by_phone';
+    var route = " ";
+    if (text == "cin") {
+      route = "search_client_by_cin";
+    } else if (text == "tel") {
+      route = "search_client_by_phone";
     } else {
-      route = 'search_client_by_email';
+      route = "search_client_by_email";
     }
 
     //seeach by cin
@@ -281,24 +283,24 @@ const onSubmit = async (data) => {
         //result client
         if (res.data.client != null) {
           setInfo_client(
-            'le ' +
+            "le " +
               text +
-              ':' +
+              ":" +
               v +
-              ' appartient au Client ' +
+              " appartient au Client " +
               res?.data?.client?.nom +
-              ' ' +
+              " " +
               res?.data?.client?.prenom +
-              '.Veuillez changer ce Cin !'
+              ".Veuillez changer ce Cin !"
           );
           set_check(true);
-          setValue('nom', res.data.client.nom);
-          setValue('prenom', res.data.client.prenom);
-          setValue('email', res.data.client.email);
-          setValue('telephone', res.data.client.telephone_num1);
-          setValue('telephone_num2', res.data.client.telephone_num2);
+          setValue("nom", res.data.client.nom);
+          setValue("prenom", res.data.client.prenom);
+          setValue("email", res.data.client.email);
+          setValue("telephone", res.data.client.telephone_num1);
+          setValue("telephone_num2", res.data.client.telephone_num2);
         } else {
-          setInfo_client('');
+          setInfo_client("");
           set_check(false);
         }
 
@@ -306,21 +308,21 @@ const onSubmit = async (data) => {
 
         if (res.data.prospect != null) {
           setInfo_prospect(
-            'le ' +
+            "le " +
               text +
-              ':' +
+              ":" +
               v +
-              ' appartient au Prospect ' +
+              " appartient au Prospect " +
               res?.data?.prospect?.nom +
-              ' ' +
+              " " +
               res?.data?.prospect?.prenom
           );
           set_check_p(true);
-          setValue('nom', res.data.prospect.nom);
-          setValue('prenom', res.data.prospect.prenom);
-          setValue('email', res.data.prospect.email);
-          setValue('telephone', res.data.prospect.telephone);
-          setValue('telephone_num2', res.data.prospect.telephone_num2);
+          setValue("nom", res.data.prospect.nom);
+          setValue("prenom", res.data.prospect.prenom);
+          setValue("email", res.data.prospect.email);
+          setValue("telephone", res.data.prospect.telephone);
+          setValue("telephone_num2", res.data.prospect.telephone_num2);
 
           set_check_p(true);
         } else {
@@ -332,15 +334,15 @@ const onSubmit = async (data) => {
 
   // First select: Source
   const handleSourceChange = (newValue) => {
-    setValue('partenaire_id', ''); // Reset partenaire ID when source changes
-    setSource_txt(newValue ? newValue.source : ''); // Set source_txt value
-    setValue('source', newValue ? newValue.id : ''); // Set source ID
+    setValue("partenaire_id", ""); // Reset partenaire ID when source changes
+    setSource_txt(newValue ? newValue.source : ""); // Set source_txt value
+    setValue("source", newValue ? newValue.id : ""); // Set source ID
   };
 
   // Second select: Partenaire
   const handlePartenaireChange = (newValue) => {
-    setPartenaire(newValue ? newValue : ''); // Set partenaire value
-    setValue('partenaire_id', newValue ? newValue.id : ''); // Set partenaire ID
+    setPartenaire(newValue ? newValue : ""); // Set partenaire value
+    setValue("partenaire_id", newValue ? newValue.id : ""); // Set partenaire ID
   };
 
   if (isEditing && !formData) {
@@ -357,7 +359,7 @@ const onSubmit = async (data) => {
         <div className="flex items-center justify-start">
           <BreadCrumb
             baseUrl={ENDPOINTS.PROSPECTS}
-            step={`${isEditing ? 'Modifier' : 'Ajouter'} un prospect`}
+            step={`${isEditing ? "Modifier" : "Ajouter"} un prospect`}
           />
         </div>
         <div className="p-6 mt-4 min-h-[89vh] bg-white shadow-md rounded-md">
@@ -377,10 +379,10 @@ const onSubmit = async (data) => {
 
               {/* First set of fields (Responsive grid) */}
               <div>
-                  <h2 className="text-xl font-medium border-b pb-2">
-                    Informations du prospect
-                  </h2>
-                </div>
+                <h2 className="text-xl font-medium border-b pb-2">
+                  Informations du prospect
+                </h2>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
                 <div>
                   <TextField
@@ -454,30 +456,30 @@ const onSubmit = async (data) => {
                     onChange={handleChange_tele}
                   />
                 </div>
-              {/* Source Select */}
+                {/* Source Select */}
                 <div className="">
                   <Autocomplete
                     name="source"
                     label="Source:"
                     options={sources}
                     value={
-                      sources.find((opt) => opt.id == watch('source')) || null
+                      sources.find((opt) => opt.id == watch("source")) || null
                     }
                     loading={loading_auto}
                     choix="source"
                     errors={errors}
                     backendErrors={backendErrors}
                     onChange={handleSourceChange}
-                    />
+                  />
                 </div>
 
-              {/* Third set of fields (Responsive grid) */}
+                {/* Third set of fields (Responsive grid) */}
                 {/* Accepte d'être contacté */}
                 <div className="flex items-center justify-between w-full mt-4">
                   <Controller
                     name="notifie"
                     control={control}
-                    defaultValue={defaultValues['notifie'] || 0}
+                    defaultValue={defaultValues["notifie"] || 0}
                     render={({ field }) => (
                       <label className="flex justify-center items-center space-x-2">
                         <input
@@ -488,25 +490,22 @@ const onSubmit = async (data) => {
                             field.onChange(e.target.checked ? 1 : 0)
                           }
                           className="h-5 w-10 rounded-full bg-gray-300 transition-all duration-300"
-                          />
+                        />
                         <span
                           className={`text-sm font-medium ${
-                            field.value === 1 ? 'text-[#009FFF]' : ''
+                            field.value === 1 ? "text-[#009FFF]" : ""
                           }`}
-                          >
-                          Accepte être contacté:
+                        >
+                          Accepte d'être contacté:
                         </span>
                       </label>
                     )}
-                    />
-                    </div>
-               
-
-                
+                  />
+                </div>
 
                 {/* Partenaire Select (conditionally rendered) */}
                 <div className="">
-                  {source_txt === 'Partenaire' && (
+                  {source_txt === "Partenaire" && (
                     <Autocomplete
                       name="partenaire_id"
                       label="Partenaire:"
@@ -541,9 +540,8 @@ const onSubmit = async (data) => {
               </div>
 
               {/* Buttons */}
-
             </div>
-              <div className="flex justify-center items-center gap-4 xl:mt-32">
+            <div className="flex justify-center items-center gap-4 xl:mt-32">
               <Button
                 type="button"
                 onClick={() => {
@@ -557,20 +555,28 @@ const onSubmit = async (data) => {
               >
                 Annuler
               </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting || check || check_p}
-              >
+              <Button type="submit" disabled={isSubmitting || check || check_p}>
                 {isSubmitting ? (
                   <div className="flex items-center gap-2">
-                    <svg 
-                      className="animate-spin h-5 w-5 text-white" 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      fill="none" 
+                    <svg
+                      className="animate-spin h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
                       viewBox="0 0 24 24"
                     >
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
                     </svg>
                     Enregistrement...
                   </div>

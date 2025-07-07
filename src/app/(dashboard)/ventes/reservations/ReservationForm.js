@@ -1,4 +1,4 @@
-import React, { useState, Fragment, useRef, useEffect } from 'react';
+import React, { useState, Fragment, useRef, useEffect } from "react";
 import {
   CheckIcon,
   CalendarIcon,
@@ -18,33 +18,33 @@ import {
   UserX,
   UserCog,
   Calendar,
-} from 'lucide-react';
+} from "lucide-react";
 
-import Button from '@/components/Button'; // Import the component
+import Button from "@/components/Button"; // Import the component
 
-import TextField from '@/components/Textfield'; // Import the component
-import { useAuth } from '../../../../context/AuthContext';
-import axios from 'axios';
-import Pusher from 'pusher-js';
-import AutocompleteClient from './AutocompleteClient';
-import BreadCrumb from '../../navigation/BreadCrumb';
-import { APIURL, ENDPOINTS } from '../../../../configs/api';
-import { useRouter } from 'next/navigation';
-import * as yup from 'yup';
-import toast from 'react-hot-toast';
-import { useForm, Controller } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import AutocompleteBien from './AutocompleteBien';
-import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
-import Autocomplete from '@/components/Autocomplete';
-import LoadingSpin from '@/components/LoadingSpin';
+import TextField from "@/components/Textfield"; // Import the component
+import { useAuth } from "../../../../context/AuthContext";
+import axios from "axios";
+import Pusher from "pusher-js";
+import AutocompleteClient from "./AutocompleteClient";
+import BreadCrumb from "../../navigation/BreadCrumb";
+import { APIURL, ENDPOINTS } from "../../../../configs/api";
+import { useRouter } from "next/navigation";
+import * as yup from "yup";
+import toast from "react-hot-toast";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import AutocompleteBien from "./AutocompleteBien";
+import AutocompleteSelectComponent from "@/components/AutocompleteSelectComponent";
+import Autocomplete from "@/components/Autocomplete";
+import LoadingSpin from "@/components/LoadingSpin";
 
 import {
   fetchData_Select,
   fetchDataByProjet_2,
   fetchList_fichier_exist,
   fetchList_fichier_exist_by_Code,
-} from '../../../../../src/configs/api-utils';
+} from "../../../../../src/configs/api-utils";
 //import Modal from '@/components/Modal';
 //import Modal_File from './Modal_file';
 import {
@@ -52,8 +52,8 @@ import {
   SITUATION_FAMILIALLE,
   MODE_FINANCE,
   MODE_PAIEMENT,
-} from '@/configs/enum';
-import { CIVILITES } from '@/components/client-utils';
+} from "@/configs/enum";
+import { CIVILITES } from "@/components/client-utils";
 export default function ReservationForm({ id }) {
   const [formSubmitted_client, setFormSubmitted_client] = useState(false);
 
@@ -72,9 +72,9 @@ export default function ReservationForm({ id }) {
 
   const { user, token } = useAuth();
   const router = useRouter();
-  const accessToken = token || localStorage.getItem('accessToken');
+  const accessToken = token || localStorage.getItem("accessToken");
   const selectedProjet =
-    JSON.parse(localStorage.getItem('selectedProjet')) || null;
+    JSON.parse(localStorage.getItem("selectedProjet")) || null;
   const pusher_key_proposition = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_PROP;
   const [formData, setFormData] = useState(null);
   const isEditing = !!id;
@@ -88,7 +88,7 @@ export default function ReservationForm({ id }) {
   const [myfile, setMyfile] = useState(false);
   const [myfile_1, setMyfile_1] = useState(false);
   const [clientsExist, setClientsExist] = useState([]);
-  const [enabled, setenabled] = useState('none');
+  const [enabled, setenabled] = useState("none");
   const [disabled_var, setDisabled] = useState(!isEditing ? true : false);
   const [oldClients, setoldClients] = useState([]);
 
@@ -98,19 +98,19 @@ export default function ReservationForm({ id }) {
   const [filesList, setfilesList] = useState([]);
   const [filesList_avc, setfilesList_avc] = useState([]);
   const [loading_1, setLoading_1] = useState(false);
-  const selectedClient = localStorage.getItem('selectedClient');
+  const selectedClient = localStorage.getItem("selectedClient");
 
   const [addedClients, setAddedClients] = useState([]);
 
-  const step_ = window.localStorage.getItem('step_res_edit');
+  const step_ = window.localStorage.getItem("step_res_edit");
 
   const [currentStep, setCurrentStep] = useState(isEditing ? Number(step_) : 0);
 
   //clients select
   const [inputList1, setinputList1] = useState([
     {
-      id: '',
-      pourcentage: '',
+      id: "",
+      pourcentage: "",
     },
   ]);
   const [showNewClientForm, setShowNewClientForm] = useState(false);
@@ -118,38 +118,38 @@ export default function ReservationForm({ id }) {
   const [numberOfForms, setNumberOfForms] = useState(1);
   const [newClientForms, setNewClientForms] = useState([
     {
-      cin: '',
-      nom: '',
-      prenom: '',
-      telephone_num1: '',
-      pourcentage: '',
-      address: '',
-      type_client: '',
-      partenaire_id: '',
+      cin: "",
+      nom: "",
+      prenom: "",
+      telephone_num1: "",
+      pourcentage: "",
+      address: "",
+      type_client: "",
+      partenaire_id: "",
       prospect_id: null,
-      info_client: '',
-      info_prospect: '',
-      projet_id: selectedProjet ? selectedProjet.id : '',
+      info_client: "",
+      info_prospect: "",
+      projet_id: selectedProjet ? selectedProjet.id : "",
       situation_familliale: null,
       nom_mari: null,
       date_mariage: null,
       lieu_mariage: null,
-      notifie: '',
-      civilite: '',
+      notifie: "",
+      civilite: "",
     },
   ]);
 
   const steps = [
     {
-      name: 'Réservation',
+      name: "Réservation",
       icon: <CalendarIcon className="w-5 h-5" />,
     },
     {
-      name: 'Acquéreurs',
+      name: "Acquéreurs",
       icon: <UsersIcon className="w-5 h-5" />,
     },
     {
-      name: 'Paiement',
+      name: "Paiement",
       icon: <CreditCardIcon className="w-5 h-5" />,
     },
   ];
@@ -170,8 +170,8 @@ export default function ReservationForm({ id }) {
     setinputList1([
       ...inputList1,
       {
-        id: '',
-        pourcentage: '',
+        id: "",
+        pourcentage: "",
       },
     ]);
   };
@@ -179,7 +179,7 @@ export default function ReservationForm({ id }) {
   const removeClientEntry = (index, text) => {
     const updatedList = inputList1.filter((_, i) => i !== index);
     const finalList =
-      updatedList.length > 0 ? updatedList : [{ id: '', pourcentage: '' }];
+      updatedList.length > 0 ? updatedList : [{ id: "", pourcentage: "" }];
 
     // Update state first
     setinputList1(finalList);
@@ -200,12 +200,12 @@ export default function ReservationForm({ id }) {
     );
 
     // Update form values
-    setValue('pourcentages', totalPercentage);
+    setValue("pourcentages", totalPercentage);
 
-    if (text == 'percent') {
+    if (text == "percent") {
       const isValid = totalPercentage == 100;
-      setValue('verifierPourcentages', isValid);
-      setenabled(isValid ? 'none' : 'block');
+      setValue("verifierPourcentages", isValid);
+      setenabled(isValid ? "none" : "block");
     }
   };
 
@@ -216,25 +216,25 @@ export default function ReservationForm({ id }) {
       Array(newValue)
         .fill(null)
         .map((_, index) => ({
-          cin: newClientForms[index]?.cin || '',
-          nom: newClientForms[index]?.nom || '',
-          prenom: newClientForms[index]?.prenom || '',
-          telephone_num1: newClientForms[index]?.email || '',
-          pourcentage: newClientForms[index]?.pourcentage || '',
-          address: newClientForms[index]?.address || '',
-          type_client: newClientForms[index]?.type_client || '',
-          partenaire_id: newClientForms[index]?.partenaire_id || '',
-          prospect_id: newClientForms[index]?.prospect_id || '',
-          info_client: newClientForms[index]?.info_client || '',
-          info_prospect: newClientForms[index]?.info_prospect || '',
-          projet_id: newClientForms[index]?.projet_id || '',
+          cin: newClientForms[index]?.cin || "",
+          nom: newClientForms[index]?.nom || "",
+          prenom: newClientForms[index]?.prenom || "",
+          telephone_num1: newClientForms[index]?.email || "",
+          pourcentage: newClientForms[index]?.pourcentage || "",
+          address: newClientForms[index]?.address || "",
+          type_client: newClientForms[index]?.type_client || "",
+          partenaire_id: newClientForms[index]?.partenaire_id || "",
+          prospect_id: newClientForms[index]?.prospect_id || "",
+          info_client: newClientForms[index]?.info_client || "",
+          info_prospect: newClientForms[index]?.info_prospect || "",
+          projet_id: newClientForms[index]?.projet_id || "",
           situation_familliale:
-            newClientForms[index]?.situation_familliale || '',
-          nom_mari: newClientForms[index]?.nom_mari || '',
+            newClientForms[index]?.situation_familliale || "",
+          nom_mari: newClientForms[index]?.nom_mari || "",
           date_mariage: newClientForms[index]?.date_mariage || null,
-          lieu_mariage: newClientForms[index]?.lieu_mariage || '',
-          notifie: newClientForms[index]?.notifie || '',
-          civilite: newClientForms[index]?.civilite || '',
+          lieu_mariage: newClientForms[index]?.lieu_mariage || "",
+          notifie: newClientForms[index]?.notifie || "",
+          civilite: newClientForms[index]?.civilite || "",
         }))
     );
   };
@@ -247,46 +247,46 @@ export default function ReservationForm({ id }) {
     );
   };
   const defaultValues = {
-    projet_id: selectedProjet ? selectedProjet.id : '',
-    bien_id: '',
-    nb_acquereurs: '',
+    projet_id: selectedProjet ? selectedProjet.id : "",
+    bien_id: "",
+    nb_acquereurs: "",
     clients: addedClients || [],
     oldClients: [],
 
     /**Reservation */
-    date_reservation: new Date(new_date).toISOString().split('T')[0],
-    code_reservation: '',
+    date_reservation: new Date(new_date).toISOString().split("T")[0],
+    code_reservation: "",
     prix: 0,
     prix_final: 0,
-    mode_financement: '',
-    commentaire: '',
-    avance: '',
+    mode_financement: "",
+    commentaire: "",
+    avance: "",
     sr: 0,
-    banque_id: '',
-    numero_paiement: '',
-    echeance: '',
+    banque_id: "",
+    numero_paiement: "",
+    echeance: "",
     check_montant: false,
-    origin: 'reservation',
-    mode_paiement: '',
-    commentaireAvance: '',
+    origin: "reservation",
+    mode_paiement: "",
+    commentaireAvance: "",
     prix_remise: 0,
     prix_forfetaire: 0,
-    num_remise: '',
-    date_encaissement: '',
-    date_reglement: new Date(new_date).toISOString().split('T')[0],
+    num_remise: "",
+    date_encaissement: "",
+    date_reglement: new Date(new_date).toISOString().split("T")[0],
     verifierPourcentages: isEditing ? true : false,
     montant_encaisse: 0,
 
     ///
     reste: 0,
-    prix_val: '',
+    prix_val: "",
     Superficie_balcon_calculer: 0,
     superficie_jardin_calculer: 0,
     superficie_terrasse_calculer: 0,
     prix_box: 0,
     prix_parking: 0,
     prix_unitaire: 0,
-    avance_minimale: '',
+    avance_minimale: "",
     pourcentages: 0,
   };
   useEffect(() => {
@@ -327,15 +327,15 @@ export default function ReservationForm({ id }) {
         .then((response) => {
           if (response.status !== 200) router.back();
           const reservation = response.data.reservation;
-          console.log('le mode finance==>' + reservation?.mode_financement);
+          console.log("le mode finance==>" + reservation?.mode_financement);
           setFormData({
             code_reservation: reservation.code_reservation,
-            date_reservation: reservation?.date_reservation || '',
-            mode_financement: reservation?.mode_financement || '',
-            commentaire: reservation?.commentaire || '',
-            bien_id: reservation?.bien_id || '',
-            prix_val: reservation?.prix || '',
-            prix: reservation?.prix || '',
+            date_reservation: reservation?.date_reservation || "",
+            mode_financement: reservation?.mode_financement || "",
+            commentaire: reservation?.commentaire || "",
+            bien_id: reservation?.bien_id || "",
+            prix_val: reservation?.prix || "",
+            prix: reservation?.prix || "",
             Superficie_balcon_calculer:
               reservation?.bien != null
                 ? reservation?.bien?.superficie_balcon_calculer
@@ -372,7 +372,7 @@ export default function ReservationForm({ id }) {
             reservation.bien_id,
             response.data.propriete_dite_bien.original,
             reservation.prix,
-            'without_proposition'
+            "without_proposition"
           );
 
           // Initialize inputList1 with existing aquereurs
@@ -382,8 +382,8 @@ export default function ReservationForm({ id }) {
           }));
           setinputList1(aquereurs);
           setoldClients(aquereurs);
-          setValue('nb_acquereurs', Number(reservation.aquereurs.length || 0));
-          setValue('oldClients', JSON.stringify(aquereurs));
+          setValue("nb_acquereurs", Number(reservation.aquereurs.length || 0));
+          setValue("oldClients", JSON.stringify(aquereurs));
 
           // Get all aquereur client IDs
           const aquereurClientIds = aquereurs.map((aq) => aq.id);
@@ -402,14 +402,14 @@ export default function ReservationForm({ id }) {
           setLoading(false);
           fetchList_fichier_exist_by_Code(
             setfilesList,
-            'rsv',
+            "rsv",
             reservation.code_reservation,
             setLoading_list
           );
 
           fetchList_fichier_exist_by_Code(
             setfilesList_avc,
-            'avc',
+            "avc",
             reservation.code_reservation,
             setLoading_list
           );
@@ -437,7 +437,7 @@ export default function ReservationForm({ id }) {
       nb_acquereurs: totalAcquereurs, // Override with current count
     }).forEach(([key, value]) => {
       // Handle array/object data properly
-      if (key == 'clients') {
+      if (key == "clients") {
         dataToSend.append(key, JSON.stringify(value));
       } else {
         dataToSend.append(key, value);
@@ -465,7 +465,7 @@ export default function ReservationForm({ id }) {
         objects.forEach((file, index) => {
           // convertir un objet en File avant de l'envoyer
           const blob = new Blob([file.fichier], {
-            type: 'application/octet-stream',
+            type: "application/octet-stream",
           });
           const newFile = new File([blob], file.fichier);
           dataToSend.append(`files_reservation[${index}]`, newFile);
@@ -480,7 +480,7 @@ export default function ReservationForm({ id }) {
         }
       }
 
-      dataToSend.append('_method', 'PATCH');
+      dataToSend.append("_method", "PATCH");
       url = `${url}/${id}`;
     }
 
@@ -488,19 +488,19 @@ export default function ReservationForm({ id }) {
     axios
       .post(url, dataToSend, {
         headers: {
-          Accept: 'application/json',
+          Accept: "application/json",
           Authorization: `Bearer ${accessToken}`,
         },
       })
       .then((res) => {
-        let message = 'Quelque chose ne va pas bien';
+        let message = "Quelque chose ne va pas bien";
         if (res.status == 200) {
           message = `La réservation a été ${
-            isEditing ? 'modifiée' : 'créée'
+            isEditing ? "modifiée" : "créée"
           } avec succès`;
           toast.success(message);
-          localStorage.removeItem('step_res_edit');
-          localStorage.removeItem('selectedClient');
+          localStorage.removeItem("step_res_edit");
+          localStorage.removeItem("selectedClient");
           router.push(ENDPOINTS.RESERVATIONS);
           reset(defaultValues);
         } else if (res.status == 422) {
@@ -535,11 +535,11 @@ export default function ReservationForm({ id }) {
 
     // First check for invalid characters
     if (/[\\/]/.test(val)) {
-      setInfo_reservation('Les caractères / et \\ ne sont pas autorisés');
+      setInfo_reservation("Les caractères / et \\ ne sont pas autorisés");
       return; // Exit early if invalid characters found
     } else {
       setInfo_reservation(null);
-      console.log('le code est==>' + val);
+      console.log("le code est==>" + val);
 
       if (val.length >= 3) {
         try {
@@ -554,7 +554,7 @@ export default function ReservationForm({ id }) {
 
           if (res.data.reservation != null) {
             setInfo_reservation(
-              'Le Code Réservation : ' + val + ' est déjà existant'
+              "Le Code Réservation : " + val + " est déjà existant"
             );
           } else {
             setInfo_reservation(null);
@@ -571,32 +571,32 @@ export default function ReservationForm({ id }) {
       setBien_id(null);
     } else {
       setBien_id(v.id);
-      setValue('bien_id', v.id);
-      setValue('prix_val', v.prix);
-      setValue('prix', v.prix);
-      setValue('prix_final', v.prix);
+      setValue("bien_id", v.id);
+      setValue("prix_val", v.prix);
+      setValue("prix", v.prix);
+      setValue("prix_final", v.prix);
       setValue(
-        'Superficie_balcon_calculer',
+        "Superficie_balcon_calculer",
         v.superficie_balcon_calculer != null ? v.superficie_balcon_calculer : 0
       );
       setValue(
-        'superficie_jardin_calculer',
+        "superficie_jardin_calculer",
         v.superficie_jardin_calculer != null ? v.superficie_jardin_calculer : 0
       );
       setValue(
-        'superficie_terrasse_calculer',
+        "superficie_terrasse_calculer",
         v.superficie_terrasse_calculer != null
           ? v.superficie_terrasse_calculer
           : 0
       );
       setValue(
-        'superficie_habitable',
+        "superficie_habitable",
         v.superficie_habitable != null ? v.superficie_habitable : 0
       );
-      setValue('prix_box', v.prix_box ? v.prix_box : 0);
-      setValue('prix_parking', v.prix_parking ? v.prix_parking : 0);
-      setValue('prix_unitaire', v.prix_unitaire ? v.prix_unitaire : 0);
-      setValue('avance_minimale', v.avance_minimale ? v.avance_minimale : 0);
+      setValue("prix_box", v.prix_box ? v.prix_box : 0);
+      setValue("prix_parking", v.prix_parking ? v.prix_parking : 0);
+      setValue("prix_unitaire", v.prix_unitaire ? v.prix_unitaire : 0);
+      setValue("avance_minimale", v.avance_minimale ? v.avance_minimale : 0);
       storebien_en_proposition(v.id);
       pusher_function();
     }
@@ -619,7 +619,7 @@ export default function ReservationForm({ id }) {
           });
         }
         setBiensByProjet(res.data.biens);
-        if (text == 'without_proposition') {
+        if (text == "without_proposition") {
           if (bien_id != null) {
             for (var i = 0; i <= Number(res.data.biens.length) - 1; i++) {
               if (bien_id == res.data.biens[i].id) {
@@ -639,26 +639,26 @@ export default function ReservationForm({ id }) {
     Pusher.logToConsole = true;
 
     const pusher = new Pusher(`${pusher_key_proposition}`, {
-      cluster: 'eu',
+      cluster: "eu",
       encrypted: true,
     });
 
-    const channel = pusher.subscribe('proposition-updates');
+    const channel = pusher.subscribe("proposition-updates");
 
-    channel.bind('App\\Events\\PropositionUpdated', (data) => {
+    channel.bind("App\\Events\\PropositionUpdated", (data) => {
       if (isEditing) fetch_bien_ByProjet();
       else
         fetchDataByProjet_2(
-          'getBiensByProjet_Concat',
-          'biens',
+          "getBiensByProjet_Concat",
+          "biens",
           setBiensByProjet,
           setLoading_bien
         );
     });
 
     return () => {
-      channel.unbind('App\\Events\\PropositionUpdated');
-      pusher.unsubscribe('proposition-updates');
+      channel.unbind("App\\Events\\PropositionUpdated");
+      pusher.unsubscribe("proposition-updates");
     };
   };
   const storebien_en_proposition = async (id) => {
@@ -667,20 +667,20 @@ export default function ReservationForm({ id }) {
       old_id = 0;
     }
     axios({
-      method: 'put',
+      method: "put",
 
       url: `${APIURL.ROOTV1}/setPropostionBien/${id}/` + old_id,
       headers: {
-        'content-type': 'application/json',
-        Accept: 'application/json',
+        "content-type": "application/json",
+        Accept: "application/json",
         Authorization: `Bearer ${accessToken}`,
       },
     })
       .then(() => {
-        console.log('bien est en proposition');
+        console.log("bien est en proposition");
       })
       .catch(() => {
-        console.log('error');
+        console.log("error");
       });
   };
 
@@ -722,7 +722,7 @@ export default function ReservationForm({ id }) {
 
       setLoadingClients(false);
     } catch (error) {
-      console.error('Error fetching clients:', error);
+      console.error("Error fetching clients:", error);
       setLoadingClients(false);
     }
   };
@@ -730,18 +730,18 @@ export default function ReservationForm({ id }) {
   useEffect(() => {
     if (!isEditing) {
       fetchDataByProjet_2(
-        'getBiensByProjet_Concat',
-        'biens',
+        "getBiensByProjet_Concat",
+        "biens",
         setBiensByProjet,
         setLoading_bien
       );
       if (banques.length == 0) {
-        fetchData_Select('banques', setBanques, setLoading_1);
+        fetchData_Select("banques", setBanques, setLoading_1);
       }
     }
 
     if (partenaires.length == 0) {
-      fetchData_Select('partenaires', setPartenaires, setLoading_1);
+      fetchData_Select("partenaires", setPartenaires, setLoading_1);
     }
 
     if (clientsExist.length == 0) {
@@ -754,7 +754,7 @@ export default function ReservationForm({ id }) {
   const handleFileClick = (file) => {
     window.open(
       `${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/reservations/${file}`,
-      '_blank'
+      "_blank"
     );
   };
   const handleDownloadFile = (file) => {
@@ -763,9 +763,9 @@ export default function ReservationForm({ id }) {
     window.open(fileURL);
   };
   const handleDeleteFile = (index, fileType) => {
-    if (fileType == 'rsv') {
+    if (fileType == "rsv") {
       setSelectedFiles_rsv((prev) => prev.filter((_, i) => i !== index));
-    } else if (fileType == 'avc') {
+    } else if (fileType == "avc") {
       setSelectedFiles_avc((prev) => prev.filter((_, i) => i !== index));
     }
   };
@@ -795,9 +795,9 @@ export default function ReservationForm({ id }) {
         let fileNumber = 1;
 
         // Séparer le nom et l'extension de manière plus robuste
-        const fileParts = fileName.split('.');
+        const fileParts = fileName.split(".");
         const extension = fileParts.pop(); // Extraire l'extension
-        const baseName = fileParts.join('.'); // Joindre le reste comme nom de fichier
+        const baseName = fileParts.join("."); // Joindre le reste comme nom de fichier
 
         // Tant que le nom généré existe déjà dans filesList, on continue à ajouter un suffixe
         while (Object.values(fileList).includes(newFileName)) {
@@ -838,7 +838,6 @@ export default function ReservationForm({ id }) {
     });
   };
 
-
   const isButtonDisabled = () => {
     // Cache all watched values at start
     const {
@@ -861,7 +860,7 @@ export default function ReservationForm({ id }) {
     // Non-editing validations
     if (!isEditing) {
       // Basic amount validations
-      if (avance < 0 || avance === '') return true;
+      if (avance < 0 || avance === "") return true;
 
       // Payment method validation
       if (!mode_paiement) return true;
@@ -892,11 +891,11 @@ export default function ReservationForm({ id }) {
   };
   // Helper functions (add these outside your component)
   const getFileIcon = (filename) => {
-    const extension = filename.split('.').pop().toLowerCase();
-    const iconClass = 'w-5 h-5 flex-shrink-0 text-gray-400';
+    const extension = filename.split(".").pop().toLowerCase();
+    const iconClass = "w-5 h-5 flex-shrink-0 text-gray-400";
 
     switch (extension) {
-      case 'pdf':
+      case "pdf":
         return (
           <svg className={iconClass} fill="currentColor" viewBox="0 0 20 20">
             <path
@@ -906,9 +905,9 @@ export default function ReservationForm({ id }) {
             />
           </svg>
         );
-      case 'jpg':
-      case 'jpeg':
-      case 'png':
+      case "jpg":
+      case "jpeg":
+      case "png":
         return (
           <svg className={iconClass} fill="currentColor" viewBox="0 0 20 20">
             <path
@@ -918,8 +917,8 @@ export default function ReservationForm({ id }) {
             />
           </svg>
         );
-      case 'doc':
-      case 'docx':
+      case "doc":
+      case "docx":
         return (
           <svg className={iconClass} fill="currentColor" viewBox="0 0 20 20">
             <path
@@ -943,7 +942,7 @@ export default function ReservationForm({ id }) {
   };
 
   const formatFileSize = (bytes) => {
-    if (!bytes) return 'N/A';
+    if (!bytes) return "N/A";
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / 1048576).toFixed(1)} MB`;
@@ -970,7 +969,7 @@ export default function ReservationForm({ id }) {
 
     inputList1.forEach((nombres) => {
       //disbled client selected
-      if (text == 'select_client') {
+      if (text == "select_client") {
         for (var j = 0; j <= Number(clientsExist.length) - 1; j++) {
           if (
             clientsExist[j].id === nombres.id &&
@@ -997,7 +996,7 @@ export default function ReservationForm({ id }) {
       }
     }
     // ONLY RUN THIS FOR CLIENT SELECTION CHANGES
-    if (text == 'select_client') {
+    if (text == "select_client") {
       var id_cl_selectionne = [];
       for (var j = 0; j <= Number(inputList1.length) - 1; j++) {
         id_cl_selectionne.push(inputList1[j].id);
@@ -1023,20 +1022,20 @@ export default function ReservationForm({ id }) {
     );
 
     console.log(
-      'toto percentselect =>' +
+      "toto percentselect =>" +
         sum_percent_select +
-        'totalPercentage_client_form==>' +
+        "totalPercentage_client_form==>" +
         totalPercentage_client_form
     );
     const totalPercentage = sum_percent_select + totalPercentage_client_form;
 
-    setValue('pourcentages', totalPercentage);
+    setValue("pourcentages", totalPercentage);
 
-    if (text == 'percent') {
+    if (text == "percent") {
       // Validate if total is exactly 100
       const isValid = totalPercentage == 100;
-      setValue('verifierPourcentages', isValid);
-      setenabled(isValid ? 'none' : 'block');
+      setValue("verifierPourcentages", isValid);
+      setenabled(isValid ? "none" : "block");
     }
 
     var arrayinputList1 = Object.values(inputList1);
@@ -1046,7 +1045,7 @@ export default function ReservationForm({ id }) {
       arrayClient1.push(propertyValues);
     }
     setoldClients(arrayClient1);
-    setValue('oldClients', JSON.stringify(arrayClient1));
+    setValue("oldClients", JSON.stringify(arrayClient1));
   };
 
   const handleAnnuler_form = () => {
@@ -1057,28 +1056,28 @@ export default function ReservationForm({ id }) {
     );
 
     // Get current value of pourcentages field
-    const old_value_pourcentages = getValues('pourcentages');
+    const old_value_pourcentages = getValues("pourcentages");
 
     // Calculate and set new value
     const newValue = old_value_pourcentages - totalPercentage;
-    setValue('pourcentages', newValue);
+    setValue("pourcentages", newValue);
 
     // Validate if total is exactly 100
 
-    setenabled(newValue == 100 ? 'none' : 'block');
+    setenabled(newValue == 100 ? "none" : "block");
   };
   const handleAnnuler_client_added = (percent) => {
     // Get current value of pourcentages field
-    const old_value_pourcentages = getValues('pourcentages');
+    const old_value_pourcentages = getValues("pourcentages");
 
     // Calculate and set new value
     const newValue = old_value_pourcentages - percent;
 
-    setValue('pourcentages', newValue);
+    setValue("pourcentages", newValue);
 
     // Validate if total is exactly 100
 
-    setenabled(newValue == 100 ? 'none' : 'block');
+    setenabled(newValue == 100 ? "none" : "block");
   };
 
   const calculateTotalPercentage_new_form = (currentClients) => {
@@ -1099,51 +1098,51 @@ export default function ReservationForm({ id }) {
     );
 
     // Update all states
-    setValue('pourcentages', total);
+    setValue("pourcentages", total);
     // Validate
     const isValid = total == 100;
-    setValue('verifierPourcentages', isValid);
-    setenabled(isValid ? 'none' : 'block');
+    setValue("verifierPourcentages", isValid);
+    setenabled(isValid ? "none" : "block");
   };
   const handleFakeSubmit = (e) => {
     e.preventDefault(); // Prevent actual form submission
     if (isFormValid()) {
       // Proceed with submission
     } else {
-      console.error('Form validation failed');
+      console.error("Form validation failed");
     }
   };
   const isFormValid = () => {
     return newClientForms.every((form) => {
       // Basic field validation
       const hasRequiredFields =
-        form.cin?.trim() !== '' &&
-        form.nom?.trim() !== '' &&
-        form.prenom?.trim() !== '' &&
-        String(form.telephone_num1 || '').length >= 8 &&
+        form.cin?.trim() !== "" &&
+        form.nom?.trim() !== "" &&
+        form.prenom?.trim() !== "" &&
+        String(form.telephone_num1 || "").length >= 8 &&
         !isNaN(form.telephone_num1) &&
-        form.pourcentage !== '' &&
+        form.pourcentage !== "" &&
         !isNaN(form.pourcentage) &&
         Number(form.pourcentage) >= 0 &&
         Number(form.pourcentage) <= 100 &&
-        form.situation_familliale !== '' && // Situation familiale is required
-        form.civilite != '' &&
-        form.notifie != '';
+        form.situation_familliale !== "" && // Situation familiale is required
+        form.civilite != "" &&
+        form.notifie != "";
       // Type client validation
-      const hasValidType = form.type_client !== '';
+      const hasValidType = form.type_client !== "";
 
       // Partenaire validation (only required if type is Société)
       const hasValidPartenaire =
-        form.type_client !== '2' || // Not Société
-        (form.type_client === '2' && form.partenaire_id !== ''); // Or has partenaire
+        form.type_client !== "2" || // Not Société
+        (form.type_client === "2" && form.partenaire_id !== ""); // Or has partenaire
 
       // Marriage validation (only required if situation is Marié)
       const hasValidMarriage =
-        form.situation_familliale !== '2' || // Not Marié
-        (form.situation_familliale === '2' &&
-          form.nom_mari?.trim() !== '' &&
+        form.situation_familliale !== "2" || // Not Marié
+        (form.situation_familliale === "2" &&
+          form.nom_mari?.trim() !== "" &&
           form.date_mariage &&
-          form.lieu_mariage?.trim() !== ''); // Or has all marriage fields
+          form.lieu_mariage?.trim() !== ""); // Or has all marriage fields
 
       return (
         hasRequiredFields &&
@@ -1159,41 +1158,41 @@ export default function ReservationForm({ id }) {
     if (isFormValid_Edit()) {
       // Proceed with submission
     } else {
-      console.error('Form validation failed');
+      console.error("Form validation failed");
     }
   };
 
   const isFormValid_Edit = () => {
     // Basic field validation
     const hasRequiredFields =
-      clientToEdit.cin?.trim() !== '' &&
-      clientToEdit.nom?.trim() !== '' &&
-      clientToEdit.prenom?.trim() !== '' &&
-      String(clientToEdit.telephone_num1 || '').length >= 8 &&
+      clientToEdit.cin?.trim() !== "" &&
+      clientToEdit.nom?.trim() !== "" &&
+      clientToEdit.prenom?.trim() !== "" &&
+      String(clientToEdit.telephone_num1 || "").length >= 8 &&
       !isNaN(clientToEdit.telephone_num1) &&
-      clientToEdit.pourcentage !== '' &&
+      clientToEdit.pourcentage !== "" &&
       !isNaN(clientToEdit.pourcentage) &&
       Number(clientToEdit.pourcentage) >= 0 &&
       Number(clientToEdit.pourcentage) <= 100 &&
-      clientToEdit.situation_familliale != '' &&
-      clientToEdit.civilite != '' &&
-      clientToEdit.notifie != ''; // Situation familiale is required
+      clientToEdit.situation_familliale != "" &&
+      clientToEdit.civilite != "" &&
+      clientToEdit.notifie != ""; // Situation familiale is required
 
     // Type client validation
-    const hasValidType = clientToEdit.type_client !== '';
+    const hasValidType = clientToEdit.type_client !== "";
 
     // Partenaire validation (only required if type is Société)
     const hasValidPartenaire =
-      clientToEdit.type_client !== '2' || // Not Société
-      (clientToEdit.type_client === '2' && clientToEdit.partenaire_id !== ''); // Or has partenaire
+      clientToEdit.type_client !== "2" || // Not Société
+      (clientToEdit.type_client === "2" && clientToEdit.partenaire_id !== ""); // Or has partenaire
 
     // Marriage validation (only required if situation is Marié)
     const hasValidMarriage =
-      clientToEdit.situation_familliale !== '2' || // Not Marié
-      (clientToEdit.situation_familliale === '2' &&
-        clientToEdit.nom_marie?.trim() !== '' &&
+      clientToEdit.situation_familliale !== "2" || // Not Marié
+      (clientToEdit.situation_familliale === "2" &&
+        clientToEdit.nom_marie?.trim() !== "" &&
         clientToEdit.date_mariage &&
-        clientToEdit.lieu_mariage?.trim() !== ''); // Or has all marriage fields
+        clientToEdit.lieu_mariage?.trim() !== ""); // Or has all marriage fields
 
     return (
       hasRequiredFields &&
@@ -1210,7 +1209,7 @@ export default function ReservationForm({ id }) {
     accessToken,
     updateFormField
   ) => {
-    const prefix = text == 'tel' ? 'Le numéro de téléphone ' : 'La Cin ';
+    const prefix = text == "tel" ? "Le numéro de téléphone " : "La Cin ";
 
     try {
       const response = await axios.get(
@@ -1228,17 +1227,17 @@ export default function ReservationForm({ id }) {
           if (response.data.prospect.telephone) {
             toast.error(
               ` ${prefix} ${value} appartient au Prospect ${
-                response.data.prospect.nom + ' ' + response.data.prospect.prenom
+                response.data.prospect.nom + " " + response.data.prospect.prenom
               }`,
               {
-                position: 'top-center',
+                position: "top-center",
                 duration: 5000,
               }
             );
           }
 
           // Update prospect info if needed
-          updateFormField(formIndex, 'prospect_id', response.data.prospect.id);
+          updateFormField(formIndex, "prospect_id", response.data.prospect.id);
           set_check_p(true); // Set prospect check to true
         } else {
           set_check_p(false); // Set prospect check to false
@@ -1247,10 +1246,10 @@ export default function ReservationForm({ id }) {
         if (response.data.client) {
           toast.error(
             ` ${prefix} ${value} appartient au Client ${
-              response.data.client.nom + ' ' + response.data.client.prenom
+              response.data.client.nom + " " + response.data.client.prenom
             }`,
             {
-              position: 'top-center',
+              position: "top-center",
               duration: 5000,
             }
           );
@@ -1260,10 +1259,10 @@ export default function ReservationForm({ id }) {
         }
       }
     } catch (error) {
-      console.error('Error checking phone number:', error);
+      console.error("Error checking phone number:", error);
       // You might want to add error handling toast here
-      toast.error('Erreur lors de la vérification du numéro de téléphone', {
-        position: 'top-center',
+      toast.error("Erreur lors de la vérification du numéro de téléphone", {
+        position: "top-center",
         duration: 5000,
       });
     }
@@ -1303,32 +1302,32 @@ export default function ReservationForm({ id }) {
   const handleChangePrixRemise = (event) => {
     const values = {
       prix_remise: event.target.value,
-      prix_unitaire: watch('prix_unitaire'),
-      prix_forfetaire: watch('prix_forfetaire'),
-      superficie_jardin_calculer: watch('superficie_jardin_calculer'),
-      superficie_habitable: watch('superficie_habitable'),
-      superficie_balcon_calculer: watch('Superficie_balcon_calculer'),
-      superficie_terrasse_calculer: watch('superficie_terrasse_calculer'),
-      prix_box: watch('prix_box'),
-      prix_parking: watch('prix_parking'),
+      prix_unitaire: watch("prix_unitaire"),
+      prix_forfetaire: watch("prix_forfetaire"),
+      superficie_jardin_calculer: watch("superficie_jardin_calculer"),
+      superficie_habitable: watch("superficie_habitable"),
+      superficie_balcon_calculer: watch("Superficie_balcon_calculer"),
+      superficie_terrasse_calculer: watch("superficie_terrasse_calculer"),
+      prix_box: watch("prix_box"),
+      prix_parking: watch("prix_parking"),
     };
-    setValue('prix_final', calculateTotalPrice(values));
+    setValue("prix_final", calculateTotalPrice(values));
   };
 
   const handleChangePrixForfetaire = (event) => {
     const values = {
-      prix_remise: watch('prix_remise'),
-      prix_unitaire: watch('prix_unitaire'),
+      prix_remise: watch("prix_remise"),
+      prix_unitaire: watch("prix_unitaire"),
       prix_forfetaire: event.target.value,
-      superficie_jardin_calculer: watch('superficie_jardin_calculer'),
-      superficie_habitable: watch('superficie_habitable'),
-      superficie_balcon_calculer: watch('Superficie_balcon_calculer'),
-      superficie_terrasse_calculer: watch('superficie_terrasse_calculer'),
-      prix_box: watch('prix_box'),
-      prix_parking: watch('prix_parking'),
+      superficie_jardin_calculer: watch("superficie_jardin_calculer"),
+      superficie_habitable: watch("superficie_habitable"),
+      superficie_balcon_calculer: watch("Superficie_balcon_calculer"),
+      superficie_terrasse_calculer: watch("superficie_terrasse_calculer"),
+      prix_box: watch("prix_box"),
+      prix_parking: watch("prix_parking"),
     };
 
-    setValue('prix_final', calculateTotalPrice(values));
+    setValue("prix_final", calculateTotalPrice(values));
   };
 
   if (isEditing && !formData) {
@@ -1345,7 +1344,7 @@ export default function ReservationForm({ id }) {
         <div className="flex items-center justify-start">
           <BreadCrumb
             baseUrl={ENDPOINTS.RESERVATIONS}
-            step={`${isEditing ? 'Modifier' : 'Ajouter'} Reservation`}
+            step={`${isEditing ? "Modifier" : "Ajouter"} Reservation`}
           />
         </div>
       </div>
@@ -1357,10 +1356,10 @@ export default function ReservationForm({ id }) {
                 <div
                   className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
                     index < currentStep
-                      ? 'bg-blue-600 border-blue-600'
+                      ? "bg-blue-600 border-blue-600"
                       : index == currentStep
-                      ? 'border-blue-600'
-                      : 'border-gray-300'
+                      ? "border-blue-600"
+                      : "border-gray-300"
                   }`}
                 >
                   {index < currentStep ? (
@@ -1368,7 +1367,7 @@ export default function ReservationForm({ id }) {
                   ) : (
                     <span
                       className={`${
-                        index == currentStep ? 'text-blue-600' : 'text-gray-500'
+                        index == currentStep ? "text-blue-600" : "text-gray-500"
                       }`}
                     >
                       {steps[index].icon}
@@ -1377,7 +1376,7 @@ export default function ReservationForm({ id }) {
                 </div>
                 <span
                   className={`ml-3 text-lg font-medium ${
-                    index <= currentStep ? 'text-gray-700' : 'text-gray-400'
+                    index <= currentStep ? "text-gray-700" : "text-gray-400"
                   }`}
                 >
                   {`0${index + 1}`} {step.name}
@@ -1386,7 +1385,7 @@ export default function ReservationForm({ id }) {
               {index < steps.length - 1 && (
                 <div
                   className={`flex-1 mx-4 h-1 ${
-                    index < currentStep ? 'bg-blue-600' : 'bg-gray-200'
+                    index < currentStep ? "bg-blue-600" : "bg-gray-200"
                   }`}
                 ></div>
               )}
@@ -1411,7 +1410,7 @@ export default function ReservationForm({ id }) {
                   }}
                 />
                 {info_reservation != null && (
-                  <p style={{ color: 'red' }}>{info_reservation}</p>
+                  <p style={{ color: "red" }}>{info_reservation}</p>
                 )}
               </div>
 
@@ -1419,10 +1418,10 @@ export default function ReservationForm({ id }) {
                 <AutocompleteBien
                   user={user}
                   biensByProjet={biensByProjet}
-                  value={watch('bien_id')}
+                  value={watch("bien_id")}
                   onChange={handleSelectBien}
                   loading={loading_bien}
-                  error={errors['bien_id'] || backendErrors['bien_id']}
+                  error={errors["bien_id"] || backendErrors["bien_id"]}
                 />
               </div>
               <div>
@@ -1521,7 +1520,7 @@ export default function ReservationForm({ id }) {
                                 {formatFileSize(data.size)}
                               </span>
                               <button
-                                onClick={() => handleDeleteFile(index, 'rsv')}
+                                onClick={() => handleDeleteFile(index, "rsv")}
                                 className="p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 transition-colors"
                                 title="Supprimer"
                               >
@@ -1589,7 +1588,7 @@ export default function ReservationForm({ id }) {
                           selectedClient && index == 0 ? false : disabled_var
                         }
                         onChange={(e) =>
-                          handleinputchange1(e, index, 'percent')
+                          handleinputchange1(e, index, "percent")
                         }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="0"
@@ -1597,14 +1596,14 @@ export default function ReservationForm({ id }) {
                         max="100"
                       />
                     </div>
-                    <p style={{ display: enabled, color: 'red' }}>
-                      {'la somme des pourcentages doit être 100% !'}
+                    <p style={{ display: enabled, color: "red" }}>
+                      {"la somme des pourcentages doit être 100% !"}
                     </p>
                   </div>
                   {inputList1.length > 1 && (
                     <button
                       onClick={() =>
-                        removeClientEntry(index, 'without_new_client')
+                        removeClientEntry(index, "without_new_client")
                       }
                       className="mt-7 p-2 text-red-600 hover:text-red-700 hover:bg-red rounded-md transition-colors bg-[red]"
                     >
@@ -1630,24 +1629,24 @@ export default function ReservationForm({ id }) {
                   setNumberOfForms(1);
                   setNewClientForms([
                     {
-                      cin: '',
-                      nom: '',
-                      prenom: '',
-                      telephone_num1: '',
-                      pourcentage: '',
-                      address: '',
-                      type_client: '',
-                      partenaire_id: '',
+                      cin: "",
+                      nom: "",
+                      prenom: "",
+                      telephone_num1: "",
+                      pourcentage: "",
+                      address: "",
+                      type_client: "",
+                      partenaire_id: "",
                       prospect_id: null,
-                      info_client: '',
-                      info_prospect: '',
-                      projet_id: selectedProjet ? selectedProjet.id : '',
+                      info_client: "",
+                      info_prospect: "",
+                      projet_id: selectedProjet ? selectedProjet.id : "",
                       situation_familliale: null,
                       nom_mari: null,
                       date_mariage: null,
                       lieu_mariage: null,
-                      notifie: '',
-                      civilite: '',
+                      notifie: "",
+                      civilite: "",
                     },
                   ]);
                 }}
@@ -1672,24 +1671,24 @@ export default function ReservationForm({ id }) {
                         setNumberOfForms(1);
                         setNewClientForms([
                           {
-                            cin: '',
-                            nom: '',
-                            prenom: '',
-                            telephone_num1: '',
-                            pourcentage: '',
-                            address: '',
-                            type_client: '',
-                            partenaire_id: '',
+                            cin: "",
+                            nom: "",
+                            prenom: "",
+                            telephone_num1: "",
+                            pourcentage: "",
+                            address: "",
+                            type_client: "",
+                            partenaire_id: "",
                             prospect_id: null,
-                            info_client: '',
-                            info_prospect: '',
-                            projet_id: selectedProjet ? selectedProjet.id : '',
+                            info_client: "",
+                            info_prospect: "",
+                            projet_id: selectedProjet ? selectedProjet.id : "",
                             situation_familliale: null,
                             nom_mari: null,
                             date_mariage: null,
                             lieu_mariage: null,
-                            notifie: '',
-                            civilite: '',
+                            notifie: "",
+                            civilite: "",
                           },
                         ]);
                       }}
@@ -1728,33 +1727,33 @@ export default function ReservationForm({ id }) {
                             {/* Type Client Select */}
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Type Client{' '}
+                                Type Client{" "}
                                 <span className="text-red-500 ml-1">*</span>
                               </label>
                               <select
-                                value={form.type_client || ''}
+                                value={form.type_client || ""}
                                 onChange={(e) => {
                                   console.log(
-                                    'Selected value:',
+                                    "Selected value:",
                                     e.target.value
                                   ); // Debug log
                                   updateFormField(
                                     formIndex,
-                                    'type_client',
+                                    "type_client",
                                     e.target.value
                                   );
-                                  if (e.target.value != '2') {
+                                  if (e.target.value != "2") {
                                     updateFormField(
                                       formIndex,
-                                      'partenaire_id',
-                                      ''
+                                      "partenaire_id",
+                                      ""
                                     );
                                   }
                                 }}
                                 className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                   formSubmitted_client && !form.type_client
-                                    ? 'border-red-500'
-                                    : 'border-gray-300'
+                                    ? "border-red-500"
+                                    : "border-gray-300"
                                 } rounded-md focus:outline-none focus:border-gray-500`}
                               >
                                 <option value="">Sélectionnez un type</option>
@@ -1775,27 +1774,27 @@ export default function ReservationForm({ id }) {
                             </div>
 
                             {/* Conditional Partenaire Select (only shows when type_client === 2) */}
-                            {form.type_client == '2' && (
+                            {form.type_client == "2" && (
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                  Partenaire{' '}
+                                  Partenaire{" "}
                                   <span className="text-red-500 ml-1">*</span>
                                 </label>
                                 <select
-                                  value={form.partenaire_id || ''}
+                                  value={form.partenaire_id || ""}
                                   onChange={(e) =>
                                     updateFormField(
                                       formIndex,
-                                      'partenaire_id',
+                                      "partenaire_id",
                                       e.target.value
                                     )
                                   }
                                   className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                     formSubmitted_client &&
-                                    form.type_client == '2' &&
+                                    form.type_client == "2" &&
                                     !form.partenaire_id
-                                      ? 'border-red-500'
-                                      : 'border-gray-300'
+                                      ? "border-red-500"
+                                      : "border-gray-300"
                                   } rounded-md focus:outline-none focus:border-gray-500`}
                                 >
                                   <option value="">
@@ -1811,7 +1810,7 @@ export default function ReservationForm({ id }) {
                                   ))}
                                 </select>
                                 {formSubmitted_client &&
-                                  form.type_client === '2' &&
+                                  form.type_client === "2" &&
                                   !form.partenaire_id && (
                                     <p className="text-red-500 text-xs mt-1">
                                       Partenaire est obligatoire
@@ -1828,12 +1827,12 @@ export default function ReservationForm({ id }) {
                                 value={form.cin}
                                 onChange={async (e) => {
                                   const value = e.target.value;
-                                  updateFormField(formIndex, 'cin', value);
+                                  updateFormField(formIndex, "cin", value);
 
                                   // Only make API call if phone number has sufficient length
                                   if (value.length >= 3) {
                                     await fetch_cin_tel(
-                                      'cin',
+                                      "cin",
                                       value,
                                       formIndex,
                                       accessToken,
@@ -1846,7 +1845,7 @@ export default function ReservationForm({ id }) {
                                   // Optional: Validate again when leaving the field
                                   if (value.length >= 3) {
                                     await fetch_cin_tel(
-                                      'cin',
+                                      "cin",
                                       value,
                                       formIndex,
                                       accessToken,
@@ -1856,13 +1855,13 @@ export default function ReservationForm({ id }) {
                                 }}
                                 className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                   formSubmitted_client &&
-                                  form.cin?.trim() === ''
-                                    ? 'border-red-500'
-                                    : 'border-gray-300'
+                                  form.cin?.trim() === ""
+                                    ? "border-red-500"
+                                    : "border-gray-300"
                                 } rounded-md focus:outline-none focus:border-gray-500`}
                               />
                               {formSubmitted_client &&
-                                form.cin?.trim() === '' && (
+                                form.cin?.trim() === "" && (
                                   <p className="text-red-500 text-xs mt-1">
                                     CIN est obligatoire
                                   </p>
@@ -1879,18 +1878,18 @@ export default function ReservationForm({ id }) {
                                 onChange={(e) =>
                                   updateFormField(
                                     formIndex,
-                                    'nom',
+                                    "nom",
                                     e.target.value
                                   )
                                 }
                                 className={`w-full h-[38px] px-3 py-2 text-sm border ${
-                                  formSubmitted_client && form.nom?.trim() == ''
-                                    ? 'border-red-500'
-                                    : 'border-gray-300'
+                                  formSubmitted_client && form.nom?.trim() == ""
+                                    ? "border-red-500"
+                                    : "border-gray-300"
                                 } rounded-md focus:outline-none focus:border-gray-500`}
                               />
                               {formSubmitted_client &&
-                                form.nom?.trim() == '' && (
+                                form.nom?.trim() == "" && (
                                   <p className="text-red-500 text-xs mt-1">
                                     Nom est obligatoire
                                   </p>
@@ -1899,7 +1898,7 @@ export default function ReservationForm({ id }) {
 
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Prénom{' '}
+                                Prénom{" "}
                                 <span className="text-red-500 ml-1">*</span>
                               </label>
                               <input
@@ -1908,19 +1907,19 @@ export default function ReservationForm({ id }) {
                                 onChange={(e) =>
                                   updateFormField(
                                     formIndex,
-                                    'prenom',
+                                    "prenom",
                                     e.target.value
                                   )
                                 }
                                 className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                   formSubmitted_client &&
-                                  form.prenom?.trim() === ''
-                                    ? 'border-red-500'
-                                    : 'border-gray-300'
+                                  form.prenom?.trim() === ""
+                                    ? "border-red-500"
+                                    : "border-gray-300"
                                 } rounded-md focus:outline-none focus:border-gray-500`}
                               />
                               {formSubmitted_client &&
-                                form.prenom?.trim() === '' && (
+                                form.prenom?.trim() === "" && (
                                   <p className="text-red-500 text-xs mt-1">
                                     Prénom est obligatoire
                                   </p>
@@ -1928,26 +1927,26 @@ export default function ReservationForm({ id }) {
                             </div>
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Civilité{' '}
+                                Civilité{" "}
                                 <span className="text-red-500 ml-1">*</span>
                               </label>
                               <select
-                                value={form.civilite || ''}
+                                value={form.civilite || ""}
                                 onChange={(e) => {
                                   console.log(
-                                    'Selected value:',
+                                    "Selected value:",
                                     e.target.value
                                   ); // Debug log
                                   updateFormField(
                                     formIndex,
-                                    'civilite',
+                                    "civilite",
                                     e.target.value
                                   );
                                 }}
                                 className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                   formSubmitted_client && !form.civilite
-                                    ? 'border-red-500'
-                                    : 'border-gray-300'
+                                    ? "border-red-500"
+                                    : "border-gray-300"
                                 } rounded-md focus:outline-none focus:border-gray-500`}
                               >
                                 <option value="">
@@ -1970,7 +1969,7 @@ export default function ReservationForm({ id }) {
                             </div>
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Pourcentage{' '}
+                                Pourcentage{" "}
                                 <span className="text-red-500 ml-1">*</span>
                               </label>
                               <input
@@ -1981,22 +1980,22 @@ export default function ReservationForm({ id }) {
                                 onChange={(e) =>
                                   updateFormField(
                                     formIndex,
-                                    'pourcentage',
+                                    "pourcentage",
                                     e.target.value
                                   )
                                 }
                                 className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                   (formSubmitted_client &&
-                                    form.pourcentage == '') ||
+                                    form.pourcentage == "") ||
                                   isNaN(Number(form.pourcentage)) ||
                                   Number(form.pourcentage) < 0 ||
                                   Number(form.pourcentage) > 100
-                                    ? 'border-red-500'
-                                    : 'border-gray-300'
+                                    ? "border-red-500"
+                                    : "border-gray-300"
                                 } rounded-md focus:outline-none focus:border-gray-500`}
                               />
                               {(formSubmitted_client &&
-                                form.pourcentage == '') ||
+                                form.pourcentage == "") ||
                                 (isNaN(Number(form.pourcentage)) && (
                                   <p className="text-red-500 text-xs mt-1">
                                     Pourcentage est obligatoire
@@ -2010,14 +2009,14 @@ export default function ReservationForm({ id }) {
                                     Doit être entre 0 et 100
                                   </p>
                                 )}
-                              <p style={{ display: enabled, color: 'red' }}>
-                                {'la somme des pourcentages doit être 100% !'}
+                              <p style={{ display: enabled, color: "red" }}>
+                                {"la somme des pourcentages doit être 100% !"}
                               </p>
                             </div>
 
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Téléphone{' '}
+                                Téléphone{" "}
                                 <span className="text-red-500 ml-1">*</span>
                               </label>
                               <input
@@ -2030,14 +2029,14 @@ export default function ReservationForm({ id }) {
                                   const value = e.target.value;
                                   updateFormField(
                                     formIndex,
-                                    'telephone_num1',
+                                    "telephone_num1",
                                     value
                                   );
 
                                   // Only make API call if phone number has sufficient length
                                   if (value.length >= 8) {
                                     await fetch_cin_tel(
-                                      'tel',
+                                      "tel",
                                       value,
                                       formIndex,
                                       accessToken,
@@ -2050,7 +2049,7 @@ export default function ReservationForm({ id }) {
                                   // Optional: Validate again when leaving the field
                                   if (value.length >= 8) {
                                     await fetch_cin_tel(
-                                      'tel',
+                                      "tel",
                                       value,
                                       formIndex,
                                       accessToken,
@@ -2060,15 +2059,15 @@ export default function ReservationForm({ id }) {
                                 }}
                                 className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                   (formSubmitted_client &&
-                                    String(form.telephone_num1 || '').length <
+                                    String(form.telephone_num1 || "").length <
                                       8) ||
                                   isNaN(form.telephone_num1)
-                                    ? 'border-red-500'
-                                    : 'border-gray-300'
+                                    ? "border-red-500"
+                                    : "border-gray-300"
                                 } rounded-md focus:outline-none focus:border-gray-500`}
                               />
                               {formSubmitted_client &&
-                                String(form.telephone_num1 || '').length <
+                                String(form.telephone_num1 || "").length <
                                   8 && (
                                   <p className="text-red-500 text-xs mt-1">
                                     Minimum 8 chiffres
@@ -2079,38 +2078,38 @@ export default function ReservationForm({ id }) {
                             {/* Situation Familiale Select */}
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Situation Familiale{' '}
+                                Situation Familiale{" "}
                                 <span className="text-red-500 ml-1">*</span>
                               </label>
                               <select
-                                value={form.situation_familliale || ''}
+                                value={form.situation_familliale || ""}
                                 onChange={(e) => {
                                   const newSituation = e.target.value;
                                   updateFormField(
                                     formIndex,
-                                    'situation_familliale',
+                                    "situation_familliale",
                                     newSituation
                                   );
                                   // Clear marriage fields if not married
-                                  if (newSituation != '2') {
-                                    updateFormField(formIndex, 'nom_mari', '');
+                                  if (newSituation != "2") {
+                                    updateFormField(formIndex, "nom_mari", "");
                                     updateFormField(
                                       formIndex,
-                                      'date_mariage',
+                                      "date_mariage",
                                       null
                                     );
                                     updateFormField(
                                       formIndex,
-                                      'lieu_mariage',
-                                      ''
+                                      "lieu_mariage",
+                                      ""
                                     );
                                   }
                                 }}
                                 className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                   formSubmitted_client &&
                                   !form.situation_familliale
-                                    ? 'border-red-500'
-                                    : 'border-gray-300'
+                                    ? "border-red-500"
+                                    : "border-gray-300"
                                 } rounded-md focus:outline-none focus:border-gray-500`}
                               >
                                 <option value="">
@@ -2136,7 +2135,7 @@ export default function ReservationForm({ id }) {
                             </div>
 
                             {/* Conditional Marriage Fields - only shows when situation_familliale === "2" */}
-                            {form.situation_familliale == '2' && (
+                            {form.situation_familliale == "2" && (
                               <>
                                 <div>
                                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -2144,25 +2143,25 @@ export default function ReservationForm({ id }) {
                                   </label>
                                   <input
                                     type="text"
-                                    value={form.nom_mari || ''}
+                                    value={form.nom_mari || ""}
                                     onChange={(e) =>
                                       updateFormField(
                                         formIndex,
-                                        'nom_mari',
+                                        "nom_mari",
                                         e.target.value
                                       )
                                     }
                                     className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                       formSubmitted_client &&
-                                      form.situation_familliale == '2' &&
-                                      (form.nom_mari || '').trim() === '' // Also handle null check here
-                                        ? 'border-red-500'
-                                        : 'border-gray-300'
+                                      form.situation_familliale == "2" &&
+                                      (form.nom_mari || "").trim() === "" // Also handle null check here
+                                        ? "border-red-500"
+                                        : "border-gray-300"
                                     } rounded-md focus:outline-none focus:border-gray-500`}
                                   />
                                   {formSubmitted_client &&
-                                    form.situation_familliale == '2' &&
-                                    form.nom_mari?.trim() === '' && (
+                                    form.situation_familliale == "2" &&
+                                    form.nom_mari?.trim() === "" && (
                                       <p className="text-red-500 text-xs mt-1">
                                         Nom du conjoint est obligatoire
                                       </p>
@@ -2175,24 +2174,24 @@ export default function ReservationForm({ id }) {
                                   </label>
                                   <input
                                     type="date"
-                                    value={form.date_mariage || ''}
+                                    value={form.date_mariage || ""}
                                     onChange={(e) =>
                                       updateFormField(
                                         formIndex,
-                                        'date_mariage',
+                                        "date_mariage",
                                         e.target.value
                                       )
                                     }
                                     className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                       formSubmitted_client &&
-                                      form.situation_familliale == '2' &&
-                                      (form.date_mariage || '').trim() === ''
-                                        ? 'border-red-500'
-                                        : 'border-gray-300'
+                                      form.situation_familliale == "2" &&
+                                      (form.date_mariage || "").trim() === ""
+                                        ? "border-red-500"
+                                        : "border-gray-300"
                                     } rounded-md focus:outline-none focus:border-gray-500`}
                                   />
                                   {formSubmitted_client &&
-                                    form.situation_familliale == '2' &&
+                                    form.situation_familliale == "2" &&
                                     !form.date_mariage && (
                                       <p className="text-red-500 text-xs mt-1">
                                         Date de mariage est obligatoire
@@ -2206,25 +2205,25 @@ export default function ReservationForm({ id }) {
                                   </label>
                                   <input
                                     type="text"
-                                    value={form.lieu_mariage || ''}
+                                    value={form.lieu_mariage || ""}
                                     onChange={(e) =>
                                       updateFormField(
                                         formIndex,
-                                        'lieu_mariage',
+                                        "lieu_mariage",
                                         e.target.value
                                       )
                                     }
                                     className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                       formSubmitted_client &&
-                                      form.situation_familliale == '2' &&
-                                      (form.lieu_mariage || '').trim() === ''
-                                        ? 'border-red-500'
-                                        : 'border-gray-300'
+                                      form.situation_familliale == "2" &&
+                                      (form.lieu_mariage || "").trim() === ""
+                                        ? "border-red-500"
+                                        : "border-gray-300"
                                     } rounded-md focus:outline-none focus:border-gray-500`}
                                   />
                                   {formSubmitted_client &&
-                                    form.situation_familliale == '2' &&
-                                    form.lieu_mariage?.trim() === '' && (
+                                    form.situation_familliale == "2" &&
+                                    form.lieu_mariage?.trim() === "" && (
                                       <p className="text-red-500 text-xs mt-1">
                                         Lieu de mariage est obligatoire
                                       </p>
@@ -2235,7 +2234,7 @@ export default function ReservationForm({ id }) {
 
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Accepte être contacté{' '}
+                                Accepte d'être contacté{" "}
                                 <span className="text-red-500 ml-1">*</span>
                               </label>
 
@@ -2244,17 +2243,17 @@ export default function ReservationForm({ id }) {
                                 <label className="inline-flex items-center">
                                   <input
                                     type="radio"
-                                    name={'notifie'}
+                                    name={"notifie"}
                                     value="0"
-                                    checked={form.notifie == '0'}
+                                    checked={form.notifie == "0"}
                                     onChange={(e) => {
                                       console.log(
-                                        'Selected value:',
+                                        "Selected value:",
                                         e.target.value
                                       );
                                       updateFormField(
                                         formIndex,
-                                        'notifie',
+                                        "notifie",
                                         e.target.value
                                       );
                                     }}
@@ -2271,15 +2270,15 @@ export default function ReservationForm({ id }) {
                                     type="radio"
                                     name={`notifie`}
                                     value="1"
-                                    checked={form.notifie == '1'}
+                                    checked={form.notifie == "1"}
                                     onChange={(e) => {
                                       console.log(
-                                        'Selected value:',
+                                        "Selected value:",
                                         e.target.value
                                       );
                                       updateFormField(
                                         formIndex,
-                                        'notifie',
+                                        "notifie",
                                         e.target.value
                                       );
                                     }}
@@ -2307,7 +2306,7 @@ export default function ReservationForm({ id }) {
                                 onChange={(e) =>
                                   updateFormField(
                                     formIndex,
-                                    'address',
+                                    "address",
                                     e.target.value
                                   )
                                 }
@@ -2328,26 +2327,26 @@ export default function ReservationForm({ id }) {
                           setNumberOfForms(1);
                           setNewClientForms([
                             {
-                              cin: '',
-                              nom: '',
-                              prenom: '',
-                              telephone_num1: '',
-                              pourcentage: '',
-                              address: '',
-                              type_client: '',
-                              partenaire_id: '',
+                              cin: "",
+                              nom: "",
+                              prenom: "",
+                              telephone_num1: "",
+                              pourcentage: "",
+                              address: "",
+                              type_client: "",
+                              partenaire_id: "",
                               prospect_id: null,
-                              info_client: '',
-                              info_prospect: '',
+                              info_client: "",
+                              info_prospect: "",
                               projet_id: selectedProjet
                                 ? selectedProjet.id
-                                : '',
+                                : "",
                               situation_familliale: null,
                               nom_mari: null,
                               date_mariage: null,
                               lieu_mariage: null,
-                              notifie: '',
-                              civilite: '',
+                              notifie: "",
+                              civilite: "",
                             },
                           ]);
                         }}
@@ -2370,40 +2369,40 @@ export default function ReservationForm({ id }) {
                             // Calculate total using the function
                             calculateTotalPercentage_new_form(updatedClients);
                             setAddedClients(updatedClients);
-                            setValue('clients', updatedClients);
+                            setValue("clients", updatedClients);
                             // Reset form
                             setShowNewClientForm(false);
                             setNumberOfForms(1);
                             setNewClientForms([
                               {
-                                cin: '',
-                                nom: '',
-                                prenom: '',
-                                telephone_num1: '',
-                                pourcentage: '',
-                                address: '',
-                                type_client: '',
-                                partenaire_id: '',
+                                cin: "",
+                                nom: "",
+                                prenom: "",
+                                telephone_num1: "",
+                                pourcentage: "",
+                                address: "",
+                                type_client: "",
+                                partenaire_id: "",
                                 prospect_id: null,
-                                info_client: '',
-                                info_prospect: '',
+                                info_client: "",
+                                info_prospect: "",
                                 projet_id: selectedProjet
                                   ? selectedProjet.id
-                                  : '',
+                                  : "",
                                 situation_familliale: null,
                                 nom_mari: null,
                                 date_mariage: null,
                                 lieu_mariage: null,
-                                notifie: '',
-                                civilite: '',
+                                notifie: "",
+                                civilite: "",
                               },
                             ]);
                           }
                         }}
                         className={`px-6 py-2 rounded-md ${
                           !isFormValid() || check || check_p
-                            ? 'bg-gray-400 cursor-not-allowed'
-                            : 'bg-blue-600 hover:bg-blue-700 text-white'
+                            ? "bg-gray-400 cursor-not-allowed"
+                            : "bg-blue-600 hover:bg-blue-700 text-white"
                         }`}
                       >
                         Ajouter
@@ -2446,8 +2445,8 @@ export default function ReservationForm({ id }) {
                                   <span
                                     className="truncate "
                                     style={{
-                                      color: 'green',
-                                      fontWeight: 'bold',
+                                      color: "green",
+                                      fontWeight: "bold",
                                     }}
                                   >
                                     {client.pourcentage != undefined &&
@@ -2475,14 +2474,14 @@ export default function ReservationForm({ id }) {
                                       {client.type_client && (
                                         <div className="flex items-center text-sm text-gray-600">
                                           <span className="truncate">
-                                            {client.type_client === '1'
-                                              ? 'Particulier'
+                                            {client.type_client === "1"
+                                              ? "Particulier"
                                               : `Partenaire(${
                                                   partenaires.find(
                                                     (p) =>
                                                       p.id ==
                                                       client.partenaire_id
-                                                  )?.description || 'inconnu'
+                                                  )?.description || "inconnu"
                                                 })`}
                                           </span>
                                         </div>
@@ -2495,13 +2494,13 @@ export default function ReservationForm({ id }) {
                                 {client.situation_familliale && (
                                   <div className="space-y-1.5">
                                     <div className="flex items-center text-sm text-gray-600">
-                                      {client.situation_familliale === '1' ? (
+                                      {client.situation_familliale === "1" ? (
                                         <User className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
                                       ) : client.situation_familliale ===
-                                        '2' ? (
+                                        "2" ? (
                                         <Heart className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
                                       ) : client.situation_familliale ===
-                                        '3' ? (
+                                        "3" ? (
                                         <UserX className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
                                       ) : (
                                         <UserCog className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
@@ -2509,12 +2508,12 @@ export default function ReservationForm({ id }) {
                                       <span>
                                         {SITUATION_FAMILIALLE[
                                           client.situation_familliale
-                                        ]?.label || 'Inconnue'}
+                                        ]?.label || "Inconnue"}
                                       </span>
                                     </div>
 
                                     {/* Marriage Details - Only shown when "Marié" */}
-                                    {client.situation_familliale === '2' && (
+                                    {client.situation_familliale === "2" && (
                                       <>
                                         {client.nom_mari && (
                                           <div className="flex items-center text-sm text-gray-600 ml-6">
@@ -2528,10 +2527,10 @@ export default function ReservationForm({ id }) {
                                           <div className="flex items-center text-sm text-gray-600 ml-6">
                                             <Calendar className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
                                             <span>
-                                              Marié depuis:{' '}
+                                              Marié depuis:{" "}
                                               {new Date(
                                                 client.date_mariage
-                                              ).toLocaleDateString('fr-FR')}
+                                              ).toLocaleDateString("fr-FR")}
                                             </span>
                                           </div>
                                         )}
@@ -2577,7 +2576,7 @@ export default function ReservationForm({ id }) {
                                     (_, i) => i !== index
                                   );
                                   setAddedClients(updatedClients);
-                                  setValue('clients', updatedClients);
+                                  setValue("clients", updatedClients);
                                 }}
                                 className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-red-50 transition-colors duration-200"
                                 aria-label="Supprimer le client"
@@ -2613,24 +2612,24 @@ export default function ReservationForm({ id }) {
                         {/* Type Client Select */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Type Client{' '}
+                            Type Client{" "}
                             <span className="text-red-500 ml-1">*</span>
                           </label>
                           <select
-                            value={clientToEdit.type_client || ''}
+                            value={clientToEdit.type_client || ""}
                             onChange={(e) => {
                               const newType = e.target.value;
                               setClientToEdit({
                                 ...clientToEdit,
                                 type_client: newType,
                                 // Reset partenaire_id when changing from Société to Particulier
-                                ...(newType != '2' && { partenaire_id: '' }),
+                                ...(newType != "2" && { partenaire_id: "" }),
                               });
                             }}
                             className={`w-full h-[38px] px-3 py-2 text-sm border ${
                               !clientToEdit.type_client
-                                ? 'border-red-500'
-                                : 'border-gray-300'
+                                ? "border-red-500"
+                                : "border-gray-300"
                             } rounded-md focus:outline-none focus:border-gray-500`}
                           >
                             <option value="">Sélectionnez un type</option>
@@ -2651,14 +2650,14 @@ export default function ReservationForm({ id }) {
                         </div>
 
                         {/* Conditional Partenaire Select - only shows when type_client === "2" */}
-                        {clientToEdit.type_client == '2' && (
+                        {clientToEdit.type_client == "2" && (
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Partenaire{' '}
+                              Partenaire{" "}
                               <span className="text-red-500 ml-1">*</span>
                             </label>
                             <select
-                              value={clientToEdit.partenaire_id || ''}
+                              value={clientToEdit.partenaire_id || ""}
                               onChange={(e) =>
                                 setClientToEdit({
                                   ...clientToEdit,
@@ -2666,10 +2665,10 @@ export default function ReservationForm({ id }) {
                                 })
                               }
                               className={`w-full h-[38px] px-3 py-2 text-sm border ${
-                                clientToEdit.type_client === '2' &&
+                                clientToEdit.type_client === "2" &&
                                 !clientToEdit.partenaire_id
-                                  ? 'border-red-500'
-                                  : 'border-gray-300'
+                                  ? "border-red-500"
+                                  : "border-gray-300"
                               } rounded-md focus:outline-none focus:border-gray-500`}
                             >
                               <option value="">
@@ -2684,7 +2683,7 @@ export default function ReservationForm({ id }) {
                                 </option>
                               ))}
                             </select>
-                            {clientToEdit.type_client == '2' &&
+                            {clientToEdit.type_client == "2" &&
                               !clientToEdit.partenaire_id && (
                                 <p className="text-red-500 text-xs mt-1">
                                   Partenaire est obligatoire pour Société
@@ -2709,7 +2708,7 @@ export default function ReservationForm({ id }) {
                               // Only make API call if CIN has sufficient length
                               if (value.length >= 8) {
                                 await fetch_cin_tel(
-                                  'cin',
+                                  "cin",
                                   value,
                                   0, // Default formIndex or pass the correct index
                                   accessToken,
@@ -2722,7 +2721,7 @@ export default function ReservationForm({ id }) {
                               // Optional: Validate again when leaving the field
                               if (value.length >= 8) {
                                 await fetch_cin_tel(
-                                  'cin',
+                                  "cin",
                                   value,
                                   0, // Default formIndex or pass the correct index
                                   accessToken,
@@ -2731,12 +2730,12 @@ export default function ReservationForm({ id }) {
                               }
                             }}
                             className={`w-full h-[38px] px-3 py-2 text-sm border ${
-                              clientToEdit.cin?.trim() === ''
-                                ? 'border-red-500'
-                                : 'border-gray-300'
+                              clientToEdit.cin?.trim() === ""
+                                ? "border-red-500"
+                                : "border-gray-300"
                             } rounded-md focus:outline-none focus:border-gray-500`}
                           />
-                          {clientToEdit.cin?.trim() === '' && (
+                          {clientToEdit.cin?.trim() === "" && (
                             <p className="text-red-500 text-xs mt-1">
                               CIN est obligatoire
                             </p>
@@ -2758,12 +2757,12 @@ export default function ReservationForm({ id }) {
                               })
                             }
                             className={`w-full h-[38px] px-3 py-2 text-sm border ${
-                              clientToEdit.nom?.trim() === ''
-                                ? 'border-red-500'
-                                : 'border-gray-300'
+                              clientToEdit.nom?.trim() === ""
+                                ? "border-red-500"
+                                : "border-gray-300"
                             } rounded-md focus:outline-none focus:border-gray-500`}
                           />
-                          {clientToEdit.nom?.trim() === '' && (
+                          {clientToEdit.nom?.trim() === "" && (
                             <p className="text-red-500 text-xs mt-1">
                               Nom est obligatoire
                             </p>
@@ -2785,12 +2784,12 @@ export default function ReservationForm({ id }) {
                               })
                             }
                             className={`w-full h-[38px] px-3 py-2 text-sm border ${
-                              clientToEdit.prenom?.trim() === ''
-                                ? 'border-red-500'
-                                : 'border-gray-300'
+                              clientToEdit.prenom?.trim() === ""
+                                ? "border-red-500"
+                                : "border-gray-300"
                             } rounded-md focus:outline-none focus:border-gray-500`}
                           />
-                          {clientToEdit.prenom?.trim() === '' && (
+                          {clientToEdit.prenom?.trim() === "" && (
                             <p className="text-red-500 text-xs mt-1">
                               Prénom est obligatoire
                             </p>
@@ -2799,11 +2798,11 @@ export default function ReservationForm({ id }) {
 
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Civilité{' '}
+                            Civilité{" "}
                             <span className="text-red-500 ml-1">*</span>
                           </label>
                           <select
-                            value={clientToEdit.civilite || ''}
+                            value={clientToEdit.civilite || ""}
                             onChange={(e) => {
                               const newType = e.target.value;
                               setClientToEdit({
@@ -2813,8 +2812,8 @@ export default function ReservationForm({ id }) {
                             }}
                             className={`w-full h-[38px] px-3 py-2 text-sm border ${
                               !clientToEdit.civilite
-                                ? 'border-red-500'
-                                : 'border-gray-300'
+                                ? "border-red-500"
+                                : "border-gray-300"
                             } rounded-md focus:outline-none focus:border-gray-500`}
                           >
                             <option value="">Sélectionnez un type</option>
@@ -2837,7 +2836,7 @@ export default function ReservationForm({ id }) {
                         {/* POURCENTAGE */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Pourcentage{' '}
+                            Pourcentage{" "}
                             <span className="text-red-500 ml-1">*</span>
                           </label>
                           <input
@@ -2852,15 +2851,15 @@ export default function ReservationForm({ id }) {
                               })
                             }
                             className={`w-full h-[38px] px-3 py-2 text-sm border ${
-                              clientToEdit.pourcentage === '' ||
+                              clientToEdit.pourcentage === "" ||
                               isNaN(Number(clientToEdit.pourcentage)) ||
                               Number(clientToEdit.pourcentage) < 0 ||
                               Number(clientToEdit.pourcentage) > 100
-                                ? 'border-red-500'
-                                : 'border-gray-300'
+                                ? "border-red-500"
+                                : "border-gray-300"
                             } rounded-md focus:outline-none focus:border-gray-500`}
                           />
-                          {clientToEdit.pourcentage == '' ||
+                          {clientToEdit.pourcentage == "" ||
                             (isNaN(Number(clientToEdit.pourcentage)) && (
                               <p className="text-red-500 text-xs mt-1">
                                 Pourcentage est obligatoire
@@ -2878,7 +2877,7 @@ export default function ReservationForm({ id }) {
                         {/* TÉLÉPHONE */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Téléphone{' '}
+                            Téléphone{" "}
                             <span className="text-red-500 ml-1">*</span>
                           </label>
                           <input
@@ -2886,7 +2885,7 @@ export default function ReservationForm({ id }) {
                             pattern="[0-9]{8,}"
                             value={clientToEdit.telephone_num1}
                             onChange={async (e) => {
-                              const value = e.target.value.replace(/\D/g, ''); // Remove non-digit characters
+                              const value = e.target.value.replace(/\D/g, ""); // Remove non-digit characters
                               setClientToEdit({
                                 ...clientToEdit,
                                 telephone_num1: value,
@@ -2895,7 +2894,7 @@ export default function ReservationForm({ id }) {
                               // Only make API call if phone number has sufficient length
                               if (value.length >= 8) {
                                 await fetch_cin_tel(
-                                  'tel', // Changed from 'cin' to 'tel' since this is a telephone field
+                                  "tel", // Changed from 'cin' to 'tel' since this is a telephone field
                                   value,
                                   0,
                                   accessToken,
@@ -2904,11 +2903,11 @@ export default function ReservationForm({ id }) {
                               }
                             }}
                             onBlur={async (e) => {
-                              const value = e.target.value.replace(/\D/g, '');
+                              const value = e.target.value.replace(/\D/g, "");
                               // Validate again when leaving the field
                               if (value.length >= 8) {
                                 await fetch_cin_tel(
-                                  'tel',
+                                  "tel",
                                   value,
                                   0, // Default formIndex or pass the correct index
                                   accessToken,
@@ -2917,13 +2916,13 @@ export default function ReservationForm({ id }) {
                               }
                             }}
                             className={`w-full h-[38px] px-3 py-2 text-sm border ${
-                              String(clientToEdit.telephone_num1 || '').length <
+                              String(clientToEdit.telephone_num1 || "").length <
                                 8 || isNaN(clientToEdit.telephone_num1)
-                                ? 'border-red-500'
-                                : 'border-gray-300'
+                                ? "border-red-500"
+                                : "border-gray-300"
                             } rounded-md focus:outline-none focus:border-gray-500`}
                           />
-                          {String(clientToEdit.telephone_num1 || '').length <
+                          {String(clientToEdit.telephone_num1 || "").length <
                             8 && (
                             <p className="text-red-500 text-xs mt-1">
                               Minimum 8 chiffres
@@ -2932,28 +2931,28 @@ export default function ReservationForm({ id }) {
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Situation Familiale{' '}
+                            Situation Familiale{" "}
                             <span className="text-red-500 ml-1">*</span>
                           </label>
                           <select
-                            value={clientToEdit.situation_familliale || ''}
+                            value={clientToEdit.situation_familliale || ""}
                             onChange={(e) => {
                               const newSituation = e.target.value;
                               setClientToEdit({
                                 ...clientToEdit,
                                 situation_familliale: newSituation,
                                 // Clear marriage fields when not married
-                                ...(newSituation != '2' && {
-                                  nom_mari: '',
+                                ...(newSituation != "2" && {
+                                  nom_mari: "",
                                   date_mariage: null,
-                                  lieu_mariage: '',
+                                  lieu_mariage: "",
                                 }),
                               });
                             }}
                             className={`w-full h-[38px] px-3 py-2 text-sm border ${
                               !clientToEdit.situation_familliale
-                                ? 'border-red-500'
-                                : 'border-gray-300'
+                                ? "border-red-500"
+                                : "border-gray-300"
                             } rounded-md focus:outline-none focus:border-gray-500`}
                           >
                             <option value="">Sélectionnez une situation</option>
@@ -2976,7 +2975,7 @@ export default function ReservationForm({ id }) {
                         </div>
 
                         {/* Conditional Marriage Fields */}
-                        {clientToEdit.situation_familliale == '2' && (
+                        {clientToEdit.situation_familliale == "2" && (
                           <div className="mt-4 space-y-4">
                             {/* Spouse Name */}
                             <div>
@@ -2985,7 +2984,7 @@ export default function ReservationForm({ id }) {
                               </label>
                               <input
                                 type="text"
-                                value={clientToEdit.nom_mari || ''}
+                                value={clientToEdit.nom_mari || ""}
                                 onChange={(e) =>
                                   setClientToEdit({
                                     ...clientToEdit,
@@ -2994,15 +2993,15 @@ export default function ReservationForm({ id }) {
                                 }
                                 className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                   formSubmitted_client &&
-                                  clientToEdit.situation_familliale == '2' &&
-                                  clientToEdit.nom_mari?.trim() === ''
-                                    ? 'border-red-500'
-                                    : 'border-gray-300'
+                                  clientToEdit.situation_familliale == "2" &&
+                                  clientToEdit.nom_mari?.trim() === ""
+                                    ? "border-red-500"
+                                    : "border-gray-300"
                                 } rounded-md focus:outline-none focus:border-gray-500`}
                               />
                               {formSubmitted_client &&
-                                clientToEdit.situation_familliale == '2' &&
-                                clientToEdit.nom_mari?.trim() === '' && (
+                                clientToEdit.situation_familliale == "2" &&
+                                clientToEdit.nom_mari?.trim() === "" && (
                                   <p className="text-red-500 text-xs mt-1">
                                     Nom du conjoint est obligatoire
                                   </p>
@@ -3018,7 +3017,7 @@ export default function ReservationForm({ id }) {
                                 </label>
                                 <input
                                   type="date"
-                                  value={clientToEdit.date_mariage || ''}
+                                  value={clientToEdit.date_mariage || ""}
                                   onChange={(e) =>
                                     setClientToEdit({
                                       ...clientToEdit,
@@ -3027,14 +3026,14 @@ export default function ReservationForm({ id }) {
                                   }
                                   className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                     formSubmitted_client &&
-                                    clientToEdit.situation_familliale == '2' &&
+                                    clientToEdit.situation_familliale == "2" &&
                                     !clientToEdit.date_mariage
-                                      ? 'border-red-500'
-                                      : 'border-gray-300'
+                                      ? "border-red-500"
+                                      : "border-gray-300"
                                   } rounded-md focus:outline-none focus:border-gray-500`}
                                 />
                                 {formSubmitted_client &&
-                                  clientToEdit.situation_familliale == '2' &&
+                                  clientToEdit.situation_familliale == "2" &&
                                   !clientToEdit.date_mariage && (
                                     <p className="text-red-500 text-xs mt-1">
                                       Date de mariage est obligatoire
@@ -3049,7 +3048,7 @@ export default function ReservationForm({ id }) {
                                 </label>
                                 <input
                                   type="text"
-                                  value={clientToEdit.lieu_mariage || ''}
+                                  value={clientToEdit.lieu_mariage || ""}
                                   onChange={(e) =>
                                     setClientToEdit({
                                       ...clientToEdit,
@@ -3058,15 +3057,15 @@ export default function ReservationForm({ id }) {
                                   }
                                   className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                     formSubmitted_client &&
-                                    clientToEdit.situation_familliale == '2' &&
-                                    clientToEdit.lieu_mariage?.trim() === ''
-                                      ? 'border-red-500'
-                                      : 'border-gray-300'
+                                    clientToEdit.situation_familliale == "2" &&
+                                    clientToEdit.lieu_mariage?.trim() === ""
+                                      ? "border-red-500"
+                                      : "border-gray-300"
                                   } rounded-md focus:outline-none focus:border-gray-500`}
                                 />
                                 {formSubmitted_client &&
-                                  clientToEdit.situation_familliale == '2' &&
-                                  clientToEdit.lieu_mariage?.trim() === '' && (
+                                  clientToEdit.situation_familliale == "2" &&
+                                  clientToEdit.lieu_mariage?.trim() === "" && (
                                     <p className="text-red-500 text-xs mt-1">
                                       Lieu de mariage est obligatoire
                                     </p>
@@ -3078,7 +3077,7 @@ export default function ReservationForm({ id }) {
 
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Accepte être contacté{' '}
+                            Accepte d'être contacté{" "}
                             <span className="text-red-500 ml-1">*</span>
                           </label>
 
@@ -3086,8 +3085,8 @@ export default function ReservationForm({ id }) {
                             className={`w-full h-[38px] px-3 py-2 text-sm border ${
                               clientToEdit.notifie === undefined ||
                               clientToEdit.notifie === null
-                                ? 'border-red-500'
-                                : 'border-gray-300'
+                                ? "border-red-500"
+                                : "border-gray-300"
                             } rounded-md focus:outline-none focus:border-gray-500 flex items-center`}
                           >
                             <div className="flex space-x-4">
@@ -3097,10 +3096,10 @@ export default function ReservationForm({ id }) {
                                   type="radio"
                                   name="notifie"
                                   value="0"
-                                  checked={clientToEdit.notifie == '0'}
+                                  checked={clientToEdit.notifie == "0"}
                                   onChange={(e) => {
                                     console.log(
-                                      'Selected value:',
+                                      "Selected value:",
                                       e.target.value
                                     );
                                     setClientToEdit({
@@ -3121,10 +3120,10 @@ export default function ReservationForm({ id }) {
                                   type="radio"
                                   name="notifie"
                                   value="1"
-                                  checked={clientToEdit.notifie == '1'}
+                                  checked={clientToEdit.notifie == "1"}
                                   onChange={(e) => {
                                     console.log(
-                                      'Selected value:',
+                                      "Selected value:",
                                       e.target.value
                                     );
                                     setClientToEdit({
@@ -3179,8 +3178,8 @@ export default function ReservationForm({ id }) {
                           disabled={!isFormValid_Edit()}
                           className={`px-6 py-2 rounded-md ${
                             !isFormValid_Edit()
-                              ? 'bg-gray-400 cursor-not-allowed' // Disabled style
-                              : 'bg-blue-600 hover:bg-blue-700' // Enabled style
+                              ? "bg-gray-400 cursor-not-allowed" // Disabled style
+                              : "bg-blue-600 hover:bg-blue-700" // Enabled style
                           } text-white`}
                           onClick={() => {
                             if (isFormValid_Edit()) {
@@ -3195,29 +3194,29 @@ export default function ReservationForm({ id }) {
                                 address: clientToEdit.address,
                                 type_client: clientToEdit.type_client,
                                 partenaire_id:
-                                  clientToEdit.type_client === '2'
+                                  clientToEdit.type_client === "2"
                                     ? clientToEdit.partenaire_id
                                     : null,
                                 situation_familliale:
                                   clientToEdit.situation_familliale,
                                 // Clear marriage fields if not married
                                 nom_mari:
-                                  clientToEdit.situation_familliale == '2'
+                                  clientToEdit.situation_familliale == "2"
                                     ? clientToEdit.nom_mari
                                     : null,
                                 date_mariage:
-                                  clientToEdit.situation_familliale == '2'
+                                  clientToEdit.situation_familliale == "2"
                                     ? clientToEdit.date_mariage
                                     : null,
                                 lieu_mariage:
-                                  clientToEdit.situation_familliale == '2'
+                                  clientToEdit.situation_familliale == "2"
                                     ? clientToEdit.lieu_mariage
                                     : null,
                                 civilite: clientToEdit.civilite,
                                 notifie: clientToEdit.notifie,
                               };
                               setAddedClients(updatedClients);
-                              setValue('clients', updatedClients);
+                              setValue("clients", updatedClients);
 
                               // Then calculate with the NEW updatedClients array
                               const sum_percent_select = inputList1.reduce(
@@ -3236,16 +3235,16 @@ export default function ReservationForm({ id }) {
                               const totalPercentage =
                                 sum_percent_select +
                                 totalPercentage_client_form;
-                              setValue('pourcentages', totalPercentage);
+                              setValue("pourcentages", totalPercentage);
 
                               const isValid = totalPercentage === 100;
-                              setValue('verifierPourcentages', isValid);
-                              setenabled(isValid ? 'none' : 'block');
+                              setValue("verifierPourcentages", isValid);
+                              setenabled(isValid ? "none" : "block");
                               console.log(
-                                'total==>' +
+                                "total==>" +
                                   totalPercentage +
-                                  'w valid==>' +
-                                  getValues('verifierPourcentages')
+                                  "w valid==>" +
+                                  getValues("verifierPourcentages")
                               );
 
                               setShowEditModal(false);
@@ -3259,25 +3258,25 @@ export default function ReservationForm({ id }) {
                   </div>
                 </div>
               )}
-              <p style={{ display: 'none' }}>
+              <p style={{ display: "none" }}>
                 {currentStep === 0 &&
-                  watch('bien_id') === '' &&
-                  '• Select a property\n'}
+                  watch("bien_id") === "" &&
+                  "• Select a property\n"}
                 {currentStep === 0 &&
-                  watch('code_reservation') === '' &&
-                  '• Enter reservation code\n'}
+                  watch("code_reservation") === "" &&
+                  "• Enter reservation code\n"}
                 {currentStep === 0 &&
-                  watch('date_reservation') === '' &&
-                  '• Choose reservation date\n'}
+                  watch("date_reservation") === "" &&
+                  "• Choose reservation date\n"}
                 {currentStep === 0 &&
                   info_reservation !== null &&
-                  '• Reservation already exists\n'}
+                  "• Reservation already exists\n"}
                 {currentStep === 0 &&
                   loading_bien &&
-                  '• Loading property data...\n'}
+                  "• Loading property data...\n"}
                 {currentStep === 1 &&
-                  !watch('verifierPourcentages') &&
-                  '• Fix percentage distribution (must total 100%)\n'}
+                  !watch("verifierPourcentages") &&
+                  "• Fix percentage distribution (must total 100%)\n"}
               </p>
             </>
           </div>
@@ -3291,16 +3290,16 @@ export default function ReservationForm({ id }) {
                   <Controller
                     name="sr"
                     control={control}
-                    defaultValue={defaultValues?.sr || ''}
+                    defaultValue={defaultValues?.sr || ""}
                     render={({ field }) => (
                       <div className="flex items-center">
                         <input
                           {...field}
                           id="sr"
                           type="checkbox"
-                          checked={field.value == '1'} // Or whatever string value you use
+                          checked={field.value == "1"} // Or whatever string value you use
                           onChange={(e) =>
-                            field.onChange(e.target.checked ? '1' : '0')
+                            field.onChange(e.target.checked ? "1" : "0")
                           }
                           className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                         />
@@ -3335,23 +3334,23 @@ export default function ReservationForm({ id }) {
                 backendErrors={backendErrors}
                 defaultValues={defaultValues}
               />
-              <p style={{ display: 'none' }}>
-                {'superficie_jardin_calculer' +
-                  watch('superficie_jardin_calculer') +
-                  'sup habitable=>' +
-                  watch('superficie_habitable') +
-                  'superficie_balcon_calculer=>' +
-                  watch('Superficie_balcon_calculer') +
-                  'sup terrasse==>' +
-                  watch('superficie_terrasse_calculer') +
-                  'prix box==>' +
-                  watch('prix_box') +
-                  'prix parking==>' +
-                  watch('prix_parking') +
-                  'prix remis=>' +
-                  watch('prix_remise') +
-                  'prix forfetaire=>' +
-                  watch('prix_forfetaire')}
+              <p style={{ display: "none" }}>
+                {"superficie_jardin_calculer" +
+                  watch("superficie_jardin_calculer") +
+                  "sup habitable=>" +
+                  watch("superficie_habitable") +
+                  "superficie_balcon_calculer=>" +
+                  watch("Superficie_balcon_calculer") +
+                  "sup terrasse==>" +
+                  watch("superficie_terrasse_calculer") +
+                  "prix box==>" +
+                  watch("prix_box") +
+                  "prix parking==>" +
+                  watch("prix_parking") +
+                  "prix remis=>" +
+                  watch("prix_remise") +
+                  "prix forfetaire=>" +
+                  watch("prix_forfetaire")}
               </p>
               <TextField
                 label="Prix Remise:"
@@ -3398,7 +3397,7 @@ export default function ReservationForm({ id }) {
                     defaultValues={defaultValues}
                   />
                   <div>
-                    {' '}
+                    {" "}
                     <TextField
                       label="Montant:"
                       name="avance"
@@ -3408,19 +3407,19 @@ export default function ReservationForm({ id }) {
                       backendErrors={backendErrors}
                       type="number"
                       onChange={(e) => {
-                        setValue('reste', watch('prix_final') - e.target.value);
+                        setValue("reste", watch("prix_final") - e.target.value);
                       }}
                     />
-                    {watch('avance') == 0 && user?.role > 2 && (
-                      <p style={{ color: 'red' }}>
+                    {watch("avance") == 0 && user?.role > 2 && (
+                      <p style={{ color: "red" }}>
                         Le montant ne peut pas être 0 pour votre rôle
                       </p>
                     )}
-                    {watch('avance') > 0 &&
-                      watch('avance') < watch('avance_minimale') && (
-                        <p style={{ color: 'red' }}>
-                          Le montant doit être au moins{' '}
-                          {watch('avance_minimale')}
+                    {watch("avance") > 0 &&
+                      watch("avance") < watch("avance_minimale") && (
+                        <p style={{ color: "red" }}>
+                          Le montant doit être au moins{" "}
+                          {watch("avance_minimale")}
                         </p>
                       )}
                   </div>
@@ -3439,11 +3438,11 @@ export default function ReservationForm({ id }) {
                 <AutocompleteSelectComponent
                   label="Mode Financement :"
                   name="mode_financement"
-                  value={watch('mode_financement')}
+                  value={watch("mode_financement")}
                   required={true}
                   options={MODE_FINANCE}
                   onChange={(e) => {
-                    setValue('mode_financement', e);
+                    setValue("mode_financement", e);
                   }}
                 />
               )}
@@ -3453,11 +3452,11 @@ export default function ReservationForm({ id }) {
                 <AutocompleteSelectComponent
                   label="Mode Financement :"
                   name="mode_financement"
-                  value={watch('mode_financement')}
+                  value={watch("mode_financement")}
                   required={true}
                   options={MODE_FINANCE}
                   onChange={(e) => {
-                    setValue('mode_financement', e);
+                    setValue("mode_financement", e);
                   }}
                 />
 
@@ -3468,24 +3467,24 @@ export default function ReservationForm({ id }) {
                     required={true}
                     options={MODE_PAIEMENT}
                     onChange={(e) => {
-                      setValue('mode_paiement', e);
+                      setValue("mode_paiement", e);
                     }}
                   />
-                  {watch('mode_paiement') != 1 &&
-                    watch('mode_paiement') != '' && (
+                  {watch("mode_paiement") != 1 &&
+                    watch("mode_paiement") != "" && (
                       <>
                         <Autocomplete
                           label="Banque:"
                           name="banque_id"
                           required={true}
                           options={banques}
-                          value={watch('banque_id')}
+                          value={watch("banque_id")}
                           loading={loading_1}
                           control={control}
                           errors={errors}
                           backendErrors={backendErrors}
                           onChange={(e) => {
-                            setValue('banque_id', e.id);
+                            setValue("banque_id", e.id);
                           }}
                           choix="nom"
                         />
@@ -3502,10 +3501,10 @@ export default function ReservationForm({ id }) {
                       </>
                     )}
 
-                  {watch('mode_paiement') != '' &&
-                    watch('mode_paiement') != 1 &&
-                    watch('mode_paiement') != 6 &&
-                    watch('mode_paiement') != 5 && (
+                  {watch("mode_paiement") != "" &&
+                    watch("mode_paiement") != 1 &&
+                    watch("mode_paiement") != 6 &&
+                    watch("mode_paiement") != 5 && (
                       <TextField
                         label="Date Echéance:"
                         name="echeance"
@@ -3517,11 +3516,11 @@ export default function ReservationForm({ id }) {
                         defaultValues={defaultValues}
                       />
                     )}
-                  {watch('avance') != '' && watch('avance') == 0 && (
+                  {watch("avance") != "" && watch("avance") == 0 && (
                     <Controller
                       name="check_montant"
                       control={control}
-                      defaultValue={defaultValues?.check_montant || ''}
+                      defaultValue={defaultValues?.check_montant || ""}
                       render={({ field }) => (
                         <div className="flex items-center">
                           <input
@@ -3548,7 +3547,7 @@ export default function ReservationForm({ id }) {
                   <TextField
                     label="Commentaire:"
                     name="commentaireAvance"
-                    required={watch('check_montant') == true ? true : false}
+                    required={watch("check_montant") == true ? true : false}
                     multi={true} // Set this to true if you want a multi-line textarea, else leave it out or false
                     control={control} // Passed from useForm hook
                     errors={errors} // Validation errors from React Hook Form
@@ -3628,7 +3627,7 @@ export default function ReservationForm({ id }) {
                                     </span>
                                     <button
                                       onClick={() =>
-                                        handleDeleteFile(index, 'avc')
+                                        handleDeleteFile(index, "avc")
                                       }
                                       className="p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 transition-colors"
                                       title="Supprimer"
@@ -3654,12 +3653,12 @@ export default function ReservationForm({ id }) {
                           </div>
                         </div>
                       )}
-                      {user.role <= 2 && watch('avance') > 0 && (
+                      {user.role <= 2 && watch("avance") > 0 && (
                         <>
                           <div className="col-span-3">
                             <h2
                               className="text-lg font-medium border-b pb-2 mb-4"
-                              style={{ color: '#231651' }}
+                              style={{ color: "#231651" }}
                             >
                               Informations Encaissement
                             </h2>
@@ -3670,7 +3669,7 @@ export default function ReservationForm({ id }) {
                             name="num_remise"
                             type="number"
                             required={
-                              watch('date_encaissement') != '' ? true : false
+                              watch("date_encaissement") != "" ? true : false
                             }
                             control={control}
                             errors={errors}
@@ -3682,7 +3681,7 @@ export default function ReservationForm({ id }) {
                             label="Date Encaissement:"
                             name="date_encaissement"
                             type="date"
-                            required={watch('num_remise') != '' ? true : false}
+                            required={watch("num_remise") != "" ? true : false}
                             control={control}
                             errors={errors}
                             backendErrors={backendErrors}
@@ -3704,8 +3703,8 @@ export default function ReservationForm({ id }) {
             onClick={goToPrevStep}
             className={`px-6 py-2 rounded-md border border-gray-300 text-gray-700 ${
               currentStep == 0
-                ? 'opacity-50 cursor-not-allowed'
-                : 'hover:bg-gray-50'
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:bg-gray-50"
             }`}
             disabled={currentStep == 0}
           >
@@ -3718,7 +3717,7 @@ export default function ReservationForm({ id }) {
               onClick={handleSubmit(onSubmit)}
               disabled={isButtonDisabled()}
               loading={loading.form}
-              className={isButtonDisabled() ? '!bg-[rgb(45_133_72_/_28%)]' : ''}
+              className={isButtonDisabled() ? "!bg-[rgb(45_133_72_/_28%)]" : ""}
             >
               Enregistrer
             </Button>
@@ -3728,23 +3727,23 @@ export default function ReservationForm({ id }) {
               onClick={goToNextStep}
               className={`px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 ${
                 (currentStep == 0 &&
-                  (watch('bien_id') == '' ||
-                    watch('code_reservation') == '' ||
-                    watch('date_reservation') == '' ||
+                  (watch("bien_id") == "" ||
+                    watch("code_reservation") == "" ||
+                    watch("date_reservation") == "" ||
                     info_reservation != null ||
                     loading_bien == true)) ||
-                (currentStep == 1 && !watch('verifierPourcentages'))
-                  ? 'opacity-50 cursor-not-allowed'
-                  : ''
+                (currentStep == 1 && !watch("verifierPourcentages"))
+                  ? "opacity-50 cursor-not-allowed"
+                  : ""
               }`}
               disabled={
                 (currentStep == 0 &&
-                  (watch('bien_id') == '' ||
-                    watch('code_reservation') == '' ||
-                    watch('date_reservation') == '' ||
+                  (watch("bien_id") == "" ||
+                    watch("code_reservation") == "" ||
+                    watch("date_reservation") == "" ||
                     info_reservation != null ||
                     loading_bien == true)) ||
-                (currentStep == 1 && !watch('verifierPourcentages'))
+                (currentStep == 1 && !watch("verifierPourcentages"))
               }
             >
               Suivant
