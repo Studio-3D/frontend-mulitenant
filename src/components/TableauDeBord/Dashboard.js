@@ -115,6 +115,8 @@ export const Dashboard = () => {
     fetchData();
   }, [selectedProjet, accesstoken, dateRange]);
 
+ 
+
   if (loading) {
     return <div className="flex justify-center items-center h-64">Loading...</div>;
   }
@@ -205,7 +207,7 @@ export const Dashboard = () => {
           <div className="bg-white rounded-xl shadow-sm border border-gray-50">
             <VisitesChart 
               dateRange={dateRange} 
-              data={data} 
+              data={data?.array_visite_interet_et_date} 
             />
           </div>
         </div>

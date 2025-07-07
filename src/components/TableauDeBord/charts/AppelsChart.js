@@ -10,188 +10,16 @@ import {
 } from 'recharts';
 
 export const AppelsChart = ({ dateRange }) => {
-  // Aggregate data for different date ranges
-  const getAggregatedData = () => {
-    const dataSets = {
-      "aujourd'hui": [
-        {
-          name: '8h',
-          entrants: 3,
-          sortants: 5,
-          manques: 1,
-        },
-        {
-          name: '10h',
-          entrants: 5,
-          sortants: 8,
-          manques: 2,
-        },
-        {
-          name: '12h',
-          entrants: 4,
-          sortants: 6,
-          manques: 1,
-        },
-        {
-          name: '14h',
-          entrants: 6,
-          sortants: 4,
-          manques: 2,
-        },
-        {
-          name: '16h',
-          entrants: 7,
-          sortants: 9,
-          manques: 0,
-        },
-        {
-          name: '18h',
-          entrants: 4,
-          sortants: 7,
-          manques: 1,
-        },
-      ],
-      'cette semaine': [
-        {
-          name: 'Lun',
-          entrants: 12,
-          sortants: 18,
-          manques: 4,
-        },
-        {
-          name: 'Mar',
-          entrants: 15,
-          sortants: 22,
-          manques: 2,
-        },
-        {
-          name: 'Mer',
-          entrants: 10,
-          sortants: 16,
-          manques: 6,
-        },
-        {
-          name: 'Jeu',
-          entrants: 18,
-          sortants: 14,
-          manques: 3,
-        },
-        {
-          name: 'Ven',
-          entrants: 20,
-          sortants: 25,
-          manques: 5,
-        },
-      ],
-      'ce mois': [
-        {
-          name: 'Sem 1',
-          entrants: 55,
-          sortants: 75,
-          manques: 15,
-        },
-        {
-          name: 'Sem 2',
-          entrants: 62,
-          sortants: 80,
-          manques: 12,
-        },
-        {
-          name: 'Sem 3',
-          entrants: 58,
-          sortants: 72,
-          manques: 18,
-        },
-        {
-          name: 'Sem 4',
-          entrants: 65,
-          sortants: 85,
-          manques: 14,
-        },
-      ],
-      'cette année': [
-        {
-          name: 'T1',
-          entrants: 480,
-          sortants: 620,
-          manques: 95,
-        },
-        {
-          name: 'T2',
-          entrants: 520,
-          sortants: 680,
-          manques: 85,
-        },
-        {
-          name: 'T3',
-          entrants: 490,
-          sortants: 640,
-          manques: 105,
-        },
-        {
-          name: 'T4',
-          entrants: 550,
-          sortants: 700,
-          manques: 90,
-        },
-      ],
-      'dernière année': [
-        {
-          name: 'T1',
-          entrants: 450,
-          sortants: 590,
-          manques: 85,
-        },
-        {
-          name: 'T2',
-          entrants: 490,
-          sortants: 650,
-          manques: 75,
-        },
-        {
-          name: 'T3',
-          entrants: 460,
-          sortants: 610,
-          manques: 95,
-        },
-        {
-          name: 'T4',
-          entrants: 520,
-          sortants: 670,
-          manques: 80,
-        },
-      ],
-    };
-    const data = dataSets[dateRange];
-    // Sum up the values for each category
-    let totalEntrants = 0;
-    let totalSortants = 0;
-    let totalManques = 0;
-    data.forEach((item) => {
-      totalEntrants += item.entrants;
-      totalSortants += item.sortants;
-      totalManques += item.manques;
-    });
-    return [
-      {
-        name: 'Appels entrants',
-        value: totalEntrants,
-      },
-      {
-        name: 'Appels sortants',
-        value: totalSortants,
-      },
-      {
-        name: 'Appels manqués',
-        value: totalManques,
-      },
-    ];
-  };
-  const data = getAggregatedData();
-  const COLORS = ['#22c55e', '#0ea5e9 ', '#f43f5e'];
+  // Data based on the image content
+  const data = [
+    { name: 'Appels entrants', value: 1 },
+    { name: 'Appels sortants', value: 2 },
+  ];
+
+  const COLORS = ['#22c55e', '#0ea5e9', '#f43f5e'];
+  
   const renderActiveShape = (props) => {
-    const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } =
-      props;
+    const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
     return (
       <g>
         <Sector
@@ -206,6 +34,7 @@ export const AppelsChart = ({ dateRange }) => {
       </g>
     );
   };
+
   return (
     <ResponsiveContainer width="100%" height={250}>
       <PieChart>
@@ -220,6 +49,7 @@ export const AppelsChart = ({ dateRange }) => {
           activeShape={renderActiveShape}
           animationDuration={1000}
           animationBegin={0}
+          label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
         >
           {data.map((entry, index) => (
             <Cell
@@ -247,7 +77,7 @@ export const AppelsChart = ({ dateRange }) => {
           verticalAlign="bottom"
           align="center"  
           wrapperStyle={{
-            paddingTop: '20px'  /* Add some padding if needed */
+            paddingTop: '20px'
           }}
           iconSize={10}
           iconType="circle"
