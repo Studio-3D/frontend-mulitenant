@@ -67,7 +67,7 @@ export const fetchData_table_by_projet = async (
   setError('');
 
   const selectedProjet = JSON.parse(localStorage.getItem('selectedProjet')) || {};
-  const urlsSansProjet = ['ReclamationsClients', 'projets'];
+  const urlsSansProjet = ['ReclamationsClients', 'projets','typeProjets','sources','banques',,'typefreins'];
 
 // Si l'entité nécessite un projet sélectionné (pas dans urlsSansProjet), on vérifie selectedProjet
 if (!urlsSansProjet.includes(entity.API_URL)) {
@@ -88,7 +88,7 @@ if (!urlsSansProjet.includes(entity.API_URL)) {
     };
 
     // URL conditionnelle selon l'entité
-    const urlsSansProjet = ['ReclamationsClients', 'projets'];
+    const urlsSansProjet = ['ReclamationsClients', 'projets','typeProjets','sources','banques','typefreins'];
 
     const baseUrl = urlsSansProjet.includes(entity.API_URL)
       ? `${APIURL.ROOT}/v1/${entity.API_URL}/`

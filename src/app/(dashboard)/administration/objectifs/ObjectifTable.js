@@ -1,81 +1,109 @@
-import { useState, useEffect, useMemo } from 'react';
-import Table from '@/components/Table';
-import * as XLSX from 'xlsx';
-import { Eye, Edit, Trash2 } from "lucide-react";
-import { format } from 'date-fns';
-import Input from "@/components/Input";
+'use client';
 
-const ObjectifTable = ({ 
-  data = [], 
-  loading = false, 
-  onAction,onFilterSubmit ,
-  
-  canAddObjectifs = false
-}) => {
+import React, { useEffect, useState, useCallback } from 'react';
+import Table from '@/components/Table';
+import { Eye, Pencil, Check, RefreshCw, Trash2 } from 'lucide-react';
+import Modal from '@/components/Modal';
+import DeleteData from '@/components/DeleteData';
+import { useAuth } from '../../../../context/AuthContext';
+import { useProjet } from '../../../../context/ProjetContext';
+import { APIURL, ENDPOINTS } from '../../../../configs/api';
+import { useRouter } from 'next/navigation';
+import { fetchData_table_by_projet } from '../../../../configs/api-utils';
+import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
+import Input from '@/components/Input';
+import { format } from 'date-fns';
+
+const ObjectifTable = () => {
+  const [objectifs, setObjectifs] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedId, setSelectedId] = useState(null);
+  const [totalRows, setTotalRows] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
-  const [tempFilters, setTempFilters] = useState({date: "",commercial:"" }); // les champs que l'utilisateur tape
-  const handleFilterChange = (field, value) => {
-    setTempFilters((prev) => ({ ...prev, [field]: value }));
-  };
+  const { user, token } = useAuth();
+  const { selectedProjet } = useProjet();
+  const accesstoken = token || localStorage.getItem('accessToken');
 
-  const applyFilters = () => {
-    onFilterSubmit && onFilterSubmit(tempFilters); 
-  };
-  
-  const resetFilters = () => {
-    const reset = { date: "",commercial:""  };
-    setTempFilters(reset);
-    onFilterSubmit && onFilterSubmit(reset); 
-  };
-  // Filter data based on search term
-  const filteredData = data.filter(item => {
-    const userName = item.user ? `${item.user.name} ${item.user.prenom}`.toLowerCase() : '';
-    const date = item.created_at ? format(new Date(item.created_at), 'dd/MM/yyyy').toLowerCase() : '';
-    return searchTerm === '' || 
-           userName.includes(searchTerm.toLowerCase()) ||
-           date.includes(searchTerm.toLowerCase());
+  const router = useRouter();
+  // Declare the entity object in the component scope
+  const [filters, setFilters] = useState({
+    date: "",commercial:""  
   });
+  const [tempFilters, setTempFilters] = useState({ ...filters });
 
-  // Apply sorting
-  const sortedData = useMemo(() => {
-    let sortableItems = [...filteredData];
-    if (sortConfig.key) {
-      sortableItems.sort((a, b) => {
-        // Handle sorting based on field type
-        if (sortConfig.key === 'date') {
-          const dateA = a.created_at ? new Date(a.created_at) : new Date(0);
-          const dateB = b.created_at ? new Date(b.created_at) : new Date(0);
-          return sortConfig.direction === 'asc' 
-            ? dateA - dateB 
-            : dateB - dateA;
-        } else if (sortConfig.key === 'user') {
-          const nameA = a.user ? `${a.user.name} ${a.user.prenom}`.toLowerCase() : '';
-          const nameB = b.user ? `${b.user.name} ${b.user.prenom}`.toLowerCase() : '';
-          return sortConfig.direction === 'asc'
-            ? nameA.localeCompare(nameB)
-            : nameB.localeCompare(nameA);
-        } else {
-          // For other fields (metrics), compare the semaine value as a simple example
-          const valueA = a[sortConfig.key]?.semaine || 0;
-          const valueB = b[sortConfig.key]?.semaine || 0;
-          return sortConfig.direction === 'asc' ? valueA - valueB : valueB - valueA;
-        }
-      });
-    }
-    return sortableItems;
-  }, [filteredData, sortConfig]);
+  const entity = {
+    API_URL: 'objectifs',
+    dataKey: 'data',
+    searchFields: ['objectif'],
+  };
 
-  // Calculate paginated data
-  const indexOfLastItem = currentPage * rowsPerPage;
-  const indexOfFirstItem = indexOfLastItem - rowsPerPage;
-  const currentItems = sortedData.slice(indexOfFirstItem, indexOfLastItem);
+  useEffect(() => {
+    fetchData_table_by_projet(
+      entity,
+      filters,
+      searchTerm,
+      currentPage,
+      rowsPerPage,
+      accesstoken,
+      setLoading,
+      setError,
+      setObjectifs,
+      setTotalRows
+    );
+  }, [
+    accesstoken,
+    currentPage,
+    rowsPerPage,
+    searchTerm,
+    filters,
+    selectedProjet,
+  ]);
 
-  // Format objectifs for display
-  const formattedObjectifs = currentItems.map(obj => ({
-    id: obj.id,
+
+
+  useEffect(() => {
+        fetchData_table_by_projet(
+          entity,
+          filters,
+          searchTerm,
+          currentPage,
+          rowsPerPage,
+          accesstoken,
+          setLoading,
+          setError,
+          setObjectifs,
+          setTotalRows
+        );
+      
+  }, [
+    accesstoken,
+    currentPage,
+    rowsPerPage,
+    searchTerm,
+    filters,
+    selectedProjet,
+  ]);
+
+
+  function handleEdit(ObjectifId) {
+    router.push(`${ENDPOINTS.OBJECTIFS}?id=${ObjectifId}&action=edit`);
+  }
+
+  const handleFilterToggle = (isOpen) => {
+    if (!isOpen) resetFilters(); // Si on ferme, on réinitialise
+  };
+
+
+
+  
+  // Format users data for table display
+  const formatData = () => {
+    return objectifs.map((obj) => ({
+      id: obj.id,
     date: obj.created_at ? format(new Date(obj.created_at), 'dd/MM/yyyy') : 'N/A',
     user: obj.user ? `${obj.user.name} ${obj.user.prenom}` : 'N/A',
     visites: obj.visites ? 
@@ -88,18 +116,9 @@ const ObjectifTable = ({
       `S: ${obj.reservations.semaine} | J: ${obj.reservations.jours} | M: ${obj.reservations.mois}` : 
       'N/A',
   }));
-
-  // Handle sorting
-  const requestSort = (key) => {
-    let direction = 'asc';
-    if (sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
-    }
-    setSortConfig({ key, direction });
   };
 
-  // Define table columns with action buttons
-  const columns = [
+   const columns = [
     { 
       key: 'date', 
       label: 'Date',
@@ -130,52 +149,35 @@ const ObjectifTable = ({
       sortable: true,
       onSort: () => requestSort('reservations')
     },
-    { 
-      key: 'actions', 
-      label: 'Actions',
+    {
+      key: "actions",
+      label: "Actions",
       render: (row) => (
-        <div className="flex gap-4 items-center">
+        <div className="flex gap-3 items-center">
           
-          <button
-            className="text-blue-500 hover:text-blue-700"
-            onClick={() => onAction && onAction('edit', row.id)}
-            title="Modifier"
-          >
-            <Edit className="w-4 h-4" />
-          </button>
-          <button
-            className="text-red-500 hover:text-red-700"
-            onClick={() => onAction && onAction('delete', row)}
-            title="Supprimer"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          <Pencil
+            className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
+            onClick={() => handleEdit(row.id)}
+          />
+          <Trash2
+            className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
+            onClick={() => {
+              setSelectedId(row.id);
+              setShowDeleteModal(true);
+            }}
+          />
+
         </div>
-      )
-    }
+      ),
+    },
   ];
 
-  // Handle search
-  const handleSearchChange = (term) => {
-    setSearchTerm(term);
-    setCurrentPage(1); // Reset to first page on search
-  };
+   
+  
 
-  // Handle page change
-  const handlePageChange = (newPage) => {
-    setCurrentPage(newPage);
-  };
-
-  // Handle rows per page change
-  const handleRowsPerPageChange = (newSize) => {
-    setRowsPerPage(newSize);
-    setCurrentPage(1); // Reset to first page when changing rows per page
-  };
-
-  // Export to Excel function
-  const handleExportExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(data.map(obj => ({
-      'ID': obj.id,
+  const data_to_export = () => {
+    return objectifs.map((obj) => ({ 
+     'ID': obj.id,
       'Date': obj.created_at ? format(new Date(obj.created_at), 'dd/MM/yyyy') : 'N/A',
       'Commercial': obj.user ? `${obj.user.name} ${obj.user.prenom}` : 'N/A',
       'Visites Jours': obj.visites?.jours || 0,
@@ -187,20 +189,66 @@ const ObjectifTable = ({
       'Réservations Jours': obj.reservations?.jours || 0,
       'Réservations Semaine': obj.reservations?.semaine || 0,
       'Réservations Mois': obj.reservations?.mois || 0
-    })));
-    
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Objectifs");
-    XLSX.writeFile(workbook, "objectifs_export.xlsx");
+    }));
   };
-  
+
+  const columns_export = [
+  { key: 'ID', label: 'ID' },
+  { key: 'Date', label: 'Date' },
+  { key: 'Commercial', label: 'Commercial' },
+  { key: 'Visites Jours', label: 'Visites (Jour)' },
+  { key: 'Visites Semaine', label: 'Visites (Semaine)' },
+  { key: 'Visites Mois', label: 'Visites (Mois)' },
+  { key: 'Appels Jours', label: 'Appels (Jour)' },
+  { key: 'Appels Semaine', label: 'Appels (Semaine)' },
+  { key: 'Appels Mois', label: 'Appels (Mois)' },
+  { key: 'Réservations Jours', label: 'Réservations (Jour)' },
+  { key: 'Réservations Semaine', label: 'Réservations (Semaine)' },
+  { key: 'Réservations Mois', label: 'Réservations (Mois)' },
+];
+
+  const handleFilterChange = (field, value) => {
+    setTempFilters((prev) => ({ ...prev, [field]: value }));
+  };
+  const applyFilters = () => {
+    setFilters(tempFilters);
+  };
+  const resetFilters = () => {
+    const reset = {
+      date: "",commercial:""  
+    };
+    setFilters(reset);
+    setTempFilters(reset);
+  };
+
   return (
-    <div>
-      <Table
-        title={"Objectifs"}  
-        columns={columns}
-        data={formattedObjectifs}
-        filterComponent={
+    <>
+      <div className="reflative bg-white rounded-lg shadow-md p-4">
+        <Table
+          title={'Objectifs'}
+          data_to_export={data_to_export()}
+          columns_export={columns_export}
+          name_file_export={'objectifs_export'}
+          columns={columns}
+          data={formatData()}
+          totalRows={totalRows}
+          loading={loading}
+          error={error}
+          currentPage={currentPage}
+          rowsPerPage={rowsPerPage}
+          onPageChange={setCurrentPage}
+          onRowsPerPageChange={setRowsPerPage}
+          onSearchChange={setSearchTerm}
+          enableExport={true}
+          onFilterToggle={handleFilterToggle}
+          addLink={
+            isSuperAdmin(user.role) ||
+            isAdmin(user.role) ||
+            isCommercial(user.role)
+              ? `${ENDPOINTS.OBJECTIFS}?action=add`
+              : undefined
+          }
+          filterComponent={
           <div className="space-y-4 ">
             <div
               className="grid gap-3"
@@ -243,22 +291,42 @@ const ObjectifTable = ({
         
           </div>
         }
-        totalRows={filteredData.length}
-        loading={loading}
-        addLink={canAddObjectifs ? "/administration/objectifs?action=add" : undefined}
-        onSearchChange={handleSearchChange}
-        currentPage={currentPage}
-        rowsPerPage={rowsPerPage}
-        onPageChange={handlePageChange}
-        onRowsPerPageChange={handleRowsPerPageChange}
-        onExport={handleExportExcel}
-        enableExport={data.length > 0}
-        sortConfig={sortConfig}
+        showSearch={false}
+        />
+      </div>
 
-      />
-      
+      {showDeleteModal && selectedId && (
+        <Modal
+          isVisible={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+        >
+          <DeleteData
+            route={APIURL.OBJECTIFS}
+            Id={selectedId}
+            type='Objectif'
+            message={'Etes-vous sûr de vouloir supprimer ce Objectif ?'}
+            accessToken={accesstoken}
+            onClose={() => {
+              setShowDeleteModal(false);
+              fetchData_table_by_projet(
+                entity,
+                {},
+                searchTerm,
+                currentPage,
+                rowsPerPage,
+                accesstoken,
+                setLoading,
+                setError,
+                setObjectifs,
+                setTotalRows
+              );
+            }}
+          />
+        </Modal>
+      )}
 
-    </div>
+     
+    </>
   );
 };
 
