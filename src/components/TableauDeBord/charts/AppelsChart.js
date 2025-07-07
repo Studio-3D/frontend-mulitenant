@@ -188,7 +188,7 @@ export const AppelsChart = ({ dateRange }) => {
     ];
   };
   const data = getAggregatedData();
-  const COLORS = ['#4f46e5', '#0ea5e9', '#f43f5e'];
+  const COLORS = ['#66C8A5', '#97BDFB', '#FF7C7C'];
   const renderActiveShape = (props) => {
     const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } =
       props;
