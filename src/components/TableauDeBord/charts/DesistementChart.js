@@ -111,7 +111,7 @@ const transformData = () => {
           verticalAlign="bottom"
           align="center"
           wrapperStyle={{
-            paddingTop: '20px'
+            paddingTop: '4px',
           }}
           iconSize={10}
           iconType="circle"
