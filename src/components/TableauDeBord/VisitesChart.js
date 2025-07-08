@@ -133,7 +133,7 @@ export function VisitesChart({ data = [], dateRange }) {
             </h2>
           </CardTitle>
           <CardDescription className="text-sm sm:text-base">
-            {dateRange}
+             Affichage du total des visiteurs {dateRange}
           </CardDescription>
         </div>
 
@@ -188,16 +188,6 @@ export function VisitesChart({ data = [], dateRange }) {
           </ResponsiveContainer>
         </ChartContainer>
       </CardContent>
-
-      <CardFooter className="flex-col items-start gap-2 text-sm px-4 sm:px-6">
-        <div className="flex items-center gap-2 font-medium leading-none">
-          Tendance à la hausse de 5,2% ce mois-ci
-          <TrendingUp className="h-4 w-4 text-green-500" />
-        </div>
-        <div className="leading-none text-muted-foreground text-xs sm:text-sm">
-          Affichage du total des visiteurs selon la période sélectionnée
-        </div>
-      </CardFooter>
     </Card>
   )
 }
