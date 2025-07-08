@@ -107,6 +107,7 @@ export const Dashboard = () => {
     encaissements = [],
     remboursements = [],
     visites = {},
+    bien_vendu_par_type_et_date_reservation: biensVendusRaw = [],
     array_type_date_desistement: cancellationsRaw = [],
     chartData_sources = [],
   } = dashboardData || {};
@@ -391,7 +392,8 @@ export const Dashboard = () => {
           <h3 className="text-lg font-medium text-gray-800 mb-4">
             Nombre de Biens Vendus
           </h3>
-          <MulBar 
+          <MulBar
+            data={biensVendusRaw}
             startDate={startDate} 
             endDate={endDate}
             timePeriod={timePeriod}
