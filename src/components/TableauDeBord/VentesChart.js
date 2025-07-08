@@ -33,6 +33,47 @@ const rangeDescriptions = {
   "dernière année": "Ventes l'année dernière",
 }
 
+// Fixed month names in French
+const FRENCH_MONTHS = [
+  "janv", "févr", "mars", "avr", "mai", "juin",
+  "juil", "août", "sept", "oct", "nov", "déc"
+];
+
+// Helper function to generate complete date ranges
+const generateCompleteDateRange = (range) => {
+  const now = new Date();
+  const dates = [];
+
+  if (range === "cette année" || range === "dernière année") {
+    const year = range === "dernière année" ? now.getFullYear() - 1 : now.getFullYear();
+    for (let month = 0; month < 12; month++) {
+      const date = new Date(year, month, 1);
+      dates.push(date.toISOString().split('T')[0]);
+    }
+  } else if (range === "ce mois") {
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(year, month, day);
+      dates.push(date.toISOString().split('T')[0]);
+    }
+  } else if (range === "cette semaine") {
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const startDate = new Date(today);
+    startDate.setDate(today.getDate() - dayOfWeek);
+    
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + i);
+      dates.push(date.toISOString().split('T')[0]);
+    }
+  }
+
+  return dates;
+}
+
 // Helper function to format dates based on range
 const formatDateLabel = (dateStr, range) => {
   const date = new Date(dateStr);
@@ -46,7 +87,7 @@ const formatDateLabel = (dateStr, range) => {
       return date.getDate().toString();
     case "cette année":
     case "dernière année":
-      return date.toLocaleDateString("fr-FR", { month: 'short' });
+      return FRENCH_MONTHS[date.getMonth()];
     default:
       return dateStr;
   }
@@ -57,13 +98,25 @@ export function VentesChart({ dateRange, data }) {
   
   // Transform the API data into the format expected by Recharts
   const chartData = React.useMemo(() => {
-    if (!data) return [];
-    
-    return data.map(([date, ventes]) => ({
-      name: date,
-      ventes,
-      formattedName: formatDateLabel(date, dateRange)
-    }));
+    if (!Array.isArray(data)) return [];
+
+    // Create a map of date to ventes for quick lookup
+    const ventesMap = new Map();
+    data.forEach(([date, ventes]) => {
+      ventesMap.set(date, ventes);
+    });
+
+    // Generate complete date range for the selected period
+    const completeDateRange = generateCompleteDateRange(dateRange);
+
+    // Create chart data with all dates, filling in 0 for missing dates
+    return completeDateRange.map(date => {
+      return {
+        name: date,
+        formattedName: formatDateLabel(date, dateRange),
+        ventes: ventesMap.get(date) || 0
+      };
+    });
   }, [data, dateRange]);
 
   const totalVentes = chartData.reduce((sum, d) => sum + d.ventes, 0);
@@ -101,18 +154,27 @@ export function VentesChart({ dateRange, data }) {
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              minTickGap={32}
+              minTickGap={8}
+              interval={0}
             />
             <ChartTooltip
               cursor={false}
               content={
                 <ChartTooltipContent
                   labelFormatter={(value) => {
-                    return new Date(value).toLocaleDateString("fr-FR", {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric"
-                    })
+                    try {
+                      const date = new Date(value);
+                      if (isNaN(date.getTime())) {
+                        return "Date invalide";
+                      }
+                      return date.toLocaleDateString("fr-FR", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric"
+                      });
+                    } catch (e) {
+                      return "Date invalide";
+                    }
                   }}
                   indicator="dot"
                 />

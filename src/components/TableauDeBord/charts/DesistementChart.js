@@ -13,34 +13,34 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
 export const DesistementChart = ({ dateRange, data }) => {
   // Transform the desistements data into chart format
-  const transformData = () => {
-    if (!data?.desistements) return [];
+const transformData = () => {
+  if (!data?.desistements) return [];
 
-    const desistements = data.desistements;
-    
-    // Initialize counters for each type
-    const counts = {
-      'Désistement Définitif': 0,
-      'Désistement au profit d\'un co reservataire': 0,
-      'Désistement au profit d\'un proche': 0,
-      'Désistement partiel': 0,
-      'Changeant de Bien': 0
-    };
+  const filteredData = data.desistements; // Already filtered by the backend
 
-    // Sum up all desistement types across all records
-    desistements.forEach(item => {
-      counts['Désistement Définitif'] += item['Désistement Définitif'] || 0;
-      counts['Désistement au profit d\'un co reservataire'] += item['Désistement au profit d\'un co reservataire'] || 0;
-      counts['Désistement au profit d\'un proche'] += item['Désistement au profit d\'un proche'] || 0;
-      counts['Désistement partiel'] += item['Désistement partiel'] || 0;
-      counts['Changeant de Bien'] += item['Changeant de Bien'] || 0;
-    });
-
-    // Convert to array format for PieChart
-    return Object.entries(counts)
-      .filter(([_, value]) => value > 0) // Only include types with count > 0
-      .map(([name, value]) => ({ name, value }));
+  const counts = {
+    'Désistement Définitif': 0,
+    'Désistement au profit d\'un co reservataire': 0,
+    'Désistement au profit d\'un proche': 0,
+    'Désistement partiel': 0,
+    'Changeant de Bien': 0
   };
+
+  filteredData.forEach(item => {
+    counts['Désistement Définitif'] += item['Désistement Définitif'] || 0;
+    counts['Désistement au profit d\'un co reservataire'] += item['Désistement au profit d\'un co reservataire'] || 0;
+    counts['Désistement au profit d\'un proche'] += item['Désistement au profit d\'un proche'] || 0;
+    counts['Désistement partiel'] += item['Désistement partiel'] || 0;
+    counts['Changeant de Bien'] += item['Changeant de Bien'] || 0;
+  });
+
+  const result = Object.entries(counts)
+    .filter(([_, value]) => value > 0)
+    .map(([name, value]) => ({ name, value }));
+
+  return result.length > 0 ? result : [];
+};
+
 
   const chartData = transformData();
 
