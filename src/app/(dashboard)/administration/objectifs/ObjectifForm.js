@@ -141,7 +141,7 @@ export default function ObjectifForm({ id = null }) {
       });
 
       toast.success(`Objectif ${id ? "modifié" : "créé"} avec succès`);
-      router.push("/administration/objectifs");
+      router.push(ENDPOINTS.OBJECTIFS);
     } catch (error) {
       console.error("Error submitting objectif:", error);
 

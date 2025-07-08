@@ -382,6 +382,7 @@ const ClientTable = () => {
           <DeleteData
             route={APIURL.CLIENTS}
             Id={selectedId}
+            type='Client'
             message={'Etes-vous sûr de vouloir supprimer ce Client ?'}
             accessToken={accesstoken}
             onClose={() => {

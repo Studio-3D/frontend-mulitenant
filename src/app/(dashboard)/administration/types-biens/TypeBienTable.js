@@ -1,159 +1,266 @@
-import { useState } from 'react';
-import Table from '@/components/Table';
-import * as XLSX from 'xlsx';
-import { Eye, Edit, Trash2 } from "lucide-react";
-import Input from "@/components/Input";
+'use client';
 
-const TypeBienTable = ({ 
-  data = [], 
-  loading = false, 
-  onAction,onFilterSubmit,
-  onRefresh
-}) => {
+import React, { useEffect, useState, useCallback } from 'react';
+import Table from '@/components/Table';
+import { Eye, Pencil, Check, RefreshCw, Trash2 } from 'lucide-react';
+import Modal from '@/components/Modal';
+import DeleteData from '@/components/DeleteData';
+import { useAuth } from '../../../../context/AuthContext';
+import { useProjet } from '../../../../context/ProjetContext';
+import { APIURL, ENDPOINTS } from '../../../../configs/api';
+import { useRouter } from 'next/navigation';
+import { fetchData_table_by_projet } from '../../../../configs/api-utils';
+import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
+import Input from '@/components/Input';
+
+const TypeBienTable = () => {
+  const [typebiens, setTypeBiens] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedId, setSelectedId] = useState(null);
+  const [totalRows, setTotalRows] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [tempFilters, setTempFilters] = useState({ type: "" }); // les champs que l'utilisateur tape
+  const { user, token } = useAuth();
+  const { selectedProjet } = useProjet();
+  const accesstoken = token || localStorage.getItem('accessToken');
+
+  const router = useRouter();
+  // Declare the entity object in the component scope
+  const [filters, setFilters] = useState({
+    type: ''
+  });
+  const [tempFilters, setTempFilters] = useState({ ...filters });
+
+  const entity = {
+    API_URL: 'typeBiens',
+    dataKey: 'data',
+    searchFields: ['type'],
+  };
+
+  useEffect(() => {
+    fetchData_table_by_projet(
+      entity,
+      filters,
+      searchTerm,
+      currentPage,
+      rowsPerPage,
+      accesstoken,
+      setLoading,
+      setError,
+      setTypeBiens,
+      setTotalRows
+    );
+  }, [
+    accesstoken,
+    currentPage,
+    rowsPerPage,
+    searchTerm,
+    filters,
+    selectedProjet,
+  ]);
+
+
+
+  useEffect(() => {
+        fetchData_table_by_projet(
+          entity,
+          filters,
+          searchTerm,
+          currentPage,
+          rowsPerPage,
+          accesstoken,
+          setLoading,
+          setError,
+          setTypeBiens,
+          setTotalRows
+        );
+      
+  }, [
+    accesstoken,
+    currentPage,
+    rowsPerPage,
+    searchTerm,
+    filters,
+    selectedProjet,
+  ]);
+
+
+  function handleEdit(TypeBienId) {
+    router.push(`${ENDPOINTS.TYPEBIENS}?id=${TypeBienId}&action=edit`);
+  }
+
+  const handleFilterToggle = (isOpen) => {
+    if (!isOpen) resetFilters(); // Si on ferme, on réinitialise
+  };
+
+
+
+  
+  // Format users data for table display
+  const formatData = () => {
+    return typebiens.map((typebien) => ({
+      id: typebien.id,
+      typebien: typebien.type,
+      
+    }));
+  };
+
+   const columns = [
+        { key: 'typebien', label: 'Type de Bien' },
+        {
+              key: "actions",
+              label: "Actions",
+              render: (row) => (
+                <div className="flex gap-3 items-center">
+                  
+                  <Pencil
+                    className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
+                    onClick={() => handleEdit(row.id)}
+                  />
+                  <Trash2
+                    className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
+                    onClick={() => {
+                      setSelectedId(row.id);
+                      setShowDeleteModal(true);
+                    }}
+                  />
+        
+                </div>
+              ),
+            },
+      ];
+  
+
+  const data_to_export = () => {
+    return typebiens.map((ty) => ({ 
+      typebien: ty.type,
+    }));
+  };
+
+  const columns_export = [
+    { key: 'typebien', label: 'Type Bien' },
+    
+  ];
+
   const handleFilterChange = (field, value) => {
     setTempFilters((prev) => ({ ...prev, [field]: value }));
   };
-
   const applyFilters = () => {
-    onFilterSubmit && onFilterSubmit(tempFilters); 
+    setFilters(tempFilters);
   };
-  
   const resetFilters = () => {
-    const reset = { type: "" };
-    setTempFilters(reset);
-    onFilterSubmit && onFilterSubmit(reset); 
-  };
-  // Filter data based on search term
-  const filteredData = data.filter(item => 
-    item.type?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // Calculate paginated data
-  const indexOfLastItem = currentPage * rowsPerPage;
-  const indexOfFirstItem = indexOfLastItem - rowsPerPage;
-  const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
-
-  // Define table columns with action buttons
-  const columns = [
-    { key: 'type', label: 'Type de bien' },
-    { 
-      key: 'actions', 
-      label: 'Actions',
-      render: (row) => (
-        <div className="flex gap-4 items-center">
-          <button
-            className="text-blue-500 hover:text-blue-700"
-            onClick={() => onAction && onAction('edit', row.id)}
-            title="Modifier"
-          >
-            <Edit className="w-4 h-4" />
-          </button>
-          <button
-            className="text-red-500 hover:text-red-700"
-            onClick={() => onAction && onAction('delete', row)}
-            title="Supprimer"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
-        </div>
-      )
-    }
-  ];
-
-  // Handle search
-  const handleSearchChange = (term) => {
-    setSearchTerm(term);
-    setCurrentPage(1); // Reset to first page on search
-  };
-
-  // Handle page change
-  const handlePageChange = (newPage) => {
-    setCurrentPage(newPage);
-  };
-
-  // Handle rows per page change
-  const handleRowsPerPageChange = (newSize) => {
-    setRowsPerPage(newSize);
-    setCurrentPage(1); // Reset to first page when changing rows per page
-  };
-
-  // Export to Excel function
-  const handleExportExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(data.map(item => ({
-      ID: item.id,
-      Type: item.type
-    })));
-    
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Types de Biens");
-    XLSX.writeFile(workbook, "types-biens.xlsx");
-  };
-  
-  return (
-    <div className="bg-white p-4 rounded-lg shadow-md">
-      <Table 
-        title={"Type Biens"} 
-        columns={columns}
-        data={currentItems}
-        filterComponent={
-          <div className="space-y-4">
-            <div
-              className="grid gap-3"
-              style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}
-            >
-              <Input
-                type="text"
-                placeholder="Type de Bien..."
-                value={tempFilters.type}
-                onChange={(e) => handleFilterChange("type", e.target.value)}
-                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-              />
-              
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={applyFilters}
-                className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-              >
-                Appliquer les filtres
-              </button>
-              <button
-                type="button"
-                onClick={resetFilters}
-                className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
-              >
-                Réinitialiser
-              </button>
-            </div>
-            </div>
-
-          </div>
-        }
-        totalRows={filteredData.length}
-        loading={loading}
-        addLink="/administration/types-biens?action=add"
-        onSearchChange={handleSearchChange}
-        currentPage={currentPage}
-        rowsPerPage={rowsPerPage}
-        onPageChange={handlePageChange}
-        onRowsPerPageChange={handleRowsPerPageChange}
-        onExport={handleExportExcel}
-        enableExport={data.length > 0}
-      />
+    const reset = {
+      type: '',
       
-      {/* <div className="flex justify-end mt-4">
-        <button 
-          onClick={onRefresh}
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+    };
+    setFilters(reset);
+    setTempFilters(reset);
+  };
+
+  return (
+    <>
+      <div className="reflative bg-white rounded-lg shadow-md p-4">
+        <Table
+          title={'Types de Biens'}
+          data_to_export={data_to_export()}
+          columns_export={columns_export}
+          name_file_export={'typebiens_export'}
+          columns={columns}
+          data={formatData()}
+          totalRows={totalRows}
+          loading={loading}
+          error={error}
+          currentPage={currentPage}
+          rowsPerPage={rowsPerPage}
+          onPageChange={setCurrentPage}
+          onRowsPerPageChange={setRowsPerPage}
+          onSearchChange={setSearchTerm}
+          enableExport={true}
+          onFilterToggle={handleFilterToggle}
+          addLink={
+            isSuperAdmin(user.role) ||
+            isAdmin(user.role) ||
+            isCommercial(user.role)
+              ? `${ENDPOINTS.TYPEBIENS}?action=add`
+              : undefined
+          }
+          filterComponent={
+            <div className="space-y-4 ">
+              <div
+                className="grid gap-5"
+                style={{
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                }}
+              >
+                <Input
+                  label={'Type Bien'}
+                  type="text"
+                  placeholder="Type Bien..."
+                  value={tempFilters.type}
+                  onChange={(e) => handleFilterChange('type', e.target.value)}
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
+               
+                
+              </div>
+
+              {/* Boutons */}
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={applyFilters}
+                  className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                >
+                  Appliquer les filtres
+                </button>
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
+                >
+                  Réinitialiser
+                </button>
+              </div>
+            </div>
+          }
+        />
+      </div>
+
+      {showDeleteModal && selectedId && (
+        <Modal
+          isVisible={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
         >
-          Actualiser
-        </button>
-      </div> */}
-    </div>
+          <DeleteData
+            route={APIURL.TYPEBIENS}
+            Id={selectedId}
+            type='TypeBien'
+            message={'Etes-vous sûr de vouloir supprimer ce TypeBien ?'}
+            accessToken={accesstoken}
+            onClose={() => {
+              setShowDeleteModal(false);
+              fetchData_table_by_projet(
+                entity,
+                {},
+                searchTerm,
+                currentPage,
+                rowsPerPage,
+                accesstoken,
+                setLoading,
+                setError,
+                setTypeBiens,
+                setTotalRows
+              );
+            }}
+          />
+        </Modal>
+      )}
+
+     
+    </>
   );
 };
 

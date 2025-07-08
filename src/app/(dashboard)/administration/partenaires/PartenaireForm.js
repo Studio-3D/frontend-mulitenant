@@ -105,10 +105,7 @@ export default function PartenaireForm({ id = null, onComplete }) {
 
       toast.success(`Partenaire ${id ? "modifié" : "créé"} avec succès`);
 
-      // Ensure we wait for the toast before navigating
-      setTimeout(() => {
-        if (onComplete) onComplete();
-      }, 300);
+      router.push(ENDPOINTS.PARTENAIRES);
     } catch (error) {
       console.error("Error submitting partenaire:", error);
 
