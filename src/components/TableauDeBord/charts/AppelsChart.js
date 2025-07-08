@@ -9,15 +9,35 @@ import {
   Sector,
 } from 'recharts';
 
-export const AppelsChart = ({ dateRange }) => {
-  // Data based on the image content
-  const data = [
-    { name: 'Appels entrants', value: 1 },
-    { name: 'Appels sortants', value: 2 },
-  ];
+const COLORS = ['#22c55e', '#0ea5e9', '#f43f5e'];
 
-  const COLORS = ['#22c55e', '#0ea5e9', '#f43f5e'];
-  
+export const AppelsChart = ({ dateRange, data }) => {
+  // Transform the appels data into chart format
+  const transformData = () => {
+    if (!data?.Appels) return [];
+
+    const appels = data.Appels;
+    
+    // Initialize counters for each type
+    const counts = {
+      'Appels entrants': 0,
+      'Appels sortants': 0
+    };
+
+    // Sum up all appel types across all records
+    appels.forEach(item => {
+      counts['Appels entrants'] += item['appel entrant'] || 0;
+      counts['Appels sortants'] += item['appel sortant'] || 0;
+    });
+
+    // Convert to array format for PieChart
+    return Object.entries(counts)
+      .filter(([_, value]) => value > 0) // Only include types with count > 0
+      .map(([name, value]) => ({ name, value }));
+  };
+
+  const chartData = transformData();
+
   const renderActiveShape = (props) => {
     const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
     return (
@@ -35,23 +55,32 @@ export const AppelsChart = ({ dateRange }) => {
     );
   };
 
+  if (chartData.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64 text-gray-500">
+        Aucune donnée d'appels disponible
+      </div>
+    );
+  }
+
   return (
     <ResponsiveContainer width="100%" height={250}>
       <PieChart>
         <Pie
-          data={data}
+          data={chartData}
           cx="50%"
           cy="50%"
           labelLine={false}
           outerRadius={80}
           fill="#8884d8"
           dataKey="value"
+          nameKey="name"
           activeShape={renderActiveShape}
           animationDuration={1000}
           animationBegin={0}
           label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
         >
-          {data.map((entry, index) => (
+          {chartData.map((entry, index) => (
             <Cell
               key={`cell-${index}`}
               fill={COLORS[index % COLORS.length]}
@@ -75,7 +104,7 @@ export const AppelsChart = ({ dateRange }) => {
         <Legend
           layout="horizontal"
           verticalAlign="bottom"
-          align="center"  
+          align="center"
           wrapperStyle={{
             paddingTop: '20px'
           }}
