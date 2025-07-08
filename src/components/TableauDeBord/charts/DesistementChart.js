@@ -9,213 +9,43 @@ import {
   Sector,
 } from 'recharts';
 
-export const DesistementChart = ({ dateRange }) => {
-  // Aggregate data for different date ranges
-  const getAggregatedData = () => {
-    const dataSets = {
-      "aujourd'hui": [
-        {
-          name: '8h',
-          definitif: 1,
-          profit: 0,
-          changement: 0,
-        },
-        {
-          name: '10h',
-          definitif: 0,
-          profit: 1,
-          changement: 1,
-        },
-        {
-          name: '12h',
-          definitif: 2,
-          profit: 1,
-          changement: 0,
-        },
-        {
-          name: '14h',
-          definitif: 1,
-          profit: 0,
-          changement: 2,
-        },
-        {
-          name: '16h',
-          definitif: 0,
-          profit: 2,
-          changement: 1,
-        },
-        {
-          name: '18h',
-          definitif: 1,
-          profit: 1,
-          changement: 0,
-        },
-      ],
-      'cette semaine': [
-        {
-          name: 'Lun',
-          definitif: 3,
-          profit: 2,
-          changement: 1,
-        },
-        {
-          name: 'Mar',
-          definitif: 2,
-          profit: 3,
-          changement: 2,
-        },
-        {
-          name: 'Mer',
-          definitif: 4,
-          profit: 1,
-          changement: 3,
-        },
-        {
-          name: 'Jeu',
-          definitif: 1,
-          profit: 4,
-          changement: 2,
-        },
-        {
-          name: 'Ven',
-          definitif: 2,
-          profit: 2,
-          changement: 4,
-        },
-      ],
-      'ce mois': [
-        {
-          name: 'Sem 1',
-          definitif: 8,
-          profit: 6,
-          changement: 5,
-        },
-        {
-          name: 'Sem 2',
-          definitif: 7,
-          profit: 9,
-          changement: 7,
-        },
-        {
-          name: 'Sem 3',
-          definitif: 10,
-          profit: 5,
-          changement: 8,
-        },
-        {
-          name: 'Sem 4',
-          definitif: 6,
-          profit: 8,
-          changement: 9,
-        },
-      ],
-      'cette année': [
-        {
-          name: 'Jan',
-          definitif: 20,
-          profit: 15,
-          changement: 10,
-        },
-        {
-          name: 'Fév',
-          definitif: 18,
-          profit: 17,
-          changement: 12,
-        },
-        {
-          name: 'Mar',
-          definitif: 22,
-          profit: 14,
-          changement: 15,
-        },
-        {
-          name: 'Avr',
-          definitif: 16,
-          profit: 20,
-          changement: 13,
-        },
-        {
-          name: 'Mai',
-          definitif: 19,
-          profit: 18,
-          changement: 16,
-        },
-        {
-          name: 'Juin',
-          definitif: 21,
-          profit: 16,
-          changement: 18,
-        },
-      ],
-      'dernière année': [
-        {
-          name: 'Jan',
-          definitif: 18,
-          profit: 13,
-          changement: 9,
-        },
-        {
-          name: 'Fév',
-          definitif: 16,
-          profit: 15,
-          changement: 11,
-        },
-        {
-          name: 'Mar',
-          definitif: 20,
-          profit: 12,
-          changement: 14,
-        },
-        {
-          name: 'Avr',
-          definitif: 14,
-          profit: 18,
-          changement: 12,
-        },
-        {
-          name: 'Mai',
-          definitif: 17,
-          profit: 16,
-          changement: 15,
-        },
-        {
-          name: 'Juin',
-          definitif: 19,
-          profit: 14,
-          changement: 17,
-        },
-      ],
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+
+export const DesistementChart = ({ dateRange, data }) => {
+  // Transform the desistements data into chart format
+  const transformData = () => {
+    if (!data?.desistements) return [];
+
+    const desistements = data.desistements;
+    
+    // Initialize counters for each type
+    const counts = {
+      'Désistement Définitif': 0,
+      'Désistement au profit d\'un co reservataire': 0,
+      'Désistement au profit d\'un proche': 0,
+      'Désistement partiel': 0,
+      'Changeant de Bien': 0
     };
-    const data = dataSets[dateRange];
-    // Sum up the values for each category
-    let totalDefinitif = 0;
-    let totalProfit = 0;
-    let totalChangement = 0;
-    data.forEach((item) => {
-      totalDefinitif += item.definitif;
-      totalProfit += item.profit;
-      totalChangement += item.changement;
+
+    // Sum up all desistement types across all records
+    desistements.forEach(item => {
+      counts['Désistement Définitif'] += item['Désistement Définitif'] || 0;
+      counts['Désistement au profit d\'un co reservataire'] += item['Désistement au profit d\'un co reservataire'] || 0;
+      counts['Désistement au profit d\'un proche'] += item['Désistement au profit d\'un proche'] || 0;
+      counts['Désistement partiel'] += item['Désistement partiel'] || 0;
+      counts['Changeant de Bien'] += item['Changeant de Bien'] || 0;
     });
-    return [
-      {
-        name: 'Désistement Définitif',
-        value: totalDefinitif,
-      },
-      {
-        name: 'Désistements Au Profit',
-        value: totalProfit,
-      },
-      {
-        name: 'Changement de Bien',
-        value: totalChangement,
-      },
-    ];
+
+    // Convert to array format for PieChart
+    return Object.entries(counts)
+      .filter(([_, value]) => value > 0) // Only include types with count > 0
+      .map(([name, value]) => ({ name, value }));
   };
-  const data = getAggregatedData();
-  const COLORS = ['#f97316', '#0ea5e9', '#14b8a6'];
+
+  const chartData = transformData();
+
   const renderActiveShape = (props) => {
-    const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } =
-      props;
+    const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
     return (
       <g>
         <Sector
@@ -230,22 +60,32 @@ export const DesistementChart = ({ dateRange }) => {
       </g>
     );
   };
+
+  if (chartData.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64 text-gray-500">
+        Aucune donnée de désistement disponible
+      </div>
+    );
+  }
+
   return (
     <ResponsiveContainer width="100%" height={250}>
       <PieChart>
         <Pie
-          data={data}
+          data={chartData}
           cx="50%"
           cy="50%"
           labelLine={false}
           outerRadius={80}
           fill="#8884d8"
           dataKey="value"
+          nameKey="name"
           activeShape={renderActiveShape}
           animationDuration={1000}
           animationBegin={0}
         >
-          {data.map((entry, index) => (
+          {chartData.map((entry, index) => (
             <Cell
               key={`cell-${index}`}
               fill={COLORS[index % COLORS.length]}
@@ -269,9 +109,9 @@ export const DesistementChart = ({ dateRange }) => {
         <Legend
           layout="horizontal"
           verticalAlign="bottom"
-          align="center"  
+          align="center"
           wrapperStyle={{
-            paddingTop: '20px'  /* Add some padding if needed */
+            paddingTop: '20px'
           }}
           iconSize={10}
           iconType="circle"
