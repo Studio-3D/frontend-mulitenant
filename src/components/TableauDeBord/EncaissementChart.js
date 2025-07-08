@@ -1,8 +1,7 @@
 "use client";
 
-import React, {useMemo} from "react";
+import React, { useMemo } from "react";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
-
 import {
   Card,
   CardContent,
@@ -17,132 +16,162 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
-const chartData = [
-  { date: "2024-04-01", encaissement: 150 },
-  { date: "2024-04-02", encaissement: 180 },
-  { date: "2024-04-03", encaissement: 120 },
-  { date: "2024-04-04", encaissement: 260 },
-  { date: "2024-04-05", encaissement: 290 },
-  { date: "2024-04-06", encaissement: 340 },
-  { date: "2024-04-07", encaissement: 180 },
-  { date: "2024-04-08", encaissement: 320 },
-  { date: "2024-04-09", encaissement: 110 },
-  { date: "2024-04-10", encaissement: 190 },
-  { date: "2024-04-11", encaissement: 350 },
-  { date: "2024-04-12", encaissement: 210 },
-  { date: "2024-04-13", encaissement: 380 },
-  { date: "2024-04-14", encaissement: 220 },
-  { date: "2024-04-15", encaissement: 170 },
-  { date: "2024-04-16", encaissement: 190 },
-  { date: "2024-04-17", encaissement: 360 },
-  { date: "2024-04-18", encaissement: 410 },
-  { date: "2024-04-19", encaissement: 180 },
-  { date: "2024-04-20", encaissement: 150 },
-  { date: "2024-04-21", encaissement: 200 },
-  { date: "2024-04-22", encaissement: 170 },
-  { date: "2024-04-23", encaissement: 230 },
-  { date: "2024-04-24", encaissement: 290 },
-  { date: "2024-04-25", encaissement: 250 },
-  { date: "2024-04-26", encaissement: 130 },
-  { date: "2024-04-27", encaissement: 420 },
-  { date: "2024-04-28", encaissement: 180 },
-  { date: "2024-04-29", encaissement: 240 },
-  { date: "2024-04-30", encaissement: 380 },
-  { date: "2024-05-01", encaissement: 220 },
-  { date: "2024-05-02", encaissement: 310 },
-  { date: "2024-05-03", encaissement: 190 },
-  { date: "2024-05-04", encaissement: 420 },
-  { date: "2024-05-05", encaissement: 390 },
-  { date: "2024-05-06", encaissement: 520 },
-  { date: "2024-05-07", encaissement: 300 },
-  { date: "2024-05-08", encaissement: 210 },
-  { date: "2024-05-09", encaissement: 180 },
-  { date: "2024-05-10", encaissement: 330 },
-  { date: "2024-05-11", encaissement: 270 },
-  { date: "2024-05-12", encaissement: 240 },
-  { date: "2024-05-13", encaissement: 160 },
-  { date: "2024-05-14", encaissement: 490 },
-  { date: "2024-05-15", encaissement: 380 },
-  { date: "2024-05-16", encaissement: 400 },
-  { date: "2024-05-17", encaissement: 420 },
-  { date: "2024-05-18", encaissement: 350 },
-  { date: "2024-05-19", encaissement: 180 },
-  { date: "2024-05-20", encaissement: 230 },
-  { date: "2024-05-21", encaissement: 140 },
-  { date: "2024-05-22", encaissement: 120 },
-  { date: "2024-05-23", encaissement: 290 },
-  { date: "2024-05-24", encaissement: 220 },
-  { date: "2024-05-25", encaissement: 250 },
-  { date: "2024-05-26", encaissement: 170 },
-  { date: "2024-05-27", encaissement: 460 },
-  { date: "2024-05-28", encaissement: 190 },
-  { date: "2024-05-29", encaissement: 130 },
-  { date: "2024-05-30", encaissement: 280 },
-  { date: "2024-05-31", encaissement: 230 },
-  { date: "2024-06-01", encaissement: 200 },
-  { date: "2024-06-02", encaissement: 410 },
-  { date: "2024-06-03", encaissement: 160 },
-  { date: "2024-06-04", encaissement: 380 },
-  { date: "2024-06-05", encaissement: 140 },
-  { date: "2024-06-06", encaissement: 250 },
-  { date: "2024-06-07", encaissement: 370 },
-  { date: "2024-06-08", encaissement: 320 },
-  { date: "2024-06-09", encaissement: 480 },
-  { date: "2024-06-10", encaissement: 200 },
-  { date: "2024-06-11", encaissement: 150 },
-  { date: "2024-06-12", encaissement: 420 },
-  { date: "2024-06-13", encaissement: 130 },
-  { date: "2024-06-14", encaissement: 380 },
-  { date: "2024-06-15", encaissement: 350 },
-  { date: "2024-06-16", encaissement: 310 },
-  { date: "2024-06-17", encaissement: 520 },
-  { date: "2024-06-18", encaissement: 170 },
-  { date: "2024-06-19", encaissement: 290 },
-  { date: "2024-06-20", encaissement: 450 },
-  { date: "2024-06-21", encaissement: 210 },
-  { date: "2024-06-22", encaissement: 270 },
-  { date: "2024-06-23", encaissement: 530 },
-  { date: "2024-06-24", encaissement: 180 },
-  { date: "2024-06-25", encaissement: 190 },
-  { date: "2024-06-26", encaissement: 380 },
-  { date: "2024-06-27", encaissement: 490 },
-  { date: "2024-06-28", encaissement: 200 },
-  { date: "2024-06-29", encaissement: 160 },
-  { date: "2024-06-30", encaissement: 400 },
-];
-
 const chartConfig = {
-  views: {
-    label: "Encaissement",
-  },
   encaissement: {
     label: "Encaissement",
     color: "#2CAFFE",
   },
 };
 
-export function EncaissementChart() {
-  const total = useMemo(
-    () => chartData.reduce((acc, curr) => acc + curr.encaissement, 0),
-    []
-  );
+const rangeDescriptions = {
+  "aujourd'hui": "Affichage des encaissements pour aujourd'hui",
+  "cette semaine": "Affichage des encaissements pour cette semaine",
+  "ce mois": "Affichage des encaissements pour ce mois",
+  "cette année": "Affichage des encaissements pour cette année",
+  "dernière année": "Affichage des encaissements pour l'année dernière",
+};
+
+function parseDateWithoutTimezone(dateString) {
+  const [year, month, day] = dateString.split('-');
+  return new Date(year, month - 1, day);
+}
+
+export function EncaissementChart({ dateRange, data }) {
+  const { chartData, total } = useMemo(() => {
+    if (!data) return { chartData: [], total: 0 };
+
+    const today = new Date();
+    let startDate = new Date();
+    let endDate = new Date();
+
+    switch (dateRange) {
+      case "aujourd'hui":
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(23, 59, 59, 999);
+        break;
+      case "cette semaine":
+        startDate.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1));
+        endDate.setDate(startDate.getDate() + 6);
+        break;
+      case "ce mois":
+        startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        break;
+      case "cette année":
+        startDate = new Date(today.getFullYear(), 0, 1);
+        endDate = new Date(today.getFullYear(), 11, 31);
+        break;
+      case "dernière année":
+        startDate = new Date(today.getFullYear() - 1, 0, 1);
+        endDate = new Date(today.getFullYear() - 1, 11, 31);
+        break;
+      default:
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(23, 59, 59, 999);
+    }
+
+    // For monthly view
+    if (dateRange === "ce mois") {
+      const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+      const monthlyData = Array.from({ length: daysInMonth }, (_, i) => {
+        const day = i + 1;
+        const dateKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        
+        // Find matching data entry (using timezone-insensitive comparison)
+        const matchingEntry = data.find(([dateStr]) => {
+          const apiDate = parseDateWithoutTimezone(dateStr);
+          return (
+            apiDate.getFullYear() === today.getFullYear() &&
+            apiDate.getMonth() === today.getMonth() &&
+            apiDate.getDate() === day
+          );
+        });
+        
+        return {
+          name: day.toString(),
+          amount: matchingEntry ? matchingEntry[1] : 0,
+          fullDate: new Date(today.getFullYear(), today.getMonth(), day).toLocaleDateString('fr-FR')
+        };
+      });
+
+      return {
+        chartData: monthlyData,
+        total: monthlyData.reduce((sum, item) => sum + item.amount, 0)
+      };
+    }
+
+    // For yearly view
+    if (dateRange === "cette année" || dateRange === "dernière année") {
+      const year = dateRange === "cette année" ? today.getFullYear() : today.getFullYear() - 1;
+      const monthlyData = Array.from({ length: 12 }, (_, month) => {
+        // Filter data for this specific month
+        const monthData = data.filter(([dateStr]) => {
+          const apiDate = parseDateWithoutTimezone(dateStr);
+          return apiDate.getFullYear() === year && apiDate.getMonth() === month;
+        });
+        
+        const monthTotal = monthData.reduce((sum, [, amount]) => sum + amount, 0);
+        
+        return {
+          name: new Date(year, month, 1).toLocaleDateString('fr-FR', { month: 'short' }),
+          amount: monthTotal,
+          fullDate: new Date(year, month, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+        };
+      });
+
+      return {
+        chartData: monthlyData,
+        total: monthlyData.reduce((sum, item) => sum + item.amount, 0)
+      };
+    }
+
+    // For other date ranges (day, week)
+    const formattedData = data.map(([dateStr, amount]) => {
+      const date = parseDateWithoutTimezone(dateStr);
+      return {
+        name: formatDailyDisplay(date, dateRange),
+        amount,
+        fullDate: date.toLocaleDateString('fr-FR')
+      };
+    });
+
+    const totalAmount = formattedData.reduce((sum, item) => sum + item.amount, 0);
+
+    return {
+      chartData: formattedData,
+      total: totalAmount
+    };
+  }, [data, dateRange]);
+
+  function formatDailyDisplay(date, range) {
+    const d = new Date(date);
+    if (range === "cette semaine") return d.toLocaleDateString('fr-FR', { weekday: 'short' });
+    return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+  }
+
+  const description = rangeDescriptions[dateRange] || "Affichage des encaissements";
 
   return (
-    <Card className=" bg-white">
-      <CardHeader className="flex flex-col items-stretch space-y-0 border-b p-0 sm:flex-row">
+    <Card className="border-none shadow-none">
+      <CardHeader className="flex flex-col items-stretch space-y-0 p-0 sm:flex-row">
         <div className="flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-6">
-          <CardTitle>Encaissement</CardTitle>
+          <CardTitle>
+            <h2 className="font-semibold mb-4 text-gray-700 flex items-center">
+              <span className="w-2 h-8 bg-blue-500 rounded-md mr-3"></span>
+              Encaissement
+            </h2>
+          </CardTitle>
           <CardDescription>
-            Affichage des encaissements totaux des 3 derniers mois
+            {description}
           </CardDescription>
         </div>
         <div className="flex">
-          <div className="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left sm:border-l sm:border-t-0 sm:px-8 sm:py-6">
-            <span className="text-xs text-muted-foreground">
+          <div className="relative z-30 flex flex-1 flex-col justify-center gap-1 px-6 py-4 text-left sm:px-8 sm:py-6">
+            <span className="text-muted-foreground">
               Encaissement total
             </span>
             <span className="text-lg font-bold leading-none sm:text-3xl">
-              {total.toLocaleString()}
+              {total.toLocaleString('fr-FR')} DH
             </span>
           </div>
         </div>
@@ -162,35 +191,29 @@ export function EncaissementChart() {
           >
             <CartesianGrid vertical={false} />
             <XAxis
-              dataKey="date"
+              dataKey="name"
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              minTickGap={32}
-              tickFormatter={(value) => {
-                const date = new Date(value);
-                 return date.toLocaleDateString("fr-FR", {
-                  month: "short",
-                  day: "numeric",
-                });
-              }}
+              minTickGap={8}
             />
             <ChartTooltip
               content={
                 <ChartTooltipContent
                   className="w-[150px]"
-                  nameKey="views"
-                  labelFormatter={(value) => {
-                    return new Date(value).toLocaleDateString("fr-FR", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    });
+                  nameKey="name"
+                  valueKey="amount"
+                  valueFormatter={(value) => `${value.toLocaleString('fr-FR')} DH`}
+                  labelFormatter={(value, payload) => {
+                    if (payload && payload[0]?.payload?.fullDate) {
+                      return payload[0].payload.fullDate;
+                    }
+                    return value;
                   }}
                 />
               }
             />
-            <Bar dataKey="encaissement" fill="#2CAFFE" />
+            <Bar dataKey="amount" fill="#2CAFFE" />
           </BarChart>
         </ChartContainer>
       </CardContent>

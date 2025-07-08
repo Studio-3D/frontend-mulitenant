@@ -12,8 +12,7 @@ import { CompromisVentesTab } from '../../../../../components/reservation/tabs/C
 import { ContractTab } from '../../../../../components/reservation/tabs/ContractTab';
 import { TransfertTab } from '../../../../../components/reservation/tabs/TransfertTab';
 
-import { HistoriqueDesistementTab } from '../../../../../components/reservation/tabs/HistoriqueDesistementTab';
-
+import HistoriqueDesistementTab from '../../../../../components/reservation/tabs/HistoriqueDesistementTab';
 import axios from 'axios';
 import { useParams } from 'next/navigation';
 import LoadingSpin from '@/components/LoadingSpin';
@@ -57,7 +56,6 @@ const Res_Show = () => {
       // Construct the proper API URL
       const apiUrl = `${APIURL.RESERVATIONS}/${reservationId}`;
 
-
       const response = await axios.get(apiUrl, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -84,7 +82,6 @@ const Res_Show = () => {
       setLoading(false);
     }
   };
-
 
   useEffect(() => {
     // Verify reservationId is correct before fetching
@@ -144,8 +141,14 @@ const Res_Show = () => {
     if (!reservationData) return { tabs: [], counts: {} };
 
     const counts = {
-      acquereurs: reservationData?.reservation?.aquereurs?.length || 0,
-      piecesJointes: reservationData?.reservation?.piece_jointe?.length || 0,
+      acquereurs:
+        reservationData?.reservation?.etat == 1
+          ? reservationData?.reservation?.aquereurs?.length
+          : reservationData?.reservation?.aquereurs_ancien?.length || 0,
+      piecesJointes:
+        reservationData?.reservation?.etat == 1
+          ? reservationData?.reservation?.piece_jointe?.length
+          : reservationData?.reservation?.piece_jointe_desiste?.length || 0,
       avances: reservationData?.reservation?.avances?.length || 0,
       rendezVous: reservationData?.reservation?.rdv?.length || 0,
     };
@@ -161,6 +164,20 @@ const Res_Show = () => {
       { id: 'acquereurs', label: 'Acquéreurs', icon: 'users' },
       { id: 'piecesJointes', label: 'Pièces jointes', icon: 'paperclip' },
       { id: 'avances', label: 'Avances', icon: 'coins' },
+      {
+        id: 'transfert',
+        label: 'Transfert',
+        icon: 'swap-horizontal',
+        visible:
+          reservationData?.reservation?.etat == 2 &&
+          reservationData?.reservation?.remboursement_dd_with_transfert != null,
+      },
+      {
+        id: 'historiqueDesistement',
+        label: 'Historique Désistement',
+        icon: 'repeat',
+        visible: reservationData?.reservation?.code_desistement != null,
+      },
       {
         id: 'rendezVous',
         label: 'Rendez-vous',
@@ -181,18 +198,6 @@ const Res_Show = () => {
           userRole <= 3 &&
           reservationData.sum_avances_valides >=
             reservationData?.reservation?.prix,
-      },
-      {
-        id: 'transfert',
-        label: 'Transfert',
-        icon: 'swap-horizontal',
-        visible: reservationData.etat == 2 && reservationData.transfert,
-      },
-      {
-        id: 'historiqueDesistement',
-        label: 'Historique Désistement',
-        icon: 'repeat',
-        visible: reservationData.code_desistement != null,
       },
     ];
 
@@ -227,13 +232,28 @@ const Res_Show = () => {
       case 'acquereurs':
         return (
           <AcquereursTab
-            reservationData={reservationData}
+            etat={reservationData?.reservation?.etat}
+            contrat_vente={reservationData?.reservation?.contrat_vente}
+            reservationId={reservationData?.reservation?.id}
+            aquereurs={
+              reservationData?.reservation?.etat == 1
+                ? reservationData?.reservation?.aquereurs
+                : reservationData?.reservation?.aquereurs_ancien || []
+            }
             user_role={userRole}
           />
         );
       case 'piecesJointes':
         return (
-          <PiecesJointesTab reservationData={reservationData} user={user} />
+          <PiecesJointesTab
+            reservationData={reservationData}
+            user={user}
+            piecesJointesData={
+              reservationData?.reservation?.etat == 1
+                ? reservationData?.reservation?.piece_jointe
+                : reservationData?.reservation?.piece_jointe_desiste
+            }
+          />
         );
       case 'avances':
         return (
@@ -272,9 +292,19 @@ const Res_Show = () => {
           />
         );
       case 'transfert':
-        return <TransfertTab reservationData={reservationData} />;
+        return (
+          <TransfertTab
+            reservationData={reservationData}
+            user={user}
+            accessToken={accessToken}
+          />
+        );
       case 'historiqueDesistement':
-        return <HistoriqueDesistementTab reservationData={reservationData} />;
+        return (
+          <HistoriqueDesistementTab
+            code_desistement={reservationData?.reservation?.code_desistement}
+          />
+        );
       default:
         return <DetailTab reservationData={reservationData} />;
     }

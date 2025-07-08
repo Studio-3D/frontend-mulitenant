@@ -37,7 +37,7 @@ export default function Biens_Dispo_By_frein_id() {
     searchFields: [],
   };
   const handleShow = (Id) => {
-    window.open(`/biens/${Id}`, '_blank');
+    window.open(`/Biens/${Id}`, '_blank');
   };
 
   useEffect(() => {
@@ -90,7 +90,7 @@ export default function Biens_Dispo_By_frein_id() {
       label: 'Bien',
       render: (row) => {
         return (
-          <Link target="_blank" href={`/biens/${row?.bien_id}`}>
+          <Link target="_blank" href={`/Biens/${row?.bien_id}`}>
             <strong style={{ fontWeight: 600 }}>
               {row.bien_propriete_dite_bien}
             </strong>

@@ -134,7 +134,7 @@ const TvaBiensPage = () => {
 
   const handleShowTvaCollecte = (bienId) => {
     localStorage.setItem('active_tab_bien_id', bienId);
-    window.open(`/biens/${bienId}`, '_blank');
+    window.open(`/Biens/${bienId}`, '_blank');
   };
 
   const columns = [

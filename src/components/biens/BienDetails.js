@@ -6,7 +6,21 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
-import { Pencil, ArrowLeft, Building, Home, MapPin, Tag, Euro, FileText, AlignLeft, Files, CreditCard, Receipt, Image } from "lucide-react";
+import {
+  Pencil,
+  ArrowLeft,
+  Building,
+  Home,
+  MapPin,
+  Tag,
+  Euro,
+  FileText,
+  AlignLeft,
+  Files,
+  CreditCard,
+  Receipt,
+  Image,
+} from "lucide-react";
 import { getEtatLabel, getFullOrientation } from "@/configs/enum";
 import BienSuperficies from "./BienSuperficies";
 import BienComposition from "./BienComposition";
@@ -33,24 +47,24 @@ export default function BienDetails({ id }) {
       try {
         const token = localStorage.getItem("accessToken");
         const response = await axios.get(`${APIURL.BIENS}/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         if (response.data && response.data.bien) {
           setBien(response.data.bien);
           setBienDescription(response.data.bien.description || "");
-          
+
           // If the property belongs to a project, store the project in localStorage
           if (response.data.bien.projet_id) {
             try {
               const projectResponse = await axios.get(
-                `${APIURL.PROJETS}/${response.data.bien.projet_id}`, 
+                `${APIURL.PROJETS}/${response.data.bien.projet_id}`,
                 { headers: { Authorization: `Bearer ${token}` } }
               );
-              
+
               if (projectResponse.data && projectResponse.data.projet) {
                 localStorage.setItem(
-                  "selectedProjet", 
+                  "selectedProjet",
                   JSON.stringify(projectResponse.data.projet)
                 );
               }
@@ -63,7 +77,9 @@ export default function BienDetails({ id }) {
         }
       } catch (err) {
         console.error("Error fetching bien details:", err);
-        setError(err.response?.data?.message || "Erreur lors du chargement du bien");
+        setError(
+          err.response?.data?.message || "Erreur lors du chargement du bien"
+        );
       } finally {
         setLoading(false);
       }
@@ -85,7 +101,10 @@ export default function BienDetails({ id }) {
       <div className="bg-red-50 p-4 rounded-md border-l-4 border-red-500 !text-red-700">
         <p className="font-medium">Erreur</p>
         <p>{error}</p>
-        <Link href="/Biens" className="text-blue-500 hover:underline mt-2 inline-block">
+        <Link
+          href="/Biens"
+          className="text-blue-500 hover:underline mt-2 inline-block"
+        >
           Retour à la liste des biens
         </Link>
       </div>
@@ -94,19 +113,23 @@ export default function BienDetails({ id }) {
 
   // Format price with thousand separators
   const formatPrice = (price) => {
-    return price ? price.toLocaleString('fr-FR') + ' Dhs' : 'N/A';
+    return price ? price.toLocaleString("fr-FR") + " Dhs" : "N/A";
   };
 
   // Get the status badge with proper formatting
   const getStatusBadge = (etat) => {
     const statusClasses = {
-      disponible: "bg-green-100 !text-green-800 border border-green-300",
-      reserve: "bg-blue-100 !text-blue-800 border border-blue-300",
-      vendu: "bg-purple-100 text-purple-800 border border-purple-300",
+      DISPONIBLE: "bg-green-100 !text-green-800 border border-green-300",
+      RESERVE: "bg-blue-100 !text-blue-800 border border-blue-300",
+      VENDU: "bg-purple-100 text-purple-800 border border-purple-300",
     };
-    
+
     return (
-      <span className={`px-3 py-1.5 rounded-full text-sm font-semibold ${statusClasses[etat] || "bg-gray-100 !text-gray-800"}`}>
+      <span
+        className={`px-3 py-1.5 rounded-full text-sm font-semibold ${
+          statusClasses[etat] || "bg-gray-100 !text-gray-800"
+        }`}
+      >
         {getEtatLabel(etat)}
       </span>
     );
@@ -114,14 +137,30 @@ export default function BienDetails({ id }) {
 
   // Define tabs with description - ADD media tab
   const tabs = [
-    { id: "superficies", label: "Superficies", icon: <MapPin className="w-4 h-4" /> },
-    { id: "composition", label: "Composition", icon: <Home className="w-4 h-4" /> },
+    {
+      id: "superficies",
+      label: "Superficies",
+      icon: <MapPin className="w-4 h-4" />,
+    },
+    {
+      id: "composition",
+      label: "Composition",
+      icon: <Home className="w-4 h-4" />,
+    },
     { id: "media", label: "Médias", icon: <Image className="w-4 h-4" /> },
     { id: "dossiers", label: "Dossiers", icon: <Files className="w-4 h-4" /> },
-    { id: "encaissements", label: "Encaissements", icon: <CreditCard className="w-4 h-4" /> },
-    { id: "tva_collecte", label: "TVA Collecté", icon: <Receipt className="w-4 h-4" /> },
+    {
+      id: "encaissements",
+      label: "Encaissements",
+      icon: <CreditCard className="w-4 h-4" />,
+    },
+    {
+      id: "tva_collecte",
+      label: "TVA Collecté",
+      icon: <Receipt className="w-4 h-4" />,
+    },
   ];
-  
+
   // Render the appropriate content for the active tab - ADD media case
   const renderTabContent = () => {
     switch (activeTab) {
@@ -141,10 +180,12 @@ export default function BienDetails({ id }) {
         return <BienSuperficies bien={bien} />;
     }
   };
-  
+
   // Helper function to render avatar with icon
   const renderIconAvatar = (icon, bgColor = "bg-blue-100") => (
-    <div className={`flex items-center justify-center w-8 h-8 rounded-full ${bgColor} !text-blue-600 flex-shrink-0`}>
+    <div
+      className={`flex items-center justify-center w-8 h-8 rounded-full ${bgColor} !text-blue-600 flex-shrink-0`}
+    >
       {icon}
     </div>
   );
@@ -155,44 +196,46 @@ export default function BienDetails({ id }) {
       <div className="bg-white rounded-lg p-6 shadow border border-gray-200">
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-2">
-            <Link 
+            <Link
               href={bien.projet_id ? `/Projets/${bien.projet_id}` : "/Biens"}
               className="text-gray-600 hover:text-gray-800"
             >
               <ArrowLeft className="w-5 h-5" />
             </Link>
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">{bien.propriete_dite_bien}</h1>
+              <h1 className="text-2xl font-bold text-gray-800">
+                {bien.propriete_dite_bien}
+              </h1>
               <p className="text-gray-500">
                 {[
                   bien.projet?.nom,
                   bien.tranche?.nom,
                   bien.bloc?.nom,
-                  bien.immeuble?.nom
+                  bien.immeuble?.nom,
                 ]
-                .filter(Boolean)
-                .join(" • ")}
+                  .filter(Boolean)
+                  .join(" • ")}
               </p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-3">
             {/* État actuel badge */}
             {getStatusBadge(bien.etat)}
-            
+
             {/* Partager button */}
             {canEditBien && (
-              <BienDescriptionGenerator 
-                bien={bien} 
+              <BienDescriptionGenerator
+                bien={bien}
                 onDescriptionSaved={(desc) => setBienDescription(desc)}
                 buttonText="Partager"
               />
             )}
-            
+
             {/* Modifier button */}
             {canEditBien && (
-              <Link 
-                href={`/Biens/${id}/modifier`} 
+              <Link
+                href={`/Biens/${id}/modifier`}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
               >
                 <Pencil className="w-4 h-4" />
@@ -206,9 +249,11 @@ export default function BienDetails({ id }) {
       {/* General info section */}
       <div className="bg-white shadow-sm rounded-lg">
         <div className="border-b border-gray-200 px-4 py-2">
-          <h2 className="text-base font-medium text-gray-800">Informations générales</h2>
+          <h2 className="text-base font-medium text-gray-800">
+            Informations générales
+          </h2>
         </div>
-        
+
         <div className="p-3">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {/* Basic information */}
@@ -216,23 +261,36 @@ export default function BienDetails({ id }) {
               {renderIconAvatar(<Home className="w-4 h-4" />, "bg-indigo-100")}
               <div className="min-w-0">
                 <h3 className="text-xs font-medium !text-gray-500">Numéro</h3>
-                <p className="mt-0.5 font-semibold text-sm truncate">{bien.numero || 'N/A'}</p>
+                <p className="mt-0.5 font-semibold text-sm truncate">
+                  {bien.numero || "N/A"}
+                </p>
               </div>
             </div>
-            
+
             <div className="flex items-start gap-2">
-              {renderIconAvatar(<Building className="w-4 h-4" />, "bg-purple-100")}
+              {renderIconAvatar(
+                <Building className="w-4 h-4" />,
+                "bg-purple-100"
+              )}
               <div className="min-w-0">
-                <h3 className="text-xs font-medium !text-gray-500">Type de bien</h3>
-                <p className="mt-0.5 font-semibold text-sm truncate">{bien.type_bien?.type || 'N/A'}</p>
+                <h3 className="text-xs font-medium !text-gray-500">
+                  Type de bien
+                </h3>
+                <p className="mt-0.5 font-semibold text-sm truncate">
+                  {bien.type_bien?.type || "N/A"}
+                </p>
               </div>
             </div>
-            
+
             <div className="flex items-start gap-2">
               {renderIconAvatar(<Tag className="w-4 h-4" />, "bg-teal-100")}
               <div className="min-w-0">
-                <h3 className="text-xs font-medium !text-gray-500">Typologie</h3>
-                <p className="mt-0.5 font-semibold text-sm truncate">{bien.typologie?.typologie || 'N/A'}</p>
+                <h3 className="text-xs font-medium !text-gray-500">
+                  Typologie
+                </h3>
+                <p className="mt-0.5 font-semibold text-sm truncate">
+                  {bien.typologie?.typologie || "N/A"}
+                </p>
               </div>
             </div>
 
@@ -240,53 +298,89 @@ export default function BienDetails({ id }) {
               {renderIconAvatar(<MapPin className="w-4 h-4" />, "bg-amber-100")}
               <div className="min-w-0">
                 <h3 className="text-xs font-medium !text-gray-500">Niveau</h3>
-                <p className="mt-0.5 font-semibold text-sm">{bien.niveau !== null ? bien.niveau : 'N/A'}</p>
+                <p className="mt-0.5 font-semibold text-sm">
+                  {bien.niveau !== null ? bien.niveau : "N/A"}
+                </p>
               </div>
             </div>
-            
+
             <div className="flex items-start gap-2">
               {renderIconAvatar(<Euro className="w-4 h-4" />, "bg-green-200")}
               <div className="min-w-0">
                 <h3 className="text-xs font-medium !text-gray-500">Prix</h3>
-                <p className="mt-0.5 font-semibold text-sm !text-green-600 truncate">{formatPrice(bien.prix)}</p>
+                <p className="mt-0.5 font-semibold text-sm !text-green-600 truncate">
+                  {formatPrice(bien.prix)}
+                </p>
               </div>
             </div>
-            
+
             <div className="flex items-start gap-2">
               {renderIconAvatar(
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="w-4 h-4"
+                >
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                </svg>, 
+                </svg>,
                 "bg-pink-100"
               )}
               <div className="min-w-0">
-                <h3 className="text-xs font-medium !text-gray-500">Orientation</h3>
-                <p className="mt-0.5 font-semibold text-sm truncate">{bien.orientation ? getFullOrientation(bien.orientation) : 'N/A'}</p>
+                <h3 className="text-xs font-medium !text-gray-500">
+                  Orientation
+                </h3>
+                <p className="mt-0.5 font-semibold text-sm truncate">
+                  {bien.orientation
+                    ? getFullOrientation(bien.orientation)
+                    : "N/A"}
+                </p>
               </div>
             </div>
-            
+
             {/* Prix unitaire */}
             <div className="flex items-start gap-2">
               {renderIconAvatar(<Euro className="w-4 h-4" />, "bg-purple-100")}
               <div className="min-w-0">
-                <h3 className="text-xs font-medium !text-gray-500">Prix unitaire</h3>
-                <p className="mt-0.5 font-semibold text-sm text-purple-600 truncate">{formatPrice(bien.prix_unitaire)}</p>
+                <h3 className="text-xs font-medium !text-gray-500">
+                  Prix unitaire
+                </h3>
+                <p className="mt-0.5 font-semibold text-sm text-purple-600 truncate">
+                  {formatPrice(bien.prix_unitaire)}
+                </p>
               </div>
             </div>
-            
+
             {/* Avance minimale */}
             <div className="flex items-start gap-2">
               {renderIconAvatar(<Euro className="w-4 h-4" />, "bg-amber-100")}
               <div className="min-w-0">
-                <h3 className="text-xs font-medium !text-gray-500">Avance minimale</h3>
-                <p className="mt-0.5 font-semibold text-sm text-amber-700 truncate">{formatPrice(bien.avance_minimale)}</p>
+                <h3 className="text-xs font-medium !text-gray-500">
+                  Avance minimale
+                </h3>
+                <p className="mt-0.5 font-semibold text-sm text-amber-700 truncate">
+                  {formatPrice(bien.avance_minimale)}
+                </p>
               </div>
             </div>
-            
+
             {/* Nombre de façades */}
             <div className="flex items-start gap-2">
               {renderIconAvatar(
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="w-4 h-4"
+                >
                   <rect x="3" y="3" width="18" height="18" rx="2" />
                   <path d="M3 9h18" />
                   <path d="M9 21V9" />
@@ -294,16 +388,29 @@ export default function BienDetails({ id }) {
                 "bg-blue-100"
               )}
               <div className="min-w-0">
-                <h3 className="text-xs font-medium !text-gray-500">Nombre de façades</h3>
-                <p className="mt-0.5 font-semibold text-sm">{bien.nbre_facades || 'N/A'}</p>
+                <h3 className="text-xs font-medium !text-gray-500">
+                  Nombre de façades
+                </h3>
+                <p className="mt-0.5 font-semibold text-sm">
+                  {bien.nbre_facades || "N/A"}
+                </p>
               </div>
             </div>
-            
+
             {/* Vue */}
             {bien.vue && (
               <div className="flex items-start gap-2">
                 {renderIconAvatar(
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="w-4 h-4"
+                  >
                     <path d="M15 3h6v6" />
                     <path d="M10 14 21 3" />
                     <path d="M19 10v11H3V5h11" />
@@ -312,15 +419,26 @@ export default function BienDetails({ id }) {
                 )}
                 <div className="min-w-0">
                   <h3 className="text-xs font-medium !text-gray-500">Vue</h3>
-                  <p className="mt-0.5 font-semibold text-sm truncate">{bien.vue.vue}</p>
+                  <p className="mt-0.5 font-semibold text-sm truncate">
+                    {bien.vue.vue}
+                  </p>
                 </div>
               </div>
             )}
-            
+
             {bien.titre_foncier && (
               <div className="flex items-start gap-2">
                 {renderIconAvatar(
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="w-4 h-4"
+                  >
                     <rect x="3" y="4" width="18" height="16" rx="2" />
                     <path d="M7 9h10" />
                     <path d="M7 13h10" />
@@ -329,25 +447,44 @@ export default function BienDetails({ id }) {
                   "bg-orange-100"
                 )}
                 <div className="min-w-0">
-                  <h3 className="text-xs font-medium !text-gray-500">Titre foncier</h3>
-                  <p className="mt-0.5 font-semibold text-sm truncate">{bien.titre_foncier}</p>
+                  <h3 className="text-xs font-medium !text-gray-500">
+                    Titre foncier
+                  </h3>
+                  <p className="mt-0.5 font-semibold text-sm truncate">
+                    {bien.titre_foncier}
+                  </p>
                 </div>
               </div>
             )}
-            
+
             {/* Conventionné */}
             <div className="flex items-start gap-2">
               {renderIconAvatar(
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="w-4 h-4"
+                >
                   <polyline points="9 11 12 14 22 4" />
                   <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
                 </svg>,
                 bien.conventionne ? "bg-green-200" : "bg-red-200"
               )}
               <div className="min-w-0">
-                <h3 className="text-xs font-medium !text-gray-500">Conventionné</h3>
-                <p className={`mt-0.5 font-semibold text-sm ${bien.conventionne ? "text-green-600" : "text-red-500"}`}>
-                  {bien.conventionne ? 'Oui' : 'Non'}
+                <h3 className="text-xs font-medium !text-gray-500">
+                  Conventionné
+                </h3>
+                <p
+                  className={`mt-0.5 font-semibold text-sm ${
+                    bien.conventionne ? "text-green-600" : "text-red-500"
+                  }`}
+                >
+                  {bien.conventionne ? "Oui" : "Non"}
                 </p>
               </div>
             </div>
@@ -375,10 +512,8 @@ export default function BienDetails({ id }) {
             ))}
           </div>
         </div>
-        
-        <div className="p-4">
-          {renderTabContent()}
-        </div>
+
+        <div className="p-4">{renderTabContent()}</div>
       </div>
     </div>
   );

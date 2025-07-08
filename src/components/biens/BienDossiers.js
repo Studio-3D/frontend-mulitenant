@@ -261,7 +261,7 @@ export default function BienDossiers({ bienId }) {
         if (!row.histo?.reservation_id) return null;
         return (
           <a 
-            href={`/reservations/show/${row.histo.reservation_id}`}
+            href={`/ventes/reservations/${row.histo.reservation_id}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center w-8 h-8 rounded-full !text-blue-600 hover:bg-blue-100 transition-colors duration-200"

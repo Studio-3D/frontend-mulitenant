@@ -17,6 +17,7 @@ import {
   FileSignature,
   ArrowRightLeft,
   Receipt,
+  Ban,
 } from 'lucide-react';
 import { APIURL } from '../../../../../../configs/api';
 import axios from 'axios';
@@ -59,6 +60,9 @@ export function Desistement_Definitif({
       const list =
         formData?.remboursement?.length > 0
           ? formData.remboursement.map((item) => ({
+              date_decaissement: item?.date_decaissement,
+              date_accuse:item?.date_accuse,
+              banque:item?.banque?.nom,
               statut: item?.statut,
               cheque_client_signe: item?.cheque_client_signe,
               cl_id: item?.aquereur?.client_id,
@@ -394,17 +398,7 @@ export function Desistement_Definitif({
                             </h4>
                           </div>
 
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                              <label className="block text-sm text-gray-500 mb-1">
-                                Dossier lié
-                              </label>
-                              <p className="font-medium text-gray-800">
-                                {dossiers.find((d) => d.id === item.dossier_id)
-                                  ?.code_reservation || ''}
-                              </p>
-                            </div>
-                          </div>
+                         
 
                           {loadingInfos[index] ? (
                             <div className="flex justify-center py-8">
@@ -415,7 +409,8 @@ export function Desistement_Definitif({
                               <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 mb-6">
                                 <h5 className="text-md font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center">
                                   <Home className="w-5 h-5 mr-2 text-blue-500" />
-                                  Dossier transféré
+                                  Dossier transféré : {dossiers.find((d) => d.id === item.dossier_id)
+                                  ?.code_reservation || ''}
                                 </h5>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                   <div>
@@ -490,6 +485,20 @@ export function Desistement_Definitif({
                                         index
                                       ].reste?.toLocaleString()}{' '}
                                       DH
+                                    </p>
+                                  </div>
+                                   <div>
+                                    <label className="block text-sm text-gray-500 mb-1">
+                                     Montant transféré
+
+                                    </label>
+                                    <p className="font-medium text-red-00 flex items-center">
+                                      <Wallet className="w-4 h-4 mr-2 text-red-500" />
+                                      {item.montant_transferer
+                                            ? `${parseFloat(
+                                                item.montant_transferer
+                                              ).toFixed(2)} DH`
+                                            : ''}
                                     </p>
                                   </div>
                                 </div>
@@ -692,6 +701,55 @@ export function Desistement_Definitif({
                                       ) : (
                                         ''
                                       )}
+                                    </p>
+                                  </div>
+                                )}
+                                {item.date_decaissement != null && (
+                                  <div className="bg-white p-4 rounded-lg border border-gray-200">
+                                    <label className="block text-sm text-gray-500 mb-1 flex items-center">
+                                      <Calendar className="w-4 h-4 mr-2 text-blue-500" />
+                                      Date Décaissement
+                                    </label>
+                                    <p className="font-medium text-gray-800">
+                                      {item.date_decaissement
+                                        ? format(
+                                            new Date(item.date_decaissement),
+                                            'dd/MM/yyyy',
+                                            {
+                                              timeZone: 'UTC',
+                                            }
+                                          )
+                                        : ''}
+                                    </p>
+                                  </div>
+                                )}
+                                {item.banque != null && (
+                                  <div className="bg-white p-4 rounded-lg border border-gray-200">
+                                    <label className="block text-sm text-gray-500 mb-1 flex items-center">
+                                      <Ban className="w-4 h-4 mr-2 text-blue-500" />
+                                      Banque
+                                    </label>
+                                    <p className="font-medium text-gray-800">
+                                      {item.banque}
+                                    </p>
+                                  </div>
+                                )}
+                                {item.date_accuse != null && (
+                                  <div className="bg-white p-4 rounded-lg border border-gray-200">
+                                    <label className="block text-sm text-gray-500 mb-1 flex items-center">
+                                      <Calendar className="w-4 h-4 mr-2 text-blue-500" />
+                                      Date Accusé
+                                    </label>
+                                    <p className="font-medium text-gray-800">
+                                      {item.date_accuse
+                                        ? format(
+                                            new Date(item.date_accuse),
+                                            'dd/MM/yyyy',
+                                            {
+                                              timeZone: 'UTC',
+                                            }
+                                          )
+                                        : ''}
                                     </p>
                                   </div>
                                 )}

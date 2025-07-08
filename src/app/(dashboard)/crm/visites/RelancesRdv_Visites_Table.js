@@ -201,7 +201,7 @@ const RelancesRdv_Visites_Table = (type) => {
       label: 'Bien',
       render: (row) => {
         return (
-          <Link target="_blank" href={`/biens/${row?.bien?.id}`}>
+          <Link target="_blank" href={`/Biens/${row?.bien?.id}`}>
             <strong style={{ fontWeight: 600 }}>
               {row.bien?.propriete_dite_bien}
             </strong>

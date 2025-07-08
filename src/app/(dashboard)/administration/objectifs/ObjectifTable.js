@@ -123,31 +123,31 @@ const ObjectifTable = () => {
       key: 'date', 
       label: 'Date',
       sortable: true,
-      onSort: () => requestSort('date')
+      onSort: () => requestSort("date"),
     },
-    { 
-      key: 'user', 
-      label: 'Commercial',
+    {
+      key: "user",
+      label: "Commercial",
       sortable: true,
-      onSort: () => requestSort('user')
+      onSort: () => requestSort("user"),
     },
-    { 
-      key: 'visites', 
-      label: 'Visites',
+    {
+      key: "visites",
+      label: "Visites",
       sortable: true,
-      onSort: () => requestSort('visites')
+      onSort: () => requestSort("visites"),
     },
-    { 
-      key: 'appels', 
-      label: 'Appels',
+    {
+      key: "appels",
+      label: "Appels",
       sortable: true,
-      onSort: () => requestSort('appels')
+      onSort: () => requestSort("appels"),
     },
-    { 
-      key: 'reservations', 
-      label: 'Réservations',
+    {
+      key: "reservations",
+      label: "Réservations",
       sortable: true,
-      onSort: () => requestSort('reservations')
+      onSort: () => requestSort("reservations"),
     },
     {
       key: "actions",
@@ -252,43 +252,48 @@ const ObjectifTable = () => {
           <div className="space-y-4 ">
             <div
               className="grid gap-3"
-              style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}
+              style={{
+                gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+              }}
             >
               <Input
                 type="text"
                 placeholder="commercial..."
                 value={tempFilters.commercial}
-                onChange={(e) => handleFilterChange("commercial", e.target.value)}
+                onChange={(e) =>
+                  handleFilterChange("commercial", e.target.value)
+                }
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
               <input
                 type="text"
                 placeholder="Date..."
                 onFocus={(e) => (e.target.type = "date")}
-                onBlur={(e) => e.target.type = e.target.value ? "date" : "text"}
+                onBlur={(e) =>
+                  (e.target.type = e.target.value ? "date" : "text")
+                }
                 value={tempFilters.date}
                 onChange={(e) => handleFilterChange("date", e.target.value)}
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-              /> 
-              
-            <div className="flex  gap-3 items-center">
-              <button
-                type="button"
-                onClick={applyFilters}
-                className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-              >
-                Appliquer les filtres
-              </button>
-              <button
-                type="button"
-                onClick={resetFilters}
-                className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
-              >
-                Réinitialiser
-              </button>
+              />
+
+              <div className="flex  gap-3 items-center">
+                <button
+                  type="button"
+                  onClick={applyFilters}
+                  className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                >
+                  Appliquer les filtres
+                </button>
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
+                >
+                  Réinitialiser
+                </button>
+              </div>
             </div>
-            </div>
-        
           </div>
         }
         showSearch={false}

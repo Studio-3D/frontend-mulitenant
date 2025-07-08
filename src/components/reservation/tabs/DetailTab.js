@@ -161,7 +161,7 @@ export const DetailTab = ({ reservationData, sum_avances_valides }) => {
                   <p className="font-medium">
                     <Link
                       target="_blank"
-                      href={'/biens/' + reservation?.bien_id}
+                      href={'/Biens/' + reservation?.bien_id}
                       style={{
                         textDecoration: 'none',
                       }}

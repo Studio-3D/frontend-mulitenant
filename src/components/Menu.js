@@ -112,6 +112,7 @@ const Menu = () => {
         label: "Tableau de Bord",
         icon: <LayoutDashboard />,
         href: "/tableau-de-bord",
+        needsProjet: true,
       },
     ];
 
@@ -153,7 +154,7 @@ const Menu = () => {
       needsSociete: user.role === 1,
     },
     {
-      label: "Administration",
+      label: "Configuration",
       icon: <Settings size={20} />,
       children: [
         {
@@ -226,16 +227,16 @@ const Menu = () => {
           needsSociete: user.role === 1,
         },
         {
-          label: "Config Réseaux Sociaux",
-          icon: <Share2 size={20} />,
-          href: "/administration/config-socials",
-          needsSociete: user.role === 1,
-        },
-        {
           label: "Commision",
           icon: <BeakerIcon size={20} />,
           href: "/administration/commissions/configuration",
           needsProjet: true,
+          needsSociete: user.role === 1,
+        },
+        {
+          label: "Réseaux Sociaux",
+          icon: <Share2 size={20} />,
+          href: "/administration/config-socials",
           needsSociete: user.role === 1,
         },
       ],
@@ -386,7 +387,7 @@ const Menu = () => {
                 className={`flex items-center justify-between p-2 mt-1 mb-1 cursor-pointer ${
                   pathname.startsWith(item.href)
                     ? "bg-active text-[#231651] rounded-md"
-                    : "hover:bg-[#d6fff6] hover:text-[#231651] rounded-md"
+                    : "hover:bg-[#fff] hover:text-[#231651] rounded-md"
                 }`}
               >
                 <div className="flex items-center gap-2">
@@ -446,7 +447,7 @@ const Menu = () => {
                       className={`flex items-center gap-2 p-[7px] mt-1 cursor-pointer ${
                         pathname === child.href
                           ? "bg-active text-[#231651] rounded-md"
-                          : "hover:bg-[#d6fff6] hover:text-[#231651] rounded-md"
+                          : "hover:bg-[#fff] hover:text-[#231651] rounded-md"
                       }`}
                     >
                       <span className="w-[18px] h-[18px] flex justify-center items-center text-xl">
@@ -497,7 +498,7 @@ const Menu = () => {
               className={`flex items-center gap-2 p-2 mt-1 cursor-pointer ${
                 pathname.startsWith(item.href)
                   ? "bg-active text-[#231651] rounded-md"
-                  : "hover:bg-[#d6fff6] hover:text-[#231651] rounded-md"
+                  : "hover:bg-[#fff] hover:text-[#231651] rounded-md"
               }`}
             >
               <span className="w-6 h-6 flex justify-start items-center text-xl">
