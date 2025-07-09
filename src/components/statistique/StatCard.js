@@ -12,18 +12,6 @@ export const StatCard = ({ title, value, change, isPositive, icon, color }) => {
           </div>
           <div className={`p-3 rounded-full ${color} text-white`}>{icon}</div>
         </div>
-        <div className="flex items-center mt-4">
-          <div
-            className={`flex items-center ${isPositive ? 'text-green-500' : 'text-red-500'}`}
-          >
-            {isPositive ? (
-              <TrendingUpIcon size={16} className="mr-1" />
-            ) : (
-              <TrendingDownIcon size={16} className="mr-1" />
-            )}
-            <span className="text-sm font-medium">{change}</span>
-          </div>
-        </div>
       </div>
     </div>
   );
