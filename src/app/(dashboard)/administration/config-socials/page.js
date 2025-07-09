@@ -13,7 +13,6 @@ import LinkedInConfigTab from "@/components/config-socials/LinkedInConfigTab";
 export default function ConfigurationSocialsPage() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("facebook");
   const [socialConfig, setSocialConfig] = useState({
     page_fcb_id: "",
@@ -25,6 +24,12 @@ export default function ConfigurationSocialsPage() {
     tiktok_client_key: "",
     tiktok_client_secret: "",
     tiktok_redirect_uri: "",
+  });
+
+  // Individual saving states for each platform
+  const [savingStates, setSavingStates] = useState({
+    facebook: false,
+    instagram: false,
   });
 
   // Fetch existing configurations
@@ -74,107 +79,79 @@ export default function ConfigurationSocialsPage() {
     }));
   };
 
-  // Save configuration
-  const handleSave = async () => {
+  // Save configuration for specific platform
+  const handleSavePlatform = async (platform) => {
     try {
-      setSaving(true);
+      setSavingStates(prev => ({ ...prev, [platform]: true }));
       const token = localStorage.getItem("accessToken");
+      
+      // Prepare data based on platform
+      let dataToSave = {};
+      if (platform === 'facebook') {
+        dataToSave = {
+          page_fcb_id: socialConfig.page_fcb_id,
+          acces_token_page: socialConfig.acces_token_page,
+        };
+      } else if (platform === 'instagram') {
+        dataToSave = {
+          instagram_id: socialConfig.instagram_id,
+          acces_token_user: socialConfig.acces_token_user,
+        };
+      }
+
       await axios.post(
         APIURL.ROOTV1 + "/store_configurations_social_network",
-        socialConfig,
+        dataToSave,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
       
       // Automatically verify configurations after saving
-      await verifyConfigurations();
+      await verifyConfigurations(platform);
       
-      toast.success("Configuration enregistrée avec succès");
+      toast.success(`Configuration ${platform} enregistrée avec succès`);
     } catch (error) {
-      console.error("Error saving social configurations:", error);
-      toast.error("Erreur lors de l'enregistrement des configurations");
+      console.error(`Error saving ${platform} configurations:`, error);
+      toast.error(`Erreur lors de l'enregistrement des configurations ${platform}`);
     } finally {
-      setSaving(false);
+      setSavingStates(prev => ({ ...prev, [platform]: false }));
     }
   };
 
-  // Verify social media configurations
-  const verifyConfigurations = async () => {
+  // Verify social media configurations for specific platform
+  const verifyConfigurations = async (platform) => {
     const token = localStorage.getItem("accessToken");
     
-    // Verify Facebook configuration
-    if (socialConfig.page_fcb_id && socialConfig.acces_token_page) {
-      try {
-        const fbResponse = await axios.get(
-          `https://graph.facebook.com/v18.0/${socialConfig.page_fcb_id}?access_token=${socialConfig.acces_token_page}`
-        );
-        if (fbResponse.data && fbResponse.data.id) {
-          toast.success("✅ Configuration Facebook vérifiée");
-        }
-      } catch (error) {
-        console.error("Facebook verification failed:", error);
-        toast.error("❌ Erreur de configuration Facebook: Token invalide ou page inaccessible");
-      }
-    }
-
-    // Verify Instagram configuration
-    if (socialConfig.instagram_id && socialConfig.acces_token_user) {
-      try {
-        const instaResponse = await axios.get(
-          `https://graph.facebook.com/v18.0/${socialConfig.instagram_id}?access_token=${socialConfig.acces_token_user}`
-        );
-        if (instaResponse.data && instaResponse.data.id) {
-          toast.success("✅ Configuration Instagram vérifiée");
-        }
-      } catch (error) {
-        console.error("Instagram verification failed:", error);
-        toast.error("❌ Erreur de configuration Instagram: Token invalide ou compte inaccessible");
-      }
-    }
-
-    // Verify LinkedIn configuration
-    if (socialConfig.linkedin_client_id && socialConfig.linkedin_client_secret) {
-      try {
-        const linkedinResponse = await axios.post(
-          APIURL.ROOTV1 + "/verify_linkedin_config",
-          {
-            client_id: socialConfig.linkedin_client_id,
-            client_secret: socialConfig.linkedin_client_secret
-          },
-          {
-            headers: { Authorization: `Bearer ${token}` }
+    if (platform === 'facebook') {
+      // Verify Facebook configuration
+      if (socialConfig.page_fcb_id && socialConfig.acces_token_page) {
+        try {
+          const fbResponse = await axios.get(
+            `https://graph.facebook.com/v18.0/${socialConfig.page_fcb_id}?access_token=${socialConfig.acces_token_page}`
+          );
+          if (fbResponse.data && fbResponse.data.id) {
+            toast.success("✅ Configuration Facebook vérifiée");
           }
-        );
-        if (linkedinResponse.data && linkedinResponse.data.success) {
-          toast.success("✅ Configuration LinkedIn vérifiée");
+        } catch (error) {
+          console.error("Facebook verification failed:", error);
+          toast.error("❌ Erreur de configuration Facebook: Token invalide ou page inaccessible");
         }
-      } catch (error) {
-        console.error("LinkedIn verification failed:", error);
-        toast.error("❌ Erreur de configuration LinkedIn: Identifiants invalides");
       }
-    }
-
-    // Verify TikTok configuration
-    if (socialConfig.tiktok_client_key && socialConfig.tiktok_client_secret) {
-      try {
-        const tiktokResponse = await axios.post(
-          APIURL.ROOTV1 + "/verify_tiktok_config",
-          {
-            client_key: socialConfig.tiktok_client_key,
-            client_secret: socialConfig.tiktok_client_secret,
-            redirect_uri: socialConfig.tiktok_redirect_uri
-          },
-          {
-            headers: { Authorization: `Bearer ${token}` }
+    } else if (platform === 'instagram') {
+      // Verify Instagram configuration
+      if (socialConfig.instagram_id && socialConfig.acces_token_user) {
+        try {
+          const instaResponse = await axios.get(
+            `https://graph.facebook.com/v18.0/${socialConfig.instagram_id}?access_token=${socialConfig.acces_token_user}`
+          );
+          if (instaResponse.data && instaResponse.data.id) {
+            toast.success("✅ Configuration Instagram vérifiée");
           }
-        );
-        if (tiktokResponse.data && tiktokResponse.data.success) {
-          toast.success("✅ Configuration TikTok vérifiée");
+        } catch (error) {
+          console.error("Instagram verification failed:", error);
+          toast.error("❌ Erreur de configuration Instagram: Token invalide ou compte inaccessible");
         }
-      } catch (error) {
-        console.error("TikTok verification failed:", error);
-        toast.error("❌ Erreur de configuration TikTok: Identifiants invalides");
       }
     }
   };
@@ -268,44 +245,6 @@ export default function ConfigurationSocialsPage() {
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">Configuration de base</h3>
-                
-                <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-700">
-                    ID de la Page Facebook
-                  </label>
-                  <input
-                    type="text"
-                    name="page_fcb_id"
-                    value={socialConfig.page_fcb_id}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Ex: 123456789012345"
-                  />
-                  <p className="text-xs text-gray-500">
-                    L&apos;identifiant numérique de votre page Facebook (visible dans les paramètres de la page)
-                  </p>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Token d&apos;accès à la Page
-                  </label>
-                  <textarea
-                    name="acces_token_page"
-                    value={socialConfig.acces_token_page}
-                    onChange={handleChange}
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Collez votre token d'accès ici"
-                  />
-                  <p className="text-xs text-gray-500">
-                    Token longue durée obtenu via le Gestionnaire de Pages Facebook
-                  </p>
-                </div>
-              </div>
-
               <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
                 <h3 className="text-lg font-medium">Comment obtenir ces informations</h3>
                 <div className="space-y-3 text-sm">
@@ -345,31 +284,89 @@ export default function ConfigurationSocialsPage() {
                   </p>
                 </div>
               </div>
-            </div>
 
-            {/* Demo Video Section */}
-            <div className="mt-8 border-t pt-6">
-              <h3 className="text-lg font-medium mb-4">Démonstration vidéo</h3>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <p className="text-sm text-gray-700 mb-4">
-                  Regardez cette vidéo pour voir étape par étape comment obtenir votre token d'accès Facebook :
-                </p>
-                <div className="relative w-full max-w-2xl mx-auto">
-                  <video 
-                    controls 
-                    className="w-full rounded-lg shadow-lg"
-                    poster="/Demo/demo-thumbnail.jpg"
-                  >
-                    <source src="/Demo/Demo.mp4" type="video/mp4" />
-                    Votre navigateur ne prend pas en charge la lecture de vidéos HTML5.
-                  </video>
-                </div>
-                <div className="mt-3 text-xs text-gray-500">
-                  <p>💡 Astuce : Vous pouvez mettre la vidéo en plein écran pour une meilleure visibilité</p>
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Démonstration vidéo</h3>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-700 mb-4">
+                    Regardez cette vidéo pour voir étape par étape comment obtenir votre token d'accès Facebook :
+                  </p>
+                  <div className="relative w-full mx-auto">
+                    <video 
+                      controls 
+                      className="w-full rounded-lg shadow-lg"
+                      poster="/Demo/demo-thumbnail.jpg"
+                    >
+                      <source src="/Demo/Demo.mp4" type="video/mp4" />
+                      Votre navigateur ne prend pas en charge la lecture de vidéos HTML5.
+                    </video>
+                  </div>
+                  <div className="mt-3 text-xs text-gray-500">
+                    <p>💡 Astuce : Vous pouvez mettre la vidéo en plein écran pour une meilleure visibilité</p>
+                  </div>
                 </div>
               </div>
             </div>
 
+            {/* Configuration Form */}
+            <div className="mt-8 border-t pt-6">
+              <h3 className="text-lg font-medium mb-4">Configuration Facebook</h3>
+              <div className="max-w-2xl space-y-4">
+                <div className="space-y-1">
+                  <label className="block text-sm font-medium text-gray-700">
+                    ID de la Page Facebook
+                  </label>
+                  <input
+                    type="text"
+                    name="page_fcb_id"
+                    value={socialConfig.page_fcb_id}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Ex: 123456789012345"
+                  />
+                  <p className="text-xs text-gray-500">
+                    L&apos;identifiant numérique de votre page Facebook (visible dans les paramètres de la page)
+                  </p>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Token d&apos;accès à la Page
+                  </label>
+                  <textarea
+                    name="acces_token_page"
+                    value={socialConfig.acces_token_page}
+                    onChange={handleChange}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Collez votre token d'accès ici"
+                  />
+                  <p className="text-xs text-gray-500">
+                    Token longue durée obtenu via le Gestionnaire de Pages Facebook
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => handleSavePlatform('facebook')}
+                  disabled={savingStates.facebook}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {savingStates.facebook ? (
+                    <>
+                      <Loader className="h-4 w-4 animate-spin" />
+                      Enregistrement...
+                    </>
+                  ) : (
+                    <>
+                      <SaveIcon className="h-4 w-4" />
+                      Enregistrer la configuration Facebook
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Association and Warning sections remain the same */}
             <div className="mt-8 border-t pt-6">
               <h3 className="text-lg font-medium mb-4">Association avec les projets</h3>
               <p className="text-sm text-gray-700 mb-4">
@@ -423,44 +420,6 @@ export default function ConfigurationSocialsPage() {
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">Configuration de base</h3>
-                
-                <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-700">
-                    ID du compte Instagram Business
-                  </label>
-                  <input
-                    type="text"
-                    name="instagram_id"
-                    value={socialConfig.instagram_id}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Ex: 17841454841928506"
-                  />
-                  <p className="text-xs text-gray-500">
-                    L&apos;identifiant numérique de votre compte Instagram Business (obtenu via l&apos;API Facebook)
-                  </p>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Token d&apos;accès utilisateur
-                  </label>
-                  <textarea
-                    name="acces_token_user"
-                    value={socialConfig.acces_token_user}
-                    onChange={handleChange}
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Collez votre token d'accès Instagram ici"
-                  />
-                  <p className="text-xs text-gray-500">
-                    Token d&apos;accès longue durée avec permissions Instagram
-                  </p>
-                </div>
-              </div>
-
               <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
                 <h3 className="text-lg font-medium">Guide de configuration</h3>
                 <div className="space-y-3 text-sm">
@@ -517,8 +476,89 @@ export default function ConfigurationSocialsPage() {
                   </p>
                 </div>
               </div>
+
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Démonstration vidéo</h3>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-700 mb-4">
+                    Regardez cette vidéo pour voir étape par étape comment obtenir votre token d'accès Instagram :
+                  </p>
+                  <div className="relative w-full mx-auto">
+                    <video 
+                      controls 
+                      className="w-full rounded-lg shadow-lg"
+                      poster="/Demo/demo-thumbnail.jpg"
+                    >
+                      <source src="/Demo/Demo.mp4" type="video/mp4" />
+                      Votre navigateur ne prend pas en charge la lecture de vidéos HTML5.
+                    </video>
+                  </div>
+                  <div className="mt-3 text-xs text-gray-500">
+                    <p>💡 Astuce : Vous pouvez mettre la vidéo en plein écran pour une meilleure visibilité</p>
+                  </div>
+                </div>
+              </div>
             </div>
 
+            {/* Configuration Form */}
+            <div className="mt-8 border-t pt-6">
+              <h3 className="text-lg font-medium mb-4">Configuration Instagram</h3>
+              <div className="max-w-2xl space-y-4">
+                <div className="space-y-1">
+                  <label className="block text-sm font-medium text-gray-700">
+                    ID du compte Instagram Business
+                  </label>
+                  <input
+                    type="text"
+                    name="instagram_id"
+                    value={socialConfig.instagram_id}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Ex: 17841454841928506"
+                  />
+                  <p className="text-xs text-gray-500">
+                    L&apos;identifiant numérique de votre compte Instagram Business (obtenu via l&apos;API Facebook)
+                  </p>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Token d&apos;accès utilisateur
+                  </label>
+                  <textarea
+                    name="acces_token_user"
+                    value={socialConfig.acces_token_user}
+                    onChange={handleChange}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Collez votre token d'accès Instagram ici"
+                  />
+                  <p className="text-xs text-gray-500">
+                    Token d&apos;accès longue durée avec permissions Instagram
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => handleSavePlatform('instagram')}
+                  disabled={savingStates.instagram}
+                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-md hover:from-pink-600 hover:to-purple-600 disabled:opacity-50"
+                >
+                  {savingStates.instagram ? (
+                    <>
+                      <Loader className="h-4 w-4 animate-spin" />
+                      Enregistrement...
+                    </>
+                  ) : (
+                    <>
+                      <SaveIcon className="h-4 w-4" />
+                      Enregistrer la configuration Instagram
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Types de contenu section remains the same */}
             <div className="mt-8 border-t pt-6">
               <h3 className="text-lg font-medium mb-4">Types de contenu supportés</h3>
               <div className="grid md:grid-cols-2 gap-4">
@@ -585,23 +625,6 @@ export default function ConfigurationSocialsPage() {
     <div className="space-y-6 p-4">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Configuration des réseaux sociaux</h1>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-        >
-          {saving ? (
-            <>
-              <Loader className="h-4 w-4 animate-spin" />
-              Enregistrement...
-            </>
-          ) : (
-            <>
-              <SaveIcon className="h-4 w-4" />
-              Enregistrer
-            </>
-          )}
-        </button>
       </div>
 
       <div className="bg-white shadow rounded-lg overflow-hidden">

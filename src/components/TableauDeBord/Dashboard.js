@@ -35,44 +35,99 @@ export const Dashboard = () => {
     }
   }, [selectedProjet]);
 
-  const getDateRangeParams = (range) => {
-    const today = new Date();
-    const startDate = new Date();
-    let endDate = new Date();
-    
-    switch (range) {
-      case "aujourd'hui":
-        startDate.setHours(0, 0, 0, 0);
-        endDate.setHours(23, 59, 59, 999);
-        break;
-      case "cette semaine":
-        startDate.setDate(today.getDate() - today.getDay());
-        startDate.setHours(0, 0, 0, 0);
-        endDate.setDate(today.getDate() + (6 - today.getDay()));
-        endDate.setHours(23, 59, 59, 999);
-        break;
-      case "ce mois":
-        startDate.setDate(1);
-        startDate.setHours(0, 0, 0, 0);
-        endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-        endDate.setHours(23, 59, 59, 999);
-        break;
-      case "cette année":
-        startDate.setMonth(0, 1);
-        startDate.setHours(0, 0, 0, 0);
-        endDate = new Date(today.getFullYear(), 11, 31);
-        endDate.setHours(23, 59, 59, 999);
-        break;
-      default:
-        startDate.setHours(0, 0, 0, 0);
-        endDate.setHours(23, 59, 59, 999);
-    }
-
-    return {
-      start_date: startDate.toISOString().split('T')[0],
-      end_date: endDate.toISOString().split('T')[0]
-    };
+ const getDateRangeParams = (range) => {
+  const today = new Date();
+  
+  // Helper function to format date without timezone issues
+  const formatLocalDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
+
+  switch (range) {
+    case "aujourd'hui":
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      
+      const todayEnd = new Date();
+      todayEnd.setHours(23, 59, 59, 999);
+      
+      return {
+        start_date: formatLocalDate(todayStart),
+        end_date: formatLocalDate(todayEnd)
+      };
+
+    case "cette semaine":
+      const weekStart = new Date();
+      weekStart.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)); // Monday
+      weekStart.setHours(0, 0, 0, 0);
+      
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6); // Sunday
+      weekEnd.setHours(23, 59, 59, 999);
+      
+      return {
+        start_date: formatLocalDate(weekStart),
+        end_date: formatLocalDate(weekEnd)
+      };
+
+    case "ce mois":
+      const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+      monthStart.setHours(0, 0, 0, 0);
+      
+      const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      monthEnd.setHours(23, 59, 59, 999);
+      
+      return {
+        start_date: formatLocalDate(monthStart),
+        end_date: formatLocalDate(monthEnd)
+      };
+
+    case "cette année":
+      const yearStart = new Date(today.getFullYear(), 0, 1);
+      yearStart.setHours(0, 0, 0, 0);
+      
+      const yearEnd = new Date(today.getFullYear(), 11, 31);
+      yearEnd.setHours(23, 59, 59, 999);
+      
+      return {
+        start_date: formatLocalDate(yearStart),
+        end_date: formatLocalDate(yearEnd)
+      };
+
+    case "dernière année":
+      const lastYearStart = new Date(today.getFullYear() - 1, 0, 1);
+      lastYearStart.setHours(0, 0, 0, 0);
+      
+      const lastYearEnd = new Date(today.getFullYear() - 1, 11, 31);
+      lastYearEnd.setHours(23, 59, 59, 999);
+      
+      return {
+        start_date: formatLocalDate(lastYearStart),
+        end_date: formatLocalDate(lastYearEnd)
+      };
+
+    default:
+      const defaultStart = new Date();
+      defaultStart.setHours(0, 0, 0, 0);
+      
+      const defaultEnd = new Date();
+      defaultEnd.setHours(23, 59, 59, 999);
+      
+      return {
+        start_date: formatLocalDate(defaultStart),
+        end_date: formatLocalDate(defaultEnd)
+      };
+  }
+};
+// Test the function
+console.log("Today:", getDateRangeParams("aujourd'hui"));
+console.log("This week:", getDateRangeParams("cette semaine"));
+console.log("This month:", getDateRangeParams("ce mois"));
+console.log("This year:", getDateRangeParams("cette année"));
+console.log("Last year:", getDateRangeParams("dernière année"));
 
   useEffect(() => {
     const fetchData = async () => {
@@ -114,6 +169,8 @@ export const Dashboard = () => {
   
     fetchData();
   }, [selectedProjet, accesstoken, dateRange]);
+
+ 
 
   if (loading) {
     return <div className="flex justify-center items-center h-64">Loading...</div>;
@@ -205,7 +262,7 @@ export const Dashboard = () => {
           <div className="bg-white rounded-xl shadow-sm border border-gray-50">
             <VisitesChart 
               dateRange={dateRange} 
-              data={data} 
+              data={data?.array_visite_interet_et_date} 
             />
           </div>
         </div>

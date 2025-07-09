@@ -1,127 +1,64 @@
-"use client";
-import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
-import { useProjet } from "@/context/ProjetContext";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
-import axios from "axios";
-import { APIURL } from "@/configs/api";
-import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
-import TypologieTable from "./TypologieTable";
-import TypologieFilter from "./TypologieFilter";
-import TypologieForm from "./TypologieForm";
+'use client';
 
-export default function TypologiesPage() {
-  const [action, setAction] = useState(null);
-  const [typologieId, setTypologieId] = useState(null);
-  const [typologies, setTypologies] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filterParams, setFilterParams] = useState({});
+import React, { useEffect, useState } from 'react';
+import TypologieTable from './TypologieTable';
+import TypologieForm from './TypologieForm';
+import { useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { isAdmin, isCommercial, isSuperAdmin } from '@/configs/enum';
 
-  const router = useRouter();
-  const searchParams = useSearchParams();
+export default function Page() {
+  const ACTION = { EDIT: 'edit', ADD: 'add' };
+  const [child, setChild] = useState(null);
   const { user } = useAuth();
-  const { selectedProjet } = useProjet();
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [rowToDelete, setRowToDelete] = useState(null);
-
-  // This effect handles URL parameter changes
+  const userRole = user?.role;
+  const router = useRouter();
   useEffect(() => {
-    // Parse query parameters
-    const actionParam = searchParams.get("action");
-    const idParam = searchParams.get("id");
-
-    // Reset component state based on URL parameters
-    setAction(actionParam || null);
-    setTypologieId(idParam || null);
-
-    // Load data if we're on the main page
-    if (!actionParam) {
-      fetchTypologies();
+    if (
+      !isAdmin(userRole) &&
+      !isSuperAdmin(userRole) &&
+      !isCommercial(userRole)
+    ) {
+      router.push('/');
     }
-  }, [searchParams, selectedProjet]); // Important to include searchParams as a dependency
+  }, [router]);
 
-  const fetchTypologies = async (filters = {}) => {
-    if (!selectedProjet) return;
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    if (!searchParams) return;
 
-    setLoading(true);
-    try {
-      const token = localStorage.getItem("accessToken");
-      const response = await axios.get(APIURL.TYPOLOGIES, {
-        headers: { Authorization: `Bearer ${token}` },
-        params: {
-          projet_id: selectedProjet.id,
-          ...filters,
-        },
-      });
+    const id = searchParams.get('id');
+    const action = searchParams.get('action');
 
-      setTypologies(response.data.typologies || []);
-    } catch (error) {
-      console.error("Error fetching typologies:", error);
-    } finally {
-      setLoading(false);
+    let newChild = determineChildComponent(action, id);
+    setChild(newChild);
+  }, [searchParams]);
+
+  // Fonction pour déterminer le composant enfant en fonction de l'action et de l'id
+  const determineChildComponent = (action, id) => {
+    if (action === ACTION.ADD) {
+      return <TypologieForm />;
+    } else if (!isNaN(parseInt(id)) && action === ACTION.EDIT) {
+      return <TypologieForm id={id} />;
+    } else {
+      console.warn('Invalid action or missing id:', action, id); // Debugging
+
+      return null;
     }
   };
 
-  const handleFilterSubmit = (values) => {
-    setFilterParams(values);
-    fetchTypologies(values);
-  };
-
-  const handleAction = (actionType, row) => {
-    if (actionType === "edit") {
-      router.push(`/administration/typologies?action=edit&id=${row}`);
-    } else if (actionType === "delete") {
-      // Handle delete with confirmation
-      setRowToDelete(row);
-      setDeleteModalOpen(true);
-    }
-  };
-
-  // Handle form completion
-  const handleFormComplete = () => {
-    // Use router.replace instead of push to ensure a clean navigation
-    router.replace("/administration/typologies");
-  };
-
-  // If not logged in or no project selected, show appropriate message
-  if (!user) {
-    return <div>Veuillez vous connecter pour accéder à cette page.</div>;
-  }
-
-  
-
-  // Show form for add/edit actions
-  if (action === "add" || action === "edit") {
-    return (
-      <TypologieForm
-        id={action === "edit" ? typologieId : null}
-        onComplete={handleFormComplete}
-      />
-    );
-  }
-
-  // Main view with table
   return (
-    <div className="p-4 bg-white rounded-lg shadow-md">
-      <TypologieTable
-        data={typologies}
-        loading={loading}
-        onAction={handleAction}
-        onAddClick={() => router.push("/administration/typologies?action=add")}
-        onFilterSubmit={handleFilterSubmit} 
-        onRefresh={() => fetchTypologies(filterParams)}
-      />
-      <DeleteConfirmationModal
-        isOpen={deleteModalOpen}
-        onClose={() => setDeleteModalOpen(false)}
-        entityName="TYPOLOGIES"
-        itemLabel={'Typologie'}
-        entityId={rowToDelete?.id}
-        data={typologies}
-        onDeleted={() => fetchTypologies(filterParams)} // <- ici
-      />
+    <div>
+      {child ? (
+        child
+      ) : (
+        <>
+          <div>
+            <TypologieTable />
+          </div>
+        </>
+      )}
     </div>
   );
 }
