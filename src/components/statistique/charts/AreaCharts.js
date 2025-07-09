@@ -209,7 +209,7 @@ export const AreaChart = ({ data = [], startDate, endDate }) => {
       <ResponsiveContainer width="100%" height="100%">
         <RechartsAreaChart
           data={chartData}
-          margin={{ top: 13, right: 10, left: 0, bottom: 0 }}
+          margin={{ top: 13, right: 10, left: 13, bottom: 0 }}
         >
           <defs>
             <linearGradient id="colorEncaissements" x1="0" y1="0" x2="0" y2="1">
