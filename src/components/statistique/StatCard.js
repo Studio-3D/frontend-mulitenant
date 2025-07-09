@@ -23,9 +23,6 @@ export const StatCard = ({ title, value, change, isPositive, icon, color }) => {
             )}
             <span className="text-sm font-medium">{change}</span>
           </div>
-          <span className="text-xs text-gray-500 ml-2">
-            depuis le mois dernier
-          </span>
         </div>
       </div>
     </div>
