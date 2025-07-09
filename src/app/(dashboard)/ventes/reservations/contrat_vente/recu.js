@@ -132,7 +132,7 @@ const Document_Contrat = ({ data }) => (
         <Text style={styles.subtitle}>
           Dossier: {data.code_reservation || 'N/A'}
         </Text>
-        <Text style={styles.subtitle}>N° Reçu: {data.num_recu || 'XXXX'}</Text>
+        <Text style={styles.subtitle}>N° : {data.num_recu}</Text>
       </View>
 
       {/* Parties Section */}
@@ -225,7 +225,7 @@ const Document_Contrat = ({ data }) => (
             le numéro {data.bien?.numero || 'non renseigné'}. Il est situé au{' '}
             {data.bien?.niveau == 0
               ? 'rez-de-chaussée'
-              : `${data.bien?.etage}ème étage`}{' '}
+              : `${data.bien?.niveau}ème étage`}{' '}
             et offre une superficie habitable de{' '}
             {data.bien?.superficie_habitable || '0'} m².
             {data.bien?.superficie_balcon > 0 &&

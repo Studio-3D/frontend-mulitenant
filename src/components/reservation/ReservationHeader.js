@@ -14,7 +14,7 @@ import Button from '@/components/Button'; // adjust the path as needed
 import Modal from '@/components/Modal';
 import Modal_Relance from './Modal_Relance';
 
-export const ReservationHeader = ({ reservationData }) => {
+export const ReservationHeader = ({ reservationData ,userRole}) => {
   const [open_dialog, setOpen_dialog] = useState(false);
 
   // Add null checks and default values
@@ -68,7 +68,7 @@ export const ReservationHeader = ({ reservationData }) => {
             </span>
           </div>
         </div>
-        {reservation.statut == 2 && (
+        {reservation.statut == 2 && userRole==3 &&  (
           <div className="flex justify-end">
             <Button type="delete" onClick={() => handle_relance()}>
               Relancer

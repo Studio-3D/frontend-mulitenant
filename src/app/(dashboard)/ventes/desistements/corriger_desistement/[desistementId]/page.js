@@ -29,6 +29,7 @@ import Autocomplete from '@/components/Autocomplete';
 export default function Page() {
   const hasFetchedFiles = useRef(false);
   const codeResRef = useRef();
+  const [dossierInfos, setDossierInfos] = useState({});
 
   const router = useRouter();
   const params = useParams();
@@ -350,7 +351,7 @@ export default function Page() {
         formData.append('type', 1);
         formData.append('motif', data.motif);
         formData.append('type_remb', data.type_remb);
-        formData.append('inputList_remb', JSON.stringify(data.inputList_remb));
+        formData.append('inputlist_remb', JSON.stringify(data.inputList_remb));
         data.inputList_remb.forEach((item, index) => {
           if (item.fichier_autorisation) {
             formData.append(
@@ -431,8 +432,13 @@ export default function Page() {
         },
       });
 
-      /*if (response.status == 201) {
+      /* if (user.role <= 2) {
+        localStorage.setItem('etat_dst', '1');
         router.push('/ventes/desistements');
+      } else {
+        //commercial
+        localStorage.setItem('etat_dst', '5');
+        router.push('/ventes/desistements/attente_encours');
       }*/
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -461,10 +467,10 @@ export default function Page() {
         }
 
         // Validate based on remboursement type
-        if (formValues.type_remb === 'direct') {
+        if (formValues.type_remb == 'direct') {
           if (
             !formValues.inputList_remb ||
-            formValues.inputList_remb.length === 0
+            formValues.inputList_remb.length == 0
           ) {
             errors.push('Au moins un remboursement doit être configuré');
           } else {
@@ -480,8 +486,8 @@ export default function Page() {
 
               // Validate transfer section if mode is transfert or transfert_remb
               if (
-                item.type_remb === 'transfert' ||
-                item.type_remb === 'transfert_remb'
+                item.type_remb == 'transfert' ||
+                item.type_remb == 'transfert_remb'
               ) {
                 if (!item.dossier_id) {
                   errors.push(
@@ -490,14 +496,14 @@ export default function Page() {
                 }
 
                 // Additional validation for transfert_remb mode
-                if (item.type_remb === 'transfert_remb') {
+                if (item.type_remb == 'transfert_remb') {
                   const sum_avance_by_aq_percent =
-                    (item.pourcentage / 100) * sum_avances_valides;
+                    (item.pourcentage / 100) * reservationData.sumAvances;
 
                   // Validate montant_transferer
                   if (
-                    item.montant_transferer === '' ||
-                    item.montant_transferer === null
+                    item.montant_transferer == '' ||
+                    item.montant_transferer == null
                   ) {
                     errors.push(
                       `${clientPrefix} Le montant à transférer est requis`
@@ -550,8 +556,8 @@ export default function Page() {
 
                   // Validate reste_a_rembourse
                   if (
-                    item.reste_a_rembourse === '' ||
-                    item.reste_a_rembourse === null
+                    item.reste_a_rembourse == '' ||
+                    item.reste_a_rembourse == null
                   ) {
                     errors.push(
                       `${clientPrefix} Le reste à rembourser est requis`
@@ -577,7 +583,7 @@ export default function Page() {
                   }
 
                   // Validate direct remboursement fields if type_remb_transfere is immediat
-                  if (item.type_remb_transfere === 'immediat') {
+                  if (item.type_remb_transfere == 'immediat') {
                     if (!item.date_rembourse) {
                       errors.push(
                         `${clientPrefix} La date de remboursement est requise pour le remboursement immédiat`
@@ -598,13 +604,13 @@ export default function Page() {
                         `${clientPrefix} Le compte bénéficiaire est requis pour le remboursement immédiat`
                       );
                     }
-                    if (item.mode_rembourse === 'cheque' && !item.cheque_recu) {
+                    if (item.mode_rembourse == 'cheque' && !item.cheque_recu) {
                       errors.push(
                         `${clientPrefix} Le reçu de chèque est requis pour le remboursement immédiat`
                       );
                     }
                     if (
-                      item.pour_le_compte === 'autre' &&
+                      item.pour_le_compte == 'autre' &&
                       !item.fichier_autorisation
                     ) {
                       errors.push(
@@ -616,7 +622,7 @@ export default function Page() {
               }
 
               // Validate direct remboursement fields if mode is direct
-              if (item.type_remb === 'direct') {
+              if (item.type_remb == 'direct') {
                 if (!item.date_rembourse) {
                   errors.push(
                     `${clientPrefix} La date de remboursement est requise`
@@ -637,11 +643,11 @@ export default function Page() {
                     `${clientPrefix} Le compte bénéficiaire est requis`
                   );
                 }
-                if (item.mode_rembourse === 'cheque' && !item.cheque_recu) {
+                if (item.mode_rembourse == 'cheque' && !item.cheque_recu) {
                   errors.push(`${clientPrefix} Le reçu de chèque est requis`);
                 }
                 if (
-                  item.pour_le_compte === 'autre' &&
+                  item.pour_le_compte == 'autre' &&
                   !item.fichier_autorisation
                 ) {
                   errors.push(
@@ -651,13 +657,13 @@ export default function Page() {
               }
 
               // Validate the sum makes sense for transfert_remb
-              if (item.type_remb === 'transfert_remb') {
+              if (item.type_remb == 'transfert_remb') {
                 const montantTransferer =
                   parseFloat(item.montant_transferer) || 0;
                 const resteARembourser =
                   parseFloat(item.reste_a_rembourse) || 0;
                 const expectedTotal =
-                  (item.pourcentage / 100) * sum_avances_valides;
+                  (item.pourcentage / 100) * reservationData.sumAvances;
                 const actualTotal = montantTransferer + resteARembourser;
 
                 if (Math.abs(actualTotal - expectedTotal) > 0.01) {
@@ -689,12 +695,12 @@ export default function Page() {
         // Désistement au profit d'un proche
         if (
           !formValues.desisteur_dp_proche_co ||
-          formValues.desisteur_dp_proche_co.length === 0
+          formValues.desisteur_dp_proche_co.length == 0
         ) {
           errors.push('Au moins un désisteur doit être sélectionné');
         }
 
-        if (!formValues.inputList || formValues.inputList.length === 0) {
+        if (!formValues.inputList || formValues.inputList.length == 0) {
           errors.push('Au moins un nouveau client doit être ajouté');
         } else {
           formValues.inputList.forEach((client, index) => {
@@ -756,14 +762,14 @@ export default function Page() {
         // Désistement au profit d'un co-réservataire
         if (
           !formValues.desisteur_dp_proche_co ||
-          formValues.desisteur_dp_proche_co.length === 0
+          formValues.desisteur_dp_proche_co.length == 0
         ) {
           errors.push('Au moins un désisteur doit être sélectionné');
         }
 
         if (
           !formValues.profit_dp_co_reser ||
-          formValues.profit_dp_co_reser.length === 0
+          formValues.profit_dp_co_reser.length == 0
         ) {
           errors.push('Au moins un bénéficiaire doit être sélectionné');
         } else {
@@ -806,7 +812,7 @@ export default function Page() {
         // Désistement partiel
         if (
           !formValues.desisteutrs_profit_dp_partiel ||
-          formValues.desisteutrs_profit_dp_partiel.length === 0
+          formValues.desisteutrs_profit_dp_partiel.length == 0
         ) {
           errors.push('Au moins un désisteur doit être sélectionné');
         } else {
@@ -949,12 +955,12 @@ export default function Page() {
         }
 
         // Validate files if required
-        if (
-          (!formValues.files_avance || formValues.files_avance.length === 0) &&
+        /*if (
+          (!formValues.files_avance || formValues.files_avance.length == 0) &&
           formValues.montant_a_ajouter > 0
         ) {
           errors.push('Veuillez joindre les fichiers de paiement');
-        }
+        }*/
       }
     }
     // Penalty validation (applies to all activeModel cases if avecPenalite is true)
@@ -1256,6 +1262,8 @@ export default function Page() {
               reservationId={desistementData.reservation_id}
               type_remb_get={desistementData.type_remb}
               inputListRemb_get={reservationData.inputListRemb}
+              dossierInfos={dossierInfos}
+              setDossierInfos={setDossierInfos}
             />
           )}
 

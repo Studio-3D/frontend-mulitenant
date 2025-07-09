@@ -90,7 +90,7 @@ const Compromis_show = ({
     },
     clients: reservationData.reservation?.aquereurs || [],
     sum_avances_valides: reservationData?.sum_avances_valides || 0,
-    num_recu: num_recu,
+    num_recu: data.num_recu,
     form: {
       date_sign_client: date_sign_client,
       date_sign_mo: date_sign_mo,
@@ -371,13 +371,15 @@ const Compromis_show = ({
                       >
                         {({ loading }) => (
                           <button
-                            className={`text-indigo-500 hover:text-indigo-700 ${
+                            className={`px-4 py-2 bg-blue-500 text-white rounded hover:bg-indigo-700 ${
                               loading ? 'opacity-50' : ''
                             }`}
                             title="Télécharger PDF"
                             disabled={loading}
                           >
-                            {loading ? '...' : <Upload className="w-4 h-4" />}
+                            {loading
+                              ? 'Génération en cours...'
+                              : 'Télécharger le PDF'}
                           </button>
                         )}
                       </PDFDownloadLink>
