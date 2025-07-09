@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const StatCard = ({ title, value, change, isPositive, icon, color }) => {
+export const StatCard = ({ title, value, icon, color }) => {
   return (
     <div className="bg-white rounded-lg shadow mt-1 transition-transform hover:shadow-md hover:-translate-y-1 duration-300">
       <div className="p-5">
