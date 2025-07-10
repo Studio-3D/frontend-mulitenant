@@ -200,7 +200,7 @@ export default function RembTable({ etat }) {
           : ''
       }`,
       bien_id: remboursement.desistement?.bien_ancien?.id || '',
-      bien: remboursement.desistement?.bien_ancien?.propriete_dite_bien || '',
+      bien: remboursement.desistement?.bien_ancien || '',
       montant: `${
         remboursement.montant_a_rembourser?.toLocaleString() || '0'
       } DH`,
@@ -228,6 +228,17 @@ export default function RembTable({ etat }) {
     }));
   };
 
+  function NomBienComplet(bien) {
+    const noms = [];
+
+    if (bien?.tranche?.nom) noms.push(bien.tranche.nom);
+    if (bien?.bloc?.nom) noms.push(bien.bloc.nom);
+    if (bien?.immeuble?.nom) noms.push(bien.immeuble.nom);
+
+    noms.push(bien?.propriete_dite_bien);
+
+    return noms.join(' - ');
+  }
   // Table columns configuration
   const baseColumns = [
     { key: 'client', label: 'Clients' },
@@ -241,7 +252,7 @@ export default function RembTable({ etat }) {
           className="text-blue-500 hover:text-blue-700"
           target="_blank"
         >
-          {row.bien}
+          {NomBienComplet(row.bien)}
         </Link>
       ),
     },
@@ -405,7 +416,7 @@ export default function RembTable({ etat }) {
     ...additionalColumns,
     ...accuseColumns,
     ...decaissementColumns,
-    actionColumn,
+  ...((etat != 4 && etat != 2) ? [actionColumn] : []), // Only include actionColumn if etat is not 4
   ];
 
   // Export data configuration
@@ -676,7 +687,7 @@ export default function RembTable({ etat }) {
                 {(isSuperAdmin(userRole) || isAdmin(userRole)) && (
                   <Input
                     type="text"
-                    placeholder="Responsable"
+                    label="Responsable"
                     value={tempFilters.responsable}
                     onChange={(e) =>
                       handleFilterChange('responsable', e.target.value)
@@ -686,21 +697,21 @@ export default function RembTable({ etat }) {
                 )}
                 <Input
                   type="text"
-                  placeholder="Client"
+                  label="Client"
                   value={tempFilters.client}
                   onChange={(e) => handleFilterChange('client', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
                 <Input
                   type="text"
-                  placeholder="Bien"
+                  label="Bien"
                   value={tempFilters.bien}
                   onChange={(e) => handleFilterChange('bien', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
                 <Input
                   type="number"
-                  placeholder="Montant à Rembourser"
+                  label="Montant à Rembourser"
                   value={tempFilters.montant_a_rembourser}
                   onChange={(e) =>
                     handleFilterChange('montant_a_rembourser', e.target.value)
@@ -719,23 +730,23 @@ export default function RembTable({ etat }) {
                         value: data.code,
                         label: data.label,
                       }))}
-                      placeholder="Remboursement"
+                      label="Remboursement"
                       className="h-10 text-sm w-full"
                     />
-
-                    <input
-                      type={tempFilters.date_remb ? 'date' : 'text'}
-                      placeholder="Date Remboursement"
+                     <Input
+                      type="date"
+                      label="Date Remboursement"
                       value={tempFilters.date_remb}
-                      onFocus={(e) => (e.target.type = 'date')}
                       onChange={(e) =>
                         handleFilterChange('date_remb', e.target.value)
                       }
-                      className="h-10 px-3 py-2 rounded-md border border-black-300 w-full text-sm"
+                      className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                     />
+                    
+
                     <Input
                       type="number"
-                      placeholder="N° Paiement"
+                      label="N° Paiement"
                       value={tempFilters.num_paiement}
                       onChange={(e) =>
                         handleFilterChange('num_paiement', e.target.value)
@@ -744,7 +755,7 @@ export default function RembTable({ etat }) {
                     />
                     <Input
                       type="text"
-                      placeholder="Pour le Compte"
+                      label="Pour le Compte"
                       value={tempFilters.pour_le_compte}
                       onChange={(e) =>
                         handleFilterChange('pour_le_compte', e.target.value)
@@ -756,26 +767,25 @@ export default function RembTable({ etat }) {
 
                 {(etat == 2 || etat == 4) && (
                   <>
-                   
-                      <input
-                      type={tempFilters.date_decaissement ? 'date' : 'text'}
-                      placeholder="Date Décaissement"
+                    
+                      <Input
+                      type="date"
+                      label="Date Décaissement"
                       value={tempFilters.date_decaissement}
-                      onFocus={(e) => (e.target.type = 'date')}
                       onChange={(e) =>
                         handleFilterChange('date_decaissement', e.target.value)
                       }
-                      className="h-10 px-3 py-2 rounded-md border border-black-300 w-full text-sm"
+                      className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                     />
-                     <input
-                      type={tempFilters.date_accuse ? 'date' : 'text'}
-                      placeholder="Date Accusé"
+
+                      <Input
+                      type="date"
+                      label="Date Accusé"
                       value={tempFilters.date_accuse}
-                      onFocus={(e) => (e.target.type = 'date')}
                       onChange={(e) =>
                         handleFilterChange('date_accuse', e.target.value)
                       }
-                      className="h-10 px-3 py-2 rounded-md border border-black-300 w-full text-sm"
+                      className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                     />
                    
 
@@ -786,7 +796,7 @@ export default function RembTable({ etat }) {
                         value: data.id,
                         label: data.nom,
                       }))}
-                      placeholder="Banque"
+                      label="Banque"
                       className="h-10 text-sm w-full"
                     />
                   </>
@@ -847,7 +857,7 @@ export default function RembTable({ etat }) {
                 control={false}
                 errors={{}}
                 backendErrors={{}}
-                value={selectedBien}
+                value={NomBienComplet(selectedBien)}
                 disabled
               />
             </div>
@@ -1022,7 +1032,7 @@ export default function RembTable({ etat }) {
               </label>
               <input
                 type="text"
-                value={selectedBien}
+                value={NomBienComplet(selectedBien)}
                 disabled
                 className="w-full h-10 px-3 py-2 rounded-md border border-gray-300 text-sm"
               />
@@ -1096,7 +1106,7 @@ export default function RembTable({ etat }) {
               </label>
               <input
                 type="text"
-                value={selectedBien}
+                value={NomBienComplet(selectedBien)}
                 disabled
                 className="w-full h-10 px-3 py-2 rounded-md border border-gray-300 text-sm"
               />
@@ -1129,7 +1139,7 @@ export default function RembTable({ etat }) {
                   label: banque.nom,
                   original: banque, // Keep reference to full object if needed
                 }))}
-                placeholder="Choisissez un Banque"
+                label="Choisissez un Banque"
                 className="h-10 text-sm w-full"
                 loading={loadingBanques}
               />

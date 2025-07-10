@@ -192,7 +192,7 @@ export function Changement_De_Bien({
   const show_bien = async (bien_id) => {
     setLoading_bien_id(true);
     try {
-      const response = await axios.get(`${APIURL.ROOTV1}/biens/${bien_id}`, {
+      const response = await axios.get(`${APIURL.BIENS}/${bien_id}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
       const avance_minimale = response.data.bien.avance_minimale;
@@ -491,9 +491,9 @@ export function Changement_De_Bien({
               )}
             </div>
 
-            <div>
+           {/* <div>
               <div className="space-y-4">
-                {/* File Input */}
+                {/* File Input 
                 <div className="relative">
                   <TextField
                     label="Fichiers Paiement:"
@@ -511,7 +511,7 @@ export function Changement_De_Bien({
                   </p>
                 </div>
 
-                {/* Selected Files Preview */}
+                {/* Selected Files Preview 
                 {selectedFiles_avc.length > 0 && (
                   <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                     <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
@@ -539,7 +539,7 @@ export function Changement_De_Bien({
                             className="flex flex-col p-3 bg-white rounded-md border border-gray-200 hover:border-blue-200 transition-colors h-full"
                           >
                             <div className="flex items-center mb-2">
-                              {/* File icon based on type */}
+                              {/* File icon based on type 
                               {getFileIcon(data.name || data.fichier)}
 
                               <button
@@ -586,7 +586,7 @@ export function Changement_De_Bien({
                   </div>
                 )}
               </div>
-            </div>
+            </div>*/}
           </>
         )}
       </div>

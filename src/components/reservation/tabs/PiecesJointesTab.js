@@ -8,9 +8,8 @@ import {
   PlusIcon,
 } from 'lucide-react';
 
-export const PiecesJointesTab = ({ reservationData, user }) => {
+export const PiecesJointesTab = ({ reservationData, user,piecesJointesData}) => {
   const { reservation } = reservationData;
-  const piecesJointesData = reservation?.piece_jointe || [];
   const FileUrl = process.env.NEXT_PUBLIC_IMG_URL;
 
   const handleEdit_PJ = () => {
@@ -20,7 +19,7 @@ export const PiecesJointesTab = ({ reservationData, user }) => {
   };
 
   const handleFileClick = (fileName) => {
-    const fileUrl = `${FileUrl}/Docs/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/reservations/${fileName}`;
+    const fileUrl = `${FileUrl}/Docs/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/reservations/${reservation.code_reservation}/${fileName}`;
     window.open(fileUrl, '_blank');
   };
 

@@ -63,11 +63,10 @@ const Table = ({
     
     const timer = setTimeout(() => {
       onSearchChange(localSearchTerm);
-      onPageChange(1);
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [localSearchTerm, onSearchChange, onPageChange, showSearch]);
+  }, [localSearchTerm, onSearchChange, showSearch]);
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {

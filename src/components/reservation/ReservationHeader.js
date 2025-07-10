@@ -14,7 +14,7 @@ import Button from '@/components/Button'; // adjust the path as needed
 import Modal from '@/components/Modal';
 import Modal_Relance from './Modal_Relance';
 
-export const ReservationHeader = ({ reservationData }) => {
+export const ReservationHeader = ({ reservationData ,userRole}) => {
   const [open_dialog, setOpen_dialog] = useState(false);
 
   // Add null checks and default values
@@ -66,10 +66,9 @@ export const ReservationHeader = ({ reservationData }) => {
             <span className="text-gray-600">
               Dernière mise à jour: {lastUpdated}
             </span>
-
           </div>
         </div>
-        {reservation.statut == 2 && (
+        {reservation.statut == 2 && userRole==3 &&  (
           <div className="flex justify-end">
             <Button type="delete" onClick={() => handle_relance()}>
               Relancer
@@ -93,7 +92,9 @@ export const ReservationHeader = ({ reservationData }) => {
               <p className="text-gray-600">Acquéreurs</p>
             </div>
             <p className="text-lg font-semibold">
-              {reservation?.aquereurs?.length || 0}{' '}
+              {reservation?.etat == 1
+                ? reservation?.aquereurs?.length
+                : reservation?.aquereurs_ancien?.length || 0}
             </p>
           </div>
           <div className="bg-blue-50 p-3 rounded-md">
@@ -113,7 +114,6 @@ export const ReservationHeader = ({ reservationData }) => {
             <p className="text-lg font-semibold">
               {reservation?.historiques?.length || 0}
             </p>
-
           </div>
         </div>
       </div>

@@ -3,13 +3,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import Table from "@/components/Table";
 import Link from "next/link";
-import {
-  Eye,
-  PencilSquare,
-  ShieldX,
-  ShieldCheck,
-  Trash2
-} from 'lucide-react';
+import { Eye, PencilSquare, ShieldX, ShieldCheck, Trash2 } from "lucide-react";
 import Modal from "@/components/Modal";
 import BlockUser from "@/components/Utilisateurs/BlockUser";
 import UnblockUser from "@/components/Utilisateurs/UnblockUser";
@@ -72,6 +66,8 @@ const Page = () => {
         page: currentPage,
         size: rowsPerPage,
         ...filters,
+        // Add search term to parameters if it exists
+        ...(searchTerm && { search: searchTerm }),
       };
 
       if (user?.role !== 1 && selectedSociete?.id) {
@@ -82,49 +78,21 @@ const Page = () => {
         headers: { Authorization: `Bearer ${accesstoken}` },
         params,
       });
-      console.log("Response:", response.data);
 
-      if (response.data?.users) {
-        let filteredUsers = response.data.users.filter(
-          (u) => u.id !== user?.id
-        );
+      // Filter out current user from results
+      const filteredUsers = response.data.users.filter(
+        (u) => u.id !== user?.id
+      );
 
-        // Client-side filtering
-        if (searchTerm) {
-          filteredUsers = response.data.users.filter((user) => {
-            const searchText = searchTerm.toLowerCase();
-            const fullName = `${user.name || ""} ${
-              user.prenom || ""
-            }`.toLowerCase();
-            const email = user.email?.toLowerCase() || "";
-            const phone = (user.phone || "").toLowerCase();
-            const role = getRoleText(user.role).toLowerCase();
-            const status = (user.is_actif ? "1" : "2").toLowerCase();
-
-            return (
-              fullName.includes(searchText) ||
-              email.includes(searchText) ||
-              phone.includes(searchText) ||
-              role.includes(searchText) ||
-              status.includes(searchText)
-            );
-          });
-        }
-
-        setUsers(filteredUsers);
-        setTotalRows(
-          response.data.pagination?.totalItems
-            ? Math.max(response.data.pagination.totalItems - 1, 0) // Adjust total count
-            : filteredUsers.length
-        );
-      } else {
-        setError("Aucun utilisateur trouvé");
-      }
+      setUsers(filteredUsers);
+      setTotalRows(
+        response.data.pagination?.totalItems || filteredUsers.length
+      );
     } catch (err) {
       setError(err.response?.data?.message || "Erreur lors du chargement");
       if (err.response?.status === 401) {
-        router.push('/');
-        toast.error('Session expirée, veuillez vous reconnecter.');
+        router.push("/");
+        toast.error("Session expirée, veuillez vous reconnecter.");
       }
     } finally {
       setLoading(false);
@@ -136,8 +104,10 @@ const Page = () => {
     selectedSociete,
     token,
     user?.role,
+    user?.id,
     router,
     filters,
+    accesstoken,
   ]);
 
   const handleFilterChange = (field, value) => {
@@ -145,7 +115,8 @@ const Page = () => {
   };
 
   const applyFilters = () => {
-    setFilters(tempFilters); // C’est ici que fetchUsers va être déclenché
+    setCurrentPage(1); // Reset to first page when filters change
+    setFilters(tempFilters);
   };
 
   const resetFilters = () => {
@@ -159,14 +130,22 @@ const Page = () => {
       niveau: "",
       status: "",
     };
+    setCurrentPage(1); // Reset to first page when filters reset
     setFilters(reset);
     setTempFilters(reset);
+    setSearchTerm(""); // Also reset search term
   };
 
-  // Fetch users when pagination or search changes
+  // Handle search separately
+  const handleSearch = (term) => {
+    setSearchTerm(term);
+    setCurrentPage(1); // Reset to first page when search changes
+  };
+
+  // Fetch users when pagination, filters or search changes
   useEffect(() => {
     fetchUsers();
-  }, [filters, currentPage, rowsPerPage, searchTerm, selectedSociete]);
+  }, [fetchUsers]);
 
   // Format user role text
   const getRoleText = (roleId) => {
@@ -207,29 +186,38 @@ const Page = () => {
   const data_to_export = () => {
     return users.map((us) => ({
       nom: us.name,
-      prenom:us.prenom,
+      prenom: us.prenom,
+      prenom: us.prenom,
       email: us.email,
       telephone: us.phone || "",
       role: getRoleText(us.role),
       date: new Date(us.created_at).toLocaleDateString(),
       status: us.is_actif ? "Actif" : "Inactif",
-      societe:us.societe.raison_sociale,
-      adresse:us.adresse,
-      gender:us.gender,
-      cin:us.cin,
-      fonction:us.fonction,
-      date_embauche:us.date_embauche,
-      niveau_etude:us.niveau_etude,
-      cnss:us.cnss,
-      solde_conge:us.solde_conge,
+      societe: us.societe?.raison_sociale,
+      adresse: us.adresse,
+      gender: us.gender,
+      cin: us.cin,
+      fonction: us.fonction,
+      date_embauche: us.date_embauche,
+      niveau_etude: us.niveau_etude,
+      cnss: us.cnss,
+      solde_conge: us.solde_conge,
+      societe: us.societe.raison_sociale,
+      adresse: us.adresse,
+      gender: us.gender,
+      cin: us.cin,
+      fonction: us.fonction,
+      date_embauche: us.date_embauche,
+      niveau_etude: us.niveau_etude,
+      cnss: us.cnss,
+      solde_conge: us.solde_conge,
     }));
   };
 
   const columns_export = Object.keys(data_to_export()[0] || {}).map((key) => ({
-  key,
-  label: key
-}));
-
+    key,
+    label: key,
+  }));
 
   // Table columns configuration
   const columns = [
@@ -295,58 +283,58 @@ const Page = () => {
       key: "actions",
       label: "Actions",
       render: (row) => (
-       <div className="flex gap-4 items-center text-sm">
-  <Link
-    href={`/Utilisateurs/afficher-utilisateur/${row.id}`}
-    className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
-    title="Voir les détails"
-  >
-    <Eye className="w-4 h-4" />
-  </Link>
+        <div className="flex gap-4 items-center text-sm">
+          <Link
+            href={`/Utilisateurs/afficher-utilisateur/${row.id}`}
+            className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+            title="Voir les détails"
+          >
+            <Eye className="w-4 h-4" />
+          </Link>
 
-  <Link
-    href={`/Utilisateurs/afficher-utilisateur/${row.id}?edit=true`}
-    className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
-    title="Modifier l'utilisateur"
-  >
-    <PencilSquareIcon className="w-4 h-4" />
-  </Link>
+          <Link
+            href={`/Utilisateurs/afficher-utilisateur/${row.id}?edit=true`}
+            className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
+            title="Modifier l'utilisateur"
+          >
+            <PencilSquareIcon className="w-4 h-4" />
+          </Link>
 
-  {row.status === "Actif" ? (
-    <button
-      onClick={() => {
-        setSelectedUserId(row.id);
-        setShowBlockModal(true);
-      }}
-      className="flex items-center gap-1 text-green-500 hover:text-green-700"
-      title="Bloquer l'utilisateur"
-    >
-      <ShieldX className="w-4 h-4" />
-    </button>
-  ) : (
-    <button
-      onClick={() => {
-        setSelectedUserId(row.id);
-        setShowUnblockModal(true);
-      }}
-      className="flex items-center gap-1 text-red-500 hover:text-red-700"
-      title="Débloquer l'utilisateur"
-    >
-      <ShieldCheck className="w-4 h-4" />
-    </button>
-  )}
+          {row.status === "Actif" ? (
+            <button
+              onClick={() => {
+                setSelectedUserId(row.id);
+                setShowBlockModal(true);
+              }}
+              className="flex items-center gap-1 text-red-500 hover:text-red-700"
+              title="Bloquer l'utilisateur"
+            >
+              <ShieldX className="w-4 h-4" />
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                setSelectedUserId(row.id);
+                setShowUnblockModal(true);
+              }}
+              className="flex items-center gap-1 text-green-500 hover:text-green-700"
+              title="Débloquer l'utilisateur"
+            >
+              <ShieldCheck className="w-4 h-4" />
+            </button>
+          )}
 
-  <button
-    onClick={() => {
-      setSelectedUserId(row.id);
-      setShowDeleteModal(true);
-    }}
-    className="flex items-center gap-1 text-red-500 hover:text-red-700"
-    title="Supprimer l'utilisateur"
-  >
-    <Trash2 className="w-4 h-4" />
-  </button>
-</div>
+          <button
+            onClick={() => {
+              setSelectedUserId(row.id);
+              setShowDeleteModal(true);
+            }}
+            className="flex items-center gap-1 text-red-500 hover:text-red-700"
+            title="Supprimer l'utilisateur"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
       ),
     },
   ];
@@ -355,7 +343,7 @@ const Page = () => {
     <>
       <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
         <Table
-          title={'Utilisateurs'}
+          title={"Utilisateurs"}
           data_to_export={data_to_export()}
           columns_export={columns_export}
           name_file_export={"utilisateur_export"}
@@ -364,63 +352,67 @@ const Page = () => {
             <div className="space-y-4 ">
               <div
                 className="grid gap-3 "
-                style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}
+                style={{
+                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                }}
               >
                 {/* Champs de recherche */}
                 <Input
-                  label={'Nom & prénom'}
+                  label={"Nom & prénom"}
                   type="text"
                   placeholder="Nom & prénom..."
                   value={tempFilters.nom}
                   onChange={(e) => handleFilterChange("nom", e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-          
+
                 <Input
-                  label={'Email'}
+                  label={"Email"}
                   type="text"
                   placeholder="Email..."
                   value={tempFilters.email}
                   onChange={(e) => handleFilterChange("email", e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-          
+
                 <Input
-                  label={'Téléphone'}
+                  label={"Téléphone"}
                   type="text"
                   placeholder="Téléphone..."
                   value={tempFilters.telephone}
-                  onChange={(e) => handleFilterChange("telephone", e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange("telephone", e.target.value)
+                  }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-          
+
                 {!selectedSociete && (
                   <Input
-                    label={'Société'}
+                    label={"Société"}
                     type="text"
                     placeholder="Société..."
                     value={tempFilters.societe}
-                    onChange={(e) => handleFilterChange("societe", e.target.value)}
+                    onChange={(e) =>
+                      handleFilterChange("societe", e.target.value)
+                    }
                     className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                   />
                 )}
-          
+
                 <SelectInput
-                  label={'Role'}
+                  label={"Role"}
                   value={tempFilters.role}
                   onChange={(value) => handleFilterChange("role", value)}
                   options={Object.entries(USER_TYPES)
-                    .filter(([key]) => key !== "SUPERADMIN") // on enlève SUPERADMIN
+                    .filter(([key]) => key !== "SUPERADMIN")
                     .map(([key, label]) => ({
-                      value: encryptUserType(label), 
+                      value: encryptUserType(label),
                       label,
-                    }))
-                  }
+                    }))}
                   placeholder="Rôle"
-                  //className="h-10 text-sm w-full"
                 />
                 <SelectInput
-                  label={'Genre'}
+                  label={"Genre"}
                   value={tempFilters.gender}
                   onChange={(value) => handleFilterChange("gender", value)}
                   options={Object.values(GENDERS).map(({ code, label }) => ({
@@ -430,33 +422,38 @@ const Page = () => {
                   placeholder="Genre"
                   className="h-10 text-sm w-full"
                 />
-          
+
                 <SelectInput
-                  label={'Niveau'}
+                  label={"Niveau"}
                   value={tempFilters.niveau}
                   onChange={(value) => handleFilterChange("niveau", value)}
-                  options={Object.entries(EDUCATION_LEVELS).map(([key, label]) => ({
-                    value: label,
-                    label,
-                  }))}
-                  placeholder="Niveau d’étude"
+                  options={Object.entries(EDUCATION_LEVELS).map(
+                    ([key, label]) => ({
+                      value: label,
+                      label,
+                    })
+                  )}
+                  placeholder="Niveau d'étude"
                   className="h-10 text-sm w-full"
                 />
-          
+
                 <SelectInput
-                  label={'Status'}
+                  label={"Status"}
                   value={tempFilters.status?.toString()}
-                  onChange={(value) => handleFilterChange("status", Number(value))}
-                  options={Object.values(USER_STATUS).map(({ code, label }) => ({
-                    value: code.toString(),
-                    label,
-                  }))}
+                  onChange={(value) =>
+                    handleFilterChange("status", Number(value))
+                  }
+                  options={Object.values(USER_STATUS).map(
+                    ({ code, label }) => ({
+                      value: code.toString(),
+                      label,
+                    })
+                  )}
                   placeholder="Statut"
                   className="h-10 text-sm w-full"
                 />
-          
               </div>
-          
+
               {/* Boutons */}
               <div className="flex justify-end gap-3 pt-2">
                 <button
@@ -476,24 +473,21 @@ const Page = () => {
               </div>
             </div>
           }
-          
           data={
-            user?.role === 1 // Check if Super Admin
-              ? formatUsers() // Show all users regardless of societe
+            user?.role === 1
+              ? formatUsers()
               : selectedSociete?.id
-              ? formatUsers() // Show societe-specific users for others
+              ? formatUsers()
               : []
           }
           totalRows={
-            user?.role === 1
-              ? totalRows // Show total across all sociétés
-              : selectedSociete?.id
-              ? totalRows
-              : 0
+            user?.role === 1 ? totalRows : selectedSociete?.id ? totalRows : 0
           }
           loading={loading}
           error={error}
-          addLink={user?.role === 1 ? `/Utilisateurs/Ajouter-Utilisateur` : undefined}
+          addLink={
+            user?.role === 1 ? `/Utilisateurs/Ajouter-Utilisateur` : undefined
+          }
           enableExport
           currentPage={currentPage}
           rowsPerPage={rowsPerPage}
@@ -502,9 +496,9 @@ const Page = () => {
           onSearchChange={setSearchTerm}
           emptyMessage={
             user?.role === 1
-              ? "Aucun utilisateur trouvé." // Super Admin sees generic message
+              ? "Aucun utilisateur trouvé."
               : !selectedSociete?.id
-              ? "Veuillez sélectionner une société pour voir les utilisateurs." // Others see prompt
+              ? "Veuillez sélectionner une société pour voir les utilisateurs."
               : "Aucun utilisateur trouvé."
           }
         />
@@ -521,7 +515,7 @@ const Page = () => {
             accessToken={accesstoken}
             onClose={() => {
               setShowBlockModal(false);
-              fetchUsers(currentPage, rowsPerPage, searchTerm);
+              fetchUsers();
             }}
           />
         </Modal>
@@ -537,7 +531,7 @@ const Page = () => {
             accessToken={accesstoken}
             onClose={() => {
               setShowUnblockModal(false);
-              fetchUsers(currentPage, rowsPerPage, searchTerm);
+              fetchUsers();
             }}
           />
         </Modal>
@@ -557,7 +551,7 @@ const Page = () => {
             accessToken={accesstoken}
             onClose={() => {
               setShowDeleteModal(false);
-              fetchUsers(currentPage, rowsPerPage, searchTerm);
+              fetchUsers();
             }}
           />
         </Modal>

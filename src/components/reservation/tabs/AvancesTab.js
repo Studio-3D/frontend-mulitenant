@@ -69,9 +69,9 @@ export const AvancesTab = ({
   const [open_v_r, setOpen_v_r] = useState(false);
   const [ID, setID] = useState(0);
   const [num_recu, set_num_recu] = useState(0);
-  const [Commentaire_r, setCommentaire_r] = useState(null);
+  const [Commentaire_r, setCommentaire_r] = useState('');
   const [type_action, set_type_action] = useState(null);
-  const [action, setAction] = useState(null);
+  const [action, setAction] = useState('');
   const [date_encaissement_v, set_date_encaissement_v] = useState(null);
   const [num_remise_v, set_num_remise_v] = useState(null);
   const [reste, setReste] = useState(0);
@@ -103,7 +103,7 @@ export const AvancesTab = ({
         },
       });
 
-      const { data, etat_res, prix, sum_avances } = response.data;
+      const { data, etat_res, prix, sum_avances ,sum_avances_valides} = response.data;
       const processedData = data.map((item, index) => ({
         ...item,
         number: index + 1,
@@ -122,12 +122,12 @@ export const AvancesTab = ({
       }
       // Notify res show  parent of changes
       if (onAvancesChange) {
-        onAvancesChange(data.length, sum_avances);
+        onAvancesChange(data.length, sum_avances_valides);
       }
       // Also update reservation data if sum_avances == prix
-      if (sum_avances >= prix && updateReservationData) {
+      if (sum_avances_valides >= prix && updateReservationData) {
         updateReservationData({
-          sum_avances_valides: sum_avances,
+          sum_avances_valides: sum_avances_valides,
         });
       }
     } catch (error) {
@@ -557,7 +557,7 @@ export const AvancesTab = ({
   };
 
   const show_dos_desiste = (dosId) => {
-    window.open(`/reservations/show/${dosId}`, '_blank');
+    window.open(`/ventes/reservations/${dosId}`, '_blank');
   };
 
   const formatData = () => {
@@ -699,86 +699,100 @@ export const AvancesTab = ({
                 <Printer className="w-5 h-5" />
               </button>
             )}
-
-            {/* Scan Button */}
-            {canShowScan && (
-              <button
-                className="p-1 text-green-500 hover:text-green-700"
-                onClick={() => handle_Scanne_recu(row.id)}
-                title="Scanner reçu"
-              >
-                <ScanEye className="w-5 h-5" />
-              </button>
-            )}
-
-            {/* Edit/Delete Buttons */}
-            {isAdminOrEditor ? (
+            {etat_res == 1 && (
               <>
-                <button
-                  className="p-1 text-yellow-500 hover:text-yellow-700"
-                  onClick={() => handleEdit(row.id)}
-                  title="Modifier"
-                >
-                  <Pencil className="w-5 h-5" />
-                </button>
-
-                {!isLastRow && (
-                  <button
-                    className="p-1 text-red-500 hover:text-red-700"
-                    onClick={() => {
-                      setSelectedId(row.id);
-                      setShowDeleteModal(true);
-                    }}
-                    title="Supprimer Avance"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                )}
-              </>
-            ) : user?.role == 3 && Number(row.statut != 1) ? (
-              <button
-                className="p-1 text-yellow-500 hover:text-yellow-700"
-                onClick={() => handleEdit(row.id)}
-                title="Modifier"
-              >
-                <Pencil className="w-5 h-5" />
-              </button>
-            ) : null}
-
-            {/* Validation/Encashment Buttons */}
-            {reservationData.reservation?.statut == 1 && isAdminOrEditor && (
-              <>
-                {Number(row.statut) == 3 && (
+                {/* Scan Button */}
+                {canShowScan && (
                   <button
                     className="p-1 text-green-500 hover:text-green-700"
-                    onClick={() =>
-                      handle_valider_rejete(row.id, row.sr, 0, 'validation')
-                    }
-                    title="Valider le paiement"
+                    onClick={() => handle_Scanne_recu(row.id)}
+                    title="Scanner reçu"
                   >
-                    <CheckCircle className="w-5 h-5" />
+                    <ScanEye className="w-5 h-5" />
                   </button>
                 )}
 
-                {/*nest pas transfer*/}
-
-                {Number(row.mode_pai) != 7 &&
-                  parseFloat(row.montant) > 0 &&
-                  Number(row.statut) == 1 &&
-                  (row.date_encaissement == null || row.num_remise == null) && (
+                {/* Edit/Delete Buttons */}
+                {isAdminOrEditor ? (
+                  <>
                     <button
-                      className="p-1 text-blue-500 hover:text-blue-700"
-                      onClick={() =>
-                        handle_valider_rejete(row.id, row.sr, 1, 'encaissement')
-                      }
-                      title="Ajouter encaissement"
+                      className="p-1 text-yellow-500 hover:text-yellow-700"
+                      onClick={() => handleEdit(row.id)}
+                      title="Modifier"
                     >
-                      <Euro className="w-5 h-5" />
+                      <Pencil className="w-5 h-5" />
                     </button>
+
+                    {!isLastRow && (
+                      <button
+                        className="p-1 text-red-500 hover:text-red-700"
+                        onClick={() => {
+                          setSelectedId(row.id);
+                          setShowDeleteModal(true);
+                        }}
+                        title="Supprimer Avance"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    )}
+                  </>
+                ) : user?.role == 3 && Number(row.statut != 1) ? (
+                  <button
+                    className="p-1 text-yellow-500 hover:text-yellow-700"
+                    onClick={() => handleEdit(row.id)}
+                    title="Modifier"
+                  >
+                    <Pencil className="w-5 h-5" />
+                  </button>
+                ) : null}
+
+                {/* Validation/Encashment Buttons */}
+                {reservationData.reservation?.statut == 1 &&
+                  isAdminOrEditor && (
+                    <>
+                      {Number(row.statut) == 3 && (
+                        <button
+                          className="p-1 text-green-500 hover:text-green-700"
+                          onClick={() =>
+                            handle_valider_rejete(
+                              row.id,
+                              row.sr,
+                              0,
+                              'validation'
+                            )
+                          }
+                          title="Valider le paiement"
+                        >
+                          <CheckCircle className="w-5 h-5" />
+                        </button>
+                      )}
+
+                      {/*nest pas transfer*/}
+
+                      {Number(row.mode_pai) != 7 &&
+                        parseFloat(row.montant) > 0 &&
+                        Number(row.statut) == 1 &&
+                        (row.date_encaissement == null ||
+                          row.num_remise == null) && (
+                          <button
+                            className="p-1 text-blue-500 hover:text-blue-700"
+                            onClick={() =>
+                              handle_valider_rejete(
+                                row.id,
+                                row.sr,
+                                1,
+                                'encaissement'
+                              )
+                            }
+                            title="Ajouter encaissement"
+                          >
+                            <Euro className="w-5 h-5" />
+                          </button>
+                        )}
+                    </>
                   )}
               </>
             )}
-
             {/* History Button */}
             {row.historiques_count > 0 && (
               <button
@@ -862,29 +876,6 @@ export const AvancesTab = ({
         setSelectedFiles_avc([...selectedFiles_avc, file]);
       }
     });
-  };
-
-  const handleaddFile = () => {
-    if (myfile !== null && Array.isArray(myfile)) {
-      const updatedFiles = selectedFiles_avc.filter(
-        (selectedFile) =>
-          !myfile.some(
-            (file) =>
-              selectedFile.fichier == file.name ||
-              selectedFile.name == file.name
-          )
-      );
-      setSelectedFiles_avc([...updatedFiles, ...myfile]);
-    } else if (myfile !== null) {
-      const updatedFiles = selectedFiles_avc.filter(
-        (selectedFile) =>
-          selectedFile.fichier !== myfile.name &&
-          selectedFile.name !== myfile.name
-      );
-      setSelectedFiles_avc([...updatedFiles, myfile]);
-    }
-
-    setMyfile(null);
   };
 
   const handleDeleteFile = (index) => {
@@ -1008,6 +999,7 @@ export const AvancesTab = ({
           onPageChange={setCurrentPage}
           onRowsPerPageChange={setRowsPerPage}
           enableExport
+          showSearch={false}
         />
       </div>
       {(editDialogOpen || addDialogOpen) && (

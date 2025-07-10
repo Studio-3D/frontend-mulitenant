@@ -1,7 +1,7 @@
-'use client';
-import { useRouter, usePathname } from 'next/navigation';
-import { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
+"use client";
+import { useRouter, usePathname } from "next/navigation";
+import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import {
   User,
   Calendar,
@@ -13,9 +13,9 @@ import {
   Pause,
   ChevronDown,
   ChevronUp,
-} from 'lucide-react';
-import Pusher from 'pusher-js';
-import FetchNotifMenu from '../../src/configs/FetchNotifMenu';
+} from "lucide-react";
+import Pusher from "pusher-js";
+import FetchNotifMenu from "../../src/configs/FetchNotifMenu";
 
 const CRMNavbar = () => {
   const router = useRouter();
@@ -23,15 +23,15 @@ const CRMNavbar = () => {
     process.env.NEXT_PUBLIC_PUSHER_APP_KEY_NOTIF_MENU;
 
   const pathname = usePathname();
-  const projetId = JSON.parse(localStorage.getItem('selectedProjet'))
-    ? JSON.parse(localStorage.getItem('selectedProjet')).id
+  const projetId = JSON.parse(localStorage.getItem("selectedProjet"))
+    ? JSON.parse(localStorage.getItem("selectedProjet")).id
     : 1;
   const [nb_relances_appels, setnb_rel_appel] = useState(0);
   const [nb_rdv_appel, setnb_rdv_appel] = useState(0);
   const [nb_relance_visite, setnb_rel_visite] = useState(0);
   const [nb_rdv_visite, setnb_rdv_visite] = useState(0);
   const [nb_rel_client_freins, set_nb_rel_client_freins] = useState(0);
-  const [param, setParam] = useState('D');
+  const [param, setParam] = useState("D");
   const [param_2, setParam_2] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [openSubmenu, setOpenSubmenu] = useState(null);
@@ -57,28 +57,28 @@ const CRMNavbar = () => {
 
   useEffect(() => {
     pusher_function();
-    if (param == 'D') {
-      fetchDataNotiMon('D');
+    if (param == "D") {
+      fetchDataNotiMon("D");
     }
   }, [param]);
 
   const pusher_function = async () => {
     const pusher = new Pusher(`${pusher_key_NotifMenu}`, {
-      cluster: 'eu',
+      cluster: "eu",
       encrypted: true,
     });
 
-    const channel = pusher.subscribe('NotifMenu');
+    const channel = pusher.subscribe("NotifMenu");
 
-    channel.bind('App\\Events\\NotifMenuEvent', (data) => {
+    channel.bind("App\\Events\\NotifMenuEvent", (data) => {
       fetchDataNotiMon(data.NotifMenuId);
       setParam(data.NotifMenuId);
       setParam_2(1);
     });
 
     return () => {
-      channel.unbind('App\\Events\\NotifMenuEvent');
-      pusher.unsubscribe('NotifMenu');
+      channel.unbind("App\\Events\\NotifMenuEvent");
+      pusher.unsubscribe("NotifMenu");
     };
   };
 
@@ -89,9 +89,9 @@ const CRMNavbar = () => {
         setOpenSubmenu(null);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -101,62 +101,62 @@ const CRMNavbar = () => {
 
   const navItems = [
     {
-      name: 'Prospects',
-      path: '/crm/prospects',
+      name: "Prospects",
+      path: "/crm/prospects",
       icon: <User className="w-5 h-5" />,
     },
     {
-      name: 'Visites',
-      path: '/crm/visites',
+      name: "Visites",
+      path: "/crm/visites",
       icon: <Users className="w-5 h-5" />,
     },
     {
-      name: 'Appels',
-      path: '/crm/appels',
+      name: "Appels",
+      path: "/crm/appels",
       icon: <Phone className="w-5 h-5" />,
     },
     {
-      name: 'Pré-réservations',
-      path: '/crm/pre-reservations',
+      name: "Pré-réservations",
+      path: "/crm/pre-reservations",
       icon: <Home className="w-5 h-5" />,
     },
     {
-      name: 'Relances',
+      name: "Relances",
       icon: <Clock className="w-5 h-5" />,
       badge: nb_total_relances,
       subItems: [
         {
-          name: 'Appels Relances',
-          path: '/crm/appels/relances',
+          name: "Appels Relances",
+          path: "/crm/appels/relances",
           badge: nb_relances_appels,
         },
         {
-          name: 'Visites Relances',
-          path: '/crm/visites/relances',
+          name: "Visites Relances",
+          path: "/crm/visites/relances",
           badge: nb_relance_visite,
         },
       ],
     },
     {
-      name: 'RDV',
+      name: "RDV",
       icon: <Calendar className="w-5 h-5" />,
       badge: nb_total_rdv,
       subItems: [
         {
-          name: 'Appels RDV',
-          path: '/crm/appels/rdv',
+          name: "Appels RDV",
+          path: "/crm/appels/rdv",
           badge: nb_rdv_appel,
         },
         {
-          name: 'Visites RDV',
-          path: '/crm/visites/rdv',
+          name: "Visites RDV",
+          path: "/crm/visites/rdv",
           badge: nb_rdv_visite,
         },
       ],
     },
     {
-      name: 'Freins',
-      path: '/crm/visites/freins',
+      name: "Freins",
+      path: "/crm/visites/freins",
       icon: <Pause className="w-5 h-5" />,
       badge: nb_rel_client_freins,
     },
@@ -188,7 +188,7 @@ const CRMNavbar = () => {
       {/* Responsive Navigation */}
       <nav
         className={`flex flex-col gap-4 md:flex-row ${
-          menuOpen ? 'block' : 'hidden md:flex'
+          menuOpen ? "block" : "hidden md:flex"
         }`}
       >
         {navItems.map((item) => {
@@ -200,12 +200,12 @@ const CRMNavbar = () => {
           return (
             <div key={item.name} className="relative flex-1">
               <Link
-                href={item.path || '#'}
+                href={item.path || "#"}
                 onClick={() => item.subItems && toggleSubmenu(item.name)}
                 className={`flex items-center gap-2 px-1 py-3 rounded-md transition-colors ${
                   isActive(item.path) || isParentActive(item.subItems)
-                    ? 'bg-[#009FFF] text-white font-normal'
-                    : 'text-gray-700 hover:bg-gray-100'
+                    ? "bg-[#1ab394] text-white font-normal"
+                    : "text-gray-700 hover:bg-gray-100"
                 }`}
               >
                 {item.icon}
@@ -234,7 +234,7 @@ const CRMNavbar = () => {
                       key={subItem.name}
                       href={subItem.path}
                       className={`flex items-center justify-between px-4 py-2 m-1 !text-gray-700 hover:bg-gray-100 hover:rounded-md ${
-                        isActive(subItem.path) ? 'bg-blue-50 rounded-md' : ''
+                        isActive(subItem.path) ? "bg-blue-50 rounded-md" : ""
                       }`}
                     >
                       <span>{subItem.name}</span>

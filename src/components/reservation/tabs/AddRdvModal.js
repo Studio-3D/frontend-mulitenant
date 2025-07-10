@@ -4,8 +4,9 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import axios from 'axios';
 import { X, Calendar, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { APIURL } from '../../../configs/api';
 
-const AddRdvModal = ({ open, reservation_id,onClose, onRdvAdded }) => {
+const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [type, setType] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -93,7 +94,7 @@ const AddRdvModal = ({ open, reservation_id,onClose, onRdvAdded }) => {
     try {
       const token = localStorage.getItem('accessToken');
       const response = await axios.post(
-        'http://127.0.0.1:8000/api/store_rdv_reservation/'+reservation_id,
+        `${APIURL.ROOT}/store_rdv_reservation/${reservation_id}`,
         {
           rdv: selectedSlot.start,
           type: type,
@@ -192,7 +193,7 @@ const AddRdvModal = ({ open, reservation_id,onClose, onRdvAdded }) => {
                   const token = localStorage.getItem('accessToken');
                   try {
                     const res = await axios.get(
-                      'http://127.0.0.1:8000/api/creneaux-occupes',
+                      `${APIURL.ROOT}/creneaux-occupes`,
                       {
                         params: {
                           start: fetchInfo.start.valueOf(),

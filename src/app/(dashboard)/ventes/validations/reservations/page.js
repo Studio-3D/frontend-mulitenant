@@ -212,7 +212,7 @@ const PageTraitement_Validation_rejets = () => {
       key: 'propriete_dite_bien',
       label: 'Bien',
       render: (row) => (
-        <Link target="_blank" href={`/biens/${row.bien_id}`}>
+        <Link target="_blank" href={`/Biens/${row.bien_id}`}>
           <strong style={{ fontWeight: 600 }}>
             {NomBienComplet(row.bien)}
           </strong>

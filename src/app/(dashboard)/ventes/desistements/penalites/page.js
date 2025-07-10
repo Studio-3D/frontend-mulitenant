@@ -416,239 +416,245 @@ export default function PenalitesTable() {
 
   return (
     <>
-          <VenteNavbar />
+      <VenteNavbar />
 
-    <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
+      <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
+        <p className="text-lg font-semibold mb-4">
+          Pénalités {statusTitles[etat_penalite] || ''}
+        </p>
 
-      <p className="text-lg font-semibold mb-4">
-        Pénalités {statusTitles[etat_penalite] || ''}
-      </p>
+        <Table
+          data_to_export={data_to_export()}
+          columns_export={columns_export}
+          name_file_export={'penalites_export'}
+          columns={columns}
+          data={formatData()}
+          totalRows={totalRows}
+          loading={loading}
+          error={error}
+          currentPage={currentPage}
+          rowsPerPage={rowsPerPage}
+          onPageChange={setCurrentPage}
+          onRowsPerPageChange={setRowsPerPage}
+          onSearchChange={setSearchTerm}
+          enableExport={true}
+          enableImport={false}
+          showSearch={false}
+          filterComponent={
+            <div className="space-y-4">
+              <div
+                className="grid gap-5"
+                style={{
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                }}
+              >
+                {/* Regular inputs */}
 
-
-      <Table
-        data_to_export={data_to_export()}
-        columns_export={columns_export}
-        name_file_export={'penalites_export'}
-        columns={columns}
-        data={formatData()}
-        totalRows={totalRows}
-        loading={loading}
-        error={error}
-        currentPage={currentPage}
-        rowsPerPage={rowsPerPage}
-        onPageChange={setCurrentPage}
-        onRowsPerPageChange={setRowsPerPage}
-        onSearchChange={setSearchTerm}
-        enableExport={true}
-        enableImport={false}
-        showSearch={false}
-        filterComponent={
-          <div className="space-y-4">
-            <div
-              className="grid gap-5"
-              style={{
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              }}
-            >
-              {/* Regular inputs */}
-
-              <Input
-                type="text"
-                placeholder="N° Reçu"
-                value={tempFilters.num_recu}
-                onChange={(e) => handleFilterChange('num_recu', e.target.value)}
-                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-              />
-              {userRole <= 2 && (
                 <Input
                   type="text"
-                  placeholder="Responsable"
-                  value={tempFilters.responsable}
+                  label="N° Reçu"
+                  value={tempFilters.num_recu}
                   onChange={(e) =>
-                    handleFilterChange('responsable', e.target.value)
+                    handleFilterChange('num_recu', e.target.value)
                   }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-              )}
-
-              <Input
-                type="date"
-                placeholder="Date"
-                value={tempFilters.date}
-                onChange={(e) => handleFilterChange('date', e.target.value)}
-                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-              />
-
-              <Input
-                type="number"
-                placeholder="Pénalité"
-                value={tempFilters.penalite}
-                onChange={(e) => handleFilterChange('penalite', e.target.value)}
-                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-              />
-
-              <SelectInput
-                value={tempFilters.mode_paiement}
-                onChange={(value) => handleFilterChange('mode_paiement', value)}
-                options={Object.values(MODE_PAIEMENT).map((data) => ({
-                  value: data.code,
-                  label: data.label,
-                }))}
-                placeholder="Choisir un Mode Paiement"
-                className="h-10 text-sm w-full"
-              />
-              <SelectInput
-                value={tempFilters.type_desistement}
-                onChange={(value) =>
-                  handleFilterChange('type_desistement', value)
-                }
-                options={Object.values(Type_dst_t).map((data) => ({
-                  value: data.code,
-                  label: data.label,
-                }))}
-                placeholder="Choisir Type desistement"
-                className="h-10 text-sm w-full"
-              />
-            </div>
-
-            {/* Buttons */}
-            <div className="flex justify-end gap-3 pt-2">
-              <button
-                type="button"
-                onClick={applyFilters}
-                className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-              >
-                Appliquer les filtres
-              </button>
-              <button
-                type="button"
-                onClick={resetFilters}
-                className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
-              >
-                Réinitialiser
-              </button>
-            </div>
-          </div>
-        }
-      />
-
-      {/* Dialog for Valider/Rejeter */}
-      {dialogData.open && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <div className="w-full h-[60px] bg-[green] px-4 mb-3">
-              <div className="flex items-center justify-center h-full">
-                <h1 className="text-2xl font-bold text-center text-white">
-                  Traitement Pénalité
-                </h1>
-              </div>
-            </div>
-
-            <form onSubmit={handleSubmitValiderRejeter}>
-              <div>
-                <TextField
-                  label="N° Pénalité"
-                  name="pen"
-                  control={false}
-                  errors={{}}
-                  backendErrors={{}}
-                  value={num_penalite}
-                  disabled
-                />
-              </div>
-              <div className="mb-4">
-                <SelectInput
-                  label="Action"
-                  value={dialogData.action}
-                  onChange={(e) => updateDialogState({ action: e })}
-                  options={[
-                    { value: '', label: 'Sélectionner une action' },
-                    { value: '1', label: 'Valider' },
-                    { value: '2', label: 'Rejeter' },
-                  ]}
-                />
-              </div>
-
-              {dialogData.action == '1' && (
-                <>
-                  <div className="mb-4">
-                    <TextField
-                      label="N° Remise"
-                      name="remiseNumber"
-                      control={false}
-                      errors={{}}
-                      backendErrors={{}}
-                      value={dialogData.num_remise}
-                      onChange={(e) =>
-                        updateDialogState({ num_remise: e.target.value })
-                      }
-                      required={true}
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <TextField
-                      label="Date Encaissement"
-                      name="encaiss"
-                      type="date"
-                      control={false}
-                      errors={{}}
-                      backendErrors={{}}
-                      value={dialogData.date_encaissement}
-                      onChange={(e) =>
-                        updateDialogState({ date_encaissement: e.target.value })
-                      }
-                      required={true}
-                    />
-                  </div>
-                </>
-              )}
-
-              {dialogData.action == '2' && (
-                <div className="mb-4">
-                  <TextField
-                    control={false}
-                    label="Commentaire"
-                    name="comment"
-                    value={dialogData.commentaire}
+                {userRole <= 2 && (
+                  <Input
+                    type="text"
+                    label="Responsable"
+                    value={tempFilters.responsable}
                     onChange={(e) =>
-                      updateDialogState({ commentaire: e.target.value })
+                      handleFilterChange('responsable', e.target.value)
                     }
-                    multi={true}
+                    className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                  />
+                )}
+                <Input
+                  type="date"
+                  label="Date"
+                  value={tempFilters.date}
+                  onChange={(e) => handleFilterChange('date', e.target.value)}
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
+
+                <Input
+                  type="number"
+                  label="Pénalité"
+                  value={tempFilters.penalite}
+                  onChange={(e) =>
+                    handleFilterChange('penalite', e.target.value)
+                  }
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
+
+                <SelectInput
+                  value={tempFilters.mode_paiement}
+                  onChange={(value) =>
+                    handleFilterChange('mode_paiement', value)
+                  }
+                  options={Object.values(MODE_PAIEMENT).map((data) => ({
+                    value: data.code,
+                    label: data.label,
+                  }))}
+                  label="Choisir un Mode Paiement"
+                  className="h-10 text-sm w-full"
+                />
+                <SelectInput
+                  value={tempFilters.type_desistement}
+                  onChange={(value) =>
+                    handleFilterChange('type_desistement', value)
+                  }
+                  options={Object.values(Type_dst_t).map((data) => ({
+                    value: data.code,
+                    label: data.label,
+                  }))}
+                  label="Choisir Type desistement"
+                  className="h-10 text-sm w-full"
+                />
+              </div>
+
+              {/* Buttons */}
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={applyFilters}
+                  className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                >
+                  Appliquer les filtres
+                </button>
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
+                >
+                  Réinitialiser
+                </button>
+              </div>
+            </div>
+          }
+        />
+
+        {/* Dialog for Valider/Rejeter */}
+        {dialogData.open && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+              <div className="w-full h-[60px] bg-[green] px-4 mb-3">
+                <div className="flex items-center justify-center h-full">
+                  <h1 className="text-2xl font-bold text-center text-white">
+                    Traitement Pénalité
+                  </h1>
+                </div>
+              </div>
+
+              <form onSubmit={handleSubmitValiderRejeter}>
+                <div>
+                  <TextField
+                    label="N° Pénalité"
+                    name="pen"
+                    control={false}
                     errors={{}}
                     backendErrors={{}}
-                    rows={4}
-                    required
-                    width="w-full"
-                    height="h-full"
+                    value={num_penalite}
+                    disabled
                   />
                 </div>
-              )}
-
-              {dialogData.errors && (
-                <div className="mb-4 p-2 bg-red-100 text-red-700 rounded">
-                  {Object.values(dialogData.errors).map((error, index) => (
-                    <p key={index}>{error}</p>
-                  ))}
+                <div className="mb-4">
+                  <SelectInput
+                    label="Action"
+                    value={dialogData.action}
+                    onChange={(e) => updateDialogState({ action: e })}
+                    options={[
+                      { value: '', label: 'Sélectionner une action' },
+                      { value: '1', label: 'Valider' },
+                      { value: '2', label: 'Rejeter' },
+                    ]}
+                  />
                 </div>
-              )}
 
-              <div className="flex justify-end gap-2">
-                <Button
-                  type=""
-                  onClick={handleCloseDialog}
-                  className="px-4 py-2 border rounded"
-                >
-                  Annuler
-                </Button>
-                <Button type="submit" loading={dialogData.disabled}>
-                  Enregistrer
-                </Button>
-              </div>
-            </form>
+                {dialogData.action == '1' && (
+                  <>
+                    <div className="mb-4">
+                      <TextField
+                        type="number"
+                        label="N° Remise"
+                        name="remiseNumber"
+                        control={false}
+                        errors={{}}
+                        backendErrors={{}}
+                        value={dialogData.num_remise}
+                        onChange={(e) =>
+                          updateDialogState({ num_remise: e.target.value })
+                        }
+                        required={true}
+                      />
+                    </div>
+                    <div className="mb-4">
+                      <TextField
+                        label="Date Encaissement"
+                        name="encaiss"
+                        type="date"
+                        control={false}
+                        errors={{}}
+                        backendErrors={{}}
+                        value={dialogData.date_encaissement}
+                        onChange={(e) =>
+                          updateDialogState({
+                            date_encaissement: e.target.value,
+                          })
+                        }
+                        required={true}
+                      />
+                    </div>
+                  </>
+                )}
+
+                {dialogData.action == '2' && (
+                  <div className="mb-4">
+                    <TextField
+                      control={false}
+                      label="Commentaire"
+                      name="comment"
+                      value={dialogData.commentaire}
+                      onChange={(e) =>
+                        updateDialogState({ commentaire: e.target.value })
+                      }
+                      multi={true}
+                      errors={{}}
+                      backendErrors={{}}
+                      rows={4}
+                      required
+                      width="w-full"
+                      height="h-full"
+                    />
+                  </div>
+                )}
+
+                {dialogData.errors && (
+                  <div className="mb-4 p-2 bg-red-100 text-red-700 rounded">
+                    {Object.values(dialogData.errors).map((error, index) => (
+                      <p key={index}>{error}</p>
+                    ))}
+                  </div>
+                )}
+
+                <div className="flex justify-end gap-2">
+                  <Button
+                    type=""
+                    onClick={handleCloseDialog}
+                    className="px-4 py-2 border rounded"
+                  >
+                    Annuler
+                  </Button>
+                  <Button type="submit" loading={dialogData.disabled}>
+                    Enregistrer
+                  </Button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
     </>
   );
 }

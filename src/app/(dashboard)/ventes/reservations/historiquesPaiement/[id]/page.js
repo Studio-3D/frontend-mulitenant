@@ -11,6 +11,7 @@ import Input from '@/components/Input';
 import SelectInput from '@/components/SelectInput';
 import { useParams } from 'next/navigation';
 import axios from 'axios';
+import DateRangePicker from '@/components/DateRangePicker';
 
 const HistoriquesPaiement = () => {
   const color_header_modal = process.env.NEXT_PUBLIC_COLOR_Header_Modal;
@@ -197,20 +198,20 @@ const HistoriquesPaiement = () => {
   };
 
   const columns_export = [
-  { key: 'N° Reçu', label: 'N° Reçu' },
-  { key: 'Date réglement', label: 'Date réglement' },
-  { key: 'CC', label: 'Responsable' },
-  { key: 'Montant', label: 'Montant' },
-  { key: 'Mode paiement', label: 'Mode paiement' },
-  { key: 'Banque', label: 'Banque' },
-  { key: 'Num paiement', label: 'Num paiement' },
-  { key: 'Echéance', label: 'Echéance' },
-  { key: 'Etat', label: 'Etat' },
-  { key: 'num_remise', label: 'N° Remise' },
-  { key: 'date_encaissement', label: 'Date Encaissement' },
-  { key: 'commentaireAvance', label: 'Commentaire' },
-  { key: 'commentaire_rejete', label: 'Commentaire Rejeté' },
-];
+    { key: 'N° Reçu', label: 'N° Reçu' },
+    { key: 'Date réglement', label: 'Date réglement' },
+    { key: 'CC', label: 'Responsable' },
+    { key: 'Montant', label: 'Montant' },
+    { key: 'Mode paiement', label: 'Mode paiement' },
+    { key: 'Banque', label: 'Banque' },
+    { key: 'Num paiement', label: 'Num paiement' },
+    { key: 'Echéance', label: 'Echéance' },
+    { key: 'Etat', label: 'Etat' },
+    { key: 'num_remise', label: 'N° Remise' },
+    { key: 'date_encaissement', label: 'Date Encaissement' },
+    { key: 'commentaireAvance', label: 'Commentaire' },
+    { key: 'commentaire_rejete', label: 'Commentaire Rejeté' },
+  ];
   const handleFilterChange = (field, value) => {
     setTempFilters((prev) => ({ ...prev, [field]: value }));
   };
@@ -238,6 +239,7 @@ const HistoriquesPaiement = () => {
   return (
     <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
       <Table
+        showSearch={false}
         data_to_export={data_to_export()}
         columns_export={columns_export}
         name_file_export={'historique_paiements_export'}
@@ -263,45 +265,40 @@ const HistoriquesPaiement = () => {
             >
               <Input
                 type="text"
-                placeholder="CC"
+                label="CC"
                 value={tempFilters.cc}
                 onChange={(e) => handleFilterChange('cc', e.target.value)}
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
               <Input
                 type="text"
-                placeholder="N° Paiement"
+                label="N° Paiement"
                 value={tempFilters.numero_paiement}
                 onChange={(e) =>
                   handleFilterChange('numero_paiement', e.target.value)
                 }
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
-              <Input
-                type="date"
-                placeholder="Date début"
-                value={tempFilters.date_start}
-                onChange={(e) =>
-                  handleFilterChange('date_start', e.target.value)
-                }
-                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-              />
-              <Input
-                type="date"
+
+              <input
+                type={tempFilters.date_end ? 'date' : 'text'}
                 placeholder="Date fin"
                 value={tempFilters.date_end}
+                onFocus={(e) => (e.target.type = 'date')}
                 onChange={(e) => handleFilterChange('date_end', e.target.value)}
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
+
               <Input
                 type="date"
-                placeholder="Date règlement"
+                label="Date Réglement"
                 value={tempFilters.date_reglement}
                 onChange={(e) =>
                   handleFilterChange('date_reglement', e.target.value)
                 }
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
+
               <Input
                 type="number"
                 placeholder="Montant"
@@ -318,6 +315,17 @@ const HistoriquesPaiement = () => {
                 }))}
                 placeholder="Mode paiement"
                 className="h-10 text-sm w-full"
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <DateRangePicker
+                startName="date_start"
+                endName="date_end"
+                startValue={tempFilters.date_start}
+                endValue={tempFilters.date_end}
+                onChange={handleFilterChange}
+                placeholder="Choisir une Date"
+                label="Date"
               />
             </div>
 

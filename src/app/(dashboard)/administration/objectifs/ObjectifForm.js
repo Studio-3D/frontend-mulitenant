@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 import { useProjet } from "@/context/ProjetContext";
 import Button from "@/components/Button";
 import BreadCrumb from "../../navigation/BreadCrumb";
-import LoadingSpin from '@/components/LoadingSpin';
+import LoadingSpin from "@/components/LoadingSpin";
 
 export default function ObjectifForm({ id = null }) {
   const router = useRouter();
@@ -160,7 +160,7 @@ export default function ObjectifForm({ id = null }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <LoadingSpin /> 
+        <LoadingSpin />
       </div>
     );
   }
@@ -323,8 +323,8 @@ export default function ObjectifForm({ id = null }) {
 
           {/* Reservations section */}
           <div className="mb-6">
-            <div className="bg-amber-50 p-3 rounded-t-md border-l-4 border-amber-500">
-              <h3 className="font-medium text-amber-700">Réservations</h3>
+            <div className="bg-blue-50 p-3 rounded-t-md border-l-4 border-blue-500">
+              <h3 className="font-medium text-blue-700">Réservations</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3 mb-6">
               <div>
