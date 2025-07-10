@@ -6,7 +6,7 @@ import { TikTokConfigTab } from "@/components/config-socials/TikTokConfigTab";
 import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
 import { APIURL } from "@/configs/api";
-import { Box, SaveIcon, AlertCircleIcon, Loader, Facebook, Instagram, Linkedin, Video } from "lucide-react";
+import { Box, SaveIcon, AlertCircleIcon, Loader, Facebook, Instagram, Linkedin, Video, Settings, TestTube } from "lucide-react";
 import toast from "react-hot-toast";
 import LinkedInConfigTab from "@/components/config-socials/LinkedInConfigTab";
 
@@ -19,18 +19,20 @@ export default function ConfigurationSocialsPage() {
     acces_token_page: "",
     instagram_id: "",
     acces_token_user: "",
-    linkedin_client_id: "",
-    linkedin_client_secret: "",
-    tiktok_client_key: "",
-    tiktok_client_secret: "",
-    tiktok_redirect_uri: "",
+    webhook_verify_token: "",
+    webhook_enabled: false,
+    webhook_subscriptions: [],
   });
 
   // Individual saving states for each platform
   const [savingStates, setSavingStates] = useState({
     facebook: false,
     instagram: false,
+    webhook: false,
   });
+
+  // Webhook testing state
+  const [testingWebhook, setTestingWebhook] = useState(false);
 
   // Fetch existing configurations
   useEffect(() => {
@@ -72,10 +74,20 @@ export default function ConfigurationSocialsPage() {
 
   // Handle input changes
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setSocialConfig((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
+  };
+
+  // Handle webhook subscriptions change
+  const handleWebhookSubscriptionsChange = (subscription) => {
+    setSocialConfig((prev) => ({
+      ...prev,
+      webhook_subscriptions: prev.webhook_subscriptions.includes(subscription)
+        ? prev.webhook_subscriptions.filter(s => s !== subscription)
+        : [...prev.webhook_subscriptions, subscription]
     }));
   };
 
@@ -88,14 +100,32 @@ export default function ConfigurationSocialsPage() {
       // Prepare data based on platform
       let dataToSave = {};
       if (platform === 'facebook') {
+        if (!socialConfig.page_fcb_id || !socialConfig.acces_token_page) {
+          toast.error("Veuillez remplir tous les champs Facebook");
+          return;
+        }
         dataToSave = {
           page_fcb_id: socialConfig.page_fcb_id,
           acces_token_page: socialConfig.acces_token_page,
         };
       } else if (platform === 'instagram') {
+        if (!socialConfig.instagram_id || !socialConfig.acces_token_user) {
+          toast.error("Veuillez remplir tous les champs Instagram");
+          return;
+        }
         dataToSave = {
           instagram_id: socialConfig.instagram_id,
           acces_token_user: socialConfig.acces_token_user,
+        };
+      } else if (platform === 'webhook') {
+        if (!socialConfig.webhook_verify_token) {
+          toast.error("Veuillez remplir le token de vérification webhook");
+          return;
+        }
+        dataToSave = {
+          webhook_verify_token: socialConfig.webhook_verify_token,
+          webhook_enabled: socialConfig.webhook_enabled,
+          webhook_subscriptions: socialConfig.webhook_subscriptions,
         };
       }
 
@@ -107,15 +137,44 @@ export default function ConfigurationSocialsPage() {
         }
       );
       
-      // Automatically verify configurations after saving
-      await verifyConfigurations(platform);
+      // Automatically verify configurations after saving (except webhook)
+      if (platform !== 'webhook') {
+        await verifyConfigurations(platform);
+      }
       
       toast.success(`Configuration ${platform} enregistrée avec succès`);
     } catch (error) {
       console.error(`Error saving ${platform} configurations:`, error);
-      toast.error(`Erreur lors de l'enregistrement des configurations ${platform}`);
+      toast.error(error.response?.data?.message || `Erreur lors de l'enregistrement des configurations ${platform}`);
     } finally {
       setSavingStates(prev => ({ ...prev, [platform]: false }));
+    }
+  };
+
+  // Test webhook configuration
+  const testWebhookConfiguration = async () => {
+    try {
+      setTestingWebhook(true);
+      const token = localStorage.getItem("accessToken");
+      
+      const response = await axios.post(
+        APIURL.ROOTV1 + "/test_webhook_verification",
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (response.data.success) {
+        toast.success("✅ Configuration webhook testée avec succès");
+      } else {
+        toast.error("❌ Test webhook échoué: " + response.data.message);
+      }
+    } catch (error) {
+      console.error("Error testing webhook:", error);
+      toast.error("❌ Erreur lors du test webhook: " + (error.response?.data?.message || error.message));
+    } finally {
+      setTestingWebhook(false);
     }
   };
 
@@ -192,6 +251,11 @@ export default function ConfigurationSocialsPage() {
       id: "instagram", 
       label: "Instagram", 
       icon: <Instagram className="h-4 w-4 text-[#E1306C]" />
+    },
+    { 
+      id: "webhook", 
+      label: "Webhooks", 
+      icon: <Settings className="h-4 w-4 text-[#6B7280]" />
     },
     { 
       id: "linkedin", 
@@ -314,7 +378,7 @@ export default function ConfigurationSocialsPage() {
               <div className="max-w-2xl space-y-4">
                 <div className="space-y-1">
                   <label className="block text-sm font-medium text-gray-700">
-                    ID de la Page Facebook
+                    ID de la Page Facebook *
                   </label>
                   <input
                     type="text"
@@ -323,15 +387,16 @@ export default function ConfigurationSocialsPage() {
                     onChange={handleChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Ex: 123456789012345"
+                    required
                   />
                   <p className="text-xs text-gray-500">
-                    L&apos;identifiant numérique de votre page Facebook (visible dans les paramètres de la page)
+                    L&apos;identifiant numérique de votre page Facebook (obligatoire)
                   </p>
                 </div>
 
                 <div className="space-y-1">
                   <label className="block text-sm font-medium text-gray-700">
-                    Token d&apos;accès à la Page
+                    Token d&apos;accès à la Page *
                   </label>
                   <textarea
                     name="acces_token_page"
@@ -340,15 +405,16 @@ export default function ConfigurationSocialsPage() {
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Collez votre token d'accès ici"
+                    required
                   />
                   <p className="text-xs text-gray-500">
-                    Token longue durée obtenu via le Gestionnaire de Pages Facebook
+                    Token longue durée obtenu via le Gestionnaire de Pages Facebook (obligatoire)
                   </p>
                 </div>
 
                 <button
                   onClick={() => handleSavePlatform('facebook')}
-                  disabled={savingStates.facebook}
+                  disabled={savingStates.facebook || !socialConfig.page_fcb_id || !socialConfig.acces_token_page}
                   className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                 >
                   {savingStates.facebook ? (
@@ -403,7 +469,7 @@ export default function ConfigurationSocialsPage() {
                   <h3 className="text-sm font-medium text-pink-800">
                     Prérequis pour l&apos;intégration Instagram
                   </h3>
-                  <div className="mt-2 text-sm text-pink-700 space-y-1">
+                  <div className="mt-2 text-sm text-pink-700">
                     <p>
                       <strong>Important :</strong> Votre compte Instagram doit être un compte professionnel (business) 
                       et être connecté à une page Facebook pour utiliser l&apos;API Instagram.
@@ -506,7 +572,7 @@ export default function ConfigurationSocialsPage() {
               <div className="max-w-2xl space-y-4">
                 <div className="space-y-1">
                   <label className="block text-sm font-medium text-gray-700">
-                    ID du compte Instagram Business
+                    ID du compte Instagram Business *
                   </label>
                   <input
                     type="text"
@@ -515,15 +581,16 @@ export default function ConfigurationSocialsPage() {
                     onChange={handleChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Ex: 17841454841928506"
+                    required
                   />
                   <p className="text-xs text-gray-500">
-                    L&apos;identifiant numérique de votre compte Instagram Business (obtenu via l&apos;API Facebook)
+                    L&apos;identifiant numérique de votre compte Instagram Business (obligatoire)
                   </p>
                 </div>
 
                 <div className="space-y-1">
                   <label className="block text-sm font-medium text-gray-700">
-                    Token d&apos;accès utilisateur
+                    Token d&apos;accès utilisateur *
                   </label>
                   <textarea
                     name="acces_token_user"
@@ -532,15 +599,16 @@ export default function ConfigurationSocialsPage() {
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Collez votre token d'accès Instagram ici"
+                    required
                   />
                   <p className="text-xs text-gray-500">
-                    Token d&apos;accès longue durée avec permissions Instagram
+                    Token d&apos;accès longue durée avec permissions Instagram (obligatoire)
                   </p>
                 </div>
 
                 <button
                   onClick={() => handleSavePlatform('instagram')}
-                  disabled={savingStates.instagram}
+                  disabled={savingStates.instagram || !socialConfig.instagram_id || !socialConfig.acces_token_user}
                   className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-md hover:from-pink-600 hover:to-purple-600 disabled:opacity-50"
                 >
                   {savingStates.instagram ? (
@@ -610,6 +678,172 @@ export default function ConfigurationSocialsPage() {
           </div>
         );
       
+      case "webhook":
+        return (
+          <div className="space-y-6 p-6">
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <AlertCircleIcon className="h-5 w-5 text-blue-600" />
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-blue-800">
+                    Configuration des Webhooks Facebook/Instagram
+                  </h3>
+                  <div className="mt-2 text-sm text-blue-700">
+                    <p>
+                      Les webhooks permettent de recevoir des notifications en temps réel lorsque des événements 
+                      se produisent sur vos pages Facebook et comptes Instagram (commentaires, mentions, messages, etc.).
+                    </p>
+                    <p className="mt-2">
+                      <strong>Prérequis:</strong> Vous devez d'abord configurer Facebook et/ou Instagram 
+                      avant de pouvoir activer les webhooks.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 border-t pt-6">
+              <h3 className="text-lg font-medium mb-4">Configuration Webhook</h3>
+              <div className="max-w-2xl space-y-4">
+                <div className="space-y-1">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Token de vérification webhook *
+                  </label>
+                  <input
+                    type="text"
+                    name="webhook_verify_token"
+                    value={socialConfig.webhook_verify_token}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Ex: my_secure_webhook_token_123"
+                    required
+                  />
+                  <p className="text-xs text-gray-500">
+                    Token de sécurité pour vérifier les webhooks (choisissez une chaîne sécurisée)
+                  </p>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-sm font-medium text-gray-700">
+                    URL du webhook (lecture seule)
+                  </label>
+                  <input
+                    type="text"
+                    value={`${window.location.origin}/api/webhookFcb_Insta`}
+                    readOnly
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 cursor-not-allowed"
+                  />
+                  <p className="text-xs text-gray-500">
+                    Utilisez cette URL dans la configuration de votre application Facebook
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Abonnements aux événements
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { id: 'feed', label: 'Posts Facebook' },
+                      { id: 'comments', label: 'Commentaires' },
+                      { id: 'reactions', label: 'Réactions' },
+                      { id: 'mentions', label: 'Mentions Instagram' },
+                    ].map((subscription) => (
+                      <label key={subscription.id} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={socialConfig.webhook_subscriptions.includes(subscription.id)}
+                          onChange={() => handleWebhookSubscriptionsChange(subscription.id)}
+                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                        <span className="text-sm text-gray-700">{subscription.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    name="webhook_enabled"
+                    checked={socialConfig.webhook_enabled}
+                    onChange={handleChange}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <label className="text-sm font-medium text-gray-700">
+                    Activer les webhooks
+                  </label>
+                </div>
+
+                <div className="flex space-x-3">
+                  <button
+                    onClick={() => handleSavePlatform('webhook')}
+                    disabled={savingStates.webhook || !socialConfig.webhook_verify_token}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {savingStates.webhook ? (
+                      <>
+                        <Loader className="h-4 w-4 animate-spin" />
+                        Enregistrement...
+                      </>
+                    ) : (
+                      <>
+                        <SaveIcon className="h-4 w-4" />
+                        Enregistrer la configuration webhook
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={testWebhookConfiguration}
+                    disabled={testingWebhook || !socialConfig.webhook_verify_token}
+                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+                  >
+                    {testingWebhook ? (
+                      <>
+                        <Loader className="h-4 w-4 animate-spin" />
+                        Test en cours...
+                      </>
+                    ) : (
+                      <>
+                        <TestTube className="h-4 w-4" />
+                        Tester la configuration
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 border-t pt-6">
+              <h3 className="text-lg font-medium mb-4">Instructions de configuration</h3>
+              <div className="space-y-4 text-sm">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-medium mb-2">1. Dans votre application Facebook Developer:</h4>
+                  <ul className="list-disc pl-5 space-y-1 text-gray-600">
+                    <li>Allez dans "Webhooks" dans le menu de gauche</li>
+                    <li>Cliquez sur "Ajouter un webhook"</li>
+                    <li>Collez l'URL du webhook ci-dessus</li>
+                    <li>Entrez le token de vérification que vous avez configuré</li>
+                    <li>Sélectionnez les événements auxquels vous voulez vous abonner</li>
+                    <li>Cliquez sur "Vérifier et enregistrer"</li>
+                  </ul>
+                </div>
+                
+                <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                  <h4 className="font-medium text-yellow-800 mb-2">⚠️ Important:</h4>
+                  <p className="text-yellow-700">
+                    Les webhooks ne fonctionneront que si vous avez configuré Facebook et/ou Instagram 
+                    avec succès. Assurez-vous d'avoir testé vos configurations avant d'activer les webhooks.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      
       case "linkedin":
         return <LinkedInConfigTab />;
       
@@ -628,14 +862,12 @@ export default function ConfigurationSocialsPage() {
       </div>
 
       <div className="bg-white shadow rounded-lg overflow-hidden">
-        {/* Using the existing Tabs component */}
         <Tabs 
           tabs={tabsConfig}
           defaultTab="facebook"
           onTabChange={handleTabChange}
         />
         
-        {/* Render the content for the active tab */}
         <div className="tab-content">
           {renderTabContent()}
         </div>
