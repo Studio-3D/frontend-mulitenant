@@ -224,13 +224,15 @@ export default function Changement_bien_list() {
       width: '120px',
       render: (row) => (
         <div className="flex gap-2">
-          <button
-            onClick={() => handleView(row.id)}
-            className="text-blue-500 hover:text-blue-700"
-            title="Détail Désistement"
-          >
-            <Eye className="w-4 h-4" />
-          </button>
+          {etat_desistement != 2 && (
+            <button
+              onClick={() => handleView(row.id)}
+              className="text-blue-500 hover:text-blue-700"
+              title="Détail Désistement"
+            >
+              <Eye className="w-4 h-4" />
+            </button>
+          )}
           <button
             onClick={() =>
               handleView_reservation(
@@ -349,6 +351,7 @@ export default function Changement_bien_list() {
         totalRows={totalRows}
         loading={loading}
         error={error}
+        showSearch={false}
         currentPage={currentPage}
         rowsPerPage={rowsPerPage}
         onPageChange={setCurrentPage}
@@ -368,7 +371,7 @@ export default function Changement_bien_list() {
               {user_role <= 2 && (
                 <Input
                   type="text"
-                  placeholder="Responsable"
+                  label="Responsable"
                   value={tempFilters.cc}
                   onChange={(e) => handleFilterChange('cc', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
@@ -376,7 +379,7 @@ export default function Changement_bien_list() {
               )}
               <Input
                 type="text"
-                placeholder="Code Réservation"
+                label="Code Réservation"
                 value={tempFilters.code_reservation}
                 onChange={(e) =>
                   handleFilterChange('code_reservation', e.target.value)
@@ -387,7 +390,7 @@ export default function Changement_bien_list() {
                 !(etat_desistement == 5 || etat_desistement == 0) && (
                   <Input
                     type="text"
-                    placeholder="Responsable Validation"
+                    label="Responsable Validation"
                     value={tempFilters.responsable}
                     onChange={(e) =>
                       handleFilterChange('responsable', e.target.value)
@@ -398,14 +401,14 @@ export default function Changement_bien_list() {
 
               <Input
                 type="number"
-                placeholder="Pénalité"
+                label="Pénalité"
                 value={tempFilters.penalite}
                 onChange={(e) => handleFilterChange('penalite', e.target.value)}
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
               <Input
                 type="text"
-                placeholder="Nom et Prénom"
+                label="Nom et Prénom"
                 value={tempFilters.nom_prenom}
                 onChange={(e) =>
                   handleFilterChange('nom_prenom', e.target.value)
@@ -414,14 +417,14 @@ export default function Changement_bien_list() {
               />
               <Input
                 type="text"
-                placeholder="Ancien Bien"
+                label="Ancien Bien"
                 value={tempFilters.old_bien}
                 onChange={(e) => handleFilterChange('old_bien', e.target.value)}
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
               <Input
                 type="text"
-                placeholder="Nouveau Bien"
+                label="Nouveau Bien"
                 value={tempFilters.new_bien}
                 onChange={(e) => handleFilterChange('new_bien', e.target.value)}
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
@@ -434,7 +437,7 @@ export default function Changement_bien_list() {
                   value: data.id,
                   label: data.label,
                 }))}
-                placeholder="Choisir un Motif"
+                label="Choisir un Statut"
                 className="h-10 text-sm w-full"
               />
             </div>
@@ -447,8 +450,7 @@ export default function Changement_bien_list() {
                 startValue={tempFilters.de_date_des}
                 endValue={tempFilters.a_date_des}
                 onChange={handleFilterChange}
-                placeholder="Choisir une Date"
-                label="Date"
+                labeL="Choisir une Date"
               />
               {user_role <= 2 &&
                 !(etat_desistement == 5 || etat_desistement == 0) && (
@@ -458,8 +460,7 @@ export default function Changement_bien_list() {
                     startValue={tempFilters.de_date_respo_req}
                     endValue={tempFilters.a_date_respo_req}
                     onChange={handleFilterChange}
-                    placeholder="Choisir une Date Validation"
-                    label="Date Validation"
+                    label="Choisir une Date Validation"
                   />
                 )}
             </div>

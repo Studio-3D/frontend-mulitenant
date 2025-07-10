@@ -34,7 +34,7 @@ export default function Modal_valider_avance({
     date_encaiss: '',
     commentaire_av: '',
     av_id: av_id,
-    statut_av: 1,
+    statut_av: '',
     prix: prix,
     avance: avance,
   };
@@ -49,7 +49,7 @@ export default function Modal_valider_avance({
   } = useForm({
     resolver: yupResolver(validationSchemaRef.current),
     defaultValues: {
-      ...defaultValues, // Spread your existing default values
+      ...defaultValues,
       action: action, // Include the current action state
     },
   });
@@ -62,14 +62,14 @@ export default function Modal_valider_avance({
     // Manual validation
     const errors = {};
 
-    if (data.action === '1') {
+    if (data.action == '1') {
       if (!data.n_remise) {
         errors.n_remise = 'Le numéro de remise est requis';
       }
       if (!data.date_encaiss) {
         errors.date_encaiss = "La date d'encaissement est requise";
       }
-    } else if (data.action === '2') {
+    } else if (data.action == '2') {
       if (!data.commentaire_av) {
         errors.commentaire_av = "Le commentaire d'avance est requis";
       }
@@ -109,7 +109,7 @@ export default function Modal_valider_avance({
       .catch((error) => {
         setLoading({ ...loading, form: false });
         const response = error.response;
-        if (response?.status === 422) {
+        if (response?.status == 422) {
           setBackendErrors(response.data.message || {});
           toast.error(response.data.message || 'Erreur de validation.');
         } else {
@@ -223,7 +223,7 @@ export default function Modal_valider_avance({
       <div className="w-full h-[60px] bg-green-600 px-4">
         <div className="flex items-center justify-center h-full">
           <h1 className="text-3xl font-bold text-center text-white">
-           Etape 2: Traiter Premier Avance N° {first_num_recu}
+            Etape 2: Traiter Premier Avance N° {first_num_recu}
           </h1>
         </div>
       </div>
@@ -270,6 +270,7 @@ export default function Modal_valider_avance({
                 onChange={(e) => {
                   console.log('e==>' + JSON.stringify(e));
                   setValue('action', e);
+                  setValue('statut_av', e); // Also update statut_av
                   setAction(e);
                 }}
                 options={statuts.map((status) => ({
@@ -362,13 +363,12 @@ export default function Modal_valider_avance({
             >
               Enregistrer
             </Button>
-           
           </div>
-           <div className="text-center pt-2">
-              <button onClick={onClose} className="text-blue ">
-                Retour à {'l\'étape'} précédente
-              </button>
-            </div>
+          <div className="text-center pt-2">
+            <button onClick={onClose} className="text-blue ">
+              Retour à {"l'étape"} précédente
+            </button>
+          </div>
         </form>
       </div>
     </div>

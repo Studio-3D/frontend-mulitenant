@@ -66,6 +66,8 @@ const Page = () => {
         page: currentPage,
         size: rowsPerPage,
         ...filters,
+        // Add search term to parameters if it exists
+        ...(searchTerm && { search: searchTerm }),
       };
 
       if (user?.role !== 1 && selectedSociete?.id) {
@@ -76,44 +78,12 @@ const Page = () => {
         headers: { Authorization: `Bearer ${accesstoken}` },
         params,
       });
-      console.log("Response:", response.data);
 
-      if (response.data?.users) {
-        let filteredUsers = response.data.users.filter(
-          (u) => u.id !== user?.id
-        );
-
-        // Client-side filtering
-        if (searchTerm) {
-          filteredUsers = response.data.users.filter((user) => {
-            const searchText = searchTerm.toLowerCase();
-            const fullName = `${user.name || ""} ${
-              user.prenom || ""
-            }`.toLowerCase();
-            const email = user.email?.toLowerCase() || "";
-            const phone = (user.phone || "").toLowerCase();
-            const role = getRoleText(user.role).toLowerCase();
-            const status = (user.is_actif ? "1" : "2").toLowerCase();
-
-            return (
-              fullName.includes(searchText) ||
-              email.includes(searchText) ||
-              phone.includes(searchText) ||
-              role.includes(searchText) ||
-              status.includes(searchText)
-            );
-          });
-        }
-
-        setUsers(filteredUsers);
-        setTotalRows(
-          response.data.pagination?.totalItems
-            ? Math.max(response.data.pagination.totalItems - 1, 0) // Adjust total count
-            : filteredUsers.length
-        );
-      } else {
-        setError("Aucun utilisateur trouvé");
-      }
+      // Filter out current user from results
+      const filteredUsers = response.data.users.filter(u => u.id !== user?.id);
+      
+      setUsers(filteredUsers);
+      setTotalRows(response.data.pagination?.totalItems || filteredUsers.length);
     } catch (err) {
       setError(err.response?.data?.message || "Erreur lors du chargement");
       if (err.response?.status === 401) {
@@ -130,8 +100,10 @@ const Page = () => {
     selectedSociete,
     token,
     user?.role,
+    user?.id,
     router,
     filters,
+    accesstoken
   ]);
 
   const handleFilterChange = (field, value) => {
@@ -139,7 +111,8 @@ const Page = () => {
   };
 
   const applyFilters = () => {
-    setFilters(tempFilters); // C’est ici que fetchUsers va être déclenché
+    setCurrentPage(1); // Reset to first page when filters change
+    setFilters(tempFilters);
   };
 
   const resetFilters = () => {
@@ -153,14 +126,22 @@ const Page = () => {
       niveau: "",
       status: "",
     };
+    setCurrentPage(1); // Reset to first page when filters reset
     setFilters(reset);
     setTempFilters(reset);
+    setSearchTerm(""); // Also reset search term
   };
 
-  // Fetch users when pagination or search changes
+  // Handle search separately
+  const handleSearch = (term) => {
+    setSearchTerm(term);
+    setCurrentPage(1); // Reset to first page when search changes
+  };
+
+  // Fetch users when pagination, filters or search changes
   useEffect(() => {
     fetchUsers();
-  }, [filters, currentPage, rowsPerPage, searchTerm, selectedSociete]);
+  }, [fetchUsers]);
 
   // Format user role text
   const getRoleText = (roleId) => {
@@ -202,11 +183,21 @@ const Page = () => {
     return users.map((us) => ({
       nom: us.name,
       prenom: us.prenom,
+      prenom: us.prenom,
       email: us.email,
       telephone: us.phone || "",
       role: getRoleText(us.role),
       date: new Date(us.created_at).toLocaleDateString(),
       status: us.is_actif ? "Actif" : "Inactif",
+      societe: us.societe?.raison_sociale,
+      adresse: us.adresse,
+      gender: us.gender,
+      cin: us.cin,
+      fonction: us.fonction,
+      date_embauche: us.date_embauche,
+      niveau_etude: us.niveau_etude,
+      cnss: us.cnss,
+      solde_conge: us.solde_conge,
       societe: us.societe.raison_sociale,
       adresse: us.adresse,
       gender: us.gender,
@@ -222,6 +213,9 @@ const Page = () => {
   const columns_export = Object.keys(data_to_export()[0] || {}).map((key) => ({
     key,
     label: key,
+  }));
+    key,
+    label: key
   }));
 
   // Table columns configuration
@@ -328,6 +322,29 @@ const Page = () => {
               <ShieldCheck className="w-4 h-4" />
             </button>
           )}
+          {row.status === "Actif" ? (
+            <button
+              onClick={() => {
+                setSelectedUserId(row.id);
+                setShowBlockModal(true);
+              }}
+              className="flex items-center gap-1 text-green-500 hover:text-green-700"
+              title="Bloquer l'utilisateur"
+            >
+              <ShieldX className="w-4 h-4" />
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                setSelectedUserId(row.id);
+                setShowUnblockModal(true);
+              }}
+              className="flex items-center gap-1 text-red-500 hover:text-red-700"
+              title="Débloquer l'utilisateur"
+            >
+              <ShieldCheck className="w-4 h-4" />
+            </button>
+          )}
 
           <button
             onClick={() => {
@@ -409,13 +426,12 @@ const Page = () => {
                   value={tempFilters.role}
                   onChange={(value) => handleFilterChange("role", value)}
                   options={Object.entries(USER_TYPES)
-                    .filter(([key]) => key !== "SUPERADMIN") // on enlève SUPERADMIN
+                    .filter(([key]) => key !== "SUPERADMIN")
                     .map(([key, label]) => ({
                       value: encryptUserType(label),
                       label,
                     }))}
                   placeholder="Rôle"
-                  //className="h-10 text-sm w-full"
                 />
                 <SelectInput
                   label={"Genre"}
@@ -439,7 +455,7 @@ const Page = () => {
                       label,
                     })
                   )}
-                  placeholder="Niveau d’étude"
+                  placeholder="Niveau d'étude"
                   className="h-10 text-sm w-full"
                 />
 
@@ -480,15 +496,15 @@ const Page = () => {
             </div>
           }
           data={
-            user?.role === 1 // Check if Super Admin
-              ? formatUsers() // Show all users regardless of societe
+            user?.role === 1
+              ? formatUsers()
               : selectedSociete?.id
-              ? formatUsers() // Show societe-specific users for others
+              ? formatUsers()
               : []
           }
           totalRows={
             user?.role === 1
-              ? totalRows // Show total across all sociétés
+              ? totalRows
               : selectedSociete?.id
               ? totalRows
               : 0
@@ -506,9 +522,9 @@ const Page = () => {
           onSearchChange={setSearchTerm}
           emptyMessage={
             user?.role === 1
-              ? "Aucun utilisateur trouvé." // Super Admin sees generic message
+              ? "Aucun utilisateur trouvé."
               : !selectedSociete?.id
-              ? "Veuillez sélectionner une société pour voir les utilisateurs." // Others see prompt
+              ? "Veuillez sélectionner une société pour voir les utilisateurs."
               : "Aucun utilisateur trouvé."
           }
         />
@@ -525,7 +541,7 @@ const Page = () => {
             accessToken={accesstoken}
             onClose={() => {
               setShowBlockModal(false);
-              fetchUsers(currentPage, rowsPerPage, searchTerm);
+              fetchUsers();
             }}
           />
         </Modal>
@@ -541,7 +557,7 @@ const Page = () => {
             accessToken={accesstoken}
             onClose={() => {
               setShowUnblockModal(false);
-              fetchUsers(currentPage, rowsPerPage, searchTerm);
+              fetchUsers();
             }}
           />
         </Modal>
@@ -561,7 +577,7 @@ const Page = () => {
             accessToken={accesstoken}
             onClose={() => {
               setShowDeleteModal(false);
-              fetchUsers(currentPage, rowsPerPage, searchTerm);
+              fetchUsers();
             }}
           />
         </Modal>

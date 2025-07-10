@@ -496,7 +496,7 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
                             field.value === 1 ? "text-[#009FFF]" : ""
                           }`}
                         >
-                          Accepte d'être contacté:
+                          Accepte d'être contacté :
                         </span>
                       </label>
                     )}

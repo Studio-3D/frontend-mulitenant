@@ -1,11 +1,7 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
-import { APIURL } from '@/configs/api';
 import { format } from 'date-fns';
-import { useAuth } from '@/context/AuthContext';
 import { Eye, ChevronDown, ChevronRight } from 'lucide-react';
 import Table from '@/components/Table';
-import { useRouter } from 'next/navigation';
 import {
   type_dst,
   type_dst_dp,
@@ -44,7 +40,12 @@ export default function HistoriqueDesistementTab({ code_desistement }) {
       setDossiers,
       setTotalRows
     );
-  }, [localStorage.getItem('accessToken'), currentPage, rowsPerPage, searchTerm]);
+  }, [
+    localStorage.getItem('accessToken'),
+    currentPage,
+    rowsPerPage,
+    searchTerm,
+  ]);
 
   // Check if a dossier has desistement details
   const hasDesistementDetails = (row) => {
@@ -100,7 +101,7 @@ export default function HistoriqueDesistementTab({ code_desistement }) {
     },
     {
       key: 'cc',
-      label: 'CC',
+      label: 'Responsable',
       render: (row) => {
         if (row.histo?.reservation_id) {
           return (
@@ -122,46 +123,52 @@ export default function HistoriqueDesistementTab({ code_desistement }) {
       label: 'Code',
       render: (row) => row.histo?.reservation?.code_reservation || '',
     },
-   {
-  key: 'acquereurs_ancien',
-  label: 'Acquéreurs',
-  render: (row) => {
-    const createMarkup = (html) => {
-      return { __html: html };
-    };
+    {
+      key: 'acquereurs_ancien',
+      label: 'Acquéreurs',
+      render: (row) => {
+        const createMarkup = (html) => {
+          return { __html: html };
+        };
 
-    let htmlContent = '';
-    
-    if (row.histo?.reservation) {
-      const acquereurs =
-        row.histo.reservation.aquereurs_ancien?.length > 0
-          ? row.histo.reservation.aquereurs_ancien
-          : row.histo.reservation.aquereurs || [];
+        let htmlContent = '';
 
-      htmlContent = acquereurs
-        .map(
-          (acq) =>
-            `${acq.client?.nom || ''} ${acq.client?.prenom || ''} (<span style="color: rgb(90, 149, 226)">${
-              acq.pourcentage
-            }%</span>)`
-        )
-        .join(', ');
-    } else if (row.histo?.desistement?.reservation_ancien?.aquereurs_ancien) {
-      htmlContent = Object.values(
-        row.histo.desistement.reservation_ancien.aquereurs_ancien
-      )
-        .map(
-          (acq) =>
-            `${acq.client?.nom || ''} ${acq.client?.prenom || ''} (<span style="color: rgb(90, 149, 226)">${
-              acq.pourcentage
-            }%</span>)`
-        )
-        .join(', ');
-    }
+        if (row.histo?.reservation) {
+          const acquereurs =
+            row.histo.reservation.aquereurs_ancien?.length > 0
+              ? row.histo.reservation.aquereurs_ancien
+              : row.histo.reservation.aquereurs || [];
 
-    return <div dangerouslySetInnerHTML={createMarkup(htmlContent)} />;
-  },
-},
+          htmlContent = acquereurs
+            .map(
+              (acq) =>
+                `${acq.client?.nom || ''} ${
+                  acq.client?.prenom || ''
+                } (<span style="color: rgb(90, 149, 226)">${
+                  acq.pourcentage
+                }%</span>)`
+            )
+            .join(', ');
+        } else if (
+          row.histo?.desistement?.reservation_ancien?.aquereurs_ancien
+        ) {
+          htmlContent = Object.values(
+            row.histo.desistement.reservation_ancien.aquereurs_ancien
+          )
+            .map(
+              (acq) =>
+                `${acq.client?.nom || ''} ${
+                  acq.client?.prenom || ''
+                } (<span style="color: rgb(90, 149, 226)">${
+                  acq.pourcentage
+                }%</span>)`
+            )
+            .join(', ');
+        }
+
+        return <div dangerouslySetInnerHTML={createMarkup(htmlContent)} />;
+      },
+    },
     {
       key: 'ancien_bien',
       label: 'Bien',
@@ -414,7 +421,7 @@ export default function HistoriqueDesistementTab({ code_desistement }) {
   const getDesistementColumns = (row) => {
     const desistementType = row.histo?.desistement?.type;
     const desistementTypeDp = row.histo?.desistement?.type_dp;
-
+console.log('le tye dp =+>'+desistementTypeDp)
     // Always show type column first
     let columns = [allDesistementColumns.type_desistement];
 
@@ -423,12 +430,12 @@ export default function HistoriqueDesistementTab({ code_desistement }) {
     const typeDpNum = parseInt(desistementTypeDp);
 
     // Determine which additional columns to show based on type
-    if (typeNum === 1) {
+    if (typeNum == 1) {
       // Désistement Définitif => motif / pénalité
       columns.push(allDesistementColumns.motif, allDesistementColumns.penalite);
-    } else if (typeNum === 2) {
+    } else if (typeNum == 2) {
       // Based on type_dp for "Profit un proche" variations
-      if (typeDpNum === 1) {
+      if (typeDpNum == 1) {
         // Profit un proche => lien de parenté / anciens acquéreurs / désisteurs / nouveaux acquéreurs / pénalité
         columns.push(
           allDesistementColumns.lien_parente,
@@ -437,15 +444,16 @@ export default function HistoriqueDesistementTab({ code_desistement }) {
           allDesistementColumns.nouveau_acquereurs,
           allDesistementColumns.penalite
         );
-      } else if (typeDpNum === 2) {
+      } else if (typeDpNum == 3) {
         // Désistement Partiel => lien de parenté / anciens acquéreurs / nouveaux acquéreurs / pénalité
+        console.log('ana hnaa')
         columns.push(
           allDesistementColumns.lien_parente,
           allDesistementColumns.ancien_acquereurs,
           allDesistementColumns.nouveau_acquereurs,
           allDesistementColumns.penalite
         );
-      } else if (typeDpNum === 3) {
+      } else if (typeDpNum == 2) {
         // Désistement co Réservataire => anciens acquéreurs / désisteurs / au profit / pénalité
         columns.push(
           allDesistementColumns.ancien_acquereurs,
@@ -454,7 +462,7 @@ export default function HistoriqueDesistementTab({ code_desistement }) {
           allDesistementColumns.penalite
         );
       }
-    } else if (typeNum === 3) {
+    } else if (typeNum == 3) {
       // Changement de Bien => ancien bien / nouveau bien / montant à ajouter / pénalité
       columns.push(
         allDesistementColumns.ancien_bien,
@@ -495,7 +503,7 @@ export default function HistoriqueDesistementTab({ code_desistement }) {
       if (col.key !== 'actions' && col.key !== 'expandToggle' && col.render) {
         const rendered = col.render(dossier);
         row[col.key] =
-          typeof rendered === 'string'
+          typeof rendered == 'string'
             ? rendered
             : rendered?.props?.children || '';
       }
@@ -506,7 +514,7 @@ export default function HistoriqueDesistementTab({ code_desistement }) {
       if (col.render) {
         const rendered = col.render(dossier);
         row[col.key] =
-          typeof rendered === 'string'
+          typeof rendered == 'string'
             ? rendered
             : rendered?.props?.children || '';
       }
@@ -517,22 +525,21 @@ export default function HistoriqueDesistementTab({ code_desistement }) {
 
   // Render the expanded row with dynamic columns based on desistement type
   const renderExpandedRow = (row, idx) => {
-  const rowId = row.id || idx;
+    const rowId = row.id || idx;
 
-  if (!expandedRows[rowId] || !hasDesistementDetails(row)) {
-    return null;
-  }
+    if (!expandedRows[rowId] || !hasDesistementDetails(row)) {
+      return null;
+    }
 
-  // Get dynamic columns based on desistement type
-  const dynamicColumns = getDesistementColumns(row);
+    // Get dynamic columns based on desistement type
+    const dynamicColumns = getDesistementColumns(row);
 
-  return (
-    <tr className="border-b">
-      <td colSpan={columns.length} className="p-0 bg-gray-50">
+    return (
+      <div className="p-0 bg-gray-50">
         <div className="overflow-hidden transition-all duration-300 ease-in-out">
           <div className="p-4">
             <h6 className="text-md font-semibold mb-3 !text-gray-700 flex items-center">
-              <span className="w-1.5 h-5 bg-blue-500 rounded-sm mr-2"></span>
+              <span className="w-1.5 h-5 bg-blue-600 rounded-sm mr-2"></span>
               Détails du désistement
             </h6>
             <div className="overflow-x-auto">
@@ -577,10 +584,9 @@ export default function HistoriqueDesistementTab({ code_desistement }) {
             </div>
           </div>
         </div>
-      </td>
-    </tr>
-  );
-};
+      </div>
+    );
+  };
 
   if (error) {
     return (
@@ -592,32 +598,30 @@ export default function HistoriqueDesistementTab({ code_desistement }) {
 
   return (
     <div className="bg-white shadow-sm rounded-lg">
-   
-
       <div className="p-6">
         <Table
           title=""
-          onPageChange={setCurrentPage}
-          onRowsPerPageChange={setRowsPerPage}
-          onSearchChange={setSearchTerm}
           data={dossiers}
           columns={columns}
           totalRows={totalRows}
           loading={loading}
           emptyMessage="Aucun dossier trouvé pour ce bien."
+          onPageChange={setCurrentPage}
+          onRowsPerPageChange={setRowsPerPage}
+          onSearchChange={setSearchTerm}
           currentPage={currentPage}
           rowsPerPage={rowsPerPage}
           enableExport={dossiers.length > 0}
-          name_file_export="dossiers_bien"
+          name_file_export="historiques_desistement"
           data_to_export={exportData}
           columns_export={columnsExport}
           renderExpandedRow={renderExpandedRow}
-          showSearch={false}
           onRowClick={(row, idx) => {
             if (hasDesistementDetails(row)) {
               toggleRowExpanded(row.id || idx);
             }
           }}
+          showSearch={false}
           rowClassName={(row) =>
             hasDesistementDetails(row) ? 'cursor-pointer' : ''
           }

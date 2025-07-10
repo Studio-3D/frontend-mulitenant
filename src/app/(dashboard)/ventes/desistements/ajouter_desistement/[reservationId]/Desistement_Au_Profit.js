@@ -127,6 +127,8 @@ export function Desistement_Au_Profit({
             formData.aquereurs_profits?.map((item) => ({
               prenom: item.aquereur?.client?.prenom,
               nom: item.aquereur?.client?.nom,
+              cl_id: item.aquereur?.client?.id,
+              id: item.aquereur?.id,
               new_pourcentage: item.pourcentage,
             })) || [];
           setValue('profit_dp_co_reser', profit_dp_co_res || []);
@@ -138,6 +140,7 @@ export function Desistement_Au_Profit({
         case '3': // Désistement partiel
           const dp_partiel =
             formData.aquereurs_partiel?.map((item) => ({
+              id: item?.aquereur?.id,
               cin: item?.aquereur?.client?.cin,
               nom: item?.aquereur?.client?.nom,
               prenom: item?.aquereur?.client?.prenom,
@@ -169,7 +172,6 @@ export function Desistement_Au_Profit({
                 prenom: item.prenom,
                 telephone_num1: item.telephone,
                 pourcentage: item.pourcentage || 0,
-              
               };
             }) || [];
 
@@ -368,7 +370,6 @@ export function Desistement_Au_Profit({
   };
   const handleinputchange_dp_part = (e, index) => {
     const { name, value } = e.target;
-
     if (isEditing) {
       // Editing mode - handle array structure
       const fieldMatch = name.match(/dp_part\[(\d+)\]\.(\w+)/);
@@ -376,11 +377,13 @@ export function Desistement_Au_Profit({
         const fieldIndex = fieldMatch[1];
         const fieldName = fieldMatch[2];
 
-        // Update form and local state
-        setValue(`dp_part[${fieldIndex}].${fieldName}`, value);
-
+        // Convert value to number if it's the percentage field
+        const processedValue =
+          fieldName === 'pourcentage_' ? parseFloat(value) || 0 : value;
+        // Update form and local state with the processed value
+        setValue(`dp_part[${fieldIndex}].${fieldName}`, processedValue);
         const updatedList = [...desisteutrs_profit_dp_partiel];
-        updatedList[fieldIndex][fieldName] = value;
+        updatedList[fieldIndex][fieldName] = processedValue;
         set_desisteurs_partiel(updatedList);
 
         // Calculate total percentage for old clients
@@ -424,6 +427,7 @@ export function Desistement_Au_Profit({
         }
 
         // Update states
+        setValue('desisteutrs_profit_dp_partiel', updatedList);
         setValue('somme_percent_dp_patiel_old', totalOldPercentage);
         setErrors_dp_part(newErrors);
       }
@@ -476,6 +480,7 @@ export function Desistement_Au_Profit({
         }));
       }
       // Update states
+      set_desisteurs_partiel(updatedList);
       setValue('desisteutrs_profit_dp_partiel', updatedList);
       setValue('somme_percent_dp_patiel_old', totalOldPercentage);
       setErrors_dp_part(newErrors);
@@ -685,6 +690,7 @@ export function Desistement_Au_Profit({
           }}
         />
       </div>
+      <p>{JSON.stringify(watch('desisteur_dp_proche_co'))}</p>
       {(type_dp == 1 || type_dp == 2) && (
         <div className="border-t border-gray-200 py-4">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6">
@@ -704,7 +710,6 @@ export function Desistement_Au_Profit({
                       key={`desisteur-${autocompleteKey}`} // This forces complete remount
                       name="desisteur_dp_proche_co"
                       required
-                      value={desisteur_dp_proche}
                       // This should be your array of selected items
                       options={desisteurs.filter(
                         (desisteur) =>
@@ -714,6 +719,7 @@ export function Desistement_Au_Profit({
                               (isEditing ? desisteur.id : desisteur.client.id)
                           )
                       )}
+                      value={desisteur_dp_proche}
                       choiceKey="id" // Used for unique identification
                       onChange={(newValue) => {
                         let totalPercent = 0;
@@ -1008,6 +1014,7 @@ export function Desistement_Au_Profit({
                     )}
                   </>
                 )}
+                <p>{JSON.stringify(watch('profit_dp_co_reser'))}</p>
 
                 {type_dp == 2 && (
                   <>
@@ -1017,7 +1024,7 @@ export function Desistement_Au_Profit({
                           Au Profit de : <span className="text-red-500">*</span>
                         </label>
                         <Controller
-                          name=""
+                          name="profit_dp_co_reser"
                           control={control}
                           rules={{ required: 'Ce champ est requis' }}
                           defaultValue={profit_dp_co_reser || []} // Initialize with your selected values
@@ -1242,7 +1249,7 @@ export function Desistement_Au_Profit({
                     <div className="md:col-span-3">
                       {isEditing ? (
                         <Inputs_des_Profit
-                          label={'Pourcentage Ancien mm Client:'}
+                          label={'Pourcentage Ancien  Client:'}
                           name={`dp_part[${index}].pourcentage_`}
                           value={item?.pourcentage_ || 0}
                           onChange={(e) => handleinputchange_dp_part(e, index)}
