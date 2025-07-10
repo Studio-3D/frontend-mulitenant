@@ -193,7 +193,7 @@ const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
                   const token = localStorage.getItem('accessToken');
                   try {
                     const res = await axios.get(
-                      `${APIURL.ROOT}/creneaux-occupes/${reservation_id}`,
+                      `${APIURL.ROOT}/creneaux-occupes`,
                       {
                         params: {
                           start: fetchInfo.start.valueOf(),

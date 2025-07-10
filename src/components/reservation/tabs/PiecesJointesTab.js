@@ -19,7 +19,7 @@ export const PiecesJointesTab = ({ reservationData, user,piecesJointesData}) => 
   };
 
   const handleFileClick = (fileName) => {
-    const fileUrl = `${FileUrl}/Docs/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/reservations/${fileName}`;
+    const fileUrl = `${FileUrl}/Docs/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/reservations/${reservation.code_reservation}/${fileName}`;
     window.open(fileUrl, '_blank');
   };
 

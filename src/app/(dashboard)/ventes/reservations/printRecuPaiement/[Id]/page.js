@@ -730,7 +730,7 @@ const PrevisualiserRecu = () => {
           )*/}
           {/* Add this NOTE BIEN section */}
 
-          <div className="mb-4 rounded-md border-2 border-amber-400 bg-amber-50 p-3 text-center font-medium text-amber-800">
+          <div className="mb-4 mt-4 rounded-md border-2 border-amber-400 bg-amber-50 p-3 text-center font-medium text-amber-800">
             <span className="font-bold mt-10">NOTE :</span> Ces modifications
             seront appliquées sur la quittance seulement sauf Client.
           </div>
@@ -744,13 +744,14 @@ const PrevisualiserRecu = () => {
             >
               {({ loading }) => (
                 <button
-                  className={`text-indigo-500 hover:text-indigo-700 ${
-                    loading ? 'opacity-50' : ''
+                  className={`px-3 py-1 text-sm rounded ${
+                    loading
+                      ? 'bg-gray-200 text-gray-500 cursor-wait'
+                      : 'bg-blue-500 text-white hover:bg-indigo-600'
                   }`}
-                  title="Télécharger PDF"
                   disabled={loading}
                 >
-                  {loading ? '...' : <Upload className="w-4 h-4" />}
+                  {loading ? 'Génération...' : 'Télécharger PDF'}
                 </button>
               )}
             </PDFDownloadLink>

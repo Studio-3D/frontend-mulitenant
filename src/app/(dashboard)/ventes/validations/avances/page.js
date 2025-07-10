@@ -1,24 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, Fragment } from 'react';
-import {
-  ScanEye,
-  Pencil,
-  CheckCircle,
-  Euro,
-  Trash2,
-  History,
-  FolderSearch,
-  Paperclip,
-  Printer,
-  FileText,
-  Plus,
-  ThumbsUp,
-  ThumbsDown,
-  Eye,
-  X,
-  Clock,
-} from 'lucide-react';
+import { Euro, ThumbsUp, Eye } from 'lucide-react';
 import Table from '@/components/Table';
 import Modal from '@/components/Modal';
 import { useAuth } from '../../../../../context/AuthContext';
@@ -32,7 +15,7 @@ import {
 } from '../../../../../configs/enum';
 import { fetchData_table_by_id } from '../../../../../configs/api-utils';
 import Link from 'next/link';
-import { MODE_PAIEMENT } from '../../../../../configs/enum';
+import { MODE_PAIEMENT, Avance_Statut } from '../../../../../configs/enum';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
 import LoadingSpin from '@/components/LoadingSpin';
@@ -46,11 +29,11 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
   const [etat_av, setEtatAv] = useState(null);
 
   useEffect(() => {
-  const storedEtatAv = localStorage.getItem('etat_av');
-  if (storedEtatAv !== null) {
-    setEtatAv(storedEtatAv);
-  }
-}, []);
+    const storedEtatAv = localStorage.getItem('etat_av');
+    if (storedEtatAv !== null) {
+      setEtatAv(storedEtatAv);
+    }
+  }, []);
   const { user, token } = useAuth();
   const userRole = user?.role;
   const accessToken =
@@ -63,18 +46,16 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
     table: false,
     form: false,
   });
-  const [searchTerm, setSearchTerm] = useState('');
 
   const [error, setError] = useState('');
   const [totalRows, setTotalRows] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [data, setData] = useState([]);
-  const [selectedProjet, setSelectedProjet] = useState(
-    typeof window !== 'undefined'
+  const selectedProjet =
+    typeof window != 'undefined'
       ? JSON.parse(localStorage.getItem('selectedProjet'))
-      : null
-  );
+      : null;
 
   // Validation/Rejection dialog states
   const [open_v_r, setOpen_v_r] = useState(false);
@@ -82,8 +63,8 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
   const [num_recu, set_num_recu] = useState(0);
   const [Commentaire_r, setCommentaire_r] = useState(null);
   const [type_action, set_type_action] = useState(null);
-  const [action, setAction] = useState(null);
-  const [date_encaissement_v, set_date_encaissement_v] = useState(null);
+  const [action, setAction] = useState('');
+  const [date_encaissement_v, set_date_encaissement_v] = useState('');
   const [num_remise_v, set_num_remise_v] = useState(null);
   const [txt_rejete, set_txt_rejete] = useState(null);
   const [open, setOpen] = useState(false);
@@ -111,11 +92,10 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
   const handleFilterChange = (field, value) => {
     setTempFilters((prev) => ({ ...prev, [field]: value }));
   };
-
- useEffect(() => {
-  if (etat_av === null) return; // Don't fetch until etat_av is set
-
-  const idd = etat_av == 99 ? `${selectedProjet?.id}` : `${selectedProjet?.id}/${etat_av}`;
+  const idd =
+    etat_av == 99
+      ? `${selectedProjet?.id}`
+      : `${selectedProjet?.id}/${etat_av}`;
   const API_URLL = etat_av == 99 ? 'get_echeances' : 'avances_by_etat';
 
   const entity = {
@@ -125,19 +105,29 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
     searchFields: [''],
   };
 
-  fetchData_table_by_id(
-    entity,
-    filters,
-    searchTerm,
+  useEffect(() => {
+    if (etat_av === null) return; // Don't fetch until etat_av is set
+    fetchData_table_by_id(
+      entity,
+      filters,
+      null,
+      currentPage,
+      rowsPerPage,
+      accessToken,
+      setLoading,
+      setError,
+      setData,
+      setTotalRows
+    );
+  }, [
+    accessToken,
     currentPage,
     rowsPerPage,
-    accessToken,
-    setLoading,
-    setError,
-    setData,
-    setTotalRows
-  );
-}, [accessToken, currentPage, rowsPerPage, searchTerm, filters, etat_av, selectedProjet?.id]);
+    null,
+    filters,
+    etat_av,
+    selectedProjet?.id,
+  ]);
 
   const handle_valider_rejete = (Id, n_recu, number, text) => {
     setOpen_v_r(!open_v_r);
@@ -175,7 +165,7 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
       fetchData_table_by_id(
         entity,
         {},
-        searchTerm,
+        null,
         currentPage,
         rowsPerPage,
         accessToken,
@@ -241,9 +231,9 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
       label: 'Code Réservation',
       render: (row) => (
         <Link
-          href={`/ventes/reservations/show/${row.reservation_id}`}
+          href={`/ventes/reservations/${row.reservation_id}`}
           target="_blank"
-          className="text-blue-600 hover:text-blue-800"
+          className="text-blue-500 hover:text-blue-800"
         >
           {row.code_reservation}
         </Link>
@@ -278,69 +268,159 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
     { key: 'numero_paiement', label: 'Num paiement' },
     { key: 'echeance', label: 'Echéance' },
 
-    {
-      key: 'actions',
-      label: 'Actions',
-      render: (row) => {
-        const isAdminOrSuperAdmin =
-          (isAdmin(userRole) || isSuperAdmin(userRole)) &&
-          (etat_av == 2 || etat_av == 3);
+    ...(etat_av != 99
+      ? [
+          {
+            key: 'actions',
+            label: 'Actions',
+            render: (row) => {
+              const isAdminOrSuperAdmin =
+                (isAdmin(userRole) || isSuperAdmin(userRole)) &&
+                (etat_av == 2 || etat_av == 3);
 
-        return (
-          <div className="flex gap-3 items-center">
-            {/* Validation/Encashment Buttons */}
-            {isAdminOrSuperAdmin && (
-              <>
-                {Number(row.statut) == 3 && (
-                  <button
-                    className="p-1 text-green-500 hover:text-green-700"
-                    onClick={() =>
-                      handle_valider_rejete(row.id, row.sr, 0, 'validation')
-                    }
-                    title="Valider le paiement"
-                  >
-                    <ThumbsUp className="w-5 h-5" />
-                  </button>
-                )}
+              return (
+                <div className="flex gap-3 items-center">
+                  {/* Validation/Encashment Buttons */}
+                  {isAdminOrSuperAdmin && (
+                    <>
+                      {row.last_statut == null && (
+                        <button
+                          className="p-1 text-green-500 hover:text-green-700"
+                          onClick={() =>
+                            handle_valider_rejete(
+                              row.id,
+                              row.sr,
+                              0,
+                              'validation'
+                            )
+                          }
+                          title="Valider le paiement"
+                        >
+                          <ThumbsUp className="w-5 h-5" />
+                        </button>
+                      )}
 
-                {Number(row.mode_pai) != 7 &&
-                  parseFloat(row.montant) > 0 &&
-                  Number(row.statut) == 1 &&
-                  (row.date_encaissement == null || row.num_remise == null) && (
-                    <button
-                      className="p-1 text-blue-500 hover:text-blue-700"
-                      onClick={() =>
-                        handle_valider_rejete(row.id, row.sr, 1, 'encaissement')
-                      }
-                      title="Ajouter encaissement"
-                    >
-                      <Euro className="w-5 h-5" />
-                    </button>
+                      {Number(row.mode_pai) != 7 &&
+                        parseFloat(row.montant) > 0 &&
+                        Number(row.statut) == 1 &&
+                        (row.date_encaissement == null ||
+                          row.num_remise == null) && (
+                          <button
+                            className="p-1 text-blue-500 hover:text-blue-700"
+                            onClick={() =>
+                              handle_valider_rejete(
+                                row.id,
+                                row.sr,
+                                1,
+                                'encaissement'
+                              )
+                            }
+                            title="Ajouter encaissement"
+                          >
+                            <Euro className="w-5 h-5" />
+                          </button>
+                        )}
+                      {Number(row.statut) == 2 && (
+                        <button
+                          className="p-1 text-red-500 hover:text-red-700"
+                          onClick={() =>
+                            handle_show_comment_rejete(
+                              row.last_statut?.commentaire,
+                              row.sr
+                            )
+                          }
+                          title="Voir le motif de rejet"
+                        >
+                          <Eye className="w-5 h-5" />
+                        </button>
+                      )}
+                    </>
                   )}
-                {Number(row.statut) == 2 && (
-                  <button
-                    className="p-1 text-red-500 hover:text-red-700"
-                    onClick={() =>
-                      handle_show_comment_rejete(
-                        row.last_statut?.commentaire,
-                        row.sr
-                      )
-                    }
-                    title="Voir le motif de rejet"
-                  >
-                    <Eye className="w-5 h-5" />
-                  </button>
-                )}
-              </>
-            )}
 
-            {/* Show Rejection Reason */}
-          </div>
-        );
-      },
-    },
+                  {/* Show Rejection Reason */}
+                </div>
+              );
+            },
+          },
+        ]
+      : []),
   ];
 
+  const data_to_export = () => {
+    return data.map((item) => {
+      // Extraire les noms des acquéreurs et les séparer par "/"
+      const acquereursNames = item?.reservation.aquereurs
+        ? item.reservation.aquereurs
+            .map((acq) => acq.client?.nom + ' ' + acq.client?.prenom || '')
+            .join(' / ') // Sépare les noms par "/"
+        : '';
+
+      const acquereursCin = item?.reservation.aquereurs
+        ? item.reservation.aquereurs
+            .map((acq) => acq.client?.cin || '')
+            .join(' / ') // Sépare les noms par "/"
+        : '';
+
+      const acquereursTele = item?.reservation.aquereurs
+        ? item.reservation.aquereurs
+            .map((acq) => acq.client?.telephone_num1 || '')
+            .join(' / ') // Sépare les noms par "/"
+        : '';
+
+      return {
+        num_recu: item?.sr == 0 ? item?.num_recu : 'SR',
+        date_reg: format(new Date(item.date_reglement), 'dd/MM/yyyy'),
+        cc: item.user.name + ' ' + item.user.prenom || '',
+        bien: item.reservation.bien.propriete_dite_bien || '',
+        prix: item.reservation.prix || '',
+        avance: item.montant.toLocaleString() + ' DH',
+        mode_paiement: MODE_PAIEMENT[item.mode_paiement]?.label,
+        banque: item?.banque?.nom || '',
+        num_pai: item.numero_paiement || '',
+        echeance:
+          item.echeance != null
+            ? format(new Date(item.echeance), 'dd/MM/yyyy')
+            : null,
+        date_enc: item?.last_statut?.date_encaissement
+          ? format(new Date(item.last_statut.date_encaissement), 'dd/MM/yyyy')
+          : null,
+        statut:
+          item.statut == 1 &&
+          (item.last_statut?.date_encaissement == null ||
+            item.last_statut?.num_remise == null)
+            ? "Validé En Attente d'Encaissement"
+            : Avance_Statut[item.statut]?.label,
+        num_rem: item?.last_statut?.num_remise,
+        code_res: item.reservation.code_reservation || '',
+        date_res: item.reservation.date_reservation
+          ? format(new Date(item.reservation.date_reservation), 'dd/MM/yyyy')
+          : '',
+        aq_names: acquereursNames || '',
+        aq_cin: acquereursCin || '',
+        aq_tele: acquereursTele || '',
+      };
+    });
+  };
+
+  const columns_export = [
+    { key: 'num_recu', label: 'N° recu' },
+    { key: 'date_reg', label: 'Date réglement' },
+    { key: 'cc', label: 'Responsable' },
+    { key: 'bien', label: 'Bien' },
+    { key: 'prix', label: 'Prix de vente' },
+    { key: 'avance', label: 'Avance' },
+    { key: 'mode_paiement', label: 'Mode paiement' },
+    { key: 'banque', label: 'Banque' },
+    { key: 'num_pai', label: 'Num paiement' },
+    { key: 'echeance', label: 'Echéance' },
+    { key: 'statut', label: 'Etat' },
+    { key: 'num_rem', label: 'N° Remise' },
+    { key: 'date_enc', label: 'Date Encaiss' },
+    { key: 'code_res', label: 'Code reservation' },
+    { key: 'aq_names', label: 'Nom client' },
+    { key: 'aq_cin', label: 'Cin client' },
+    { key: 'aq_tele', label: 'Tele client' },
+  ];
   if (etat_av === null) {
     return <LoadingSpin />;
   }
@@ -365,6 +445,9 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
 
         {/* Main Table */}
         <Table
+          data_to_export={data_to_export()}
+          columns_export={columns_export}
+          name_file_export={'paiments_export'}
           columns={columns}
           data={formatData()}
           totalRows={totalRows}
@@ -374,7 +457,7 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
           rowsPerPage={rowsPerPage}
           onPageChange={setCurrentPage}
           onRowsPerPageChange={setRowsPerPage}
-          enableExport
+          enableExport={true}
           showSearch={false}
           filterComponent={
             <div className="space-y-4 p-4 rounded-lg ">
@@ -386,7 +469,7 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
               >
                 <Input
                   type="text"
-                  placeholder="N° Paiement"
+                  label="N° Paiement"
                   value={tempFilters.numero_paiement}
                   onChange={(e) =>
                     handleFilterChange('numero_paiement', e.target.value)
@@ -396,7 +479,7 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
 
                 <Input
                   type="text"
-                  placeholder="Montant"
+                  label="Montant"
                   value={tempFilters.montant}
                   onChange={(e) =>
                     handleFilterChange('montant', e.target.value)
@@ -405,19 +488,21 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
                 />
                 <Input
                   type="text"
-                  placeholder="Responsable"
+                  label="Responsable"
                   value={tempFilters.cc}
                   onChange={(e) => handleFilterChange('cc', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
                 <SelectInput
                   value={tempFilters.mode_paiement}
-                  onChange={(value) => handleFilterChange('statut', value)}
+                  onChange={(value) =>
+                    handleFilterChange('mode_paiement', value)
+                  }
                   options={Object.values(MODE_PAIEMENT).map((data) => ({
-                    value: data.id,
+                    value: data.code,
                     label: data.label,
                   }))}
-                  placeholder="Choisir un mode paiement"
+                  label="Mode paiement"
                   className="h-10 text-sm w-full"
                 />
               </div>

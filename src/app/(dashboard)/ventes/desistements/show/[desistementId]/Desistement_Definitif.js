@@ -61,8 +61,8 @@ export function Desistement_Definitif({
         formData?.remboursement?.length > 0
           ? formData.remboursement.map((item) => ({
               date_decaissement: item?.date_decaissement,
-              date_accuse:item?.date_accuse,
-              banque:item?.banque?.nom,
+              date_accuse: item?.date_accuse,
+              banque: item?.banque?.nom,
               statut: item?.statut,
               cheque_client_signe: item?.cheque_client_signe,
               cl_id: item?.aquereur?.client_id,
@@ -398,8 +398,6 @@ export function Desistement_Definitif({
                             </h4>
                           </div>
 
-                         
-
                           {loadingInfos[index] ? (
                             <div className="flex justify-center py-8">
                               <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-indigo-500"></div>
@@ -409,8 +407,10 @@ export function Desistement_Definitif({
                               <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 mb-6">
                                 <h5 className="text-md font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center">
                                   <Home className="w-5 h-5 mr-2 text-blue-500" />
-                                  Dossier transféré : {dossiers.find((d) => d.id === item.dossier_id)
-                                  ?.code_reservation || ''}
+                                  Dossier transféré :{' '}
+                                  {dossiers.find(
+                                    (d) => d.id === item.dossier_id
+                                  )?.code_reservation || ''}
                                 </h5>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                   <div>
@@ -487,20 +487,21 @@ export function Desistement_Definitif({
                                       DH
                                     </p>
                                   </div>
-                                   <div>
-                                    <label className="block text-sm text-gray-500 mb-1">
-                                     Montant transféré
-
-                                    </label>
-                                    <p className="font-medium text-red-00 flex items-center">
-                                      <Wallet className="w-4 h-4 mr-2 text-red-500" />
-                                      {item.montant_transferer
-                                            ? `${parseFloat(
-                                                item.montant_transferer
-                                              ).toFixed(2)} DH`
-                                            : ''}
-                                    </p>
-                                  </div>
+                                  {currentMode == 'transfert' && (
+                                    <div>
+                                      <label className="block text-sm text-gray-500 mb-1">
+                                        Montant transféré
+                                      </label>
+                                      <p className="font-medium text-red-00 flex items-center">
+                                        <Wallet className="w-4 h-4 mr-2 text-red-500" />
+                                        {item.montant_transferer
+                                          ? `${parseFloat(
+                                              item.montant_transferer
+                                            ).toFixed(2)} DH`
+                                          : ''}
+                                      </p>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
 
@@ -663,7 +664,7 @@ export function Desistement_Definitif({
                                     <p className="font-medium text-gray-800">
                                       {item.fichier_autorisation ? (
                                         <a
-                                          href={`${FileUrl}/Docs/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/remboursements/fichiers_autorisations/${code_reservation}/${item.fichier_autorisation}`}
+                                          href={`${FileUrl}/Docs/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/remboursements/fichier_autorisations/${code_reservation}/${item.fichier_autorisation}`}
                                           target="_blank"
                                           rel="noopener noreferrer"
                                           className="text-indigo-500 hover:text-indigo-800 flex items-center transition-colors"

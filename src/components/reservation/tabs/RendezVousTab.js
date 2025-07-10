@@ -13,7 +13,7 @@ import axios from 'axios';
 //import Swal from 'sweetalert2';
 import format from 'date-fns/format';
 import { PDFDownloadLink } from '@react-pdf/renderer';
-import Document from '../../../app/(dashboard)/ventes/reservations/rdv/recu_rdv';
+import ReceiptDocument from '../../../app/(dashboard)/ventes/reservations/rdv/recu_rdv';
 import toast from 'react-hot-toast';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
@@ -350,10 +350,7 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange  }) => {
                     </p>
                   </div>
                 </div>
-                <div className="flex space-x-1">
-                  {etatRes == 1 && contratVente == null && (
-                    <>
-                      <button
+                 {/*<button
                         className="p-2 text-gray-500 hover:text-blue-500 transition-colors"
                         onClick={() => {
                           setRdvId(rdv.id);
@@ -363,7 +360,11 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange  }) => {
                         }}
                       >
                         <EditIcon className="h-4 w-4" />
-                      </button>
+                      </button>*/}
+                <div className="flex space-x-1">
+                  {etatRes == 1 && contratVente == null && (
+                    <>
+                     
                       {user.role <= 2 && rdv.statut == 0 && (
                         <>
                           <button
@@ -416,7 +417,7 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange  }) => {
                     <span className="font-medium w-24">Fiche:</span>
                     <PDFDownloadLink
                       document={
-                        <Document
+                        <ReceiptDocument
                           data={[
                             rdv.reservation.code_reservation,
                             rdv.reservation.bien.propriete_dite_bien,

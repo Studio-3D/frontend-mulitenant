@@ -286,13 +286,15 @@ export default function Desistement_dp_partiel_list() {
       width: '120px',
       render: (row) => (
         <div className="flex gap-2">
-          <button
-            onClick={() => handleView(row.id)}
-            className="text-blue-500 hover:text-blue-700"
-            title="Détail Désistement"
-          >
-            <Eye className="w-4 h-4" />
-          </button>
+          {etat_desistement != 2 && (
+            <button
+              onClick={() => handleView(row.id)}
+              className="text-blue-500 hover:text-blue-700"
+              title="Détail Désistement"
+            >
+              <Eye className="w-4 h-4" />
+            </button>
+          )}
           <button
             onClick={() =>
               handleView_reservation(
@@ -419,6 +421,7 @@ export default function Desistement_dp_partiel_list() {
       </p>
 
       <Table
+        showSearch={false}
         data_to_export={data_to_export()}
         columns_export={columns_export}
         name_file_export={'desistements_partiel_export'}
@@ -446,7 +449,7 @@ export default function Desistement_dp_partiel_list() {
               {user_role <= 2 && (
                 <Input
                   type="text"
-                  placeholder="Responsable"
+                  label="Responsable"
                   value={tempFilters.cc}
                   onChange={(e) => handleFilterChange('cc', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
@@ -454,7 +457,7 @@ export default function Desistement_dp_partiel_list() {
               )}
               <Input
                 type="text"
-                placeholder="Code Réservation"
+                label="Code Réservation"
                 value={tempFilters.code_reservation}
                 onChange={(e) =>
                   handleFilterChange('code_reservation', e.target.value)
@@ -465,7 +468,7 @@ export default function Desistement_dp_partiel_list() {
                 !(etat_desistement == 5 || etat_desistement == 0) && (
                   <Input
                     type="text"
-                    placeholder="Responsable Validation"
+                    label="Responsable Validation"
                     value={tempFilters.responsable}
                     onChange={(e) =>
                       handleFilterChange('responsable', e.target.value)
@@ -476,7 +479,7 @@ export default function Desistement_dp_partiel_list() {
 
               <Input
                 type="number"
-                placeholder="Pénalité"
+                label="Pénalité"
                 value={tempFilters.penalite}
                 onChange={(e) => handleFilterChange('penalite', e.target.value)}
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
@@ -484,7 +487,7 @@ export default function Desistement_dp_partiel_list() {
 
               <Input
                 type="text"
-                placeholder="Ancien aquéreurs"
+                label="Ancien aquéreurs"
                 value={tempFilters.ancien_aq}
                 onChange={(e) =>
                   handleFilterChange('ancien_aq', e.target.value)
@@ -493,7 +496,7 @@ export default function Desistement_dp_partiel_list() {
               />
               <Input
                 type="text"
-                placeholder="Désisteurs"
+                label="Désisteurs"
                 value={tempFilters.desisteur}
                 onChange={(e) =>
                   handleFilterChange('desisteur', e.target.value)
@@ -502,7 +505,7 @@ export default function Desistement_dp_partiel_list() {
               />
               <Input
                 type="text"
-                placeholder="Nouveaux Aquéreurs"
+                label="Nouveaux Aquéreurs"
                 value={tempFilters.nouvel_aq}
                 onChange={(e) =>
                   handleFilterChange('nouvel_aq', e.target.value)
@@ -511,11 +514,9 @@ export default function Desistement_dp_partiel_list() {
               />
               <Input
                 type="text"
-                placeholder="Lien de Parenté"
+                label="Lien de Parenté"
                 value={tempFilters.lien_prt}
-                onChange={(e) =>
-                  handleFilterChange('lien_prt', e.target.value)
-                }
+                onChange={(e) => handleFilterChange('lien_prt', e.target.value)}
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
               <SelectInput
@@ -525,7 +526,7 @@ export default function Desistement_dp_partiel_list() {
                   value: data.id,
                   label: data.label,
                 }))}
-                placeholder="Choisir un Motif"
+                label="Choisir un Statut"
                 className="h-10 text-sm w-full"
               />
             </div>
@@ -538,8 +539,7 @@ export default function Desistement_dp_partiel_list() {
                 startValue={tempFilters.de_date_des}
                 endValue={tempFilters.a_date_des}
                 onChange={handleFilterChange}
-                placeholder="Choisir une Date"
-                label="Date"
+                label="Choisir une Date"
               />
               {user_role <= 2 &&
                 !(etat_desistement == 5 || etat_desistement == 0) && (
@@ -549,8 +549,7 @@ export default function Desistement_dp_partiel_list() {
                     startValue={tempFilters.de_date_respo_req}
                     endValue={tempFilters.a_date_respo_req}
                     onChange={handleFilterChange}
-                    placeholder="Choisir une Date Validation"
-                    label="Date Validation"
+                    label="Choisir une Date Validation"
                   />
                 )}
             </div>

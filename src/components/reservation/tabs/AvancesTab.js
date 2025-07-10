@@ -69,9 +69,9 @@ export const AvancesTab = ({
   const [open_v_r, setOpen_v_r] = useState(false);
   const [ID, setID] = useState(0);
   const [num_recu, set_num_recu] = useState(0);
-  const [Commentaire_r, setCommentaire_r] = useState(null);
+  const [Commentaire_r, setCommentaire_r] = useState('');
   const [type_action, set_type_action] = useState(null);
-  const [action, setAction] = useState(null);
+  const [action, setAction] = useState('');
   const [date_encaissement_v, set_date_encaissement_v] = useState(null);
   const [num_remise_v, set_num_remise_v] = useState(null);
   const [reste, setReste] = useState(0);
@@ -103,7 +103,7 @@ export const AvancesTab = ({
         },
       });
 
-      const { data, etat_res, prix, sum_avances } = response.data;
+      const { data, etat_res, prix, sum_avances ,sum_avances_valides} = response.data;
       const processedData = data.map((item, index) => ({
         ...item,
         number: index + 1,
@@ -122,12 +122,12 @@ export const AvancesTab = ({
       }
       // Notify res show  parent of changes
       if (onAvancesChange) {
-        onAvancesChange(data.length, sum_avances);
+        onAvancesChange(data.length, sum_avances_valides);
       }
       // Also update reservation data if sum_avances == prix
-      if (sum_avances >= prix && updateReservationData) {
+      if (sum_avances_valides >= prix && updateReservationData) {
         updateReservationData({
-          sum_avances_valides: sum_avances,
+          sum_avances_valides: sum_avances_valides,
         });
       }
     } catch (error) {
@@ -557,7 +557,7 @@ export const AvancesTab = ({
   };
 
   const show_dos_desiste = (dosId) => {
-    window.open(`/reservations/show/${dosId}`, '_blank');
+    window.open(`/ventes/reservations/${dosId}`, '_blank');
   };
 
   const formatData = () => {

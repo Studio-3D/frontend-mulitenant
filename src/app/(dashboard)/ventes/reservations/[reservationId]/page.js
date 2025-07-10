@@ -123,7 +123,12 @@ const Res_Show = () => {
       },
     }));
   };
-
+console.log("Sum Avances:", reservationData?.sum_avances_valides);
+console.log("Prix:", reservationData?.reservation?.prix);
+console.log(
+  "Should show Contract Tab?",
+  userRole <= 3 && reservationData?.sum_avances_valides >= reservationData?.reservation?.prix
+);
   const handleRdvChange = (count) => {
     setReservationData((prev) => ({
       ...prev,
@@ -320,7 +325,7 @@ const Res_Show = () => {
         <div className="p-6 text-red-500">{error}</div>
       ) : (
         <>
-          <ReservationHeader reservationData={reservationData} />
+          <ReservationHeader reservationData={reservationData} userRole={userRole} />
           <div className="bg-white rounded-lg shadow-md mt-6">
             <TabNavigation
               activeTab={activeTab}

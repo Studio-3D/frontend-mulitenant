@@ -46,7 +46,7 @@ export default function Desistement_dp_co_list() {
     desisteur: '',
     au_profit: '',
     type: 'dp_co',
-    lien_prt:'',
+    lien_prt: '',
     statut: etat_desistement,
   };
 
@@ -114,22 +114,22 @@ export default function Desistement_dp_co_list() {
 
       // Process ancien aquereurs (from reservation_ancien)
       if (desistement.reservation_ancien?.aquereurs?.length > 0) {
-        desistement.reservation_ancien.aquereurs.forEach(a => {
+        desistement.reservation_ancien.aquereurs.forEach((a) => {
           if (a?.client) {
             ancienAquereurs.push({
               name: `${a.client.nom || ''} ${a.client.prenom || ''}`.trim(),
               id: a.client.id,
-              pourcentage: a.pourcentage
+              pourcentage: a.pourcentage,
             });
           }
         });
       } else if (desistement.reservation_ancien?.aquereurs_ancien?.length > 0) {
-        desistement.reservation_ancien.aquereurs_ancien.forEach(a => {
+        desistement.reservation_ancien.aquereurs_ancien.forEach((a) => {
           if (a?.client) {
             ancienAquereurs.push({
               name: `${a.client.nom || ''} ${a.client.prenom || ''}`.trim(),
               id: a.client.id,
-              pourcentage: a.pourcentage
+              pourcentage: a.pourcentage,
             });
           }
         });
@@ -137,12 +137,14 @@ export default function Desistement_dp_co_list() {
 
       // Process desisteurs
       if (desistement.aquereurs_desisteurs?.length > 0) {
-        desistement.aquereurs_desisteurs.forEach(a => {
+        desistement.aquereurs_desisteurs.forEach((a) => {
           if (a?.aquereur?.client) {
             desisteurs.push({
-              name: `${a.aquereur.client.nom || ''} ${a.aquereur.client.prenom || ''}`.trim(),
+              name: `${a.aquereur.client.nom || ''} ${
+                a.aquereur.client.prenom || ''
+              }`.trim(),
               id: a.aquereur.client_id,
-              pourcentage: a.pourcentage
+              pourcentage: a.pourcentage,
             });
           }
         });
@@ -150,12 +152,14 @@ export default function Desistement_dp_co_list() {
 
       // Process aquereurs profits
       if (desistement.aquereurs_profits?.length > 0) {
-        desistement.aquereurs_profits.forEach(a => {
+        desistement.aquereurs_profits.forEach((a) => {
           if (a?.aquereur?.client) {
             aquereursProfits.push({
-              name: `${a.aquereur.client.nom || ''} ${a.aquereur.client.prenom || ''}`.trim(),
+              name: `${a.aquereur.client.nom || ''} ${
+                a.aquereur.client.prenom || ''
+              }`.trim(),
               id: a.aquereur.client_id,
-              pourcentage: a.pourcentage
+              pourcentage: a.pourcentage,
             });
           }
         });
@@ -166,8 +170,11 @@ export default function Desistement_dp_co_list() {
         date: desistement.created_at
           ? format(new Date(desistement.created_at), 'dd/MM/yyyy')
           : '',
-        cc: `${desistement?.user?.name || ''} ${desistement?.user?.prenom || ''}`.trim(),
-        code_reservation: desistement.reservation_ancien?.code_reservation || '',
+        cc: `${desistement?.user?.name || ''} ${
+          desistement?.user?.prenom || ''
+        }`.trim(),
+        code_reservation:
+          desistement.reservation_ancien?.code_reservation || '',
         ancienAquereurs,
         desisteurs,
         aquereursProfits,
@@ -179,10 +186,12 @@ export default function Desistement_dp_co_list() {
           ? format(new Date(desistement.date_validation), 'dd/MM/yyyy')
           : '',
         responsable_validation: desistement.user_id_valider
-          ? `${desistement.responsable_validation?.name || ''} ${desistement.responsable_validation?.prenom || ''}`.trim()
+          ? `${desistement.responsable_validation?.name || ''} ${
+              desistement.responsable_validation?.prenom || ''
+            }`.trim()
           : '',
         reservation_id: desistement.reservation_id,
-        reservation_id_new: desistement.reservation_id_new
+        reservation_id_new: desistement.reservation_id_new,
       };
     });
   };
@@ -198,7 +207,7 @@ export default function Desistement_dp_co_list() {
       label: 'Ancien Aquéreur',
       render: (row) => (
         <div className="flex flex-col gap-1">
-          {row.ancienAquereurs.map((client, index) => (
+          {row.ancienAquereurs.map((client, index) =>
             client.id ? (
               <Link
                 key={index}
@@ -206,12 +215,13 @@ export default function Desistement_dp_co_list() {
                 className="text-blue-500 hover:text-blue-800 "
                 target="_blank"
               >
-                {client.name} <span className="text-blue-600">{client.pourcentage}%</span>
+                {client.name}{' '}
+                <span className="text-blue-600">{client.pourcentage}%</span>
               </Link>
             ) : (
               <span key={index}>{client.name}</span>
             )
-          ))}
+          )}
         </div>
       ),
     },
@@ -220,7 +230,7 @@ export default function Desistement_dp_co_list() {
       label: 'Désisteurs',
       render: (row) => (
         <div className="flex flex-col gap-1">
-          {row.desisteurs.map((client, index) => (
+          {row.desisteurs.map((client, index) =>
             client.id ? (
               <Link
                 key={index}
@@ -228,12 +238,13 @@ export default function Desistement_dp_co_list() {
                 className="text-blue-500 hover:text-blue-800 "
                 target="_blank"
               >
-                {client.name} <span className="text-red-500">{client.pourcentage}%</span>
+                {client.name}{' '}
+                <span className="text-red-500">{client.pourcentage}%</span>
               </Link>
             ) : (
               <span key={index}>{client.name}</span>
             )
-          ))}
+          )}
         </div>
       ),
     },
@@ -242,7 +253,7 @@ export default function Desistement_dp_co_list() {
       label: 'Au Profit',
       render: (row) => (
         <div className="flex flex-col gap-1">
-          {row.aquereursProfits.map((client, index) => (
+          {row.aquereursProfits.map((client, index) =>
             client.id ? (
               <Link
                 key={index}
@@ -250,12 +261,13 @@ export default function Desistement_dp_co_list() {
                 className="text-blue-500 hover:text-blue-800 "
                 target="_blank"
               >
-                {client.name} <span className="text-green-500">{client.pourcentage}%</span>
+                {client.name}{' '}
+                <span className="text-green-500">{client.pourcentage}%</span>
               </Link>
             ) : (
               <span key={index}>{client.name}</span>
             )
-          ))}
+          )}
         </div>
       ),
     },
@@ -263,7 +275,7 @@ export default function Desistement_dp_co_list() {
     { key: 'lien_parente', label: 'Lien de Parenté' },
     ...(user_role <= 2 && !(etat_desistement == 5 || etat_desistement == 0)
       ? [
-         {
+          {
             key: 'date_validation',
             label:
               etat_desistement == 1
@@ -289,15 +301,23 @@ export default function Desistement_dp_co_list() {
       width: '120px',
       render: (row) => (
         <div className="flex gap-2">
+          {etat_desistement != 2 && (
+            <button
+              onClick={() => handleView(row.id)}
+              className="text-blue-500 hover:text-blue-700"
+              title="Détail Désistement"
+            >
+              <Eye className="w-4 h-4" />
+            </button>
+          )}
           <button
-            onClick={() => handleView(row.id)}
-            className="text-blue-500 hover:text-blue-700"
-            title="Détail Désistement"
-          >
-            <Eye className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => handleView_reservation(etat_desistement == 1 ? row.reservation_id_new : row.reservation_id)}
+            onClick={() =>
+              handleView_reservation(
+                etat_desistement == 1
+                  ? row.reservation_id_new
+                  : row.reservation_id
+              )
+            }
             className="text-green-500 hover:text-green-700"
             title="Détail Réservation"
           >
@@ -322,42 +342,61 @@ export default function Desistement_dp_co_list() {
     return data.map((desistement) => {
       // Format client data for export
       const formatClients = (clients) => {
-        return clients.map(c => `${c.name} (${c.pourcentage}%)`).join(', ');
+        return clients.map((c) => `${c.name} (${c.pourcentage}%)`).join(', ');
       };
 
       const ancienAquereurs = [];
       if (desistement.reservation_ancien?.aquereurs?.length > 0) {
-        desistement.reservation_ancien.aquereurs.forEach(a => {
+        desistement.reservation_ancien.aquereurs.forEach((a) => {
           if (a?.client) {
-            ancienAquereurs.push(`${a.client.nom} ${a.client.prenom} (${a.pourcentage}%)`);
+            ancienAquereurs.push(
+              `${a.client.nom} ${a.client.prenom} (${a.pourcentage}%)`
+            );
           }
         });
       } else if (desistement.reservation_ancien?.aquereurs_ancien?.length > 0) {
-        desistement.reservation_ancien.aquereurs_ancien.forEach(a => {
+        desistement.reservation_ancien.aquereurs_ancien.forEach((a) => {
           if (a?.client) {
-            ancienAquereurs.push(`${a.client.nom} ${a.client.prenom} (${a.pourcentage}%)`);
+            ancienAquereurs.push(
+              `${a.client.nom} ${a.client.prenom} (${a.pourcentage}%)`
+            );
           }
         });
       }
 
-      const desisteurs = desistement.aquereurs_desisteurs?.map(a => 
-        `${a.aquereur?.client?.nom || ''} ${a.aquereur?.client?.prenom || ''} (${a.pourcentage}%)`
-      ).join(', ') || '';
+      const desisteurs =
+        desistement.aquereurs_desisteurs
+          ?.map(
+            (a) =>
+              `${a.aquereur?.client?.nom || ''} ${
+                a.aquereur?.client?.prenom || ''
+              } (${a.pourcentage}%)`
+          )
+          .join(', ') || '';
 
-      const aquereursProfits = desistement.aquereurs_profits?.map(a => 
-        `${a.aquereur?.client?.nom || ''} ${a.aquereur?.client?.prenom || ''} (${a.pourcentage}%)`
-      ).join(', ') || '';
+      const aquereursProfits =
+        desistement.aquereurs_profits
+          ?.map(
+            (a) =>
+              `${a.aquereur?.client?.nom || ''} ${
+                a.aquereur?.client?.prenom || ''
+              } (${a.pourcentage}%)`
+          )
+          .join(', ') || '';
 
       return {
         Date: desistement.created_at
           ? format(new Date(desistement.created_at), 'dd/MM/yyyy')
           : '',
-        CC: `${desistement?.user?.name || ''} ${desistement?.user?.prenom || ''}`.trim(),
-        'Code Réservation': desistement.reservation_ancien?.code_reservation || '',
+        CC: `${desistement?.user?.name || ''} ${
+          desistement?.user?.prenom || ''
+        }`.trim(),
+        'Code Réservation':
+          desistement.reservation_ancien?.code_reservation || '',
         'Ancien Aquéreur': ancienAquereurs.join(', ') || '',
-        'Désisteurs': desisteurs,
+        Désisteurs: desisteurs,
         'Au Profit': aquereursProfits,
-        'Pénalité': desistement.penalite_desistement?.montant
+        Pénalité: desistement.penalite_desistement?.montant
           ? `${desistement.penalite_desistement.montant.toLocaleString()} DH`
           : '',
         'Lien de Parenté': lien_parentes[desistement.lien_parente]?.label || '',
@@ -365,7 +404,9 @@ export default function Desistement_dp_co_list() {
           ? format(new Date(desistement.date_validation), 'dd/MM/yyyy')
           : '',
         'Responsable Validation': desistement.user_id_valider
-          ? `${desistement.responsable_validation?.name || ''} ${desistement.responsable_validation?.prenom || ''}`.trim()
+          ? `${desistement.responsable_validation?.name || ''} ${
+              desistement.responsable_validation?.prenom || ''
+            }`.trim()
           : '',
       };
     });
@@ -387,7 +428,7 @@ export default function Desistement_dp_co_list() {
   return (
     <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
       <p className="text-lg font-semibold mb-4">
-        Désistements Profits d{'\''}un Co-Réservataire{' '}
+        Désistements Profits d{"'"}un Co-Réservataire{' '}
         {etat_desistement == 5
           ? 'En Attentes'
           : etat_desistement == 0
@@ -416,138 +457,142 @@ export default function Desistement_dp_co_list() {
         enableExport={true}
         enableImport={false}
         showSearch={false}
-         filterComponent={
-                  <div className="space-y-4">
-                    <div
-                      className="grid gap-5"
-                      style={{
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                      }}
-                    >
-                      {/* Regular inputs */}
-                      {user_role <= 2 && (
-                        <Input
-                          type="text"
-                          placeholder="Responsable"
-                          value={tempFilters.cc}
-                          onChange={(e) => handleFilterChange('cc', e.target.value)}
-                          className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-                        />
-                      )}
-                      <Input
-                        type="text"
-                        placeholder="Code Réservation"
-                        value={tempFilters.code_reservation}
-                        onChange={(e) =>
-                          handleFilterChange('code_reservation', e.target.value)
-                        }
-                        className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-                      />
-                      {user_role <= 2 &&
-                        !(etat_desistement == 5 || etat_desistement == 0) && (
-                          <Input
-                            type="text"
-                            placeholder="Responsable Validation"
-                            value={tempFilters.responsable}
-                            onChange={(e) =>
-                              handleFilterChange('responsable', e.target.value)
-                            }
-                            className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-                          />
-                        )}
-        
-                      <Input
-                        type="number"
-                        placeholder="Pénalité"
-                        value={tempFilters.penalite}
-                        onChange={(e) => handleFilterChange('penalite', e.target.value)}
-                        className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-                      />
-                     
-                      <Input
-                        type="text"
-                        placeholder="Ancien aquéreurs"
-                        value={tempFilters.ancien_aq}
-                        onChange={(e) => handleFilterChange('ancien_aq', e.target.value)}
-                        className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-                      />
-                       <Input
-                        type="text"
-                        placeholder="Désisteurs"
-                        value={tempFilters.desisteur}
-                        onChange={(e) => handleFilterChange('desisteur', e.target.value)}
-                        className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-                      />
-                       <Input
-                        type="text"
-                        placeholder="Au Profit"
-                        value={tempFilters.au_profit}
-                        onChange={(e) => handleFilterChange('au_profit', e.target.value)}
-                        className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-                      />
-                       <Input
-                        type="text"
-                        placeholder="Lien de Parenté"
-                        value={tempFilters.lien_prt}
-                        onChange={(e) => handleFilterChange('lien_prt', e.target.value)}
-                        className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-                      />
-                      <SelectInput
-                        value={tempFilters.statut}
-                        onChange={(value) => handleFilterChange('statut', value)}
-                        options={Object.values(status).map((data) => ({
-                          value: data.id,
-                          label: data.label,
-                        }))}
-                        placeholder="Choisir un Motif"
-                        className="h-10 text-sm w-full"
-                      />
-                    </div>
-        
-                    {/* Date range inputs in their own row */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                      <DateRangePicker
-                        startName="de_date_des"
-                        endName="a_date_des"
-                        startValue={tempFilters.de_date_des}
-                        endValue={tempFilters.a_date_des}
-                        onChange={handleFilterChange}
-                        placeholder="Choisir une Date"
-                        label="Date"
-                      />
-                      {user_role <= 2 &&
-                        !(etat_desistement == 5 || etat_desistement == 0) && (
-                          <DateRangePicker
-                            startName="de_date_respo_req"
-                            endName="a_date_respo_req"
-                            startValue={tempFilters.de_date_respo_req}
-                            endValue={tempFilters.a_date_respo_req}
-                            onChange={handleFilterChange}
-                            placeholder="Choisir une Date Validation"
-                            label="Date Validation"
-                          />
-                        )}
-                    </div>
-        
-                    {/* Buttons */}
-                    <div className="flex justify-end gap-3 pt-2">
-                      <button
-                        type="button"
-                        onClick={applyFilters}
-                        className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-                      >
-                        Appliquer les filtres
-                      </button>
-                      <button
-                        type="button"
-                        onClick={resetFilters}
-                        className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
-                      >
-                        Réinitialiser
-                      </button>
-                    </div>
-                  </div>
+        filterComponent={
+          <div className="space-y-4">
+            <div
+              className="grid gap-5"
+              style={{
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              }}
+            >
+              {/* Regular inputs */}
+              {user_role <= 2 && (
+                <Input
+                  type="text"
+                  label="Responsable"
+                  value={tempFilters.cc}
+                  onChange={(e) => handleFilterChange('cc', e.target.value)}
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
+              )}
+              <Input
+                type="text"
+                label="Code Réservation"
+                value={tempFilters.code_reservation}
+                onChange={(e) =>
+                  handleFilterChange('code_reservation', e.target.value)
                 }
+                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+              />
+              {user_role <= 2 &&
+                !(etat_desistement == 5 || etat_desistement == 0) && (
+                  <Input
+                    type="text"
+                    label="Responsable Validation"
+                    value={tempFilters.responsable}
+                    onChange={(e) =>
+                      handleFilterChange('responsable', e.target.value)
+                    }
+                    className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                  />
+                )}
+
+              <Input
+                type="number"
+                label="Pénalité"
+                value={tempFilters.penalite}
+                onChange={(e) => handleFilterChange('penalite', e.target.value)}
+                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+              />
+
+              <Input
+                type="text"
+                label="Ancien aquéreurs"
+                value={tempFilters.ancien_aq}
+                onChange={(e) =>
+                  handleFilterChange('ancien_aq', e.target.value)
+                }
+                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+              />
+              <Input
+                type="text"
+                label="Désisteurs"
+                value={tempFilters.desisteur}
+                onChange={(e) =>
+                  handleFilterChange('desisteur', e.target.value)
+                }
+                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+              />
+              <Input
+                type="text"
+                label="Au Profit"
+                value={tempFilters.au_profit}
+                onChange={(e) =>
+                  handleFilterChange('au_profit', e.target.value)
+                }
+                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+              />
+              <Input
+                type="text"
+                label="Lien de Parenté"
+                value={tempFilters.lien_prt}
+                onChange={(e) => handleFilterChange('lien_prt', e.target.value)}
+                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+              />
+              <SelectInput
+                value={tempFilters.statut}
+                onChange={(value) => handleFilterChange('statut', value)}
+                options={Object.values(status).map((data) => ({
+                  value: data.id,
+                  label: data.label,
+                }))}
+                label="Choisir un Statut"
+                className="h-10 text-sm w-full"
+              />
+            </div>
+
+            {/* Date range inputs in their own row */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <DateRangePicker
+                startName="de_date_des"
+                endName="a_date_des"
+                startValue={tempFilters.de_date_des}
+                endValue={tempFilters.a_date_des}
+                onChange={handleFilterChange}
+                label="Choisir une Date"
+              />
+              {user_role <= 2 &&
+                !(etat_desistement == 5 || etat_desistement == 0) && (
+                  <DateRangePicker
+                    startName="de_date_respo_req"
+                    endName="a_date_respo_req"
+                    startValue={tempFilters.de_date_respo_req}
+                    endValue={tempFilters.a_date_respo_req}
+                    onChange={handleFilterChange}
+                    label="Choisir une Date Validation"
+                  />
+                )}
+            </div>
+
+            {/* Buttons */}
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={applyFilters}
+                className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+              >
+                Appliquer les filtres
+              </button>
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
+              >
+                Réinitialiser
+              </button>
+            </div>
+          </div>
+        }
       />
     </div>
   );
