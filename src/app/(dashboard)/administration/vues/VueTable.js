@@ -115,18 +115,25 @@ const VueTable = () => {
               label: "Actions",
               render: (row) => (
                 <div className="flex gap-3 items-center">
-                  
-                  <Pencil
-                    className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
-                    onClick={() => handleEdit(row.id)}
-                  />
-                  <Trash2
-                    className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
-                    onClick={() => {
-                      setSelectedId(row.id);
-                      setShowDeleteModal(true);
-                    }}
-                  />
+                  <div className="flex gap-3 items-center">
+                      <button
+                      className="text-blue-500 hover:text-blue-700"
+                      onClick={() => handleEdit(row.id)}
+                      title="Modifier"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      className="text-red-500 hover:text-red-700"
+                      onClick={() => {
+                        setSelectedId(row.id);
+                        setShowDeleteModal(true);
+                      }}
+                      title="Supprimer"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                    </div>
         
                 </div>
               ),

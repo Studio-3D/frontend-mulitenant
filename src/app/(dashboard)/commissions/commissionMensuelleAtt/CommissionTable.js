@@ -233,11 +233,14 @@ const CommissionTable = () => {
       key: 'actions',
       label: 'Actions',
       render: (row) => (
-        <Wrench
-          className="w-5 h-5 !text-red-500 hover:text-red-700 cursor-pointer"
+        <button
+          className="text-red-500 hover:text-red-700"
           title="Traiter"
           onClick={() => handleTraiterAccuse(row.id, `${row.name} ${row.prenom}`, row.commission)}
-        />
+        >
+          <Wrench className="w-5 h-5" />
+        </button>
+
       ),
     },
   ];
@@ -417,6 +420,7 @@ const handleFilterToggle = (isOpen) => {
       )}
       {/* Table des commissions */}
         <Table
+          title={"Commissions Mensuelles en Attente"}
           data_to_export={data_to_export()}
           columns_export={columns_export}
           name_file_export={"commission_export"}
