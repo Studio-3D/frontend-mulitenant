@@ -80,10 +80,14 @@ const Page = () => {
       });
 
       // Filter out current user from results
-      const filteredUsers = response.data.users.filter(u => u.id !== user?.id);
-      
+      const filteredUsers = response.data.users.filter(
+        (u) => u.id !== user?.id
+      );
+
       setUsers(filteredUsers);
-      setTotalRows(response.data.pagination?.totalItems || filteredUsers.length);
+      setTotalRows(
+        response.data.pagination?.totalItems || filteredUsers.length
+      );
     } catch (err) {
       setError(err.response?.data?.message || "Erreur lors du chargement");
       if (err.response?.status === 401) {
@@ -103,7 +107,7 @@ const Page = () => {
     user?.id,
     router,
     filters,
-    accesstoken
+    accesstoken,
   ]);
 
   const handleFilterChange = (field, value) => {
@@ -214,9 +218,6 @@ const Page = () => {
     key,
     label: key,
   }));
-    key,
-    label: key
-  }));
 
   // Table columns configuration
   const columns = [
@@ -317,29 +318,6 @@ const Page = () => {
                 setShowUnblockModal(true);
               }}
               className="flex items-center gap-1 text-green-500 hover:text-green-700"
-              title="Débloquer l'utilisateur"
-            >
-              <ShieldCheck className="w-4 h-4" />
-            </button>
-          )}
-          {row.status === "Actif" ? (
-            <button
-              onClick={() => {
-                setSelectedUserId(row.id);
-                setShowBlockModal(true);
-              }}
-              className="flex items-center gap-1 text-green-500 hover:text-green-700"
-              title="Bloquer l'utilisateur"
-            >
-              <ShieldX className="w-4 h-4" />
-            </button>
-          ) : (
-            <button
-              onClick={() => {
-                setSelectedUserId(row.id);
-                setShowUnblockModal(true);
-              }}
-              className="flex items-center gap-1 text-red-500 hover:text-red-700"
               title="Débloquer l'utilisateur"
             >
               <ShieldCheck className="w-4 h-4" />
@@ -503,11 +481,7 @@ const Page = () => {
               : []
           }
           totalRows={
-            user?.role === 1
-              ? totalRows
-              : selectedSociete?.id
-              ? totalRows
-              : 0
+            user?.role === 1 ? totalRows : selectedSociete?.id ? totalRows : 0
           }
           loading={loading}
           error={error}
