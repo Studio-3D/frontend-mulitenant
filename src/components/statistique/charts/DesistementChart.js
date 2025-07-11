@@ -24,7 +24,7 @@ import {
   endOfMonth,
   subMonths,
   isSameMonth,
-  parse // Import parse function for robust date parsing
+  parse
 } from "date-fns"
 import { fr } from "date-fns/locale"
 
@@ -60,12 +60,23 @@ const chartConfig = {
 export function DesistementChart({ data = [], startDate, endDate }) {
   const [isLoading, setIsLoading] = useState(true);
   const [timePeriod, setTimePeriod] = useState('default');
+  const [isMobile, setIsMobile] = useState(false);
 
   const zeros = {
     "Désistement Définitif": 0,
     "Désistement au Profit": 0,
     "Changement de Bien": 0
   };
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640); // Tailwind's 'sm' breakpoint
+    };
+    
+    handleResize(); // Set initial value
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const determineTimePeriod = () => {
@@ -133,7 +144,6 @@ export function DesistementChart({ data = [], startDate, endDate }) {
           const weekChartData = weekDays.map(day => {
             const result = { ...zeros };
             data.forEach(item => {
-                // Using parse for robustness, assuming 'dd-MM-yyyy' format
                 const parsedItemDate = parse(item.date, 'dd-MM-yyyy', new Date());
                 if (isSameDay(parsedItemDate, day)) {
                     result[item.typeDesistement] += item.nombre || 0;
@@ -183,7 +193,6 @@ export function DesistementChart({ data = [], startDate, endDate }) {
           });
 
           data.forEach(item => {
-            // Using parse for robustness, assuming 'dd-MM-yyyy' format
             const parsedItemDate = parse(item.date, 'dd-MM-yyyy', new Date());
             if (parsedItemDate.getFullYear() === currentYearStart.getFullYear()) {
                 const monthKey = format(parsedItemDate, 'yyyy-MM');
@@ -201,7 +210,6 @@ export function DesistementChart({ data = [], startDate, endDate }) {
           const defaultChartData = daysInDefaultRange.map(day => {
             const result = { ...zeros };
             data.forEach(item => {
-                // Using parse for robustness, assuming 'dd-MM-yyyy' format
                 const parsedItemDate = parse(item.date, 'dd-MM-yyyy', new Date());
                 if (isSameDay(parsedItemDate, day)) {
                     result[item.typeDesistement] += item.nombre || 0;
@@ -223,6 +231,22 @@ export function DesistementChart({ data = [], startDate, endDate }) {
       }
     };
     return generatePeriodData();
+  };
+
+  const calculateMobileInterval = () => {
+    if (!isMobile) return 0; // Show all labels on desktop
+    
+    switch(timePeriod) {
+      case 'week':
+        return 1; // Show every other day for week view
+      case 'month':
+      case 'last-month':
+        return 4; // Show ~7 labels for month view
+      case 'year':
+        return 0; // Show all months
+      default:
+        return 2; // Default spacing for custom ranges
+    }
   };
 
   const dateRangeLabel = getDateRangeLabel();
@@ -277,7 +301,7 @@ export function DesistementChart({ data = [], startDate, endDate }) {
           </CardDescription>
         </div>
 
-        <div className=" xl:flex gap-4">
+        <div className="hidden sm:flex gap-4">
           {Object.entries(chartConfig).map(([key, config]) => (
             <div key={key} className="flex items-center gap-1">
               <div
@@ -295,9 +319,9 @@ export function DesistementChart({ data = [], startDate, endDate }) {
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={chartData}
-              barCategoryGap="10%" 
-              barGap={1}           
-              margin={{ left: 5, right: 5 }}
+              barCategoryGap={isMobile ? '10%' : '5%'}
+              barGap={isMobile ? 2 : 5}
+              margin={{ left: 0, right: 0 }}
             >
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
               <XAxis
@@ -305,10 +329,11 @@ export function DesistementChart({ data = [], startDate, endDate }) {
                 tickLine={false}
                 tickMargin={12}
                 axisLine={false}
-                tick={{ fontSize: '0.75rem', sm: '0.875rem' }}
-                type="category" 
-                interval={0} 
-                padding={{ left: 13, right: 10 }}
+                tick={{ fontSize: '0.75rem' }}
+                type="category"
+                interval={calculateMobileInterval()}
+                minTickGap={isMobile ? 5 : 1}
+                padding={{ left: 0, right: 10 }}
               />
               <YAxis />
               <ChartTooltip
