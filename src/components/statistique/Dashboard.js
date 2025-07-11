@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { StatCard } from './StatCard';
 import { DateFilter } from './DateFilter';
 import { AreaChart } from './charts/AreaCharts';
 import { BarChart } from './charts/BarChart';
 import { PieChart } from './charts/PieChart';
 import { MulBar } from './charts/MulBar';
+import { DesistementChart } from './charts/DesistementChart';
 import { 
   startOfMonth, 
   endOfMonth, 
@@ -30,7 +31,8 @@ import {
   UsersIcon, 
   UserPlusIcon, 
   PhoneCallIcon, 
-  ArrowDownIcon 
+  ArrowDownIcon,
+  ChevronLeftIcon
 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from "../../context/AuthContext";
@@ -45,11 +47,13 @@ export const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [timePeriod, setTimePeriod] = useState('month');
+  const [selectedMonth, setSelectedMonth] = useState(null);
   
   const handleDateChange = (start, end, period) => {
     setStartDate(start);
     setEndDate(end);
     setTimePeriod(period || 'custom');
+    setSelectedMonth(null); // Reset month selection when changing period
   };
   
   const { token } = useAuth();
@@ -108,7 +112,6 @@ export const Dashboard = () => {
     remboursements = [],
     visites = {},
     bien_vendu_par_type_et_date_reservation: biensVendusRaw = [],
-    array_type_date_desistement: cancellationsRaw = [],
     chartData_sources = [],
   } = dashboardData || {};
 
@@ -253,34 +256,10 @@ export const Dashboard = () => {
       .filter(item => item.value > 0);
   };
 
-  // Prepare cancellation data
-  const prepareCancellationData = () => {
-    const cancellationCategories = [
-      { id: '1', name: 'Désistement Définitif', color: '#EF4444' },
-      { id: '2', name: 'Désistements Au Profit', color: '#F59E0B' },
-      { id: '3', name: 'Changement de Bien', color: '#3B82F6' },
-      { id: '4', name: 'Autre motif', color: '#6B7280' }
-    ];
-
-    return (cancellationsRaw || []).map(item => {
-      const category = cancellationCategories.find(cat => cat.id === item[2]);
-      return {
-        date: new Date(item[0]),
-        reason: category ? category.name : 'Unknown',
-        count: 1,
-        color: category ? category.color : '#6B7280',
-      };
-    }).filter(item => !isNaN(item.date.getTime()));
-  };
 
   const financialChartData = prepareFinancialChartData();
   const visitData = prepareVisitData();
   const sourceData = prepareSourceData();
-  const cancellations = prepareCancellationData();
-
-  const filteredCancellations = cancellations.filter(item => {
-    return item.date >= startDate && item.date <= endDate;
-  });
 
   if (loading) {
     return (
@@ -306,8 +285,8 @@ export const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen p-4">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+    <div className="min-h-screen">
+      <div className="bg-white p-4 rounded-xl shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
         <h2 className="text-xl font-semibold text-gray-800 mb-4 sm:mb-0">
           Aperçu Général
         </h2>
@@ -428,7 +407,6 @@ export const Dashboard = () => {
           <h3 className="text-lg font-medium text-gray-800 mb-4">
             Encaissements - Remboursement
           </h3>
-          {/* Legend Section */}
           <div className="flex justify-end items-center mb-4 space-x-4">
             <div className="flex items-center">
               <div className="w-3 h-3 rounded-full bg-[#10B981] mr-2"></div>
@@ -448,62 +426,14 @@ export const Dashboard = () => {
         </div>
       </div>
       
-      <div className="bg-white rounded-lg shadow p-4 md:p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-medium text-gray-800">Désistement</h3>
-          <div className="flex items-center">
-            <span className="text-sm text-gray-500 mr-2">
-              Période: {format(startDate, 'dd/MM/yyyy')} - {format(endDate, 'dd/MM/yyyy')}
-            </span>
-            <span className="text-sm font-medium text-gray-800">
-              {filteredCancellations.length} cas
-            </span>
-          </div>
+      <div className="bg-white rounded-lg shadow  ">
+          <DesistementChart 
+            data={dashboardData?.array_type_date_desistement || []} 
+            startDate={startDate}
+            endDate={endDate}
+            timePeriod={timePeriod}
+          />
         </div>
-        
-        {filteredCancellations.length > 0 ? (
-          <div className="space-y-3 overflow-auto max-h-96">
-            {filteredCancellations
-              .sort((a, b) => b.date - a.date)
-              .map((item, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex items-center flex-1 min-w-0">
-                    <div
-                      className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center"
-                      style={{ backgroundColor: `${item.color}20` }}
-                    >
-                      <ArrowDownIcon
-                        className="w-5 h-5"
-                        style={{ color: item.color }}
-                      />
-                    </div>
-                    <div className="ml-4 min-w-0">
-                      <p className="text-sm font-medium text-gray-800 truncate">
-                        {item.reason}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {format(item.date, 'dd/MM/yyyy')}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="ml-4 text-right flex-shrink-0">
-                    <p className="text-sm font-medium text-gray-800">
-                      {item.count} cas
-                    </p>
-                  </div>
-                </div>
-              ))}
-          </div>
-        ) : (
-          <div className="text-center py-6 text-gray-500">
-            <AlertCircleIcon className="w-8 h-8 mx-auto mb-2" />
-            <p>Aucun désistement enregistré pour cette période</p>
-          </div>
-        )}
       </div>
-    </div>
   );
 };

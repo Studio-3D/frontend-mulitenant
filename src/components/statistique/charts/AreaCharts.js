@@ -184,7 +184,7 @@ export const AreaChart = ({ data = [], startDate, endDate }) => {
       <div className="flex justify-center items-center h-64">
         <div className="text-center">
           <p className="text-sm text-gray-500">
-            Aucune donnée disponible
+            Aucun Encaissements-Remboursements enregistré pour cette période
           </p>
         </div>
       </div>
