@@ -45,15 +45,15 @@ import {
 const chartConfig = {
   "Désistement Définitif": {
     label: "Désistement Définitif",
-    color: "#2CAFFE",
+    color: "#0088FE",
   },
   "Désistement au Profit": {
     label: "Désistement au Profit",
-    color: "#FE642C",
+    color: "#00C49F",
   },
   "Changement de Bien": {
     label: "Changement de Bien",
-    color: "#2CFE7F",
+    color: "#FFBB28",
   },
 }
 
