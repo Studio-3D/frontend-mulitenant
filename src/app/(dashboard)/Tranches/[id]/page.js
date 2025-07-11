@@ -20,6 +20,7 @@ import Link from "next/link";
 import BienTable from "@/components/biens/BienTable";
 import BlocTable from "@/components/blocs/BlocTable";
 import ImmeubleTable from "@/components/immeubles/ImmeubleTable";
+import LoadingSpin from "@/components/LoadingSpin";
 
 export default function TrancheDetailsPage() {
   const { id } = useParams();

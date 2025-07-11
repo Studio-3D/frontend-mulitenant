@@ -72,8 +72,10 @@ export default function CommissionConfigForm({ onClose, onSuccess }) {
   };
 
   useEffect(() => {
-    fetchData_Configuration();
-  }, []);
+    fetchData_Configuration()
+    fetchData_commission_montant()
+  }, [])
+
 
   const handleAddInput = () => {
     setInputs([...inputs, { de: "", a: "", pourcentage: "" }]);

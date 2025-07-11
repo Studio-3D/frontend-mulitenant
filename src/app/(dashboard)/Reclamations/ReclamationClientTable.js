@@ -265,37 +265,42 @@ const openTraitement = (row) => {
     label: "Actions",
     render: row => (
       <>
-      <div className="text-[#666880] inline-block min-w-[80px]" // min-w élargit la colonne
->
+      <div className="text-[#666880] inline-block min-w-[80px] flex gap-2 items-center">
+        <button
+          className="text-blue-500 hover:text-yellow-700"
+          title="Voir détails"
+          onClick={() => handleShow(row)}
+        >
+          <Eye className="w-4 h-4" />
+        </button>
 
-      <Eye
-        className="w-4 h-4 !text-blue-500 hover:text-yellow-700 cursor-pointer"
-        onClick={() => handleShow(row)}
-      />
-        {row.etat == 0 && (
-          <Wrench
-            className="w-5 h-5 !text-red-500 hover:text-red-700 cursor-pointer"
+        {row.etat === 0 && (
+          <button
+            className="text-red-500 hover:text-red-700"
             title="Traiter"
             onClick={() => {
               setDialogType("traiter_client");
               openTraitement(row);
-            }}            
-          />
+            }}
+          >
+            <Wrench className="w-5 h-5" />
+          </button>
         )}
-        {row.etat == 1 && (
-          <>
-          <Check
-            className="w-4 h-4 !text-green-600 hover:text-green-800 cursor-pointer"
+
+        {row.etat === 1 && (
+          <button
+            className="text-green-600 hover:text-green-800"
             title="Résoudre"
             onClick={() => {
               setDialogType("resoudre_client");
               openTraitement(row);
             }}
-          />
-
-          </>
+          >
+            <Check className="w-4 h-4" />
+          </button>
         )}
-    </div>
+      </div>
+
 
       </>
     )

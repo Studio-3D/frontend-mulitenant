@@ -16,6 +16,7 @@ export default function ObjectifForm({ id = null }) {
   const [loading, setLoading] = useState(id ? true : false);
   const [submitting, setSubmitting] = useState(false);
   const [users, setUsers] = useState([]);
+  const [user, setUser] = useState(null);
   const [fetchingUsers, setFetchingUsers] = useState(false);
 
   // Form state
@@ -80,6 +81,7 @@ export default function ObjectifForm({ id = null }) {
             jours: 0,
           },
         });
+        setUser(objectif.user);
       } catch (error) {
         console.error("Error fetching objectif:", error);
         toast.error("Erreur lors du chargement de l'objectif");
@@ -183,11 +185,7 @@ export default function ObjectifForm({ id = null }) {
                 type="text"
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100"
                 value={
-                  users.find((u) => u.user_id === formData.user_id)?.user
-                    ?.name +
-                    " " +
-                    users.find((u) => u.user_id === formData.user_id)?.user
-                      ?.prenom || "Utilisateur non trouvé"
+                  user.name+''+user.p || "Utilisateur non trouvé"
                 }
                 disabled
               />

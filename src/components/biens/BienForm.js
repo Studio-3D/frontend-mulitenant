@@ -107,6 +107,10 @@ export default function BienForm({ id }) {
     num_parking: "",
     superficie_box: "",
     superficie_parking: "",
+    superficie_balcon_calculer:'',
+    superficie_jardin_calculer:'',
+    superficie_terrasse_calculer:'',
+    superficie_balcon:'',
   });
 
   const [formDataComp, setFormDataComp] = useState({
@@ -140,6 +144,40 @@ export default function BienForm({ id }) {
   const handleselectChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
+
+  useEffect(() => {
+  if (!hasJardin) {
+    setFormData((prev) => ({
+      ...prev,
+      superficie_jardin: '',
+      superficie_jardin_calculer: '',
+    }));
+  }
+}, [hasJardin]);
+
+useEffect(() => {
+  if (!hasParking) {
+    setFormData((prev) => ({
+      ...prev,
+      num_parking: '',
+      prix_parking: '',
+      superficie_parking: '',
+    }));
+  }
+}, [hasParking]);
+
+useEffect(() => {
+  if (!hasBox) {
+    setFormData((prev) => ({
+      ...prev,
+      prix_box: '',
+      superficie_box: '',
+      num_box: '',
+      // ajouter ici les champs à vider s’il y en a
+    }));
+  }
+}, [hasBox]);
+
 
   // Fetch reference data and initial data on component mount
   useEffect(() => {
@@ -1322,7 +1360,9 @@ export default function BienForm({ id }) {
             name="superficie_terrasse_calculer"
             type="number"
             value={formData.superficie_terrasse_calculer}
-            readOnly
+            onChange={(e) =>
+              handleChange("superficie_terrasse_calculer", e.target.value)
+            }
           />
         </div>
 
@@ -1340,7 +1380,8 @@ export default function BienForm({ id }) {
             name="superficie_balcon_calculer"
             type="number"
             value={formData.superficie_balcon_calculer}
-            readOnly
+            onChange={(e) => handleChange("superficie_balcon_calculer", e.target.value)}
+
           />
         </div>
 
@@ -1430,7 +1471,8 @@ export default function BienForm({ id }) {
               name="superficie_jardin_calculer"
               type="number"
               value={formData.superficie_jardin_calculer}
-              readOnly
+              onChange={(e) => handleChange("superficie_jardin_calculer", e.target.value)}
+
             />
           </div>
         )}
@@ -1512,7 +1554,6 @@ export default function BienForm({ id }) {
             value={formData.superficie_total}
             readOnly
           />
-
           <Input
             label="Prix (Dhs)"
             type="number"
@@ -1649,18 +1690,32 @@ export default function BienForm({ id }) {
 
         {/* Boutons navigation */}
         <div className="flex justify-between mt-6 items-center">
-          {/* Bouton "Annuler" ou "Précédent" */}
+  {/* Bouton "Annuler" ou "Précédent" */}
+        {activeStep === 0 ? (
           <button
             type="button"
-            onClick={activeStep === 0 ? () => router.back() : handleBack}
+            onClick={() => router.back()}
             className="px-4 py-2 border border-gray-300 rounded-md"
           >
-            {activeStep === 0
-              ? "Annuler"
-              : activeStep === 1
-              ? "Précédent"
-              : undefined}
+            Annuler
           </button>
+        ) : activeStep === 1 ? (
+          <button
+            type="button"
+            onClick={handleBack}
+            className="px-4 py-2 border border-gray-300 rounded-md"
+          >
+            Précédent
+          </button>
+        ) : activeStep === 2 ? (
+          <button
+            type="button"
+            onClick={() => router.back()} // <-- Redirection personnalisée
+            className="px-4 py-2 border border-gray-300 rounded-md"
+          >
+            Annuler
+          </button>
+        ) : null}
 
           {/* Étape 1 : Soumettre bien */}
           {activeStep === 1 && (

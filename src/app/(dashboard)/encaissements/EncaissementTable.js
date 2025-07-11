@@ -270,11 +270,21 @@ const getTypeEncaissementBadge = (type) => {
     label: "Actions",
     render: (row) => (
       <div className="flex gap-3 items-center">
-        
-        <Eye
-          className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
-          onClick={() => handleShow(row.type_encaissement, row.reservation_id, row.remboursement?.desistement_id, row.penalite?.desistement_id)}
-        />
+        <button
+          title="Voir détails"
+          className="text-blue-500 hover:text-blue-700"
+          onClick={() =>
+            handleShow(
+              row.type_encaissement,
+              row.reservation_id,
+              row.remboursement?.desistement_id,
+              row.penalite?.desistement_id
+            )
+          }
+        >
+          <Eye className="w-4 h-4" />
+        </button>
+
       </div>
     ),
   },
