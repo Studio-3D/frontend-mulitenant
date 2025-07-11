@@ -316,7 +316,8 @@ export const MulBar = ({ data = [], startDate, endDate }) => {
             axisLine={false}
             tickLine={false}
           />
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={<CustomTooltip />} 
+          cursor={{ fill: 'transparent' }} />
           <Legend />
           {bienTypes.map(type => (
             <Bar 
