@@ -277,7 +277,7 @@ export function DesistementChart({ data = [], startDate, endDate }) {
           </CardDescription>
         </div>
 
-        <div className="flex gap-4">
+        <div className=" xl:flex gap-4">
           {Object.entries(chartConfig).map(([key, config]) => (
             <div key={key} className="flex items-center gap-1">
               <div

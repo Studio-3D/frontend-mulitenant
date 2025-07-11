@@ -286,8 +286,8 @@ export const Dashboard = () => {
 
   return (
     <div className="min-h-screen">
-      <div className="bg-white p-4 rounded-xl shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4 sm:mb-0">
+      <div className="bg-white p-4 rounded-xl shadow-sm flex justify-between items-center  sm:flex-row sm:items-center sm:justify-between mb-6">
+        <h2 className="xl:text-xl items-center font-semibold text-gray-800  sm:mb-0">
           Aperçu Général
         </h2>
         <DateFilter
@@ -298,73 +298,70 @@ export const Dashboard = () => {
         />
       </div>
       
-      <div className="relative mb-6">
-        <div className="flex overflow-x-auto pb-4 -mx-4 px-4 gap-4 snap-x scrollbar-none">
-          <div className="flex gap-3 min-w-max">
-            <div className="xl:w-[255px] sm:w-auto snap-start">
-              <StatCard
-                title="Pénalité"
-                value={penalties.toLocaleString('fr-FR')}
-                change="+12.5%"
-                isPositive={false}
-                icon={<AlertCircleIcon className="w-5 h-5" />}
-                color="bg-gradient-to-r from-red-400 to-red-500"
-              />
-            </div>
-            <div className="xl:w-[255px] sm:w-auto snap-start">
-              <StatCard
-                title="Bien Vendu"
-                value={Bien_vendu.toLocaleString('fr-FR')}
-                change="+8.2%"
-                isPositive={true}
-                icon={<ThumbsUpIcon className="w-5 h-5" />}
-                color="bg-gradient-to-r from-green-400 to-green-500"
-              />
-            </div>
-            <div className="xl:w-[255px] sm:w-auto snap-start">
-              <StatCard
-                title="Encaissement"
-                value={`${encaissementTotal.toLocaleString('fr-FR')} dh`}
-                change="+4.4%"
-                isPositive={true}
-                icon={<BanknoteIcon className="w-5 h-5" />}
-                color="bg-gradient-to-r from-blue-400 to-blue-500"
-              />
-            </div>
-            <div className="xl:w-[255px] sm:w-auto snap-start">
-              <StatCard
-                title="Visites"
-                value={visits.toLocaleString('fr-FR')}
-                change="+1.1%"
-                isPositive={true}
-                icon={<UsersIcon className="w-5 h-5" />}
-                color="bg-gradient-to-r from-purple-400 to-purple-500"
-              />
-            </div>
-            <div className="xl:w-[255px] sm:w-auto snap-start">
-              <StatCard
-                title="Prospects"
-                value={prospects.toLocaleString('fr-FR')}
-                change="+2.3%"
-                isPositive={true}
-                icon={<UserPlusIcon className="w-5 h-5" />}
-                color="bg-gradient-to-r from-orange-400 to-orange-500"
-              />
-            </div>
-            <div className="xl:w-[255px] sm:w-auto snap-start">
-              <StatCard
-                title="Appels"
-                value={Appels.toLocaleString('fr-FR')}
-                change="+5.7%"
-                isPositive={true}
-                icon={<PhoneCallIcon className="w-5 h-5" />}
-                color="bg-gradient-to-r from-teal-400 to-teal-500"
-              />
-            </div>
-          </div>
-        </div>
-        <div className="absolute left-0 right-0 bottom-0 h-4 bg-gradient-to-t from-gray-50 pointer-events-none sm:hidden"></div>
-      </div>
+      <div className="mb-6">
+  <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+    <div>
+      <StatCard
+        title="Pénalité"
+        value={penalties.toLocaleString('fr-FR')}
+        change="+12.5%"
+        isPositive={false}
+        icon={<AlertCircleIcon className="w-5 h-5" />}
+        color="bg-gradient-to-r from-red-400 to-red-500"
+      />
+    </div>
+    <div>
+      <StatCard
+        title="Bien Vendu"
+        value={Bien_vendu.toLocaleString('fr-FR')}
+        change="+8.2%"
+        isPositive={true}
+        icon={<ThumbsUpIcon className="w-5 h-5" />}
+        color="bg-gradient-to-r from-green-400 to-green-500"
+      />
+    </div>
+    <div>
+      <StatCard
+        title="Encaissement"
+        value={`${encaissementTotal.toLocaleString('fr-FR')} dh`}
+        change="+4.4%"
+        isPositive={true}
+        icon={<BanknoteIcon className="w-5 h-5" />}
+        color="bg-gradient-to-r from-blue-400 to-blue-500"
+      />
+    </div>
+    <div>
+      <StatCard
+        title="Visites"
+        value={visits.toLocaleString('fr-FR')}
+        change="+1.1%"
+        isPositive={true}
+        icon={<UsersIcon className="w-5 h-5" />}
+        color="bg-gradient-to-r from-purple-400 to-purple-500"
+      />
+    </div>
+    <div>
+      <StatCard
+        title="Prospects"
+        value={prospects.toLocaleString('fr-FR')}
+        change="+2.3%"
+        isPositive={true}
+        icon={<UserPlusIcon className="w-5 h-5" />}
+        color="bg-gradient-to-r from-orange-400 to-orange-500"
+      />
+    </div>
+    <div>
+      <StatCard
+        title="Appels"
+        value={Appels.toLocaleString('fr-FR')}
+        change="+5.7%"
+        isPositive={true}
+        icon={<PhoneCallIcon className="w-5 h-5" />}
+        color="bg-gradient-to-r from-teal-400 to-teal-500"
+      />
+    </div>
+  </div>
+</div>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div className="bg-white rounded-lg shadow p-4 md:p-6">

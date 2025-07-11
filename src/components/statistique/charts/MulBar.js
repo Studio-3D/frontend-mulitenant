@@ -296,7 +296,7 @@ export const MulBar = ({ data = [], startDate, endDate }) => {
   }
 
   return (
-    <div className="h-[380px]">
+    <div className="xl:h-[380px] h-[250px]">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={processedData}
