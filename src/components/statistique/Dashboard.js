@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { StatCard } from './StatCard';
 import { DateFilter } from './DateFilter';
 import { AreaChart } from './charts/AreaCharts';
 import { BarChart } from './charts/BarChart';
 import { PieChart } from './charts/PieChart';
 import { MulBar } from './charts/MulBar';
+import { DesistementChart } from './charts/DesistementChart';
 import { 
   startOfMonth, 
   endOfMonth, 
@@ -30,7 +31,8 @@ import {
   UsersIcon, 
   UserPlusIcon, 
   PhoneCallIcon, 
-  ArrowDownIcon 
+  ArrowDownIcon,
+  ChevronLeftIcon
 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from "../../context/AuthContext";
@@ -45,11 +47,13 @@ export const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [timePeriod, setTimePeriod] = useState('month');
+  const [selectedMonth, setSelectedMonth] = useState(null);
   
   const handleDateChange = (start, end, period) => {
     setStartDate(start);
     setEndDate(end);
     setTimePeriod(period || 'custom');
+    setSelectedMonth(null); // Reset month selection when changing period
   };
   
   const { token } = useAuth();
@@ -108,7 +112,6 @@ export const Dashboard = () => {
     remboursements = [],
     visites = {},
     bien_vendu_par_type_et_date_reservation: biensVendusRaw = [],
-    array_type_date_desistement: cancellationsRaw = [],
     chartData_sources = [],
   } = dashboardData || {};
 
@@ -253,34 +256,10 @@ export const Dashboard = () => {
       .filter(item => item.value > 0);
   };
 
-  // Prepare cancellation data
-  const prepareCancellationData = () => {
-    const cancellationCategories = [
-      { id: '1', name: 'Désistement Définitif', color: '#EF4444' },
-      { id: '2', name: 'Désistements Au Profit', color: '#F59E0B' },
-      { id: '3', name: 'Changement de Bien', color: '#3B82F6' },
-      { id: '4', name: 'Autre motif', color: '#6B7280' }
-    ];
-
-    return (cancellationsRaw || []).map(item => {
-      const category = cancellationCategories.find(cat => cat.id === item[2]);
-      return {
-        date: new Date(item[0]),
-        reason: category ? category.name : 'Unknown',
-        count: 1,
-        color: category ? category.color : '#6B7280',
-      };
-    }).filter(item => !isNaN(item.date.getTime()));
-  };
 
   const financialChartData = prepareFinancialChartData();
   const visitData = prepareVisitData();
   const sourceData = prepareSourceData();
-  const cancellations = prepareCancellationData();
-
-  const filteredCancellations = cancellations.filter(item => {
-    return item.date >= startDate && item.date <= endDate;
-  });
 
   if (loading) {
     return (
@@ -306,9 +285,9 @@ export const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen p-4">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4 sm:mb-0">
+    <div className="min-h-screen">
+      <div className="bg-white p-4 rounded-xl shadow-sm flex justify-between items-center  sm:flex-row sm:items-center sm:justify-between mb-6">
+        <h2 className="xl:text-xl items-center font-semibold text-gray-800  sm:mb-0">
           Aperçu Général
         </h2>
         <DateFilter
@@ -319,73 +298,70 @@ export const Dashboard = () => {
         />
       </div>
       
-      <div className="relative mb-6">
-        <div className="flex overflow-x-auto pb-4 -mx-4 px-4 gap-4 snap-x scrollbar-none">
-          <div className="flex gap-3 min-w-max">
-            <div className="xl:w-[255px] sm:w-auto snap-start">
-              <StatCard
-                title="Pénalité"
-                value={penalties.toLocaleString('fr-FR')}
-                change="+12.5%"
-                isPositive={false}
-                icon={<AlertCircleIcon className="w-5 h-5" />}
-                color="bg-gradient-to-r from-red-400 to-red-500"
-              />
-            </div>
-            <div className="xl:w-[255px] sm:w-auto snap-start">
-              <StatCard
-                title="Bien Vendu"
-                value={Bien_vendu.toLocaleString('fr-FR')}
-                change="+8.2%"
-                isPositive={true}
-                icon={<ThumbsUpIcon className="w-5 h-5" />}
-                color="bg-gradient-to-r from-green-400 to-green-500"
-              />
-            </div>
-            <div className="xl:w-[255px] sm:w-auto snap-start">
-              <StatCard
-                title="Encaissement"
-                value={`${encaissementTotal.toLocaleString('fr-FR')} dh`}
-                change="+4.4%"
-                isPositive={true}
-                icon={<BanknoteIcon className="w-5 h-5" />}
-                color="bg-gradient-to-r from-blue-400 to-blue-500"
-              />
-            </div>
-            <div className="xl:w-[255px] sm:w-auto snap-start">
-              <StatCard
-                title="Visites"
-                value={visits.toLocaleString('fr-FR')}
-                change="+1.1%"
-                isPositive={true}
-                icon={<UsersIcon className="w-5 h-5" />}
-                color="bg-gradient-to-r from-purple-400 to-purple-500"
-              />
-            </div>
-            <div className="xl:w-[255px] sm:w-auto snap-start">
-              <StatCard
-                title="Prospects"
-                value={prospects.toLocaleString('fr-FR')}
-                change="+2.3%"
-                isPositive={true}
-                icon={<UserPlusIcon className="w-5 h-5" />}
-                color="bg-gradient-to-r from-orange-400 to-orange-500"
-              />
-            </div>
-            <div className="xl:w-[255px] sm:w-auto snap-start">
-              <StatCard
-                title="Appels"
-                value={Appels.toLocaleString('fr-FR')}
-                change="+5.7%"
-                isPositive={true}
-                icon={<PhoneCallIcon className="w-5 h-5" />}
-                color="bg-gradient-to-r from-teal-400 to-teal-500"
-              />
-            </div>
-          </div>
-        </div>
-        <div className="absolute left-0 right-0 bottom-0 h-4 bg-gradient-to-t from-gray-50 pointer-events-none sm:hidden"></div>
-      </div>
+      <div className="mb-6">
+  <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+    <div>
+      <StatCard
+        title="Pénalité"
+        value={penalties.toLocaleString('fr-FR')}
+        change="+12.5%"
+        isPositive={false}
+        icon={<AlertCircleIcon className="w-5 h-5" />}
+        color="bg-gradient-to-r from-red-400 to-red-500"
+      />
+    </div>
+    <div>
+      <StatCard
+        title="Bien Vendu"
+        value={Bien_vendu.toLocaleString('fr-FR')}
+        change="+8.2%"
+        isPositive={true}
+        icon={<ThumbsUpIcon className="w-5 h-5" />}
+        color="bg-gradient-to-r from-green-400 to-green-500"
+      />
+    </div>
+    <div>
+      <StatCard
+        title="Encaissement"
+        value={`${encaissementTotal.toLocaleString('fr-FR')} dh`}
+        change="+4.4%"
+        isPositive={true}
+        icon={<BanknoteIcon className="w-5 h-5" />}
+        color="bg-gradient-to-r from-blue-400 to-blue-500"
+      />
+    </div>
+    <div>
+      <StatCard
+        title="Visites"
+        value={visits.toLocaleString('fr-FR')}
+        change="+1.1%"
+        isPositive={true}
+        icon={<UsersIcon className="w-5 h-5" />}
+        color="bg-gradient-to-r from-purple-400 to-purple-500"
+      />
+    </div>
+    <div>
+      <StatCard
+        title="Prospects"
+        value={prospects.toLocaleString('fr-FR')}
+        change="+2.3%"
+        isPositive={true}
+        icon={<UserPlusIcon className="w-5 h-5" />}
+        color="bg-gradient-to-r from-orange-400 to-orange-500"
+      />
+    </div>
+    <div>
+      <StatCard
+        title="Appels"
+        value={Appels.toLocaleString('fr-FR')}
+        change="+5.7%"
+        isPositive={true}
+        icon={<PhoneCallIcon className="w-5 h-5" />}
+        color="bg-gradient-to-r from-teal-400 to-teal-500"
+      />
+    </div>
+  </div>
+</div>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div className="bg-white rounded-lg shadow p-4 md:p-6">
@@ -428,7 +404,6 @@ export const Dashboard = () => {
           <h3 className="text-lg font-medium text-gray-800 mb-4">
             Encaissements - Remboursement
           </h3>
-          {/* Legend Section */}
           <div className="flex justify-end items-center mb-4 space-x-4">
             <div className="flex items-center">
               <div className="w-3 h-3 rounded-full bg-[#10B981] mr-2"></div>
@@ -448,62 +423,14 @@ export const Dashboard = () => {
         </div>
       </div>
       
-      <div className="bg-white rounded-lg shadow p-4 md:p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-medium text-gray-800">Désistement</h3>
-          <div className="flex items-center">
-            <span className="text-sm text-gray-500 mr-2">
-              Période: {format(startDate, 'dd/MM/yyyy')} - {format(endDate, 'dd/MM/yyyy')}
-            </span>
-            <span className="text-sm font-medium text-gray-800">
-              {filteredCancellations.length} cas
-            </span>
-          </div>
+      <div className="bg-white rounded-lg shadow  ">
+          <DesistementChart 
+            data={dashboardData?.array_type_date_desistement || []} 
+            startDate={startDate}
+            endDate={endDate}
+            timePeriod={timePeriod}
+          />
         </div>
-        
-        {filteredCancellations.length > 0 ? (
-          <div className="space-y-3 overflow-auto max-h-96">
-            {filteredCancellations
-              .sort((a, b) => b.date - a.date)
-              .map((item, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex items-center flex-1 min-w-0">
-                    <div
-                      className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center"
-                      style={{ backgroundColor: `${item.color}20` }}
-                    >
-                      <ArrowDownIcon
-                        className="w-5 h-5"
-                        style={{ color: item.color }}
-                      />
-                    </div>
-                    <div className="ml-4 min-w-0">
-                      <p className="text-sm font-medium text-gray-800 truncate">
-                        {item.reason}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {format(item.date, 'dd/MM/yyyy')}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="ml-4 text-right flex-shrink-0">
-                    <p className="text-sm font-medium text-gray-800">
-                      {item.count} cas
-                    </p>
-                  </div>
-                </div>
-              ))}
-          </div>
-        ) : (
-          <div className="text-center py-6 text-gray-500">
-            <AlertCircleIcon className="w-8 h-8 mx-auto mb-2" />
-            <p>Aucun désistement enregistré pour cette période</p>
-          </div>
-        )}
       </div>
-    </div>
   );
 };
