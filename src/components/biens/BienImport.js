@@ -4,7 +4,7 @@ import axios from 'axios'
 import { Box } from '@mui/material'
 import { Dialog, DialogContent, DialogTitle, Typography, TextField, Grid, IconButton,Button, Alert } from '@mui/material'
 import { Table, TableHead, TableBody, TableRow, TableCell, TableSortLabel } from '@mui/material'
-import { APIURL } from '@/configs/api'
+import { APIURL, RESOURCE_URL } from '@/configs/api'
 import { getEtatLabel } from '../bien-utils'
 import { Database, Printer, Trash2 } from 'lucide-react'
 import * as XLSX from 'xlsx';
@@ -227,7 +227,7 @@ const handleDialogToggle = () => {
   }
 
   const handleFileClick = () => {
-    window.open(`${FileUrl}/Docs/import_bien.xlsx`, '_blank')
+    window.open(`${RESOURCE_URL.DOCS}/import_bien.xlsx`, '_blank')
   }
 
  

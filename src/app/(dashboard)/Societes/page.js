@@ -10,6 +10,7 @@ import { APIURL, RESOURCE_URL } from '../../../configs/api';
 import DeleteData from '@/components/DeleteData';
 import Link from "next/link";
 import Input from "@/components/Input";
+import DeletSociete from "./DeleteSociete";
 
 export default function Societes() {
   const [societes, setSocietes] = useState([]);
@@ -311,7 +312,7 @@ export default function Societes() {
       {/* Delete modal   */}
       {showDelete && selectedSocieteId && (
       <Modal isVisible={showDelete} onClose={() => setShowDelete(false)}>
-        <DeleteData
+        <DeletSociete
           route={APIURL.SOCIETES}
           Id={selectedSocieteId}
           type="Societé"

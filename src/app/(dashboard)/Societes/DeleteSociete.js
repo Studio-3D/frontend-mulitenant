@@ -1,46 +1,48 @@
 'use client';
-import { AlertCircle } from "lucide-react";
-import axios from 'axios';
+
+import { AlertCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { APIURL } from '../../../configs/api';
 import { useState } from 'react';
-import { useSociete } from "../../../context/SocieteContext"; 
+import { useSociete } from '@/context/SocieteContext'; // ✅ import du context
 
-export default function DeleteSociete({ societeId, accessToken, onClose }) {
+export default function DeletSociete({
+  Id,
+  onClose,
+  message,
+  type = 'Donnée',
+}) {
   const [loading, setLoading] = useState(false);
-  const { refreshSocietes } = useSociete();
+  const { deleteSociete } = useSociete(); // ✅ utilise le context
 
-  // Delete societe handler
   const handleDelete = async () => {
-    if (!societeId || !accessToken) {
-      toast.error('Société ou token invalide');
+    if (!Id) {
+      toast.error(`${type} invalide`);
       return;
     }
-  
+
     setLoading(true);
     try {
-      await axios.delete(`${APIURL.SOCIETES}/${societeId}`, {
-        headers: { Authorization: `Bearer ${accessToken}` }
-      });
-  
-      toast.success('Société supprimée avec succès');
-      onClose(societeId);
-      refreshSocietes();
+      // ✅ suppression via le contexte
+      await deleteSociete(Id);
+
+      toast.success(`${type} supprimée avec succès`);
+
+      if (onClose) onClose(); // Fermer le modal
     } catch (error) {
+      console.error('Erreur suppression:', error);
       toast.error('Erreur lors de la suppression');
     } finally {
       setLoading(false);
     }
   };
-  
 
   return (
     <div className="w-[500px] p-4">
-      <AlertCircle className="text-[#FF4E4E] text-6xl mx-auto mt-2 mb-4" />
-      <h2 className="text-xl font-semibold text-center">Supprimer Société</h2>
-      <p className="text-center text-[#878484] mt-2">
-        Êtes-vous sûr de vouloir supprimer cette société ?
-      </p>
+      <AlertCircle className="text-[#FF4E4E] w-14 h-14 mx-auto mt-2 mb-4" />
+      <h2 className="text-xl font-semibold text-center">
+        Confirmation de la suppression
+      </h2>
+      <p className="text-center text-[#878484] mt-2">{message}</p>
       <div className="flex justify-center gap-4 mt-4 mb-4">
         <button
           className="font-medium px-4 py-2 rounded-lg bg-gray-200"
@@ -49,7 +51,9 @@ export default function DeleteSociete({ societeId, accessToken, onClose }) {
           Non, annuler
         </button>
         <button
-          className={`font-medium px-4 py-2 rounded-lg bg-[#FF4E4E] text-white ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`font-medium px-4 py-2 rounded-lg bg-[#FF4E4E] text-text ${
+            loading ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
           onClick={handleDelete}
           disabled={loading}
         >

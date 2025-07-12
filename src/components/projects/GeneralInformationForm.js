@@ -160,7 +160,9 @@ export default function GeneralInformationForm({ state, setState, onNext, onBack
           <input
             type="number"
             min="0"
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            className={`mt-1 block w-full px-3 py-2 border ${
+              errors?.prix_acquisition ? "border-red-500" : "border-gray-300"
+            } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
             value={state.limite_annulation_reservation}
             onChange={(e) => handleChange("limite_annulation_reservation", e.target.value)}
             required
