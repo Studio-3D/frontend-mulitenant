@@ -113,46 +113,44 @@ export default function AddProjectPage() {
   };
 
   const validateCurrentStep = () => {
-    // Step-specific validation
-    if (activeStep === 0) {
-      if (!formState.typeId) {
-        setErrors({ type_id: ['Veuillez sélectionner un type de projet'] });
-        return false;
-      }
-    } 
-    else if (activeStep === 1) {
-      if (!formState.nom) {
-        setErrors({ nom: ['Le nom du projet est requis'] });
-        return false;
-      }
-      if (formState.surface_terrain==0) {
-        setErrors({ surface_terrain: ['surface terrain est requis'] });
-        return false;
-      }
-      if (formState.limite_annulation_reservation===0 ) {
-        setErrors({ limite_annulation_reservation: ['limite annulation reservation est requis'] });
-        return false;
-      }
-       if (formState.prix_acquisition==0) {
-        setErrors({ prix_acquisition: ['prix acquisition est requis'] });
-        return false;
-      }
-      if (formState.max_etages===0 ) {
-        setErrors({ max_etages: ['max etages est requis'] });
-        return false;
-      }
-      
-      if (!formState.code) {
-        setErrors({ code: ['Le code du projet est requis'] });
-        return false;
-      }
-      if (!formState.adresse) {
-        setErrors({ adresse: ['L\'adresse du projet est requise'] });
-        return false;
-      }
+  const newErrors = {};
+
+  if (activeStep === 0) {
+    if (!formState.typeId) {
+      newErrors.type_id = ['Veuillez sélectionner un type de projet'];
     }
-    return true;
-  };
+  } else if (activeStep === 1) {
+    if (!formState.nom) {
+      newErrors.nom = ['Le nom du projet est requis'];
+    }
+    if (!formState.code) {
+      newErrors.code = ['Le code du projet est requis'];
+    }
+    if (!formState.adresse) {
+      newErrors.adresse = ['L\'adresse du projet est requise'];
+    }
+    if (formState.surface_terrain === 0) {
+      newErrors.surface_terrain = ['Surface terrain est requise'];
+    }
+    if (formState.limite_annulation_reservation === 0) {
+      newErrors.limite_annulation_reservation = ['Limite annulation réservation est requise'];
+    }
+    if (formState.prix_acquisition === 0) {
+      newErrors.prix_acquisition = ['Prix acquisition est requis'];
+    }
+    if (formState.max_etages === 0) {
+      newErrors.max_etages = ['Max étages est requis'];
+    }
+  }
+
+  if (Object.keys(newErrors).length > 0) {
+    setErrors(newErrors);
+    return false;
+  }
+
+  return true;
+};
+
 
   const handleSubmit = async () => {
     if (!validateCurrentStep()) return;
