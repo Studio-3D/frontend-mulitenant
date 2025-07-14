@@ -49,31 +49,29 @@ const Page = () => {
     prenom: Yup.string().required("Le prénom est requis"),
     email: Yup.string()
       .trim()
+      .required("L'email est requis")
       .email("Email invalide")
       .matches(
-        /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+        /^(?!\.)(?!.*\.\.)[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/,
         "Format d'email invalide"
       )
-      .notOneOf(
-        ["test@test.com", "example@example.com"],
-        "Cet email est interdit"
-      )
-      .required("L'email est requis"),
+      .max(254, "L'email ne doit pas dépasser 254 caractères"),
     role: Yup.string().required('Le rôle est requis'),
     gender: Yup.string().required('Le genre est requis'),
     phone: Yup.string()
     .matches(/^[0-9]{10}$/, 'Le numéro doit contenir exactement 10 chiffres') // Match exactly 10 digits
     .required('Le téléphone est requis'),
     cin: Yup.string().required('CIN est requis'),
+    cnss: Yup.string().required('Le numéro CNSS est requis'),
     fonction: Yup.string(),
     date_embauche: Yup.date(),
     password: Yup.string()
       .min(8, "• Au moins 8 caractères")
-      .required("Mot de passe requis"),
-    // .matches(/^(?=.*[A-Z])/, '• Au moins une majuscule')
-    // .matches(/^(?=.*[0-9])/, '• Au moins un chiffre')
-    // .matches(/^(?=.*[@$!%*?&])/, '• Au moins un caractère spécial')
-    //.required('Mot de passe requis'),
+      .required("Mot de passe requis")
+    .matches(/^(?=.*[A-Z])/, '• Au moins une majuscule')
+    .matches(/^(?=.*[0-9])/, '• Au moins un chiffre')
+    .matches(/^(?=.*[@$!%*?&])/, '• Au moins un caractère spécial')
+    .required('Mot de passe requis'),
     password_confirmation: Yup.string()
       .oneOf(
         [Yup.ref("password"), null],
@@ -189,7 +187,13 @@ const Page = () => {
             </div>
           </div>
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-16 md:gap-y-3 gap-y-4 p-4 '>
-            <Input label='Nom :' type='text' name="name" value={formik.values.name} onChange={formik.handleChange} {...formik.getFieldProps('name')} error={formik.errors.name} />
+            <Input label='Nom :' 
+              type='text' name="name"
+             value={formik.values.name}
+              onChange={formik.handleChange} 
+              {...formik.getFieldProps('name')}
+               error={formik.errors.name} 
+               />
             <Input label='Prénom :' type='text' name="prenom" value={formik.values.prenom} onChange={formik.handleChange} {...formik.getFieldProps('prenom')} error={formik.errors.prenom}/>
             <Input label='Email :' type='email' name="email" value={formik.values.email} onChange={formik.handleChange} {...formik.getFieldProps('email')} error={formik.errors.email}/>
             <SelectInput 
@@ -294,6 +298,7 @@ const Page = () => {
               name="cnss"
               value={formik.values.cnss}
               onChange={formik.handleChange}
+              error={formik.errors.cnss} 
             />
             <SelectInput
               label="Actif"
