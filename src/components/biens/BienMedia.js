@@ -12,7 +12,6 @@ export default function BienMedia({ bienId }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [bien, setBien] = useState(null);
-  const [hasLinkedInConfig, setHasLinkedInConfig] = useState(false);
   
   // States for upload functionality
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -42,19 +41,6 @@ export default function BienMedia({ bienId }) {
         });
         setBien(bienResponse.data.bien);
         
-        // Check if LinkedIn is configured for this project
-        if (bienResponse.data.bien?.projet_id) {
-          try {
-            const configResponse = await axios.get(
-              `${APIURL.LINKEDIN_CONFIG}/project/${bienResponse.data.bien.projet_id}`,
-              { headers: { Authorization: `Bearer ${token}` } }
-            );
-            setHasLinkedInConfig(!!configResponse.data.configuration);
-          } catch (error) {
-            console.log("No LinkedIn configuration found for this project");
-            setHasLinkedInConfig(false);
-          }
-        }
       } catch (error) {
         console.error("Error fetching media or bien details:", error);
       } finally {
@@ -404,25 +390,6 @@ export default function BienMedia({ bienId }) {
       </div>
     );
   };
-
-  // Check LinkedIn configuration when bien data is loaded
-  useEffect(() => {
-    const checkLinkedInConfig = async () => {
-      if (bien?.projet_id) {
-        try {
-          const token = localStorage.getItem("accessToken");
-          const response = await axios.get(`${APIURL.ROOTV1}/linkedin-config/project/${bien.projet_id}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          setHasLinkedInConfig(response.data.success);
-        } catch (error) {
-          setHasLinkedInConfig(false);
-        }
-      }
-    };
-
-    checkLinkedInConfig();
-  }, [bien]);
 
   // Render loading state
   if (loading) {

@@ -186,7 +186,7 @@ export default function WebhookConfigTab() {
             </label>
             <input
               type="text"
-              value="https://982cb63ba8f7.ngrok-free.app/api/webhookFcb_Insta"
+              value="https://e86332116ba7.ngrok-free.app/api/webhookFcb_Insta"
               readOnly
               className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 cursor-not-allowed"
             />

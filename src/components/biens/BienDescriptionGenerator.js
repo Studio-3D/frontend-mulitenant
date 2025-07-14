@@ -29,6 +29,15 @@ export default function BienDescriptionGenerator({
   const [userFeedback, setUserFeedback] = useState("");
   const [hasGeneratedOnce, setHasGeneratedOnce] = useState(false);
   
+  // Add states for configuration checks
+  const [socialConfigurations, setSocialConfigurations] = useState({
+    facebook: false,
+    instagram: false,
+    linkedin: false,
+    tiktok: false
+  });
+  const [configurationsLoading, setConfigurationsLoading] = useState(true);
+  
   // Media states with additional server-related states
   const [selectedMedia, setSelectedMedia] = useState(null);
   const [mediaPreview, setMediaPreview] = useState(null);
@@ -59,7 +68,103 @@ export default function BienDescriptionGenerator({
     setIsModalOpen(false);
     if (onClose) onClose();
   };
-  
+
+  // Check if configurations exist for this project
+  const checkProjectConfigurations = async () => {
+    if (!bien?.projet_id) {
+      setConfigurationsLoading(false);
+      return;
+    }
+    
+    setConfigurationsLoading(true);
+    const token = localStorage.getItem("accessToken");
+    const configurations = {
+      facebook: false,
+      instagram: false,
+      linkedin: false,
+      tiktok: false
+    };
+    
+    try {
+      // Check Facebook configuration
+      try {
+        const facebookResponse = await axios.get(
+          `${APIURL.ROOTV1}/facebook-configurations`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        
+        if (facebookResponse.data?.configurations?.length > 0) {
+          configurations.facebook = facebookResponse.data.configurations.some(
+            config => config.projet_id === bien.projet_id
+          );
+        }
+      } catch (error) {
+        console.log('No Facebook configuration found for this project');
+      }
+
+      // Check Instagram configuration
+      try {
+        const instagramResponse = await axios.get(
+          `${APIURL.ROOTV1}/instagram-configurations`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        
+        if (instagramResponse.data?.configurations?.length > 0) {
+          configurations.instagram = instagramResponse.data.configurations.some(
+            config => config.projet_id === bien.projet_id
+          );
+        }
+      } catch (error) {
+        console.log('No Instagram configuration found for this project');
+      }
+      
+      // Check LinkedIn configuration
+      try {
+        const linkedinResponse = await axios.get(
+          `${APIURL.ROOTV1}/linkedin-configurations`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        
+        if (linkedinResponse.data?.configurations?.length > 0) {
+          configurations.linkedin = linkedinResponse.data.configurations.some(
+            config => config.projet_id === bien.projet_id
+          );
+        }
+      } catch (error) {
+        console.log('No LinkedIn configuration found for this project');
+      }
+
+      // Check TikTok configuration
+      try {
+        const tiktokResponse = await axios.get(
+          `${APIURL.TIKTOK_CONFIG}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        
+        if (tiktokResponse.data?.configurations?.length > 0) {
+          configurations.tiktok = tiktokResponse.data.configurations.some(
+            config => config.projet_id === bien.projet_id
+          );
+        }
+      } catch (error) {
+        console.log('No TikTok configuration found for this project');
+      }
+      
+      setSocialConfigurations(configurations);
+      console.log('Social media configurations for project', bien.projet_id, ':', configurations);
+    } catch (error) {
+      console.error('Error checking social media configurations:', error);
+    } finally {
+      setConfigurationsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isModalOpen && bien?.projet_id) {
+      checkProjectConfigurations();
+    }
+  }, [isModalOpen, bien?.projet_id]);
+
   // Generate initial property description
   const generateDescription = async () => {
     if (!bien) {
@@ -294,6 +399,7 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
       const formData = new FormData();
       formData.append('reseaux_sociaux', '2');
       formData.append('description', postContent);
+      formData.append('projet_id', bien.projet_id); // Add project ID
       
       if (uploadedMediaUrl) {
         formData.append('mode', 'existante');
@@ -324,13 +430,12 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
           toast.error("Erreur lors de la publication sur Instagram.");
         }
         
-        // Close modal after delay
         setTimeout(() => {
           handleModalClose();
         }, 2000);
       }).catch(error => {
         console.error("Failed to post to Instagram API:", error);
-        toast.error("Erreur lors de la publication sur Instagram.");
+        toast.error(error.response?.data?.message || "Erreur lors de la publication sur Instagram.");
       }).finally(() => {
         setIsSharing(false);
       });
@@ -338,6 +443,78 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
       console.error("Failed to share to Instagram:", error);
       toast.error("Erreur lors du partage sur Instagram");
       setIsSharing(false);
+    }
+  };
+
+  // Share to Facebook with media using the Facebook_InstagramController
+  const shareToFacebook = () => {
+    if (!description) {
+      toast.error("Veuillez générer une description d'abord");
+      return;
+    }
+    
+    setIsSharingFacebook(true);
+    
+    try {
+      const propertyTitle = bien?.propriete_dite_bien || "Propriété";
+      const propertyLocation = bien?.immeuble?.nom || bien?.bloc?.nom || bien?.tranche?.nom || bien?.projet?.nom || "Emplacement";
+      const propertyPrice = bien?.prix ? bien.prix.toLocaleString() + " DH" : "Prix sur demande";
+      
+      const sanitizedDescription = sanitizeDescriptionForSocialMedia(description);
+      const postContent = `🏡 ${propertyTitle}\n\n${sanitizedDescription}\n\n📍 ${propertyLocation}\n💰 ${propertyPrice}`;
+      
+      const token = localStorage.getItem("accessToken");
+      
+      const formData = new FormData();
+      formData.append('reseaux_sociaux', '3');
+      formData.append('description', postContent);
+      formData.append('projet_id', bien.projet_id); // Add project ID
+      
+      if (uploadedMediaUrl) {
+        formData.append('mode', 'existante');
+        formData.append('img_existant_url', uploadedMediaUrl);
+      } else if (selectedMedia) {
+        formData.append('mode', 'parcourir');
+        formData.append('mediaFile', selectedMedia);
+      } else {
+        formData.append('mode', 'null');
+      }
+      
+      const apiUrl = `${APIURL.ROOTV1}/postTo_Social_Network`;
+      
+      axios.post(
+        apiUrl,
+        formData,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      )
+      .then(response => {
+        if (response.data && response.data.success) {
+          toast.success("Publication partagée sur Facebook avec succès!");
+          
+          saveDescriptionToServer();
+          
+          setTimeout(() => {
+            handleModalClose();
+          }, 2000);
+        } else {
+          toast.error("Erreur lors de la publication sur Facebook.");
+        }
+      }).catch(error => {
+        console.error("Failed to post to Facebook API:", error);
+        const errorMessage = error.response?.data?.message || "Erreur lors de la publication sur Facebook.";
+        toast.error(errorMessage);
+      }).finally(() => {
+        setIsSharingFacebook(false);
+      });
+    } catch (error) {
+      console.error("Failed to share to Facebook:", error);
+      toast.error("Erreur lors du partage sur Facebook");
+      setIsSharingFacebook(false);
     }
   };
 
@@ -418,79 +595,6 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
     }
   };
   
-  // Share to Facebook with media using the Facebook_InstagramController
-  const shareToFacebook = () => {
-    if (!description) {
-      toast.error("Veuillez générer une description d'abord");
-      return;
-    }
-    
-    setIsSharingFacebook(true);
-    
-    try {
-      const propertyTitle = bien?.propriete_dite_bien || "Propriété";
-      const propertyLocation = bien?.immeuble?.nom || bien?.bloc?.nom || bien?.tranche?.nom || bien?.projet?.nom || "Emplacement";
-      const propertyPrice = bien?.prix ? bien.prix.toLocaleString() + " DH" : "Prix sur demande";
-      
-      const sanitizedDescription = sanitizeDescriptionForSocialMedia(description);
-      const postContent = `🏡 ${propertyTitle}\n\n${sanitizedDescription}\n\n📍 ${propertyLocation}\n💰 ${propertyPrice}`;
-      
-      const token = localStorage.getItem("accessToken");
-      
-      const formData = new FormData();
-      formData.append('reseaux_sociaux', '3');
-      formData.append('description', postContent);
-      
-      if (uploadedMediaUrl) {
-        formData.append('mode', 'existante');
-        formData.append('img_existant_url', uploadedMediaUrl);
-      } else if (selectedMedia) {
-        formData.append('mode', 'parcourir');
-        formData.append('mediaFile', selectedMedia);
-      } else {
-        formData.append('mode', 'null');
-      }
-      
-      const apiUrl = `${APIURL.ROOTV1}/postTo_Social_Network`;
-      
-      axios.post(
-        apiUrl,
-        formData,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
-          }
-        }
-      )
-      .then(response => {
-        if (response.data && response.data.success) {
-          toast.success("Publication partagée sur Facebook avec succès!");
-          
-          // Save description to server
-          saveDescriptionToServer();
-          
-          // Close modal after delay
-          setTimeout(() => {
-            handleModalClose();
-          }, 2000);
-        } else {
-          toast.error("Erreur lors de la publication sur Facebook.");
-        }
-      }).catch(error => {
-        console.error("Failed to post to Facebook API:", error);
-        const errorMessage = error.response?.data?.message || "Erreur lors de la publication sur Facebook.";
-        toast.error(errorMessage);
-      }).finally(() => {
-        setIsSharingFacebook(false);
-      });
-    } catch (error) {
-      console.error("Failed to share to Facebook:", error);
-      toast.error("Erreur lors du partage sur Facebook");
-      setIsSharingFacebook(false);
-    }
-  };
-
   // Share to LinkedIn with configuration check
   const shareToLinkedin = async () => {
     if (!bien?.projet_id) {
@@ -539,66 +643,6 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
     }
   };
 
-  // Check if configurations exist for this project
-  const checkProjectConfigurations = async () => {
-    if (!bien?.projet_id) return;
-    
-    const token = localStorage.getItem("accessToken");
-    
-    try {
-      // Check LinkedIn config
-      const linkedinResponse = await axios.get(
-        `${APIURL.LINKEDIN_CONFIG}/project/${bien.projet_id}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      console.log('LinkedIn config available:', !!linkedinResponse.data.configuration);
-      
-      // Check TikTok config
-      const tiktokResponse = await axios.get(
-        `${APIURL.TIKTOK_CONFIG}/project/${bien.projet_id}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      console.log('TikTok config available:', !!tiktokResponse.data.configuration);
-    } catch (error) {
-      console.log('Error checking configurations:', error);
-    }
-  };
-
-  // Add event listener for LinkedIn OAuth callback
-  useEffect(() => {
-    const handleLinkedInCallback = (event) => {
-      if (event.origin !== window.location.origin) {
-        return;
-      }
-      
-      switch(event.data.type) {
-        case 'LINKEDIN_SHARE_SUCCESS':
-          toast.success(`Publication partagée sur LinkedIn avec succès!`);
-          setTimeout(() => setIsModalOpen(false), 2000);
-          break;
-          
-        case 'LINKEDIN_SHARE_ERROR':
-          toast.error(`Erreur lors du partage sur LinkedIn: ${event.data.error}`);
-          break;
-          
-        case 'LINKEDIN_AUTH_ERROR':
-          toast.error(`Erreur d'authentification LinkedIn: ${event.data.error}`);
-          break;
-      }
-      
-      setIsSharingLinkedin(false);
-    };
-    
-    window.addEventListener('message', handleLinkedInCallback);
-    return () => window.removeEventListener('message', handleLinkedInCallback);
-  }, []);
-
-  useEffect(() => {
-    if (isModalOpen && bien?.projet_id) {
-      checkProjectConfigurations();
-    }
-  }, [isModalOpen, bien?.projet_id]);
-
   return (
     <>
       {!isOpen && (
@@ -624,80 +668,163 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
             >
               Annuler
             </button>
-            <div className="flex gap-2">
-              <button
-                onClick={shareToFacebook}
-                disabled={!description || isSharingFacebook}
-                className="flex items-center gap-2 px-4 py-2 bg-[#1877F2] text-white rounded-md hover:bg-[#166FE5] disabled:opacity-50"
-              >
-                {isSharingFacebook ? (
-                  <>
-                    <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-1"></span>
-                    Partage...
-                  </>
-                ) : (
-                  <>
-                    <Facebook size={16} />
-                    Facebook
-                  </>
+            
+            {/* Show loading state while checking configurations */}
+            {configurationsLoading ? (
+              <div className="flex items-center gap-2 px-4 py-2 !text-gray-500">
+                <span className="animate-spin h-4 w-4 border-2 border-gray-300 border-t-blue-500 rounded-full"></span>
+                Vérification des configurations...
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                {/* Facebook Share Button - only show if configured */}
+                {socialConfigurations.facebook && (
+                  <button
+                    onClick={shareToFacebook}
+                    disabled={!description || isSharingFacebook}
+                    className="flex items-center gap-2 px-4 py-2 bg-[#1877F2] text-white rounded-md hover:bg-[#166FE5] disabled:opacity-50"
+                  >
+                    {isSharingFacebook ? (
+                      <>
+                        <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-1"></span>
+                        Partage...
+                      </>
+                    ) : (
+                      <>
+                        <Facebook size={16} />
+                        Facebook
+                      </>
+                    )}
+                  </button>
                 )}
-              </button>
-              <button
-                onClick={shareToInstagram}
-                disabled={!description || isSharing}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-md hover:opacity-90 disabled:opacity-50"
-              >
-                {isSharing ? (
-                  <>
-                    <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-1"></span>
-                    Partage...
-                  </>
-                ) : (
-                  <>
-                    <Instagram size={16} />
-                    Instagram
-                  </>
+
+                {/* Instagram Share Button - only show if configured */}
+                {socialConfigurations.instagram && (
+                  <button
+                    onClick={shareToInstagram}
+                    disabled={!description || isSharing}
+                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-md hover:opacity-90 disabled:opacity-50"
+                  >
+                    {isSharing ? (
+                      <>
+                        <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-1"></span>
+                        Partage...
+                      </>
+                    ) : (
+                      <>
+                        <Instagram size={16} />
+                        Instagram
+                      </>
+                    )}
+                  </button>
                 )}
-              </button>
-              <button
-                onClick={shareToTikTok}
-                disabled={!description || isSharingTikTok}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-black to-[#00f2ea] text-white rounded-md hover:opacity-90 disabled:opacity-50"
-              >
-                {isSharingTikTok ? (
-                  <>
-                    <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-1"></span>
-                    Partage...
-                  </>
-                ) : (
-                  <>
-                    <TikTokIcon size={16} />
-                    TikTok
-                  </>
+
+                {/* LinkedIn Share Button - only show if configured */}
+                {socialConfigurations.linkedin && (
+                  <button
+                    onClick={shareToLinkedin}
+                    disabled={!description || isSharingLinkedin}
+                    className="flex items-center gap-2 px-4 py-2 bg-[#0A66C2] text-white rounded-md hover:bg-[#004182] disabled:opacity-50"
+                  >
+                    {isSharingLinkedin ? (
+                      <>
+                        <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-1"></span>
+                        Partage...
+                      </>
+                    ) : (
+                      <>
+                        <LinkedInIcon size={16} />
+                        LinkedIn
+                      </>
+                    )}
+                  </button>
                 )}
-              </button>
-              <button
-                onClick={shareToLinkedin}
-                disabled={!description || isSharingLinkedin}
-                className="flex items-center gap-2 px-4 py-2 bg-[#0A66C2] text-white rounded-md hover:bg-[#004182] disabled:opacity-50"
-              >
-                {isSharingLinkedin ? (
-                  <>
-                    <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-1"></span>
-                    Partage...
-                  </>
-                ) : (
-                  <>
-                    <LinkedInIcon size={16} />
-                    LinkedIn
-                  </>
+
+                {/* TikTok Share Button - only show if configured */}
+                {socialConfigurations.tiktok && (
+                  <button
+                    onClick={shareToTikTok}
+                    disabled={!description || isSharingTikTok}
+                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-black to-[#00f2ea] text-white rounded-md hover:opacity-90 disabled:opacity-50"
+                  >
+                    {isSharingTikTok ? (
+                      <>
+                        <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-1"></span>
+                        Partage...
+                      </>
+                    ) : (
+                      <>
+                        <TikTokIcon size={16} />
+                        TikTok
+                      </>
+                    )}
+                  </button>
                 )}
-              </button>
-            </div>
+
+                {/* Show message if no configurations are found */}
+                {!configurationsLoading && 
+                 !socialConfigurations.facebook && 
+                 !socialConfigurations.instagram && 
+                 !socialConfigurations.linkedin && 
+                 !socialConfigurations.tiktok && (
+                  <div className="flex items-center gap-2 px-4 py-2 !text-gray-500 bg-gray-100 rounded-md">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    Aucun réseau social configuré pour ce projet
+                  </div>
+                )}
+              </div>
+            )}
           </>
         }
       >
         <div className="space-y-6">
+          {/* Show configuration warning if no social media is configured */}
+          {!configurationsLoading && 
+           !socialConfigurations.facebook && 
+           !socialConfigurations.instagram && 
+           !socialConfigurations.linkedin && 
+           !socialConfigurations.tiktok && (
+            <div className="p-4 border border-orange-300 rounded-md bg-orange-50 !text-orange-800">
+              <div className="flex items-start">
+                <svg className="w-5 h-5 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                <div>
+                  <p className="font-medium">Aucune configuration trouvée</p>
+                  <p className="text-sm mt-1">
+                    Aucun réseau social n'est configuré pour ce projet. 
+                    Veuillez configurer au moins un réseau social dans la section "Configuration des réseaux sociaux" 
+                    pour pouvoir partager ce contenu.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Show which platforms are configured */}
+          {!configurationsLoading && (
+            socialConfigurations.facebook || 
+            socialConfigurations.instagram || 
+            socialConfigurations.linkedin || 
+            socialConfigurations.tiktok
+          ) && (
+            <div className="p-3 border border-green-300 rounded-md bg-green-50">
+              <p className="text-sm !text-green-800">
+                <span className="font-medium">Réseaux sociaux configurés pour ce projet:</span>
+                <span className="ml-2">
+                  {[
+                    socialConfigurations.facebook && 'Facebook',
+                    socialConfigurations.instagram && 'Instagram', 
+                    socialConfigurations.linkedin && 'LinkedIn',
+                    socialConfigurations.tiktok && 'TikTok'
+                  ].filter(Boolean).join(', ')}
+                </span>
+              </p>
+            </div>
+          )}
+
           <div className="flex justify-center">
             <button
               onClick={generateDescription}
