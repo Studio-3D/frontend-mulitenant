@@ -11,6 +11,7 @@ import Input from '@/components/Input';
 import SelectInput from '@/components/SelectInput';
 import { useParams } from 'next/navigation';
 import axios from 'axios';
+import DateRangePicker from '@/components/DateRangePicker';
 
 const HistoriquesPaiement = () => {
   const color_header_modal = process.env.NEXT_PUBLIC_COLOR_Header_Modal;
@@ -264,30 +265,21 @@ const HistoriquesPaiement = () => {
             >
               <Input
                 type="text"
-                placeholder="CC"
+                label="CC"
                 value={tempFilters.cc}
                 onChange={(e) => handleFilterChange('cc', e.target.value)}
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
               <Input
                 type="text"
-                placeholder="N° Paiement"
+                label="N° Paiement"
                 value={tempFilters.numero_paiement}
                 onChange={(e) =>
                   handleFilterChange('numero_paiement', e.target.value)
                 }
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
-              <input
-                type={tempFilters.date_start ? 'date' : 'text'}
-                placeholder="Date début"
-                value={tempFilters.date_start}
-                onFocus={(e) => (e.target.type = 'date')}
-                onChange={(e) =>
-                  handleFilterChange('date_start', e.target.value)
-                }
-                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-              />
+
               <input
                 type={tempFilters.date_end ? 'date' : 'text'}
                 placeholder="Date fin"
@@ -296,11 +288,11 @@ const HistoriquesPaiement = () => {
                 onChange={(e) => handleFilterChange('date_end', e.target.value)}
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
-              <input
-                type={tempFilters.date_reglement ? 'date' : 'text'}
-                placeholder="Date règlement"
+
+              <Input
+                type="date"
+                label="Date Réglement"
                 value={tempFilters.date_reglement}
-                onFocus={(e) => (e.target.type = 'date')}
                 onChange={(e) =>
                   handleFilterChange('date_reglement', e.target.value)
                 }
@@ -323,6 +315,17 @@ const HistoriquesPaiement = () => {
                 }))}
                 placeholder="Mode paiement"
                 className="h-10 text-sm w-full"
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <DateRangePicker
+                startName="date_start"
+                endName="date_end"
+                startValue={tempFilters.date_start}
+                endValue={tempFilters.date_end}
+                onChange={handleFilterChange}
+                placeholder="Choisir une Date"
+                label="Date"
               />
             </div>
 

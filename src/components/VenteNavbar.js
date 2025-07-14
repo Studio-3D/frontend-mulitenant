@@ -209,17 +209,15 @@ const VenteNavbar = () => {
     {
       name: 'Remboursements',
       icon: <Handshake className="w-5 h-5" />,
-      //badge: nb_demande_pre_remb,
       subItems:
         userRole <= 2
           ? [
               {
                 name: 'Aprés Vente',
                 path: '/ventes/remboursements/apres_ventes',
-               // badge: nb_demande_pre_remb,
               },
               {
-                name: ' Attente Accusé du chèque',
+                name: 'Attente Accusé du chèque',
                 path: '/ventes/remboursements/att_accuse_cheque',
               },
               {
@@ -239,10 +237,9 @@ const VenteNavbar = () => {
               {
                 name: 'Aprés Vente',
                 path: '/ventes/remboursements/apres_ventes',
-               // badge: nb_demande_pre_remb,
               },
               {
-                name: ' Attente Accusé du chèque',
+                name: 'Attente Accusé du chèque',
                 path: '/ventes/remboursements/att_accuse_cheque',
               },
               {
@@ -325,7 +322,6 @@ const VenteNavbar = () => {
     return subItems?.some((subItem) => pathname.startsWith(subItem.path));
   };
 
-  // Get the active submenu item name
   const getActiveSubmenuName = (subItems) => {
     const activeItem = subItems?.find((subItem) =>
       pathname.startsWith(subItem.path)
@@ -335,7 +331,6 @@ const VenteNavbar = () => {
 
   return (
     <div className="bg-white rounded-lg shadow-md p-4 mb-4" ref={navRef}>
-      {/* Collapsible Menu Button */}
       <button
         className="block md:hidden !text-gray-700 focus:outline-none"
         onClick={() => setMenuOpen(!menuOpen)}
@@ -343,7 +338,6 @@ const VenteNavbar = () => {
         <Menu className="w-6 h-6" />
       </button>
 
-      {/* Responsive Navigation */}
       <nav
         className={`flex flex-col gap-4 md:flex-row ${
           menuOpen ? 'block' : 'hidden md:flex'
@@ -351,9 +345,6 @@ const VenteNavbar = () => {
       >
         {navItems.map((item) => {
           const activeSubmenuName = getActiveSubmenuName(item.subItems);
-          const showSubmenuName =
-            activeSubmenuName &&
-            (isParentActive(item.subItems) || openSubmenu === item.name);
 
           return (
             <div key={item.name} className="relative flex-1">
@@ -374,7 +365,12 @@ const VenteNavbar = () => {
               >
                 {item.icon}
                 <span className="whitespace-nowrap">
-                  {showSubmenuName ? activeSubmenuName : item.name}
+                  {item.name}
+                  {activeSubmenuName && (
+                    <span className="ml-2 text-xs opacity-75">
+                      ({activeSubmenuName})
+                    </span>
+                  )}
                 </span>
                 {item.badge && (
                   <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-semibold text-white bg-red-500 rounded-full">

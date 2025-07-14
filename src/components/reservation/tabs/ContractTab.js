@@ -90,7 +90,7 @@ export const ContractTab = ({
       })
       .catch((err) => {
         const response = err.response;
-        if (response && response.status === 422) {
+        if (response && response.status == 422) {
           modifierErreur(response.data.errors);
         }
         setLoading_btn(false);
@@ -182,7 +182,7 @@ export const ContractTab = ({
       })
       .catch((err) => {
         const response = err.response;
-        if (response && response.status === 422) {
+        if (response && response.status == 422) {
           modifierErreur(response.data.errors);
         }
         setLoading_btn(false);
@@ -405,7 +405,7 @@ export const ContractTab = ({
                         <h5 className="font-bold text-[#5A5FE0]">Vendeur</h5>
                       </div>
                       <p className="text-sm">
-                        {data_reservation?.societe?.raison_sociale}, société à
+                        {user?.societe?.raison_sociale}, société à
                         responsabilité limitée de droit Marocain, au capital
                         social de 100.000,00 de dirhams, ayant son siège social
                         à Fes, 47, Boulevard Al Amir 5ème étage.
@@ -424,7 +424,13 @@ export const ContractTab = ({
                         Object.keys(data_reservation.aquereurs).map((key) => (
                           <div key={key} className="mb-3">
                             <p className="text-sm font-semibold">
-                              {data_reservation.aquereurs[key].client.civilite}{' '}
+                              {data_reservation.aquereurs[key].client
+                                .civilite == 1
+                                ? 'Mr'
+                                : data_reservation.aquereurs[key].client
+                                    .civilite == 2
+                                ? 'Mme'
+                                : 'Mlle'}{' '}
                               {data_reservation.aquereurs[key].client.nom}{' '}
                               {data_reservation.aquereurs[key].client.prenom}
                             </p>
@@ -452,7 +458,7 @@ export const ContractTab = ({
                   {/* Détails du bien */}
                   <div className="mb-6">
                     <h4 className="text-lg font-bold text-[#5A5FE0] border-b border-[#EEEEEE] pb-2 mb-4">
-                      Détails du bien
+                      Détails du bien {data_reservation?.bien?.niveau}
                     </h4>
                     <div className="bg-[#F5F0F5] p-4 rounded-lg border-l-4 border-[#5A5FE0]">
                       <p className="text-sm mb-3">
@@ -464,7 +470,7 @@ export const ContractTab = ({
                         est situé au{' '}
                         {data_reservation?.bien?.niveau == 0
                           ? 'rez-de-chaussée'
-                          : `${data_reservation?.bien?.etage}ème étage`}{' '}
+                          : `${data_reservation?.bien?.niveau}ème étage`}{' '}
                         et offre une superficie habitable de{' '}
                         {data_reservation?.bien?.superficie_habitable || '0'}{' '}
                         m².
@@ -710,7 +716,7 @@ export const ContractTab = ({
             <div className="mt-4 md:mt-0">
               <div className="flex items-center space-x-2">
                 <div className="bg-white/20 px-3 py-1 rounded-full text-sm font-medium text-white">
-                  N° Reçu: {num_recu}
+                  N°: {num_recu}
                 </div>
                 <div className="bg-emerald-500 px-3 py-1 rounded-full text-sm font-medium text-white">
                   {contrat_sign
@@ -1014,10 +1020,7 @@ export const ContractTab = ({
                   <input
                     type="date"
                     required
-                    defaultValue={format(
-                      new Date(date_sign_client),
-                      'yyyy-MM-dd'
-                    )}
+                    defaultValue={date_sign_client}
                     onChange={(e) => setDate_sign_client(e.target.value)}
                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
@@ -1032,7 +1035,7 @@ export const ContractTab = ({
                   <input
                     type="date"
                     required
-                    defaultValue={format(new Date(date_sign_mo), 'yyyy-MM-dd')}
+                    defaultValue={date_sign_mo}
                     onChange={(e) => setDate_sign_mo(e.target.value)}
                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
@@ -1047,7 +1050,7 @@ export const ContractTab = ({
                   <input
                     type="date"
                     required
-                    defaultValue={format(new Date(date_enreg), 'yyyy-MM-dd')}
+                    defaultValue={date_enreg}
                     onChange={(e) => setDate_enreg(e.target.value)}
                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />

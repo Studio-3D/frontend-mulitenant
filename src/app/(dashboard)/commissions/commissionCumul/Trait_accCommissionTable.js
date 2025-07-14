@@ -216,6 +216,7 @@ const handleFilterToggle = (isOpen) => {
     <div className="relative bg-white rounded-lg shadow-md p-4">
 
       <Table
+        title={type === 0 ? "Commissions Cumulées" : type === 1 ? "Commissions Traitées" : "Commissions"}
         data_to_export={data_to_export()}
         columns_export={columns_export}
         name_file_export={"commission_export"}

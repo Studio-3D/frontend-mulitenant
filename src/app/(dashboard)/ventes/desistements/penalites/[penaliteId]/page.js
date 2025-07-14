@@ -130,7 +130,7 @@ const ShowPenalite = () => {
   };
 
   const handleCorrectionSubmit = async (data) => {
-    setLoadingSave(true)
+    setLoadingSave(true);
     try {
       // Create FormData for file uploads
       const formData = new FormData();
@@ -147,19 +147,19 @@ const ShowPenalite = () => {
       formData.append('numero_paiement_pen', data.numero_paiement_pen);
       formData.append('echeance_pen', data.echeance_pen);
 
-     // Append files correctly
-    if (data.files && data.files.length > 0) {
-      data.files.forEach((file, index) => {
-        // For new files (File objects)
-        if (file instanceof File || file.file) {
-          formData.append(`files_penalite[${index}]`, file.file || file);
-        }
-        // For existing files (if you need to keep them)
-        else if (file.fichier) {
-          formData.append(`files_penalite[${index}]`, file.fichier);
-        }
-      });
-    }
+      // Append files correctly
+      if (data.files && data.files.length > 0) {
+        data.files.forEach((file, index) => {
+          // For new files (File objects)
+          if (file instanceof File || file.file) {
+            formData.append(`files_penalite[${index}]`, file.file || file);
+          }
+          // For existing files (if you need to keep them)
+          else if (file.fichier) {
+            formData.append(`files_penalite[${index}]`, file.fichier);
+          }
+        });
+      }
 
       const response = await axios.post(
         `${APIURL.ROOTV1}/penalites/corriger_penalite`,
@@ -177,9 +177,9 @@ const ShowPenalite = () => {
 
       // Show success message
       toast.success('Action traitée avec succès');
-      setLoadingSave(false)
+      setLoadingSave(false);
     } catch (error) {
-      setLoadingSave(false)
+      setLoadingSave(false);
       setErrors(
         error.response?.data?.errors || { message: 'An error occurred' }
       );
@@ -743,6 +743,7 @@ const ValidationModal = ({
                         rules={{ required: 'Ce champ est obligatoire' }}
                         render={({ field }) => (
                           <TextField
+                            type="number"
                             control={false}
                             label="N° Remise"
                             name="remiseNumber"

@@ -291,43 +291,54 @@ const fetchPrestataires= async (service_id) => {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <Eye
-            className="w-4 h-4 !text-blue-500 hover:text-yellow-700 cursor-pointer"
+          <button
+            className="text-blue-500 hover:text-yellow-700"
             onClick={() => handleShow(row.id)}
-          />
-          <Pencil
-            className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
+            title="Voir"
+          >
+            <Eye className="w-4 h-4" />
+          </button>
+
+          <button
+            className="text-yellow-500 hover:text-yellow-700"
             onClick={() => handleEdit(row.id)}
-          />
+            title="Modifier"
+          >
+            <Pencil className="w-4 h-4" />
+          </button>
+
           {row.statut_raw === 1 && (
-            <>
-              <Wrench
-                className="w-5 h-5 !text-red-500 hover:text-red-700 cursor-pointer"
-                title="Traiter"
-                onClick={() => openTraitement(row, row.bien)}
-              />
-            </>
+            <button
+              className="text-red-500 hover:text-red-700"
+              onClick={() => openTraitement(row, row.bien)}
+              title="Traiter"
+            >
+              <Wrench className="w-5 h-5" />
+            </button>
           )}
+
           {row.statut_raw === 2 && (
-            <>
-            <Check
-              className="w-4 h-4 !text-green-600 hover:text-green-800 cursor-pointer"
-              title="Résoudre"
+            <button
+              className="text-green-600 hover:text-green-800"
               onClick={() => openResolution(row.id, row.bien)}
-            />
-
-            </>
+              title="Résoudre"
+            >
+              <Check className="w-4 h-4" />
+            </button>
           )}
 
-          <Trash2
-            className="w-4 h-4 !text-red-1000 hover:text-red-700 cursor-pointer"
+          <button
+            className="text-red-500 hover:text-red-700"
             onClick={() => {
               setSelectedId(row.id);
               setShowDeleteModal(true);
             }}
-          />
-          
-    </div>
+            title="Supprimer"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
+
  
 
       ),

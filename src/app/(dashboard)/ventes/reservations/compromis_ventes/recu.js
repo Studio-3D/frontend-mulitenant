@@ -199,8 +199,8 @@ const Document_Compromis = ({ data }) => (
 
           <View style={styles.metaInfo}>
             <View style={styles.metaRow}>
-              <Text style={styles.metaLabel}>N°Reçu:</Text>
-              <Text style={styles.metaValue}>{data.num_recu || 'XXXX'}</Text>
+              <Text style={styles.metaLabel}>N°:</Text>
+              <Text style={styles.metaValue}>{data.num_recu}</Text>
             </View>
             <View style={styles.metaRow}>
               <Text style={styles.metaLabel}>Date:</Text>

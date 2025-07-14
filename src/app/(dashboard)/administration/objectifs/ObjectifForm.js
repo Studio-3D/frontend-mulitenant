@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 import { useProjet } from "@/context/ProjetContext";
 import Button from "@/components/Button";
 import BreadCrumb from "../../navigation/BreadCrumb";
-import LoadingSpin from '@/components/LoadingSpin';
+import LoadingSpin from "@/components/LoadingSpin";
 
 export default function ObjectifForm({ id = null }) {
   const router = useRouter();
@@ -16,6 +16,7 @@ export default function ObjectifForm({ id = null }) {
   const [loading, setLoading] = useState(id ? true : false);
   const [submitting, setSubmitting] = useState(false);
   const [users, setUsers] = useState([]);
+  const [user, setUser] = useState(null);
   const [fetchingUsers, setFetchingUsers] = useState(false);
 
   // Form state
@@ -80,6 +81,7 @@ export default function ObjectifForm({ id = null }) {
             jours: 0,
           },
         });
+        setUser(objectif.user);
       } catch (error) {
         console.error("Error fetching objectif:", error);
         toast.error("Erreur lors du chargement de l'objectif");
@@ -141,7 +143,7 @@ export default function ObjectifForm({ id = null }) {
       });
 
       toast.success(`Objectif ${id ? "modifié" : "créé"} avec succès`);
-      router.push("/administration/objectifs");
+      router.push(ENDPOINTS.OBJECTIFS);
     } catch (error) {
       console.error("Error submitting objectif:", error);
 
@@ -158,7 +160,7 @@ export default function ObjectifForm({ id = null }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <LoadingSpin /> 
+        <LoadingSpin />
       </div>
     );
   }
@@ -183,11 +185,7 @@ export default function ObjectifForm({ id = null }) {
                 type="text"
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100"
                 value={
-                  users.find((u) => u.user_id === formData.user_id)?.user
-                    ?.name +
-                    " " +
-                    users.find((u) => u.user_id === formData.user_id)?.user
-                      ?.prenom || "Utilisateur non trouvé"
+                  user.name+''+user.p || "Utilisateur non trouvé"
                 }
                 disabled
               />
@@ -325,8 +323,8 @@ export default function ObjectifForm({ id = null }) {
 
           {/* Reservations section */}
           <div className="mb-6">
-            <div className="bg-amber-50 p-3 rounded-t-md border-l-4 border-amber-500">
-              <h3 className="font-medium text-amber-700">Réservations</h3>
+            <div className="bg-blue-50 p-3 rounded-t-md border-l-4 border-blue-500">
+              <h3 className="font-medium text-blue-700">Réservations</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3 mb-6">
               <div>

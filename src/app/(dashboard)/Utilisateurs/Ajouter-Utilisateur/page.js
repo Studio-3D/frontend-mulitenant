@@ -59,12 +59,12 @@ const Page = () => {
         "Cet email est interdit"
       )
       .required("L'email est requis"),
-    //role: Yup.string().required('Le rôle est requis'),
-    //gender: Yup.string().required('Le genre est requis'),
-    /* phone: Yup.string()
+    role: Yup.string().required('Le rôle est requis'),
+    gender: Yup.string().required('Le genre est requis'),
+    phone: Yup.string()
     .matches(/^[0-9]{10}$/, 'Le numéro doit contenir exactement 10 chiffres') // Match exactly 10 digits
-    .required('Le téléphone est requis'), */
-    //cin: Yup.string().required('CIN est requis'),
+    .required('Le téléphone est requis'),
+    cin: Yup.string().required('CIN est requis'),
     fonction: Yup.string(),
     date_embauche: Yup.date(),
     password: Yup.string()
@@ -188,39 +188,13 @@ const Page = () => {
               <Pencil className="text-gray-600 w-5 h-5" />
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-16 md:gap-y-3 gap-y-4 p-4 ">
-            <Input
-              label="Nom :"
-              type="text"
-              name="name"
-              required
-              value={formik.values.name}
-              onChange={formik.handleChange}
-              {...formik.getFieldProps("name")}
-              error={formik.errors.name}
-            />
-            <Input
-              label="Prénom :"
-              type="text"
-              name="prenom"
-              required
-              value={formik.values.prenom}
-              onChange={formik.handleChange}
-              {...formik.getFieldProps("prenom")}
-              error={formik.errors.prenom}
-            />
-            <Input
-              label="Email :"
-              type="email"
-              name="email"
-              required
-              value={formik.values.email}
-              onChange={formik.handleChange}
-              {...formik.getFieldProps("email")}
-              error={formik.errors.email}
-            />
-            <SelectInput
-              label="Rôle"
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-16 md:gap-y-3 gap-y-4 p-4 '>
+            <Input label='Nom :' type='text' name="name" value={formik.values.name} onChange={formik.handleChange} {...formik.getFieldProps('name')} error={formik.errors.name} />
+            <Input label='Prénom :' type='text' name="prenom" value={formik.values.prenom} onChange={formik.handleChange} {...formik.getFieldProps('prenom')} error={formik.errors.prenom}/>
+            <Input label='Email :' type='email' name="email" value={formik.values.email} onChange={formik.handleChange} {...formik.getFieldProps('email')} error={formik.errors.email}/>
+            <SelectInput 
+              label="Rôle" 
+
               name="role"
               placeholder="Sélectionnez un rôle"
               options={[
@@ -349,16 +323,12 @@ const Page = () => {
               onChange={formik.handleChange}
             />
             {/* password input with toggle view hide */}
-            <Input
-              label="Mot de passe"
-              type={showPassword ? "text" : "password"}
-              name="password"
-              required
-              value={formik.values.password}
-              onChange={formik.handleChange}
-              error={formik.errors.password}
-            >
-              {showPassword ? (
+            <Input label="Mot de passe" type={showPassword ? "text" : "password"} name="password"
+            value={formik.values.password}
+            onChange={formik.handleChange}
+            error={formik.errors.password}>
+            {showPassword ? (
+
                 <EyeOff
                   className="w-6 h-6 !text-gray-600"
                   onClick={() => setShowPassword(false)}
@@ -371,16 +341,11 @@ const Page = () => {
               )}
             </Input>
             {/* confirm password input with toggle view hide */}
-            <Input
-              label="Confirmer le mot de passe"
-              type={showPasswordConfirmation ? "text" : "password"}
-              name="password_confirmation"
-              required
-              value={formik.values.password_confirmation}
-              onChange={formik.handleChange}
-              error={formik.errors.password_confirmation}
-            >
-              {showPasswordConfirmation ? (
+            <Input label="Confirmer le mot de passe" type={showPasswordConfirmation ? "text" : "password"} name="password_confirmation"
+            value={formik.values.password_confirmation}
+            onChange={formik.handleChange}
+            error={formik.errors.password_confirmation}>
+            {showPasswordConfirmation ? (
                 <EyeOff
                   className="w-6 h-6 !text-gray-600"
                   onClick={() => setShowPasswordConfirmation(false)}

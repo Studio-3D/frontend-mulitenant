@@ -95,10 +95,7 @@ const SourceForm = ({ id = null, onComplete }) => {
         id ? "Source modifiée avec succès" : "Source ajoutée avec succès"
       );
 
-      // Ensure we wait for the toast before navigating
-      setTimeout(() => {
-        if (onComplete) onComplete();
-      }, 300);
+      router.push(ENDPOINTS.SOURCES);
     } catch (error) {
       console.error("Error submitting form:", error);
 

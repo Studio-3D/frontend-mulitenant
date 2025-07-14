@@ -3,13 +3,12 @@ import axios from "axios";
 import { APIURL } from "@/configs/api";
 
 export default function BienComposition({ bien }) {
-  const [compositionData, setCompositionData] = useState(null);
+  const [compositions, setCompositions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // If no property data, don't try to fetch
-    if (!bien || !bien.id) {
+    if (!bien?.id) {
       setLoading(false);
       return;
     }
@@ -17,27 +16,17 @@ export default function BienComposition({ bien }) {
     const fetchComposition = async () => {
       try {
         const token = localStorage.getItem("accessToken");
-        // Use the correct API endpoint format
         const response = await axios.get(`${APIURL.ROOTV1}/compositionBiens`, {
           headers: { Authorization: `Bearer ${token}` },
           params: { 
-            page: 1, 
-            size: 5, 
             bien_id: bien.id,
-            nbre_balcons: '',
-            nbre_buanderies: '',
-            nbre_chambres: '',
-            nbre_cuisines: '',
-            nbre_salons: ''
           }
         });
         
-        if (response.data && response.data.compositionBiens && response.data.compositionBiens.length > 0) {
-          // Take the first composition data since we're only displaying one
-          setCompositionData(response.data.compositionBiens[0]);
+        if (response.data?.compositionBiens?.length > 0) {
+          setCompositions(response.data.compositionBiens);
         } else {
-          // If no composition data, just use the data from the bien object if available
-          setCompositionData({
+          setCompositions([{
             nbre_chambres: bien.nbre_chambres || 0,
             nbre_salons: bien.nbre_salons || 0,
             nbre_sdb: bien.nbre_sdb || 0,
@@ -48,14 +37,12 @@ export default function BienComposition({ bien }) {
             nbre_receptions: bien.nbre_receptions || 0,
             nbre_buanderies: bien.nbre_buanderies || 0,
             nbre_placards: bien.nbre_placards || 0
-          });
+          }]);
         }
       } catch (err) {
         console.error("Error fetching composition data:", err);
         setError("Impossible de charger les données de composition");
-        
-        // Fall back to bien data if API call fails
-        setCompositionData({
+        setCompositions([{
           nbre_chambres: bien.nbre_chambres || 0,
           nbre_salons: bien.nbre_salons || 0,
           nbre_sdb: bien.nbre_sdb || 0,
@@ -66,7 +53,7 @@ export default function BienComposition({ bien }) {
           nbre_receptions: bien.nbre_receptions || 0,
           nbre_buanderies: bien.nbre_buanderies || 0,
           nbre_placards: bien.nbre_placards || 0
-        });
+        }]);
       } finally {
         setLoading(false);
       }
@@ -75,7 +62,6 @@ export default function BienComposition({ bien }) {
     fetchComposition();
   }, [bien]);
 
-  // Display loading state while fetching data
   if (loading) {
     return (
       <div className="flex justify-center items-center p-8">
@@ -91,31 +77,7 @@ export default function BienComposition({ bien }) {
       </div>
     );
   }
-  
-  // Check if there's any composition data to display
-  const hasComposition = compositionData && (
-    (compositionData.nbre_chambres && compositionData.nbre_chambres > 0) || 
-    (compositionData.nbre_salons && compositionData.nbre_salons > 0) || 
-    (compositionData.nbre_sdb && compositionData.nbre_sdb > 0) || 
-    (compositionData.nbre_cuisines && compositionData.nbre_cuisines > 0) || 
-    (compositionData.nbre_terasses && compositionData.nbre_terasses > 0) || 
-    (compositionData.nbre_balcons && compositionData.nbre_balcons > 0) || 
-    (compositionData.nbre_halls && compositionData.nbre_halls > 0) || 
-    (compositionData.nbre_receptions && compositionData.nbre_receptions > 0) || 
-    (compositionData.nbre_buanderies && compositionData.nbre_buanderies > 0) || 
-    (compositionData.nbre_placards && compositionData.nbre_placards > 0)
-  );
 
-  // If no composition data, show a message
-  if (!hasComposition) {
-    return (
-      <div className="text-center py-8 !text-gray-500">
-        <p>Aucune information de composition disponible pour ce bien.</p>
-      </div>
-    );
-  }
-
-  // Structure to define all possible composition elements and their icons
   const compositionItems = [
     {
       field: 'nbre_chambres',
@@ -209,36 +171,69 @@ export default function BienComposition({ bien }) {
     }
   ];
 
-  // Filter out items that have value of 0 or are not present
-  const presentItems = compositionItems.filter(item => 
-    compositionData[item.field] && compositionData[item.field] > 0
+  const hasCompositions = compositions.some(comp => 
+    Object.values(comp).some(val => typeof val === 'number' && val > 0)
   );
 
-  return (
-    <div className="bg-white shadow-sm rounded-lg">
-      <div className="p-6">
-        {presentItems.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {presentItems.map((item, index) => (
-              <div key={index} className="flex items-start gap-3">
-                <div className="mt-1 flex-shrink-0">
-                  {item.icon}
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium !text-gray-500">{item.label}</h3>
-                  <p className="mt-1 font-medium !text-gray-900">
-                    {compositionData[item.field]} {compositionData[item.field] > 1 ? 'pièces' : 'pièce'}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-4 !text-gray-500">
-            <p>Aucune information de composition disponible pour ce bien.</p>
-          </div>
-        )}
+  if (!hasCompositions) {
+    return (
+      <div className="text-center py-8 !text-gray-500">
+        <p>Aucune information de composition disponible pour ce bien.</p>
       </div>
+    );
+  }
+
+  return (
+  <div className="bg-white shadow-sm rounded-lg">
+    <div className="p-6">
+      {compositions.map((composition, compIndex) => {
+        const presentItems = compositionItems.filter(item => 
+          composition[item.field] > 0
+        );
+
+        return (
+          <div key={compIndex}>
+            {/* Trait de séparation plus visible */}
+            {compIndex > 0 && (
+              <div className="my-6 border-t border-gray-300"></div>
+            )}
+            
+            <div className="mb-6">
+              {compositions.length > 1 && (
+                <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 mb-6 shadow-sm">
+                  <svg className="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M4 3a2 2 0 012-2h6a2 2 0 012 2h1a2 2 0 012 2v11a2 2 0 01-2 2h-1a2 2 0 01-2 2H6a2 2 0 01-2-2H3a2 2 0 01-2-2V5a2 2 0 012-2h1z" />
+                  </svg>
+                  <h3 className="text-lg font-semibold text-blue-700">
+                    Composition {compIndex + 1}
+                  </h3>
+                </div>
+              )}
+
+              {presentItems.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {presentItems.map((item, index) => (
+                    <div key={index} className="flex items-start gap-3">
+                      <div className="mt-1 flex-shrink-0">
+                        {item.icon}
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium !text-gray-500">{item.label}</h3>
+                        <p className="mt-1 font-medium !text-gray-900">
+                          {composition[item.field]} {composition[item.field] > 1 ? 'pièces' : 'pièce'}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500">Aucun élément dans cette composition</p>
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
-  );
+  </div>
+);
 }

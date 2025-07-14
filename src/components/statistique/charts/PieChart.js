@@ -62,7 +62,7 @@ export const PieChart = ({ data, startDate, endDate }) => {
       <div className="flex justify-center items-center h-64">
         <div className="text-center">
           <p className="text-sm text-gray-500">
-            Aucune donnée de visite disponible
+            Aucune donnée de visite disponible pour cette période.
           </p>
         </div>
       </div>

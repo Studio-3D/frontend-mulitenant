@@ -18,6 +18,8 @@ export function Desistement_Definitif({
   reservationId,
   onDossierInfosChange, // Add this prop
   type_remb_get,
+  dossierInfos, // Add this
+  setDossierInfos, // Add this
 }) {
   const {
     control,
@@ -27,7 +29,6 @@ export function Desistement_Definitif({
   } = useFormContext();
   const [loading_dos, setLoading_dos] = useState();
   const [dossiers, setDossiers] = useState([]);
-  const [dossierInfos, setDossierInfos] = useState({}); // Changed to object to store per-client dossier info
   const [loadingInfos, setLoadingInfos] = useState({}); // Track loading state per client
   const [type_remb, set_type_remb] = useState(null); // Track loading state per client
   const [inputListRemb, set_inputList_remb] = useState([]); // Track loading state per client
@@ -36,9 +37,9 @@ export function Desistement_Definitif({
     if (isEditing && formData) {
       // Initialize type_remb from props
       set_type_remb(type_remb_get);
-      setValue('motif',formData.motif)
+      setValue('motif', formData.motif);
       setValue('type_remb', type_remb_get);
-      setValue('commentaire_rejete',formData.commentaire_rejete)
+      setValue('commentaire_rejete', formData.commentaire_rejete);
 
       // Initialize inputListRemb from formData
       const list =
@@ -51,7 +52,11 @@ export function Desistement_Definitif({
               prenom: item?.aquereur?.client.prenom,
               date_rembourse: item.date_rembourse,
               mode_rembourse: item.mode_rembourse_client, // Make sure this matches your data
-              type_remb: item.mode_rembourse, // Make sure this matches your data
+              type_remb:
+                item.mode_rembourse ==
+                ('transfert_rem_direct' || 'transfert_rem_apres_vente')
+                  ? 'transfert_remb'
+                  : item.mode_rembourse,
               montant_transferer: item.montant_transfert,
               reste_a_rembourse: item.montant_a_rembourser,
               num_paiement: item.num_paiement,
@@ -332,7 +337,7 @@ export function Desistement_Definitif({
                     Remboursement du Client: {item.nom} {item.prenom}
                     {currentMode !== 'transfert' && (
                       <span className="text-red-500 ml-2">
-                        Montant: {(item.reste_a_rembourse || 0)} DH
+                        Montant: {item.reste_a_rembourse || 0} DH
                       </span>
                     )}
                   </p>
@@ -645,7 +650,6 @@ export function Desistement_Definitif({
                                           );
                                         }}
                                       />
-                                     
                                     </div>
 
                                     <div className="flex items-center">
@@ -659,15 +663,11 @@ export function Desistement_Definitif({
                                         disabled
                                       />
                                     </div>
-                                     {watch(
-                                        `inputList_remb.${index}.error`
-                                      ) && (
-                                        <p className="text-red-500 text-sm mt-1">
-                                          {watch(
-                                            `inputList_remb.${index}.error`
-                                          )}
-                                        </p>
-                                      )}
+                                    {watch(`inputList_remb.${index}.error`) && (
+                                      <p className="text-red-500 text-sm mt-1">
+                                        {watch(`inputList_remb.${index}.error`)}
+                                      </p>
+                                    )}
                                   </div>
                                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                                     <Controller

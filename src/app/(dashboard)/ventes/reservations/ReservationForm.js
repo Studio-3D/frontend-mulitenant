@@ -134,7 +134,7 @@ export default function ReservationForm({ id }) {
       nom_mari: null,
       date_mariage: null,
       lieu_mariage: null,
-      notifie: '',
+      notifie: '0',
       civilite: '',
     },
   ]);
@@ -227,7 +227,7 @@ export default function ReservationForm({ id }) {
           prospect_id: newClientForms[index]?.prospect_id || '',
           info_client: newClientForms[index]?.info_client || '',
           info_prospect: newClientForms[index]?.info_prospect || '',
-          projet_id: newClientForms[index]?.projet_id || '',
+          projet_id: selectedProjet ? selectedProjet.id : '',
           situation_familliale:
             newClientForms[index]?.situation_familliale || '',
           nom_mari: newClientForms[index]?.nom_mari || '',
@@ -240,11 +240,19 @@ export default function ReservationForm({ id }) {
   };
 
   const updateFormField = (formIndex, field, value) => {
-    setNewClientForms((prevForms) =>
-      prevForms.map((form, index) =>
-        index == formIndex ? { ...form, [field]: value } : form
-      )
-    );
+    setNewClientForms((prevForms) => {
+      const updatedForms = prevForms.map((form, index) =>
+        index === formIndex ? { ...form, [field]: value } : form
+      );
+
+      // Log the specific form being updated
+      console.log('Updated form:', updatedForms[formIndex]);
+
+      // Log all forms (optional)
+      console.log('All forms:', updatedForms);
+
+      return updatedForms;
+    });
   };
   const defaultValues = {
     projet_id: selectedProjet ? selectedProjet.id : '',
@@ -838,7 +846,6 @@ export default function ReservationForm({ id }) {
     });
   };
 
-
   const isButtonDisabled = () => {
     // Cache all watched values at start
     const {
@@ -1145,11 +1152,14 @@ export default function ReservationForm({ id }) {
           form.date_mariage &&
           form.lieu_mariage?.trim() !== ''); // Or has all marriage fields
 
+      const hasValidNotifie =
+        form.notifie !== undefined && form.notifie !== null;
       return (
         hasRequiredFields &&
         hasValidType &&
         hasValidPartenaire &&
-        hasValidMarriage
+        hasValidMarriage &&
+        hasValidNotifie
       );
     });
   };
@@ -1416,14 +1426,17 @@ export default function ReservationForm({ id }) {
               </div>
 
               <div>
-                <AutocompleteBien
-                  user={user}
-                  biensByProjet={biensByProjet}
-                  value={watch('bien_id')}
-                  onChange={handleSelectBien}
-                  loading={loading_bien}
-                  error={errors['bien_id'] || backendErrors['bien_id']}
-                />
+                <>
+                  <AutocompleteBien
+                    user={user}
+                    biensByProjet={biensByProjet}
+                    value={watch('bien_id')}
+                    onChange={handleSelectBien}
+                    disabled={isEditing && user.role <= 2 ? true : false}
+                    loading={loading_bien}
+                    error={errors['bien_id'] || backendErrors['bien_id']}
+                  />
+                </>
               </div>
               <div>
                 <TextField
@@ -1659,9 +1672,10 @@ export default function ReservationForm({ id }) {
             </div>
 
             {showNewClientForm && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-                <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-                  <div className="flex justify-between items-center mb-6">
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                <div className="bg-white rounded-lg p-4 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+                  {/* Header */}
+                  <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-medium text-gray-900">
                       Nouveau Client
                     </h3>
@@ -1698,7 +1712,9 @@ export default function ReservationForm({ id }) {
                       <XIcon className="w-6 h-6" />
                     </button>
                   </div>
-                  <div className="mb-6">
+
+                  {/* Number of Forms Control */}
+                  <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Nombre de formulaires:
                     </label>
@@ -1710,34 +1726,31 @@ export default function ReservationForm({ id }) {
                       onChange={(e) =>
                         handleNumberOfFormsChange(parseInt(e.target.value) || 1)
                       }
-                      className="w-32 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full sm:w-32 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
+
                   <form onSubmit={handleFakeSubmit} className="w-full">
-                    <div className="space-y-8">
+                    <div className="space-y-6">
                       {newClientForms.map((form, formIndex) => (
                         <div
                           key={formIndex}
-                          className="border-t pt-6 first:border-t-0 first:pt-0"
+                          className="border-t pt-4 first:border-t-0 first:pt-0"
                         >
-                          <h4 className="text-md font-medium text-gray-900 mb-4">
+                          <h4 className="text-md font-medium text-gray-900 mb-3">
                             Client {formIndex + 1}
                           </h4>
 
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Type Client Select */}
-                            <div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {/* Type Client */}
+                            <div className="sm:col-span-2 md:col-span-1">
                               <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Type Client{' '}
-                                <span className="text-red-500 ml-1">*</span>
+                                <span className="text-red-500">*</span>
                               </label>
                               <select
                                 value={form.type_client || ''}
                                 onChange={(e) => {
-                                  console.log(
-                                    'Selected value:',
-                                    e.target.value
-                                  ); // Debug log
                                   updateFormField(
                                     formIndex,
                                     'type_client',
@@ -1774,12 +1787,12 @@ export default function ReservationForm({ id }) {
                               )}
                             </div>
 
-                            {/* Conditional Partenaire Select (only shows when type_client === 2) */}
+                            {/* Partenaire (conditional) */}
                             {form.type_client == '2' && (
-                              <div>
+                              <div className="sm:col-span-2 md:col-span-1">
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                   Partenaire{' '}
-                                  <span className="text-red-500 ml-1">*</span>
+                                  <span className="text-red-500">*</span>
                                 </label>
                                 <select
                                   value={form.partenaire_id || ''}
@@ -1819,9 +1832,11 @@ export default function ReservationForm({ id }) {
                                   )}
                               </div>
                             )}
+
+                            {/* CIN */}
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">
-                                CIN <span className="text-red-500 ml-1">*</span>
+                                CIN <span className="text-red-500">*</span>
                               </label>
                               <input
                                 type="text"
@@ -1829,21 +1844,6 @@ export default function ReservationForm({ id }) {
                                 onChange={async (e) => {
                                   const value = e.target.value;
                                   updateFormField(formIndex, 'cin', value);
-
-                                  // Only make API call if phone number has sufficient length
-                                  if (value.length >= 3) {
-                                    await fetch_cin_tel(
-                                      'cin',
-                                      value,
-                                      formIndex,
-                                      accessToken,
-                                      updateFormField
-                                    );
-                                  }
-                                }}
-                                onBlur={async (e) => {
-                                  const value = e.target.value;
-                                  // Optional: Validate again when leaving the field
                                   if (value.length >= 3) {
                                     await fetch_cin_tel(
                                       'cin',
@@ -1869,9 +1869,10 @@ export default function ReservationForm({ id }) {
                                 )}
                             </div>
 
+                            {/* Nom */}
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Nom <span className="text-red-500 ml-1">*</span>
+                                Nom <span className="text-red-500">*</span>
                               </label>
                               <input
                                 type="text"
@@ -1897,10 +1898,10 @@ export default function ReservationForm({ id }) {
                                 )}
                             </div>
 
+                            {/* Prénom */}
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Prénom{' '}
-                                <span className="text-red-500 ml-1">*</span>
+                                Prénom <span className="text-red-500">*</span>
                               </label>
                               <input
                                 type="text"
@@ -1926,24 +1927,21 @@ export default function ReservationForm({ id }) {
                                   </p>
                                 )}
                             </div>
+
+                            {/* Civilité */}
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Civilité{' '}
-                                <span className="text-red-500 ml-1">*</span>
+                                Civilité <span className="text-red-500">*</span>
                               </label>
                               <select
                                 value={form.civilite || ''}
-                                onChange={(e) => {
-                                  console.log(
-                                    'Selected value:',
-                                    e.target.value
-                                  ); // Debug log
+                                onChange={(e) =>
                                   updateFormField(
                                     formIndex,
                                     'civilite',
                                     e.target.value
-                                  );
-                                }}
+                                  )
+                                }
                                 className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                   formSubmitted_client && !form.civilite
                                     ? 'border-red-500'
@@ -1968,10 +1966,12 @@ export default function ReservationForm({ id }) {
                                 </p>
                               )}
                             </div>
+
+                            {/* Pourcentage */}
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Pourcentage{' '}
-                                <span className="text-red-500 ml-1">*</span>
+                                <span className="text-red-500">*</span>
                               </label>
                               <input
                                 type="text"
@@ -2015,16 +2015,15 @@ export default function ReservationForm({ id }) {
                               </p>
                             </div>
 
+                            {/* Téléphone */}
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Téléphone{' '}
-                                <span className="text-red-500 ml-1">*</span>
+                                <span className="text-red-500">*</span>
                               </label>
                               <input
                                 type="tel"
                                 pattern="[0-9]{8,}"
-                                min="0"
-                                max="100"
                                 value={form.telephone_num1}
                                 onChange={async (e) => {
                                   const value = e.target.value;
@@ -2033,21 +2032,6 @@ export default function ReservationForm({ id }) {
                                     'telephone_num1',
                                     value
                                   );
-
-                                  // Only make API call if phone number has sufficient length
-                                  if (value.length >= 8) {
-                                    await fetch_cin_tel(
-                                      'tel',
-                                      value,
-                                      formIndex,
-                                      accessToken,
-                                      updateFormField
-                                    );
-                                  }
-                                }}
-                                onBlur={async (e) => {
-                                  const value = e.target.value;
-                                  // Optional: Validate again when leaving the field
                                   if (value.length >= 8) {
                                     await fetch_cin_tel(
                                       'tel',
@@ -2076,11 +2060,11 @@ export default function ReservationForm({ id }) {
                                 )}
                             </div>
 
-                            {/* Situation Familiale Select */}
+                            {/* Situation Familiale */}
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Situation Familiale{' '}
-                                <span className="text-red-500 ml-1">*</span>
+                                <span className="text-red-500">*</span>
                               </label>
                               <select
                                 value={form.situation_familliale || ''}
@@ -2091,7 +2075,6 @@ export default function ReservationForm({ id }) {
                                     'situation_familliale',
                                     newSituation
                                   );
-                                  // Clear marriage fields if not married
                                   if (newSituation != '2') {
                                     updateFormField(formIndex, 'nom_mari', '');
                                     updateFormField(
@@ -2135,12 +2118,13 @@ export default function ReservationForm({ id }) {
                                 )}
                             </div>
 
-                            {/* Conditional Marriage Fields - only shows when situation_familliale === "2" */}
+                            {/* Marriage Fields (conditional) */}
                             {form.situation_familliale == '2' && (
                               <>
                                 <div>
                                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Marié(e) à M/MME
+                                    Marié(e) à M/MME{' '}
+                                    <span className="text-red-500">*</span>
                                   </label>
                                   <input
                                     type="text"
@@ -2155,7 +2139,7 @@ export default function ReservationForm({ id }) {
                                     className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                       formSubmitted_client &&
                                       form.situation_familliale == '2' &&
-                                      (form.nom_mari || '').trim() === '' // Also handle null check here
+                                      (form.nom_mari || '').trim() === ''
                                         ? 'border-red-500'
                                         : 'border-gray-300'
                                     } rounded-md focus:outline-none focus:border-gray-500`}
@@ -2171,7 +2155,8 @@ export default function ReservationForm({ id }) {
 
                                 <div>
                                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Date de Mariage
+                                    Date de Mariage{' '}
+                                    <span className="text-red-500">*</span>
                                   </label>
                                   <input
                                     type="date"
@@ -2202,7 +2187,8 @@ export default function ReservationForm({ id }) {
 
                                 <div>
                                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Lieu de Mariage
+                                    Lieu de Mariage{' '}
+                                    <span className="text-red-500">*</span>
                                   </label>
                                   <input
                                     type="text"
@@ -2233,64 +2219,60 @@ export default function ReservationForm({ id }) {
                               </>
                             )}
 
+                            {/* Notifié */}
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Accepte être contacté{' '}
-                                <span className="text-red-500 ml-1">*</span>
-                              </label>
-
-                              <div className="flex items-center space-x-4">
-                                {/* Yes Radio Button */}
-                                <label className="inline-flex items-center">
-                                  <input
-                                    type="radio"
-                                    name={'notifie'}
-                                    value="0"
-                                    checked={form.notifie == '0'}
-                                    onChange={(e) => {
-                                      console.log(
-                                        'Selected value:',
-                                        e.target.value
-                                      );
-                                      updateFormField(
-                                        formIndex,
-                                        'notifie',
-                                        e.target.value
-                                      );
-                                    }}
-                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                                  />
-                                  <span className="ml-2 text-sm text-gray-700">
-                                    Oui
-                                  </span>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                  Accepte être contacté{' '}
+                                  <span className="text-red-500">*</span>
                                 </label>
-
-                                {/* No Radio Button */}
-                                <label className="inline-flex items-center">
-                                  <input
-                                    type="radio"
-                                    name={`notifie`}
-                                    value="1"
-                                    checked={form.notifie == '1'}
-                                    onChange={(e) => {
-                                      console.log(
-                                        'Selected value:',
-                                        e.target.value
-                                      );
-                                      updateFormField(
-                                        formIndex,
-                                        'notifie',
-                                        e.target.value
-                                      );
-                                    }}
-                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                                  />
-                                  <span className="ml-2 text-sm text-gray-700">
-                                    Non
-                                  </span>
-                                </label>
+                                <div className="flex flex-wrap gap-4">
+                                  <label className="inline-flex items-center">
+                                    <input
+                                      type="radio"
+                                      name={`notifie_${formIndex}`} // Make name unique per client
+                                      value="1" // Use consistent values (1 for Oui, 0 for Non)
+                                      checked={form.notifie === '1'}
+                                      onChange={(e) =>
+                                        updateFormField(
+                                          formIndex,
+                                          'notifie',
+                                          e.target.value
+                                        )
+                                      }
+                                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                                    />
+                                    <span className="ml-2 text-sm text-gray-700">
+                                      Oui
+                                    </span>
+                                  </label>
+                                  <label className="inline-flex items-center">
+                                    <input
+                                      type="radio"
+                                      name={`notifie_${formIndex}`} // Same unique name
+                                      value="0"
+                                      checked={form.notifie === '0'}
+                                      onChange={(e) =>
+                                        updateFormField(
+                                          formIndex,
+                                          'notifie',
+                                          e.target.value
+                                        )
+                                      }
+                                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                                    />
+                                    <span className="ml-2 text-sm text-gray-700">
+                                      Non
+                                    </span>
+                                  </label>
+                                </div>
+                                {formSubmitted_client &&
+                                  form.notifie === undefined && (
+                                    <p className="text-red-500 text-xs mt-1">
+                                      Cette sélection est obligatoire
+                                    </p>
+                                  )}
                               </div>
-
                               {formSubmitted_client && !form.notifie && (
                                 <p className="text-red-500 text-xs mt-1">
                                   Cette sélection est obligatoire
@@ -2298,7 +2280,8 @@ export default function ReservationForm({ id }) {
                               )}
                             </div>
 
-                            <div className="md:col-span-2">
+                            {/* Adresse */}
+                            <div className="sm:col-span-2">
                               <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Adresse
                               </label>
@@ -2319,10 +2302,13 @@ export default function ReservationForm({ id }) {
                         </div>
                       ))}
                     </div>
-                    <div className="mt-6 flex justify-end space-x-3">
+
+                    {/* Form Actions */}
+                    <div className="mt-6 flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3">
                       <button
+                        type="button"
                         onClick={() => {
-                          setFormSubmitted_client(false); // Reset submission state
+                          setFormSubmitted_client(false);
                           handleAnnuler_form();
                           setShowNewClientForm(false);
                           setNumberOfForms(1);
@@ -2359,19 +2345,15 @@ export default function ReservationForm({ id }) {
                         type="submit"
                         disabled={!isFormValid() || check || check_p}
                         onClick={() => {
-                          setFormSubmitted_client(true); // Reset submission state
+                          setFormSubmitted_client(true);
                           if (isFormValid()) {
-                            // Create updated clients array first
                             const updatedClients = [
                               ...addedClients,
                               ...newClientForms,
                             ];
-
-                            // Calculate total using the function
                             calculateTotalPercentage_new_form(updatedClients);
                             setAddedClients(updatedClients);
                             setValue('clients', updatedClients);
-                            // Reset form
                             setShowNewClientForm(false);
                             setNumberOfForms(1);
                             setNewClientForms([
@@ -2544,6 +2526,15 @@ export default function ReservationForm({ id }) {
                                           </div>
                                         )}
                                       </>
+                                    )}
+                                    {client.notifie == '1' && (
+                                      <div className="flex items-center text-sm text-gray-600">
+                                        <MapPin className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
+                                        <span className="truncate">
+                                          {client.notifie == '1' &&
+                                            "Accepte d'etre contacté"}
+                                        </span>
+                                      </div>
                                     )}
                                   </div>
                                 )}
@@ -3078,7 +3069,7 @@ export default function ReservationForm({ id }) {
 
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Accepte être contacté{' '}
+                            Accepte être contacté {clientToEdit.notifie}
                             <span className="text-red-500 ml-1">*</span>
                           </label>
 
@@ -3096,8 +3087,8 @@ export default function ReservationForm({ id }) {
                                 <input
                                   type="radio"
                                   name="notifie"
-                                  value="0"
-                                  checked={clientToEdit.notifie == '0'}
+                                  value="1"
+                                  checked={clientToEdit.notifie == '1'}
                                   onChange={(e) => {
                                     console.log(
                                       'Selected value:',
@@ -3120,8 +3111,8 @@ export default function ReservationForm({ id }) {
                                 <input
                                   type="radio"
                                   name="notifie"
-                                  value="1"
-                                  checked={clientToEdit.notifie == '1'}
+                                  value="0"
+                                  checked={clientToEdit.notifie == ''}
                                   onChange={(e) => {
                                     console.log(
                                       'Selected value:',
@@ -3411,11 +3402,13 @@ export default function ReservationForm({ id }) {
                         setValue('reste', watch('prix_final') - e.target.value);
                       }}
                     />
-                    {watch('avance') == 0 && user?.role > 2 && (
-                      <p style={{ color: 'red' }}>
-                        Le montant ne peut pas être 0 pour votre rôle
-                      </p>
-                    )}
+                    {watch('avance') != '' &&
+                      watch('avance') == 0 &&
+                      user?.role > 2 && (
+                        <p style={{ color: 'red' }}>
+                          Le montant ne peut pas être 0 pour votre rôle
+                        </p>
+                      )}
                     {watch('avance') > 0 &&
                       watch('avance') < watch('avance_minimale') && (
                         <p style={{ color: 'red' }}>

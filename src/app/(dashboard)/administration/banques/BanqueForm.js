@@ -95,10 +95,7 @@ const BanqueForm = ({ id = null, onComplete }) => {
         id ? "Banque modifiée avec succès" : "Banque ajoutée avec succès"
       );
 
-      // Ensure we wait for the toast before navigating
-      setTimeout(() => {
-        if (onComplete) onComplete();
-      }, 300);
+     router.push(ENDPOINTS.BANQUES);
     } catch (error) {
       console.error("Error submitting form:", error);
 

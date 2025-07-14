@@ -120,9 +120,7 @@ const FreinForm = ({ id = null, onComplete }) => {
       );
 
       // Ensure we wait for the toast before navigating
-      setTimeout(() => {
-        if (onComplete) onComplete();
-      }, 300);
+      router.push(ENDPOINTS.TYPEFREINS);
     } catch (error) {
       console.error("Error submitting form:", error);
 
