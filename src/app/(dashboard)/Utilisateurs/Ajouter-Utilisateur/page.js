@@ -187,7 +187,8 @@ const Page = () => {
             </div>
           </div>
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-16 md:gap-y-3 gap-y-4 p-4 '>
-            <Input label='Nom :' 
+            <Input 
+              label='Nom :' 
               type='text' name="name"
              value={formik.values.name}
               onChange={formik.handleChange} 
