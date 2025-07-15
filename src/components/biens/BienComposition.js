@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { APIURL } from "@/configs/api";
+import Composition from "@/app/(dashboard)/compositionBien/CompositionTable";
 
 export default function BienComposition({ bien }) {
   const [compositions, setCompositions] = useState([]);
@@ -185,55 +186,7 @@ export default function BienComposition({ bien }) {
 
   return (
   <div className="bg-white shadow-sm rounded-lg">
-    <div className="p-6">
-      {compositions.map((composition, compIndex) => {
-        const presentItems = compositionItems.filter(item => 
-          composition[item.field] > 0
-        );
-
-        return (
-          <div key={compIndex}>
-            {/* Trait de séparation plus visible */}
-            {compIndex > 0 && (
-              <div className="my-6 border-t border-gray-300"></div>
-            )}
-            
-            <div className="mb-6">
-              {compositions.length > 1 && (
-                <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 mb-6 shadow-sm">
-                  <svg className="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M4 3a2 2 0 012-2h6a2 2 0 012 2h1a2 2 0 012 2v11a2 2 0 01-2 2h-1a2 2 0 01-2 2H6a2 2 0 01-2-2H3a2 2 0 01-2-2V5a2 2 0 012-2h1z" />
-                  </svg>
-                  <h3 className="text-lg font-semibold text-blue-700">
-                    Composition {compIndex + 1}
-                  </h3>
-                </div>
-              )}
-
-              {presentItems.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {presentItems.map((item, index) => (
-                    <div key={index} className="flex items-start gap-3">
-                      <div className="mt-1 flex-shrink-0">
-                        {item.icon}
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-medium !text-gray-500">{item.label}</h3>
-                        <p className="mt-1 font-medium !text-gray-900">
-                          {composition[item.field]} {composition[item.field] > 1 ? 'pièces' : 'pièce'}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-gray-500">Aucun élément dans cette composition</p>
-              )}
-            </div>
-          </div>
-        );
-      })}
-    </div>
+    <Composition bien={bien.id}/>
   </div>
 );
 }

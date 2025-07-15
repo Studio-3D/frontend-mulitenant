@@ -336,6 +336,7 @@ const formatData = compositionBiens.map((c, index) => ({
             accessToken={accesstoken}
             onClose={() => {
               setShowDeleteModal(false);
+              fetchCompositionBiensFromApi(0); // Recharger les données après suppression
               
             }}
           />

@@ -145,38 +145,50 @@ export default function BienForm({ id }) {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  useEffect(() => {
+  // Fonction générique pour vider des champs et relancer les calculs
+const clearFieldsAndRecalculate = (fieldsToClear) => {
+  const updatedForm = { ...formData };
+
+  fieldsToClear.forEach((field) => {
+    updatedForm[field] = '';
+  });
+
+  setFormData(updatedForm);
+  updateVendableAndTotalArea(updatedForm);
+};
+
+// Vider les champs si hasJardin est désactivé
+useEffect(() => {
   if (!hasJardin) {
-    setFormData((prev) => ({
-      ...prev,
-      superficie_jardin: '',
-      superficie_jardin_calculer: '',
-    }));
+    clearFieldsAndRecalculate([
+      'superficie_jardin',
+      'superficie_jardin_calculer',
+    ]);
   }
 }, [hasJardin]);
 
+// Vider les champs si hasParking est désactivé
 useEffect(() => {
   if (!hasParking) {
-    setFormData((prev) => ({
-      ...prev,
-      num_parking: '',
-      prix_parking: '',
-      superficie_parking: '',
-    }));
+    clearFieldsAndRecalculate([
+      'num_parking',
+      'prix_parking',
+      'superficie_parking',
+    ]);
   }
 }, [hasParking]);
 
+// Vider les champs si hasBox est désactivé
 useEffect(() => {
   if (!hasBox) {
-    setFormData((prev) => ({
-      ...prev,
-      prix_box: '',
-      superficie_box: '',
-      num_box: '',
-      // ajouter ici les champs à vider s’il y en a
-    }));
+    clearFieldsAndRecalculate([
+      'num_box',
+      'prix_box',
+      'superficie_box',
+    ]);
   }
 }, [hasBox]);
+
 
 
   // Fetch reference data and initial data on component mount
@@ -473,62 +485,50 @@ useEffect(() => {
     }
   };
 
-  // Calculate derived values
   const handleTerraceChange = (value, currentFormData) => {
-    const terraceValue = parseFloat(value) || 0;
-    // Calculate 50% of the terrace area for the calculated field
-    const terraceCalculated = terraceValue * 0.5;
+  const terraceValue = parseFloat(value) || 0;
+  const terraceCalculated = terraceValue * 0.5;
 
-    setFormData((prev) => ({
-      ...prev,
-      superficie_terrasse_calculer: terraceCalculated,
-    }));
-
-    // Use the latest form data
-    updateVendableAndTotalArea({
-      ...currentFormData,
-      superficie_terrasse: terraceValue,
-      superficie_terrasse_calculer: terraceCalculated,
-    });
+  const updatedForm = {
+    ...currentFormData,
+    superficie_terrasse: terraceValue,
+    superficie_terrasse_calculer: terraceCalculated,
   };
 
-  // New function to handle balcon changes
+  setFormData(updatedForm);
+  updateVendableAndTotalArea(updatedForm);
+};
+
+
   const handleBalconChange = (value, currentFormData) => {
-    const balconValue = parseFloat(value) || 0;
-    // Calculate 50% of the balcon area (adjust calculation as needed)
-    const balconCalculated = balconValue * 0.5;
+  const balconValue = parseFloat(value) || 0;
+  const balconCalculated = balconValue * 0.5;
 
-    setFormData((prev) => ({
-      ...prev,
-      superficie_balcon_calculer: balconCalculated,
-    }));
-
-    // Update vendable and total areas
-    updateVendableAndTotalArea({
-      ...currentFormData,
-      superficie_balcon: balconValue,
-      superficie_balcon_calculer: balconCalculated,
-    });
+  const updatedForm = {
+    ...currentFormData,
+    superficie_balcon: balconValue,
+    superficie_balcon_calculer: balconCalculated,
   };
 
-  // New function to handle jardin changes
+  setFormData(updatedForm);
+  updateVendableAndTotalArea(updatedForm);
+};
+
+
   const handleJardinChange = (value, currentFormData) => {
-    const jardinValue = parseFloat(value) || 0;
-    // Calculate 25% of the garden area (adjust calculation as needed)
-    const jardinCalculated = jardinValue * 0.25;
+  const jardinValue = parseFloat(value) || 0;
+  const jardinCalculated = jardinValue * 0.25;
 
-    setFormData((prev) => ({
-      ...prev,
-      superficie_jardin_calculer: jardinCalculated,
-    }));
-
-    // Update vendable and total areas
-    updateVendableAndTotalArea({
-      ...currentFormData,
-      superficie_jardin: jardinValue,
-      superficie_jardin_calculer: jardinCalculated,
-    });
+  const updatedForm = {
+    ...currentFormData,
+    superficie_jardin: jardinValue,
+    superficie_jardin_calculer: jardinCalculated,
   };
+
+  setFormData(updatedForm);
+  updateVendableAndTotalArea(updatedForm);
+};
+
 
   // Calculate vendable and total areas based on all fields
   const updateVendableAndTotalArea = (data) => {
@@ -835,8 +835,8 @@ useEffect(() => {
         setBienCreeId(response.data.bien.id);
         setShowCompositionModal(true);
       } else {
-        router.back();
-        //router.push(projet?.id ? `/Projets/${projet.id}?tab=biens` : "/Projets");
+        //router.back();
+        router.push(projet?.id ? `/Projets/${projet.id}?tab=biens` : "/Projets");
       }
       console.log("Bien créé ou mis à jour avec succès:", bienCreeId);
 
@@ -863,7 +863,7 @@ useEffect(() => {
           }
         }
       }
-      toast.error("Erreur lors de l'enregistrement du bien");
+      //toast.error("Erreur lors de l'enregistrement du bien");
     } finally {
       setLoading(false);
     }
