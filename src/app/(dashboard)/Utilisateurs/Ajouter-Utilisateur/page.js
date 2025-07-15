@@ -48,14 +48,14 @@ const Page = () => {
     name: Yup.string().required("Le nom est requis"),
     prenom: Yup.string().required("Le prénom est requis"),
     email: Yup.string()
-      .trim()
-      .required("L'email est requis")
-      .email("Email invalide")
-      .matches(
-        /^(?!\.)(?!.*\.\.)[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/,
-        "Format d'email invalide"
-      )
-      .max(254, "L'email ne doit pas dépasser 254 caractères"),
+  .trim()
+  .required("L'email est requis")
+  .matches(
+    /^[a-zA-Z0-9._%+-]+@(gmail\.com|outlook\.com|[a-zA-Z0-9-]+\.[a-zA-Z]{2,})$/,
+    "Seules les adresses @gmail.com, @outlook.com ou professionnelles sont acceptées"
+  )
+  .max(254, "L'email ne doit pas dépasser 254 caractères")
+  .lowercase(),
     role: Yup.string().required('Le rôle est requis'),
     gender: Yup.string().required('Le genre est requis'),
     phone: Yup.string()
@@ -135,9 +135,11 @@ const Page = () => {
         setLoading(false);
       }
     },
-    validateOnChange: false, // Disable validation on input changes
-    validateOnBlur: false, // Disable validation on blur events
+    validateOnChange: true, // Enable validation on input changes
+    validateOnBlur: true, // Disable validation on blur events
   });
+
+ 
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -191,15 +193,39 @@ const Page = () => {
               label='Nom :' 
               type='text' name="name"
              value={formik.values.name}
-              onChange={formik.handleChange} 
-              {...formik.getFieldProps('name')}
-               error={formik.errors.name} 
+              onChange={(e) => {
+                formik.handleChange(e);
+                // Mark the field as touched when user types
+                formik.setFieldTouched('name', true, false);
+              }}
+              onBlur={formik.handleBlur}
+              error={(formik.touched.name || formik.submitCount > 0) ? formik.errors.name : null}
                />
-            <Input label='Prénom :' type='text' name="prenom" value={formik.values.prenom} onChange={formik.handleChange} {...formik.getFieldProps('prenom')} error={formik.errors.prenom}/>
-            <Input label='Email :' type='email' name="email" value={formik.values.email} onChange={formik.handleChange} {...formik.getFieldProps('email')} error={formik.errors.email}/>
-            <SelectInput 
-              label="Rôle" 
-
+            <Input 
+              label='Prénom :' 
+              type='text' name="prenom" 
+              value={formik.values.prenom} 
+              onChange={(e) => {
+                formik.handleChange(e);
+                formik.setFieldTouched('prenom', true, false);
+              }} onBlur={formik.handleBlur} 
+              error={(formik.touched.prenom || formik.submitCount > 0) ? formik.errors.prenom : null} 
+              />
+            <Input
+              label='Email :'
+              type='email'
+              name="email" 
+              placeholder={'exemple@gmail.com'}
+              value={formik.values.email}
+              onChange={(e) => {
+                formik.handleChange(e);
+                formik.setFieldTouched('email', true, false);
+              }}
+              onBlur={formik.handleBlur}
+              error={(formik.touched.email || formik.submitCount > 0) ? formik.errors.email : null}
+            />
+            <SelectInput
+              label="Rôle"
               name="role"
               placeholder="Sélectionnez un rôle"
               options={[
@@ -212,6 +238,19 @@ const Page = () => {
               value={formik.values.role} // Directly link the value from Formik
               onChange={(value) => formik.setFieldValue("role", value)} // Handle change via setFieldValue
               error={formik.errors.role} // Show validation error
+            />
+
+            <SelectInput
+              label="Société"
+              name="societe_id"
+              placeholder="Sélectionnez une société"
+              options={societes.map((societe) => ({
+                label: societe.raison_sociale,
+                value: societe.id,
+              }))}
+              value={formik.values.societe_id}
+              onChange={(value) => formik.setFieldValue("societe_id", value)}
+              error={formik.errors.societe_id}
             />
 
             <SelectInput
@@ -243,6 +282,7 @@ const Page = () => {
               type="text"
               name="phone"
               value={formik.values.phone}
+              placeholder={"Ex: 0612345678"}
               onChange={(e) => {
                 // Filter to allow only numbers
                 const numericValue = e.target.value.replace(/[^0-9]/g, "");
