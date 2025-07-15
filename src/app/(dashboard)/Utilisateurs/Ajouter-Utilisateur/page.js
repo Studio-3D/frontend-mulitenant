@@ -50,11 +50,33 @@ const Page = () => {
     email: Yup.string()
   .trim()
   .required("L'email est requis")
-  .matches(
-    /^[a-zA-Z0-9._%+-]+@(gmail\.com|outlook\.com|[a-zA-Z0-9-]+\.[a-zA-Z]{2,})$/,
-    "Seules les adresses @gmail.com, @outlook.com ou professionnelles sont acceptées"
-  )
   .max(254, "L'email ne doit pas dépasser 254 caractères")
+  .matches(
+    /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+    "Veuillez entrer une adresse email valide"
+  )
+  .test(
+    'no-spaces',
+    "L'email ne doit pas contenir d'espaces",
+    (value) => !/\s/.test(value)
+  )
+  .test(
+    'valid-domain',
+    "Domaine email non valide",
+    (value) => {
+      if (!value) return true;
+      const domain = value.split('@')[1];
+      return domain && domain.includes('.');
+    }
+  )
+  .test(
+    'no-special-chars',
+    "L'email contient des caractères spéciaux non autorisés",
+    (value) => {
+      if (!value) return true;
+      return /^[a-zA-Z0-9._%+-@]+$/.test(value.split('@')[0]);
+    }
+  )
   .lowercase(),
     role: Yup.string().required('Le rôle est requis'),
     gender: Yup.string().required('Le genre est requis'),
@@ -136,7 +158,7 @@ const Page = () => {
       }
     },
     validateOnChange: true, // Enable validation on input changes
-    validateOnBlur: true, // Disable validation on blur events
+    validateOnBlur: false, // Disable validation on blur events
   });
 
  
@@ -158,7 +180,7 @@ const Page = () => {
   };
 
   return (
-    <div className="flex justify-center mt-2 bg-white h-[89vh] shadow-md rounded-lg p-4 overflow-auto">
+    <div className="flex justify-center mt-2 bg-white min-h-[89vh] shadow-md rounded-lg p-4 overflow-auto">
       <div className="flex flex-col gap-4 items-center w-full">
         <h1 className="text-2xl font-semibold mt-2">Ajouter un utilisateur</h1>
         <form
@@ -237,7 +259,9 @@ const Page = () => {
               ]}
               value={formik.values.role} // Directly link the value from Formik
               onChange={(value) => formik.setFieldValue("role", value)} // Handle change via setFieldValue
-              error={formik.errors.role} // Show validation error
+              onBlur={() => formik.setFieldTouched("role", true)}
+              error={(formik.touched.role || formik.submitCount > 0) ? formik.errors.role : null}
+              submitted={formik.submitCount > 0}
             />
 
             <SelectInput
@@ -262,7 +286,9 @@ const Page = () => {
               }))}
               value={formik.values.gender}
               onChange={(value) => formik.setFieldValue("gender", value)}
-              error={formik.errors.gender}
+              onBlur={() => formik.setFieldTouched("gender", true)}
+              error={(formik.touched.gender || formik.submitCount > 0) ? formik.errors.gender : null}
+              submitted={formik.submitCount > 0}
             />
 
             <Input
