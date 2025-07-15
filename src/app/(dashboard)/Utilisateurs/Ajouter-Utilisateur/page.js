@@ -45,8 +45,8 @@ const Page = () => {
   };
 
   const validationSchema = Yup.object().shape({
-    name: Yup.string().required("Le nom est requis"),
-    prenom: Yup.string().required("Le prénom est requis"),
+    name: Yup.string().required("Le nom est requis").min(3, "Le nom doit comporter au moins 3 caractères"),
+    prenom: Yup.string().required("Le prénom est requis").min(3, "Le prénom doit comporter au moins 3 caractères"),
     email: Yup.string()
   .trim()
   .required("L'email est requis")
@@ -251,18 +251,6 @@ const Page = () => {
               value={formik.values.societe_id}
               onChange={(value) => formik.setFieldValue("societe_id", value)}
               error={formik.errors.societe_id}
-            />
-
-            <SelectInput
-              label="Société"
-              name="societe_id"
-              placeholder="Sélectionnez une société"
-              options={societes.map((societe) => ({
-                label: societe.raison_sociale,
-                value: societe.id,
-              }))}
-              value={formik.values.societe_id}
-              onChange={(value) => formik.setFieldValue("societe_id", value)}
             />
             <SelectInput
               label="Genre"
