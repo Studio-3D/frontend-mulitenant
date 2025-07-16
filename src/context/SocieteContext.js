@@ -44,6 +44,28 @@ export function SocieteProvider({ children }) {
     setLoading(prev => ({ ...prev, init: false }));
   }, [initialized]);
 
+  const deleteSociete = async (id) => {
+  try {
+    const token = localStorage.getItem("accessToken");
+    await axios.delete(`${APIURL.SOCIETES}/${id}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    // Supprimer la société du contexte
+    setSocietes(prev => prev.filter(s => s.id !== id));
+
+    // Si la société supprimée était sélectionnée, on la retire aussi
+    if (selectedSociete?.id === id) {
+      clearSelectedSociete();
+    }
+
+    toast.success("Société supprimée avec succès.");
+  } catch (err) {
+    toast.error("Erreur lors de la suppression de la société.");
+    console.error("Erreur suppression société :", err);
+  }
+};
+
   // Clear selected societe on logout
   useEffect(() => {
     if (!authLoading && !user) {
@@ -169,16 +191,18 @@ export function SocieteProvider({ children }) {
 
   return (
     <SocieteContext.Provider
-      value={{
-        selectedSociete,
-        societes,
-        loading: isLoading,
-        selectionLoading: loading.selection,
-        selectSociete,
-        clearSelectedSociete,
-        refreshSocietes,
-      }}
-    >
+  value={{
+    selectedSociete,
+    societes,
+    loading: isLoading,
+    selectionLoading: loading.selection,
+    selectSociete,
+    clearSelectedSociete,
+    refreshSocietes,
+    deleteSociete, 
+  }}
+>
+
       {children}
     </SocieteContext.Provider>
   );

@@ -4,7 +4,7 @@ import axios from 'axios'
 import { Box } from '@mui/material'
 import { Dialog, DialogContent, DialogTitle, Typography, TextField, Grid, IconButton,Button, Alert } from '@mui/material'
 import { Table, TableHead, TableBody, TableRow, TableCell, TableSortLabel } from '@mui/material'
-import { APIURL } from '@/configs/api'
+import { APIURL, RESOURCE_URL } from '@/configs/api'
 import { getEtatLabel } from '../bien-utils'
 import { Database, Printer, Trash2 } from 'lucide-react'
 import * as XLSX from 'xlsx';
@@ -40,12 +40,7 @@ const handleDialogToggle = () => {
     setBackendErrors_tp(null)
   }
 
-  const handleDialogToggleOpen = () => {
-    setFile(null)
-    onclose()
-    setDisabled_var(true)
-    setBackendErrors([])
-  }
+  
 
   const onSubmit_file = e => {
     e.preventDefault()
@@ -232,7 +227,7 @@ const handleDialogToggle = () => {
   }
 
   const handleFileClick = () => {
-    window.open(`${FileUrl}/Docs/import_bien.xlsx`, '_blank')
+    window.open(`${RESOURCE_URL.DOCS}/import_bien.xlsx`, '_blank')
   }
 
  
@@ -334,6 +329,27 @@ const handleDialogToggle = () => {
       Importer des Biens
     </Typography>
   </div>
+    <Box
+      className="flex items-center justify-between bg-blue-100 border border-blue-300 rounded px-4 py-3 w-full"
+    >
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-blue-800">
+        <Typography variant="body1" fontWeight="bold">
+          📄 Modèle Excel :
+        </Typography>
+        <Typography variant="body2">
+          Utilisez ce fichier comme référence pour le format d'importation.
+        </Typography>
+      </div>
+      <Button
+        variant="contained"
+        size="small"
+        className="bg-blue-600 hover:bg-blue-700 text-white"
+        onClick={handleFileClick}
+      >
+        Télécharger le modèle
+      </Button>
+    </Box>
+
 
   <DialogContent className="bg-blue-50 px-10 py-8">
     <form onSubmit={onSubmit_file} className="flex flex-col items-center w-full max-w-3xl mx-auto gap-6">

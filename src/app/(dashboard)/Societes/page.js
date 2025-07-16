@@ -10,6 +10,7 @@ import { APIURL, RESOURCE_URL } from '../../../configs/api';
 import DeleteData from '@/components/DeleteData';
 import Link from "next/link";
 import Input from "@/components/Input";
+import DeletSociete from "./DeleteSociete";
 
 export default function Societes() {
   const [societes, setSocietes] = useState([]);
@@ -35,28 +36,28 @@ export default function Societes() {
   const accesstoken = localStorage.getItem('accessToken');
   // Fetch sociétés function
   const fetchSocietes = async () => {
-    try {
-      const params = {
-        
-        ...filters,
-      };
+  try {
+    const params = {
+      ...filters,
+      page: currentPage,
+      size: rowsPerPage,
+      search: searchTerm, // if supported
+    };
 
-      const response = await axios.get(APIURL.SOCIETES, {
+    const response = await axios.get(APIURL.SOCIETES, {
+      headers: { Authorization: `Bearer ${accesstoken}` },
+      params,
+    });
 
-        headers: { Authorization: `Bearer ${accesstoken}`,},
-        params,
-      });
-
-      setSocietes(response.data.societes || []);
-      setTotalRows(response.data.pagination?.totalItems || 0);
-
-      setLoading(false);
-    } catch (err) {
-      console.error("API Error:", err);
-      setError(`Erreur lors du chargement des sociétés: ${err.message}`);
-      setLoading(false);
-    }
-  };
+    setSocietes(response.data.societes || []);
+    setTotalRows(response.data.pagination?.totalItems || 0);
+    setLoading(false);
+  } catch (err) {
+    console.error("API Error:", err);
+    setError(`Erreur lors du chargement des sociétés: ${err.message}`);
+    setLoading(false);
+  }
+};
 
   // Fetch sociétés on component mount
   useEffect(() => {
@@ -67,6 +68,16 @@ export default function Societes() {
     setTempFilters((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handlePageChange = (page) => {
+    setLoading(true);        // Trigger loading
+    setCurrentPage(page);    // Change the page
+  };
+
+  const handleRowsPerPageChange = (rows) => {
+    setLoading(true);          // Trigger loading
+    setRowsPerPage(rows);      // Change rows per page
+    setCurrentPage(1);         // Optional: reset to page 1
+  };
   const applyFilters = () => {
     setFilters(tempFilters); // C’est ici que fetchUsers va être déclenché
   };
@@ -187,7 +198,7 @@ export default function Societes() {
     <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
       {/* Table */}
       <Table 
-        title={'Societes'}
+        
         data_to_export={data_to_export()}
         columns_export={columns_export}
         name_file_export={"societe_export"}
@@ -277,8 +288,8 @@ export default function Societes() {
         totalRows={totalRows}
         currentPage={currentPage}  
         rowsPerPage={rowsPerPage}
-        onPageChange={setCurrentPage}
-        onRowsPerPageChange={setRowsPerPage}
+        onPageChange={handlePageChange}
+        onRowsPerPageChange={handleRowsPerPageChange}
         // add + export buttons
         addLink={"/Societes/ajouter-societe"}
         enableExport={true}
@@ -301,7 +312,7 @@ export default function Societes() {
       {/* Delete modal   */}
       {showDelete && selectedSocieteId && (
       <Modal isVisible={showDelete} onClose={() => setShowDelete(false)}>
-        <DeleteData
+        <DeletSociete
           route={APIURL.SOCIETES}
           Id={selectedSocieteId}
           type="Societé"

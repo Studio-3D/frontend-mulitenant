@@ -426,7 +426,14 @@ export default function Page() {
       });
 
       if (response.status == 201 || response.status == 200) {
-        router.push('/ventes/desistements');
+        if (user.role <= 2) {
+              localStorage.setItem('etat_dst', '1');
+          router.push('/ventes/desistements');
+        } else {
+          //commercial
+          localStorage.setItem('etat_dst', '5');
+          router.push('/ventes/desistements/attente_encours');
+        }
       }
     } catch (error) {
       console.error('Error submitting form:', error);

@@ -362,7 +362,7 @@ export default function Page() {
                   <div className="flex items-center mb-2">
                     {getFileIcon(file.fichier)}
                     <a
-                      href={`${FileUrl}/Docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/desistement/${reservationData.codeRes}/${file.fichier}`}
+                      href={`${FileUrl}/Docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/desistements/${reservationData.codeRes}/${file.fichier}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="ml-2 text-sm font-medium text-gray-700 hover:text-blue-600 truncate"
@@ -616,7 +616,7 @@ export default function Page() {
             {showRejectComment && (
               <div className="py-1 ">
                 <TextField
-                  label="Commentaire de rejet*"
+                  label="Commentaire de rejet"
                   name="commentaire_rejete"
                   control={false}
                   value={commentaire_rejete}

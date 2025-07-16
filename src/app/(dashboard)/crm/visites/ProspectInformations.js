@@ -1,8 +1,8 @@
-import React from 'react';
-import { Controller } from 'react-hook-form';
-import Autocomplete from '@/components/Autocomplete';
-import Input from '@/components/Input';
-import SelectInput from '@/components/SelectInput';
+import React from "react";
+import { Controller } from "react-hook-form";
+import Autocomplete from "@/components/Autocomplete";
+import Input from "@/components/Input";
+import SelectInput from "@/components/SelectInput";
 
 const ProspectInformations = ({
   control,
@@ -58,7 +58,7 @@ const ProspectInformations = ({
             required: true,
             pattern: {
               value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-              message: 'Email invalide',
+              message: "Email invalide",
             },
           }}
           error={errors?.email?.message || backendErrors?.email}
@@ -72,12 +72,12 @@ const ProspectInformations = ({
         <Input
           label="CIN:"
           name="cin"
-          required={Number(watch('interet')) === 1}
+          required={Number(watch("interet")) === 1}
           control={control}
           rules={{
             validate: (value) => {
-              if (Number(watch('interet')) === 1 && !value) {
-                return 'Ce champ est obligatoire lorsque interet est intéressé.';
+              if (Number(watch("interet")) === 1 && !value) {
+                return "Ce champ est obligatoire lorsque interet est intéressé.";
               }
               return true;
             },
@@ -97,11 +97,11 @@ const ProspectInformations = ({
           inputMode="numeric"
           onKeyDown={(e) => {
             const allowedKeys = [
-              'Backspace',
-              'Delete',
-              'ArrowLeft',
-              'ArrowRight',
-              'Tab',
+              "Backspace",
+              "Delete",
+              "ArrowLeft",
+              "ArrowRight",
+              "Tab",
             ];
 
             if (allowedKeys.includes(e.key)) return;
@@ -111,18 +111,18 @@ const ProspectInformations = ({
             }
           }}
           onChange={(e) => {
-            const numericValue = e.target.value.replace(/[^0-9]/g, '');
+            const numericValue = e.target.value.replace(/[^0-9]/g, "");
 
             // If using react-hook-form's setValue method:
             if (control.setValue) {
-              control.setValue('telephone', numericValue, {
+              control.setValue("telephone", numericValue, {
                 shouldValidate: true,
                 shouldDirty: true,
               });
             }
 
             // Trigger your custom handler
-            handleChange_event('Téléphone')({
+            handleChange_event("Téléphone")({
               ...e,
               target: { ...e.target, value: numericValue },
             });
@@ -147,12 +147,12 @@ const ProspectInformations = ({
           }}
           onChange={(e) => {
             // Filter out any non-numeric characters that might get through (like paste)
-            const numericValue = e.target.value.replace(/[^0-9]/g, '');
+            const numericValue = e.target.value.replace(/[^0-9]/g, "");
             // Update the input value
             e.target.value = numericValue;
             // Pass to form handlers
-            control?.register('telephone_num2').onChange(e);
-            handleChange_event('Téléphone2')(e);
+            control?.register("telephone_num2").onChange(e);
+            handleChange_event("Téléphone2")(e);
           }}
           inputMode="numeric" // Shows numeric keyboard on mobile
         />
@@ -176,7 +176,7 @@ const ProspectInformations = ({
             control={control}
             errors={errors}
             backendErrors={backendErrors}
-            value={watch('source_id')} // Should be the full object or ID
+            value={watch("source_id")} // Should be the full object or ID
             onChange={handleSourceChange}
             choix="source" // This tells the Autocomplete to use the "source" property
           />
@@ -198,7 +198,7 @@ const ProspectInformations = ({
           />
         </div>
       )}
-      {watch('source_txt') === 'Partenaire' &&
+      {watch("source_txt") === "Partenaire" &&
         (partenaire_txt != null ? (
           <div>
             <Input
@@ -217,7 +217,7 @@ const ProspectInformations = ({
             <Autocomplete
               label="Partenaire:"
               name="partenaire_id"
-              required={watch('source_txt') === 'Partenaire'}
+              required={watch("source_txt") === "Partenaire"}
               options={partenaires}
               value={partenaireValue}
               loading={loading}
@@ -226,9 +226,9 @@ const ProspectInformations = ({
                 ...errors,
                 partenaire_id:
                   formSubmitted &&
-                  watch('source_txt') === 'Partenaire' &&
-                  !watch('partenaire_id')
-                    ? { message: 'Partenaire est obligatoire' }
+                  watch("source_txt") === "Partenaire" &&
+                  !watch("partenaire_id")
+                    ? { message: "Partenaire est obligatoire" }
                     : null,
               }}
               backendErrors={backendErrors}
@@ -241,7 +241,7 @@ const ProspectInformations = ({
         <Controller
           name="notifie"
           control={control}
-          defaultValue={defaultValues['notifie'] || 0}
+          defaultValue={defaultValues["notifie"] || 0}
           render={({ field }) => (
             <label className="flex justify-center items-center space-x-2">
               <input
@@ -253,10 +253,10 @@ const ProspectInformations = ({
               />
               <span
                 className={` font-medium ${
-                  field.value === 1 ? 'text-[#009FFF]' : ''
+                  field.value === 1 ? "text-[#009FFF]" : ""
                 }`}
               >
-                Accepte être contacté
+                Accepte d'être contacté
               </span>
             </label>
           )}

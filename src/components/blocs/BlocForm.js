@@ -22,9 +22,7 @@ export default function BlocForm({ id, projetId, trancheId }) {
   const [selectedTranche, setSelectedTranche] = useState(null);
   
   // Get selected project from localStorage if not provided via props
-  const selectedProjet = projetId ? 
-    { id: projetId } : 
-    JSON.parse(localStorage.getItem("selectedProjet") || "{}");
+  const selectedProjet = JSON.parse(localStorage.getItem("selectedProjet") || "{}");
 
   const defaultValues = {
     nom: "",

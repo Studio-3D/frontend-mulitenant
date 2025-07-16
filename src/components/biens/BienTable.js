@@ -521,7 +521,6 @@ const handleImportClick = () => {
 </Box>
 </Box>
     <Table
-      title={"Biens"} 
       columns={columns}
       totalRows={totalRows}
       loading={loading}
@@ -549,7 +548,7 @@ const handleImportClick = () => {
       data_to_export={data_to_export()}
       columns_export={columns_export}
       name_file_export={"bien_export"}
-      data={paginatedData}
+      data={formattedBiens}
       showSearch={false}
       enableImport={true}
       onImportClick={handleImportClick}

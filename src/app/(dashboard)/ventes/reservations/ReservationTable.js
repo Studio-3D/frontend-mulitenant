@@ -2,7 +2,15 @@
 
 import React, { useEffect, useState } from 'react';
 import Table from '@/components/Table';
-import { Edit, ThumbsDown, ThumbsUp, Clock, Eye, X } from 'lucide-react';
+import {
+  Edit,
+  ThumbsDown,
+  ThumbsUp,
+  Clock,
+  Eye,
+  X,
+  Trash2,
+} from 'lucide-react';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
 import { useAuth } from '../../../../context/AuthContext';
@@ -22,7 +30,7 @@ import Modal_Rejeter_Reservation from './Modal_Rejeter_Reservation';
 import Modal_show_info from './Modal_show_info';
 import DateRangePicker from '@/components/DateRangePicker';
 
-const ReservationTable = ({ dataClient,user_id }) => {
+const ReservationTable = ({ dataClient, user_id }) => {
   const { user, token } = useAuth();
   const userRole = user.role;
   const accesstoken = token || localStorage.getItem('accessToken');
@@ -90,7 +98,7 @@ const ReservationTable = ({ dataClient,user_id }) => {
     const combinedFilters = {
       ...(user_id ? { user_id } : {}),
       ...filters,
-      ...params_url
+      ...params_url,
     };
     fetchData_table_by_projet(
       entity,
@@ -230,7 +238,10 @@ const ReservationTable = ({ dataClient,user_id }) => {
           <>
             {row.data_res.user && (
               <>
-                <Link target="_blank" href={'/Utilisateurs/afficher-utilisateur/' + row.user_id}>
+                <Link
+                  target="_blank"
+                  href={'/Utilisateurs/afficher-utilisateur/' + row.user_id}
+                >
                   <strong style={{ fontWeight: 600 }}>{row.cc}</strong>
                 </Link>
               </>
@@ -347,6 +358,14 @@ const ReservationTable = ({ dataClient,user_id }) => {
                     className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
                     title="Refuser"
                     onClick={() => handle_rejeter(row.id, row.code_reservation)}
+                  />
+                  <Trash2
+                    className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
+                    onClick={() => {
+                      setSelectedId(row.id);
+                      setShowDeleteModal(true);
+                    }}
+                    title="Supprimer"
                   />
                 </>
               ) : (
@@ -560,12 +579,13 @@ const ReservationTable = ({ dataClient,user_id }) => {
           onRowsPerPageChange={setRowsPerPage}
           onSearchChange={setSearchTerm}
           enableExport={true}
-          enableImport={true}
+          enableImport={false}
           showSearch={false}
           addLink={
             (isSuperAdmin(user.role) ||
-            isAdmin(user.role) ||
-            isCommercial(user.role)) && !user_id 
+              isAdmin(user.role) ||
+              isCommercial(user.role)) &&
+            !user_id
               ? `${ENDPOINTS.RESERVATIONS}?action=add`
               : undefined
           }
@@ -579,47 +599,46 @@ const ReservationTable = ({ dataClient,user_id }) => {
               >
                 <Input
                   type="text"
-                  placeholder="Code Réservation"
+                  label="Code Réservation"
                   value={tempFilters.code_reservation}
                   onChange={(e) =>
                     handleFilterChange('code_reservation', e.target.value)
                   }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-                
+
                 <Input
                   type="text"
-                  placeholder="Bien"
+                  label="Bien"
                   value={tempFilters.bien}
                   onChange={(e) => handleFilterChange('bien', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
                 {/*<Input
                   type="text"
-                  placeholder="Client"
+                  label="Client"
                   value={tempFilters.client}
                   onChange={(e) => handleFilterChange('client', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />*/}
                 <Input
                   type="text"
-                  placeholder="Commercial"
+                  label="Commercial"
                   value={tempFilters.cc}
                   onChange={(e) => handleFilterChange('cc', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                  <DateRangePicker
-                    startName="date_start"
-                    endName="date_end"
-                    startValue={tempFilters.date_start}
-                    endValue={tempFilters.date_end}
-                    onChange={handleFilterChange}
-                    placeholder="Choisir une Date"
-                    label="Date"
-                  />
-                </div>
+                <DateRangePicker
+                  startName="date_start"
+                  endName="date_end"
+                  startValue={tempFilters.date_start}
+                  endValue={tempFilters.date_end}
+                  onChange={handleFilterChange}
+                  label="Choisir une Date"
+                />
+              </div>
               <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="button"
@@ -646,7 +665,6 @@ const ReservationTable = ({ dataClient,user_id }) => {
           onClose={() => setShowDeleteModal(false)}
         >
           <DeleteData
-            type='Client'
             route={APIURL.RESERVATIONS}
             Id={selectedId}
             message={'Etes-vous sûr de vouloir supprimer cete Réservation ?'}

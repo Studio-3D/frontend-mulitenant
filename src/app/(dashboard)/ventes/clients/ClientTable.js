@@ -191,16 +191,21 @@ const ClientTable = () => {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <Eye
-            className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
+          <button
+            className="text-blue-500 hover:text-blue-700"
             title="Voir détails"
             onClick={() => handleShow(row.id)}
-          />
-          <Pencil
-            className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
+          >
+            <Eye className="w-4 h-4" />
+          </button>
+
+          <button
+            className="text-yellow-500 hover:text-yellow-700"
             title="Modifier"
             onClick={() => handleEdit(row.id)}
-          />
+          >
+            <Pencil className="w-4 h-4" />
+          </button>
           {row?.aquereur?.length === 0 &&
             row?.aquereur_desistement.length === 0 &&
             row.prospect == null &&
@@ -382,6 +387,7 @@ const ClientTable = () => {
           <DeleteData
             route={APIURL.CLIENTS}
             Id={selectedId}
+            type='Client'
             message={'Etes-vous sûr de vouloir supprimer ce Client ?'}
             accessToken={accesstoken}
             onClose={() => {

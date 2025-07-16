@@ -110,10 +110,7 @@ const VueForm = ({ id = null, onComplete }) => {
         id ? "Vue modifiée avec succès" : "Vue ajoutée avec succès"
       );
 
-      // Ensure we wait for the toast before navigating
-      setTimeout(() => {
-        if (onComplete) onComplete();
-      }, 300);
+    router.push(ENDPOINTS.VUES);      
     } catch (error) {
       console.error("Error submitting form:", error);
 
