@@ -104,6 +104,9 @@ export default function FacebookConfigTab() {
       // Verify configuration after saving
       await verifyFacebookConfiguration();
       
+      // Subscribe page to webhook after successful configuration
+      await subscribePageToWebhook(facebookConfig.page_fcb_id, facebookConfig.acces_token_page);
+      
       toast.success("Configuration Facebook enregistrée avec succès");
       
       // Reset form and refresh configurations
@@ -122,6 +125,35 @@ export default function FacebookConfigTab() {
       toast.error(error.response?.data?.message || "Erreur lors de l'enregistrement de la configuration Facebook");
     } finally {
       setSaving(false);
+    }
+  };
+
+  // Subscribe page to webhook
+  const subscribePageToWebhook = async (pageId, pageAccessToken) => {
+    try {
+      const response = await axios.post(
+        `https://graph.facebook.com/v19.0/${pageId}/subscribed_apps`,
+        {
+          subscribed_fields: ["feed", "comments", "reactions", "mentions"]
+        },
+        {
+          headers: {
+            "Authorization": `Bearer ${pageAccessToken}`,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+      
+      if (response.data.success) {
+        console.log("Page successfully subscribed to webhook");
+        toast.success("Page Facebook abonnée aux webhooks avec succès");
+      } else {
+        console.warn("Page subscription response:", response.data);
+        toast.warning("Abonnement webhook partiellement configuré");
+      }
+    } catch (error) {
+      console.error("Error subscribing page to webhook:", error);
+      toast.error("Erreur lors de l'abonnement aux webhooks Facebook");
     }
   };
 
@@ -183,6 +215,13 @@ export default function FacebookConfigTab() {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+      
+      // Find the configuration to get page details for subscription
+      const config = configurations.find(c => c.id === configId);
+      if (config) {
+        // Subscribe page to webhook after successful webhook configuration
+        await subscribePageToWebhook(config.page_fcb_id, config.acces_token_page);
+      }
       
       toast.success("Webhook Facebook configuré avec succès");
       

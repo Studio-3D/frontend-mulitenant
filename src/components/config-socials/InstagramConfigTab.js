@@ -102,6 +102,9 @@ export default function InstagramConfigTab() {
       // Verify configuration after saving
       await verifyInstagramConfiguration();
       
+      // Subscribe Instagram account to webhook after successful configuration
+      await subscribeInstagramToWebhook(instagramConfig.instagram_id, instagramConfig.acces_token_user);
+      
       toast.success("Configuration Instagram enregistrée avec succès");
       
       // Reset form and refresh configurations
@@ -120,6 +123,35 @@ export default function InstagramConfigTab() {
       toast.error(error.response?.data?.message || "Erreur lors de l'enregistrement de la configuration Instagram");
     } finally {
       setSaving(false);
+    }
+  };
+
+  // Subscribe Instagram account to webhook
+  const subscribeInstagramToWebhook = async (instagramId, accessToken) => {
+    try {
+      const response = await axios.post(
+        `https://graph.facebook.com/v19.0/${instagramId}/subscribed_apps`,
+        {
+          subscribed_fields: ["comments", "mentions"]
+        },
+        {
+          headers: {
+            "Authorization": `Bearer ${accessToken}`,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+      
+      if (response.data.success) {
+        console.log("Instagram account successfully subscribed to webhook");
+        toast.success("Compte Instagram abonné aux webhooks avec succès");
+      } else {
+        console.warn("Instagram subscription response:", response.data);
+        toast.warning("Abonnement webhook Instagram partiellement configuré");
+      }
+    } catch (error) {
+      console.error("Error subscribing Instagram to webhook:", error);
+      toast.error("Erreur lors de l'abonnement aux webhooks Instagram");
     }
   };
 
@@ -181,6 +213,13 @@ export default function InstagramConfigTab() {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+      
+      // Find the configuration to get Instagram details for subscription
+      const config = configurations.find(c => c.id === configId);
+      if (config) {
+        // Subscribe Instagram account to webhook after successful webhook configuration
+        await subscribeInstagramToWebhook(config.instagram_id, config.acces_token_user);
+      }
       
       toast.success("Webhook Instagram configuré avec succès");
       
