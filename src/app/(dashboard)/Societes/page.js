@@ -5,7 +5,7 @@ import Table from '@/components/Table';
 import axios from "axios";
 import Modal from '@/components/Modal';
 import AfficherSociete from "./AfficherSociete";
-import { Eye, UserCog, Trash2 } from 'lucide-react';
+import { Eye, PencilLine, Trash2 } from 'lucide-react';
 import { APIURL, RESOURCE_URL } from '../../../configs/api';
 import DeleteData from '@/components/DeleteData';
 import Link from "next/link";
@@ -152,16 +152,22 @@ export default function Societes() {
       label: 'Actions',
       render: row => (
         <div className="flex gap-3 items-center cursor-pointer">
+          {/* View button */}
+          <button title="Voir Société" >
             <Eye className="w-4 h-4 !text-blue-500 hover:text-blue-700" 
-            onClick={()=>
-              {
-                setSelectedSocieteId(row.id); // Set the selected société ID
-                setShowSociete(true); // Open the modal
+              onClick={()=>
+                {
+                  setSelectedSocieteId(row.id); // Set the selected société ID
+                  setShowSociete(true); // Open the modal
+                }
               }
-            }/>
-          <Link href={`/Societes/${row.id}/edit`}>
-            <UserCog className="w-4 h-4 !text-green-500 hover:text-green-700"/>
+            />
+          </button>
+          <Link href={`/Societes/${row.id}/edit`} title="Modifier Société">
+            <PencilLine className="w-4 h-4 !text-yellow-500 hover:text-yellow-500" />
           </Link>
+          {/* Delete button */}
+          <button title="Supprimer Société" >
           <Trash2
             className="w-4 h-4 !text-red-500 hover:text-red-700"
             onClick={() => {
@@ -169,6 +175,7 @@ export default function Societes() {
               setShowDelete(true); // Open the modal
             }}
           />
+          </button>
         </div>
       ),
     },
