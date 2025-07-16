@@ -328,6 +328,7 @@ const Page = () => {
               value={formik.values.date_embauche} // Pass Formik's value
               onChange={(date) => formik.setFieldValue("date_embauche", date)} // Update Formik value
               error={formik.errors.date_embauche} // Pass validation error
+             
             />
             <SelectInput
               label="Niveau d'étude"
