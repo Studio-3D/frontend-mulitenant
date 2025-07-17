@@ -119,7 +119,7 @@ export const Dashboard = () => {
             Authorization: `Bearer ${accesstoken}`
           },
         });
-        
+        console.log("Dashboard data response:", response.data); // Debug log
         setData(response.data);
       } catch (err) {
         setError(`Failed to fetch dashboard data: ${err.message}`);
