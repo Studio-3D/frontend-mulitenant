@@ -15,7 +15,7 @@ import { useRouter } from 'next/navigation';
 import { useSociete } from '@/context/SocieteContext';
 import SocieteModal from '../SocieteDialog';
 import ProjetDialog from '../../components/ProjetDialog';
-import { User_roles } from "../../configs/enum";
+import { User_roles, decryptUserType } from "../../configs/enum";
 
 export const Dashboard = () => {
   const { token, user } = useAuth();
@@ -27,24 +27,14 @@ export const Dashboard = () => {
   const [dateRange, setDateRange] = useState("cette année");
   const [showProjetDialog, setShowProjetDialog] = useState(false);
   const router = useRouter();
-  const { selectedSociete } = useSociete();
+  const { selectedSociete, societes } = useSociete();
   const [showSocieteModal, setShowSocieteModal] = useState(false);
+  const [selectedSocieteId, setSelectedSocieteId] = useState(null);
 
-  // Check which dialogs to show on initial render
-  useEffect(() => {
-    if (!user) return;
 
-    // For superadmin: show societe dialog first if no societe is selected
-    if (user.role === 'superadmin' && !selectedSociete) {
-      setShowSocieteModal(true);
-      return;
-    }
-
-    // For all users: show projet dialog if no projet is selected
-    if (!selectedProjet && !localStorage.getItem("selectedProjet")) {
-      setShowProjetDialog(true);
-    }
-  }, [user, selectedSociete, selectedProjet]);
+  // Proper role checking
+  const userRole = decryptUserType(user?.role);
+  const isSuperAdmin = userRole === User_roles.ROLE_SUPER_ADMIN;
 
   const getDateRangeParams = (range) => {
     const today = new Date();
@@ -121,6 +111,28 @@ export const Dashboard = () => {
     }
   };
 
+  // Check which dialogs to show on initial render
+  useEffect(() => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+
+    // Check if we need to show societe modal
+    if (isSuperAdmin && !selectedSociete && !showSocieteModal) {
+      setShowSocieteModal(true);
+      return;
+    }
+
+    // Check if we need to show projet modal (only after societe is selected for super admin)
+    if (!selectedProjet && !localStorage.getItem("selectedProjet") && !showProjetDialog) {
+      // For super admin, only show projet dialog if societe is already selected
+      if (!isSuperAdmin || (isSuperAdmin && selectedSociete)) {
+        setShowProjetDialog(true);
+      }
+    }
+  }, [user, selectedSociete, selectedProjet, isSuperAdmin]);
+
   useEffect(() => {
     const fetchData = async () => {
       if (!accesstoken) {
@@ -129,7 +141,15 @@ export const Dashboard = () => {
         return;
       }
 
-      if (!selectedProjet && !localStorage.getItem("selectedProjet")) {
+      // Don't fetch data if we're showing modals
+      if (showSocieteModal || showProjetDialog) {
+        setLoading(false);
+        return;
+      }
+
+      // Don't fetch data if no projet is selected
+      const hasSelectedProjet = selectedProjet || localStorage.getItem("selectedProjet");
+      if (!hasSelectedProjet) {
         setLoading(false);
         return;
       }
@@ -157,38 +177,58 @@ export const Dashboard = () => {
     };
   
     fetchData();
-  }, [selectedProjet, accesstoken, dateRange]);
+  }, [selectedProjet, accesstoken, dateRange, showSocieteModal, showProjetDialog]);
 
   if (loading) {
     return <div className="flex justify-center items-center h-64">Loading...</div>;
   }
 
+  
   // Show SocieteDialog first for superadmin if needed
-  if (user?.role === 'superadmin' && showSocieteModal && !selectedSociete) {
-    return (
-      <SocieteModal
-        open={showSocieteModal}
-        onClose={() => setShowSocieteModal(false)}
-        onSelect={() => {
-          setShowSocieteModal(false);
-          if (!selectedProjet && !localStorage.getItem("selectedProjet")) {
-            setShowProjetDialog(true);
-          }
-        }}
-      />
-    );
-  }
+if (isSuperAdmin && showSocieteModal) {
+  return (
+    <SocieteModal
+      open={showSocieteModal}
+      onClose={() => {
+        setShowSocieteModal(false);
+        // If they close without selecting, redirect to home
+        router.push('/');
+      }}
+      selectedId={selectedSocieteId}
+      setSelectedId={setSelectedSocieteId}
+      societes={societes} // Add this line
+      onConfirm={() => {  // Changed from onSelect to onConfirm to match your modal
+        setShowSocieteModal(false);
+        // After selecting societe, show projet dialog if needed
+        if (!selectedProjet && !localStorage.getItem("selectedProjet")) {
+          setShowProjetDialog(true);
+        }
+      }}
+    />
+  );
+}
 
   // Show ProjetDialog if needed
-  if (showProjetDialog && (!selectedProjet && !localStorage.getItem("selectedProjet"))) {
+  if (showProjetDialog) {
     return (
       <ProjetDialog
         open={showProjetDialog}
-        onClose={() => setShowProjetDialog(false)}
+        onClose={() => {
+          setShowProjetDialog(false);
+          // If they close without selecting, redirect to home
+          router.push('/');
+        }}
         projets={projets}
         onSelect={() => setShowProjetDialog(false)}
       />
     );
+  }
+
+  // Only show dashboard content if all required selections are made
+  const canShowDashboard = (!isSuperAdmin || selectedSociete) && (selectedProjet || localStorage.getItem("selectedProjet"));
+
+  if (!canShowDashboard) {
+    return <div className="flex justify-center items-center h-64">Preparing dashboard...</div>;
   }
 
   return (
