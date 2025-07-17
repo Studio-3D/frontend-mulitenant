@@ -16,6 +16,18 @@ import { useSociete } from '@/context/SocieteContext';
 import SocieteModal from '../SocieteDialog';
 import ProjetDialog from '../../components/ProjetDialog';
 import { User_roles, decryptUserType } from "../../configs/enum";
+import { 
+  startOfDay, 
+  endOfDay, 
+  startOfWeek, 
+  endOfWeek, 
+  startOfMonth, 
+  endOfMonth, 
+  startOfYear, 
+  endOfYear,
+  subDays,
+  format
+} from 'date-fns';
 
 export const Dashboard = () => {
   const { token, user } = useAuth();
@@ -24,91 +36,27 @@ export const Dashboard = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [dateRange, setDateRange] = useState("cette année");
+  const [startDate, setStartDate] = useState(startOfYear(new Date()));
+  const [endDate, setEndDate] = useState(endOfYear(new Date()));
   const [showProjetDialog, setShowProjetDialog] = useState(false);
   const router = useRouter();
   const { selectedSociete, societes } = useSociete();
   const [showSocieteModal, setShowSocieteModal] = useState(false);
   const [selectedSocieteId, setSelectedSocieteId] = useState(null);
 
-
   // Proper role checking
   const userRole = decryptUserType(user?.role);
   const isSuperAdmin = userRole === User_roles.ROLE_SUPER_ADMIN;
 
-  const getDateRangeParams = (range) => {
-    const today = new Date();
-    
+  const getDateRangeParams = (startDate, endDate) => {
     const formatLocalDate = (date) => {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
+      return format(date, 'yyyy-MM-dd');
     };
 
-    switch (range) {
-      case "aujourd'hui":
-        const todayStart = new Date();
-        todayStart.setHours(0, 0, 0, 0);
-        const todayEnd = new Date();
-        todayEnd.setHours(23, 59, 59, 999);
-        return {
-          start_date: formatLocalDate(todayStart),
-          end_date: formatLocalDate(todayEnd)
-        };
-
-      case "cette semaine":
-        const weekStart = new Date();
-        weekStart.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1));
-        weekStart.setHours(0, 0, 0, 0);
-        const weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekStart.getDate() + 6);
-        weekEnd.setHours(23, 59, 59, 999);
-        return {
-          start_date: formatLocalDate(weekStart),
-          end_date: formatLocalDate(weekEnd)
-        };
-
-      case "ce mois":
-        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-        monthStart.setHours(0, 0, 0, 0);
-        const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-        monthEnd.setHours(23, 59, 59, 999);
-        return {
-          start_date: formatLocalDate(monthStart),
-          end_date: formatLocalDate(monthEnd)
-        };
-
-      case "cette année":
-        const yearStart = new Date(today.getFullYear(), 0, 1);
-        yearStart.setHours(0, 0, 0, 0);
-        const yearEnd = new Date(today.getFullYear(), 11, 31);
-        yearEnd.setHours(23, 59, 59, 999);
-        return {
-          start_date: formatLocalDate(yearStart),
-          end_date: formatLocalDate(yearEnd)
-        };
-
-      case "dernière année":
-        const lastYearStart = new Date(today.getFullYear() - 1, 0, 1);
-        lastYearStart.setHours(0, 0, 0, 0);
-        const lastYearEnd = new Date(today.getFullYear() - 1, 11, 31);
-        lastYearEnd.setHours(23, 59, 59, 999);
-        return {
-          start_date: formatLocalDate(lastYearStart),
-          end_date: formatLocalDate(lastYearEnd)
-        };
-
-      default:
-        const defaultStart = new Date();
-        defaultStart.setHours(0, 0, 0, 0);
-        const defaultEnd = new Date();
-        defaultEnd.setHours(23, 59, 59, 999);
-        return {
-          start_date: formatLocalDate(defaultStart),
-          end_date: formatLocalDate(defaultEnd)
-        };
-    }
+    return {
+      start_date: formatLocalDate(startDate),
+      end_date: formatLocalDate(endDate)
+    };
   };
 
   // Check which dialogs to show on initial render
@@ -132,6 +80,11 @@ export const Dashboard = () => {
       }
     }
   }, [user, selectedSociete, selectedProjet, isSuperAdmin]);
+
+  const handleDateChange = (newStartDate, newEndDate) => {
+    setStartDate(newStartDate);
+    setEndDate(newEndDate);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -158,7 +111,7 @@ export const Dashboard = () => {
         setLoading(true);
         setError(null);
 
-        const dateParams = getDateRangeParams(dateRange);
+        const dateParams = getDateRangeParams(startDate, endDate);
         const projetId = selectedProjet?.id || JSON.parse(localStorage.getItem("selectedProjet"))?.id;
 
         const response = await axios.get(`${APIURL.ROOTV1}/dashboard/${projetId}/${dateParams.start_date}/${dateParams.end_date}`, {
@@ -177,36 +130,35 @@ export const Dashboard = () => {
     };
   
     fetchData();
-  }, [selectedProjet, accesstoken, dateRange, showSocieteModal, showProjetDialog]);
+  }, [selectedProjet, accesstoken, startDate, endDate, showSocieteModal, showProjetDialog]);
 
   if (loading) {
     return <div className="flex justify-center items-center h-64">Loading...</div>;
   }
 
-  
   // Show SocieteDialog first for superadmin if needed
-if (isSuperAdmin && showSocieteModal) {
-  return (
-    <SocieteModal
-      open={showSocieteModal}
-      onClose={() => {
-        setShowSocieteModal(false);
-        // If they close without selecting, redirect to home
-        router.push('/');
-      }}
-      selectedId={selectedSocieteId}
-      setSelectedId={setSelectedSocieteId}
-      societes={societes} // Add this line
-      onConfirm={() => {  // Changed from onSelect to onConfirm to match your modal
-        setShowSocieteModal(false);
-        // After selecting societe, show projet dialog if needed
-        if (!selectedProjet && !localStorage.getItem("selectedProjet")) {
-          setShowProjetDialog(true);
-        }
-      }}
-    />
-  );
-}
+  if (isSuperAdmin && showSocieteModal) {
+    return (
+      <SocieteModal
+        open={showSocieteModal}
+        onClose={() => {
+          setShowSocieteModal(false);
+          // If they close without selecting, redirect to home
+          router.push('/');
+        }}
+        selectedId={selectedSocieteId}
+        setSelectedId={setSelectedSocieteId}
+        societes={societes}
+        onConfirm={() => {
+          setShowSocieteModal(false);
+          // After selecting societe, show projet dialog if needed
+          if (!selectedProjet && !localStorage.getItem("selectedProjet")) {
+            setShowProjetDialog(true);
+          }
+        }}
+      />
+    );
+  }
 
   // Show ProjetDialog if needed
   if (showProjetDialog) {
@@ -243,7 +195,11 @@ if (isSuperAdmin && showSocieteModal) {
             {selectedProjet?.nom || JSON.parse(localStorage.getItem('selectedProjet'))?.nom}
           </div>
         </div>
-        <DateSelector selected={dateRange} onSelect={setDateRange} />
+        <DateSelector 
+          startDate={startDate}
+          endDate={endDate}
+          onChange={handleDateChange}
+        />
       </div>
 
       {/* Metrics Cards */}
@@ -292,19 +248,22 @@ if (isSuperAdmin && showSocieteModal) {
         <div className="w-full lg:w-2/3 flex flex-col gap-6">
           <div className="bg-white rounded-xl shadow-sm border border-gray-50">
             <EncaissementChart 
-              dateRange={dateRange}
+              startDate={startDate}
+              endDate={endDate}
               data={data?.array_encaissement} 
             />
           </div>
           <div className="bg-white rounded-xl shadow-sm border border-gray-50">
             <VentesChart 
-              dateRange={dateRange} 
+              startDate={startDate}
+              endDate={endDate}
               data={data?.array_ventes} 
             />
           </div>
           <div className="bg-white rounded-xl shadow-sm border border-gray-50">
             <VisitesChart 
-              dateRange={dateRange} 
+              startDate={startDate}
+              endDate={endDate}
               data={data?.array_visite_interet_et_date} 
             />
           </div>
@@ -317,14 +276,22 @@ if (isSuperAdmin && showSocieteModal) {
               <span className="w-2 h-8 bg-indigo-500 rounded-md mr-3"></span>
               Appels
             </h2>
-            <AppelsChart dateRange={dateRange} data={data} />
+            <AppelsChart 
+              startDate={startDate}
+              endDate={endDate}
+              data={data} 
+            />
           </div>
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-50">
             <h2 className="text-lg font-semibold mb-4 text-gray-700 flex items-center">
               <span className="w-2 h-8 bg-amber-500 rounded-md mr-3"></span>
               Désistement
             </h2>
-            <DesistementChart dateRange={dateRange} data={data} />
+            <DesistementChart 
+              startDate={startDate}
+              endDate={endDate}
+              data={data} 
+            />
           </div>
         </div>
       </div>
