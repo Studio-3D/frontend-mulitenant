@@ -119,14 +119,16 @@ export const DateSelector = ({ startDate, endDate, onChange }) => {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={toggleDropdown}
-        className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        className="flex  items-center w-[300px] px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
       >
         <CalendarIcon size={16} className="mr-2 text-gray-500" />
-        <span>{getDisplayText()}</span>
-        <ChevronDownIcon size={16} className="ml-2 text-gray-500" />
+        <div className='flex-1 flex items-center justify-between'>
+          <span>{getDisplayText()}</span>
+          <ChevronDownIcon size={16} className="ml-2 text-gray-500" />
+        </div>
       </button>
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-lg z-20 animate-fadeIn">
+        <div className="absolute right-0 w-[300px] mt-2 bg-white rounded-lg shadow-lg z-20 animate-fadeIn">
           <div className="p-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-medium text-gray-700">Période</h3>
