@@ -188,18 +188,20 @@ export const Dashboard = () => {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 bg-white p-5 rounded-xl shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center gap-3">
-          <h1 className="text-2xl font-bold text-gray-800 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+          <div className='flex justify-between items-center w-full md:w-auto mb-2 md:mb-0 gap-6'>
+          <h1 className="xl:text-2xl font-bold text-gray-800 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
             Aperçu de projet
           </h1>
-          <div className="px-4 py-1.5 bg-cyan-50 rounded-md text-gray-800 font-medium">
-            {selectedProjet?.nom || JSON.parse(localStorage.getItem('selectedProjet'))?.nom}
-          </div>
-        </div>
         <DateSelector 
           startDate={startDate}
           endDate={endDate}
           onChange={handleDateChange}
         />
+          </div>
+          <div className="px-4 py-1.5 bg-cyan-50 rounded-md text-gray-800 font-medium">
+            {selectedProjet?.nom || JSON.parse(localStorage.getItem('selectedProjet'))?.nom}
+          </div>
+        </div>
       </div>
 
       {/* Metrics Cards */}
