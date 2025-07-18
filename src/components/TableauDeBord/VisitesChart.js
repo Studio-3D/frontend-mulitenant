@@ -1,6 +1,4 @@
 "use client"
-
-import { TrendingUp } from "lucide-react"
 import {
   Bar,
   BarChart,
@@ -8,14 +6,13 @@ import {
   ResponsiveContainer,
   XAxis,
 } from "recharts"
-import { format, isSameMonth, isSameYear, isSameDay, isSameWeek, subDays } from "date-fns"
+import { format, isSameMonth, isSameYear, isSameDay} from "date-fns"
 import { fr } from 'date-fns/locale'
 
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"

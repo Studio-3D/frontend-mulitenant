@@ -218,7 +218,7 @@ export const Dashboard = () => {
         />
         <MetricsCard
           title="Visites"
-          value={data?.nb_visites}
+          value={data?.array_visite_interet_et_date?.reduce((acc, item) => acc + (item.visite || 0), 0)}
           icon={<CalendarCheckIcon className="h-6 w-6 text-purple-500" />}
           color="purple"
         />
