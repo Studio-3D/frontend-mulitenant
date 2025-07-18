@@ -185,24 +185,29 @@ export const Dashboard = () => {
 
   return (
     <div className="">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 bg-white p-5 rounded-xl shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-center gap-3">
-          <div className='flex justify-between items-center w-full md:w-auto mb-2 md:mb-0 gap-6'>
-          <h1 className="xl:text-2xl font-bold text-gray-800 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            Aperçu de projet
-          </h1>
-        <DateSelector 
-          startDate={startDate}
-          endDate={endDate}
-          onChange={handleDateChange}
-        />
-          </div>
-          <div className="px-4 py-1.5 bg-cyan-50 rounded-md text-gray-800 font-medium">
-            {selectedProjet?.nom || JSON.parse(localStorage.getItem('selectedProjet'))?.nom}
-          </div>
-        </div>
+     {/* Header Section */}
+<div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 bg-white p-5 rounded-xl shadow-sm">
+  <div className="flex flex-col w-full md:flex-row md:items-center md:justify-between gap-3">
+    {/* Left side - Title and project name (stacked on mobile, inline on xl) */}
+    <div className="flex  items-center xl:flex-row xl:items-center gap-3 w-full md:w-auto">
+      <h1 className="text-xl xl:text-2xl font-bold text-gray-800 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+        Aperçu de projet :
+      </h1>
+      <div className="px-4 py-1.5 bg-cyan-50 rounded-md text-gray-800 font-medium w-fit">
+        {selectedProjet?.nom || JSON.parse(localStorage.getItem('selectedProjet'))?.nom}
       </div>
+    </div>
+
+    {/* Right side - Date selector (full width on mobile, auto on larger screens) */}
+    <div className="w-full xl:w-auto mt-2 xl:mt-0">
+      <DateSelector 
+        startDate={startDate}
+        endDate={endDate}
+        onChange={handleDateChange}
+      />
+    </div>
+  </div>
+</div>
 
       {/* Metrics Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
