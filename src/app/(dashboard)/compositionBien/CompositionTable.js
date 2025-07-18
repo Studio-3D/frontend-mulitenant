@@ -109,25 +109,10 @@ const handleClose = () => {
     }, [searchTerm, currentPage, rowsPerPage, accesstoken,filters,reloadTrigger]);
 
     
-    const handleFilterChange = (field, value) => {
-      setTempFilters((prev) => ({ ...prev, [field]: value }));
-    };
-  
+    
+    
 
-    const applyFilters = () => {
-      setFilters(tempFilters); // C’est ici que fetchUsers va être déclenché
-    };
-    const resetFilters = () => {
-      const reset = {
-        nom: "",
-        prenom: "",
-        cin: "",
-        email: "",
-        telephone: "",
-      };
-      setFilters(reset);
-      setTempFilters(reset);
-    };
+
 
 
  const handleEdit = (id) => {
@@ -136,19 +121,15 @@ const handleClose = () => {
     setSelectedRow({ ...row }); // copier les données
     setShowEditModal(true);
   }
-};
+}
 
-const onUpdate = (data) => {
+const onUpdate = async (data) => {
   setLoading({ ...loading, form: true });
-
-  // Filtrer uniquement les clés qui commencent par "nbre"
   const filteredData = Object.fromEntries(
     Object.entries(data).filter(([key]) => key.startsWith('nbre'))
   );
 
-  // Vérifier si toutes les valeurs filtrées sont égales à 0 ou vides (string "0" ou nombre 0)
   const allZero = Object.values(filteredData).every(value => {
-    // Convertir en string puis en nombre pour comparaison fiable
     const num = Number(value);
     return num === 0 || value === '' || value === null;
   });
@@ -159,52 +140,45 @@ const onUpdate = (data) => {
     return;
   }
 
-  // Ajouter bien_id si besoin (hors filtres)
-  filteredData.bien_id = selectedBien;
+  filteredData.bien_id = bien ? bien : selectedBien;
 
-  let url = `${APIURL.COMPOSITIONBIENS}/${selectedRow.id}`;
-  let method = 'PATCH';
+  try {
+    const url = `${APIURL.COMPOSITIONBIENS}/${selectedRow.id}`;
+    const method = 'put';
 
-  // Construire FormData uniquement avec filteredData
-  const dataToSend = new FormData();
-  Object.entries(filteredData).forEach(([key, value]) => {
-    dataToSend.append(key, value === null ? '' : value);
-  });
+    const response = await axios({
+      method,
+      url,
+      data: filteredData, // 👉 JSON object, not FormData
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
-  axios({
-    method: method,
-    url: url,
-    data: dataToSend,
-    headers: {
-      // Ne pas définir Content-Type, axios le gère automatiquement avec FormData
-      'Accept': 'application/json',
-      'Authorization': `Bearer ${accessToken}`
-    },
-  })
-    .then(res => {
-      setLoading({ ...loading, form: false });
+    if (response.status === 200) {
+      toast.success("Composition modifiée avec succès");
+      setShowEditModal(false);
+      fetchCompositionBiensFromApi(0);
+    }
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour:", error);
+    const response = error.response;
 
-      if (res.status === 200) {
-        toast.success('La composition du bien a été modifiée avec succès');
-        setShowEditModal(false);
-        fetchCompositionBiensFromApi(0);
-      } else if (res.status === 422) {
-        setBackendErrors(res.data.errors);
-        setTimeout(() => setBackendErrors({}), 5000);
-      }
-    })
-    .catch(error => {
-      const response = error.response;
-      console.error("Erreur lors de la mise à jour:", error);
-      if (response?.status === 422) {
-        setBackendErrors(response.data.errors);
-        setTimeout(() => setBackendErrors({}), 5000);
-      } else {
-        toast.error("Une erreur s'est produite lors de la mise à jour.");
-      }
-    })
-    .finally(() => setLoading({ ...loading, form: false }));
+    if (response?.status === 422) {
+      setBackendErrors(response.data.errors);
+      Object.values(response.data.errors).forEach((messages) => {
+        messages.forEach((msg) => toast.error(msg));
+      });
+      setTimeout(() => setBackendErrors({}), 5000);
+    } else {
+      toast.error("Une erreur s'est produite lors de la mise à jour.");
+    }
+  } finally {
+    setLoading({ ...loading, form: false });
+  }
 };
+
 
 
   const columns = [
@@ -279,42 +253,9 @@ const formatData = compositionBiens.map((c, index) => ({
         columns={columns}
         onFilterToggle={handleFilterToggle}
         data={compositionBiens}
-        /* filterComponent={
-          <div className="space-y-4 p-4 rounded-lg ">
-            <div
-              className="grid gap-3"
-              style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}
-            >
-              <Input
-                type="text"
-                placeholder="Nom..."
-                value={tempFilters.nom}
-                onChange={(e) => handleFilterChange("nom", e.target.value)}
-                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-              />
-            
-            </div>
-        
-            <div className="flex justify-end gap-3 pt-2">
-              
-              <button
-                type="button"
-                onClick={resetFilters}
-                className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
-              >
-                Réinitialiser
-              </button>
-              <button
-                type="button"
-                onClick={applyFilters}
-                className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-              >
-                Appliquer les filtres
-              </button>
-              
-            </div>
-          </div>
-        } */
+        addLink={
+          `/Biens/${bien}/ajouter-composition`
+        }        
         totalRows={totalRows}
         loading={loading}
         error={error}
@@ -343,90 +284,90 @@ const formatData = compositionBiens.map((c, index) => ({
         </Modal>
       )}
       {showModal && selectedRow && (
-  <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
-    <div className="bg-white w-full max-w-xl p-6 rounded-lg shadow-xl">
-      <h2 className="text-xl font-bold mb-6 text-center text-gray-800">
-        Détails des pièces
-      </h2>
-      
-      <div className="grid grid-cols-2 gap-4">
-        {Object.entries(selectedRow)
-          .filter(([key]) => key.startsWith('nbre_'))
-          .map(([key, value]) => (
-            <div key={key} className="flex flex-col">
-              <span className="text-sm text-gray-500 capitalize">{key.replace('nbre_', '').replace('_', ' ')}</span>
-              <span className="text-base font-medium text-gray-900">{value}</span>
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white w-full max-w-xl p-6 rounded-lg shadow-xl">
+            <h2 className="text-xl font-bold mb-6 text-center text-gray-800">
+              Détails des pièces
+            </h2>
+            
+            <div className="grid grid-cols-2 gap-4">
+              {Object.entries(selectedRow)
+                .filter(([key]) => key.startsWith('nbre_'))
+                .map(([key, value]) => (
+                  <div key={key} className="flex flex-col">
+                    <span className="text-sm text-gray-500 capitalize">{key.replace('nbre_', '').replace('_', ' ')}</span>
+                    <span className="text-base font-medium text-gray-900">{value}</span>
+                  </div>
+                ))}
             </div>
-          ))}
-      </div>
 
-      <div className="mt-6 text-right">
-        <button
-          onClick={handleClose}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Fermer
-        </button>
-      </div>
-    </div>
-  </div>
+            <div className="mt-6 text-right">
+              <button
+                onClick={handleClose}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
       )}
       {showEditModal && selectedRow && (
-  <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
-    <div className="bg-white w-full max-w-xl p-6 rounded-lg shadow-xl">
-      <h2 className="text-xl font-bold mb-6 text-center text-gray-800">
-        Modifier les pièces
-      </h2>
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white w-full max-w-xl p-6 rounded-lg shadow-xl">
+            <h2 className="text-xl font-bold mb-6 text-center text-gray-800">
+              Modifier les pièces
+            </h2>
 
-      <form onSubmit={(e) => {
-          e.preventDefault();
-          onUpdate(selectedRow); // 🔁 utilise onUpdate ici
-        }}>
+            <form onSubmit={(e) => {
+                e.preventDefault();
+                onUpdate(selectedRow); // 🔁 utilise onUpdate ici
+              }}>
 
-        <div className="grid grid-cols-2 gap-4">
-          {Object.entries(selectedRow)
-            .filter(([key]) => key.startsWith('nbre_'))
-            .map(([key, value]) => (
-              <div key={key} className="flex flex-col">
-                <label htmlFor={key} className="text-sm text-gray-600 capitalize mb-1">
-                  {key.replace('nbre_', '').replace('_', ' ')}
-                </label>
-                <input
-                  type="number"
-                  name={key}
-                  id={key}
-                  value={selectedRow[key]}
-                  onChange={(e) =>
-                    setSelectedRow((prev) => ({
-                      ...prev,
-                      [key]: parseInt(e.target.value, 10),
-                    }))
-                  }
-                  className="border rounded px-3 py-2 text-sm"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                {Object.entries(selectedRow)
+                  .filter(([key]) => key.startsWith('nbre_'))
+                  .map(([key, value]) => (
+                    <div key={key} className="flex flex-col">
+                      <label htmlFor={key} className="text-sm text-gray-600 capitalize mb-1">
+                        {key.replace('nbre_', '').replace('_', ' ')}
+                      </label>
+                      <input
+                        type="number"
+                        name={key}
+                        id={key}
+                        value={selectedRow[key]}
+                        onChange={(e) =>
+                          setSelectedRow((prev) => ({
+                            ...prev,
+                            [key]: parseInt(e.target.value, 10),
+                          }))
+                        }
+                        className="border rounded px-3 py-2 text-sm"
+                      />
+                    </div>
+                  ))}
               </div>
-            ))}
-        </div>
 
-        <div className="mt-6 flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={() => setShowEditModal(false)}
-            className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
-          >
-            Annuler
-          </button>
-          <button
-            type="submit"
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-          >
-            Enregistrer
-          </button>
+              <div className="mt-6 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                >
+                  Enregistrer
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-      </form>
-    </div>
-  </div>
-)}
+      )}
 
 
 

@@ -176,13 +176,13 @@ export default function BienComposition({ bien }) {
     Object.values(comp).some(val => typeof val === 'number' && val > 0)
   );
 
-  if (!hasCompositions) {
+  /* if (!hasCompositions) {
     return (
       <div className="text-center py-8 !text-gray-500">
         <p>Aucune information de composition disponible pour ce bien.</p>
       </div>
     );
-  }
+  } */
 
   return (
   <div className="bg-white shadow-sm rounded-lg">
