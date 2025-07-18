@@ -236,7 +236,7 @@ export const Dashboard = () => {
         />
         <MetricsCard
           title="Appels"
-          value={data?.nb_appels}
+          value={data?.Appels?.reduce((acc, item) => acc + (item['appel entrant'] || 0) + (item['appel sortant'] || 0), 0)}
           icon={<PhoneIcon className="h-6 w-6 text-indigo-500" />}
           color="indigo"
         />
