@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+"use client";
+;
+import { useState, useEffect, use } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { APIURL, ENDPOINTS } from "@/configs/api";
 import axios from "axios";

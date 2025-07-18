@@ -97,7 +97,7 @@ export const ENDPOINTS = {
   BLOCS: '/blocs/home',
   IMMEUBLES: '/immeubles/home',
   BIENS: '/biens/home',
-  COMPOSITIONBIENS: '/compositionBiens/home',
+  COMPOSITIONBIENS: '/ajouter_composition',
   VISITES: '/crm/visites',
   APPELS: '/crm/appels',
   PROSPECTS: '/crm/prospects',
