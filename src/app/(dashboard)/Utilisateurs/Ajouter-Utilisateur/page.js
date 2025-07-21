@@ -81,7 +81,7 @@ const Page = () => {
     role: Yup.string().required('Le rôle est requis'),
     gender: Yup.string().required('Le genre est requis'),
     phone: Yup.string()
-    .matches(/^[0-9]{10}$/, 'Le numéro doit contenir exactement 10 chiffres') // Match exactly 10 digits
+    .min(10, "Téléphone doit contenir au moins 10 caractères").max(15, "Téléphone ne doit pas dépasser 15 caractères")
     .required('Le téléphone est requis'),
     cin: Yup.string().required('CIN est requis'),
     cnss: Yup.string().required('Le numéro CNSS est requis'),
@@ -89,11 +89,10 @@ const Page = () => {
     date_embauche: Yup.date(),
     password: Yup.string()
       .min(8, "• Au moins 8 caractères")
-      .required("Mot de passe requis")
-    .matches(/^(?=.*[A-Z])/, '• Au moins une majuscule')
-    .matches(/^(?=.*[0-9])/, '• Au moins un chiffre')
-    .matches(/^(?=.*[@$!%*?&])/, '• Au moins un caractère spécial')
-    .required('Mot de passe requis'),
+      .required("Mot de passe requis"),
+    // .matches(/^(?=.*[A-Z])/, '• Au moins une majuscule')
+    // .matches(/^(?=.*[0-9])/, '• Au moins un chiffre')
+    // .matches(/^(?=.*[@$!%*?&])/, '• Au moins un caractère spécial'),
     password_confirmation: Yup.string()
       .oneOf(
         [Yup.ref("password"), null],

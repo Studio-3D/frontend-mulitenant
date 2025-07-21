@@ -14,7 +14,7 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 export const DesistementChart = ({ startDate, endDate, data }) => {
   // Transform the desistements data into chart format
   const transformData = () => {
-    if (!data?.desistements || !Array.isArray(data.desistements)) return [];
+    if (!data?.desistements) return [];
 
    const filteredData = data.desistements.filter(item => {
   try {

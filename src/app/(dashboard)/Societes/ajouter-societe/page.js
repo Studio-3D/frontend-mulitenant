@@ -128,7 +128,7 @@ const Page = () => {
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               error={formik.touched.raison_sociale && formik.errors.raison_sociale}
-              required
+              
             />
             <Input
               label="Email"
@@ -138,7 +138,7 @@ const Page = () => {
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               error={formik.touched.email && formik.errors.email}
-              required
+              
             />
             <Input
               label="Nom"
@@ -148,7 +148,7 @@ const Page = () => {
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               error={formik.touched.nom_contact && formik.errors.nom_contact}
-              required
+              
             />
             <Input
               label="Prénom"
@@ -158,7 +158,7 @@ const Page = () => {
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               error={formik.touched.prenom_contact && formik.errors.prenom_contact}
-              required
+              
             />
             <Input
               label="Téléphone"
@@ -221,7 +221,7 @@ const Page = () => {
               className={`bg-[#2D8548] text-white font-medium rounded-lg px-6 py-2 ${
                 loading || !formik.dirty ? 'opacity-50 cursor-not-allowed' : ''
               }`}
-              disabled={loading || !formik.dirty}
+              
             >
               {loading ? 'Ajout en cours...' : 'Ajouter'}
             </button>
