@@ -5,7 +5,7 @@ import { useSociete } from '@/context/SocieteContext';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Table from '@/components/Table';
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import { Eye, PencilLine, Trash2 } from "lucide-react";
 import * as XLSX from 'xlsx';
 import { APIURL } from '@/configs/api';
 import Modal from '@/components/Modal';
@@ -100,18 +100,18 @@ export default function ProjetsPage({user_id}) {
       render: (row) => (
         <div className="flex gap-4 items-center">
           <button
-            className="text-teal-500 hover:text-teal-700"
+            className="text-blue-500 hover:text-blue-700"
             onClick={() => handleAction('view', row.id)}
-            title="Voir"
+            title="Voir Projet"
           >
             <Eye className="w-4 h-4" />
           </button>
           <button
-            className="text-blue-500 hover:text-blue-700"
+            className="text-yellow-500 hover:text-yellow-700"
             onClick={() => handleAction('edit', row.id)}
-            title="Modifier"
+            title="Modifier Projet"
           >
-            <Pencil className="w-4 h-4" />
+            <PencilLine className="w-4 h-4" />
           </button>
           <button
             className="text-red-500 hover:text-red-700"
