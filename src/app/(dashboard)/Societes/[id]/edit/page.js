@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { APIURL, RESOURCE_URL } from '@/configs/api';
 import axios from 'axios';
 import { AvatarUpload } from "@/components/Societes/AvatarUpload";
@@ -19,6 +19,7 @@ export default function UpdateSociete() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [loading, setLoading] = useState(true);
     const [selectedLogo, setSelectedLogo] = useState(null);
+    const initialValuesRef = useRef(null);
 
     // Formik configuration with validation
     const formik = useFormik({
@@ -85,11 +86,14 @@ export default function UpdateSociete() {
         validateOnBlur: true,
     });
 
-    const hasChanges = (values) => {
+    const hasChanges = (currentValues) => {
+        if (!initialValuesRef.current) return false;
+        
         const logoChanged = selectedLogo !== null;
-        const fieldsChanged = Object.keys(formik.initialValues).some(
-            key => values[key] !== formik.initialValues[key]
+        const fieldsChanged = Object.keys(initialValuesRef.current).some(
+            key => currentValues[key] !== initialValuesRef.current[key]
         );
+        
         return logoChanged || fieldsChanged;
     };
 
@@ -109,7 +113,7 @@ export default function UpdateSociete() {
                 const societeData = response.data.societe;
                 setSociete(societeData);
                 
-                formik.setValues({
+                const initialValues = {
                     raison_sociale: societeData.raison_sociale,
                     nom_contact: societeData.nom_contact,
                     prenom_contact: societeData.prenom_contact,
@@ -120,7 +124,10 @@ export default function UpdateSociete() {
                     id_fiscal: societeData.id_fiscal,
                     capital: societeData.capital,
                     logo: null
-                });
+                };
+                
+                formik.setValues(initialValues);
+                initialValuesRef.current = initialValues;
             } catch (error) {
                 toast.error("Erreur lors de la récupération des informations de l'entreprise.");
             } finally {
@@ -186,7 +193,11 @@ export default function UpdateSociete() {
                                 value={formik.values.raison_sociale}
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
-                                className={`w-full px-4 py-3 border ${formik.touched.raison_sociale && formik.errors.raison_sociale ? 'border-red-500' : 'border-gray-200'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200`} 
+                                className={`w-full px-4 py-3 border ${
+                                    formik.touched.raison_sociale && formik.errors.raison_sociale 
+                                        ? 'border-red-500 focus:ring-red-500' 
+                                        : 'border-gray-200 focus:ring-blue-500'
+                                } rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-shadow duration-200`} 
                             />
                             {formik.touched.raison_sociale && formik.errors.raison_sociale && (
                                 <p className="text-red-500 text-xs mt-1">{formik.errors.raison_sociale}</p>
@@ -205,7 +216,11 @@ export default function UpdateSociete() {
                                 value={formik.values.nom_contact}
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
-                                className={`w-full px-4 py-3 border ${formik.touched.nom_contact && formik.errors.nom_contact ? 'border-red-500' : 'border-gray-200'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200`} 
+                                className={`w-full px-4 py-3 border ${
+                                    formik.touched.nom_contact && formik.errors.nom_contact 
+                                        ? 'border-red-500 focus:ring-red-500' 
+                                        : 'border-gray-200 focus:ring-blue-500'
+                                } rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-shadow duration-200`} 
                             />
                             {formik.touched.nom_contact && formik.errors.nom_contact && (
                                 <p className="text-red-500 text-xs mt-1">{formik.errors.nom_contact}</p>
@@ -224,7 +239,11 @@ export default function UpdateSociete() {
                                 value={formik.values.prenom_contact}
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
-                                className={`w-full px-4 py-3 border ${formik.touched.prenom_contact && formik.errors.prenom_contact ? 'border-red-500' : 'border-gray-200'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200`} 
+                                className={`w-full px-4 py-3 border ${
+                                    formik.touched.prenom_contact && formik.errors.prenom_contact 
+                                        ? 'border-red-500 focus:ring-red-500' 
+                                        : 'border-gray-200 focus:ring-blue-500'
+                                } rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-shadow duration-200`} 
                             />
                             {formik.touched.prenom_contact && formik.errors.prenom_contact && (
                                 <p className="text-red-500 text-xs mt-1">{formik.errors.prenom_contact}</p>
@@ -243,7 +262,11 @@ export default function UpdateSociete() {
                                 value={formik.values.adresse}
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
-                                className={`w-full px-4 py-3 border ${formik.touched.adresse && formik.errors.adresse ? 'border-red-500' : 'border-gray-200'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200`} 
+                                className={`w-full px-4 py-3 border ${
+                                    formik.touched.adresse && formik.errors.adresse 
+                                        ? 'border-red-500 focus:ring-red-500' 
+                                        : 'border-gray-200 focus:ring-blue-500'
+                                } rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-shadow duration-200`} 
                             />
                             {formik.touched.adresse && formik.errors.adresse && (
                                 <p className="text-red-500 text-xs mt-1">{formik.errors.adresse}</p>
@@ -262,7 +285,11 @@ export default function UpdateSociete() {
                                 value={formik.values.email}
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
-                                className={`w-full px-4 py-3 border ${formik.touched.email && formik.errors.email ? 'border-red-500' : 'border-gray-200'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200`} 
+                                className={`w-full px-4 py-3 border ${
+                                    formik.touched.email && formik.errors.email 
+                                        ? 'border-red-500 focus:ring-red-500' 
+                                        : 'border-gray-200 focus:ring-blue-500'
+                                } rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-shadow duration-200`} 
                             />
                             {formik.touched.email && formik.errors.email && (
                                 <p className="text-red-500 text-xs mt-1">{formik.errors.email}</p>
@@ -281,7 +308,11 @@ export default function UpdateSociete() {
                                 value={formik.values.tel}
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
-                                className={`w-full px-4 py-3 border ${formik.touched.tel && formik.errors.tel ? 'border-red-500' : 'border-gray-200'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200`} 
+                                className={`w-full px-4 py-3 border ${
+                                    formik.touched.tel && formik.errors.tel 
+                                        ? 'border-red-500 focus:ring-red-500' 
+                                        : 'border-gray-200 focus:ring-blue-500'
+                                } rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-shadow duration-200`} 
                             />
                             {formik.touched.tel && formik.errors.tel && (
                                 <p className="text-red-500 text-xs mt-1">{formik.errors.tel}</p>
@@ -300,7 +331,11 @@ export default function UpdateSociete() {
                                 value={formik.values.registre_commerce}
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
-                                className={`w-full px-4 py-3 border ${formik.touched.registre_commerce && formik.errors.registre_commerce ? 'border-red-500' : 'border-gray-200'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200`} 
+                                className={`w-full px-4 py-3 border ${
+                                    formik.touched.registre_commerce && formik.errors.registre_commerce 
+                                        ? 'border-red-500 focus:ring-red-500' 
+                                        : 'border-gray-200 focus:ring-blue-500'
+                                } rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-shadow duration-200`} 
                             />
                             {formik.touched.registre_commerce && formik.errors.registre_commerce && (
                                 <p className="text-red-500 text-xs mt-1">{formik.errors.registre_commerce}</p>
@@ -319,7 +354,11 @@ export default function UpdateSociete() {
                                 value={formik.values.id_fiscal}
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
-                                className={`w-full px-4 py-3 border ${formik.touched.id_fiscal && formik.errors.id_fiscal ? 'border-red-500' : 'border-gray-200'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200`} 
+                                className={`w-full px-4 py-3 border ${
+                                    formik.touched.id_fiscal && formik.errors.id_fiscal 
+                                        ? 'border-red-500 focus:ring-red-500' 
+                                        : 'border-gray-200 focus:ring-blue-500'
+                                } rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-shadow duration-200`} 
                             />
                             {formik.touched.id_fiscal && formik.errors.id_fiscal && (
                                 <p className="text-red-500 text-xs mt-1">{formik.errors.id_fiscal}</p>
@@ -338,7 +377,11 @@ export default function UpdateSociete() {
                                 value={formik.values.capital}
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
-                                className={`w-full px-4 py-3 border ${formik.touched.capital && formik.errors.capital ? 'border-red-500' : 'border-gray-200'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200`} 
+                                className={`w-full px-4 py-3 border ${
+                                    formik.touched.capital && formik.errors.capital 
+                                        ? 'border-red-500 focus:ring-red-500' 
+                                        : 'border-gray-200 focus:ring-blue-500'
+                                } rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-shadow duration-200`} 
                             />
                             {formik.touched.capital && formik.errors.capital && (
                                 <p className="text-red-500 text-xs mt-1">{formik.errors.capital}</p>
@@ -346,6 +389,7 @@ export default function UpdateSociete() {
                         </div>
                     </div>
 
+                    {/* Submit button */}
                     <div className="flex justify-end pt-8">
                         <button 
                             type="submit" 
