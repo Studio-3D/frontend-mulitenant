@@ -35,7 +35,7 @@ export default function UpdateSociete() {
             logo: null,
         },
         validationSchema: Yup.object({
-            raison_sociale: Yup.string().required("Raison sociale est obligatoire"),
+            raison_sociale: Yup.string().required("Raison sociale est obligatoire").min(3, "Raison sociale doit contenir au moins 3 caractères"),
             nom_contact: Yup.string().required("Nom est obligatoire").min(3, "Nom doit contenir au moins 3 caractères"),
             prenom_contact: Yup.string().required("Prénom est obligatoire").min(3, "Prénom doit contenir au moins 3 caractères"),
             email: Yup.string().email("Email invalide").required("Email est obligatoire"),
@@ -174,6 +174,7 @@ export default function UpdateSociete() {
 
                 <div className="space-y-6">
                     <div className="grid grid-cols-2 gap-6">
+                        {/* Raison Sociale */}
                         <div className="col-span-2">
                             <label htmlFor="raison_sociale" className="block text-sm font-medium !text-gray-700 mb-1">
                                 Raison Sociale:
@@ -185,11 +186,14 @@ export default function UpdateSociete() {
                                 value={formik.values.raison_sociale}
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
-                                error={formik.touched.raison_sociale && formik.errors.raison_sociale}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200" 
+                                className={`w-full px-4 py-3 border ${formik.touched.raison_sociale && formik.errors.raison_sociale ? 'border-red-500' : 'border-gray-200'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200`} 
                             />
+                            {formik.touched.raison_sociale && formik.errors.raison_sociale && (
+                                <p className="text-red-500 text-xs mt-1">{formik.errors.raison_sociale}</p>
+                            )}
                         </div>
 
+                        {/* Nom */}
                         <div>
                             <label htmlFor="nom_contact" className="block text-sm font-medium !text-gray-700 mb-1">
                                 Nom:
@@ -201,13 +205,14 @@ export default function UpdateSociete() {
                                 value={formik.values.nom_contact}
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200" 
+                                className={`w-full px-4 py-3 border ${formik.touched.nom_contact && formik.errors.nom_contact ? 'border-red-500' : 'border-gray-200'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200`} 
                             />
                             {formik.touched.nom_contact && formik.errors.nom_contact && (
                                 <p className="text-red-500 text-xs mt-1">{formik.errors.nom_contact}</p>
                             )}
                         </div>
 
+                        {/* Prénom */}
                         <div>
                             <label htmlFor="prenom_contact" className="block text-sm font-medium !text-gray-700 mb-1">
                                 Prénom:
@@ -219,13 +224,14 @@ export default function UpdateSociete() {
                                 value={formik.values.prenom_contact}
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200" 
+                                className={`w-full px-4 py-3 border ${formik.touched.prenom_contact && formik.errors.prenom_contact ? 'border-red-500' : 'border-gray-200'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200`} 
                             />
                             {formik.touched.prenom_contact && formik.errors.prenom_contact && (
                                 <p className="text-red-500 text-xs mt-1">{formik.errors.prenom_contact}</p>
                             )}
                         </div>
 
+                        {/* Adresse */}
                         <div className="col-span-2">
                             <label htmlFor="adresse" className="block text-sm font-medium !text-gray-700 mb-1">
                                 Adresse:
@@ -237,13 +243,14 @@ export default function UpdateSociete() {
                                 value={formik.values.adresse}
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200" 
+                                className={`w-full px-4 py-3 border ${formik.touched.adresse && formik.errors.adresse ? 'border-red-500' : 'border-gray-200'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200`} 
                             />
                             {formik.touched.adresse && formik.errors.adresse && (
                                 <p className="text-red-500 text-xs mt-1">{formik.errors.adresse}</p>
                             )}
                         </div>
 
+                        {/* Email */}
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium !text-gray-700 mb-1">
                                 Email:
@@ -255,13 +262,14 @@ export default function UpdateSociete() {
                                 value={formik.values.email}
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200" 
+                                className={`w-full px-4 py-3 border ${formik.touched.email && formik.errors.email ? 'border-red-500' : 'border-gray-200'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200`} 
                             />
                             {formik.touched.email && formik.errors.email && (
                                 <p className="text-red-500 text-xs mt-1">{formik.errors.email}</p>
                             )}
                         </div>
 
+                        {/* Téléphone */}
                         <div>
                             <label htmlFor="tel" className="block text-sm font-medium !text-gray-700 mb-1">
                                 Téléphone:
@@ -273,13 +281,14 @@ export default function UpdateSociete() {
                                 value={formik.values.tel}
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200" 
+                                className={`w-full px-4 py-3 border ${formik.touched.tel && formik.errors.tel ? 'border-red-500' : 'border-gray-200'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200`} 
                             />
                             {formik.touched.tel && formik.errors.tel && (
                                 <p className="text-red-500 text-xs mt-1">{formik.errors.tel}</p>
                             )}
                         </div>
 
+                        {/* Registre de commerce */}
                         <div className="col-span-2">
                             <label htmlFor="registre_commerce" className="block text-sm font-medium !text-gray-700 mb-1">
                                 Registre de commerce:
@@ -291,13 +300,14 @@ export default function UpdateSociete() {
                                 value={formik.values.registre_commerce}
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200" 
+                                className={`w-full px-4 py-3 border ${formik.touched.registre_commerce && formik.errors.registre_commerce ? 'border-red-500' : 'border-gray-200'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200`} 
                             />
                             {formik.touched.registre_commerce && formik.errors.registre_commerce && (
                                 <p className="text-red-500 text-xs mt-1">{formik.errors.registre_commerce}</p>
                             )}
                         </div>
 
+                        {/* ID fiscal */}
                         <div>
                             <label htmlFor="id_fiscal" className="block text-sm font-medium !text-gray-700 mb-1">
                                 ID fiscal:
@@ -309,13 +319,14 @@ export default function UpdateSociete() {
                                 value={formik.values.id_fiscal}
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200" 
+                                className={`w-full px-4 py-3 border ${formik.touched.id_fiscal && formik.errors.id_fiscal ? 'border-red-500' : 'border-gray-200'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200`} 
                             />
                             {formik.touched.id_fiscal && formik.errors.id_fiscal && (
                                 <p className="text-red-500 text-xs mt-1">{formik.errors.id_fiscal}</p>
                             )}
                         </div>
 
+                        {/* Capital */}
                         <div>
                             <label htmlFor="capital" className="block text-sm font-medium !text-gray-700 mb-1">
                                 Capital:
@@ -327,7 +338,7 @@ export default function UpdateSociete() {
                                 value={formik.values.capital}
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200" 
+                                className={`w-full px-4 py-3 border ${formik.touched.capital && formik.errors.capital ? 'border-red-500' : 'border-gray-200'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200`} 
                             />
                             {formik.touched.capital && formik.errors.capital && (
                                 <p className="text-red-500 text-xs mt-1">{formik.errors.capital}</p>
