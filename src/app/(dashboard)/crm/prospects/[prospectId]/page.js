@@ -216,7 +216,7 @@ const ProspectDetails = () => {
 
                     {activeTab === 'visites' && (
                       <div className="min-h-[400px]">
-                     <VisiteTable dataProspect={prospectDetails} />
+                     <VisiteTable dataProspect={prospectDetails} show_prospect={true} />
                       </div>
                     )}
                   </div>

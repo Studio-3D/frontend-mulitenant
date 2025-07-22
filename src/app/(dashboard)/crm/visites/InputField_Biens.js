@@ -12,6 +12,7 @@ const InputField_Biens = ({
   min = null,
   max = null,
   placeholder = '',
+  error, // Add error prop to receive error messages
 }) => {
   // For datetime-local inputs, ensure placeholder shows format
   const resolvedPlaceholder = type === 'datetime-local' && !placeholder 
@@ -38,12 +39,12 @@ const InputField_Biens = ({
           disabled={disabled}
           placeholder={resolvedPlaceholder}
           rows={4}
-          className={`block ${width} w-full px-3 py-2 text-sm border border-gray-300 rounded-md  focus:outline-none hover:border-gray-500 focus:border-gray-500 ${
+          className={`block ${width} w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none hover:border-gray-500 focus:border-gray-500 ${
             disabled ? 'bg-gray-100 cursor-not-allowed' : ''
           }`}
         />
       ) : (
-        <div className="relative ">
+        <div className="relative">
           <input
             id={name}
             name={name}
@@ -55,24 +56,27 @@ const InputField_Biens = ({
             min={min}
             max={max}
             placeholder={resolvedPlaceholder}
-            className={`block ${width} ${height}  px-3 py-2 text-sm border border-gray-300 rounded-md  focus:outline-none hover:border-gray-500 focus:border-gray-500 ${
+            className={`block ${width} ${height} px-3 py-2 text-sm border ${
+              error ? 'border-red-500' : 'border-gray-300'
+            } rounded-md focus:outline-none hover:border-gray-500 focus:border-gray-500 ${
               disabled ? 'bg-gray-100 cursor-not-allowed' : ''
             }`}
-            // These styles ensure the picker appears on the entire input click
-            style={{
+            style={type === 'datetime-local' ? {
               cursor: 'pointer',
-              caretColor: 'transparent' // Hides blinking cursor
-            }}
+              caretColor: 'transparent'
+            } : {}}
             onFocus={(e) => {
               if (type === 'datetime-local') {
-                e.target.showPicker(); // This triggers the native picker
+                e.target.showPicker();
               }
             }}
           />
         </div>
       )}
+      {/* Error message display */}
+      {error && (
+        <p className="mt-1 text-sm text-red-600">{error}</p>
+      )}
     </div>
   );
 };
-
-export default InputField_Biens;
