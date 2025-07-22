@@ -119,7 +119,7 @@ export default function ProjetsPage({user_id}) {
               setSelectedId(row.id);
               setShowDeleteModal(true);
             }}            
-            title="Supprimer"
+            title="Supprimer le projet"
           >
             <Trash2 className="w-4 h-4" />
           </button>
