@@ -11,6 +11,7 @@ import {
 } from "react-icons/md"
 import Modal from "@/components/Modal"
 import toast from "react-hot-toast"
+import SelectInput from "../SelectInput"
 
 export default function CompositionForm({ state, setState, onNext, errors, isEdit = false }) {
   const [typeOptions, setTypeOptions] = useState([])
@@ -204,80 +205,58 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
   )
 
   return (
-    <div className="bg-white p-6 rounded-md">
-      <h2 className="text-xl font-medium mb-6">Type de projet et Composition</h2>
+   <div className="bg-white p-6 rounded-md">
 
-      <div className="mb-6 bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-        <h3 className="text-lg font-medium mb-4">Type de projet</h3>
-        
+      <div className=" bg-white p-6 rounded-lg">
+      <h2 className="text-xl font-medium mb-6">Type de projet et Composition</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex items-end gap-2">
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Type de projet <span className="text-red-500">*</span>
-              </label>
+              <SelectInput
+                label="Type de projet"
+                placeholder="Sélectionnez un type"
+                options={loading ? [] : typeOptions.map(option => ({
+                  value: option.id,
+                  label: option.type
+                }))}
+                value={state.typeId || ""}
+                onChange={(selectedId) => {
+                  const selectedOption = typeOptions.find(opt => opt.id === selectedId);
+                  handleChange("typeId", selectedId);
+                  handleChange("type", selectedOption ? selectedOption.type : "");
+                }}
+                error={errors?.type_id?.[0]}
+                required={true}
+                disabled={isEdit || loading}
+                name="type_id"
+              />
 
-              {loading ? (
-                <div className="flex items-center space-x-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
-                  <span className="text-sm text-gray-500">Chargement des types de projet...</span>
-                </div>
-              ) : (
-                <>
-                  <select
-                    className={`mt-1 block w-full px-3 py-2 border ${
-                      errors?.type_id ? "border-red-500" : "border-gray-300"
-                    } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
-                    value={state.typeId || ""}
-                    onChange={(e) => {
-                      const selectedId = e.target.value ? Number.parseInt(e.target.value) : null
-                      const selectedOption = typeOptions.find((opt) => opt.id === selectedId)
-                      handleChange("typeId", selectedId)
-                      handleChange("type", selectedOption ? selectedOption.type : "")
-                    }}
-                    disabled={isEdit}
-                  >
-                    <option value="">Sélectionnez un type</option>
-                    {typeOptions.length > 0 ? (
-                      typeOptions.map((option) => (
-                        <option key={option.id} value={option.id}>
-                          {option.type}
-                        </option>
-                      ))
-                    ) : (
-                      <option disabled value="">
-                        Aucun type disponible
-                      </option>
-                    )}
-                  </select>
-                  {typeOptions.length === 0 && !loading && (
-                    <p className="mt-1 text-sm text-amber-600">
-                      Aucun type de projet trouvé. Veuillez d'abord créer des types de projets.
-                    </p>
-                  )}
-                </>
+              {typeOptions.length === 0 && !loading && (
+                <p className="mt-1 text-sm text-amber-600">
+                  Aucun type de projet trouvé. Veuillez d'abord créer des types de projets.
+                </p>
               )}
-
-              {errors?.type_id && <p className="mt-1 text-sm text-red-600">{errors.type_id[0]}</p>}
             </div>
-            
             {/* Add Type Project Button */}
             {!isEdit && (
               <button
                 type="button"
                 onClick={() => setShowAddTypeModal(true)}
-                className="mb-0.5 h-10 px-3 py-2 flex items-center justify-center bg-green-500 hover:bg-green-600 text-white rounded-md text-sm transition-colors"
+                className=" px-4 py-1.5 flex items-center justify-center bg-green-500 hover:bg-green-600 text-white  rounded-md transition-colors"
               >
-                <MdAdd className="h-5 w-5 mr-1" />
-                <span>Nouveau</span>
+                <div className="flex items-center justify-center">
+                  <MdAdd className="h-5 w-5 mr-1" />
+                  <span className="text-md font-medium">Nouveau</span>
+                </div>
               </button>
             )}
+
           </div>
         </div>
       </div>
 
-      <div className="mb-8 bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-        <h3 className="text-lg font-medium mb-6">Composition de projet</h3>
+      <div className=" bg-white p-6 rounded-lg ">
+        <h3 className="text-xl font-medium mb-4">Composition de projet</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {/* Tranches */}
@@ -368,7 +347,7 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
 
       {/* Modal for adding new project type */}
       <Modal isVisible={showAddTypeModal} onClose={() => setShowAddTypeModal(false)}>
-        <div className="p-6">
+        <div className="p-6 w-[600px]">
           <h3 className="text-lg font-medium mb-4">Ajouter un type de projet</h3>
           <form onSubmit={handleAddTypeProjet}>
             <div className="mb-4">

@@ -1,5 +1,5 @@
 'use client';
-import { X } from 'lucide-react';
+
 
 export default function Modal({ children, isVisible, onClose }) {
   if (!isVisible) return null; // Return null if modal is not visible
