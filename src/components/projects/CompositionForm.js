@@ -168,7 +168,7 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
     onInputChange,
     disabled = false
   }) => (
-    <div className={`border rounded-lg p-4 flex flex-col items-center transition-all duration-200 hover:shadow-md ${
+    <div className={`border rounded-lg p-4 flex flex-col cursor-pointer items-center transition-all duration-200 hover:shadow-md ${
       isChecked ? `border-${colorClass}-500` : 'border-gray-200'
     } ${disabled ? "opacity-70" : ""}`}>
       <div className={`text-4xl mb-3 ${isChecked ? `text-${colorClass}-500` : 'text-gray-400'}`}>
@@ -182,7 +182,7 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
             type="checkbox"
             checked={isChecked}
             onChange={(e) => !disabled && onCheckChange(e.target.checked)}
-            className={`form-checkbox h-5 w-5 text-${colorClass}-500 rounded focus:ring-${colorClass}-500`}
+            className={`form-checkbox h-5 w-5 cursor-pointer text-${colorClass}-500 rounded focus:ring-${colorClass}-500`}
             disabled={disabled}
           />
         </label>
