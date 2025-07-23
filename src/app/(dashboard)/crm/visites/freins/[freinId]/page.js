@@ -168,7 +168,7 @@ export default function Biens_Dispo_By_frein_id() {
         />
       </div>
       <button
-        style={{ float: 'right', marginTop: '-33px' }}
+        style={{ float: 'right'}}
         className="flex gap-1 items-center bg-green-500 text-white font-medium rounded-lg px-3 py-1.5"
         onClick={showTraitement}
       >
@@ -177,6 +177,7 @@ export default function Biens_Dispo_By_frein_id() {
       </button>
       <div className="reflative">
         <Table
+        showSearch={false}
           data_to_export={data_to_export()}
           columns_export={columns_export}
           name_file_export={'biens_dispo_freins_export'}

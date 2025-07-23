@@ -8,7 +8,6 @@ import {
   Image,
 } from '@react-pdf/renderer';
 
-// Créez les styles
 const styles = StyleSheet.create({
   page: {
     padding: 30,
@@ -23,11 +22,8 @@ const styles = StyleSheet.create({
   logoContainer: {
     width: '30%',
   },
-  underline: {
-    textDecoration: 'underline',
-  },
   logo: {
-    width: 60, // Ajustez la taille du logo ici
+    width: 60,
     height: 'auto',
   },
   companyDetails: {
@@ -38,111 +34,163 @@ const styles = StyleSheet.create({
   },
   title: {
     textAlign: 'center',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 20,
+    textDecoration: 'underline',
+  },
+  subtitle: {
+    textAlign: 'center',
+    fontSize: 12,
+    marginBottom: 20,
+    fontStyle: 'italic',
   },
   section: {
     marginBottom: 20,
   },
   line: {
     borderBottomWidth: 1,
-    borderBottomColor: '#000', // Couleur de la barre (noire ici)
-    marginBottom: 20, // Espace entre la barre et le titre
+    borderBottomColor: '#000',
+    marginBottom: 20,
   },
   text: {
-    fontSize: 10,
+    fontSize: 11,
     lineHeight: 1.6,
-    textAlign: 'justify',
+    textAlign: 'left',
+    marginBottom: 10,
   },
   bold: {
     fontWeight: 'bold',
-    fontSize: 11,
   },
-  table: {
-    marginTop: 10,
-    marginBottom: 10,
+  underline: {
+    textDecoration: 'underline',
   },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 5,
+  propertyDetails: {
+    marginTop: 20,
+    marginBottom: 15,
+    lineHeight: 1.8,
+  },
+  footer: {
+    textAlign: 'center',
+    fontSize: 12,
+    marginTop: 30,
   },
   signature: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 30,
+    marginTop: 50,
     fontSize: 10,
+  },
+  stampArea: {
+    marginTop: 30,
+    textAlign: 'center',
+    fontStyle: 'italic',
+    fontSize: 9,
   },
 });
 
-// Fonction principale
-const ReceiptDocument = ({ data }) => {
+const MyDocument = ({ data }) => {
   const user = JSON.parse(localStorage.getItem('authUser'));
-
   const imageUrl = `/Docs/${user.societe.raison_sociale_concatene}_${user.societe.id}/logos/${user.societe.logo}`;
-
 
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        {/* En-tête */}
+        {/* En-tête avec logo */}
         <View style={styles.header}>
           <View style={styles.logoContainer}>
             <Image src={imageUrl} style={styles.logo} />
           </View>
           <View style={styles.companyDetails}>
-            <Text>Societé: {user.societe.raison_sociale}</Text>
-            <Text>Adresse: {user.societe.adresse}</Text>
-            <Text>Tél : {user.societe.tel}</Text>
+            <Text style={styles.bold}>{user.societe.raison_sociale}</Text>
+            <Text>{user.societe.adresse}</Text>
+            <Text>Tél: {user.societe.tel}</Text>
+            <Text>Email: {user.societe.email}</Text>
           </View>
         </View>
-        <View style={styles.line}></View>
+        <View style={styles.line} />
 
-        {/* Titre */}
-        <Text style={styles.title}>Fiche Rendez-vous Notaire</Text>
+        {/* Titre principal */}
+        <Text style={styles.title}>REÇU DE PRÉ-RÉSERVATION</Text>
+        <Text style={styles.subtitle}>N° {data[0] || 'N/A'}</Text>
 
-        {/* Contenu */}
+        {/* Contenu principal */}
         <View style={styles.section}>
           <Text style={styles.text}>
-            Nous confirmons que&nbsp;
-            <Text>
-              {data[2].length > 1 ? 'les clients: ' : 'Le client: '}
-              {data[2].map((client, i) => (
-                <Text key={i}>
-                  <Text style={styles.bold}>
-                    {client.name} {client.prenom}
-                  </Text>
-                  {i !== data[2].length - 1 ? ' et ' : ''}{' '}
-                  {/* Add "et" between clients if there's more than one */}
-                </Text>
-              ))}
+            Je soussigné(e),{' '}
+            <Text style={styles.bold}>
+              {data[9]} {data[10]}
             </Text>
-            ,{data[2].length > 1 ? 'ont' : 'a'} un rendez-vous avec le notaire
-            pour la signature du{' '}
-            {data[5] == 1 ? 'Compromis de Vente ' : 'Contrat de vente'}{' '}
-            concernant le bien <Text style={styles.bold}>« {data[1]} »</Text>,
-            inscrit sous le dossier n°{' '}
-            <Text style={styles.bold}>{data[0]}</Text>.
+            , représentant(e) de la société{' '}
+            <Text style={styles.bold}>{user.societe.raison_sociale}</Text>,
+            confirme la pré-réservation du bien décrit ci-dessous :
           </Text>
-        </View>
-        <View style={styles.section}>
-          <Text style={styles.text}>
-            Le rendez-vous est programmé pour le{' '}
-            <Text style={[styles.bold, styles.underline]}>{data[3]}</Text>, en
-            présence du notaire et du commercial, afin {"d'"}accomplir les
-            démarches nécessaires à la conclusion de {"l'"}accord de vente.
-          </Text>
-        </View>
 
-        {/* Signatures */}
-        <View style={styles.signature}>
-          <Text>Signature des acquéreurs :</Text>
-          <Text>Signature de {"l'"}entreprise :</Text>
+          <View style={styles.propertyDetails}>
+            <Text style={styles.text}>
+              <Text style={styles.bold}>• Référence du bien:</Text>{' '}
+              {data[4] || 'N/A'}
+            </Text>
+            <Text style={styles.text}>
+              <Text style={styles.bold}>• Type/Niveau:</Text> {data[5] || 'N/A'}
+            </Text>
+            <Text style={styles.text}>
+              <Text style={styles.bold}>• Superficie:</Text> {data[6] || 'N/A'}{' '}
+              m²
+            </Text>
+            <Text style={styles.text}>
+              <Text style={styles.bold}>• Orientation:</Text> {data[7] || 'N/A'}
+            </Text>
+            <Text style={styles.text}>
+              <Text style={styles.bold}>• Prix:</Text>{' '}
+              {data[8] ? data[8].toLocaleString() : 'N/A'} DH
+            </Text>
+            <Text style={styles.text}>
+              <Text style={styles.bold}>• Date de rendez-vous:</Text>{' '}
+              {data[2] ? new Date(data[2]).toLocaleDateString() : 'N/A'}
+            </Text>
+          </View>
+
+          <Text style={styles.text}>
+            Ce reçu atteste de l'engagement du client à procéder à la
+            réservation définitive du bien selon les modalités convenues.
+          </Text>
+
+          <Text style={styles.text}>
+            Fait à {user.societe.ville || '...'}, le{' '}
+            {new Date().toLocaleDateString()}
+          </Text>
+
+          {/* Zone de signatures */}
+          <View style={styles.signature}>
+            <View>
+              <Text style={styles.underline}>Le Client</Text>
+              <Text>Nom et signature</Text>
+            </View>
+            <View>
+              <Text style={styles.underline}>Le Responsable Commercial</Text>
+              <Text>
+                {data[9]} {data[10]}
+              </Text>
+            </View>
+          </View>
+
+          {/* Pied de page */}
+          <View style={styles.footer}>
+            <Text style={styles.bold}>
+              Nord Afrique Immobilier - Es qualité
+            </Text>
+            <Text>Merci pour votre confiance</Text>
+          </View>
+
+          {/* Zone pour cachet */}
+          <View style={styles.stampArea}>
+            <Text>Cachet et signature de {'l\''}'agence</Text>
+          </View>
         </View>
       </Page>
     </Document>
   );
 };
 
-export default ReceiptDocument;
+export default MyDocument;

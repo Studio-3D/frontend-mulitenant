@@ -14,7 +14,7 @@ import Input from '@/components/Input';
 import SelectInput from '@/components/SelectInput';
 
 import { VISITE_INTERETS } from '../../../../../src/configs/enum';
-const AppelsTable = ({dataClient}) => {
+const AppelsTable = ({ dataClient }) => {
   const { user, token } = useAuth();
   const accesstoken = token || localStorage.getItem('accessToken');
 
@@ -82,26 +82,25 @@ const AppelsTable = ({dataClient}) => {
   }
 
   const canAddAppel =
-      isSuperAdmin(user.role) || isAdmin(user.role) || isCommercial(user.role);
-  
+    isSuperAdmin(user.role) || isAdmin(user.role) || isCommercial(user.role);
 
   function getAddLinkForAppel(user) {
-  if (canAddAppel) {
-    if (dataClient) {
-      return {
-        pathname: `${ENDPOINTS.APPELS}?action=add`,
-        onClick: () => {
-          localStorage.setItem(
-                'selectedClient',
-                JSON.stringify({ dataClient: dataClient })
-              );        
-        }
-      };
+    if (canAddAppel) {
+      if (dataClient) {
+        return {
+          pathname: `${ENDPOINTS.APPELS}?action=add`,
+          onClick: () => {
+            localStorage.setItem(
+              'selectedClient',
+              JSON.stringify({ dataClient: dataClient })
+            );
+          },
+        };
+      }
+      return `${ENDPOINTS.APPELS}?action=add`;
     }
-    return `${ENDPOINTS.APPELS}?action=add`;
+    return undefined;
   }
-  return undefined;
-}
 
   function handle_convert_to_visite(prospect) {
     localStorage.setItem(
@@ -190,36 +189,46 @@ const AppelsTable = ({dataClient}) => {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <Eye
-            className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
-            title="Voir détails"
-            onClick={() => handleShow(row.id)}
-          />
-          <Pencil
-            className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
-            title="Modifier"
-            onClick={() => handleEdit(row.last_traitement_id)}
-          />
+          <div title="Voir détails">
+            <Eye
+              className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
+              onClick={() => handleShow(row.id)}
+            />
+          </div>
 
-          <Trash2
-            className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
-            onClick={() => {
-              setSelectedId(row.id);
-              setShowDeleteModal(true);
-            }}
-            title="Supprimer Appel"
-          />
+          <div title="Modifier">
+            <Pencil
+              className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
+              title="Modifier"
+              onClick={() => handleEdit(row.last_traitement_id)}
+            />
+          </div>
+
+          <div title="Supprimer Appel">
+            <Trash2
+              className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
+              onClick={() => {
+                setSelectedId(row.id);
+                setShowDeleteModal(true);
+              }}
+            />
+          </div>
+
           {row.last_traitement_visite_id == null ? (
-            <RefreshCw
-              className="w-4 h-4 !text-green-500  cursor-pointer"
-              title="Convertir en visite"
-              onClick={() => handle_convert_to_visite(row.prospect)}
-            />
+            <div title="Convertir en visite">
+              <RefreshCw
+                className="w-4 h-4 !text-green-500  cursor-pointer"
+                title="Convertir en visite"
+                onClick={() => handle_convert_to_visite(row.prospect)}
+              />
+            </div>
           ) : (
-            <CreditCard
-              className="w-4 h-4 !text-blue-500 cursor-pointer"
-              onClick={() => voir_visite(row.last_traitement_visite_id)}
-            />
+            <div title="Voir visite">
+              <CreditCard
+                className="w-4 h-4 !text-blue-500 cursor-pointer"
+                onClick={() => voir_visite(row.last_traitement_visite_id)}
+              />
+            </div>
           )}
         </div>
       ),
@@ -299,7 +308,7 @@ const AppelsTable = ({dataClient}) => {
     <>
       <div className="relative bg-white rounded-lg px-4 py-4">
         <Table
-          title={"Appels"} 
+          title={'Appels'}
           data_to_export={data_to_export()}
           columns_export={columns_export}
           name_file_export={'appels_export'}
@@ -315,8 +324,8 @@ const AppelsTable = ({dataClient}) => {
           onSearchChange={setSearchTerm}
           enableExport={true}
           enableImport={false}
+          showSearch={false}
           addLink={getAddLinkForAppel(user)}
-
           /* addLink={
             isSuperAdmin(user.role) ||
             isAdmin(user.role) ||
@@ -334,24 +343,23 @@ const AppelsTable = ({dataClient}) => {
               >
                 {/* Champs de recherche */}
 
-                <input
-                  type={tempFilters.date ? 'date' : 'text'}
-                  placeholder="Date"
+                <Input
+                  type="date"
+                  label="Date"
                   value={tempFilters.date}
-                  onFocus={(e) => (e.target.type = 'date')}
                   onChange={(e) => handleFilterChange('date', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
                 <Input
                   type="text"
-                  placeholder="Nom"
+                  label="Nom"
                   value={tempFilters.nom}
                   onChange={(e) => handleFilterChange('nom', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
                 <Input
                   type="text"
-                  placeholder="Prénom"
+                  label="Prénom"
                   value={tempFilters.prenom}
                   onChange={(e) => handleFilterChange('prenom', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
@@ -359,7 +367,7 @@ const AppelsTable = ({dataClient}) => {
 
                 <Input
                   type="number"
-                  placeholder="Téléphone"
+                  label="Téléphone"
                   value={tempFilters.telephone}
                   onChange={(e) =>
                     handleFilterChange('telephone', e.target.value)
@@ -373,7 +381,7 @@ const AppelsTable = ({dataClient}) => {
                     value: data.code,
                     label: data.label,
                   }))}
-                  placeholder="Choisir un Intéret"
+                  label="Choisir un Intéret"
                   className="h-10 text-sm w-full"
                 />
               </div>
@@ -407,7 +415,7 @@ const AppelsTable = ({dataClient}) => {
           <DeleteData
             route={APIURL.APPELS}
             Id={selectedId}
-            type='Appel'
+            type="Appel"
             message={'Etes-vous sûr de vouloir supprimer cette Appel ?'}
             accessToken={accesstoken}
             onClose={() => {

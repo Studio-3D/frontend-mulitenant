@@ -332,6 +332,7 @@ const RelancesRdvAppelsTable = (type) => {
               ? 'relances_appels_exports'
               : 'Rendez-Vous_appels_exports'
           }
+          showSearch={false}
           columns={columns}
           data={formatData()}
           totalRows={totalRows}

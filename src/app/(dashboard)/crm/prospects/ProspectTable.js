@@ -118,7 +118,7 @@ const ProspectTable = () => {
     selectedProjet,
   ]);
 
-   const formatData = () => {
+  const formatData = () => {
     return prospects.map((pro) => ({
       id: pro.id,
       nom: `${pro.nom || ''}`.trim(),
@@ -143,8 +143,8 @@ const ProspectTable = () => {
     }));
   };
   const handleImportClick = () => {
-    setShowImportModal(true)  // ouvrir la modale d'import
-  }
+    setShowImportModal(true); // ouvrir la modale d'import
+  };
 
   const handleShow = (prospectId) => {
     router.push(`/crm/prospects/${prospectId}`);
@@ -170,7 +170,6 @@ const ProspectTable = () => {
     router.push(`${ENDPOINTS.VISITES}?action=add`);
   }
   // Format users data for table display
- 
 
   // Table columns configuration
   const columns = [
@@ -224,39 +223,45 @@ const ProspectTable = () => {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <Eye
-            className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
-            title="Voir détails"
-            onClick={() => handleShow(row.id)}
-          />
-          <Pencil
-            className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
-            title="Modifier"
-            onClick={() => handleEdit(row.id)}
-          />
-
-          <Check
-            className="w-4 h-4  hover:text-['rgb(87,80,129)']-700 text-['rgb(87,80,129)'] cursor-pointer"
-            title="Traiter"
-            onClick={() => handleraiter(row.id, row.telephone, row.nomComplet)}
-          />
-          <RefreshCw
-            className="w-4 h-4 !text-green-500  cursor-pointer"
-            title="Convertir en visite"
-            onClick={() => handle_convert_to_visite(row.prospect)}
-          />
+          <div title="Voir détails">
+            <Eye
+              className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
+              onClick={() => handleShow(row.id)}
+            />
+          </div>
+          <div title="Modifier">
+            <Pencil
+              className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
+              onClick={() => handleEdit(row.id)}
+            />
+          </div>
+          <div title="Traiter">
+            <Check
+              className="w-4 h-4  hover:text-['rgb(87,80,129)']-700 text-['rgb(87,80,129)'] cursor-pointer"
+              onClick={() =>
+                handleraiter(row.id, row.telephone, row.nomComplet)
+              }
+            />
+          </div>
+          <div title="Convertir en visite">
+            <RefreshCw
+              className="w-4 h-4 !text-green-500  cursor-pointer"
+              onClick={() => handle_convert_to_visite(row.prospect)}
+            />
+          </div>
 
           {row.client == null &&
             row.visites.length == 0 &&
             row.appels == null && (
-              <Trash2
-                className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
-                onClick={() => {
-                  setSelectedId(row.id);
-                  setShowDeleteModal(true);
-                }}
-                title="Supprimer utilisateur"
-              />
+              <div title="Supprimer utilisateur">
+                <Trash2
+                  className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
+                  onClick={() => {
+                    setSelectedId(row.id);
+                    setShowDeleteModal(true);
+                  }}
+                />
+              </div>
             )}
         </div>
       ),
@@ -335,6 +340,7 @@ const ProspectTable = () => {
           enableExport={true}
           enableImport={true}
           onImportClick={handleImportClick}
+          showSearch={false}
           addLink={
             isSuperAdmin(user.role) ||
             isAdmin(user.role) ||
@@ -353,21 +359,21 @@ const ProspectTable = () => {
                 {/* Champs de recherche */}
                 <Input
                   type="text"
-                  placeholder="Cin"
+                  label="Cin"
                   value={tempFilters.cin}
                   onChange={(e) => handleFilterChange('cin', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
                 <Input
                   type="text"
-                  placeholder="Nom"
+                  label="Nom"
                   value={tempFilters.nom}
                   onChange={(e) => handleFilterChange('nom', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
                 <Input
                   type="text"
-                  placeholder="Prénom"
+                  label="Prénom"
                   value={tempFilters.prenom}
                   onChange={(e) => handleFilterChange('prenom', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
@@ -375,7 +381,7 @@ const ProspectTable = () => {
 
                 <Input
                   type="number"
-                  placeholder="Téléphone"
+                  label="Téléphone"
                   value={tempFilters.telephone}
                   onChange={(e) =>
                     handleFilterChange('telephone', e.target.value)
@@ -384,7 +390,7 @@ const ProspectTable = () => {
                 />
                 <Input
                   type="email"
-                  placeholder="Email"
+                  label="Email"
                   value={tempFilters.email}
                   onChange={(e) => handleFilterChange('email', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
@@ -396,7 +402,7 @@ const ProspectTable = () => {
                     value: data.id,
                     label: data.label,
                   }))}
-                  placeholder="Choisir un Statut"
+                  label="Choisir un Statut"
                   className="h-10 text-sm w-full"
                 />
               </div>
@@ -431,7 +437,7 @@ const ProspectTable = () => {
           <DeleteData
             route={APIURL.PROSPECTS}
             Id={selectedId}
-            type='Prospect'
+            type="Prospect"
             message={'Etes-vous sûr de vouloir supprimer ce Prospect ?'}
             accessToken={accesstoken}
             onClose={() => {
@@ -468,9 +474,9 @@ const ProspectTable = () => {
       {showImportModal && (
         <Modal isVisible={true} onClose={() => setShowImportModal(false)}>
           <Modal_Import
-            title='Prospects'
-            route='upload_excel_prospect'
-            localstorage='load_data_prospect'
+            title="Prospects"
+            route="upload_excel_prospect"
+            localstorage="load_data_prospect"
             onClose={() => setShowImportModal(false)}
           />
         </Modal>

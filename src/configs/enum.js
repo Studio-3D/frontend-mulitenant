@@ -257,7 +257,7 @@ export const getOrientationCode = (orientation) =>
 export const Statuts_Prospect = {
   1: { id: '1', label: 'Planification Rendez Vous' },
   2: { id: '2', label: 'Injoignable' },
-  3: { id: '3', label: 'Rappelmm' },
+  3: { id: '3', label: 'Rappel' },
   4: { id: '4', label: 'Converti en Visite' },
   5: { id: '5', label: 'Nouveau Appel' },
 };

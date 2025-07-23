@@ -54,9 +54,9 @@ export function ClientDetails({ Prospect }) {
               <p className="text-sm text-[whitesmoke]">Téléphone</p>
               <p className="font-medium">
                 {Prospect?.telephone}
-                {Prospect?.telephone_num2 != null
+                {Prospect?.telephone_num2 != null && Prospect?.telephone_num2 != ""
                   ? '/' + Prospect?.telephone_num2
-                  : null}
+                  : ''}
               </p>
             </div>
           </div>
