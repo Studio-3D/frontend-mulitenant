@@ -67,7 +67,6 @@ export default function ConfigurationSocialsPage() {
     setActiveTab(tabId);
   };
 
-  // Render content for the active tab (removed webhook case)
   const renderTabContent = () => {
     switch (activeTab) {
       case "facebook":

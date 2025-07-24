@@ -7,6 +7,7 @@ import axios from "axios";
 import { APIURL } from "@/configs/api";
 import { Box, SaveIcon, AlertCircleIcon, Loader, Trash2, Plus, CheckCircle, Settings, Globe } from "lucide-react";
 import toast from "react-hot-toast";
+import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
 
 export default function FacebookConfigTab() {
   const { user } = useAuth();
@@ -26,6 +27,13 @@ export default function FacebookConfigTab() {
 
   const [webhookConfig, setWebhookConfig] = useState({
     webhook_verify_token: "",
+  });
+
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    type: null, // 'configuration' or 'webhook'
+    itemId: null,
+    itemLabel: ''
   });
 
   // Fetch existing Facebook configurations and webhooks
@@ -104,9 +112,6 @@ export default function FacebookConfigTab() {
       // Verify configuration after saving
       await verifyFacebookConfiguration();
       
-      // Subscribe page to webhook after successful configuration
-      await subscribePageToWebhook(facebookConfig.page_fcb_id, facebookConfig.acces_token_page);
-      
       toast.success("Configuration Facebook enregistrée avec succès");
       
       // Reset form and refresh configurations
@@ -128,56 +133,15 @@ export default function FacebookConfigTab() {
     }
   };
 
-  // Subscribe page to webhook
-  const subscribePageToWebhook = async (pageId, pageAccessToken) => {
-    try {
-      const response = await axios.post(
-        `https://graph.facebook.com/v19.0/${pageId}/subscribed_apps`,
-        {
-          subscribed_fields: ["feed", "comments", "reactions", "mentions"]
-        },
-        {
-          headers: {
-            "Authorization": `Bearer ${pageAccessToken}`,
-            "Content-Type": "application/json"
-          }
-        }
-      );
-      
-      if (response.data.success) {
-        console.log("Page successfully subscribed to webhook");
-        toast.success("Page Facebook abonnée aux webhooks avec succès");
-      } else {
-        console.warn("Page subscription response:", response.data);
-        toast.warning("Abonnement webhook partiellement configuré");
-      }
-    } catch (error) {
-      console.error("Error subscribing page to webhook:", error);
-      toast.error("Erreur lors de l'abonnement aux webhooks Facebook");
-    }
-  };
-
   // Delete Facebook configuration
   const handleDeleteConfiguration = async (configId) => {
-    if (!window.confirm("Êtes-vous sûr de vouloir supprimer cette configuration?")) {
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem("accessToken");
-      await axios.delete(`${APIURL.ROOTV1}/facebook-configurations/${configId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      
-      toast.success("Configuration supprimée avec succès");
-      
-      // Refresh configurations list
-      setConfigurations(prev => prev.filter(config => config.id !== configId));
-      
-    } catch (error) {
-      console.error("Error deleting Facebook configuration:", error);
-      toast.error("Erreur lors de la suppression de la configuration");
-    }
+    const config = configurations.find(c => c.id === configId);
+    setDeleteModal({
+      isOpen: true,
+      type: 'configuration',
+      itemId: configId,
+      itemLabel: `Configuration Facebook pour ${config?.projet?.nom || 'Projet supprimé'}`
+    });
   };
 
   // Verify Facebook configuration
@@ -197,7 +161,7 @@ export default function FacebookConfigTab() {
     }
   };
 
-  // Save webhook configuration
+  // Save webhook configuration - webhook starts disabled by default
   const handleSaveWebhook = async (configId) => {
     try {
       setSaving(true);
@@ -215,13 +179,6 @@ export default function FacebookConfigTab() {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      
-      // Find the configuration to get page details for subscription
-      const config = configurations.find(c => c.id === configId);
-      if (config) {
-        // Subscribe page to webhook after successful webhook configuration
-        await subscribePageToWebhook(config.page_fcb_id, config.acces_token_page);
-      }
       
       toast.success("Webhook Facebook configuré avec succès");
       
@@ -242,24 +199,78 @@ export default function FacebookConfigTab() {
 
   // Delete webhook configuration
   const handleDeleteWebhook = async (configId) => {
-    if (!window.confirm("Êtes-vous sûr de vouloir supprimer ce webhook?")) {
-      return;
-    }
+    const config = configurations.find(c => c.id === configId);
+    const webhook = getWebhookForConfig(configId);
+    setDeleteModal({
+      isOpen: true,
+      type: 'webhook',
+      itemId: configId,
+      itemLabel: `Webhook pour ${config?.projet?.nom || 'Projet supprimé'}`
+    });
+  };
 
+  // Handle delete confirmation
+  const handleDeleteConfirmed = async () => {
+    const { type, itemId } = deleteModal;
+    
     try {
       const token = localStorage.getItem("accessToken");
-      await axios.delete(`${APIURL.ROOTV1}/facebook-configurations/${configId}/webhook`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
       
-      toast.success("Webhook supprimé avec succès");
+      if (type === 'configuration') {
+        await axios.delete(`${APIURL.ROOTV1}/facebook-configurations/${itemId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        toast.success("Configuration supprimée avec succès");
+      } else if (type === 'webhook') {
+        await axios.delete(`${APIURL.ROOTV1}/facebook-configurations/${itemId}/webhook`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        toast.success("Webhook supprimé avec succès");
+      }
       
-      // Refresh webhooks list
+      // Refresh data
       window.location.reload();
       
     } catch (error) {
-      console.error("Error deleting webhook:", error);
-      toast.error("Erreur lors de la suppression du webhook");
+      console.error("Error deleting:", error);
+      toast.error("Erreur lors de la suppression");
+    }
+  };
+
+  // Toggle webhook enable/disable - let backend handle Facebook subscription
+  const handleToggleWebhook = async (configId, currentStatus) => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const newStatus = !currentStatus;
+      
+      // Send request to backend to toggle webhook and handle Facebook subscription
+      await axios.put(
+        `${APIURL.ROOTV1}/facebook-configurations/${configId}/webhook/toggle`,
+        { webhook_enabled: newStatus },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      
+      const statusText = newStatus ? 'activé' : 'désactivé';
+      toast.success(`Webhook ${statusText} avec succès`);
+      
+      // Update local state
+      setWebhooks(prev => prev.map(webhook => 
+        webhook.id === configId 
+          ? { ...webhook, webhook_enabled: newStatus }
+          : webhook
+      ));
+      
+    } catch (error) {
+      console.error("Error toggling webhook:", error);
+      
+      // Handle specific error messages from backend
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("Erreur lors de la modification du webhook");
+      }
     }
   };
 
@@ -375,17 +386,61 @@ export default function FacebookConfigTab() {
                       </div>
 
                       {webhook && (
-                        <div className="bg-gray-50 p-3 rounded-md">
+                        <div className="bg-blue-50 p-3 rounded-md">
                           <div className="grid grid-cols-2 gap-4 text-xs">
                             <div>
                               <span className="font-medium text-gray-700">URL Webhook:</span>
                               <p className="text-gray-600 mt-1 break-all">{webhook.webhook_url}</p>
                             </div>
                             <div>
-                              <span className="font-medium text-gray-700">Événements:</span>
+                              <span className="font-medium text-gray-700">Événements requis:</span>
                               <p className="text-gray-600 mt-1">
-                                {webhook.webhook_subscriptions?.join(', ') || 'Aucun'}
+                                feed, mention
                               </p>
+                              <p className="text-xs text-blue-600 mt-1">
+                                ⚠️ Ces événements doivent être configurés dans Facebook Developer Console
+                              </p>
+                            </div>
+                          </div>
+                          
+                          {/* Add webhook toggle with warning */}
+                          <div className="mt-3 pt-3 border-t border-blue-200">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-medium text-gray-700">
+                                État du webhook:
+                              </span>
+                              <div className="flex items-center space-x-2">
+                                <span className={`text-xs ${webhook.webhook_enabled ? 'text-green-600' : 'text-red-600'}`}>
+                                  {webhook.webhook_enabled ? 'Activé' : 'Désactivé'}
+                                </span>
+                                <button
+                                  onClick={() => handleToggleWebhook(config.id, webhook.webhook_enabled)}
+                                  className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors ${
+                                    webhook.webhook_enabled ? 'bg-green-500' : 'bg-gray-300'
+                                  }`}
+                                >
+                                  <span
+                                    className={`inline-block h-3 w-3 transform rounded-full bg-white transition ${
+                                      webhook.webhook_enabled ? 'translate-x-4' : 'translate-x-0.5'
+                                    }`}
+                                  />
+                                </button>
+                              </div>
+                            </div>
+                            
+                            {/* Warning message */}
+                            <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs">
+                              <div className="flex items-start space-x-1">
+                                <AlertCircleIcon className="h-3 w-3 text-yellow-600 mt-0.5 flex-shrink-0" />
+                                <div className="text-yellow-700">
+                                  <p className="font-medium">Avant d'activer le webhook :</p>
+                                  <ol className="list-decimal pl-3 mt-1 space-y-0.5">
+                                    <li>Configurez votre webhook dans <strong>Facebook Developer Console</strong></li>
+                                    <li>Abonnez-vous aux événements : <strong>feed</strong> et <strong>mention</strong></li>
+                                    <li>Vérifiez que votre webhook répond correctement</li>
+                                  </ol>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -396,6 +451,23 @@ export default function FacebookConfigTab() {
                           <h5 className="text-sm font-medium text-blue-900 mb-3">
                             Configurer le webhook pour {config.projet?.nom}
                           </h5>
+                          
+                          {/* Important instructions */}
+                          <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                            <div className="flex items-start space-x-2">
+                              <AlertCircleIcon className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+                              <div className="text-sm text-yellow-800">
+                                <p className="font-medium mb-1">Configuration Facebook Developer Console requise :</p>
+                                <ul className="list-disc pl-4 space-y-1 text-xs">
+                                  <li>URL du webhook : <code className="bg-white px-1 rounded">https://immogestion.alemsafi.live/api/webhookFcb_Insta</code></li>
+                                  <li>Token de vérification : Utilisez le token que vous saisissez ci-dessous</li>
+                                  <li>Événements à sélectionner : <strong>feed</strong> et <strong>mention</strong> uniquement</li>
+                                  <li>Testez la vérification du webhook avant d'activer</li>
+                                </ul>
+                              </div>
+                            </div>
+                          </div>
+                          
                           <div className="space-y-3">
                             <div>
                               <label className="block text-xs font-medium text-blue-700 mb-1">
@@ -700,6 +772,42 @@ export default function FacebookConfigTab() {
         </div>
       )}
 
+      {/* Add webhook configuration section */}
+      <div className="mt-8 border-t pt-6">
+        <h3 className="text-lg font-medium mb-4">Configuration des Webhooks Facebook</h3>
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-start space-x-3">
+            <Settings className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <div className="text-sm">
+              <h4 className="font-medium text-blue-900 mb-2">Événements webhook supportés</h4>
+              <div className="space-y-2 text-blue-800">
+                <div className="flex items-start space-x-2">
+                  <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <strong>feed</strong> - Notifications pour les nouveaux posts sur votre page
+                    <p className="text-xs text-blue-600">Recevez des notifications quand quelqu'un publie sur votre page</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-2">
+                  <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <strong>mention</strong> - Notifications quand votre page est mentionnée
+                    <p className="text-xs text-blue-600">Recevez des notifications quand votre page est taguée ou mentionnée</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded">
+                <p className="text-xs text-yellow-800">
+                  <strong>Important :</strong> Vous devez configurer ces événements dans Facebook Developer Console 
+                  avant de pouvoir activer les webhooks dans cette interface.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Info Section */}
       <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4">
         <div className="flex">
@@ -714,6 +822,16 @@ export default function FacebookConfigTab() {
           </div>
         </div>
       </div>
+
+      {/* Delete Modal */}
+      <DeleteConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, type: null, itemId: null, itemLabel: '' })}
+        entityName="FACEBOOK_CONFIG"
+        itemLabel={deleteModal.itemLabel}
+        entityId={deleteModal.itemId}
+        onDeleted={handleDeleteConfirmed}
+      />
     </div>
   );
 }

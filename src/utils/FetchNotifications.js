@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { format } from 'date-fns';
+import { format, isValid, parseISO } from 'date-fns';
 
 const fetchNotifications = async ({ setNotifications, setNewNotificationsCount, setIsLoadingNotifications }) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -62,30 +62,61 @@ const fetchNotifications = async ({ setNotifications, setNewNotificationsCount, 
         color: 'error',
         subtitle: (prospect, user, avance, reservation, bien, projet) => `Avance N°: ${avance?.num_recu}`
       },
-      // Other notification types...
       15: {
         title: 'Une Réservation Validé',
         icon: 'check-circle',
         color: 'success',
         subtitle: (prospect, user, avance, reservation, bien, projet) => `Code: ${reservation?.code_reservation}`
       },
-      // Add more notification types as needed
+      98: {
+        title: 'Nouvelle Réaction Facebook',
+        icon: 'heart',
+        color: 'info',
+        subtitle: (prospect, user, avance, reservation, bien, projet, description_type) => description_type || 'Quelqu\'un a réagi à votre publication'
+      }
     };
 
     const formattedNotifications = notifications
       .map(notification => {
-        const { type, date, deleted_at, id, prospect, user, avance, reservation, bien, projet, lien } = notification;
+        const { type, date, deleted_at, id, prospect, user, avance, reservation, bien, projet, lien, description_type } = notification;
         const notificationType = typeNotiMap[type];
         if (!notificationType) {
           console.error('Unknown notification type: ' + type);
-          return null; // Skip this notification if type is unknown
+          return null;
         }
 
         const { icon, color, subtitle, title } = notificationType;
 
-        const formattedDate = type === 2
-          ? format(new Date(date), 'dd/MM/yyyy kk:mm')
-          : format(new Date(date), 'dd/MM/yyyy');
+        // Better date parsing with validation
+        let formattedDate;
+        try {
+          // Try different parsing methods
+          let dateObj;
+          
+          if (typeof date === 'string') {
+            // Try parsing as ISO string first
+            dateObj = parseISO(date);
+            
+            // If that fails, try direct Date constructor
+            if (!isValid(dateObj)) {
+              dateObj = new Date(date);
+            }
+          } else {
+            dateObj = new Date(date);
+          }
+          
+          if (isValid(dateObj)) {
+            formattedDate = type === 2
+              ? format(dateObj, 'dd/MM/yyyy HH:mm')
+              : format(dateObj, 'dd/MM/yyyy');
+          } else {
+            console.warn('Invalid date received:', date);
+            formattedDate = 'Date invalide';
+          }
+        } catch (error) {
+          console.error('Error formatting date:', date, error);
+          formattedDate = 'Date invalide';
+        }
 
         return {
           id,
@@ -95,7 +126,7 @@ const fetchNotifications = async ({ setNotifications, setNewNotificationsCount, 
           title: `${[20, 21, 8, 23, 24, 25, 26, 29].indexOf(type) >= 0 ? `${title}` : `Vous Avez ${title}`}`,
           icon: icon,
           color: color,
-          subtitle: subtitle(prospect, user, avance, reservation, bien, projet)
+          subtitle: subtitle(prospect, user, avance, reservation, bien, projet, description_type)
         };
       })
       .filter(notification => notification !== null);
