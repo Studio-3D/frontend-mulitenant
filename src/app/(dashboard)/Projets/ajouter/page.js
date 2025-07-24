@@ -228,7 +228,7 @@ export default function AddProjectPage() {
     <div className="relative bg-white rounded-lg shadow-md">
       <div className="p-6">
         <h1 className="text-2xl items-center text-center font-semibold">Ajouter un projet</h1>
-        <div className="p-6 mx-6">
+        <div className=" mx-8 mt-4">
           <ProjectStepper 
             steps={steps.map(step => step.title)}
             activeStep={activeStep} 
@@ -236,7 +236,7 @@ export default function AddProjectPage() {
           />
         </div>
         
-        <div className="mt-8">
+        <div className="">
           {steps[activeStep].component}
         </div>
         

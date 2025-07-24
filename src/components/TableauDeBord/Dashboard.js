@@ -102,8 +102,6 @@ export const Dashboard = () => {
 
       // Don't fetch data if no projet is selected
       const hasSelectedProjet = selectedProjet || localStorage.getItem("selectedProjet");
-       console.log('Selected projet:', selectedProjet);
-    console.log('LocalStorage projet:', localStorage.getItem("selectedProjet"));
       if (!hasSelectedProjet) {
         setLoading(false);
         return;
@@ -115,19 +113,15 @@ export const Dashboard = () => {
 
         const dateParams = getDateRangeParams(startDate, endDate);
         const projetId = selectedProjet?.id || JSON.parse(localStorage.getItem("selectedProjet"))?.id;
-        console.log('API Request URL:', `${APIURL.ROOTV1}/dashboard/${projetId}/${dateParams.start_date}/${dateParams.end_date}`);
-console.log('Request Headers:', { Authorization: `Bearer ${accesstoken}` });
         const response = await axios.get(`${APIURL.ROOTV1}/dashboard/${projetId}/${dateParams.start_date}/${dateParams.end_date}`, {
           headers: {
             Authorization: `Bearer ${accesstoken}`
           },
         });
         console.log("Dashboard data response:", response.data); // Debug log
-        console.log("Desistements data:", response.data.desistements); // Specific log
         setData(response.data);
       } catch (err) {
         setError(`Failed to fetch dashboard data: ${err.message}`);
-        console.error('API Error:', err);
       } finally {
         setLoading(false);
       }
@@ -147,8 +141,6 @@ console.log('Request Headers:', { Authorization: `Bearer ${accesstoken}` });
         open={showSocieteModal}
         onClose={() => {
           setShowSocieteModal(false);
-          // If they close without selecting, redirect to home
-          router.push('/');
         }}
         selectedId={selectedSocieteId}
         setSelectedId={setSelectedSocieteId}
@@ -171,20 +163,11 @@ console.log('Request Headers:', { Authorization: `Bearer ${accesstoken}` });
         open={showProjetDialog}
         onClose={() => {
           setShowProjetDialog(false);
-          // If they close without selecting, redirect to home
-          router.push('/');
         }}
         projets={projets}
         onSelect={() => setShowProjetDialog(false)}
       />
     );
-  }
-
-  // Only show dashboard content if all required selections are made
-  const canShowDashboard = (!isSuperAdmin || selectedSociete) && (selectedProjet || localStorage.getItem("selectedProjet"));
-
-  if (!canShowDashboard) {
-    return <div className="flex justify-center items-center h-64">Preparing dashboard...</div>;
   }
 
   return (

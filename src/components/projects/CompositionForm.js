@@ -205,7 +205,7 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
   )
 
   return (
-   <div className="bg-white p-6 rounded-md">
+   <div className="bg-white p-6 rounded-md min-h-[64vh]">
 
       <div className=" bg-white p-6 rounded-lg">
       <h2 className="text-xl font-medium mb-6">Type de projet et Composition</h2>
@@ -213,7 +213,7 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
           <div className="flex items-end gap-2">
             <div className="flex-1">
               <SelectInput
-                label="Type de projet"
+                label="Type de projet :"
                 placeholder="Sélectionnez un type"
                 options={loading ? [] : typeOptions.map(option => ({
                   value: option.id,
@@ -313,7 +313,7 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
         </div>
       </div>
 
-      <div className="flex justify-between pt-5">
+      <div className="flex justify-between p-6 mt-6">
         <button
           type="button"
           onClick={() => window.history.back()}

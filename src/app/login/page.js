@@ -3,9 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import Link from 'next/link';
-import { useSociete } from '@/context/SocieteContext';
-import SocieteModal from '../../components/SocieteDialog';
-import LoadingSpin from '../../components/LoadingSpin';
+import { Eye, EyeOff, Home, Check } from 'lucide-react';
 
 export default function Login() {
   // State
@@ -16,10 +14,10 @@ export default function Login() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const router = useRouter();
-  const { login, user, loading } = useAuth();
+  const { login, user } = useAuth();
 
   // Handle input changes
   const handleChange = useCallback((e) => {
@@ -32,10 +30,10 @@ export default function Login() {
 
   // Redirect if already logged in
   useEffect(() => {
-    if (user && !loading) {
+    if (user) {
       router.push('/tableau-de-bord');
     }
-  }, [user, loading, router]);
+  }, [user, router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -46,7 +44,7 @@ export default function Login() {
       return;
     }
 
-    setIsLoading(true);
+    setIsSubmitting(true);
     setError('');
     
     try {
@@ -56,18 +54,9 @@ export default function Login() {
       console.error('Login error:', err);
       setError(err.message || "L'e-mail ou le mot de passe n'est pas valide ou l'utilisateur n'est pas Actif");
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
-
-  // Show loading spinner during auth check
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <LoadingSpin />
-      </div>
-    );
-  }
 
   return (
     <div className="flex min-h-screen bg-white">
@@ -78,7 +67,9 @@ export default function Login() {
             src="/images/bg1.jpg"
             alt="Real Estate Illustration"
             className="max-w-[38rem] rounded-lg shadow-lg"
-            loading="lazy" // Add lazy loading for better performance
+            loading="lazy"
+            width={608}
+            height={456}
           />
         </div>
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-100 opacity-60"></div>
@@ -94,9 +85,7 @@ export default function Login() {
         <div className="p-7 w-full max-w-[450px]">
           {/* Logo */}
           <div className="absolute top-8 left-8 flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-              <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2 20h2m0 0h6m-6 0v-8.548c0-.534 0-.801.065-1.05a2 2 0 0 1 .28-.617c.145-.213.346-.39.748-.741l4.801-4.202c.746-.652 1.119-.978 1.538-1.102c.37-.11.765-.11 1.135 0c.42.124.794.45 1.54 1.104l4.8 4.2c.402.352.603.528.748.74c.127.19.222.398.28.618c.065.249.065.516.065 1.05V20m-10 0h4m-4 0v-4a2 2 0 1 1 4 0v4m0 0h6m0 0h2"/>
-            </svg>
+            <Home className="w-6 h-6" />
             <span className="ml-2 text-xl font-bold leading-6">Immo Gestion</span>
           </div>
 
@@ -164,17 +153,7 @@ export default function Login() {
                   className="absolute right-3 top-1/2 -translate-y-1/2 !text-gray-500"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  {showPassword ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                      <line x1="1" y1="1" x2="23" y2="23"></line>
-                    </svg>
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                      <circle cx="12" cy="12" r="3"></circle>
-                    </svg>
-                  )}
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
             </div>
@@ -195,11 +174,7 @@ export default function Login() {
                     className={`border rounded w-4 h-4 flex flex-shrink-0 justify-center items-center mr-2
                       ${formData.rememberMe ? 'bg-[#666cff] border-[#666cff]' : 'border-gray-400'}`}
                   >
-                    {formData.rememberMe && (
-                      <svg className="w-2.5 h-2.5" viewBox="0 0 20 20" fill="white" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M0 11l2-2 5 5L18 3l2 2L7 18z" />
-                      </svg>
-                    )}
+                    {formData.rememberMe && <Check className="w-3 h-3 text-white" />}
                   </div>
                 </div>
                 <label htmlFor="remember-me" className="ml-2 text-sm !text-gray-600">
@@ -214,10 +189,10 @@ export default function Login() {
             {/* Login Button */}
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isSubmitting}
               className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium !text-white bg-[#666cff] hover:bg-[#5a5fe6] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#666cff] mb-7 transition-colors duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {isLoading ? (
+              {isSubmitting ? (
                 <span className="flex items-center justify-center">
                   <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
