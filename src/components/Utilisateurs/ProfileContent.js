@@ -1,5 +1,7 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 import axios from 'axios';
 import { APIURL, RESOURCE_URL } from '../../configs/api';
 import Image from 'next/image';
@@ -10,13 +12,14 @@ import { Edit } from "lucide-react";
 import LoadingSpin from "../LoadingSpin";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
+import SelectInput from '../SelectInput';
+import DateInput from '../DateInput';
 
 const ProfileContent = ({ userId }) => {
   const { user } = useAuth();
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [formData, setFormData] = useState({});
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isEditing, setIsEditing] = useState(
@@ -24,9 +27,87 @@ const ProfileContent = ({ userId }) => {
   );
   const accessToken = localStorage.getItem("accessToken");
   const { selectedSociete } = useSociete();
-const [previewUrl, setPreviewUrl] = useState('');
-const fileInputRef = useRef(null);
-const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState('');
+  const fileInputRef = useRef(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+
+  const validationSchema = Yup.object().shape({
+    name: Yup.string().required("Le nom est requis").min(3, "Le nom doit comporter au moins 3 caractères"),
+    prenom: Yup.string().required("Le prénom est requis").min(3, "Le prénom doit comporter au moins 3 caractères"),
+    email: Yup.string()
+      .trim()
+      .required("L'email est requis")
+      .max(254, "L'email ne doit pas dépasser 254 caractères")
+      .matches(
+        /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+        "Veuillez entrer une adresse email valide"
+      ),
+    phone: Yup.string()
+      .matches(/^[0-9]{10}$/, 'Le numéro doit contenir exactement 10 chiffres')
+      .required('Le téléphone est requis'),
+    cin: Yup.string().required('CIN est requis'),
+    cnss: Yup.string().required('Le numéro CNSS est requis'),
+    gender: Yup.string().required('Le genre est requis'),
+    fonction: Yup.string(),
+    date_embauche: Yup.date(),
+    solde_conge: Yup.number()
+  });
+
+  const formik = useFormik({
+    initialValues: {
+      name: "",
+      prenom: "",
+      email: "",
+      phone: "",
+      adresse: "",
+      gender: "",
+      role: "",
+      is_actif: "",
+      fonction: "",
+      date_embauche: "",
+      cin: "",
+      cnss: "",
+      solde_conge: "",
+    },
+    validationSchema,
+    onSubmit: async (values) => {
+      const formToSend = new FormData();
+
+      // Add all form values
+      for (const key in values) {
+        const value = values[key];
+        if (value !== undefined && value !== null && value !== '') {
+          formToSend.append(key, value);
+        }
+      }
+
+      // Add the image file if selected
+      if (selectedFile) {
+        formToSend.append('photo', selectedFile);
+      }
+
+      try {
+        await axios.post(`${APIURL.UTILISATEURS}/${userId}`, formToSend, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+
+        toast.success('Profile updated successfully!');
+        setIsEditing(false);
+
+        if (searchParams.get('edit')) {
+          router.push('/Utilisateurs');
+        }
+      } catch (error) {
+        toast.error('Failed to update profile. Please check your inputs.');
+        console.error(error);
+      }
+    },
+    validateOnChange: true,
+    validateOnBlur: false,
+  });
 
   useEffect(() => {
     if (!userId || !accessToken) {
@@ -42,7 +123,9 @@ const [selectedFile, setSelectedFile] = useState(null);
         });
         const data = response.data.user || response.data;
         setUserData(data);
-        setFormData({
+        
+        // Set Formik initial values
+        formik.setValues({
           name: data.name || "",
           prenom: data.prenom || "",
           email: data.email || "",
@@ -50,12 +133,12 @@ const [selectedFile, setSelectedFile] = useState(null);
           adresse: data.adresse || "",
           gender: data.gender || "",
           role: data.role || "",
-          is_actif: data.is_actif || "",
+          is_actif: data.is_actif?.toString() || "1",
           fonction: data.fonction || "",
           date_embauche: data.date_embauche || "",
           cin: data.cin || "",
           cnss: data.cnss || "",
-          solde_conge: data.solde_conge || "",
+          solde_conge: data.solde_conge?.toString() || "",
         });
       } catch (err) {
         if (err.response?.status === 401) {
@@ -71,72 +154,11 @@ const [selectedFile, setSelectedFile] = useState(null);
     fetchUser();
   }, [userId, accessToken]);
 
-  const handleProfileChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
- const handleProfileSubmit = async (e) => {
-  e.preventDefault();
-
-  const formToSend = new FormData();
-
-  // Ajouter toutes les valeurs de formData dans le FormData final
-  for (const key in formData) {
-    const value = formData[key];
-    if (value !== undefined && value !== null && value !== '') {
-      formToSend.append(key, value);
-    }
-  }
-
-  // Ajouter le fichier image si sélectionné
-  if (selectedFile) {
-    formToSend.append('photo', selectedFile);
-  }
-
-  try {
-    await axios.post(`${APIURL.UTILISATEURS}/${userId}`, formToSend, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-
-    toast.success('Profile updated successfully!');
-    setIsEditing(false);
-
-    if (searchParams.get('edit')) {
-      router.push('/Utilisateurs');
-    }
-  } catch (error) {
-    toast.error('Failed to update profile. Please check your inputs.');
-    console.error(error); // pour déboguer plus facilement
-  }
-};
-
-
-
   const resetForm = () => {
     if (searchParams.get("edit")) {
-      // Redirect back to user table if came from edit link
       router.push("/Utilisateurs");
     } else {
-      // Reset form if editing from profile view
-      setFormData({
-        name: userData.name,
-        prenom: userData.prenom,
-        email: userData.email,
-        phone: userData.phone,
-        adresse: userData.adresse,
-        gender: userData.gender,
-        role: userData.role,
-        is_actif: userData.is_actif,
-        fonction: userData.fonction,
-        date_embauche: userData.date_embauche,
-        cin: userData.cin,
-        cnss: userData.cnss,
-        solde_conge: userData.solde_conge,
-      });
+      formik.resetForm();
       setIsEditing(false);
     }
   };
@@ -148,12 +170,12 @@ const [selectedFile, setSelectedFile] = useState(null);
       </div>
     );
   if (error) return <div>{error}</div>;
-  if (!userData) return <div>No user data found.</div>;
+  if (!userData) return <div>Aucune donnée utilisateur trouvée.</div>;
 
   return (
     <div className="relative">
       {/* Background Image */}
-      <div className="w-full h-[22vh] relative">
+      <div className="w-full h-[20vh] relative">
         <Image
           src="/images/banners/background3.jpg"
           alt="Profile background"
@@ -164,46 +186,45 @@ const [selectedFile, setSelectedFile] = useState(null);
       </div>
 
       {/* Profile Avatar Section */}
-      <div className="flex items-center absolute top-[17vh] left-4 w-full pr-20">
+      <div className="flex items-center absolute top-[15vh] left-4 w-full pr-20">
         <div className="flex items-center flex-grow">
-<input
-  type="file"
-  accept="image/*"
-  className="hidden"
-  ref={fileInputRef}
-  onChange={(e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
-    }
-  }}
-/>
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            ref={fileInputRef}
+            onChange={(e) => {
+              const file = e.target.files[0];
+              if (file) {
+                setSelectedFile(file);
+                setPreviewUrl(URL.createObjectURL(file));
+              }
+            }}
+          />
 
           <div className='relative w-32 h-32 cursor-pointer'>
-          <img
-  src={
-    previewUrl
-      ? previewUrl
-      : userData.photo
-      ? `${RESOURCE_URL.DOCS}/${
-          userData.societe
-            ? userData.societe.raison_sociale_concatene
-            : user?.societe?.raison_sociale_concatene
-        }_${userData.societe_id || user.societe_id}/users/${userData.photo}`
-      : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
-  }
-  alt="User Avatar"
-  className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
-/>
+            <img
+              src={
+                previewUrl
+                  ? previewUrl
+                  : userData.photo
+                  ? `${RESOURCE_URL.DOCS}/${
+                      userData.societe
+                        ? userData.societe.raison_sociale_concatene
+                        : user?.societe?.raison_sociale_concatene
+                    }_${userData.societe_id || user.societe_id}/users/${userData.photo}`
+                  : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
+              }
+              alt="User Avatar"
+              className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+            />
 
             <div
-  className="absolute top-1 right-1 bg-white p-1 rounded-full shadow-md cursor-pointer"
-  onClick={() => fileInputRef.current?.click()} // 👈 CLIC SUR L’ICÔNE LANCE L’INPUT FILE
->
-  <Edit className="text-gray-600 text-lg" />
-</div>
-
+              className="absolute top-1 right-1 bg-white p-1 rounded-full shadow-md cursor-pointer"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Edit className="text-gray-600 text-lg" />
+            </div>
           </div>
           <div className="flex flex-col p-4 mt-8">
             <div className="font-bold text-2xl !text-gray-900">
@@ -246,123 +267,150 @@ const [selectedFile, setSelectedFile] = useState(null);
 
       {/* Profile Information Form */}
       <form
-        onSubmit={handleProfileSubmit}
-        className="flex flex-col px-4 ml-4 py-2"
+        onSubmit={formik.handleSubmit}
+        className="flex flex-col p-8 ml-4 py-2"
       >
         <div className="w-full grid grid-cols-1 md:grid-cols-1 xl:grid-cols-3 md:gap-8 xl:gap-x-16 xl:gap-y-4">
           <Input
             label="Nom:"
             name="name"
-            value={formData.name}
-            onChange={handleProfileChange}
+            value={formik.values.name}
+            onChange={(e) => {
+              formik.handleChange(e);
+              formik.setFieldTouched('name', true, false);
+            }}
             readOnly={!isEditing}
             required={isEditing}
+            error={(formik.touched.name || formik.submitCount > 0) ? formik.errors.name : null}
           />
           <Input
             label="Prénom:"
             name="prenom"
-            value={formData.prenom}
-            onChange={handleProfileChange}
+            value={formik.values.prenom}
+            onChange={(e) => {
+              formik.handleChange(e);
+              formik.setFieldTouched('prenom', true, false);
+            }}
             readOnly={!isEditing}
             required={isEditing}
+            error={(formik.touched.prenom || formik.submitCount > 0) ? formik.errors.prenom : null}
           />
           <Input
             label="Email:"
             name="email"
-            value={formData.email}
-            onChange={handleProfileChange}
+            value={formik.values.email}
+            onChange={(e) => {
+              formik.handleChange(e);
+              formik.setFieldTouched('email', true, false);
+            }}
             type="email"
             readOnly={!isEditing}
             required={isEditing}
+            error={(formik.touched.email || formik.submitCount > 0) ? formik.errors.email : null}
           />
           <Input
             label="Téléphone:"
             name="phone"
-            value={formData.phone}
-            onChange={handleProfileChange}
+            value={formik.values.phone}
+            onChange={(e) => {
+              const numericValue = e.target.value.replace(/[^0-9]/g, "");
+              formik.setFieldValue("phone", numericValue);
+              formik.setFieldTouched('phone', true, false);
+            }}
             type="tel"
             readOnly={!isEditing}
+            required={isEditing}
+            error={(formik.touched.phone || formik.submitCount > 0) ? formik.errors.phone : null}
           />
           <Input
             label="Adresse:"
             name="adresse"
-            value={formData.adresse}
-            onChange={handleProfileChange}
+            value={formik.values.adresse}
+            onChange={formik.handleChange}
             readOnly={!isEditing}
           />
           <Input
             label="Role:"
             name="role"
             value={
-              formData.role === 1
+              formik.values.role === 1
                 ? "Super Admin"
-                : formData.role === 2
+                : formik.values.role === 2
                 ? "Admin"
-                : formData.role === 3
+                : formik.values.role === 3
                 ? "Commercial"
                 : "Utilisateur"
             }
             readOnly
           />
-          <Input
-            label="Genre:"
+          <SelectInput
+            label="Genre"
             name="gender"
-            value={
-              formData.gender == 'homme'
-                ? "Homme"
-                : formData.gender == 'femme'
-                ? "Femme"
-                : ""
-            }
-            onChange={handleProfileChange}
+            options={[
+              { label: "Homme", value: "homme" },
+              { label: "Femme", value: "femme" }
+            ]}
+            value={formik.values.gender}
+            onChange={(value) => formik.setFieldValue("gender", value)}
             readOnly={!isEditing}
+            required={isEditing}
+            error={(formik.touched.gender || formik.submitCount > 0) ? formik.errors.gender : null}
           />
-          <Input
-            label="Is Actif:"
+          <SelectInput
+            label="Statut"
             name="is_actif"
-            value={
-              formData.is_actif == 1
-                ? "Oui"
-                : formData.is_actif == 2
-                ? "Non"
-                : ""
-            }
-            onChange={handleProfileChange}
+            options={[
+              { label: "Actif", value: "1" },
+              { label: "Inactif", value: "0" }
+            ]}
+            value={formik.values.is_actif}
+            onChange={(value) => formik.setFieldValue("is_actif", value)}
             readOnly={!isEditing}
           />
           <Input
             label="Fonction:"
             name="fonction"
-            value={formData.fonction}
-            onChange={handleProfileChange}
+            value={formik.values.fonction}
+            onChange={formik.handleChange}
             readOnly={!isEditing}
           />
-          <Input
+          <DateInput
             label="Date embauche:"
             name="date_embauche"
-            value={formData.date_embauche}
-            onChange={handleProfileChange}
+            value={formik.values.date_embauche}
+            onChange={(date) => formik.setFieldValue("date_embauche", date)}
             readOnly={!isEditing}
+            
           />
           <Input
             label="CIN:"
             name="cin"
-            value={formData.cin}
-            onChange={handleProfileChange}
+            value={formik.values.cin}
+            onChange={(e) => {
+              formik.handleChange(e);
+              formik.setFieldTouched('cin', true, false);
+            }}
             readOnly={!isEditing}
+            required={isEditing}
+            error={(formik.touched.cin || formik.submitCount > 0) ? formik.errors.cin : null}
           />
           <Input
             label="CNSS:"
             name="cnss"
-            value={formData.cnss}
-            onChange={handleProfileChange}
+            value={formik.values.cnss}
+            onChange={(e) => {
+              formik.handleChange(e);
+              formik.setFieldTouched('cnss', true, false);
+            }}
             readOnly={!isEditing}
+            required={isEditing}
+            error={(formik.touched.cnss || formik.submitCount > 0) ? formik.errors.cnss : null}
           />
           <Input
             label="Solde Congé:"
             name="solde_conge"
-            value={formData.solde_conge}
-            onChange={handleProfileChange}
+            value={formik.values.solde_conge}
+            onChange={formik.handleChange}
             type="number"
             readOnly={!isEditing}
           />

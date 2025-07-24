@@ -45,26 +45,46 @@ const Page = () => {
   };
 
   const validationSchema = Yup.object().shape({
-    name: Yup.string().required("Le nom est requis"),
-    prenom: Yup.string().required("Le prénom est requis"),
+    name: Yup.string().required("Le nom est requis").min(3, "Le nom doit comporter au moins 3 caractères"),
+    prenom: Yup.string().required("Le prénom est requis").min(3, "Le prénom doit comporter au moins 3 caractères"),
     email: Yup.string()
-      .trim()
-      .email("Email invalide")
-      .matches(
-        /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-        "Format d'email invalide"
-      )
-      .notOneOf(
-        ["test@test.com", "example@example.com"],
-        "Cet email est interdit"
-      )
-      .required("L'email est requis"),
+  .trim()
+  .required("L'email est requis")
+  .max(254, "L'email ne doit pas dépasser 254 caractères")
+  .matches(
+    /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+    "Veuillez entrer une adresse email valide"
+  )
+  .test(
+    'no-spaces',
+    "L'email ne doit pas contenir d'espaces",
+    (value) => !/\s/.test(value)
+  )
+  .test(
+    'valid-domain',
+    "Domaine email non valide",
+    (value) => {
+      if (!value) return true;
+      const domain = value.split('@')[1];
+      return domain && domain.includes('.');
+    }
+  )
+  .test(
+    'no-special-chars',
+    "L'email contient des caractères spéciaux non autorisés",
+    (value) => {
+      if (!value) return true;
+      return /^[a-zA-Z0-9._%+-@]+$/.test(value.split('@')[0]);
+    }
+  )
+  .lowercase(),
     role: Yup.string().required('Le rôle est requis'),
     gender: Yup.string().required('Le genre est requis'),
     phone: Yup.string()
-    .matches(/^[0-9]{10}$/, 'Le numéro doit contenir exactement 10 chiffres') // Match exactly 10 digits
+    .min(10, "Téléphone doit contenir au moins 10 caractères").max(15, "Téléphone ne doit pas dépasser 15 caractères")
     .required('Le téléphone est requis'),
     cin: Yup.string().required('CIN est requis'),
+    cnss: Yup.string().required('Le numéro CNSS est requis'),
     fonction: Yup.string(),
     date_embauche: Yup.date(),
     password: Yup.string()
@@ -72,8 +92,7 @@ const Page = () => {
       .required("Mot de passe requis"),
     // .matches(/^(?=.*[A-Z])/, '• Au moins une majuscule')
     // .matches(/^(?=.*[0-9])/, '• Au moins un chiffre')
-    // .matches(/^(?=.*[@$!%*?&])/, '• Au moins un caractère spécial')
-    //.required('Mot de passe requis'),
+    // .matches(/^(?=.*[@$!%*?&])/, '• Au moins un caractère spécial'),
     password_confirmation: Yup.string()
       .oneOf(
         [Yup.ref("password"), null],
@@ -137,9 +156,11 @@ const Page = () => {
         setLoading(false);
       }
     },
-    validateOnChange: false, // Disable validation on input changes
+    validateOnChange: true, // Enable validation on input changes
     validateOnBlur: false, // Disable validation on blur events
   });
+
+ 
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -158,7 +179,7 @@ const Page = () => {
   };
 
   return (
-    <div className="flex justify-center mt-2 bg-white h-[89vh] shadow-md rounded-lg p-4 overflow-auto">
+    <div className="flex justify-center mt-2 bg-white min-h-[89vh] shadow-md rounded-lg p-4 overflow-auto">
       <div className="flex flex-col gap-4 items-center w-full">
         <h1 className="text-2xl font-semibold mt-2">Ajouter un utilisateur</h1>
         <form
@@ -189,12 +210,43 @@ const Page = () => {
             </div>
           </div>
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-16 md:gap-y-3 gap-y-4 p-4 '>
-            <Input label='Nom :' type='text' name="name" value={formik.values.name} onChange={formik.handleChange} {...formik.getFieldProps('name')} error={formik.errors.name} />
-            <Input label='Prénom :' type='text' name="prenom" value={formik.values.prenom} onChange={formik.handleChange} {...formik.getFieldProps('prenom')} error={formik.errors.prenom}/>
-            <Input label='Email :' type='email' name="email" value={formik.values.email} onChange={formik.handleChange} {...formik.getFieldProps('email')} error={formik.errors.email}/>
-            <SelectInput 
-              label="Rôle" 
-
+            <Input 
+              label='Nom :' 
+              type='text' name="name"
+             value={formik.values.name}
+              onChange={(e) => {
+                formik.handleChange(e);
+                // Mark the field as touched when user types
+                formik.setFieldTouched('name', true, false);
+              }}
+              onBlur={formik.handleBlur}
+              error={(formik.touched.name || formik.submitCount > 0) ? formik.errors.name : null}
+               />
+            <Input 
+              label='Prénom :' 
+              type='text' name="prenom" 
+              value={formik.values.prenom} 
+              onChange={(e) => {
+                formik.handleChange(e);
+                formik.setFieldTouched('prenom', true, false);
+              }} onBlur={formik.handleBlur} 
+              error={(formik.touched.prenom || formik.submitCount > 0) ? formik.errors.prenom : null} 
+              />
+            <Input
+              label='Email :'
+              type='email'
+              name="email" 
+              placeholder={'exemple@gmail.com'}
+              value={formik.values.email}
+              onChange={(e) => {
+                formik.handleChange(e);
+                formik.setFieldTouched('email', true, false);
+              }}
+              onBlur={formik.handleBlur}
+              error={(formik.touched.email || formik.submitCount > 0) ? formik.errors.email : null}
+            />
+            <SelectInput
+              label="Rôle"
               name="role"
               placeholder="Sélectionnez un rôle"
               options={[
@@ -206,7 +258,9 @@ const Page = () => {
               ]}
               value={formik.values.role} // Directly link the value from Formik
               onChange={(value) => formik.setFieldValue("role", value)} // Handle change via setFieldValue
-              error={formik.errors.role} // Show validation error
+              onBlur={() => formik.setFieldTouched("role", true)}
+              error={(formik.touched.role || formik.submitCount > 0) ? formik.errors.role : null}
+              submitted={formik.submitCount > 0}
             />
 
             <SelectInput
@@ -219,6 +273,7 @@ const Page = () => {
               }))}
               value={formik.values.societe_id}
               onChange={(value) => formik.setFieldValue("societe_id", value)}
+              error={formik.errors.societe_id}
             />
             <SelectInput
               label="Genre"
@@ -230,7 +285,9 @@ const Page = () => {
               }))}
               value={formik.values.gender}
               onChange={(value) => formik.setFieldValue("gender", value)}
-              error={formik.errors.gender}
+              onBlur={() => formik.setFieldTouched("gender", true)}
+              error={(formik.touched.gender || formik.submitCount > 0) ? formik.errors.gender : null}
+              submitted={formik.submitCount > 0}
             />
 
             <Input
@@ -238,6 +295,7 @@ const Page = () => {
               type="text"
               name="phone"
               value={formik.values.phone}
+              placeholder={"Ex: 0612345678"}
               onChange={(e) => {
                 // Filter to allow only numbers
                 const numericValue = e.target.value.replace(/[^0-9]/g, "");
@@ -269,6 +327,7 @@ const Page = () => {
               value={formik.values.date_embauche} // Pass Formik's value
               onChange={(date) => formik.setFieldValue("date_embauche", date)} // Update Formik value
               error={formik.errors.date_embauche} // Pass validation error
+             
             />
             <SelectInput
               label="Niveau d'étude"
@@ -294,6 +353,7 @@ const Page = () => {
               name="cnss"
               value={formik.values.cnss}
               onChange={formik.handleChange}
+              error={formik.errors.cnss} 
             />
             <SelectInput
               label="Actif"

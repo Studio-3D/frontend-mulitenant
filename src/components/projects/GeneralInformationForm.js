@@ -24,10 +24,10 @@ export default function GeneralInformationForm({ state, setState, onNext, onBack
     <div className="bg-white p-6 rounded-md">
       {/* <h2 className="text-xl font-medium mb-6">Informations générales</h2> */}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
         {/* Left Column */}
         {/* Nom du projet */}
-        <div>
+        <div className="">
           <label className="block text-sm font-medium !text-gray-700 mb-1">
             Nom du projet <span className="text-red-500">*</span>
           </label>
@@ -203,7 +203,7 @@ export default function GeneralInformationForm({ state, setState, onNext, onBack
         </div>
       </div>
 
-      <div className="flex justify-between pt-5">
+      <div className="flex justify-between  p-6">
         <button
           type="button"
           onClick={onBack}

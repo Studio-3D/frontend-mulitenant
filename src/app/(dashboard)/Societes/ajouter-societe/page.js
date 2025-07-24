@@ -33,14 +33,14 @@ const Page = () => {
     },
     validationSchema: Yup.object({
       raison_sociale: Yup.string().required("Raison sociale est obligatoire"),
-      nom_contact: Yup.string().required("Nom est obligatoire"),
-      prenom_contact: Yup.string().required("Prénom est obligatoire"),
+      nom_contact: Yup.string().required("Nom est obligatoire").min(3, "Nom doit contenir au moins 3 caractères"),
+      prenom_contact: Yup.string().required("Prénom est obligatoire").min(3, "Prénom doit contenir au moins 3 caractères"),
       email: Yup.string().email("Email invalide").required("Email est obligatoire"),
-      //tel: Yup.string().required("Téléphone est obligatoire"),
-      //adresse: Yup.string().required("Adresse est obligatoire"),
-      //registre_commerce: Yup.number().required("Registre de commerce est obligatoire"),
-      //id_fiscal: Yup.number().required("ID Fiscal est obligatoire"),
-      //capital: Yup.number().required("Capital est obligatoire"),
+      tel: Yup.string().required("Téléphone est obligatoire").min(10, "Téléphone doit contenir au moins 10 caractères").max(15, "Téléphone ne doit pas dépasser 15 caractères"),
+      adresse: Yup.string().required("Adresse est obligatoire"),
+      registre_commerce: Yup.number().required("Registre de commerce est obligatoire"),
+      id_fiscal: Yup.number().required("ID Fiscal est obligatoire"),
+      capital: Yup.number().required("Capital est obligatoire"),
     }),
     onSubmit: async (values, { resetForm }) => {
       setLoading(true);
@@ -128,7 +128,7 @@ const Page = () => {
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               error={formik.touched.raison_sociale && formik.errors.raison_sociale}
-              required
+              
             />
             <Input
               label="Email"
@@ -138,7 +138,7 @@ const Page = () => {
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               error={formik.touched.email && formik.errors.email}
-              required
+              
             />
             <Input
               label="Nom"
@@ -148,7 +148,7 @@ const Page = () => {
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               error={formik.touched.nom_contact && formik.errors.nom_contact}
-              required
+              
             />
             <Input
               label="Prénom"
@@ -158,7 +158,7 @@ const Page = () => {
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               error={formik.touched.prenom_contact && formik.errors.prenom_contact}
-              required
+              
             />
             <Input
               label="Téléphone"
@@ -221,7 +221,7 @@ const Page = () => {
               className={`bg-[#2D8548] text-white font-medium rounded-lg px-6 py-2 ${
                 loading || !formik.dirty ? 'opacity-50 cursor-not-allowed' : ''
               }`}
-              disabled={loading || !formik.dirty}
+              
             >
               {loading ? 'Ajout en cours...' : 'Ajouter'}
             </button>

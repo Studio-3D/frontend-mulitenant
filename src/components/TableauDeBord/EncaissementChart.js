@@ -15,6 +15,23 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { 
+  format, 
+  isSameYear, 
+  isSameMonth, 
+  isSameDay, 
+  differenceInDays,
+  eachDayOfInterval,
+  eachWeekOfInterval,
+  eachMonthOfInterval,
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+  startOfYear,
+  endOfYear
+} from "date-fns";
+import { fr } from "date-fns/locale";
 
 const chartConfig = {
   encaissement: {
@@ -23,133 +40,132 @@ const chartConfig = {
   },
 };
 
-const rangeDescriptions = {
-  "aujourd'hui": "Affichage des encaissements pour aujourd'hui",
-  "cette semaine": "Affichage des encaissements pour cette semaine",
-  "ce mois": "Affichage des encaissements pour ce mois",
-  "cette année": "Affichage des encaissements pour cette année",
-  "dernière année": "Affichage des encaissements pour l'année dernière",
-};
-
 function parseDateWithoutTimezone(dateString) {
   const [year, month, day] = dateString.split('-');
   return new Date(year, month - 1, day);
 }
 
-export function EncaissementChart({ dateRange, data }) {
-  const { chartData, total } = useMemo(() => {
-    if (!data) return { chartData: [], total: 0 };
+export function EncaissementChart({ startDate, endDate, data }) {
+  const { chartData, total, description } = useMemo(() => {
+    if (!data) return { chartData: [], total: 0, description: "Affichage des encaissements" };
 
-    const today = new Date();
-    let startDate = new Date();
-    let endDate = new Date();
-
-    switch (dateRange) {
-      case "aujourd'hui":
-        startDate.setHours(0, 0, 0, 0);
-        endDate.setHours(23, 59, 59, 999);
-        break;
-      case "cette semaine":
-        startDate.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1));
-        endDate.setDate(startDate.getDate() + 6);
-        break;
-      case "ce mois":
-        startDate = new Date(today.getFullYear(), today.getMonth(), 1);
-        endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-        break;
-      case "cette année":
-        startDate = new Date(today.getFullYear(), 0, 1);
-        endDate = new Date(today.getFullYear(), 11, 31);
-        break;
-      case "dernière année":
-        startDate = new Date(today.getFullYear() - 1, 0, 1);
-        endDate = new Date(today.getFullYear() - 1, 11, 31);
-        break;
-      default:
-        startDate.setHours(0, 0, 0, 0);
-        endDate.setHours(23, 59, 59, 999);
-    }
-
-    // For monthly view
-    if (dateRange === "ce mois") {
-      const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
-      const monthlyData = Array.from({ length: daysInMonth }, (_, i) => {
-        const day = i + 1;
-        const dateKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        
-        // Find matching data entry (using timezone-insensitive comparison)
-        const matchingEntry = data.find(([dateStr]) => {
-          const apiDate = parseDateWithoutTimezone(dateStr);
-          return (
-            apiDate.getFullYear() === today.getFullYear() &&
-            apiDate.getMonth() === today.getMonth() &&
-            apiDate.getDate() === day
-          );
-        });
-        
-        return {
-          name: day.toString(),
-          amount: matchingEntry ? matchingEntry[1] : 0,
-          fullDate: new Date(today.getFullYear(), today.getMonth(), day).toLocaleDateString('fr-FR')
-        };
-      });
-
-      return {
-        chartData: monthlyData,
-        total: monthlyData.reduce((sum, item) => sum + item.amount, 0)
-      };
-    }
-
-    // For yearly view
-    if (dateRange === "cette année" || dateRange === "dernière année") {
-      const year = dateRange === "cette année" ? today.getFullYear() : today.getFullYear() - 1;
-      const monthlyData = Array.from({ length: 12 }, (_, month) => {
-        // Filter data for this specific month
-        const monthData = data.filter(([dateStr]) => {
-          const apiDate = parseDateWithoutTimezone(dateStr);
-          return apiDate.getFullYear() === year && apiDate.getMonth() === month;
-        });
-        
-        const monthTotal = monthData.reduce((sum, [, amount]) => sum + amount, 0);
-        
-        return {
-          name: new Date(year, month, 1).toLocaleDateString('fr-FR', { month: 'short' }),
-          amount: monthTotal,
-          fullDate: new Date(year, month, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
-        };
-      });
-
-      return {
-        chartData: monthlyData,
-        total: monthlyData.reduce((sum, item) => sum + item.amount, 0)
-      };
-    }
-
-    // For other date ranges (day, week)
-    const formattedData = data.map(([dateStr, amount]) => {
+    // Create a map of the data for easy lookup
+    const dataMap = new Map();
+    data.forEach(([dateStr, amount]) => {
       const date = parseDateWithoutTimezone(dateStr);
-      return {
-        name: formatDailyDisplay(date, dateRange),
-        amount,
-        fullDate: date.toLocaleDateString('fr-FR')
-      };
+      const dateKey = format(date, 'yyyy-MM-dd');
+      dataMap.set(dateKey, amount);
     });
 
-    const totalAmount = formattedData.reduce((sum, item) => sum + item.amount, 0);
+    // Determine the appropriate grouping based on date range
+    let groupBy = 'day';
+    let rangeDescription;
+    
+    if (isSameDay(startDate, endDate)) {
+      groupBy = 'day';
+      rangeDescription = `Affichage des encaissements pour le ${format(startDate, 'd MMMM yyyy', { locale: fr })}`;
+    } else if (differenceInDays(endDate, startDate) <= 7) {
+      groupBy = 'day';
+      rangeDescription = `Affichage des encaissements pour cette semaine du ${format(startDate, 'd MMMM', { locale: fr })} au ${format(endDate, 'd MMMM yyyy', { locale: fr })}`;
+    } else if (isSameMonth(startDate, endDate)) {
+      groupBy = 'day';
+      rangeDescription = `Affichage des encaissements pour ${format(startDate, 'MMMM yyyy', { locale: fr })}`;
+    } else if (isSameYear(startDate, endDate)) {
+      groupBy = 'month';
+      rangeDescription = `Affichage des encaissements pour ${format(startDate, 'yyyy', { locale: fr })}`;
+    } else {
+      groupBy = 'month';
+      rangeDescription = `Affichage des encaissements du ${format(startDate, 'd MMMM yyyy', { locale: fr })} au ${format(endDate, 'd MMMM yyyy', { locale: fr })}`;
+    }
+
+    let processedData = [];
+    let totalAmount = 0;
+
+    if (groupBy === 'month') {
+      // Generate all months in the range
+      const months = eachMonthOfInterval({
+        start: startOfYear(startDate),
+        end: endOfYear(endDate)
+      });
+
+      processedData = months.map(month => {
+        const monthStart = startOfMonth(month);
+        const monthEnd = endOfMonth(month);
+        const monthKey = format(month, 'yyyy-MM');
+        
+        // Sum all data points within this month
+        let amount = 0;
+        data.forEach(([dateStr, value]) => {
+          const date = parseDateWithoutTimezone(dateStr);
+          if (date >= monthStart && date <= monthEnd) {
+            amount += value;
+          }
+        });
+
+        totalAmount += amount;
+
+        return {
+          name: format(month, 'MMM', { locale: fr }),
+          amount,
+          fullDate: format(month, 'MMMM yyyy', { locale: fr })
+        };
+      });
+    } 
+    else if (groupBy === 'week') {
+      // Generate all weeks in the range
+      const weeks = eachWeekOfInterval({
+        start: startDate,
+        end: endDate
+      }, { weekStartsOn: 1 });
+
+      processedData = weeks.map(weekStart => {
+        const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
+        const weekKey = format(weekStart, 'yyyy-ww');
+        
+        // Sum all data points within this week
+        let amount = 0;
+        data.forEach(([dateStr, value]) => {
+          const date = parseDateWithoutTimezone(dateStr);
+          if (date >= weekStart && date <= weekEnd) {
+            amount += value;
+          }
+        });
+
+        totalAmount += amount;
+
+        return {
+          name: `S${format(weekStart, 'ww')}`,
+          amount,
+          fullDate: `${format(weekStart, 'd MMM', { locale: fr })} - ${format(weekEnd, 'd MMM yyyy', { locale: fr })}`
+        };
+      });
+    }
+    else {
+      // Generate all days in the range
+      const days = eachDayOfInterval({
+        start: startDate,
+        end: endDate
+      });
+
+      processedData = days.map(day => {
+        const dayKey = format(day, 'yyyy-MM-dd');
+        const amount = dataMap.get(dayKey) || 0;
+        totalAmount += amount;
+
+        return {
+          name: format(day, 'd', { locale: fr }),
+          amount,
+          fullDate: format(day, 'EEEE d MMMM yyyy', { locale: fr })
+        };
+      });
+    }
 
     return {
-      chartData: formattedData,
-      total: totalAmount
+      chartData: processedData,
+      total: totalAmount,
+      description: rangeDescription
     };
-  }, [data, dateRange]);
-
-  function formatDailyDisplay(date, range) {
-    const d = new Date(date);
-    if (range === "cette semaine") return d.toLocaleDateString('fr-FR', { weekday: 'short' });
-    return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
-  }
-
-  const description = rangeDescriptions[dateRange] || "Affichage des encaissements";
+  }, [data, startDate, endDate]);
 
   return (
     <Card className="border-none shadow-none">
