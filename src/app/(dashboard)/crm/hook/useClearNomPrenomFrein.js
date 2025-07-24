@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function useClearProspect() {
+export default function useClearNomPrenomFrein() {
   /* Removes selectedProspect when navigating to another route ✅ Removes selectedProspect when refreshing the page ✅ Removes selectedProspect when the VisiteForm component unmounts*/
 
   const router = useRouter();
@@ -11,7 +11,7 @@ export default function useClearProspect() {
   useEffect(() => {
     // Function to clear localStorage
     const clearProspect = () => {
-      localStorage.removeItem('selectedProspect');
+      localStorage.removeItem('nom_prenom_frein');
     };
 
     // Clear localStorage on page reload

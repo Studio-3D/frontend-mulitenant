@@ -26,7 +26,7 @@ const AppelDetails = () => {
   };
 
   const tabs = [
-    { id: 'journaux', label: 'Journal des Appels', icon: '📜' },
+    { id: 'journaux', label: 'Journal des Appels', icon: '' },
   ];
 
   useEffect(() => {
@@ -167,7 +167,7 @@ const AppelDetails = () => {
               <div className="p-6">
                 {activeTab === 'journaux' && (
                   <div className="min-h-[400px]">
-                    <JournalTable id={appelDetails.id} />
+                    <JournalTable id={appelDetails.id} prospect={appelDetails.prospect} />
                   </div>
                 )}
               </div>

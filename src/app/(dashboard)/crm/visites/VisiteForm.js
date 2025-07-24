@@ -66,7 +66,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
 
   //  const { selectedProjet } = useProjet();
   const selectedProjet =
-    JSON.parse(localStorage.getItem('selectedProjet')) || 1;
+    JSON.parse(localStorage.getItem('selectedProjet')) ;
   const [backendErrors, setBackendErrors] = useState({});
   const [sources, setSources] = useState([]);
   const [partenaires, setPartenaires] = useState([]);
@@ -122,7 +122,6 @@ const VisiteForm = ({ prospect_id, origin }) => {
     }
   };
   const [check_save_perdu, setCheck_save_perdu] = useState(false);
-
   const isOrigin = !!origin;
   const [partenaire_txt, setPartenaire_txt] = useState(
     selectedPerson?.partenaire?.description
@@ -731,7 +730,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
             message = `La visite a été créée
              avec succès`;
             toast.success(message);
-            // router.push(ENDPOINTS.VISITES);
+             router.push(ENDPOINTS.VISITES);
             localStorage.removeItem('selectedProspect');
             localStorage.removeItem('selectedClient');
             reset(defaultValues);
@@ -1805,7 +1804,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                         partenaires={partenaires}
                         handlePartenaireChange={handlePartenaireChange}
                         disabled_var={disabled_var}
-                        selectedPerson={selectedPerson}
+                        source_d={watch('source_id')}
                         disabled_var_source={disabled_var_source}
                         partenaire_txt={partenaire_txt}
                         handleChange_event={handleChange_event}
@@ -2247,25 +2246,21 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                       type="number"
                                       required
                                       value={x.avance_res}
+                                       error={
+                                          x.avance_res != '' &&
+                                          x.avance_res == 0 &&
+                                          user?.role > 2
+                                            ? 'Le montant ne peut pas être 0 pour votre rôle'
+                                            : x.avance_res > 0 &&
+                                              x.avance_res < x.avance_minimale
+                                            ? `Le montant doit être au moins ${x.avance_minimale}`
+                                            : null
+                                        }
                                       onChange={(e) =>
                                         handleinputchange_bien_vendu(e, j)
                                       }
                                     />
-                                    {x.avance_res != '' &&
-                                      x.avance_res == 0 &&
-                                      user?.role > 2 && (
-                                        <strong style={{ color: 'red' }}>
-                                          Le montant ne peut pas être 0 pour
-                                          votre rôle
-                                        </strong>
-                                      )}
-                                    {x.avance_res > 0 &&
-                                      x.avance_res < x.avance_minimale && (
-                                        <strong style={{ color: 'red' }}>
-                                          Le montant doit être au moins{' '}
-                                          {x.avance_minimale}
-                                        </strong>
-                                      )}
+                                    
                                     <AutocompleteStatut_ModeRelance_Biens
                                       name={'mode_financement'}
                                       label={'Mode Financement:'}
@@ -2830,32 +2825,26 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                         value={x.reste}
                                         disabled
                                       />
-                                      
                                       <InputField_Biens
                                         label="Montant:"
                                         name="avance_res"
                                         type="number"
                                         required
                                         value={x.avance_res}
+                                        error={
+                                          x.avance_res != '' &&
+                                          x.avance_res == 0 &&
+                                          user?.role > 2
+                                            ? 'Le montant ne peut pas être 0 pour votre rôle'
+                                            : x.avance_res > 0 &&
+                                              x.avance_res < x.avance_minimale
+                                            ? `Le montant doit être au moins ${x.avance_minimale}`
+                                            : null
+                                        }
                                         onChange={(e) =>
                                           handleinputchange(e, i)
                                         }
                                       />
-                                      {x.avance_res != '' &&
-                                        x.avance_res == 0 &&
-                                        user?.role > 2 && (
-                                          <p style={{ color: 'red' }}>
-                                            Le montant ne peut pas être 0 pour
-                                            votre rôle
-                                          </p>
-                                        )}
-                                      {x.avance_res > 0 &&
-                                        x.avance_res < x.avance_minimale && (
-                                          <p style={{ color: 'red' }}>
-                                            Le montant doit être au moins{' '}
-                                            {x.avance_minimale}
-                                          </p>
-                                        )}
                                       <AutocompleteStatut_ModeRelance_Biens
                                         name={'mode_financement'}
                                         label={'Mode Financement:'}

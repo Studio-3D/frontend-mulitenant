@@ -600,7 +600,7 @@ const calculate_age = (dobString) => {
             htmlFor="notifie"
             className="ml-2 font-medium text-gray-700 select-none"
           >
-            Accepte d'être contacté:
+            Accepte {'d\''}être contacté:
           </label>
         </div>
         </div>
