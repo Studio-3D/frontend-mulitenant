@@ -16,10 +16,7 @@ import {
 } from '@/configs/enum';
 import { useRouter } from 'next/navigation';
 
-import {
-  
-  fetchDataByProjet,
-} from '../../../../../../../src/configs/api-utils';
+import { fetchDataByProjet } from '../../../../../../../src/configs/api-utils';
 import AutocompleteMultiple from '@/components/AutocompleteMultiple';
 import Pusher from 'pusher-js';
 import BienAutocomplete from './BienAutocomplete';
@@ -37,7 +34,6 @@ export default function Modal_Traite_Frein({ onClose, id, biens }) {
   const list_etages = [];
   const [list_biens_clickable] = useState([]);
 
- 
   const [type_freins, setType_freins] = useState([]);
   const [list_typologies, setListTyplogies] = useState([]);
   const [list_vues, setList_Vues] = useState([]);
@@ -200,8 +196,8 @@ export default function Modal_Traite_Frein({ onClose, id, biens }) {
         if (res.status === 200) {
           toast.success(`Frein Traité avec succès`);
           onClose();
-          localStorage.setItem('nom_prenom_frein', null);
-          router.push('/crm/visites/freins')
+          localStorage.removeItem('nom_prenom_frein');
+          // router.push('/crm/visites/freins')
         }
       })
       .catch((error) => {
@@ -250,9 +246,9 @@ export default function Modal_Traite_Frein({ onClose, id, biens }) {
                 {...field}
                 id={name}
                 name={name}
-                className={`block ${width} ${height} px-3 py-2 mt-1 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
-                  errors[name] ? 'border-red-500' : ''
-                }`}
+                className={`block ${width} ${height} px-3 py-2 border border-gray-300 rounded-md focus:outline-none hover:border-gray-500 focus:border-gray-500 ${
+                  disabled ? 'bg-gray-100 cursor-not-allowed' : ''
+                } ${errors?.[name] ? 'border-red-500' : ''}`}
                 disabled={disabled}
                 required={required}
                 value={field.value || ''}
@@ -264,9 +260,9 @@ export default function Modal_Traite_Frein({ onClose, id, biens }) {
                 id={name}
                 name={name}
                 type={type}
-                className={`block ${width} ${height} px-3 py-2 mt-1 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
-                  errors[name] ? 'border-red-500' : ''
-                }`}
+                className={`block ${width} ${height} px-3 py-2 border border-gray-300 rounded-md focus:outline-none hover:border-gray-500 focus:border-gray-500 ${
+                  disabled ? 'bg-gray-100 cursor-not-allowed' : ''
+                } ${errors?.[name] ? 'border-red-500' : ''}`}
                 required={required}
                 disabled={disabled}
                 value={field.value || ''}
@@ -389,7 +385,6 @@ export default function Modal_Traite_Frein({ onClose, id, biens }) {
     label: ORIENTATIONS[key].label,
     description: ORIENTATIONS[key].description,
   }));
- 
 
   const storebien_en_proposition = async (id) => {
     var old_id = bien_id;
@@ -768,13 +763,6 @@ export default function Modal_Traite_Frein({ onClose, id, biens }) {
               {watch('frein').includes('prix') && (
                 <>
                   <div>
-                    {info_prix != null && (
-                      <div className="w-full">
-                        <div className="bg-[rgba(253,181,40,0.12)] border-l-4 border-yellow-500 text-[rgb(227,162,36)] p-4 text-center rounded">
-                          {info_prix}
-                        </div>
-                      </div>
-                    )}
                     <div style={{ display: 'flex', gap: '1rem' }}>
                       <TextField
                         label="Prix Min:"
@@ -787,6 +775,11 @@ export default function Modal_Traite_Frein({ onClose, id, biens }) {
                         onChange={handlePrixChange(1)}
                         required={watch('frein')?.includes('prix')}
                       />
+                      {info_prix != null && (
+                        <div className="text-red-500 text-sm mt-1">
+                          {info_prix}
+                        </div>
+                      )}
                       <TextField
                         label="Prix Max:"
                         name="prix_max"
@@ -805,13 +798,6 @@ export default function Modal_Traite_Frein({ onClose, id, biens }) {
               {watch('frein').includes('superficie') && (
                 <>
                   <div>
-                    {info_sup != null && (
-                      <div className="w-full">
-                        <div className="bg-blue-100 !text-blue-700 p-3 rounded-md border-l-4 border-blue-500 p-4 text-center rounded">
-                          {info_sup}
-                        </div>
-                      </div>
-                    )}
                     <div style={{ display: 'flex', gap: '1rem' }}>
                       <TextField
                         label="Sup Min:"
@@ -824,6 +810,11 @@ export default function Modal_Traite_Frein({ onClose, id, biens }) {
                         onChange={handlePrixChange(2)}
                         required={watch('frein')?.includes('superficie')}
                       />
+                      {info_sup != null && (
+                        <div className="text-red-500 text-sm mt-1">
+                          {info_sup}
+                        </div>
+                      )}
                       <TextField
                         label="Sup Max:"
                         name="sup_max"

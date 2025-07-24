@@ -374,7 +374,7 @@ const AppelsTable = ({ dataClient }) => {
                   }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-                <SelectInput
+                {/*<SelectInput
                   value={tempFilters.interet}
                   onChange={(value) => handleFilterChange('interet', value)}
                   options={Object.values(VISITE_INTERETS).map((data) => ({
@@ -383,7 +383,7 @@ const AppelsTable = ({ dataClient }) => {
                   }))}
                   label="Choisir un Intéret"
                   className="h-10 text-sm w-full"
-                />
+                />*/}
               </div>
 
               {/* Boutons */}

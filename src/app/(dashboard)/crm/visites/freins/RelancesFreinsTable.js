@@ -85,8 +85,9 @@ const RelancesFreinsTable = () => {
 
     return () => clearTimeout(timer); // Clean up the timeout on each render
   }, [searchTerm]);
-  const handleShow = (visiteId) => {
-    window.open(`/crm/visites/${visiteId}`, '_blank');
+  const handleShow = (origin_id,visite_id) => {
+    localStorage.setItem('v_id_cadre',visite_id);
+    window.open(`/crm/visites/${origin_id}`, '_blank');
   };
   const handle_Bien = (frId, nom_prenom) => {
     localStorage.setItem('nom_prenom_frein', nom_prenom);
@@ -107,6 +108,7 @@ const RelancesFreinsTable = () => {
               ? ' / ' + pro.telephone_2
               : '') || 'Non spécifié',
         frein_id_origin: pro.id_origin,
+        visiteId:pro.visite_id
       };
     });
   };
@@ -146,7 +148,7 @@ const RelancesFreinsTable = () => {
             <Eye
               className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
               title="Voir détails"
-              onClick={() => handleShow(row.frein_id_origin)}
+              onClick={() => handleShow(row.frein_id_origin,row.visiteId)}
             />
           </div>
           <div title="Traiter les Biens Disponibles">
@@ -221,17 +223,17 @@ const RelancesFreinsTable = () => {
                 }}
               >
                 {/* Champs de recherche */}
-                <input
-                  type={tempFilters.date ? 'date' : 'text'}
-                  placeholder="Date"
+
+                <Input
+                  type="date"
+                  label="Date"
                   value={tempFilters.date}
-                  onFocus={(e) => (e.target.type = 'date')}
                   onChange={(e) => handleFilterChange('date', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
                 <Input
                   type="text"
-                  placeholder="Nom & Prénom"
+                  label="Nom Complet"
                   value={tempFilters.nom_prenom}
                   onChange={(e) =>
                     handleFilterChange('nom_prenom', e.target.value)
@@ -240,7 +242,7 @@ const RelancesFreinsTable = () => {
                 />
                 <Input
                   type="number"
-                  placeholder="Téléphone"
+                  label="Téléphone"
                   value={tempFilters.telephone}
                   onChange={(e) =>
                     handleFilterChange('telephone', e.target.value)
@@ -249,7 +251,7 @@ const RelancesFreinsTable = () => {
                 />
                 <Input
                   type="text"
-                  placeholder="frein"
+                  label="frein"
                   value={tempFilters.frein}
                   onChange={(e) => handleFilterChange('frein', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"

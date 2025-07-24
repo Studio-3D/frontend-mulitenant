@@ -96,7 +96,6 @@ const PreReservationTable = () => {
       window.open(`/crm/appels/${data.t_appel.appel.id}`);
     } else if (data.visite_id) {
       localStorage.setItem('v_id_cadre', data.visite.related_show_id);
-      localStorage.setItem('v_id_org', data.visite.origin_id);
       window.open(`/crm/visites/${data.visite.origin_id}`);
     }
   };

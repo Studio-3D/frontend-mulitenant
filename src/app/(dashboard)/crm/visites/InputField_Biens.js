@@ -75,8 +75,9 @@ const InputField_Biens = ({
       )}
       {/* Error message display */}
       {error && (
-        <p className="mt-1 text-sm text-red-600">{error}</p>
+        <p className="mt-1 text-sm text-red-500">{error}</p>
       )}
     </div>
   );
 };
+export default InputField_Biens;
