@@ -4,40 +4,22 @@ import { useState, useEffect, useRef } from 'react';
 import { Bell, Check, CheckCheck, Eye, RefreshCw, Calendar, Home, AlertTriangle, Clock, CheckCircle, ThumbsUp, MessageCircle, Share } from 'lucide-react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
+import { useNotifications } from '../context/NotificationContext';
 
-const NotificationDropdown = ({ notifications, newNotificationsCount, onFetchNotifications }) => {
+const NotificationDropdown = ({ isLoadingNotifications: propLoading }) => {
+  const {
+    notifications,
+    newNotificationsCount,
+    isLoadingNotifications,
+    seenNotifications,
+    fetchNotifications,
+    markAsSeen,
+    markAllAsSeen,
+    isNotificationSeen
+  } = useNotifications();
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
-  const [seenNotifications, setSeenNotifications] = useState(new Set());
   const dropdownRef = useRef(null);
   const router = useRouter();
-
-  // Load seen notifications from backend on mount
-  useEffect(() => {
-    fetchSeenNotifications();
-  }, []);
-
-  const fetchSeenNotifications = async () => {
-    try {
-      const accessToken = localStorage.getItem('accessToken');
-      const selectedProject = JSON.parse(localStorage.getItem('selectedProjet'));
-      
-      if (!accessToken || !selectedProject) return;
-
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/get_seen_notifications/${selectedProject.id}`,
-        {
-          headers: { Authorization: `Bearer ${accessToken}` }
-        }
-      );
-      
-      if (response.data.seen_notifications) {
-        setSeenNotifications(new Set(response.data.seen_notifications));
-      }
-    } catch (error) {
-      console.error('Error fetching seen notifications:', error);
-    }
-  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -74,7 +56,7 @@ const NotificationDropdown = ({ notifications, newNotificationsCount, onFetchNot
     })
       .then(() => {
         console.log('Notification marked as read');
-        onFetchNotifications();
+        fetchNotifications();
         if (notification.url) {
           window.open(notification.url, '_blank');
         }
@@ -82,60 +64,6 @@ const NotificationDropdown = ({ notifications, newNotificationsCount, onFetchNot
       .catch(() => {
         console.log('Failed to mark notification as read');
       });
-  };
-
-  const markAsSeen = async (notificationId) => {
-    try {
-      const accessToken = localStorage.getItem('accessToken');
-      const selectedProject = JSON.parse(localStorage.getItem('selectedProjet'));
-      
-      // Update local state immediately
-      setSeenNotifications(prev => new Set([...prev, notificationId]));
-      
-      // Save to backend
-      await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/mark_notification_seen`,
-        {
-          notification_id: notificationId,
-          projet_id: selectedProject.id
-        },
-        {
-          headers: { Authorization: `Bearer ${accessToken}` }
-        }
-      );
-    } catch (error) {
-      console.error('Error marking notification as seen:', error);
-    }
-  };
-
-  const markAllAsSeen = async () => {
-    try {
-      const accessToken = localStorage.getItem('accessToken');
-      const selectedProject = JSON.parse(localStorage.getItem('selectedProjet'));
-      
-      const allNotificationIds = notifications.map(notif => notif.id);
-      
-      // Update local state immediately
-      setSeenNotifications(prev => new Set([...prev, ...allNotificationIds]));
-      
-      // Save to backend
-      await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/mark_all_notifications_seen`,
-        {
-          notification_ids: allNotificationIds,
-          projet_id: selectedProject.id
-        },
-        {
-          headers: { Authorization: `Bearer ${accessToken}` }
-        }
-      );
-    } catch (error) {
-      console.error('Error marking all notifications as seen:', error);
-    }
-  };
-
-  const isNotificationSeen = (notificationId) => {
-    return seenNotifications.has(notificationId);
   };
 
   const handleViewAllNotifications = () => {
