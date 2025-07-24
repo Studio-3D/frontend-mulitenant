@@ -7,6 +7,7 @@ import axios from "axios";
 import { APIURL } from "@/configs/api";
 import { Box, SaveIcon, AlertCircleIcon, Loader, Trash2, Plus, CheckCircle, Settings, Globe } from "lucide-react";
 import toast from "react-hot-toast";
+import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
 
 export default function InstagramConfigTab() {
   const { user } = useAuth();
@@ -24,6 +25,12 @@ export default function InstagramConfigTab() {
   });
   const [webhookConfig, setWebhookConfig] = useState({
     webhook_verify_token: "",
+  });
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    type: null, // 'configuration' or 'webhook'
+    itemId: null,
+    itemLabel: ''
   });
 
   // Fetch existing Instagram configurations and webhooks
@@ -123,47 +130,7 @@ export default function InstagramConfigTab() {
     }
   };
 
-  // Delete Instagram configuration
-  const handleDeleteConfiguration = async (configId) => {
-    if (!window.confirm("Êtes-vous sûr de vouloir supprimer cette configuration?")) {
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem("accessToken");
-      await axios.delete(`${APIURL.ROOTV1}/instagram-configurations/${configId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      
-      toast.success("Configuration supprimée avec succès");
-      
-      // Refresh configurations list
-      setConfigurations(prev => prev.filter(config => config.id !== configId));
-      
-    } catch (error) {
-      console.error("Error deleting Instagram configuration:", error);
-      toast.error("Erreur lors de la suppression de la configuration");
-    }
-  };
-
-  // Verify Instagram configuration
-  const verifyInstagramConfiguration = async () => {
-    if (instagramConfig.instagram_id && instagramConfig.acces_token_user) {
-      try {
-        const instaResponse = await axios.get(
-          `https://graph.facebook.com/v18.0/${instagramConfig.instagram_id}?access_token=${instagramConfig.acces_token_user}`
-        );
-        if (instaResponse.data && instaResponse.data.id) {
-          toast.success("✅ Configuration Instagram vérifiée");
-        }
-      } catch (error) {
-        console.error("Instagram verification failed:", error);
-        toast.error("❌ Erreur de configuration Instagram: Token invalide ou compte inaccessible");
-      }
-    }
-  };
-
-  // Save webhook configuration
+  // Save webhook configuration - webhook starts disabled by default
   const handleSaveWebhook = async (configId) => {
     try {
       setSaving(true);
@@ -199,26 +166,107 @@ export default function InstagramConfigTab() {
     }
   };
 
-  // Delete webhook configuration
-  const handleDeleteWebhook = async (configId) => {
-    if (!window.confirm("Êtes-vous sûr de vouloir supprimer ce webhook?")) {
-      return;
+  // Verify Instagram configuration
+  const verifyInstagramConfiguration = async () => {
+    if (instagramConfig.instagram_id && instagramConfig.acces_token_user) {
+      try {
+        const instaResponse = await axios.get(
+          `https://graph.facebook.com/v18.0/${instagramConfig.instagram_id}?access_token=${instagramConfig.acces_token_user}`
+        );
+        if (instaResponse.data && instaResponse.data.id) {
+          toast.success("✅ Configuration Instagram vérifiée");
+        }
+      } catch (error) {
+        console.error("Instagram verification failed:", error);
+        toast.error("❌ Erreur de configuration Instagram: Token invalide ou compte inaccessible");
+      }
     }
+  };
 
+  // Toggle webhook enable/disable - let backend handle Instagram subscription
+  const handleToggleWebhook = async (configId, currentStatus) => {
     try {
       const token = localStorage.getItem("accessToken");
-      await axios.delete(`${APIURL.ROOTV1}/instagram-configurations/${configId}/webhook`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const newStatus = !currentStatus;
       
-      toast.success("Webhook supprimé avec succès");
+      // Send request to backend to toggle webhook and handle Instagram subscription
+      await axios.put(
+        `${APIURL.ROOTV1}/instagram-configurations/${configId}/webhook/toggle`,
+        { webhook_enabled: newStatus },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       
-      // Refresh webhooks list
+      const statusText = newStatus ? 'activé' : 'désactivé';
+      toast.success(`Webhook ${statusText} avec succès`);
+      
+      // Update local state
+      setWebhooks(prev => prev.map(webhook => 
+        webhook.id === configId 
+          ? { ...webhook, webhook_enabled: newStatus }
+          : webhook
+      ));
+      
+    } catch (error) {
+      console.error("Error toggling webhook:", error);
+      
+      // Handle specific error messages from backend
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("Erreur lors de la modification du webhook");
+      }
+    }
+  };
+
+  // Delete Instagram configuration
+  const handleDeleteConfiguration = async (configId) => {
+    const config = configurations.find(c => c.id === configId);
+    setDeleteModal({
+      isOpen: true,
+      type: 'configuration',
+      itemId: configId,
+      itemLabel: `Configuration Instagram pour ${config?.projet?.nom || 'Projet supprimé'}`
+    });
+  };
+
+  // Delete webhook configuration
+  const handleDeleteWebhook = async (configId) => {
+    const config = configurations.find(c => c.id === configId);
+    setDeleteModal({
+      isOpen: true,
+      type: 'webhook',
+      itemId: configId,
+      itemLabel: `Webhook pour ${config?.projet?.nom || 'Projet supprimé'}`
+    });
+  };
+
+  // Handle delete confirmation
+  const handleDeleteConfirmed = async () => {
+    const { type, itemId } = deleteModal;
+    
+    try {
+      const token = localStorage.getItem("accessToken");
+      
+      if (type === 'configuration') {
+        await axios.delete(`${APIURL.ROOTV1}/instagram-configurations/${itemId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        toast.success("Configuration supprimée avec succès");
+      } else if (type === 'webhook') {
+        await axios.delete(`${APIURL.ROOTV1}/instagram-configurations/${itemId}/webhook`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        toast.success("Webhook supprimé avec succès");
+      }
+      
+      // Refresh data
       window.location.reload();
       
     } catch (error) {
-      console.error("Error deleting webhook:", error);
-      toast.error("Erreur lors de la suppression du webhook");
+      console.error("Error deleting:", error);
+      toast.error("Erreur lors de la suppression");
     }
   };
 
@@ -341,10 +389,52 @@ export default function InstagramConfigTab() {
                               <p className="text-gray-600 mt-1 break-all">{webhook.webhook_url}</p>
                             </div>
                             <div>
-                              <span className="font-medium text-gray-700">Événements:</span>
-                              <p className="text-gray-600 mt-1">
-                                {webhook.webhook_subscriptions?.join(', ') || 'Aucun'}
+                              <span className="font-medium text-gray-700">Événement requis:</span>
+                              <p className="text-gray-600 mt-1">mention</p>
+                              <p className="text-xs text-pink-600 mt-1">
+                                ⚠️ Cet événement doit être configuré dans Facebook Developer Console
                               </p>
+                            </div>
+                          </div>
+                          
+                          {/* Add webhook toggle with warning */}
+                          <div className="mt-3 pt-3 border-t border-pink-200">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-medium text-gray-700">
+                                État du webhook:
+                              </span>
+                              <div className="flex items-center space-x-2">
+                                <span className={`text-xs ${webhook.webhook_enabled ? 'text-green-600' : 'text-red-600'}`}>
+                                  {webhook.webhook_enabled ? 'Activé' : 'Désactivé'}
+                                </span>
+                                <button
+                                  onClick={() => handleToggleWebhook(config.id, webhook.webhook_enabled)}
+                                  className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors ${
+                                    webhook.webhook_enabled ? 'bg-green-500' : 'bg-gray-300'
+                                  }`}
+                                >
+                                  <span
+                                    className={`inline-block h-3 w-3 transform rounded-full bg-white transition ${
+                                      webhook.webhook_enabled ? 'translate-x-4' : 'translate-x-0.5'
+                                    }`}
+                                  />
+                                </button>
+                              </div>
+                            </div>
+                            
+                            {/* Warning message */}
+                            <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs">
+                              <div className="flex items-start space-x-1">
+                                <AlertCircleIcon className="h-3 w-3 text-yellow-600 mt-0.5 flex-shrink-0" />
+                                <div className="text-yellow-700">
+                                  <p className="font-medium">Avant d'activer le webhook :</p>
+                                  <ol className="list-decimal pl-3 mt-1 space-y-0.5">
+                                    <li>Configurez votre webhook dans <strong>Facebook Developer Console</strong></li>
+                                    <li>Abonnez-vous à l'événement : <strong>mention</strong></li>
+                                    <li>Vérifiez que votre webhook répond correctement</li>
+                                  </ol>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -355,6 +445,23 @@ export default function InstagramConfigTab() {
                           <h5 className="text-sm font-medium text-pink-900 mb-3">
                             Configurer le webhook pour {config.projet?.nom}
                           </h5>
+                          
+                          {/* Important instructions */}
+                          <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                            <div className="flex items-start space-x-2">
+                              <AlertCircleIcon className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+                              <div className="text-sm text-yellow-800">
+                                <p className="font-medium mb-1">Configuration Facebook Developer Console requise :</p>
+                                <ul className="list-disc pl-4 space-y-1 text-xs">
+                                  <li>URL du webhook : <code className="bg-white px-1 rounded">https://immogestion.alemsafi.live/api/webhookFcb_Insta</code></li>
+                                  <li>Token de vérification : Utilisez le token que vous saisissez ci-dessous</li>
+                                  <li>Événement à sélectionner : <strong>mention</strong> uniquement</li>
+                                  <li>Testez la vérification du webhook avant d'activer</li>
+                                </ul>
+                              </div>
+                            </div>
+                          </div>
+                          
                           <div className="space-y-3">
                             <div>
                               <label className="block text-xs font-medium text-pink-700 mb-1">
@@ -658,6 +765,35 @@ export default function InstagramConfigTab() {
               </div>
             </div>
           </div>
+          
+          {/* Add webhook configuration section */}
+          <div className="mt-8 border-t pt-6">
+            <h3 className="text-lg font-medium mb-4">Configuration des Webhooks Instagram</h3>
+            <div className="bg-gradient-to-r from-pink-50 to-purple-50 border border-pink-200 rounded-lg p-4">
+              <div className="flex items-start space-x-3">
+                <Settings className="h-5 w-5 text-pink-600 mt-0.5 flex-shrink-0" />
+                <div className="text-sm">
+                  <h4 className="font-medium text-pink-900 mb-2">Événement webhook supporté</h4>
+                  <div className="space-y-2 text-pink-800">
+                    <div className="flex items-start space-x-2">
+                      <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <strong>mention</strong> - Notifications quand votre compte est mentionné
+                        <p className="text-xs text-pink-600">Recevez des notifications quand votre compte Instagram est tagué ou mentionné</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded">
+                    <p className="text-xs text-yellow-800">
+                      <strong>Important :</strong> Vous devez configurer cet événement dans Facebook Developer Console 
+                      avant de pouvoir activer les webhooks dans cette interface.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -675,6 +811,16 @@ export default function InstagramConfigTab() {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, type: null, itemId: null, itemLabel: '' })}
+        entityName="INSTAGRAM_CONFIG"
+        itemLabel={deleteModal.itemLabel}
+        entityId={deleteModal.itemId}
+        onDeleted={handleDeleteConfirmed}
+      />
     </div>
   );
 }

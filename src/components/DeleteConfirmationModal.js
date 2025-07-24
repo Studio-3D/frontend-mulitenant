@@ -9,8 +9,8 @@ import { useState } from "react";
 const DeleteConfirmationModal = ({
   isOpen,
   onClose,
-  entityName,    // ex: "VUES"
-  itemLabel,     // ex: "Ma Vue"
+  entityName,
+  itemLabel,
   entityId,
   data,
   onDeleted
@@ -26,13 +26,17 @@ const DeleteConfirmationModal = ({
 
     setLoading(true);
     try {
-      await axios.delete(`${APIURL[entityName]}/${entityId}`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
+      if (entityName === 'FACEBOOK_CONFIG' || entityName === 'INSTAGRAM_CONFIG') {
+        onDeleted?.();
+      } else {
+        await axios.delete(`${APIURL[entityName]}/${entityId}`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
 
-      // Met à jour les données
-      onDeleted?.(); // <- appelle fetchBanques
-      toast.success(`${itemLabel} supprimé(e) avec succès`);
+        onDeleted?.();
+        toast.success(`${itemLabel} supprimé(e) avec succès`);
+      }
+      
       onClose();
     } catch (error) {
       console.error(error);

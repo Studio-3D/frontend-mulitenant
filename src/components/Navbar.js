@@ -1,13 +1,16 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { Bell, Moon } from "lucide-react";
+import { Bell, Moon, TestTube } from "lucide-react";
 import DropdownMenuDemo from "./DropdownMenuDemo";
 import SocieteDropDown from "./SocieteDropDown";
 import ProjetsDropDown from "./ProjetsDropDown";
 import NotificationDropdown from "./NotificationDropdown";
 import { fetchNotifications } from "../utils/FetchNotifications";
 import Pusher from "pusher-js";
+import axios from "axios";
+import { APIURL } from "../configs/api";
+import toast from "react-hot-toast";
 
 export default function CombinedNavbar() {
   const { user } = useAuth();
