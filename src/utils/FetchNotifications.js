@@ -34,7 +34,7 @@ const fetchNotifications = async ({ setNotifications, setNewNotificationsCount, 
     const typeNotiMap = {
       1: {
         title: 'Une Relance',
-        icon: 'arrow-clockwise',
+        icon: 'refresh-cw',
         color: 'warning',
         subtitle: (prospect, user, avance, reservation, bien, projet) => `Pour Le Client: ${prospect?.nom} ${prospect?.prenom}`
       },
@@ -46,8 +46,8 @@ const fetchNotifications = async ({ setNotifications, setNewNotificationsCount, 
       },
       3: {
         title: 'Un Bien Disponible',
-        icon: 'unlock',
-        color: 'error',
+        icon: 'home',
+        color: 'success',
         subtitle: (prospect, user, avance, reservation, bien, projet) => `Pour Le Client: ${prospect.nom} ${prospect.prenom}`
       },
       4: {
@@ -68,20 +68,34 @@ const fetchNotifications = async ({ setNotifications, setNewNotificationsCount, 
         color: 'success',
         subtitle: (prospect, user, avance, reservation, bien, projet) => `Code: ${reservation?.code_reservation}`
       },
+      96: {
+        title: 'Nouvelle Publication Facebook',
+        icon: 'share',
+        color: 'info',
+        subtitle: (prospect, user, avance, reservation, bien, projet, description_type) => description_type || 'Une nouvelle publication a été ajoutée'
+      },
+      97: {
+        title: 'Nouveau Commentaire Instagram',
+        icon: 'message-circle',
+        color: 'info',
+        subtitle: (prospect, user, avance, reservation, bien, projet, description_type) => description_type || 'Quelqu\'un a commenté votre publication'
+      },
       98: {
         title: 'Nouvelle Réaction Facebook',
-        icon: 'heart',
+        icon: 'thumbs-up',
         color: 'info',
         subtitle: (prospect, user, avance, reservation, bien, projet, description_type) => description_type || 'Quelqu\'un a réagi à votre publication'
       }
     };
 
     const formattedNotifications = notifications
+      .filter(notification => notification.type !== 99) // Filter out type 99 completely
       .map(notification => {
         const { type, date, deleted_at, id, prospect, user, avance, reservation, bien, projet, lien, description_type } = notification;
         const notificationType = typeNotiMap[type];
+        
         if (!notificationType) {
-          console.error('Unknown notification type: ' + type);
+          console.warn(`Unknown notification type: ${type}, skipping...`);
           return null;
         }
 

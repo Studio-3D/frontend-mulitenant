@@ -1,18 +1,43 @@
 "use client";
 
-import { useState, useEffect, useRef, Fragment } from 'react';
-import { Bell, Trash2, ExternalLink } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Bell, Check, CheckCheck, Eye, RefreshCw, Calendar, Home, AlertTriangle, Clock, CheckCircle, ThumbsUp, MessageCircle, Share } from 'lucide-react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { fetchNotifications } from '@/utils/FetchNotifications';
-import Pusher from 'pusher-js';
 
 const NotificationDropdown = ({ notifications, newNotificationsCount, onFetchNotifications }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
+  const [seenNotifications, setSeenNotifications] = useState(new Set());
   const dropdownRef = useRef(null);
   const router = useRouter();
+
+  // Load seen notifications from backend on mount
+  useEffect(() => {
+    fetchSeenNotifications();
+  }, []);
+
+  const fetchSeenNotifications = async () => {
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+      const selectedProject = JSON.parse(localStorage.getItem('selectedProjet'));
+      
+      if (!accessToken || !selectedProject) return;
+
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/get_seen_notifications/${selectedProject.id}`,
+        {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        }
+      );
+      
+      if (response.data.seen_notifications) {
+        setSeenNotifications(new Set(response.data.seen_notifications));
+      }
+    } catch (error) {
+      console.error('Error fetching seen notifications:', error);
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -35,6 +60,9 @@ const NotificationDropdown = ({ notifications, newNotificationsCount, onFetchNot
     const accessToken = localStorage.getItem('accessToken');
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     
+    // Mark as seen locally first for immediate UI feedback
+    markAsSeen(notifId);
+    
     axios({
       method: 'get',
       url: `${apiUrl}/DestroyNotif/${notifId}`,
@@ -56,13 +84,61 @@ const NotificationDropdown = ({ notifications, newNotificationsCount, onFetchNot
       });
   };
 
-  const handleDeleteNotification = async (notificationId, e) => {
-    e.stopPropagation();
-    // Implement delete functionality
-    console.log('Delete notification:', notificationId);
+  const markAsSeen = async (notificationId) => {
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+      const selectedProject = JSON.parse(localStorage.getItem('selectedProjet'));
+      
+      // Update local state immediately
+      setSeenNotifications(prev => new Set([...prev, notificationId]));
+      
+      // Save to backend
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/mark_notification_seen`,
+        {
+          notification_id: notificationId,
+          projet_id: selectedProject.id
+        },
+        {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        }
+      );
+    } catch (error) {
+      console.error('Error marking notification as seen:', error);
+    }
   };
 
-  const handleViewAll = () => {
+  const markAllAsSeen = async () => {
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+      const selectedProject = JSON.parse(localStorage.getItem('selectedProjet'));
+      
+      const allNotificationIds = notifications.map(notif => notif.id);
+      
+      // Update local state immediately
+      setSeenNotifications(prev => new Set([...prev, ...allNotificationIds]));
+      
+      // Save to backend
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/mark_all_notifications_seen`,
+        {
+          notification_ids: allNotificationIds,
+          projet_id: selectedProject.id
+        },
+        {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        }
+      );
+    } catch (error) {
+      console.error('Error marking all notifications as seen:', error);
+    }
+  };
+
+  const isNotificationSeen = (notificationId) => {
+    return seenNotifications.has(notificationId);
+  };
+
+  const handleViewAllNotifications = () => {
     setIsOpen(false);
     router.push('/notifications');
   };
@@ -81,17 +157,23 @@ const NotificationDropdown = ({ notifications, newNotificationsCount, onFetchNot
   const getIconComponent = (iconName) => {
     const iconMap = {
       'bell': Bell,
-      'calendar': () => <div className="w-4 h-4">📅</div>,
-      'clock': () => <div className="w-4 h-4">⏰</div>,
-      'check-circle': () => <div className="w-4 h-4">✅</div>,
-      'alert-triangle': () => <div className="w-4 h-4">⚠️</div>,
-      'unlock': () => <div className="w-4 h-4">🔓</div>,
-      'arrow-clockwise': () => <div className="w-4 h-4">🔄</div>
+      'calendar': Calendar,
+      'clock': Clock,
+      'check-circle': CheckCircle,
+      'alert-triangle': AlertTriangle,
+      'home': Home,
+      'refresh-cw': RefreshCw,
+      'thumbs-up': ThumbsUp,
+      'message-circle': MessageCircle,
+      'share': Share
     };
     
     const IconComponent = iconMap[iconName] || Bell;
     return <IconComponent className="h-4 w-4" />;
   };
+
+  // Calculate unseen count
+  const unseenCount = notifications.filter(notif => !isNotificationSeen(notif.id)).length;
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -101,9 +183,9 @@ const NotificationDropdown = ({ notifications, newNotificationsCount, onFetchNot
         aria-label="Notifications"
       >
         <Bell className="h-6 w-6" />
-        {newNotificationsCount > 0 && (
+        {unseenCount > 0 && (
           <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
-            {newNotificationsCount > 99 ? '99+' : newNotificationsCount}
+            {unseenCount > 99 ? '99+' : unseenCount}
           </span>
         )}
       </button>
@@ -111,10 +193,24 @@ const NotificationDropdown = ({ notifications, newNotificationsCount, onFetchNot
       {isOpen && (
         <div className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">
           <div className="p-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">Notifications</h3>
-            {newNotificationsCount > 0 && (
-              <p className="text-sm text-gray-500">{newNotificationsCount} nouvelles notifications</p>
-            )}
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-lg font-medium text-gray-900">Notifications</h3>
+                {unseenCount > 0 && (
+                  <p className="text-sm text-gray-500">{unseenCount} non lues</p>
+                )}
+              </div>
+              {notifications.length > 0 && (
+                <button
+                  onClick={markAllAsSeen}
+                  className="flex items-center space-x-1 text-sm text-blue-600 hover:text-blue-800"
+                  title="Marquer tout comme lu"
+                >
+                  <CheckCheck className="h-4 w-4" />
+                  <span>Tout marquer</span>
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="max-h-96 overflow-y-auto">
@@ -130,65 +226,67 @@ const NotificationDropdown = ({ notifications, newNotificationsCount, onFetchNot
               </div>
             ) : (
               <div className="divide-y divide-gray-200">
-                {notifications.map((notification) => (
-                  <div
-                    key={notification.id}
-                    className="p-4 hover:bg-gray-50 cursor-pointer group"
-                    onClick={() => handleNotificationClick(notification.id, notification)}
-                  >
-                    <div className="flex items-start space-x-3">
-                      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${getColorClass(notification.color)}`}>
-                        {getIconComponent(notification.icon)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {notification.title}
-                        </p>
-                        <p className="text-sm text-gray-500 truncate">
-                          {notification.subtitle}
-                        </p>
-                        <p className="text-xs text-gray-400 mt-1">
-                          {new Date(notification.date).toLocaleString('fr-FR')}
-                        </p>
-                      </div>
-                      <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {notification.url && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              window.open(notification.url, '_blank');
-                            }}
-                            className="p-1 text-gray-400 hover:text-blue-500"
-                            title="Ouvrir le lien"
-                          >
-                            <ExternalLink className="h-4 w-4" />
-                          </button>
-                        )}
-                        <button
-                          onClick={(e) => handleDeleteNotification(notification.id, e)}
-                          className="p-1 text-gray-400 hover:text-red-500"
-                          title="Supprimer"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                {notifications.map((notification) => {
+                  const isSeen = isNotificationSeen(notification.id);
+                  return (
+                    <div
+                      key={notification.id}
+                      className={`p-4 hover:bg-gray-50 cursor-pointer group relative ${
+                        !isSeen ? 'bg-blue-50 border-l-4 border-blue-500' : ''
+                      }`}
+                      onClick={() => handleNotificationClick(notification.id, notification)}
+                    >
+                      <div className="flex items-start space-x-3">
+                        <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${getColorClass(notification.color)}`}>
+                          {getIconComponent(notification.icon)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-sm font-medium truncate ${
+                            !isSeen ? 'text-gray-900' : 'text-gray-600'
+                          }`}>
+                            {notification.title}
+                          </p>
+                          <p className="text-sm text-gray-500 truncate">
+                            {notification.subtitle}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-1">
+                            {notification.date}
+                          </p>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          {!isSeen && (
+                            <>
+                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  markAsSeen(notification.id);
+                                }}
+                                className="p-1 text-gray-400 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                title="Marquer comme lu"
+                              >
+                                <Check className="h-4 w-4" />
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
 
-          {notifications.length > 0 && (
-            <div className="p-4 border-t border-gray-200">
-              <button
-                onClick={onFetchNotifications}
-                className="w-full text-center text-sm text-blue-600 hover:text-blue-800"
-              >
-                Actualiser les notifications
-              </button>
-            </div>
-          )}
+          <div className="p-4 border-t border-gray-200">
+            <button
+              onClick={handleViewAllNotifications}
+              className="w-full flex items-center justify-center space-x-1 text-sm text-gray-600 hover:text-gray-800"
+            >
+              <Eye className="h-4 w-4" />
+              <span>Voir toutes les notifications</span>
+            </button>
+          </div>
         </div>
       )}
     </div>
