@@ -202,7 +202,7 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
 
   const handleRowsPerPageChange = (rows) => {
     setRowsPerPage(rows);
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset to first page when changing rows per page
   };
 
   const formattedBiens = biens.map(bien => ({
@@ -217,9 +217,6 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
     etat: bien.etat,
     type: bien.type_bien?.type || '',
   }));
-
-  // Apply pagination to the data prop
-  const paginatedData = formattedBiens.slice(0, rowsPerPage);
 
   const columns = [
     { key: 'propriete_dite_bien', label: 'Désignation' },
@@ -356,7 +353,7 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
         data_to_export={data_to_export()}
         columns_export={columns_export}
         name_file_export={"bien_export"}
-        data={paginatedData} // Use paginated data here
+        data={biens} // Pass the full data array and let Table handle pagination
         showSearch={true}
         enableImport={true}
         onImportClick={() => setShowImportModal(true)}

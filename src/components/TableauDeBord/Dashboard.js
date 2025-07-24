@@ -170,19 +170,39 @@ export const Dashboard = () => {
     );
   }
 
+  // Helper component for empty state messages
+  const EmptyStateMessage = ({ message }) => (
+    <div className="flex flex-col items-center justify-center h-64 bg-white rounded-xl shadow-sm border border-gray-50 p-4">
+      <div className="text-gray-500 text-lg font-medium text-center">
+        {message}
+      </div>
+    </div>
+  );
+
+  // Check if we should show societe selection message (for super admin only)
+  const shouldShowSocieteMessage = isSuperAdmin && !selectedSociete;
+  // Check if we should show projet selection message
+  const shouldShowProjetMessage = !selectedProjet && !localStorage.getItem("selectedProjet");
+
   return (
     <div className="">
-     {/* Header Section */}
+      {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 bg-white p-5 rounded-xl shadow-sm">
         <div className="flex flex-col w-full md:flex-row md:items-center md:justify-between gap-3">
           {/* Left side - Title and project name (stacked on mobile, inline on xl) */}
-          <div className="flex  items-center xl:flex-row xl:items-center gap-3 w-full md:w-auto">
+          <div className="flex items-center xl:flex-row xl:items-center gap-3 w-full md:w-auto">
             <h1 className="text-xl xl:text-2xl font-bold text-gray-800 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
               Aperçu de projet :
             </h1>
-            <div className="px-4 py-1.5 bg-cyan-50 rounded-md text-gray-800 font-medium w-fit">
-              {selectedProjet?.nom || JSON.parse(localStorage.getItem('selectedProjet'))?.nom}
-            </div>
+            {selectedProjet || localStorage.getItem("selectedProjet") ? (
+              <div className="px-4 py-1.5 bg-cyan-50 rounded-md text-gray-800 font-medium w-fit">
+                {selectedProjet?.nom || JSON.parse(localStorage.getItem('selectedProjet'))?.nom}
+              </div>
+            ) : (
+              <div className="px-4 py-1.5 bg-red-50 rounded-md text-red-500 font-medium w-fit">
+                Aucun projet sélectionné
+              </div>
+            )}
           </div>
 
           {/* Right side - Date selector (full width on mobile, auto on larger screens) */}
@@ -191,6 +211,7 @@ export const Dashboard = () => {
               startDate={startDate}
               endDate={endDate}
               onChange={handleDateChange}
+              disabled={shouldShowSocieteMessage || shouldShowProjetMessage}
             />
           </div>
         </div>
@@ -198,95 +219,137 @@ export const Dashboard = () => {
 
       {/* Metrics Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-        <MetricsCard
-          title="Clients"
-          value={data?.nb_clients}
-          icon={<UsersIcon className="h-6 w-6 text-blue-500" />}
-          color="blue"
-        />
-        <MetricsCard
-          title="Prospects"
-          value={data?.nb_prospects}
-          icon={<UserPlusIcon className="h-6 w-6 text-green-500" />}
-          color="green"
-        />
-        <MetricsCard
-          title="Visites"
-          value={data?.array_visite_interet_et_date?.reduce((acc, item) => acc + (item.visite || 0), 0)}
-          icon={<CalendarCheckIcon className="h-6 w-6 text-purple-500" />}
-          color="purple"
-        />
-        <MetricsCard
-          title="Pénalités"
-          value={data?.sum_penalites}
-          icon={<AlertOctagonIcon className="h-6 w-6 text-red-500" />}
-          color="red"
-        />
-        <MetricsCard
-          title="Remboursement"
-          value={data?.sum_remboursements?.toFixed(2)}
-          icon={<CreditCardIcon className="h-6 w-6 text-amber-500" />}
-          color="amber"
-        />
-        <MetricsCard
-          title="Appels"
-          value={data?.Appels?.reduce((acc, item) => acc + (item['appel entrant'] || 0) + (item['appel sortant'] || 0), 0)}
-          icon={<PhoneIcon className="h-6 w-6 text-indigo-500" />}
-          color="indigo"
-        />
+        {shouldShowSocieteMessage ? (
+          Array(6).fill(0).map((_, i) => (
+            <MetricsCard
+              key={`societe-msg-${i}`}
+              title="Société requise"
+              value=""
+              icon={<AlertOctagonIcon className="h-6 w-6 text-gray-400" />}
+              color="gray"
+              message="Veuillez sélectionner une société"
+            />
+          ))
+        ) : shouldShowProjetMessage ? (
+          Array(6).fill(0).map((_, i) => (
+            <MetricsCard
+              key={`projet-msg-${i}`}
+              title="Projet requis"
+              value=""
+              icon={<AlertOctagonIcon className="h-6 w-6 text-gray-400" />}
+              color="gray"
+              message="Veuillez sélectionner un projet"
+            />
+          ))
+        ) : (
+          <>
+            <MetricsCard
+              title="Clients"
+              value={data?.nb_clients}
+              icon={<UsersIcon className="h-6 w-6 text-blue-500" />}
+              color="blue"
+            />
+            <MetricsCard
+              title="Prospects"
+              value={data?.nb_prospects}
+              icon={<UserPlusIcon className="h-6 w-6 text-green-500" />}
+              color="green"
+            />
+            <MetricsCard
+              title="Visites"
+              value={data?.array_visite_interet_et_date?.reduce((acc, item) => acc + (item.visite || 0), 0)}
+              icon={<CalendarCheckIcon className="h-6 w-6 text-purple-500" />}
+              color="purple"
+            />
+            <MetricsCard
+              title="Pénalités"
+              value={data?.sum_penalites}
+              icon={<AlertOctagonIcon className="h-6 w-6 text-red-500" />}
+              color="red"
+            />
+            <MetricsCard
+              title="Remboursement"
+              value={data?.sum_remboursements?.toFixed(2)}
+              icon={<CreditCardIcon className="h-6 w-6 text-amber-500" />}
+              color="amber"
+            />
+            <MetricsCard
+              title="Appels"
+              value={data?.Appels?.reduce((acc, item) => acc + (item['appel entrant'] || 0) + (item['appel sortant'] || 0), 0)}
+              icon={<PhoneIcon className="h-6 w-6 text-indigo-500" />}
+              color="indigo"
+            />
+          </>
+        )}
       </div>
 
       {/* Two-Column Layout */}
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Left Column - Main Charts */}
         <div className="w-full lg:w-2/3 flex flex-col gap-6">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-50">
-            <EncaissementChart 
-              startDate={startDate}
-              endDate={endDate}
-              data={data?.array_encaissement} 
-            />
-          </div>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-50">
-            <VentesChart 
-              startDate={startDate}
-              endDate={endDate}
-              data={data?.array_ventes} 
-            />
-          </div>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-50">
-            <VisitesChart 
-              startDate={startDate}
-              endDate={endDate}
-              data={data?.array_visite_interet_et_date} 
-            />
-          </div>
+          {shouldShowSocieteMessage ? (
+            <EmptyStateMessage message="Veuillez sélectionner une société pour afficher les données" />
+          ) : shouldShowProjetMessage ? (
+            <EmptyStateMessage message="Veuillez sélectionner un projet pour afficher les données" />
+          ) : (
+            <>
+              <div className="bg-white rounded-xl shadow-sm border border-gray-50">
+                <EncaissementChart 
+                  startDate={startDate}
+                  endDate={endDate}
+                  data={data?.array_encaissement} 
+                />
+              </div>
+              <div className="bg-white rounded-xl shadow-sm border border-gray-50">
+                <VentesChart 
+                  startDate={startDate}
+                  endDate={endDate}
+                  data={data?.array_ventes} 
+                />
+              </div>
+              <div className="bg-white rounded-xl shadow-sm border border-gray-50">
+                <VisitesChart 
+                  startDate={startDate}
+                  endDate={endDate}
+                  data={data?.array_visite_interet_et_date} 
+                />
+              </div>
+            </>
+          )}
         </div>
 
         {/* Right Column - Appels and Désistement */}
         <div className="w-full lg:w-1/3 flex flex-col gap-6">
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-50">
-            <h2 className="text-lg font-semibold mb-4 text-gray-700 flex items-center">
-              <span className="w-2 h-8 bg-indigo-500 rounded-md mr-3"></span>
-              Appels
-            </h2>
-            <AppelsChart 
-              startDate={startDate}
-              endDate={endDate}
-              data={data} 
-            />
-          </div>
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-50">
-            <h2 className="text-lg font-semibold mb-4 text-gray-700 flex items-center">
-              <span className="w-2 h-8 bg-amber-500 rounded-md mr-3"></span>
-              Désistement
-            </h2>
-            <DesistementChart 
-              startDate={startDate}
-              endDate={endDate}
-              data={data} 
-            />
-          </div>
+          {shouldShowSocieteMessage ? (
+            <EmptyStateMessage message="Veuillez sélectionner une société pour afficher les données" />
+          ) : shouldShowProjetMessage ? (
+            <EmptyStateMessage message="Veuillez sélectionner un projet pour afficher les données" />
+          ) : (
+            <>
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-50">
+                <h2 className="text-lg font-semibold mb-4 text-gray-700 flex items-center">
+                  <span className="w-2 h-8 bg-indigo-500 rounded-md mr-3"></span>
+                  Appels
+                </h2>
+                <AppelsChart 
+                  startDate={startDate}
+                  endDate={endDate}
+                  data={data} 
+                />
+              </div>
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-50">
+                <h2 className="text-lg font-semibold mb-4 text-gray-700 flex items-center">
+                  <span className="w-2 h-8 bg-amber-500 rounded-md mr-3"></span>
+                  Désistement
+                </h2>
+                <DesistementChart 
+                  startDate={startDate}
+                  endDate={endDate}
+                  data={data} 
+                />
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
