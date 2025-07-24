@@ -187,7 +187,7 @@ export default function Modal_Traite({ onClose, id, num_tel, nom_prenom }) {
             {
               <>
                 <TextField
-                  type="number"
+                  type="text"
                   label="Téléphone:"
                   disabled={true}
                   name="telephone"

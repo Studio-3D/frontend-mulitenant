@@ -122,7 +122,6 @@ const JournalTable = (id) => {
     //Implementing the setInterval method
     const interval = setInterval(() => {
       if (localStorage.getItem('load_data_journaux') == 1) {
-
         fetchData_table_by_id(
           entity,
           searchTerm,
@@ -134,8 +133,7 @@ const JournalTable = (id) => {
           setJournaux,
           setTotalRows
         );
-                localStorage.removeItem('load_data_journaux');
-
+        localStorage.removeItem('load_data_journaux');
       }
     }, 1000);
 
@@ -218,6 +216,7 @@ const JournalTable = (id) => {
 
   // Format users data for table display
   const formatData = () => {
+    if (!Array.isArray(jornaux)) return []; // Add this line
     return jornaux.map((pro) => ({
       id: pro.id,
       nomcc: `${pro.user.name || ''} ${pro.user.prenom || ''}`.trim(),
@@ -305,67 +304,76 @@ const JournalTable = (id) => {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <Edit
-            className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
-            title="Modifier"
-            onClick={() => handleEdit(row.id)}
-          />
-          {VISITE_INTERETS[row.interet]?.label != 'Injoignable' && (
-            <Eye
-              className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
-              title="Voir détails"
-              onClick={() =>
-                handleShow(
-                  row.date,
-                  row.interet,
-                  row.type_appel,
-                  row.nomcc,
-                  row.tranche_nom,
-                  row.bloc_nom,
-                  row.immeuble_nom,
-                  row.type_biens,
-                  row.orientation,
-                  row.etage,
-                  row.rdv?.rdv,
-                  row.relance?.date_relance,
-                  row.relance?.mode_relance,
-                  row.frein,
-                  row.commentaire,
-                  row.commentaire_rel,
-                  row.commentaire_rdv
-                )
-              }
+          <div title="Modifier">
+            <Edit
+              className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
+              title="Modifier"
+              onClick={() => handleEdit(row.id)}
             />
+          </div>
+
+          {VISITE_INTERETS[row.interet]?.label != 'Injoignable' && (
+            <div title="Voir détails">
+              <Eye
+                className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
+                title="Voir détails"
+                onClick={() =>
+                  handleShow(
+                    row.date,
+                    row.interet,
+                    row.type_appel,
+                    row.nomcc,
+                    row.tranche_nom,
+                    row.bloc_nom,
+                    row.immeuble_nom,
+                    row.type_biens,
+                    row.orientation,
+                    row.etage,
+                    row.rdv?.rdv,
+                    row.relance?.date_relance,
+                    row.relance?.mode_relance,
+                    row.frein,
+                    row.commentaire,
+                    row.commentaire_rel,
+                    row.commentaire_rdv
+                  )
+                }
+              />
+            </div>
           )}
           {row.relance != null &&
             row.relance.type_traitement == 0 &&
             row.relance.deleted_at == null &&
             row.user?.user_id_origin == user.id && (
-              <CheckCircle
-                className="w-4 h-4 !text-green-500 hover:text-green-700 cursor-pointer"
-                title="Traiter Relance"
-                onClick={() => handleValider(row.relance?.id, 'Relance')}
-              />
+              <div title="Traiter Relance">
+                <CheckCircle
+                  className="w-4 h-4 !text-green-500 hover:text-green-700 cursor-pointer"
+                  title="Traiter Relance"
+                  onClick={() => handleValider(row.relance?.id, 'Relance')}
+                />
+              </div>
             )}
           {row.rdv != null &&
             row.rdv.type_traitement == 0 &&
             row.rdv.deleted_at == null &&
             row.user?.user_id_origin == user.id && (
-              <CalendarClock
-                className="w-4 h-4 text-orange-500 hover:text-orange-700 cursor-pointer"
-                title="Traiter Rendez Vous"
-                onClick={() => handleValider(row.rdv?.id, 'RDV')}
-              />
+              <div title="Traiter Rendez Vous">
+                <CalendarClock
+                  className="w-4 h-4 text-orange-500 hover:text-orange-700 cursor-pointer"
+                  onClick={() => handleValider(row.rdv?.id, 'RDV')}
+                />
+              </div>
             )}
 
-          <Trash2
-            className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
-            onClick={() => {
-              setSelectedId(row.id);
-              setShowDeleteModal(true);
-            }}
-            title="Supprimer appel"
-          />
+          <div title="Supprimer appel">
+            <Trash2
+              className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
+              onClick={() => {
+                setSelectedId(row.id);
+                setShowDeleteModal(true);
+              }}
+            />
+          </div>
         </div>
       ),
     },
@@ -376,10 +384,12 @@ const JournalTable = (id) => {
   }
 
   //EXPORT
+
   const data_to_export = () => {
+    if (!Array.isArray(jornaux)) return []; // Add this line
     return jornaux.map((pro) => ({
       id: pro.id,
-      nomcc: `${pro.user.name || ''} ${pro.user.prenom || ''}`.trim(),
+      nomcc: `${pro.user?.name || ''} ${pro.user?.prenom || ''}`.trim(),
       date: pro.date ? format(new Date(pro.date), 'dd/MM/yyyy ') : '',
       type_appel: getTypeAppelLabel(pro.type_appel),
       interet: VISITE_INTERETS[pro.interet]?.label,
@@ -426,6 +436,7 @@ const JournalTable = (id) => {
           onRowsPerPageChange={setRowsPerPage}
           onSearchChange={setSearchTerm}
           enableExport={true}
+          showSearch={false}
           addLink={
             isSuperAdmin(user.role) ||
             isAdmin(user.role) ||
@@ -442,26 +453,10 @@ const JournalTable = (id) => {
                 }}
               >
                 {/* Champs de recherche */}
-                <Input
-                  type="date"
-                  placeholder="Date"
-                  value={tempFilters.date}
-                  onChange={(e) => handleFilterChange('date', e.target.value)}
-                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-                />
-                <input
-                  type={tempFilters.date ? 'date' : 'text'}
-                  placeholder="Date"
-                  value={tempFilters.date}
-                  onFocus={(e) => (e.target.type = 'date')}
-                  onChange={(e) =>
-                    handleFilterChange('date_traitement', e.target.value)
-                  }
-                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-                />
+
                 <Input
                   type="text"
-                  placeholder="Responsable"
+                  label="Responsable"
                   value={tempFilters.responsable}
                   onChange={(e) =>
                     handleFilterChange('responsable', e.target.value)
@@ -476,7 +471,7 @@ const JournalTable = (id) => {
                     value: data.code,
                     label: data.label,
                   }))}
-                  placeholder="Choisir un Intéret"
+                  label="Choisir un Intéret"
                   className="h-10 text-sm w-full"
                 />
 
@@ -487,7 +482,7 @@ const JournalTable = (id) => {
                     value: data.code,
                     label: data.label,
                   }))}
-                  placeholder="Choisir un Type Appel"
+                  label="Choisir un Type Appel"
                   className="h-10 text-sm w-full"
                 />
               </div>

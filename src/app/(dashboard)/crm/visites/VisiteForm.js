@@ -42,11 +42,7 @@ import Pusher from 'pusher-js';
 import Modal_OldVisites_Perdu from './Modal_OldVisites_Perdu';
 import FreinsComponent from './FreinsComponent';
 
-import SelectInput from '@/components/SelectInput';
-import Input from '@/components/Input';
-import DateInput from '@/components/DateInput';
-
-const VisiteForm = (id, origin) => {
+const VisiteForm = ({ prospect_id, origin }) => {
   const router = useRouter();
   useClearProspect();
   const { user } = useAuth();
@@ -59,7 +55,6 @@ const VisiteForm = (id, origin) => {
   const [client_prospect, setClient_prospect] = useState(null);
   const [id_appel, setId_appel] = useState(null);
   const [id_visite, setId_visite] = useState(null);
-
   const accessToken = localStorage.getItem('accessToken');
   const { person: selectedPerson, type: personType } = getStoredPerson();
   const pusher_key_proposition = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_PROP;
@@ -119,7 +114,7 @@ const VisiteForm = (id, origin) => {
     setOpen_D_P(false);
     const hasAnyVisite = old_visites_perdu.length > 0;
     const allActionsEmpty = old_visites_perdu.every(
-      (v) => v.action === 0 || v.action === '' || v.action === null
+      (v) => v.action == 0 || v.action == '' || v.action == null
     );
 
     if (hasAnyVisite && allActionsEmpty) {
@@ -128,24 +123,30 @@ const VisiteForm = (id, origin) => {
   };
   const [check_save_perdu, setCheck_save_perdu] = useState(false);
 
-  const isEditing = id && Object.keys(id).length > 0;
   const isOrigin = !!origin;
   const [partenaire_txt, setPartenaire_txt] = useState(
     selectedPerson?.partenaire?.description
       ? selectedPerson.partenaire.description
       : null
   );
+  console.log('prospect_id==>' + prospect_id);
   const defaultValues = {
     interet: '',
-    selectedProjet: selectedProjet?.id || 1,
-    client_id: personType === 'client' ? selectedPerson?.id : '',
+    selectedProjet: selectedProjet?.id,
+    client_id: personType == 'client' ? selectedPerson?.id : '',
     id_t_appel: selectedPerson?.id_t_appel || '',
-    prospect_id: selectedPerson?.id || '',
+    prospect_id: selectedPerson?.id || prospect_id || '',
+    last_origin_id_of_prospect: null,
     cin: selectedPerson?.cin || '',
     nom: selectedPerson?.nom || '',
     email: selectedPerson?.email || '',
     prenom: selectedPerson?.prenom || '',
-    telephone: personType === 'prospect' ? selectedPerson?.telephone : personType === 'client' ? selectedPerson?.telephone_num1 : '',
+    telephone:
+      personType == 'prospect'
+        ? selectedPerson?.telephone
+        : personType == 'client'
+        ? selectedPerson?.telephone_num1
+        : '',
     telephone_num2: selectedPerson?.telephone_num2 || null,
     ville: selectedPerson?.ville || '',
     notifie: selectedPerson?.notifie || '',
@@ -195,7 +196,7 @@ const VisiteForm = (id, origin) => {
           .string()
           .transform((value, originalValue) => {
             // Convert string "null" or empty string to actual null
-            return originalValue === 'null' || originalValue === ''
+            return originalValue == 'null' || originalValue == ''
               ? null
               : originalValue;
           })
@@ -219,16 +220,13 @@ const VisiteForm = (id, origin) => {
     defaultValues,
   });
 
-  
- if (list_etages.length == 0 && selectedProjet?.max_etages > 0) {
+  if (list_etages.length == 0 && selectedProjet?.max_etages > 0) {
     for (let i = 0; i <= selectedProjet?.max_etages; i++) {
       list_etages.push({ id: i + 1, value: i });
     }
   }
 
-
   const pusher_function = async () => {
-    console.log('je suis en pusher');
     Pusher.logToConsole = true;
 
     const pusher = new Pusher(`${pusher_key_proposition}`, {
@@ -271,7 +269,7 @@ const VisiteForm = (id, origin) => {
       })
       .catch((err) => {
         const response = err.response;
-        if (response && response.status === 422) {
+        if (response && response.status == 422) {
           toast.error(response.data.error);
         }
       });
@@ -297,11 +295,10 @@ const VisiteForm = (id, origin) => {
   };
 
   const handleChange_interet = (code) => {
-    console.log('Selected:', code); // Debug the selected option
     if (code) {
       setValue('interet', code);
 
-      if (code === 2) {
+      if (code == 2) {
         setValue('list_bien_interesse', []);
         setValue('list_bien_transfere_vendu', []);
         setValue('nb_bien_added', '');
@@ -320,11 +317,11 @@ const VisiteForm = (id, origin) => {
       else if (code == 1) {
         setValue('nb_bien_added', '');
         setValue('list_bien_transfere_vendu', []);
-        if (watch('cin') === '' && !isOrigin) {
+        if (watch('cin') == '' && !isOrigin) {
           setdisplay_cin_1(true);
           toast.error('Veuillez saisir un cin !');
         }
-        if (watch('cin') === '' && isOrigin && display_cin) {
+        if (watch('cin') == '' && isOrigin && display_cin) {
           setdisplay_cin_1(true);
           toast.error('Veuillez saisir un cin !');
         }
@@ -366,123 +363,67 @@ const VisiteForm = (id, origin) => {
   };
   const fetch_visite_bien_pre_reserve = async () => {
     if (isOrigin) {
-      setValue('loading_b_pre', true);
-      axios
-        .get(`${APIURL.ROOTV1}/get_oldBien_visite_pre_reserve/${origin}`, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        })
-        .then((response) => {
-          setOldBiens_pre([]);
-
-          //bien visites
-          if (response.data.biens_visite.length > 0) {
-            for (
-              var i = 0;
-              i <= Number(response.data.biens_visite.length) - 1;
-              i++
-            ) {
-              let propriete =
-                response.data.biens_visite[i].bien.propriete_dite_bien;
-              let bien_id = response.data.biens_visite[i].bien_id;
-              let v_id = response.data.biens_visite[i].id;
-              let avancee = response.data.biens_visite[i].bien.avance_minimale;
-              let prixx = response.data.biens_visite[i].bien.prix;
-              let prixx_uni = response.data.biens_visite[i].bien.prix_unitaire;
-              let sup_jardin =
-                response.data.biens_visite[i].bien.superficie_jardin_calculer;
-              console.log('sup jardin=>' + sup_jardin);
-              let sup_habit =
-                response.data.biens_visite[i].bien.superficie_habitable;
-              let sup_balcon =
-                response.data.biens_visite[i].bien.superficie_balcon_calculer;
-              let sup_terrase =
-                response.data.biens_visite[i].bien.superficie_terrasse_calculer;
-              let p_box = response.data.biens_visite[i].bien.prix_box;
-              let p_parking = response.data.biens_visite[i].bien.prix_parking;
-              setOldBiens_pre((OldBiens_pre) => [
-                ...OldBiens_pre,
-                {
-                  propriete_dite_bien: propriete,
-                  prix: prixx,
-                  prix_unitaire: prixx_uni,
-                  bien_id: bien_id,
-                  visite_id: v_id,
-                  superficie_jardin_calculer: sup_jardin,
-                  superficie_habitable: sup_habit,
-                  superficie_balcon_calculer: sup_balcon,
-                  superficie_terrasse_calculer: sup_terrase,
-                  prix_box: p_box,
-                  prix_parking: p_parking,
-                  avance_minimale: avancee,
-                  action: 0,
-                },
-              ]);
-            }
+      try {
+        setValue('loading_b_pre', true);
+        const response = await axios.get(
+          `${APIURL.ROOTV1}/get_oldBien_visite_pre_reserve/${origin}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
           }
+        );
 
-          //biens Traitement frein
-          if (response.data.biens_traitement_freins.length > 0) {
-            for (
-              var n = 0;
-              n <= Number(response.data.biens_traitement_freins.length) - 1;
-              n++
-            ) {
-              let propriete =
-                response.data.biens_traitement_freins[n].bien
-                  .propriete_dite_bien;
-              let bien_id = response.data.biens_traitement_freins[n].bien_id;
-              let t_f_id = response.data.biens_traitement_freins[n].id;
-              let avancee =
-                response.data.biens_traitement_freins[n].bien.avance_minimale;
-              let prixx = response.data.biens_traitement_freins[n].bien.prix;
-              let prixx_uni =
-                response.data.biens_traitement_freins[n].bien.prix_unitaire;
-              let sup_jardin =
-                response.data.biens_traitement_freins[n].bien
-                  .superficie_jardin_calculer;
-              let sup_habit =
-                response.data.biens_traitement_freins[n].bien
-                  .superficie_habitable;
-              let sup_balcon =
-                response.data.biens_traitement_freins[n].bien
-                  .superficie_balcon_calculer;
-              let sup_terrase =
-                response.data.biens_traitement_freins[n].bien
-                  .superficie_terrasse_calculer;
-              let p_box =
-                response.data.biens_traitement_freins[n].bien.prix_box;
-              let p_parking =
-                response.data.biens_traitement_freins[n].bien.prix_parking;
-              setOldBiens_pre((OldBiens_pre) => [
-                ...OldBiens_pre,
-                {
-                  propriete_dite_bien: propriete,
-                  prix: prixx,
-                  prix_unitaire: prixx_uni,
-                  bien_id: bien_id,
-                  traitement_frein_id: t_f_id,
-                  superficie_jardin_calculer: sup_jardin,
-                  superficie_habitable: sup_habit,
-                  superficie_balcon_calculer: sup_balcon,
-                  superficie_terrasse_calculer: sup_terrase,
-                  prix_box: p_box,
-                  prix_parking: p_parking,
-                  avance_minimale: avancee,
-                  action: 0,
-                },
-              ]);
-            }
-          }
+        setOldBiens_pre([]);
 
-          setValue('loading_b_pre', false);
-        })
-        .catch((error) => {
-          setValue('loading_b_pre', false);
+        if (response.data.biens_visite?.length > 0) {
+          const newOldBiens = response.data.biens_visite.map((visite) => ({
+            propriete_dite_bien: visite.bien.propriete_dite_bien,
+            prix: visite.bien.prix,
+            prix_unitaire: visite.bien.prix_unitaire,
+            bien_id: visite.bien_id,
+            visite_id: visite.id,
+            superficie_jardin_calculer: visite.bien.superficie_jardin_calculer,
+            superficie_habitable: visite.bien.superficie_habitable,
+            superficie_balcon_calculer: visite.bien.superficie_balcon_calculer,
+            superficie_terrasse_calculer:
+              visite.bien.superficie_terrasse_calculer,
+            prix_box: visite.bien.prix_box,
+            prix_parking: visite.bien.prix_parking,
+            avance_minimale: visite.bien.avance_minimale,
+            action: 0,
+          }));
+          setOldBiens_pre(newOldBiens);
+        }
 
-          console.error('Error fetching visite details:', error);
-        });
+        if (response.data.biens_traitement_freins?.length > 0) {
+          const traitementFreins = response.data.biens_traitement_freins.map(
+            (frein) => ({
+              propriete_dite_bien: frein.bien.propriete_dite_bien,
+              prix: frein.bien.prix,
+              prix_unitaire: frein.bien.prix_unitaire,
+              bien_id: frein.bien_id,
+              traitement_frein_id: frein.id,
+              superficie_jardin_calculer: frein.bien.superficie_jardin_calculer,
+              superficie_habitable: frein.bien.superficie_habitable,
+              superficie_balcon_calculer: frein.bien.superficie_balcon_calculer,
+              superficie_terrasse_calculer:
+                frein.bien.superficie_terrasse_calculer,
+              prix_box: frein.bien.prix_box,
+              prix_parking: frein.bien.prix_parking,
+              avance_minimale: frein.bien.avance_minimale,
+              action: 0,
+            })
+          );
+          setOldBiens_pre((prev) => [...prev, ...traitementFreins]);
+        }
+
+        setValue('loading_b_pre', false);
+      } catch (error) {
+        console.error('Error fetching visite details:', error);
+        setValue('loading_b_pre', false);
+        toast.error('Erreur lors de la récupération des biens pré-réservés');
+      }
     }
   };
 
@@ -590,7 +531,7 @@ const VisiteForm = (id, origin) => {
     } else {
       fetchData_Select('sources', setSources, setLoading);
 
-      if (partenaires.length === 0) {
+      if (partenaires.length == 0) {
         fetchDataByProjet('partenaires', setPartenaires, setLoading);
       }
     }
@@ -603,7 +544,7 @@ const VisiteForm = (id, origin) => {
     setTimeout(() => {
       let a, b, minField, maxField;
 
-      if (val === 1) {
+      if (val == 1) {
         a = Number(watch('prix_min')); // Convertir en nombre
         b = Number(watch('prix_max')); // Convertir en nombre
         minField = 'prix_min';
@@ -619,7 +560,7 @@ const VisiteForm = (id, origin) => {
         } else {
           setInfo_prix(null);
         }
-      } else if (val === 2) {
+      } else if (val == 2) {
         a = Number(watch('sup_min')); // Convertir en nombre
         b = Number(watch('sup_max')); // Convertir en nombre
         minField = 'superficie min';
@@ -659,19 +600,19 @@ const VisiteForm = (id, origin) => {
       console.error('Email invalide');
     }
     // Partenaire required if source_txt is 'Partenaire'
-    if (watch('source_txt') === 'Partenaire' && !watch('partenaire_id')) {
+    if (watch('source_txt') == 'Partenaire' && !watch('partenaire_id')) {
       valid = false;
       console.error('Partenaire obligatoire');
     }
 
-    if (Number(watch('interet')) === 1) {
+    if (Number(watch('interet')) == 1) {
       if (Number(watch('nb_bien_added')) < 0) {
         valid = false;
         console.error('Nb Bien obligatoire');
       }
     }
-    // If interet === 3, then all those frein checks
-    if (Number(watch('interet')) === 3) {
+    // If interet == 3, then all those frein checks
+    if (Number(watch('interet')) == 3) {
       const frein = watch('frein') || [];
       const checks = [
         frein.length > 0,
@@ -733,10 +674,15 @@ const VisiteForm = (id, origin) => {
       Object.entries(data).forEach(([key, value]) => {
         //console.log(`Checking key: ${key}, value:`, value, typeof value);
 
+        // Always include prospect_id regardless of isOrigin
+        if (key == 'prospect_id') {
+          dataToSend.append(key, value);
+          return;
+        }
         // Normalize value: trim and lowercase
         if (
-          typeof value === 'string' &&
-          value.trim().replace(/['"]/g, '').toLowerCase() === 'null'
+          typeof value == 'string' &&
+          value.trim().replace(/['"]/g, '').toLowerCase() == 'null'
         ) {
           // console.log(`Converting ${key} from string "null" to actual null`);
           data[key] = null;
@@ -745,7 +691,6 @@ const VisiteForm = (id, origin) => {
         if (
           isOrigin &&
           [
-            'prospect_id',
             'nom',
             'email',
             'prenom',
@@ -769,10 +714,6 @@ const VisiteForm = (id, origin) => {
       if (isOrigin) {
         url = `${APIURL.ROOT}/v1/store_n_visite/` + origin;
       }
-      if (isEditing) {
-        url = `${url}/${id}`;
-        method = 'put';
-      }
 
       axios({
         method: method,
@@ -786,15 +727,15 @@ const VisiteForm = (id, origin) => {
       })
         .then((res) => {
           let message = 'Quelque chose ne va pas bien';
-          if (res.status === 200) {
-            message = `La visite a été ${
-              isEditing ? 'modifiée' : 'créée'
-            } avec succès`;
+          if (res.status == 200) {
+            message = `La visite a été créée
+             avec succès`;
             toast.success(message);
-            router.push(ENDPOINTS.VISITES);
+            // router.push(ENDPOINTS.VISITES);
             localStorage.removeItem('selectedProspect');
-          localStorage.removeItem('selectedClient');            reset(defaultValues);
-          } else if (res.status === 422) {
+            localStorage.removeItem('selectedClient');
+            reset(defaultValues);
+          } else if (res.status == 422) {
             message = res.data.message;
             setBackendErrors(res.data.errors);
 
@@ -804,12 +745,12 @@ const VisiteForm = (id, origin) => {
         })
         .catch((error) => {
           const response = error.response;
-          if (response && response.status === 422) {
+          if (response && response.status == 422) {
             setBackendErrors(response.data.errors);
 
             // Effacer les erreurs après 5 secondes
             setTimeout(() => setBackendErrors({}), 5000);
-          } else if (response.status === 333) {
+          } else if (response.status == 333) {
             toast.error(response.data.error_33);
           } else {
             toast.error(
@@ -825,7 +766,7 @@ const VisiteForm = (id, origin) => {
 
   const handleChange_event = (text) => (event) => {
     const value = event.target.value;
-    if (text === 'cin') {
+    if (text == 'cin') {
       if (value.length >= 3) {
         const timeout = setTimeout(() => {
           fetch_event_visite(value, 'search_prospect_by_param', text, 'cin');
@@ -833,7 +774,7 @@ const VisiteForm = (id, origin) => {
 
         return () => clearTimeout(timeout);
       }
-    } else if (text === 'Téléphone' || text === 'Téléphone2') {
+    } else if (text == 'Téléphone' || text == 'Téléphone2') {
       if (value.length >= 10) {
         const timeout = setTimeout(() => {
           fetch_event_visite(value, 'search_prospect_by_param', text, 'tel');
@@ -841,7 +782,7 @@ const VisiteForm = (id, origin) => {
 
         return () => clearTimeout(timeout);
       }
-    } else if (text === "l'email") {
+    } else if (text == "l'email") {
       if (value.length >= 4) {
         const timeout = setTimeout(() => {
           fetch_event_visite(value, 'search_prospect_by_param', text, 'email');
@@ -885,7 +826,9 @@ const VisiteForm = (id, origin) => {
 
         // Extraire les champs communs seulement si `contactData` existe
 
-        const prospect_id = client ? contactData.prospect.id : contactData.id;
+        const prospect_id = client
+          ? contactData?.prospect?.id
+          : contactData?.id;
         const cin = contactData.cin;
         const nom = contactData.nom;
         const prenom = contactData.prenom;
@@ -905,9 +848,9 @@ const VisiteForm = (id, origin) => {
         const biens_traitement_freins = res.data.biens_traitement_freins || [];
 
         // Définir les états et valeurs des champs seulement si `contactData` est défini
-        setInfo_client_1(`Nom & Prénom: ${nom} ${prenom}`);
+        setInfo_client_1(`${nom} ${prenom}`);
         setClient_prospect(isClient ? 'Est un client' : 'Est un Prospect');
-        setValue('prospect_id', prospect_id || '');
+        setValue('prospect_id', prospect_id);
         setValue('cin', cin || '');
         setValue('nom', nom || '');
         setValue('prenom', prenom || '');
@@ -943,6 +886,7 @@ const VisiteForm = (id, origin) => {
           visite_pre_reserves.length > 0 ||
           biens_traitement_freins.length > 0
         ) {
+          setValue('loading_b_pre', true);
           if (visite_pre_reserves.length > 0) {
             const oldBiens = visite_pre_reserves.map(
               ({ bien, bien_id, id }) => ({
@@ -1012,7 +956,7 @@ const VisiteForm = (id, origin) => {
               ]);
             }
           }
-          setValue('loading_b_pre', true);
+          setValue('loading_b_pre', false);
         } else {
           setValue('loading_b_pre', false);
         }
@@ -1020,6 +964,7 @@ const VisiteForm = (id, origin) => {
         // Gérer les données de dialogue
         if (prospect?.appels) setId_appel(prospect.appels.id);
         if (prospect?.visites?.length) {
+          setValue('last_origin_id_of_prospect', prospect.visites[0].id);
           setId_visite(prospect.visites[0].id);
 
           setOld_visites_perdu([]);
@@ -1106,7 +1051,7 @@ const VisiteForm = (id, origin) => {
   };
   //selectedProjet?.id
   const fetch_bien_ByProjet = async () => {
-    if (Number(watch('interet')) === 1) {
+    if (Number(watch('interet')) == 1) {
       setLoading_bien(true);
       await axios
 
@@ -1369,17 +1314,17 @@ const VisiteForm = (id, origin) => {
 
     if (
       list[index]['statut'] == 2 &&
-      (list[index]['code_reservation'] === '' ||
-        list[index]['bien_id'] === '' ||
-        list[index]['prix'] === '' ||
-        list[index]['date_reservation'] === '' ||
+      (list[index]['code_reservation'] == '' ||
+        list[index]['bien_id'] == '' ||
+        list[index]['prix'] == '' ||
+        list[index]['date_reservation'] == '' ||
         Number(list[index]['avance_res']) < 0 || // Ensure it's treated as a number
-        list[index]['mode_financement'] === '' ||
-        list[index]['mode_paiement'] === '' ||
-        (list[index]['check_montant'] === true &&
-          list[index]['commentaireAvance'].length === 0) ||
-        (Number(list[index]['avance_res']) === 0 &&
-          list[index]['check_montant'] === false))
+        list[index]['mode_financement'] == '' ||
+        list[index]['mode_paiement'] == '' ||
+        (list[index]['check_montant'] == true &&
+          list[index]['commentaireAvance'].length == 0) ||
+        (Number(list[index]['avance_res']) == 0 &&
+          list[index]['check_montant'] == false))
     ) {
       list[index]['check_save'] = false;
     } else {
@@ -1626,20 +1571,20 @@ const VisiteForm = (id, origin) => {
     list[index][name] = value;
 
     // Handle bien_id changes
-    if (name === 'bien_id') {
+    if (name == 'bien_id') {
       show_bien(value, index);
       storebien_en_proposition(value, index);
       pusher_function();
     }
 
     // Handle avance_res and other fields
-    if (name === 'avance_res') {
+    if (name == 'avance_res') {
       list[index]['reste'] = list[index]['prix_final'] - e.target.value;
     }
-    if (name === 'sr') {
+    if (name == 'sr') {
       list[index]['sr'] = e.target.checked;
     }
-    if (name === 'check_montant') {
+    if (name == 'check_montant') {
       list[index]['check_montant'] = e.target.checked;
     }
 
@@ -1652,17 +1597,17 @@ const VisiteForm = (id, origin) => {
     // Additional checks and updates
     if (
       list[index]['statut'] == 2 &&
-      (list[index]['code_reservation'] === '' ||
-        list[index]['bien_id'] === '' ||
-        list[index]['prix'] === '' ||
-        list[index]['date_reservation'] === '' ||
+      (list[index]['code_reservation'] == '' ||
+        list[index]['bien_id'] == '' ||
+        list[index]['prix'] == '' ||
+        list[index]['date_reservation'] == '' ||
         Number(list[index]['avance_res']) < 0 || // Ensure it's treated as a number
-        list[index]['mode_financement'] === '' ||
-        list[index]['mode_paiement'] === '' ||
-        (list[index]['check_montant'] === true &&
-          list[index]['commentaireAvance'].length === 0) ||
-        (Number(list[index]['avance_res']) === 0 &&
-          list[index]['check_montant'] === false))
+        list[index]['mode_financement'] == '' ||
+        list[index]['mode_paiement'] == '' ||
+        (list[index]['check_montant'] == true &&
+          list[index]['commentaireAvance'].length == 0) ||
+        (Number(list[index]['avance_res']) == 0 &&
+          list[index]['check_montant'] == false))
     ) {
       console.log('hop', list[index]);
 
@@ -1674,13 +1619,13 @@ const VisiteForm = (id, origin) => {
     setCheck_save(true);
 
     input_biens.forEach((input) => {
-      if (name === 'bien_id') {
+      if (name == 'bien_id') {
         for (let j = 0; j <= Number(biensByProjet.length) - 1; j++) {
-          if (biensByProjet[j].id === JSON.stringify(input.bien_id)) {
+          if (biensByProjet[j].id == JSON.stringify(input.bien_id)) {
             biensByProjet[j].disabled = true;
           }
           if (list[index]['old_bien_id'] !== '') {
-            if (biensByProjet[j].id === list[index]['old_bien_id']) {
+            if (biensByProjet[j].id == list[index]['old_bien_id']) {
               biensByProjet[j].disabled = false;
             }
           }
@@ -1697,7 +1642,7 @@ const VisiteForm = (id, origin) => {
         setCheck_save(false);
       }
 
-      if (name === 'code_reservation') {
+      if (name == 'code_reservation') {
         if (value.length >= 3) {
           setInfo_reservation(null);
           setTimeout(() => {
@@ -1707,10 +1652,10 @@ const VisiteForm = (id, origin) => {
       }
     });
 
-    if (name === 'prix_remise') {
+    if (name == 'prix_remise') {
       handlechangeprix_remise(value, index, null);
     }
-    if (name === 'prix_forfetaire') {
+    if (name == 'prix_forfetaire') {
       handlechangeprix_forfetaire(value, index, null);
     }
 
@@ -1739,7 +1684,7 @@ const VisiteForm = (id, origin) => {
       })
       .catch((err) => {
         const response = err.response;
-        if (response && response.status === 422) {
+        if (response && response.status == 422) {
           toast.error(response.data.error);
         }
       });
@@ -1780,7 +1725,22 @@ const VisiteForm = (id, origin) => {
     open_D_P ||
     (watch('list_bien_transfere_vendu').length == 0 &&
       watch('interet') == 1 &&
-      watch('nb_bien_added') == 0);
+      watch('nb_bien_added') == 0) ||
+    // Add new conditions for avance_res validation
+    input_biens.some(
+      (x) =>
+        x.statut == 2 &&
+        x.bien_id != null &&
+        ((x.avance_res != '' && x.avance_res == 0 && user?.role > 2) ||
+          (x.avance_res > 0 && x.avance_res < x.avance_minimale))
+    ) ||
+    input_biens_vendu.some(
+      (x) =>
+        x.statut == 2 &&
+        x.bien_id != null &&
+        ((x.avance_res != '' && x.avance_res == 0 && user?.role > 2) ||
+          (x.avance_res > 0 && x.avance_res < x.avance_minimale))
+    );
 
   return (
     <div>
@@ -1799,17 +1759,20 @@ const VisiteForm = (id, origin) => {
       </Modal>
       {open_dialog == true && (
         <>
-          <Modal isVisible={true} onClose={() => setOpen_Dialog(false)}>
-            <Modal_Propsepct_Exist
-              info_client_1={info_client_1}
-              id_appel={id_appel}
-              id_visite={id_visite}
-              client_prospect={client_prospect}
-              onClose={() => setOpen_Dialog(false)}
-            />
-          </Modal>
+          <Modal_Propsepct_Exist
+            info_client_1={info_client_1}
+            id_appel={id_appel}
+            id_visite={id_visite}
+            client_prospect={client_prospect}
+            onClose={() => setOpen_Dialog(false)}
+          />
         </>
       )}{' '}
+      <div className="">
+        <div className="flex items-center justify-start">
+          <BreadCrumb baseUrl={ENDPOINTS.VISITES} step={`Ajouter Visite`} />
+        </div>
+      </div>
       <div>
         {(!isOrigin ||
           (isOrigin && OldBiens_pre.length > 0 && paper_exist == 1) ||
@@ -1820,34 +1783,59 @@ const VisiteForm = (id, origin) => {
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="space-y-4">
                 {/* Client/Prospect Information */}
-                <div>
-                  <h2 className="text-xl font-medium border-b pb-2">
-                    Informations du prospect
-                  </h2>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
-                  {!isOrigin && (
-                    <ProspectInformations
-                      control={control}
-                      watch={watch}
-                      errors={errors}
-                      backendErrors={backendErrors}
-                      defaultValues={defaultValues}
-                      formSubmitted={formSubmitted}
-                      email_required={email_required}
-                      loading={loading}
-                      sources={sources}
-                      handleSourceChange={handleSourceChange}
-                      partenaires={partenaires}
-                      handlePartenaireChange={handlePartenaireChange}
-                      disabled_var={disabled_var}
-                      selectedPerson={selectedPerson}
-                      disabled_var_source={disabled_var_source}
-                      partenaire_txt={partenaire_txt}
-                      handleChange_event={handleChange_event}
-                    />
-                  )}
-                </div>
+                {!isOrigin && (
+                  <>
+                    <div>
+                      <h2 className="text-xl font-medium border-b pb-2">
+                        Informations du prospect
+                      </h2>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
+                      <ProspectInformations
+                        control={control}
+                        watch={watch}
+                        errors={errors}
+                        backendErrors={backendErrors}
+                        defaultValues={defaultValues}
+                        formSubmitted={formSubmitted}
+                        email_required={email_required}
+                        loading={loading}
+                        sources={sources}
+                        handleSourceChange={handleSourceChange}
+                        partenaires={partenaires}
+                        handlePartenaireChange={handlePartenaireChange}
+                        disabled_var={disabled_var}
+                        selectedPerson={selectedPerson}
+                        disabled_var_source={disabled_var_source}
+                        partenaire_txt={partenaire_txt}
+                        handleChange_event={handleChange_event}
+                      />
+                    </div>
+                  </>
+                )}
+
+                {isOrigin && display_cin && display_cin_1 && (
+                  <>
+                    <div>
+                      <h2 className="text-xl font-medium border-b pb-2">
+                        Informations du prospect
+                      </h2>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
+                      <TextField
+                        label="Cin:"
+                        name="cin"
+                        control={control}
+                        errors={errors}
+                        backendErrors={backendErrors}
+                        defaultValues={defaultValues}
+                        onChange={handleChange_event('cin')}
+                        required={Number(watch('interet')) == 1}
+                      />
+                    </div>
+                  </>
+                )}
+
                 <div className="col-span-3 mt-4">
                   <h2 className="text-xl font-medium  border-b pb-2 mb-4">
                     Informations de la visite
@@ -1877,7 +1865,7 @@ const VisiteForm = (id, origin) => {
                                       3: VISITE_INTERETS[3],
                                     }
                               }
-                              disabled={watch('telephone') == ''}
+                              disabled={!isOrigin && watch('telephone') == ''}
                               onChange={handleChange_interet}
                             />
                           </div>
@@ -1892,7 +1880,7 @@ const VisiteForm = (id, origin) => {
                                   ...errors,
                                   nb_bien_added:
                                     formSubmitted &&
-                                    Number(watch('interet')) === 1 &&
+                                    Number(watch('interet')) == 1 &&
                                     !watch('nb_bien_added') &&
                                     watch('nb_bien_added') !== 0
                                       ? 'Ce champ est obligatoire lorsque interet est Intéressé.'
@@ -1902,7 +1890,7 @@ const VisiteForm = (id, origin) => {
                                 }}
                                 backendErrors={backendErrors}
                                 defaultValues={{ nb_bien_added: 0 }}
-                                required={Number(watch('interet')) === 1}
+                                required={Number(watch('interet')) == 1}
                                 inputProps={{
                                   min: 0,
                                   inputMode: 'numeric',
@@ -1929,24 +1917,10 @@ const VisiteForm = (id, origin) => {
                           )}
                         </>
                       )}
-                      {isOrigin && display_cin && display_cin_1 && (
-                        <div>
-                          <TextField
-                            label="Cin:"
-                            name="cin"
-                            control={control}
-                            errors={errors}
-                            backendErrors={backendErrors}
-                            defaultValues={defaultValues}
-                            onChange={handleChange_event('cin')}
-                            required={Number(watch('interet')) === 1}
-                          />
-                        </div>
-                      )}
                     </>
                   )}
 
-                  {Number(watch('interet')) === 2 && (
+                  {Number(watch('interet')) == 2 && (
                     <>
                       <div className="">
                         <AutocompleteSelectComponent
@@ -1970,7 +1944,7 @@ const VisiteForm = (id, origin) => {
                       </div>
                     </>
                   )}
-                  {Number(watch('interet')) === 3 && (
+                  {Number(watch('interet')) == 3 && (
                     <FreinsComponent
                       watch={watch}
                       control={control}
@@ -2195,7 +2169,7 @@ const VisiteForm = (id, origin) => {
                                       >
                                         <span
                                           className={`text-sm font-medium ${
-                                            x.sr === true
+                                            x.sr == true
                                               ? 'text-purple-600'
                                               : ''
                                           }`}
@@ -2277,6 +2251,21 @@ const VisiteForm = (id, origin) => {
                                         handleinputchange_bien_vendu(e, j)
                                       }
                                     />
+                                    {x.avance_res != '' &&
+                                      x.avance_res == 0 &&
+                                      user?.role > 2 && (
+                                        <strong style={{ color: 'red' }}>
+                                          Le montant ne peut pas être 0 pour
+                                          votre rôle
+                                        </strong>
+                                      )}
+                                    {x.avance_res > 0 &&
+                                      x.avance_res < x.avance_minimale && (
+                                        <strong style={{ color: 'red' }}>
+                                          Le montant doit être au moins{' '}
+                                          {x.avance_minimale}
+                                        </strong>
+                                      )}
                                     <AutocompleteStatut_ModeRelance_Biens
                                       name={'mode_financement'}
                                       label={'Mode Financement:'}
@@ -2362,7 +2351,7 @@ const VisiteForm = (id, origin) => {
                                           >
                                             <span
                                               className={`text-sm font-medium ${
-                                                x.check_montant === true
+                                                x.check_montant == true
                                                   ? 'text-purple-600'
                                                   : ''
                                               }`}
@@ -2485,7 +2474,7 @@ const VisiteForm = (id, origin) => {
                                   ...errors,
                                   nb_bien_added:
                                     formSubmitted &&
-                                    Number(watch('interet')) === 1 &&
+                                    Number(watch('interet')) == 1 &&
                                     !watch('nb_bien_added')
                                       ? 'Ce champ est obligatoire lorsque interet est Intéressé.'
                                       : null,
@@ -2493,7 +2482,7 @@ const VisiteForm = (id, origin) => {
                                 backendErrors={backendErrors}
                                 defaultValues={defaultValues}
                                 onChange={handleChange_NbrBien}
-                                required={Number(watch('interet')) === 1}
+                                required={Number(watch('interet')) == 1}
                               />
                             </>
                           )}
@@ -2509,7 +2498,7 @@ const VisiteForm = (id, origin) => {
                             backendErrors={backendErrors}
                             defaultValues={defaultValues}
                             onChange={handleChange_event('cin')}
-                            required={Number(watch('interet')) === 1}
+                            required={Number(watch('interet')) == 1}
                           />
                         </div>
                       )}
@@ -2769,7 +2758,7 @@ const VisiteForm = (id, origin) => {
                                         >
                                           <span
                                             className={`text-sm font-medium ${
-                                              x.sr === true
+                                              x.sr == true
                                                 ? 'text-purple-600'
                                                 : ''
                                             }`}
@@ -2841,6 +2830,7 @@ const VisiteForm = (id, origin) => {
                                         value={x.reste}
                                         disabled
                                       />
+                                      
                                       <InputField_Biens
                                         label="Montant:"
                                         name="avance_res"
@@ -2851,6 +2841,21 @@ const VisiteForm = (id, origin) => {
                                           handleinputchange(e, i)
                                         }
                                       />
+                                      {x.avance_res != '' &&
+                                        x.avance_res == 0 &&
+                                        user?.role > 2 && (
+                                          <p style={{ color: 'red' }}>
+                                            Le montant ne peut pas être 0 pour
+                                            votre rôle
+                                          </p>
+                                        )}
+                                      {x.avance_res > 0 &&
+                                        x.avance_res < x.avance_minimale && (
+                                          <p style={{ color: 'red' }}>
+                                            Le montant doit être au moins{' '}
+                                            {x.avance_minimale}
+                                          </p>
+                                        )}
                                       <AutocompleteStatut_ModeRelance_Biens
                                         name={'mode_financement'}
                                         label={'Mode Financement:'}
@@ -2936,7 +2941,7 @@ const VisiteForm = (id, origin) => {
                                             >
                                               <span
                                                 className={`text-sm font-medium ${
-                                                  x.check_montant === true
+                                                  x.check_montant == true
                                                     ? 'text-purple-600'
                                                     : ''
                                                 }`}
@@ -3017,8 +3022,8 @@ const VisiteForm = (id, origin) => {
                       </div>
                     ))}
                 </div>
-                {(Number(watch('interet')) === 2 ||
-                  Number(watch('interet')) === 3) && (
+                {(Number(watch('interet')) == 2 ||
+                  Number(watch('interet')) == 3) && (
                   <div className="flex-1 mt-4">
                     <TextField
                       label="Commentaire:"
@@ -3130,7 +3135,7 @@ const VisiteForm = (id, origin) => {
                                   type="button"
                                   value="1"
                                   className={`py-1 px-2 rounded-md ${
-                                    x.action === '1'
+                                    x.action == '1'
                                       ? 'bg-blue-500 text-white'
                                       : 'bg-[rgb(231,239,255)]'
                                   }`}
@@ -3144,7 +3149,7 @@ const VisiteForm = (id, origin) => {
                                   type="button"
                                   value="2"
                                   className={`py-1 px-2 rounded-md ${
-                                    x.action === '2'
+                                    x.action == '2'
                                       ? 'bg-red-500 text-white'
                                       : 'bg-[rgb(231,239,255)]'
                                   }`}
@@ -3158,7 +3163,7 @@ const VisiteForm = (id, origin) => {
                                   type="button"
                                   value="3"
                                   className={`py-1 px-2 rounded-md ${
-                                    x.action === '3'
+                                    x.action == '3'
                                       ? 'bg-green-500 text-white'
                                       : 'bg-[rgb(231,239,255)]'
                                   }`}

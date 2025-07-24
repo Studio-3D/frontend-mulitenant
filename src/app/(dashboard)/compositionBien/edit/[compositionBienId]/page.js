@@ -1,10 +1,12 @@
-import { useState, useEffect } from "react";
+"use client";
+;
+import { useState, useEffect, use } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { APIURL, ENDPOINTS } from "@/configs/api";
 import axios from "axios";
 import toast from "react-hot-toast";
 import Button from "@/components/Button";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import BreadCrumb from "../../navigation/BreadCrumb";
 import {
   Grid,
@@ -27,7 +29,9 @@ import { encryptUserType, USER_TYPES } from "@/components/user-utils";
 import InputSelect from "@/components/inputSelect";
 import Input from '@/components/Input';
 
-const CompositionForm = ({ id = null }) => {
+const CompositionForm = () => {
+const { id } = useParams();
+    
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [services, setServices] = useState([]);

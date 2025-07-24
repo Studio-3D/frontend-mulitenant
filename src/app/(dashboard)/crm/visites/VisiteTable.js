@@ -19,7 +19,7 @@ import {
 import Link from 'next/link';
 import SelectInput from '@/components/SelectInput';
 
-const VisiteTable = ({user_id,dataProspect, dataClient}) => {
+const VisiteTable = ({ user_id, dataProspect, dataClient, show_prospect }) => {
   const [visites, setVisites] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -53,8 +53,8 @@ const VisiteTable = ({user_id,dataProspect, dataClient}) => {
     searchFields: ['responsable', 'date', 'nom', 'prenom', 'telephone'],
   };
   // Prepare parameters based on conditions
-  const clientId = dataClient?.id;
-  const prospectId = dataProspect?.dataProspect?.id;
+  const clientId = dataClient ? JSON.stringify(dataClient?.id) : null;
+  const prospectId = dataProspect ? JSON.stringify(dataProspect?.id) : null;
   useEffect(() => {
     const params_url = clientId
       ? { client_id: clientId }
@@ -64,7 +64,7 @@ const VisiteTable = ({user_id,dataProspect, dataClient}) => {
     const combinedFilters = {
       ...(user_id ? { user_id } : {}),
       ...filters,
-      ...params_url
+      ...params_url,
     };
     fetchData_table_by_projet(
       entity,
@@ -151,62 +151,64 @@ const VisiteTable = ({user_id,dataProspect, dataClient}) => {
   };
 
   // Table columns configuration
-  const columns = [
-    {
-      key: 'responsable',
-      label: 'Responsable',
-      render: (row) => (
-        <div className="flex items-center gap-3">
-          <span>{row.cc}</span>
-        </div>
-      ),
+ // Table columns configuration
+const columns = [
+  {
+    key: 'responsable',
+    label: 'Responsable',
+    render: (row) => (
+      <div className="flex items-center gap-3">
+        <span>{row.cc}</span>
+      </div>
+    ),
+  },
+  { key: 'date', label: 'Date' },
+  // Only show nom column if prospect_id exists
+  ...(prospectId==null ? [{
+    key: 'nom',
+    label: 'Nom',
+    render: (row) => {
+      return row.prospect_id ? (
+        <Link href={'/crm/prospects/' + row.prospect_id} target="_blank">
+          <strong style={{ fontWeight: 600 }}>{row.nom}</strong>
+        </Link>
+      ) : null;
     },
-    { key: 'date', label: 'Date' },
-    {
-      key: 'nom',
-      label: 'Nom ',
-      render: (row) => {
-        return (
-          <Link href={'/crm/prospects/' + row.prospect_id} target="_blank">
-            <strong style={{ fontWeight: 600 }}>{row.nom}</strong>
-          </Link>
-        );
-      },
+  }] : []),
+  // Only show prenom column if prospect_id exists
+  ...(prospectId==null ? [{
+    key: 'prenom',
+    label: 'Prénom',
+    render: (row) => {
+      return row.prospect_id ? (
+        <Link href={'/crm/prospects/' + row.prospect_id} target="_blank">
+          <strong style={{ fontWeight: 600 }}>{row.prenom}</strong>
+        </Link>
+      ) : null;
     },
-    {
-      key: 'prenom',
-      label: 'Prénom',
-      render: (row) => {
-        return (
-          <Link href={'/crm/prospects/' + row.prospect_id} target="_blank">
-            <strong style={{ fontWeight: 600 }}>{row.prenom}</strong>
-          </Link>
-        );
-      },
+  }] : []),
+  { key: 'telephone', label: 'Téléphone' },
+  {
+    key: 'interet',
+    label: 'Intéret',
+    render: (row) => {
+      return getInteretBadge(row.interet);
     },
-    { key: 'telephone', label: 'Téléphone' },
-
-    {
-      key: 'interet',
-      label: 'Intéret',
-      render: (row) => {
-        return getInteretBadge(row.interet);
-      },
-    },
-    {
-      key: 'actions',
-      label: 'Actions',
-      render: (row) => (
-        <div className="flex gap-3 items-center">
-          <Eye
-            className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
-            title="Voir détails"
-            onClick={() => handleShow(row.origin_id)}
-          />
-        </div>
-      ),
-    },
-  ];
+  },
+  {
+    key: 'actions',
+    label: 'Actions',
+    render: (row) => (
+      <div className="flex gap-3 items-center">
+        <Eye
+          className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
+          title="Voir détails"
+          onClick={() => handleShow(row.origin_id)}
+        />
+      </div>
+    ),
+  },
+].filter(Boolean); // This removes any falsy values from the array
 
   {
     /* Dynamic Modals Import */
@@ -245,23 +247,24 @@ const VisiteTable = ({user_id,dataProspect, dataClient}) => {
   const canAddVisite =
     isSuperAdmin(user.role) || isAdmin(user.role) || isCommercial(user.role);
 
-   function getAddLinkForVisite(user) {
-     if (canAddVisite) {
-       if (dataClient) {
-         return {
-           pathname: `${ENDPOINTS.VISITES}?action=add`,
-           onClick: () => {
-             localStorage.setItem(
-                   'selectedClient',
-                   JSON.stringify({ dataClient: dataClient })
-                 );        
-           }
-         };
-       }
-       return `${ENDPOINTS.VISITES}?action=add`;
-     }
-     return undefined;
-   }
+  function getAddLinkForVisite(user) {
+    if (canAddVisite) {
+      if (dataClient) {
+        return {
+          pathname: `${ENDPOINTS.VISITES}?action=add`,
+          onClick: () => {
+            localStorage.setItem(
+              'selectedClient',
+              JSON.stringify({ dataClient: dataClient })
+            );
+          },
+        };
+      }
+
+      return `${ENDPOINTS.VISITES}?action=add`;
+    }
+    return undefined;
+  }
 
   const handleFilterChange = (field, value) => {
     setTempFilters((prev) => ({ ...prev, [field]: value }));
@@ -300,7 +303,8 @@ const VisiteTable = ({user_id,dataProspect, dataClient}) => {
           onRowsPerPageChange={setRowsPerPage}
           onSearchChange={setSearchTerm}
           enableExport={true}
-          addLink={!user_id && getAddLinkForVisite(user)}
+          showSearch={false}
+          addLink={!user_id && !show_prospect && getAddLinkForVisite(user)}
           filterComponent={
             <div className="space-y-4 p-4 rounded-lg ">
               <div
@@ -312,7 +316,7 @@ const VisiteTable = ({user_id,dataProspect, dataClient}) => {
                 {/* Champs de recherche */}
                 <Input
                   type="text"
-                  placeholder="Responsable"
+                  label="Responsable"
                   value={tempFilters.cc}
                   onChange={(e) => handleFilterChange('cc', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
@@ -321,7 +325,7 @@ const VisiteTable = ({user_id,dataProspect, dataClient}) => {
                   <>
                     <Input
                       type="text"
-                      placeholder="Nom"
+                      label="Nom"
                       value={tempFilters.nom}
                       onChange={(e) =>
                         handleFilterChange('nom', e.target.value)
@@ -330,7 +334,7 @@ const VisiteTable = ({user_id,dataProspect, dataClient}) => {
                     />
                     <Input
                       type="text"
-                      placeholder="Prénom"
+                      label="Prénom"
                       value={tempFilters.prenom}
                       onChange={(e) =>
                         handleFilterChange('prenom', e.target.value)
@@ -340,7 +344,7 @@ const VisiteTable = ({user_id,dataProspect, dataClient}) => {
 
                     <Input
                       type="text"
-                      placeholder="Cin"
+                      label="Cin"
                       value={tempFilters.cin}
                       onChange={(e) =>
                         handleFilterChange('cin', e.target.value)
@@ -349,7 +353,7 @@ const VisiteTable = ({user_id,dataProspect, dataClient}) => {
                     />
                     <Input
                       type="number"
-                      placeholder="Téléphome"
+                      label="Téléphome"
                       value={tempFilters.telephone}
                       onChange={(e) =>
                         handleFilterChange('telephone', e.target.value)
@@ -361,11 +365,13 @@ const VisiteTable = ({user_id,dataProspect, dataClient}) => {
                 <SelectInput
                   value={tempFilters.interet}
                   onChange={(value) => handleFilterChange('interet', value)}
-                  options={Object.values(VISITE_INTERETS).map((data) => ({
-                    value: data.code,
-                    label: data.label,
-                  }))}
-                  placeholder="Choisir un Intéret"
+                  options={Object.values(VISITE_INTERETS)
+                    .filter((data) => data.code !== 4) // This will exclude the option with code 4
+                    .map((data) => ({
+                      value: data.code,
+                      label: data.label,
+                    }))}
+                  label="Choisir un Intéret"
                   className="h-10 text-sm w-full"
                 />
               </div>

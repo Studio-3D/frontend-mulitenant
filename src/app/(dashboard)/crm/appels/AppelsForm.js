@@ -105,13 +105,23 @@ export default function AppelsForm({ id }) {
 
   const defaultValues = {
     id_t_appel: '',
-    prospect_id: personType === 'prospect' ? selectedPerson?.id : personType === 'client' ? selectedPerson?.prospect_id : '',
+    prospect_id:
+      personType === 'prospect'
+        ? selectedPerson?.id
+        : personType === 'client'
+        ? selectedPerson?.prospect_id
+        : '',
     client_id: personType === 'client' ? selectedPerson?.id : '',
     cin: selectedPerson?.cin || '',
     nom: selectedPerson?.nom || '',
     email: selectedPerson?.email || '',
     prenom: selectedPerson?.prenom || '',
-    telephone: personType === 'prospect' ? selectedPerson?.telephone : personType === 'client' ? selectedPerson?.telephone_num1 : '',
+    telephone:
+      personType === 'prospect'
+        ? selectedPerson?.telephone
+        : personType === 'client'
+        ? selectedPerson?.telephone_num1
+        : '',
     telephone_num2: selectedPerson?.telephone_num2 || null,
     ville: selectedPerson?.ville || '',
     notifie: selectedPerson?.notifie || '',
@@ -610,7 +620,7 @@ export default function AppelsForm({ id }) {
         }
       })
       .finally(() => {
-            setIsSubmitting(false); // Reset manual loading state
+        setIsSubmitting(false); // Reset manual loading state
       });
   };
 
@@ -665,7 +675,7 @@ export default function AppelsForm({ id }) {
               res.data.client.prospect?.partenaire?.description ||
               res.data.prospect.partenaire.description;
             setInfo_client(
-              'Nom & Prénom: ' +
+              
                 ((res.data.client?.nom || res.data.prospect?.nom || '') +
                   ' ' +
                   (res.data.client?.prenom || res.data.prospect?.prenom || ''))
@@ -685,7 +695,7 @@ export default function AppelsForm({ id }) {
             partenaire_txt = res.data.prospect?.partenaire?.description;
 
             setInfo_client(
-              'Nom & Prénom : ' +
+              
                 res.data.prospect.nom +
                 ' ' +
                 res.data.prospect.prenom
@@ -883,15 +893,13 @@ export default function AppelsForm({ id }) {
     <>
       {open_dialog == true && (
         <>
-          <Modal isVisible={true} onClose={() => setOpen_Dialog(false)}>
-            <Modal_Propsepct_Exist
-              info_client_1={info_client}
-              id_appel={id_appel}
-              id_visite={id_visite}
-              client_prospect={client_prospect}
-              onClose={() => setOpen_Dialog(false)}
-            />
-          </Modal>
+          <Modal_Propsepct_Exist
+            info_client_1={info_client}
+            id_appel={id_appel}
+            id_visite={id_visite}
+            client_prospect={client_prospect}
+            onClose={() => setOpen_Dialog(false)}
+          />
         </>
       )}
       <div className="">
@@ -1095,7 +1103,7 @@ export default function AppelsForm({ id }) {
                 />
               </div>
             </div>
-            {Number(watch('interet')) != '' && (
+            {Number(watch('interet')) != '' && Number(watch('interet')) != '4' && (
               <div className="col-span-3 mt-4">
                 <h2
                   className="text-lg font-medium border-b pb-2 mb-4"
@@ -1105,7 +1113,7 @@ export default function AppelsForm({ id }) {
                 </h2>
               </div>
             )}
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-start">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start">
               {/* Tranche et Bloc si interet == 1 */}
               {Number(watch('interet')) == 1 && (
                 <>
@@ -1562,49 +1570,49 @@ export default function AppelsForm({ id }) {
                       </div>
                     </>
                   )}
-                   {(watch('freins')?.includes('superficie') ||
+                  {(watch('freins')?.includes('superficie') ||
                     freins_value.includes('superficie')) && (
                     <>
                       <div>
                         {info_prix != null && (
                           <div className="w-full">
-                          <div className="bg-blue-100 !text-blue-700 border-l-4 border-blue-500 p-4 text-center rounded">
-                          {info_prix}
+                            <div className="bg-blue-100 !text-blue-700 border-l-4 border-blue-500 p-4 text-center rounded">
+                              {info_prix}
                             </div>
                           </div>
                         )}
                         <div className="sm:col-span-2 flex gap-4">
                           <div className="w-1/2">
-                          <TextField
-                            label="Sup Min:"
-                            name="sup_min"
-                            type="number"
-                            control={control}
-                            errors={errors}
-                            backendErrors={backendErrors}
-                            defaultValues={defaultValues}
-                            onChange={handlePrixChange(2)}
-                            required={watch('freins')?.includes('superficie')}
-                          />
+                            <TextField
+                              label="Sup Min:"
+                              name="sup_min"
+                              type="number"
+                              control={control}
+                              errors={errors}
+                              backendErrors={backendErrors}
+                              defaultValues={defaultValues}
+                              onChange={handlePrixChange(2)}
+                              required={watch('freins')?.includes('superficie')}
+                            />
                           </div>
                           <div className="w-1/2">
                             <TextField
-                            label="Sup Max:"
-                            name="sup_max"
-                            type="number"
-                            control={control}
-                            errors={errors}
-                            backendErrors={backendErrors}
-                            defaultValues={defaultValues}
-                            onChange={handlePrixChange(2)}
-                            required={watch('freins')?.includes('superficie')}
-                          />
+                              label="Sup Max:"
+                              name="sup_max"
+                              type="number"
+                              control={control}
+                              errors={errors}
+                              backendErrors={backendErrors}
+                              defaultValues={defaultValues}
+                              onChange={handlePrixChange(2)}
+                              required={watch('freins')?.includes('superficie')}
+                            />
                           </div>
                         </div>
                       </div>
                     </>
                   )}
-                 
+
                   {(watch('freins')?.includes('typologie') ||
                     freins_value.includes('typologie')) && (
                     <div>
@@ -1711,7 +1719,7 @@ export default function AppelsForm({ id }) {
             <TextField
               label="Commentaire:"
               name="commentaire"
-              required
+              
               type="text"
               multi={true} // Set this to true if you want a multi-line textarea, else leave it out or false
               control={control} // Passed from useForm hook
@@ -1723,35 +1731,48 @@ export default function AppelsForm({ id }) {
             />
           </div>
           <div className="flex justify-center gap-4 items-center xl:mt-32">
-            <Button type="button" 
-            onClick={() => {
-                  if (onClose) {
-                    onClose();
-                  } else {
-                    router.back();
-                  }
-                }} disabled={isSubmitting} // Disable cancel during submit
+            <Button
+              type="button"
+              onClick={() => {
+                if (onClose) {
+                  onClose();
+                } else {
+                  router.back();
+                }
+              }}
+              disabled={isSubmitting} // Disable cancel during submit
             >
               Annuler
             </Button>
 
             <Button type="submit" disabled={isSubmitting || disabled_var}>
-             {isSubmitting ? (
-                  <div className="flex items-center gap-2">
-                    <svg 
-                      className="animate-spin h-5 w-5 text-white" 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      fill="none" 
-                      viewBox="0 0 24 24"
-                    >
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Enregistrement...
-                  </div>
-                ) : (
-                  "Enregistrer"
-                )}
+              {isSubmitting ? (
+                <div className="flex items-center gap-2">
+                  <svg
+                    className="animate-spin h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Enregistrement...
+                </div>
+              ) : (
+                'Enregistrer'
+              )}
             </Button>
           </div>
         </form>

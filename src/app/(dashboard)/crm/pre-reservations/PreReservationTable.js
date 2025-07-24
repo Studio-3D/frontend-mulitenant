@@ -11,7 +11,7 @@ import { fetchData_table_by_projet } from '../../../../../src/configs/api-utils'
 import Link from 'next/link';
 import { format, parseISO, isValid } from 'date-fns';
 import { PDFDownloadLink } from '@react-pdf/renderer';
-import Document from './bon_pre_reservation.js';
+import MyDocument from './bon_pre_reservation.js';
 import Input from '@/components/Input';
 
 const PreReservationTable = () => {
@@ -73,7 +73,14 @@ const PreReservationTable = () => {
       setData,
       setTotalRows
     );
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters, selectedProjet]);
+  }, [
+    accesstoken,
+    currentPage,
+    rowsPerPage,
+    searchTerm,
+    filters,
+    selectedProjet,
+  ]);
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
@@ -186,7 +193,20 @@ const PreReservationTable = () => {
         </div>
       ),
     },
-    { key: 'bien_propriete', label: 'Bien' },
+    {
+      key: 'bien',
+      label: 'Bien',
+      render: (row) => {
+        return (
+          <Link target="_blank" href={`/Biens/${row?.bien.id}`}>
+            <strong style={{ fontWeight: 600 }}>
+              {' '}
+              {NomBienComplet(row.bien)}
+            </strong>
+          </Link>
+        );
+      },
+    },
     { key: 'respo', label: 'Commercial' },
     {
       key: 'prospect',
@@ -206,15 +226,17 @@ const PreReservationTable = () => {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <Eye
-            className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
-            title="Voir détails"
-            onClick={() => handleShow(row)}
-          />
+          <div title="Voir détails">
+            <Eye
+              className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
+              title="Voir détails"
+              onClick={() => handleShow(row)}
+            />
+          </div>
 
           <PDFDownloadLink
             document={
-              <Document
+              <MyDocument
                 data={[
                   row.visite_id,
                   row.code_pre_reserve,
@@ -244,15 +266,17 @@ const PreReservationTable = () => {
             }
             fileName="bon_pre_reservation.pdf"
           >
-           {({ loading }) => (
-                <button
-                  className={`text-indigo-500 hover:text-indigo-700 ${loading ? 'opacity-50' : ''}`}
-                  title="Télécharger PDF"
-                  disabled={loading}
-                >
-                  {loading ? '...' : <Download className="w-4 h-4" />}
-                </button>
-              )}
+            {({ loading }) => (
+              <button
+                className={`text-indigo-500 hover:text-indigo-700 ${
+                  loading ? 'opacity-50' : ''
+                }`}
+                title="Télécharger PDF"
+                disabled={loading}
+              >
+                {loading ? '...' : <Download className="w-4 h-4" />}
+              </button>
+            )}
           </PDFDownloadLink>
         </div>
       ),
@@ -263,6 +287,17 @@ const PreReservationTable = () => {
     /* Dynamic Modals Import */
   }
 
+  function NomBienComplet(bien) {
+    const noms = [];
+
+    if (bien.tranche?.nom) noms.push(bien.tranche.nom);
+    if (bien.bloc?.nom) noms.push(bien.bloc.nom);
+    if (bien.immeuble?.nom) noms.push(bien.immeuble.nom);
+
+    noms.push(bien.propriete_dite_bien);
+
+    return noms.join(' - ');
+  }
   //EXPORT
 
   const data_to_export = () => {
@@ -314,7 +349,8 @@ const PreReservationTable = () => {
         respo,
         prospect,
         rdv,
-        bien_propriete: pro.bien?.propriete_dite_bien || '',
+        bien_propriete: pro?.bien?.propriete_dite_bien || '',
+        bien: pro?.bien || '',
       };
     });
   };
@@ -348,6 +384,7 @@ const PreReservationTable = () => {
           onRowsPerPageChange={setRowsPerPage}
           onSearchChange={setSearchTerm}
           enableExport={true}
+          showSearch={false}
           filterComponent={
             <div className="space-y-4 p-4 rounded-lg ">
               <div
@@ -359,14 +396,14 @@ const PreReservationTable = () => {
                 {/* Champs de recherche */}
                 <Input
                   type="text"
-                  placeholder="Bien"
+                  label="Bien"
                   value={tempFilters.bien}
                   onChange={(e) => handleFilterChange('bien', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
                 <Input
                   type="text"
-                  placeholder="Nom & Prénom"
+                  label="Nom & Prénom"
                   value={tempFilters.prospect}
                   onChange={(e) =>
                     handleFilterChange('prospect', e.target.value)
@@ -375,7 +412,7 @@ const PreReservationTable = () => {
                 />
                 <Input
                   type="text"
-                  placeholder="Responsable"
+                  label="Responsable"
                   value={tempFilters.respo}
                   onChange={(e) => handleFilterChange('respo', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
@@ -383,7 +420,7 @@ const PreReservationTable = () => {
 
                 <Input
                   type="text"
-                  placeholder="Code"
+                  label="Code"
                   value={tempFilters.code_pre}
                   onChange={(e) =>
                     handleFilterChange('code_pre', e.target.value)

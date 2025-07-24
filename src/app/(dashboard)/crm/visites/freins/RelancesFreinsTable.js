@@ -38,7 +38,9 @@ const RelancesFreinsTable = () => {
     setTempFilters((prev) => ({ ...prev, [field]: value }));
   };
   const resetFilters = () => {
-    const reset = Object.fromEntries(Object.keys(filters).map(key => [key, '']));
+    const reset = Object.fromEntries(
+      Object.keys(filters).map((key) => [key, ''])
+    );
     setFilters(reset);
     setTempFilters(reset);
   };
@@ -65,7 +67,14 @@ const RelancesFreinsTable = () => {
       setData,
       setTotalRows
     );
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters, selectedProjet]);
+  }, [
+    accesstoken,
+    currentPage,
+    rowsPerPage,
+    searchTerm,
+    filters,
+    selectedProjet,
+  ]);
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
@@ -133,16 +142,19 @@ const RelancesFreinsTable = () => {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <Eye
-            className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
-            title="Voir détails"
-            onClick={() => handleShow(row.frein_id_origin)}
-          />
-          <Pencil
-            className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
-            title="Traiter les Biens Disponibles"
-            onClick={() => handle_Bien(row.id, row.nomComplet)}
-          />
+          <div title="Voir Détails">
+            <Eye
+              className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
+              title="Voir détails"
+              onClick={() => handleShow(row.frein_id_origin)}
+            />
+          </div>
+          <div title="Traiter les Biens Disponibles">
+            <Pencil
+              className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
+              onClick={() => handle_Bien(row.id, row.nomComplet)}
+            />
+          </div>
         </div>
       ),
     },
@@ -183,9 +195,9 @@ const RelancesFreinsTable = () => {
 
   return (
     <>
-
       <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
         <Table
+          showSearch={false}
           data_to_export={data_to_export()}
           columns_export={columns_export}
           name_file_export={'Freins_Clients_export'}
@@ -214,9 +226,7 @@ const RelancesFreinsTable = () => {
                   placeholder="Date"
                   value={tempFilters.date}
                   onFocus={(e) => (e.target.type = 'date')}
-                  onChange={(e) =>
-                    handleFilterChange('date', e.target.value)
-                  }
+                  onChange={(e) => handleFilterChange('date', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
                 <Input

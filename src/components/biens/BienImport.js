@@ -52,6 +52,11 @@ const handleDialogToggle = () => {
     }
   }
 
+  const hasTranches = selectedProjet?.nbre_blocs > 0
+  const hasBlocs = selectedProjet?.nbre_tranches > 0
+  const hasImmeubles = selectedProjet?.nbre_immeubles > 0
+
+
   const handleImportClick = async file => {
   try {
     const XLSX = await import('xlsx')
@@ -69,10 +74,7 @@ const handleDialogToggle = () => {
       const normalizedHeaders = rawHeaders.map(h => h?.toString().trim().toLowerCase())
       console.log('Headers Excel normalisés :', normalizedHeaders)
 
-      const hasTranches = selectedProjet?.nbre_blocs > 0
-      const hasBlocs = selectedProjet?.nbre_tranches > 0
-      const hasImmeubles = selectedProjet?.nbre_immeubles > 0
-
+      
       let msg_error = []
 
       // Colonnes obligatoires (normalisées en minuscules)
@@ -227,8 +229,32 @@ const handleDialogToggle = () => {
   }
 
   const handleFileClick = () => {
-    window.open(`${RESOURCE_URL.DOCS}/import_bien.xlsx`, '_blank')
+
+  let fileName = '';
+
+  if (hasTranches && hasBlocs && hasImmeubles) {
+    fileName = 'import_bien_tr_bl_imm.xlsx';
+  } else if (hasTranches && hasBlocs) {
+    fileName = 'import_bien_tr_bl.xlsx';
+  } else if (hasTranches && hasImmeubles) {
+    fileName = 'import_bien_tr_imm.xlsx';
+  } else if (hasBlocs && hasImmeubles) {
+    fileName = 'import_bien_bl_imm.xlsx';
+  } else if (hasTranches) {
+    fileName = 'import_bien_tr.xlsx';
+  } else if (hasBlocs) {
+    fileName = 'import_bien_bl.xlsx';
+  } else if (hasImmeubles) {
+    fileName = 'import_bien_imm.xlsx';
+  } else if (!hasTranches && !hasBlocs && !hasImmeubles) {
+    fileName = 'import_bien_.xlsx';
+  } else {
+    return; // Aucun fichier à ouvrir
   }
+
+  window.open(`${RESOURCE_URL.DOCS}/exemplaires/${fileName}`, '_blank');
+};
+
 
  
 
@@ -258,7 +284,6 @@ const handleDialogToggle = () => {
   }
 
   const handleSubmit_type_bien = () => {
-  console.log('here')
 
   const dupli = []
   const seenTypes = new Set()

@@ -11,6 +11,7 @@ import { Eye } from 'lucide-react';
 import { Statuts_Prospect } from '../../../../../../src/configs/enum';
 
 import SelectInput from '@/components/SelectInput';
+import Input from '@/components/Input';
 const HistoriquesTable = (id) => {
   const [historiques, setHistoriques] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -149,18 +150,21 @@ const HistoriquesTable = (id) => {
       render: (row) => (
         <div className="flex gap-3 items-center">
           {row.visite_id != null && (
-            <Eye
-              className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
-              title="Voir Visite"
-              onClick={() => handleShow(row.visite_id)}
-            />
+            <div title="Voir Visite">
+              <Eye
+                className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
+                title="Voir Visite"
+                onClick={() => handleShow(row.visite_id)}
+              />
+            </div>
           )}
           {row.appel_id != null && (
-            <Eye
-              className="w-4 h-4 !text-green-500 hover:text-green-700 cursor-pointer"
-              title="Voir Visite"
-              onClick={() => handleShowAppel(row.appel_id)}
-            />
+            <div title="Voir Appel">
+              <Eye
+                className="w-4 h-4 !text-green-500 hover:text-green-700 cursor-pointer"
+                onClick={() => handleShowAppel(row.appel_id)}
+              />
+            </div>
           )}
         </div>
       ),
@@ -210,6 +214,7 @@ const HistoriquesTable = (id) => {
           onRowsPerPageChange={setRowsPerPage}
           onSearchChange={setSearchTerm}
           enableExport={true}
+          showSearch={false}
           filterComponent={
             <div className="space-y-4 p-4 rounded-lg ">
               <div
@@ -219,36 +224,34 @@ const HistoriquesTable = (id) => {
                 }}
               >
                 {/* Champs de recherche */}
-                <input
-                  type={tempFilters.date_traitement ? 'date' : 'text'}
-                  placeholder="Date Traitement"
+                <Input
+                  type="date"
+                  label="Date Traitement"
                   value={tempFilters.date_traitement}
-                  onFocus={(e) => (e.target.type = 'date')}
                   onChange={(e) =>
                     handleFilterChange('date_traitement', e.target.value)
                   }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
 
-                <input
-                  type={tempFilters.rdv ? 'date' : 'text'}
-                  placeholder="Rendez Vous"
+                <Input
+                  type="date"
+                  label="Rendez Vous"
                   value={tempFilters.rdv}
-                  onFocus={(e) => (e.target.type = 'date')}
                   onChange={(e) => handleFilterChange('rdv', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
 
-                <input
-                  type={tempFilters.date_rappel ? 'date' : 'text'}
-                  placeholder="Date Rappel"
+                <Input
+                  type="date"
+                  label="Date Rappel"
                   value={tempFilters.date_rappel}
-                  onFocus={(e) => (e.target.type = 'date')}
                   onChange={(e) =>
                     handleFilterChange('date_rappel', e.target.value)
                   }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
+
                 <SelectInput
                   value={tempFilters.statut}
                   onChange={(value) => handleFilterChange('statut', value)}
