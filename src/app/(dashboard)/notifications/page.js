@@ -2,113 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import { Bell, Check, CheckCheck } from 'lucide-react';
-import { fetchNotifications } from '@/utils/FetchNotifications';
-import axios from 'axios';
+import { useNotifications } from '@/context/NotificationContext';
 
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState([]);
-  const [newNotificationsCount, setNewNotificationsCount] = useState(0);
-  const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
-  const [seenNotifications, setSeenNotifications] = useState(new Set());
+  const {
+    notifications,
+    isLoadingNotifications,
+    seenNotifications,
+    markAsSeen,
+    markAllAsSeen,
+    isNotificationSeen
+  } = useNotifications();
   const [filter, setFilter] = useState('all'); // 'all', 'unseen', 'seen'
-
-  // Load seen notifications from backend on mount
-  useEffect(() => {
-    const fetchSeenNotifications = async () => {
-      try {
-        const accessToken = localStorage.getItem('accessToken');
-        const selectedProject = JSON.parse(localStorage.getItem('selectedProjet'));
-        if (!accessToken || !selectedProject) return;
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/get_seen_notifications/${selectedProject.id}`,
-          { headers: { Authorization: `Bearer ${accessToken}` } }
-        );
-        if (response.data.seen_notifications) {
-          setSeenNotifications(new Set(response.data.seen_notifications));
-        }
-      } catch (error) {
-        console.error('Error fetching seen notifications:', error);
-      }
-    };
-    fetchSeenNotifications();
-  }, []);
-
-  // Fetch notifications on mount
-  useEffect(() => {
-    fetchNotificationsData();
-  }, []);
-
-  const fetchNotificationsData = async () => {
-    if (localStorage.getItem('selectedProjet')) {
-      await fetchNotifications({ 
-        setNotifications, 
-        setNewNotificationsCount, 
-        setIsLoadingNotifications 
-      });
-    }
-  };
-
-  const markAsSeen = async (notificationId) => {
-    try {
-      const accessToken = localStorage.getItem('accessToken');
-      const selectedProject = JSON.parse(localStorage.getItem('selectedProjet'));
-      setSeenNotifications(prev => new Set([...prev, notificationId]));
-      await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/mark_notification_seen`,
-        { notification_id: notificationId, projet_id: selectedProject.id },
-        { headers: { Authorization: `Bearer ${accessToken}` } }
-      );
-    } catch (error) {
-      console.error('Error marking notification as seen:', error);
-    }
-  };
-
-  const markAllAsSeen = async () => {
-    try {
-      const accessToken = localStorage.getItem('accessToken');
-      const selectedProject = JSON.parse(localStorage.getItem('selectedProjet'));
-      const allNotificationIds = notifications.map(notif => notif.id);
-      setSeenNotifications(prev => new Set([...prev, ...allNotificationIds]));
-      await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/mark_all_notifications_seen`,
-        { notification_ids: allNotificationIds, projet_id: selectedProject.id },
-        { headers: { Authorization: `Bearer ${accessToken}` } }
-      );
-    } catch (error) {
-      console.error('Error marking all notifications as seen:', error);
-    }
-  };
-
-  const isNotificationSeen = (notificationId) => {
-    return seenNotifications.has(notificationId);
-  };
-
-  const getColorClass = (color) => {
-    const colorMap = {
-      warning: 'text-yellow-600 bg-yellow-100',
-      primary: 'text-blue-600 bg-blue-100',
-      error: 'text-red-600 bg-red-100',
-      success: 'text-green-600 bg-green-100',
-      info: 'text-blue-600 bg-blue-100'
-    };
-    return colorMap[color] || 'text-gray-600 bg-gray-100';
-  };
-
-  const getIconComponent = (iconName) => {
-    const iconMap = {
-      'bell': Bell,
-      'calendar': () => <div className="w-6 h-6 text-xs">📅</div>,
-      'clock': () => <div className="w-6 h-6 text-xs">⏰</div>,
-      'check-circle': () => <div className="w-6 h-6 text-xs">✅</div>,
-      'alert-triangle': () => <div className="w-6 h-6 text-xs">⚠️</div>,
-      'unlock': () => <div className="w-6 h-6 text-xs">🔓</div>,
-      'arrow-clockwise': () => <div className="w-6 h-6 text-xs">🔄</div>,
-      'heart': () => <div className="w-6 h-6 text-xs font-medium">❤️</div>
-    };
-    
-    const IconComponent = iconMap[iconName] || Bell;
-    return <IconComponent className="h-6 w-6" />;
-  };
 
   // Filter notifications based on seen status
   const filteredNotifications = notifications.filter(notification => {
@@ -250,4 +155,5 @@ export default function NotificationsPage() {
     </div>
   );
 }
+
 
