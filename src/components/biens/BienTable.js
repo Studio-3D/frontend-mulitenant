@@ -348,19 +348,22 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-medium">Biens</h3>
-        <div className="min-w-[100px] relative z-10">
-          <SelectInput
-            value={activeTab}
-            onChange={handleTypeClick}
-            options={selectOptions}
-            width="w-full"
-          />
+      
+      <div>
+        {/* title section */}
+          <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-medium">Biens</h3>
+          <div className="min-w-[100px] relative z-10">
+            <SelectInput
+              value={activeTab}
+              onChange={handleTypeClick}
+              options={selectOptions}
+              width="w-full"
+            />
+          </div>
         </div>
-      </div>
 
-      {/* Stats Section with Loading State */}
+        {/* Stats Section with Loading State */}
       <div className="flex flex-col xl:flex-row items-center gap-1 mb-6">
         <div className="flex-1">
           {statsLoading ? (
@@ -394,41 +397,43 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
           )}
         </div>
       </div>
-
-      <Table
-        showSearch={false}
-        columns={columns}
-        data={formattedBiens}
-        totalRows={totalRows}
-        loading={loading}
-        filterComponent={
-          <BienFilter
-            tempFilters={tempFilters}
-            handleFilterChange={handleFilterChange}
-            resetFilters={resetFilters}
-            applyFilters={applyFilters}
-            trancheId={trancheId}
-            blocId={blocId}
-            immeubleId={immeubleId}
-          />
-        }
-        error={error}
-        addLink={addButtonUrl}
-        currentPage={currentPage}
-        rowsPerPage={10}
-        onPageChange={(newPage) => {
-          setCurrentPage(newPage);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }}
-        enableExport={formattedBiens.length > 0}
-        data_to_export={data_to_export}
-        columns_export={columns_export}
-        name_file_export={"bien_export"}
-        onFilterToggle={(isOpen) => { if (!isOpen) resetFilters(); }}
-        enableImport={true}
-        onImportClick={() => setShowImportModal(true)}
-        showRowsPerPage={false}
-      />
+      
+        {/* Table Section */}
+        <Table
+          showSearch={false}
+          columns={columns}
+          data={formattedBiens}
+          totalRows={totalRows}
+          loading={loading}
+          filterComponent={
+            <BienFilter
+              tempFilters={tempFilters}
+              handleFilterChange={handleFilterChange}
+              resetFilters={resetFilters}
+              applyFilters={applyFilters}
+              trancheId={trancheId}
+              blocId={blocId}
+              immeubleId={immeubleId}
+            />
+          }
+          error={error}
+          addLink={addButtonUrl}
+          currentPage={currentPage}
+          rowsPerPage={10}
+          onPageChange={(newPage) => {
+            setCurrentPage(newPage);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          enableExport={formattedBiens.length > 0}
+          data_to_export={data_to_export}
+          columns_export={columns_export}
+          name_file_export={"bien_export"}
+          onFilterToggle={(isOpen) => { if (!isOpen) resetFilters(); }}
+          enableImport={true}
+          onImportClick={() => setShowImportModal(true)}
+          showRowsPerPage={false}
+        />
+        </div>    
 
       {showDeleteModal && selectedId && (
         <Modal isVisible={true} onClose={() => setShowDeleteModal(false)}>
