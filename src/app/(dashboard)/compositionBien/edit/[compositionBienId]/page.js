@@ -7,7 +7,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import Button from "@/components/Button";
 import { useParams, useRouter } from "next/navigation";
-import BreadCrumb from "../../navigation/BreadCrumb";
+import BreadCrumb from "@/app/(dashboard)/navigation/BreadCrumb";
 import {
   Grid,
   FormControl,

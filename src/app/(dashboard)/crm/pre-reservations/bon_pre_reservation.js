@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontStyle: 'italic',
     fontSize: 9,
-  }
+  },
 });
 
 const MyDocument = ({ data }) => {
@@ -112,53 +112,67 @@ const MyDocument = ({ data }) => {
 
         {/* Titre principal */}
         <Text style={styles.title}>REÇU DE PRÉ-RÉSERVATION</Text>
-        <Text style={styles.subtitle}>N° {data[0] || 'N/A'}</Text>
+        <Text style={styles.subtitle}>N° {data[0] || ''}</Text>
 
         {/* Contenu principal */}
         <View style={styles.section}>
           <Text style={styles.text}>
-            Je soussigné(e), <Text style={styles.bold}>{data[9]} {data[10]}</Text>, 
-            représentant(e) de la société <Text style={styles.bold}>{user.societe.raison_sociale}</Text>,
+            La société{' '}
+            <Text style={styles.bold}>{user.societe.raison_sociale}</Text>,
             confirme la pré-réservation du bien immobilier suivant :
           </Text>
 
           <View style={styles.propertyDetails}>
             <Text style={styles.text}>
-              Le bien identifié sous la référence <Text style={styles.bold}>{data[4] || 'N/A'}</Text> est situé en Niveau: {data[5] || 'bien non spécifié'} {'d\''}une superficie de {data[6] || 'N/A'} mètres carrés,
-              Ce bien présente une orientation <Text style={styles.bold}>{data[7] || 'non spécifiée'}</Text> et est proposé au prix de <Text style={styles.bold}>{data[8] ? data[8].toLocaleString() : 'N/A'} DH</Text>.
-              Un rendez-vous a été fixé pour le <Text style={styles.bold}>{data[2] ? new Date(data[2]).toLocaleDateString() : 'date non précisée'}</Text> afin de finaliser cette réservation.
+              Le bien identifié sous la référence{' '}
+              <Text style={styles.bold}>{data[4] || ''}</Text> est situé au:
+              {'   '}
+              {data[5] == 0 ? ' RDC' : data[5] + ' étage'} {"d'"}une superficie
+              de {data[6] || ''} mètres carrés, Ce bien présente une orientation{' '}
+              <Text style={styles.bold}>{data[7] || ''}</Text> et est proposé au
+              prix de{' '}
+              <Text style={styles.bold}>
+                {data[8] ? data[8].toLocaleString() : ''} DH
+              </Text>
+              .
+              {data[2] != null && (
+                <>
+                  Un rendez-vous a été fixé pour le{' '}
+                  <Text style={styles.bold}>
+                    {data[2] ? new Date(data[2]).toLocaleDateString() : ''}
+                  </Text>{' '}
+                  afin de finaliser cette réservation.
+                </>
+              )}
             </Text>
           </View>
 
           <Text style={styles.text}>
-            Ce reçu atteste de {'l\''}engagement du client à procéder à la réservation définitive du bien selon les modalités convenues entre les parties.
+            Ce reçu atteste de {"l'"}engagement du client à procéder à la
+            réservation définitive du bien selon les modalités convenues entre
+            les parties.
           </Text>
 
           <Text style={styles.text}>
-            Fait à {user.societe.ville || '...'}, le {new Date().toLocaleDateString()}
+            Fait à {user.societe.ville || '...'}, le{' '}
+            {new Date().toLocaleDateString()}
           </Text>
 
           {/* Zone de signatures */}
           <View style={styles.signature}>
             <View>
-              <Text style={styles.underline}>Le Client</Text>
-              <Text>Nom et signature</Text>
+              <Text style={styles.underline}>Signature du Client</Text>
             </View>
             <View>
-              <Text style={styles.underline}>Le Responsable Commercial</Text>
-              <Text>{data[9]} {data[10]}</Text>
+              <Text style={styles.underline}>
+                Signature du Societé {user.societe.raison_sociale}{' '}
+              </Text>
             </View>
           </View>
 
           {/* Pied de page */}
           <View style={styles.footer}>
-            <Text style={styles.bold}>Nord Afrique Immobilier - Es qualité</Text>
             <Text>Merci pour votre confiance</Text>
-          </View>
-
-          {/* Zone pour cachet */}
-          <View style={styles.stampArea}>
-            <Text>Cachet et signature de {'l\''}agence</Text>
           </View>
         </View>
       </Page>

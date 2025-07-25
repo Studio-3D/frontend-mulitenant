@@ -1,16 +1,10 @@
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useState, useEffect, useRef } from 'react';
-import { useSearchParams } from 'next/navigation';
-import {
-  fetchData_Select,
-  fetchDataByProjet,
-} from '../../../../../src/configs/api-utils';
-import Modal from '@/components/Modal';
-import format from 'date-fns/format';
+import { fetchData_Select } from '../../../../../src/configs/api-utils';
 
 import BreadCrumb from '../../navigation/BreadCrumb';
-import { Controller, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { APIURL, ENDPOINTS } from '../../../../configs/api';
@@ -25,7 +19,6 @@ import TextField from '@/components/Textfield'; // Import the component
 import Button from '@/components/Button'; // adjust the path as needed
 import LoadingSpin from '@/components/LoadingSpin';
 import Modal_Propsepct_Exist from '../visites/Modal_Propsepct_Exist';
-//import { useProjet } from '@/context/ProjetContext';
 
 import {
   VISITE_INTERETS,
@@ -33,15 +26,17 @@ import {
   getInteret_label,
   TYPES_APPELS,
   ORIENTATIONS,
-  getOrientationCode,
   ORIENTATION_ABBREVIATIONS,
 } from '@/configs/enum';
 import { getStoredPerson } from '@/components/storageHelpers';
 import useClearProspect from '../hook/useClearProspect';
+import useClearProspectAppel from '../hook/useClearProspectAppel';
+
 export default function AppelsForm({ id }) {
   const { token } = useAuth();
   const router = useRouter();
   useClearProspect();
+  useClearProspectAppel();
 
   const [info_cin, setInfo_cin] = useState(null);
   const [loading_tp_frein, setLoading_tp_frein] = useState(false);
@@ -49,7 +44,6 @@ export default function AppelsForm({ id }) {
 
   const accessToken = token || localStorage.getItem('accessToken');
   const { user } = useAuth();
-  const [email_required, setEmail_required] = useState(false);
 
   //dialog
   const [info_client, setInfo_client] = useState(null);
@@ -63,7 +57,6 @@ export default function AppelsForm({ id }) {
   const [info_prix, setInfo_prix] = useState(null);
   const [info_sup, setInfo_sup] = useState(null);
   const [formData, setFormData] = useState(null);
-  const [formData_check, setFormData_check] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [loading, setLoading] = useState({ form: false });
@@ -75,26 +68,16 @@ export default function AppelsForm({ id }) {
   const [list_partenaires, setList_Partenaires] = useState([]);
   const [partenaire, setPartenaire] = useState('');
   const [tranches, setTranches] = useState([]);
-  const [tranche, setTranche] = useState('');
   const [blocs, setBlocs] = useState([]);
-  const [bloc, setBloc] = useState('');
   const [immeubles, setImmeubles] = useState([]);
-  const [immeuble, setImmeuble] = useState('');
   const [list_etages, setList_etages] = useState([]);
-  const [etage, setEtage] = useState('');
   const [type_freins, setType_freins] = useState([]);
   const [list_typologies, setListTyplogies] = useState([]);
   const [list_vues, setList_Vues] = useState([]);
   const [list_type_biens, setListType_biens] = useState([]);
 
   //edit
-  const [list_type_biens_value, setListType_bien_value] = useState([]);
-  const [freins_value, setFrein_value] = useState([]);
-  const [list_etages_value, setList_etages_value] = useState([]);
-  const [list_tranches_value, setListTranches_value] = useState([]);
-  const [list_orientation_value, setListOrientations_value] = useState([]);
-  const [list_vues_value, setListVues_value] = useState([]);
-  const [list_typologies_value, setList_Typologies_value] = useState([]);
+
   const { person: selectedPerson, type: personType } = getStoredPerson();
   const orientationOptions = Object.keys(ORIENTATIONS).map((key) => ({
     code: ORIENTATIONS[key].code,
@@ -103,6 +86,22 @@ export default function AppelsForm({ id }) {
     key: key,
   }));
 
+ // Safely get and parse the prospect data
+const getProspectFromStorage = () => {
+  try {
+    const storedData = localStorage.getItem('selectedProspect_appel');
+    if (!storedData) return null;
+    
+    const parsedData = JSON.parse(storedData);
+    return parsedData?.prospect || null;
+  } catch (error) {
+    console.error("Error parsing prospect data:", error);
+    return null;
+  }
+};
+
+const prospect_appel = getProspectFromStorage();
+
   const defaultValues = {
     id_t_appel: '',
     prospect_id:
@@ -110,32 +109,42 @@ export default function AppelsForm({ id }) {
         ? selectedPerson?.id
         : personType === 'client'
         ? selectedPerson?.prospect_id
+        : prospect_appel != ''
+        ? prospect_appel?.id
         : '',
     client_id: personType === 'client' ? selectedPerson?.id : '',
-    cin: selectedPerson?.cin || '',
-    nom: selectedPerson?.nom || '',
-    email: selectedPerson?.email || '',
-    prenom: selectedPerson?.prenom || '',
+    cin: selectedPerson?.cin || prospect_appel?.cin || '',
+    nom: selectedPerson?.nom || prospect_appel?.nom || '',
+    email: selectedPerson?.email || prospect_appel?.email || '',
+    prenom: selectedPerson?.prenom || prospect_appel?.prenom || '',
     telephone:
       personType === 'prospect'
         ? selectedPerson?.telephone
         : personType === 'client'
         ? selectedPerson?.telephone_num1
+        : prospect_appel != ''
+        ? prospect_appel?.telephone
         : '',
-    telephone_num2: selectedPerson?.telephone_num2 || null,
-    ville: selectedPerson?.ville || '',
-    notifie: selectedPerson?.notifie || '',
-    source_id: selectedPerson?.source?.id || '',
-    source_txt: selectedPerson?.source?.source || '',
-    partenaire_id: selectedPerson?.partenaire_id || '',
-    partenaire_txt: selectedPerson?.partenaire?.description || '',
+    telephone_num2:
+      selectedPerson?.telephone_num2 || prospect_appel?.telephone_num2 || null,
+    ville: selectedPerson?.ville || prospect_appel?.ville || '',
+    notifie: selectedPerson?.notifie || prospect_appel?.notifie || '',
+    source: selectedPerson?.source?.id || prospect_appel?.source?.id || '',
+    source_txt:
+      selectedPerson?.source?.source || prospect_appel?.source?.source || '',
+    partenaire_id:
+      selectedPerson?.partenaire_id || prospect_appel?.partenaire_id || '',
+    partenaire_txt:
+      selectedPerson?.partenaire?.description ||
+      prospect_appel?.partenaire?.description ||
+      '',
     interet: '',
     type_appel: '',
     type_biens: '',
-    projet_id: '',
-    source: '',
-    source_txt: '',
-    partenaire_id: '',
+    projet_id:
+      selectedPerson?.projet_id ||
+      prospect_appel?.projet_id ||
+      '',
     date_relance: '',
     mode_relance: '',
     tranche_id: '',
@@ -255,10 +264,6 @@ export default function AppelsForm({ id }) {
           fetch_type_biens(tr_appel.appel.projet.id);
           setSource(tr_appel.appel.prospect.source?.source);
           setPartenaire(tr_appel.appel.prospect?.partenaire?.id);
-          setTranche(tr_appel.tranche);
-          setBloc(tr_appel.bloc);
-          setImmeuble(tr_appel.immeuble);
-          setEtage(tr_appel.etage);
           let freinValue = [];
           if (intere_label == 'Perdu') {
             fetch_type_Freins();
@@ -506,81 +511,87 @@ export default function AppelsForm({ id }) {
   const onSubmit = (data) => {
     setFormSubmitted(true);
     if (!validateFields()) {
-      // there were validation errors → bail out
       return;
     }
     setLoading({ ...loading, form: true });
-
-    setIsSubmitting(true); // Set manual loading state
+    setIsSubmitting(true);
     setBackendErrors({});
-    const preparedData = { ...data };
-    // Convert [34, 7] → "34,7"
-    if (Array.isArray(preparedData.type_biens)) {
-      preparedData.type_biens = preparedData.type_biens.join(',');
-    }
-    // si il ya des freins Storing
-    if (!isEditing) {
-      // 6) Create mode: only uppercase any frein array
-      if (Array.isArray(preparedData.freins)) {
-        preparedData.freins = preparedData.freins
-          .map((v) => v.toUpperCase())
-          .join(',');
-      }
-    } else {
-      //Editing
-      // Helper: array-to-comma string
-      const transformMultiSelectField = (val) => {
-        if (!val) return '';
-        if (Array.isArray(val)) {
-          if (val.length === 0) return '';
-          return typeof val[0] === 'object'
-            ? val.map((v) => v.id).join(',')
-            : val.join(',');
-        }
-        return val;
-      };
 
-      // Fields to turn into comma-lists
-      ['tranches_id', 'typologies', 'vues', 'etages', 'orientations'].forEach(
-        (field) => {
-          preparedData[field] = transformMultiSelectField(data[field]);
-        }
-      );
+    // Enhanced field handler that properly handles untouched multi-select fields
+    const handleField = (value) => {
+      if (value === null || value === undefined) return null;
 
-      // Normalize + uppercase freins
-      if (preparedData.freins) {
-        const arr =
-          typeof preparedData.freins === 'string'
-            ? preparedData.freins
-                .split(',')
-                .map((s) => s.trim())
-                .filter(Boolean)
-            : Array.isArray(preparedData.freins)
-            ? preparedData.freins
-            : [];
-        preparedData.freins = arr.map((v) => v.toUpperCase()).join(',');
+      // Handle array case
+      if (Array.isArray(value)) {
+        // If array contains objects with 'id' property, extract IDs
+        if (value.length > 0 && value[0]?.id) {
+          return value.map((item) => item.id).join(',');
+        }
+        return value.join(',');
       }
 
-      // Map orientation IDs → N/S/E/W codes
-      if (preparedData.orientations) {
+      // Handle object case (when field wasn't touched in edit mode)
+      if (typeof value === 'object' && value !== null) {
+        return ''; // Return empty string for untouched fields
+      }
+
+      // Handle string case (including "[object Object]")
+      if (typeof value === 'string') {
+        return value.startsWith('[object Object]') ? '' : value;
+      }
+
+      return value;
+    };
+
+    // Prepare the data structure
+    const preparedData = {
+      ...data,
+      // Handle all fields that might be multi-select
+      freins: Array.isArray(data.freins)
+        ? data.freins.join(', ')
+        : typeof data.freins === 'string'
+        ? data.freins
+        : '',
+      tranches_id: handleField(data.tranches_id),
+      etages: handleField(data.etages),
+      orientations: handleField(data.orientations),
+      typologies: handleField(data.typologies),
+      vues: handleField(data.vues),
+      type_biens: handleField(data.type_biens),
+    };
+
+    // For editing mode transformations
+    if (isEditing) {
+      // Safely map orientation IDs to N/S/E/W codes
+      if (preparedData.orientations && preparedData.orientations !== '') {
         const codes = String(preparedData.orientations)
           .split(',')
-          .map((s) => parseInt(s.trim(), 10))
+          .map((s) => {
+            const num = parseInt(s.trim(), 10);
+            return isNaN(num) ? '' : num;
+          })
           .filter((i) => ORIENTATIONS[i])
-          .map((i) => ORIENTATION_ABBREVIATIONS[ORIENTATIONS[i].label] || '');
-        preparedData.orientations = codes.join(',');
+          .map((i) => ORIENTATION_ABBREVIATIONS[ORIENTATIONS[i].label] || '')
+          .filter(Boolean);
+
+        preparedData.orientations = codes.length ? codes.join(',') : '';
+      }
+
+      // Normalize freins format
+      if (preparedData.freins) {
+        preparedData.freins = preparedData.freins
+          .split(',')
+          .map((s) => s.trim().toUpperCase())
+          .filter(Boolean)
+          .join(', ');
       }
     }
 
-    // 7) Build FormData payload
-    const dataToSend = new FormData();
-    Object.entries(preparedData).forEach(([key, value]) => {
-      dataToSend.append(key, value);
-    });
-
+    // Create payload
     const payload = { ...preparedData };
 
-    console.log('FormData contents:', Object.fromEntries(dataToSend.entries()));
+    // For debugging
+    console.log('Final payload:', payload);
 
     axios({
       method: isEditing ? 'put' : 'post',
@@ -592,25 +603,24 @@ export default function AppelsForm({ id }) {
       },
     })
       .then((res) => {
-        let message = 'Quelque chose ne va pas bien';
-        if (res.status == 200) {
-          message = `Appel a été ${
+        if (res.status === 200) {
+          const message = `Appel a été ${
             isEditing ? 'modifiée' : 'créée'
           } avec succès`;
           reset(defaultValues);
           toast.success(message);
           router.push(ENDPOINTS.APPELS);
+          localStorage.removeItem('selectedProspect_appel');
           localStorage.removeItem('selectedProspect');
           localStorage.removeItem('selectedClient');
-        } else if (res.status == 422) {
-          message = res.data.message;
+        } else if (res.status === 422) {
           setBackendErrors(res.data.errors);
           setTimeout(() => setBackendErrors({}), 5000);
         }
       })
       .catch((error) => {
         const response = error.response;
-        if (response && response.status == 422) {
+        if (response && response.status === 422) {
           setBackendErrors(response.data.errors);
           setTimeout(() => setBackendErrors({}), 5000);
         } else {
@@ -620,10 +630,9 @@ export default function AppelsForm({ id }) {
         }
       })
       .finally(() => {
-        setIsSubmitting(false); // Reset manual loading state
+        setIsSubmitting(false);
       });
   };
-
   const fetch_event_by_param = async (route, value, param) => {
     await axios
       .get(`${APIURL.ROOTV1}/` + route + `/` + param + `/` + value, {
@@ -675,10 +684,9 @@ export default function AppelsForm({ id }) {
               res.data.client.prospect?.partenaire?.description ||
               res.data.prospect.partenaire.description;
             setInfo_client(
-              
-                ((res.data.client?.nom || res.data.prospect?.nom || '') +
-                  ' ' +
-                  (res.data.client?.prenom || res.data.prospect?.prenom || ''))
+              (res.data.client?.nom || res.data.prospect?.nom || '') +
+                ' ' +
+                (res.data.client?.prenom || res.data.prospect?.prenom || '')
             );
             setClient_prospect('Est un client');
           } else {
@@ -695,10 +703,7 @@ export default function AppelsForm({ id }) {
             partenaire_txt = res.data.prospect?.partenaire?.description;
 
             setInfo_client(
-              
-                res.data.prospect.nom +
-                ' ' +
-                res.data.prospect.prenom
+              res.data.prospect.nom + ' ' + res.data.prospect.prenom
             );
             setClient_prospect('Est un prospect');
           }
@@ -795,25 +800,41 @@ export default function AppelsForm({ id }) {
       return () => clearTimeout(timeout);
     }
   };
-
   const handlePrixChange = (val) => {
     setTimeout(() => {
-      let a, b;
+      let a, b, minField, maxField;
 
-      if (val == 1) {
-        a = watch('prix_min');
-        b = watch('prix_max');
+      if (val === 1) {
+        a = Number(watch('prix_min'));
+        b = Number(watch('prix_max'));
+        minField = 'prix_min';
+        maxField = 'prix_max';
+
         if (a > b) {
-          setInfo_prix(`Le Prix min doit être inférieur ou égal au Prix Max.`);
+          setInfo_prix(
+            `Le ${minField.replace(
+              '_',
+              ' '
+            )} doit être inférieur ou égal au ${maxField.replace('_', ' ')}.`
+          );
         } else {
           setInfo_prix(null);
         }
-      } else if (val == 2) {
-        a = watch('sup_min');
-        b = watch('sup_max');
+      } else if (val === 2) {
+        a = Number(watch('sup_min'));
+        b = Number(watch('sup_max'));
+        minField = 'superficie min';
+        maxField = 'superficie max';
+
         if (a > b) {
           setInfo_sup(
-            `La Superficie Min doit être inférieure ou égale à la Superficie Max.`
+            `La ${minField.replace(
+              '_',
+              ' '
+            )} doit être inférieure ou égale à la ${maxField.replace(
+              '_',
+              ' '
+            )}.`
           );
         } else {
           setInfo_sup(null);
@@ -947,21 +968,22 @@ export default function AppelsForm({ id }) {
               <TextField
                 label="Cin:"
                 name="cin"
-                required={Number(watch('interet')) == 1}
+               // required={Number(watch('interet')) == 1}
                 control={control}
-                errors={{
+                errors={errors}
+                /*errors={{
                   ...errors,
                   cin:
                     formSubmitted && (Number(watch('interet')) == 1) == 1
                       ? 'Ce champ est obligatoire lorsque interet est interessé.'
                       : null,
-                }}
+                }}*/
                 backendErrors={backendErrors}
                 defaultValues={defaultValues}
                 onChange={handleChange_event('cin')}
               />
               <TextField
-                label="Telephone:"
+                label="Téléphone:"
                 required
                 name="telephone"
                 type="number"
@@ -1007,12 +1029,8 @@ export default function AppelsForm({ id }) {
                 onChange={(newValue) => {
                   setValue('projet_id', newValue ? newValue.id : '');
                   setValue('tranche_id', '');
-                  setTranche(null);
                   setValue('bloc_id', '');
-                  setBloc(null);
                   setValue('immeuble_id', '');
-                  setImmeuble(null);
-                  setEtage('');
                   setValue('etage', '');
                   if (newValue?.id) {
                     fetchPartenaires(newValue.id);
@@ -1103,16 +1121,17 @@ export default function AppelsForm({ id }) {
                 />
               </div>
             </div>
-            {Number(watch('interet')) != '' && Number(watch('interet')) != '4' && (
-              <div className="col-span-3 mt-4">
-                <h2
-                  className="text-lg font-medium border-b pb-2 mb-4"
-                  style={{ color: '#231651' }}
-                >
-                  Informations {"d'appel"}
-                </h2>
-              </div>
-            )}
+            {Number(watch('interet')) != '' &&
+              Number(watch('interet')) != '4' && (
+                <div className="col-span-3 mt-4">
+                  <h2
+                    className="text-lg font-medium border-b pb-2 mb-4"
+                    style={{ color: '#231651' }}
+                  >
+                    Informations {"d'appel"}
+                  </h2>
+                </div>
+              )}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start">
               {/* Tranche et Bloc si interet == 1 */}
               {Number(watch('interet')) == 1 && (
@@ -1132,7 +1151,6 @@ export default function AppelsForm({ id }) {
                     backendErrors={backendErrors}
                     onChange={(newValue) => {
                       setValue('tranche_id', newValue ? newValue.id : '');
-                      setTranche(newValue || '');
                     }}
                   />
                   <div className="mt-1">
@@ -1150,7 +1168,6 @@ export default function AppelsForm({ id }) {
                       backendErrors={backendErrors}
                       onChange={(newValue) => {
                         setValue('bloc_id', newValue ? newValue.id : '');
-                        setBloc(newValue || '');
                       }}
                     />
                   </div>
@@ -1171,7 +1188,6 @@ export default function AppelsForm({ id }) {
                       backendErrors={backendErrors}
                       onChange={(newValue) => {
                         setValue('immeuble_id', newValue ? newValue.id : '');
-                        setBloc(newValue || '');
                       }}
                     />
                   </div>
@@ -1258,7 +1274,6 @@ export default function AppelsForm({ id }) {
                       backendErrors={backendErrors}
                       onChange={(newValue) => {
                         setValue('etage', newValue ? newValue.value : '');
-                        setEtage(newValue ? newValue.value : '');
                       }}
                     />
                   </div>
@@ -1358,8 +1373,7 @@ export default function AppelsForm({ id }) {
                     backendErrors={backendErrors}
                   />
 
-                  {(watch('freins')?.includes('tranche') ||
-                    freins_value.includes('tranche')) && ( // Safe access using optional chaining
+                  {watch('freins')?.includes('tranche') && ( // Safe access using optional chaining
                     <AutocompleteMultiple
                       label="Tranches :"
                       name="tranches_id"
@@ -1406,8 +1420,7 @@ export default function AppelsForm({ id }) {
                     />
                   )}
 
-                  {(watch('freins')?.includes('etage') ||
-                    freins_value.includes('etage')) && (
+                  {watch('freins')?.includes('etage') && (
                     <AutocompleteMultiple
                       label="Etages :"
                       name="etages"
@@ -1512,8 +1525,7 @@ export default function AppelsForm({ id }) {
                       />
                     </div>
                   )}
-                  {(watch('freins')?.includes('avance') ||
-                    freins_value.includes('avance')) && (
+                  {watch('freins')?.includes('avance') && (
                     <div>
                       <TextField
                         label="Avance:"
@@ -1528,17 +1540,9 @@ export default function AppelsForm({ id }) {
                     </div>
                   )}
 
-                  {(watch('freins')?.includes('prix') ||
-                    freins_value.includes('prix')) && (
+                  {watch('freins')?.includes('prix') && (
                     <>
                       <div>
-                        {info_prix != null && (
-                          <div className="w-full">
-                            <div className="bg-[rgba(253,181,40,0.12)] border-l-4 border-yellow-500 text-[rgb(227,162,36)] p-4 text-center rounded">
-                              {info_prix}
-                            </div>
-                          </div>
-                        )}
                         <div className="sm:col-span-2 flex gap-4">
                           <div className="w-1/2">
                             <TextField
@@ -1552,6 +1556,11 @@ export default function AppelsForm({ id }) {
                               onChange={handlePrixChange(1)}
                               required={watch('freins')?.includes('prix')}
                             />
+                            {info_prix != null && (
+                              <div className="text-red-500 text-sm mt-1">
+                                {info_prix}
+                              </div>
+                            )}
                           </div>
                           <div className="w-1/2">
                             <TextField
@@ -1570,17 +1579,9 @@ export default function AppelsForm({ id }) {
                       </div>
                     </>
                   )}
-                  {(watch('freins')?.includes('superficie') ||
-                    freins_value.includes('superficie')) && (
+                  {watch('freins')?.includes('superficie') && (
                     <>
                       <div>
-                        {info_prix != null && (
-                          <div className="w-full">
-                            <div className="bg-blue-100 !text-blue-700 border-l-4 border-blue-500 p-4 text-center rounded">
-                              {info_prix}
-                            </div>
-                          </div>
-                        )}
                         <div className="sm:col-span-2 flex gap-4">
                           <div className="w-1/2">
                             <TextField
@@ -1594,6 +1595,11 @@ export default function AppelsForm({ id }) {
                               onChange={handlePrixChange(2)}
                               required={watch('freins')?.includes('superficie')}
                             />
+                            {info_sup != null && (
+                              <div className="text-red-500 text-sm mt-1">
+                                {info_sup}
+                              </div>
+                            )}
                           </div>
                           <div className="w-1/2">
                             <TextField
@@ -1613,8 +1619,7 @@ export default function AppelsForm({ id }) {
                     </>
                   )}
 
-                  {(watch('freins')?.includes('typologie') ||
-                    freins_value.includes('typologie')) && (
+                  {watch('freins')?.includes('typologie') && (
                     <div>
                       <AutocompleteMultiple
                         label="Typologies :"
@@ -1662,8 +1667,7 @@ export default function AppelsForm({ id }) {
                       />
                     </div>
                   )}
-                  {(watch('freins')?.includes('vue') ||
-                    freins_value.includes('vue')) && (
+                  {watch('freins')?.includes('vue') && (
                     <div>
                       <AutocompleteMultiple
                         label="vue :"
@@ -1719,7 +1723,6 @@ export default function AppelsForm({ id }) {
             <TextField
               label="Commentaire:"
               name="commentaire"
-              
               type="text"
               multi={true} // Set this to true if you want a multi-line textarea, else leave it out or false
               control={control} // Passed from useForm hook

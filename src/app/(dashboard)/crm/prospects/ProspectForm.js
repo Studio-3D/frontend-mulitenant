@@ -433,7 +433,7 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
                 </div>
                 <div>
                   <TextField
-                    label="Telephone:"
+                    label="Téléphone:"
                     required
                     name="telephone"
                     type="number"
@@ -446,7 +446,7 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
                 </div>
                 <div>
                   <TextField
-                    label="Telephone 2:"
+                    label="Téléphone 2:"
                     name="telephone_num2"
                     type="number"
                     control={control}

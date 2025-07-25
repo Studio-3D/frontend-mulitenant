@@ -402,11 +402,11 @@ export default function VisiteFormEdit({ id }) {
           if (visite.interet === '1') {
             fetch_bien_ByProjet(
               visite.bien_id,
-              res.data.propriete_dite_bien.original,
+              NomBienComplet(visite?.bien),
               'without_proposition'
             );
 
-            setBien_propriete_o(res.data.propriete_dite_bien.original);
+            setBien_propriete_o(NomBienComplet(visite?.bien));
           }
           setPartenaire_txt(
             !visite.prospect.partenaire_id
@@ -546,11 +546,33 @@ export default function VisiteFormEdit({ id }) {
     handleSubmit,
     reset,
     setValue,
+    setError, // Add this line
+    clearErrors, // Add this line if you need it
     formState: { errors },
   } = useForm({
     resolver: yupResolver(validationSchemaRef.current),
     defaultValues,
   });
+  useEffect(() => {
+    if (watch('avance_res') !== '') {
+      if (watch('avance_res') == 0 && user?.role > 2) {
+        setError('avance_res', {
+          type: 'manual',
+          message: 'Le montant ne peut pas être 0 pour votre rôle',
+        });
+      } else if (
+        watch('avance_res') > 0 &&
+        watch('avance_res') < watch('avance_minimale')
+      ) {
+        setError('avance_res', {
+          type: 'manual',
+          message: `Le montant doit être au moins ${watch('avance_minimale')}`,
+        });
+      } else {
+        clearErrors('avance_res');
+      }
+    }
+  }, [watch('avance_res'), watch('avance_minimale'), user?.role]);
 
   const handlePrixChange = (val) => {
     setTimeout(() => {
@@ -914,7 +936,7 @@ export default function VisiteFormEdit({ id }) {
       });
   };
 
-  const fetch_bien_ByProjet = async (bien_id_, bien_propriete, text) => {
+  const fetch_bien_ByProjet = async (bien_id_, bien_propriete, txt) => {
     if (watch('interet') == 1) {
       setLoading_bien(true);
       await axios
@@ -1079,7 +1101,35 @@ export default function VisiteFormEdit({ id }) {
         (watch('check_montant') == true &&
           watch('commentaireAvance') != null &&
           watch('commentaireAvance').length == 0) ||
-        (watch('avance_res') == 0 && watch('check_montant') == false)));
+        (watch('avance_res') == 0 && watch('check_montant') == false) ||
+        errors.avance_res)); // Add this check for avance_res errors
+
+ function NomBienComplet(bien) {
+  console.log('Full bien object:', bien); // Log the entire object
+  const noms = [];
+
+  if (bien.tranche?.nom) {
+    console.log('Adding tranche:', bien.tranche.nom);
+    noms.push(bien.tranche.nom);
+  }
+
+  if (bien.bloc?.nom) {
+    console.log('Adding bloc:', bien.bloc.nom);
+    noms.push(bien.bloc.nom);
+  }
+
+  if (bien.immeuble?.nom) {
+    console.log('Adding immeuble:', bien.immeuble.nom);
+    noms.push(bien.immeuble.nom);
+  }
+
+  console.log('Adding propriete_dite_bien:', bien.propriete_dite_bien);
+  noms.push(bien.propriete_dite_bien);
+
+  const result = noms.join(' - ');
+  console.log('Final result:', result);
+  return result;
+}
   if (isEditing && !formData) {
     return <LoadingSpin />;
   }
@@ -1574,21 +1624,6 @@ export default function VisiteFormEdit({ id }) {
                               onChange={(e) => handlechangeMontant(e)}
                             />
 
-                            {watch('avance_res') != '' &&
-                              watch('avance_res') == 0 &&
-                              user?.role > 2 && (
-                                <p style={{ color: 'red' }}>
-                                  Le montant ne peut pas être 0 pour votre rôle
-                                </p>
-                              )}
-                            {watch('avance_res') > 0 &&
-                              watch('avance_res') <
-                                watch('avance_minimale') && (
-                                <p style={{ color: 'red' }}>
-                                  Le montant doit être au moins{' '}
-                                  {watch('avance_minimale')}
-                                </p>
-                              )}
                             <AutocompleteSelectComponent
                               label="Mode Financement:"
                               name="mode_financement"

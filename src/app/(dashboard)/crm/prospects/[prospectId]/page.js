@@ -11,6 +11,7 @@ import HistoriquesTable from "./HistoriquesTable";
 import BreadCrumb from "../../../navigation/BreadCrumb";
 import LoadingSpin from "@/components/LoadingSpin";
 import VisiteTable from "../../visites/VisiteTable";
+import JournalTable from "../../appels/[appelId]/JournalTable";
 const ProspectDetails = () => {
   const { token } = useAuth();
   const router = useRouter();
@@ -18,7 +19,6 @@ const ProspectDetails = () => {
   const accessToken = token || localStorage.getItem("accessToken");
   const [loading, setLoading] = useState(false);
   const [prospectDetails, setProspectDetails] = useState([]);
-
   const [activeTab, setActiveTab] = useState("historiques"); // Default to 'historiques' if tab is not present
 
   const handleEdit = (id) => {
@@ -26,8 +26,9 @@ const ProspectDetails = () => {
   };
 
   const tabs = [
-    { id: "historiques", label: "Historiques", icon: "📜" },
-    { id: "visites", label: "Visites", icon: "📅" },
+    { id: "historiques", label: "Historiques", icon: "" },
+    { id: "visites", label: "Visites", icon: "" },
+    { id: "journaux", label: "Journal des Appels", icon: "" },
   ];
 
   useEffect(() => {
@@ -202,6 +203,10 @@ const ProspectDetails = () => {
                           {tab.id === "visites" && (
                             <span className="ml-1 text-xs"></span>
                           )}
+                          {tab.id === "journaux" &&
+                            prospectDetails?.appels != null && (
+                              <span className="ml-1 text-xs"></span>
+                            )}
                         </button>
                       ))}
                     </div>
@@ -221,6 +226,14 @@ const ProspectDetails = () => {
                         <VisiteTable
                           dataProspect={prospectDetails}
                           show_prospect={true}
+                        />
+                      </div>
+                    )}
+                    {activeTab === "journaux" && (
+                      <div className="min-h-[400px]">
+                        <JournalTable
+                          id={prospectDetails?.appels?.id}
+                          prospect={prospectDetails}
                         />
                       </div>
                     )}

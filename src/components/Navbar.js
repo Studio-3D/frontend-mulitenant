@@ -1,56 +1,60 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { Bell, Moon } from "lucide-react";
+import { useProjet } from "../context/ProjetContext";
+import { Bell, Moon, TestTube } from "lucide-react";
 import DropdownMenuDemo from "./DropdownMenuDemo";
 import SocieteDropDown from "./SocieteDropDown";
 import ProjetsDropDown from "./ProjetsDropDown";
 import NotificationDropdown from "./NotificationDropdown";
-import { fetchNotifications } from "../utils/FetchNotifications";
+import { useNotifications } from "../context/NotificationContext";
 import Pusher from "pusher-js";
 
 export default function CombinedNavbar() {
   const { user } = useAuth();
-  const [notifications, setNotifications] = useState([]);
-  const [newNotificationsCount, setNewNotificationsCount] = useState(0);
-  const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
+  const { selectedProjet } = useProjet();
+  const {
+    notifications,
+    newNotificationsCount,
+    isLoadingNotifications,
+    fetchNotifications,
+    setNotifications,
+    setNewNotificationsCount
+  } = useNotifications();
 
-  const fetchNotificationsData = async () => {
-    if (localStorage.getItem('selectedProjet')) {
-      await fetchNotifications({ 
-        setNotifications, 
-        setNewNotificationsCount: setNewNotificationsCount, 
-        setIsLoadingNotifications 
-      });
-    }
-  };
-
+  // Fetch notifications when the component mounts or when the selected project changes
   useEffect(() => {
-    // Fetch notifications on component mount
-    if (localStorage.getItem('selectedProjet')) {
-      fetchNotificationsData();
+    if (selectedProjet?.id) {
+      console.log('Project selected, fetching notifications for project:', selectedProjet.id);
+      fetchNotifications();
       
       // Set up Pusher for real-time notifications
       const pusherKey = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_NOTIF;
-      const pusher = new Pusher(pusherKey, {
-        cluster: 'eu',
-        encrypted: true
-      });
-      
-      const channel = pusher.subscribe('Notifications');
-      
-      channel.bind('App\\Events\\NotificationEvent', () => {
-        console.log('Received notification event');
-        fetchNotificationsData();
-      });
-      
-      return () => {
-        channel.unbind_all();
-        channel.unsubscribe();
-        pusher.disconnect();
-      };
+      if (pusherKey) {
+        const pusher = new Pusher(pusherKey, {
+          cluster: 'eu',
+          encrypted: true
+        });
+        
+        const channel = pusher.subscribe('Notifications');
+        
+        channel.bind('App\\Events\\NotificationEvent', () => {
+          console.log('Received notification event');
+          fetchNotifications();
+        });
+        
+        return () => {
+          channel.unbind_all();
+          channel.unsubscribe();
+          pusher.disconnect();
+        };
+      }
+    } else {
+      // Clear notifications when no project is selected
+      setNotifications([]);
+      setNewNotificationsCount(0);
     }
-  }, []);
+  }, [selectedProjet]);
 
   return (
     <nav className="bg-white border-b border-gray-200 fixed w-full z-40 top-0 right-0 left-0">
@@ -58,7 +62,7 @@ export default function CombinedNavbar() {
         {/* Left side - Societe & Projet selector */}
         <div className="flex items-center gap-2">
           {user?.role === 1 && <SocieteDropDown />}
-          <ProjetsDropDown onProjectChange={fetchNotificationsData} />
+          <ProjetsDropDown onProjectChange={fetchNotifications} />
         </div>
 
         {/* Right side - User menu & actions */}
@@ -69,7 +73,8 @@ export default function CombinedNavbar() {
           <NotificationDropdown 
             notifications={notifications}
             newNotificationsCount={newNotificationsCount}
-            onFetchNotifications={fetchNotificationsData}
+            onFetchNotifications={fetchNotifications}
+            isLoadingNotifications={isLoadingNotifications}
           />
 
           {/* User Dropdown */}

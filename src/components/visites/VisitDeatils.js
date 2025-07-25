@@ -45,17 +45,23 @@ import Modal_Historique_rel_rdv from './Modal_Historique_rel_rdv';
 import Modal_Historique from './Modal_Historique';
 import axios from 'axios';
 import Modal_Traite from '../../../src/app/(dashboard)/crm/Modal_Traite';
+import useClear_visite_cadre from '@/app/(dashboard)/crm/hook/useClear_visite_cadre';
 export function VisitDetails({
   visites_all_show,
   visites_all,
   origin_id,
   last_related_id,
 }) {
+  //when reload remove item v_id_cadre
+  useClear_visite_cadre()
+  const cadre_selected = `${localStorage.getItem('v_id_cadre')}`;
+  console.log('le cadre=>' + cadre_selected);
+
   const router = useRouter();
   const [openH, setOpenH] = useState(false);
   const [open_rel, setOpen_rel] = useState(false);
   const [activeVisit, setActiveVisit] = useState(
-    visites_all_show?.[0]?.related_show_id || null
+    cadre_selected!='null'?cadre_selected: visites_all_show?.[0]?.related_show_id 
   );
   const [rows_histo_rel_rdv, setrowsHisto_rel_rdv] = useState([]);
   const [loading_h_rel, setLoading_h_rel] = useState(true); // Add a loading state
@@ -554,6 +560,10 @@ export function VisitDetails({
 
     return noms.join(' - ');
   }
+ const change_visite = (newVisitId) => {
+  setActiveVisit(newVisitId);
+  localStorage.removeItem('v_id_cadre');
+};
   //Traitement Frein
   const RowTraitement = ({ row }) => {
     const [open, setOpen] = useState(false);
@@ -835,7 +845,7 @@ export function VisitDetails({
               <VisitTimeline
                 visites_all_show={visites_all_show}
                 activeVisit={activeVisit}
-                onVisitSelect={setActiveVisit}
+                onVisitSelect={change_visite}
                 origin_id={origin_id}
               />
             </div>
@@ -1011,8 +1021,7 @@ export function VisitDetails({
                                       className="ml-2 !text-red hover:text-red transition-colors mt-1"
                                     >
                                       <div title="Voir Réservation">
-                                      <EyeIcon className="h-5 w-5" />
-
+                                        <EyeIcon className="h-5 w-5" />
                                       </div>
                                     </button>
                                   )}

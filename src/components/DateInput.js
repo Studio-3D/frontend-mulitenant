@@ -16,7 +16,7 @@ export default function DateInput({ label, value, onChange, placeholderText, err
         selected={value ? new Date(value) : null}
         onChange={handleDateChange}
         dateFormat="yyyy-MM-dd"
-        className={`p-2 w-[350px] h-[38px] outline-none border rounded-md hover:border-gray-500 focus:border-gray-500 duration-200 bg-inherit ${
+        className={`p-2 w-full xl:w-[380px] h-[38px] outline-none border rounded-md hover:border-gray-500 focus:border-gray-500 duration-200 bg-inherit ${
           error ? "border-red-500" : "border-gray-300"
         }`}
         placeholderText={placeholderText || "yyyy-MM-dd"}

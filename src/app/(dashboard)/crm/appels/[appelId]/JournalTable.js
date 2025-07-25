@@ -27,7 +27,7 @@ import {
 } from '../../../../../../src/configs/enum';
 import Input from '@/components/Input';
 
-const JournalTable = (id) => {
+const JournalTable = ({ id, prospect }) => {
   const [filters, setFilters] = useState({
     responsable: '',
     type_appel: '',
@@ -79,6 +79,8 @@ const JournalTable = (id) => {
   const [frein_avance, setFreinsAvance] = useState(null);
   const [commentaire, setCommentaire] = useState(null);
   const [commentaire_rel, setCommentaire_rel] = useState(null);
+  const [commentaire_rdv, setCommentaire_rdv] = useState(null);
+
   const [open_dialog_r, setOpen_dialog_r] = useState(false);
 
   const { user, token } = useAuth();
@@ -87,7 +89,7 @@ const JournalTable = (id) => {
   const router = useRouter();
   // Declare the entity object in the component scope
   const entity = {
-    id: JSON.stringify(id.id),
+    id: id,
     API_URL: 'index_traitement_appel',
     dataKey: 'data',
     searchFields: ['nomCC', 'date'],
@@ -124,6 +126,7 @@ const JournalTable = (id) => {
       if (localStorage.getItem('load_data_journaux') == 1) {
         fetchData_table_by_id(
           entity,
+          {},
           searchTerm,
           currentPage,
           rowsPerPage,
@@ -164,7 +167,8 @@ const JournalTable = (id) => {
     mode_relance,
     frein,
     comment,
-    comment_rel
+    comment_rel,
+    comment_rdv
   ) => {
     setInteret(interet);
     setDate(date);
@@ -201,8 +205,10 @@ const JournalTable = (id) => {
       frein?.prix_max != null && setFreinsPrixMax(frein?.prix_max);
     }
     {
-      frein?.superficie_min != null && setFreinsSuperficieMin(frein?.prix_min);
-      frein?.superficie_max != null && setFreinsSuperficieMax(frein?.prix_max);
+      frein?.superficie_min != null &&
+        setFreinsSuperficieMin(frein?.superficie_min);
+      frein?.superficie_max != null &&
+        setFreinsSuperficieMax(frein?.superficie_max);
     }
     {
       frein?.avance != 0 &&
@@ -211,6 +217,8 @@ const JournalTable = (id) => {
     }
     setCommentaire(comment);
     setCommentaire_rel(comment_rel);
+    setCommentaire_rdv(comment_rdv);
+
     setOpen_Dialog(true);
   };
 
@@ -418,6 +426,17 @@ const JournalTable = (id) => {
     setFilters(reset);
     setTempFilters(reset);
   };
+  function getAddLinkForAppel() {
+    return {
+      pathname: `${ENDPOINTS.APPELS}?action=add`,
+      onClick: () => {
+        localStorage.setItem(
+          'selectedProspect_appel',
+          JSON.stringify({ prospect })
+        );
+      },
+    };
+  }
   return (
     <>
       <div className="reflative">
@@ -438,11 +457,10 @@ const JournalTable = (id) => {
           enableExport={true}
           showSearch={false}
           addLink={
-            isSuperAdmin(user.role) ||
-            isAdmin(user.role) ||
-            isCommercial(user.role)
-              ? `${ENDPOINTS.APPELS}?action=add`
-              : undefined
+            (isSuperAdmin(user.role) ||
+              isAdmin(user.role) ||
+              isCommercial(user.role)) &&
+            getAddLinkForAppel()
           }
           filterComponent={
             <div className="space-y-4 p-4 rounded-lg">
@@ -537,6 +555,7 @@ const JournalTable = (id) => {
               frein_avance={frein_avance}
               commentaire={commentaire}
               commentaire_rel={commentaire_rel}
+              commentaire_rdv={commentaire_rdv}
               onClose={() => setOpen_Dialog(false)}
             />
           </Modal>
@@ -546,6 +565,7 @@ const JournalTable = (id) => {
         <>
           <Modal isVisible={true} onClose={() => setOpen_dialog_r(false)}>
             <Modal_Traite
+              type_menu={4} //journal appel
               text={text}
               id={ID_rel_rdv}
               onClose={() => setOpen_dialog_r(false)}
@@ -569,6 +589,7 @@ const JournalTable = (id) => {
               setShowDeleteModal(false);
               fetchData_table_by_id(
                 entity,
+                {},
                 searchTerm,
                 currentPage,
                 rowsPerPage,

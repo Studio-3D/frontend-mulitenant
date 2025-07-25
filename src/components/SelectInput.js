@@ -9,12 +9,12 @@ export default function SelectInput({
   placeholder = "Sélectionner",
   options = [],
   value,
-  backendErrors,
   onChange = () => {},
   error,
   width = 'w-full',
   required = false,
   name,
+  onBlur,
   submitted = false,
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -30,42 +30,25 @@ export default function SelectInput({
     onChange(optionValue);
     setIsOpen(false);
     setIsTouched(true);
-
-    // Clear error if error is a callback
-    if (error && typeof error === 'function') {
-      error(name, '');
-    }
+    if (onBlur) onBlur(); // Trigger Formik's blur handler
   };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
+        if (onBlur) onBlur(); // Trigger Formik's blur handler when clicking outside
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [onBlur]);
 
   const isEmpty = value === undefined || value === null || value === '';
 
-  const getErrorMessage = () => {
-    if (required && isEmpty && (isTouched || submitted)) {
-      return 'Ce champ est obligatoire';
-    }
-    if (error) {
-      if (typeof error === 'string') return error;
-      if (typeof error === 'object' && error.message) return error.message;
-    }
-    if (backendErrors) {
-      if (typeof backendErrors === 'string') return backendErrors;
-      if (Array.isArray(backendErrors)) return backendErrors.join(', ');
-    }
-    return null;
-  };
-
-  const errorMessage = getErrorMessage();
-  const showError = !!errorMessage && (isTouched || submitted);
+  // Simplified error handling that works with Formik
+  const showError = error && (isTouched || submitted);
+  const errorMessage = error;
 
   const selectedOption = options.find(opt => String(opt.value) === String(value));
 
@@ -138,7 +121,7 @@ export default function SelectInput({
         <p className="text-red-500 text-sm mt-1">{errorMessage}</p>
       )}
 
-      {/* Pour valider HTML5 sans afficher un champ visible */}
+      {/* Hidden input for form submission */}
       <input
         type="text"
         name={name}

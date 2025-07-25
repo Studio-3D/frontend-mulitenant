@@ -10,7 +10,7 @@ import {
   Layers, 
   Building, 
   Home,
-  Pencil,
+  PencilLine,
   Trash2,
   ArrowLeft
 } from "lucide-react";
@@ -129,60 +129,82 @@ export default function ProjectDetailsPage() {
   tabs.push({ id: "biens", label: "Biens", icon: <Home className="w-5 h-5"/> });
 
   return (
-    <div className="container mx-auto">
+    <div className="">
       <div className="flex flex-col lg:flex-row gap-6">
-        {/* Project Summary Card - Left Side */}
-        <div className="w-full lg:w-1/3">
+        {/* Project  Card - Left Side */}
+        <div className="w-full lg:w-1/3 min-h-[89vh]">
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <div className="text-center p-6 border-b border-gray-200">
-              <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-[#009FFF]">
-                  {projet.nom ? projet.nom.charAt(0).toUpperCase() : "P"}
-                </span>
-              </div>
-              <h1 className="text-xl font-semibold">{projet.nom}</h1>
-              <div className="inline-block px-3 py-1 bg-blue-100 !text-blue-700 rounded-full text-sm mt-2">
-                {projet.code}
+            <div className="relative bg-blue-100 w-full h-32">
+              {/* Project logo  */}
+              <div className="relative w-full h-36 ">
+                  {/* Background image */}
+                  <img 
+                     src='/images/banners/img1A.jpg'
+                    alt="Real Estate Banner" 
+                    className="w-full h-full object-cover"
+                  />
+                  
+                  {/* Project logo */}
+                  <div className="absolute -bottom-10 left-1/2 transform -translate-x-1/2 w-24 h-24 hover:scale-105 transition-transform cursor-pointer rounded-full bg-blue-100 flex items-center justify-center mx-auto border-4 border-white shadow-md">
+                    <span className="text-2xl font-bold text-[#009FFF]">
+                      {projet.nom ? projet.nom.charAt(0).toUpperCase() : "P"}
+                    </span>
+                  </div>
+                </div>
+            </div>
+              {/* Project Name */}
+            <div className="pt-12 text-center  border-b border-gray-200">
+              <div className="p-4">
+                <h1 className="text-xl  font-semibold">{projet.nom}</h1>
+                <div className="inline-block px-3 py-1 bg-blue-100 !text-blue-700 rounded-full text-sm mt-2">
+                  {projet.code}
+                </div>
               </div>
             </div>
 
             <div className="p-4 border-b border-gray-200">
-              <div className="grid grid-cols-2 gap-4 text-center">
-                {showTrancheTab && (
-                  <div className="p-2">
-                    <div className="flex flex-col items-center">
-                      <Database className="w-6 h-6 !text-green-500 mb-1" />
-                      <span className="text-xl font-medium">{projet.tranche_count || 0}</span>
-                      <span className="text-sm !text-gray-500">Tranches</span>
+              <div className="grid grid-cols-2 gap-6 text-center">
+                {/* Tranche  */}
+                <div className="flex justify-center">
+                  <div className="flex items-end gap-3"> 
+                    <Database className="w-7 h-7 !text-green-500 shrink-0" />
+                    <div className="flex flex-col leading-none text-left">
+                      <span className="text-md font-medium">{projet.tranche_count || 0}</span>
+                      <span className="text-gray-500">Tranches</span>
                     </div>
                   </div>
-                )}
+                </div>
 
-                {showBlocTab && (
-                  <div className="p-2">
-                    <div className="flex flex-col items-center">
-                      <Layers className="w-6 h-6 text-orange-500 mb-1" />
-                      <span className="text-xl font-medium">{projet.bloc_count || 0}</span>
-                      <span className="text-sm !text-gray-500">Blocs</span>
+                {/* Bloc  */}
+                <div className="flex justify-center">
+                  <div className="flex items-end gap-3">
+                    <Layers className="w-7 h-7 !text-orange-500 shrink-0" />
+                    <div className="flex flex-col leading-none text-left">
+                      <span className="text-md font-medium">{projet.bloc_count || 0}</span>
+                      <span className="text-gray-500">Blocs</span>
                     </div>
                   </div>
-                )}
+                </div>
 
-                {showImmeubleTab && (
-                  <div className="p-2">
-                    <div className="flex flex-col items-center">
-                      <Building className="w-6 h-6 !text-red-500 mb-1" />
-                      <span className="text-xl font-medium">{projet.immeuble_count || 0}</span>
-                      <span className="text-sm !text-gray-500">Immeubles</span>
+                {/* Immeuble  */}
+                <div className="flex justify-center ml-4">
+                  <div className="flex items-end gap-3">
+                    <Building className="w-7 h-7 !text-red-500 shrink-0" />
+                    <div className="flex flex-col leading-none text-left">
+                      <span className="text-md font-medium">{projet.immeuble_count || 0}</span>
+                      <span className="text-gray-500 ">Immeubles</span>
                     </div>
                   </div>
-                )}
+                </div>
 
-                <div className="p-2">
-                  <div className="flex flex-col items-center">
-                    <Home className="w-6 h-6 !text-blue-500 mb-1" />
-                    <span className="text-xl font-medium">{projet.bien_count || 0}</span>
-                    <span className="text-sm !text-gray-500">Biens</span>
+                {/* Bien */}
+                <div className="flex justify-center">
+                  <div className="flex items-end gap-3">
+                    <Home className="w-7 h-7 !text-blue-500 shrink-0" />
+                    <div className="flex flex-col leading-none text-left">
+                      <span className="text-md font-medium">{projet.bien_count || 0}</span>
+                      <span className="text-gray-500">Biens</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -292,8 +314,9 @@ export default function ProjectDetailsPage() {
                   <Link 
                     href={`/Projets/${id}/modifier`}
                     className="flex-1 flex items-center justify-center gap-2 py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
+                  
                   >
-                    <Pencil className="w-5 h-5" />
+                    <PencilLine className="w-5 h-5" />
                     <span>Modifier</span>
                   </Link>
                   
@@ -361,7 +384,6 @@ export default function ProjectDetailsPage() {
 
               {activeTab === "biens" && (
                 <div className="min-h-[400px]">
-                  <h3 className="text-lg font-medium mb-4">Biens</h3>
                   <BienTable projetId={id} />
                 </div>
               )}
