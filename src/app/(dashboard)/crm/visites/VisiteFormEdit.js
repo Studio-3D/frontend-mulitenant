@@ -48,8 +48,7 @@ export default function VisiteFormEdit({ id }) {
   const accessToken = localStorage.getItem('accessToken');
   const pusher_key_proposition = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_PROP;
   const [loading, setLoading] = useState({ form: false, visites: false });
-  const selectedProjet =
-    JSON.parse(localStorage.getItem('selectedProjet')) ;
+  const selectedProjet = JSON.parse(localStorage.getItem('selectedProjet'));
   const [backendErrors, setBackendErrors] = useState({});
   const [sources, setSources] = useState([]);
   const [partenaires, setPartenaires] = useState([]);
@@ -80,7 +79,7 @@ export default function VisiteFormEdit({ id }) {
 
   const defaultValues = {
     // selectedProjet.id || ''
-    selectedProjet: selectedProjet.id || 1,
+    selectedProjet: selectedProjet?.id || 1,
     prospect_id: '',
     cin: '',
     nom: '',
@@ -159,12 +158,11 @@ export default function VisiteFormEdit({ id }) {
     })
   );
 
-  if (list_etages.length == 0 && (selectedProjet.max_etages ) > 0) {
-    for (var i = 0; i <= (selectedProjet?.max_etages ); i++) {
+  if (list_etages.length == 0 && selectedProjet.max_etages > 0) {
+    for (var i = 0; i <= selectedProjet?.max_etages; i++) {
       list_etages.push({ value: i });
     }
   }
-
 
   //fin multiple bien
 
@@ -346,7 +344,7 @@ export default function VisiteFormEdit({ id }) {
             nom: visite?.prospect?.nom || '',
             prenom: visite?.prospect?.prenom || '',
             telephone: visite?.prospect?.telephone || '',
-            telephone_num2: visite?.prospect?.telephone_num2 || null,
+            telephone_num2: visite?.prospect?.telephone_num2 || '',
             email: visite?.prospect?.email || '',
             notifie: visite?.prospect?.notifie || 0,
             cin: visite?.prospect?.cin || '',
@@ -402,14 +400,13 @@ export default function VisiteFormEdit({ id }) {
           });
           setValue('interet', visite.interet);
           if (visite.interet === '1') {
-
             fetch_bien_ByProjet(
               visite.bien_id,
-              res.data.propriete_dite_bien.original,
+              NomBienComplet(visite?.bien),
               'without_proposition'
             );
 
-            setBien_propriete_o(res.data.propriete_dite_bien.original);
+            setBien_propriete_o(NomBienComplet(visite?.bien));
           }
           setPartenaire_txt(
             !visite.prospect.partenaire_id
@@ -434,37 +431,35 @@ export default function VisiteFormEdit({ id }) {
           }
 
           if (visite.interet == '3') {
-            console.log('je suis en freins')
             fetchTypeFreins();
 
             fetchDataByProjet('tranches', setTranches, setLoading);
             fetchDataByProjet('vues', setList_Vues, setLoading);
             fetchDataByProjet('typologies', setListTyplogies, setLoading);
+            console.log('rani here ');
             let freinValue = [];
 
             if (visite.frein.frein_etage.length > 0) {
-              const etages = visite.frein.frein_etage.map(
-                (item) => item.etage
-              );
+              const etages = visite.frein.frein_etage.map((item) => item.etage);
               setValue('etages', etages);
               freinValue.push('etage');
             }
 
-            if (visite.frein.frein_vues.length > 0) {
-              const vues = visite.frein.frein_vues.map((item) => item.vue);
+            if (visite.frein.frein_vue.length > 0) {
+              const vues = visite.frein.frein_vue.map((item) => item.vue);
               setValue('vues', vues);
               freinValue.push('vue');
             }
 
-            if (visite.frein.frein_typologies.length > 0) {
-              const typologies = visite.frein.frein_typologies.map(
+            if (visite.frein.frein_typologie.length > 0) {
+              const typologies = visite.frein.frein_typologie.map(
                 (item) => item.typologie
               );
               setValue('typologies', typologies);
               freinValue.push('typologie');
             }
 
-            if (visite.frein.frein_tranches.length > 0) {
+            if (visite.frein.frein_tranche.length > 0) {
               const tranches = visite.frein.frein_tranches.map(
                 (item) => item.tranche
               );
@@ -472,7 +467,7 @@ export default function VisiteFormEdit({ id }) {
               freinValue.push('tranche');
             }
 
-            if (visite.frein.frein_orientations.length > 0) {
+            if (visite.frein.frein_orientation.length > 0) {
               const firstLetterToCode = {
                 N: ORIENTATIONS[1].code, // Nord
                 S: ORIENTATIONS[2].code, // Sud
@@ -484,7 +479,7 @@ export default function VisiteFormEdit({ id }) {
                 S_O: ORIENTATIONS[8].code, // Ouest
               };
 
-              const orientations = visite.frein.frein_orientations.map(
+              const orientations = visite.frein.frein_orientation.map(
                 (item) => {
                   const letter = item.orientation
                     ?.trim()
@@ -551,11 +546,33 @@ export default function VisiteFormEdit({ id }) {
     handleSubmit,
     reset,
     setValue,
+    setError, // Add this line
+    clearErrors, // Add this line if you need it
     formState: { errors },
   } = useForm({
     resolver: yupResolver(validationSchemaRef.current),
     defaultValues,
   });
+  useEffect(() => {
+    if (watch('avance_res') !== '') {
+      if (watch('avance_res') == 0 && user?.role > 2) {
+        setError('avance_res', {
+          type: 'manual',
+          message: 'Le montant ne peut pas être 0 pour votre rôle',
+        });
+      } else if (
+        watch('avance_res') > 0 &&
+        watch('avance_res') < watch('avance_minimale')
+      ) {
+        setError('avance_res', {
+          type: 'manual',
+          message: `Le montant doit être au moins ${watch('avance_minimale')}`,
+        });
+      } else {
+        clearErrors('avance_res');
+      }
+    }
+  }, [watch('avance_res'), watch('avance_minimale'), user?.role]);
 
   const handlePrixChange = (val) => {
     setTimeout(() => {
@@ -629,12 +646,7 @@ export default function VisiteFormEdit({ id }) {
         (!watch('frein')?.includes('etage') || watch('etages').length !== 0) &&
         (!watch('frein')?.includes('tranche') ||
           watch('tranches').length !== 0);
-      console.log(
-        'frein tranche ==>' +
-          watch('frein')?.includes('tranche') +
-          'w lenght ==>' +
-          watch('tranches').length
-      );
+
       if (isValid) {
         errors_validation = true;
 
@@ -809,7 +821,6 @@ export default function VisiteFormEdit({ id }) {
         },
       })
       .then((res) => {
-        console.log(res.data.prospect);
         if (res.data.prospect.length != 0) {
           setDisabled(true);
           if (res.data.prospect.cin != null) {
@@ -857,7 +868,6 @@ export default function VisiteFormEdit({ id }) {
           if (res.data.prospect.notifie != null) {
             setValue('notifie', res.data.prospect.notifie);
           }
-          console.log(res.data.prospect.is_client);
           if (res.data.prospect.is_client === 0) {
             setInfo_client(
               'le ' +
@@ -926,7 +936,7 @@ export default function VisiteFormEdit({ id }) {
       });
   };
 
-  const fetch_bien_ByProjet = async (bien_id_, bien_propriete, text) => {
+  const fetch_bien_ByProjet = async (bien_id_, bien_propriete, txt) => {
     if (watch('interet') == 1) {
       setLoading_bien(true);
       await axios
@@ -992,10 +1002,8 @@ export default function VisiteFormEdit({ id }) {
   const handlechangeprix_remise = (event) => {
     const prixRemise = getParsed(event.target.value);
     const prixForfetaire = getParsed(watch('prix_forfetaire'));
-    console.log('ooof');
     if (prixRemise !== 0) {
       const total = getPrixTotal(prixRemise);
-      console.log('total==>' + total);
       setValue('prix', prixForfetaire ? total - prixForfetaire : total);
     }
   };
@@ -1025,7 +1033,6 @@ export default function VisiteFormEdit({ id }) {
     const avance = parseFloat(event.target.value) || 0;
     setValue('reste', prixFinal - avance);
   };
-
 
   // First select: Source
   const handleSourceChange = (newValue) => {
@@ -1074,7 +1081,6 @@ export default function VisiteFormEdit({ id }) {
   };
   const handleinputchange_banuqe = (e) => {
     if (e) {
-      console.log(e.target.value);
       setValue('banque_id', e.target.value);
     }
   };
@@ -1095,7 +1101,35 @@ export default function VisiteFormEdit({ id }) {
         (watch('check_montant') == true &&
           watch('commentaireAvance') != null &&
           watch('commentaireAvance').length == 0) ||
-        (watch('avance_res') == 0 && watch('check_montant') == false)));
+        (watch('avance_res') == 0 && watch('check_montant') == false) ||
+        errors.avance_res)); // Add this check for avance_res errors
+
+ function NomBienComplet(bien) {
+  console.log('Full bien object:', bien); // Log the entire object
+  const noms = [];
+
+  if (bien.tranche?.nom) {
+    console.log('Adding tranche:', bien.tranche.nom);
+    noms.push(bien.tranche.nom);
+  }
+
+  if (bien.bloc?.nom) {
+    console.log('Adding bloc:', bien.bloc.nom);
+    noms.push(bien.bloc.nom);
+  }
+
+  if (bien.immeuble?.nom) {
+    console.log('Adding immeuble:', bien.immeuble.nom);
+    noms.push(bien.immeuble.nom);
+  }
+
+  console.log('Adding propriete_dite_bien:', bien.propriete_dite_bien);
+  noms.push(bien.propriete_dite_bien);
+
+  const result = noms.join(' - ');
+  console.log('Final result:', result);
+  return result;
+}
   if (isEditing && !formData) {
     return <LoadingSpin />;
   }
@@ -1193,7 +1227,7 @@ export default function VisiteFormEdit({ id }) {
                 Informations du prospect
               </h2>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
               <>
                 <ProspectInformations
                   control={control}
@@ -1235,7 +1269,7 @@ export default function VisiteFormEdit({ id }) {
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
               <AutocompleteSelectComponent
                 label="Intérêt:"
                 name="interet"

@@ -1,7 +1,6 @@
-'use client';
+"use client";
 
-import Button from '@/components/Button';
-import { Eye } from 'lucide-react';
+import { HomeIcon, InfoIcon, PhoneIcon, XIcon } from "lucide-react";
 
 export default function Modal_Propsepct_Exist({
   onClose,
@@ -10,74 +9,78 @@ export default function Modal_Propsepct_Exist({
   id_visite,
   client_prospect,
 }) {
-  function handle_click_appel(appelId) {
-    window.open(`/appels/${appelId}`, '_blank');
+  function handleClickAppel(appelId) {
+    window.open(`/crm/appels/${appelId}`, "_blank");
   }
-  function handle_click_visite(vId) {
-    window.open(`/visites/${vId}`, '_blank');
+
+  function handleClickVisite(vId) {
+    window.open(`/crm/visites/${vId}`, "_blank");
   }
 
   return (
-    <div className="w-full max-w-[90%] sm:max-w-[500px] md:max-w-[600px] lg:max-w-[800px] h-auto bg-white flex flex-col mx-auto">
-      <div className="w-full h-[60px] bg-[#5483b3] px-4">
-        <div className="flex items-center justify-center h-full">
-          <h1 className="text-3xl font-bold text-center text-white">
-            Information
-          </h1>
-        </div>
-      </div>
+    <div
+      className="w-full bg-white border-b border-gray-200"
+      style={{ background: "#957de62b" }}
+    >
+      <div className="container mx-auto px-4 py-4 relative">
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="absolute top-0 right-0 text-gray-400 hover:text-gray-600"
+            aria-label="Fermer"
+          >
+            <XIcon className="w-5 h-5" />
+          </button>
+        )}
 
-      <div className="p-4 w-[600px] ">
-        <div className="text-center space-y-4">
-          {/* First Row */}
-          <div>
-            <h5 className="text-red-500 text-base sm:text-lg font-medium mt-0 mb-2 leading-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+          {/* Column 1: Title */}
+          <div className="flex items-center col-span-1">
+            <InfoIcon className="h-5 w-5 text-blue-500 mr-2" />
+            <h3 className="text-lg font-medium text-gray-900">
+              Ce téléphone appartient à:{" "}
+            </h3>
+          </div>
+
+          {/* Column 2: Name */}
+          <div className="flex items-center col-span-1">
+            <div className="text-sm font-medium text-gray-500 mr-2">
+              Nom & Prénom:
+            </div>
+            <div className="font-medium text-gray-900 truncate">
               {info_client_1}
-            </h5>
+            </div>
           </div>
 
-          {/* Second Row */}
-          <div>
-            <h5 className="text-base sm:text-lg font-medium">
-              {client_prospect}
-            </h5>
+          {/* Column 3: Type */}
+          <div className="flex items-center col-span-1">
+            <div className="text-sm font-medium text-gray-500 mr-2">Type:</div>
+            <div className="font-medium text-gray-900">{client_prospect}</div>
           </div>
 
-          {/* Conditional: Call Made */}
-          {id_appel != null && (
-            <div>
-              <h5 className="text-base sm:text-lg font-medium flex items-center justify-center">
-                {'A Déja fait un Appel'}
-                <div className="ml-2">
-                  <Eye
-                    className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
-                    title="Voir détails"
-                    onClick={() => handle_click_appel(id_appel)}
-                  />
-                </div>
-              </h5>
-            </div>
-          )}
+          {/* Column 4: Actions */}
+          <div className="flex flex-wrap gap-2 justify-end col-span-1">
+            {id_appel != null && (
+              <button
+                onClick={() => handleClickAppel(id_appel)}
+                className="inline-flex items-center text-sm bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 transition-colors"
+                aria-label="Voir détails de l'appel"
+              >
+                <PhoneIcon className="w-4 h-4 text-blue-500 mr-1.5" />
+                <span>Voir appel</span>
+              </button>
+            )}
 
-          {/* Conditional: Visit Made */}
-          {id_visite != null && (
-            <div>
-              <h5 className="text-base sm:text-lg font-medium flex items-center justify-center">
-                {'A Déja fait une Visite'}
-                <div className="ml-2">
-                  <Eye
-                    className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
-                    title="Voir détails"
-                    onClick={() => handle_click_visite(id_visite)}
-                  />
-                </div>
-              </h5>
-            </div>
-          )}
-          <div className="flex justify-center gap-2 mt-[10%]">
-            <Button type="button" onClick={onClose}>
-              Annuler
-            </Button>
+            {id_visite != null && (
+              <button
+                onClick={() => handleClickVisite(id_visite)}
+                className="inline-flex items-center text-sm bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 transition-colors"
+                aria-label="Voir détails de la visite"
+              >
+                <HomeIcon className="w-4 h-4 text-blue-500 mr-1.5" />
+                <span>Voir visite</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

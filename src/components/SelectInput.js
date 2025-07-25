@@ -55,7 +55,7 @@ export default function SelectInput({
   return (
     <div className={`flex flex-col ${width}`} ref={dropdownRef}>
       {label && (
-        <label className="font-medium text-gray-700 mb-1">
+        <label className="font-medium text-gray-700 ">
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>

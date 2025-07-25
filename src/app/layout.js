@@ -4,6 +4,7 @@ import { AuthProvider } from "../context/AuthContext";
 import { SocieteProvider } from "../context/SocieteContext";
 import { ProjetProvider } from "../context/ProjetContext";
 import { Toaster } from "react-hot-toast";
+import { NotificationProvider } from "../context/NotificationContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,7 +31,11 @@ export default function RootLayout({ children }) {
         <Toaster position="top-center" reverseOrder={false} />
         <AuthProvider>
           <SocieteProvider>
-            <ProjetProvider>{children}</ProjetProvider>
+            <ProjetProvider>
+              <NotificationProvider>
+                {children}
+              </NotificationProvider>
+            </ProjetProvider>
           </SocieteProvider>
         </AuthProvider>
       </body>

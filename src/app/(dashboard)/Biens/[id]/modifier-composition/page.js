@@ -1,11 +1,13 @@
-import { useState, useEffect } from "react";
+"use client";
+;
+import { useState, useEffect, use } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { APIURL, ENDPOINTS } from "@/configs/api";
 import axios from "axios";
 import toast from "react-hot-toast";
 import Button from "@/components/Button";
-import { useRouter } from "next/navigation";
-import BreadCrumb from "../../navigation/BreadCrumb";
+import { useParams, useRouter } from "next/navigation";
+import BreadCrumb from "@/app/(dashboard)/navigation/BreadCrumb";
 import {
   Grid,
   FormControl,
@@ -27,7 +29,8 @@ import { encryptUserType, USER_TYPES } from "@/components/user-utils";
 import InputSelect from "@/components/inputSelect";
 import Input from '@/components/Input';
 
-const CompositionForm = ({ id = null }) => {
+const CompositionForm = ({}) => {
+  const { id } = useParams();
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [services, setServices] = useState([]);
@@ -169,7 +172,7 @@ const CompositionForm = ({ id = null }) => {
   <div className="flex items-center justify-start">
     <BreadCrumb
       baseUrl={ENDPOINTS.COMPOSITIONBIENS}
-      step={`${id ? "Modifier" : "Ajouter"} un prestataire`}
+      step={`${id ? "Modifier" : "Ajouter"} une composition de bien`}
     />
   </div>
 

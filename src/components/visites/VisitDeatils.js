@@ -27,7 +27,10 @@ import {
   AreaChartIcon,
   ImageIcon,
   WalletIcon,
-  FileTextIcon,DownloadIcon
+  FileTextIcon,
+  DownloadIcon,
+  ChevronUpIcon,
+  ChevronDownIcon,
 } from 'lucide-react';
 import format from 'date-fns/format';
 import {
@@ -42,17 +45,23 @@ import Modal_Historique_rel_rdv from './Modal_Historique_rel_rdv';
 import Modal_Historique from './Modal_Historique';
 import axios from 'axios';
 import Modal_Traite from '../../../src/app/(dashboard)/crm/Modal_Traite';
+import useClear_visite_cadre from '@/app/(dashboard)/crm/hook/useClear_visite_cadre';
 export function VisitDetails({
   visites_all_show,
   visites_all,
   origin_id,
   last_related_id,
 }) {
+  //when reload remove item v_id_cadre
+  useClear_visite_cadre()
+  const cadre_selected = `${localStorage.getItem('v_id_cadre')}`;
+  console.log('le cadre=>' + cadre_selected);
+
   const router = useRouter();
   const [openH, setOpenH] = useState(false);
   const [open_rel, setOpen_rel] = useState(false);
   const [activeVisit, setActiveVisit] = useState(
-    visites_all_show?.[0]?.related_show_id || null
+    cadre_selected!='null'?cadre_selected: visites_all_show?.[0]?.related_show_id 
   );
   const [rows_histo_rel_rdv, setrowsHisto_rel_rdv] = useState([]);
   const [loading_h_rel, setLoading_h_rel] = useState(true); // Add a loading state
@@ -111,34 +120,14 @@ export function VisitDetails({
     const statut_info = VISITE_STATUT[statut];
     return (
       <span
-        className={`px-2 py-1 rounded-full text-xs font-medium ${statut_info.color}`}
+        className={`px-2 py-1 rounded-full text-xs font-medium ${statut_info?.color}`}
       >
-        {statut_info.label}
+        {statut_info?.label}
       </span>
     );
   };
   const handleView_Reservation = (reservationId) => {
-    window.open(`/vente/reservations/${reservationId}`, '_blank');
-  };
-  const handleDeleteWarning = async (text) => {
-    if (text == 'without_reservation') {
-      setOpen_D_M_warning(true);
-      setMessage_delete_warning(
-        'Veuillez supprimer les visites ultérieures avant de supprimer celle-ci !'
-      );
-    } else {
-      setOpen_D_M_warning(true);
-      setMessage_delete_warning(
-        'Vous ne pouvez pas supprimer une visite liée à Une Réservation !'
-      );
-    }
-  };
-
-  const handleEditWarning = async () => {
-    setOpen_D_M_warning(true);
-    setMessage_delete_warning(
-      'Cette visite ne peut pas être modifiée car elle est liée à une réservation!'
-    );
+    window.open(`/ventes/reservations/${reservationId}`, '_blank');
   };
 
   const handleDelete = async (vId, text) => {
@@ -407,29 +396,37 @@ export function VisitDetails({
             let sup_max = '';
             let avance = '';
 
-            if (interet === '3') {
+            if (interet == '3') {
               const frein = response?.data?.historiques[k]?.frein;
-              
+
               const concatNames = (array, keyPath) =>
                 Array.isArray(array)
-                  ? array.map(item => keyPath.split('.').reduce((o, i) => o?.[i], item)).filter(Boolean).join(',')
+                  ? array
+                      .map((item) =>
+                        keyPath.split('.').reduce((o, i) => o?.[i], item)
+                      )
+                      .filter(Boolean)
+                      .join(',')
                   : '';
-            
+
               fr_tr = concatNames(frein?.frein_tranches, 'tranche.nom');
               fr_o = concatNames(frein?.frein_orientations, 'orientation');
-              fr_tp = concatNames(frein?.frein_typologies, 'typologie.typologie');
+              fr_tp = concatNames(
+                frein?.frein_typologies,
+                'typologie.typologie'
+              );
               fr_v = concatNames(frein?.frein_vues, 'vue.vue');
               fr_et = concatNames(frein?.frein_etages, 'etage');
-            
-              const formatValue = (value, suffix = '') => (value != null && value !== 0 ? `${value}${suffix}` : '');
-            
+
+              const formatValue = (value, suffix = '') =>
+                value != null && value !== 0 ? `${value}${suffix}` : '';
+
               prix_min = formatValue(frein?.prix_min, ' DH');
               prix_max = formatValue(frein?.prix_max, ' DH');
               sup_min = formatValue(frein?.superficie_min);
               sup_max = formatValue(frein?.superficie_max);
               avance = formatValue(frein?.avance, ' DH');
             }
-            
 
             if (response.data.historiques[k].deleted_at != null) {
               let description_new = '';
@@ -552,6 +549,263 @@ export function VisitDetails({
     };
   };
 
+  function NomBienComplet(bien) {
+    const noms = [];
+
+    if (bien?.tranche?.nom) noms.push(bien?.tranche?.nom);
+    if (bien?.bloc?.nom) noms.push(bien?.bloc?.nom);
+    if (bien?.immeuble?.nom) noms.push(bien?.immeuble?.nom);
+
+    noms.push(bien?.propriete_dite_bien);
+
+    return noms.join(' - ');
+  }
+ const change_visite = (newVisitId) => {
+  setActiveVisit(newVisitId);
+  localStorage.removeItem('v_id_cadre');
+};
+  //Traitement Frein
+  const RowTraitement = ({ row }) => {
+    const [open, setOpen] = useState(false);
+    const hasDetails =
+      row.interet == '1' || row.interet == '2' || row.interet == '3';
+
+    return (
+      <>
+        <tr className="border-b hover:bg-gray-50 transition-colors duration-150">
+          <td className="px-4 py-3 text-center">
+            {hasDetails && (
+              <button
+                aria-label={open ? 'collapse row' : 'expand row'}
+                className="p-1 rounded-full hover:bg-gray-200 transition-colors duration-200"
+                onClick={() => setOpen(!open)}
+              >
+                {open ? (
+                  <ChevronUpIcon size={18} className="text-gray-600" />
+                ) : (
+                  <ChevronDownIcon size={18} className="text-gray-600" />
+                )}
+              </button>
+            )}
+          </td>
+
+          <td className="px-4 py-3 text-center font-medium">
+            {format(new Date(row.date), 'dd/MM/yyyy HH:mm')}
+          </td>
+          <td className={`px-4 py-3 text-center`}>
+            {getInteretBadge(row.interet)}
+          </td>
+          <td className="px-4 py-3 text-center">{NomBienComplet(row?.bien)}</td>
+          <td className={`px-4 py-3 text-center`}>
+            {getStatutBadge(row.statut)}
+          </td>
+          <td className="px-4 py-3 text-center">{row.commentaire || '-'}</td>
+        </tr>
+
+        {hasDetails && open && (
+          <tr className="border-b">
+            <td colSpan={6} className="p-0 bg-gray-50">
+              <div className="p-4">
+                <h6 className="text-md font-semibold mb-3 !text-gray-700 flex items-center">
+                  <span className="w-1.5 h-5 bg-blue-600 rounded-sm mr-2"></span>
+                  Détails supplémentaires
+                </h6>
+                <div className="overflow-hidden">
+                  <table className="w-full text-sm border-collapse">
+                    <thead className="bg-blue-50">
+                      <tr>
+                        {/* Intéressé (RDV) */}
+                        {row.interet == 1 && (
+                          <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
+                            Rendez-vous
+                          </th>
+                        )}
+
+                        {/* Réceptif (Relance) */}
+                        {row.interet == 2 && (
+                          <>
+                            <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
+                              Mode Relance
+                            </th>
+                            <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
+                              Date Relance
+                            </th>
+                          </>
+                        )}
+
+                        {/* Perdu (Freins) */}
+                        {row.interet == 3 && (
+                          <>
+                            <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
+                              Freins
+                            </th>
+                            <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
+                              Détails
+                            </th>
+                          </>
+                        )}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="bg-white">
+                        {/* Intéressé (RDV) */}
+                        {row.interet == 1 && (
+                          <td className="text-center px-3 py-2 border-b border-gray-200">
+                            {row.rdv_relation?.rdv
+                              ? format(
+                                  new Date(row.rdv_relation.rdv),
+                                  'dd/MM/yyyy HH:mm'
+                                )
+                              : '-'}
+                          </td>
+                        )}
+
+                        {/* Réceptif (Relance) */}
+                        {row.interet == 2 && (
+                          <>
+                            <td className="text-center px-3 py-2 border-b border-gray-200">
+                              {row.rdv_relation?.mode_relance == '1'
+                                ? 'SMS'
+                                : row.rdv_relation?.mode_relance == '2'
+                                ? 'Appel'
+                                : row.rdv_relation?.mode_relance == '3'
+                                ? 'Email'
+                                : '-'}
+                            </td>
+                            <td className="text-center px-3 py-2 border-b border-gray-200">
+                              {row.rdv_relation?.date_relance
+                                ? format(
+                                    new Date(row.rdv_relation.date_relance),
+                                    'dd/MM/yyyy'
+                                  )
+                                : '-'}
+                            </td>
+                          </>
+                        )}
+
+                        {/* Perdu (Freins) */}
+                        {row.interet == 3 && (
+                          <>
+                            <td className="text-center px-3 py-2 border-b border-gray-200">
+                              {[
+                                row.frein?.frein_tranche?.length > 0 &&
+                                  'Tranche',
+                                row.frein?.frein_etage?.length > 0 && 'Etage',
+                                row.frein?.frein_orientation?.length > 0 &&
+                                  'Orientation',
+                                row.frein?.frein_typologie?.length > 0 &&
+                                  'Typologie',
+                                row.frein?.frein_vue?.length > 0 && 'Vue',
+                                (row.frein?.prix_min || row.frein?.prix_max) &&
+                                  'Prix',
+                                (row.frein?.superficie_min ||
+                                  row.frein?.superficie_max) &&
+                                  'Superficie',
+                                row.frein?.avance && 'Avance',
+                                row.frein?.description_autre && 'Autre',
+                              ]
+                                .filter(Boolean)
+                                .join(', ')}
+                            </td>
+                            <td className="px-3 py-2 border-b border-gray-200">
+                              <div className="grid grid-cols-2 gap-2">
+                                {row.frein?.frein_tranche?.length > 0 && (
+                                  <div>
+                                    <span className="font-medium">
+                                      Tranches:{' '}
+                                    </span>
+                                    {row.frein.frein_tranche
+                                      .map((t) => t.tranche.nom)
+                                      .join(', ')}
+                                  </div>
+                                )}
+                                {row.frein?.frein_etage?.length > 0 && (
+                                  <div>
+                                    <span className="font-medium">
+                                      Etages:{' '}
+                                    </span>
+                                    {row.frein.frein_etage
+                                      .map((e) => e.etage)
+                                      .join(', ')}
+                                  </div>
+                                )}
+                                {row.frein?.frein_orientation?.length > 0 && (
+                                  <div>
+                                    <span className="font-medium">
+                                      Orientations:{' '}
+                                    </span>
+                                    {row.frein.frein_orientation
+                                      .map((o) => o.orientation)
+                                      .join(', ')}
+                                  </div>
+                                )}
+                                {row.frein?.frein_typologie?.length > 0 && (
+                                  <div>
+                                    <span className="font-medium">
+                                      Typologies:{' '}
+                                    </span>
+                                    {row.frein.frein_typologie
+                                      .map((t) => t.typologie.typologie)
+                                      .join(', ')}
+                                  </div>
+                                )}
+                                {row.frein?.frein_vue?.length > 0 && (
+                                  <div>
+                                    <span className="font-medium">Vues: </span>
+                                    {row.frein.frein_vue
+                                      .map((v) => v.vue.vue)
+                                      .join(', ')}
+                                  </div>
+                                )}
+                                {(row.frein?.prix_min ||
+                                  row.frein?.prix_max) && (
+                                  <div>
+                                    <span className="font-medium">Prix: </span>
+                                    {`[${row.frein.prix_min || ''}, ${
+                                      row.frein.prix_max || ''
+                                    }]`}
+                                  </div>
+                                )}
+                                {(row.frein?.superficie_min ||
+                                  row.frein?.superficie_max) && (
+                                  <div>
+                                    <span className="font-medium">
+                                      Superficie:{' '}
+                                    </span>
+                                    {`[${row.frein.superficie_min || ''}, ${
+                                      row.frein.superficie_max || ''
+                                    }]`}
+                                  </div>
+                                )}
+                                {row.frein?.avance && (
+                                  <div>
+                                    <span className="font-medium">
+                                      Avance:{' '}
+                                    </span>
+                                    {row.frein.avance}
+                                  </div>
+                                )}
+                                {row.frein?.description_autre && (
+                                  <div>
+                                    <span className="font-medium">Autre: </span>
+                                    {row.frein.description_autre}
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                          </>
+                        )}
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </td>
+          </tr>
+        )}
+      </>
+    );
+  };
   return (
     <>
       <div className="relative">
@@ -591,7 +845,7 @@ export function VisitDetails({
               <VisitTimeline
                 visites_all_show={visites_all_show}
                 activeVisit={activeVisit}
-                onVisitSelect={setActiveVisit}
+                onVisitSelect={change_visite}
                 origin_id={origin_id}
               />
             </div>
@@ -766,7 +1020,9 @@ export function VisitDetails({
                                       }
                                       className="ml-2 !text-red hover:text-red transition-colors mt-1"
                                     >
-                                      <EyeIcon className="h-5 w-5" />
+                                      <div title="Voir Réservation">
+                                        <EyeIcon className="h-5 w-5" />
+                                      </div>
                                     </button>
                                   )}
 
@@ -800,7 +1056,9 @@ export function VisitDetails({
                                           loading ? (
                                             'Loading document...'
                                           ) : (
-                                            <DownloadIcon className="h-5 w-5" />
+                                            <div title="Télécharger Bon de Préservation">
+                                              <DownloadIcon className="h-5 w-5" />
+                                            </div>
                                           )
                                         }
                                       </PDFDownloadLink>
@@ -1001,9 +1259,8 @@ export function VisitDetails({
                                   icon={<WalletIcon className="h-5 w-5" />}
                                   title="Avance"
                                   value={
-                                    visite.frein?.avance?.toLocaleString(
-                                      'fr-MA'
-                                    ) + ' DH'
+                                    visite.frein?.avance?.toLocaleString() +
+                                    ' DH'
                                   }
                                 />
                               )}
@@ -1017,18 +1274,18 @@ export function VisitDetails({
                                 value={
                                   visite.frein?.prix_min &&
                                   visite.frein?.prix_max
-                                    ? `Prix entre ${visite.frein?.prix_min.toLocaleString(
-                                        'fr-MA' + ' DH'
-                                      )} et ${visite.frein?.prix_max.toLocaleString(
-                                        'fr-MA' + ' DH'
+                                    ? `Prix entre ${visite.frein?.prix_min?.toLocaleString(
+                                        +' DH'
+                                      )} et ${visite.frein?.prix_max?.toLocaleString(
+                                        +' DH'
                                       )}`
                                     : visite.frein?.prix_min
-                                    ? `Prix à partir de ${visite.frein?.prix_min.toLocaleString(
-                                        'fr-MA' + ' DH'
+                                    ? `Prix à partir de ${visite.frein?.prix_min?.toLocaleString(
+                                        +' DH'
                                       )}`
                                     : visite.frein?.prix_max
-                                    ? `Prix jusqu'à ${visite.frein?.prix_max.toLocaleString(
-                                        'fr-MA' + ' DH'
+                                    ? `Prix jusqu'à ${visite.frein?.prix_max?.toLocaleString(
+                                        +' DH'
                                       )}`
                                     : null
                                 }
@@ -1042,19 +1299,11 @@ export function VisitDetails({
                                 value={
                                   visite.frein?.superficie_min &&
                                   visite.frein?.superficie_max
-                                    ? `Superficie entre ${visite.frein?.superficie_min.toLocaleString(
-                                        'fr-MA'
-                                      )} m² et ${visite.frein?.superficie_max.toLocaleString(
-                                        'fr-MA'
-                                      )} m²`
+                                    ? `Superficie entre ${visite.frein?.superficie_min.toLocaleString()} m² et ${visite.frein?.superficie_max.toLocaleString()} m²`
                                     : visite.frein?.superficie_min
-                                    ? `Superficie à partir de ${visite.frein?.superficie_min.toLocaleString(
-                                        'fr-MA'
-                                      )} m²`
+                                    ? `Superficie à partir de ${visite.frein?.superficie_min.toLocaleString()} m²`
                                     : visite.frein?.superficie_max
-                                    ? `Superficie jusqu'à ${visite.frein?.superficie_max.toLocaleString(
-                                        'fr-MA'
-                                      )} m²`
+                                    ? `Superficie jusqu'à ${visite.frein?.superficie_max.toLocaleString()} m²`
                                     : null
                                 }
                               />
@@ -1090,16 +1339,21 @@ export function VisitDetails({
                           <>
                             {visite.reservation == null && (
                               <>
-                                {/* if si interesse ou receptif*/}
-                                {/* elseperdu disbaled si frein supprimé/traité/desactive*/}
-                                {visite.interet == 1 || visite.interet == 2 ? (
+                                {/* Show Modifier button if:
+        - interet == 1 AND statut == 1
+        OR
+        - interet == 2
+    */}
+                                {(visite.interet == 1 && visite.statut == 1) ||
+                                visite.interet == 2 ? (
                                   <Button
                                     type="edit"
                                     onClick={() => handleEdit(visite.id)}
                                     disabled={
                                       visite.statut == 3 ||
                                       visite.statut == 4 ||
-                                      visite.statut == 5
+                                      visite.statut == 5 ||
+                                      visite.statut == 2
                                         ? 'disabled'
                                         : ''
                                     }
@@ -1107,46 +1361,43 @@ export function VisitDetails({
                                     Modifier
                                   </Button>
                                 ) : (
-                                  <Button
-                                    type="edit"
-                                    onClick={() => handleEdit(visite.id)}
-                                    disabled={
-                                      visite?.frein?.etat == 3 ||
-                                      visite?.frein?.etat == 4 ||
-                                      visite?.frein?.etat == 5
-                                        ? 'disabled'
-                                        : ''
-                                    }
-                                  >
-                                    Modifier
-                                  </Button>
+                                  <>
+                                    {visite.interet == 3 && (
+                                      <Button
+                                        type="edit"
+                                        onClick={() => handleEdit(visite.id)}
+                                        disabled={
+                                          visite?.frein?.etat == 3 ||
+                                          visite?.frein?.etat == 4 ||
+                                          visite?.frein?.etat == 5
+                                            ? 'disabled'
+                                            : ''
+                                        }
+                                      >
+                                        Modifier
+                                      </Button>
+                                    )}
+                                  </>
                                 )}
 
-                                {/*si visite id==visiteid (id du url)(first visite)=>ne supprimer pas */}
-                                {visite.id != origin_id && (
-                                  <Button
-                                    type="delete"
-                                    onClick={() =>
-                                      handleDelete(
-                                        visite.id,
-
-                                        null
-                                      )
-                                    }
-                                  >
-                                    Supprimer
-                                  </Button>
-                                )}
-                                {/*si first visite ya pas d'autre visite */}
-                                {visite.id == origin_id &&
-                                  visites_all.length == 1 && (
+                                {/* Hide Supprimer button if:
+        - interet == 1 AND statut == 2
+        OR
+        - it's the first visite (origin_id) unless it's the only visite
+    */}
+                                {!(visite.interet == 1 && visite.statut == 2) &&
+                                  (visite.id != origin_id ||
+                                    (visite.id == origin_id &&
+                                      visites_all.length == 1)) && (
                                     <Button
                                       type="delete"
                                       onClick={() =>
                                         handleDelete(
                                           visite.id,
-
-                                          'first_visite'
+                                          visite.id == origin_id &&
+                                            visites_all.length == 1
+                                            ? 'first_visite'
+                                            : null
                                         )
                                       }
                                     >
@@ -1158,6 +1409,70 @@ export function VisitDetails({
                           </>
                         )}
                       </div>
+                      {visite.traitement_frein.length > 0 && (
+                        <>
+                          <h5 style={{ marginLeft: '12px', color: 'blue' }}>
+                            Historiques Traitement du Frein
+                          </h5>
+                          <div className="overflow-y-auto flex-1 p-4">
+                            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+                              <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-blue-50 sticky top-0">
+                                  <tr
+                                    style={{
+                                      background: 'black',
+                                      color: 'white',
+                                    }}
+                                  >
+                                    <th
+                                      scope="col"
+                                      className="px-4 py-3 w-12"
+                                    ></th>
+                                    <th
+                                      scope="col"
+                                      className="px-4 py-3 text-center text-xs font-medium  uppercase tracking-wider"
+                                    >
+                                      Date
+                                    </th>
+                                    <th
+                                      scope="col"
+                                      className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider"
+                                    >
+                                      Intérêt
+                                    </th>
+                                    <th
+                                      scope="col"
+                                      className="px-4 py-3 text-center text-xs font-medium  uppercase tracking-wider"
+                                    >
+                                      Bien
+                                    </th>
+                                    <th
+                                      scope="col"
+                                      className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider"
+                                    >
+                                      Statut
+                                    </th>
+                                    <th
+                                      scope="col"
+                                      className="px-4 py-3 text-center text-xs font-medium  uppercase tracking-wider"
+                                    >
+                                      Commentaire
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                  {visite.traitement_frein.map((row, index) => (
+                                    <RowTraitement
+                                      key={row.id || `row-${index}`}
+                                      row={row}
+                                    />
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </VisitCard>
                   )
               )}
@@ -1198,7 +1513,7 @@ export function VisitDetails({
           <DeleteData
             route={APIURL.VISITES}
             Id={selectedId}
-            type='Visite'
+            type="Visite"
             message={'Etes-vous sûr de vouloir supprimer cette Visite ?'}
             accessToken={accessToken}
             onClose={() => {

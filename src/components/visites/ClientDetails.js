@@ -1,21 +1,21 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React from "react";
 import {
   UserIcon,
   PhoneIcon,
   InfoIcon,
   AlertCircleIcon,
   ImageIcon,
-} from 'lucide-react';
+} from "lucide-react";
 
-import Modal from '@/components/Modal';
-import { useState } from 'react';
+import Modal from "@/components/Modal";
+import { useState } from "react";
 
-import ProspectFormDialog from '../../../src/app/(dashboard)/crm/prospects/ProspectFormDialg';
+import ProspectFormDialog from "../../../src/app/(dashboard)/crm/prospects/ProspectFormDialg";
 export function ClientDetails({ Prospect }) {
   const handleView_Prospect = (prosId) => {
-    window.open(`/crm/prospects/${prosId}`, '_blank');
+    window.open(`/crm/prospects/${prosId}`, "_blank");
   };
   //modifier prspct
   const [openDialog, setOpenDialog] = useState(false);
@@ -33,7 +33,7 @@ export function ClientDetails({ Prospect }) {
             <div>
               <p className="text-sm text-[whitesmoke]">Nom & Prénom:</p>
               <h2 className="text-xl font-bold">
-                {Prospect?.nom + ' ' + Prospect?.prenom}
+                {Prospect?.nom + " " + Prospect?.prenom}
               </h2>
             </div>
           </div>
@@ -42,7 +42,7 @@ export function ClientDetails({ Prospect }) {
           <div className="flex items-center space-x-4">
             <ImageIcon className="h-6 w-6 text-[whitesmoke]" />
             <div>
-              <p className="text-sm text-[whitesmoke]">Carte Identité National:</p>
+              <p className="text-sm text-[whitesmoke]">CIN:</p>
               <p className="font-medium">{Prospect?.cin}</p>
             </div>
           </div>
@@ -54,9 +54,10 @@ export function ClientDetails({ Prospect }) {
               <p className="text-sm text-[whitesmoke]">Téléphone</p>
               <p className="font-medium">
                 {Prospect?.telephone}
-                {Prospect?.telephone_num2 != null
-                  ? '/' + Prospect?.telephone_num2
-                  : null}
+                {Prospect?.telephone_num2 != null &&
+                Prospect?.telephone_num2 != ""
+                  ? "/" + Prospect?.telephone_num2
+                  : ""}
               </p>
             </div>
           </div>
@@ -85,9 +86,11 @@ export function ClientDetails({ Prospect }) {
           <div className="flex items-center space-x-3">
             <AlertCircleIcon className="h-6 w-6 text-[whitesmoke]" />
             <div>
-              <p className="text-sm text-[whitesmoke]">Accepte {'d\'être'} contacté</p>
+              <p className="text-sm text-[whitesmoke]">
+                Accepte {"d'être"} contacté
+              </p>
               <p className="font-medium">
-                {Prospect?.notifie == 1 ? 'Oui' : 'Non'}
+                {Prospect?.notifie == 1 ? "Oui" : "Non"}
               </p>
             </div>
           </div>

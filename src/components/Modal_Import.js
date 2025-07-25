@@ -18,17 +18,19 @@ export default function Modal_Import({ onClose, title, route }) {
   const fileInputRef = useRef(null);
   const [file, setFile] = useState(null);
   const [backendErrors, setBackendErrors] = useState(null);
+  //        `${RESOURCE_URL.DOCS}/${selectedSociete.raison_sociale_concatene}_${selectedSociete.id}/reclamations/exemple.xlsx`,
 
   const handleFileClick = () => {
     if (selectedSociete?.raison_sociale_concatene && selectedSociete?.id) {
       window.open(
-        `${RESOURCE_URL.DOCS}/${selectedSociete.raison_sociale_concatene}_${selectedSociete.id}/reclamations/exemple.xlsx`,
+        `${RESOURCE_URL.DOCS}/import_prospect.xlsx`,
+
         '_blank'
       );
     } else {
       toast.error('Société non sélectionnée');
     }
-  }
+  };
 
   const onSubmit_file = (e) => {
     e.preventDefault();
@@ -90,9 +92,8 @@ export default function Modal_Import({ onClose, title, route }) {
         setFile(null);
         if (res.status === 200) {
           toast.success('Le fichier est importé avec succès');
-          onClose()
+          onClose();
           localStorage.setItem('load_data_prospect', 1);
-
         }
       })
       .catch((error) => {
@@ -111,7 +112,7 @@ export default function Modal_Import({ onClose, title, route }) {
   return (
     <div className="w-full max-w-[90%] sm:max-w-[500px] md:max-w-[600px] lg:max-w-[800px] h-auto bg-white flex flex-col mx-auto">
       {/* Header */}
-      <div className="w-full h-[150px] bg-[#231651] px-4">
+      <div className="w-full h-[90px] bg-[#231651] px-4">
         <div className="flex items-center justify-center h-full">
           <h1 className="text-3xl font-bold text-center text-white">
             Importer des {title}

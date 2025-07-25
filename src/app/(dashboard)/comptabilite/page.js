@@ -18,7 +18,7 @@ const ComptabilitePage = () => {
   // Check user permissions
   useEffect(() => {
     if (user && !isAdmin(user.role) && !isSuperAdmin(user.role)) {
-      router.push('/home');
+      router.push('/');
     }
   }, [user, router]);
 

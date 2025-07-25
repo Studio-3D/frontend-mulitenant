@@ -1,85 +1,179 @@
 import React from 'react';
-import { Document, Page, Text, StyleSheet, View } from '@react-pdf/renderer';
+import {
+  Document,
+  Page,
+  Text,
+  View,
+  StyleSheet,
+  Image,
+} from '@react-pdf/renderer';
 
-// Create styles
 const styles = StyleSheet.create({
   page: {
-    flexDirection: 'column',
-    padding: 20,
+    padding: 30,
+    fontSize: 10,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  logoContainer: {
+    width: '30%',
+  },
+  logo: {
+    width: 60,
+    height: 'auto',
+  },
+  companyDetails: {
+    width: '60%',
+    fontSize: 9,
+    textAlign: 'right',
+    lineHeight: 1.5,
   },
   title: {
-    fontSize: 24,
-    marginBottom: 20,
     textAlign: 'center',
+    fontSize: 16,
     fontWeight: 'bold',
+    marginBottom: 20,
     textDecoration: 'underline',
+  },
+  subtitle: {
+    textAlign: 'center',
+    fontSize: 12,
+    marginBottom: 20,
     fontStyle: 'italic',
   },
   section: {
-    fontSize: 14,
-    marginBottom: 18,
-    textAlign: 'center',  // Center the paragraph
-    paddingLeft: 20,
-    paddingRight: 20,
+    marginBottom: 20,
   },
-  normalText: {
-    textAlign: 'center',  // Center the text
-    fontSize: 12,
-    fontWeight: 'normal',
-    lineHeight: 1.5,  // Improve readability
+  line: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#000',
+    marginBottom: 20,
+  },
+  text: {
+    fontSize: 11,
+    lineHeight: 1.6,
+    textAlign: 'left',
+    marginBottom: 10,
   },
   bold: {
     fontWeight: 'bold',
-    fontSize: 13,
   },
   underline: {
     textDecoration: 'underline',
   },
-  highlight: {
-    fontSize: 10,
-    color: 'red',
+  propertyDetails: {
+    marginTop: 20,
+    marginBottom: 15,
+    lineHeight: 1.8,
   },
-  TextFin: {
+  footer: {
     textAlign: 'center',
-    fontSize: 15,
-    fontWeight: 'bold',
-    textDecoration: 'underline',
-    marginTop: 15,
+    fontSize: 12,
+    marginTop: 30,
+  },
+  signature: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 50,
+    fontSize: 10,
+  },
+  stampArea: {
+    marginTop: 30,
+    textAlign: 'center',
+    fontStyle: 'italic',
+    fontSize: 9,
   },
 });
 
 const MyDocument = ({ data }) => {
+  const user = JSON.parse(localStorage.getItem('authUser'));
+  const imageUrl = `/Docs/${user.societe.raison_sociale_concatene}_${user.societe.id}/logos/${user.societe.logo}`;
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        {/* Title */}
-        <Text style={styles.title}>
-          Pré-réservation du bien : {data[4] || 'Bien N/A'}
-        </Text>
-
-        {/* Centered Paragraph */}
-        <View style={styles.section}>
-          <Text style={styles.normalText}>
-            {`Bien : ${data[4] || 'N/A'}`}
-            {'\n'}
-            {`Niveau : ${data[5] || 'N/A'}`}
-            {'\n'}
-            {`Superficie : ${data[6] || 'N/A'} m²`}
-            {'\n'}
-            {`Orientation : ${data[7] || 'N/A'}`}
-            {'\n'}
-            {`Date de rendez-vous : ${data[2] ? new Date(data[2]).toLocaleDateString() : 'N/A'}`}
-            {'\n'}
-            {`Prix : ${data[8] ? data[8].toLocaleString() : 'N/A'} DH`}
-            {'\n'}
-            {`Responsable : ${data[9]} ${data[10]}`}
-          </Text>
+        {/* En-tête avec logo */}
+        <View style={styles.header}>
+          <View style={styles.logoContainer}>
+            <Image src={imageUrl} style={styles.logo} />
+          </View>
+          <View style={styles.companyDetails}>
+            <Text style={styles.bold}>{user.societe.raison_sociale}</Text>
+            <Text>{user.societe.adresse}</Text>
+            <Text>Tél: {user.societe.tel}</Text>
+            <Text>Email: {user.societe.email}</Text>
+          </View>
         </View>
+        <View style={styles.line} />
 
-        {/* Footer or Additional Content */}
-        <View style={styles.TextFin}>
-          <Text>Nord Afrique Immobilier</Text>
-          <Text>Es qualité</Text>
+        {/* Titre principal */}
+        <Text style={styles.title}>REÇU DE PRÉ-RÉSERVATION</Text>
+        <Text style={styles.subtitle}>N° {data[0] || ''}</Text>
+
+        {/* Contenu principal */}
+        <View style={styles.section}>
+          <Text style={styles.text}>
+            La société{' '}
+            <Text style={styles.bold}>{user.societe.raison_sociale}</Text>,
+            confirme la pré-réservation du bien immobilier suivant :
+          </Text>
+
+          <View style={styles.propertyDetails}>
+            <Text style={styles.text}>
+              Le bien identifié sous la référence{' '}
+              <Text style={styles.bold}>{data[4] || ''}</Text> est situé au:
+              {'   '}
+              {data[5] == 0 ? ' RDC' : data[5] + ' étage'} {"d'"}une superficie
+              de {data[6] || ''} mètres carrés, Ce bien présente une orientation{' '}
+              <Text style={styles.bold}>{data[7] || ''}</Text> et est proposé au
+              prix de{' '}
+              <Text style={styles.bold}>
+                {data[8] ? data[8].toLocaleString() : ''} DH
+              </Text>
+              .
+              {data[2] != null && (
+                <>
+                  Un rendez-vous a été fixé pour le{' '}
+                  <Text style={styles.bold}>
+                    {data[2] ? new Date(data[2]).toLocaleDateString() : ''}
+                  </Text>{' '}
+                  afin de finaliser cette réservation.
+                </>
+              )}
+            </Text>
+          </View>
+
+          <Text style={styles.text}>
+            Ce reçu atteste de {"l'"}engagement du client à procéder à la
+            réservation définitive du bien selon les modalités convenues entre
+            les parties.
+          </Text>
+
+          <Text style={styles.text}>
+            Fait à {user.societe.ville || '...'}, le{' '}
+            {new Date().toLocaleDateString()}
+          </Text>
+
+          {/* Zone de signatures */}
+          <View style={styles.signature}>
+            <View>
+              <Text style={styles.underline}>Signature du Client</Text>
+            </View>
+            <View>
+              <Text style={styles.underline}>
+                Signature du Societé {user.societe.raison_sociale}{' '}
+              </Text>
+            </View>
+          </View>
+
+          {/* Pied de page */}
+          <View style={styles.footer}>
+            <Text>Merci pour votre confiance</Text>
+          </View>
         </View>
       </Page>
     </Document>
