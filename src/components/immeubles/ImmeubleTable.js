@@ -10,6 +10,7 @@ import { Eye, PencilLine, Trash2 } from "lucide-react";
 import { useProjet } from '@/context/ProjetContext';
 import Input from '../Input';
 import InputSelect from '../inputSelect';
+import Link from 'next/link';
 import Modal from '../Modal';
 import DeleteData from '../DeleteData';
 
@@ -264,8 +265,10 @@ export default function ImmeubleTable({ projetId, trancheId, blocId }) {
 
   return (
     <div>
-      <Table 
+      <h3 className="text-lg font-medium mb-4">Immeubles</h3>
+      <Table
         columns={columns}
+        showSearch={false}
         data={formattedImmeubles}
         totalRows={totalRows}
         loading={loading}

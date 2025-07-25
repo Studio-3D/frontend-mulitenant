@@ -1,7 +1,8 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
+import { debounce } from 'lodash';
 import { APIURL } from "@/configs/api";
 import { useAuth } from "@/context/AuthContext";
 import { useProjet } from "@/context/ProjetContext";
@@ -11,8 +12,7 @@ import {
   Building, 
   Home,
   PencilLine,
-  Trash2,
-  ArrowLeft
+  Trash2
 } from "lucide-react";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
@@ -37,21 +37,44 @@ export default function ProjectDetailsPage() {
   });
   const [confirming, setConfirming] = useState(false);
   const [hasSetProjet, setHasSetProjet] = useState(false);
+  const apiCache = useRef({});
+  const abortControllers = useRef([]);
 
   const canManageProjet = user?.role === 1 || user?.role === 2;
 
-  useEffect(() => {
-    if (projet && !loading) return;
-    
-    const fetchProjectDetails = async () => {
+  const fetchWithRetry = async (fn, retries = 3, delay = 1000) => {
+    try {
+      return await fn();
+    } catch (error) {
+      if (error.response?.status === 429 && retries > 0) {
+        await new Promise(res => setTimeout(res, delay));
+        return fetchWithRetry(fn, retries - 1, delay * 2);
+      }
+      throw error;
+    }
+  };
+
+  const fetchProjectDetails = useCallback(async () => {
+    const cacheKey = `project-${id}`;
+    if (apiCache.current[cacheKey]) {
+      setProjet(apiCache.current[cacheKey]);
+      return;
+    }
+
+    const controller = new AbortController();
+    abortControllers.current.push(controller);
+
+    try {
       setLoading(true);
-      try {
+      await fetchWithRetry(async () => {
         const token = localStorage.getItem("accessToken");
         const response = await axios.get(`${APIURL.PROJETS}/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
+          signal: controller.signal
         });
 
         if (response.data.projet) {
+          apiCache.current[cacheKey] = response.data.projet;
           setProjet(response.data.projet);
           
           if (!hasSetProjet) {
@@ -61,25 +84,38 @@ export default function ProjectDetailsPage() {
         } else {
           setError("Projet non trouvé");
         }
-      } catch (err) {
+      });
+    } catch (err) {
+      if (!axios.isCancel(err)) {
         console.error("Failed to load project:", err);
         setError("Erreur lors du chargement du projet");
-      } finally {
-        setLoading(false);
       }
-    };
-
-    if (id) {
-      fetchProjectDetails();
+    } finally {
+      setLoading(false);
     }
-  }, [id, hasSetProjet]);
+  }, [id, hasSetProjet, selectProjet]);
 
-  const handleTabClick = (tab) => {
+  useEffect(() => {
+    if (projet && !loading) return;
+    if (!id) return;
+
+    const timer = setTimeout(() => {
+      fetchProjectDetails();
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+      abortControllers.current.forEach(controller => controller.abort());
+      abortControllers.current = [];
+    };
+  }, [id, projet, loading, fetchProjectDetails]);
+
+  const debouncedTabChange = useCallback(debounce((tab) => {
     setActiveTab(tab);
     const url = new URL(window.location);
     url.searchParams.set("tab", tab);
     window.history.pushState({}, "", url);
-  };
+  }, 300), []);
 
   const handleDeleteConfirm = async () => {
     setConfirming(true);
@@ -131,31 +167,27 @@ export default function ProjectDetailsPage() {
   return (
     <div className="">
       <div className="flex flex-col lg:flex-row gap-6">
-        {/* Project  Card - Left Side */}
+        {/* Project Card - Left Side (Complete with all details) */}
         <div className="w-full lg:w-1/3 min-h-[89vh]">
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="relative bg-blue-100 w-full h-32">
-              {/* Project logo  */}
-              <div className="relative w-full h-36 ">
-                  {/* Background image */}
-                  <img 
-                     src='/images/banners/img1A.jpg'
-                    alt="Real Estate Banner" 
-                    className="w-full h-full object-cover"
-                  />
-                  
-                  {/* Project logo */}
-                  <div className="absolute -bottom-10 left-1/2 transform -translate-x-1/2 w-24 h-24 hover:scale-105 transition-transform cursor-pointer rounded-full bg-blue-100 flex items-center justify-center mx-auto border-4 border-white shadow-md">
-                    <span className="text-2xl font-bold text-[#009FFF]">
-                      {projet.nom ? projet.nom.charAt(0).toUpperCase() : "P"}
-                    </span>
-                  </div>
+              <div className="relative w-full h-36">
+                <img 
+                  src='/images/banners/img1A.jpg'
+                  alt="Real Estate Banner" 
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute -bottom-10 left-1/2 transform -translate-x-1/2 w-24 h-24 hover:scale-105 transition-transform cursor-pointer rounded-full bg-blue-100 flex items-center justify-center mx-auto border-4 border-white shadow-md">
+                  <span className="text-2xl font-bold text-[#009FFF]">
+                    {projet.nom ? projet.nom.charAt(0).toUpperCase() : "P"}
+                  </span>
                 </div>
+              </div>
             </div>
-              {/* Project Name */}
-            <div className="pt-12 text-center  border-b border-gray-200">
+
+            <div className="pt-12 text-center border-b border-gray-200">
               <div className="p-4">
-                <h1 className="text-xl  font-semibold">{projet.nom}</h1>
+                <h1 className="text-xl font-semibold">{projet.nom}</h1>
                 <div className="inline-block px-3 py-1 bg-blue-100 !text-blue-700 rounded-full text-sm mt-2">
                   {projet.code}
                 </div>
@@ -164,7 +196,6 @@ export default function ProjectDetailsPage() {
 
             <div className="p-4 border-b border-gray-200">
               <div className="grid grid-cols-2 gap-6 text-center">
-                {/* Tranche  */}
                 <div className="flex justify-center">
                   <div className="flex items-end gap-3"> 
                     <Database className="w-7 h-7 !text-green-500 shrink-0" />
@@ -175,7 +206,6 @@ export default function ProjectDetailsPage() {
                   </div>
                 </div>
 
-                {/* Bloc  */}
                 <div className="flex justify-center">
                   <div className="flex items-end gap-3">
                     <Layers className="w-7 h-7 !text-orange-500 shrink-0" />
@@ -186,18 +216,16 @@ export default function ProjectDetailsPage() {
                   </div>
                 </div>
 
-                {/* Immeuble  */}
                 <div className="flex justify-center ml-4">
                   <div className="flex items-end gap-3">
                     <Building className="w-7 h-7 !text-red-500 shrink-0" />
                     <div className="flex flex-col leading-none text-left">
                       <span className="text-md font-medium">{projet.immeuble_count || 0}</span>
-                      <span className="text-gray-500 ">Immeubles</span>
+                      <span className="text-gray-500">Immeubles</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Bien */}
                 <div className="flex justify-center">
                   <div className="flex items-end gap-3">
                     <Home className="w-7 h-7 !text-blue-500 shrink-0" />
@@ -314,7 +342,6 @@ export default function ProjectDetailsPage() {
                   <Link 
                     href={`/Projets/${id}/modifier`}
                     className="flex-1 flex items-center justify-center gap-2 py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
-                  
                   >
                     <PencilLine className="w-5 h-5" />
                     <span>Modifier</span>
@@ -347,7 +374,7 @@ export default function ProjectDetailsPage() {
                         ? "border-b-2 border-[#009FFF] text-[#009FFF]"
                         : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
                     }`}
-                    onClick={() => handleTabClick(tab.id)}
+                    onClick={() => debouncedTabChange(tab.id)}
                   >
                     {tab.icon}
                     {tab.label}
@@ -361,32 +388,21 @@ export default function ProjectDetailsPage() {
             </div>
 
             <div className="p-6">
-              {activeTab === "tranches" && (
-                <div className="min-h-[400px]">
-                  <h3 className="text-lg font-medium mb-4">Tranches</h3>
-                  <TrancheTable projetId={id} />
-                </div>
-              )}
-
-              {activeTab === "blocs" && (
-                <div className="min-h-[400px]">
-                  <h3 className="text-lg font-medium mb-4">Blocs</h3>
-                  <BlocTable projetId={id} />
-                </div>
-              )}
-
-              {activeTab === "immeubles" && (
-                <div className="min-h-[400px]">
-                  <h3 className="text-lg font-medium mb-4">Immeubles</h3>
-                  <ImmeubleTable projetId={id} />
-                </div>
-              )}
-
-              {activeTab === "biens" && (
-                <div className="min-h-[400px]">
-                  <BienTable projetId={id} />
-                </div>
-              )}
+              <div className={`${activeTab !== "tranches" ? "hidden" : ""}`}>
+                <TrancheTable projetId={id} key={`tranches-${id}`} />
+              </div>
+              
+              <div className={`${activeTab !== "blocs" ? "hidden" : ""}`}>
+                <BlocTable projetId={id} key={`blocs-${id}`} />
+              </div>
+              
+              <div className={`${activeTab !== "immeubles" ? "hidden" : ""}`}>
+                <ImmeubleTable projetId={id} key={`immeubles-${id}`} />
+              </div>
+              
+              <div className={`${activeTab !== "biens" ? "hidden" : ""}`}>
+                <BienTable projetId={id} key={`biens-${id}`} />
+              </div>
             </div>
           </div>
         </div>

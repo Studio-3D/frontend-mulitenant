@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from "@/context/AuthContext";
 import { Eye, PencilLine, Trash2 } from "lucide-react";
 import InputSelect from '../inputSelect';
+import Link from 'next/link';
 import Input from '../Input';
 import { useProjet } from '@/context/ProjetContext';
 import Modal from '../Modal';
@@ -251,8 +252,10 @@ export default function BlocTable({ projetId, trancheId }) {
 
   return (
     <div>
+      <h3 className="text-lg font-medium mb-4">Blocs</h3>
       <Table 
         columns={columns}
+        showSearch={false}
         data={formattedBlocs}
         totalRows={totalRows}
         loading={loading}

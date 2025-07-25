@@ -205,8 +205,10 @@ export default function TrancheTable({ projetId }) {
 
   return (
     <div>
-      <Table 
+      <h3 className="text-lg font-medium mb-4">Tranches</h3>
+      <Table
         columns={columns}
+        showSearch={false}
         data={formattedTranches}
         totalRows={totalRows}
         loading={loading}
