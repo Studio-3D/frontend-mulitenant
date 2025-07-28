@@ -26,34 +26,6 @@ export default function TrancheTable({ projetId }) {
   const [selectedId, setSelectedId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  // Debugging logs
-  useEffect(() => {
-    console.log('Current tranches data:', tranches);
-    console.log('Total rows:', totalRows);
-    console.log('Loading state:', loading);
-    console.log('Error state:', error);
-  }, [tranches, totalRows, loading, error]);
-
-  const handleFilterChange = (field, value) => {
-    setTempFilters((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const applyFilters = () => {
-    setFilters(tempFilters);
-    setCurrentPage(1);
-  };
-
-  const resetFilters = () => {
-    const reset = { nom: '', niveau_etages: '' };
-    setFilters(reset);
-    setTempFilters(reset);
-    setCurrentPage(1);
-  };
-
-  const handleFilterToggle = (isOpen) => {
-    if (!isOpen) resetFilters();
-  };
-    
   const canManageTranches = user?.role === 1 || user?.role === 2;
 
   const columns = [
@@ -103,46 +75,61 @@ export default function TrancheTable({ projetId }) {
   const loadData = async () => {
     try {
       setLoading(true);
-      const filtersToUse = {
+      const params = {
         ...filters,
-        ...(projetId ? { projet_id: projetId } : {}),
+        ...(projetId && { projet_id: projetId }),
+        search: searchTerm,
+        page: currentPage,
+        size: rowsPerPage, // Changed from 'per_page' to 'size' to match your backend
       };
 
-      console.log('Fetching data with filters:', filtersToUse);
-      
       const response = await axios.get(`${APIURL.TRANCHES}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
-        params: {
-          ...filtersToUse,
-          search: searchTerm,
-          page: currentPage,
-          per_page: rowsPerPage,
-        }
+        params
       });
-
-      console.log('API Response:', response.data);
 
       if (response.data?.data) {
         setTranches(response.data.data);
-        setTotalRows(response.data.total || 0);
+        // Use either the pagination total or direct total from response
+        setTotalRows(response.data.pagination?.totalItems || response.data.total || 0);
       } else {
         throw new Error("Format de données API invalide");
       }
     } catch (err) {
       console.error('Error loading data:', err);
-      setError(err.message || "Erreur lors du chargement des données");
+      setError(err.response?.data?.message || err.message || "Erreur lors du chargement des données");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (!projetId) {
+    if (projetId) {
+      loadData();
+    } else {
       setError('Project ID is required');
-      return;
     }
-    loadData();
-  }, [searchTerm, accessToken, projetId, filters, currentPage, rowsPerPage]);
+  }, [searchTerm, filters, currentPage, rowsPerPage, projetId]);
+
+  const handleFilterChange = (field, value) => {
+    setTempFilters((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const applyFilters = () => {
+    setFilters(tempFilters);
+    setCurrentPage(1); // Reset to first page when applying filters
+  };
+
+  const resetFilters = () => {
+    const reset = { nom: '', niveau_etages: '' };
+    setFilters(reset);
+    setTempFilters(reset);
+    setCurrentPage(1); // Reset to first page when resetting filters
+  };
+
+  const handleFilterToggle = (isOpen) => {
+    if (!isOpen) resetFilters();
+  };
 
   const formattedTranches = tranches.map(tranche => ({
     id: tranche.id,
@@ -154,7 +141,7 @@ export default function TrancheTable({ projetId }) {
 
   const handleSearchChange = (term) => {
     setSearchTerm(term);
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset to first page when searching
   };
 
   const handlePageChange = (newPage) => {
@@ -163,17 +150,15 @@ export default function TrancheTable({ projetId }) {
 
   const handleRowsPerPageChange = (newSize) => {
     setRowsPerPage(newSize);
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset to first page when changing page size
   };
 
-  const data_to_export = () => {
-    return formattedTranches.map((tranche) => ({
-      'Tranche': tranche.nom,
-      "Date lancement": tranche.date_lancement,
-      "Niveau d'étages": tranche.niveau_etages,
-      "Date livraison": tranche.date_livraison
-    }));
-  };
+  const data_to_export = formattedTranches.map((tranche) => ({
+    'Tranche': tranche.nom,
+    "Date lancement": tranche.date_lancement,
+    "Niveau d'étages": tranche.niveau_etages,
+    "Date livraison": tranche.date_livraison
+  }));
 
   const columns_export = [
     { key: "Tranche", label: "Tranche" },
@@ -200,8 +185,6 @@ export default function TrancheTable({ projetId }) {
   if (error) {
     return <div className="text-red-500 p-4">Error: {error}</div>;
   }
-
- 
 
   return (
     <div>
@@ -260,7 +243,7 @@ export default function TrancheTable({ projetId }) {
         onPageChange={handlePageChange}
         onRowsPerPageChange={handleRowsPerPageChange}
         enableExport={formattedTranches.length > 0}
-        data_to_export={data_to_export()}
+        data_to_export={data_to_export}
         columns_export={columns_export}
         name_file_export={"tranche_export"}
         onFilterToggle={handleFilterToggle}
