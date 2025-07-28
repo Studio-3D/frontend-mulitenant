@@ -23,6 +23,7 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalRows, setTotalRows] = useState(0);
   const [selectedId, setSelectedId] = useState(null);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [stats, setStats] = useState([]);
@@ -61,6 +62,12 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
       }))
     ];
   }, [types]);
+
+
+ const handleRowsPerPageChange = (rows) => {
+  setRowsPerPage(rows);
+  setCurrentPage(1); 
+};
 
   // Fetch total stats
   const fetchTotalStats = useCallback(async () => {
@@ -148,40 +155,40 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
 
   // Fetch biens data with pagination
   const fetchBiens = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
+  try {
+    setLoading(true);
+    setError(null);
 
-      const params = {
-        ...filters,
-        ...(projetId && { projet_id: projetId }),
-        ...(trancheId && { tranche_id: trancheId }),
-        ...(blocId && { bloc_id: blocId }),
-        ...(immeubleId && { immeuble_id: immeubleId }),
-        ...(type_id && { type_id }),
-        page: currentPage,
-        per_page: 10,
-      };
+    const params = {
+      ...filters,
+      ...(projetId && { projet_id: projetId }),
+      ...(trancheId && { tranche_id: trancheId }),
+      ...(blocId && { bloc_id: blocId }),
+      ...(immeubleId && { immeuble_id: immeubleId }),
+      ...(type_id && { type_id }),
+      page: currentPage,
+      size: rowsPerPage, // Use the rowsPerPage state here
+    };
 
-      const response = await axios.get(`${APIURL.ROOTV1}/biens`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-        params
-      });
+    const response = await axios.get(`${APIURL.ROOTV1}/biens`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      params
+    });
 
-      if (response.data?.data) {
-        setBiens(response.data.data);
-        setTotalRows(response.data.total || 0);
-      } else {
-        throw new Error("Invalid API response format");
-      }
-    } catch (err) {
-      console.error('Error loading biens:', err);
-      setError(err.response?.data?.message || "Erreur lors du chargement des biens");
-      toast.error("Échec du chargement des données");
-    } finally {
-      setLoading(false);
+    if (response.data?.data) {
+      setBiens(response.data.data);
+      setTotalRows(response.data.pagination?.totalItems || response.data.total || 0);
+    } else {
+      throw new Error("Invalid API response format");
     }
-  }, [filters, projetId, trancheId, blocId, immeubleId, type_id, currentPage, accessToken]);
+  } catch (err) {
+    console.error('Error loading biens:', err);
+    setError(err.response?.data?.message || "Erreur lors du chargement des biens");
+    toast.error("Échec du chargement des données");
+  } finally {
+    setLoading(false);
+  }
+}, [filters, projetId, trancheId, blocId, immeubleId, type_id, currentPage, rowsPerPage, accessToken]);
 
   // Filter handlers
   const handleFilterChange = (field, value) => {
@@ -214,6 +221,10 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
     setTempFilters(reset);
     setCurrentPage(1);
   };
+
+  const handlePageChange = (page) => {
+  setCurrentPage(page);
+};
 
   // Handle type selection
   const handleTypeClick = (typeId) => {
@@ -405,6 +416,9 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
           data={formattedBiens}
           totalRows={totalRows}
           loading={loading}
+          rowsPerPage={rowsPerPage}
+          onPageChange={handlePageChange}
+          onRowsPerPageChange={handleRowsPerPageChange}
           filterComponent={
             <BienFilter
               tempFilters={tempFilters}
@@ -419,11 +433,6 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
           error={error}
           addLink={addButtonUrl}
           currentPage={currentPage}
-          rowsPerPage={10}
-          onPageChange={(newPage) => {
-            setCurrentPage(newPage);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
           enableExport={formattedBiens.length > 0}
           data_to_export={data_to_export}
           columns_export={columns_export}
@@ -431,7 +440,7 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
           onFilterToggle={(isOpen) => { if (!isOpen) resetFilters(); }}
           enableImport={true}
           onImportClick={() => setShowImportModal(true)}
-          showRowsPerPage={false}
+          showRowsPerPage={true} // Make sure this is true to show the rows per page selector
         />
         </div>    
 
