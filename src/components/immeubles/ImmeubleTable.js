@@ -41,16 +41,6 @@ export default function ImmeubleTable({ projetId, trancheId, blocId }) {
   });
   const [tempFilters, setTempFilters] = useState({ ...filters });
 
-  // Debugging logs
-  useEffect(() => {
-    console.log('Current immeubles:', immeubles);
-    console.log('Total rows:', totalRows);
-    console.log('Filters:', filters);
-    console.log('Project ID:', projetId);
-    console.log('Tranche ID:', trancheId);
-    console.log('Bloc ID:', blocId);
-  }, [immeubles, totalRows, filters, projetId, trancheId, blocId]);
-
   // Fetch tranches and blocs data
   useEffect(() => {
     const fetchRelatedData = async () => {
@@ -102,7 +92,7 @@ export default function ImmeubleTable({ projetId, trancheId, blocId }) {
     if (!isOpen) resetFilters();
   };
 
-  // Load immeubles data
+  // Load immeubles data with pagination
   const loadData = async () => {
     try {
       setLoading(true);
@@ -115,27 +105,24 @@ export default function ImmeubleTable({ projetId, trancheId, blocId }) {
         ...(blocId && { bloc_id: blocId }),
         search: searchTerm,
         page: currentPage,
-        per_page: rowsPerPage
+        size: rowsPerPage // Changed from 'per_page' to 'size' to match backend
       };
-
-      console.log('Fetching immeubles with params:', params);
 
       const response = await axios.get(`${APIURL.IMMEUBLES}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
         params
       });
 
-      console.log('API response:', response.data);
-
       if (response.data?.data) {
         setImmeubles(response.data.data);
-        setTotalRows(response.data.total || 0);
+        // Use either the pagination total or direct total from response
+        setTotalRows(response.data.pagination?.totalItems || response.data.total || 0);
       } else {
         throw new Error("Invalid API response format");
       }
     } catch (err) {
       console.error('Error loading immeubles:', err);
-      setError(err.message || "Failed to load immeubles");
+      setError(err.response?.data?.message || err.message || "Failed to load immeubles");
       toast.error("Erreur lors du chargement des immeubles");
     } finally {
       setLoading(false);
@@ -208,15 +195,13 @@ export default function ImmeubleTable({ projetId, trancheId, blocId }) {
   ];
 
   // Export data
-  const data_to_export = () => {
-    return formattedImmeubles.map(immeuble => ({
-      'Immeuble': immeuble.nom,
-      'Tranche': immeuble.tranche_nom,
-      'Bloc': immeuble.bloc_nom,
-      'Titre foncier': immeuble.titre_foncier,
-      'Nombre de biens': immeuble.nbre_biens
-    }));
-  };
+  const data_to_export = formattedImmeubles.map(immeuble => ({
+    'Immeuble': immeuble.nom,
+    'Tranche': immeuble.tranche_nom,
+    'Bloc': immeuble.bloc_nom,
+    'Titre foncier': immeuble.titre_foncier,
+    'Nombre de biens': immeuble.nbre_biens
+  }));
 
   const columns_export = [
     { key: "Immeuble", label: "Immeuble" },
@@ -240,6 +225,21 @@ export default function ImmeubleTable({ projetId, trancheId, blocId }) {
     }
   };
 
+  // Pagination handlers
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+  };
+
+  const handleRowsPerPageChange = (newSize) => {
+    setRowsPerPage(newSize);
+    setCurrentPage(1); // Reset to first page when changing page size
+  };
+
+  const handleSearchChange = (term) => {
+    setSearchTerm(term);
+    setCurrentPage(1); // Reset to first page when searching
+  };
+
   // Add button URL
   const addButtonUrl = canManageImmeubles 
     ? `/Immeubles/ajouter?projet=${projetId}${blocId ? `&bloc=${blocId}` : ''}${trancheId ? `&tranche=${trancheId}` : ''}`
@@ -248,19 +248,6 @@ export default function ImmeubleTable({ projetId, trancheId, blocId }) {
   // Error and empty states
   if (error) {
     return <div className="text-red-500 p-4">Error: {error}</div>;
-  }
-
-  if (!loading && formattedImmeubles.length === 0) {
-    return (
-      <div className="p-4">
-        <p>Aucun immeuble trouvé pour ce projet</p>
-        {addButtonUrl && (
-          <Link href={addButtonUrl} className="text-blue-500 hover:underline">
-            Ajouter un immeuble
-          </Link>
-        )}
-      </div>
-    );
   }
 
   return (
@@ -329,14 +316,14 @@ export default function ImmeubleTable({ projetId, trancheId, blocId }) {
         }
         currentPage={currentPage}
         rowsPerPage={rowsPerPage}
-        onPageChange={setCurrentPage}
-        onRowsPerPageChange={setRowsPerPage}
-        data_to_export={data_to_export()}
+        onPageChange={handlePageChange}
+        onRowsPerPageChange={handleRowsPerPageChange}
+        data_to_export={data_to_export}
         columns_export={columns_export}
         name_file_export="immeuble_export"
         addLink={addButtonUrl}
         onFilterToggle={handleFilterToggle}
-        onSearchChange={setSearchTerm}
+        onSearchChange={handleSearchChange}
         enableExport={formattedImmeubles.length > 0}
       />
       {showDeleteModal && selectedId && (

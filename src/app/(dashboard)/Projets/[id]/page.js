@@ -166,9 +166,9 @@ export default function ProjectDetailsPage() {
 
   return (
     <div className="">
-      <div className="flex flex-col lg:flex-row gap-6">
+      <div className="flex flex-col lg:flex-row gap-6 ">
         {/* Project Card - Left Side (Complete with all details) */}
-        <div className="w-full lg:w-1/3 min-h-[89vh]">
+        <div className="w-full lg:w-1/3 h-[89vh] ">
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="relative bg-blue-100 w-full h-32">
               <div className="relative w-full h-36">
@@ -362,7 +362,7 @@ export default function ProjectDetailsPage() {
         </div>
 
         {/* Project Content - Right Side */}
-        <div className="w-full lg:w-2/3">
+        <div className="w-full lg:w-2/3 h-full overflow-hidden">
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="border-b border-gray-200">
               <div className="flex overflow-x-auto">
