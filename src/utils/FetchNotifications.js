@@ -89,7 +89,7 @@ const fetchNotifications = async ({ setNotifications, setNewNotificationsCount, 
     };
 
     const formattedNotifications = notifications
-      .filter(notification => notification.type !== 99) // Filter out type 99 completely
+      .filter(notification => notification.type !== 99)
       .map(notification => {
         const { type, date, deleted_at, id, prospect, user, avance, reservation, bien, projet, lien, description_type } = notification;
         const notificationType = typeNotiMap[type];
@@ -140,7 +140,8 @@ const fetchNotifications = async ({ setNotifications, setNewNotificationsCount, 
           title: `${[20, 21, 8, 23, 24, 25, 26, 29].indexOf(type) >= 0 ? `${title}` : `Vous Avez ${title}`}`,
           icon: icon,
           color: color,
-          subtitle: subtitle(prospect, user, avance, reservation, bien, projet, description_type)
+          subtitle: subtitle(prospect, user, avance, reservation, bien, projet, description_type),
+          seen: notification.seen === 1
         };
       })
       .filter(notification => notification !== null);
