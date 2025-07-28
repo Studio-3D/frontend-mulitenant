@@ -22,24 +22,6 @@ export function NotificationProvider({ children }) {
     }
   }, []);
 
-  // Fetch seen notifications
-  const fetchSeenNotifications = useCallback(async () => {
-    try {
-      const accessToken = localStorage.getItem('accessToken');
-      const selectedProject = JSON.parse(localStorage.getItem('selectedProjet'));
-      if (!accessToken || !selectedProject) return;
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/get_seen_notifications/${selectedProject.id}`,
-        { headers: { Authorization: `Bearer ${accessToken}` } }
-      );
-      if (response.data.seen_notifications) {
-        setSeenNotifications(new Set(response.data.seen_notifications));
-      }
-    } catch (error) {
-      console.error('Error fetching seen notifications:', error);
-    }
-  }, []);
-
   // Mark notification as seen
   const markAsSeen = useCallback(async (notificationId) => {
     try {
@@ -51,10 +33,14 @@ export function NotificationProvider({ children }) {
         { notification_id: notificationId, projet_id: selectedProject.id },
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
+      // Optionally, update the notification in state to seen
+      setNotifications(prev =>
+        prev.map(n => n.id === notificationId ? { ...n, seen: true } : n)
+      );
     } catch (error) {
       console.error('Error marking notification as seen:', error);
     }
-  }, []);
+  }, [setNotifications]);
 
   // Mark all as seen
   const markAllAsSeen = useCallback(async () => {
@@ -68,22 +54,28 @@ export function NotificationProvider({ children }) {
         { notification_ids: allNotificationIds, projet_id: selectedProject.id },
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
+      // Optionally, update all notifications in state to seen
+      setNotifications(prev =>
+        prev.map(n => ({ ...n, seen: true }))
+      );
     } catch (error) {
       console.error('Error marking all notifications as seen:', error);
     }
-  }, [notifications]);
+  }, [notifications, setNotifications]);
 
   // Utility
   const isNotificationSeen = useCallback(
-    (notificationId) => seenNotifications.has(notificationId),
-    [seenNotifications]
+    (notificationId) => {
+      const notif = notifications.find(n => n.id === notificationId);
+      return notif ? notif.seen : false;
+    },
+    [notifications]
   );
 
   // Initial fetch
   useEffect(() => {
-    fetchSeenNotifications();
     fetchNotifications();
-  }, [fetchSeenNotifications, fetchNotifications]);
+  }, [fetchNotifications]);
 
   return (
     <NotificationContext.Provider
@@ -93,7 +85,6 @@ export function NotificationProvider({ children }) {
         isLoadingNotifications,
         seenNotifications,
         fetchNotifications,
-        fetchSeenNotifications,
         markAsSeen,
         markAllAsSeen,
         isNotificationSeen,
