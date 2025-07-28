@@ -188,6 +188,7 @@ export default function ProjetsPage({ user_id }) {
   return (
     <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
       <Table
+        loading={loading}
         title={user_id ? 'Liste des projets' : 'Projets'}
         data_to_export={data_to_export}
         columns_export={columns_export}
@@ -205,7 +206,6 @@ export default function ProjetsPage({ user_id }) {
         }
         data={filteredProjets}
         totalRows={totalRows}
-        loading={loading}
         error={error}
         onFilterToggle={handleFilterToggle}
         addLink={((isSuperAdmin(user?.role) || isAdmin(user?.role)) && !user_id ? "/Projets/ajouter" : undefined)}

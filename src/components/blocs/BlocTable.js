@@ -39,15 +39,6 @@ export default function BlocTable({ projetId, trancheId }) {
   });
   const [tempFilters, setTempFilters] = useState({ ...filters });
 
-  // Debugging logs
-  useEffect(() => {
-    console.log('Current blocs:', blocs);
-    console.log('Total rows:', totalRows);
-    console.log('Filters:', filters);
-    console.log('Project ID:', projetId);
-    console.log('Tranche ID:', trancheId);
-  }, [blocs, totalRows, filters, projetId, trancheId]);
-
   // Fetch tranches data
   useEffect(() => {
     const fetchTranches = async () => {
@@ -102,27 +93,24 @@ export default function BlocTable({ projetId, trancheId }) {
         ...(trancheId && { tranche_id: trancheId }),
         search: searchTerm,
         page: currentPage,
-        per_page: rowsPerPage
+        size: rowsPerPage // Changed from 'per_page' to 'size' to match backend
       };
-
-      console.log('Fetching blocs with params:', params);
 
       const response = await axios.get(`${APIURL.BLOCS}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
         params
       });
 
-      console.log('API response:', response.data);
-
       if (response.data?.data) {
         setBlocs(response.data.data);
-        setTotalRows(response.data.total || 0);
+        // Use either the pagination total or direct total from response
+        setTotalRows(response.data.pagination?.totalItems || response.data.total || 0);
       } else {
         throw new Error("Invalid API response format");
       }
     } catch (err) {
       console.error('Error loading blocs:', err);
-      setError(err.message || "Failed to load blocs");
+      setError(err.response?.data?.message || err.message || "Failed to load blocs");
       toast.error("Erreur lors du chargement des blocs");
     } finally {
       setLoading(false);
@@ -195,15 +183,13 @@ export default function BlocTable({ projetId, trancheId }) {
   ];
 
   // Export data
-  const data_to_export = () => {
-    return formattedBlocs.map(bloc => ({
-      'Bloc': bloc.nom,
-      'Tranche': bloc.tranche_nom,
-      'Titre foncier': bloc.titre_foncier,
-      'Nombre immeubles': bloc.nbre_immeubles,
-      'Nombre biens': bloc.nbre_biens
-    }));
-  };
+  const data_to_export = formattedBlocs.map(bloc => ({
+    'Bloc': bloc.nom,
+    'Tranche': bloc.tranche_nom,
+    'Titre foncier': bloc.titre_foncier,
+    'Nombre immeubles': bloc.nbre_immeubles,
+    'Nombre biens': bloc.nbre_biens
+  }));
 
   const columns_export = [
     { key: "Bloc", label: "Bloc" },
@@ -237,18 +223,16 @@ export default function BlocTable({ projetId, trancheId }) {
     return <div className="text-red-500 p-4">Error: {error}</div>;
   }
 
-  if (!loading && formattedBlocs.length === 0) {
-    return (
-      <div className="p-4">
-        <p>Aucun bloc trouvé pour ce projet</p>
-        {addButtonUrl && (
-          <Link href={addButtonUrl} className="text-blue-500 hover:underline">
-            Ajouter un bloc
-          </Link>
-        )}
-      </div>
-    );
-  }
+  // Pagination handlers
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+  };
+
+  const handleRowsPerPageChange = (newSize) => {
+    setRowsPerPage(newSize);
+    setCurrentPage(1); // Reset to first page when changing page size
+  };
+
 
   return (
     <div>
@@ -308,14 +292,13 @@ export default function BlocTable({ projetId, trancheId }) {
         }
         currentPage={currentPage}
         rowsPerPage={rowsPerPage}
-        onPageChange={setCurrentPage}
-        onRowsPerPageChange={setRowsPerPage}
-        data_to_export={data_to_export()}
+        onPageChange={handlePageChange}
+        onRowsPerPageChange={handleRowsPerPageChange}
+        data_to_export={data_to_export}
         columns_export={columns_export}
         name_file_export="bloc_export"
         addLink={addButtonUrl}
         onFilterToggle={handleFilterToggle}
-        onSearchChange={setSearchTerm}
         enableExport={formattedBlocs.length > 0}
       />
       {showDeleteModal && selectedId && (
