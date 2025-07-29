@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { ClientDetails } from '@/components/visites/ClientDetails';
 import { VisitDetails } from '@/components/visites/VisitDeatils';
 import axios from 'axios';
-import { APIURL, ENDPOINTS } from '../../configs/api';
+import { APIURL} from '../../configs/api';
 import { useAuth } from '../../context/AuthContext';
 import LoadingSpin from '@/components/LoadingSpin';
 
@@ -51,8 +51,6 @@ export function ClientDetailsPage(visiteId) {
 
   useEffect(() => {
     fetch_visite();
-       /*localStorage.setItem('v_id_cadre', null);
-    localStorage.setItem('v_id_org', null);*/
   }, []);
 
   useEffect(() => {
