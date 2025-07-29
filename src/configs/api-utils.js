@@ -64,14 +64,13 @@ export const fetchData_table_by_projet = async (
   setTotalRows = () => {}
 ) => {
   setLoading(true);
-  setError(null); // Reset error state
-  setData([]); // Clear previous data while loading
+  setError(null);
+  setData([]);
 
   try {
     const selectedProjet = JSON.parse(localStorage.getItem('selectedProjet')) || {};
     const urlsSansProjet = ['ReclamationsClients', 'projets', 'typeProjets', 'sources', 'banques', 'typefreins'];
 
-    // Validate project selection for entities that require it
     if (!urlsSansProjet.includes(entity.API_URL)) {
       if (!selectedProjet?.id) {
         setError('Veuillez sélectionner un projet');
@@ -79,14 +78,14 @@ export const fetchData_table_by_projet = async (
       }
     }
 
+    // Ensure these parameters are properly structured for your API
     const params = {
       page: currentPage,
-      per_page: rowsPerPage, // Changed from 'size' to 'per_page' for consistency
-      search: searchTerm, // Added search term to params
+      size: rowsPerPage, // or per_page depending on your API
+      search: searchTerm,
       ...params_url
     };
 
-    // Build the appropriate URL
     const baseUrl = urlsSansProjet.includes(entity.API_URL)
       ? `${APIURL.ROOT}/v1/${entity.API_URL}/`
       : `${APIURL.ROOT}/v1/projets/${selectedProjet?.id}/${entity.API_URL}/`;
@@ -95,10 +94,12 @@ export const fetchData_table_by_projet = async (
       headers: {
         Authorization: `Bearer ${accesstoken}`,
       },
-      params,
+      params, // Make sure params are being sent
     });
 
-    // Handle response data
+    // Verify the response structure
+    console.log('API Response:', response.data); // Debug log
+
     const responseData = response.data[entity.dataKey] || [];
     const totalItems = response.data.pagination?.totalItems || responseData.length;
 
@@ -110,7 +111,6 @@ export const fetchData_table_by_projet = async (
     const errorMessage = err.response?.data?.message || 'Erreur lors du chargement des données';
     setError(errorMessage);
     
-    // Show toast only for non-401 errors
     if (err.response?.status !== 401) {
       toast.error(errorMessage);
     }

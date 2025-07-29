@@ -59,22 +59,28 @@ export default function ProjetsPage({ user_id }) {
 
   // Debounced fetch function
   const fetchProjetsData = useCallback(() => {
-    const params_url = user_id ? { user_id: user_id } : {};
-    const combinedFilters = { ...filters, ...params_url };
-    
-    fetchData_table_by_projet(
-      entity,
-      combinedFilters,
-      searchTerm,
-      currentPage,
-      rowsPerPage,
-      accessToken,
-      setLoading,
-      setError,
-      setProjets,
-      setTotalRows
-    );
-  }, [entity, filters, searchTerm, currentPage, rowsPerPage, accessToken, user_id]);
+  const params_url = user_id ? { user_id: user_id } : {};
+  const combinedFilters = { ...filters, ...params_url };
+  
+  // Ensure pagination parameters are included
+  const paginationParams = {
+    page: currentPage,
+    per_page: rowsPerPage, // Make sure this is the correct parameter name your API expects
+  };
+
+  fetchData_table_by_projet(
+    entity,
+    { ...combinedFilters, ...paginationParams }, // Combine all params
+    searchTerm,
+    currentPage,
+    rowsPerPage,
+    accessToken,
+    setLoading,
+    setError,
+    setProjets,
+    setTotalRows
+  );
+}, [entity, filters, searchTerm, currentPage, rowsPerPage, accessToken, user_id]);
 
   // Fetch data with debounce
   useEffect(() => {
