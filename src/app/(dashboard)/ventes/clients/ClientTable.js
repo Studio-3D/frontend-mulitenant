@@ -121,9 +121,6 @@ const ClientTable = () => {
     if (!isOpen) resetFilters(); // Si on ferme, on réinitialise
   };
 
-
-
-  
   // Format users data for table display
   const formatData = () => {
     return clients.map((cl) => ({
@@ -135,17 +132,18 @@ const ClientTable = () => {
       cin: cl.cin,
       telephone_num1:
         (cl.telephone_num1 ? cl.telephone_num1 : '') +
-          (cl.telephone_num1 && cl.telephone_num2 && cl.telephone_num2 !== 'null'
+          (cl.telephone_num1 &&
+          cl.telephone_num2 &&
+          cl.telephone_num2 !== 'null'
             ? ' / ' + cl.telephone_num2
             : '') || '',
-      
+
       type_client: cl.partenaire_id,
       partenaire: cl?.partenaire,
       aquereur: cl.aquereur,
       aquereur_desistement: cl.aquereur_desistement,
       prospect: cl.prospect,
       reclamation: cl.reclamation,
-      
     }));
   };
 
@@ -179,13 +177,17 @@ const ClientTable = () => {
         <Typography
           variant="body2"
           style={{ color: row.type_client == null ? 'green' : 'red' }}
-          title={row.type_client !== null ? `Partenaire : ${row.partenaire?.description || ''}` : 'Client particulier'}
+          title={
+            row.type_client !== null
+              ? `Partenaire : ${row.partenaire?.description || ''}`
+              : 'Client particulier'
+          }
         >
           {row.type_client === null ? 'Particulier' : 'Professionnel'}
         </Typography>
       ),
     },
-    
+
     {
       key: 'actions',
       label: 'Actions',
@@ -221,8 +223,6 @@ const ClientTable = () => {
                 <Trash2 className="w-4 h-4" />
               </button>
             )}
-          
-            
         </div>
       ),
     },
@@ -240,7 +240,9 @@ const ClientTable = () => {
       email: cl.email,
       telephone_num1:
         (cl.telephone_num1 ? cl.telephone_num1 : '') +
-          (cl.telephone_num1 && cl.telephone_num2 && cl.telephone_num2 !== 'null'
+          (cl.telephone_num1 &&
+          cl.telephone_num2 &&
+          cl.telephone_num2 !== 'null'
             ? ' / ' + cl.telephone_num2
             : '') || '',
       cin: cl.cin,
@@ -281,6 +283,7 @@ const ClientTable = () => {
     <>
       <div className="reflative bg-white rounded-lg shadow-md p-4">
         <Table
+          showSearch={false}
           data_to_export={data_to_export()}
           columns_export={columns_export}
           name_file_export={'clients_export'}
@@ -354,7 +357,6 @@ const ClientTable = () => {
                   onChange={(e) => handleFilterChange('email', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-                
               </div>
 
               {/* Boutons */}
@@ -387,7 +389,7 @@ const ClientTable = () => {
           <DeleteData
             route={APIURL.CLIENTS}
             Id={selectedId}
-            type='Client'
+            type="Client"
             message={'Etes-vous sûr de vouloir supprimer ce Client ?'}
             accessToken={accesstoken}
             onClose={() => {
@@ -408,8 +410,6 @@ const ClientTable = () => {
           />
         </Modal>
       )}
-
-     
     </>
   );
 };

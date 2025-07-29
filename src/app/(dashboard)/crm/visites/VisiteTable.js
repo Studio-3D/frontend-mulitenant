@@ -260,6 +260,17 @@ const columns = [
           },
         };
       }
+      else if (dataProspect) {
+        return {
+          pathname: `${ENDPOINTS.VISITES}?action=add`,
+          onClick: () => {
+            localStorage.setItem(
+              'selectedProspect',
+              JSON.stringify({ dataProspect: dataProspect })
+            );
+          },
+        };
+      }
 
       return `${ENDPOINTS.VISITES}?action=add`;
     }
@@ -304,7 +315,7 @@ const columns = [
           onSearchChange={setSearchTerm}
           enableExport={true}
           showSearch={false}
-          addLink={!user_id && !show_prospect && getAddLinkForVisite(user)}
+          addLink={!user_id  && getAddLinkForVisite(user)}
           filterComponent={
             <div className="space-y-4 p-4 rounded-lg ">
               <div

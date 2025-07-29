@@ -81,7 +81,7 @@ export const fetchData_table_by_projet = async (
 
     const params = {
       page: currentPage,
-      per_page: rowsPerPage, // Changed from 'size' to 'per_page' for consistency
+      size: rowsPerPage, // Changed from 'size' to 'per_page' for consistency
       search: searchTerm, // Added search term to params
       ...params_url
     };

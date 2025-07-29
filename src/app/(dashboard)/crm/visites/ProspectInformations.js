@@ -188,7 +188,7 @@ const ProspectInformations = ({
         <div>
           <Autocomplete
             options={sources}
-            label="Sourceff:"
+            label="Source:"
             name="source_id"
             disabled
             control={control}

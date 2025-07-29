@@ -48,7 +48,7 @@ const fetchNotifications = async ({ setNotifications, setNewNotificationsCount, 
         title: 'Un Bien Disponible',
         icon: 'home',
         color: 'success',
-        subtitle: (prospect, user, avance, reservation, bien, projet) => `Pour Le Client: ${prospect.nom} ${prospect.prenom}`
+        subtitle: (prospect, user, avance, reservation, bien, projet) => `Pour Le Client: ${prospect?.nom} ${prospect?.prenom}`
       },
       4: {
         title: "Pré Réservation sur le point d'expirer",
