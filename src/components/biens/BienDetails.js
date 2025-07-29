@@ -191,329 +191,331 @@ export default function BienDetails({ id }) {
   );
 
   return (
-    <div className="space-y-6">
-      {/* Header with actions - Redesigned with professional white background */}
-      <div className="bg-white rounded-lg p-6 shadow border border-gray-200">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <Link
-              href={bien.projet_id ? `/Projets/${bien.projet_id}` : "/Biens"}
-              className="text-gray-600 hover:text-gray-800"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Link>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-800">
-                {bien.propriete_dite_bien}
-              </h1>
-              <p className="text-gray-500">
-                {[
-                  bien.projet?.nom,
-                  bien.tranche?.nom,
-                  bien.bloc?.nom,
-                  bien.immeuble?.nom,
-                ]
-                  .filter(Boolean)
-                  .join(" • ")}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {/* État actuel badge */}
-            {getStatusBadge(bien.etat)}
-
-            {/* Partager button */}
-            {canEditBien && (
-              <BienDescriptionGenerator
-                bien={bien}
-                onDescriptionSaved={(desc) => setBienDescription(desc)}
-                buttonText="Partager"
-              />
-            )}
-
-            {/* Modifier button */}
-            {canEditBien && (
+    <div className="">
+      <div className="space-y-6 ">
+        {/* Header with actions - Redesigned with professional white background */}
+        <div className="bg-white rounded-lg p-6 shadow border border-gray-200">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-2 ">
               <Link
-                href={`/Biens/${id}/modifier`}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                href={bien.projet_id ? `/Projets/${bien.projet_id}` : "/Biens"}
+                className="text-gray-600 hover:text-gray-800"
               >
-                <Pencil className="w-4 h-4" />
-                Modifier
+                <ArrowLeft className="w-5 h-5" />
               </Link>
-            )}
+              <div>
+                <h1 className="text-2xl font-bold text-gray-800">
+                  {bien.propriete_dite_bien}
+                </h1>
+                <p className="text-gray-500">
+                  {[
+                    bien.projet?.nom,
+                    bien.tranche?.nom,
+                    bien.bloc?.nom,
+                    bien.immeuble?.nom,
+                  ]
+                    .filter(Boolean)
+                    .join(" • ")}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              {/* État actuel badge */}
+              {getStatusBadge(bien.etat)}
+
+              {/* Partager button */}
+              {canEditBien && (
+                <BienDescriptionGenerator
+                  bien={bien}
+                  onDescriptionSaved={(desc) => setBienDescription(desc)}
+                  buttonText="Partager"
+                />
+              )}
+
+              {/* Modifier button */}
+              {canEditBien && (
+                <Link
+                  href={`/Biens/${id}/modifier`}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                >
+                  <Pencil className="w-4 h-4" />
+                  Modifier
+                </Link>
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* General info section */}
-      <div className="bg-white shadow-sm rounded-lg">
-        <div className="border-b border-gray-200 px-4 py-2">
-          <h2 className="text-base font-medium text-gray-800">
-            Informations générales
-          </h2>
-        </div>
+        {/* General info section */}
+        <div className="bg-white shadow-sm rounded-lg">
+          <div className="border-b border-gray-200 px-4 py-2">
+            <h2 className="text-base font-medium text-gray-800">
+              Informations générales
+            </h2>
+          </div>
 
-        <div className="p-3">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {/* Basic information */}
-            <div className="flex items-start gap-2">
-              {renderIconAvatar(<Home className="w-4 h-4" />, "bg-indigo-100")}
-              <div className="min-w-0">
-                <h3 className="text-xs font-medium !text-gray-500">Numéro</h3>
-                <p className="mt-0.5 font-semibold text-sm truncate">
-                  {bien.numero || "N/A"}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-2">
-              {renderIconAvatar(
-                <Building className="w-4 h-4" />,
-                "bg-purple-100"
-              )}
-              <div className="min-w-0">
-                <h3 className="text-xs font-medium !text-gray-500">
-                  Type de bien
-                </h3>
-                <p className="mt-0.5 font-semibold text-sm truncate">
-                  {bien.type_bien?.type || "N/A"}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-2">
-              {renderIconAvatar(<Tag className="w-4 h-4" />, "bg-teal-100")}
-              <div className="min-w-0">
-                <h3 className="text-xs font-medium !text-gray-500">
-                  Typologie
-                </h3>
-                <p className="mt-0.5 font-semibold text-sm truncate">
-                  {bien.typologie?.typologie || "N/A"}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-2">
-              {renderIconAvatar(<MapPin className="w-4 h-4" />, "bg-amber-100")}
-              <div className="min-w-0">
-                <h3 className="text-xs font-medium !text-gray-500">Niveau</h3>
-                <p className="mt-0.5 font-semibold text-sm">
-                  {bien.niveau !== null ? bien.niveau : "N/A"}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-2">
-              {renderIconAvatar(<Euro className="w-4 h-4" />, "bg-green-200")}
-              <div className="min-w-0">
-                <h3 className="text-xs font-medium !text-gray-500">Prix</h3>
-                <p className="mt-0.5 font-semibold text-sm !text-green-600 truncate">
-                  {formatPrice(bien.prix)}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-2">
-              {renderIconAvatar(
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="w-4 h-4"
-                >
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                </svg>,
-                "bg-pink-100"
-              )}
-              <div className="min-w-0">
-                <h3 className="text-xs font-medium !text-gray-500">
-                  Orientation
-                </h3>
-                <p className="mt-0.5 font-semibold text-sm truncate">
-                  {bien.orientation
-                    ? getFullOrientation(bien.orientation)
-                    : "N/A"}
-                </p>
-              </div>
-            </div>
-
-            {/* Prix unitaire */}
-            <div className="flex items-start gap-2">
-              {renderIconAvatar(<Euro className="w-4 h-4" />, "bg-purple-100")}
-              <div className="min-w-0">
-                <h3 className="text-xs font-medium !text-gray-500">
-                  Prix unitaire
-                </h3>
-                <p className="mt-0.5 font-semibold text-sm text-purple-600 truncate">
-                  {formatPrice(bien.prix_unitaire)}
-                </p>
-              </div>
-            </div>
-
-            {/* Avance minimale */}
-            <div className="flex items-start gap-2">
-              {renderIconAvatar(<Euro className="w-4 h-4" />, "bg-amber-100")}
-              <div className="min-w-0">
-                <h3 className="text-xs font-medium !text-gray-500">
-                  Avance minimale
-                </h3>
-                <p className="mt-0.5 font-semibold text-sm text-amber-700 truncate">
-                  {formatPrice(bien.avance_minimale)}
-                </p>
-              </div>
-            </div>
-
-            {/* Nombre de façades */}
-            <div className="flex items-start gap-2">
-              {renderIconAvatar(
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="w-4 h-4"
-                >
-                  <rect x="3" y="3" width="18" height="18" rx="2" />
-                  <path d="M3 9h18" />
-                  <path d="M9 21V9" />
-                </svg>,
-                "bg-blue-100"
-              )}
-              <div className="min-w-0">
-                <h3 className="text-xs font-medium !text-gray-500">
-                  Nombre de façades
-                </h3>
-                <p className="mt-0.5 font-semibold text-sm">
-                  {bien.nbre_facades || "N/A"}
-                </p>
-              </div>
-            </div>
-
-            {/* Vue */}
-            {bien.vue && (
+          <div className="p-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              {/* Basic information */}
               <div className="flex items-start gap-2">
-                {renderIconAvatar(
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="w-4 h-4"
-                  >
-                    <path d="M15 3h6v6" />
-                    <path d="M10 14 21 3" />
-                    <path d="M19 10v11H3V5h11" />
-                  </svg>,
-                  "bg-cyan-100"
-                )}
+                {renderIconAvatar(<Home className="w-4 h-4" />, "bg-indigo-100")}
                 <div className="min-w-0">
-                  <h3 className="text-xs font-medium !text-gray-500">Vue</h3>
+                  <h3 className="text-xs font-medium !text-gray-500">Numéro</h3>
                   <p className="mt-0.5 font-semibold text-sm truncate">
-                    {bien.vue.vue}
+                    {bien.numero || "N/A"}
                   </p>
                 </div>
               </div>
-            )}
 
-            {bien.titre_foncier && (
               <div className="flex items-start gap-2">
                 {renderIconAvatar(
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="w-4 h-4"
-                  >
-                    <rect x="3" y="4" width="18" height="16" rx="2" />
-                    <path d="M7 9h10" />
-                    <path d="M7 13h10" />
-                    <path d="M7 17h4" />
-                  </svg>,
-                  "bg-orange-100"
+                  <Building className="w-4 h-4" />,
+                  "bg-purple-100"
                 )}
                 <div className="min-w-0">
                   <h3 className="text-xs font-medium !text-gray-500">
-                    Titre foncier
+                    Type de bien
                   </h3>
                   <p className="mt-0.5 font-semibold text-sm truncate">
-                    {bien.titre_foncier}
+                    {bien.type_bien?.type || "N/A"}
                   </p>
                 </div>
               </div>
-            )}
 
-            {/* Conventionné */}
-            <div className="flex items-start gap-2">
-              {renderIconAvatar(
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="w-4 h-4"
-                >
-                  <polyline points="9 11 12 14 22 4" />
-                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-                </svg>,
-                bien.conventionne ? "bg-green-200" : "bg-red-200"
+              <div className="flex items-start gap-2">
+                {renderIconAvatar(<Tag className="w-4 h-4" />, "bg-teal-100")}
+                <div className="min-w-0">
+                  <h3 className="text-xs font-medium !text-gray-500">
+                    Typologie
+                  </h3>
+                  <p className="mt-0.5 font-semibold text-sm truncate">
+                    {bien.typologie?.typologie || "N/A"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2">
+                {renderIconAvatar(<MapPin className="w-4 h-4" />, "bg-amber-100")}
+                <div className="min-w-0">
+                  <h3 className="text-xs font-medium !text-gray-500">Niveau</h3>
+                  <p className="mt-0.5 font-semibold text-sm">
+                    {bien.niveau !== null ? bien.niveau : "N/A"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2">
+                {renderIconAvatar(<Euro className="w-4 h-4" />, "bg-green-200")}
+                <div className="min-w-0">
+                  <h3 className="text-xs font-medium !text-gray-500">Prix</h3>
+                  <p className="mt-0.5 font-semibold text-sm !text-green-600 truncate">
+                    {formatPrice(bien.prix)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2">
+                {renderIconAvatar(
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="w-4 h-4"
+                  >
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  </svg>,
+                  "bg-pink-100"
+                )}
+                <div className="min-w-0">
+                  <h3 className="text-xs font-medium !text-gray-500">
+                    Orientation
+                  </h3>
+                  <p className="mt-0.5 font-semibold text-sm truncate">
+                    {bien.orientation
+                      ? getFullOrientation(bien.orientation)
+                      : "N/A"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Prix unitaire */}
+              <div className="flex items-start gap-2">
+                {renderIconAvatar(<Euro className="w-4 h-4" />, "bg-purple-100")}
+                <div className="min-w-0">
+                  <h3 className="text-xs font-medium !text-gray-500">
+                    Prix unitaire
+                  </h3>
+                  <p className="mt-0.5 font-semibold text-sm text-purple-600 truncate">
+                    {formatPrice(bien.prix_unitaire)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Avance minimale */}
+              <div className="flex items-start gap-2">
+                {renderIconAvatar(<Euro className="w-4 h-4" />, "bg-amber-100")}
+                <div className="min-w-0">
+                  <h3 className="text-xs font-medium !text-gray-500">
+                    Avance minimale
+                  </h3>
+                  <p className="mt-0.5 font-semibold text-sm text-amber-700 truncate">
+                    {formatPrice(bien.avance_minimale)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Nombre de façades */}
+              <div className="flex items-start gap-2">
+                {renderIconAvatar(
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="w-4 h-4"
+                  >
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <path d="M3 9h18" />
+                    <path d="M9 21V9" />
+                  </svg>,
+                  "bg-blue-100"
+                )}
+                <div className="min-w-0">
+                  <h3 className="text-xs font-medium !text-gray-500">
+                    Nombre de façades
+                  </h3>
+                  <p className="mt-0.5 font-semibold text-sm">
+                    {bien.nbre_facades || "N/A"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Vue */}
+              {bien.vue && (
+                <div className="flex items-start gap-2">
+                  {renderIconAvatar(
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="w-4 h-4"
+                    >
+                      <path d="M15 3h6v6" />
+                      <path d="M10 14 21 3" />
+                      <path d="M19 10v11H3V5h11" />
+                    </svg>,
+                    "bg-cyan-100"
+                  )}
+                  <div className="min-w-0">
+                    <h3 className="text-xs font-medium !text-gray-500">Vue</h3>
+                    <p className="mt-0.5 font-semibold text-sm truncate">
+                      {bien.vue.vue}
+                    </p>
+                  </div>
+                </div>
               )}
-              <div className="min-w-0">
-                <h3 className="text-xs font-medium !text-gray-500">
-                  Conventionné
-                </h3>
-                <p
-                  className={`mt-0.5 font-semibold text-sm ${
-                    bien.conventionne ? "text-green-600" : "text-red-500"
-                  }`}
-                >
-                  {bien.conventionne ? "Oui" : "Non"}
-                </p>
+
+              {bien.titre_foncier && (
+                <div className="flex items-start gap-2">
+                  {renderIconAvatar(
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="w-4 h-4"
+                    >
+                      <rect x="3" y="4" width="18" height="16" rx="2" />
+                      <path d="M7 9h10" />
+                      <path d="M7 13h10" />
+                      <path d="M7 17h4" />
+                    </svg>,
+                    "bg-orange-100"
+                  )}
+                  <div className="min-w-0">
+                    <h3 className="text-xs font-medium !text-gray-500">
+                      Titre foncier
+                    </h3>
+                    <p className="mt-0.5 font-semibold text-sm truncate">
+                      {bien.titre_foncier}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Conventionné */}
+              <div className="flex items-start gap-2">
+                {renderIconAvatar(
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="w-4 h-4"
+                  >
+                    <polyline points="9 11 12 14 22 4" />
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                  </svg>,
+                  bien.conventionne ? "bg-green-200" : "bg-red-200"
+                )}
+                <div className="min-w-0">
+                  <h3 className="text-xs font-medium !text-gray-500">
+                    Conventionné
+                  </h3>
+                  <p
+                    className={`mt-0.5 font-semibold text-sm ${
+                      bien.conventionne ? "text-green-600" : "text-red-500"
+                    }`}
+                  >
+                    {bien.conventionne ? "Oui" : "Non"}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Tab navigation for other content */}
-      <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-        <div className="border-b border-gray-200">
-          <div className="flex overflow-x-auto">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center px-3 py-2 font-medium text-sm border-b-2 whitespace-nowrap ${
-                  activeTab === tab.id
-                    ? "border-blue-500 !text-blue-600 bg-blue-50"
-                    : "border-transparent !text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
-              >
-                <span className="mr-2">{tab.icon}</span>
-                {tab.label}
-              </button>
-            ))}
+        {/* Tab navigation for other content */}
+        <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+          <div className="border-b border-gray-200">
+            <div className="flex overflow-x-auto">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center px-3 py-2 font-medium text-sm border-b-2 whitespace-nowrap ${
+                    activeTab === tab.id
+                      ? "border-blue-500 !text-blue-600 bg-blue-50"
+                      : "border-transparent !text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }`}
+                >
+                  <span className="mr-2">{tab.icon}</span>
+                  {tab.label}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        <div className="p-4">{renderTabContent()}</div>
+          <div className="p-4">{renderTabContent()}</div>
+        </div>
       </div>
     </div>
   );

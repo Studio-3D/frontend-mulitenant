@@ -37,14 +37,44 @@ export default function ProjectDetailsPage() {
   });
   const [confirming, setConfirming] = useState(false);
   const [hasSetProjet, setHasSetProjet] = useState(false);
+  const [loadedTabs, setLoadedTabs] = useState({});
   const apiCache = useRef({});
   const abortControllers = useRef([]);
+  const requestQueue = useRef([]);
+  const isProcessing = useRef(false);
 
   const canManageProjet = user?.role === 1 || user?.role === 2;
 
-  const fetchWithRetry = async (fn, retries = 3, delay = 1000) => {
+  // Request queue processing
+  const processQueue = useCallback(async () => {
+    if (isProcessing.current || requestQueue.current.length === 0) return;
+    
+    isProcessing.current = true;
+    const request = requestQueue.current.shift();
+    
     try {
-      return await fn();
+      const result = await request.fn();
+      request.resolve(result);
+    } catch (error) {
+      request.reject(error);
+    } finally {
+      isProcessing.current = false;
+      setTimeout(processQueue, 300); // 300ms delay between requests
+    }
+  }, []);
+
+  // Add request to queue
+  const enqueueRequest = useCallback((fn) => {
+    return new Promise((resolve, reject) => {
+      requestQueue.current.push({ fn, resolve, reject });
+      processQueue();
+    });
+  }, [processQueue]);
+
+  // Fetch with retry and rate limiting
+  const fetchWithRetry = useCallback(async (fn, retries = 3, delay = 1000) => {
+    try {
+      return await enqueueRequest(fn);
     } catch (error) {
       if (error.response?.status === 429 && retries > 0) {
         await new Promise(res => setTimeout(res, delay));
@@ -52,7 +82,18 @@ export default function ProjectDetailsPage() {
       }
       throw error;
     }
-  };
+  }, [enqueueRequest]);
+
+  // Fetch with caching
+  const fetchWithCache = useCallback(async (cacheKey, fn) => {
+    if (apiCache.current[cacheKey]) {
+      return apiCache.current[cacheKey];
+    }
+    
+    const result = await fetchWithRetry(fn);
+    apiCache.current[cacheKey] = result;
+    return result;
+  }, [fetchWithRetry]);
 
   const fetchProjectDetails = useCallback(async () => {
     const cacheKey = `project-${id}`;
@@ -93,7 +134,7 @@ export default function ProjectDetailsPage() {
     } finally {
       setLoading(false);
     }
-  }, [id, hasSetProjet, selectProjet]);
+  }, [id, hasSetProjet, selectProjet, fetchWithRetry]);
 
   useEffect(() => {
     if (projet && !loading) return;
@@ -110,6 +151,13 @@ export default function ProjectDetailsPage() {
     };
   }, [id, projet, loading, fetchProjectDetails]);
 
+  // Track loaded tabs to prevent unnecessary requests
+  useEffect(() => {
+    if (activeTab && !loadedTabs[activeTab]) {
+      setLoadedTabs(prev => ({ ...prev, [activeTab]: true }));
+    }
+  }, [activeTab, loadedTabs]);
+
   const debouncedTabChange = useCallback(debounce((tab) => {
     setActiveTab(tab);
     const url = new URL(window.location);
@@ -121,8 +169,10 @@ export default function ProjectDetailsPage() {
     setConfirming(true);
     try {
       const token = localStorage.getItem("accessToken");
-      await axios.delete(`${APIURL.PROJETS}/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      await fetchWithRetry(async () => {
+        await axios.delete(`${APIURL.PROJETS}/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
       });
       toast.success("Projet supprimé avec succès");
       router.push("/Projets");
@@ -167,8 +217,8 @@ export default function ProjectDetailsPage() {
   return (
     <div className="">
       <div className="flex flex-col lg:flex-row gap-6 ">
-        {/* Project Card - Left Side (Complete with all details) */}
-        <div className="w-full lg:w-1/3  ">
+        {/* Project Card - Left Side */}
+        <div className="w-full lg:w-1/3">
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="relative bg-blue-100 w-full h-32">
               <div className="relative w-full h-36">
@@ -362,7 +412,7 @@ export default function ProjectDetailsPage() {
         </div>
 
         {/* Project Content - Right Side */}
-        <div className="w-full lg:w-2/3 ">
+        <div className="w-full lg:w-2/3">
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="border-b border-gray-200">
               <div className="flex overflow-x-auto">
@@ -389,19 +439,47 @@ export default function ProjectDetailsPage() {
 
             <div className="p-6">
               <div className={`${activeTab !== "tranches" ? "hidden" : ""}`}>
-                <TrancheTable projetId={id} key={`tranches-${id}`} />
+                {loadedTabs.tranches && (
+                  <TrancheTable 
+                    projetId={id} 
+                    key={`tranches-${id}`}
+                    fetchWithCache={fetchWithCache}
+                    fetchWithRetry={fetchWithRetry}
+                  />
+                )}
               </div>
               
               <div className={`${activeTab !== "blocs" ? "hidden" : ""}`}>
-                <BlocTable projetId={id} key={`blocs-${id}`} />
+                {loadedTabs.blocs && (
+                  <BlocTable 
+                    projetId={id} 
+                    key={`blocs-${id}`}
+                    fetchWithCache={fetchWithCache}
+                    fetchWithRetry={fetchWithRetry}
+                  />
+                )}
               </div>
               
               <div className={`${activeTab !== "immeubles" ? "hidden" : ""}`}>
-                <ImmeubleTable projetId={id} key={`immeubles-${id}`} />
+                {loadedTabs.immeubles && (
+                  <ImmeubleTable 
+                    projetId={id} 
+                    key={`immeubles-${id}`}
+                    fetchWithCache={fetchWithCache}
+                    fetchWithRetry={fetchWithRetry}
+                  />
+                )}
               </div>
               
               <div className={`${activeTab !== "biens" ? "hidden" : ""}`}>
-                <BienTable projetId={id} key={`biens-${id}`} />
+                {loadedTabs.biens && (
+                  <BienTable 
+                    projetId={id} 
+                    key={`biens-${id}`}
+                    fetchWithCache={fetchWithCache}
+                    fetchWithRetry={fetchWithRetry}
+                  />
+                )}
               </div>
             </div>
           </div>
