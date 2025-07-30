@@ -105,7 +105,7 @@ const ProspectDetails = () => {
                     <div className="space-y-3">
                       <div className="flex justify-between">
                         <span className="text-gray-600">
-                          Accepte d'être contacté:
+                          Accepte {'d\''}être contacté:
                         </span>
                         <span className="font-medium">
                           <span

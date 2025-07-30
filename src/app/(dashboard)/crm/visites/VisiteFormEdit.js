@@ -1373,6 +1373,7 @@ export default function VisiteFormEdit({ id }) {
                         label="Mode Relance:"
                         name="mode_relance"
                         required={false}
+                         value={watch('mode_relance')}
                         options={VISITE_TYPE_NOTIF}
                         onChange={handleChange_tp_notif}
                       />
