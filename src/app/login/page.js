@@ -51,8 +51,7 @@ export default function Login() {
       await login(formData);
       router.push('/tableau-de-bord');
     } catch (err) {
-      console.error('Login error:', err);
-      setError(err.message || "L'e-mail ou le mot de passe n'est pas valide ou l'utilisateur n'est pas Actif");
+      setError("L'e-mail ou le mot de passe n'est pas valide ou l'utilisateur n'est pas Actif");
     } finally {
       setIsSubmitting(false);
     }
