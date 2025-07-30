@@ -219,12 +219,9 @@ const Table = ({
                     ))}
                   </tr>
                 ))
-              ) : data.length === 0 ? (
+              ) : !Array.isArray(data) || data.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan={columns.length}
-                    className="py-4 text-center !text-gray-500"
-                  >
+                  <td colSpan={columns.length} className="py-4 text-center !text-gray-500">
                     {emptyMessage}
                   </td>
                 </tr>
@@ -245,7 +242,6 @@ const Table = ({
                           </td>
                         ))}
                       </tr>
-                      {/* Expanded row content */}
                       {isExpanded && renderExpandedRow && (
                         <tr>
                           <td colSpan={columns.length} className="p-0 border-b">
