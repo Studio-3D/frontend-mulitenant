@@ -191,7 +191,7 @@ export default function BienDetails({ id }) {
   );
 
   return (
-    <div className="">
+    <div className=" ">
       <div className="space-y-6 ">
         {/* Header with actions - Redesigned with professional white background */}
         <div className="bg-white rounded-lg p-6 shadow border border-gray-200">
