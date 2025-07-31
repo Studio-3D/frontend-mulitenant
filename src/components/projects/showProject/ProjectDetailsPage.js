@@ -23,6 +23,52 @@ export const ProjectDetailsPage = () => {
 
   // Mock data for tabs
   const tabsData = {
+    
+    tranche: {
+      count: 3,
+      items: [
+        {
+          id: 1,
+          name: 'Appartement A1',
+          type: 'T3',
+          surface: '65m²',
+          price: '250,000€',
+          status: 'Disponible',
+        },
+        {
+          id: 2,
+          name: 'Appartement A2',
+          type: 'T2',
+          surface: '45m²',
+          price: '180,000€',
+          status: 'Pré-réservé',
+        },
+        {
+          id: 3,
+          name: 'Appartement A3',
+          type: 'T4',
+          surface: '85m²',
+          price: '320,000€',
+          status: 'Vendu',
+        },
+        {
+          id: 4,
+          name: 'Appartement A4',
+          type: 'T3',
+          surface: '68m²',
+          price: '265,000€',
+          status: 'Disponible',
+        },
+      ],
+    },
+    blocs: {
+      count: 2,
+      items: [],
+    },
+    immeuble: {
+      count: 5,
+      items: [],
+    },
     bien: {
       count: 24,
       statuses: [
@@ -91,51 +137,6 @@ export const ProjectDetailsPage = () => {
           status: 'Disponible',
         },
       ],
-    },
-    tranche: {
-      count: 3,
-      items: [
-        {
-          id: 1,
-          name: 'Appartement A1',
-          type: 'T3',
-          surface: '65m²',
-          price: '250,000€',
-          status: 'Disponible',
-        },
-        {
-          id: 2,
-          name: 'Appartement A2',
-          type: 'T2',
-          surface: '45m²',
-          price: '180,000€',
-          status: 'Pré-réservé',
-        },
-        {
-          id: 3,
-          name: 'Appartement A3',
-          type: 'T4',
-          surface: '85m²',
-          price: '320,000€',
-          status: 'Vendu',
-        },
-        {
-          id: 4,
-          name: 'Appartement A4',
-          type: 'T3',
-          surface: '68m²',
-          price: '265,000€',
-          status: 'Disponible',
-        },
-      ],
-    },
-    immeuble: {
-      count: 5,
-      items: [],
-    },
-    blocs: {
-      count: 2,
-      items: [],
     },
   };
 
