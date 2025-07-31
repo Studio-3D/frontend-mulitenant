@@ -140,19 +140,7 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab }) => {
         
         {/* Common table for all tabs */}
         <div className="mb-6">
-          <h2 className="text-xl font-semibold text-gray-800">
-            {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
-          </h2>
-          {activeTab === 'bien' && (
-            <div className="mt-4">
-              <Table
-                columns={tabColumns[activeTab]}
-                data={tabsData[activeTab].items}
-                showSearch={false}
-              />
-            </div>
-          )}
-          {activeTab !== 'bien' && (
+          {activeTab  && (
             <div className="mt-4">
               <Table
                 columns={tabColumns[activeTab]}
