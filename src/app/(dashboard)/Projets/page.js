@@ -105,7 +105,7 @@ const Page = () => {
       render: (row) => (
         <div className="flex gap-4 items-center text-sm">
           <Link
-            href={`${row.id}`}
+            href={`/Projets/${row.id}`}
             className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
             title="Voir le projet"
           >
