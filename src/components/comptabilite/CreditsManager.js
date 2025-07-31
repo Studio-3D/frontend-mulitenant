@@ -9,13 +9,15 @@ import Table from '@/components/Table';
 import CreditsFilter from './CreditsFilter';
 import CreditsForm from './CreditsForm';
 import { toast } from 'react-hot-toast';
-import { Edit, Eye, Trash } from 'lucide-react';
+import { PencilLine, Trash2 } from 'lucide-react';
 import Modal from '@/components/Modal';
 import format from 'date-fns/format';
-import ProjectSelectorWrapper from './ProjectSelectorWrapper';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
+import { useAuth } from '@/context/AuthContext';
 
-const CreditsManager = ({ userRole }) => {
+const CreditsManager = ({}) => {
+  const { user } = useAuth();
+
   const { selectedProjet } = useProjet();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,7 +32,7 @@ const CreditsManager = ({ userRole }) => {
   const [refreshData, setRefreshData] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [creditToDelete, setCreditToDelete] = useState(null);
-  
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const action = searchParams.get('action');
@@ -38,7 +40,7 @@ const CreditsManager = ({ userRole }) => {
 
   const fetchData = async () => {
     if (!selectedProjet) return;
-    
+
     setLoading(true);
     try {
       const token = localStorage.getItem('accessToken');
@@ -46,19 +48,22 @@ const CreditsManager = ({ userRole }) => {
         page,
         size: rowsPerPage,
         search: searchTerm,
-        ...filterValues
+        ...filterValues,
       };
-      
-      const response = await axios.get(`${APIURL.ROOT}/v1/projets/${selectedProjet.id}/credits/`, {
-        headers: { Authorization: `Bearer ${token}` },
-        params
-      });
-      
-      console.log("Credits API response:", response.data);
-      
+
+      const response = await axios.get(
+        `${APIURL.ROOT}/v1/projets/${selectedProjet.id}/credits/`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          params,
+        }
+      );
+
+      console.log('Credits API response:', response.data);
+
       const fetchedData = response.data.data || [];
       const pagination = response.data.pagination || {};
-      
+
       setData(fetchedData);
       setTotalRows(pagination.totalItems || fetchedData.length);
       setError(null);
@@ -75,7 +80,14 @@ const CreditsManager = ({ userRole }) => {
     if (selectedProjet && selectedProjet.id) {
       fetchData();
     }
-  }, [selectedProjet, page, rowsPerPage, searchTerm, filterValues, refreshData]);
+  }, [
+    selectedProjet,
+    page,
+    rowsPerPage,
+    searchTerm,
+    filterValues,
+    refreshData,
+  ]);
 
   useEffect(() => {
     if (action === 'edit' && id) {
@@ -93,117 +105,140 @@ const CreditsManager = ({ userRole }) => {
 
   const handleEditCredit = (id) => {
     const token = localStorage.getItem('accessToken');
-    axios.get(`${APIURL.CREDITS}/${id}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-    .then(response => {
-      setCurrentCredit(response.data.credit);
-      setShowFormModal(true);
-    })
-    .catch(error => {
-      toast.error("Erreur lors du chargement du crédit");
-      console.error("Error fetching credit:", error);
-    });
+    axios
+      .get(`${APIURL.CREDITS}/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((response) => {
+        setCurrentCredit(response.data.credit);
+        setShowFormModal(true);
+      })
+      .catch((error) => {
+        toast.error('Erreur lors du chargement du crédit');
+        console.error('Error fetching credit:', error);
+      });
   };
 
   const handleDeleteCredit = (id) => {
-    const credit = data.find(c => c.id === id);
+    const credit = data.find((c) => c.id === id);
     setCreditToDelete(credit);
     setDeleteModalOpen(true);
   };
 
   const handleFormSave = () => {
     setShowFormModal(false);
-    setRefreshData(prev => !prev);
+    setRefreshData((prev) => !prev);
     router.push('/comptabilite/credits');
   };
 
   const handleFileClick = (file) => {
-    window.open(`${RESOURCE_URL.DOCS}/${selectedProjet?.societe?.raison_sociale_concatene}_${selectedProjet?.societe_id}/credits/${file}`, '_blank');
+    window.open(
+      `${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user?.societe_id}/credits/${file}`,
+      '_blank'
+    );
   };
 
   const columns = [
-    { 
-      key: 'date', 
+    {
+      key: 'date',
       label: 'Date',
-      render: (row) => row.date ? format(new Date(row.date), 'dd/MM/yyyy') : '-'
+      render: (row) =>
+        row.date ? format(new Date(row.date), 'dd/MM/yyyy') : '-',
     },
-    { 
-      key: 'num_contrat', 
+    {
+      key: 'num_contrat',
       label: 'N° Contrat',
-      render: (row) => <span>{row.num_contrat}</span>
+      render: (row) => <span>{row.num_contrat}</span>,
     },
-    { 
-      key: 'banque', 
+    {
+      key: 'banque',
       label: 'Banque',
-      render: (row) => <span>{row.banque?.nom}</span>
+      render: (row) => <span>{row.banque?.nom}</span>,
     },
-    { 
-      key: 'piece_jointe', 
+    {
+      key: 'piece_jointe',
       label: 'Pièce Jointe',
-      render: (row) => row.piece_jointe ? (
-        <span 
-          className="text-blue-700 hover:underline cursor-pointer font-medium"
-          onClick={() => handleFileClick(row.piece_jointe)}
-        >
-          {row.piece_jointe}
-        </span>
-      ) : <span className="text-gray-500">-</span>
+      render: (row) =>
+        row.piece_jointe ? (
+          <span
+            className="text-blue-700 hover:underline cursor-pointer font-medium"
+            onClick={() => handleFileClick(row.piece_jointe)}
+          >
+            {row.piece_jointe}
+          </span>
+        ) : (
+          <span className="text-gray-500">-</span>
+        ),
     },
-    { 
-      key: 'montant_capital', 
+    {
+      key: 'montant_capital',
       label: 'Montant Capital',
-      render: (row) => <span className="font-semibold !text-blue-700">{row.montant_capital.toLocaleString()} DH</span>
+      render: (row) => (
+        <span className="font-semibold !text-blue-700">
+          {row.montant_capital.toLocaleString()} DH
+        </span>
+      ),
     },
-    { 
-      key: 'frais_dossier', 
+    {
+      key: 'frais_dossier',
       label: 'Frais Dossier',
-      render: (row) => <span>{row.frais_dossier.toLocaleString()} DH</span>
+      render: (row) => <span>{row.frais_dossier.toLocaleString()} DH</span>,
     },
-    { 
-      key: 'periode', 
+    {
+      key: 'periode',
       label: 'Période',
-      render: (row) => <span>
-        {row.de && row.a ? `Du ${format(new Date(row.de), 'dd/MM/yyyy')} au ${format(new Date(row.a), 'dd/MM/yyyy')}` : '-'}
-      </span>
+      render: (row) => (
+        <span>
+          {row.de && row.a
+            ? `Du ${format(new Date(row.de), 'dd/MM/yyyy')} au ${format(
+                new Date(row.a),
+                'dd/MM/yyyy'
+              )}`
+            : '-'}
+        </span>
+      ),
     },
-    { 
-      key: 'nb_mois', 
+    {
+      key: 'nb_mois',
       label: 'Nombre Mois',
-      render: (row) => <span>{row.nb_mois}</span>
+      render: (row) => <span>{row.nb_mois}</span>,
     },
-    { 
-      key: 'taux_interet', 
+    {
+      key: 'taux_interet',
       label: 'Taux Intérêt',
-      render: (row) => <span>{row.taux_interet}%</span>
+      render: (row) => <span>{row.taux_interet}%</span>,
     },
-    { 
-      key: 'montant_interet', 
+    {
+      key: 'montant_interet',
       label: 'Montant Intérêt',
-      render: (row) => <span className="font-medium !text-green-600">{row.montant_interet.toLocaleString()} DH</span>
+      render: (row) => (
+        <span className="font-medium !text-green-600">
+          {row.montant_interet.toLocaleString()} DH
+        </span>
+      ),
     },
-    { 
-      key: 'actions', 
+    {
+      key: 'actions',
       label: 'Actions',
       render: (row) => (
         <div className="flex space-x-2">
           <button
             onClick={() => handleEditCredit(row.id)}
             title="Modifier"
-            className="p-1.5 bg-amber-100 text-amber-600 rounded-full hover:bg-amber-200"
+            className="flex items-center gap-1  text-yellow-500  hover:text-yellow-700"
           >
-            <Edit size={16} />
+            <PencilLine className="w-4 h-4" />
           </button>
           <button
             onClick={() => handleDeleteCredit(row.id)}
             title="Supprimer"
-            className="p-1.5 bg-red-200 !text-red-600 rounded-full hover:bg-red-200"
+            className="flex items-center gap-1  !text-red-500  hover:text-red-700"
           >
-            <Trash size={16} />
+            <Trash2 className="w-4 h-4" />
           </button>
         </div>
-      )
-    }
+      ),
+    },
   ];
 
   const exportColumns = [
@@ -215,74 +250,87 @@ const CreditsManager = ({ userRole }) => {
     { key: 'periode', label: 'Période' },
     { key: 'nb_mois', label: 'Nombre Mois' },
     { key: 'taux_interet', label: 'Taux Intérêt' },
-    { key: 'montant_interet', label: 'Montant Intérêt' }
+    { key: 'montant_interet', label: 'Montant Intérêt' },
   ];
 
   const transformDataForExport = () => {
     return data.map((item) => ({
-      date: item.date ? format(new Date(item.date), 'dd/MM/yyyy') : "",
-      num_contrat: item.num_contrat || "",
-      banque: item.banque?.nom || "",
-      montant_capital: item.montant_capital?.toLocaleString() + " DH" || "",
-      frais_dossier: item.frais_dossier?.toLocaleString() + " DH" || "",
-      periode: item.de && item.a ? `Du ${format(new Date(item.de), 'dd/MM/yyyy')} au ${format(new Date(item.a), 'dd/MM/yyyy')}` : "",
-      nb_mois: item.nb_mois || "",
-      taux_interet: item.taux_interet ? `${item.taux_interet}%` : "",
-      montant_interet: item.montant_interet?.toLocaleString() + " DH" || ""
+      date: item.date ? format(new Date(item.date), 'dd/MM/yyyy') : '',
+      num_contrat: item.num_contrat || '',
+      banque: item.banque?.nom || '',
+      montant_capital: item.montant_capital?.toLocaleString() + ' DH' || '',
+      frais_dossier: item.frais_dossier?.toLocaleString() + ' DH' || '',
+      periode:
+        item.de && item.a
+          ? `Du ${format(new Date(item.de), 'dd/MM/yyyy')} au ${format(
+              new Date(item.a),
+              'dd/MM/yyyy'
+            )}`
+          : '',
+      nb_mois: item.nb_mois || '',
+      taux_interet: item.taux_interet ? `${item.taux_interet}%` : '',
+      montant_interet: item.montant_interet?.toLocaleString() + ' DH' || '',
     }));
   };
 
   return (
-    <ProjectSelectorWrapper>
-      <div>
-        <Table
-          name_file_export="credits"
-          data_to_export={transformDataForExport()}
-          columns_export={exportColumns}
-          columns={columns}
-          data={data}
-          totalRows={totalRows}
-          loading={loading}
-          error={error}
-          emptyMessage="Aucun crédit trouvé"
-          onPageChange={setPage}
-          onRowsPerPageChange={setRowsPerPage}
-          onSearchChange={setSearchTerm}
-          currentPage={page}
-          rowsPerPage={rowsPerPage}
-          enableExport={true}
-          addLink="/comptabilite/credits?action=add"
-          filterComponent={<CreditsFilter onSubmit={handleFilterChange} initialValues={filterValues} />}
-        />
+    <div className="relative bg-white rounded-lg px-4 py-4">
+      <Table
+        showSearch={false}
+        name_file_export="credits"
+        data_to_export={transformDataForExport()}
+        columns_export={exportColumns}
+        columns={columns}
+        data={data}
+        totalRows={totalRows}
+        loading={loading}
+        error={error}
+        emptyMessage="Aucun crédit trouvé"
+        onPageChange={setPage}
+        onRowsPerPageChange={setRowsPerPage}
+        onSearchChange={setSearchTerm}
+        currentPage={page}
+        rowsPerPage={rowsPerPage}
+        enableExport={true}
+        addLink="/comptabilite/credits?action=add"
+        filterComponent={
+          <CreditsFilter
+            onSubmit={handleFilterChange}
+            initialValues={filterValues}
+          />
+        }
+      />
 
-        {showFormModal && (
-          <Modal isVisible={true} onClose={() => {
+      {showFormModal && (
+        <Modal
+          isVisible={true}
+          onClose={() => {
             setShowFormModal(false);
             router.push('/comptabilite/credits');
-          }}>
-            <CreditsForm 
-              credit={currentCredit} 
-              onSave={handleFormSave}
-              onCancel={() => {
-                setShowFormModal(false);
-                router.push('/comptabilite/credits');
-              }}
-            />
-          </Modal>
-        )}
-        
-        {deleteModalOpen && creditToDelete && (
-          <DeleteConfirmationModal
-            isOpen={deleteModalOpen}
-            onClose={() => setDeleteModalOpen(false)}
-            entityName="CREDITS"
-            itemLabel={"Credit"}
-            entityId={creditToDelete.id}
-            onDeleted={() => setRefreshData(prev => !prev)}
+          }}
+        >
+          <CreditsForm
+            credit={currentCredit}
+            onSave={handleFormSave}
+            onCancel={() => {
+              setShowFormModal(false);
+              router.push('/comptabilite/credits');
+            }}
           />
-        )}
-      </div>
-    </ProjectSelectorWrapper>
+        </Modal>
+      )}
+
+      {deleteModalOpen && creditToDelete && (
+        <DeleteConfirmationModal
+          isOpen={deleteModalOpen}
+          onClose={() => setDeleteModalOpen(false)}
+          entityName="CREDITS"
+          itemLabel={'Credit'}
+          entityId={creditToDelete.id}
+          onDeleted={() => setRefreshData((prev) => !prev)}
+        />
+      )}
+    </div>
   );
 };
 

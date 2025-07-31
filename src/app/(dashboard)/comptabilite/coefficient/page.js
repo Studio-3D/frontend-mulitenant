@@ -1,18 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { useProjet } from '@/context/ProjetContext';
 import { isAdmin, isSuperAdmin } from '@/configs/enum';
 import CoefficientManager from '@/components/comptabilite/CoefficientManager';
-import ProjetSelector from '@/components/ProjetSelector';
 import ComptabiliteTabsNav from '@/components/comptabilite/ComptabiliteTabsNav';
+import LoadingSpin from '@/components/LoadingSpin';
 
 const CoefficientPage = () => {
   const { user } = useAuth();
-  const { selectedProjet } = useProjet();
-  const [needsProjectSelection, setNeedsProjectSelection] = useState(true);
   const router = useRouter();
 
   // Check user permissions
@@ -23,37 +20,20 @@ const CoefficientPage = () => {
   }, [user, router]);
 
   // Check if project is selected
-  useEffect(() => {
-    if (selectedProjet) {
-      setNeedsProjectSelection(false);
-    } else {
-      setNeedsProjectSelection(true);
-    }
-  }, [selectedProjet]);
-
-  const handleProjectSelected = () => {
-    setNeedsProjectSelection(false);
-  };
 
   if (!user) {
-    return <div className="p-6 text-center">Chargement...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpin /> {/* Use your loading spinner here */}
+      </div>
+    );
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Comptabilité - Coefficient</h1>
-      
+    <div >
       <ComptabiliteTabsNav />
-      
-      {needsProjectSelection ? (
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4">Sélectionner un projet</h2>
-          <p className="mb-4">Veuillez sélectionner un projet pour gérer les coefficients</p>
-          <ProjetSelector onSelect={handleProjectSelected} />
-        </div>
-      ) : (
-        <CoefficientManager userRole={user?.role} />
-      )}
+
+      <CoefficientManager />
     </div>
   );
 };

@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { XCircle } from 'lucide-react';
+import Input from '../Input';
 
 const TvaFilter = ({ onSubmit, initialValues = {} }) => {
   const [values, setValues] = useState({
     nom: '',
     coefficient: '',
     qp_bati: '',
-    ...initialValues
+    ...initialValues,
   });
 
   useEffect(() => {
@@ -16,13 +17,13 @@ const TvaFilter = ({ onSubmit, initialValues = {} }) => {
       nom: '',
       coefficient: '',
       qp_bati: '',
-      ...initialValues
+      ...initialValues,
     });
   }, [initialValues]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setValues(prev => ({ ...prev, [name]: value }));
+    setValues((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e) => {
@@ -34,73 +35,58 @@ const TvaFilter = ({ onSubmit, initialValues = {} }) => {
     const emptyValues = {
       nom: '',
       coefficient: '',
-      qp_bati: ''
+      qp_bati: '',
     };
     setValues(emptyValues);
     onSubmit(emptyValues);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-4 rounded-lg shadow-sm border">
+    <form
+      onSubmit={handleSubmit}
+      className="bg-white p-4 rounded-lg shadow-sm border"
+    >
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div>
-          <label htmlFor="nom" className="block text-sm font-medium !text-gray-700 mb-1">
-            Tranche
-          </label>
-          <input
-            id="nom"
-            name="nom"
-            type="text"
-            value={values.nom}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
-        
-        <div>
-          <label htmlFor="coefficient" className="block text-sm font-medium !text-gray-700 mb-1">
-            Coefficient
-          </label>
-          <input
-            id="coefficient"
-            name="coefficient"
-            type="text"
-            value={values.coefficient}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
-        
-        <div>
-          <label htmlFor="qp_bati" className="block text-sm font-medium !text-gray-700 mb-1">
-            QP Terrain Bati
-          </label>
-          <input
-            id="qp_bati"
-            name="qp_bati"
-            type="text"
-            value={values.qp_bati}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
+        <Input
+          type="text"
+          name="nom"
+          label="Nom"
+          value={values.nom}
+          onChange={handleChange}
+          className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+        />
+        <Input
+          name="coefficient"
+          type="number"
+          label="Coefficient"
+          value={values.coefficient}
+          onChange={handleChange}
+          className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+        />
+
+        <Input
+          name="qp_bati"
+          type="number"
+          label=" QP Terrain Bati"
+          value={values.qp_bati}
+          onChange={handleChange}
+          className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+        />
       </div>
-      
-      <div className="mt-4 flex justify-end space-x-3">
+
+      <div className="flex justify-end gap-3 pt-2">
+        <button
+          type="submit"
+          className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+        >
+          Appliquer les filtres
+        </button>
         <button
           type="button"
           onClick={handleClear}
-          className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium !text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center"
+          className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
         >
-          <XCircle className="mr-2" size={18} />
-          Vider
-        </button>
-        
-        <button
-          type="submit"
-          className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#009FFF] hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          Appliquer
+          Réinitialiser
         </button>
       </div>
     </form>

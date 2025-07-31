@@ -52,8 +52,8 @@ const handleDialogToggle = () => {
     }
   }
 
-  const hasTranches = selectedProjet?.nbre_blocs > 0
-  const hasBlocs = selectedProjet?.nbre_tranches > 0
+  const hasTranches = selectedProjet?.nbre_tranches > 0
+  const hasBlocs = selectedProjet?.nbre_blocs > 0
   const hasImmeubles = selectedProjet?.nbre_immeubles > 0
 
 
@@ -90,7 +90,7 @@ const handleDialogToggle = () => {
 
       if (hasTranches) {
         requiredHeaders.push('tranche')
-      } else if (normalizedHeaders.includes('tranche')) {
+      } else if (normalizedHeaders.includes('Tranche')) {
         msg_error.push({
           id: 0,
           msg: `Le projet ne contient pas de tranches, mais la colonne "Tranche" est présente dans le fichier Excel. Supprime-la.`
@@ -99,7 +99,7 @@ const handleDialogToggle = () => {
 
       if (hasBlocs) {
         requiredHeaders.push('bloc')
-      } else if (normalizedHeaders.includes('bloc')) {
+      } else if (normalizedHeaders.includes('Bloc')) {
         msg_error.push({
           id: 0,
           msg: `Le projet ne contient pas de blocs, mais la colonne "Bloc" est présente dans le fichier Excel. Supprime-la.`
@@ -108,7 +108,7 @@ const handleDialogToggle = () => {
 
       if (hasImmeubles) {
         requiredHeaders.push('immeuble')
-      } else if (normalizedHeaders.includes('immeuble')) {
+      } else if (normalizedHeaders.includes('Immeuble')) {
         msg_error.push({
           id: 0,
           msg: `Le projet ne contient pas d’immeubles, mais la colonne "Immeuble" est présente dans le fichier Excel. Supprime-la.`
@@ -362,7 +362,7 @@ const handleDialogToggle = () => {
           📄 Modèle Excel :
         </Typography>
         <Typography variant="body2">
-          Utilisez ce fichier comme référence pour le format d'importation.
+          Utilisez ce fichier comme référence pour le format {'d\''}importation.
         </Typography>
       </div>
       <Button

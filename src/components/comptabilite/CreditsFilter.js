@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { XCircle } from 'lucide-react';
+import Input from '../Input';
+import DateRangePicker from '../DateRangePicker';
 
 const CreditsFilter = ({ onSubmit, initialValues = {} }) => {
   const [values, setValues] = useState({
@@ -10,7 +12,7 @@ const CreditsFilter = ({ onSubmit, initialValues = {} }) => {
     date: '',
     de: '',
     a: '',
-    ...initialValues
+    ...initialValues,
   });
 
   useEffect(() => {
@@ -20,13 +22,16 @@ const CreditsFilter = ({ onSubmit, initialValues = {} }) => {
       date: '',
       de: '',
       a: '',
-      ...initialValues
+      ...initialValues,
     });
   }, [initialValues]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setValues(prev => ({ ...prev, [name]: value }));
+  // Single optimized handler for all filter changes
+  const handleChange = (field, value) => {
+    setValues((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
 
   const handleSubmit = (e) => {
@@ -40,101 +45,69 @@ const CreditsFilter = ({ onSubmit, initialValues = {} }) => {
       taux_interet: '',
       date: '',
       de: '',
-      a: ''
+      a: '',
     };
     setValues(emptyValues);
     onSubmit(emptyValues);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-4 rounded-lg shadow-sm border">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div>
-          <label htmlFor="num_contrat" className="block text-sm font-medium !text-gray-700 mb-1">
-            N° Contrat
-          </label>
-          <input
-            id="num_contrat"
-            name="num_contrat"
-            type="text"
-            value={values.num_contrat}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
-        
-        <div>
-          <label htmlFor="taux_interet" className="block text-sm font-medium !text-gray-700 mb-1">
-            Taux Intérêt
-          </label>
-          <input
-            id="taux_interet"
-            name="taux_interet"
-            type="text"
-            value={values.taux_interet}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
-        
-        <div>
-          <label htmlFor="date" className="block text-sm font-medium !text-gray-700 mb-1">
-            Date
-          </label>
-          <input
-            id="date"
-            name="date"
-            type="date"
-            value={values.date}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
+    <form
+      onSubmit={handleSubmit}
+      className="bg-white p-4 rounded-lg shadow-sm border"
+    >
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
+        <Input
+          name="num_contrat"
+          type="text"
+          label="N° Contrat"
+          value={values.num_contrat}
+          onChange={(e) => handleChange('num_contrat', e.target.value)}
+          className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+        />
 
-        <div>
-          <label htmlFor="de" className="block text-sm font-medium !text-gray-700 mb-1">
-            Période - De
-          </label>
-          <input
-            id="de"
-            name="de"
-            type="date"
-            value={values.de}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
-        
-        <div>
-          <label htmlFor="a" className="block text-sm font-medium !text-gray-700 mb-1">
-            Période - À
-          </label>
-          <input
-            id="a"
-            name="a"
-            type="date"
-            value={values.a}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
+        <Input
+          name="taux_interet"
+          type="text"
+          label="Taux Intérêt"
+          value={values.taux_interet}
+          onChange={(e) => handleChange('taux_interet', e.target.value)}
+          className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+        />
+
+        <Input
+          name="date"
+          type="date"
+          label="Date"
+          value={values.date}
+          onChange={(e) => handleChange('date', e.target.value)}
+          className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+        />
       </div>
-      
-      <div className="mt-4 flex justify-end space-x-3">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <DateRangePicker
+          startName="de"
+          endName="a"
+          placeholder="Choisir une Période"
+          startValue={values.de}
+          endValue={values.a}
+          onChange={handleChange}
+          label="Choisir une Période"
+        />
+      </div>
+      <div className="flex justify-end gap-3 pt-2">
+        <button
+          type="submit"
+          className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+        >
+          Appliquer les filtres
+        </button>
         <button
           type="button"
           onClick={handleClear}
-          className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium !text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center"
+          className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
         >
-          <XCircle className="mr-2" size={18} />
-          Vider
-        </button>
-        
-        <button
-          type="submit"
-          className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#009FFF] hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          Appliquer
+          Réinitialiser
         </button>
       </div>
     </form>

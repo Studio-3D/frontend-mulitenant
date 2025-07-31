@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import Table from '@/components/Table';
-import { Eye, Pencil, Check, RefreshCw, Trash2 } from 'lucide-react';
+import { Eye, Pencil, Check, RefreshCw, Trash2, PencilLine } from 'lucide-react';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
 import { useAuth } from '../../../../context/AuthContext';
@@ -206,7 +206,7 @@ const ClientTable = () => {
             title="Modifier"
             onClick={() => handleEdit(row.id)}
           >
-            <Pencil className="w-4 h-4" />
+            <PencilLine className="w-4 h-4" />
           </button>
           {row?.aquereur?.length === 0 &&
             row?.aquereur_desistement.length === 0 &&

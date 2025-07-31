@@ -9,6 +9,7 @@ import axios from 'axios';
 import { APIURL } from '@/configs/api';
 import ComptabiliteTabsNav from '@/components/comptabilite/ComptabiliteTabsNav';
 import { toast } from 'react-hot-toast';
+import LoadingSpin from '@/components/LoadingSpin';
 
 // Update to proper params handling for Next.js
 const TvaTrancheDetailPage = ({ params }) => {
@@ -55,8 +56,11 @@ const TvaTrancheDetailPage = ({ params }) => {
   }, [trancheId, selectedProjet]);
 
   if (!user || !selectedProjet || loading) {
-    return <div className="p-6 text-center">Chargement...</div>;
-  }
+ return (
+         <div className="flex items-center justify-center min-h-screen">
+           <LoadingSpin /> {/* Use your loading spinner here */}
+         </div>
+       );  }
 
   if (!trancheDetails) {
     return <div className="p-6 text-center">Tranche non trouvée</div>;
@@ -103,7 +107,7 @@ const TvaTrancheDetailPage = ({ params }) => {
             <h2 className="text-xl font-semibold mb-4">Valeurs Calculées</h2>
             <div className="space-y-2">
               <div>
-                <span className="font-medium">Prix d'Acquisition:</span> 
+                <span className="font-medium">Prix {'d\''}Acquisition:</span> 
                 <span className="ml-2">{selectedProjet.prix_acquisition?.toLocaleString() || '-'} DH</span>
               </div>
               <div>

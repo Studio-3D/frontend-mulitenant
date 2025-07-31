@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import Table from '@/components/Table';
-import { Eye, Pencil, Check, RefreshCw, Trash2 } from 'lucide-react';
+import { Eye, Pencil, Check, RefreshCw, Trash2, PencilLine } from 'lucide-react';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
 import { useAuth } from '../../../../context/AuthContext';
@@ -230,7 +230,7 @@ const ProspectTable = () => {
             />
           </div>
           <div title="Modifier">
-            <Pencil
+            <PencilLine
               className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
               onClick={() => handleEdit(row.id)}
             />

@@ -203,7 +203,7 @@ export const MODE_PAIEMENT_with_transfert = {
   7: { code: 7, label: "Transfert Dossier" },
 };
 export const getModePaiementLabel = (code) => {
-  return MODE_PAIEMENT_with_transfert[code]?.label || "Unknown";
+  return MODE_PAIEMENT_with_transfert[code]?.label || "";
 };
 export const Avance_Statut = {
   1: { label: "Validé", color: "success" },

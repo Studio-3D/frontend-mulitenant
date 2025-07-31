@@ -16,7 +16,7 @@ import axios from 'axios';
 const Modal_Historique = ({ onClose, rows, loading_histo }) => {
   const [entityNames, setEntityNames] = useState({});
   const accessToken = localStorage.getItem('accessToken');
- 
+
   // Extract all unique IDs for sources, partners, and banks from history
   useEffect(() => {
     if (!rows.length) return;
@@ -331,9 +331,6 @@ const Modal_Historique = ({ onClose, rows, loading_histo }) => {
                                   key={`histo_${key}`}
                                   className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700"
                                 >
-                                  {key === 'date_relance' && 'Date Relance'}
-                                  {key === 'mode_relance' && 'Mode Relance'}
-                                  {key === 'rdv' && 'Rendez-vous'}
                                   {key === 'prospect' && 'Prospect'}
                                 </th>
                               ))}
@@ -464,25 +461,7 @@ const Modal_Historique = ({ onClose, rows, loading_histo }) => {
 
                                 let displayContent;
 
-                                if (key === 'date_relance') {
-                                  displayContent = (
-                                    <div className="text-center">
-                                      {formatDate(value.new)}
-                                    </div>
-                                  );
-                                } else if (key === 'mode_relance') {
-                                  displayContent = (
-                                    <div className="text-center">
-                                      {getRelance_label(value.new)}
-                                    </div>
-                                  );
-                                } else if (key === 'rdv') {
-                                  displayContent = (
-                                    <div className="text-center">
-                                      {formatDateTime(value.new)}
-                                    </div>
-                                  );
-                                } else if (key === 'prospect') {
+                                if (key === 'prospect') {
                                   displayContent =
                                     value && typeof value === 'object' ? (
                                       <div className="flex flex-col items-center justify-center gap-1">
@@ -713,39 +692,44 @@ const Modal_Historique = ({ onClose, rows, loading_histo }) => {
                         </tbody>
                       </table>
                     ) : (
-                      <table className="w-full text-sm border-collapse">
-                        {/* Création */}
-                        <thead style={{ background: '#bcf7ff' }}>
-                          <tr>
-                            <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
-                              Mode Relance
-                            </th>
-                            <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
-                              Date de Relance
-                            </th>
-                            {row.interet == '1' && (
-                              <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
-                                RDV
-                              </th>
-                            )}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr className="bg-white">
-                            <td className="text-center px-3 py-2 border-b border-gray-200">
-                              {getRelance_label(row.mode_rel) || null}
-                            </td>
-                            <td className="text-center px-3 py-2 border-b border-gray-200">
-                              {row.date_rel || null}
-                            </td>
-                            {row.interet == '1' && (
-                              <td className="text-center px-3 py-2 border-b border-gray-200">
-                                {row.rdv || null}
-                              </td>
-                            )}
-                          </tr>
-                        </tbody>
-                      </table>
+                      <>
+                        {(row.interet == '1' ||
+                          row.interet == '2')&& row.statut!=2 && (
+                            <table className="w-full text-sm border-collapse">
+                              {/* Création */}
+                              <thead style={{ background: '#bcf7ff' }}>
+                                <tr>
+                                  <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
+                                    Mode Relance
+                                  </th>
+                                  <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
+                                    Date de Relance
+                                  </th>
+                                  {row.interet == '1' && (
+                                    <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
+                                      RDV
+                                    </th>
+                                  )}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr className="bg-white">
+                                  <td className="text-center px-3 py-2 border-b border-gray-200">
+                                    {getRelance_label(row.mode_rel) || null}
+                                  </td>
+                                  <td className="text-center px-3 py-2 border-b border-gray-200">
+                                    {row.date_rel || null}
+                                  </td>
+                                  {row.interet == '1' && (
+                                    <td className="text-center px-3 py-2 border-b border-gray-200">
+                                      {row.rdv || null}
+                                    </td>
+                                  )}
+                                </tr>
+                              </tbody>
+                            </table>
+                          )}
+                      </>
                     )}
                   </div>
                 </div>
@@ -825,7 +809,12 @@ const Modal_Historique = ({ onClose, rows, loading_histo }) => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {rows.map((row, index) => (
-                  <Row key={`${row.id || index}-${row.action}`} row={row} />
+                  <Row
+                    key={`${row.id || `row-${index}`}-${row.action}-${
+                      row.date
+                    }`}
+                    row={row}
+                  />
                 ))}
               </tbody>
             </table>
