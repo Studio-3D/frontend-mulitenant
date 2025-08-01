@@ -145,7 +145,7 @@ const Page = () => {
         loading={loading}
         totalRows={totalRows}
         error={error}
-        addLink={(isSuperAdmin(user?.role) || isAdmin(user?.role)) ? "/Projets/ajouter" : undefined}
+        addLink={(isSuperAdmin(user?.role) || isAdmin(user?.role)) ? "/Projets/addProject" : undefined}
         currentPage={currentPage}
         rowsPerPage={rowsPerPage}
         onPageChange={handlePageChange}
