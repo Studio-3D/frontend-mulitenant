@@ -7,6 +7,7 @@ import { useProjet } from '@/context/ProjetContext';
 import { isAdmin, isSuperAdmin } from '@/configs/enum';
 import ComptabiliteTabsNav from '@/components/comptabilite/ComptabiliteTabsNav';
 import FournisseursManager from '@/components/comptabilite/FournisseursManager';
+import LoadingSpin from '@/components/LoadingSpin';
 
 const FournisseursPage = () => {
   const { user } = useAuth();
@@ -23,16 +24,18 @@ const FournisseursPage = () => {
   }, [user, selectedProjet, router]);
 
   if (!user || !selectedProjet) {
-    return <div className="p-6 text-center">Chargement...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpin /> {/* Use your loading spinner here */}
+      </div>
+    );
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Comptabilité - Fournisseurs</h1>
-      
+    <div >
       <ComptabiliteTabsNav />
-      
-      <FournisseursManager userRole={user?.role} />
+
+      <FournisseursManager />
     </div>
   );
 };

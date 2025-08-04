@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Table from '@/components/Table';
-import { Eye, Pencil, Download } from 'lucide-react';
+import { Eye, Pencil, Download, PencilLine } from 'lucide-react';
 
 import { useAuth } from '../../../../../context/AuthContext';
 import { useProjet } from '../../../../../context/ProjetContext';
@@ -152,7 +152,7 @@ const RelancesFreinsTable = () => {
             />
           </div>
           <div title="Traiter les Biens Disponibles">
-            <Pencil
+            <PencilLine
               className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
               onClick={() => handle_Bien(row.id, row.nomComplet)}
             />

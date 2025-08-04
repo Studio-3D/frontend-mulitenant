@@ -21,6 +21,7 @@ import {
   Archive,
   FileImage,
   Calendar,
+  PencilLine,
 } from 'lucide-react';
 import { ChevronDown } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -352,7 +353,7 @@ const Compromis_show = ({
                           className="ml-2 text-red-500 hover:text-red-700"
                           title="Modifier Compromis Scanné"
                         >
-                          <Edit2 className="w-5 h-5" />
+                          <PencilLine className="w-5 h-5" />
                         </button>
                       )}
                     </div>
@@ -389,7 +390,7 @@ const Compromis_show = ({
                             onClick={handleEdit}
                             className="flex items-center px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700"
                           >
-                            <Edit2 className="w-5 h-5 mr-2" />
+                            <PencilLine className="w-5 h-5 mr-2" />
                             Modifier
                           </button>
                           <button

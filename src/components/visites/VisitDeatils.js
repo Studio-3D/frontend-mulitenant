@@ -842,7 +842,7 @@ export function VisitDetails({
           {/* Split layout */}
           <div className="grid lg:grid-cols-12 gap-8 p-8">
             {/* Timeline section */}
-            <div className="lg:col-span-4 space-y-6">
+            <div className="lg:col-span-4 space-y-6 mt-5">
               <VisitTimeline
                 visites_all_show={visites_all_show}
                 activeVisit={activeVisit}
@@ -919,18 +919,18 @@ export function VisitDetails({
                                 )}
                             </div>
 
-                            {/* Add this new row below the Traiter buttons 
+                            {/* Add this new row below the Traiter buttons */}
                             <div className="flex items-center space-x-4 mt-3">
-                              {/* Status tag 
+                              {/* Status tag */}
                               {visite.interet == 1 && (
                                 <div className="flex items-center">
                                   {getStatutBadge(visite.statut)}
                                 </div>
                               )}
 
-                              {/* Action buttons 
+                              {/* Action buttons */}
                               <div className="flex space-x-2">
-                                {/* View Reservation button 
+                                {/* View Reservation button */}
                                 {visite.reservation != null && (
                                   <button
                                     title="Détail du Réservation"
@@ -945,7 +945,7 @@ export function VisitDetails({
                                   </button>
                                 )}
 
-                                {/* Download PDF button 
+                                {/* Download PDF button */}
                                 {(visite.statut == 1 ||
                                   visite.statut == 3 ||
                                   visite.statut == 5) && (
@@ -1076,7 +1076,7 @@ export function VisitDetails({
                               }
                             />
 
-                            <InfoCard
+                           {/* <InfoCard
                               icon={<BadgeCheckIcon className="h-5 w-5" />}
                               title="Statut"
                               value={getStatutBadge(visite.statut)}
@@ -1138,7 +1138,7 @@ export function VisitDetails({
                                   )}
                                 </>
                               }
-                            />
+                            />*/}
                             <>
                               {visite.relance_relation != null && (
                                 <>

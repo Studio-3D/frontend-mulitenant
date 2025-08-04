@@ -9,19 +9,21 @@ import Table from '@/components/Table';
 import FacturesFilter from './FacturesFilter';
 import FacturesForm from './FacturesForm';
 import { toast } from 'react-hot-toast';
-import { Edit, Eye, Trash } from 'lucide-react';
+import { PencilLine, Trash, Trash2 } from 'lucide-react';
 import Modal from '@/components/Modal';
 import { format } from 'date-fns';
 import { MODE_PAIEMENT } from '@/configs/enum';
-import ProjectSelectorWrapper from './ProjectSelectorWrapper';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
+import { fetchData_table_by_projet } from '@/configs/api-utils';
+import { useAuth } from '@/context/AuthContext';
 
-const FacturesManager = ({ userRole, decompteId, montantDecompte, montantPaye }) => {
+const FacturesManager = ({ decompteId, montantDecompte, montantPaye }) => {
+    const { user } = useAuth();
+  
   const { selectedProjet } = useProjet();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalRows, setTotalRows] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
@@ -31,6 +33,7 @@ const FacturesManager = ({ userRole, decompteId, montantDecompte, montantPaye })
   const [refreshData, setRefreshData] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [factureToDelete, setFactureToDelete] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -39,68 +42,37 @@ const FacturesManager = ({ userRole, decompteId, montantDecompte, montantPaye })
   const queryDecompteId = searchParams.get('decompteId');
   const queryMontantDecompte = searchParams.get('montantDecompte');
 
-  const fetchData = async () => {
-    if (!selectedProjet) return;
-    
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('accessToken');
-      const params = {
-        page,
-        size: rowsPerPage,
-        search: searchTerm,
-        ...filterValues
-      };
-      
-      // If we're showing factures for a specific decompte
-      if (decompteId) {
-        params.decompteId = decompteId;
-      } else if (queryDecompteId) {
-        params.decompteId = queryDecompteId;
-      }
-      
-      const response = await axios.get(`${APIURL.ROOT}/v1/projets/${selectedProjet.id}/factures/`, {
-        headers: { Authorization: `Bearer ${token}` },
-        params
-      });
-      
-      console.log("Factures API response:", response.data);
-      
-      // Check different possible response structures
-      let fetchedData = [];
-      if (response.data.factures) {
-        // First check if data is in the expected format
-        fetchedData = response.data.factures;
-      } else if (response.data.message && Array.isArray(response.data.message)) {
-        // Check if message contains an array
-        fetchedData = response.data.message;
-      } else if (response.data.message && typeof response.data.message === 'object') {
-        // Check if message is a single object (like in your example)
-        fetchedData = [response.data.message];
-      } else if (Array.isArray(response.data)) {
-        // Check if response.data is directly an array
-        fetchedData = response.data;
-      } else if (response.data.data) {
-        // Check if data is under a data key
-        fetchedData = response.data.data;
-      }
-      
-      setData(fetchedData);
-      setTotalRows(response.data.pagination?.totalItems || fetchedData.length);
-    } catch (err) {
-      console.error('Error fetching factures data:', err);
-      setError('Erreur lors du chargement des données');
-      toast.error('Erreur lors du chargement des données');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const accesstoken = localStorage.getItem('accessToken');
 
+  const entity = {
+    API_URL: 'factures',
+    dataKey: 'data',
+    searchFields: [''],
+  };
   useEffect(() => {
     if (selectedProjet && selectedProjet.id) {
-      fetchData();
+      fetchData_table_by_projet(
+        entity,
+        filterValues,
+        searchTerm,
+        currentPage,
+        rowsPerPage,
+        accesstoken,
+        setLoading,
+        setError,
+        setData,
+        setTotalRows
+      );
     }
-  }, [selectedProjet, page, rowsPerPage, searchTerm, filterValues, refreshData]);
+  }, [
+    accesstoken,
+    currentPage,
+    rowsPerPage,
+    searchTerm,
+    filterValues,
+    selectedProjet,
+    refreshData,
+  ]);
 
   useEffect(() => {
     if (action === 'edit' && id) {
@@ -114,53 +86,49 @@ const FacturesManager = ({ userRole, decompteId, montantDecompte, montantPaye })
   useEffect(() => {
     if (showFormModal) {
       // Add this debug message when form modal is shown
-      console.log("Form modal is open, should fetch fournisseurs data");
+      console.log('Form modal is open, should fetch fournisseurs data');
     }
   }, [showFormModal]);
 
   const handleFilterChange = (values) => {
     setFilterValues(values);
-    setPage(1);
-  };
-
-  const handleAddFacture = () => {
-    setCurrentFacture(null);
-    setShowFormModal(true);
+    setCurrentPage(1);
   };
 
   const handleEditFacture = (id) => {
     const token = localStorage.getItem('accessToken');
-    axios.get(`${APIURL.FACTURES}/${id}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-    .then(response => {
-      setCurrentFacture(response.data.facture);
-      setShowFormModal(true);
-    })
-    .catch(error => {
-      toast.error("Erreur lors du chargement de la facture");
-      console.error("Error fetching facture:", error);
-    });
+    axios
+      .get(`${APIURL.FACTURES}/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((response) => {
+        setCurrentFacture(response.data.facture);
+        setShowFormModal(true);
+      })
+      .catch((error) => {
+        toast.error('Erreur lors du chargement de la facture');
+        console.error('Error fetching facture:', error);
+      });
   };
-
   const handleDeleteFacture = (id) => {
-    const facture = data.find(f => f.id === id);
+    const facture = data.find((f) => f.id === id);
     setFactureToDelete(facture);
     setDeleteModalOpen(true);
   };
 
   const handleFormSave = () => {
     setShowFormModal(false);
-    setRefreshData(prev => !prev);
+    setRefreshData((prev) => !prev);
     router.push('/comptabilite/factures');
   };
 
   const handleFileClick = (fileType, filename) => {
-    const basePath = `${RESOURCE_URL.DOCS}/${selectedProjet?.societe?.raison_sociale_concatene}_${selectedProjet?.societe_id}/factures`;
-    const url = fileType === 'paiement' 
-      ? `${basePath}/paiements/${filename}` 
-      : `${basePath}/${filename}`;
-    
+    const basePath = `${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user?.societe_id}/factures`;
+    const url =
+      fileType === 'paiement'
+        ? `${basePath}/paiements/${filename}`
+        : `${basePath}/${filename}`;
+
     window.open(url, '_blank');
   };
 
@@ -169,91 +137,109 @@ const FacturesManager = ({ userRole, decompteId, montantDecompte, montantPaye })
   };
 
   const columns = [
-    { 
-      key: 'date_facture', 
+    {
+      key: 'date_facture',
       label: 'Date',
-      render: (row) => <span>{format(new Date(row.date_facture), 'dd/MM/yyyy')}</span>
+      render: (row) => (
+        <span>{format(new Date(row.date_facture), 'dd/MM/yyyy')}</span>
+      ),
     },
-    { 
-      key: 'fournisseur', 
+    {
+      key: 'fournisseur',
       label: 'Fournisseur',
-      render: (row) => <span>{row.fournisseur?.code}/{row.fournisseur?.nom}</span>
-    },
-    { 
-      key: 'num_facture', 
-      label: 'N° Facture',
-      render: (row) => <span>{row.num_facture}</span>
-    },
-    { 
-      key: 'decompte', 
-      label: 'Décompte N°',
-      render: (row) => <span>{row.decompte?.numero || '-'}</span>
-    },
-    { 
-      key: 'piece_jointe', 
-      label: 'Pièce Jointe',
-      render: (row) => row.piece_jointe ? (
-        <span 
-          className="text-blue-700 hover:underline cursor-pointer font-medium"
-          onClick={() => handleFileClick('facture', row.piece_jointe)}
-        >
-          {row.piece_jointe}
+      render: (row) => (
+        <span>
+          {row.fournisseur?.code}/{row.fournisseur?.nom}
         </span>
-      ) : <span className="text-gray-500">-</span>
+      ),
     },
-    { 
-      key: 'montant', 
+    {
+      key: 'num_facture',
+      label: 'N° Facture',
+      render: (row) => <span>{row.num_facture}</span>,
+    },
+    {
+      key: 'decompte',
+      label: 'Décompte N°',
+      render: (row) => <span>{row.decompte?.numero || '-'}</span>,
+    },
+    {
+      key: 'piece_jointe',
+      label: 'Pièce Jointe',
+      render: (row) =>
+        row.piece_jointe ? (
+          <span
+            className="text-blue-700  cursor-pointer font-medium"
+            onClick={() => handleFileClick('facture', row.piece_jointe)}
+          >
+            {row.piece_jointe}
+          </span>
+        ) : (
+          <span className="text-gray-500">-</span>
+        ),
+    },
+    {
+      key: 'montant',
       label: 'Montant',
-      render: (row) => <span className="font-medium !text-green-600">{row.montant?.toLocaleString()} DH</span>
+      render: (row) => (
+        <span className="font-medium !text-green-600">
+          {row.montant?.toLocaleString()} DH
+        </span>
+      ),
     },
-    { 
-      key: 'date_paiement', 
+    {
+      key: 'date_paiement',
       label: 'Date Paiement',
-      render: (row) => <span>{format(new Date(row.date_paiement), 'dd/MM/yyyy')}</span>
+      render: (row) => (
+        <span>{format(new Date(row.date_paiement), 'dd/MM/yyyy')}</span>
+      ),
     },
-    { 
-      key: 'mode_paiement', 
+    {
+      key: 'mode_paiement',
       label: 'Mode Paiement',
       render: (row) => (
         <span className="px-2 py-1 bg-blue-100 !text-blue-800 rounded-full text-xs">
           {getModePaiementLabel(row.mode_paiement)}
         </span>
-      )
+      ),
     },
-    { 
-      key: 'pj_paiement', 
+    {
+      key: 'pj_paiement',
       label: 'PJ Paiement',
-      render: (row) => row.pj_paiement ? (
-        <span 
-          className="text-blue-700 hover:underline cursor-pointer font-medium"
-          onClick={() => handleFileClick('paiement', row.pj_paiement)}
-        >
-          {row.pj_paiement}
-        </span>
-      ) : <span className="text-gray-500">-</span>
+      render: (row) =>
+        row.pj_paiement ? (
+          <span
+            className="text-blue-700  cursor-pointer font-medium"
+            onClick={() => handleFileClick('paiement', row.pj_paiement)}
+          >
+            {row.pj_paiement}
+          </span>
+        ) : (
+          <span className="text-gray-500">-</span>
+        ),
     },
-    { 
-      key: 'actions', 
+    {
+      key: 'actions',
       label: 'Actions',
       render: (row) => (
         <div className="flex space-x-2">
           <button
             onClick={() => handleEditFacture(row.id)}
             title="Modifier"
-            className="p-1.5 bg-amber-100 text-amber-600 rounded-full hover:bg-amber-200"
+            className="flex items-center gap-1  text-yellow-500  hover:text-yellow-700"
           >
-            <Edit size={16} />
+            <PencilLine className="w-4 h-4" />
           </button>
           <button
             onClick={() => handleDeleteFacture(row.id)}
             title="Supprimer"
-            className="p-1.5 bg-red-200 !text-red-600 rounded-full hover:bg-red-200"
+            className="flex items-center gap-1  !text-red-500  hover:text-red-700"
           >
-            <Trash size={16} />
+            <Trash2 className="w-4 h-4" />
           </button>
         </div>
-      )
-    }
+      ),
+    },
   ];
 
   const exportColumns = [
@@ -296,66 +282,74 @@ const FacturesManager = ({ userRole, decompteId, montantDecompte, montantPaye })
     return true;
   };
 
-  const addButtonLink = queryDecompteId 
-    ? `/comptabilite/factures?action=add&decompteId=${queryDecompteId}&montantDecompte=${queryMontantDecompte}` 
+  const addButtonLink = queryDecompteId
+    ? `/comptabilite/factures?action=add&decompteId=${queryDecompteId}&montantDecompte=${queryMontantDecompte}`
     : '/comptabilite/factures?action=add';
 
   return (
-    <ProjectSelectorWrapper>
-      <div>
-        <Table
-          name_file_export="factures"
-          data_to_export={transformDataForExport()}
-          columns_export={exportColumns}
-          columns={columns}
-          data={data}
-          totalRows={totalRows}
-          loading={loading}
-          error={error}
-          emptyMessage="Aucune facture trouvée"
-          onPageChange={setPage}
-          onRowsPerPageChange={setRowsPerPage}
-          onSearchChange={setSearchTerm}
-          currentPage={page}
-          rowsPerPage={rowsPerPage}
-          enableExport={true}
-          addLink={showAddButton() ? addButtonLink : null}
-          filterComponent={<FacturesFilter onSubmit={handleFilterChange} initialValues={filterValues} />}
-        />
+    <div className="relative bg-white rounded-lg px-4 py-4">
+      <Table
+        showSearch={false}
+        name_file_export="factures"
+        data_to_export={transformDataForExport()}
+        columns_export={exportColumns}
+        columns={columns}
+        data={data}
+        totalRows={totalRows}
+        loading={loading}
+        error={error}
+        emptyMessage="Aucune facture trouvée"
+        onPageChange={setCurrentPage}
+        onRowsPerPageChange={setRowsPerPage}
+        onSearchChange={setSearchTerm}
+        currentPage={currentPage}
+        rowsPerPage={rowsPerPage}
+        enableExport={true}
+        addLink={showAddButton() ? addButtonLink : null}
+        filterComponent={
+          <FacturesFilter
+            onSubmit={handleFilterChange}
+            initialValues={filterValues}
+          />
+        }
+        // Convert 0-indexed to 1-indexed for display
+      />
 
-        {showFormModal && (
-          <Modal isVisible={true} onClose={() => {
+      {showFormModal && (
+        <Modal
+          isVisible={true}
+          onClose={() => {
             setShowFormModal(false);
             router.push('/comptabilite/factures');
-          }}>
-            <FacturesForm 
-              facture={currentFacture} 
-              decompteId={queryDecompteId || decompteId}
-              montantDecompte={queryMontantDecompte || montantDecompte}
-              onSave={handleFormSave}
-              onCancel={() => {
-                setShowFormModal(false);
-                router.push('/comptabilite/factures');
-              }}
-            />
-          </Modal>
-        )}
-        
-        {deleteModalOpen && factureToDelete && (
-          <DeleteConfirmationModal
-            isOpen={deleteModalOpen}
-            onClose={() => setDeleteModalOpen(false)}
-            entityName="FACTURES"
-            itemLabel={"Facture"}
-            entityId={factureToDelete.id}
-            onDeleted={() => {
-              setRefreshData(prev => !prev);
+          }}
+        >
+          <FacturesForm
+            facture={currentFacture}
+            decompteId={queryDecompteId || decompteId}
+            montantDecompte={queryMontantDecompte || montantDecompte}
+            onSave={handleFormSave}
+            onCancel={() => {
+              setShowFormModal(false);
               router.push('/comptabilite/factures');
             }}
           />
-        )}
-      </div>
-    </ProjectSelectorWrapper>
+        </Modal>
+      )}
+
+      {deleteModalOpen && factureToDelete && (
+        <DeleteConfirmationModal
+          isOpen={deleteModalOpen}
+          onClose={() => setDeleteModalOpen(false)}
+          entityName="FACTURES"
+          itemLabel={'Facture'}
+          entityId={factureToDelete.id}
+          onDeleted={() => {
+            setRefreshData((prev) => !prev);
+            router.push('/comptabilite/factures');
+          }}
+        />
+      )}
+    </div>
   );
 };
 
