@@ -6,7 +6,7 @@ import classNames from "classnames";
 
 export default function SelectInput({
   label,
-  placeholder = "Sélectionner",
+  placeholder = "Sélectionner" ,
   options = [],
   value,
   onChange = () => {},

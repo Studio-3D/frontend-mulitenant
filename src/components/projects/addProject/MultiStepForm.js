@@ -1,7 +1,5 @@
 'use client';
-import React, { useState } from 'react';
-import { Formik, Form } from 'formik';
-import * as Yup from 'yup';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ProjectTypeStep } from './steps/ProjectTypeStep';
 import { GeneralInfoStep } from './steps/GeneralInfoStep';
@@ -11,43 +9,14 @@ import toast from 'react-hot-toast';
 import { APIURL } from '@/configs/api';
 import { useAuth } from '@/context/AuthContext';
 
-// Validation schemas for each step
-const step1Validation = Yup.object().shape({
-  projectType: Yup.string().required('Project type is required'),
-  composition: Yup.object().shape({
-    bien: Yup.object().shape({
-      enabled: Yup.boolean(),
-      value: Yup.number().when('enabled', {
-        is: true,
-        then: Yup.number().min(1, 'Must be at least 1').required('Required'),
-      }),
-    }),
-  }),
-});
-
-const step2Validation = Yup.object().shape({
-  projectInfo: Yup.object().shape({
-    nomProjet: Yup.string().required('Project name is required'),
-    codeProjet: Yup.string().required('Project code is required'),
-    surfaceTerrain: Yup.number().min(0, 'Must be positive'),
-    prixAcquisition: Yup.number().min(0, 'Must be positive'),
-  }),
-});
-
-const step3Validation = Yup.object().shape({
-  parameters: Yup.object().shape({
-    utilisateursAcces: Yup.array()
-      .min(1, 'At least one user must have access')
-      .required('Required'),
-  }),
-});
-
-// Combine all validations
-const validationSchema = [step1Validation, step2Validation, step3Validation];
-
 export const MultiStepForm = () => {
   const { token } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
+  const [typeOptions, setTypeOptions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
 
   const initialValues = {
     projectType: '',
@@ -75,10 +44,11 @@ export const MultiStepForm = () => {
       vues: [],
       typologies: [],
       partenaires: [],
-      remise: '',
       utilisateursAcces: [],
     },
   };
+
+  const [formData, setFormData] = useState(initialValues);
 
   const steps = [
     { id: 1, name: 'Type de projet et Composition' },
@@ -86,31 +56,127 @@ export const MultiStepForm = () => {
     { id: 3, name: 'Parametres generaux' },
   ];
 
-  const next = () => setCurrentStep((prev) => Math.min(prev + 1, steps.length));
+  const next = () => {
+    // Validate current step before proceeding
+    if (validateStep(currentStep)) {
+      setCurrentStep((prev) => Math.min(prev + 1, steps.length));
+    }
+  };
+
   const prev = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
 
-  const handleSubmit = async (values, { setSubmitting, resetForm }) => {
+  const validateStep = (step) => {
+    const newErrors = {};
+    
+    if (step === 1) {
+      if (!formData.projectType) {
+        newErrors.projectType = 'Project type is required';
+      }
+      if (formData.composition.bien.enabled && !formData.composition.bien.value) {
+        newErrors.composition = {
+          bien: { value: 'Must be at least 1' }
+        };
+      }
+    }
+    
+    if (step === 2) {
+      if (!formData.projectInfo.nomProjet) {
+        newErrors.projectInfo = {
+          ...newErrors.projectInfo,
+          nomProjet: 'Project name is required'
+        };
+      }
+      if (!formData.projectInfo.codeProjet) {
+        newErrors.projectInfo = {
+          ...newErrors.projectInfo,
+          codeProjet: 'Project code is required'
+        };
+      }
+    }
+    
+    if (step === 3) {
+      if (formData.parameters.utilisateursAcces.length === 0) {
+        newErrors.parameters = {
+          utilisateursAcces: 'At least one user must have access'
+        };
+      }
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  useEffect(() => {
+    async function fetchTypeProjects() {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem("accessToken");
+        const response = await axios.get(APIURL.TYPEPROJETS, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        console.log("Type projects response:", response.data);
+        const typesData = response.data.typeProjets || [];
+        setTypeOptions(typesData);
+      } catch (error) {
+        console.error("Error fetching project types:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchTypeProjects();
+  }, []);
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
     const accessToken = token || localStorage.getItem("accessToken");
+    
     if (!accessToken) {
       toast.error('User not authenticated');
-      setSubmitting(false);
+      setIsSubmitting(false);
       return;
     }
 
     try {
-      const response = await axios.post(`${APIURL.PROJETS}`, values, {
+      const response = await axios.post(`${APIURL.PROJETS}`, formData, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
       
       toast.success('Project added successfully');
-      resetForm();
+      setFormData(initialValues);
       setCurrentStep(1);
     } catch (error) {
       console.error('Error submitting form:', error);
       toast.error(error.response?.data?.message || 'Failed to submit the form. Please try again.');
     } finally {
-      setSubmitting(false);
+      setIsSubmitting(false);
     }
+  };
+
+  const updateFormData = (field, value) => {
+    if (typeof field === 'string') {
+      // Handle nested paths like 'projectInfo.nomProjet'
+      const fields = field.split('.');
+      setFormData(prev => {
+        const newData = {...prev};
+        let current = newData;
+        
+        for (let i = 0; i < fields.length - 1; i++) {
+          current = current[fields[i]];
+        }
+        
+        current[fields[fields.length - 1]] = value;
+        return newData;
+      });
+    } else if (typeof field === 'object') {
+      // Handle direct object updates
+      setFormData(prev => ({ ...prev, ...field }));
+    }
+  };
+
+  const handleBlur = (field) => {
+    setTouched(prev => ({ ...prev, [field]: true }));
   };
 
   return (
@@ -119,51 +185,47 @@ export const MultiStepForm = () => {
         Ajouter un projets
       </h1>
       
-      <Formik
-        initialValues={initialValues}
-        validationSchema={validationSchema[currentStep - 1]}
-        onSubmit={handleSubmit}
-      >
-        {({ values, errors, touched, isSubmitting, setFieldValue }) => (
-          <Form>
-            <StepIndicator steps={steps} currentStep={currentStep} />
-            
-            <div className="mt-8">
-              {currentStep === 1 && (
-                <ProjectTypeStep
-                  formData={values}
-                  updateFormData={setFieldValue}
-                  onNext={next}
-                  errors={errors}
-                  touched={touched}
-                />
-              )}
-              
-              {currentStep === 2 && (
-                <GeneralInfoStep
-                  formData={values}
-                  updateFormData={setFieldValue}
-                  onNext={next}
-                  onPrevious={prev}
-                  errors={errors}
-                  touched={touched}
-                />
-              )}
-              
-              {currentStep === 3 && (
-                <GeneralParametersStep
-                  formData={values}
-                  updateFormData={setFieldValue}
-                  onPrevious={prev}
-                  isSubmitting={isSubmitting}
-                  errors={errors}
-                  touched={touched}
-                />
-              )}
-            </div>
-          </Form>
-        )}
-      </Formik>
+      <div>
+        <StepIndicator steps={steps} currentStep={currentStep} />
+        
+        <div className="mt-8">
+          {currentStep === 1 && (
+            <ProjectTypeStep
+              formData={formData}
+              updateFormData={updateFormData}
+              onNext={next}
+              errors={errors}
+              touched={touched}
+              typeOptions={typeOptions}
+              loading={loading}
+            />
+          )}
+          
+          {currentStep === 2 && (
+            <GeneralInfoStep
+              formData={formData}
+              updateFormData={updateFormData}
+              onNext={next}
+              onPrevious={prev}
+              errors={errors}
+              touched={touched}
+              handleBlur={handleBlur}
+            />
+          )}
+          
+          {currentStep === 3 && (
+            <GeneralParametersStep
+              formData={formData}
+              updateFormData={updateFormData}
+              onPrevious={prev}
+              onSubmit={handleSubmit}
+              isSubmitting={isSubmitting}
+              errors={errors}
+              touched={touched}
+            />
+          )}
+        </div>
+      </div>
     </div>
   );
 };

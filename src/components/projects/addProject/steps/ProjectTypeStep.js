@@ -1,21 +1,45 @@
-import React, { useState } from 'react';
-import {
-  PlusIcon,
-  CheckIcon,
-  LayersIcon,
-  GridIcon,
-  BuildingIcon,
-  HomeIcon,
-} from 'lucide-react';
-
-export const ProjectTypeStep = ({ formData, updateFormData, onNext }) => {
+'use client';
+import React, { useState, useEffect } from 'react';
+import {PlusIcon,CheckIcon,LayersIcon,GridIcon,BuildingIcon,HomeIcon,} from 'lucide-react';
+import toast from 'react-hot-toast';
+import SelectInput from '@/components/SelectInput';
+export const ProjectTypeStep = ({ 
+  formData, 
+  updateFormData, 
+  onNext,
+  errors,
+  touched,
+  typeOptions = [],
+  loading = false
+}) => {
   const [showNewTypeInput, setShowNewTypeInput] = useState(false);
   const [newType, setNewType] = useState('');
-  const [projectTypes, setProjectTypes] = useState([
-    'Type A',
-    'Type B',
-    'Type C',
-  ]);
+  const [localProjectTypes, setLocalProjectTypes] = useState([]);
+
+  const safeTrim = (str) => {
+    if (typeof str === 'string') {
+      return str.replace(/^\s+|\s+$/g, '');
+    }
+    return '';
+  };
+
+  useEffect(() => {
+    const storedTypes = localStorage.getItem('localProjectTypes');
+    if (storedTypes) {
+      setLocalProjectTypes(JSON.parse(storedTypes));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (localProjectTypes.length > 0) {
+      localStorage.setItem('localProjectTypes', JSON.stringify(localProjectTypes));
+    }
+  }, [localProjectTypes]);
+
+  const projectTypes = [
+    ...typeOptions.map(type => type.type),
+    ...localProjectTypes
+  ];
 
   const handleCompositionChange = (field, value) => {
     const numValue = parseInt(value) || 0;
@@ -24,82 +48,100 @@ export const ProjectTypeStep = ({ formData, updateFormData, onNext }) => {
         ...formData.composition,
         [field]: {
           ...formData.composition[field],
-          value: numValue,
-        },
-      },
+          value: numValue
+        }
+      }
     });
   };
 
   const handleCompositionToggle = (field) => {
+    const currentValue = formData.composition[field].enabled;
     updateFormData({
       composition: {
         ...formData.composition,
         [field]: {
           ...formData.composition[field],
-          enabled: !formData.composition[field].enabled,
-        },
-      },
+          enabled: !currentValue,
+          value: currentValue ? 0 : formData.composition[field].value
+        }
+      }
     });
   };
 
   const handleAddNewType = () => {
-    if (newType.trim()) {
-      setProjectTypes((prev) => [...prev, newType.trim()]);
-      updateFormData({
-        projectType: newType.trim(),
-      });
+    const trimmedType = safeTrim(newType);
+    if (trimmedType) {
+      setLocalProjectTypes((prev) => [...prev, trimmedType]);
+      updateFormData('projectType', trimmedType);
+      toast.success('Nouveau type ajouté avec succès !');
       setNewType('');
       setShowNewTypeInput(false);
+    } else {
+      toast.error('Veuillez entrer un nom de type valide.');
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <div className=" space-y-4">
+      <div className="space-y-4">
         <div className="flex items-end gap-4">
           <div className="flex flex-col mt-10">
             <label htmlFor="projectType" className="block text-lg font-medium text-gray-700 mb-1">
               Type de projet
             </label>
             {showNewTypeInput ? (
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  id="newProjectType"
-                  value={newType}
-                  onChange={(e) => setNewType(e.target.value)}
-                  className="block w-[600px] rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2"
-                  placeholder="Nouveau type"
-                />
-                <button
-                  type="button"
-                  onClick={handleAddNewType}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-                >
-                  Ajouter
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowNewTypeInput(false)}
-                  className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300"
-                >
-                  Annuler
-                </button>
+              <div className="flex flex-col gap-2">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    id="newProjectType"
+                    value={newType}
+                    onChange={(e) => setNewType(e.target.value)}
+                    className="block w-[600px] rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2"
+                    placeholder="Nouveau type"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddNewType}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                  >
+                    Ajouter
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowNewTypeInput(false)}
+                    className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300"
+                  >
+                    Annuler
+                  </button>
+                </div>
               </div>
             ) : (
-              <select
-                id="projectType"
-                value={formData.projectType}
-                onChange={(e) => updateFormData({ projectType: e.target.value })}
-                className="block w-[600px] rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2"
-              >
-                <option value="">Sélectionnez un type</option>
-                {projectTypes.map((type, index) => (
-                  <option key={index} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
+              <div>
+                <SelectInput 
+                  id="projectType"
+                  name="projectType"
+                  value={formData.projectType}  // Just pass the value directly
+                  onChange={(selectedOption) => updateFormData('projectType', selectedOption)}
+                  options={[
+                    { value: '', label: 'Sélectionnez un type' },
+                    ...projectTypes.map(type => ({ value: type, label: type }))
+                  ]}
+                  width="w-[600px]"  // Use the width prop instead of className
+                  error={touched.projectType && errors.projectType}
+                />
+                {errors.projectType && touched.projectType && (
+                  <div className="text-red-500 text-sm mt-1">{errors.projectType}</div>
+                )}
+              </div>
             )}
           </div>
           {!showNewTypeInput && (
@@ -116,16 +158,20 @@ export const ProjectTypeStep = ({ formData, updateFormData, onNext }) => {
       </div>
 
       <div className="space-y-4">
-        <h3 className="text-lg font-medium text-gray-800  mt-14">Composition de projet</h3>
+        <h3 className="text-lg font-medium text-gray-800 mt-14">Composition de projet</h3>
+        {errors.composition?.bien?.value && touched.composition?.bien?.value && (
+          <div className="text-red-500 text-sm">
+            {errors.composition.bien.value}
+          </div>
+        )}
         <div className="flex flex-wrap gap-4">
-          {/* Tranche */}
-          <div className={`flex-1 border rounded-md p-4  h-[30vh] ${formData.composition.tranche.enabled ? 'bg-white' : 'bg-gray-50'}`}>
+          <div className={`flex-1 border rounded-md p-4 h-[30vh] ${formData.composition.tranche.enabled ? 'bg-white' : 'bg-gray-50'}`}>
             <div className="flex flex-col items-center text-center mb-3">
               <LayersIcon size={32} className="text-blue-500 mb-2" />
               <h4 className="font-medium">Tranche</h4>
               <p className="text-xs text-gray-500 mt-6">Ce projet se compose des tranches</p>
             </div>
-            <div className="flex items-center gap-3 mb-3 justify-center ">
+            <div className="flex items-center gap-3 mb-3 justify-center">
               <div
                 onClick={() => handleCompositionToggle('tranche')}
                 className={`w-5 h-5 border rounded flex items-center justify-center cursor-pointer ${formData.composition.tranche.enabled ? 'bg-blue-600 border-blue-600' : 'border-gray-300'}`}
@@ -139,6 +185,7 @@ export const ProjectTypeStep = ({ formData, updateFormData, onNext }) => {
             <input
               type="number"
               id="tranche"
+              name="composition.tranche.value"
               min="0"
               disabled={!formData.composition.tranche.enabled}
               value={formData.composition.tranche.value || ''}
@@ -147,7 +194,6 @@ export const ProjectTypeStep = ({ formData, updateFormData, onNext }) => {
             />
           </div>
 
-          {/* Blocs */}
           <div className={`flex-1 border rounded-md p-4 ${formData.composition.blocs.enabled ? 'bg-white' : 'bg-gray-50'}`}>
             <div className="flex flex-col items-center text-center mb-3">
               <GridIcon size={32} className="text-blue-500 mb-2" />
@@ -168,6 +214,7 @@ export const ProjectTypeStep = ({ formData, updateFormData, onNext }) => {
             <input
               type="number"
               id="blocs"
+              name="composition.blocs.value"
               min="0"
               disabled={!formData.composition.blocs.enabled}
               value={formData.composition.blocs.value || ''}
@@ -176,7 +223,6 @@ export const ProjectTypeStep = ({ formData, updateFormData, onNext }) => {
             />
           </div>
 
-          {/* Immeuble */}
           <div className={`flex-1 border rounded-md p-4 ${formData.composition.immeuble.enabled ? 'bg-white' : 'bg-gray-50'}`}>
             <div className="flex flex-col items-center text-center mb-3">
               <BuildingIcon size={32} className="text-blue-500 mb-2" />
@@ -197,6 +243,7 @@ export const ProjectTypeStep = ({ formData, updateFormData, onNext }) => {
             <input
               type="number"
               id="immeuble"
+              name="composition.immeuble.value"
               min="0"
               disabled={!formData.composition.immeuble.enabled}
               value={formData.composition.immeuble.value || ''}
@@ -205,7 +252,6 @@ export const ProjectTypeStep = ({ formData, updateFormData, onNext }) => {
             />
           </div>
 
-          {/* Bien */}
           <div className={`flex-1 border rounded-md p-4 ${formData.composition.bien.enabled ? 'bg-white' : 'bg-gray-50'}`}>
             <div className="flex flex-col items-center text-center mb-3">
               <HomeIcon size={32} className="text-blue-500 mb-2" />
@@ -226,6 +272,7 @@ export const ProjectTypeStep = ({ formData, updateFormData, onNext }) => {
             <input
               type="number"
               id="bien"
+              name="composition.bien.value"
               min="0"
               disabled={!formData.composition.bien.enabled}
               value={formData.composition.bien.value || ''}
@@ -240,7 +287,10 @@ export const ProjectTypeStep = ({ formData, updateFormData, onNext }) => {
         <button
           type="button"
           onClick={onNext}
-          className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
+          disabled={!formData.projectType || (formData.composition.bien.enabled && !formData.composition.bien.value)}
+          className={`bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 ${
+            (!formData.projectType || (formData.composition.bien.enabled && !formData.composition.bien.value)) ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
         >
           Suivant
         </button>

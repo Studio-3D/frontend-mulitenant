@@ -1,13 +1,19 @@
 import React, { useState } from 'react';
 import { PlusIcon, XIcon } from 'lucide-react';
 
-export const GeneralParametersStep = ({ formData, updateFormData, onPrevious }) => {
+export const GeneralParametersStep = ({ 
+  formData, 
+  updateFormData, 
+  onPrevious,
+  onSubmit,
+  isSubmitting,
+  errors,
+  touched
+}) => {
   const [inputValues, setInputValues] = useState({
     typesDeBien: '',
     vues: '',
     typologies: '',
-    partenaires: '',
-    remise: '',
   });
   
   const [selectedUser, setSelectedUser] = useState('');
@@ -16,7 +22,6 @@ export const GeneralParametersStep = ({ formData, updateFormData, onPrevious }) 
     remise: '',
   });
 
-  // Mock users data
   const availableUsers = [
     { id: '1', name: 'Jean Dupont' },
     { id: '2', name: 'Marie Martin' },
@@ -27,12 +32,10 @@ export const GeneralParametersStep = ({ formData, updateFormData, onPrevious }) 
 
   const handleAddItem = (field) => {
     if (inputValues[field].trim()) {
-      updateFormData({
-        parameters: {
-          ...formData.parameters,
-          [field]: [...formData.parameters[field], inputValues[field].trim()],
-        },
-      });
+      updateFormData(`parameters.${field}`, [
+        ...formData.parameters[field],
+        inputValues[field].trim()
+      ]);
       setInputValues({ ...inputValues, [field]: '' });
     }
   };
@@ -43,51 +46,29 @@ export const GeneralParametersStep = ({ formData, updateFormData, onPrevious }) 
         nom: partenaireInputs.nom.trim(),
         remise: partenaireInputs.remise || '0',
       };
-      updateFormData({
-        parameters: {
-          ...formData.parameters,
-          partenaires: [...formData.parameters.partenaires, newPartenaire],
-        },
-      });
+      updateFormData(`parameters.partenaires`, [
+        ...formData.parameters.partenaires,
+        newPartenaire
+      ]);
       setPartenaireInputs({ nom: '', remise: '' });
     }
   };
 
   const handleRemoveItem = (field, index) => {
-    updateFormData({
-      parameters: {
-        ...formData.parameters,
-        [field]: formData.parameters[field].filter((_, i) => i !== index),
-      },
-    });
+    const newItems = formData.parameters[field].filter((_, i) => i !== index);
+    updateFormData(`parameters.${field}`, newItems);
   };
 
   const handleAddUser = () => {
     if (selectedUser && !formData.parameters.utilisateursAcces.includes(selectedUser)) {
-      updateFormData({
-        parameters: {
-          ...formData.parameters,
-          utilisateursAcces: [...formData.parameters.utilisateursAcces, selectedUser],
-        },
-      });
+      updateFormData(`parameters.utilisateursAcces`, [
+        ...formData.parameters.utilisateursAcces,
+        selectedUser
+      ]);
       setSelectedUser('');
     }
   };
-
-  const handleRemiseChange = (value) => {
-    updateFormData({
-      parameters: {
-        ...formData.parameters,
-        remise: value,
-      },
-    });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Form submitted:', formData);
-  };
-
+  
   const renderParameterField = (field, label, isOptional = true) => {
     return (
       <div className="space-y-3 mb-6">
@@ -200,7 +181,9 @@ export const GeneralParametersStep = ({ formData, updateFormData, onPrevious }) 
                 <select
                   value={selectedUser}
                   onChange={(e) => setSelectedUser(e.target.value)}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2"
+                  className={`block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2 ${
+                    errors.parameters?.utilisateursAcces && touched.parameters?.utilisateursAcces ? 'border-red-500' : ''
+                  }`}
                 >
                   <option value="">Sélectionnez un utilisateur</option>
                   {availableUsers.map((user) => (
@@ -217,6 +200,11 @@ export const GeneralParametersStep = ({ formData, updateFormData, onPrevious }) 
                   <PlusIcon size={20} />
                 </button>
               </div>
+              {errors.parameters?.utilisateursAcces && touched.parameters?.utilisateursAcces && (
+                <div className="text-red-500 text-sm mt-1">
+                  {errors.parameters.utilisateursAcces}
+                </div>
+              )}
               {formData.parameters.utilisateursAcces.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-2">
                   {formData.parameters.utilisateursAcces.map((user, index) => (
@@ -246,11 +234,11 @@ export const GeneralParametersStep = ({ formData, updateFormData, onPrevious }) 
           Précédent
         </button>
         <button
-          type="button"
-          onClick={handleSubmit}
-          className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700"
+          type="submit"
+          disabled={isSubmitting}
+          className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 disabled:bg-green-300"
         >
-          Soumettre
+          {isSubmitting ? 'Ajout en cours...' : 'Ajouter le projet'}
         </button>
       </div>
     </div>
