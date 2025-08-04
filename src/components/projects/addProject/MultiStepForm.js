@@ -9,6 +9,7 @@ import toast from 'react-hot-toast';
 import { APIURL } from '@/configs/api';
 import { useAuth } from '@/context/AuthContext';
 
+
 export const MultiStepForm = () => {
   const { token } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
@@ -17,6 +18,8 @@ export const MultiStepForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
+  const [users, setUsers] = useState([]);
+  const [fetchingUsers, setFetchingUsers] = useState(false);
 
   const initialValues = {
     projectType: '',
@@ -105,7 +108,38 @@ export const MultiStepForm = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+  // fetch users
+    useEffect(() => {
+    async function fetchUsers() {
+      setFetchingUsers(true)
+      try {
+        const token = localStorage.getItem("accessToken")
+        const response = await axios.get(`${APIURL.ROOT}/get_users`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
 
+        console.log("API response for users:", response.data)
+
+        const fetchedUsers = response.data.users || []
+
+        const newUsers = fetchedUsers.map((user, index) => ({
+    ...user,
+    localId: index + 1, // uniquement pour clé React
+  }))
+  setUsers(newUsers)
+        console.log("Created user ID mapping:", newUsers) // Affiche bien les users avec localId
+
+      } catch (error) {
+        console.error("Error fetching users:", error)
+      } finally {
+        setFetchingUsers(false)
+      }
+    }
+
+    fetchUsers()
+  }, [])
+
+  // Fetch project types on component mount
   useEffect(() => {
     async function fetchTypeProjects() {
       setLoading(true);
@@ -222,6 +256,8 @@ export const MultiStepForm = () => {
               isSubmitting={isSubmitting}
               errors={errors}
               touched={touched}
+              users={users}
+              fetchingUsers={fetchingUsers}
             />
           )}
         </div>

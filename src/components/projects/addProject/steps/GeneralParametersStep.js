@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { PlusIcon, XIcon } from 'lucide-react';
+import SelectInput from '@/components/SelectInput';
 
 export const GeneralParametersStep = ({ 
   formData, 
@@ -8,7 +9,9 @@ export const GeneralParametersStep = ({
   onSubmit,
   isSubmitting,
   errors,
-  touched
+  touched,
+  users,
+  fetchingUsers
 }) => {
   const [inputValues, setInputValues] = useState({
     typesDeBien: '',
@@ -22,14 +25,7 @@ export const GeneralParametersStep = ({
     remise: '',
   });
 
-  const availableUsers = [
-    { id: '1', name: 'Jean Dupont' },
-    { id: '2', name: 'Marie Martin' },
-    { id: '3', name: 'Pierre Durand' },
-    { id: '4', name: 'Sophie Lefebvre' },
-    { id: '5', name: 'Thomas Bernard' },
-  ];
-
+ 
   const handleAddItem = (field) => {
     if (inputValues[field].trim()) {
       updateFormData(`parameters.${field}`, [
@@ -178,20 +174,19 @@ export const GeneralParametersStep = ({
                 Utilisateurs avec accès au projet <span className="text-red-500">*</span>
               </label>
               <div className="flex gap-2">
-                <select
+                <SelectInput
+                  label=""
+                  placeholder="Sélectionnez un utilisateur"
+                  options={users.map(user => ({
+                    value: user.id.toString(),
+                    label: `${user.prenom} ${user.name}`
+                  }))}
                   value={selectedUser}
-                  onChange={(e) => setSelectedUser(e.target.value)}
-                  className={`block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2 ${
-                    errors.parameters?.utilisateursAcces && touched.parameters?.utilisateursAcces ? 'border-red-500' : ''
-                  }`}
-                >
-                  <option value="">Sélectionnez un utilisateur</option>
-                  {availableUsers.map((user) => (
-                    <option key={user.id} value={user.name}>
-                      {user.name}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(value) => setSelectedUser(value)}
+                  error={errors.parameters?.utilisateursAcces && touched.parameters?.utilisateursAcces ? 
+                        errors.parameters.utilisateursAcces : null}
+                  submitted={touched.parameters?.utilisateursAcces}
+                />
                 <button
                   type="button"
                   onClick={handleAddUser}
