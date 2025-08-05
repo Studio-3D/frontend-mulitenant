@@ -19,13 +19,11 @@ export const GeneralParametersStep = ({
     typologies: '',
   });
   
-  const [selectedUser, setSelectedUser] = useState('');
   const [partenaireInputs, setPartenaireInputs] = useState({
     nom: '',
     remise: '',
   });
 
- 
   const handleAddItem = (field) => {
     if (inputValues[field].trim()) {
       updateFormData(`parameters.${field}`, [
@@ -55,16 +53,27 @@ export const GeneralParametersStep = ({
     updateFormData(`parameters.${field}`, newItems);
   };
 
-  const handleAddUser = () => {
-    if (selectedUser && !formData.parameters.utilisateursAcces.includes(selectedUser)) {
-      updateFormData(`parameters.utilisateursAcces`, [
-        ...formData.parameters.utilisateursAcces,
-        selectedUser
-      ]);
-      setSelectedUser('');
-    }
+  const handleUserSelection = (selectedOptions) => {
+    // Handle both single and multi-select cases
+    const selectedUsers = Array.isArray(selectedOptions) 
+      ? selectedOptions.map(opt => opt.value)
+      : selectedOptions 
+        ? [selectedOptions.value]
+        : [];
+    
+    updateFormData(`parameters.utilisateursAcces`, selectedUsers);
   };
-  
+
+  const selectedUserOptions = formData.parameters.utilisateursAcces
+    .map(userId => {
+      const user = users.find(u => u.id.toString() === userId);
+      return user ? { 
+        value: user.id.toString(), 
+        label: `${user.prenom} ${user.name}` 
+      } : null;
+    })
+    .filter(Boolean);
+
   const renderParameterField = (field, label, isOptional = true) => {
     return (
       <div className="space-y-3 mb-6">
@@ -173,47 +182,29 @@ export const GeneralParametersStep = ({
               <label className="block text-sm font-medium text-gray-700">
                 Utilisateurs avec accès au projet <span className="text-red-500">*</span>
               </label>
-              <div className="flex gap-2">
-                <SelectInput
-                  label=""
-                  placeholder="Sélectionnez un utilisateur"
-                  options={users.map(user => ({
-                    value: user.id.toString(),
-                    label: `${user.prenom} ${user.name}`
-                  }))}
-                  value={selectedUser}
-                  onChange={(value) => setSelectedUser(value)}
-                  error={errors.parameters?.utilisateursAcces && touched.parameters?.utilisateursAcces ? 
-                        errors.parameters.utilisateursAcces : null}
-                  submitted={touched.parameters?.utilisateursAcces}
-                />
-                <button
-                  type="button"
-                  onClick={handleAddUser}
-                  className="bg-gray-100 hover:bg-gray-200 text-gray-800 p-2 rounded-md"
-                >
-                  <PlusIcon size={20} />
-                </button>
-              </div>
+              <SelectInput
+                isMulti
+                placeholder="Sélectionnez des utilisateurs"
+                options={users.map(user => ({
+                  value: user.id.toString(),
+                  label: `${user.prenom} ${user.name}`
+                }))}
+                value={formData.parameters.utilisateursAcces}
+                onChange={(selectedValues) => updateFormData(`parameters.utilisateursAcces`, selectedValues)}
+                error={errors.parameters?.utilisateursAcces && touched.parameters?.utilisateursAcces ? 
+                      errors.parameters.utilisateursAcces : null}
+                submitted={touched.parameters?.utilisateursAcces}
+              />
               {errors.parameters?.utilisateursAcces && touched.parameters?.utilisateursAcces && (
                 <div className="text-red-500 text-sm mt-1">
                   {errors.parameters.utilisateursAcces}
                 </div>
               )}
               {formData.parameters.utilisateursAcces.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {formData.parameters.utilisateursAcces.map((user, index) => (
-                    <div key={index} className="flex items-center bg-gray-100 rounded-md px-3 py-1">
-                      <span>{user}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveItem('utilisateursAcces', index)}
-                        className="ml-2 text-gray-500 hover:text-gray-700"
-                      >
-                        <XIcon size={14} />
-                      </button>
-                    </div>
-                  ))}
+                <div className="mt-2">
+                  <p className="text-sm text-gray-500">
+                    {formData.parameters.utilisateursAcces.length} utilisateur(s) sélectionné(s)
+                  </p>
                 </div>
               )}
             </div>
@@ -229,16 +220,33 @@ export const GeneralParametersStep = ({
           Précédent
         </button>
         <button
-  type="button"  // Changed from type="submit" to type="button"
-  onClick={(e) => {
-    e.preventDefault();
-    onSubmit();
-  }}
-  disabled={isSubmitting}
-  className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 disabled:bg-green-300"
->
-  {isSubmitting ? 'Ajout en cours...' : 'Ajouter le projet'}
-</button>
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            if (formData.parameters.utilisateursAcces.length === 0) {
+              setErrors(prev => ({
+                ...prev,
+                parameters: {
+                  ...prev.parameters,
+                  utilisateursAcces: 'Veuillez sélectionner au moins un utilisateur'
+                }
+              }));
+              setTouched(prev => ({
+                ...prev,
+                parameters: {
+                  ...prev.parameters,
+                  utilisateursAcces: true
+                }
+              }));
+              return;
+            }
+            onSubmit();
+          }}
+          disabled={isSubmitting}
+          className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 disabled:bg-green-300"
+        >
+          {isSubmitting ? 'Ajout en cours...' : 'Ajouter le projet'}
+        </button>
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ import { StepIndicator } from './StepIndicator';
 import toast from 'react-hot-toast';
 import { APIURL } from '@/configs/api';
 import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
 
 
 export const MultiStepForm = () => {
@@ -20,6 +21,7 @@ export const MultiStepForm = () => {
   const [touched, setTouched] = useState({});
   const [users, setUsers] = useState([]);
   const [fetchingUsers, setFetchingUsers] = useState(false);
+  const router = useRouter();
 
   const initialValues = {
     projectType: '',
@@ -231,7 +233,7 @@ export const MultiStepForm = () => {
     });
     
     toast.success('Project added successfully');
-
+    router.push("/Projets");
     setFormData(initialValues);
     setCurrentStep(1);
   } catch (error) {
