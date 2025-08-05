@@ -35,25 +35,40 @@ const Page = () => {
   const [filters, setFilters] = useState(INITIAL_FILTERS);
   const [tempFilters, setTempFilters] = useState(INITIAL_FILTERS);
 
-  const filteredProjets = useMemo(() => {
-    if (!projects) return [];
-    return projects.filter(projet => {
-      return (
-        projet.nom?.toLowerCase().includes(filters.nom.toLowerCase()) &&
-        projet.code?.toLowerCase().includes(filters.code.toLowerCase()) &&
-        (filters.type === '' || projet.type_projet?.type === filters.type) &&
-        projet.adresse?.toLowerCase().includes(filters.adresse.toLowerCase()) &&
-        (filters.date === '' || new Date(projet.created_at).toLocaleDateString('fr-FR').includes(filters.date))
-      );
-    }).map(projet => ({
-      id: projet.id,
-      nom: projet.nom || 'Sans nom',
-      code: projet.code || '',
-      type: projet.type_projet?.type || '',
-      adresse: projet.adresse || '',
-      date: new Date(projet.created_at).toLocaleDateString('fr-FR') || '',
-    }));
-  }, [projects, filters]);
+  const formatDate = (dateString) => {
+  if (!dateString) return 'N/A';
+  try {
+    const date = new Date(dateString);
+    return isNaN(date.getTime()) ? 'N/A' : date.toLocaleDateString('fr-FR');
+  } catch {
+    return 'N/A';
+  }
+};
+
+const filteredProjets = useMemo(() => {
+  if (!projects) return [];
+  return projects.filter(projet => {
+    const projetType = projet.type_projet?.type || '';
+    const projetDate = formatDate(projet.created_at);
+    
+    return (
+      (projet.nom || '').toLowerCase().includes(filters.nom.toLowerCase()) &&
+      (projet.code || '').toLowerCase().includes(filters.code.toLowerCase()) &&
+      (filters.type === '' || projetType.toLowerCase().includes(filters.type.toLowerCase())) &&
+      (projet.adresse || '').toLowerCase().includes(filters.adresse.toLowerCase()) &&
+      (filters.date === '' || projetDate.includes(filters.date))
+    );
+  }).map(projet => ({
+    ...projet,
+    nom: projet.nom || 'Sans nom',
+    code: projet.code || '',
+    type: projet.type_projet?.type || 'Non spécifié',
+    adresse: projet.adresse || '',
+    date: formatDate(projet.created_at),
+    formatted_type: projet.type_projet?.type || 'Non spécifié',
+    formatted_date: formatDate(projet.created_at)
+  }));
+}, [projects, filters]);
 
   const dataToExport = useMemo(() => {
   return filteredProjets.map((projet) => ({
@@ -102,7 +117,7 @@ const Page = () => {
         headers: { Authorization: `Bearer ${accessToken}` },
         params
       })
-      
+      console.log("API Response:", response.data);
       if (response.data?.projets) {
         setProjects(response.data.projets)
         setTotalRows(response.data.total || response.data.pagination?.totalItems || 0)
@@ -139,6 +154,7 @@ const Page = () => {
     setShowDeleteModal(true);
   };
 
+
   // Table Columns
   const columns = [
     { key: 'nom', label: 'Nom du projet' },
@@ -152,7 +168,7 @@ const Page = () => {
     { 
       key: 'created_at', 
       label: 'Date création',
-      render: (row) => new Date(row.created_at).toLocaleDateString('fr-FR')
+      render: (row) => formatDate(row.created_at)
     },
     { 
       key: "actions", 
@@ -170,7 +186,7 @@ const Page = () => {
           {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
             <>
               <Link
-                href={`/Projets/${row.id}?edit=true`}
+                href={`/Projets/editProject/${row.id}?edit=true`}
                 className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
                 title="Modifier le projet"
               >
