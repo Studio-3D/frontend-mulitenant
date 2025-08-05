@@ -73,8 +73,10 @@ export const MultiStepForm = () => {
     
     if (step === 1) {
       if (!formData.projectType) {
-        newErrors.projectType = 'Project type is required';
-      }
+      newErrors.projectType = 'Project type is required';
+    } else if (isNaN(Number(formData.projectType))) {
+      newErrors.projectType = 'Invalid project type selected';
+    }
       if (formData.composition.bien.enabled && !formData.composition.bien.value) {
         newErrors.composition = {
           bien: { value: 'Must be at least 1' }
@@ -140,53 +142,115 @@ export const MultiStepForm = () => {
   }, [])
 
   // Fetch project types on component mount
-  useEffect(() => {
-    async function fetchTypeProjects() {
-      setLoading(true);
-      try {
-        const token = localStorage.getItem("accessToken");
-        const response = await axios.get(APIURL.TYPEPROJETS, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        console.log("Type projects response:", response.data);
-        const typesData = response.data.typeProjets || [];
-        setTypeOptions(typesData);
-      } catch (error) {
-        console.error("Error fetching project types:", error);
-      } finally {
-        setLoading(false);
-      }
+    // Fetch project types
+  const fetchTypeProjects = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await axios.get(APIURL.TYPEPROJETS, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setTypeOptions(response.data.typeProjets || []);
+    } catch (error) {
+      console.error("Error fetching project types:", error);
+      toast.error("Failed to load project types");
+    } finally {
+      setLoading(false);
     }
+  };
+        // Add new project type
+  const handleAddNewType = async (typeName) => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await axios.post(
+        APIURL.TYPEPROJETS,
+        { type: typeName },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      
+      if (response.data?.typeProjet) {
+        await fetchTypeProjects();
+        return response.data.typeProjet;
+      }
+    } catch (error) {
+      console.error("Error adding project type:", error);
+      throw error;
+    }
+  };
 
+  useEffect(() => {
     fetchTypeProjects();
   }, []);
 
-  const handleSubmit = async () => {
-    setIsSubmitting(true);
-    const accessToken = token || localStorage.getItem("accessToken");
-    
-    if (!accessToken) {
-      toast.error('User not authenticated');
-      setIsSubmitting(false);
-      return;
-    }
+  // function to submit the form
+ const handleSubmit = async () => {
+  setIsSubmitting(true);
+  const accessToken = token || localStorage.getItem("accessToken");
+  
+  if (!accessToken) {
+    toast.error('User not authenticated');
+    setIsSubmitting(false);
+    return;
+  }
 
-    try {
-      const response = await axios.post(`${APIURL.PROJETS}`, formData, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-      
-      toast.success('Project added successfully');
-      setFormData(initialValues);
-      setCurrentStep(1);
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      toast.error(error.response?.data?.message || 'Failed to submit the form. Please try again.');
-    } finally {
-      setIsSubmitting(false);
+  try {
+    // Transform data to match backend structure
+    const payload = {
+      nom: formData.projectInfo.nomProjet,
+      code: formData.projectInfo.codeProjet,
+      adresse: formData.projectInfo.adresse,
+      date_autorisation_construction: formData.projectInfo.dateAutorisationConstruction,
+      date_permis_habiter: formData.projectInfo.datePermisHabiter,
+      titre_foncier: formData.projectInfo.titreFoncier,
+      surface_terrain: formData.projectInfo.surfaceTerrain,
+      prix_acquisition: formData.projectInfo.prixAcquisition,
+      limite_annulation_reservation: formData.projectInfo.limiteAnnulationReservation,
+      type_id: Number(formData.projectType), // Make sure this matches your type ID
+      prolongation_reservation: formData.projectInfo.prolongationReservation || 0,
+      nbre_tranches: formData.composition.tranche.enabled ? formData.composition.tranche.value : 0,
+      nbre_blocs: formData.composition.blocs.enabled ? formData.composition.blocs.value : 0,
+      nbre_immeubles: formData.composition.immeuble.enabled ? formData.composition.immeuble.value : 0,
+      max_etages: formData.projectInfo.nombreEtagesMaximum,
+      nbre_biens: formData.composition.bien.enabled ? formData.composition.bien.value : 0,
+      donneesTypeBien: JSON.stringify(formData.parameters.typesDeBien),
+      donneesVue: JSON.stringify(formData.parameters.vues),
+      donneesTypologie: JSON.stringify(formData.parameters.typologies),
+      partenaires: JSON.stringify(formData.parameters.partenaires),
+      selectedUsers: JSON.stringify(formData.parameters.utilisateursAcces)
+    };
+
+    console.log("Submitting payload:", payload); // Debug log
+
+    const response = await axios.post(`${APIURL.PROJETS}`, payload, {
+      headers: { 
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+    });
+    
+    toast.success('Project added successfully');
+
+    setFormData(initialValues);
+    setCurrentStep(1);
+  } catch (error) {
+    console.error('Error submitting form:', error);
+    let errorMessage = 'Failed to submit the form. Please try again.';
+    
+    if (error.response) {
+      if (error.response.data && error.response.data.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response.data && error.response.data.errors) {
+        errorMessage = Object.values(error.response.data.errors).join('\n');
+      }
     }
-  };
+    
+    toast.error(errorMessage);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const updateFormData = (field, value) => {
     if (typeof field === 'string') {
@@ -218,7 +282,10 @@ export const MultiStepForm = () => {
       <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">
         Ajouter un projets
       </h1>
-      
+      <form onSubmit={(e) => {
+          e.preventDefault();
+          handleSubmit();
+        }}>
       <div>
         <StepIndicator steps={steps} currentStep={currentStep} />
         
@@ -232,6 +299,7 @@ export const MultiStepForm = () => {
               touched={touched}
               typeOptions={typeOptions}
               loading={loading}
+              onAddNewType={handleAddNewType}
             />
           )}
           
@@ -262,6 +330,7 @@ export const MultiStepForm = () => {
           )}
         </div>
       </div>
+      </form>
     </div>
   );
 };

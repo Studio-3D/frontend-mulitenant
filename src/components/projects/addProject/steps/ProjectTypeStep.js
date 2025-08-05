@@ -1,8 +1,9 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-import {PlusIcon,CheckIcon,LayersIcon,GridIcon,BuildingIcon,HomeIcon,} from 'lucide-react';
+import React, { useState } from 'react';
+import { PlusIcon, CheckIcon, LayersIcon, GridIcon, BuildingIcon, HomeIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 import SelectInput from '@/components/SelectInput';
+
 export const ProjectTypeStep = ({ 
   formData, 
   updateFormData, 
@@ -10,36 +11,12 @@ export const ProjectTypeStep = ({
   errors,
   touched,
   typeOptions = [],
-  loading = false
+  loading = false,
+  onAddNewType
 }) => {
   const [showNewTypeInput, setShowNewTypeInput] = useState(false);
   const [newType, setNewType] = useState('');
-  const [localProjectTypes, setLocalProjectTypes] = useState([]);
-
-  const safeTrim = (str) => {
-    if (typeof str === 'string') {
-      return str.replace(/^\s+|\s+$/g, '');
-    }
-    return '';
-  };
-
-  useEffect(() => {
-    const storedTypes = localStorage.getItem('localProjectTypes');
-    if (storedTypes) {
-      setLocalProjectTypes(JSON.parse(storedTypes));
-    }
-  }, []);
-
-  useEffect(() => {
-    if (localProjectTypes.length > 0) {
-      localStorage.setItem('localProjectTypes', JSON.stringify(localProjectTypes));
-    }
-  }, [localProjectTypes]);
-
-  const projectTypes = [
-    ...typeOptions.map(type => type.type),
-    ...localProjectTypes
-  ];
+  const [addingType, setAddingType] = useState(false);
 
   const handleCompositionChange = (field, value) => {
     const numValue = parseInt(value) || 0;
@@ -68,16 +45,26 @@ export const ProjectTypeStep = ({
     });
   };
 
-  const handleAddNewType = () => {
-    const trimmedType = safeTrim(newType);
-    if (trimmedType) {
-      setLocalProjectTypes((prev) => [...prev, trimmedType]);
-      updateFormData('projectType', trimmedType);
-      toast.success('Nouveau type ajouté avec succès !');
-      setNewType('');
-      setShowNewTypeInput(false);
-    } else {
-      toast.error('Veuillez entrer un nom de type valide.');
+  const handleAddNewType = async () => {
+    const trimmedType = newType.trim();
+    if (!trimmedType) {
+      toast.error('Please enter a valid type name');
+      return;
+    }
+
+    setAddingType(true);
+    try {
+      const newTypeObj = await onAddNewType(trimmedType);
+      if (newTypeObj) {
+        updateFormData('projectType', newTypeObj.id.toString());
+        toast.success('Type added successfully!');
+        setNewType('');
+        setShowNewTypeInput(false);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to add type');
+    } finally {
+      setAddingType(false);
     }
   };
 
@@ -107,17 +94,22 @@ export const ProjectTypeStep = ({
                     onChange={(e) => setNewType(e.target.value)}
                     className="block w-[600px] rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2"
                     placeholder="Nouveau type"
+                    disabled={addingType}
                   />
                   <button
                     type="button"
                     onClick={handleAddNewType}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                    disabled={addingType || !newType.trim()}
+                    className={`bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 ${
+                      addingType ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
                   >
-                    Ajouter
+                    {addingType ? 'Ajout en cours...' : 'Ajouter'}
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowNewTypeInput(false)}
+                    disabled={addingType}
                     className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300"
                   >
                     Annuler
@@ -129,13 +121,16 @@ export const ProjectTypeStep = ({
                 <SelectInput 
                   id="projectType"
                   name="projectType"
-                  value={formData.projectType}  // Just pass the value directly
-                  onChange={(selectedOption) => updateFormData('projectType', selectedOption)}
+                  value={formData.projectType}
+                  onChange={(selectedId) => updateFormData('projectType', selectedId)}
                   options={[
                     { value: '', label: 'Sélectionnez un type' },
-                    ...projectTypes.map(type => ({ value: type, label: type }))
+                    ...typeOptions.map(type => ({ 
+                      value: type.id.toString(),
+                      label: type.type 
+                    }))
                   ]}
-                  width="w-[600px]"  // Use the width prop instead of className
+                  width="w-[600px]"
                   error={touched.projectType && errors.projectType}
                 />
                 {errors.projectType && touched.projectType && (

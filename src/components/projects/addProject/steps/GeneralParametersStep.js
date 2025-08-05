@@ -229,12 +229,16 @@ export const GeneralParametersStep = ({
           Précédent
         </button>
         <button
-          type="submit"
-          disabled={isSubmitting}
-          className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 disabled:bg-green-300"
-        >
-          {isSubmitting ? 'Ajout en cours...' : 'Ajouter le projet'}
-        </button>
+  type="button"  // Changed from type="submit" to type="button"
+  onClick={(e) => {
+    e.preventDefault();
+    onSubmit();
+  }}
+  disabled={isSubmitting}
+  className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 disabled:bg-green-300"
+>
+  {isSubmitting ? 'Ajout en cours...' : 'Ajouter le projet'}
+</button>
       </div>
     </div>
   );
