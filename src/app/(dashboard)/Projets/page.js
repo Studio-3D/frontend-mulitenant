@@ -186,7 +186,7 @@ const filteredProjets = useMemo(() => {
           {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
             <>
               <Link
-                href={`/Projets/editProject/${row.id}?edit=true`}
+                href={`/Projets/editProject/${row.id}`}
                 className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
                 title="Modifier le projet"
               >
