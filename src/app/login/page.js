@@ -1,57 +1,61 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import Link from 'next/link';
-import LoadingSpin from '../../components/LoadingSpin'; // Import your loading spinner component
+import { Eye, EyeOff, Home, Check } from 'lucide-react';
 
 export default function Login() {
   // State
-  const [email, setEmail] = useState('superadmin@gmail.com');
-  const [password, setPassword] = useState('superadmin');
-  const [rememberMe, setRememberMe] = useState(true);
+  const [formData, setFormData] = useState({
+    email: 'superadmin@gmail.com',
+    password: 'superadmin',
+    rememberMe: true
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const router = useRouter();
-  const { login, user, loading } = useAuth();
+  const { login, user } = useAuth();
+
+  // Handle input changes
+  const handleChange = useCallback((e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  }, []);
 
   // Redirect if already logged in
   useEffect(() => {
-    if (user && !loading) {
-      router.push('/');
+    if (user) {
+      router.push('/tableau-de-bord');
     }
-  }, [user, loading, router]);
+  }, [user, router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
+    
+    // Basic validation
+    if (!formData.email || !formData.password) {
+      setError("Veuillez remplir tous les champs");
+      return;
+    }
+
+    setIsSubmitting(true);
     setError('');
     
     try {
-      await login({
-        email,
-        password,
-        rememberMe
-      });
-      router.push('/tableau-de-bord'); // Redirect to dashboard after successful login
+      await login(formData);
+      router.push('/tableau-de-bord');
     } catch (err) {
-      console.error('Login error:', err);
       setError("L'e-mail ou le mot de passe n'est pas valide ou l'utilisateur n'est pas Actif");
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
-
-  // Show loading spinner during auth check
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <LoadingSpin /> {/* Use your loading spinner here */}
-      </div>
-    );
-  }
 
   return (
     <div className="flex min-h-screen bg-white">
@@ -62,118 +66,114 @@ export default function Login() {
             src="/images/bg1.jpg"
             alt="Real Estate Illustration"
             className="max-w-[38rem] rounded-lg shadow-lg"
+            loading="lazy"
+            width={608}
+            height={456}
           />
         </div>
-        {/* Decorative overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-100 opacity-60"></div>
         
-        {/* Real estate related text */}
         <div className="absolute bottom-16 left-0 right-0 text-center">
           <h2 className="text-2xl font-bold !text-gray-800">Gestion Immobilière Professionnelle</h2>
           <p className="text-gray-600 mt-2">Solutions complètes pour votre entreprise</p>
         </div>
       </div>
 
-      {/* Right side - Login Form - exactly like MUI version */}
+      {/* Right side - Login Form */}
       <div className="w-full md:w-2/5 lg:w-2/5 xl:w-[450px] flex items-center justify-center border-l border-gray-200 !text-gray-500">
         <div className="p-7 w-full max-w-[450px]">
           {/* Logo */}
           <div className="absolute top-8 left-8 flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-              <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2 20h2m0 0h6m-6 0v-8.548c0-.534 0-.801.065-1.05a2 2 0 0 1 .28-.617c.145-.213.346-.39.748-.741l4.801-4.202c.746-.652 1.119-.978 1.538-1.102c.37-.11.765-.11 1.135 0c.42.124.794.45 1.54 1.104l4.8 4.2c.402.352.603.528.748.74c.127.19.222.398.28.618c.065.249.065.516.065 1.05V20m-10 0h4m-4 0v-4a2 2 0 1 1 4 0v4m0 0h6m0 0h2"/>
-            </svg>
+            <Home className="w-6 h-6" />
             <span className="ml-2 text-xl font-bold leading-6">Immo Gestion</span>
           </div>
 
           <div className="mb-6 mt-16">
-            <h5 className="text-2xl font-semibold mb-1.5">Bienvenue sur Immo Gestion! 👋🏻</h5>
+            <h1 className="text-2xl font-semibold mb-1.5">Bienvenue sur Immo Gestion! 👋🏻</h1>
             <p className="text-gray-500">Veuillez vous connecter</p>
           </div>
 
-          <form noValidate autoComplete="off" onSubmit={handleSubmit}>
-            {/* Email field - Styled exactly like MUI */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-md text-sm">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} noValidate>
+            {/* Email field */}
             <div className="mb-4">
               <div className="relative">
                 <label 
                   htmlFor="email"
                   className={`absolute text-xs font-medium bg-white px-2 -top-2 left-2 z-10
-                    ${email ? 'text-[#666cff]' : 'text-gray-500'}`}
+                    ${formData.email ? 'text-[#666cff]' : 'text-gray-500'}`}
                 >
                   Email
                 </label>
                 <input
                   id="email"
-                  autoFocus
+                  name="email"
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  autoFocus
+                  value={formData.email}
+                  onChange={handleChange}
                   className={`w-full px-3 py-3 border rounded-md bg-transparent
-                    ${error ? 'border-red-500' : email ? 'border-[#666cff]' : 'border-gray-300'}
+                    ${error ? 'border-red-500' : formData.email ? 'border-[#666cff]' : 'border-gray-300'}
                     focus:outline-none focus:border-[#666cff] focus:border-2`}
+                  aria-describedby="email-error"
                 />
               </div>
-              {error && <p className="mt-1 text-xs !text-red-500">{error}</p>}
             </div>
 
-            {/* Password field - Styled exactly like MUI */}
+            {/* Password field */}
             <div className="mb-4">
               <div className="relative">
                 <label 
                   htmlFor="password"
                   className={`absolute text-xs font-medium bg-white px-2 -top-2 left-2 z-10
-                    ${password ? 'text-[#666cff]' : 'text-gray-500'}`}
+                    ${formData.password ? 'text-[#666cff]' : 'text-gray-500'}`}
                 >
                   Password
                 </label>
                 <input
                   id="password"
+                  name="password"
                   type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={formData.password}
+                  onChange={handleChange}
                   className={`w-full px-3 py-3 border rounded-md bg-transparent
-                    ${error ? 'border-red-500' : password ? 'border-[#666cff]' : 'border-gray-300'}
+                    ${error ? 'border-red-500' : formData.password ? 'border-[#666cff]' : 'border-gray-300'}
                     focus:outline-none focus:border-[#666cff] focus:border-2 pr-10`}
+                  aria-describedby="password-error"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 !text-gray-500"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  {showPassword ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                      <line x1="1" y1="1" x2="23" y2="23"></line>
-                    </svg>
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                      <circle cx="12" cy="12" r="3"></circle>
-                    </svg>
-                  )}
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
             </div>
 
-            {/* Remember Me and Forgot Password - Fix the checkbox color */}
+            {/* Remember Me and Forgot Password */}
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center">
                 <div className="relative inline-block">
                   <input
                     id="remember-me"
+                    name="rememberMe"
                     type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
+                    checked={formData.rememberMe}
+                    onChange={handleChange}
                     className="opacity-0 absolute h-4 w-4 cursor-pointer"
                   />
                   <div 
                     className={`border rounded w-4 h-4 flex flex-shrink-0 justify-center items-center mr-2
-                      ${rememberMe ? 'bg-[#666cff] border-[#666cff]' : 'border-gray-400'}`}
+                      ${formData.rememberMe ? 'bg-[#666cff] border-[#666cff]' : 'border-gray-400'}`}
                   >
-                    {rememberMe && (
-                      <svg className="w-2.5 h-2.5" viewBox="0 0 20 20" fill="white" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M0 11l2-2 5 5L18 3l2 2L7 18z" />
-                      </svg>
-                    )}
+                    {formData.rememberMe && <Check className="w-3 h-3 text-white" />}
                   </div>
                 </div>
                 <label htmlFor="remember-me" className="ml-2 text-sm !text-gray-600">
@@ -185,16 +185,24 @@ export default function Login() {
               </Link>
             </div>
 
-            {/* Login Button - exactly like MUI */}
+            {/* Login Button */}
             <button
               type="submit"
-              disabled={isLoading}
-              className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium !text-white bg-[#666cff] hover:bg-[#5a5fe6] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#666cff] mb-7"
+              disabled={isSubmitting}
+              className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium !text-white bg-[#666cff] hover:bg-[#5a5fe6] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#666cff] mb-7 transition-colors duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Chargement...' : 'Se Connecter'}
+              {isSubmitting ? (
+                <span className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Chargement...
+                </span>
+              ) : 'Se Connecter'}
             </button>
 
-            {/* Divider - exactly like MUI */}
+            {/* Divider */}
             <div className="relative mt-7 mb-7">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-200"></div>
@@ -206,7 +214,7 @@ export default function Login() {
 
             {/* Footer with legal links */}
             <div className="text-center text-gray-500 text-sm mt-8">
-              <p>© 2023 Immo Gestion. Tous droits réservés.</p>
+              <p>© {new Date().getFullYear()} Immo Gestion. Tous droits réservés.</p>
               <div className="mt-2 space-x-4">
                 <Link href="/conditions-generales" className="!text-blue-600 hover:text-blue-800">
                   Conditions Générales

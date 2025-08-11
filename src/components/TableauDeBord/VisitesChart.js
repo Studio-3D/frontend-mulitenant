@@ -1,6 +1,4 @@
 "use client"
-
-import { TrendingUp } from "lucide-react"
 import {
   Bar,
   BarChart,
@@ -8,12 +6,13 @@ import {
   ResponsiveContainer,
   XAxis,
 } from "recharts"
+import { format, isSameMonth, isSameYear, isSameDay} from "date-fns"
+import { fr } from 'date-fns/locale'
 
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -40,87 +39,139 @@ const chartConfig = {
   },
 }
 
-// Generate full axis labels depending on range
-function generateChartLabels(range) {
-  const today = new Date()
-  const labels = []
-
-  if (range === "cette année") {
-    return [
-      "janv", "févr", "mars", "avr", "mai", "juin",
-      "juil", "août", "sept", "oct", "nov", "déc"
-    ]
-  }
-
-  if (range === "ce mois") {
-    const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate()
-    for (let i = 1; i <= daysInMonth; i++) {
-      labels.push(i.toString())
+export function VisitesChart({ data = [], startDate, endDate }) {
+  // Determine the date range type
+  const getRangeType = () => {
+    const diffInDays = Math.round((endDate - startDate) / (1000 * 60 * 60 * 24))
+    
+    if (isSameDay(startDate, endDate)) {
+      return "day"
+    } else if (diffInDays <= 7) {
+      return "week"
+    } else if (isSameMonth(startDate, endDate)) {
+      return "month"
+    } else if (isSameYear(startDate, endDate)) {
+      return "year"
+    } else {
+      return "custom"
     }
-    return labels
   }
 
-  if (range === "cette semaine") {
-    return ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"]
-  }
-
-  if (range === "aujourd'hui") {
-    for (let i = 0; i < 24; i++) {
-      labels.push(`${i}h`)
+  // Transform data based on the date range
+  const transformData = (data, rangeType) => {
+    const result = []
+    
+    if (rangeType === "day") {
+      // Group by hour for single day
+      for (let hour = 0; hour < 24; hour++) {
+        const hourData = { name: `${hour}h`, interesse: 0, perdu: 0, receptif: 0 }
+        data.forEach(item => {
+          const itemHour = new Date(item.date).getHours()
+          if (itemHour === hour) {
+            hourData.interesse += item["intéressé"] || 0
+            hourData.perdu += item["perdu"] || 0
+            hourData.receptif += item["réceptif"] || 0
+          }
+        })
+        result.push(hourData)
+      }
+    } 
+    else if (rangeType === "week") {
+      // Group by day of week
+      const days = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"]
+      days.forEach(day => {
+        const dayData = { name: day, interesse: 0, perdu: 0, receptif: 0 }
+        data.forEach(item => {
+          const itemDay = format(new Date(item.date), 'EEE', { locale: fr }).substring(0, 3)
+          if (itemDay === day.substring(0, 3)) {
+            dayData.interesse += item["intéressé"] || 0
+            dayData.perdu += item["perdu"] || 0
+            dayData.receptif += item["réceptif"] || 0
+          }
+        })
+        result.push(dayData)
+      })
     }
-    return labels
+    else if (rangeType === "month") {
+      // Group by day of month
+      const daysInMonth = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0).getDate()
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dayData = { name: day.toString(), interesse: 0, perdu: 0, receptif: 0 }
+        data.forEach(item => {
+          const itemDay = new Date(item.date).getDate()
+          if (itemDay === day) {
+            dayData.interesse += item["intéressé"] || 0
+            dayData.perdu += item["perdu"] || 0
+            dayData.receptif += item["réceptif"] || 0
+          }
+        })
+        result.push(dayData)
+      }
+    }
+    else if (rangeType === "year") {
+      // Group by month
+      const months = [
+        "janv", "févr", "mars", "avr", "mai", "juin",
+        "juil", "août", "sept", "oct", "nov", "déc"
+      ]
+      months.forEach((month, index) => {
+        const monthData = { name: month, interesse: 0, perdu: 0, receptif: 0 }
+        data.forEach(item => {
+          const itemMonth = new Date(item.date).getMonth()
+          if (itemMonth === index) {
+            monthData.interesse += item["intéressé"] || 0
+            monthData.perdu += item["perdu"] || 0
+            monthData.receptif += item["réceptif"] || 0
+          }
+        })
+        result.push(monthData)
+      })
+    }
+    else {
+      // For custom ranges, group by day
+      const daysDiff = Math.round((endDate - startDate) / (1000 * 60 * 60 * 24))
+      for (let i = 0; i <= daysDiff; i++) {
+        const currentDate = new Date(startDate)
+        currentDate.setDate(startDate.getDate() + i)
+        const dayStr = format(currentDate, 'dd MMM', { locale: fr })
+        const dayData = { name: dayStr, interesse: 0, perdu: 0, receptif: 0 }
+        data.forEach(item => {
+          const itemDate = new Date(item.date)
+          if (
+            itemDate.getDate() === currentDate.getDate() &&
+            itemDate.getMonth() === currentDate.getMonth() &&
+            itemDate.getFullYear() === currentDate.getFullYear()
+          ) {
+            dayData.interesse += item["intéressé"] || 0
+            dayData.perdu += item["perdu"] || 0
+            dayData.receptif += item["réceptif"] || 0
+          }
+        })
+        result.push(dayData)
+      }
+    }
+    
+    return result
   }
 
-  return []
-}
+  const rangeType = getRangeType()
+  const chartData = transformData(data, rangeType)
 
-// Map your data to appropriate label grouping
-function transformData(data, range) {
-  const labels = generateChartLabels(range)
-  const grouped = {}
-
-  data.forEach((item) => {
-    const date = new Date(item.date)
-    let key = ""
-
-    switch (range) {
-      case "cette année":
-        key = date.toLocaleString("fr-FR", { month: "short" }) // "janv"
-        break
-      case "ce mois":
-        key = date.getDate().toString() // "1" to "31"
-        break
-      case "cette semaine":
-        key = date.toLocaleString("fr-FR", { weekday: "short" }) // "lun", "mar" etc.
-        key = key.charAt(0).toUpperCase() + key.slice(1, 3) // Normalize to "Lun"
-        break
-      case "aujourd'hui":
-        key = `${date.getHours()}h`
-        break
+  // Generate appropriate description based on range
+  const getRangeDescription = () => {
+    switch (rangeType) {
+      case "day":
+        return format(startDate, 'd MMMM yyyy', { locale: fr })
+      case "week":
+        return `Semaine du ${format(startDate, 'd MMM', { locale: fr })}`
+      case "month":
+        return format(startDate, 'MMMM yyyy', { locale: fr })
+      case "year":
+        return format(startDate, 'yyyy', { locale: fr })
       default:
-        break
+        return `${format(startDate, 'd MMM yyyy', { locale: fr })} - ${format(endDate, 'd MMM yyyy', { locale: fr })}`
     }
-
-    if (!grouped[key]) {
-      grouped[key] = { interesse: 0, perdu: 0, receptif: 0 }
-    }
-
-    grouped[key].interesse += item["intéressé"] || 0
-    grouped[key].perdu += item["perdu"] || 0
-    grouped[key].receptif += item["réceptif"] || 0
-  })
-
-  // Fill empty slots with 0
-  return labels.map((label) => ({
-    name: label,
-    interesse: grouped[label]?.interesse || 0,
-    perdu: grouped[label]?.perdu || 0,
-    receptif: grouped[label]?.receptif || 0,
-  }))
-}
-
-export function VisitesChart({ data = [], dateRange }) {
-  const chartData = transformData(data, dateRange)
+  }
 
   return (
     <Card>
@@ -133,7 +184,7 @@ export function VisitesChart({ data = [], dateRange }) {
             </h2>
           </CardTitle>
           <CardDescription className="text-sm sm:text-base">
-             Affichage du total des visiteurs {dateRange}
+            Affichage du total des visiteurs ({getRangeDescription()})
           </CardDescription>
         </div>
 

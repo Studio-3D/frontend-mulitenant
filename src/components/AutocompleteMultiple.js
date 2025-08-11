@@ -111,11 +111,15 @@ const AutocompleteMultiple = ({
 
       <div className="relative">
         <div
-          className={`flex items-center gap-2 p-2 border rounded-md bg-white h-[38px] w-full overflow-hidden ${
+          className={`flex items-center p-2 border rounded-md bg-white min-h-[38px] w-full ${
             errors[name] ? 'border-red-500' : 'border-gray-300'
           }`}
         >
-          <div className="flex flex-nowrap ">
+            {/* Main container for selected items and input */}
+          <div className="flex-1 min-w-0 ">
+            {/* Scrollable container for selected items */}
+            <div className="flex-1 overflow-x-auto scrollbar-hide mr-2">
+              <div className="flex flex-nowrap items-center gap-2">
             {selectedOptions.map((opt, idx) => (
               <span
                 key={idx}
@@ -132,15 +136,17 @@ const AutocompleteMultiple = ({
               </span>
             ))}
           </div>
+          </div>
           <input
             id={name}
             type="text"
             value={inputValue}
-            placeholder={inputValue.length === 0 && selectedOptions.length === 0 ? placeholder : ''}
+            placeholder={inputValue.length === 0 && selectedOptions.length === 0 ? placeholder : 'Ajouter plus...'}
             onChange={handleInputChange}
             onFocus={handleInputFocus}
             className="flex-grow  outline-none "
           />
+          </div>
           
           {/* Dropdown Toggle Icon */}
           <div 

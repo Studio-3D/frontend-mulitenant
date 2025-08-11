@@ -41,7 +41,8 @@ export default function Modal_Traite({ onClose, id, text, client, type_menu }) {
     setBackendErrors();
 
     // Simplified URL logic
-    const isAppel = type_menu === 1 || (!client && type_menu !== 3);
+    const isAppel =
+      type_menu == 1 || (!client && type_menu != 3) || type_menu == 4;
     const url = isAppel
       ? `${APIURL.ROOTV1}/traiter_relance_rdv_appel/${Number(id)}`
       : `${APIURL.ROOTV1}/traiter_relance_rdv_visite/${Number(id)}`;
@@ -72,13 +73,13 @@ export default function Modal_Traite({ onClose, id, text, client, type_menu }) {
               ? 'load_data_rdv_relance_visites'
               : type_menu == 3
               ? 'visite_fetch_show'
-              : 'load_data_journaux';
+              : type_menu == 4
+              ? 'load_data_journaux'
+              : '';
 
           localStorage.setItem(key, 1);
-                  console.log('final key==>', key); // Should now show correct value
-
+          console.log('final key==>', key); // Should now show correct value
         }
-
       })
       .catch((error) => {
         setLoading({ ...loading, form: false });
@@ -125,9 +126,9 @@ export default function Modal_Traite({ onClose, id, text, client, type_menu }) {
                 {...field}
                 id={name}
                 name={name}
-                className={`block ${width} ${height} px-3 py-2 mt-1 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
-                  errors[name] ? 'border-red-500' : ''
-                }`}
+                className={`block ${width} ${height} px-3 py-2 border border-gray-300 rounded-md focus:outline-none hover:border-gray-500 focus:border-gray-500 ${
+                  disabled ? 'bg-gray-100 cursor-not-allowed' : ''
+                } ${errors?.[name] ? 'border-red-500' : ''}`}
                 disabled={disabled}
                 required={required}
                 value={field.value || ''}
@@ -139,9 +140,9 @@ export default function Modal_Traite({ onClose, id, text, client, type_menu }) {
                 id={name}
                 name={name}
                 type={type}
-                className={`block ${width} ${height} px-3 py-2 mt-1 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
-                  errors[name] ? 'border-red-500' : ''
-                }`}
+                className={`block ${width} ${height} px-3 py-2 border border-gray-300 rounded-md focus:outline-none hover:border-gray-500 focus:border-gray-500 ${
+                  disabled ? 'bg-gray-100 cursor-not-allowed' : ''
+                } ${errors?.[name] ? 'border-red-500' : ''}`}
                 required={required}
                 disabled={disabled}
                 value={field.value || ''}

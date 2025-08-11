@@ -8,7 +8,7 @@ export function VisitTimeline(props) {
   const { activeVisit, onVisitSelect, visites_all_show, origin_id } = props;
 
   const handleAdd = (vId) => {
-    router.push(`/crm/visites/ajouter-nouelle-visite/${vId}`);
+    router.push(`/crm/visites/ajouter-nouvelle-visite/${vId}`);
   };
 
   return (

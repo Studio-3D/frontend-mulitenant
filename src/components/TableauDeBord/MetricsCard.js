@@ -30,9 +30,9 @@ export const MetricsCard = ({
       <div className="flex justify-between items-start">
         <div>
           <p className="text-sm font-medium text-gray-500">{title}</p>
-          <p className="text-2xl font-bold mt-1 text-gray-800">{value}</p>
+          <p className="xl:text-2xl font-bold mt-1 text-gray-800">{value}</p>
         </div>
-        <div className={`p-3 rounded-xl ${getColorClass()}`}>{icon}</div>
+        <div className={`p-1 xl:p-3 ml-1 rounded-xl ${getColorClass()}`}>{icon}</div>
       </div>
     </div>
   );

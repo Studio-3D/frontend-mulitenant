@@ -64,31 +64,27 @@ export const fetchData_table_by_projet = async (
   setTotalRows = () => {}
 ) => {
   setLoading(true);
-  setError('');
-
-  const selectedProjet = JSON.parse(localStorage.getItem('selectedProjet')) || {};
-  const urlsSansProjet = ['ReclamationsClients', 'projets','typeProjets','sources','banques',,'typefreins'];
-
-// Si l'entité nécessite un projet sélectionné (pas dans urlsSansProjet), on vérifie selectedProjet
-if (!urlsSansProjet.includes(entity.API_URL)) {
-  if (!selectedProjet || !selectedProjet.id) {
-    setError('Veuillez sélectionner un projet');
-    setLoading(false);
-    setData([]);
-    setTotalRows(0);
-    return;
-  }
-}
+  setError(null);
+  setData([]);
 
   try {
+    const selectedProjet = JSON.parse(localStorage.getItem('selectedProjet')) || {};
+    const urlsSansProjet = ['ReclamationsClients', 'projets', 'typeProjets', 'sources', 'banques', 'typefreins'];
+
+    if (!urlsSansProjet.includes(entity.API_URL)) {
+      if (!selectedProjet?.id) {
+        setError('Veuillez sélectionner un projet');
+        return;
+      }
+    }
+
+    // Ensure these parameters are properly structured for your API
     const params = {
       page: currentPage,
-      size: rowsPerPage,
+      size: rowsPerPage, // or per_page depending on your API
+      search: searchTerm,
       ...params_url
     };
-
-    // URL conditionnelle selon l'entité
-    const urlsSansProjet = ['ReclamationsClients', 'projets','typeProjets','sources','banques','typefreins'];
 
     const baseUrl = urlsSansProjet.includes(entity.API_URL)
       ? `${APIURL.ROOT}/v1/${entity.API_URL}/`
@@ -98,55 +94,26 @@ if (!urlsSansProjet.includes(entity.API_URL)) {
       headers: {
         Authorization: `Bearer ${accesstoken}`,
       },
-      params,
+      params, // Make sure params are being sent
     });
 
-    if (response.data && Array.isArray(response.data[entity.dataKey])) {
-      let filteredData = response.data[entity.dataKey];
+    // Verify the response structure
+    console.log('API Response:', response.data); // Debug log
 
-      if (searchTerm) {
-        const lowerSearchTerm = searchTerm.toLowerCase();
+    const responseData = response.data[entity.dataKey] || [];
+    const totalItems = response.data.pagination?.totalItems || responseData.length;
 
-        filteredData = filteredData.filter((item) => {
-          const fullName = `${item.name || ''}${item.prenom || ''} ${item.prenom || ''}`.toLowerCase();
+    setData(responseData);
+    setTotalRows(totalItems);
 
-          const role = Object.keys(User_roles).find(
-            (key) => User_roles[key] === item.role
-          );
-          const roleText = role
-            ? role.replace('ROLE_', '').replace('_', ' ').toLowerCase()
-            : '';
-
-          const status = (item.is_actif ? '1' : '2').toLowerCase();
-
-          return (
-            fullName.includes(lowerSearchTerm) ||
-            roleText.includes(lowerSearchTerm) ||
-            status.includes(lowerSearchTerm) ||
-            entity.searchFields.some((field) => {
-              if (field === 'fullname') {
-                return fullName.includes(lowerSearchTerm);
-              }
-              const value = (item[field] || '').toLowerCase();
-              return value.includes(lowerSearchTerm);
-            })
-          );
-        });
-      }
-
-      setData(filteredData);
-      setTotalRows(response.data.pagination?.totalItems || filteredData.length);
-    } else {
-      setData([]);
-    }
   } catch (err) {
-    setError(err.response?.data?.message || 'Error loading data');
-    if (err.response?.status === 401) {
-      toast.error('Session expired, please log in again.');
-    } else {
-      toast.error('Failed to fetch data');
+    console.error('API Error:', err);
+    const errorMessage = err.response?.data?.message || 'Erreur lors du chargement des données';
+    setError(errorMessage);
+    
+    if (err.response?.status !== 401) {
+      toast.error(errorMessage);
     }
-    setData([]);
   } finally {
     setLoading(false);
   }

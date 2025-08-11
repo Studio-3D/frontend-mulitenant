@@ -10,18 +10,18 @@ import { handleExportExcel } from '../../src/configs/export';
 const Table = ({
   onFilterToggle = () => {},
   title,
-  name_file_export,
-  data_to_export,
-  columns_export,
-  columns,
-  data,
+  name_file_export = 'export',
+  data_to_export = [],
+  columns_export = [],
+  columns = [],
+  data = [],
   totalRows = 0,
   addLink,
-  loading,
-  error,
+  loading = false,
+  error = null,
   emptyMessage = "Aucune donnée trouvée",
   onPageChange = () => {},
-  onRowsPerPageChange,
+  onRowsPerPageChange = () => {},
   onSearchChange = () => {},
   currentPage = 1,
   rowsPerPage = 10,
@@ -29,11 +29,8 @@ const Table = ({
   onExport = null,
   enableExport = false,
   enableImport = false,
-
-  enableConfig= false,
-
+  enableConfig = false,
   filterComponent = null,
-  // New props for expandable rows
   renderExpandedRow = null,
   onRowClick = null,
   rowClassName = () => "",
@@ -85,11 +82,15 @@ const Table = ({
   };
 
   const handleExport = () => {
-    handleExportExcel(
-      data_to_export,
-      columns_export,
-      name_file_export + '.xlsx'
-    );
+    if (onExport) {
+      onExport();
+    } else {
+      handleExportExcel(
+        data_to_export,
+        columns_export,
+        `${name_file_export}.xlsx`
+      );
+    }
   };
 
   // Safe calculation of total pages
@@ -113,7 +114,7 @@ const Table = ({
                 showFilter ? 'bg-[#009FFF] text-white' : 'border-gray-300 bg-transparent'
               }`}
               onClick={toggleFilter}
-              >
+            >
               <Filter className="w-6 h-6" />
             </button>
           )}
@@ -147,7 +148,7 @@ const Table = ({
               </Link>
             ) : (
               <Link
-                href={addLink.pathname}
+                href={addLink.pathname || '#'}
                 onClick={addLink.onClick}
                 className="flex gap-1 items-center bg-green-600 text-white font-medium rounded-lg px-3 py-1.5"
               >
@@ -202,7 +203,7 @@ const Table = ({
             <thead>
               <tr className="bg-[#009FFF] text-white">
                 {columns.map((column) => (
-                  <th key={column.key} className={`py-3 px-2 text-left ${showPagination ? '' : 'text-sm'}`}>
+                  <th key={column.key || column.label} className={`py-3 px-2 text-left ${showPagination ? '' : 'text-sm'}`}>
                     {column.label}
                   </th>
                 ))}
@@ -219,12 +220,9 @@ const Table = ({
                     ))}
                   </tr>
                 ))
-              ) : data.length === 0 ? (
+              ) : !Array.isArray(data) || data.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan={columns.length}
-                    className="py-4 text-center !text-gray-500"
-                  >
+                  <td colSpan={columns.length} className="py-4 text-center !text-gray-500">
                     {emptyMessage}
                   </td>
                 </tr>
@@ -240,12 +238,11 @@ const Table = ({
                         onClick={() => onRowClick && onRowClick(row, index)}
                       >
                         {columns.map((column) => (
-                          <td key={column.key} className={`py-4 px-2 border-b ${showPagination ? '' : 'py-2 text-sm'}`}>
+                          <td key={`${rowId}-${column.key}`} className={`py-4 px-2 border-b ${showPagination ? '' : 'py-2 text-sm'}`}>
                             {column.render ? column.render(row, index) : row[column.key]}
                           </td>
                         ))}
                       </tr>
-                      {/* Expanded row content */}
                       {isExpanded && renderExpandedRow && (
                         <tr>
                           <td colSpan={columns.length} className="p-0 border-b">
@@ -307,7 +304,6 @@ const Table = ({
           {showModal}
         </Modal>
       )}
-      
     </div>
   );
 };

@@ -22,7 +22,7 @@ export default function UserDetailsPage() { // Renamed to PascalCase
   ];
 
   return (
-    <div className='bg-white xl:h-[90vh] shadow-md rounded-xl'>
+    <div className='bg-white xl:min-h-[90vh] shadow-md rounded-xl pb-4'>
      
       <div className='flex justify-between  h-full'>
 

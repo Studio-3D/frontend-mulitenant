@@ -73,13 +73,11 @@ const DecomptesForm = ({ decompte, onSave, onCancel }) => {
       const token = localStorage.getItem('accessToken');
       const formData = new FormData();
       
-      // Add all form fields to FormData
-      Object.entries(data).forEach(([key, value]) => {
-        if (value !== null && value !== undefined) {
-          formData.append(key, value);
-        }
-      });
-      
+       // Create a plain object instead of FormData
+    const requestData = {
+      ...data,
+      projet_id: selectedProjet?.id || null
+    };
       // Determine if we're adding or editing
       let url = `${APIURL.ROOT}/v1/decomptes`;
       let method = 'post';
@@ -93,7 +91,7 @@ const DecomptesForm = ({ decompte, onSave, onCancel }) => {
       const response = await axios({
         method,
         url,
-        data: formData,
+        data: requestData,
         headers: {
           Authorization: `Bearer ${token}`
         }

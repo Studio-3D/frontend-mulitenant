@@ -45,17 +45,24 @@ import Modal_Historique_rel_rdv from './Modal_Historique_rel_rdv';
 import Modal_Historique from './Modal_Historique';
 import axios from 'axios';
 import Modal_Traite from '../../../src/app/(dashboard)/crm/Modal_Traite';
+import useClear_visite_cadre from '@/app/(dashboard)/crm/hook/useClear_visite_cadre';
 export function VisitDetails({
   visites_all_show,
   visites_all,
   origin_id,
   last_related_id,
 }) {
+  //when reload remove item v_id_cadre
+  useClear_visite_cadre();
+  const cadre_selected = `${localStorage.getItem('v_id_cadre')}`;
+
   const router = useRouter();
   const [openH, setOpenH] = useState(false);
   const [open_rel, setOpen_rel] = useState(false);
   const [activeVisit, setActiveVisit] = useState(
-    visites_all_show?.[0]?.related_show_id || null
+    cadre_selected != 'null'
+      ? cadre_selected
+      : visites_all_show?.[0]?.related_show_id
   );
   const [rows_histo_rel_rdv, setrowsHisto_rel_rdv] = useState([]);
   const [loading_h_rel, setLoading_h_rel] = useState(true); // Add a loading state
@@ -317,6 +324,8 @@ export function VisitDetails({
             k <= Number(response.data.historiques.length) - 1;
             k++
           ) {
+            let historique_modification =
+              response.data.historiques[k].historique_modification;
             let username = response.data.historiques[k].user.name;
             let userprenom = response.data.historiques[k].user.prenom;
             let date = response.data.historiques[k].created_at;
@@ -327,7 +336,7 @@ export function VisitDetails({
             }
             let bien = null;
             if (response.data.historiques[k].bien != null) {
-              bien = response.data.historiques[k].bien.propriete_dite_bien;
+              bien = NomBienComplet(response.data.historiques[k].bien);
             }
 
             let etat_bien = '';
@@ -338,20 +347,8 @@ export function VisitDetails({
             let mode_rel = ' ';
             let date_rel = ' ';
             if (response.data.historiques[k].relance_relation != null) {
-              if (
-                response.data.historiques[k].relance_relation.mode_relance == 1
-              ) {
-                mode_rel = 'Sms';
-              } else if (
-                response.data.historiques[k].relance_relation.mode_relance == 2
-              ) {
-                mode_rel = 'Appel';
-              } else if (
-                response.data.historiques[k].relance_relation.mode_relance == 3
-              ) {
-                mode_rel = 'Email';
-              }
-
+              mode_rel =
+                response.data.historiques[k].relance_relation.mode_relance;
               if (
                 response.data.historiques[k].relance_relation.date_relance !=
                 null
@@ -389,10 +386,12 @@ export function VisitDetails({
             let sup_min = '';
             let sup_max = '';
             let avance = '';
+            let fr_autre = '';
 
             if (interet == '3') {
               const frein = response?.data?.historiques[k]?.frein;
-
+              fr_autre =
+                response?.data?.historiques[k]?.frein?.description_autre;
               const concatNames = (array, keyPath) =>
                 Array.isArray(array)
                   ? array
@@ -458,7 +457,9 @@ export function VisitDetails({
                   fr_et,
                   fr_o,
                   fr_tp,
-                  fr_v
+                  fr_v,
+                  fr_autre,
+                  historique_modification
                 ),
               ]);
             }
@@ -484,7 +485,9 @@ export function VisitDetails({
                 fr_et,
                 fr_o,
                 fr_tp,
-                fr_v
+                fr_v,
+                fr_autre,
+                historique_modification
               ),
             ]);
           }
@@ -517,7 +520,9 @@ export function VisitDetails({
     fr_etages,
     fr_orientations,
     fr_typologies,
-    fr_vues
+    fr_vues,
+    fr_autre,
+    historique_modification
   ) => {
     return {
       action,
@@ -540,6 +545,8 @@ export function VisitDetails({
       fr_orientations,
       fr_typologies,
       fr_vues,
+      fr_autre,
+      historique_modification,
     };
   };
 
@@ -554,6 +561,10 @@ export function VisitDetails({
 
     return noms.join(' - ');
   }
+  const change_visite = (newVisitId) => {
+    setActiveVisit(newVisitId);
+    localStorage.removeItem('v_id_cadre');
+  };
   //Traitement Frein
   const RowTraitement = ({ row }) => {
     const [open, setOpen] = useState(false);
@@ -831,11 +842,11 @@ export function VisitDetails({
           {/* Split layout */}
           <div className="grid lg:grid-cols-12 gap-8 p-8">
             {/* Timeline section */}
-            <div className="lg:col-span-4 space-y-6">
+            <div className="lg:col-span-4 space-y-6 mt-5">
               <VisitTimeline
                 visites_all_show={visites_all_show}
                 activeVisit={activeVisit}
-                onVisitSelect={setActiveVisit}
+                onVisitSelect={change_visite}
                 origin_id={origin_id}
               />
             </div>
@@ -866,6 +877,7 @@ export function VisitDetails({
                               </div>
                             </div>
 
+                            {/* ... existing code ... */}
                             <div className="flex space-x-3">
                               {visite.relance_relation &&
                                 visite.relance_relation.type_traitement == 0 &&
@@ -906,6 +918,76 @@ export function VisitDetails({
                                   </Button>
                                 )}
                             </div>
+
+                            {/* Add this new row below the Traiter buttons */}
+                            <div className="flex items-center space-x-4 mt-3">
+                              {/* Status tag */}
+                              {visite.interet == 1 && (
+                                <div className="flex items-center">
+                                  {getStatutBadge(visite.statut)}
+                                </div>
+                              )}
+
+                              {/* Action buttons */}
+                              <div className="flex space-x-2">
+                                {/* View Reservation button */}
+                                {visite.reservation != null && (
+                                  <button
+                                    title="Détail du Réservation"
+                                    onClick={() =>
+                                      handleView_Reservation(
+                                        visite?.reservation?.id
+                                      )
+                                    }
+                                    className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+                                  >
+                                    <EyeIcon className="h-5 w-5 text-gray-700" />
+                                  </button>
+                                )}
+
+                                {/* Download PDF button */}
+                                {(visite.statut == 1 ||
+                                  visite.statut == 3 ||
+                                  visite.statut == 5) && (
+                                  <PDFDownloadLink
+                                    document={
+                                      <Document
+                                        data={[
+                                          visite.id,
+                                          visite.pre_reservation_visite
+                                            ?.code_pre_reserve,
+                                          visite.rdv_relation?.rdv,
+                                          visite.pre_reservation_visite
+                                            ?.date_pre_reserve,
+                                          visite.bien.propriete_dite_bien,
+                                          visite.bien.niveau,
+                                          visite.bien.superficie_architecte,
+                                          visite.bien.orientation,
+                                          visite.bien.prix,
+                                          visite.user.name,
+                                          visite.user.prenom,
+                                        ]}
+                                      />
+                                    }
+                                    fileName="bon_pre_reservation.pdf"
+                                  >
+                                    {({ loading }) => (
+                                      <button
+                                        className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+                                        disabled={loading}
+                                      >
+                                        {loading ? (
+                                          <span>Loading...</span>
+                                        ) : (
+                                          <DownloadIcon className="h-5 w-5 text-gray-700" />
+                                        )}
+                                      </button>
+                                    )}
+                                  </PDFDownloadLink>
+                                )}
+                              </div>
+                            </div>
+                            {/* ... rest of the code ... */}
                           </div>
                         </div>
 
@@ -994,7 +1076,7 @@ export function VisitDetails({
                               }
                             />
 
-                            <InfoCard
+                           {/* <InfoCard
                               icon={<BadgeCheckIcon className="h-5 w-5" />}
                               title="Statut"
                               value={getStatutBadge(visite.statut)}
@@ -1011,8 +1093,7 @@ export function VisitDetails({
                                       className="ml-2 !text-red hover:text-red transition-colors mt-1"
                                     >
                                       <div title="Voir Réservation">
-                                      <EyeIcon className="h-5 w-5" />
-
+                                        <EyeIcon className="h-5 w-5" />
                                       </div>
                                     </button>
                                   )}
@@ -1057,7 +1138,7 @@ export function VisitDetails({
                                   )}
                                 </>
                               }
-                            />
+                            />*/}
                             <>
                               {visite.relance_relation != null && (
                                 <>
@@ -1544,9 +1625,11 @@ export function VisitDetails({
 
 function InfoCard(props) {
   const { icon, title, value, url } = props;
-
+  {
+    /*hover:border-blue-300 hover:border hover:shadow-lg*/
+  }
   return (
-    <div className="group bg-white/60 cursor-pointer hover:border hover:border-blue-300 backdrop-blur-sm rounded-2xl p-6 border transition-all duration-300 hover:shadow-lg">
+    <div className="group bg-white/60 cursor-pointer   backdrop-blur-sm rounded-2xl p-6 border transition-all duration-300 ">
       <div className="flex items-center space-x-3 mb-3">
         <div className="text-[#2563eb] group-hover:scale-110 transition-transform">
           {icon}

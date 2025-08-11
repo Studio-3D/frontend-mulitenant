@@ -1,6 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import Table from '@/components/Table';
-import { Eye, Pencil, RefreshCw, CreditCard, Trash2 } from 'lucide-react';
+import {
+  Eye,
+  Pencil,
+  RefreshCw,
+  CreditCard,
+  Trash2,
+  PencilLine,
+} from 'lucide-react';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
 import { useAuth } from '../../../../context/AuthContext';
@@ -11,7 +18,6 @@ import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
 import { fetchData_table_by_projet } from '../../../../../src/configs/api-utils';
 import Link from 'next/link';
 import Input from '@/components/Input';
-import SelectInput from '@/components/SelectInput';
 
 import { VISITE_INTERETS } from '../../../../../src/configs/enum';
 const AppelsTable = ({ dataClient }) => {
@@ -197,7 +203,7 @@ const AppelsTable = ({ dataClient }) => {
           </div>
 
           <div title="Modifier">
-            <Pencil
+            <PencilLine
               className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
               title="Modifier"
               onClick={() => handleEdit(row.last_traitement_id)}
@@ -374,7 +380,7 @@ const AppelsTable = ({ dataClient }) => {
                   }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-                <SelectInput
+                {/*<SelectInput
                   value={tempFilters.interet}
                   onChange={(value) => handleFilterChange('interet', value)}
                   options={Object.values(VISITE_INTERETS).map((data) => ({
@@ -383,7 +389,7 @@ const AppelsTable = ({ dataClient }) => {
                   }))}
                   label="Choisir un Intéret"
                   className="h-10 text-sm w-full"
-                />
+                />*/}
               </div>
 
               {/* Boutons */}

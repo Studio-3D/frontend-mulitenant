@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../../../context/AuthContext';
 import { fetchData_table_by_projet } from '../../../../../../src/configs/api-utils';
-import { Eye, Pencil } from 'lucide-react';
+import { Eye, Pencil, PencilLine } from 'lucide-react';
 import Link from 'next/link';
 import Input from '@/components/Input';
 import SelectInput from '@/components/SelectInput';
@@ -245,7 +245,7 @@ export default function Desistement_dd_list() {
               className="text-red-500 hover:text-red-700"
               title="Corriger"
             >
-              <Pencil className="w-4 h-4" />
+              <PencilLine className="w-4 h-4" />
             </button>
           )}
         </div>

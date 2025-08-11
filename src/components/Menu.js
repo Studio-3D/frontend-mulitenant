@@ -52,6 +52,7 @@ import { useSociete } from "@/context/SocieteContext";
 import SocieteDialog from "./SocieteDialog";
 import { useProjet } from "@/context/ProjetContext";
 import ProjetDialog from "./ProjetDialog";
+import { ro, tr } from "date-fns/locale";
 
 const Menu = () => {
   const [menuItems, setMenuItems] = useState([]);
@@ -75,6 +76,7 @@ const Menu = () => {
     // Ferme la fenêtre de la société
     setIsModalVisible(false);
 
+    
     // Si le projet n'est pas encore sélectionné, on montre le popup projet
     if (!projet && requireProjetAfterSociete) {
       setIsProjetDialogVisible(true);
@@ -107,6 +109,7 @@ const Menu = () => {
   }, [user]);
 
   const getMenuItems = (role) => {
+    
     const items = [
       {
         label: "Tableau de Bord",
@@ -355,16 +358,20 @@ const Menu = () => {
       label: "Comptabilité",
       icon: <Calculator />,
       href: "/comptabilite",
+      needsProjet: true,
+      needsSociete: user.role === 1,
     },
     {
       label: "Statistiques",
       icon: <BarChart4 size={20} />,
       href: "/Statistiques",
+      needsProjet: true,
+      needsSociete: user.role === 1,
     },
     {
       label: "Historique Importation",
       icon: <History size={20} />,
-      href: "/historique-importation",
+      href: "/Historique-importation",
       needsSociete: user.role === 1,
       needsProjet: true,
     },

@@ -227,15 +227,16 @@ export default function AddProjectPage() {
   return (
     <div className="relative bg-white rounded-lg shadow-md">
       <div className="p-6">
-        <h1 className="text-2xl font-semibold mb-6">Ajouter un projet</h1>
+        <h1 className="text-2xl items-center text-center font-semibold">Ajouter un projet</h1>
+        <div className=" mx-8 mt-4">
+          <ProjectStepper 
+            steps={steps.map(step => step.title)}
+            activeStep={activeStep} 
+            activeColor="#009FFF"
+          />
+        </div>
         
-        <ProjectStepper 
-          steps={steps.map(step => step.title)}
-          activeStep={activeStep} 
-          activeColor="#009FFF"
-        />
-        
-        <div className="mt-8">
+        <div className="">
           {steps[activeStep].component}
         </div>
         

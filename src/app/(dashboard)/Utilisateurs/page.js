@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import Table from "@/components/Table";
 import Link from "next/link";
-import { Eye, PencilSquare, ShieldX, ShieldCheck, Trash2 } from "lucide-react";
+import { Eye, PencilLine , ShieldX, ShieldCheck, Trash2 } from "lucide-react";
 import Modal from "@/components/Modal";
 import BlockUser from "@/components/Utilisateurs/BlockUser";
 import UnblockUser from "@/components/Utilisateurs/UnblockUser";
@@ -23,7 +23,6 @@ import {
   USER_STATUS,
   USER_TYPES,
 } from "@/components/user-utils";
-import { PencilSquareIcon } from "@heroicons/react/24/outline";
 
 const Page = () => {
   const [users, setUsers] = useState([]);
@@ -136,11 +135,7 @@ const Page = () => {
     setSearchTerm(""); // Also reset search term
   };
 
-  // Handle search separately
-  const handleSearch = (term) => {
-    setSearchTerm(term);
-    setCurrentPage(1); // Reset to first page when search changes
-  };
+
 
   // Fetch users when pagination, filters or search changes
   useEffect(() => {
@@ -297,7 +292,7 @@ const Page = () => {
             className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
             title="Modifier l'utilisateur"
           >
-            <PencilSquareIcon className="w-4 h-4" />
+            <PencilLine className="w-4 h-4" />
           </Link>
 
           {row.status === "Actif" ? (

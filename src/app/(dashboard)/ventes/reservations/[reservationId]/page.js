@@ -1,26 +1,26 @@
-'use client';
-import React, { useState, useEffect } from 'react';
-import { ReservationHeader } from '../../../../../components/reservation/ReservationHeader';
-import { TabNavigation } from '../../../../../components/reservation/TabNavigation';
-import { DetailTab } from '../../../../../components/reservation/tabs/DetailTab';
-import { HistoriquesTab } from '../../../../../components/reservation/tabs/HistoriquesTab';
-import { AcquereursTab } from '../../../../../components/reservation/tabs/AcquereursTab';
-import { PiecesJointesTab } from '../../../../../components/reservation/tabs/PiecesJointesTab';
-import { AvancesTab } from '../../../../../components/reservation/tabs/AvancesTab';
-import { RendezVousTab } from '../../../../../components/reservation/tabs/RendezVousTab';
-import { CompromisVentesTab } from '../../../../../components/reservation/tabs/CompromisVentesTab';
-import { ContractTab } from '../../../../../components/reservation/tabs/ContractTab';
-import { TransfertTab } from '../../../../../components/reservation/tabs/TransfertTab';
+"use client";
+import React, { useState, useEffect } from "react";
+import { ReservationHeader } from "../../../../../components/reservation/ReservationHeader";
+import { TabNavigation } from "../../../../../components/reservation/TabNavigation";
+import { DetailTab } from "../../../../../components/reservation/tabs/DetailTab";
+import { HistoriquesTab } from "../../../../../components/reservation/tabs/HistoriquesTab";
+import { AcquereursTab } from "../../../../../components/reservation/tabs/AcquereursTab";
+import { PiecesJointesTab } from "../../../../../components/reservation/tabs/PiecesJointesTab";
+import { AvancesTab } from "../../../../../components/reservation/tabs/AvancesTab";
+import { RendezVousTab } from "../../../../../components/reservation/tabs/RendezVousTab";
+import { CompromisVentesTab } from "../../../../../components/reservation/tabs/CompromisVentesTab";
+import { ContractTab } from "../../../../../components/reservation/tabs/ContractTab";
+import { TransfertTab } from "../../../../../components/reservation/tabs/TransfertTab";
 
-import HistoriqueDesistementTab from '../../../../../components/reservation/tabs/HistoriqueDesistementTab';
-import axios from 'axios';
-import { useParams } from 'next/navigation';
-import LoadingSpin from '@/components/LoadingSpin';
-import { APIURL } from '../../../../../configs/api';
-import { useAuth } from '../../../../../context/AuthContext';
+import HistoriqueDesistementTab from "../../../../../components/reservation/tabs/HistoriqueDesistementTab";
+import axios from "axios";
+import { useParams } from "next/navigation";
+import LoadingSpin from "@/components/LoadingSpin";
+import { APIURL } from "../../../../../configs/api";
+import { useAuth } from "../../../../../context/AuthContext";
 
 const Res_Show = () => {
-  const [activeTab, setActiveTab] = useState('detail');
+  const [activeTab, setActiveTab] = useState("detail");
   const [sum_av, setSum_av] = useState(null);
 
   const [reservationData, setReservationData] = useState(null);
@@ -29,7 +29,7 @@ const Res_Show = () => {
   const { reservationId } = useParams();
   const { user, token } = useAuth();
   const userRole = user.role;
-  const accessToken = token || localStorage.getItem('accessToken');
+  const accessToken = token || localStorage.getItem("accessToken");
 
   // In Res_Show component where reste==0 dont reload page// and if on submit contrat de vente
   const updateReservationData = (newData) => {
@@ -42,7 +42,7 @@ const Res_Show = () => {
   const fetchData = async () => {
     try {
       if (!reservationId) {
-        setError('No reservation ID provided');
+        setError("No reservation ID provided");
         return;
       }
 
@@ -50,7 +50,7 @@ const Res_Show = () => {
       setError(null);
 
       if (!accessToken) {
-        throw new Error('No access token found');
+        throw new Error("No access token found");
       }
 
       // Construct the proper API URL
@@ -61,20 +61,20 @@ const Res_Show = () => {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      console.log('Response data:', response.data); // Debug log
+      console.log("Response data:", response.data); // Debug log
 
       setReservationData(response.data);
       setSum_av(response.data.sum_avances_valides);
     } catch (error) {
-      console.error('Full error details:', error);
+      console.error("Full error details:", error);
       if (error.response) {
         setError(
           `Server error: ${error.response.status} - ${
-            error.response.data?.message || 'No additional info'
+            error.response.data?.message || "No additional info"
           }`
         );
       } else if (error.request) {
-        setError('No response received from server');
+        setError("No response received from server");
       } else {
         setError(`Request error: ${error.message}`);
       }
@@ -85,21 +85,21 @@ const Res_Show = () => {
 
   useEffect(() => {
     // Verify reservationId is correct before fetching
-    if (reservationId && typeof reservationId === 'string') {
-      console.log('Fetching data for reservation ID:', reservationId);
+    if (reservationId && typeof reservationId === "string") {
+      console.log("Fetching data for reservation ID:", reservationId);
       fetchData();
     } else {
-      console.error('Invalid reservationId:', reservationId);
-      setError('Invalid reservation ID');
+      console.error("Invalid reservationId:", reservationId);
+      setError("Invalid reservation ID");
     }
   }, [reservationId]);
 
   useEffect(() => {
     //Implementing the setInterval method
     const interval = setInterval(() => {
-      if (localStorage.getItem('load_reservation_show') == 1) {
+      if (localStorage.getItem("load_reservation_show") == 1) {
         fetchData();
-        localStorage.removeItem('load_reservation_show');
+        localStorage.removeItem("load_reservation_show");
       }
     }, 1000);
 
@@ -123,12 +123,13 @@ const Res_Show = () => {
       },
     }));
   };
-console.log("Sum Avances:", reservationData?.sum_avances_valides);
-console.log("Prix:", reservationData?.reservation?.prix);
-console.log(
-  "Should show Contract Tab?",
-  userRole <= 3 && reservationData?.sum_avances_valides >= reservationData?.reservation?.prix
-);
+  console.log("Sum Avances:", reservationData?.sum_avances_valides);
+  console.log("Prix:", reservationData?.reservation?.prix);
+  console.log(
+    "Should show Contract Tab?",
+    userRole <= 3 &&
+      reservationData?.sum_avances_valides >= reservationData?.reservation?.prix
+  );
   const handleRdvChange = (count) => {
     setReservationData((prev) => ({
       ...prev,
@@ -159,46 +160,46 @@ console.log(
     };
 
     const baseTabs = [
-      { id: 'detail', label: 'Détail réservation', icon: 'file-text' },
+      { id: "detail", label: "Détail réservation", icon: "file-text" },
       {
-        id: 'historiques',
-        label: 'Historiques',
-        icon: 'history',
+        id: "historiques",
+        label: "Historiques",
+        icon: "history",
         visible: true,
       },
-      { id: 'acquereurs', label: 'Acquéreurs', icon: 'users' },
-      { id: 'piecesJointes', label: 'Pièces jointes', icon: 'paperclip' },
-      { id: 'avances', label: 'Avances', icon: 'coins' },
+      { id: "acquereurs", label: "Acquéreurs", icon: "users" },
+      { id: "piecesJointes", label: "Pièces jointes", icon: "paperclip" },
+      { id: "avances", label: "Avances", icon: "coins" },
       {
-        id: 'transfert',
-        label: 'Transfert',
-        icon: 'swap-horizontal',
+        id: "transfert",
+        label: "Transfert",
+        icon: "swap-horizontal",
         visible:
           reservationData?.reservation?.etat == 2 &&
           reservationData?.reservation?.remboursement_dd_with_transfert != null,
       },
       {
-        id: 'historiqueDesistement',
-        label: 'Historique Désistement',
-        icon: 'repeat',
+        id: "historiqueDesistement",
+        label: "Historique Désistement",
+        icon: "repeat",
         visible: reservationData?.reservation?.code_desistement != null,
       },
       {
-        id: 'rendezVous',
-        label: 'Rendez-vous',
-        icon: 'calendar',
+        id: "rendezVous",
+        label: "Rendez-vous",
+        icon: "calendar",
         visible: userRole <= 3,
       },
       {
-        id: 'compromisVentes',
-        label: 'Compromis de ventes',
-        icon: 'file-signature',
+        id: "compromisVentes",
+        label: "Attestation de vente",
+        icon: "file-signature",
         visible: userRole <= 3 && reservationData.sum_avances_valides > 0,
       },
       {
-        id: 'contract',
-        label: 'Contract',
-        icon: 'file-text',
+        id: "contract",
+        label: "Contract",
+        icon: "file-text",
         visible:
           userRole <= 3 &&
           reservationData.sum_avances_valides >=
@@ -225,16 +226,16 @@ console.log(
     if (!reservationData) return <div className="p-6">No data available</div>;
 
     switch (activeTab) {
-      case 'detail':
+      case "detail":
         return (
           <DetailTab
             reservationData={reservationData}
             sum_avances_valides={sum_av}
           />
         );
-      case 'historiques':
+      case "historiques":
         return <HistoriquesTab reservationData={reservationData} />;
-      case 'acquereurs':
+      case "acquereurs":
         return (
           <AcquereursTab
             etat={reservationData?.reservation?.etat}
@@ -248,7 +249,7 @@ console.log(
             user_role={userRole}
           />
         );
-      case 'piecesJointes':
+      case "piecesJointes":
         return (
           <PiecesJointesTab
             reservationData={reservationData}
@@ -260,7 +261,7 @@ console.log(
             }
           />
         );
-      case 'avances':
+      case "avances":
         return (
           <AvancesTab
             reservationData={reservationData}
@@ -270,7 +271,7 @@ console.log(
             updateReservationData={updateReservationData} // Add this line
           />
         );
-      case 'rendezVous':
+      case "rendezVous":
         return (
           <RendezVousTab
             reservationData={reservationData}
@@ -279,7 +280,7 @@ console.log(
             onRdvChange={handleRdvChange}
           />
         );
-      case 'compromisVentes':
+      case "compromisVentes":
         return (
           <CompromisVentesTab
             reservationData={reservationData}
@@ -287,7 +288,7 @@ console.log(
             accessToken={accessToken}
           />
         );
-      case 'contract':
+      case "contract":
         return (
           <ContractTab
             reservationData={reservationData}
@@ -296,7 +297,7 @@ console.log(
             updateReservationData={updateReservationData} // Add this line
           />
         );
-      case 'transfert':
+      case "transfert":
         return (
           <TransfertTab
             reservationData={reservationData}
@@ -304,7 +305,7 @@ console.log(
             accessToken={accessToken}
           />
         );
-      case 'historiqueDesistement':
+      case "historiqueDesistement":
         return (
           <HistoriqueDesistementTab
             code_desistement={reservationData?.reservation?.code_desistement}
@@ -325,7 +326,10 @@ console.log(
         <div className="p-6 text-red-500">{error}</div>
       ) : (
         <>
-          <ReservationHeader reservationData={reservationData} userRole={userRole} />
+          <ReservationHeader
+            reservationData={reservationData}
+            userRole={userRole}
+          />
           <div className="bg-white rounded-lg shadow-md mt-6">
             <TabNavigation
               activeTab={activeTab}

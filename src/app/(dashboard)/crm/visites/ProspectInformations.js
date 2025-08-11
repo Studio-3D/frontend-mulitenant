@@ -2,7 +2,6 @@ import React from 'react';
 import { Controller } from 'react-hook-form';
 import Autocomplete from '@/components/Autocomplete';
 import Input from '@/components/Input';
-import SelectInput from '@/components/SelectInput';
 
 const ProspectInformations = ({
   control,
@@ -17,7 +16,7 @@ const ProspectInformations = ({
   handleSourceChange,
   partenaires,
   handlePartenaireChange,
-  selectedProspect,
+  source_d,
   disabled_var_source,
   partenaire_txt,
   sourceValue,
@@ -52,10 +51,10 @@ const ProspectInformations = ({
           name="email"
           type="email"
           placeholder="email@example.com"
-          required
+          
           control={control}
           rules={{
-            required: true,
+            required: false,
             pattern: {
               value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
               message: 'Email invalide',
@@ -90,7 +89,7 @@ const ProspectInformations = ({
       </div>
       <div>
         <Input
-          label="Telephone:"
+          label="Téléphone:"
           required
           name="telephone"
           type="number"
@@ -134,7 +133,7 @@ const ProspectInformations = ({
       </div>
       <div>
         <Input
-          label="Telephone 2:"   
+          label="Téléphone 2:"   
           name="telephone_num2"
           type="number"
           control={control}
@@ -185,7 +184,7 @@ const ProspectInformations = ({
           defaultValue={defaultValues?.ville}
         />
       </div>
-      {selectedProspect?.source || disabled_var_source ? (
+      {source_d!='' || disabled_var_source ? (
         <div>
           <Autocomplete
             options={sources}

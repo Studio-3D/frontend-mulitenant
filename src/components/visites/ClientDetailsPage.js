@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { ClientDetails } from '@/components/visites/ClientDetails';
 import { VisitDetails } from '@/components/visites/VisitDeatils';
 import axios from 'axios';
-import { APIURL, ENDPOINTS } from '../../configs/api';
+import { APIURL} from '../../configs/api';
 import { useAuth } from '../../context/AuthContext';
 import LoadingSpin from '@/components/LoadingSpin';
 
@@ -12,7 +12,6 @@ export function ClientDetailsPage(visiteId) {
   const [visites_all, setvisites_all] = useState([]);
   const [visites_all_show, setvisites_all_show] = useState([]);
   const [visite, setvisite] = useState(null);
-  const [value, setValue] = useState('');
   const [last_related_id, setLast_Related_id] = useState(0);
 
   const { token } = useAuth();
@@ -32,7 +31,6 @@ export function ClientDetailsPage(visiteId) {
           setvisites_all(response.data.visites);
           setvisites_all_show(response.data.visites_show);
           setvisite(response.data.visite);
-
           for (
             var i = 0;
             i <= Number(response.data.visites_show.length) - 1;
@@ -40,12 +38,6 @@ export function ClientDetailsPage(visiteId) {
           ) {
             if (i == 0) {
               setLast_Related_id(response.data.visites_show[0].related_show_id);
-              if (localStorage.getItem('v_id_org') != visiteId) {
-                setValue(response.data.visites_show[0].related_show_id);
-              } else {
-                //get item de quel cadre va s'afficher on cas d'ajouter n visite et le modal de garder annulder frein s'affiche==> va vous rediriger verd le cadre v perdu
-                setValue(`${localStorage.getItem('v_id_cadre')}`);
-              }
             }
           }
           setLoading(false); // Data is loaded, set loading to false
@@ -58,8 +50,6 @@ export function ClientDetailsPage(visiteId) {
   };
 
   useEffect(() => {
-    localStorage.setItem('v_id_cadre', null);
-    localStorage.setItem('v_id_org', null);
     fetch_visite();
   }, []);
 
