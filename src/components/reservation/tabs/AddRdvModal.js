@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import FullCalendar from '@fullcalendar/react';
-import timeGridPlugin from '@fullcalendar/timegrid';
-import interactionPlugin from '@fullcalendar/interaction';
-import axios from 'axios';
-import { X, Calendar, Clock, CheckCircle, AlertCircle } from 'lucide-react';
-import { APIURL } from '../../../configs/api';
-import Pusher from 'pusher-js';
+import React, { useState, useEffect } from "react";
+import FullCalendar from "@fullcalendar/react";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import interactionPlugin from "@fullcalendar/interaction";
+import axios from "axios";
+import { X, Calendar, Clock, CheckCircle, AlertCircle } from "lucide-react";
+import { APIURL } from "../../../configs/api";
+import Pusher from "pusher-js";
 
 const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
   const [selectedSlot, setSelectedSlot] = useState(null);
-  const [type, setType] = useState('');
+  const [type, setType] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState(null);
   const [calendarApi, setCalendarApi] = useState(null);
@@ -17,18 +17,18 @@ const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
   const [showDetailModal, setShowDetailModal] = useState(false);
 
   const types = [
-    { title: 'Compromis de vente', value: 1 },
-    { title: 'Contrat de vente', value: 2 },
+    { title: "Attestation de vente", value: 1 },
+    { title: "Contrat de vente", value: 2 },
   ];
 
   useEffect(() => {
     if (!open || !calendarApi) return;
 
-    console.log('Initializing Pusher with key:', pusherKey);
+    console.log("Initializing Pusher with key:", pusherKey);
     const cleanup = pusher_function();
 
     return () => {
-      console.log('Running Pusher cleanup');
+      console.log("Running Pusher cleanup");
       cleanup && cleanup();
     };
   }, [open, calendarApi, pusherKey]);
@@ -41,13 +41,13 @@ const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
       calendarApi.removeAllEvents();
       calendarApi.addEventSource(events);
     } catch (error) {
-      console.error('Error refreshing calendar:', error);
+      console.error("Error refreshing calendar:", error);
     }
   };
 
   // Modified fetchEvents to handle missing fetchInfo
   const fetchEvents = async (fetchInfo = {}) => {
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem("accessToken");
 
     // If no fetchInfo provided, use default values
     const start = fetchInfo.start || new Date();
@@ -71,31 +71,31 @@ const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
           id: c.id,
           title:
             new Date(c.debut) < now
-              ? 'Passé'
+              ? "Passé"
               : c.disponible
-              ? 'Disponible'
-              : 'Occupé',
+              ? "Disponible"
+              : "Occupé",
           start: c.debut,
           end: c.fin,
           color:
             new Date(c.debut) < now
-              ? '#9CA3AF'
+              ? "#9CA3AF"
               : c.disponible
-              ? '#10B981'
-              : '#EF4444',
+              ? "#10B981"
+              : "#EF4444",
           textColor:
             new Date(c.debut) < now
-              ? '#6B7280'
+              ? "#6B7280"
               : c.disponible
-              ? '#065F46'
-              : 'black',
-          borderColor: 'transparent',
+              ? "#065F46"
+              : "black",
+          borderColor: "transparent",
           extendedProps: {
             disponible: new Date(c.debut) < now ? false : c.disponible,
           },
         }));
     } catch (error) {
-      console.error('Erreur de chargement des créneaux:', error);
+      console.error("Erreur de chargement des créneaux:", error);
       return [];
     }
   };
@@ -121,12 +121,12 @@ const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
 
   // Add this at the top of your component with other constants
   const DATE_FORMAT_OPTIONS = {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   };
   const handleSlotSelect = async (selectInfo) => {
     const now = new Date();
@@ -139,7 +139,7 @@ const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
     setSelectedSlot({
       start: selectInfo.startStr,
       end: selectInfo.endStr,
-      display: selectInfo.start.toLocaleString('fr-FR', DATE_FORMAT_OPTIONS),
+      display: selectInfo.start.toLocaleString("fr-FR", DATE_FORMAT_OPTIONS),
     });
     setShowDetailModal(true);
 
@@ -152,24 +152,24 @@ const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
         },
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
           },
         }
       );
 
       // Visual feedback
       selectInfo.view.calendar.addEvent({
-        title: 'Selected',
+        title: "Selected",
         start: selectInfo.start,
         end: selectInfo.end,
-        color: '#3b82f6',
-        display: 'background',
+        color: "#3b82f6",
+        display: "background",
         extendedProps: { isSelection: true },
       });
     } catch (error) {
-      console.error('Slot update failed:', error);
+      console.error("Slot update failed:", error);
       setErrors({
-        general: [error.response?.data?.message || 'Update failed'],
+        general: [error.response?.data?.message || "Update failed"],
       });
       selectInfo.view.calendar.unselect();
     }
@@ -179,36 +179,36 @@ const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
 
   const pusher_function = () => {
     if (!pusherKey) {
-      console.error('Pusher key is missing');
+      console.error("Pusher key is missing");
       return;
     }
 
     const pusher = new Pusher(pusherKey, {
-      cluster: 'eu',
+      cluster: "eu",
       forceTLS: true,
       authEndpoint: `${APIURL.ROOT}/broadcasting/auth`,
       auth: {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
       },
     });
 
-    const channel = pusher.subscribe('rdv-updates');
+    const channel = pusher.subscribe("rdv-updates");
 
-    console.log('Subscribing to channel...');
+    console.log("Subscribing to channel...");
 
-    channel.bind('Rendez_vous_Prop', (data) => {
-      console.log('Received Pusher event:', data);
+    channel.bind("Rendez_vous_Prop", (data) => {
+      console.log("Received Pusher event:", data);
 
       if (data.reservationId == reservation_id) {
-        console.log('Matching reservation ID, refreshing...');
+        console.log("Matching reservation ID, refreshing...");
 
         const view = calendarApi.view;
         refreshCalendar({
           start: view.activeStart,
           end: view.activeEnd,
-          timeZone: view.calendar.getOption('timeZone'),
+          timeZone: view.calendar.getOption("timeZone"),
         });
 
         if (
@@ -217,11 +217,11 @@ const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
             new Date(data.newDate).getTime()
         ) {
           calendarApi.addEvent({
-            title: 'Selected',
+            title: "Selected",
             start: selectedSlot.start,
             end: selectedSlot.end,
-            color: '#3b82f6',
-            display: 'background',
+            color: "#3b82f6",
+            display: "background",
             extendedProps: { isSelection: true },
           });
         }
@@ -229,12 +229,12 @@ const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
     });
 
     // Debugging connection state
-    pusher.connection.bind('state_change', (states) => {
-      console.log('Pusher connection state changed:', states);
+    pusher.connection.bind("state_change", (states) => {
+      console.log("Pusher connection state changed:", states);
     });
 
     return () => {
-      console.log('Cleaning up Pusher...');
+      console.log("Cleaning up Pusher...");
       channel.unbind_all();
       channel.unsubscribe();
       pusher.disconnect();
@@ -245,13 +245,13 @@ const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
     setIsSubmitting(true);
 
     if (!selectedSlot || !type) {
-      setErrors({ general: ['Veuillez sélectionner un créneau et un type'] });
+      setErrors({ general: ["Veuillez sélectionner un créneau et un type"] });
       setIsSubmitting(false);
       return;
     }
 
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem("accessToken");
       const response = await axios.post(
         `${APIURL.ROOT}/store_rdv_reservation/${reservation_id}`,
         {
@@ -324,16 +324,16 @@ const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
                 plugins={[timeGridPlugin, interactionPlugin]}
                 initialView="timeGridWeek"
                 headerToolbar={{
-                  left: 'prev,next',
-                  center: 'title',
-                  right: 'timeGridDay,timeGridWeek',
+                  left: "prev,next",
+                  center: "title",
+                  right: "timeGridDay,timeGridWeek",
                 }}
                 height="100%"
                 allDaySlot={false}
                 slotDuration="00:30:00"
                 slotLabelFormat={{
-                  hour: '2-digit',
-                  minute: '2-digit',
+                  hour: "2-digit",
+                  minute: "2-digit",
                   hour12: false,
                 }}
                 selectable={true}
@@ -358,13 +358,13 @@ const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
                 weekends={false}
                 businessHours={{
                   daysOfWeek: [1, 2, 3, 4, 5],
-                  startTime: '08:00',
-                  endTime: '18:00',
+                  startTime: "08:00",
+                  endTime: "18:00",
                 }}
                 dayHeaderFormat={{
-                  weekday: 'short',
-                  day: 'numeric',
-                  month: 'short',
+                  weekday: "short",
+                  day: "numeric",
+                  month: "short",
                 }}
                 hiddenDays={[0, 6]}
                 nowIndicator={true}
@@ -402,20 +402,20 @@ const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
                           Créneau sélectionné
                         </p>
                         <p className="text-xs text-blue-500">
-                          {selectedSlot.display} •{' '}
+                          {selectedSlot.display} •{" "}
                           {new Date(selectedSlot.start).toLocaleTimeString(
-                            'fr-FR',
+                            "fr-FR",
                             {
-                              hour: '2-digit',
-                              minute: '2-digit',
+                              hour: "2-digit",
+                              minute: "2-digit",
                             }
-                          )}{' '}
-                          -{' '}
+                          )}{" "}
+                          -{" "}
                           {new Date(selectedSlot.end).toLocaleTimeString(
-                            'fr-FR',
+                            "fr-FR",
                             {
-                              hour: '2-digit',
-                              minute: '2-digit',
+                              hour: "2-digit",
+                              minute: "2-digit",
                             }
                           )}
                         </p>
@@ -474,8 +474,8 @@ const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
                     disabled={!selectedSlot || !type || isSubmitting}
                     className={`px-4 py-1.5 rounded-lg text-sm font-medium text-white ${
                       !selectedSlot || !type
-                        ? 'bg-blue-400 cursor-not-allowed'
-                        : 'bg-blue-600 hover:bg-blue-700'
+                        ? "bg-blue-400 cursor-not-allowed"
+                        : "bg-blue-600 hover:bg-blue-700"
                     } transition-colors flex items-center space-x-1`}
                   >
                     {isSubmitting ? (
@@ -511,7 +511,6 @@ const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
             </div>
           )}
         </div>
-
       </div>
     </div>
   );

@@ -1,30 +1,29 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
-import format from 'date-fns/format';
-import TextField from '@/components/Textfield';
-import SelectInput from '@/components/SelectInput';
-import Compromis_show from '../../../app/(dashboard)/ventes/reservations/compromis_ventes/show';
+import { useState, useEffect } from "react";
+import axios from "axios";
+import format from "date-fns/format";
+import TextField from "@/components/Textfield";
+import SelectInput from "@/components/SelectInput";
+import Compromis_show from "../../../app/(dashboard)/ventes/reservations/compromis_ventes/show";
 
 export const CompromisVentesTab = ({
   reservationData,
   user,
   accessToken: propAccessToken,
 }) => {
-  const accessToken = propAccessToken || localStorage.getItem('accessToken');
+  const accessToken = propAccessToken || localStorage.getItem("accessToken");
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const reservationId = reservationData?.reservation?.id;
 
-  
   function NomBienComplet(bien) {
     const noms = [];
-  
+
     if (bien.tranche?.nom) noms.push(bien.tranche.nom);
     if (bien.bloc?.nom) noms.push(bien.bloc.nom);
     if (bien.immeuble?.nom) noms.push(bien.immeuble.nom);
-  
+
     noms.push(bien.propriete_dite_bien);
-  
-    return noms.join(' - ');
+
+    return noms.join(" - ");
   }
   // State management
   const [data, setData] = useState({
@@ -35,7 +34,7 @@ export const CompromisVentesTab = ({
     openPreview: false,
     nb_compromis_annule: 0,
     reservationDetails: null,
-    bien: '',
+    bien: "",
     sum_avances_valides: 0,
     clients: [],
     etat_res: 1,
@@ -53,10 +52,10 @@ export const CompromisVentesTab = ({
 
   // Duration options
   const durationOptions = [
-    { value: '3', label: '3 Mois' },
-    { value: '6', label: '6 Mois' },
-    { value: '12', label: '12 Mois' },
-    { value: 'Autre', label: 'Autre' },
+    { value: "3", label: "3 Mois" },
+    { value: "6", label: "6 Mois" },
+    { value: "12", label: "12 Mois" },
+    { value: "Autre", label: "Autre" },
   ];
 
   // Handle errors
@@ -89,7 +88,7 @@ export const CompromisVentesTab = ({
     }
   };
   const style_p = {
-    color: 'rgb(42 44 62)',
+    color: "rgb(42 44 62)",
   };
   // Fetch data
   const fetchData = async () => {
@@ -115,7 +114,7 @@ export const CompromisVentesTab = ({
         bien: resData.reservation.original.propriete_dite_bien.original,
       }));
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error:", error);
     } finally {
       setData((prev) => ({ ...prev, loading: false }));
     }
@@ -152,8 +151,8 @@ export const CompromisVentesTab = ({
             </div>
             <div className="ml-3">
               <p className="text-sm text-red-500">
-                Le dossier est désisté. Vous ne pouvez pas ajouter un Compromis
-                de Vente.
+                Le dossier est désisté. Vous ne pouvez pas ajouter une
+                attestation de Vente.
               </p>
             </div>
           </div>
@@ -163,9 +162,9 @@ export const CompromisVentesTab = ({
   } else {
     return (
       <Compromis_show
-      etat_res={data.etat_res}
-      user={user}
-      reservationData={reservationData}
+        etat_res={data.etat_res}
+        user={user}
+        reservationData={reservationData}
         data_c={data.compromis}
         nb_compromis_annule={data.nb_compromis_annule}
       />
@@ -193,7 +192,7 @@ export const CompromisVentesTab = ({
               {/* Modal Header */}
               <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-5 text-white">
                 <h3 className="text-xl font-semibold">
-                  Prévisualisation du Compromis de Vente
+                  Prévisualisation de l'attestation de Vente
                 </h3>
               </div>
 
@@ -239,7 +238,7 @@ export const CompromisVentesTab = ({
                           Date:
                         </span>
                         <span className="text-gray-800 font-medium">
-                          {format(new Date(), 'dd/MM/yyyy')}
+                          {format(new Date(), "dd/MM/yyyy")}
                         </span>
                       </div>
                     </div>
@@ -248,7 +247,7 @@ export const CompromisVentesTab = ({
                   {/* Title */}
                   <div className="text-center mb-8">
                     <h1 className="text-2xl font-bold text-indigo-700">
-                      COMPROMIS DE VENTE
+                      ATTESTATION DE VENTE
                     </h1>
                     <div className="mt-2 h-1 bg-gradient-to-r from-blue-100 via-indigo-400 to-blue-100"></div>
                   </div>
@@ -261,10 +260,10 @@ export const CompromisVentesTab = ({
                         LES SOUSSIGNES
                       </h3>
                       <p className="text-gray-700 leading-relaxed">
-                        LA SOCIETE «{' '}
+                        LA SOCIETE «{" "}
                         <span className="font-bold">
                           {user?.societe?.raison_sociale}
-                        </span>{' '}
+                        </span>{" "}
                         », société à responsabilité limitée de droit Marocain,
                         au capital social de 100.000,00 de dirhams, ayant son
                         siège social à Fes, 47, Boulevard Al Amir 5ème étage,
@@ -284,7 +283,7 @@ export const CompromisVentesTab = ({
                           <div key={idx} className="bg-gray-50 p-4 rounded-lg">
                             <p className="text-gray-700">
                               <span className="font-medium">
-                                {client.client.civilite} {client.client.nom}{' '}
+                                {client.client.civilite} {client.client.nom}{" "}
                                 {client.client.prenom}
                               </span>
                               , titulaire de la carte {"d'"}identité nationale
@@ -301,10 +300,10 @@ export const CompromisVentesTab = ({
                     {/* Article 1 */}
                     <div>
                       <h3 className="text-lg font-semibold text-indigo-600 mb-3 border-b pb-1">
-                        LE RESERVATAIRE{"D'"}AUTRE PART
+                        LE RESERVATAIRE{" D'"}AUTRE PART
                       </h3>
                       <h6 className="text-black font-bold underline">
-                        Article 1 :OBJET
+                        Article 1 : OBJET
                       </h6>
                       <p
                         className="text-gray-700 leading-relaxed mt-2"
@@ -322,7 +321,7 @@ export const CompromisVentesTab = ({
                     {/* Article 2 */}
                     <div>
                       <h6 className="text-black font-bold underline">
-                        Article 2 :Designation
+                        Article 2 : Désignation
                       </h6>
                       <p
                         className="text-gray-700 leading-relaxed mt-2"
@@ -333,24 +332,24 @@ export const CompromisVentesTab = ({
                         le nom :<b>{data.bien} </b>. en copropriété sis à FES,
                         commune a, Al Amir à distraire des propriétés dénommées
                         : -« » objet du titre foncier mère numéro 82493/47 Cet
-                        Appartement sera situé au{' '}
+                        Appartement sera situé au{" "}
                         <b>
                           {data.reservationDetails?.bien.etage == 0
-                            ? 'RDC'
+                            ? "RDC"
                             : data.reservationDetails?.bien.etage +
-                              'étage'}{' '}
+                              "étage"}{" "}
                         </b>
-                        , {"D'"}une superficie approximative de{' '}
+                        , {"D'"}une superficie approximative de{" "}
                         <b>
-                          {data.reservationDetails?.bien.superficie_habitable}{' '}
-                          m²{' '}
-                        </b>{' '}
+                          {data.reservationDetails?.bien.superficie_habitable}{" "}
+                          m²{" "}
+                        </b>{" "}
                         dont un balcon et buanderie {"d'"}une superficie
-                        approximative de{' '}
+                        approximative de{" "}
                         <b>
                           {data.reservationDetails?.bien.superficie_balcon} m²
-                        </b>{' '}
-                        Et une terrasse {"d'"}une superficie approximative de{' '}
+                        </b>{" "}
+                        Et une terrasse {"d'"}une superficie approximative de{" "}
                       </p>
                       <p>
                         {/* Terrasse condition */}
@@ -358,14 +357,14 @@ export const CompromisVentesTab = ({
                           0 && (
                           <>
                             Et une terrasse {"d'"}une superficie approximative
-                            de{' '}
+                            de{" "}
                             <b>
                               {
                                 data.reservationDetails?.bien
                                   .superficie_terrasse
-                              }{' '}
+                              }{" "}
                               m²
-                            </b>{' '}
+                            </b>{" "}
                           </>
                         )}
 
@@ -417,7 +416,7 @@ export const CompromisVentesTab = ({
                               if (summedComposition.nbre_halls > 0)
                                 parts.push(
                                   `${summedComposition.nbre_halls} hall${
-                                    summedComposition.nbre_halls > 1 ? 's' : ''
+                                    summedComposition.nbre_halls > 1 ? "s" : ""
                                   }`
                                 );
                               if (summedComposition.nbre_salons > 0)
@@ -428,8 +427,8 @@ export const CompromisVentesTab = ({
                                 parts.push(
                                   `${summedComposition.nbre_chambres} chambre${
                                     summedComposition.nbre_chambres > 1
-                                      ? 's'
-                                      : ''
+                                      ? "s"
+                                      : ""
                                   }`
                                 );
                               if (summedComposition.nbre_cuisines > 0)
@@ -439,15 +438,15 @@ export const CompromisVentesTab = ({
                               if (summedComposition.nbre_sdb > 0)
                                 parts.push(
                                   `${summedComposition.nbre_sdb} salle${
-                                    summedComposition.nbre_sdb > 1 ? 's' : ''
+                                    summedComposition.nbre_sdb > 1 ? "s" : ""
                                   } de bain`
                                 );
                               if (summedComposition.nbre_balcons > 0)
                                 parts.push(
                                   `${summedComposition.nbre_balcons} balcon${
                                     summedComposition.nbre_balcons > 1
-                                      ? 's'
-                                      : ''
+                                      ? "s"
+                                      : ""
                                   }`
                                 );
                               if (summedComposition.nbre_buanderies > 0)
@@ -458,8 +457,8 @@ export const CompromisVentesTab = ({
                                 parts.push(
                                   `${summedComposition.nbre_placards} placard${
                                     summedComposition.nbre_placards > 1
-                                      ? 's'
-                                      : ''
+                                      ? "s"
+                                      : ""
                                   }`
                                 );
                               if (summedComposition.nbre_receptions > 0)
@@ -468,19 +467,19 @@ export const CompromisVentesTab = ({
                                     summedComposition.nbre_receptions
                                   } réception${
                                     summedComposition.nbre_receptions > 1
-                                      ? 's'
-                                      : ''
+                                      ? "s"
+                                      : ""
                                   }`
                                 );
 
                               // Join with commas and replace last comma with "et"
                               if (parts.length > 0) {
-                                let text = parts.join(', ');
-                                const lastCommaIndex = text.lastIndexOf(', ');
+                                let text = parts.join(", ");
+                                const lastCommaIndex = text.lastIndexOf(", ");
                                 if (lastCommaIndex !== -1) {
                                   text =
                                     text.substring(0, lastCommaIndex) +
-                                    ' et ' +
+                                    " et " +
                                     text.substring(lastCommaIndex + 2);
                                 }
                                 return text;
@@ -496,8 +495,8 @@ export const CompromisVentesTab = ({
                             data.reservationDetails.bien.num_parking
                           } place${
                             data.reservationDetails.bien.num_parking > 1
-                              ? 's'
-                              : ''
+                              ? "s"
+                              : ""
                           } de parking au sous-sol`}
                         {data.reservationDetails?.bien.num_box != null &&
                           ` Et ${data.reservationDetails.bien.num_box} Box`}
@@ -507,7 +506,7 @@ export const CompromisVentesTab = ({
                     {/* Article 3 */}
                     <div>
                       <h6 className="text-black font-bold underline">
-                        Article 3 :Prix
+                        Article 3 : Prix
                       </h6>
                       <p
                         className="text-gray-700 leading-relaxed mt-2"
@@ -515,18 +514,18 @@ export const CompromisVentesTab = ({
                       >
                         Le présent contrat de réservation est consenti et
                         accepté moyennant le prix ci-après détaillé :<br />
-                        *Soit un prix global estimatif de la somme{' '}
-                        <b>{data.reservationDetails?.prix + ' DHS'} </b> Sur
+                        *Soit un prix global estimatif de la somme{" "}
+                        <b>{data.reservationDetails?.prix + " DHS"} </b> Sur
                         lequel prix de vente ,le réservataire a versé à titre
                         {"d'"}acompte à valoir sur le prix de vente {"d'"}une
-                        valeur de <b>{data.sum_avances_valides + ' DHS'}</b>
+                        valeur de <b>{data.sum_avances_valides + " DHS"}</b>
                         <br />
-                        *Le reliquat soit la somme de{' '}
+                        *Le reliquat soit la somme de{" "}
                         <b>
                           {data.reservationDetails?.prix -
-                            data.sum_avances_valides}{' '}
+                            data.sum_avances_valides}{" "}
                           DHS
-                        </b>{' '}
+                        </b>{" "}
                         sera réglée le jour de la réalisation de la vente
                         définitive.
                       </p>
@@ -535,43 +534,43 @@ export const CompromisVentesTab = ({
                     {/* Article 4 */}
                     <div>
                       <h6 className="text-black font-bold underline">
-                        Article 4 :Compromis
+                        Article 4 : Compromis
                       </h6>
                       <p
                         className="text-gray-700 leading-relaxed mt-2"
                         style={style_p}
                       >
-                        Il est énoncé que le client a signé le comprimis en{' '}
+                        Il est énoncé que le client a signé le comprimis en{" "}
                         <b>
                           {form.date_sign_client != null &&
                             format(
                               new Date(form.date_sign_client),
-                              'dd/MM/yyyy'
+                              "dd/MM/yyyy"
                             )}
-                        </b>{' '}
-                        et le Maitre {"d'"}Ouvrage en{' '}
+                        </b>{" "}
+                        et le Maitre {"d'"}Ouvrage en{" "}
                         <b>
                           {form.date_sign_mo != null &&
-                            format(new Date(form.date_sign_mo), 'dd/MM/yyyy')}
-                        </b>{' '}
-                        et enregistré en{' '}
+                            format(new Date(form.date_sign_mo), "dd/MM/yyyy")}
+                        </b>{" "}
+                        et enregistré en{" "}
                         <b>
                           {form.date_enreg != null &&
-                            format(new Date(form.date_enreg), 'dd/MM/yyyy')}
-                        </b>{' '}
-                        avec une durée {"d'"}échéance du{' '}
-                        {form.duree_echeance == '3'
-                          ? '3 Mois'
-                          : form.duree_echeance == '6'
-                          ? '6 Mois'
-                          : form.duree_echeance == '12'
-                          ? '12 Mois'
-                          : null}{' '}
-                        correspondant le{' '}
+                            format(new Date(form.date_enreg), "dd/MM/yyyy")}
+                        </b>{" "}
+                        avec une durée {"d'"}échéance du{" "}
+                        {form.duree_echeance == "3"
+                          ? "3 Mois"
+                          : form.duree_echeance == "6"
+                          ? "6 Mois"
+                          : form.duree_echeance == "12"
+                          ? "12 Mois"
+                          : null}{" "}
+                        correspondant le{" "}
                         <b>
                           {form.date_echeance != null &&
-                            format(new Date(form.date_echeance), 'dd/MM/yyyy')}
-                        </b>{' '}
+                            format(new Date(form.date_echeance), "dd/MM/yyyy")}
+                        </b>{" "}
                         .
                       </p>
                     </div>
@@ -620,7 +619,7 @@ export const CompromisVentesTab = ({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-semibold text-white">
-                Nouveau Compromis de Vente
+                Nouvelle attestation de Vente
               </h2>
               <p className="mt-1 text-blue-100">
                 Remplissez les informations nécessaires pour établir le
@@ -629,7 +628,7 @@ export const CompromisVentesTab = ({
             </div>
             <div className="hidden md:block">
               <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                {reservationData.reservation?.code_reservation || 'Nouveau'}
+                {reservationData.reservation?.code_reservation || "Nouveau"}
               </span>
             </div>
           </div>
@@ -678,7 +677,7 @@ export const CompromisVentesTab = ({
                       control={false}
                       label="CIN"
                       name="cin"
-                      value={client.client.cin || ''}
+                      value={client.client.cin || ""}
                       disabled
                       errors={{}}
                       backendErrors={{}}
@@ -689,7 +688,7 @@ export const CompromisVentesTab = ({
                       control={false}
                       label="Nom"
                       name="nom"
-                      value={client.client.nom || ''}
+                      value={client.client.nom || ""}
                       disabled
                       errors={{}}
                       backendErrors={{}}
@@ -700,7 +699,7 @@ export const CompromisVentesTab = ({
                       control={false}
                       label="Prénom"
                       name="prenom"
-                      value={client.client.prenom || ''}
+                      value={client.client.prenom || ""}
                       disabled
                       errors={{}}
                       backendErrors={{}}
@@ -735,7 +734,7 @@ export const CompromisVentesTab = ({
                 control={false}
                 label="Code Réservation"
                 name="code_reservation"
-                value={data.reservationDetails?.code_reservation || ''}
+                value={data.reservationDetails?.code_reservation || ""}
                 disabled
                 className="bg-gray-50"
               />
@@ -743,7 +742,7 @@ export const CompromisVentesTab = ({
                 control={false}
                 label="Projet"
                 name="projet"
-                value={data.reservationDetails?.bien?.projet?.nom || ''}
+                value={data.reservationDetails?.bien?.projet?.nom || ""}
                 disabled
                 className="bg-gray-50"
               />
@@ -759,7 +758,7 @@ export const CompromisVentesTab = ({
                 control={false}
                 label="Prix (DH)"
                 name="prix"
-                value={data.reservationDetails?.prix || ''}
+                value={data.reservationDetails?.prix || ""}
                 disabled
                 className="bg-gray-50"
               />
@@ -860,14 +859,14 @@ export const CompromisVentesTab = ({
                   value={form.duree_echeance}
                   onChange={(value) => {
                     setForm((prev) => ({ ...prev, duree_echeance: value }));
-                    if (value !== 'Autre') {
+                    if (value !== "Autre") {
                       const newDate = new Date();
                       newDate.setMonth(
                         newDate.getMonth() + parseInt(value, 10)
                       );
                       setForm((prev) => ({
                         ...prev,
-                        date_echeance: format(newDate, 'yyyy-MM-dd'),
+                        date_echeance: format(newDate, "yyyy-MM-dd"),
                       }));
                     } else {
                       setForm((prev) => ({ ...prev, date_echeance: null }));
@@ -890,7 +889,7 @@ export const CompromisVentesTab = ({
                       date_echeance: e.target.value,
                     }))
                   }
-                  disabled={form.duree_echeance !== 'Autre'}
+                  disabled={form.duree_echeance !== "Autre"}
                 />
               </div>
             </div>
