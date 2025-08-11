@@ -25,6 +25,10 @@ export default function DashboardLayout({ children }) {
     '/immeubles',
     '/biens'
   ];
+   useEffect(() => {
+    // Reset scroll position to top on route change or reload
+    window.scrollTo(0, 0);
+  }, [pathname]);
   
   useEffect(() => {
     // Only show modal when:

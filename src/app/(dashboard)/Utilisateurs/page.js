@@ -135,11 +135,7 @@ const Page = () => {
     setSearchTerm(""); // Also reset search term
   };
 
-  // Handle search separately
-  const handleSearch = (term) => {
-    setSearchTerm(term);
-    setCurrentPage(1); // Reset to first page when search changes
-  };
+
 
   // Fetch users when pagination, filters or search changes
   useEffect(() => {

@@ -8,62 +8,56 @@ import Table from '@/components/Table';
 import CoefficientDialog from './CoefficientDialog';
 import CoefficientFilter from './CoefficientFilter';
 import { toast } from 'react-hot-toast';
-import { Edit, PlusCircle, Eye } from 'lucide-react';
+import {  Eye, PencilLine, PlusCircle } from 'lucide-react';
+import { fetchData_table_by_projet } from '@/configs/api-utils';
 
-const CoefficientManager = ({ userRole }) => {
+const CoefficientManager = ({}) => {
+
   const { selectedProjet } = useProjet();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalRows, setTotalRows] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterValues, setFilterValues] = useState({});
-  
+  const [currentPage, setCurrentPage] = useState(1);
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedTranche, setSelectedTranche] = useState(null);
   const [dialogAction, setDialogAction] = useState(0); // 0 for add, 1 for edit
 
-  const fetchData = async () => {
-    if (!selectedProjet) return;
-    
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('accessToken');
-      const params = {
-        page,
-        size: rowsPerPage,
-        search: searchTerm,
-        ...filterValues
-      };
+  const accesstoken = localStorage.getItem('accessToken');
 
-      // Updated URL structure to use nested resources pattern
-      const response = await axios.get(`${APIURL.ROOT}/v1/projets/${selectedProjet.id}/tranches/`, {
-        headers: { Authorization: `Bearer ${token}` },
-        params
-      });
-
-      const fetchedTranches = response.data.data || [];
-      const pagination = response.data.pagination || {};
-      
-      setData(fetchedTranches);
-      setTotalRows(pagination.totalItems || fetchedTranches.length);
-      setError(null);
-    } catch (err) {
-      console.error('Error fetching tranches data:', err);
-      setError('Erreur lors du chargement des données');
-      toast.error('Erreur lors du chargement des données');
-    } finally {
-      setLoading(false);
-    }
+  const entity = {
+    API_URL: 'tranches',
+    dataKey: 'data',
+    searchFields: [''],
   };
 
   useEffect(() => {
     if (selectedProjet && selectedProjet.id) {
-      fetchData();
+      fetchData_table_by_projet(
+        entity,
+        filterValues,
+        searchTerm,
+        currentPage,
+        rowsPerPage,
+        accesstoken,
+        setLoading,
+        setError,
+        setData,
+        setTotalRows
+      );
     }
-  }, [selectedProjet, page, rowsPerPage, searchTerm, filterValues]);
+  }, [
+    accesstoken,
+    currentPage,
+    rowsPerPage,
+    searchTerm,
+    filterValues,
+    selectedProjet,
+  ]);
 
   const handleAddCoefficient = (tranche) => {
     setSelectedTranche(tranche);
@@ -84,87 +78,111 @@ const CoefficientManager = ({ userRole }) => {
 
   const handleDialogSave = async (formData) => {
     try {
-      const token = localStorage.getItem('accessToken');
       await axios({
         method: 'put',
         url: `${APIURL.ROOTV1}/calculer_tva/${selectedTranche.id}`,
-        data: { 
-          coefficient: formData.coefficient, 
+        data: {
+          coefficient: formData.coefficient,
           qp_bati: selectedTranche.qp_bati,
-          action: dialogAction 
+          action: dialogAction,
         },
         headers: {
-          Authorization: `Bearer ${token}`
-        }
+          Authorization: `Bearer ${accesstoken}`,
+        },
       });
-      
+
       toast.success('Coefficient enregistré avec succès');
-      fetchData();
+      fetchData_table_by_projet(
+        entity,
+        {},
+        searchTerm,
+        currentPage,
+        rowsPerPage,
+        accesstoken,
+        setLoading,
+        setError,
+        setData,
+        setTotalRows
+      );
       closeDialog();
     } catch (err) {
       console.error('Error saving coefficient data:', err);
-      toast.error('Erreur lors de l\'enregistrement du coefficient');
+      toast.error("Erreur lors de l'enregistrement du coefficient");
     }
   };
 
   const handleFilterChange = (values) => {
     setFilterValues(values);
-    setPage(1);
+    setCurrentPage(1);
+  };
+  const handleShow = (trancheId) => {
+    window.open(`/Tranches/${trancheId}`, '_blank');
   };
 
   const columns = [
-    { 
-      key: 'nom', 
+    {
+      key: 'nom',
       label: 'Tranche',
-      render: (row) => <span className="font-medium">{row.nom}</span>
+      render: (row) => <span className="font-medium">{row.nom}</span>,
     },
-    { 
-      key: 'coefficient', 
+    {
+      key: 'coefficient',
       label: 'Coefficient de Réévaluation',
-      render: (row) => row.coefficient_tranche?.coefficient || '-'
+      render: (row) => row.coefficient_tranche?.coefficient || '-',
     },
-    { 
-      key: 'actions', 
+    {
+      key: 'actions',
       label: 'Actions',
       render: (row) => (
         <div className="flex space-x-2">
+          <button
+            onClick={() => handleShow(row.id)}
+            title="Détail Tranche" // Updated title to be clearer
+            className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+          >
+            <Eye className="w-4 h-4" />
+          </button>
           {row.coefficient_tranche === null ? (
             <button
               onClick={() => handleAddCoefficient(row)}
               title="Ajouter Coefficient"
-              className="p-1.5 bg-green-100 !text-green-600 rounded-full hover:bg-green-200"
+              className="flex items-center gap-1 !text-green-500  hover:text-green-700 "
             >
-              <PlusCircle size={16} />
+              <PlusCircle className="w-4 h-4" />
             </button>
           ) : (
             <button
               onClick={() => handleEditCoefficient(row)}
               title="Modifier Coefficient"
-              className="p-1.5 bg-amber-100 text-amber-600 rounded-full hover:bg-amber-200"
+              className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700  "
             >
-              <Edit size={16} />
+              <PencilLine className="w-4 h-4" />
             </button>
           )}
         </div>
-      )
-    }
+      ),
+    },
   ];
 
   const exportColumns = [
     { key: 'nom', label: 'Tranche' },
-    { key: 'coefficient', label: 'Coefficient de Réévaluation' }
+    { key: 'coefficient', label: 'Coefficient de Réévaluation' },
   ];
 
   const transformDataForExport = () => {
     return data.map((item) => ({
-      nom: item?.nom || "",
-      coefficient: item?.coefficient_tranche?.coefficient || ""
+      nom: item?.nom || '',
+      coefficient: item?.coefficient_tranche?.coefficient || '',
     }));
   };
 
   return (
-    <div>
+    <div className="relative bg-white rounded-lg px-4 py-4">
       <Table
+        showSearch={false}
+        currentPage={currentPage}
+        rowsPerPage={rowsPerPage}
+        onPageChange={setCurrentPage}
         name_file_export="coefficients"
         data_to_export={transformDataForExport()}
         columns_export={exportColumns}
@@ -174,13 +192,15 @@ const CoefficientManager = ({ userRole }) => {
         loading={loading}
         error={error}
         emptyMessage="Aucune tranche trouvée"
-        onPageChange={setPage}
         onRowsPerPageChange={setRowsPerPage}
         onSearchChange={setSearchTerm}
-        currentPage={page}
-        rowsPerPage={rowsPerPage}
         enableExport={true}
-        filterComponent={<CoefficientFilter onSubmit={handleFilterChange} initialValues={filterValues} />}
+        filterComponent={
+          <CoefficientFilter
+            onSubmit={handleFilterChange}
+            initialValues={filterValues}
+          />
+        }
       />
 
       {dialogOpen && selectedTranche && (

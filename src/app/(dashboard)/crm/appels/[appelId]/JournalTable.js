@@ -8,7 +8,7 @@ import { fetchData_table_by_id } from '@/configs/api-utils';
 import format from 'date-fns/format';
 import DeleteData from '@/components/DeleteData';
 
-import { Eye, Edit, CalendarClock, CheckCircle, Trash2 } from 'lucide-react';
+import { Eye, Edit, CalendarClock, CheckCircle, Trash2, PencilLine } from 'lucide-react';
 
 import { APIURL, ENDPOINTS } from '@/configs/api';
 import Modal from '@/components/Modal';
@@ -313,7 +313,7 @@ const JournalTable = ({ id, prospect }) => {
       render: (row) => (
         <div className="flex gap-3 items-center">
           <div title="Modifier">
-            <Edit
+            <PencilLine
               className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
               title="Modifier"
               onClick={() => handleEdit(row.id)}

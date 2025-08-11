@@ -10,6 +10,7 @@ import {
   Eye,
   X,
   Trash2,
+  PencilLine,
 } from 'lucide-react';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
@@ -322,7 +323,7 @@ const ReservationTable = ({ dataClient, user_id }) => {
             onClick={() => handleShow(row.id)}
           />
           {row.data_res.contrat_vente == null && (
-            <Edit
+            <PencilLine
               className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
               title="Modifier"
               onClick={() => handleEdit(row.id)}

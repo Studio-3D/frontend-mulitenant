@@ -4,23 +4,23 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useProjet } from '@/context/ProjetContext';
-import { APIURL } from '@/configs/api';
+import { APIURL, ENDPOINTS } from '@/configs/api';
 import Table from '@/components/Table';
 import DecomptesFilter from './DecomptesFilter';
 import DecomptesForm from './DecomptesForm';
 import { toast } from 'react-hot-toast';
-import { Edit, Eye, Trash } from 'lucide-react';
+import { Eye, PencilLine, Trash2 } from 'lucide-react';
 import Modal from '@/components/Modal';
 import format from 'date-fns/format';
-import ProjectSelectorWrapper from './ProjectSelectorWrapper';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
+import { fetchData_table_by_projet } from '@/configs/api-utils';
 
-const DecomptesManager = ({ userRole }) => {
+const DecomptesManager = () => {
   const { selectedProjet } = useProjet();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [page, setPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalRows, setTotalRows] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
@@ -30,51 +30,43 @@ const DecomptesManager = ({ userRole }) => {
   const [refreshData, setRefreshData] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [decompteToDelete, setDecompteToDelete] = useState(null);
-  
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const action = searchParams.get('action');
   const id = searchParams.get('id');
 
-  const fetchData = async () => {
-    if (!selectedProjet) return;
-    
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('accessToken');
-      const params = {
-        page: page, // Use 1-indexed pagination for the API
-        size: rowsPerPage,
-        search: searchTerm,
-        ...filterValues
-      };
-      
-      // Update URL format: project ID should be in the path, not a query parameter
-      const response = await axios.get(`${APIURL.ROOT}/v1/projets/${selectedProjet.id}/decomptes/`, {
-        headers: { Authorization: `Bearer ${token}` },
-        params
-      });
-      
-      const fetchedData = response.data.data || [];
-      const pagination = response.data.pagination || {};
-      
-      setData(fetchedData);
-      setTotalRows(pagination.totalItems || fetchedData.length);
-      setError(null);
-    } catch (err) {
-      console.error('Error fetching decomptes data:', err);
-      setError('Erreur lors du chargement des données');
-      toast.error('Erreur lors du chargement des données');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const accesstoken = localStorage.getItem('accessToken');
 
+  const entity = {
+    API_URL: 'decomptes',
+    dataKey: 'data',
+    searchFields: [''],
+  };
   useEffect(() => {
     if (selectedProjet && selectedProjet.id) {
-      fetchData();
+      fetchData_table_by_projet(
+        entity,
+        filterValues,
+        searchTerm,
+        currentPage,
+        rowsPerPage,
+        accesstoken,
+        setLoading,
+        setError,
+        setData,
+        setTotalRows
+      );
     }
-  }, [selectedProjet, page, rowsPerPage, searchTerm, filterValues, refreshData]);
+  }, [
+    accesstoken,
+    currentPage,
+    rowsPerPage,
+    searchTerm,
+    filterValues,
+    selectedProjet,
+    refreshData,
+  ]);
 
   useEffect(() => {
     if (action === 'edit' && id) {
@@ -87,109 +79,118 @@ const DecomptesManager = ({ userRole }) => {
 
   const handleFilterChange = (values) => {
     setFilterValues(values);
-    setPage(1);
-  };
-
-  const handleAddDecompte = () => {
-    setCurrentDecompte(null);
-    setShowFormModal(true);
+    setCurrentPage(1);
   };
 
   const handleEditDecompte = (id) => {
     const token = localStorage.getItem('accessToken');
-    axios.get(`${APIURL.DECOMPTES}/${id}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-    .then(response => {
-      setCurrentDecompte(response.data.decompte);
-      setShowFormModal(true);
-    })
-    .catch(error => {
-      toast.error("Erreur lors du chargement du décompte");
-      console.error("Error fetching decompte:", error);
-    });
+    axios
+      .get(`${APIURL.DECOMPTES}/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((response) => {
+        setCurrentDecompte(response.data.decompte);
+        setShowFormModal(true);
+      })
+      .catch((error) => {
+        toast.error('Erreur lors du chargement du décompte');
+        console.error('Error fetching decompte:', error);
+      });
   };
 
   const handleDeleteDecompte = (id) => {
-    const decompte = data.find(d => d.id === id);
+    const decompte = data.find((d) => d.id === id);
     setDecompteToDelete(decompte);
     setDeleteModalOpen(true);
   };
 
   const handleFormSave = () => {
     setShowFormModal(false);
-    setRefreshData(prev => !prev);
+    setRefreshData((prev) => !prev);
     router.push('/comptabilite/decomptes');
   };
 
   const columns = [
-    { 
-      key: 'date', 
+    {
+      key: 'date',
       label: 'Date',
-      render: (row) => row.date ? format(new Date(row.date), 'dd/MM/yyyy') : '-'
+      render: (row) =>
+        row.date ? format(new Date(row.date), 'dd/MM/yyyy') : '-',
     },
-    { 
-      key: 'numero', 
+    {
+      key: 'numero',
       label: 'Numéro',
-      render: (row) => <span>{row.numero}</span>
+      render: (row) => <span>{row.numero}</span>,
     },
-    { 
-      key: 'montant', 
+    {
+      key: 'montant',
       label: 'Montant',
-      render: (row) => <span className="font-medium !text-gray-800">{row.montant.toLocaleString()} DH</span>
+      render: (row) => (
+        <span className="font-medium !text-gray-800">
+          {row.montant.toLocaleString()} DH
+        </span>
+      ),
     },
-    { 
-      key: 'montant_paye', 
+    {
+      key: 'montant_paye',
       label: 'Montant Payé',
-      render: (row) => <span className="text-green-600 font-medium">
-        {row.factures_sum_montant ? row.factures_sum_montant.toLocaleString() : 0} DH
-      </span>
+      render: (row) => (
+        <span className="text-green-600 font-medium">
+          {row.factures_sum_montant
+            ? row.factures_sum_montant.toLocaleString()
+            : 0}{' '}
+          DH
+        </span>
+      ),
     },
-    { 
-      key: 'reste', 
+    {
+      key: 'reste',
       label: 'Reste',
       render: (row) => (
-        <div className="!text-red-700 font-bold" style={{ color: '#b91c1c !important' }}>
+        <div
+          className="!text-red-700 font-bold"
+          style={{ color: '#b91c1c !important' }}
+        >
           {row.factures_sum_montant
             ? (row.montant - row.factures_sum_montant).toLocaleString()
-            : row.montant.toLocaleString()
-          } DH
+            : row.montant.toLocaleString()}{' '}
+          DH
         </div>
-      )
+      ),
     },
-    { 
-      key: 'actions', 
+    {
+      key: 'actions',
       label: 'Actions',
       render: (row) => (
         <div className="flex space-x-2">
           <button
             onClick={() => handleEditDecompte(row.id)}
             title="Modifier"
-            className="p-1.5 bg-amber-100 text-amber-600 rounded-full hover:bg-amber-200"
+            className="flex items-center gap-1  text-yellow-500  hover:text-yellow-700"
           >
-            <Edit size={16} />
+            <PencilLine className="w-4 h-4" />
           </button>
-          
+
           {row.factures && row.factures.length > 0 ? (
             <button
               onClick={() => router.push(`/comptabilite/decomptes/${row.id}`)}
               title="Voir les factures"
-              className="p-1.5 bg-blue-100 !text-blue-600 rounded-full hover:bg-blue-200"
+              className="flex items-center gap-1  !text-blue-500  hover:text-blue-700"
             >
-              <Eye size={16} />
+              <Eye className="w-4 h-4" />
             </button>
           ) : (
             <button
               onClick={() => handleDeleteDecompte(row.id)}
               title="Supprimer"
-              className="p-1.5 bg-red-200 !text-red-600 rounded-full hover:bg-red-200"
+              className="flex items-center gap-1  !text-red-500  hover:text-red-700"
             >
-              <Trash size={16} />
+              <Trash2 className="w-4 h-4" />
             </button>
           )}
         </div>
-      )
-    }
+      ),
+    },
   ];
 
   const exportColumns = [
@@ -197,72 +198,79 @@ const DecomptesManager = ({ userRole }) => {
     { key: 'num', label: 'Numéro' },
     { key: 'mnt', label: 'Montant' },
     { key: 'mnt_pay', label: 'Montant Payé' },
-    { key: 'reste', label: 'Reste' }
+    { key: 'reste', label: 'Reste' },
   ];
 
   const transformDataForExport = () => {
     return data.map((item) => ({
-      date: item.date ? format(new Date(item.date), 'dd/MM/yyyy') : "",
-      num: item.numero || "",
-      mnt: item.montant + " DH",
-      mnt_pay: (item.factures_sum_montant || 0) + " DH",
-      reste: item.factures_sum_montant 
-        ? (item.montant - item.factures_sum_montant) + " DH"
-        : item.montant + " DH"
+      date: item.date ? format(new Date(item.date), 'dd/MM/yyyy') : '',
+      num: item.numero || '',
+      mnt: item.montant + ' DH',
+      mnt_pay: (item.factures_sum_montant || 0) + ' DH',
+      reste: item.factures_sum_montant
+        ? item.montant - item.factures_sum_montant + ' DH'
+        : item.montant + ' DH',
     }));
   };
 
   return (
-    <ProjectSelectorWrapper>
-      <div>
-        <Table
-          name_file_export="decomptes"
-          data_to_export={transformDataForExport()}
-          columns_export={exportColumns}
-          columns={columns}
-          data={data}
-          totalRows={totalRows}
-          loading={loading}
-          error={error}
-          emptyMessage="Aucun décompte trouvé"
-          onPageChange={setPage}
-          onRowsPerPageChange={setRowsPerPage}
-          onSearchChange={setSearchTerm}
-          currentPage={page}
-          rowsPerPage={rowsPerPage}
-          enableExport={true}
-          addLink="/comptabilite/decomptes?action=add"
-          filterComponent={<DecomptesFilter onSubmit={handleFilterChange} initialValues={filterValues} />}
-        />
+    <div className="relative bg-white rounded-lg px-4 py-4">
+      <Table
+        name_file_export="decomptes"
+        data_to_export={transformDataForExport()}
+        columns_export={exportColumns}
+        columns={columns}
+        data={data}
+        totalRows={totalRows}
+        loading={loading}
+        error={error}
+        emptyMessage="Aucun décompte trouvé"
+        onRowsPerPageChange={setRowsPerPage}
+        onSearchChange={setSearchTerm}
+        rowsPerPage={rowsPerPage}
+        enableExport={true}
+        addLink={`${ENDPOINTS.DECOMPTES}?action=add`}
+        filterComponent={
+          <DecomptesFilter
+            onSubmit={handleFilterChange}
+            initialValues={filterValues}
+          />
+        }
+        showSearch={false}
+        onPageChange={setCurrentPage}
+        currentPage={currentPage} // Convert 0-indexed to 1-indexed for display
+      />
 
-        {showFormModal && (
-          <Modal isVisible={true} onClose={() => {
+      {showFormModal && (
+        <Modal
+          isVisible={true}
+          onClose={() => {
             setShowFormModal(false);
             router.push('/comptabilite/decomptes');
-          }}>
-            <DecomptesForm 
-              decompte={currentDecompte} 
-              onSave={handleFormSave}
-              onCancel={() => {
-                setShowFormModal(false);
-                router.push('/comptabilite/decomptes');
-              }}
-            />
-          </Modal>
-        )}
-        
-        {deleteModalOpen && decompteToDelete && (
-          <DeleteConfirmationModal
-            isOpen={deleteModalOpen}
-            onClose={() => setDeleteModalOpen(false)}
-            entityName="DECOMPTES"
-            itemLabel={"Décompte"}
-            entityId={decompteToDelete.id}
-            onDeleted={() => setRefreshData(prev => !prev)}
+          }}
+        >
+          <DecomptesForm
+            decompte={currentDecompte}
+            onSave={handleFormSave}
+            onCancel={() => {
+              setShowFormModal(false);
+              router.push('/comptabilite/decomptes');
+            }}
           />
-        )}
-      </div>
-    </ProjectSelectorWrapper>
+        </Modal>
+      )}
+
+      {deleteModalOpen && decompteToDelete && (
+        <DeleteConfirmationModal
+          isOpen={deleteModalOpen}
+          onClose={() => setDeleteModalOpen(false)}
+          entityName="DECOMPTES"
+          itemLabel={'Décompte'}
+          entityId={decompteToDelete.id}
+          onDeleted={() => setRefreshData((prev) => !prev)}
+        />
+      )}
+    </div>
   );
 };
 

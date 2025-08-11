@@ -18,6 +18,7 @@ import {
   UserX,
   UserCog,
   Calendar,
+  PencilLine,
 } from 'lucide-react';
 
 import Button from '@/components/Button'; // Import the component
@@ -2553,7 +2554,7 @@ export default function ReservationForm({ id }) {
                                 className="p-1 text-gray-400 hover:text-blue-500 rounded-full hover:bg-blue-50 transition-colors duration-200"
                                 aria-label="Modifier le client"
                               >
-                                <Pencil className="w-5 h-5" />
+                                <PencilLine className="w-5 h-5" />
                               </button>
 
                               {/* Delete button */}

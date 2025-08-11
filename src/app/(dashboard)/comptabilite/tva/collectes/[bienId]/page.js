@@ -12,6 +12,7 @@ import { toast } from 'react-hot-toast';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { Eye } from 'lucide-react';
+import LoadingSpin from '@/components/LoadingSpin';
 
 const TvaCollectesPage = () => {
   const params = useParams();
@@ -118,13 +119,16 @@ const TvaCollectesPage = () => {
   };
 
   if (!user || !selectedProjet || !biensDetail) {
-    return <div className="p-6 text-center">Chargement...</div>;
-  }
+ return (
+         <div className="flex items-center justify-center min-h-screen">
+           <LoadingSpin /> {/* Use your loading spinner here */}
+         </div>
+       );  }
 
   const color_title = ancien === 0 ? '#9370db' : '#3E2C5A';
 
   return (
-    <div className="p-6">
+    <div >
       <h1 className="text-2xl font-bold mb-6">TVA Collectes - {biensDetail.propriete_dite_bien}</h1>
       
       <ComptabiliteTabsNav />
