@@ -3,12 +3,12 @@ import { useState, useEffect } from "react"
 import axios from "axios"
 import { APIURL } from "@/configs/api"
 import { 
-  MdStorage, 
-  MdOutlineViewInAr, 
-  MdApartment,
-  MdHome,
-  MdAdd
-} from "react-icons/md"
+  Archive, 
+  Layers, 
+  Building2,
+  Home,
+  Plus
+} from "lucide-react"
 import Modal from "@/components/Modal"
 import toast from "react-hot-toast"
 
@@ -268,7 +268,7 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
                 onClick={() => setShowAddTypeModal(true)}
                 className="mb-0.5 h-10 px-3 py-2 flex items-center justify-center bg-green-500 hover:bg-green-600 text-white rounded-md text-sm transition-colors"
               >
-                <MdAdd className="h-5 w-5 mr-1" />
+                <Plus className="h-5 w-5 mr-1" />
                 <span>Nouveau</span>
               </button>
             )}
@@ -282,7 +282,7 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {/* Tranches */}
           <CompositionCard
-            icon={<MdStorage />}
+            icon={<Archive />}
             title="Tranche"
             description="Ce projet se compose des tranches."
             isChecked={hasTranches}
@@ -295,7 +295,7 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
           
           {/* Blocs */}
           <CompositionCard
-            icon={<MdOutlineViewInAr />}
+            icon={<Layers />}
             title="Bloc"
             description="Ce projet se compose des blocs."
             isChecked={hasBlocks}
@@ -308,7 +308,7 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
           
           {/* Immeubles */}
           <CompositionCard
-            icon={<MdApartment />}
+            icon={<Building2 />}
             title="Immeuble"
             description="Ce projet se compose des immeubles."
             isChecked={hasBuilding}
@@ -321,7 +321,7 @@ export default function CompositionForm({ state, setState, onNext, errors, isEdi
           
           {/* Bien */}
           <CompositionCard
-            icon={<MdHome />}
+            icon={<Home />}
             title="Bien"
             description="Ce projet se compose des biens."
             isChecked={hasBien}

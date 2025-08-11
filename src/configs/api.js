@@ -72,11 +72,21 @@ export const APIURL = {
   // Social Media Configuration APIs
   LINKEDIN_CONFIG: `${APIBASEURL}/v1/linkedin-config`,
   TIKTOK_CONFIG: `${APIBASEURL}/v1/tiktok-config`,
-  
+  FACEBOOK_CONFIG: `${APIBASEURL}/v1/facebook-configurations`,
+  INSTAGRAM_CONFIG: `${APIBASEURL}/v1/instagram-configurations`,
+
   // Social Media Sharing APIs
   LINKEDIN_SHARE: `${APIBASEURL}/v1/linkedin/share`,
   TIKTOK_PUBLISH: `${APIBASEURL}/v1/tiktok/publish`,
   TIKTOK_STATUS: `${APIBASEURL}/v1/tiktok/status`,
+  FACEBOOK_SHARE: `${APIBASEURL}/v1/postTo_Social_Network`,
+  INSTAGRAM_SHARE: `${APIBASEURL}/v1/postTo_Social_Network`,
+
+  // Webhook Management APIs
+  FACEBOOK_WEBHOOK_TOGGLE: `${APIBASEURL}/v1/facebook-configurations`,
+  INSTAGRAM_WEBHOOK_TOGGLE: `${APIBASEURL}/v1/instagram-configurations`,
+  FACEBOOK_WEBHOOKS: `${APIBASEURL}/v1/facebook-webhooks`,
+  INSTAGRAM_WEBHOOKS: `${APIBASEURL}/v1/instagram-webhooks`,
 }
 
 export const ENDPOINTS = {
@@ -168,6 +178,30 @@ export const checkSocialMediaConfigurations = async (projectId) => {
     configurations.tiktok = !!tiktokResponse.data.configuration;
   } catch (error) {
     console.log("No TikTok configuration found");
+  }
+
+  try {
+    // Check Facebook configuration
+    const facebookResponse = await axios.get(
+      `${APIURL.FACEBOOK_CONFIG}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    configurations.facebook = facebookResponse.data.configurations &&
+      facebookResponse.data.configurations.some(config => config.projet_id == projectId);
+  } catch (error) {
+    console.log("No Facebook configuration found");
+  }
+
+  try {
+    // Check Instagram configuration
+    const instagramResponse = await axios.get(
+      `${APIURL.INSTAGRAM_CONFIG}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    configurations.instagram = instagramResponse.data.configurations &&
+      instagramResponse.data.configurations.some(config => config.projet_id == projectId);
+  } catch (error) {
+    console.log("No Instagram configuration found");
   }
 
   return configurations;

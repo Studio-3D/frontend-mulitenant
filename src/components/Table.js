@@ -1,12 +1,10 @@
 'use client';
 
 import { useState, useEffect, Fragment } from 'react';
-import { Filter, Search, Plus, Download, Upload } from 'lucide-react';
+import { Filter, Search, Plus, Download, Upload, Settings } from 'lucide-react';
 import Link from 'next/link';
 import Modal from './Modal';
 import { handleExportExcel } from '../../src/configs/export';
-
-import { FiSettings } from 'react-icons/fi';
 
 
 const Table = ({
@@ -45,6 +43,7 @@ const Table = ({
   compact = false, 
   onImportClick = () => {},
   onConfigClick = () => {},
+  extraActions = null,
 
 }) => {
   const [showModal, setShowModal] = useState(null);
@@ -135,6 +134,8 @@ const Table = ({
         </div>
 
         <div className="flex gap-2 items-center">
+          {/* extraActions is used for tables with special actions */}
+          {extraActions}
           {addLink && (
             typeof addLink === 'string' ? (
               <Link
@@ -155,7 +156,6 @@ const Table = ({
               </Link>
             )
           )}
-         
           {enableExport && (
             <button
               className="flex gap-1 items-center bg-[#009FFF] text-white font-medium rounded-lg px-3 py-1.5"
@@ -179,7 +179,7 @@ const Table = ({
               className="flex gap-1 items-center bg-orange-300 text-white font-medium rounded-lg px-3 py-1.5 hover:bg-orange-100 transition"
               onClick={onConfigClick}
             >
-              <FiSettings className="w-5 h-5" />
+              <Settings className="w-5 h-5" />
               <span>Configuration</span>
             </button>
           )}

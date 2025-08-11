@@ -5,7 +5,7 @@ import Button from '@/components/Button';
 import toast from 'react-hot-toast';
 import { APIURL } from '../../../../configs/api';
 import { useAuth } from '../../../../context/AuthContext';
-import { Statuts_Prospect } from '../../../../../src/configs/enum';
+import { Statuts_Prospect_Traitement } from '../../../../../src/configs/enum';
 import Autocomplete from '@/components/Autocomplete';
 import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -206,9 +206,7 @@ export default function Modal_Traite({ onClose, id, num_tel, nom_prenom }) {
                 <Autocomplete
                   label="Statut:"
                   required={true}
-                  options={Object.values(Statuts_Prospect).filter(
-                    (option) => option.id !== '4'
-                  )}
+                  options={Object.values(Statuts_Prospect_Traitement)}
                   choix="label"
                   value={field.value}
                   onChange={(selectedOption) => {
@@ -224,7 +222,7 @@ export default function Modal_Traite({ onClose, id, num_tel, nom_prenom }) {
               )}
             />
           </div>
-          {watch('statut') == 1 && (
+          {watch('statut') == 'Planification Rendez Vous' && (
             <div className="flex items-center space-x-2 w-full">
               {
                 <>
@@ -232,7 +230,7 @@ export default function Modal_Traite({ onClose, id, num_tel, nom_prenom }) {
                     type="datetime-local"
                     label="Rendez vous:"
                     name="rdv"
-                    required={watch('statut') == 1 ? true : false}
+                    required={watch('statut') == 'Planification Rendez Vous' ? true : false}
                     control={control}
                     errors={errors}
                   />
@@ -240,15 +238,15 @@ export default function Modal_Traite({ onClose, id, num_tel, nom_prenom }) {
               }
             </div>
           )}
-          {watch('statut') == 3 && (
+          {watch('statut') == 'Rappel' && (
             <div className="flex items-center space-x-2 w-full">
               {
                 <>
                   <TextField
                     type="date"
                     label="Date Rappel:"
-                    name="rdv"
-                    required={watch('statut') == 3 ? true : false}
+                    name="date_rappel"
+                    required={watch('statut') == 'Rappel' ? true : false}
                     control={control}
                     errors={errors}
                     defaultValues={defaultValues}
