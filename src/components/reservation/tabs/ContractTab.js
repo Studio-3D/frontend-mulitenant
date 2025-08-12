@@ -3,17 +3,17 @@ import format from 'date-fns/format';
 import toast, { Toaster } from 'react-hot-toast';
 import axios from 'axios';
 import {
-  FiEdit2,
-  FiCheckCircle,
-  FiPrinter,
-  FiUpload,
-  FiCalendar,
-  FiUser,
-  FiFileText,
-  FiCheck,
-  FiX,
-} from 'react-icons/fi';
-import { FaFilePdf } from 'react-icons/fa';
+  Edit2,
+  CheckCircle,
+  Printer,
+  Upload,
+  Calendar,
+  User,
+  FileText,
+  Check,
+  X,
+  File,
+} from 'lucide-react';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import Document_Contrat from '../../../app/(dashboard)/ventes/reservations/contrat_vente/recu';
 export const ContractTab = ({
@@ -267,7 +267,7 @@ export const ContractTab = ({
               <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 mb-8">
                 <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-4">
                   <h2 className="text-xl font-bold text-white flex items-center">
-                    <FiFileText className="mr-2" />
+                    <FileText className="mr-2" />
                     Ajouter un nouveau contrat
                   </h2>
                 </div>
@@ -276,7 +276,7 @@ export const ContractTab = ({
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="space-y-1">
                       <label className="block text-sm font-medium text-gray-700 flex items-center">
-                        <FiCalendar className="mr-2 text-blue-600" />
+                        <Calendar className="mr-2 text-blue-600" />
                         Date Signature Client{' '}
                         <span className="text-red-500 ml-1">*</span>
                       </label>
@@ -292,7 +292,7 @@ export const ContractTab = ({
 
                     <div className="space-y-1">
                       <label className="block text-sm font-medium text-gray-700 flex items-center">
-                        <FiCalendar className="mr-2 text-blue-600" />
+                        <Calendar className="mr-2 text-blue-600" />
                         Date Signature MO{' '}
                         <span className="text-red-500 ml-1">*</span>
                       </label>
@@ -308,7 +308,7 @@ export const ContractTab = ({
 
                     <div className="space-y-1">
                       <label className="block text-sm font-medium text-gray-700 flex items-center">
-                        <FiCalendar className="mr-2 text-blue-600" />
+                        <Calendar className="mr-2 text-blue-600" />
                         Date Enregistrement{' '}
                         <span className="text-red-500 ml-1">*</span>
                       </label>
@@ -325,7 +325,7 @@ export const ContractTab = ({
 
                   <div className="space-y-1">
                     <label className="block text-sm font-medium text-gray-700 flex items-center">
-                      <FiEdit2 className="mr-2 text-blue-600" />
+                      <Edit2 className="mr-2 text-blue-600" />
                       Commentaire
                     </label>
                     <textarea
@@ -341,7 +341,7 @@ export const ContractTab = ({
                       type="reset"
                       className="px-5 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200 flex items-center"
                     >
-                      <FiX className="mr-2" />
+                      <X className="mr-2" />
                       Annuler
                     </button>
 
@@ -353,7 +353,7 @@ export const ContractTab = ({
                       {loading_btn ? (
                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                       ) : (
-                        <FiCheck className="mr-2" />
+                        <Check className="mr-2" />
                       )}
                       Enregistrer le contrat
                     </button>
@@ -366,7 +366,7 @@ export const ContractTab = ({
                 <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-4">
                   <div className="flex justify-between items-center">
                     <h2 className="text-xl font-bold text-white flex items-center">
-                      <FiFileText className="mr-2" />
+                      <FileText className="mr-2" />
                       Aperçu du contrat
                     </h2>
                     <div className="bg-white/20 px-3 py-1 rounded-full text-xs font-medium text-white">
@@ -706,7 +706,7 @@ export const ContractTab = ({
           <div className="flex flex-col md:flex-row md:items-center justify-between bg-gradient-to-r from-blue-600 to-indigo-700 rounded-t-xl px-6 py-5">
             <div>
               <h1 className="text-2xl font-bold text-white flex items-center">
-                <FiFileText className="mr-3 text-white" />
+                <FileText className="mr-3 text-white" />
                 Contrat de Vente
               </h1>
               <p className="text-blue-100 mt-1">
@@ -734,7 +734,7 @@ export const ContractTab = ({
               <div className="p-6 border-b md:border-b-0 md:border-r border-gray-100">
                 <div className="flex items-center mb-3">
                   <div className="bg-blue-100 p-2 rounded-lg mr-4">
-                    <FiUser className="text-blue-800 text-xl" />
+                    <User className="text-blue-800 text-xl" />
                   </div>
                   <div>
                     <h3 className="text-sm font-medium text-gray-500">
@@ -748,7 +748,7 @@ export const ContractTab = ({
               <div className="p-6 border-b md:border-b-0 md:border-r border-gray-100">
                 <div className="flex items-center mb-3">
                   <div className="bg-indigo-100 p-2 rounded-lg mr-4">
-                    <FiCalendar className="text-indigo-600 text-xl" />
+                    <Calendar className="text-indigo-600 text-xl" />
                   </div>
                   <div>
                     <h3 className="text-sm font-medium text-gray-500">
@@ -766,7 +766,7 @@ export const ContractTab = ({
               <div className="p-6">
                 <div className="flex items-center mb-3">
                   <div className="bg-green-300 p-2 rounded-lg mr-4">
-                    <FiCheckCircle className="text-white text-xl" />
+                    <CheckCircle className="text-white text-xl" />
                   </div>
                   <div>
                     <h3 className="text-sm font-medium text-gray-500">
@@ -795,7 +795,7 @@ export const ContractTab = ({
                   {/* Registration */}
                   <div className="relative mb-8">
                     <div className="absolute left-0 top-0 w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
-                      <FiCheckCircle className="text-white" />
+                      <CheckCircle className="text-white" />
                     </div>
                     <div className="flex justify-between items-start pl-10">
                       {' '}
@@ -819,7 +819,7 @@ export const ContractTab = ({
                   <div className="mb-8 relative">
                     {contrat_sign && (
                       <div className="absolute left-0 top-0 w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
-                        <FiCheckCircle className="text-white" />
+                        <CheckCircle className="text-white" />
                       </div>
                     )}
                     <div className="flex justify-between items-start pl-10">
@@ -845,7 +845,7 @@ export const ContractTab = ({
                   <div className="mb-8 relative">
                     {contrat_sign && (
                       <div className="absolute left-0 top-0 w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
-                        <FiCheckCircle className="text-white" />
+                        <CheckCircle className="text-white" />
                       </div>
                     )}
                     <div className="flex justify-between items-start pl-10">
@@ -914,7 +914,7 @@ export const ContractTab = ({
                           ) : (
                             <>
                               <button className="px-4 py-2 bg-gray-800 text-white rounded-lg flex items-center text-sm hover:bg-gray-900 transition-colors">
-                                <FiPrinter className="mr-2" />
+                                <Printer className="mr-2" />
                                 Télécharger le Pdf
                               </button>
                             </>
@@ -927,7 +927,7 @@ export const ContractTab = ({
                         onClick={handleEdit}
                         className="px-4 py-2 bg-green-500 text-white rounded-lg flex items-center text-sm hover:bg-gray-200 transition-colors"
                       >
-                        <FiEdit2 className="mr-2" />
+                        <Edit2 className="mr-2" />
                         Modifier
                       </button>
                     )}
@@ -939,7 +939,7 @@ export const ContractTab = ({
                 <div className="border border-gray-200 rounded-lg p-4 bg-gray-50 flex items-center justify-between">
                   <div className="flex items-center">
                     {contrat_sign?.toLowerCase()?.endsWith('.pdf') ? (
-                      <FaFilePdf className="text-red-500 text-3xl mr-4" />
+                      <File className="text-red-500 text-3xl mr-4" />
                     ) : (
                       <img
                         src={`${FileUrl}/Docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/contrat_vente/${reservationData?.reservation?.code_reservation}/${contrat_sign}`}
@@ -963,7 +963,7 @@ export const ContractTab = ({
                 <>
                   {etat_res == 1 && (
                     <div className="border border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50">
-                      <FiFileText className="mx-auto text-gray-400 text-4xl mb-3" />
+                      <FileText className="mx-auto text-gray-400 text-4xl mb-3" />
                       <h4 className="text-lg font-medium text-gray-700 mb-1">
                         Aucun document signé disponible
                       </h4>
@@ -975,7 +975,7 @@ export const ContractTab = ({
                         onClick={handle_Scanne_recu}
                         className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-lg flex items-center mx-auto hover:from-blue-700 hover:to-indigo-800 transition-all"
                       >
-                        <FiUpload className="mr-2" />
+                        <Upload className="mr-2" />
                         Ajouter le document signé
                       </button>
                     </div>
@@ -1013,7 +1013,7 @@ export const ContractTab = ({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-1">
                   <label className="block text-sm font-medium text-gray-700 flex items-center">
-                    <FiCalendar className="mr-2 text-blue-600" />
+                    <Calendar className="mr-2 text-blue-600" />
                     Date Signature Client{' '}
                     <span className="text-red-500 ml-1">*</span>
                   </label>
@@ -1028,7 +1028,7 @@ export const ContractTab = ({
 
                 <div className="space-y-1">
                   <label className="block text-sm font-medium text-gray-700 flex items-center">
-                    <FiCalendar className="mr-2 text-blue-600" />
+                    <Calendar className="mr-2 text-blue-600" />
                     Date Signature Maitre Ouvrage{' '}
                     <span className="text-red-500 ml-1">*</span>
                   </label>
@@ -1043,7 +1043,7 @@ export const ContractTab = ({
 
                 <div className="space-y-1">
                   <label className="block text-sm font-medium text-gray-700 flex items-center">
-                    <FiCalendar className="mr-2 text-blue-600" />
+                    <Calendar className="mr-2 text-blue-600" />
                     Date Enregistrement{' '}
                     <span className="text-red-500 ml-1">*</span>
                   </label>
@@ -1059,7 +1059,7 @@ export const ContractTab = ({
 
               <div className="space-y-1">
                 <label className="block text-sm font-medium text-gray-700 flex items-center">
-                  <FiEdit2 className="mr-2 text-blue-600" />
+                  <Edit2 className="mr-2 text-blue-600" />
                   Commentaire
                 </label>
                 <textarea
@@ -1087,7 +1087,7 @@ export const ContractTab = ({
                   onClick={handleEdit}
                   className="px-5 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200 flex items-center"
                 >
-                  <FiX className="mr-2" />
+                  <X className="mr-2" />
                   Annuler
                 </button>
 
@@ -1099,7 +1099,7 @@ export const ContractTab = ({
                   {loading_btn ? (
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                   ) : (
-                    <FiCheck className="mr-2" />
+                    <Check className="mr-2" />
                   )}
                   Enregistrer les modifications
                 </button>
@@ -1124,7 +1124,7 @@ export const ContractTab = ({
             <div className="p-6">
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
-                  <FiUpload className="mr-2 text-blue-600" />
+                  <Upload className="mr-2 text-blue-600" />
                   Téléverser le document signé{' '}
                   <span className="text-red-500 ml-1">*</span>
                 </label>
@@ -1133,7 +1133,7 @@ export const ContractTab = ({
                   <div className="space-y-1 text-center">
                     {fichier_scanner ? (
                       <div className="text-center">
-                        <FaFilePdf className="mx-auto text-red-500 text-4xl mb-3" />
+                        <File className="mx-auto text-red-500 text-4xl mb-3" />
                         <p className="text-sm font-medium text-gray-900 truncate">
                           {fichier_scanner.name}
                         </p>
@@ -1143,7 +1143,7 @@ export const ContractTab = ({
                       </div>
                     ) : (
                       <>
-                        <FiUpload className="mx-auto h-12 w-12 text-gray-400" />
+                        <Upload className="mx-auto h-12 w-12 text-gray-400" />
                         <div className="flex text-sm text-gray-600">
                           <label className="relative cursor-pointer bg-white rounded-md font-medium text-blue-800 hover:text-blue-500">
                             <span>Téléverser un fichier</span>
@@ -1187,7 +1187,7 @@ export const ContractTab = ({
                   {loading_scann ? (
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                   ) : (
-                    <FiCheck className="mr-2" />
+                    <Check className="mr-2" />
                   )}
                   {contrat_sign ? 'Mettre à jour' : 'Enregistrer'}
                 </button>

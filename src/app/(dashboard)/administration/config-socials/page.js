@@ -5,8 +5,9 @@ import Tabs from "@/components/ui/Tabs";
 import { TikTokConfigTab } from "@/components/config-socials/TikTokConfigTab";
 import FacebookConfigTab from "@/components/config-socials/FacebookConfigTab";
 import InstagramConfigTab from "@/components/config-socials/InstagramConfigTab";
+import WhatsAppConfigTab from "@/components/config-socials/WhatsAppConfigTab";
 import { useAuth } from "@/context/AuthContext";
-import { AlertCircleIcon, Loader, Facebook, Instagram, Linkedin, Video, Settings } from "lucide-react";
+import { AlertCircleIcon, Loader, Facebook, Instagram, Linkedin, Video, Settings, MessageCircle } from "lucide-react";
 import LinkedInConfigTab from "@/components/config-socials/LinkedInConfigTab";
 
 export default function ConfigurationSocialsPage() {
@@ -40,25 +41,30 @@ export default function ConfigurationSocialsPage() {
 
   // Configure tabs for our existing Tabs component (removed webhook tab)
   const tabsConfig = [
-    { 
-      id: "facebook", 
-      label: "Facebook", 
+    {
+      id: "facebook",
+      label: "Facebook",
       icon: <Facebook className="h-4 w-4 text-[#1877F2]" />
     },
-    { 
-      id: "instagram", 
-      label: "Instagram", 
+    {
+      id: "instagram",
+      label: "Instagram",
       icon: <Instagram className="h-4 w-4 text-[#E1306C]" />
     },
-    { 
-      id: "linkedin", 
-      label: "LinkedIn", 
+    {
+      id: "linkedin",
+      label: "LinkedIn",
       icon: <Linkedin className="h-4 w-4 text-[#0A66C2]" />
     },
-    { 
-      id: "tiktok", 
-      label: "TikTok", 
+    {
+      id: "tiktok",
+      label: "TikTok",
       icon: <Video className="h-4 w-4 text-[#FF0050]" />
+    },
+    {
+      id: "whatsapp",
+      label: "WhatsApp",
+      icon: <MessageCircle className="h-4 w-4 text-[#25D366]" />
     }
   ];
 
@@ -71,16 +77,19 @@ export default function ConfigurationSocialsPage() {
     switch (activeTab) {
       case "facebook":
         return <FacebookConfigTab />;
-      
+
       case "instagram":
         return <InstagramConfigTab />;
-      
+
       case "linkedin":
         return <LinkedInConfigTab />;
-      
+
       case "tiktok":
         return <TikTokConfigTab />;
-      
+
+      case "whatsapp":
+        return <WhatsAppConfigTab />;
+
       default:
         return null;
     }

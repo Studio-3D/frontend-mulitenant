@@ -156,16 +156,12 @@ export const fetchData_table_by_id = async (
 
       // Format the data first
       const formattedData = rawData.map((pro) => {
-        const statutLabel = Statuts_Prospect[pro.statut]?.label || '';
-      //  const type_appel = (pro.type_appel ? '1' : '2').toLowerCase();
-
         return {
           ...pro,
           date_traitement: pro.date_traitement
             ? format(new Date(pro.date_traitement), 'dd/MM/yyyy')
             : '',
-          statut: statutLabel,
-         // type:type_appel,
+          // Keep original statut value - don't override it
           rappel: pro.date_rappel
             ? format(new Date(pro.date_rappel), 'dd/MM/yyyy')
             : '',
