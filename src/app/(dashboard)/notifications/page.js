@@ -1,14 +1,56 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Bell, Check, CheckCheck } from 'lucide-react';
+import {
+  Bell,
+  Check,
+  CheckCheck,
+  RefreshCw,
+  Calendar,
+  Home,
+  AlertTriangle,
+  Clock,
+  CheckCircle,
+  Share,
+  MessageCircle,
+  ThumbsUp,
+  Phone
+} from 'lucide-react';
 import { useNotifications } from '@/context/NotificationContext';
+
+// Helper function to get color classes based on notification color
+const getColorClass = (color) => {
+  const colorMap = {
+    'primary': 'bg-blue-100 text-blue-600',
+    'success': 'bg-green-100 text-green-600',
+    'warning': 'bg-yellow-100 text-yellow-600',
+    'error': 'bg-red-100 text-red-600',
+    'info': 'bg-cyan-100 text-cyan-600',
+  };
+  return colorMap[color] || 'bg-gray-100 text-gray-600';
+};
+
+// Helper function to get icon component based on notification icon
+const getIconComponent = (iconName) => {
+  const iconMap = {
+    'refresh-cw': <RefreshCw className="h-6 w-6" />,
+    'calendar': <Calendar className="h-6 w-6" />,
+    'home': <Home className="h-6 w-6" />,
+    'alert-triangle': <AlertTriangle className="h-6 w-6" />,
+    'clock': <Clock className="h-6 w-6" />,
+    'check-circle': <CheckCircle className="h-6 w-6" />,
+    'share': <Share className="h-6 w-6" />,
+    'message-circle': <MessageCircle className="h-6 w-6" />,
+    'thumbs-up': <ThumbsUp className="h-6 w-6" />,
+    'phone': <Phone className="h-6 w-6" />,
+  };
+  return iconMap[iconName] || <Bell className="h-6 w-6" />;
+};
 
 export default function NotificationsPage() {
   const {
     notifications,
     isLoadingNotifications,
-    seenNotifications,
     markAsSeen,
     markAllAsSeen,
     isNotificationSeen

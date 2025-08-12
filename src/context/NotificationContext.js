@@ -9,7 +9,6 @@ export function NotificationProvider({ children }) {
   const [notifications, setNotifications] = useState([]);
   const [newNotificationsCount, setNewNotificationsCount] = useState(0);
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
-  const [seenNotifications, setSeenNotifications] = useState(new Set());
 
   // Fetch notifications
   const fetchNotifications = useCallback(async () => {
@@ -27,20 +26,26 @@ export function NotificationProvider({ children }) {
     try {
       const accessToken = localStorage.getItem('accessToken');
       const selectedProject = JSON.parse(localStorage.getItem('selectedProjet'));
-      setSeenNotifications(prev => new Set([...prev, notificationId]));
+
+      // Optimistically update the UI first
+      setNotifications(prev =>
+        prev.map(n => n.id === notificationId ? { ...n, seen: true } : n)
+      );
+
+      // Then make the API call
       await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/mark_notification_seen`,
         { notification_id: notificationId, projet_id: selectedProject.id },
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
-      // Optionally, update the notification in state to seen
-      setNotifications(prev =>
-        prev.map(n => n.id === notificationId ? { ...n, seen: true } : n)
-      );
     } catch (error) {
       console.error('Error marking notification as seen:', error);
+      // Revert the optimistic update on error
+      setNotifications(prev =>
+        prev.map(n => n.id === notificationId ? { ...n, seen: false } : n)
+      );
     }
-  }, [setNotifications]);
+  }, []);
 
   // Mark all as seen
   const markAllAsSeen = useCallback(async () => {
@@ -48,20 +53,26 @@ export function NotificationProvider({ children }) {
       const accessToken = localStorage.getItem('accessToken');
       const selectedProject = JSON.parse(localStorage.getItem('selectedProjet'));
       const allNotificationIds = notifications.map(notif => notif.id);
-      setSeenNotifications(prev => new Set([...prev, ...allNotificationIds]));
+
+      // Optimistically update the UI first
+      setNotifications(prev =>
+        prev.map(n => ({ ...n, seen: true }))
+      );
+
+      // Then make the API call
       await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/mark_all_notifications_seen`,
         { notification_ids: allNotificationIds, projet_id: selectedProject.id },
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
-      // Optionally, update all notifications in state to seen
-      setNotifications(prev =>
-        prev.map(n => ({ ...n, seen: true }))
-      );
     } catch (error) {
       console.error('Error marking all notifications as seen:', error);
+      // Revert the optimistic update on error
+      setNotifications(prev =>
+        prev.map(n => ({ ...n, seen: false }))
+      );
     }
-  }, [notifications, setNotifications]);
+  }, [notifications]);
 
   // Utility
   const isNotificationSeen = useCallback(
@@ -83,7 +94,6 @@ export function NotificationProvider({ children }) {
         notifications,
         newNotificationsCount,
         isLoadingNotifications,
-        seenNotifications,
         fetchNotifications,
         markAsSeen,
         markAllAsSeen,
