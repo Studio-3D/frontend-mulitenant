@@ -12,12 +12,58 @@ import { useRouter } from 'next/navigation';
 import { fetchData_table_by_projet } from '@/configs/api-utils';
 import { isAdmin, isCommercial, isSuperAdmin } from '@/configs/enum';
 import Modal_Traite from './Modal_Traite';
-import { Statuts_Prospect, getProspectStatusColor, getProspectStatusLabel } from '@/configs/enum';
+import { Statuts_Prospect, getProspectStatusColor, getProspectStatusLabel, canProspectBeAssigned } from '@/configs/enum';
+import { Check as CheckIcon } from 'lucide-react';
 import Input from '@/components/Input';
 import SelectInput from '@/components/SelectInput';
 import Modal_Import from '@/components/Modal_Import';
 import Button from '@/components/Button';
 import { format } from 'date-fns';
+
+// Custom Checkbox Component
+const CustomCheckbox = ({ checked, onChange, disabled = false, className = '', title = '', ariaLabel = '' }) => {
+  return (
+    <div className="flex items-center justify-center">
+      <button
+        type="button"
+        onClick={onChange}
+        disabled={disabled}
+        className={`
+          relative w-5 h-5 rounded border-2 transition-all duration-200 ease-in-out transform
+          ${checked
+            ? 'bg-blue-600 border-blue-600 shadow-lg scale-105'
+            : 'bg-white border-gray-300 hover:border-blue-400 hover:bg-blue-50'
+          }
+          ${disabled
+            ? 'opacity-50 cursor-not-allowed bg-gray-100 border-gray-200'
+            : 'cursor-pointer hover:shadow-md active:scale-95'
+          }
+          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50
+          ${className}
+        `}
+        title={title}
+        aria-label={ariaLabel}
+        aria-checked={checked}
+        role="checkbox"
+      >
+        <div className={`
+          absolute inset-0 rounded transition-all duration-200
+          ${checked ? 'bg-blue-600' : 'bg-transparent'}
+        `}>
+          {checked && (
+            <CheckIcon
+              className={`
+                absolute inset-0 w-3 h-3 m-auto text-white animate-in zoom-in duration-200
+                ${disabled ? 'text-gray-400' : 'text-white'}
+              `}
+              strokeWidth={3}
+            />
+          )}
+        </div>
+      </button>
+    </div>
+  );
+};
 
 const ProspectTable = ({ showOnlyAssigned = false }) => {
   // --- State ---
@@ -180,22 +226,32 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
     // Only show checkbox column if user is not commercial
     ...(!isCommercialUser ? [{
       key: '__checkbox__',
-      label: (
-        <input
-          type="checkbox"
-          checked={formatData().length > 0 && checkedProspects.length === formatData().length}
-          onChange={(e) => handleCheckAll(e.target.checked)}
-          aria-label="Tout sélectionner"
-        />
-      ),
-      render: (row) => (
-        <input
-          type="checkbox"
-          checked={checkedProspects.includes(row.id)}
-          onChange={() => handleCheckProspect(row.id)}
-          aria-label={`Sélectionner le prospect ${row.nom} ${row.prenom}`}
-        />
-      ),
+      label: (() => {
+        const assignableProspects = formatData().filter(row => canProspectBeAssigned(row.prospect));
+        return (
+          <div className="flex items-center justify-center">
+            <CustomCheckbox
+              checked={assignableProspects.length > 0 && checkedProspects.length === assignableProspects.length}
+              onChange={() => handleCheckAll(!(assignableProspects.length > 0 && checkedProspects.length === assignableProspects.length))}
+              ariaLabel="Tout sélectionner"
+              title="Sélectionner/Désélectionner tous les prospects"
+              className="ring-2 ring-blue-200"
+            />
+          </div>
+        );
+      })(),
+      render: (row) => {
+        const canBeAssigned = canProspectBeAssigned(row.prospect);
+        return (
+          <CustomCheckbox
+            checked={checkedProspects.includes(row.id)}
+            onChange={() => canBeAssigned && handleCheckProspect(row.id)}
+            disabled={!canBeAssigned}
+            ariaLabel={`Sélectionner le prospect ${row.nom} ${row.prenom}`}
+            title={!canBeAssigned ? 'Ce prospect ne peut pas être assigné (statut final)' : `Sélectionner ${row.nom} ${row.prenom}`}
+          />
+        );
+      },
     }] : []),
     { key: 'nom', label: 'Nom', render: (row) => <div className="flex items-center gap-3"><span>{row.nom}</span></div> },
     { key: 'prenom', label: 'Prénom', render: (row) => <div className="flex items-center gap-3"><span>{row.prenom}</span></div> },
@@ -278,7 +334,15 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
   const applyFilters = () => setFilters(tempFilters);
   const resetFilters = () => { const reset = { nom: '', prenom: '', cin: '', telephone: '', email: '', statut: '', }; setFilters(reset); setTempFilters(reset); };
   const handleCheckProspect = (id) => setCheckedProspects((prev) => prev.includes(id) ? prev.filter((pid) => pid !== id) : [...prev, id]);
-  const handleCheckAll = (checked) => setCheckedProspects(checked ? formatData().map((row) => row.id) : []);
+  const handleCheckAll = (checked) => {
+    if (checked) {
+      // Only select prospects that can be assigned
+      const assignableProspects = formatData().filter(row => canProspectBeAssigned(row.prospect));
+      setCheckedProspects(assignableProspects.map(row => row.id));
+    } else {
+      setCheckedProspects([]);
+    }
+  };
   const handleOpenAffecter = () => setShowAffecterModal(true);
   const handleCloseAffecter = () => { setShowAffecterModal(false); setSelectedCommercial(''); };
   const handleAffecterSubmit = async () => {
@@ -453,7 +517,15 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
               </div>
             </div>
           }
-          rowClassName={(row) => !isCommercialUser && checkedProspects.includes(row.id) ? 'bg-blue-50' : ''}
+          rowClassName={(row) => {
+            if (!isCommercialUser && checkedProspects.includes(row.id)) {
+              return 'bg-blue-50';
+            }
+            if (!canProspectBeAssigned(row.prospect)) {
+              return 'bg-gray-50 opacity-60';
+            }
+            return '';
+          }}
         />
         
         {/* Affecter Modal - Only show for non-commercial users */}
