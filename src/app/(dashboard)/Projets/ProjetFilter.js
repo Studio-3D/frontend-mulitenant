@@ -4,10 +4,16 @@ import Input from '@/components/Input'
 import InputSelect from '@/components/inputSelect'
 import React from 'react'
 
-
-const ProjetFilter = ({ tempFilters, handleFilterChange, resetFilters, applyFilters, typeProjets, loading }) => {
+const ProjetFilter = ({ 
+  tempFilters, 
+  handleFilterChange, 
+  resetFilters, 
+  applyFilters, 
+  typeProjets = [],  // Default to empty array if undefined
+  loading 
+}) => {
   return (
-    <div className="space-y-4 p-4 rounded-lg">
+    <div className="space-y-4 rounded-lg">
       <div
         className="grid gap-3"
         style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}
@@ -45,10 +51,10 @@ const ProjetFilter = ({ tempFilters, handleFilterChange, resetFilters, applyFilt
             onChange={(selected) =>
               handleFilterChange("type", selected?.value || null)
             }
-            options={typeProjets.map(type => ({
+            options={typeProjets?.map(type => ({
               value: type.id,
               label: type.type
-            }))}
+            })) || []}  // Safely handle undefined/null
             placeholder="Choisir un type..."
             isLoading={loading}
           />
