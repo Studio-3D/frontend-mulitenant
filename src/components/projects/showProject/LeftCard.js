@@ -145,7 +145,7 @@ export const LeftCard = ({ project }) => {
                 <span>Nombre de tranches:</span>
               </div>
               <div className="text-gray-600 text-right">
-                {project.counts?.tranche || 3}
+                {project?.nbre_tranches || 0}
               </div>
             </div>
             
@@ -155,7 +155,7 @@ export const LeftCard = ({ project }) => {
                 <span>Nombre de blocs:</span>
               </div>
               <div className="text-gray-600 text-right">
-                {project?.nbre_blocs || 2}
+                {project?.nbre_blocs || 0}
               </div>
             </div>
             
@@ -165,7 +165,7 @@ export const LeftCard = ({ project }) => {
                 <span>Nombre d'immeubles:</span>
               </div>
               <div className="text-gray-600 text-right">
-                {project.counts?.immeuble || 5}
+                {project?.nbre_immeubles || 0}
               </div>
             </div>
           </div>
