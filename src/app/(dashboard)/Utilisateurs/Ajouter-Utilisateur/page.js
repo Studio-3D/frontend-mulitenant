@@ -45,46 +45,46 @@ const Page = () => {
   };
 
   const validationSchema = Yup.object().shape({
-    name: Yup.string().required("Le nom est requis").min(3, "Le nom doit comporter au moins 3 caractères"),
-    prenom: Yup.string().required("Le prénom est requis").min(3, "Le prénom doit comporter au moins 3 caractères"),
+    name: Yup.string()
+      .required("Le nom est requis")
+      .min(3, "Le nom doit comporter au moins 3 caractères"),
+    prenom: Yup.string()
+      .required("Le prénom est requis")
+      .min(3, "Le prénom doit comporter au moins 3 caractères"),
     email: Yup.string()
-  .trim()
-  .required("L'email est requis")
-  .max(254, "L'email ne doit pas dépasser 254 caractères")
-  .matches(
-    /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-    "Veuillez entrer une adresse email valide"
-  )
-  .test(
-    'no-spaces',
-    "L'email ne doit pas contenir d'espaces",
-    (value) => !/\s/.test(value)
-  )
-  .test(
-    'valid-domain',
-    "Domaine email non valide",
-    (value) => {
-      if (!value) return true;
-      const domain = value.split('@')[1];
-      return domain && domain.includes('.');
-    }
-  )
-  .test(
-    'no-special-chars',
-    "L'email contient des caractères spéciaux non autorisés",
-    (value) => {
-      if (!value) return true;
-      return /^[a-zA-Z0-9._%+-@]+$/.test(value.split('@')[0]);
-    }
-  )
-  .lowercase(),
-    role: Yup.string().required('Le rôle est requis'),
-    gender: Yup.string().required('Le genre est requis'),
+      .trim()
+      .required("L'email est requis")
+      .max(254, "L'email ne doit pas dépasser 254 caractères")
+      .matches(
+        /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+        "Veuillez entrer une adresse email valide"
+      )
+      .test(
+        "no-spaces",
+        "L'email ne doit pas contenir d'espaces",
+        (value) => !/\s/.test(value)
+      )
+      .test("valid-domain", "Domaine email non valide", (value) => {
+        if (!value) return true;
+        const domain = value.split("@")[1];
+        return domain && domain.includes(".");
+      })
+      .test(
+        "no-special-chars",
+        "L'email contient des caractères spéciaux non autorisés",
+        (value) => {
+          if (!value) return true;
+          return /^[a-zA-Z0-9._%+-@]+$/.test(value.split("@")[0]);
+        }
+      )
+      .lowercase(),
+    role: Yup.string().required("Le rôle est requis"),
+    gender: Yup.string().required("Le genre est requis"),
     phone: Yup.string()
-    .min(10, "Téléphone doit contenir au moins 10 caractères").max(15, "Téléphone ne doit pas dépasser 15 caractères")
-    .required('Le téléphone est requis'),
-    cin: Yup.string().required('CIN est requis'),
-    cnss: Yup.string().required('Le numéro CNSS est requis'),
+      .min(10, "Téléphone doit contenir au moins 10 caractères")
+      .max(15, "Téléphone ne doit pas dépasser 15 caractères"),
+    cin: Yup.string(),
+    cnss: Yup.string(),
     fonction: Yup.string(),
     date_embauche: Yup.date(),
     password: Yup.string()
@@ -160,8 +160,6 @@ const Page = () => {
     validateOnBlur: false, // Disable validation on blur events
   });
 
- 
-
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -209,41 +207,56 @@ const Page = () => {
               <Pencil className="text-gray-600 w-5 h-5" />
             </div>
           </div>
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-16 md:gap-y-3 gap-y-4 p-4 '>
-            <Input 
-              label='Nom :' 
-              type='text' name="name"
-             value={formik.values.name}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-16 md:gap-y-3 gap-y-4 p-4 ">
+            <Input
+              label="Nom :"
+              type="text"
+              name="name"
+              value={formik.values.name}
               onChange={(e) => {
                 formik.handleChange(e);
                 // Mark the field as touched when user types
-                formik.setFieldTouched('name', true, false);
+                formik.setFieldTouched("name", true, false);
               }}
               onBlur={formik.handleBlur}
-              error={(formik.touched.name || formik.submitCount > 0) ? formik.errors.name : null}
-               />
-            <Input 
-              label='Prénom :' 
-              type='text' name="prenom" 
-              value={formik.values.prenom} 
+              error={
+                formik.touched.name || formik.submitCount > 0
+                  ? formik.errors.name
+                  : null
+              }
+            />
+            <Input
+              label="Prénom :"
+              type="text"
+              name="prenom"
+              value={formik.values.prenom}
               onChange={(e) => {
                 formik.handleChange(e);
-                formik.setFieldTouched('prenom', true, false);
-              }} onBlur={formik.handleBlur} 
-              error={(formik.touched.prenom || formik.submitCount > 0) ? formik.errors.prenom : null} 
-              />
+                formik.setFieldTouched("prenom", true, false);
+              }}
+              onBlur={formik.handleBlur}
+              error={
+                formik.touched.prenom || formik.submitCount > 0
+                  ? formik.errors.prenom
+                  : null
+              }
+            />
             <Input
-              label='Email :'
-              type='email'
-              name="email" 
-              placeholder={'exemple@gmail.com'}
+              label="Email :"
+              type="email"
+              name="email"
+              placeholder={"exemple@gmail.com"}
               value={formik.values.email}
               onChange={(e) => {
                 formik.handleChange(e);
-                formik.setFieldTouched('email', true, false);
+                formik.setFieldTouched("email", true, false);
               }}
               onBlur={formik.handleBlur}
-              error={(formik.touched.email || formik.submitCount > 0) ? formik.errors.email : null}
+              error={
+                formik.touched.email || formik.submitCount > 0
+                  ? formik.errors.email
+                  : null
+              }
             />
             <SelectInput
               label="Rôle"
@@ -259,7 +272,11 @@ const Page = () => {
               value={formik.values.role} // Directly link the value from Formik
               onChange={(value) => formik.setFieldValue("role", value)} // Handle change via setFieldValue
               onBlur={() => formik.setFieldTouched("role", true)}
-              error={(formik.touched.role || formik.submitCount > 0) ? formik.errors.role : null}
+              error={
+                formik.touched.role || formik.submitCount > 0
+                  ? formik.errors.role
+                  : null
+              }
               submitted={formik.submitCount > 0}
             />
 
@@ -286,7 +303,11 @@ const Page = () => {
               value={formik.values.gender}
               onChange={(value) => formik.setFieldValue("gender", value)}
               onBlur={() => formik.setFieldTouched("gender", true)}
-              error={(formik.touched.gender || formik.submitCount > 0) ? formik.errors.gender : null}
+              error={
+                formik.touched.gender || formik.submitCount > 0
+                  ? formik.errors.gender
+                  : null
+              }
               submitted={formik.submitCount > 0}
             />
 
@@ -327,7 +348,6 @@ const Page = () => {
               value={formik.values.date_embauche} // Pass Formik's value
               onChange={(date) => formik.setFieldValue("date_embauche", date)} // Update Formik value
               error={formik.errors.date_embauche} // Pass validation error
-             
             />
             <SelectInput
               label="Niveau d'étude"
@@ -353,7 +373,7 @@ const Page = () => {
               name="cnss"
               value={formik.values.cnss}
               onChange={formik.handleChange}
-              error={formik.errors.cnss} 
+              error={formik.errors.cnss}
             />
             <SelectInput
               label="Actif"
@@ -383,12 +403,15 @@ const Page = () => {
               onChange={formik.handleChange}
             />
             {/* password input with toggle view hide */}
-            <Input label="Mot de passe" type={showPassword ? "text" : "password"} name="password"
-            value={formik.values.password}
-            onChange={formik.handleChange}
-            error={formik.errors.password}>
-            {showPassword ? (
-
+            <Input
+              label="Mot de passe"
+              type={showPassword ? "text" : "password"}
+              name="password"
+              value={formik.values.password}
+              onChange={formik.handleChange}
+              error={formik.errors.password}
+            >
+              {showPassword ? (
                 <EyeOff
                   className="w-6 h-6 !text-gray-600"
                   onClick={() => setShowPassword(false)}
@@ -401,11 +424,15 @@ const Page = () => {
               )}
             </Input>
             {/* confirm password input with toggle view hide */}
-            <Input label="Confirmer le mot de passe" type={showPasswordConfirmation ? "text" : "password"} name="password_confirmation"
-            value={formik.values.password_confirmation}
-            onChange={formik.handleChange}
-            error={formik.errors.password_confirmation}>
-            {showPasswordConfirmation ? (
+            <Input
+              label="Confirmer le mot de passe"
+              type={showPasswordConfirmation ? "text" : "password"}
+              name="password_confirmation"
+              value={formik.values.password_confirmation}
+              onChange={formik.handleChange}
+              error={formik.errors.password_confirmation}
+            >
+              {showPasswordConfirmation ? (
                 <EyeOff
                   className="w-6 h-6 !text-gray-600"
                   onClick={() => setShowPasswordConfirmation(false)}

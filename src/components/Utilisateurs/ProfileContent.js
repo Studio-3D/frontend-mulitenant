@@ -1,19 +1,19 @@
-'use client';
-import React, { useEffect, useRef, useState } from 'react';
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
-import axios from 'axios';
-import { APIURL, RESOURCE_URL } from '../../configs/api';
-import Image from 'next/image';
-import { useSociete } from '@/context/SocieteContext';
+"use client";
+import React, { useEffect, useRef, useState } from "react";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import axios from "axios";
+import { APIURL, RESOURCE_URL } from "../../configs/api";
+import Image from "next/image";
+import { useSociete } from "@/context/SocieteContext";
 import Input from "../Input";
 import toast from "react-hot-toast";
 import { Edit } from "lucide-react";
 import LoadingSpin from "../LoadingSpin";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
-import SelectInput from '../SelectInput';
-import DateInput from '../DateInput';
+import SelectInput from "../SelectInput";
+import DateInput from "../DateInput";
 
 const ProfileContent = ({ userId }) => {
   const { user } = useAuth();
@@ -27,13 +27,17 @@ const ProfileContent = ({ userId }) => {
   );
   const accessToken = localStorage.getItem("accessToken");
   const { selectedSociete } = useSociete();
-  const [previewUrl, setPreviewUrl] = useState('');
+  const [previewUrl, setPreviewUrl] = useState("");
   const fileInputRef = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
 
   const validationSchema = Yup.object().shape({
-    name: Yup.string().required("Le nom est requis").min(3, "Le nom doit comporter au moins 3 caractères"),
-    prenom: Yup.string().required("Le prénom est requis").min(3, "Le prénom doit comporter au moins 3 caractères"),
+    name: Yup.string()
+      .required("Le nom est requis")
+      .min(3, "Le nom doit comporter au moins 3 caractères"),
+    prenom: Yup.string()
+      .required("Le prénom est requis")
+      .min(3, "Le prénom doit comporter au moins 3 caractères"),
     email: Yup.string()
       .trim()
       .required("L'email est requis")
@@ -42,15 +46,16 @@ const ProfileContent = ({ userId }) => {
         /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
         "Veuillez entrer une adresse email valide"
       ),
-    phone: Yup.string()
-      .matches(/^[0-9]{10}$/, 'Le numéro doit contenir exactement 10 chiffres')
-      .required('Le téléphone est requis'),
-    cin: Yup.string().required('CIN est requis'),
-    cnss: Yup.string().required('Le numéro CNSS est requis'),
-    gender: Yup.string().required('Le genre est requis'),
+    phone: Yup.string().matches(
+      /^[0-9]{10}$/,
+      "Le numéro doit contenir exactement 10 chiffres"
+    ),
+    cin: Yup.string(),
+    cnss: Yup.string(),
+    gender: Yup.string().required("Le genre est requis"),
     fonction: Yup.string(),
     date_embauche: Yup.date(),
-    solde_conge: Yup.number()
+    solde_conge: Yup.number(),
   });
 
   const formik = useFormik({
@@ -76,32 +81,32 @@ const ProfileContent = ({ userId }) => {
       // Add all form values
       for (const key in values) {
         const value = values[key];
-        if (value !== undefined && value !== null && value !== '') {
+        if (value !== undefined && value !== null && value !== "") {
           formToSend.append(key, value);
         }
       }
 
       // Add the image file if selected
       if (selectedFile) {
-        formToSend.append('photo', selectedFile);
+        formToSend.append("photo", selectedFile);
       }
 
       try {
         await axios.post(`${APIURL.UTILISATEURS}/${userId}`, formToSend, {
           headers: {
             Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'multipart/form-data',
+            "Content-Type": "multipart/form-data",
           },
         });
 
-        toast.success('Profile updated successfully!');
+        toast.success("Profil modifié avec succès");
         setIsEditing(false);
 
-        if (searchParams.get('edit')) {
-          router.push('/Utilisateurs');
+        if (searchParams.get("edit")) {
+          router.push("/Utilisateurs");
         }
       } catch (error) {
-        toast.error('Failed to update profile. Please check your inputs.');
+        toast.error("Une erreur s'est produite, Veuillez réessayer.");
         console.error(error);
       }
     },
@@ -123,7 +128,7 @@ const ProfileContent = ({ userId }) => {
         });
         const data = response.data.user || response.data;
         setUserData(data);
-        
+
         // Set Formik initial values
         formik.setValues({
           name: data.name || "",
@@ -202,7 +207,7 @@ const ProfileContent = ({ userId }) => {
             }}
           />
 
-          <div className='relative w-32 h-32 cursor-pointer'>
+          <div className="relative w-32 h-32 cursor-pointer">
             <img
               src={
                 previewUrl
@@ -212,8 +217,10 @@ const ProfileContent = ({ userId }) => {
                       userData.societe
                         ? userData.societe.raison_sociale_concatene
                         : user?.societe?.raison_sociale_concatene
-                    }_${userData.societe_id || user.societe_id}/users/${userData.photo}`
-                  : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
+                    }_${userData.societe_id || user.societe_id}/users/${
+                      userData.photo
+                    }`
+                  : "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
               }
               alt="User Avatar"
               className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
@@ -277,11 +284,15 @@ const ProfileContent = ({ userId }) => {
             value={formik.values.name}
             onChange={(e) => {
               formik.handleChange(e);
-              formik.setFieldTouched('name', true, false);
+              formik.setFieldTouched("name", true, false);
             }}
             readOnly={!isEditing}
             required={isEditing}
-            error={(formik.touched.name || formik.submitCount > 0) ? formik.errors.name : null}
+            error={
+              formik.touched.name || formik.submitCount > 0
+                ? formik.errors.name
+                : null
+            }
           />
           <Input
             label="Prénom:"
@@ -289,11 +300,15 @@ const ProfileContent = ({ userId }) => {
             value={formik.values.prenom}
             onChange={(e) => {
               formik.handleChange(e);
-              formik.setFieldTouched('prenom', true, false);
+              formik.setFieldTouched("prenom", true, false);
             }}
             readOnly={!isEditing}
             required={isEditing}
-            error={(formik.touched.prenom || formik.submitCount > 0) ? formik.errors.prenom : null}
+            error={
+              formik.touched.prenom || formik.submitCount > 0
+                ? formik.errors.prenom
+                : null
+            }
           />
           <Input
             label="Email:"
@@ -301,12 +316,16 @@ const ProfileContent = ({ userId }) => {
             value={formik.values.email}
             onChange={(e) => {
               formik.handleChange(e);
-              formik.setFieldTouched('email', true, false);
+              formik.setFieldTouched("email", true, false);
             }}
             type="email"
             readOnly={!isEditing}
             required={isEditing}
-            error={(formik.touched.email || formik.submitCount > 0) ? formik.errors.email : null}
+            error={
+              formik.touched.email || formik.submitCount > 0
+                ? formik.errors.email
+                : null
+            }
           />
           <Input
             label="Téléphone:"
@@ -315,12 +334,16 @@ const ProfileContent = ({ userId }) => {
             onChange={(e) => {
               const numericValue = e.target.value.replace(/[^0-9]/g, "");
               formik.setFieldValue("phone", numericValue);
-              formik.setFieldTouched('phone', true, false);
+              formik.setFieldTouched("phone", true, false);
             }}
             type="tel"
             readOnly={!isEditing}
             required={isEditing}
-            error={(formik.touched.phone || formik.submitCount > 0) ? formik.errors.phone : null}
+            error={
+              formik.touched.phone || formik.submitCount > 0
+                ? formik.errors.phone
+                : null
+            }
           />
           <Input
             label="Adresse:"
@@ -348,20 +371,24 @@ const ProfileContent = ({ userId }) => {
             name="gender"
             options={[
               { label: "Homme", value: "homme" },
-              { label: "Femme", value: "femme" }
+              { label: "Femme", value: "femme" },
             ]}
             value={formik.values.gender}
             onChange={(value) => formik.setFieldValue("gender", value)}
             readOnly={!isEditing}
             required={isEditing}
-            error={(formik.touched.gender || formik.submitCount > 0) ? formik.errors.gender : null}
+            error={
+              formik.touched.gender || formik.submitCount > 0
+                ? formik.errors.gender
+                : null
+            }
           />
           <SelectInput
             label="Statut"
             name="is_actif"
             options={[
               { label: "Actif", value: "1" },
-              { label: "Inactif", value: "0" }
+              { label: "Inactif", value: "0" },
             ]}
             value={formik.values.is_actif}
             onChange={(value) => formik.setFieldValue("is_actif", value)}
@@ -380,7 +407,6 @@ const ProfileContent = ({ userId }) => {
             value={formik.values.date_embauche}
             onChange={(date) => formik.setFieldValue("date_embauche", date)}
             readOnly={!isEditing}
-            
           />
           <Input
             label="CIN:"
@@ -388,11 +414,15 @@ const ProfileContent = ({ userId }) => {
             value={formik.values.cin}
             onChange={(e) => {
               formik.handleChange(e);
-              formik.setFieldTouched('cin', true, false);
+              formik.setFieldTouched("cin", true, false);
             }}
             readOnly={!isEditing}
             required={isEditing}
-            error={(formik.touched.cin || formik.submitCount > 0) ? formik.errors.cin : null}
+            error={
+              formik.touched.cin || formik.submitCount > 0
+                ? formik.errors.cin
+                : null
+            }
           />
           <Input
             label="CNSS:"
@@ -400,11 +430,15 @@ const ProfileContent = ({ userId }) => {
             value={formik.values.cnss}
             onChange={(e) => {
               formik.handleChange(e);
-              formik.setFieldTouched('cnss', true, false);
+              formik.setFieldTouched("cnss", true, false);
             }}
             readOnly={!isEditing}
             required={isEditing}
-            error={(formik.touched.cnss || formik.submitCount > 0) ? formik.errors.cnss : null}
+            error={
+              formik.touched.cnss || formik.submitCount > 0
+                ? formik.errors.cnss
+                : null
+            }
           />
           <Input
             label="Solde Congé:"
