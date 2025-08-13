@@ -96,41 +96,51 @@ const filteredProjets = useMemo(() => {
   }, []);
 
   // Fetch projects data with pagination
-  const fetchProjects = useCallback(async () => {
-    const accessToken = token || localStorage.getItem("accessToken")
+const fetchProjects = useCallback(async () => {
+  const accessToken = token || localStorage.getItem("accessToken")
+  
+  // Redirect if no token
+  if (!accessToken) {
+    router.push('/login') 
+    return
+  }
+
+  setLoading(true)
+  try {
+    const params = {
+      page: currentPage,
+      size: rowsPerPage,
+    };
+
+    // For non-super admins, filter by user's société
+    if (!isSuperAdmin(user?.role) && user?.societe_id) {
+      params.societe_id = user.societe_id;
+    }
+
+    // If you still want user-specific projects for non-admin roles
+    if (user?.id && !isSuperAdmin(user?.role) && !isAdmin(user?.role)) {
+      params.user_id = user.id;
+    }
+
+    const response = await axios.get(`${APIURL.PROJETS}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      params
+    })
     
-    // Redirect if no token
-    if (!accessToken) {
-      router.push('/login') 
-      return
+    console.log("API Response:", response.data);
+    if (response.data?.projets) {
+      setProjects(response.data.projets)
+      setTotalRows(response.data.total || response.data.pagination?.totalItems || 0)
+    } else {
+      throw new Error("Invalid API response format")
     }
-
-    setLoading(true)
-    try {
-      const params = {
-        page: currentPage,
-        size: rowsPerPage,
-        ...(user?.id && !isSuperAdmin(user?.role) && { user_id: user.id })
-      };
-
-      const response = await axios.get(`${APIURL.PROJETS}`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-        params
-      })
-      console.log("API Response:", response.data);
-      if (response.data?.projets) {
-        setProjects(response.data.projets)
-        setTotalRows(response.data.total || response.data.pagination?.totalItems || 0)
-      } else {
-        throw new Error("Invalid API response format")
-      }
-    } catch (error) {
-      console.error("Error fetching data:", error)
-      setError(error.response?.data?.message || "Failed to load projects")
-    } finally {
-      setLoading(false)
-    }
-  }, [token, router, currentPage, rowsPerPage, user])
+  } catch (error) {
+    console.error("Error fetching data:", error)
+    setError(error.response?.data?.message || "Failed to load projects")
+  } finally {
+    setLoading(false)
+  }
+}, [token, router, currentPage, rowsPerPage, user])
 
   // Fetch data when dependencies change
   useEffect(() => {
