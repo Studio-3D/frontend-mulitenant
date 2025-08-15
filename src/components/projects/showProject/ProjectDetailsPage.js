@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { LeftCard } from './LeftCard';
 import { RightCard } from './RightCard';
@@ -15,30 +15,32 @@ export const ProjectDetailsPage = () => {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('bien');
   
-  useEffect(() => {
-    const fetchProjectDetails = async () => {
-      try {
-        setLoading(true);
-        const token = localStorage.getItem("accessToken");
-        const response = await axios.get(`${APIURL.PROJETS}/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setProjectData(response.data);
-        selectProjet(response.data.projet);
-        setActiveTab('bien'); 
-        console.log("Project details fetched successfully:", response.data);
-      } catch (err) {
-        console.error("Error fetching project details:", err);
-        setError(err.message || "Failed to fetch project details");
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Define the fetch function first with useCallback
+  const fetchProjectDetails = useCallback(async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("accessToken");
+      const response = await axios.get(`${APIURL.PROJETS}/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setProjectData(response.data);
+      selectProjet(response.data.projet);
+      setActiveTab('bien'); 
+      console.log("Project details fetched successfully:", response.data);
+    } catch (err) {
+      console.error("Error fetching project details:", err);
+      setError(err.message || "Failed to fetch project details");
+    } finally {
+      setLoading(false);
+    }
+  }, [id, selectProjet]);
 
+  // Then use it in useEffect
+  useEffect(() => {
     if (id) {
       fetchProjectDetails();
     }
-  }, [id, selectProjet]);
+  }, [id, fetchProjectDetails]);
 
   const allTabsData = useMemo(() => {
     if (!projectData) return {};
@@ -169,6 +171,7 @@ export const ProjectDetailsPage = () => {
             tabsData={filteredTabsData}
             activeTab={activeTab}
             setActiveTab={setActiveTab}
+            fetchProjectData={fetchProjectDetails}
           />
         </div>
       </div>

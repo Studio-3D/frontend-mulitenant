@@ -6,6 +6,10 @@ import { isAdmin, isSuperAdmin } from '@/configs/enum';
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import SelectInput from '@/components/SelectInput';
+import Modal from '@/components/Modal';
+import DeleteData from '@/components/DeleteData';
+import { APIURL } from '@/configs/api'
+
 import {
   ChevronDownIcon,
   HomeIcon,
@@ -19,6 +23,8 @@ const TAB_CONFIG = {
   bien: {
     icon: <HomeIcon size={18} />,
     name: "Biens",
+    apiEndpoint: APIURL.BIENS,
+    addLink: (user) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? "/Projets/addBien" : undefined,
     columns: (user, handleDelete) => [
       { key: 'name', label: 'Nom' },
       { key: 'type', label: 'Type' },
@@ -64,6 +70,8 @@ const TAB_CONFIG = {
   tranche: {
     icon: <LayersIcon size={18} />,
     name: "Tranches",
+    apiEndpoint: APIURL.TRANCHES,
+    addLink: (user) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? "/Projets/addTranche" : undefined,
     columns: (user, handleDelete) => [
       { key: 'nom', label: 'Tranche' },
       { key: 'date_lancement', label: 'Date lancement' },
@@ -91,14 +99,7 @@ const TAB_CONFIG = {
                 >
                   <PencilLine className="w-4 h-4" />
                 </button>
-                <button
-                  className="text-red-500 hover:text-red-700"
-                  onClick={() => {
-                    setSelectedId(row.id);
-                    setShowDeleteModal(true);
-                  }}  
-                  title="Supprimer Tranche"
-                >
+               <button onClick={() => handleDelete(row.id)} className="flex items-center gap-1 text-red-500 hover:text-red-700">
                   <Trash2 className="w-4 h-4" />
                 </button>
               </>
@@ -111,6 +112,8 @@ const TAB_CONFIG = {
   immeuble: {
     icon: <BuildingIcon size={18} />,
     name: "Immeubles",
+    apiEndpoint: APIURL.IMMEUBLES,
+    addLink: (user) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? "/Projets/addImmeuble" : undefined,
     columns: (user, handleDelete) => [
       { key: 'nom', label: 'Immeuble' },
       { key: 'tranche_nom', label: 'Tranche' },
@@ -139,14 +142,7 @@ const TAB_CONFIG = {
                 >
                   <PencilLine className="w-4 h-4" />
                 </button>
-                <button
-                  className="text-red-500 hover:text-red-700"
-                  onClick={() => {
-                    setSelectedId(row.id);
-                    setShowDeleteModal(true);
-                  }}  
-                  title="Supprimer Immeuble"
-                >
+               <button onClick={() => handleDelete(row.id)} className="flex items-center gap-1 text-red-500 hover:text-red-700">
                   <Trash2 className="w-4 h-4" />
                 </button>
               </>
@@ -159,6 +155,8 @@ const TAB_CONFIG = {
   blocs: {
     icon: <BoxesIcon size={18} />,
     name: "Blocs",
+    apiEndpoint: APIURL.BLOCS,
+    addLink: (user) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? "/Projets/addBloc" : undefined,
     columns: (user, handleDelete) => [
       { key: 'nom', label: 'Bloc' },
       { key: 'tranche_nom', label: 'Tranche' },
@@ -187,14 +185,7 @@ const TAB_CONFIG = {
                 >
                   <PencilLine className="w-4 h-4" />
                 </button>
-                <button
-                  className="text-red-500 hover:text-red-700"
-                  onClick={() => {
-                    setSelectedId(row.id);
-                    setShowDeleteModal(true);
-                  }}  
-                  title="Supprimer Bloc"
-                >
+                <button onClick={() => handleDelete(row.id)} className="flex items-center gap-1 text-red-500 hover:text-red-700">
                   <Trash2 className="w-4 h-4" />
                 </button>
               </>
@@ -206,8 +197,8 @@ const TAB_CONFIG = {
   }
 };
 
-export const RightCard = ({ tabsData, activeTab, setActiveTab }) => {
-  const { user } = useAuth();
+export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchProjectData }) => {
+  const { token, user } = useAuth()
   const router = useRouter();
   const [selectedId, setSelectedId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -216,12 +207,19 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab }) => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalRows, setTotalRows] = useState(0);
 
-  const handleDelete = (id) => {
-    console.log('Delete item with id:', id);
+   const handleDelete = (id) => {
     setSelectedId(id);
     setShowDeleteModal(true);
   };
 
+  const handleDeleteSuccess = () => {
+  setShowDeleteModal(false);
+  if (fetchProjectData) {  // Now using the destructured prop
+      fetchProjectData(); 
+    }
+};
+
+   // Update the handleAction function to include delete
   const handleAction = (action, id) => {
     switch(action) {
       case 'view':
@@ -229,6 +227,9 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab }) => {
         break;
       case 'edit':
         router.push(`/${activeTab}/${id}?edit=true`);
+        break;
+      case 'delete':
+        handleDelete(id);
         break;
       default:
         break;
@@ -362,6 +363,7 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab }) => {
           <Table
             columns={currentColumns}
             data={hasItems ? filteredItems : []}
+             addLink={TAB_CONFIG[safeActiveTab]?.addLink?.(user)}
             showSearch={false}
             emptyMessage={
               <div className="flex flex-col items-center justify-center py-12 text-gray-500">
@@ -375,7 +377,24 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab }) => {
             totalRows={totalRows}
             onPageChange={handlePageChange}
             onRowsPerPageChange={handleRowsPerPageChange}
+            
           />
+          {/* Delete Confirmation Modal */}
+                {showDeleteModal && (
+                  <Modal isVisible={true} onClose={() => setShowDeleteModal(false)}>
+                    <DeleteData
+                      route={TAB_CONFIG[safeActiveTab]?.apiEndpoint}
+                      Id={selectedId}
+                      type={TAB_CONFIG[safeActiveTab]?.name}
+                      message={`Êtes-vous sûr de vouloir supprimer ce ${TAB_CONFIG[safeActiveTab]?.name.toLowerCase()} ?`}
+                      accessToken={token || localStorage.getItem("accessToken")}
+                      onClose={() => {
+                        setShowDeleteModal(false);
+                        handleDeleteSuccess();
+                      }}
+                    />
+                  </Modal>
+                )}
         </div>
       </div>
     </div>
