@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import { StatusCard } from './StatusCard';
 import { Eye, PencilLine, Trash2 } from "lucide-react"
 import Link from 'next/link';
@@ -212,6 +212,9 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab }) => {
   const [selectedId, setSelectedId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedType, setSelectedType] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalRows, setTotalRows] = useState(0);
 
   const handleDelete = (id) => {
     console.log('Delete item with id:', id);
@@ -232,15 +235,37 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab }) => {
     }
   };
 
-  // Filter items based on selected type
+  // Handle page change
+  const handlePageChange = useCallback((newPage) => {
+    setCurrentPage(newPage);
+  }, []);
+
+  // Handle rows per page change
+  const handleRowsPerPageChange = useCallback((newRowsPerPage) => {
+    setRowsPerPage(newRowsPerPage);
+    setCurrentPage(1); // Reset to first page when changing rows per page
+  }, []);
+
+  // Filter items based on selected type and pagination
   const filteredItems = useMemo(() => {
-    if (!selectedType || activeTab !== 'bien') {
-      return tabsData[activeTab]?.items || [];
+    if (!tabsData[activeTab]?.items) return [];
+    
+    let items = tabsData[activeTab].items;
+    
+    // Apply type filter if activeTab is 'bien' and a type is selected
+    if (activeTab === 'bien' && selectedType) {
+      items = items.filter(item => item.type === selectedType);
     }
-    return (tabsData[activeTab]?.items || []).filter(
-      item => item.type === selectedType
-    );
-  }, [tabsData, activeTab, selectedType]);
+    
+    // Update total rows count
+    setTotalRows(items.length);
+    
+    // Apply pagination
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    
+    return items.slice(startIndex, endIndex);
+  }, [tabsData, activeTab, selectedType, currentPage, rowsPerPage]);
 
   const currentColumns = useMemo(() => {
     if (!activeTab || !TAB_CONFIG[activeTab]) return [];
@@ -273,8 +298,8 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab }) => {
     );
   }
 
-   const currentTabData = tabsData[safeActiveTab];
-    const hasItems = filteredItems.length > 0;
+  const currentTabData = tabsData[safeActiveTab];
+  const hasItems = filteredItems.length > 0;
 
   return (
     <div className="bg-white rounded-lg shadow-lg h-full flex flex-col">
@@ -291,6 +316,7 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab }) => {
               onClick={() => {
                 setActiveTab(tab);
                 setSelectedType(null); // Reset filter when changing tabs
+                setCurrentPage(1); // Reset to first page when changing tabs
               }}
             >
               {TAB_CONFIG[tab]?.icon}
@@ -309,7 +335,10 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab }) => {
                   options={tabsData.bien?.typeBienOptions || []}
                   placeholder="Filtrer par type"
                   value={selectedType}
-                  onChange={(value) => setSelectedType(value)}
+                  onChange={(value) => {
+                    setSelectedType(value);
+                    setCurrentPage(1); // Reset to first page when changing filter
+                  }}
                   width="w-48"
                 />
               </div>
@@ -332,7 +361,7 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab }) => {
         <div className="mb-6">
           <Table
             columns={currentColumns}
-            data={hasItems ? currentTabData.items : []}
+            data={hasItems ? filteredItems : []}
             showSearch={false}
             emptyMessage={
               <div className="flex flex-col items-center justify-center py-12 text-gray-500">
@@ -341,6 +370,11 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab }) => {
                 </p>
               </div>
             }
+            currentPage={currentPage}
+            rowsPerPage={rowsPerPage}
+            totalRows={totalRows}
+            onPageChange={handlePageChange}
+            onRowsPerPageChange={handleRowsPerPageChange}
           />
         </div>
       </div>
