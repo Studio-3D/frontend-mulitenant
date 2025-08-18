@@ -50,15 +50,26 @@ export const ProjectDetailsPage = () => {
           projectData?.projet.bien?.map(b => b.type_bien?.type).filter(Boolean) || []
         )
       ).map(type => ({ value: type, label: type }));
+    
+      // Calculate status counts dynamically
+  const statusCounts = projectData?.projet.bien?.reduce((acc, b) => {
+    const status = b.etat;
+    if (status) {
+      acc[status] = (acc[status] || 0) + 1;
+    }
+    return acc;
+  }, {});
 
-    const defaultStatuses = [
-      { name: 'Disponible', count: 0, color: 'bg-green-500' },
-      { name: 'Pré-réservé', count: 0, color: 'bg-yellow-500' },
-      { name: 'Réservé', count: 0, color: 'bg-blue-500' },
-      { name: 'Bloqué', count: 0, color: 'bg-red-500' },
-      { name: 'Vendu', count: 0, color: 'bg-purple-500' },
-      { name: 'En cours de proposition', count: 0, color: 'bg-orange-500' },
-    ];
+     // Map to the expected status format with dynamic counts
+  const defaultStatuses = [
+    { name: 'Disponible', count: statusCounts?.DISPONIBLE || 0, color: 'bg-green-500' },
+    { name: 'Pré-réservé', count: statusCounts?.PRE_RESERVE || 0, color: 'bg-yellow-500' },
+    { name: 'Réservé', count: statusCounts?.RESERVATION || 0, color: 'bg-blue-500' },
+    { name: 'Bloqué', count: statusCounts?.BLOQUE || 0, color: 'bg-red-500' },
+    { name: 'Vendu', count: statusCounts?.VENDU || 0, color: 'bg-purple-500' },
+    { name: 'En cours de proposition', count: statusCounts?.ENCOURS_DE_PROPOSITION || 0, color: 'bg-orange-500' },
+  ];
+
     // Map bien data to match your column requirements
     const biens = projectData?.projet.bien?.map(b => ({
       id: b.id,
@@ -99,27 +110,28 @@ export const ProjectDetailsPage = () => {
     })) || [];
 
     return {
-      bien: {
-        count: projectData?.projet.bien_count || 0,
-        statuses: defaultStatuses,
-        items: biens,
-        nbr_count:projectData?.projet.nbre_biens,
-        typeBienOptions,
-      },
+      
       tranche: {
         count: projectData?.projet.tranche_count || 0,
         items: tranches,
         nbr_count: projectData?.projet.nbre_tranches || 0,
+      },
+      blocs: {
+        count: projectData?.projet.bloc_count || 0,
+        items: blocs,
+        nbr_count: projectData?.projet.nbre_blocs || 0,
       },
       immeuble: {
         count: projectData?.projet.immeuble_count || 0,
         items: immeubles,
         nbr_count: projectData?.projet.nbre_immeubles || 0,
       },
-      blocs: {
-        count: projectData?.projet.bloc_count || 0,
-        items: blocs,
-        nbr_count: projectData?.projet.nbre_blocs || 0,
+      bien: {
+        count: projectData?.projet.bien_count || 0,
+        statuses: defaultStatuses,
+        items: biens,
+        nbr_count:projectData?.projet.nbre_biens,
+        typeBienOptions,
       },
     };
   }, [projectData]);
@@ -172,6 +184,7 @@ export const ProjectDetailsPage = () => {
             activeTab={activeTab}
             setActiveTab={setActiveTab}
             fetchProjectData={fetchProjectDetails}
+            projectId={id}
           />
         </div>
       </div>

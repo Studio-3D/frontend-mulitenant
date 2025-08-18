@@ -20,58 +20,11 @@ import {
 import Table from '@/components/Table';
 
 const TAB_CONFIG = {
-  bien: {
-    icon: <HomeIcon size={18} />,
-    name: "Biens",
-    apiEndpoint: APIURL.BIENS,
-    addLink: (user) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? "/Projets/addBien" : undefined,
-    columns: (user, handleDelete) => [
-      { key: 'name', label: 'Nom' },
-      { key: 'type', label: 'Type' },
-      { key: 'surface', label: 'Surface' },
-      { key: 'price', label: 'Prix' },
-      { key: 'status', label: 'Statut' },
-      { 
-        key: "actions", 
-        label: "Actions",
-        render: (row) => (
-          <div className="flex gap-4 items-center text-sm">
-            <Link
-              href={`/Projets/${row.id}`}
-              className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
-              title="Voir le projet"
-            >
-              <Eye className="w-4 h-4" />
-            </Link>
-
-            {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
-              <>
-                <Link
-                  href={`${row.id}?edit=true`}
-                  className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
-                  title="Modifier le projet"
-                >
-                  <PencilLine className="w-4 h-4" />
-                </Link>
-                <button
-                  onClick={() => handleDelete(row.id)}
-                  className="flex items-center gap-1 text-red-500 hover:text-red-700"
-                  title="Supprimer le projet"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </>
-            )}
-          </div>
-        )
-      },
-    ]
-  },
   tranche: {
     icon: <LayersIcon size={18} />,
     name: "Tranches",
     apiEndpoint: APIURL.TRANCHES,
-    addLink: (user) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? "/Projets/addTranche" : undefined,
+    addLink: (user) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? '/Tranches/ajouter' : undefined,
     columns: (user, handleDelete) => [
       { key: 'nom', label: 'Tranche' },
       { key: 'date_lancement', label: 'Date lancement' },
@@ -82,66 +35,23 @@ const TAB_CONFIG = {
         label: 'Actions',
         render: (row) => (
           <div className="flex gap-4 items-center">
-            <button
-              className="text-blue-500 hover:text-blue-700"
-              onClick={() => handleAction('view', row.id)}
-              title="Voir Tranche"
+            <Link
+              href={`/Tranches/${row.id}`}
+              className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+              title="Voir le tranche"
             >
               <Eye className="w-4 h-4" />
-            </button>
+            </Link>
             
             {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
               <>
-                <button
-                  className="text-yellow-500 hover:text-yellow-700"
-                  onClick={() => handleAction('edit', row.id)}
-                  title="Modifier Tranche"
+                <Link
+                  href={`/Tranches/${row.id}/modifier/?edit=true`}
+                  className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
+                  title="Modifier le tranche"
                 >
                   <PencilLine className="w-4 h-4" />
-                </button>
-               <button onClick={() => handleDelete(row.id)} className="flex items-center gap-1 text-red-500 hover:text-red-700">
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </>
-            )}
-          </div>
-        )
-      }
-    ]
-  },
-  immeuble: {
-    icon: <BuildingIcon size={18} />,
-    name: "Immeubles",
-    apiEndpoint: APIURL.IMMEUBLES,
-    addLink: (user) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? "/Projets/addImmeuble" : undefined,
-    columns: (user, handleDelete) => [
-      { key: 'nom', label: 'Immeuble' },
-      { key: 'tranche_nom', label: 'Tranche' },
-      { key: 'bloc_nom', label: 'Bloc' },
-      { key: 'titre_foncier', label: 'Titre foncier' },
-      { key: 'nbre_biens', label: 'Nbr Biens' },
-      {
-        key: 'actions',
-        label: 'Actions',
-        render: (row) => (
-          <div className="flex gap-4 items-center">
-            <button
-              className="text-blue-500 hover:text-blue-700"
-              onClick={() => handleAction('view', row.id)}
-              title="Voir Immeuble"
-            >
-              <Eye className="w-4 h-4" />
-            </button>
-            
-            {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
-              <>
-                <button
-                  className="text-yellow-500 hover:text-yellow-700"
-                  onClick={() => handleAction('edit', row.id)}
-                  title="Modifier Immeuble"
-                >
-                  <PencilLine className="w-4 h-4" />
-                </button>
+                </Link>
                <button onClick={() => handleDelete(row.id)} className="flex items-center gap-1 text-red-500 hover:text-red-700">
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -156,7 +66,7 @@ const TAB_CONFIG = {
     icon: <BoxesIcon size={18} />,
     name: "Blocs",
     apiEndpoint: APIURL.BLOCS,
-    addLink: (user) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? "/Projets/addBloc" : undefined,
+    addLink: (user,) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? `/Blocs/ajouter` : undefined,
     columns: (user, handleDelete) => [
       { key: 'nom', label: 'Bloc' },
       { key: 'tranche_nom', label: 'Tranche' },
@@ -168,23 +78,23 @@ const TAB_CONFIG = {
         label: 'Actions',
         render: (row) => (
           <div className="flex gap-4 items-center">
-            <button
-              className="text-blue-500 hover:text-blue-700"
-              onClick={() => handleAction('view', row.id)}
-              title="Voir Bloc"
+            <Link
+              href={`/Blocs/${row.id}`}
+              className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+              title="Voir le bloc"
             >
               <Eye className="w-4 h-4" />
-            </button>
+            </Link>
             
             {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
               <>
-                <button
-                  className="text-yellow-500 hover:text-yellow-700"
-                  onClick={() => handleAction('edit', row.id)}
-                  title="Modifier Bloc"
+                <Link
+                  href={`/Blocs/${row.id}/modifier/?edit=true`}
+                  className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
+                  title="Modifier le bloc"
                 >
                   <PencilLine className="w-4 h-4" />
-                </button>
+                </Link>
                 <button onClick={() => handleDelete(row.id)} className="flex items-center gap-1 text-red-500 hover:text-red-700">
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -194,10 +104,100 @@ const TAB_CONFIG = {
         )
       }
     ]
-  }
+  },
+  immeuble: {
+    icon: <BuildingIcon size={18} />,
+    name: "Immeubles",
+    apiEndpoint: APIURL.IMMEUBLES,
+    addLink: (user) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? `/Immeubles/ajouter` : undefined,
+    columns: (user, handleDelete) => [
+      { key: 'nom', label: 'Immeuble' },
+      { key: 'tranche_nom', label: 'Tranche' },
+      { key: 'bloc_nom', label: 'Bloc' },
+      { key: 'titre_foncier', label: 'Titre foncier' },
+      { key: 'nbre_biens', label: 'Nbr Biens' },
+      {
+        key: 'actions',
+        label: 'Actions',
+        render: (row) => (
+          <div className="flex gap-4 items-center">
+            <Link
+              href={`/Immeubles/${row.id}`}
+              className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+              title="Voir l'immeuble"
+            >
+              <Eye className="w-4 h-4" />
+            </Link>
+            
+            {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
+              <>
+               <Link
+                  href={`/Immeubles/${row.id}/modifier/?edit=true`}
+                  className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
+                  title="Modifier l'immeuble"
+                >
+                  <PencilLine className="w-4 h-4" />
+                </Link>
+               <button onClick={() => handleDelete(row.id)} className="flex items-center gap-1 text-red-500 hover:text-red-700">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </>
+            )}
+          </div>
+        )
+      }
+    ]
+  },
+  bien: {
+    icon: <HomeIcon size={18} />,
+    name: "Biens",
+    apiEndpoint: APIURL.BIENS,
+     addLink: (user) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? `/Biens/ajouter` : undefined,
+    columns: (user, handleDelete) => [
+      { key: 'name', label: 'Nom' },
+      { key: 'type', label: 'Type' },
+      { key: 'surface', label: 'Surface' },
+      { key: 'price', label: 'Prix' },
+      { key: 'status', label: 'Statut' },
+      { 
+        key: "actions", 
+        label: "Actions",
+        render: (row) => (
+          <div className="flex gap-4 items-center text-sm">
+            <Link
+              href={`/Biens/${row.id}`}
+              className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+              title="Voir le bien"
+            >
+              <Eye className="w-4 h-4" />
+            </Link>
+
+            {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
+              <>
+                <Link
+                  href={`/Biens/${row.id}/modifier/?edit=true`}
+                  className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
+                  title="Modifier le bien"
+                >
+                  <PencilLine className="w-4 h-4" />
+                </Link>
+                <button
+                  onClick={() => handleDelete(row.id)}
+                  className="flex items-center gap-1 text-red-500 hover:text-red-700"
+                  title="Supprimer le bien"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </>
+            )}
+          </div>
+        )
+      },
+    ]
+  },
 };
 
-export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchProjectData }) => {
+export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchProjectData, projectId }) => {
   const { token, user } = useAuth()
   const router = useRouter();
   const [selectedId, setSelectedId] = useState(null);
@@ -206,6 +206,12 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchProjectData 
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalRows, setTotalRows] = useState(0);
+
+
+   // Define handleAction before it's used
+  const handleAction = useCallback((id) => {
+        handleDelete(id);
+    }, [activeTab, router]);
 
    const handleDelete = (id) => {
     setSelectedId(id);
@@ -218,23 +224,6 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchProjectData 
       fetchProjectData(); 
     }
 };
-
-   // Update the handleAction function to include delete
-  const handleAction = (action, id) => {
-    switch(action) {
-      case 'view':
-        router.push(`/${activeTab}/${id}`);
-        break;
-      case 'edit':
-        router.push(`/${activeTab}/${id}?edit=true`);
-        break;
-      case 'delete':
-        handleDelete(id);
-        break;
-      default:
-        break;
-    }
-  };
 
   // Handle page change
   const handlePageChange = useCallback((newPage) => {
@@ -273,9 +262,9 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchProjectData 
     
     const columnConfig = TAB_CONFIG[activeTab].columns;
     return typeof columnConfig === 'function' 
-      ? columnConfig(user, handleDelete) 
+      ? columnConfig(user, handleDelete, handleAction)  // Pass handleAction here
       : columnConfig;
-  }, [activeTab, user]);
+  }, [activeTab, user, handleDelete, handleAction]);
 
   const availableTabs = useMemo(() => {
     return Object.keys(tabsData).filter(tab => 
@@ -363,7 +352,7 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchProjectData 
           <Table
             columns={currentColumns}
             data={hasItems ? filteredItems : []}
-             addLink={TAB_CONFIG[safeActiveTab]?.addLink?.(user)}
+            addLink={TAB_CONFIG[safeActiveTab]?.addLink?.(user, projectId)}
             showSearch={false}
             emptyMessage={
               <div className="flex flex-col items-center justify-center py-12 text-gray-500">
