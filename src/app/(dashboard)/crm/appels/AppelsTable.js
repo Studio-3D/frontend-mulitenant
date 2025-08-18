@@ -314,7 +314,7 @@ const AppelsTable = ({ dataClient }) => {
     <>
       <div className="relative bg-white rounded-lg px-4 py-4">
         <Table
-          title={'Appels'}
+          title={!dataClient && 'Appels'}
           data_to_export={data_to_export()}
           columns_export={columns_export}
           name_file_export={'appels_export'}

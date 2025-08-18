@@ -277,7 +277,7 @@ export const Calendar = () => {
                 <ChevronRightIcon size={20} />
               </button>
               <button onClick={goToToday} className="px-3 py-1 text-sm bg-cyan-100 rounded-md hover:bg-cyan-200 transition-colors">
-                Aujourd'hui
+                Aujour{'d\''}hui
               </button>
             </div>
             
