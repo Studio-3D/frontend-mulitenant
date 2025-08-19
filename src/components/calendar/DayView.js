@@ -2,22 +2,22 @@ import React from 'react';
 import { format, isSameDay, parseISO, getHours, getMinutes } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
-export const DayView = ({ 
-  currentDate, 
-  events,
-  onPrev,
-  onNext,
-  onToday
-}) => {
+export const DayView = ({ currentDate, events, onPrev, onNext, onToday }) => {
   // Generate hours array (0-23)
   const hours = Array.from({ length: 24 }, (_, i) => i);
 
   // Filter events for the current day
-  const dayEvents = events.filter(event => {
+  const dayEvents = events.filter((event) => {
     try {
-      const eventDate = event.start.includes(' ') 
-        ? parseISO(event.start)
-        : new Date(event.start + 'T00:00:00');
+      // Handle different date formats
+      let eventDate;
+      if (typeof event.start === 'string') {
+        eventDate = event.start.includes('T')
+          ? parseISO(event.start)
+          : new Date(event.start + 'T00:00:00');
+      } else {
+        eventDate = new Date(event.start);
+      }
       return isSameDay(eventDate, currentDate);
     } catch (e) {
       console.error('Error parsing event date:', event.start, e);
@@ -26,16 +26,30 @@ export const DayView = ({
   });
 
   // Separate all-day events from timed events
-  const allDayEvents = dayEvents.filter(event => !event.start.includes(' '));
-  const timedEvents = dayEvents.filter(event => event.start.includes(' '));
+  const allDayEvents = dayEvents.filter((event) => {
+    if (typeof event.start === 'string') {
+      return !event.start.includes('T') || event.start.includes('T00:00:00');
+    }
+    // Check if it's an all-day event (time is midnight)
+    return event.start.getHours() === 0 && event.start.getMinutes() === 0;
+  });
+
+  const timedEvents = dayEvents.filter(
+    (event) => !allDayEvents.includes(event)
+  );
 
   // Group timed events by hour
   const eventsByHour = {};
-  timedEvents.forEach(event => {
+  timedEvents.forEach((event) => {
     try {
-      const eventDate = parseISO(event.start);
+      let eventDate;
+      if (typeof event.start === 'string') {
+        eventDate = parseISO(event.start);
+      } else {
+        eventDate = new Date(event.start);
+      }
       const hour = getHours(eventDate);
-      
+
       if (!eventsByHour[hour]) {
         eventsByHour[hour] = [];
       }
@@ -46,11 +60,24 @@ export const DayView = ({
   });
 
   // Sort events within each hour by minute
-  Object.keys(eventsByHour).forEach(hour => {
+  Object.keys(eventsByHour).forEach((hour) => {
     eventsByHour[hour].sort((a, b) => {
       try {
-        const aMinutes = getMinutes(parseISO(a.start));
-        const bMinutes = getMinutes(parseISO(b.start));
+        let aDate, bDate;
+        if (typeof a.start === 'string') {
+          aDate = parseISO(a.start);
+        } else {
+          aDate = new Date(a.start);
+        }
+
+        if (typeof b.start === 'string') {
+          bDate = parseISO(b.start);
+        } else {
+          bDate = new Date(b.start);
+        }
+
+        const aMinutes = getMinutes(aDate);
+        const bMinutes = getMinutes(bDate);
         return aMinutes - bMinutes;
       } catch (e) {
         return 0;
@@ -58,6 +85,11 @@ export const DayView = ({
     });
   });
 
+  const handleEventClick = (event) => {
+    if (event.url && event.url !== '#') {
+      window.open(event.url, '_blank');
+    }
+  };
   return (
     <div className="flex flex-col h-full">
       {/* All-day events section */}
@@ -73,11 +105,15 @@ export const DayView = ({
                   backgroundColor: `${event.backgroundColor}20`,
                   borderLeft: `3px solid ${event.backgroundColor}`,
                 }}
-                title={`${event.title}${event.projet_code ? ` (${event.projet_code})` : ''}`}
+                title={`${event.title}${
+                  event.projet_code ? ` (${event.projet_code})` : ''
+                }`}
               >
                 <div className="font-medium truncate">{event.title}</div>
                 {event.projet_code && (
-                  <div className="text-xs text-gray-600 truncate">{event.projet_code}</div>
+                  <div className="text-xs text-gray-600 truncate">
+                    {event.projet_code}
+                  </div>
                 )}
               </div>
             ))}
@@ -90,9 +126,9 @@ export const DayView = ({
         <div className="grid grid-cols-12">
           {/* Time labels column */}
           <div className="col-span-2 border-r">
-            {hours.map(hour => (
-              <div 
-                key={hour} 
+            {hours.map((hour) => (
+              <div
+                key={hour}
                 className="h-20 border-b text-right pr-2 pt-1 text-sm text-gray-500 relative"
               >
                 {format(new Date().setHours(hour, 0, 0, 0), 'HH:mm')}
@@ -102,43 +138,60 @@ export const DayView = ({
           </div>
 
           {/* Events column */}
-          <div className="col-span-10 grid grid-cols-1 ">
-            {hours.map(hour => (
-              <div 
-                key={hour} 
-                className="h-20 border-b overflow-y-auto"
-              >
-                
-                {/* Events for this hour */}
-                {eventsByHour[hour]?.map((event, i) => {
-                  try {
-                    const eventDate = parseISO(event.start);
-                    const minutes = getMinutes(eventDate);
-                    const topPosition = (minutes / 60) * 80; // 80px hour height
+          <div className="col-span-10 relative">
+            {hours.map((hour) => (
+              <div key={hour} className="h-20 border-b relative">
+                {/* Hour container */}
+                <div className="absolute inset-0">
+                  {/* Events for this hour */}
+                  {eventsByHour[hour]?.map((event, i) => {
+                    try {
+                      let eventDate;
+                      if (typeof event.start === 'string') {
+                        eventDate = parseISO(event.start);
+                      } else {
+                        eventDate = new Date(event.start);
+                      }
 
-                    return (
-                      <div
-                        key={`${hour}-${i}`}
-                        className="text-xs px-2 py-1  rounded shadow-sm  mx-2 "
-                        style={{
-                          top: `${topPosition}px`,
-                          backgroundColor: `${event.backgroundColor}20`,
-                          borderLeft: `3px solid ${event.backgroundColor}`,
-                          zIndex: 1,
-                          minHeight: '22px',
-                          margin: '3px 0',
-                        }}
-                        title={`${event.title}${event.projet_code ? ` (${event.projet_code})` : ''}`}
-                      >
-                        <div className="font-medium truncate">{event.title}</div>
-                        
-                      </div>
-                    );
-                  } catch (e) {
-                    console.error('Error rendering event:', event, e);
-                    return null;
-                  }
-                })}
+                      const minutes = getMinutes(eventDate);
+                      // Calculate position based on minutes (80px per hour)
+                      const topPosition = (minutes / 60) * 80;
+
+                      return (
+                        <div
+                          key={`${hour}-${i}`}
+                          className="text-xs px-2 py-1 rounded shadow-sm mx-2 w-[calc(100%-1rem)] cursor-pointer hover:opacity-80"
+                          style={{
+                            top: `${topPosition}px`,
+                            backgroundColor: `${event.backgroundColor}20`,
+                            borderLeft: `3px solid ${event.backgroundColor}`,
+                            zIndex: 1,
+                            minHeight: '22px',
+                          }}
+                          title={`${event.title}${
+                            event.projet_code ? ` (${event.projet_code})` : ''
+                          }`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEventClick(event);
+                          }}
+                        >
+                          <div className="font-medium truncate">
+                            {event.title}
+                          </div>
+                          {event.projet_code && (
+                            <div className="text-xs text-gray-600 truncate">
+                              {event.projet_code}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    } catch (e) {
+                      console.error('Error rendering event:', event, e);
+                      return null;
+                    }
+                  })}
+                </div>
               </div>
             ))}
           </div>
