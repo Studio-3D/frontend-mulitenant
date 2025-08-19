@@ -1,8 +1,9 @@
 import axios from 'axios';
 
-const APIBASEURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-const BASERESOURCEURL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:8000';
-
+const APIBASEURL =
+  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+const BASERESOURCEURL =
+  process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:8000';
 
 export const RESOURCE_URL = {
   DOCS: `${BASERESOURCEURL}/Docs`,
@@ -44,39 +45,49 @@ export const APIURL = {
   ROOTV1: `${APIBASEURL}/v1`,
   PROSPECTS: `${APIBASEURL}/v1/prospects`,
   CLIENTS: `${APIBASEURL}/v1/clients`,
-  PAIEMENTS:`${APIBASEURL}/v1/avances`,
-  DESISTEMENT:`${APIBASEURL}/v1/desistements`,
+  PAIEMENTS: `${APIBASEURL}/v1/avances`,
+  DESISTEMENT: `${APIBASEURL}/v1/desistements`,
   OBJECTIFS: `${APIBASEURL}/v1/objectifs`,
   RESERVATIONS: `${APIBASEURL}/v1/reservations`,
   FOURNISSEURS: `${APIBASEURL}/v1/fournisseurs`,
   DECOMPTES: `${APIBASEURL}/v1/decomptes`,
   FACTURES: `${APIBASEURL}/v1/factures`,
   CPS: `${APIBASEURL}/v1/cps`,
-  CREDITS:`${APIBASEURL}/v1/credits`,
-  ServicesPrestataires:`${APIBASEURL}/v1/ServicesPrestataires`,
-  Prestataires:`${APIBASEURL}/v1/Prestataires`,
-  ReclamationsSav:`${APIBASEURL}/v1/ReclamationsSav`,
-  ReclamationsClient:`${APIBASEURL}/v1/ReclamationsClients`,
-  REMISECLES:`${APIBASEURL}/v1/RemiseCles`,
-  ECHEANCESTRANCE:`${APIBASEURL}/v1/EcheancesTranche`,
-  ETAPESPROJET:`${APIBASEURL}/v1/etapesProjet`,
+  CREDITS: `${APIBASEURL}/v1/credits`,
+  ServicesPrestataires: `${APIBASEURL}/v1/ServicesPrestataires`,
+  Prestataires: `${APIBASEURL}/v1/Prestataires`,
+  ReclamationsSav: `${APIBASEURL}/v1/ReclamationsSav`,
+  ReclamationsClient: `${APIBASEURL}/v1/ReclamationsClients`,
+  REMISECLES: `${APIBASEURL}/v1/RemiseCles`,
+  ECHEANCESTRANCE: `${APIBASEURL}/v1/EcheancesTranche`,
+  ETAPESPROJET: `${APIBASEURL}/v1/etapesProjet`,
   COMMISSIONS: `${APIBASEURL}/v1/commissions`,
   COMMISSSIONCONFIG: `${APIBASEURL}/v1/commisssionConfig`,
   COMMISSIONSCONFIGURATIONS: `${APIBASEURL}/v1/commissionsConfigurations`,
   FACTURES_BY_DECOMPTE: `${APIBASEURL}/v1/factures_by_decompte`,
   DOCUMENTS_FACTURES: `${BASERESOURCEURL}/Docs/factures`,
   DOCUMENTS_CPS: `${BASERESOURCEURL}/Docs/cps`,
-  HISTOIMPORTATION:`${APIBASEURL}/v1/delete_fichier_import`,
+  HISTOIMPORTATION: `${APIBASEURL}/v1/delete_fichier_import`,
   COMPOSITIONBIENS: `${APIBASEURL}/v1/compositionBiens`,
-  
+
   // Social Media Configuration APIs
   LINKEDIN_CONFIG: `${APIBASEURL}/v1/linkedin-config`,
   TIKTOK_CONFIG: `${APIBASEURL}/v1/tiktok-config`,
-  
+  FACEBOOK_CONFIG: `${APIBASEURL}/v1/facebook-configurations`,
+  INSTAGRAM_CONFIG: `${APIBASEURL}/v1/instagram-configurations`,
+
   // Social Media Sharing APIs
   LINKEDIN_SHARE: `${APIBASEURL}/v1/linkedin/share`,
   TIKTOK_PUBLISH: `${APIBASEURL}/v1/tiktok/publish`,
   TIKTOK_STATUS: `${APIBASEURL}/v1/tiktok/status`,
+  FACEBOOK_SHARE: `${APIBASEURL}/v1/postTo_Social_Network`,
+  INSTAGRAM_SHARE: `${APIBASEURL}/v1/postTo_Social_Network`,
+
+  // Webhook Management APIs
+  FACEBOOK_WEBHOOK_TOGGLE: `${APIBASEURL}/v1/facebook-configurations`,
+  INSTAGRAM_WEBHOOK_TOGGLE: `${APIBASEURL}/v1/instagram-configurations`,
+  FACEBOOK_WEBHOOKS: `${APIBASEURL}/v1/facebook-webhooks`,
+  INSTAGRAM_WEBHOOKS: `${APIBASEURL}/v1/instagram-webhooks`,
 }
 
 export const ENDPOINTS = {
@@ -105,31 +116,36 @@ export const ENDPOINTS = {
   ENCAISSEMENTS: '/encaissements',
   RESERVATIONS: '/ventes/reservations',
   TVA: '/comptabilite',
-  DESISTEMENT:'/desistements/home',
-  PAIEMENTS:'/paiements/home',
-  OBJECTIFS:'/administration/objectifs',
+  DESISTEMENT: '/desistements/home',
+  PAIEMENTS: '/paiements/home',
+  OBJECTIFS: '/administration/objectifs',
+  COMPTABILITE: '/comptabilite',
   FOURNISSEURS: '/comptabilite/fournisseurs',
   DECOMPTES: '/comptabilite/decomptes',
   FACTURES: '/comptabilite/factures',
-  CPS:'/comptabilite/cps',
-  CREDITS:'/comptabilite/credits',
-  ServicesPrestataires:'/sav/services',
-  Prestataires:'/sav/prestataires',
-  ReclamationsSav:'/sav/reclamations',
-  ReclamationsClients:'/reclamationsClients',
-  REMISECLES:'/remiseCles',
-  ECHEANCESTRANCE:'/echeancesTranche/home',
-  HISTOIMPORTATION:'/histoImportation',
-  ETAPESPROJET:'/etapesProjet/home',
-}
+  CPS: '/comptabilite/cps',
+  CREDITS: '/comptabilite/credits',
+  ServicesPrestataires: '/sav/services',
+  Prestataires: '/sav/prestataires',
+  ReclamationsSav: '/sav/reclamations',
+  ReclamationsClients: '/reclamationsClients',
+  REMISECLES: '/remiseCles',
+  ECHEANCESTRANCE: '/echeancesTranche/home',
+  HISTOIMPORTATION: '/histoImportation',
+  ETAPESPROJET: '/etapesProjet/home',
+};
 
 // Add axios default configuration
-axios.defaults.baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+axios.defaults.baseURL =
+  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
 // Add request interceptor to always include auth token
 axios.interceptors.request.use(
   (config) => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    const token =
+      typeof window !== 'undefined'
+        ? localStorage.getItem('accessToken')
+        : null;
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -140,12 +156,12 @@ axios.interceptors.request.use(
 
 // Helper functions to check social media configurations
 export const checkSocialMediaConfigurations = async (projectId) => {
-  const token = localStorage.getItem("accessToken");
+  const token = localStorage.getItem('accessToken');
   const configurations = {
     linkedin: false,
     tiktok: false,
     facebook: false,
-    instagram: false
+    instagram: false,
   };
 
   try {
@@ -156,7 +172,7 @@ export const checkSocialMediaConfigurations = async (projectId) => {
     );
     configurations.linkedin = !!linkedinResponse.data.configuration;
   } catch (error) {
-    console.log("No LinkedIn configuration found");
+    console.log('No LinkedIn configuration found');
   }
 
   try {
@@ -168,6 +184,30 @@ export const checkSocialMediaConfigurations = async (projectId) => {
     configurations.tiktok = !!tiktokResponse.data.configuration;
   } catch (error) {
     console.log("No TikTok configuration found");
+  }
+
+  try {
+    // Check Facebook configuration
+    const facebookResponse = await axios.get(
+      `${APIURL.FACEBOOK_CONFIG}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    configurations.facebook = facebookResponse.data.configurations &&
+      facebookResponse.data.configurations.some(config => config.projet_id == projectId);
+  } catch (error) {
+    console.log("No Facebook configuration found");
+  }
+
+  try {
+    // Check Instagram configuration
+    const instagramResponse = await axios.get(
+      `${APIURL.INSTAGRAM_CONFIG}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    configurations.instagram = instagramResponse.data.configurations &&
+      instagramResponse.data.configurations.some(config => config.projet_id == projectId);
+  } catch (error) {
+    console.log("No Instagram configuration found");
   }
 
   return configurations;

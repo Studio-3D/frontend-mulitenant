@@ -13,9 +13,8 @@ import Input from "@/components/Input";
 import { useProjet } from "@/context/ProjetContext"; // Import ProjetContext
 import ProjetDialog from "@/components/ProjetDialog"; // Import ProjetDialog
 import { format } from "date-fns";
-import { Trash2 , File, Eye } from "lucide-react";
+import { Trash2 , File, Eye, Download } from "lucide-react";
 import SelectInput from "@/components/SelectInput";
-import { FiDownload } from "react-icons/fi";
 
 const HistoImpoTable = () => {
   const [histoImportations, sethistoImportations] = useState([]);
@@ -156,7 +155,7 @@ const getStatutBadge = (statutValue) => {
     render: (row) => (
       <div className="flex gap-2 items-center">
         <button title="visualiser" onClick={() => handleFileClick(row.fichier)}>
-          <FiDownload className="w-5 h-5" />
+          <Download className="w-5 h-5" />
         </button>
         {row.statut == 2 && (
           <Eye

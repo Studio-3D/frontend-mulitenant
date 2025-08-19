@@ -203,7 +203,7 @@ export const MODE_PAIEMENT_with_transfert = {
   7: { code: 7, label: "Transfert Dossier" },
 };
 export const getModePaiementLabel = (code) => {
-  return MODE_PAIEMENT_with_transfert[code]?.label || "Unknown";
+  return MODE_PAIEMENT_with_transfert[code]?.label || "";
 };
 export const Avance_Statut = {
   1: { label: "Validé", color: "success" },
@@ -254,13 +254,31 @@ export const getFullOrientation = (letter) => {
 export const getOrientationCode = (orientation) =>
   ORIENTATIONS[orientation]?.code || "";
 
+// Master prospect status definitions - matches backend StatutProspectEnum
 export const Statuts_Prospect = {
-  1: { id: "1", label: "Planification Rendez Vous" },
-  2: { id: "2", label: "Injoignable" },
-  3: { id: "3", label: "Rappel" },
-  4: { id: "4", label: "Converti en Visite" },
-  5: { id: "5", label: "Nouvel Appel" },
+  0: { id: '0', label: 'En attente', value: 'En_attente' },
+  1: { id: '1', label: 'Planification Rendez Vous', value: 'Planification_RDV' },
+  2: { id: '2', label: 'Injoignable', value: 'Injoignable' },
+  3: { id: '3', label: 'Rappel', value: 'Rappel' },
+  4: { id: '4', label: 'Converti en Visite', value: 'Converti_en_visite' },
+  5: { id: '5', label: 'Nouveau Appel', value: 'Nouveau_appel' },
+  6: { id: '6', label: 'Affecté', value: 'Affecte' },
+  7: { id: '7', label: 'Intéressé', value: 'Interesse' },
+  8: { id: '8', label: 'Perdu', value: 'Perdu' },
+  9: { id: '9', label: 'Réceptif', value: 'Receptif' },
 };
+
+// Filtered prospect statuses for treatment modal - using string labels as backend expects
+export const Statuts_Prospect_Traitement = {
+  1: { id: 'Planification Rendez Vous', label: 'Planification Rendez Vous' },
+  2: { id: 'Injoignable', label: 'Injoignable' },
+  3: { id: 'Rappel', label: 'Rappel' },
+  5: { id: 'Nouveau Appel', label: 'Nouveau Appel' },
+  7: { id: 'Intéressé', label: 'Intéressé' },
+  8: { id: 'Perdu', label: 'Perdu' },
+  9: { id: 'Réceptif', label: 'Réceptif' },
+};
+
 export const TYPES_APPELS = {
   1: { code: "1", label: "Appel Entrant" },
   2: { code: "2", label: "Appel Sortant" },
@@ -300,8 +318,57 @@ export const TYPE_CLIENT = {
 };
 
 export const SITUATION_FAMILIALLE = {
-  1: { code: 1, label: "Célibataire" },
-  2: { code: 2, label: "Marié" },
-  3: { code: 3, label: "Divorcé" },
-  4: { code: 4, label: "Veuf" },
+  1: { code: 1, label: 'Célibataire' },
+  2: { code: 2, label: 'Marié' },
+  3: { code: 3, label: 'Divorcé' },
+  4: { code: 4, label: 'Veuf' },
+};
+
+// Standardized status colors for all components
+export const PROSPECT_STATUS_COLORS = {
+  'En attente': 'bg-gray-100 text-gray-600',
+  'Planification Rendez Vous': 'bg-blue-100 text-[#009FFF]',
+  'Injoignable': 'bg-purple-100 text-purple-600',
+  'Rappel': 'bg-yellow-100 text-yellow-600',
+  'Converti en Visite': 'bg-green-100 text-green-600',
+  'Nouveau Appel': 'bg-cyan-100 text-cyan-600',
+  'Affecté': 'bg-indigo-100 text-indigo-600',
+  'Intéressé': 'bg-emerald-100 text-emerald-600',
+  'Perdu': 'bg-red-100 text-red-600',
+  'Réceptif': 'bg-teal-100 text-teal-600',
+};
+
+// Helper functions for prospect status
+export const getProspectStatusLabel = (statusValue) => {
+  const status = Object.values(Statuts_Prospect).find(s => s.value === statusValue);
+  return status ? status.label : statusValue;
+};
+
+export const getProspectStatusById = (id) => {
+  return Statuts_Prospect[id] || null;
+};
+
+export const getProspectStatusColor = (statusLabel) => {
+  return PROSPECT_STATUS_COLORS[statusLabel] || 'bg-gray-100 text-gray-600';
+};
+
+// Final statuses that should prevent assignment/reassignment
+export const FINAL_PROSPECT_STATUSES = [
+  'Perdu',              // Lost prospects should not be assigned
+  'Converti_en_visite', // Converted prospects have moved to next stage
+];
+
+// Helper function to check if a prospect status is final (should not be assigned)
+export const isProspectStatusFinal = (statusValue) => {
+  return FINAL_PROSPECT_STATUSES.includes(statusValue);
+};
+
+// Helper function to check if a prospect can be assigned based on its last status
+export const canProspectBeAssigned = (prospect) => {
+  if (!prospect || !prospect.last_statut) {
+    return true; // Allow assignment if no status (new prospect)
+  }
+
+  const statusValue = prospect.last_statut.statut;
+  return !isProspectStatusFinal(statusValue);
 };

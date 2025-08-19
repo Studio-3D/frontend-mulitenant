@@ -10,6 +10,7 @@ import { isAdmin, isSuperAdmin } from '@/configs/enum';
 import ComptabiliteTabsNav from '@/components/comptabilite/ComptabiliteTabsNav';
 import format from 'date-fns/format';
 import FacturesManager from '@/components/comptabilite/FacturesManager';
+import LoadingSpin from '@/components/LoadingSpin';
 
 const DecomptesDetailsPage = () => {
   const { user } = useAuth();
@@ -51,8 +52,11 @@ const DecomptesDetailsPage = () => {
   }, [id, selectedProjet]);
 
   if (!user || !selectedProjet || loading) {
-    return <div className="p-6 text-center">Chargement...</div>;
-  }
+ return (
+         <div className="flex items-center justify-center min-h-screen">
+           <LoadingSpin /> {/* Use your loading spinner here */}
+         </div>
+       );  }
 
   if (!decompteDetails) {
     return <div className="p-6 text-center">Décompte non trouvé</div>;

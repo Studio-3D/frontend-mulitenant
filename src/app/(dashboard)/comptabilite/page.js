@@ -6,13 +6,11 @@ import { useAuth } from '@/context/AuthContext';
 import { useProjet } from '@/context/ProjetContext';
 import { isAdmin, isSuperAdmin } from '@/configs/enum';
 import TvaTrancheManager from '@/components/comptabilite/TvaTrancheManager';
-import ProjetSelector from '@/components/ProjetSelector';
 import ComptabiliteTabsNav from '@/components/comptabilite/ComptabiliteTabsNav';
+import LoadingSpin from '@/components/LoadingSpin';
 
 const ComptabilitePage = () => {
   const { user } = useAuth();
-  const { selectedProjet } = useProjet();
-  const [needsProjectSelection, setNeedsProjectSelection] = useState(true);
   const router = useRouter();
 
   // Check user permissions
@@ -22,39 +20,20 @@ const ComptabilitePage = () => {
     }
   }, [user, router]);
 
-  // Check if project is selected
-  useEffect(() => {
-    if (selectedProjet) {
-      setNeedsProjectSelection(false);
-    } else {
-      setNeedsProjectSelection(true);
-    }
-  }, [selectedProjet]);
-
-  const handleProjectSelected = () => {
-    setNeedsProjectSelection(false);
-  };
-
   if (!user) {
-    return <div className="p-6 text-center">Chargement...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpin /> {/* Use your loading spinner here */}
+      </div>
+    );
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Comptabilité - TVA</h1>
-      
+    <div>
       {/* Tabs navigation */}
       <ComptabiliteTabsNav />
-      
-      {needsProjectSelection ? (
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4">Sélectionner un projet</h2>
-          <p className="mb-4">Veuillez sélectionner un projet pour gérer la TVA</p>
-          <ProjetSelector onSelect={handleProjectSelected} />
-        </div>
-      ) : (
-        <TvaTrancheManager userRole={user?.role} />
-      )}
+
+      <TvaTrancheManager />
     </div>
   );
 };

@@ -1,17 +1,18 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { useAuth } from "../../../../../context/AuthContext";
-import { APIURL, ENDPOINTS } from "../../../../../configs/api";
-import { useRouter } from "next/navigation";
-import { useParams } from "next/navigation";
-import Button from "@/components/Button"; // adjust the path as needed
-import HistoriquesTable from "./HistoriquesTable";
-import BreadCrumb from "../../../navigation/BreadCrumb";
-import LoadingSpin from "@/components/LoadingSpin";
-import VisiteTable from "../../visites/VisiteTable";
-import JournalTable from "../../appels/[appelId]/JournalTable";
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { useAuth } from '@/context/AuthContext';
+import { APIURL, ENDPOINTS } from '@/configs/api'
+import { useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
+import Button from '@/components/Button'; // adjust the path as needed
+import HistoriquesTable from './HistoriquesTable';
+import BreadCrumb from '../../../navigation/BreadCrumb';
+import LoadingSpin from '@/components/LoadingSpin';
+import VisiteTable from '../../visites/VisiteTable';
+import { format } from 'date-fns'; // Import format from date-fns
+
 const ProspectDetails = () => {
   const { token } = useAuth();
   const router = useRouter();
@@ -166,6 +167,42 @@ const ProspectDetails = () => {
                           </span>
                         </span>
                       </div>
+
+                      {prospectDetails?.affecte_par_admin && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Affecté par:</span>
+                          <span className="font-medium">
+                            {`${prospectDetails.affecte_par_admin.name || ''} ${prospectDetails.affecte_par_admin.prenom || ''}`}
+                          </span>
+                        </div>
+                      )}
+
+                      {prospectDetails?.date_affectation && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Date affectation:</span>
+                          <span className="font-medium">
+                            {format(new Date(prospectDetails.date_affectation), 'yyyy-MM-dd HH:mm')}
+                          </span>
+                        </div>
+                      )}
+
+                      {prospectDetails?.traite_par_user && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Traité par:</span>
+                          <span className="font-medium">
+                            {`${prospectDetails.traite_par_user.name || ''} ${prospectDetails.traite_par_user.prenom || ''}`}
+                          </span>
+                        </div>
+                      )}
+
+                      {prospectDetails?.date_traitement && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Date traitement:</span>
+                          <span className="font-medium">
+                            {format(new Date(prospectDetails.date_traitement), 'yyyy-MM-dd HH:mm')}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
 

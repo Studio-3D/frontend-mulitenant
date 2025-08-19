@@ -7,6 +7,7 @@ import { useProjet } from '@/context/ProjetContext';
 import { isAdmin, isSuperAdmin } from '@/configs/enum';
 import ComptabiliteTabsNav from '@/components/comptabilite/ComptabiliteTabsNav';
 import TvaMensuelleManager from '@/components/comptabilite/TvaMensuelleManager';
+import LoadingSpin from '@/components/LoadingSpin';
 
 const TvaMensuellePage = () => {
   const { user } = useAuth();
@@ -23,16 +24,18 @@ const TvaMensuellePage = () => {
   }, [user, selectedProjet, router]);
 
   if (!user || !selectedProjet) {
-    return <div className="p-6 text-center">Chargement...</div>;
-  }
+ return (
+         <div className="flex items-center justify-center min-h-screen">
+           <LoadingSpin /> {/* Use your loading spinner here */}
+         </div>
+       );  }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Comptabilité - TVA Mensuelle</h1>
+    <div >
       
       <ComptabiliteTabsNav />
       
-      <TvaMensuelleManager userRole={user?.role} projetId={selectedProjet?.id} />
+      <TvaMensuelleManager  projetId={selectedProjet?.id} />
     </div>
   );
 };

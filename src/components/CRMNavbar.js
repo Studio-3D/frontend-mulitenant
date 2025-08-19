@@ -1,5 +1,5 @@
 "use client";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import Pusher from "pusher-js";
 import FetchNotifMenu from "../../src/configs/FetchNotifMenu";
+import { isAdmin, isSuperAdmin, isCommercial } from "../configs/enum";
+import { useAuth } from "../context/AuthContext";
 
 const CRMNavbar = () => {
   const router = useRouter();
@@ -23,6 +25,7 @@ const CRMNavbar = () => {
     process.env.NEXT_PUBLIC_PUSHER_APP_KEY_NOTIF_MENU;
 
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const projetId = JSON.parse(localStorage.getItem("selectedProjet"))
     ? JSON.parse(localStorage.getItem("selectedProjet")).id
     : 1;
@@ -36,6 +39,7 @@ const CRMNavbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [openSubmenu, setOpenSubmenu] = useState(null);
   const navRef = useRef(null);
+  const { user } = useAuth();
 
   const nb_total_relances =
     Number(nb_relance_visite) + Number(nb_relances_appels);
@@ -99,12 +103,42 @@ const CRMNavbar = () => {
     setOpenSubmenu(openSubmenu === menu ? null : menu);
   };
 
+  const handleProspectNavigation = (path, hasSubmenu = false, menuName = null) => {
+    // If it's a submenu item, close the submenu after navigation
+    if (hasSubmenu && menuName) {
+      // Small delay to allow navigation to complete
+      setTimeout(() => {
+        setOpenSubmenu(null);
+      }, 100);
+    }
+  };
+
   const navItems = [
-    {
-      name: "Prospects",
-      path: "/crm/prospects",
-      icon: <User className="w-5 h-5" />,
-    },
+    // Prospects menu - conditional based on user role
+    ...(user && isCommercial(user?.role)
+      ? [
+          {
+            name: "Prospects",
+            icon: <User className="w-5 h-5" />,
+            subItems: [
+              {
+                name: "Mes prospects",
+                path: "/crm/prospects?view=assigned",
+              },
+              {
+                name: "Tous les prospects",
+                path: "/crm/prospects",
+              },
+            ],
+          }
+        ]
+      : [
+          {
+            name: "Prospects",
+            path: "/crm/prospects",
+            icon: <User className="w-5 h-5" />,
+          },
+        ]),
     {
       name: "Visites",
       path: "/crm/visites",
@@ -162,16 +196,68 @@ const CRMNavbar = () => {
     },
   ];
 
-  const isActive = (path) => pathname === path;
+  const isActive = (path) => {
+    // Add safety check for path
+    if (!path) return false;
+
+    // Handle the special case for prospects with view parameter
+    if (path.includes("?view=assigned")) {
+      return (
+        pathname === "/crm/prospects" &&
+        searchParams?.get("view") === "assigned"
+      );
+    }
+    if (path === "/crm/prospects" && !path.includes("?view=")) {
+      return (
+        pathname === "/crm/prospects" &&
+        searchParams?.get("view") !== "assigned"
+      );
+    }
+    return pathname === path;
+  };
   const isParentActive = (subItems) => {
-    return subItems?.some((subItem) => pathname.startsWith(subItem.path));
+    if (!subItems) return false;
+
+    return subItems.some((subItem) => {
+      if (!subItem.path) return false;
+
+      if (subItem.path.includes("?view=assigned")) {
+        return (
+          pathname === "/crm/prospects" &&
+          searchParams?.get("view") === "assigned"
+        );
+      }
+      if (subItem.path === "/crm/prospects" && !subItem.path.includes("?view=")) {
+        return (
+          pathname === "/crm/prospects" &&
+          searchParams?.get("view") !== "assigned"
+        );
+      }
+      return pathname.startsWith(subItem.path);
+    });
   };
 
   // Get the active submenu item name
   const getActiveSubmenuName = (subItems) => {
-    const activeItem = subItems?.find((subItem) =>
-      pathname.startsWith(subItem.path)
-    );
+    if (!subItems) return null;
+
+    const activeItem = subItems.find((subItem) => {
+      if (!subItem.path) return false;
+
+      if (subItem.path.includes("?view=assigned")) {
+        return (
+          pathname === "/crm/prospects" &&
+          searchParams?.get("view") === "assigned"
+        );
+      }
+      if (subItem.path === "/crm/prospects" && !subItem.path.includes("?view=")) {
+        return (
+          pathname === "/crm/prospects" &&
+          searchParams?.get("view") !== "assigned"
+        );
+      }
+      return pathname.startsWith(subItem.path);
+    });
     return activeItem?.name || null;
   };
 
@@ -201,7 +287,12 @@ const CRMNavbar = () => {
             <div key={item.name} className="relative flex-1">
               <Link
                 href={item.path || "#"}
-                onClick={() => item.subItems && toggleSubmenu(item.name)}
+                onClick={(e) => {
+                  if (item.subItems) {
+                    e.preventDefault();
+                    toggleSubmenu(item.name);
+                  }
+                }}
                 className={`flex items-center gap-2 px-1 py-3 rounded-md transition-colors ${
                   isActive(item.path) || isParentActive(item.subItems)
                     ? "bg-[#1ab394] text-white font-normal"
@@ -233,6 +324,7 @@ const CRMNavbar = () => {
                     <Link
                       key={subItem.name}
                       href={subItem.path}
+                      onClick={() => handleProspectNavigation(subItem.path, true, item.name)}
                       className={`flex items-center justify-between px-4 py-2 m-1 !text-gray-700 hover:bg-gray-100 hover:rounded-md ${
                         isActive(subItem.path) ? "bg-blue-50 rounded-md" : ""
                       }`}

@@ -1,17 +1,17 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { StatCard } from './StatCard';
-import { DateFilter } from './DateFilter';
-import { AreaChart } from './charts/AreaCharts';
-import { BarChart } from './charts/BarChart';
-import { PieChart } from './charts/PieChart';
-import { MulBar } from './charts/MulBar';
-import { DesistementChart } from './charts/DesistementChart';
-import { 
-  startOfMonth, 
-  endOfMonth, 
-  format, 
-  subDays, 
-  eachDayOfInterval, 
+import React, { useState, useEffect, useMemo } from "react";
+import { StatCard } from "./StatCard";
+import { DateFilter } from "./DateFilter";
+import { AreaChart } from "./charts/AreaCharts";
+import { BarChart } from "./charts/BarChart";
+import { PieChart } from "./charts/PieChart";
+import { MulBar } from "./charts/MulBar";
+import { DesistementChart } from "./charts/DesistementChart";
+import {
+  startOfMonth,
+  endOfMonth,
+  format,
+  subDays,
+  eachDayOfInterval,
   eachWeekOfInterval,
   isSameDay,
   startOfWeek,
@@ -22,22 +22,22 @@ import {
   startOfYear,
   endOfYear,
   eachMonthOfInterval,
-  isSameYear
-} from 'date-fns';
-import { 
-  AlertCircleIcon, 
-  ThumbsUpIcon, 
-  BanknoteIcon, 
-  UsersIcon, 
-  UserPlusIcon, 
-  PhoneCallIcon, 
+  isSameYear,
+} from "date-fns";
+import {
+  AlertCircleIcon,
+  ThumbsUpIcon,
+  BanknoteIcon,
+  UsersIcon,
+  UserPlusIcon,
+  PhoneCallIcon,
   ArrowDownIcon,
-  ChevronLeftIcon
-} from 'lucide-react';
-import axios from 'axios';
+  ChevronLeftIcon,
+} from "lucide-react";
+import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
-import { useProjet } from '@/context/ProjetContext';
-import { APIURL } from '../../configs/api';
+import { useProjet } from "@/context/ProjetContext";
+import { APIURL } from "../../configs/api";
 
 export const Dashboard = () => {
   const today = new Date();
@@ -46,16 +46,16 @@ export const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [timePeriod, setTimePeriod] = useState('month');
+  const [timePeriod, setTimePeriod] = useState("month");
   const [selectedMonth, setSelectedMonth] = useState(null);
-  
+
   const handleDateChange = (start, end, period) => {
     setStartDate(start);
     setEndDate(end);
-    setTimePeriod(period || 'custom');
+    setTimePeriod(period || "custom");
     setSelectedMonth(null); // Reset month selection when changing period
   };
-  
+
   const { token } = useAuth();
   const accesstoken = token || localStorage.getItem("accessToken");
   const { selectedProjet } = useProjet();
@@ -65,17 +65,17 @@ export const Dashboard = () => {
       try {
         setLoading(true);
         setError(null);
-        
+
         const isValidDate = (d) => d instanceof Date && !isNaN(d);
         if (!isValidDate(startDate) || !isValidDate(endDate)) {
-          throw new Error('Invalid date range');
+          throw new Error("Invalid date range");
         }
 
-        const formattedStart = format(startDate, 'yyyy-MM-dd');
-        const formattedEnd = format(endDate, 'yyyy-MM-dd');
+        const formattedStart = format(startDate, "yyyy-MM-dd");
+        const formattedEnd = format(endDate, "yyyy-MM-dd");
 
         if (!selectedProjet?.id) {
-          throw new Error('No project selected');
+          throw new Error("No project selected");
         }
 
         const response = await axios.get(
@@ -86,11 +86,11 @@ export const Dashboard = () => {
             },
           }
         );
-        console.log('stat Response:', response.data);
+        console.log("stat Response:", response.data);
         setDashboardData(response.data);
       } catch (err) {
-        setError(err.message || 'Failed to fetch dashboard data');
-        console.error('API Error:', err);
+        setError(err.message || "Failed to fetch dashboard data");
+        console.error("API Error:", err);
       } finally {
         setLoading(false);
       }
@@ -118,12 +118,12 @@ export const Dashboard = () => {
   // Prepare financial chart data based on time period
   const prepareFinancialChartData = () => {
     const processData = (items) => {
-      return (items || []).map(item => {
+      return (items || []).map((item) => {
         const date = Array.isArray(item) ? item[0] : item.date;
         const amount = Array.isArray(item) ? item[1] : item.montant;
         return {
           date: new Date(date),
-          amount: parseFloat(amount) || 0
+          amount: parseFloat(amount) || 0,
         };
       });
     };
@@ -132,76 +132,78 @@ export const Dashboard = () => {
     const remboursementsData = processData(remboursements);
 
     switch (timePeriod) {
-      case 'week': {
+      case "week": {
         const days = eachDayOfInterval({ start: startDate, end: endDate });
-        return days.map(day => {
+        return days.map((day) => {
           const enc = encaissementsData
-            .filter(e => isSameDay(e.date, day))
+            .filter((e) => isSameDay(e.date, day))
             .reduce((sum, e) => sum + e.amount, 0);
           const rem = remboursementsData
-            .filter(r => isSameDay(r.date, day))
+            .filter((r) => isSameDay(r.date, day))
             .reduce((sum, r) => sum + r.amount, 0);
           return {
             date: day,
             Encaissements: enc,
-            Remboursements: rem
+            Remboursements: rem,
           };
         });
       }
-      
-      case 'month':
-      case 'last-month': {
+
+      case "month":
+      case "last-month": {
         const days = eachDayOfInterval({ start: startDate, end: endDate });
-        return days.map(day => {
+        return days.map((day) => {
           const enc = encaissementsData
-            .filter(e => isSameDay(e.date, day))
+            .filter((e) => isSameDay(e.date, day))
             .reduce((sum, e) => sum + e.amount, 0);
           const rem = remboursementsData
-            .filter(r => isSameDay(r.date, day))
+            .filter((r) => isSameDay(r.date, day))
             .reduce((sum, r) => sum + r.amount, 0);
           return {
             date: day,
             Encaissements: enc,
-            Remboursements: rem
+            Remboursements: rem,
           };
         });
       }
-      
-      case 'year': {
+
+      case "year": {
         const months = eachMonthOfInterval({ start: startDate, end: endDate });
-        return months.map(month => {
+        return months.map((month) => {
           const enc = encaissementsData
-            .filter(e => isSameMonth(e.date, month))
+            .filter((e) => isSameMonth(e.date, month))
             .reduce((sum, e) => sum + e.amount, 0);
           const rem = remboursementsData
-            .filter(r => isSameMonth(r.date, month))
+            .filter((r) => isSameMonth(r.date, month))
             .reduce((sum, r) => sum + r.amount, 0);
           return {
             date: month,
             Encaissements: enc,
-            Remboursements: rem
+            Remboursements: rem,
           };
         });
       }
-      
+
       default: {
         const allDates = [
           ...new Set([
-            ...encaissementsData.map(e => e.date.getTime()),
-            ...remboursementsData.map(r => r.date.getTime())
-          ])
-        ].map(time => new Date(time));
+            ...encaissementsData.map((e) => e.date.getTime()),
+            ...remboursementsData.map((r) => r.date.getTime()),
+          ]),
+        ].map((time) => new Date(time));
 
-        return allDates.map(date => {
-          const enc = encaissementsData.find(e => isSameDay(e.date, date));
-          const rem = remboursementsData.find(r => isSameDay(r.date, date));
+        return allDates
+          .map((date) => {
+            const enc = encaissementsData.find((e) => isSameDay(e.date, date));
+            const rem = remboursementsData.find((r) => isSameDay(r.date, date));
 
-          return {
-            date,
-            Encaissements: enc ? enc.amount : 0,
-            Remboursements: rem ? rem.amount : 0
-          };
-        }).sort((a, b) => a.date - b.date);
+            return {
+              date,
+              Encaissements: enc ? enc.amount : 0,
+              Remboursements: rem ? rem.amount : 0,
+            };
+          })
+          .sort((a, b) => a.date - b.date);
       }
     }
   };
@@ -209,53 +211,57 @@ export const Dashboard = () => {
   // Prepare visit data
   const prepareVisitData = () => {
     const visitCategories = [
-      { id: 0, name: 'Réceptif', color: '#3B82F6' },
-      { id: 1, name: 'Pré Réservation', color: '#8B5CF6' },
-      { id: 2, name: 'Vente', color: '#EF4444' },
-      { id: 3, name: 'Perdu', color: '#6B7280' }
+      { id: 0, name: "Réceptif", color: "#3B82F6" },
+      { id: 1, name: "Pré Réservation", color: "#8B5CF6" },
+      { id: 2, name: "Vente", color: "#EF4444" },
+      { id: 3, name: "Perdu", color: "#6B7280" },
     ];
 
-    return visitCategories.map(category => ({
-      name: category.name,
-      value: visites[category.id] || 0,
-      color: category.color
-    })).filter(item => item.value > 0);
+    return visitCategories
+      .map((category) => ({
+        name: category.name,
+        value: visites[category.id] || 0,
+        color: category.color,
+      }))
+      .filter((item) => item.value > 0);
   };
 
   // Prepare source data
   const prepareSourceData = () => {
     const userSourcesData = [
-      { id: '0', name: 'Avito', color: '#3B82F6' },
-      { id: '1', name: 'Kekemonos', color: '#8B5CF6' },
-      { id: '2', name: 'Palissade', color: '#EC4899' },
-      { id: '3', name: 'Panneaux 4*3', color: '#10B981' },
-      { id: '4', name: 'Flyer', color: '#F59E0B' },
-      { id: '5', name: 'Caravane', color: '#10B981' },
-      { id: '6', name: 'Bouche à Oreille', color: '#06B6D4' },
-      { id: '7', name: 'Site Web', color: '#FCD34D' },
-      { id: '8', name: 'Facebook', color: '#EF4444' },
-      { id: '9', name: 'Smsing', color: '#FBBF24' },
-      { id: '10', name: 'Phoning BDD', color: '#A78BFA' },
-      { id: '11', name: 'Youtube', color: '#F472B6' },
-      { id: '12', name: 'Partenaire', color: '#34D399' },
-      { id: '13', name: 'Sarouty', color: '#F59E0B' }
+      { id: "0", name: "Avito", color: "#3B82F6" },
+      { id: "1", name: "Kekemonos", color: "#8B5CF6" },
+      { id: "2", name: "Palissade", color: "#EC4899" },
+      { id: "3", name: "Panneaux 4*3", color: "#10B981" },
+      { id: "4", name: "Flyer", color: "#F59E0B" },
+      { id: "5", name: "Caravane", color: "#10B981" },
+      { id: "6", name: "Bouche à Oreille", color: "#06B6D4" },
+      { id: "7", name: "Site Web", color: "#FCD34D" },
+      { id: "8", name: "Facebook", color: "#EF4444" },
+      { id: "9", name: "Smsing", color: "#FBBF24" },
+      { id: "10", name: "Phoning BDD", color: "#A78BFA" },
+      { id: "11", name: "Youtube", color: "#F472B6" },
+      { id: "12", name: "Partenaire", color: "#34D399" },
+      { id: "13", name: "Sarouty", color: "#F59E0B" },
     ];
 
     return chartData_sources
       .map(([name, value]) => {
-        const source = userSourcesData.find(s => 
-          s.name.toLowerCase() === name.toLowerCase().replace(' a ', ' à ')
+        const source = userSourcesData.find(
+          (s) =>
+            s.name.toLowerCase() === name.toLowerCase().replace(" a ", " à ")
         );
-        return source ? {
-          name: source.name,
-          value,
-          color: source.color
-        } : null;
+        return source
+          ? {
+              name: source.name,
+              value,
+              color: source.color,
+            }
+          : null;
       })
       .filter(Boolean)
-      .filter(item => item.value > 0);
+      .filter((item) => item.value > 0);
   };
-
 
   const financialChartData = prepareFinancialChartData();
   const visitData = prepareVisitData();
@@ -297,72 +303,72 @@ export const Dashboard = () => {
           timePeriod={timePeriod}
         />
       </div>
-      
+
       <div className="mb-6">
-  <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-    <div>
-      <StatCard
-        title="Pénalité"
-        value={penalties.toLocaleString('fr-FR')}
-        change="+12.5%"
-        isPositive={false}
-        icon={<AlertCircleIcon className="w-5 h-5" />}
-        color="bg-gradient-to-r from-red-400 to-red-500"
-      />
-    </div>
-    <div>
-      <StatCard
-        title="Bien Vendu"
-        value={Bien_vendu.toLocaleString('fr-FR')}
-        change="+8.2%"
-        isPositive={true}
-        icon={<ThumbsUpIcon className="w-5 h-5" />}
-        color="bg-gradient-to-r from-green-400 to-green-500"
-      />
-    </div>
-    <div>
-      <StatCard
-        title="Encaissement"
-        value={`${encaissementTotal.toLocaleString('fr-FR')} dh`}
-        change="+4.4%"
-        isPositive={true}
-        icon={<BanknoteIcon className="w-5 h-5" />}
-        color="bg-gradient-to-r from-blue-400 to-blue-500"
-      />
-    </div>
-    <div>
-      <StatCard
-        title="Visites"
-        value={visits.toLocaleString('fr-FR')}
-        change="+1.1%"
-        isPositive={true}
-        icon={<UsersIcon className="w-5 h-5" />}
-        color="bg-gradient-to-r from-purple-400 to-purple-500"
-      />
-    </div>
-    <div>
-      <StatCard
-        title="Prospects"
-        value={prospects.toLocaleString('fr-FR')}
-        change="+2.3%"
-        isPositive={true}
-        icon={<UserPlusIcon className="w-5 h-5" />}
-        color="bg-gradient-to-r from-orange-400 to-orange-500"
-      />
-    </div>
-    <div>
-      <StatCard
-        title="Appels"
-        value={Appels.toLocaleString('fr-FR')}
-        change="+5.7%"
-        isPositive={true}
-        icon={<PhoneCallIcon className="w-5 h-5" />}
-        color="bg-gradient-to-r from-teal-400 to-teal-500"
-      />
-    </div>
-  </div>
-</div>
-      
+        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+          <div>
+            <StatCard
+              title="Pénalité"
+              value={penalties.toLocaleString("fr-FR")}
+              change="+12.5%"
+              isPositive={false}
+              icon={<AlertCircleIcon className="w-5 h-5" />}
+              color="bg-gradient-to-r from-red-400 to-red-500"
+            />
+          </div>
+          <div>
+            <StatCard
+              title="Bien Vendu"
+              value={Bien_vendu.toLocaleString("fr-FR")}
+              change="+8.2%"
+              isPositive={true}
+              icon={<ThumbsUpIcon className="w-5 h-5" />}
+              color="bg-gradient-to-r from-green-400 to-green-500"
+            />
+          </div>
+          <div>
+            <StatCard
+              title="Encaissement"
+              value={`${encaissementTotal.toLocaleString("fr-FR")} dh`}
+              change="+4.4%"
+              isPositive={true}
+              icon={<BanknoteIcon className="w-5 h-5" />}
+              color="bg-gradient-to-r from-blue-400 to-blue-500"
+            />
+          </div>
+          <div>
+            <StatCard
+              title="Visites"
+              value={visits.toLocaleString("fr-FR")}
+              change="+1.1%"
+              isPositive={true}
+              icon={<UsersIcon className="w-5 h-5" />}
+              color="bg-gradient-to-r from-purple-400 to-purple-500"
+            />
+          </div>
+          <div>
+            <StatCard
+              title="Prospects"
+              value={prospects.toLocaleString("fr-FR")}
+              change="+2.3%"
+              isPositive={true}
+              icon={<UserPlusIcon className="w-5 h-5" />}
+              color="bg-gradient-to-r from-orange-400 to-orange-500"
+            />
+          </div>
+          <div>
+            <StatCard
+              title="Appels"
+              value={Appels.toLocaleString("fr-FR")}
+              change="+5.7%"
+              isPositive={true}
+              icon={<PhoneCallIcon className="w-5 h-5" />}
+              color="bg-gradient-to-r from-teal-400 to-teal-500"
+            />
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div className="bg-white rounded-lg shadow p-4 md:p-6">
           <h3 className="text-lg font-medium text-gray-800 mb-4">
@@ -370,31 +376,31 @@ export const Dashboard = () => {
           </h3>
           <MulBar
             data={biensVendusRaw}
-            startDate={startDate} 
+            startDate={startDate}
             endDate={endDate}
             timePeriod={timePeriod}
           />
         </div>
         <div className="bg-white rounded-lg shadow p-4 md:p-6">
           <h3 className="text-lg font-medium text-gray-800 mb-4">
-            Utilisateurs par Source
+            Clients/Prospects par Source
           </h3>
-          <BarChart 
-            data={sourceData} 
-            startDate={startDate} 
+          <BarChart
+            data={sourceData}
+            startDate={startDate}
             endDate={endDate}
             timePeriod={timePeriod}
           />
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         <div className="bg-white rounded-lg shadow p-4 md:p-6 lg:col-span-1">
           <h3 className="text-lg font-medium text-gray-800 mb-4">Visites</h3>
           <div className="h-80">
-            <PieChart 
-              data={visitData} 
-              startDate={startDate} 
+            <PieChart
+              data={visitData}
+              startDate={startDate}
               endDate={endDate}
               timePeriod={timePeriod}
             />
@@ -414,23 +420,23 @@ export const Dashboard = () => {
               <span className="text-sm text-gray-600">Remboursements</span>
             </div>
           </div>
-          <AreaChart 
+          <AreaChart
             data={financialChartData}
-            startDate={startDate} 
-            endDate={endDate}
-            timePeriod={timePeriod}
-          />
-        </div>
-      </div>
-      
-      <div className="bg-white rounded-lg shadow  ">
-          <DesistementChart 
-            data={dashboardData?.array_type_date_desistement || []} 
             startDate={startDate}
             endDate={endDate}
             timePeriod={timePeriod}
           />
         </div>
       </div>
+
+      <div className="bg-white rounded-lg shadow  ">
+        <DesistementChart
+          data={dashboardData?.array_type_date_desistement || []}
+          startDate={startDate}
+          endDate={endDate}
+          timePeriod={timePeriod}
+        />
+      </div>
+    </div>
   );
 };

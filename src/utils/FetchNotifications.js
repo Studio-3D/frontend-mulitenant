@@ -85,6 +85,30 @@ const fetchNotifications = async ({ setNotifications, setNewNotificationsCount, 
         icon: 'thumbs-up',
         color: 'info',
         subtitle: (prospect, user, avance, reservation, bien, projet, description_type) => description_type || 'Quelqu\'un a réagi à votre publication'
+      },
+      9: {
+        title: 'Demande de Validation Désistement',
+        icon: 'alert-triangle',
+        color: 'warning',
+        subtitle: (prospect, user, avance, reservation, bien, projet, description_type) => description_type || `Code: ${reservation?.code_reservation}`
+      },
+      22: {
+        title: 'Pénalité de Désistement',
+        icon: 'alert-triangle',
+        color: 'error',
+        subtitle: (prospect, user, avance, reservation, bien, projet, description_type) => description_type || 'Pénalité appliquée'
+      },
+      27: {
+        title: 'Appel Programmé',
+        icon: 'phone',
+        color: 'primary',
+        subtitle: (prospect, user, avance, reservation, bien, projet, description_type) => description_type || 'Appel à effectuer'
+      },
+      28: {
+        title: 'Rappel d\'Appel',
+        icon: 'phone',
+        color: 'warning',
+        subtitle: (prospect, user, avance, reservation, bien, projet, description_type) => description_type || 'Rappel d\'appel'
       }
     };
 
@@ -141,7 +165,7 @@ const fetchNotifications = async ({ setNotifications, setNewNotificationsCount, 
           icon: icon,
           color: color,
           subtitle: subtitle(prospect, user, avance, reservation, bien, projet, description_type),
-          seen: notification.seen === 1
+          seen: Boolean(notification.seen)
         };
       })
       .filter(notification => notification !== null);

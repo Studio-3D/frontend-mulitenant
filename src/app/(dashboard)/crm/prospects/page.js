@@ -15,39 +15,51 @@ export default function Page() {
   const { user } = useAuth();
   const userRole = user?.role;
   const router = useRouter();
+  const searchParams = useSearchParams();
+
   useEffect(() => {
     if (
+      user && // Add null check for user
       !isAdmin(userRole) &&
       !isSuperAdmin(userRole) &&
       !isCommercial(userRole)
     ) {
       router.push('/');
     }
-  }, [router]);
+  }, [user, userRole, router]);
 
-  const searchParams = useSearchParams();
+  // Note: Redirect logic removed from here since it's now handled in /crm page
+  // This allows users to explicitly navigate to "Tous les prospects" without being redirected
+
   useEffect(() => {
     if (!searchParams) return;
 
     const id = searchParams.get('id');
     const action = searchParams.get('action');
+    const view = searchParams.get('view'); // Get the view parameter
 
-    let newChild = determineChildComponent(action, id);
+    let newChild = determineChildComponent(action, id, view);
     setChild(newChild);
   }, [searchParams]);
 
-  // Fonction pour déterminer le composant enfant en fonction de l'action et de l'id
-  const determineChildComponent = (action, id) => {
+  // Function to determine child component based on action, id, and view
+  const determineChildComponent = (action, id, view) => {
     if (action === ACTION.ADD) {
       return <ProspectForm />;
     } else if (!isNaN(parseInt(id)) && action === ACTION.EDIT) {
       return <ProspectForm id={id} />;
     } else {
-      console.warn('Invalid action or missing id:', action, id); // Debugging
-
       return null;
     }
   };
+
+  // Determine if we should show only assigned prospects
+  const showOnlyAssigned = searchParams?.get('view') === 'assigned';
+
+  // Don't render anything if user is null (during logout process)
+  if (!user) {
+    return null;
+  }
 
   return (
     <div>
@@ -57,7 +69,7 @@ export default function Page() {
         <>
           <div>
             <CRMNavbar />
-            <ProspectTable />
+            <ProspectTable showOnlyAssigned={showOnlyAssigned} />
           </div>
         </>
       )}

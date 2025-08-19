@@ -8,7 +8,12 @@ import { fetchData_table_by_id } from '../../../../../../src/configs/api-utils';
 import format from 'date-fns/format';
 import { Eye } from 'lucide-react';
 
-import { Statuts_Prospect } from '../../../../../../src/configs/enum';
+import { Statuts_Prospect, getProspectStatusLabel, getProspectStatusColor } from '../../../../../../src/configs/enum';
+
+// Function to get status label using the centralized mapping
+const getStatusLabel = (rawStatus) => {
+  return getProspectStatusLabel(rawStatus);
+};
 
 import SelectInput from '@/components/SelectInput';
 import Input from '@/components/Input';
@@ -89,25 +94,29 @@ const HistoriquesTable = (id) => {
   };
   // Format users data for table display
   const formatData = () => {
-    return historiques.map((pro) => ({
-      id: pro.id,
-      date_traitement: pro.date_traitement,
-      //statut: Statuts_Prospect[pro.statut]?.label,
-      statut: pro.statut,
-      rdv: pro.rdv ? format(new Date(pro.rdv), 'dd/MM/yyyy H:m') : '',
-      rappel: pro.date_rappel
-        ? format(new Date(pro.date_rappel), 'dd/MM/yyyy ')
-        : '',
-      commentaire: pro.statut,
-      visite_id: pro.visite_id,
-      appel_id: pro.appel_id,
-    }));
+    return historiques.map((pro) => {
+      const mappedStatus = getStatusLabel(pro.statut);
+
+      return {
+        id: pro.id,
+        date_traitement: pro.date_traitement,
+        statut: mappedStatus,
+        rdv: pro.rdv ? format(new Date(pro.rdv), 'dd/MM/yyyy H:m') : '',
+        rappel: pro.date_rappel
+          ? format(new Date(pro.date_rappel), 'dd/MM/yyyy ')
+          : '',
+        commentaire: pro.commentaire || '',
+        user_traite: pro.user ? `${pro.user.name || ''} ${pro.user.prenom || ''}`.trim() : '',
+        visite_id: pro.visite_id,
+        appel_id: pro.appel_id,
+      };
+    });
   };
 
   // Table columns configuration
   const columns = [
     {
-      key: '',
+      key: 'date_traitement',
       label: 'Date Traitement',
       render: (row) => (
         <div className="flex items-center gap-3">
@@ -120,20 +129,11 @@ const HistoriquesTable = (id) => {
       key: 'statut',
       label: 'Statut',
       render: (row) => {
-        if (!row.statut) return ''; // or return null;
-
-        const roleColors = {
-          'Planification Rendez Vous': 'bg-blue-100 text-[#009FFF]',
-          Injoignable: 'bg-purple-100 text-purple-600',
-          Rappel: 'bg-yellow-100 !text-yellow-600',
-          'Nouveau Appel': 'bg-green-100 !text-green-600',
-        };
+        if (!row.statut) return '';
 
         return (
           <span
-            className={`px-2 py-1 rounded text-sm font-semibold ${
-              roleColors[row.statut] || 'bg-gray-100 !text-gray-600'
-            }`}
+            className={`px-2 py-1 rounded text-sm font-semibold ${getProspectStatusColor(row.statut)}`}
           >
             {row.statut}
           </span>
@@ -142,6 +142,7 @@ const HistoriquesTable = (id) => {
     },
     { key: 'rdv', label: 'Rendez Vous' },
     { key: 'rappel', label: 'Date Rappel' },
+    { key: 'user_traite', label: 'Traité par' },
     { key: 'commentaire', label: 'Commentaire' },
 
     {
@@ -179,12 +180,12 @@ const HistoriquesTable = (id) => {
   const data_to_export = () => {
     return historiques.map((pro) => ({
       date_traitement: pro.date_traitement,
-      statut: Statuts_Prospect[pro.statut]?.label,
-
+      statut: getStatusLabel(pro.statut),
       rdv: pro.rdv ? format(new Date(pro.rdv), 'dd/MM/yyyy H:m') : '',
       rappel: pro.date_rappel
         ? format(new Date(pro.date_rappel), 'dd/MM/yyyy')
         : '',
+      user_traite: pro.user ? `${pro.user.name || ''} ${pro.user.prenom || ''}`.trim() : '',
       commentaire: pro.commentaire || '',
     }));
   };
@@ -194,6 +195,7 @@ const HistoriquesTable = (id) => {
     { key: 'statut', label: 'Statut' },
     { key: 'rdv', label: 'Rendez-vous' },
     { key: 'rappel', label: 'Date Rappel' },
+    { key: 'user_traite', label: 'Traité par' },
     { key: 'commentaire', label: 'Commentaire' },
   ];
   return (
