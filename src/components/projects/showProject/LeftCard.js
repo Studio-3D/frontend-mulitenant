@@ -41,7 +41,7 @@ export const LeftCard = ({ project }) => {
       >
         <div className="absolute inset-0 bg-black bg-opacity-40"></div>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <div className="bg-white p-3 rounded-full mb-2 shadow-md">
+          <div className="bg-white p-1 rounded-full mb-2 shadow-md">
             <img
               src='https://images.unsplash.com/photo-1560179707-f14e90ef3623?q=80&w=200&auto=format&fit=crop'
               alt={`${project.nom} logo`}
@@ -61,28 +61,28 @@ export const LeftCard = ({ project }) => {
             <div className="flex flex-col items-center justify-center py-3 px-2">
               <HomeIcon className="text-blue-600 mb-1" size={20} />
               <div className="text-xs text-gray-600">Biens</div>
-              <div className="font-bold text-sm">{project.nbre_biens}</div>
+              <div className="font-bold text-sm">{project?.bien_count}</div>
             </div>
           )}
           {shouldShowStat(project?.nbre_tranches) && (
             <div className="flex flex-col items-center justify-center py-3 px-2">
               <LayersIcon className="text-green-600 mb-1" size={20} />
               <div className="text-xs text-gray-600">Tranches</div>
-              <div className="font-bold text-sm">{project.nbre_tranches}</div>
+              <div className="font-bold text-sm">{project?.tranche_count}</div>
             </div>
           )}
           {shouldShowStat(project?.nbre_immeubles) && (
             <div className="flex flex-col items-center justify-center py-3 px-2">
               <BuildingIcon className="text-purple-600 mb-1" size={20} />
               <div className="text-xs text-gray-600">Immeubles</div>
-              <div className="font-bold text-sm">{project.nbre_immeubles}</div>
+              <div className="font-bold text-sm">{project?.immeuble_count}</div>
             </div>
           )}
           {shouldShowStat(project?.nbre_blocs) && (
             <div className="flex flex-col items-center justify-center py-3 px-2">
               <BoxesIcon className="text-orange-600 mb-1" size={20} />
               <div className="text-xs text-gray-600">Blocs</div>
-              <div className="font-bold text-sm">{project.nbre_blocs}</div>
+              <div className="font-bold text-sm">{project?.bloc_count}</div>
             </div>
           )}
         </div>
