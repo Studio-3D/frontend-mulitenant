@@ -366,7 +366,6 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchProjectData,
             totalRows={totalRows}
             onPageChange={handlePageChange}
             onRowsPerPageChange={handleRowsPerPageChange}
-            
           />
           {/* Delete Confirmation Modal */}
                 {showDeleteModal && (

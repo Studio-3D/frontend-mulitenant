@@ -15,6 +15,22 @@ import {
 } from 'lucide-react';
 
 export const LeftCard = ({ project }) => {
+  // Helper function to check if value exists and is greater than 0
+  const shouldShowStat = (value) => {
+    return value !== undefined && value !== null && value > 0;
+  };
+
+  // Count visible stats for grid layout
+  const visibleStats = [
+    shouldShowStat(project?.nbre_biens),
+    shouldShowStat(project?.nbre_tranches),
+    shouldShowStat(project?.nbre_immeubles),
+    shouldShowStat(project?.nbre_blocs)
+  ].filter(Boolean).length;
+
+  // Determine grid class based on number of visible stats
+  const gridClass = visibleStats > 0 ? `grid grid-cols-${visibleStats} divide-x border-b` : 'hidden';
+
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden h-full flex flex-col">
       <div
@@ -38,33 +54,39 @@ export const LeftCard = ({ project }) => {
         </div>
       </div>
       
-      {/* Stats section */}
-      <div className="grid grid-cols-4 divide-x border-b">
-        <div className="flex flex-col items-center justify-center py-3 px-2">
-          <HomeIcon className="text-blue-600 mb-1" size={20} />
-          <div className="text-xs text-gray-600">Biens</div>
-          <div className="font-bold text-sm">{project?.nbre_biens || 0}</div>
+      {/* Stats section - Only show if at least one stat is > 0 */}
+      {visibleStats > 0 && (
+        <div className={gridClass}>
+          {shouldShowStat(project?.nbre_biens) && (
+            <div className="flex flex-col items-center justify-center py-3 px-2">
+              <HomeIcon className="text-blue-600 mb-1" size={20} />
+              <div className="text-xs text-gray-600">Biens</div>
+              <div className="font-bold text-sm">{project.nbre_biens}</div>
+            </div>
+          )}
+          {shouldShowStat(project?.nbre_tranches) && (
+            <div className="flex flex-col items-center justify-center py-3 px-2">
+              <LayersIcon className="text-green-600 mb-1" size={20} />
+              <div className="text-xs text-gray-600">Tranches</div>
+              <div className="font-bold text-sm">{project.nbre_tranches}</div>
+            </div>
+          )}
+          {shouldShowStat(project?.nbre_immeubles) && (
+            <div className="flex flex-col items-center justify-center py-3 px-2">
+              <BuildingIcon className="text-purple-600 mb-1" size={20} />
+              <div className="text-xs text-gray-600">Immeubles</div>
+              <div className="font-bold text-sm">{project.nbre_immeubles}</div>
+            </div>
+          )}
+          {shouldShowStat(project?.nbre_blocs) && (
+            <div className="flex flex-col items-center justify-center py-3 px-2">
+              <BoxesIcon className="text-orange-600 mb-1" size={20} />
+              <div className="text-xs text-gray-600">Blocs</div>
+              <div className="font-bold text-sm">{project.nbre_blocs}</div>
+            </div>
+          )}
         </div>
-        <div className="flex flex-col items-center justify-center py-3 px-2">
-          <LayersIcon className="text-green-600 mb-1" size={20} />
-          <div className="text-xs text-gray-600">Tranches</div>
-          <div className="font-bold text-sm">
-            {project?.nbre_tranches || 0}
-          </div>
-        </div>
-        <div className="flex flex-col items-center justify-center py-3 px-2">
-          <BuildingIcon className="text-purple-600 mb-1" size={20} />
-          <div className="text-xs text-gray-600">Immeubles</div>
-          <div className="font-bold text-sm">
-            {project?.nbre_immeubles || 0}
-          </div>
-        </div>
-        <div className="flex flex-col items-center justify-center py-3 px-2">
-          <BoxesIcon className="text-orange-600 mb-1" size={20} />
-          <div className="text-xs text-gray-600">Blocs</div>
-          <div className="font-bold text-sm">{project?.nbre_blocs || 0}</div>
-        </div>
-      </div>
+      )}
       
       <div className="p-6 flex-grow">
         <div className="mb-6">
@@ -112,7 +134,7 @@ export const LeftCard = ({ project }) => {
                 <SquareIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
                 <span>Surface terrain:</span>
               </div>
-              <div className="text-gray-600 text-right">{project?.surface_terrain + ' m²' || "Surface non spécifiée"}</div>
+              <div className="text-gray-600 text-right">{project?.surface_terrain ? `${project.surface_terrain} m²` : "Surface non spécifiée"}</div>
             </div>
             
             <div className="flex items-center justify-between border-b border-gray-100 pb-2">
@@ -120,7 +142,7 @@ export const LeftCard = ({ project }) => {
                 <DollarSignIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
                 <span>Prix d'acquisition:</span>
               </div>
-              <div className="text-gray-600 text-right">{project?.prix_acquisition + ' Dhs' || "Prix non spécifié"}</div>
+              <div className="text-gray-600 text-right">{project?.prix_acquisition ? `${project.prix_acquisition} Dhs` : "Prix non spécifié"}</div>
             </div>
             
             <div className="flex items-center justify-between border-b border-gray-100 pb-2">
@@ -139,39 +161,49 @@ export const LeftCard = ({ project }) => {
               <div className="text-gray-600 text-right">{project?.prolongation_reservation || "Durée non spécifiée"}</div>
             </div>
             
-            <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-              <div className="flex items-center text-gray-700">
-                <LayersIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
-                <span>Nombre de tranches:</span>
+            {shouldShowStat(project?.nbre_tranches) && (
+              <div className="flex items-center justify-between border-b border-gray-100 pb-2">
+                <div className="flex items-center text-gray-700">
+                  <LayersIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
+                  <span>Nombre de tranches:</span>
+                </div>
+                <div className="text-gray-600 text-right">{project.nbre_tranches}</div>
               </div>
-              <div className="text-gray-600 text-right">
-                {project?.nbre_tranches || 0}
-              </div>
-            </div>
+            )}
             
-            <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-              <div className="flex items-center text-gray-700">
-                <BoxesIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
-                <span>Nombre de blocs:</span>
+            {shouldShowStat(project?.nbre_blocs) && (
+              <div className="flex items-center justify-between border-b border-gray-100 pb-2">
+                <div className="flex items-center text-gray-700">
+                  <BoxesIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
+                  <span>Nombre de blocs:</span>
+                </div>
+                <div className="text-gray-600 text-right">{project.nbre_blocs}</div>
               </div>
-              <div className="text-gray-600 text-right">
-                {project?.nbre_blocs || 0}
-              </div>
-            </div>
+            )}
             
-            <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-              <div className="flex items-center text-gray-700">
-                <BuildingIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
-                <span>Nombre d'immeubles:</span>
+            {shouldShowStat(project?.nbre_immeubles) && (
+              <div className="flex items-center justify-between border-b border-gray-100 pb-2">
+                <div className="flex items-center text-gray-700">
+                  <BuildingIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
+                  <span>Nombre d'immeubles:</span>
+                </div>
+                <div className="text-gray-600 text-right">{project.nbre_immeubles}</div>
               </div>
-              <div className="text-gray-600 text-right">
-                {project?.nbre_immeubles || 0}
+            )}
+            
+            {shouldShowStat(project?.nbre_biens) && (
+              <div className="flex items-center justify-between border-b border-gray-100 pb-2">
+                <div className="flex items-center text-gray-700">
+                  <BuildingIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
+                  <span>Nombre de bien:</span>
+                </div>
+                <div className="text-gray-600 text-right">{project.nbre_biens}</div>
               </div>
-            </div>
+            )}
           </div>
         </div>
         
-      <div className="mb-6">
+        <div className="mb-6">
           <h2 className="text-lg font-semibold mb-2 text-gray-800">
             Utilisateurs
           </h2>

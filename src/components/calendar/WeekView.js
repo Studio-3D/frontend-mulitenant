@@ -1,5 +1,5 @@
 import React from 'react';
-import { format, addDays, startOfWeek, parseISO, isSameDay, getHours } from 'date-fns';
+import { format, addDays, startOfWeek, parseISO, isSameDay, getHours, isValid } from 'date-fns';
 
 export const WeekView = ({
   currentDate,
@@ -24,13 +24,39 @@ export const WeekView = ({
     });
   });
 
-  // Populate events
+  // Populate events with better error handling
   events.forEach(event => {
+    // Skip empty or invalid events
+    if (!event || typeof event !== 'object' || Object.keys(event).length === 0) {
+      console.warn('Skipping empty or invalid event object');
+      return;
+    }
+
+    // Skip events without start date
+    if (!event.start) {
+      console.warn('Skipping event without start date:', event);
+      return;
+    }
+
     try {
-      const eventDate = event.start.includes(' ') 
-        ? parseISO(event.start)
-        : new Date(event.start + 'T12:00:00'); // All-day at noon
+      let eventDate;
       
+      // Handle different date formats
+      if (event.start.includes('T')) {
+        eventDate = parseISO(event.start);
+      } else if (event.start.includes(' ')) {
+        eventDate = parseISO(event.start);
+      } else {
+        // Assume all-day event at noon
+        eventDate = new Date(event.start + 'T12:00:00');
+      }
+
+      // Validate the date
+      if (!isValid(eventDate)) {
+        console.warn('Invalid date for event:', event, eventDate);
+        return;
+      }
+
       const eventDay = format(eventDate, 'yyyy-MM-dd');
       const hour = getHours(eventDate);
       
@@ -38,11 +64,11 @@ export const WeekView = ({
         eventsByDay[eventDay][hour].push(event);
       }
     } catch (e) {
-      console.error('Error processing event:', event, e);
+      console.warn('Error processing event:', event, e);
     }
   });
 
-  return (
+   return (
     <div className="flex flex-col h-full">
 
       {/* Week grid */}
