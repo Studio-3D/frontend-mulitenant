@@ -7,6 +7,16 @@ import { APIURL } from "@/configs/api";
 import { useProjet } from "@/context/ProjetContext";
 import axios from "axios";
 
+// Define status mapping outside component to avoid recreation
+const STATUS_CONFIG = {
+  DISPONIBLE: { name: 'Disponible', color: 'bg-green-500' },
+  PRE_RESERVATION: { name: 'Pré-réservé', color: 'bg-yellow-500' },
+  RESERVATION: { name: 'Réservé', color: 'bg-blue-500' },
+  BLOQUE: { name: 'Bloqué', color: 'bg-red-500' },
+  VENDU: { name: 'Vendu', color: 'bg-purple-500' },
+  ENCOURS_DE_PROPOSITION: { name: 'En cours de proposition', color: 'bg-orange-500' },
+};
+
 export const ProjectDetailsPage = () => {
   const { id } = useParams();
   const { selectProjet } = useProjet();
@@ -15,7 +25,6 @@ export const ProjectDetailsPage = () => {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('bien');
   
-  // Define the fetch function first with useCallback
   const fetchProjectDetails = useCallback(async () => {
     try {
       setLoading(true);
@@ -35,7 +44,6 @@ export const ProjectDetailsPage = () => {
     }
   }, [id, selectProjet]);
 
-  // Then use it in useEffect
   useEffect(() => {
     if (id) {
       fetchProjectDetails();
@@ -45,40 +53,43 @@ export const ProjectDetailsPage = () => {
   const allTabsData = useMemo(() => {
     if (!projectData) return {};
 
-     const typeBienOptions = Array.from(
-        new Set(
-          projectData?.projet.bien?.map(b => b.type_bien?.type).filter(Boolean) || []
-        )
-      ).map(type => ({ value: type, label: type }));
+    const typeBienOptions = Array.from(
+      new Set(
+        projectData?.projet.bien?.map(b => b.type_bien?.type).filter(Boolean) || []
+      )
+    ).map(type => ({ value: type, label: type }));
     
-      // Calculate status counts dynamically
-  const statusCounts = projectData?.projet.bien?.reduce((acc, b) => {
-    const status = b.etat;
-    if (status) {
-      acc[status] = (acc[status] || 0) + 1;
-    }
-    return acc;
-  }, {});
+    // Calculate status counts dynamically
+    const statusCounts = projectData?.projet.bien?.reduce((acc, b) => {
+      const status = b.etat;
+      if (status) {
+        acc[status] = (acc[status] || 0) + 1;
+      }
+      return acc;
+    }, {});
 
-     // Map to the expected status format with dynamic counts
-  const defaultStatuses = [
-    { name: 'Disponible', count: statusCounts?.DISPONIBLE || 0, color: 'bg-green-500' },
-    { name: 'Pré-réservé', count: statusCounts?.PRE_RESERVE || 0, color: 'bg-yellow-500' },
-    { name: 'Réservé', count: statusCounts?.RESERVATION || 0, color: 'bg-blue-500' },
-    { name: 'Bloqué', count: statusCounts?.BLOQUE || 0, color: 'bg-red-500' },
-    { name: 'Vendu', count: statusCounts?.VENDU || 0, color: 'bg-purple-500' },
-    { name: 'En cours de proposition', count: statusCounts?.ENCOURS_DE_PROPOSITION || 0, color: 'bg-orange-500' },
-  ];
+    // Map to the expected status format with dynamic counts using STATUS_CONFIG
+    const defaultStatuses = Object.entries(STATUS_CONFIG).map(([key, config]) => ({
+      name: config.name,
+      count: statusCounts?.[key] || 0,
+      color: config.color
+    }));
 
     // Map bien data to match your column requirements
-    const biens = projectData?.projet.bien?.map(b => ({
-      id: b.id,
-      name: b.propriete_dite_bien,
-      type: b.type_bien?.type || 'Inconnu',
-      surface: b.superficie_habitable || b.superficie_architecte,
-      price: b.prix,
-      status: b.etat,
-    })) || [];
+    const biens = projectData?.projet.bien?.map(b => {
+      const statusConfig = STATUS_CONFIG[b.etat] || { name: b.etat, color: 'bg-gray-500' };
+      
+      return {
+        id: b.id,
+        name: b.propriete_dite_bien,
+        type: b.type_bien?.type || 'Inconnu',
+        surface: b.superficie_habitable || b.superficie_architecte,
+        price: b.prix,
+        status: statusConfig.name, // Use the display name from STATUS_CONFIG
+        statusColor: statusConfig.color, // Include the color for table display
+        originalStatus: b.etat, // Keep original status for filtering/sorting if needed
+      };
+    }) || [];
 
     // Map tranche data to match your column requirements
     const tranches = projectData?.projet.tranche?.map(t => ({
@@ -110,7 +121,6 @@ export const ProjectDetailsPage = () => {
     })) || [];
 
     return {
-      
       tranche: {
         count: projectData?.projet.tranche_count || 0,
         items: tranches,
@@ -130,12 +140,11 @@ export const ProjectDetailsPage = () => {
         count: projectData?.projet.bien_count || 0,
         statuses: defaultStatuses,
         items: biens,
-        nbr_count:projectData?.projet.nbre_biens,
+        nbr_count: projectData?.projet.nbre_biens,
         typeBienOptions,
       },
     };
   }, [projectData]);
-
 
   const filteredTabsData = useMemo(() => {
     return Object.fromEntries(
@@ -152,12 +161,12 @@ export const ProjectDetailsPage = () => {
   if (loading) {
     return (
       <div className="w-full">
-        <div className="flex flex-col lg:flex-row gap-6 h-full">
+        <div className="flex flex-colc  lg:flex-row gap-6 h-full">
           <div className="w-full lg:w-1/3">
-            <div className="h-[89vh] w-full bg-gray-200 animate-pulse" />
+            <div className="h-[89vh] w-full rounded-lg bg-gray-200 animate-pulse" />
           </div>
           <div className="w-full lg:w-2/3">
-            <div className="h-[89vh] w-full bg-gray-200 animate-pulse" />
+            <div className="h-[89vh] w-full rounded-lg bg-gray-200 animate-pulse" />
           </div>
         </div>
       </div>
