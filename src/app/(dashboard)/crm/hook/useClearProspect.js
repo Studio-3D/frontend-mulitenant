@@ -11,7 +11,12 @@ export default function useClearProspect() {
   useEffect(() => {
     // Function to clear localStorage
     const clearProspect = () => {
-      localStorage.removeItem('selectedProspect');
+     // localStorage.removeItem('selectedProspect');
+      //localStorage.removeItem('selectedClient');
+      if(localStorage.getItem('selectedClient_show_client')){
+        localStorage.removeItem('selectedClient_show_client')
+      }
+
     };
 
     // Clear localStorage on page reload

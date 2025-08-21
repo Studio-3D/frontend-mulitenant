@@ -12,6 +12,7 @@ import BreadCrumb from '../../../navigation/BreadCrumb';
 import LoadingSpin from '@/components/LoadingSpin';
 import VisiteTable from '../../visites/VisiteTable';
 import { format } from 'date-fns'; // Import format from date-fns
+import JournalTable from '../../appels/[appelId]/JournalTable';
 
 const ProspectDetails = () => {
   const { token } = useAuth();

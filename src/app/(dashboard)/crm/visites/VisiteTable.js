@@ -19,7 +19,7 @@ import {
 import Link from 'next/link';
 import SelectInput from '@/components/SelectInput';
 
-const VisiteTable = ({ user_id, dataProspect, dataClient, show_prospect }) => {
+const VisiteTable = ({ user_id, dataProspect, dataClient }) => {
   const [visites, setVisites] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -249,7 +249,7 @@ const columns = [
 
   function getAddLinkForVisite(user) {
     if (canAddVisite) {
-      if (dataClient) {
+      if (dataClient) {      
         return {
           pathname: `${ENDPOINTS.VISITES}?action=add`,
           onClick: () => {
