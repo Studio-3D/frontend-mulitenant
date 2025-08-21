@@ -23,7 +23,10 @@ export default function DateRangePicker({
 
   useEffect(() => {
     function handleClickOutside(event) {
-      if (containerRef.current && !containerRef.current.contains(event.target)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target)
+      ) {
         setIsOpen(false);
       }
     }
@@ -43,9 +46,12 @@ export default function DateRangePicker({
     onChange?.(endName, value);
   };
 
-  const displayValue = startValue && endValue 
-    ? `${new Date(startValue).toLocaleDateString()} - ${new Date(endValue).toLocaleDateString()}`
-    : placeholder;
+  const displayValue =
+    startValue && endValue
+      ? `${new Date(startValue).toLocaleDateString()} - ${new Date(
+          endValue
+        ).toLocaleDateString()}`
+      : placeholder;
 
   return (
     <div className="flex flex-col w-full" ref={containerRef}>

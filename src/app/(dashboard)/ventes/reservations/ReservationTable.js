@@ -561,6 +561,21 @@ const ReservationTable = ({ dataClient, user_id }) => {
     );
     setOpen_info(true);
   };
+
+  function getAddLinkForReservation() {
+    if (dataClient) {
+      return {
+        pathname: `${ENDPOINTS.RESERVATIONS}?action=add`,
+        onClick: () => {
+          localStorage.setItem(
+            'selectedClient_show_client',
+            JSON.stringify(dataClient?.id)
+          );
+        },
+      };
+    }
+    return `${ENDPOINTS.RESERVATIONS}?action=add`;
+  }
   return (
     <>
       <div className="reflative bg-white rounded-lg p-4">
@@ -587,7 +602,7 @@ const ReservationTable = ({ dataClient, user_id }) => {
               isAdmin(user.role) ||
               isCommercial(user.role)) &&
             !user_id
-              ? `${ENDPOINTS.RESERVATIONS}?action=add`
+              ? getAddLinkForReservation()
               : undefined
           }
           filterComponent={
