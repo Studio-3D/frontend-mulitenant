@@ -12,6 +12,7 @@ import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
 import ProjetFilter from './ProjetFilter';
 
+
 const INITIAL_FILTERS = { 
   nom: '', 
   code: '', 
@@ -164,6 +165,10 @@ const fetchProjects = useCallback(async () => {
     setShowDeleteModal(true);
   };
 
+  const handleDeleteSuccess = () => {
+    setShowDeleteModal(false);
+    fetchProjects(); // Refresh the list after deletion
+  };
 
   // Table Columns
   const columns = [
@@ -257,7 +262,7 @@ const fetchProjects = useCallback(async () => {
             accessToken={token || localStorage.getItem("accessToken")}
             onClose={() => {
               setShowDeleteModal(false);
-              fetchProjects(); // Refresh the list after deletion
+              handleDeleteSuccess();
             }}
           />
         </Modal>

@@ -1,15 +1,15 @@
 import React from 'react';
-import {
-  format,
-  addDays,
-  startOfWeek,
-  parseISO,
-  isSameDay,
-  getHours,
-  isValid,
-} from 'date-fns';
 
-export const WeekView = ({ currentDate, events, onPrev, onNext, onToday }) => {
+import { format, addDays, startOfWeek, parseISO, isSameDay, getHours, isValid } from 'date-fns';
+
+export const WeekView = ({
+  currentDate,
+  events,
+  onPrev,
+  onNext,
+  onToday
+}) => {
+
   const startDate = startOfWeek(currentDate);
   const hours = Array.from({ length: 24 }, (_, i) => i);
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(startDate, i));
@@ -27,13 +27,11 @@ export const WeekView = ({ currentDate, events, onPrev, onNext, onToday }) => {
   });
 
   // Populate events with better error handling
-  events.forEach((event) => {
+
+  events.forEach(event => {
     // Skip empty or invalid events
-    if (
-      !event ||
-      typeof event !== 'object' ||
-      Object.keys(event).length === 0
-    ) {
+    if (!event || typeof event !== 'object' || Object.keys(event).length === 0) {
+
       console.warn('Skipping empty or invalid event object');
       return;
     }
@@ -46,7 +44,6 @@ export const WeekView = ({ currentDate, events, onPrev, onNext, onToday }) => {
 
     try {
       let eventDate;
-
       // Handle different date formats
       if (event.start.includes('T')) {
         eventDate = parseISO(event.start);
@@ -74,6 +71,7 @@ export const WeekView = ({ currentDate, events, onPrev, onNext, onToday }) => {
     }
   });
 
+
   const handleEventClick = (event) => {
     if (event.url && event.url !== '#') {
       window.open(event.url, '_blank');
@@ -81,6 +79,7 @@ export const WeekView = ({ currentDate, events, onPrev, onNext, onToday }) => {
   };
 
   return (
+
     <div className="flex flex-col h-full">
       {/* Week grid */}
       <div className="overflow-auto flex-1">

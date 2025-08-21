@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import { StatusCard } from './StatusCard';
 import { Eye, PencilLine, Trash2 } from "lucide-react"
 import Link from 'next/link';
@@ -6,6 +6,10 @@ import { isAdmin, isSuperAdmin } from '@/configs/enum';
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import SelectInput from '@/components/SelectInput';
+import Modal from '@/components/Modal';
+import DeleteData from '@/components/DeleteData';
+import { APIURL } from '@/configs/api'
+
 import {
   ChevronDownIcon,
   HomeIcon,
@@ -16,54 +20,11 @@ import {
 import Table from '@/components/Table';
 
 const TAB_CONFIG = {
-  bien: {
-    icon: <HomeIcon size={18} />,
-    name: "Biens",
-    columns: (user, handleDelete) => [
-      { key: 'name', label: 'Nom' },
-      { key: 'type', label: 'Type' },
-      { key: 'surface', label: 'Surface' },
-      { key: 'price', label: 'Prix' },
-      { key: 'status', label: 'Statut' },
-      { 
-        key: "actions", 
-        label: "Actions",
-        render: (row) => (
-          <div className="flex gap-4 items-center text-sm">
-            <Link
-              href={`/Projets/${row.id}`}
-              className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
-              title="Voir le projet"
-            >
-              <Eye className="w-4 h-4" />
-            </Link>
-
-            {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
-              <>
-                <Link
-                  href={`${row.id}?edit=true`}
-                  className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
-                  title="Modifier le projet"
-                >
-                  <PencilLine className="w-4 h-4" />
-                </Link>
-                <button
-                  onClick={() => handleDelete(row.id)}
-                  className="flex items-center gap-1 text-red-500 hover:text-red-700"
-                  title="Supprimer le projet"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </>
-            )}
-          </div>
-        )
-      },
-    ]
-  },
   tranche: {
     icon: <LayersIcon size={18} />,
     name: "Tranches",
+    apiEndpoint: APIURL.TRANCHES,
+    addLink: (user) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? '/Tranches/ajouter' : undefined,
     columns: (user, handleDelete) => [
       { key: 'nom', label: 'Tranche' },
       { key: 'date_lancement', label: 'Date lancement' },
@@ -74,79 +35,24 @@ const TAB_CONFIG = {
         label: 'Actions',
         render: (row) => (
           <div className="flex gap-4 items-center">
-            <button
-              className="text-blue-500 hover:text-blue-700"
-              onClick={() => handleAction('view', row.id)}
-              title="Voir Tranche"
+            <Link
+              href={`/Tranches/${row.id}`}
+              className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+              title="Voir le tranche"
             >
               <Eye className="w-4 h-4" />
-            </button>
+            </Link>
             
             {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
               <>
-                <button
-                  className="text-yellow-500 hover:text-yellow-700"
-                  onClick={() => handleAction('edit', row.id)}
-                  title="Modifier Tranche"
+                <Link
+                  href={`/Tranches/${row.id}/modifier/?edit=true`}
+                  className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
+                  title="Modifier le tranche"
                 >
                   <PencilLine className="w-4 h-4" />
-                </button>
-                <button
-                  className="text-red-500 hover:text-red-700"
-                  onClick={() => {
-                    setSelectedId(row.id);
-                    setShowDeleteModal(true);
-                  }}  
-                  title="Supprimer Tranche"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </>
-            )}
-          </div>
-        )
-      }
-    ]
-  },
-  immeuble: {
-    icon: <BuildingIcon size={18} />,
-    name: "Immeubles",
-    columns: (user, handleDelete) => [
-      { key: 'nom', label: 'Immeuble' },
-      { key: 'tranche_nom', label: 'Tranche' },
-      { key: 'bloc_nom', label: 'Bloc' },
-      { key: 'titre_foncier', label: 'Titre foncier' },
-      { key: 'nbre_biens', label: 'Nbr Biens' },
-      {
-        key: 'actions',
-        label: 'Actions',
-        render: (row) => (
-          <div className="flex gap-4 items-center">
-            <button
-              className="text-blue-500 hover:text-blue-700"
-              onClick={() => handleAction('view', row.id)}
-              title="Voir Immeuble"
-            >
-              <Eye className="w-4 h-4" />
-            </button>
-            
-            {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
-              <>
-                <button
-                  className="text-yellow-500 hover:text-yellow-700"
-                  onClick={() => handleAction('edit', row.id)}
-                  title="Modifier Immeuble"
-                >
-                  <PencilLine className="w-4 h-4" />
-                </button>
-                <button
-                  className="text-red-500 hover:text-red-700"
-                  onClick={() => {
-                    setSelectedId(row.id);
-                    setShowDeleteModal(true);
-                  }}  
-                  title="Supprimer Immeuble"
-                >
+                </Link>
+               <button onClick={() => handleDelete(row.id)} className="flex items-center gap-1 text-red-500 hover:text-red-700">
                   <Trash2 className="w-4 h-4" />
                 </button>
               </>
@@ -159,6 +65,8 @@ const TAB_CONFIG = {
   blocs: {
     icon: <BoxesIcon size={18} />,
     name: "Blocs",
+    apiEndpoint: APIURL.BLOCS,
+    addLink: (user,) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? `/Blocs/ajouter` : undefined,
     columns: (user, handleDelete) => [
       { key: 'nom', label: 'Bloc' },
       { key: 'tranche_nom', label: 'Tranche' },
@@ -170,31 +78,24 @@ const TAB_CONFIG = {
         label: 'Actions',
         render: (row) => (
           <div className="flex gap-4 items-center">
-            <button
-              className="text-blue-500 hover:text-blue-700"
-              onClick={() => handleAction('view', row.id)}
-              title="Voir Bloc"
+            <Link
+              href={`/Blocs/${row.id}`}
+              className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+              title="Voir le bloc"
             >
               <Eye className="w-4 h-4" />
-            </button>
+            </Link>
             
             {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
               <>
-                <button
-                  className="text-yellow-500 hover:text-yellow-700"
-                  onClick={() => handleAction('edit', row.id)}
-                  title="Modifier Bloc"
+                <Link
+                  href={`/Blocs/${row.id}/modifier/?edit=true`}
+                  className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
+                  title="Modifier le bloc"
                 >
                   <PencilLine className="w-4 h-4" />
-                </button>
-                <button
-                  className="text-red-500 hover:text-red-700"
-                  onClick={() => {
-                    setSelectedId(row.id);
-                    setShowDeleteModal(true);
-                  }}  
-                  title="Supprimer Bloc"
-                >
+                </Link>
+                <button onClick={() => handleDelete(row.id)} className="flex items-center gap-1 text-red-500 hover:text-red-700">
                   <Trash2 className="w-4 h-4" />
                 </button>
               </>
@@ -203,53 +104,167 @@ const TAB_CONFIG = {
         )
       }
     ]
-  }
+  },
+  immeuble: {
+    icon: <BuildingIcon size={18} />,
+    name: "Immeubles",
+    apiEndpoint: APIURL.IMMEUBLES,
+    addLink: (user) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? `/Immeubles/ajouter` : undefined,
+    columns: (user, handleDelete) => [
+      { key: 'nom', label: 'Immeuble' },
+      { key: 'tranche_nom', label: 'Tranche' },
+      { key: 'bloc_nom', label: 'Bloc' },
+      { key: 'titre_foncier', label: 'Titre foncier' },
+      { key: 'nbre_biens', label: 'Nbr Biens' },
+      {
+        key: 'actions',
+        label: 'Actions',
+        render: (row) => (
+          <div className="flex gap-4 items-center">
+            <Link
+              href={`/Immeubles/${row.id}`}
+              className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+              title="Voir l'immeuble"
+            >
+              <Eye className="w-4 h-4" />
+            </Link>
+            
+            {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
+              <>
+               <Link
+                  href={`/Immeubles/${row.id}/modifier/?edit=true`}
+                  className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
+                  title="Modifier l'immeuble"
+                >
+                  <PencilLine className="w-4 h-4" />
+                </Link>
+               <button onClick={() => handleDelete(row.id)} className="flex items-center gap-1 text-red-500 hover:text-red-700">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </>
+            )}
+          </div>
+        )
+      }
+    ]
+  },
+  bien: {
+    icon: <HomeIcon size={18} />,
+    name: "Biens",
+    apiEndpoint: APIURL.BIENS,
+     addLink: (user) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? `/Biens/ajouter` : undefined,
+    columns: (user, handleDelete) => [
+      { key: 'name', label: 'Nom' },
+      { key: 'type', label: 'Type' },
+      { key: 'surface', label: 'Surface' },
+      { key: 'price', label: 'Prix' },
+      { key: 'status', label: 'Statut' },
+      { 
+        key: "actions", 
+        label: "Actions",
+        render: (row) => (
+          <div className="flex gap-4 items-center text-sm">
+            <Link
+              href={`/Biens/${row.id}`}
+              className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+              title="Voir le bien"
+            >
+              <Eye className="w-4 h-4" />
+            </Link>
+
+            {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
+              <>
+                <Link
+                  href={`/Biens/${row.id}/modifier/?edit=true`}
+                  className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
+                  title="Modifier le bien"
+                >
+                  <PencilLine className="w-4 h-4" />
+                </Link>
+                <button
+                  onClick={() => handleDelete(row.id)}
+                  className="flex items-center gap-1 text-red-500 hover:text-red-700"
+                  title="Supprimer le bien"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </>
+            )}
+          </div>
+        )
+      },
+    ]
+  },
 };
 
-export const RightCard = ({ tabsData, activeTab, setActiveTab }) => {
-  const { user } = useAuth();
+export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchProjectData, projectId }) => {
+  const { token, user } = useAuth()
   const router = useRouter();
   const [selectedId, setSelectedId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedType, setSelectedType] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalRows, setTotalRows] = useState(0);
 
-  const handleDelete = (id) => {
-    console.log('Delete item with id:', id);
+
+   // Define handleAction before it's used
+  const handleAction = useCallback((id) => {
+        handleDelete(id);
+    }, [activeTab, router]);
+
+   const handleDelete = (id) => {
     setSelectedId(id);
     setShowDeleteModal(true);
   };
 
-  const handleAction = (action, id) => {
-    switch(action) {
-      case 'view':
-        router.push(`/${activeTab}/${id}`);
-        break;
-      case 'edit':
-        router.push(`/${activeTab}/${id}?edit=true`);
-        break;
-      default:
-        break;
+  const handleDeleteSuccess = () => {
+  setShowDeleteModal(false);
+  if (fetchProjectData) {  // Now using the destructured prop
+      fetchProjectData(); 
     }
-  };
+};
 
-  // Filter items based on selected type
+  // Handle page change
+  const handlePageChange = useCallback((newPage) => {
+    setCurrentPage(newPage);
+  }, []);
+
+  // Handle rows per page change
+  const handleRowsPerPageChange = useCallback((newRowsPerPage) => {
+    setRowsPerPage(newRowsPerPage);
+    setCurrentPage(1); // Reset to first page when changing rows per page
+  }, []);
+
+  // Filter items based on selected type and pagination
   const filteredItems = useMemo(() => {
-    if (!selectedType || activeTab !== 'bien') {
-      return tabsData[activeTab]?.items || [];
+    if (!tabsData[activeTab]?.items) return [];
+    
+    let items = tabsData[activeTab].items;
+    
+    // Apply type filter if activeTab is 'bien' and a type is selected
+    if (activeTab === 'bien' && selectedType) {
+      items = items.filter(item => item.type === selectedType);
     }
-    return (tabsData[activeTab]?.items || []).filter(
-      item => item.type === selectedType
-    );
-  }, [tabsData, activeTab, selectedType]);
+    
+    // Update total rows count
+    setTotalRows(items.length);
+    
+    // Apply pagination
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    
+    return items.slice(startIndex, endIndex);
+  }, [tabsData, activeTab, selectedType, currentPage, rowsPerPage]);
 
   const currentColumns = useMemo(() => {
     if (!activeTab || !TAB_CONFIG[activeTab]) return [];
     
     const columnConfig = TAB_CONFIG[activeTab].columns;
     return typeof columnConfig === 'function' 
-      ? columnConfig(user, handleDelete) 
+      ? columnConfig(user, handleDelete, handleAction)  // Pass handleAction here
       : columnConfig;
-  }, [activeTab, user]);
+  }, [activeTab, user, handleDelete, handleAction]);
 
   const availableTabs = useMemo(() => {
     return Object.keys(tabsData).filter(tab => 
@@ -273,8 +288,8 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab }) => {
     );
   }
 
-   const currentTabData = tabsData[safeActiveTab];
-    const hasItems = filteredItems.length > 0;
+  const currentTabData = tabsData[safeActiveTab];
+  const hasItems = filteredItems.length > 0;
 
   return (
     <div className="bg-white rounded-lg shadow-lg h-full flex flex-col">
@@ -291,6 +306,7 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab }) => {
               onClick={() => {
                 setActiveTab(tab);
                 setSelectedType(null); // Reset filter when changing tabs
+                setCurrentPage(1); // Reset to first page when changing tabs
               }}
             >
               {TAB_CONFIG[tab]?.icon}
@@ -309,7 +325,10 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab }) => {
                   options={tabsData.bien?.typeBienOptions || []}
                   placeholder="Filtrer par type"
                   value={selectedType}
-                  onChange={(value) => setSelectedType(value)}
+                  onChange={(value) => {
+                    setSelectedType(value);
+                    setCurrentPage(1); // Reset to first page when changing filter
+                  }}
                   width="w-48"
                 />
               </div>
@@ -332,7 +351,8 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab }) => {
         <div className="mb-6">
           <Table
             columns={currentColumns}
-            data={hasItems ? currentTabData.items : []}
+            data={hasItems ? filteredItems : []}
+            addLink={TAB_CONFIG[safeActiveTab]?.addLink?.(user, projectId)}
             showSearch={false}
             emptyMessage={
               <div className="flex flex-col items-center justify-center py-12 text-gray-500">
@@ -341,7 +361,28 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab }) => {
                 </p>
               </div>
             }
+            currentPage={currentPage}
+            rowsPerPage={rowsPerPage}
+            totalRows={totalRows}
+            onPageChange={handlePageChange}
+            onRowsPerPageChange={handleRowsPerPageChange}
           />
+          {/* Delete Confirmation Modal */}
+                {showDeleteModal && (
+                  <Modal isVisible={true} onClose={() => setShowDeleteModal(false)}>
+                    <DeleteData
+                      route={TAB_CONFIG[safeActiveTab]?.apiEndpoint}
+                      Id={selectedId}
+                      type={TAB_CONFIG[safeActiveTab]?.name}
+                      message={`Êtes-vous sûr de vouloir supprimer ce ${TAB_CONFIG[safeActiveTab]?.name.toLowerCase()} ?`}
+                      accessToken={token || localStorage.getItem("accessToken")}
+                      onClose={() => {
+                        setShowDeleteModal(false);
+                        handleDeleteSuccess();
+                      }}
+                    />
+                  </Modal>
+                )}
         </div>
       </div>
     </div>

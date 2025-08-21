@@ -12,6 +12,8 @@ import LoadingSpin from "@/components/LoadingSpin";
 import BreadCrumb from "@/app/(dashboard)/navigation/BreadCrumb";
 import InputSelect from "../inputSelect";
 import Button from "../Button";
+import { useProjet } from "@/context/ProjetContext";
+import { useParams } from "next/navigation";
 import { Switch } from "@headlessui/react"; // ou votre composant Switch habituel
 import {
   Button as Button1,
@@ -27,7 +29,7 @@ import {
 import Input from "../Input";
 import Modal from "../Modal";
 import Composition from "@/app/(dashboard)/compositionBien/CompositionTable";
-export default function BienForm({ id }) {
+export default function BienForm() {
   const [hasJardin, setHasJardin] = useState(false);
   const [hasParking, setHasParking] = useState(false);
   const [hasBox, setHasBox] = useState(false);
@@ -37,6 +39,8 @@ export default function BienForm({ id }) {
   const [errors, setErrors] = useState({});
   const [fetchingData, setFetchingData] = useState(false);
   const searchParams = useSearchParams();
+  const { id } = useParams();
+  const { selectProjet } = useProjet();
 
   const projetId = searchParams.get("projet");
   const blocId = searchParams.get("bloc");
@@ -88,7 +92,7 @@ export default function BienForm({ id }) {
   // Form state with default values
   const [formData, setFormData] = useState({
     // Basic details
-    projet_id: projetId || "",
+    projet_id: projet?.id || id || "",
     propriete_dite_bien: "",
     numero: "",
     niveau: "",
