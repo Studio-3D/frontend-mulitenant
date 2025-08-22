@@ -340,7 +340,6 @@ export const fetchDataByProjet_2 = async (items,datakey, setData, setLoading) =>
     );
 
     setLoading(false);
-    console.log('wa data==>'+response.data[datakey])
     setData(response.data[datakey]);
   } catch (error) {
     setLoading(false);

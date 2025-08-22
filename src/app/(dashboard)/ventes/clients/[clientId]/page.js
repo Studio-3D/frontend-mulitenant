@@ -1,44 +1,44 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { useAuth } from "../../../../../context/AuthContext";
-import { APIURL, ENDPOINTS } from "../../../../../configs/api";
-import { useRouter } from "next/navigation";
-import { useParams } from "next/navigation";
-import Button from "@/components/Button"; // adjust the path as needed
-import BreadCrumb from "../../../navigation/BreadCrumb";
-import LoadingSpin from "@/components/LoadingSpin";
-import VisiteTable from "@/app/(dashboard)/crm/visites/VisiteTable";
-import EncaissementTable from "@/app/(dashboard)/encaissements/EncaissementTable";
-import ReservationTable from "../../reservations/ReservationTable";
-import format from "date-fns/format";
-import { getSituationLabel } from "@/components/client-utils";
-import AppelsTable from "@/app/(dashboard)/crm/appels/AppelsTable";
-import { PDFDownloadLink } from "@react-pdf/renderer";
-import ClientPDF from "../ClientImprimer";
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { useAuth } from '../../../../../context/AuthContext';
+import { APIURL, ENDPOINTS } from '../../../../../configs/api';
+import { useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
+import Button from '@/components/Button'; // adjust the path as needed
+import BreadCrumb from '../../../navigation/BreadCrumb';
+import LoadingSpin from '@/components/LoadingSpin';
+import VisiteTable from '@/app/(dashboard)/crm/visites/VisiteTable';
+import EncaissementTable from '@/app/(dashboard)/encaissements/EncaissementTable';
+import ReservationTable from '../../reservations/ReservationTable';
+import format from 'date-fns/format';
+import { getSituationLabel } from '@/components/client-utils';
+import AppelsTable from '@/app/(dashboard)/crm/appels/AppelsTable';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import ClientPDF from '../ClientImprimer';
 
 const ClientDetails = () => {
   const { token, user } = useAuth();
   const router = useRouter();
   const { clientId } = useParams(); // Use useParams() to access dynamic params
-  const accessToken = token || localStorage.getItem("accessToken");
+  const accessToken = token || localStorage.getItem('accessToken');
   const [loading, setLoading] = useState(false);
   const [clientDetails, setClientDetails] = useState([]);
   const [reservationDetails, setReservationDetails] = useState([]);
   const [visiteDetails, setVisiteDetails] = useState([]);
 
-  const [activeTab, setActiveTab] = useState("visites"); // Default to 'historiques' if tab is not present
+  const [activeTab, setActiveTab] = useState('visites'); // Default to 'historiques' if tab is not present
 
   const handleEdit = (id) => {
     router.push(`${ENDPOINTS.CLIENTS}?id=${id}&action=edit`);
   };
 
   const tabs = [
-    { id: "reservations", label: "Reservations", icon: "" }, // pour les réservations
-    { id: "visites", label: "Visites", icon: "" }, // pour les visites
-    { id: "encaissements", label: "Encaissements", icon: "" },
-    { id: "appels", label: "Appels", icon: "" }, // pour les encaissements
+    { id: 'reservations', label: 'Reservations', icon: '' }, // pour les réservations
+    { id: 'visites', label: 'Visites', icon: '' }, // pour les visites
+    { id: 'encaissements', label: 'Encaissements', icon: '' },
+    { id: 'appels', label: 'Appels', icon: '' }, // pour les encaissements
   ];
 
   useEffect(() => {
@@ -77,7 +77,7 @@ const ClientDetails = () => {
         <>
           <div
             className="flex items-center justify-start"
-            style={{ marginBottom: "8px" }}
+            style={{ marginBottom: '8px' }}
           >
             <BreadCrumb baseUrl={ENDPOINTS.CLIENTS} step={`Détail client`} />
           </div>
@@ -111,20 +111,20 @@ const ClientDetails = () => {
                   <div className="space-y-2 text-sm text-gray-700">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Profession:</span>
-                      <span>{clientDetails?.profession || "—"}</span>
+                      <span>{clientDetails?.profession || '—'}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">
-                        Accepte d'être contacté:
+                        Accepte {"d'"}être contacté:
                       </span>
                       <span
                         className={`text-xs px-2 py-0.5 rounded font-medium ${
                           clientDetails?.notifie === 1
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-red-100 text-red-800"
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'bg-red-100 text-red-800'
                         }`}
                       >
-                        {clientDetails?.notifie === 1 ? "Oui" : "Non"}
+                        {clientDetails?.notifie === 1 ? 'Oui' : 'Non'}
                       </span>
                     </div>
                     {clientDetails?.partenaire?.description && (
@@ -178,7 +178,7 @@ const ClientDetails = () => {
                       {clientDetails?.date_naissance &&
                         format(
                           new Date(clientDetails?.date_naissance),
-                          "dd/MM/yyyy"
+                          'dd/MM/yyyy'
                         )}
                     </span>
                   </div>
@@ -238,7 +238,7 @@ const ClientDetails = () => {
                             {clientDetails?.date_mariage &&
                               format(
                                 new Date(clientDetails?.date_mariage),
-                                "dd/MM/yyyy"
+                                'dd/MM/yyyy'
                               )}
                           </span>
                         </div>
@@ -260,7 +260,7 @@ const ClientDetails = () => {
                       className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition text-sm"
                     >
                       {({ loading }) =>
-                        loading ? "Préparation..." : "Imprimer"
+                        loading ? 'Préparation...' : 'Imprimer'
                       }
                     </PDFDownloadLink>
                     {/*  <PDFDownloadLink
@@ -299,8 +299,8 @@ const ClientDetails = () => {
                           key={tab.id}
                           className={`px-6 py-3 flex items-center gap-2 text-sm font-medium whitespace-nowrap ${
                             activeTab === tab.id
-                              ? "border-b-2 border-[#009FFF] text-[#009FFF]"
-                              : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                              ? 'border-b-2 border-[#009FFF] text-[#009FFF]'
+                              : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
                           }`}
                           onClick={() => handleTabClick(tab.id)}
                         >
@@ -308,16 +308,16 @@ const ClientDetails = () => {
                           {tab.label}
                           {/* Optional additional spans for some tabs */}
 
-                          {tab.id === "visites" && (
+                          {tab.id === 'visites' && (
                             <span className="ml-1 text-xs"></span>
                           )}
-                          {tab.id === "appels" && (
+                          {tab.id === 'appels' && (
                             <span className="ml-1 text-xs"></span>
                           )}
-                          {tab.id === "reservations" && (
+                          {tab.id === 'reservations' && (
                             <span className="ml-1 text-xs"></span>
                           )}
-                          {tab.id === "encaissements" && (
+                          {tab.id === 'encaissements' && (
                             <span className="ml-1 text-xs"></span>
                           )}
                         </button>
@@ -326,7 +326,7 @@ const ClientDetails = () => {
                   </div>
 
                   <div className="p-6">
-                    {activeTab === "visites" && (
+                    {activeTab === 'visites' && (
                       <div className="min-h-[400px]">
                         <VisiteTable
                           dataProspect={null}
@@ -334,21 +334,21 @@ const ClientDetails = () => {
                         />
                       </div>
                     )}
-                    {activeTab === "encaissements" && (
+                    {activeTab === 'encaissements' && (
                       <div className="min-h-[400px]">
                         <div className="min-h-[400px]">
                           <EncaissementTable dataClient_id={clientDetails} />
                         </div>
                       </div>
                     )}
-                    {activeTab === "appels" && (
+                    {activeTab === 'appels' && (
                       <div className="min-h-[400px]">
                         <div className="min-h-[400px]">
                           <AppelsTable dataClient={clientDetails} />
                         </div>
                       </div>
                     )}
-                    {activeTab === "reservations" && (
+                    {activeTab === 'reservations' && (
                       <div className="min-h-[400px]">
                         <div className="min-h-[400px]">
                           <ReservationTable dataClient={clientDetails} />
