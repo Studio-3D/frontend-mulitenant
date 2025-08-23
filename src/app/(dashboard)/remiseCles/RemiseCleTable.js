@@ -182,7 +182,7 @@ useEffect(() => {
       label: 'Date Remise',
       render: (row) => {
         const date = new Date(row.date_remise);
-        const formattedDate = date.toLocaleDateString('fr-FR'); // jj/mm/aaaa
+        const formattedDate = date.toLocaleDateString('fr-FR').replace(/\//g, '-'); // dd-mm-yyyy
         return formattedDate; // en gras
       },
     },     

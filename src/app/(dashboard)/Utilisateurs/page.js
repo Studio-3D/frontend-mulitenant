@@ -173,7 +173,7 @@ const Page = () => {
       email: us.email,
       telephone: us.phone || "Non spécifié",
       role: getRoleText(us.role),
-      date: new Date(us.created_at).toLocaleDateString(),
+      date: new Date(us.created_at).toLocaleDateString().replace(/\//g, '-'),
       status: us.is_actif ? "Actif" : "Inactif",
     }));
   };

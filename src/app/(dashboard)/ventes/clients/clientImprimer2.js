@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
 const formatDate = (dateString) => {
   if (!dateString) return 'Non renseigné';
   const date = new Date(dateString);
-  return date.toLocaleDateString('fr-FR');
+  return date.toLocaleDateString('fr-FR').replace(/\//g, '-');
 };
 
 const formatCurrency = (amount) => {

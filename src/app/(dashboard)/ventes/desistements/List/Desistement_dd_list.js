@@ -10,7 +10,7 @@ import SelectInput from '@/components/SelectInput';
 import DateRangePicker from '@/components/DateRangePicker';
 
 import Table from '@/components/Table';
-import { format } from 'date-fns';
+import { formatDate } from '../../../../../utils/dateUtils';
 import { motif_desistements } from '@/configs/enum';
 
 export default function Desistement_dd_list() {
@@ -138,7 +138,7 @@ export default function Desistement_dd_list() {
       return {
         id: desistement.id,
         date: desistement.created_at
-          ? format(new Date(desistement.created_at), 'dd/MM/yyyy')
+          ? formatDate(desistement.created_at)
           : '',
         cc: `${desistement?.user?.name || ''} ${
           desistement?.user?.prenom || ''
@@ -152,7 +152,7 @@ export default function Desistement_dd_list() {
           ? `${desistement.penalite_desistement.montant.toLocaleString()} DH`
           : '',
         date_validation: desistement.date_validation
-          ? format(new Date(desistement.date_validation), 'dd/MM/yyyy')
+          ? formatDate(desistement.date_validation)
           : '',
         responsable_validation: desistement.user_id_valider
           ? `${desistement.responsable_validation?.name || ''} ${
@@ -283,7 +283,7 @@ export default function Desistement_dd_list() {
 
       return {
         Date: desistement.created_at
-          ? format(new Date(desistement.created_at), 'dd/MM/yyyy')
+          ? formatDate(desistement.created_at)
           : '',
         CC: `${desistement?.user?.name || ''} ${
           desistement?.user?.prenom || ''
@@ -296,7 +296,7 @@ export default function Desistement_dd_list() {
           ? `${desistement.penalite_desistement.montant.toLocaleString()} DH`
           : '',
         'Date Validation': desistement.date_validation
-          ? format(new Date(desistement.date_validation), 'dd/MM/yyyy')
+          ? formatDate(desistement.date_validation)
           : '',
         'Responsable Validation': desistement.user_id_valider
           ? `${desistement.responsable_validation?.name || ''} ${

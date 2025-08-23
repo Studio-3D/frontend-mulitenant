@@ -7,7 +7,7 @@ import Modal from '@/components/Modal';
 import { useAuth } from '../../../../../context/AuthContext';
 import { APIURL, ENDPOINTS } from '../../../../../configs/api';
 import { useRouter } from 'next/navigation';
-import format from 'date-fns/format';
+import { formatDate } from '../../../../../utils/dateUtils';
 import {
   isAdmin,
   isCommercial,
@@ -194,7 +194,7 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
       id: av.id,
       sr: av.sr == 0 ? av.num_recu : 'SR',
       date_reglement: av.date_reglement
-        ? format(new Date(av.date_reglement), 'dd/MM/yyyy')
+        ? formatDate(av.date_reglement)
         : 'N/A',
       respo: `${av.user.name} ${av.user.prenom || ''}`.trim(),
       montant: av.montant.toLocaleString() + ' DH',
@@ -202,12 +202,12 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
       banque: av.banque?.nom || null,
       numero_paiement: av.numero_paiement,
       echeance: av.echeance
-        ? format(new Date(av.echeance), 'dd/MM/yyyy')
+        ? formatDate(av.echeance)
         : null,
       statut: av.last_statut?.statut || av.statut,
       num_remise: av.last_statut?.num_remise || null,
       date_encaissement: av.last_statut?.date_encaissement
-        ? format(new Date(av.last_statut.date_encaissement), 'dd/MM/yyyy')
+        ? formatDate(av.last_statut.date_encaissement)
         : null,
       commentaireAvance: av.commentaireAvance,
       commenataire_rejete: av.commenataire_rejete,
@@ -369,7 +369,7 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
 
       return {
         num_recu: item?.sr == 0 ? item?.num_recu : 'SR',
-        date_reg: format(new Date(item.date_reglement), 'dd/MM/yyyy'),
+        date_reg: formatDate(item.date_reglement),
         cc: item.user.name + ' ' + item.user.prenom || '',
         bien: item.reservation.bien.propriete_dite_bien || '',
         prix: item.reservation.prix || '',
@@ -379,10 +379,10 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
         num_pai: item.numero_paiement || '',
         echeance:
           item.echeance != null
-            ? format(new Date(item.echeance), 'dd/MM/yyyy')
+            ? formatDate(item.echeance)
             : null,
         date_enc: item?.last_statut?.date_encaissement
-          ? format(new Date(item.last_statut.date_encaissement), 'dd/MM/yyyy')
+          ? formatDate(item.last_statut.date_encaissement)
           : null,
         statut:
           item.statut == 1 &&
@@ -393,7 +393,7 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
         num_rem: item?.last_statut?.num_remise,
         code_res: item.reservation.code_reservation || '',
         date_res: item.reservation.date_reservation
-          ? format(new Date(item.reservation.date_reservation), 'dd/MM/yyyy')
+          ? formatDate(item.reservation.date_reservation)
           : '',
         aq_names: acquereursNames || '',
         aq_cin: acquereursCin || '',

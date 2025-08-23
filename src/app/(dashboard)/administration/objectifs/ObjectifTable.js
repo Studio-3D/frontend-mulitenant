@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation';
 import { fetchData_table_by_projet } from '../../../../configs/api-utils';
 import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
 import Input from '@/components/Input';
-import { format } from 'date-fns';
+import { formatDate } from '../../../../utils/dateUtils';
 
 const ObjectifTable = () => {
   const [objectifs, setObjectifs] = useState([]);
@@ -104,7 +104,7 @@ const ObjectifTable = () => {
   const formatData = () => {
     return objectifs.map((obj) => ({
       id: obj.id,
-    date: obj.created_at ? format(new Date(obj.created_at), 'dd/MM/yyyy') : 'N/A',
+    date: obj.created_at ? formatDate(obj.created_at) : 'N/A',
     user: obj.user ? `${obj.user.name} ${obj.user.prenom}` : 'N/A',
     visites: obj.visites ? 
       `S: ${obj.visites.semaine} | J: ${obj.visites.jours} | M: ${obj.visites.mois}` : 

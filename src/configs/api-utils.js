@@ -2,7 +2,7 @@ import axios from 'axios';
 import { APIURL } from './api';
 import toast from 'react-hot-toast';
 import { Statuts_Prospect, User_roles } from './enum'; // Adjust the path as necessary
-import { format } from 'date-fns';
+import { formatDate } from '../utils/dateUtils';
 
 // Function to fetch data by project
 export const fetchDataByProjet = async (items, setData, setLoading) => {
@@ -159,11 +159,11 @@ export const fetchData_table_by_id = async (
         return {
           ...pro,
           date_traitement: pro.date_traitement
-            ? format(new Date(pro.date_traitement), 'dd/MM/yyyy')
+            ? formatDate(pro.date_traitement)
             : '',
           // Keep original statut value - don't override it
           rappel: pro.date_rappel
-            ? format(new Date(pro.date_rappel), 'dd/MM/yyyy')
+            ? formatDate(pro.date_rappel)
             : '',
         };
       });

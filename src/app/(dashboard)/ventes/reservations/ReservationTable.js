@@ -17,7 +17,7 @@ import DeleteData from '@/components/DeleteData';
 import { useAuth } from '../../../../context/AuthContext';
 import { APIURL, ENDPOINTS } from '../../../../configs/api';
 import { useRouter } from 'next/navigation';
-import format from 'date-fns/format';
+import { formatDate, formatDateTime } from '../../../../utils/dateUtils';
 import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
 import { fetchData_table_by_projet } from '../../../../configs/api-utils';
 import Link from 'next/link';
@@ -261,9 +261,7 @@ const ReservationTable = ({ dataClient, user_id }) => {
         <div className="flex items-center gap-3">
           <span>
             {row.date_reservation
-              ? format(new Date(row.date_reservation), 'dd/MM/yyyy ', {
-                  timeZone: 'UTC',
-                })
+              ? formatDate(row.date_reservation)
               : ''}
           </span>
         </div>
@@ -462,7 +460,7 @@ const ReservationTable = ({ dataClient, user_id }) => {
       return {
         code_reservation: item.code_reservation || '',
         date_reservation: item.date_reservation
-          ? format(new Date(item.date_reservation), 'dd/MM/yyyy')
+          ? formatDate(item.date_reservation)
           : '',
         bien: item.bien?.propriete_dite_bien || '',
         prix: item.prix ? `${item.prix.toLocaleString()} DH` : '',
@@ -475,10 +473,7 @@ const ReservationTable = ({ dataClient, user_id }) => {
             : '',
         date_validation:
           item.last_statut?.statut == 1 && item.last_statut?.date_validation
-            ? format(
-                new Date(item.last_statut.date_validation),
-                'dd/MM/yyyy kk:mm'
-              )
+            ? formatDateTime(item.last_statut.date_validation)
             : '',
         responsable_validation:
           item.last_statut?.statut == 1 && item.last_statut?.user
