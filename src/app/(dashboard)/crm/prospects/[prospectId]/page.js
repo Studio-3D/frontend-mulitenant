@@ -15,6 +15,7 @@ import SelectInput from '@/components/SelectInput';
 import { useProjet } from '@/context/ProjetContext';
 import VisiteTable from '../../visites/VisiteTable';
 import { format } from 'date-fns'; // Import format from date-fns
+import JournalTable from '../../appels/[appelId]/JournalTable';
 
 const ProspectDetails = () => {
   const { token } = useAuth();

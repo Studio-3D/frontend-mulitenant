@@ -185,7 +185,7 @@ export default function ObjectifForm({ id = null }) {
                 type="text"
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100"
                 value={
-                  user.name+''+user.p || "Utilisateur non trouvé"
+                  user.name + " " + user.prenom || "Utilisateur non trouvé"
                 }
                 disabled
               />
@@ -227,7 +227,7 @@ export default function ObjectifForm({ id = null }) {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3 mb-6">
               <div>
                 <label className="block text-sm font-medium !text-gray-700 mb-1">
-                  Jours
+                  Jour
                 </label>
                 <input
                   type="number"
@@ -278,7 +278,7 @@ export default function ObjectifForm({ id = null }) {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3 mb-6">
               <div>
                 <label className="block text-sm font-medium !text-gray-700 mb-1">
-                  Jours
+                  Jour
                 </label>
                 <input
                   type="number"
@@ -329,7 +329,7 @@ export default function ObjectifForm({ id = null }) {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3 mb-6">
               <div>
                 <label className="block text-sm font-medium !text-gray-700 mb-1">
-                  Jours
+                  Jour
                 </label>
                 <input
                   type="number"

@@ -41,6 +41,19 @@ export default function ProjetsDropDown() {
         }
     }, [selectedProjet, selectProjet]);
 
+    // Add useEffect to handle automatic selection when current project is removed
+    useEffect(() => {
+        // If no project is selected but we have projects, select the first one
+        if (!selectedProjet && projets.length > 0) {
+            selectProjet(projets[0]);
+        }
+        
+        // If the selected project is no longer in the list, select another one
+        if (selectedProjet && !projets.some(p => p.id === selectedProjet.id) && projets.length > 0) {
+            selectProjet(projets[0]);
+        }
+    }, [projets, selectedProjet, selectProjet]);
+
     // Reset fetch tracking when dropdown closes
     useEffect(() => {
         if (!isSelectorOpened) {
@@ -111,13 +124,13 @@ export default function ProjetsDropDown() {
             <ul className={classNames(
                 "bg-white overflow-y-auto scrollbar-none transition-all duration-200 absolute w-full rounded-lg shadow-md z-50",
                 { 
-                    "max-h-[300px] p-2 mt-1 opacity-100 visible": isSelectorOpened, 
+                    "max-h-[300px] p-2  opacity-100 visible": isSelectorOpened, 
                     "max-h-0 opacity-0 invisible": !isSelectorOpened 
                 }
             )}>
                 {/* Search Input */}
                 {isSelectorOpened && (
-                    <div className="sticky top-0 z-10 p-2">
+                    <div className="sticky top-0 z-50 p-2  bg-white">
                         <div className="flex items-center gap-2 p-2 bg-white border rounded-lg shadow-sm">
                             <Search size={18} />
                             <input 
@@ -150,7 +163,7 @@ export default function ProjetsDropDown() {
                 {isSelectorOpened && filteredProjets.map((projet) => (
                     <li 
                         key={projet.id} 
-                        className={`p-3 mt-1 hover:bg-gray-100 hover:rounded-md cursor-pointer flex items-center ${
+                        className={`p-3 mt-1  hover:bg-gray-100 hover:rounded-md cursor-pointer flex items-center ${
                             selectedProjet?.id === projet.id ? 'bg-blue-50 text-[#009FFF]' : ''
                         }`}
                         onClick={() => handleSelectProjet(projet)}

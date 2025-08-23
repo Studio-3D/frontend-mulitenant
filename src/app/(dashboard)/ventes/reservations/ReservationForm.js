@@ -43,9 +43,10 @@ import LoadingSpin from '@/components/LoadingSpin';
 import {
   fetchData_Select,
   fetchDataByProjet_2,
-  fetchList_fichier_exist,
   fetchList_fichier_exist_by_Code,
 } from '../../../../../src/configs/api-utils';
+import { usePathname } from 'next/navigation';
+
 //import Modal from '@/components/Modal';
 //import Modal_File from './Modal_file';
 import {
@@ -56,8 +57,10 @@ import {
 } from '@/configs/enum';
 import { CIVILITES } from '@/components/client-utils';
 export default function ReservationForm({ id }) {
+  const storedValue = localStorage.getItem('selectedClient_show_client');
+  const selectedClient =
+    storedValue && !isNaN(Number(storedValue)) ? Number(storedValue) : '';
   const [formSubmitted_client, setFormSubmitted_client] = useState(false);
-
   const current = new Date();
 
   const [loading, setLoading] = useState({ form: false, reservations: false });
@@ -99,7 +102,6 @@ export default function ReservationForm({ id }) {
   const [filesList, setfilesList] = useState([]);
   const [filesList_avc, setfilesList_avc] = useState([]);
   const [loading_1, setLoading_1] = useState(false);
-  const selectedClient = localStorage.getItem('selectedClient');
 
   const [addedClients, setAddedClients] = useState([]);
 
@@ -310,6 +312,14 @@ export default function ReservationForm({ id }) {
     })
   );
 
+  const hasExecuted = useRef(false);
+
+  useEffect(() => {
+    if (selectedClient && !hasExecuted.current) {
+      setinputList1([{ id: selectedClient, pourcentage: '' }]);
+      hasExecuted.current = true;
+    }
+  }, [selectedClient]);
   const {
     control,
     getValues,
@@ -509,7 +519,7 @@ export default function ReservationForm({ id }) {
           } avec succès`;
           toast.success(message);
           localStorage.removeItem('step_res_edit');
-          localStorage.removeItem('selectedClient');
+          localStorage.removeItem('selectedClient_show_client');
           router.push(ENDPOINTS.RESERVATIONS);
           reset(defaultValues);
         } else if (res.status == 422) {
@@ -724,7 +734,8 @@ export default function ReservationForm({ id }) {
             id: client.id,
             nom: client.nom,
             prenom: client.prenom,
-            disabled: false,
+            // disabled: false,
+            disabled: selectedClient ? client.id === selectedClient : false,
           }))
         );
       }
@@ -958,13 +969,13 @@ export default function ReservationForm({ id }) {
   };
 
   const handleinputchange1 = (e, index, text) => {
-    if (selectedClient) {
+    /* if (selectedClient) {
       // Assurez-vous que l'ID par défaut du client est assigné au premier élément
       const updatedList = [...inputList1];
       updatedList[0].id = selectedClient;
       setinputList1(updatedList);
       clientsExist[0].disabled = true;
-    }
+    }*/
     const { name, value } = e.target;
     const list = [...inputList1];
     list[index][name] = value;
@@ -1004,13 +1015,14 @@ export default function ReservationForm({ id }) {
         }
       }
     }
+
     // ONLY RUN THIS FOR CLIENT SELECTION CHANGES
     if (text == 'select_client') {
       var id_cl_selectionne = [];
       for (var j = 0; j <= Number(inputList1.length) - 1; j++) {
         id_cl_selectionne.push(inputList1[j].id);
       }
-
+      console.log('les id cl selectionne ' + JSON.stringify(id_cl_selectionne));
       for (j = 0; j <= Number(clientsExist.length) - 1; j++) {
         if (id_cl_selectionne.length > 0) {
           if (id_cl_selectionne.includes(clientsExist[j].id) == false) {
@@ -1055,6 +1067,7 @@ export default function ReservationForm({ id }) {
     }
     setoldClients(arrayClient1);
     setValue('oldClients', JSON.stringify(arrayClient1));
+    console.log(' the final list==>' + JSON.stringify(inputList1));
   };
 
   const handleAnnuler_form = () => {
@@ -1620,7 +1633,7 @@ export default function ReservationForm({ id }) {
                       onClick={() =>
                         removeClientEntry(index, 'without_new_client')
                       }
-                      className="mt-7 p-2 text-red-600 hover:text-red-700 hover:bg-red rounded-md transition-colors bg-[red]"
+                      className="mt-7 p-2 text-white hover:text-red-700 hover:bg-red rounded-md transition-colors bg-[red]"
                     >
                       <XIcon className="w-5 h-5" />
                     </button>
@@ -1631,7 +1644,7 @@ export default function ReservationForm({ id }) {
             <div className="flex justify-center space-x-4">
               <button
                 onClick={addClientEntry}
-                className="flex items-center justify-center gap-2 px-4 py-2  text-blue-600 rounded-full hover:bg-blue-100 bg-[#2563eb]"
+                className="flex items-center justify-center gap-2 px-4 py-2  text-white rounded-full hover:bg-blue-100 bg-[#2563eb]"
               >
                 <PlusIcon className="w-5 h-5" />
                 <UsersIcon className="w-5 h-5" />

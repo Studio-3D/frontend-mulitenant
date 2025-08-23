@@ -12,7 +12,7 @@ import { APIURL } from '@/configs/api';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
 import { isAdmin, isSuperAdmin } from '@/configs/enum';
-import ProjetFilter from './ProjetFilter';
+import ProjetFilter from '../Projets/ProjetFilter';
 import { toast } from 'react-hot-toast';
 
 const ENTITY_CONFIG = {

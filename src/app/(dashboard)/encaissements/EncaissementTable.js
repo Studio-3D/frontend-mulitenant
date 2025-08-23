@@ -1,86 +1,82 @@
-"use client";
+'use client';
 
-import DeleteData from "@/components/DeleteData";
-import Modal from "@/components/Modal";
-import Table from "@/components/Table";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { Edit, Trash2, Eye } from "lucide-react";
-import axios from "axios";
-import Select from 'react-select';
-import { APIURL, ENDPOINTS } from "@/configs/api";
-import { fetchData_table_by_projet } from "@/configs/api-utils";
-import { isAdmin, isSuperAdmin, MODE_PAIEMENT } from "@/configs/enum";
-import { useAuth } from "@/context/AuthContext";
-import SelectInput from "@/components/SelectInput";
-import Input from "@/components/Input";
-import format from 'date-fns/format'
-import Link from 'next/link'
-import { useProjet } from "@/context/ProjetContext";
-import InputSelect from "@/components/inputSelect";
-import DateRangePicker from "@/components/DateRangePicker";
+import DeleteData from '@/components/DeleteData';
+import Modal from '@/components/Modal';
+import Table from '@/components/Table';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { Eye } from 'lucide-react';
+import axios from 'axios';
+import { APIURL } from '@/configs/api';
+import { fetchData_table_by_projet } from '@/configs/api-utils';
+import { MODE_PAIEMENT } from '@/configs/enum';
+import { useAuth } from '@/context/AuthContext';
+import Input from '@/components/Input';
+import format from 'date-fns/format';
+import Link from 'next/link';
+import { useProjet } from '@/context/ProjetContext';
+import InputSelect from '@/components/inputSelect';
+import DateRangePicker from '@/components/DateRangePicker';
+import SelectInput from '@/components/SelectInput';
 
-
-
-const EncaissementTable = ({dataClient_id, bien_id}) => {
+const EncaissementTable = ({ dataClient_id, bien_id }) => {
   const [encaissements, setEncaissements] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
+  const [error, setError] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedId, setSelectedId] = useState(null);
   const [totalRows, setTotalRows] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const accessToken = localStorage.getItem("accessToken");
+  const accessToken = localStorage.getItem('accessToken');
   const [clients, setClients] = useState([]);
   const [biens, setBiens] = useState([]);
   const { selectedProjet } = useProjet();
 
   const { user, token } = useAuth();
-  const accesstoken = token || localStorage.getItem("accessToken");
+  const accesstoken = token || localStorage.getItem('accessToken');
   const router = useRouter();
   const [filters, setFilters] = useState({
-  code_reservation: "",
-  bienId: "",
-  client_id: dataClient_id?.id?dataClient_id?.id:'' ,
-  montant: "",
-  type_encaissement: "",
-  de: "",
-  a: "",
-});
-const [tempFilters, setTempFilters] = useState({ ...filters });
+    code_reservation: '',
+    bienId: '',
+    client_id: dataClient_id?.id ? dataClient_id?.id : '',
+    montant: '',
+    type_encaissement: '',
+    de: '',
+    a: '',
+  });
+  const [tempFilters, setTempFilters] = useState({ ...filters });
 
-const handleFilterChange = (field, value) => {
-  setTempFilters((prev) => ({ ...prev, [field]: value }));
-};
-
-const applyFilters = () => {
-  setFilters(tempFilters);
-  // Ici, tu peux déclencher ton fetch ou filtrer localement
-};
-
-const resetFilters = () => {
-  const reset = {
-    code_reservation: "",
-    bienId: "",
-    client_id: "",
-    montant: "",
-    type_encaissement: "",
-    de: "",
-    a: "",
+  const handleFilterChange = (field, value) => {
+    setTempFilters((prev) => ({ ...prev, [field]: value }));
   };
-  setFilters(reset);
-  setTempFilters(reset);
-};
+
+  const applyFilters = () => {
+    setFilters(tempFilters);
+    // Ici, tu peux déclencher ton fetch ou filtrer localement
+  };
+
+  const resetFilters = () => {
+    const reset = {
+      code_reservation: '',
+      bienId: '',
+      client_id: '',
+      montant: '',
+      type_encaissement: '',
+      de: '',
+      a: '',
+    };
+    setFilters(reset);
+    setTempFilters(reset);
+  };
   const entity = {
-    API_URL: "encaissements",
-    dataKey: "data",
-    name: "Encaissement",
+    API_URL: 'encaissements',
+    dataKey: 'data',
+    name: 'Encaissement',
     searchFields: [''],
   };
 
-  
-const fetchBiens = async () => {
+  const fetchBiens = async () => {
     try {
       setLoading(true);
 
@@ -101,7 +97,7 @@ const fetchBiens = async () => {
     }
   };
 
- const fetchClients = async () => {
+  const fetchClients = async () => {
     try {
       setLoading(true);
 
@@ -119,232 +115,259 @@ const fetchBiens = async () => {
     } catch (error) {
       console.error('Error fetching data:', error);
     }
-  }; 
+  };
 
-    function handleShow(Id) {
-      router.push(`/sav/encaissements/show/${Id}`);
-    }
+  function handleShow(Id) {
+    router.push(`/sav/encaissements/show/${Id}`);
+  }
 
-    const handleFilterToggle = (isOpen) => {
-      if (!isOpen) resetFilters(); // Si on ferme, on réinitialise
-    };
+  const handleFilterToggle = (isOpen) => {
+    if (!isOpen) resetFilters(); // Si on ferme, on réinitialise
+  };
 
-  useEffect(() => { 
-    fetchBiens()
-    fetchClients()
+  useEffect(() => {
+    fetchBiens();
+    fetchClients();
     fetchData_table_by_projet(
-        entity,
-        filters,       
-        searchTerm,
-        currentPage,
-        rowsPerPage,
-        accesstoken,
-        setLoading,
-        setError,
-        setEncaissements,
-        setTotalRows
-      );
-    }, [searchTerm, currentPage, rowsPerPage, accesstoken,filters]);
-    
-   
-const typeEncaissementMap = {
-  '1': { label: 'Avances', color: 'bg-green-100 !text-green-800' },
-  '2': { label: 'Restitution', color: 'bg-red-100 !text-red-800' },
-  '3': { label: 'Remboursement', color: 'bg-yellow-100 !text-yellow-800' },
-  '4': { label: 'Décharge Reliquat', color: 'bg-blue-100 !text-blue-800' },
-  '5': { label: 'Déblocage Crédit', color: 'bg-purple-100 text-purple-800' },
-  '6': { label: 'Pénalité', color: 'bg-pink-100 text-pink-800' },
-};
+      entity,
+      filters,
+      searchTerm,
+      currentPage,
+      rowsPerPage,
+      accesstoken,
+      setLoading,
+      setError,
+      setEncaissements,
+      setTotalRows
+    );
+  }, [searchTerm, currentPage, rowsPerPage, accesstoken, filters]);
 
-const getTypeEncaissementBadge = (type) => {
-  const info = typeEncaissementMap[type];
-  if (!info) return null;
+  const typeEncaissementMap = {
+    1: { label: 'Avances', color: 'bg-green-100 !text-green-800' },
+    2: { label: 'Restitution', color: 'bg-red-100 !text-red-800' },
+    3: { label: 'Remboursement', color: 'bg-yellow-100 !text-yellow-800' },
+    4: { label: 'Décharge Reliquat', color: 'bg-blue-100 !text-blue-800' },
+    5: { label: 'Déblocage Crédit', color: 'bg-purple-100 text-purple-800' },
+    6: { label: 'Pénalité', color: 'bg-pink-100 text-pink-800' },
+  };
 
-  return (
-    <span className={`px-2 py-1 rounded-full text-xs font-medium ${info.color}`}>
-      {info.label}
-    </span>
-  );
-};
+  const getTypeEncaissementBadge = (type) => {
+    const info = typeEncaissementMap[type];
+    if (!info) return null;
 
-  
-  const columns = [
-  {
-    key: "code_reservation",
-    label: "Code Réservation",
-    render: (row) => (
-      <Link
-        target="_blank"
-        href={'/reservations/show/' + row.reservation_id}
+    return (
+      <span
+        className={`px-2 py-1 rounded-full text-xs font-medium ${info.color}`}
       >
-        <strong>{row.reservations.code_reservation}</strong>
-      </Link>
-    ),
-  },
-  {
-    key: "bien",
-    label: "Bien",
-    render: (row) =>
-      !bien_id && (
-        <Link
-          target="_blank"
-          href={'/Biens/' + row.reservations.bien_id}
-        >
-          <strong style={{ fontWeight: 600 }}>{row.reservations.bien.propriete_dite_bien}</strong>
+        {info.label}
+      </span>
+    );
+  };
+
+  const columns = [
+    {
+      key: 'code_reservation',
+      label: 'Code Réservation',
+      render: (row) => (
+        <Link target="_blank" href={'/reservations/show/' + row.reservation_id}>
+          <strong>{row.reservations.code_reservation}</strong>
         </Link>
       ),
-  },
-  {
-    key: "client",
-    label: "Client",
-    render: (row) =>
-      !dataClient_id && (
-        <>
-          {row.reservations.aquereurs.length > 0
-            ? Object.keys(row.reservations.aquereurs).map((key) => (
-                <Link
-                  key={key}
-                  target="_blank"
-                  href={'/clients/show/' + row.reservations.aquereurs[key].client.id}
-                >
-                  <strong>
-                    {row.reservations.aquereurs[key].client.nom} {row.reservations.aquereurs[key].client.prenom}
-                  </strong>
-                  <br />
-                </Link>
-              ))
-            : row.reservations.aquereurs_ancien &&
-              Object.keys(row.reservations.aquereurs_ancien).map((key) => (
-                <Link
-                  key={key}
-                  target="_blank"
-                  href={'/clients/show/' + row.reservations.aquereurs_ancien[key].client.id}
-                >
-                  <strong>
-                    {row.reservations.aquereurs_ancien[key].client.nom} {row.reservations.aquereurs_ancien[key].client.prenom}
-                  </strong>
-                  <br />
-                </Link>
-              ))}
-        </>
-      ),
-  },
-  {
-  key: "type_encaissement",
-  label: "Type Encaissement",
-  render: (row) => getTypeEncaissementBadge(row.type_encaissement),
-},
-
-  {
-    key: "montant",
-    label: "Montant",
-    render: (row) => {
-      const isPositive = ['1', '4', '5', '6'].includes(row.type_encaissement);
-      const sign = row.type_encaissement === '1' ? '+' : row.type_encaissement === '2' ? '-' : row.type_encaissement === '3' ? '-' : row.type_encaissement === '4' ? '+' : row.type_encaissement === '5' ? '+' : row.type_encaissement === '6' ? '+' : '';
-      return (
-        <span style={{ color: isPositive ? 'green' : 'red' }}>
-          {sign}
-          {row.montant} DH
-        </span>
-      );
     },
-  },
-   {
-    key: "date_encaissement",
-    label: "Date Encaissement",
-    render: (row) => format(new Date(row.date_encaissement), 'dd/MM/yyyy'),
-  },
-  {
-    key: "num_remise",
-    label: "N° Encaissement",
-    render: (row) =>
-      row.type_encaissement === '1'
-        ? row.avance?.last_statut.num_remise
-        : row.type_encaissement === '6'
-        ? row.penalite?.last_statut.num_remise
-        : null,
-  },
- 
-  {
-    key: "actions",
-    label: "Actions",
-    render: (row) => (
-      <div className="flex gap-3 items-center">
-        <button
-          title="Voir détails"
-          className="text-blue-500 hover:text-blue-700"
-          onClick={() =>
-            handleShow(
-              row.type_encaissement,
-              row.reservation_id,
-              row.remboursement?.desistement_id,
-              row.penalite?.desistement_id
-            )
-          }
-        >
-          <Eye className="w-4 h-4" />
-        </button>
+    {
+      key: 'bien',
+      label: 'Bien',
+      render: (row) =>
+        !bien_id && (
+          <Link target="_blank" href={'/Biens/' + row.reservations.bien_id}>
+            <strong style={{ fontWeight: 600 }}>
+              {row.reservations.bien.propriete_dite_bien}
+            </strong>
+          </Link>
+        ),
+    },
+    {
+      key: 'client',
+      label: 'Client',
+      render: (row) =>
+        !dataClient_id && (
+          <>
+            {row.reservations.aquereurs.length > 0
+              ? Object.keys(row.reservations.aquereurs).map((key) => (
+                  <Link
+                    key={key}
+                    target="_blank"
+                    href={
+                      '/clients/show/' +
+                      row.reservations.aquereurs[key].client.id
+                    }
+                  >
+                    <strong>
+                      {row.reservations.aquereurs[key].client.nom}{' '}
+                      {row.reservations.aquereurs[key].client.prenom}
+                    </strong>
+                    <br />
+                  </Link>
+                ))
+              : row.reservations.aquereurs_ancien &&
+                Object.keys(row.reservations.aquereurs_ancien).map((key) => (
+                  <Link
+                    key={key}
+                    target="_blank"
+                    href={
+                      '/clients/show/' +
+                      row.reservations.aquereurs_ancien[key].client.id
+                    }
+                  >
+                    <strong>
+                      {row.reservations.aquereurs_ancien[key].client.nom}{' '}
+                      {row.reservations.aquereurs_ancien[key].client.prenom}
+                    </strong>
+                    <br />
+                  </Link>
+                ))}
+          </>
+        ),
+    },
+    {
+      key: 'type_encaissement',
+      label: 'Type Encaissement',
+      render: (row) => getTypeEncaissementBadge(row.type_encaissement),
+    },
 
-      </div>
-    ),
-  },
-];
-
-  
- const formatData = () => {
-  return encaissements; // ou sortedData si vous avez trié/filtré vos données
-};
-const rows = formatData();
-
-  
-
-   const data_to_export = () => {
-  return encaissements.map((item) => {
-    const acquereursNames = item?.reservations?.aquereurs
-      ? item.reservations.aquereurs
-          .map((acq) => (acq.client?.nom || "") + " " + (acq.client?.prenom || ""))
-          .join(" / ")
-      : "";
-
-    const acquereursCin = item?.reservations?.aquereurs
-      ? item.reservations.aquereurs.map((acq) => acq.client?.cin || "").join(" / ")
-      : "";
-
-    const acquereursTele = item?.reservations?.aquereurs
-      ? item.reservations.aquereurs.map((acq) => acq.client?.telephone_num1 || "").join(" / ")
-      : "";
-
-    return {
-      cc: ((item.avance?.user?.name || "") + " " + (item.avance?.user?.prenom || "")).trim(),
-      bien: item.reservations?.bien?.propriete_dite_bien || "",
-      prix: item.reservations?.prix || "",
-      avance: item.montant?.toLocaleString() + " DH" || "",
-      mode_paiement: MODE_PAIEMENT[item.avance?.statut]?.label || "",
-      banque: item.avance?.banque?.nom || "",
-      num_pai: item.avance?.numero_paiement || "",
-      date_reg:
-        item.date_reglement != null ? format(new Date(item.date_reglement), "dd/MM/yyyy") : null,
-      num_rem:
-        item.type_encaissement == "1"
-          ? item.avance?.last_statut?.num_remise
-          : item.type_encaissement == "6"
-          ? item.penalite?.last_statut?.num_remise
+    {
+      key: 'montant',
+      label: 'Montant',
+      render: (row) => {
+        const isPositive = ['1', '4', '5', '6'].includes(row.type_encaissement);
+        const sign =
+          row.type_encaissement === '1'
+            ? '+'
+            : row.type_encaissement === '2'
+            ? '-'
+            : row.type_encaissement === '3'
+            ? '-'
+            : row.type_encaissement === '4'
+            ? '+'
+            : row.type_encaissement === '5'
+            ? '+'
+            : row.type_encaissement === '6'
+            ? '+'
+            : '';
+        return (
+          <span style={{ color: isPositive ? 'green' : 'red' }}>
+            {sign}
+            {row.montant} DH
+          </span>
+        );
+      },
+    },
+    {
+      key: 'date_encaissement',
+      label: 'Date Encaissement',
+      render: (row) => format(new Date(row.date_encaissement), 'dd/MM/yyyy'),
+    },
+    {
+      key: 'num_remise',
+      label: 'N° Encaissement',
+      render: (row) =>
+        row.type_encaissement === '1'
+          ? row.avance?.last_statut.num_remise
+          : row.type_encaissement === '6'
+          ? row.penalite?.last_statut.num_remise
           : null,
-      date_encaissement:
-        item.date_encaissement != null ? format(new Date(item.date_encaissement), "dd/MM/yyyy") : null,
-      // ... reste du code inchangé ...
-      code_res: item.reservations?.code_reservation || "",
-      date_res:
-        item.reservations?.date_reservation != null
-          ? format(new Date(item.reservations.date_reservation), "dd/MM/yyyy")
-          : "",
-      aq_names: acquereursNames,
-      aq_cin: acquereursCin,
-      aq_tele: acquereursTele,
-    };
-  });
-};
+    },
 
+    {
+      key: 'actions',
+      label: 'Actions',
+      render: (row) => (
+        <div className="flex gap-3 items-center">
+          <button
+            title="Voir détails"
+            className="text-blue-500 hover:text-blue-700"
+            onClick={() =>
+              handleShow(
+                row.type_encaissement,
+                row.reservation_id,
+                row.remboursement?.desistement_id,
+                row.penalite?.desistement_id
+              )
+            }
+          >
+            <Eye className="w-4 h-4" />
+          </button>
+        </div>
+      ),
+    },
+  ];
+
+  const formatData = () => {
+    return encaissements; // ou sortedData si vous avez trié/filtré vos données
+  };
+  const rows = formatData();
+
+  const data_to_export = () => {
+    return encaissements.map((item) => {
+      const acquereursNames = item?.reservations?.aquereurs
+        ? item.reservations.aquereurs
+            .map(
+              (acq) =>
+                (acq.client?.nom || '') + ' ' + (acq.client?.prenom || '')
+            )
+            .join(' / ')
+        : '';
+
+      const acquereursCin = item?.reservations?.aquereurs
+        ? item.reservations.aquereurs
+            .map((acq) => acq.client?.cin || '')
+            .join(' / ')
+        : '';
+
+      const acquereursTele = item?.reservations?.aquereurs
+        ? item.reservations.aquereurs
+            .map((acq) => acq.client?.telephone_num1 || '')
+            .join(' / ')
+        : '';
+
+      return {
+        cc: (
+          (item.avance?.user?.name || '') +
+          ' ' +
+          (item.avance?.user?.prenom || '')
+        ).trim(),
+        bien: item.reservations?.bien?.propriete_dite_bien || '',
+        prix: item.reservations?.prix || '',
+        avance: item.montant?.toLocaleString() + ' DH' || '',
+        mode_paiement: MODE_PAIEMENT[item.avance?.statut]?.label || '',
+        banque: item.avance?.banque?.nom || '',
+        num_pai: item.avance?.numero_paiement || '',
+        date_reg:
+          item.date_reglement != null
+            ? format(new Date(item.date_reglement), 'dd/MM/yyyy')
+            : null,
+        num_rem:
+          item.type_encaissement == '1'
+            ? item.avance?.last_statut?.num_remise
+            : item.type_encaissement == '6'
+            ? item.penalite?.last_statut?.num_remise
+            : null,
+        date_encaissement:
+          item.date_encaissement != null
+            ? format(new Date(item.date_encaissement), 'dd/MM/yyyy')
+            : null,
+        // ... reste du code inchangé ...
+        code_res: item.reservations?.code_reservation || '',
+        date_res:
+          item.reservations?.date_reservation != null
+            ? format(new Date(item.reservations.date_reservation), 'dd/MM/yyyy')
+            : '',
+        aq_names: acquereursNames,
+        aq_cin: acquereursCin,
+        aq_tele: acquereursTele,
+      };
+    });
+  };
 
   const columns_export = [
     { key: 'code_res', label: 'Code reservation' },
@@ -363,151 +386,139 @@ const rows = formatData();
     { key: 'aq_names', label: 'Nom client' },
     { key: 'aq_cin', label: 'Cin client' },
     { key: 'aq_tele', label: 'Tele client' },
-  ]
+  ];
 
- 
-  
+  const type_encaissements = [
+    { key: '1', label: 'Avances' },
+    { key: '2', label: 'Restitution' },
+    { key: '3', label: 'Remboursements' },
+    { key: '4', label: 'Décharge Reliquat' },
+    { key: '5', label: 'Déblocage Crédit' },
+    { key: '6', label: 'Pénalités' },
+  ];
 
-
- 
-  
   return (
     <>
-    <div className="reflative bg-white rounded-lg p-4">
-      <Table
-        title={"Encaissements"} 
-        data_to_export={data_to_export()}
-        columns_export={columns_export}
-        name_file_export={"encaissement_export"}
-        columns={columns}
-        onFilterToggle={handleFilterToggle}
-        data={formatData()}
-        filterComponent={
-          <div className="space-y-4 p-4 rounded-lg ">
-      <div
-        className="grid gap-3"
-        style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}
-      >
-        <Input
-          type="text"
-          label={'Code Réservation'}
-          placeholder="Code Réservation"
-          value={tempFilters.code_reservation}
-          onChange={e => handleFilterChange('code_reservation', e.target.value)}
-          className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-        /> 
-      <InputSelect
-        label="Client"
-        name="clienId"
-        options={clients.map(s => ({
-          value: s.id,
-          label: s.nom + ' ' + s.prenom
-        }))}
-        onChange={(selected) => handleFilterChange("client_id", selected?.value || null)}
-        value={tempFilters.client_id}
-        placeholder="Choisir un client..."
-        isLoading={loading}
-      />
-      <InputSelect
-        label="Bien"
-        name="bienId"
-        onChange={(selected) => handleFilterChange("bienId", selected?.value || null)}
-        options={biens.map(s => ({
-          value: s.id,
-          label: s.propriete_dite_bien
-        }))}
-        placeholder="Choisir un bien..."
-        isLoading={loading}
-      />
+      <div className="reflative bg-white rounded-lg p-4">
+        <Table
+          showSearch={false}
+          title={!dataClient_id && 'Encaissements'}
+          data_to_export={data_to_export()}
+          columns_export={columns_export}
+          name_file_export={'encaissement_export'}
+          columns={columns}
+          onFilterToggle={handleFilterToggle}
+          data={formatData()}
+          filterComponent={
+            <div className="space-y-4 p-4 rounded-lg">
+              {/* First row - inputs */}
+              <div
+                className={`grid grid-cols-1 gap-4 lg:grid-cols-${
+                  !dataClient_id ? '4' : '3'
+                }`}
+              >
+                <Input
+                  type="text"
+                  label={'Code Réservation'}
+                  placeholder="Code Réservation"
+                  value={tempFilters.code_reservation}
+                  onChange={(e) =>
+                    handleFilterChange('code_reservation', e.target.value)
+                  }
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
 
+                {!dataClient_id && (
+                  <SelectInput
+                    value={tempFilters.client}
+                    onChange={(value) => handleFilterChange('client_id', value)}
+                    options={Object.values(clients).map((data) => ({
+                      value: data.id,
+                      label: data.nom + ' ' + data.prenom,
+                    }))}
+                    label="Choisir un Client"
+                    className="h-10 text-sm w-full"
+                  />
+                )}
 
-        <Input
-          label="Montant"
-          type="text"
-          placeholder="Montant"
-          value={tempFilters.montant}
-          onChange={e => handleFilterChange('montant', e.target.value)}
-          className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                <SelectInput
+                  value={tempFilters.bienId}
+                  onChange={(value) => handleFilterChange('bienId', value)}
+                  options={Object.values(biens).map((data) => ({
+                    value: data.id,
+                    label: data.propriete_dite_bien,
+                  }))}
+                  label="Choisir un Bien"
+                  className="h-10 text-sm w-full"
+                />
+
+                <Input
+                  label="Montant"
+                  type="text"
+                  placeholder="Montant"
+                  value={tempFilters.montant}
+                  onChange={(e) =>
+                    handleFilterChange('montant', e.target.value)
+                  }
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
+              </div>
+
+              {/* Second row - remaining inputs */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <SelectInput
+                  value={tempFilters.type_encaissement}
+                  onChange={(value) =>
+                    handleFilterChange('type_encaissement', value)
+                  }
+                  options={Object.values(type_encaissements).map((data) => ({
+                    value: data.key,
+                    label: data.label,
+                  }))}
+                  label="Choisir un type"
+                  className="h-10 text-sm w-full"
+                />
+
+                <DateRangePicker
+                  startName="de"
+                  endName="a"
+                  startValue={tempFilters.de}
+                  endValue={tempFilters.a}
+                  onChange={handleFilterChange}
+                  placeholder="Choisir une Date"
+                  label="Date"
+                />
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={applyFilters}
+                  className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                >
+                  Appliquer les filtres
+                </button>
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
+                >
+                  Réinitialiser
+                </button>
+              </div>
+            </div>
+          }
+          totalRows={totalRows}
+          loading={loading}
+          error={error}
+          currentPage={currentPage}
+          rowsPerPage={rowsPerPage}
+          onPageChange={setCurrentPage}
+          onRowsPerPageChange={setRowsPerPage}
+          onSearchChange={setSearchTerm}
+          enableExport={true}
         />
-        <div className="mb-3">
-          <label className="block !text-gray-700 text-sm font-bold mb-1">
-            Type Encaissement
-          </label>        
-        <select
-          value={tempFilters.type_encaissement}
-          onChange={e => handleFilterChange('type_encaissement', e.target.value)}
-          className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm bg-white"
-        >
-          <option value="">Type Encaissement</option>
-          <option value="1">Avances</option>
-          <option value="2">Restitution</option>
-          <option value="3">Remboursements</option>
-          <option value="4">Décharge Reliquat</option>
-          <option value="5">Déblocage Crédit</option>
-          <option value="6">Pénalités</option>
-        </select>
-        </div>
-        <DateRangePicker
-          startName="de"
-          endName="a"
-          startValue={tempFilters.de}
-          endValue={tempFilters.a}
-          onChange={handleFilterChange}
-          placeholder="Choisir une Date"
-          label="Date"
-        />
-        {/* <input
-          type="date"
-          placeholder="De"
-          onFocus={(e) => (e.target.type = "de")}
-          onBlur={(e) => e.target.type = e.target.value ? "de" : "text"}
-          value={tempFilters.de}
-          onChange={(e) => handleFilterChange("de", e.target.value)}
-          className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-        /> 
-
-        <input
-          type="date"
-          placeholder="A"
-          onFocus={(e) => (e.target.type = "a")}
-          onBlur={(e) => e.target.type = e.target.value ? "a" : "text"}
-          value={tempFilters.a}
-          onChange={(e) => handleFilterChange("a", e.target.value)}
-          className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-        />  */}
-      </div>
-
-      <div className="flex justify-end gap-3 pt-2">
-        <button
-          type="button"
-          onClick={applyFilters}
-          className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-        >
-          Appliquer les filtres
-        </button>
-        <button
-          type="button"
-          onClick={resetFilters}
-          className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
-        >
-          Réinitialiser
-        </button>
-      </div>
-    </div>
-  
-}
-        totalRows={totalRows}
-        loading={loading}
-        error={error}
-        currentPage={currentPage}
-        rowsPerPage={rowsPerPage}
-        onPageChange={setCurrentPage}
-        onRowsPerPageChange={setRowsPerPage}
-        onSearchChange={setSearchTerm}
-        enableExport={true}
-        
-      />
-
       </div>
     </>
   );

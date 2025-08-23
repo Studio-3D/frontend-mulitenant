@@ -24,7 +24,10 @@ export default function DateRangePicker({
 
   useEffect(() => {
     function handleClickOutside(event) {
-      if (containerRef.current && !containerRef.current.contains(event.target)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target)
+      ) {
         setIsOpen(false);
       }
     }
@@ -47,6 +50,7 @@ export default function DateRangePicker({
   const displayValue = startValue && endValue
     ? `${formatDate(startValue)} - ${formatDate(endValue)}`
     : placeholder;
+
 
   return (
     <div className="flex flex-col w-full" ref={containerRef}>
