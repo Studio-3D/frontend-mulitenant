@@ -62,7 +62,7 @@ export const APIURL = {
   ECHEANCESTRANCE: `${APIBASEURL}/v1/EcheancesTranche`,
   ETAPESPROJET: `${APIBASEURL}/v1/etapesProjet`,
   COMMISSIONS: `${APIBASEURL}/v1/commissions`,
-  COMMISSSIONCONFIG: `${APIBASEURL}/v1/commisssionConfig`,
+  //COMMISSSIONCONFIG: `${APIBASEURL}/v1/commisssionConfig`,
   COMMISSIONSCONFIGURATIONS: `${APIBASEURL}/v1/commissionsConfigurations`,
   FACTURES_BY_DECOMPTE: `${APIBASEURL}/v1/factures_by_decompte`,
   DOCUMENTS_FACTURES: `${BASERESOURCEURL}/Docs/factures`,
@@ -133,6 +133,8 @@ export const ENDPOINTS = {
   ECHEANCESTRANCE: '/echeancesTranche/home',
   HISTOIMPORTATION: '/histoImportation',
   ETAPESPROJET: '/etapesProjet/home',
+  COMMISSSION_MENSUELLE_ATTENTE: '/commissions/commissionMensuelleAtt',
+
 };
 
 // Add axios default configuration
