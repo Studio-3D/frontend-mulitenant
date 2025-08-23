@@ -14,7 +14,7 @@ import {
   ClockIcon,
 } from 'lucide-react';
 
-export const LeftCard = ({ project }) => {
+export const LeftCard = ({ project,onEdit, onDelete, canEdit = false  }) => {
   // Helper function to check if value exists and is greater than 0
   const shouldShowStat = (value) => {
     return value !== undefined && value !== null && value > 0;
@@ -221,16 +221,24 @@ export const LeftCard = ({ project }) => {
         </div>
       </div>
       
-      <div className="p-6 bg-gray-50 flex justify-center gap-3">
-        <button className="px-4 py-2 bg-blue-600 text-white rounded-md flex items-center gap-2 hover:bg-blue-700 transition">
-          <PencilIcon size={16} />
-          Modifier
-        </button>
-        <button className="px-4 py-2 bg-red-600 text-white rounded-md flex items-center gap-2 hover:bg-red-700 transition">
-          <TrashIcon size={16} />
-          Supprimer
-        </button>
-      </div>
+      {canEdit && (
+    <div className="p-6 bg-gray-50 flex justify-center gap-3">
+      <button 
+        onClick={onEdit}
+        className="px-4 py-2 bg-blue-600 text-white rounded-md flex items-center gap-2 hover:bg-blue-700 transition"
+      >
+        <PencilIcon size={16} />
+        Modifier
+      </button>
+      <button 
+        onClick={onDelete}
+        className="px-4 py-2 bg-red-600 text-white rounded-md flex items-center gap-2 hover:bg-red-700 transition"
+      >
+        <TrashIcon size={16} />
+        Supprimer
+      </button>
+    </div>
+  )}
     </div>
   );
 };

@@ -4,6 +4,7 @@ import { APIURL } from '@/configs/api'
 import axios from 'axios'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
+import { useProjet } from '@/context/ProjetContext'
 import { Eye, PencilLine, Trash2 } from "lucide-react"
 import Table from "@/components/Table"
 import Link from 'next/link'
@@ -11,7 +12,6 @@ import { isAdmin, isSuperAdmin } from '@/configs/enum';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
 import ProjetFilter from './ProjetFilter';
-
 
 const INITIAL_FILTERS = { 
   nom: '', 
@@ -24,6 +24,7 @@ const INITIAL_FILTERS = {
 const Page = () => {
   // State Management
   const { token, user } = useAuth()
+  const { removeProjet } = useProjet()
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [projects, setProjects] = useState([])
@@ -37,49 +38,49 @@ const Page = () => {
   const [tempFilters, setTempFilters] = useState(INITIAL_FILTERS);
 
   const formatDate = (dateString) => {
-  if (!dateString) return 'N/A';
-  try {
-    const date = new Date(dateString);
-    return isNaN(date.getTime()) ? 'N/A' : date.toLocaleDateString('fr-FR');
-  } catch {
-    return 'N/A';
-  }
-};
+    if (!dateString) return 'N/A';
+    try {
+      const date = new Date(dateString);
+      return isNaN(date.getTime()) ? 'N/A' : date.toLocaleDateString('fr-FR');
+    } catch {
+      return 'N/A';
+    }
+  };
 
-const filteredProjets = useMemo(() => {
-  if (!projects) return [];
-  return projects.filter(projet => {
-    const projetType = projet.type_projet?.type || '';
-    const projetDate = formatDate(projet.created_at);
-    
-    return (
-      (projet.nom || '').toLowerCase().includes(filters.nom.toLowerCase()) &&
-      (projet.code || '').toLowerCase().includes(filters.code.toLowerCase()) &&
-      (filters.type === '' || projetType.toLowerCase().includes(filters.type.toLowerCase())) &&
-      (projet.adresse || '').toLowerCase().includes(filters.adresse.toLowerCase()) &&
-      (filters.date === '' || projetDate.includes(filters.date))
-    );
-  }).map(projet => ({
-    ...projet,
-    nom: projet.nom || 'Sans nom',
-    code: projet.code || '',
-    type: projet.type_projet?.type || 'Non spécifié',
-    adresse: projet.adresse || '',
-    date: formatDate(projet.created_at),
-    formatted_type: projet.type_projet?.type || 'Non spécifié',
-    formatted_date: formatDate(projet.created_at)
-  }));
-}, [projects, filters]);
+  const filteredProjets = useMemo(() => {
+    if (!projects) return [];
+    return projects.filter(projet => {
+      const projetType = projet.type_projet?.type || '';
+      const projetDate = formatDate(projet.created_at);
+      
+      return (
+        (projet.nom || '').toLowerCase().includes(filters.nom.toLowerCase()) &&
+        (projet.code || '').toLowerCase().includes(filters.code.toLowerCase()) &&
+        (filters.type === '' || projetType.toLowerCase().includes(filters.type.toLowerCase())) &&
+        (projet.adresse || '').toLowerCase().includes(filters.adresse.toLowerCase()) &&
+        (filters.date === '' || projetDate.includes(filters.date))
+      );
+    }).map(projet => ({
+      ...projet,
+      nom: projet.nom || 'Sans nom',
+      code: projet.code || '',
+      type: projet.type_projet?.type || 'Non spécifié',
+      adresse: projet.adresse || '',
+      date: formatDate(projet.created_at),
+      formatted_type: projet.type_projet?.type || 'Non spécifié',
+      formatted_date: formatDate(projet.created_at)
+    }));
+  }, [projects, filters]);
 
   const dataToExport = useMemo(() => {
-  return filteredProjets.map((projet) => ({
-    'Nom du projet': projet.nom,
-    'Code': projet.code,
-    'Type': projet.type,
-    'Adresse': projet.adresse,
-    'Date création': projet.date,
-  }));
-}, [filteredProjets]);
+    return filteredProjets.map((projet) => ({
+      'Nom du projet': projet.nom,
+      'Code': projet.code,
+      'Type': projet.type,
+      'Adresse': projet.adresse,
+      'Date création': projet.date,
+    }));
+  }, [filteredProjets]);
 
   const handleFilterChange = useCallback((field, value) => {
     setTempFilters(prev => ({ ...prev, [field]: value }));
@@ -97,51 +98,51 @@ const filteredProjets = useMemo(() => {
   }, []);
 
   // Fetch projects data with pagination
-const fetchProjects = useCallback(async () => {
-  const accessToken = token || localStorage.getItem("accessToken")
-  
-  // Redirect if no token
-  if (!accessToken) {
-    router.push('/login') 
-    return
-  }
-
-  setLoading(true)
-  try {
-    const params = {
-      page: currentPage,
-      size: rowsPerPage,
-    };
-
-    // For non-super admins, filter by user's société
-    if (!isSuperAdmin(user?.role) && user?.societe_id) {
-      params.societe_id = user.societe_id;
-    }
-
-    // If you still want user-specific projects for non-admin roles
-    if (user?.id && !isSuperAdmin(user?.role) && !isAdmin(user?.role)) {
-      params.user_id = user.id;
-    }
-
-    const response = await axios.get(`${APIURL.PROJETS}`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-      params
-    })
+  const fetchProjects = useCallback(async () => {
+    const accessToken = token || localStorage.getItem("accessToken")
     
-    console.log("API Response:", response.data);
-    if (response.data?.projets) {
-      setProjects(response.data.projets)
-      setTotalRows(response.data.total || response.data.pagination?.totalItems || 0)
-    } else {
-      throw new Error("Invalid API response format")
+    // Redirect if no token
+    if (!accessToken) {
+      router.push('/login') 
+      return
     }
-  } catch (error) {
-    console.error("Error fetching data:", error)
-    setError(error.response?.data?.message || "Failed to load projects")
-  } finally {
-    setLoading(false)
-  }
-}, [token, router, currentPage, rowsPerPage, user])
+
+    setLoading(true)
+    try {
+      const params = {
+        page: currentPage,
+        size: rowsPerPage,
+      };
+
+      // For non-super admins, filter by user's société
+      if (!isSuperAdmin(user?.role) && user?.societe_id) {
+        params.societe_id = user.societe_id;
+      }
+
+      // If you still want user-specific projects for non-admin roles
+      if (user?.id && !isSuperAdmin(user?.role) && !isAdmin(user?.role)) {
+        params.user_id = user.id;
+      }
+
+      const response = await axios.get(`${APIURL.PROJETS}`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        params
+      })
+      
+      console.log("API Response:", response.data);
+      if (response.data?.projets) {
+        setProjects(response.data.projets)
+        setTotalRows(response.data.total || response.data.pagination?.totalItems || 0)
+      } else {
+        throw new Error("Invalid API response format")
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error)
+      setError(error.response?.data?.message || "Failed to load projects")
+    } finally {
+      setLoading(false)
+    }
+  }, [token, router, currentPage, rowsPerPage, user])
 
   // Fetch data when dependencies change
   useEffect(() => {
@@ -167,6 +168,9 @@ const fetchProjects = useCallback(async () => {
 
   const handleDeleteSuccess = () => {
     setShowDeleteModal(false);
+    if (selectedId) {
+      removeProjet(selectedId); // Remove from context
+    }
     fetchProjects(); // Refresh the list after deletion
   };
 

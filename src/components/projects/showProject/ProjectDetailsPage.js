@@ -1,11 +1,15 @@
 'use client';
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { LeftCard } from './LeftCard';
 import { RightCard } from './RightCard';
 import { APIURL } from "@/configs/api";
 import { useProjet } from "@/context/ProjetContext";
+import { useAuth } from "@/context/AuthContext";
+import { isAdmin, isSuperAdmin } from "@/configs/enum";
 import axios from "axios";
+import Modal from '@/components/Modal';
+import DeleteData from '@/components/DeleteData';
 
 // Define status mapping outside component to avoid recreation
 const STATUS_CONFIG = {
@@ -19,11 +23,14 @@ const STATUS_CONFIG = {
 
 export const ProjectDetailsPage = () => {
   const { id } = useParams();
-  const { selectProjet } = useProjet();
+  const router = useRouter();
+  const { selectedProjet, selectProjet, clearSelectedProjet, fetchProjets, removeProjet } = useProjet();
+  const { user } = useAuth();
   const [projectData, setProjectData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('bien');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   
   const fetchProjectDetails = useCallback(async () => {
     try {
@@ -32,23 +39,52 @@ export const ProjectDetailsPage = () => {
       const response = await axios.get(`${APIURL.PROJETS}/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setProjectData(response.data);
-      selectProjet(response.data.projet);
-      setActiveTab('bien'); 
-      console.log("Project details fetched successfully:", response.data);
+      
+      const projectDetails = response.data;
+      setProjectData(projectDetails);
+      
+      // Update the context with the full project details
+      if (projectDetails.projet) {
+        selectProjet(projectDetails.projet);
+      }
+      
+      setActiveTab('bien');
     } catch (err) {
       console.error("Error fetching project details:", err);
       setError(err.message || "Failed to fetch project details");
+      
+      // If the project doesn't exist or we can't access it, clear selection
+      if (err.response?.status === 404) {
+        clearSelectedProjet();
+      }
     } finally {
       setLoading(false);
     }
-  }, [id, selectProjet]);
+  }, [id, selectProjet, clearSelectedProjet]);
 
   useEffect(() => {
     if (id) {
       fetchProjectDetails();
     }
   }, [id, fetchProjectDetails]);
+
+  // Handle edit action
+  const handleEdit = () => {
+    router.push(`/Projets/editProject/${id}`);
+  };
+
+  // Handle delete action
+  const handleDelete = () => {
+    setShowDeleteModal(true);
+  };
+
+ const handleDeleteSuccess = () => {
+  setShowDeleteModal(false);
+  window.location.href = "/Projets"; // go + reload in one step
+};
+
+
+
 
   const allTabsData = useMemo(() => {
     if (!projectData) return {};
@@ -85,9 +121,9 @@ export const ProjectDetailsPage = () => {
         type: b.type_bien?.type || 'Inconnu',
         surface: b.superficie_habitable || b.superficie_architecte,
         price: b.prix,
-        status: statusConfig.name, // Use the display name from STATUS_CONFIG
-        statusColor: statusConfig.color, // Include the color for table display
-        originalStatus: b.etat, // Keep original status for filtering/sorting if needed
+        status: statusConfig.name,
+        statusColor: statusConfig.color,
+        originalStatus: b.etat,
       };
     }) || [];
 
@@ -107,7 +143,7 @@ export const ProjectDetailsPage = () => {
       tranche_nom: projectData?.projet.tranche.find(t => t.id === i.tranche_id)?.nom || '',
       bloc_nom: projectData?.projet.bloc.find(b => b.id === i.bloc_id)?.nom || '',
       titre_foncier: i.titre_foncier,
-      nbre_biens: 0, // Default value since it wasn't in the API response
+      nbre_biens: 0,
     })) || [];
 
     // Map bloc data to match your column requirements
@@ -116,8 +152,8 @@ export const ProjectDetailsPage = () => {
       nom: b.nom,
       tranche_nom: projectData?.projet.tranche?.find(t => t.id === b.tranche_id)?.nom || '',
       titre_foncier: b.titre_foncier,
-      nbre_immeubles: b.nbre_immeubles || 0, // Default value since it wasn't in the API response
-      nbre_biens: b.nbre_biens || 0, // Default value since it wasn't in the API response
+      nbre_immeubles: b.nbre_immeubles || 0,
+      nbre_biens: b.nbre_biens || 0,
     })) || [];
 
     return {
@@ -161,7 +197,7 @@ export const ProjectDetailsPage = () => {
   if (loading) {
     return (
       <div className="w-full">
-        <div className="flex flex-colc  lg:flex-row gap-6 h-full">
+        <div className="flex flex-col lg:flex-row gap-6 h-full">
           <div className="w-full lg:w-1/3">
             <div className="h-[89vh] w-full rounded-lg bg-gray-200 animate-pulse" />
           </div>
@@ -174,18 +210,48 @@ export const ProjectDetailsPage = () => {
   }
 
   if (error) {
-    return <div className="text-red-500 p-4">Error: {error}</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-red-500 text-xl font-semibold mb-4">Error</div>
+          <div className="text-gray-600 mb-6">{error}</div>
+          <button 
+            onClick={() => router.push('/Projets')}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+          >
+            Return to Projects
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (!projectData) {
-    return <div className="p-4">Project not found</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-xl font-semibold mb-4">Project Not Found</div>
+          <button 
+            onClick={() => router.push('/Projets')}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+          >
+            Return to Projects
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="w-full">
       <div className="flex flex-col lg:flex-row gap-6 h-full">
         <div className="w-full lg:w-1/3">
-          <LeftCard project={{ ...projectData.projet }} />
+          <LeftCard 
+            project={{ ...projectData.projet }} 
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            canEdit={isSuperAdmin(user?.role) || isAdmin(user?.role)}
+          />
         </div>
         <div className="w-full lg:w-2/3">
           <RightCard
@@ -197,6 +263,21 @@ export const ProjectDetailsPage = () => {
           />
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <Modal isVisible={true} onClose={() => setShowDeleteModal(false)}>
+          <DeleteData
+            route={APIURL.PROJETS}
+            Id={id}
+            type="Projet"
+            message="Êtes-vous sûr de vouloir supprimer ce projet ? Cette action est irréversible."
+            accessToken={localStorage.getItem("accessToken")}
+            onClose={() => setShowDeleteModal(false)}
+            onSuccess={handleDeleteSuccess}
+          />
+        </Modal>
+      )}
     </div>
   );
 };
