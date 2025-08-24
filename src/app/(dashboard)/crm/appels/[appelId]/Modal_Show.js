@@ -62,8 +62,8 @@ export default function Modal_Show({
     .toLowerCase();
   const dateObj = new Date(date);
 
-  // Format date: DD/MM/YYYY
-  const formattedDate = dateObj.toLocaleDateString('fr-FR'); // or use manual formatting
+  // Format date: DD-MM-YYYY
+  const formattedDate = dateObj.toLocaleDateString('fr-FR').replace(/\//g, '-'); // or use manual formatting
 
   // Format time: HH:mm
   const formattedTime = dateObj.toLocaleTimeString('fr-FR', {

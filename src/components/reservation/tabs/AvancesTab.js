@@ -22,7 +22,7 @@ import {
 } from '../../../../src/configs/api-utils';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
-import { format } from 'date-fns';
+import { formatDate } from '../../../utils/dateUtils';
 import Autocomplete from '@/components/Autocomplete';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
@@ -565,7 +565,7 @@ export const AvancesTab = ({
       id: Paiement.id,
       sr: Paiement?.sr == 0 ? Paiement?.num_recu : 'SR',
       date_reglement: Paiement?.date_reglement
-        ? format(new Date(Paiement.date_reglement), 'dd/MM/yyyy')
+        ? formatDate(Paiement.date_reglement)
         : 'N/A',
       respo: `${Paiement.user.name} ${Paiement.user.prenom || ''}`.trim(),
       montant: Paiement.montant.toLocaleString() + ' DH',
@@ -573,12 +573,12 @@ export const AvancesTab = ({
       banque: Paiement.banque?.nom || null,
       numero_paiement: Paiement.numero_paiement,
       echeance: Paiement.echeance
-        ? format(new Date(Paiement.echeance), 'dd/MM/yyyy')
+        ? formatDate(Paiement.echeance)
         : null,
       statut: Paiement.statut,
       num_remise: Paiement?.last_statut?.num_remise || null,
       date_encaissement: Paiement?.last_statut?.date_encaissement
-        ? format(new Date(Paiement.last_statut.date_encaissement), 'dd/MM/yyyy')
+        ? formatDate(Paiement.last_statut.date_encaissement)
         : null,
       commentaireAvance: Paiement.commentaireAvance,
       commenataire_rejete: Paiement.commenataire_rejete,

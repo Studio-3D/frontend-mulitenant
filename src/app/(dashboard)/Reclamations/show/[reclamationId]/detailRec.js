@@ -25,7 +25,7 @@ import { RESOURCE_URL } from "@/configs/api";
 function formatDate(dateStr) {
   if (!dateStr) return "-";
   const d = new Date(dateStr);
-  return d.toLocaleDateString();
+  return d.toLocaleDateString().replace(/\//g, '-');
 }
 
 function getStatutLabel(statut) {

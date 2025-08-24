@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
 });
 
 const formatDate = (dateString) => {
-  return dateString ? moment(dateString).format('DD/MM/YYYY') : '';
+  return dateString ? moment(dateString).format('DD-MM-YYYY') : '';
 };
 
 const formatCurrency = (amount) => {

@@ -5,7 +5,7 @@ import Table from '@/components/Table';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { fetchData_table_by_id } from '@/configs/api-utils';
-import format from 'date-fns/format';
+import { formatDate } from '../../../../../utils/dateUtils';
 import DeleteData from '@/components/DeleteData';
 
 import { Eye, Edit, CalendarClock, CheckCircle, Trash2, PencilLine } from 'lucide-react';
@@ -285,7 +285,7 @@ const JournalTable = ({ id, prospect }) => {
       render: (row) => (
         <div className="flex items-center gap-3">
           <span>
-            {row.date ? format(new Date(row.date), 'dd/MM/yyyy ') : ''}
+            {row.date ? formatDate(row.date) : ''}
           </span>
         </div>
       ),

@@ -13,7 +13,7 @@ import DeleteData from '@/components/DeleteData';
 import { useAuth } from '../../../../context/AuthContext';
 import { APIURL, ENDPOINTS } from '../../../../configs/api';
 import { useRouter } from 'next/navigation';
-import format from 'date-fns/format';
+import { formatDate } from '../../../../utils/dateUtils';
 import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
 import { fetchData_table_by_projet } from '../../../../../src/configs/api-utils';
 import Link from 'next/link';
@@ -126,7 +126,7 @@ const AppelsTable = ({ dataClient }) => {
       id: data.id,
       date:
         data?.last_traitement_appel?.date != null
-          ? format(new Date(data?.last_traitement_appel?.date), 'dd/MM/yyyy')
+          ? formatDate(data?.last_traitement_appel?.date)
           : null,
       nom: `${data.prospect.nom || ''} `.trim(),
       prenom: `${data.prospect.prenom || ''}`.trim(),

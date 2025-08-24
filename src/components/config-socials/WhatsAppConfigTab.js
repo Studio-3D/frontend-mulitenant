@@ -5,7 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useProjet } from "@/context/ProjetContext";
 import axios from "axios";
 import { APIURL } from "@/configs/api";
-import { SaveIcon, AlertCircleIcon, Loader, Trash2, Plus, CheckCircle, MessageCircle, Globe, Settings } from "lucide-react";
+import { SaveIcon, AlertCircleIcon, Loader, Trash2, Plus, CheckCircle, MessageCircle, Globe } from "lucide-react";
 import toast from "react-hot-toast";
 import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
 
@@ -18,11 +18,12 @@ export default function WhatsAppConfigTab() {
   const [webhooks, setWebhooks] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [showWebhookForm, setShowWebhookForm] = useState(null);
-  
+
   const [whatsappConfig, setWhatsappConfig] = useState({
-    instance_id: "",
-    token: "",
-    webhook_url: "",
+    phone_number_id: "",
+    access_token: "",
+    app_id: "",
+    app_secret: "",
     projet_id: "",
   });
 
@@ -43,24 +44,23 @@ export default function WhatsAppConfigTab() {
       try {
         setLoading(true);
         const token = localStorage.getItem("accessToken");
-        
-        // For now, we'll simulate the API calls since the backend endpoints don't exist yet
-        // TODO: Replace with actual API calls when backend endpoints are implemented
-        
-        // Simulated configurations - replace with actual API call
-        // const configResponse = await axios.get(`${APIURL.ROOTV1}/whatsapp-configurations`, {
-        //   headers: { Authorization: `Bearer ${token}` },
-        // });
-        
-        // Simulated webhooks - replace with actual API call  
-        // const webhookResponse = await axios.get(`${APIURL.ROOTV1}/whatsapp-webhooks`, {
-        //   headers: { Authorization: `Bearer ${token}` },
-        // });
 
-        // For now, set empty arrays
-        setConfigurations([]);
-        setWebhooks([]);
-        
+        // Fetch WhatsApp configurations
+        const configResponse = await axios.get(`${APIURL.ROOTV1}/whatsapp-configurations`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        setConfigurations(configResponse.data.configurations || []);
+
+        // Fetch webhooks
+        const webhookResponse = await axios.get(`${APIURL.ROOTV1}/whatsapp-webhooks`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (webhookResponse.data && webhookResponse.data.webhooks) {
+          setWebhooks(webhookResponse.data.webhooks);
+        }
+
       } catch (error) {
         console.error("Error fetching WhatsApp data:", error);
         toast.error("Erreur lors du chargement des configurations WhatsApp");
@@ -85,48 +85,48 @@ export default function WhatsAppConfigTab() {
     }));
   };
 
-  const handleWebhookChange = (e) => {
-    const { name, value } = e.target;
-    setWebhookConfig((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
   // Save WhatsApp configuration
   const handleSaveWhatsApp = async () => {
     try {
       setSaving(true);
       const token = localStorage.getItem("accessToken");
       
-      if (!whatsappConfig.instance_id || !whatsappConfig.token || !whatsappConfig.projet_id) {
+      if (!whatsappConfig.phone_number_id || !whatsappConfig.access_token || !whatsappConfig.projet_id) {
         toast.error("Veuillez remplir tous les champs obligatoires");
+        setSaving(false);
         return;
       }
 
-      // TODO: Replace with actual API call when backend endpoint is implemented
-      // await axios.post(
-      //   `${APIURL.ROOTV1}/whatsapp-configurations`,
-      //   whatsappConfig,
-      //   {
-      //     headers: { Authorization: `Bearer ${token}` },
-      //   }
-      // );
+      const dataToSave = {
+        phone_number_id: whatsappConfig.phone_number_id,
+        access_token: whatsappConfig.access_token,
+        app_id: whatsappConfig.app_id,
+        app_secret: whatsappConfig.app_secret,
+        projet_id: whatsappConfig.projet_id,
+      };
 
-      // For now, just show success message
+      await axios.post(
+        `${APIURL.ROOTV1}/whatsapp-configurations`,
+        dataToSave,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
       toast.success("Configuration WhatsApp enregistrée avec succès!");
-      
+
       // Reset form
       setWhatsappConfig({
-        instance_id: "",
-        token: "",
-        webhook_url: "",
+        phone_number_id: "",
+        access_token: "",
+        app_id: "",
+        app_secret: "",
         projet_id: "",
       });
       setShowForm(false);
-      
-      // TODO: Refresh configurations list when API is implemented
-      // fetchData();
+
+      // Refresh configurations list
+      window.location.reload();
       
     } catch (error) {
       console.error("Error saving WhatsApp configuration:", error);
@@ -136,119 +136,139 @@ export default function WhatsAppConfigTab() {
     }
   };
 
-  // Save webhook configuration
+  // Save webhook configuration - webhook starts disabled by default
   const handleSaveWebhook = async (configId) => {
     try {
       setSaving(true);
       const token = localStorage.getItem("accessToken");
-      
+
       if (!webhookConfig.webhook_verify_token) {
-        toast.error("Veuillez remplir le token de vérification");
+        toast.error("Veuillez saisir un token de vérification");
+        setSaving(false);
         return;
       }
 
-      // TODO: Replace with actual API call when backend endpoint is implemented
-      // await axios.post(
-      //   `${APIURL.ROOTV1}/whatsapp-configurations/${configId}/webhook`,
-      //   webhookConfig,
-      //   {
-      //     headers: { Authorization: `Bearer ${token}` },
-      //   }
-      // );
+      await axios.post(
+        `${APIURL.ROOTV1}/whatsapp-configurations/${configId}/webhook`,
+        webhookConfig,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
-      toast.success("Webhook WhatsApp configuré avec succès!");
+      toast.success("Webhook WhatsApp configuré avec succès");
+
+      // Reset form and refresh data
       setWebhookConfig({ webhook_verify_token: "" });
       setShowWebhookForm(null);
-      
-      // TODO: Refresh webhooks list when API is implemented
-      
+
+      // Refresh webhooks list
+      window.location.reload();
+
     } catch (error) {
-      console.error("Error saving WhatsApp webhook:", error);
-      toast.error("Erreur lors de la configuration du webhook");
+      console.error("Error saving webhook:", error);
+      toast.error(error.response?.data?.message || "Erreur lors de la configuration du webhook");
     } finally {
       setSaving(false);
     }
+  };
+
+  // Delete webhook configuration
+  const handleDeleteWebhook = async (configId) => {
+    const config = configurations.find(c => c.id === configId);
+    const webhook = getWebhookForConfig(configId);
+    setDeleteModal({
+      isOpen: true,
+      type: 'webhook',
+      itemId: configId,
+      itemLabel: `Webhook pour ${config?.projet_nom || 'Projet supprimé'}`
+    });
   };
 
   // Delete configuration
   const handleDeleteConfiguration = async (configId) => {
     try {
       const token = localStorage.getItem("accessToken");
-      
-      // TODO: Replace with actual API call when backend endpoint is implemented
-      // await axios.delete(`${APIURL.ROOTV1}/whatsapp-configurations/${configId}`, {
-      //   headers: { Authorization: `Bearer ${token}` },
-      // });
+
+      await axios.delete(`${APIURL.ROOTV1}/whatsapp-configurations/${configId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       toast.success("Configuration WhatsApp supprimée avec succès!");
-      
-      // TODO: Refresh configurations list when API is implemented
-      
+      window.location.reload();
+
     } catch (error) {
       console.error("Error deleting WhatsApp configuration:", error);
       toast.error("Erreur lors de la suppression de la configuration");
     }
   };
 
-  // Delete webhook
-  const handleDeleteWebhook = async (configId) => {
+  // Handle delete confirmation
+  const handleDeleteConfirm = async () => {
+    const { type, itemId } = deleteModal;
     try {
       const token = localStorage.getItem("accessToken");
-      
-      // TODO: Replace with actual API call when backend endpoint is implemented
-      // await axios.delete(`${APIURL.ROOTV1}/whatsapp-configurations/${configId}/webhook`, {
-      //   headers: { Authorization: `Bearer ${token}` },
-      // });
 
-      toast.success("Webhook WhatsApp supprimé avec succès!");
-      
-      // TODO: Refresh webhooks list when API is implemented
-      
+      if (type === 'configuration') {
+        await axios.delete(`${APIURL.ROOTV1}/whatsapp-configurations/${itemId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        toast.success("Configuration supprimée avec succès");
+      } else if (type === 'webhook') {
+        await axios.delete(`${APIURL.ROOTV1}/whatsapp-configurations/${itemId}/webhook`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        toast.success("Webhook supprimé avec succès");
+      }
+
+      window.location.reload();
     } catch (error) {
-      console.error("Error deleting WhatsApp webhook:", error);
-      toast.error("Erreur lors de la suppression du webhook");
+      console.error("Error deleting:", error);
+      toast.error("Erreur lors de la suppression");
+    }
+    setDeleteModal({ isOpen: false, type: null, itemId: null, itemLabel: '' });
+  };
+
+  // Toggle webhook enable/disable - let backend handle WhatsApp subscription
+  const handleToggleWebhook = async (configId, currentStatus) => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const newStatus = !currentStatus;
+
+      // Send request to backend to toggle webhook and handle WhatsApp subscription
+      await axios.put(
+        `${APIURL.ROOTV1}/whatsapp-configurations/${configId}/webhook/toggle`,
+        { webhook_enabled: newStatus },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const statusText = newStatus ? 'activé' : 'désactivé';
+      toast.success(`Webhook ${statusText} avec succès`);
+
+      // Update local state
+      setWebhooks(prev => prev.map(webhook =>
+        webhook.id === configId
+          ? { ...webhook, webhook_enabled: newStatus }
+          : webhook
+      ));
+
+    } catch (error) {
+      console.error("Error toggling webhook:", error);
+
+      // Handle specific error messages from backend
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("Erreur lors de la modification du webhook");
+      }
     }
   };
 
   // Get webhook for configuration
   const getWebhookForConfig = (configId) => {
     return webhooks.find(webhook => webhook.id === configId);
-  };
-
-  // Handle delete confirmation
-  const handleDeleteConfirm = () => {
-    if (deleteModal.type === 'configuration') {
-      handleDeleteConfiguration(deleteModal.itemId);
-    } else if (deleteModal.type === 'webhook') {
-      handleDeleteWebhook(deleteModal.itemId);
-    }
-    setDeleteModal({ isOpen: false, type: null, itemId: null, itemLabel: '' });
-  };
-
-  // Toggle webhook enable/disable
-  const handleToggleWebhook = async (configId, currentStatus) => {
-    try {
-      const token = localStorage.getItem("accessToken");
-      const newStatus = !currentStatus;
-      
-      // TODO: Replace with actual API call when backend endpoint is implemented
-      // await axios.put(
-      //   `${APIURL.ROOTV1}/whatsapp-configurations/${configId}/webhook/toggle`,
-      //   { webhook_enabled: newStatus },
-      //   {
-      //     headers: { Authorization: `Bearer ${token}` },
-      //   }
-      // );
-      
-      const statusText = newStatus ? 'activé' : 'désactivé';
-      toast.success(`Webhook ${statusText} avec succès`);
-      
-      // TODO: Update local state when API is implemented
-      
-    } catch (error) {
-      console.error("Error toggling WhatsApp webhook:", error);
-      toast.error("Erreur lors de la modification du webhook");
-    }
   };
 
   if (loading) {
@@ -312,10 +332,10 @@ export default function WhatsAppConfigTab() {
                         </div>
                         <div>
                           <h3 className="text-sm font-medium text-gray-900">
-                            {config.projet?.nom || 'Projet supprimé'}
+                            {config.projet_nom || 'Projet supprimé'}
                           </h3>
                           <p className="text-sm text-gray-500">
-                            Instance ID: {config.instance_id}
+                            Phone Number ID: {config.phone_number_id}
                           </p>
                           <p className="text-xs text-gray-400">
                             Configuré le {new Date(config.created_at).toLocaleDateString('fr-FR')}
@@ -327,12 +347,162 @@ export default function WhatsAppConfigTab() {
                           isOpen: true,
                           type: 'configuration',
                           itemId: config.id,
-                          itemLabel: config.projet?.nom || 'Configuration'
+                          itemLabel: config.projet_nom || 'Configuration'
                         })}
                         className="text-red-600 hover:text-red-800 p-2 rounded-full hover:bg-red-50"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
+                    </div>
+
+                    {/* Webhook Section */}
+                    <div className="border-t pt-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center space-x-2">
+                          <Globe className="h-4 w-4 text-gray-500" />
+                          <h4 className="text-sm font-medium text-gray-700">Configuration Webhook</h4>
+                        </div>
+                        {webhook ? (
+                          <div className="flex items-center space-x-2">
+                            <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              Configuré
+                            </span>
+                            <button
+                              onClick={() => handleDeleteWebhook(config.id)}
+                              className="text-red-600 hover:text-red-800 p-1 rounded-full hover:bg-red-50"
+                              title="Supprimer webhook"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setShowWebhookForm(config.id)}
+                            className="flex items-center gap-1 px-3 py-1 text-sm bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100"
+                          >
+                            <Plus className="h-3 w-3" />
+                            Configurer
+                          </button>
+                        )}
+                      </div>
+
+                      {webhook && (
+                        <div className="bg-blue-50 p-3 rounded-md">
+                          <div className="grid grid-cols-2 gap-4 text-xs">
+                            <div>
+                              <span className="font-medium text-gray-700">URL Webhook:</span>
+                              <p className="text-gray-600 mt-1 break-all">{(process.env.NEXT_PUBLIC_WEBHOOK_BASE_URL || (typeof window !== 'undefined' ? window.location.origin : 'https://votre-domaine.com')) + '/api/webhook_whatsapp_business'}</p>
+                            </div>
+                            <div>
+                              <span className="font-medium text-gray-700">Token de vérification:</span>
+                              <p className="text-gray-600 mt-1 font-mono">
+                                {webhook.webhook_verify_token ? '••••••••••••' : 'Non configuré'}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Add webhook toggle with warning */}
+                          <div className="mt-3 pt-3 border-t border-blue-200">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-medium text-gray-700">
+                                État du webhook:
+                              </span>
+                              <div className="flex items-center space-x-2">
+                                <span className={`text-xs ${webhook.webhook_enabled ? 'text-green-600' : 'text-red-600'}`}>
+                                  {webhook.webhook_enabled ? 'Activé' : 'Désactivé'}
+                                </span>
+                                <button
+                                  onClick={() => handleToggleWebhook(config.id, webhook.webhook_enabled)}
+                                  className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors ${
+                                    webhook.webhook_enabled ? 'bg-green-500' : 'bg-gray-300'
+                                  }`}
+                                >
+                                  <span
+                                    className={`inline-block h-3 w-3 transform rounded-full bg-white transition ${
+                                      webhook.webhook_enabled ? 'translate-x-4' : 'translate-x-0.5'
+                                    }`}
+                                  />
+                                </button>
+                              </div>
+                            </div>
+
+                            {!webhook.webhook_enabled && (
+                              <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs flex items-start space-x-2">
+                                <AlertCircleIcon className="h-3 w-3 text-yellow-600 mt-0.5 flex-shrink-0" />
+                                <div className="text-yellow-700">
+                                  <p className="font-medium">Avant d'activer le webhook :</p>
+                                  <ol className="list-decimal pl-3 mt-1 space-y-0.5">
+                                    <li>Configurez votre webhook dans <strong>Facebook Developer Console</strong></li>
+                                    <li>Abonnez-vous aux événements : <strong>messages</strong></li>
+                                    <li>Vérifiez que votre webhook répond correctement</li>
+                                  </ol>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {showWebhookForm === config.id && (
+                        <div className="bg-blue-50 p-4 rounded-md mt-3">
+                          <h5 className="text-sm font-medium text-blue-900 mb-3">
+                            Configurer le webhook pour {config.projet_nom}
+                          </h5>
+
+                          <div className="space-y-3">
+                            <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
+                              <div className="flex items-start space-x-2">
+                                <AlertCircleIcon className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+                                <div className="text-yellow-800 text-xs">
+                                  <p className="font-medium mb-1">Configuration Facebook Developer Console requise :</p>
+                                  <ul className="list-disc pl-4 space-y-1 text-xs">
+                                    <li>URL du webhook : <code className="bg-white px-1 rounded">{(process.env.NEXT_PUBLIC_WEBHOOK_BASE_URL || (typeof window !== 'undefined' ? window.location.origin : 'https://votre-domaine.com'))}/api/webhook_whatsapp_business</code></li>
+                                    <li>Token de vérification : Utilisez le token que vous saisissez ci-dessous</li>
+                                    <li>Événements à sélectionner : <strong>messages</strong> uniquement</li>
+                                    <li>Testez la vérification du webhook avant d'activer</li>
+                                  </ul>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div>
+                              <label className="block text-xs font-medium text-blue-900 mb-1">
+                                Token de vérification
+                              </label>
+                              <input
+                                type="text"
+                                value={webhookConfig.webhook_verify_token}
+                                onChange={(e) => setWebhookConfig({ webhook_verify_token: e.target.value })}
+                                className="w-full px-2 py-1 text-sm border border-blue-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                placeholder="Saisissez un token de vérification unique"
+                              />
+                              <p className="text-xs text-blue-600 mt-1">
+                                Ce token sera utilisé par Facebook pour vérifier l'authenticité du webhook
+                              </p>
+                            </div>
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => handleSaveWebhook(config.id)}
+                                disabled={saving || !webhookConfig.webhook_verify_token}
+                                className="flex items-center gap-1 px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                              >
+                                {saving ? <Loader className="h-3 w-3 animate-spin" /> : <SaveIcon className="h-3 w-3" />}
+                                Enregistrer
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setShowWebhookForm(null);
+                                  setWebhookConfig({ webhook_verify_token: "" });
+                                }}
+                                className="px-3 py-1 text-xs border border-gray-300 text-gray-700 rounded hover:bg-gray-50"
+                              >
+                                Annuler
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -348,20 +518,43 @@ export default function WhatsAppConfigTab() {
           <div className="flex items-start">
             <MessageCircle className="h-5 w-5 text-blue-600 mt-0.5 mr-3" />
             <div>
-              <h3 className="text-sm font-medium text-blue-900">Configuration WhatsApp avec UltraMsg</h3>
+              <h3 className="text-sm font-medium text-blue-900">Configuration WhatsApp Business API</h3>
               <div className="mt-2 text-sm text-blue-700">
-                <p className="mb-2">
-                  Pour configurer WhatsApp, vous devez avoir un compte UltraMsg actif. Voici les étapes :
-                </p>
-                <ol className="list-decimal list-inside space-y-1 ml-4">
-                  <li>Créez un compte sur <a href="https://ultramsg.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-800">UltraMsg.com</a></li>
-                  <li>Créez une nouvelle instance WhatsApp</li>
-                  <li>Récupérez votre Instance ID et Token depuis le tableau de bord</li>
-                  <li>Configurez le webhook URL : <code className="bg-blue-100 px-1 rounded">{typeof window !== 'undefined' ? window.location.origin : 'https://votre-domaine.com'}/api/webhook_whtsp</code></li>
-                </ol>
-                <p className="mt-2 text-xs">
-                  <strong>Note :</strong> Le webhook est déjà configuré dans le système pour recevoir les messages WhatsApp.
-                </p>
+
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium text-blue-800 mb-2">📋 Étape 1 : Créer une application Facebook</h4>
+                    <ol className="list-decimal list-inside space-y-1 ml-4 text-xs">
+                      <li>Allez sur <a href="https://developers.facebook.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-800 font-medium">developers.facebook.com</a></li>
+                      <li>Cliquez sur <strong>"Mes apps"</strong> puis <strong>"Créer une app"</strong></li>
+                      <li>Sélectionnez <strong>"Business"</strong> comme type d'application</li>
+                      <li>Remplissez le nom de l'app (ex: "Mon CRM WhatsApp") et votre email</li>
+                      <li>Cliquez sur <strong>"Créer l'app"</strong></li>
+                    </ol>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium text-blue-800 mb-2">📱 Étape 2 : Ajouter WhatsApp Business</h4>
+                    <ol className="list-decimal list-inside space-y-1 ml-4 text-xs">
+                      <li>Dans le tableau de bord de votre app, cliquez sur <strong>"+ Ajouter un produit"</strong></li>
+                      <li>Trouvez <strong>"WhatsApp Business Management"</strong> et cliquez sur <strong>"Configurer"</strong></li>
+                      <li>Acceptez les conditions d'utilisation</li>
+                    </ol>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium text-blue-800 mb-2">🔑 Étape 3 : Récupérer les identifiants</h4>
+                    <ol className="list-decimal list-inside space-y-1 ml-4 text-xs">
+                      <li>Allez dans <strong>WhatsApp → Prise en main</strong></li>
+                      <li>Copiez le <strong>"Phone Number ID"</strong> (commence par 1...)</li>
+                      <li>Copiez le <strong>"Access Token"</strong> (commence par EAA...)</li>
+                      <li>Saisissez ces informations dans le formulaire ci-dessous</li>
+                      <li>⚠️ <strong>Important :</strong> Gardez ces informations secrètes !</li>
+                    </ol>
+                  </div>
+
+
+                </div>
               </div>
             </div>
           </div>
@@ -392,9 +585,7 @@ export default function WhatsAppConfigTab() {
                   required
                 >
                   <option value="">Sélectionner un projet</option>
-                  {projets
-                    .filter(projet => !configurations.some(config => config.projet_id === projet.id))
-                    .map((projet) => (
+                  {projets.map((projet) => (
                       <option key={projet.id} value={projet.id}>
                         {projet.nom}
                       </option>
@@ -404,61 +595,82 @@ export default function WhatsAppConfigTab() {
 
               <div className="space-y-1">
                 <label className="block text-sm font-medium text-gray-700">
-                  Instance ID UltraMsg *
+                  Phone Number ID *
                 </label>
                 <input
                   type="text"
-                  name="instance_id"
-                  value={whatsappConfig.instance_id}
+                  name="phone_number_id"
+                  value={whatsappConfig.phone_number_id}
                   onChange={handleChange}
-                  placeholder="Votre Instance ID UltraMsg"
+                  placeholder="Votre Phone Number ID"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#25D366] focus:border-[#25D366]"
                   required
                 />
                 <p className="text-xs text-gray-500">
-                  L'ID de votre instance UltraMsg (ex: instance12345)
+                  L'ID du numéro de téléphone WhatsApp Business (ex: 123456789012345)
                 </p>
               </div>
 
               <div className="space-y-1">
                 <label className="block text-sm font-medium text-gray-700">
-                  Token UltraMsg *
+                  Access Token *
                 </label>
                 <input
                   type="password"
-                  name="token"
-                  value={whatsappConfig.token}
+                  name="access_token"
+                  value={whatsappConfig.access_token}
                   onChange={handleChange}
-                  placeholder="Votre token UltraMsg"
+                  placeholder="Votre Access Token"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#25D366] focus:border-[#25D366]"
                   required
                 />
                 <p className="text-xs text-gray-500">
-                  Le token d'authentification de votre instance UltraMsg
+                  Le token d'accès de votre application Facebook
                 </p>
               </div>
 
               <div className="space-y-1">
                 <label className="block text-sm font-medium text-gray-700">
-                  URL Webhook (optionnel)
+                  App ID <span className="text-gray-400">(optionnel)</span>
                 </label>
                 <input
-                  type="url"
-                  name="webhook_url"
-                  value={whatsappConfig.webhook_url}
+                  type="text"
+                  name="app_id"
+                  value={whatsappConfig.app_id}
                   onChange={handleChange}
-                  placeholder="https://votre-domaine.com/api/webhook_whtsp"
+                  placeholder="Votre App ID Facebook (optionnel)"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#25D366] focus:border-[#25D366]"
                 />
                 <p className="text-xs text-gray-500">
-                  URL pour recevoir les webhooks WhatsApp (actuellement: /api/webhook_whtsp)
+                  Optionnel - requis uniquement pour des fonctionnalités avancées
                 </p>
               </div>
+
+              <div className="space-y-1">
+                <label className="block text-sm font-medium text-gray-700">
+                  App Secret <span className="text-gray-400">(optionnel)</span>
+                </label>
+                <input
+                  type="password"
+                  name="app_secret"
+                  value={whatsappConfig.app_secret}
+                  onChange={handleChange}
+                  placeholder="Votre App Secret Facebook (optionnel)"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#25D366] focus:border-[#25D366]"
+                />
+                <p className="text-xs text-gray-500">
+                  Optionnel - requis uniquement pour des fonctionnalités avancées
+                </p>
+              </div>
+
+
+
+
 
               <div className="flex space-x-3 pt-4">
                 <button
                   onClick={handleSaveWhatsApp}
-                  disabled={saving || !whatsappConfig.instance_id || !whatsappConfig.token || !whatsappConfig.projet_id}
+                  disabled={saving || !whatsappConfig.phone_number_id || !whatsappConfig.access_token || !whatsappConfig.projet_id}
                   className="flex items-center gap-2 px-4 py-2 bg-[#25D366] text-white rounded-md hover:bg-[#20BA5A] disabled:opacity-50"
                 >
                   {saving ? (
@@ -486,36 +698,7 @@ export default function WhatsAppConfigTab() {
         </div>
       )}
 
-      {/* Webhook Information */}
-      <div className="bg-gray-50 border border-gray-200 rounded-lg">
-        <div className="px-6 py-4">
-          <div className="flex items-start">
-            <Globe className="h-5 w-5 text-gray-600 mt-0.5 mr-3" />
-            <div className="flex-1">
-              <h3 className="text-sm font-medium text-gray-900">Informations Webhook</h3>
-              <div className="mt-2 text-sm text-gray-600">
-                <p className="mb-2">
-                  Le système est configuré pour recevoir les webhooks WhatsApp sur l'endpoint suivant :
-                </p>
-                <div className="bg-white border rounded p-3 font-mono text-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-800">POST {typeof window !== 'undefined' ? window.location.origin : 'https://votre-domaine.com'}/api/webhook_whtsp</span>
-                    <button
-                      onClick={() => typeof window !== 'undefined' && navigator.clipboard.writeText(`${window.location.origin}/api/webhook_whtsp`)}
-                      className="text-blue-600 hover:text-blue-800 text-xs"
-                    >
-                      Copier
-                    </button>
-                  </div>
-                </div>
-                <p className="mt-2 text-xs text-gray-500">
-                  Utilisez cette URL dans la configuration webhook de votre instance UltraMsg.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+
 
       {/* Delete Confirmation Modal */}
       <DeleteConfirmationModal

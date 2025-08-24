@@ -9,7 +9,7 @@ import { ENDPOINTS } from '../../../../configs/api';
 import { useRouter } from 'next/navigation';
 import { fetchData_table_by_projet } from '../../../../../src/configs/api-utils';
 import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
-import format from 'date-fns/format';
+import { formatDate } from '../../../../utils/dateUtils';
 import Input from '@/components/Input';
 
 import {
@@ -109,7 +109,7 @@ const VisiteTable = ({ user_id, dataProspect, dataClient }) => {
       id: data.id,
       cc: data.nom_cc,
       date:
-        data.date != null ? format(new Date(data.date), 'dd/MM/yyyy') : null,
+        data.date != null ? formatDate(data.date) : null,
       nom: `${data.nom || ''}`.trim(),
       prenom: `${data.prenom || ''}`.trim(),
       prospect_id: data.prospect_id,

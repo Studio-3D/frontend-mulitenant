@@ -1,5 +1,6 @@
 "use client";
 
+
 import React, { useEffect, useState, useCallback } from "react";
 import Table from "@/components/Table";
 import { Eye, Pencil, Check, RefreshCw, Trash2 } from "lucide-react";
@@ -98,20 +99,19 @@ const ObjectifTable = () => {
   const formatData = () => {
     return objectifs.map((obj) => ({
       id: obj.id,
-      date: obj.created_at
-        ? format(new Date(obj.created_at), "dd/MM/yyyy")
-        : "N/A",
-      user: obj.user ? `${obj.user.name} ${obj.user.prenom}` : "N/A",
-      visites: obj.visites
-        ? ` J: ${obj.visites.jours} | S: ${obj.visites.semaine} | M: ${obj.visites.mois}`
-        : "N/A",
-      appels: obj.appels
-        ? `J: ${obj.appels.jours} | S: ${obj.appels.semaine} | M: ${obj.appels.mois}`
-        : "N/A",
-      reservations: obj.reservations
-        ? `J: ${obj.reservations.jours} | S: ${obj.reservations.semaine} | M: ${obj.reservations.mois}`
-        : "N/A",
-    }));
+    date: obj.created_at ? formatDate(obj.created_at) : 'N/A',
+    user: obj.user ? `${obj.user.name} ${obj.user.prenom}` : 'N/A',
+    visites: obj.visites ? 
+      `S: ${obj.visites.semaine} | J: ${obj.visites.jours} | M: ${obj.visites.mois}` : 
+      'N/A',
+    appels: obj.appels ? 
+      `S: ${obj.appels.semaine} | J: ${obj.appels.jours} | M: ${obj.appels.mois}` : 
+      'N/A',
+    reservations: obj.reservations ? 
+      `S: ${obj.reservations.semaine} | J: ${obj.reservations.jours} | M: ${obj.reservations.mois}` : 
+      'N/A',
+  }));
+
   };
 
   const columns = [

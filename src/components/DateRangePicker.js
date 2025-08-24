@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { formatDate } from '../utils/dateUtils';
 
 export default function DateRangePicker({
   label,
@@ -46,12 +47,10 @@ export default function DateRangePicker({
     onChange?.(endName, value);
   };
 
-  const displayValue =
-    startValue && endValue
-      ? `${new Date(startValue).toLocaleDateString()} - ${new Date(
-          endValue
-        ).toLocaleDateString()}`
-      : placeholder;
+  const displayValue = startValue && endValue
+    ? `${formatDate(startValue)} - ${formatDate(endValue)}`
+    : placeholder;
+
 
   return (
     <div className="flex flex-col w-full" ref={containerRef}>
