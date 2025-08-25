@@ -42,7 +42,7 @@ export const ProjectDetailsPage = () => {
       
       const projectDetails = response.data;
       setProjectData(projectDetails);
-      
+      console.log('fetched project data', projectDetails)
       // Update the context with the full project details
       if (projectDetails.projet) {
         selectProjet(projectDetails.projet);
