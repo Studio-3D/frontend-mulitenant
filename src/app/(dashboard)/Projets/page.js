@@ -1,89 +1,199 @@
-'use client'
-import React, { useEffect, useState, useCallback, useMemo } from 'react'
-import { APIURL } from '@/configs/api'
-import axios from 'axios'
-import { useRouter } from 'next/navigation'
-import { useAuth } from '@/context/AuthContext'
-import { useProjet } from '@/context/ProjetContext'
-import { Eye, PencilLine, Trash2 } from "lucide-react"
-import Table from "@/components/Table"
-import Link from 'next/link'
-import { isAdmin, isSuperAdmin } from '@/configs/enum';
+'use client';
+import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useProjet } from '@/context/ProjetContext';
+import { useSociete } from '@/context/SocieteContext';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import Table from '@/components/Table';
+import { Eye, PencilLine, Trash2 } from 'lucide-react';
+import * as XLSX from 'xlsx';
+import axios from 'axios';
+import { APIURL } from '@/configs/api';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
-import ProjetFilter from './ProjetFilter';
+import { isAdmin, isSuperAdmin } from '@/configs/enum';
+import ProjetFilter from '../Projets/ProjetFilter';
+import { toast } from 'react-hot-toast';
 
-const INITIAL_FILTERS = { 
-  nom: '', 
-  code: '', 
-  type: '', 
-  adresse: '', 
-  date: '' 
+const ENTITY_CONFIG = {
+  API_URL: 'projets',
+  dataKey: 'projets',
+  name: 'Projet',
+  searchFields: ['nom', 'code', 'type', 'adresse'],
 };
 
-const Page = () => {
-  // State Management
-  const { token, user } = useAuth()
-  const { removeProjet } = useProjet()
-  const router = useRouter()
-  const [loading, setLoading] = useState(true)
-  const [projects, setProjects] = useState([])
+const INITIAL_FILTERS = {
+  nom: '',
+  code: '',
+  type: '',
+  adresse: '',
+  date: '',
+};
+
+export default function ProjetsPage({ user_id }) {
+  // Context hooks
+  const { selectedSociete } = useSociete();
+  const { user } = useAuth();
+  const router = useRouter();
+
+  // State management
+  const [projets, setProjets] = useState([]);
+  const [typeProjets, setTypeProjets] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalRows, setTotalRows] = useState(0);
-  const [selectedId, setSelectedId] = useState(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [filters, setFilters] = useState(INITIAL_FILTERS);
   const [tempFilters, setTempFilters] = useState(INITIAL_FILTERS);
+  const [selectedId, setSelectedId] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
-    try {
-      const date = new Date(dateString);
-      return isNaN(date.getTime()) ? 'N/A' : date.toLocaleDateString('fr-FR');
-    } catch {
-      return 'N/A';
-    }
-  };
+  // Memoized values
+  const accessToken = useMemo(
+    () =>
+      typeof window !== 'undefined'
+        ? localStorage.getItem('accessToken')
+        : null,
+    []
+  );
 
   const filteredProjets = useMemo(() => {
-    if (!projects) return [];
-    return projects.filter(projet => {
-      const projetType = projet.type_projet?.type || '';
-      const projetDate = formatDate(projet.created_at);
-      
-      return (
-        (projet.nom || '').toLowerCase().includes(filters.nom.toLowerCase()) &&
-        (projet.code || '').toLowerCase().includes(filters.code.toLowerCase()) &&
-        (filters.type === '' || projetType.toLowerCase().includes(filters.type.toLowerCase())) &&
-        (projet.adresse || '').toLowerCase().includes(filters.adresse.toLowerCase()) &&
-        (filters.date === '' || projetDate.includes(filters.date))
-      );
-    }).map(projet => ({
-      ...projet,
+    if (!projets) return [];
+    return projets.map((projet) => ({
+      id: projet.id,
       nom: projet.nom || 'Sans nom',
       code: projet.code || '',
-      type: projet.type_projet?.type || 'Non spécifié',
+      type: projet.type_projet?.type || '',
       adresse: projet.adresse || '',
-      date: formatDate(projet.created_at),
-      formatted_type: projet.type_projet?.type || 'Non spécifié',
-      formatted_date: formatDate(projet.created_at)
+      date: new Date(projet.created_at).toLocaleDateString('fr-FR') || '',
     }));
-  }, [projects, filters]);
+  }, [projets]);
 
   const dataToExport = useMemo(() => {
     return filteredProjets.map((projet) => ({
       'Nom du projet': projet.nom,
-      'Code': projet.code,
-      'Type': projet.type,
-      'Adresse': projet.adresse,
+      Code: projet.code,
+      Type: projet.type,
+      Adresse: projet.adresse,
       'Date création': projet.date,
     }));
   }, [filteredProjets]);
 
+  const columns = useMemo(
+    () => [
+      { key: 'nom', label: 'Nom du projet' },
+      { key: 'code', label: 'Code' },
+      { key: 'type', label: 'Type' },
+      { key: 'adresse', label: 'Adresse' },
+      { key: 'date', label: 'Date création' },
+      {
+        key: 'actions',
+        label: 'Actions',
+        render: (row) => (
+          <div className="flex gap-4 items-center">
+            <button
+              className="text-blue-500 hover:text-blue-700"
+              onClick={() => handleAction('view', row.id)}
+              title="Voir Projet"
+            >
+              <Eye className="w-4 h-4" />
+            </button>
+            {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
+              <>
+                <button
+                  className="text-yellow-500 hover:text-yellow-700"
+                  onClick={() => handleAction('edit', row.id)}
+                  title="Modifier Projet"
+                >
+                  <PencilLine className="w-4 h-4" />
+                </button>
+                <button
+                  className="text-red-500 hover:text-red-700"
+                  onClick={() => {
+                    setSelectedId(row.id);
+                    setShowDeleteModal(true);
+                  }}
+                  title="Supprimer le projet"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </>
+            )}
+          </div>
+        ),
+      },
+    ],
+    [user?.role]
+  );
+
+  // API calls
+  const fetchProjetsData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const params = {
+        page: currentPage,
+        size: rowsPerPage,
+        search: searchTerm,
+        ...(user_id && { user_id }),
+        ...filters,
+      };
+
+      const response = await axios.get(
+        `${APIURL.ROOT}/v1/${ENTITY_CONFIG.API_URL}`,
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          params,
+        }
+      );
+
+      setProjets(response.data[ENTITY_CONFIG.dataKey] || []);
+      setTotalRows(response.data.pagination?.totalItems || 0);
+    } catch (err) {
+      console.error('API Error:', err);
+      const errorMessage =
+        err.response?.data?.message || 'Erreur lors du chargement des données';
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, [accessToken, currentPage, rowsPerPage, searchTerm, user_id, filters]);
+
+  const fetchTypeProjets = useCallback(async () => {
+    try {
+      const response = await axios.get(`${APIURL.ROOT}/v1/typeProjets`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      setTypeProjets(response.data.typeProjets || []);
+    } catch (error) {
+      console.error('Error fetching type projets:', error);
+      toast.error('Failed to fetch project types');
+    }
+  }, [accessToken]);
+
+  // Handlers
+  const handleAction = useCallback(
+    (action, id) => {
+      switch (action) {
+        case 'view':
+          router.push(`/Projets/${id}`);
+          break;
+        case 'edit':
+          router.push(`/Projets/editProject/${id}`);
+          break;
+        default:
+          console.log(`Action ${action} for project ${id}`);
+      }
+    },
+    [router]
+  );
+
   const handleFilterChange = useCallback((field, value) => {
-    setTempFilters(prev => ({ ...prev, [field]: value }));
+    setTempFilters((prev) => ({ ...prev, [field]: value }));
   }, []);
 
   const applyFilters = useCallback(() => {
@@ -97,182 +207,76 @@ const Page = () => {
     setCurrentPage(1);
   }, []);
 
-  // Fetch projects data with pagination
-  const fetchProjects = useCallback(async () => {
-    const accessToken = token || localStorage.getItem("accessToken")
-    
-    // Redirect if no token
-    if (!accessToken) {
-      router.push('/login') 
-      return
-    }
-
-    setLoading(true)
-    try {
-      const params = {
-        page: currentPage,
-        size: rowsPerPage,
-      };
-
-      // For non-super admins, filter by user's société
-      if (!isSuperAdmin(user?.role) && user?.societe_id) {
-        params.societe_id = user.societe_id;
-      }
-
-      // If you still want user-specific projects for non-admin roles
-      if (user?.id && !isSuperAdmin(user?.role) && !isAdmin(user?.role)) {
-        params.user_id = user.id;
-      }
-
-      const response = await axios.get(`${APIURL.PROJETS}`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-        params
-      })
-      
-      console.log("API Response:", response.data);
-      if (response.data?.projets) {
-        setProjects(response.data.projets)
-        setTotalRows(response.data.total || response.data.pagination?.totalItems || 0)
-      } else {
-        throw new Error("Invalid API response format")
-      }
-    } catch (error) {
-      console.error("Error fetching data:", error)
-      setError(error.response?.data?.message || "Failed to load projects")
-    } finally {
-      setLoading(false)
-    }
-  }, [token, router, currentPage, rowsPerPage, user])
-
-  // Fetch data when dependencies change
+  // Effects
   useEffect(() => {
-    fetchProjects()
-  }, [fetchProjects])
+    fetchTypeProjets();
+  }, [fetchTypeProjets]);
 
-  // Handle page change
-  const handlePageChange = (newPage) => {
-    setCurrentPage(newPage);
-  };
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchProjetsData();
+    }, 300);
 
-  // Handle rows per page change
-  const handleRowsPerPageChange = (newRowsPerPage) => {
-    setRowsPerPage(newRowsPerPage);
-    setCurrentPage(1); // Reset to first page when changing rows per page
-  };
-
-  // Handle delete action
-  const handleDelete = (id) => {
-    setSelectedId(id);
-    setShowDeleteModal(true);
-  };
-
-  const handleDeleteSuccess = () => {
-    setShowDeleteModal(false);
-    if (selectedId) {
-      removeProjet(selectedId); // Remove from context
-    }
-    fetchProjects(); // Refresh the list after deletion
-  };
-
-  // Table Columns
-  const columns = [
-    { key: 'nom', label: 'Nom du projet' },
-    { key: 'code', label: 'Code' },
-    { 
-      key: 'type', 
-      label: 'Type',
-      render: (row) => row.type_projet?.type || 'N/A'
-    },
-    { key: 'adresse', label: 'Adresse' },
-    { 
-      key: 'created_at', 
-      label: 'Date création',
-      render: (row) => formatDate(row.created_at)
-    },
-    { 
-      key: "actions", 
-      label: "Actions",
-      render: (row) => (
-        <div className="flex gap-4 items-center text-sm">
-          <Link
-            href={`/Projets/${row.id}`}
-            className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
-            title="Voir le projet"
-          >
-            <Eye className="w-4 h-4" />
-          </Link>
-
-          {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
-            <>
-              <Link
-                href={`/Projets/editProject/${row.id}`}
-                className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
-                title="Modifier le projet"
-              >
-                <PencilLine className="w-4 h-4" />
-              </Link>
-              <button
-                onClick={() => handleDelete(row.id)}
-                className="flex items-center gap-1 text-red-500 hover:text-red-700"
-                title="Supprimer le projet"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </>
-          )}
-        </div>
-      )
-    }
-  ]
+    return () => clearTimeout(timer);
+  }, [fetchProjetsData]);
 
   return (
     <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
       <Table
-        title="Liste des Projets"
         showSearch={false}
-        data={filteredProjets} 
-        columns={columns}
         loading={loading}
-        totalRows={totalRows}
-        error={error}
-        addLink={(isSuperAdmin(user?.role) || isAdmin(user?.role)) ? "/Projets/addProject" : undefined}
-        currentPage={currentPage}
-        rowsPerPage={rowsPerPage}
-        onPageChange={handlePageChange}
-        onRowsPerPageChange={handleRowsPerPageChange}
-        emptyMessage="Aucun projet trouvé"
+        title={user_id ? 'Liste des projets' : 'Projets'}
+        data_to_export={dataToExport}
+        columns_export={[
+          { key: 'Nom du projet', label: 'Nom' },
+          { key: 'Code', label: 'Code' },
+          { key: 'Type', label: 'Type' },
+          { key: 'Adresse', label: 'Adresse' },
+          { key: 'Date création', label: 'Date de création' },
+        ]}
+        name_file_export="projet_export"
+        columns={columns}
         filterComponent={
           <ProjetFilter
             tempFilters={tempFilters}
             handleFilterChange={handleFilterChange}
             resetFilters={resetFilters}
             applyFilters={applyFilters}
+            typeProjets={typeProjets}
             loading={loading}
           />
         }
+        data={filteredProjets}
+        totalRows={totalRows}
+        error={error}
+        addLink={
+          isSuperAdmin(user?.role) || (isAdmin(user?.role) && !user_id)
+            ? '/Projets/addProject'
+            : undefined
+        }
+        onSearchChange={setSearchTerm}
+        currentPage={currentPage}
+        rowsPerPage={rowsPerPage}
+        onPageChange={setCurrentPage}
+        onRowsPerPageChange={setRowsPerPage}
         enableExport={filteredProjets.length > 0}
-        dataToExport={dataToExport}
-        exportFileName="liste_des_projets"
       />
 
-      {/* Delete Confirmation Modal */}
-      {showDeleteModal && (
+      {showDeleteModal && selectedId && (
         <Modal isVisible={true} onClose={() => setShowDeleteModal(false)}>
           <DeleteData
             route={APIURL.PROJETS}
             Id={selectedId}
             type="Projet"
             message="Êtes-vous sûr de vouloir supprimer ce projet ?"
-            accessToken={token || localStorage.getItem("accessToken")}
+            accessToken={accessToken}
             onClose={() => {
               setShowDeleteModal(false);
-              handleDeleteSuccess();
+              fetchProjetsData();
             }}
           />
         </Modal>
       )}
     </div>
-  )
+  );
 }
-
-export default Page

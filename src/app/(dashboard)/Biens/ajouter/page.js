@@ -1,20 +1,20 @@
-"use client";
-import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
-import BienForm from "@/components/biens/BienForm";
-import { useRouter } from "next/navigation";
-import axios from "axios";
-import { APIURL } from "@/configs/api";
+'use client';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import BienForm from '@/components/biens/BienForm';
+import { useRouter } from 'next/navigation';
+import axios from 'axios';
+import { APIURL } from '@/configs/api';
 import LoadingSpin from '@/components/LoadingSpin';
 
 export default function AddBienPage() {
   const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const projetId = searchParams.get("projet");
-  const blocId = searchParams.get("bloc");
-  const immeubleId = searchParams.get("immeuble");
+  const projetId = searchParams.get('projet');
+  const blocId = searchParams.get('bloc');
+  const immeubleId = searchParams.get('immeuble');
   const [loading, setLoading] = useState(true);
   const [projet, setProjet] = useState(null);
 
@@ -24,7 +24,7 @@ export default function AddBienPage() {
   // Redirect if user doesn't have permission
   useEffect(() => {
     if (user && !canCreateBien) {
-      router.push("/Projets");
+      router.push('/Projets');
     }
   }, [user, canCreateBien, router]);
 
@@ -37,7 +37,7 @@ export default function AddBienPage() {
       }
 
       try {
-        const token = localStorage.getItem("accessToken");
+        const token = localStorage.getItem('accessToken');
         const response = await axios.get(`${APIURL.PROJETS}/${projetId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -45,10 +45,13 @@ export default function AddBienPage() {
         if (response.data.projet) {
           setProjet(response.data.projet);
           // Store project in localStorage for component use
-          localStorage.setItem("selectedProjet", JSON.stringify(response.data.projet));
+          localStorage.setItem(
+            'selectedProjet',
+            JSON.stringify(response.data.projet)
+          );
         }
       } catch (err) {
-        console.error("Failed to load project:", err);
+        console.error('Failed to load project:', err);
       } finally {
         setLoading(false);
       }
@@ -60,7 +63,7 @@ export default function AddBienPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <LoadingSpin /> 
+        <LoadingSpin />
       </div>
     );
   }
@@ -69,13 +72,12 @@ export default function AddBienPage() {
     return (
       <div className="bg-red-50 p-4 rounded-md border-l-4 border-red-500 !text-red-700">
         <p className="font-medium">Accès refusé</p>
-        <p>Vous n'avez pas les droits nécessaires pour ajouter un bien.</p>
+        <p>Vous {"n'"}avez pas les droits nécessaires pour ajouter un bien.</p>
       </div>
     );
   }
 
   return (
-    
-      <BienForm projetId={projetId} blocId={blocId} immeubleId={immeubleId} />
+    <BienForm projetId={projetId} blocId={blocId} immeubleId={immeubleId} />
   );
 }

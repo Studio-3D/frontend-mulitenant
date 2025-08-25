@@ -1,15 +1,28 @@
 import React from 'react';
 
-export const GeneralInfoStep = ({ 
-  formData, 
-  updateFormData, 
-  onNext, 
+export const GeneralInfoStep = ({
+  formData,
+  updateFormData,
+  onNext,
   onPrevious,
   errors,
-  touched
+  touched,
 }) => {
   const handleInputChange = (field, value) => {
     updateFormData(`projectInfo.${field}`, value);
+  };
+
+  const isFormIncomplete = (state) => {
+    return (
+      state.projectInfo.nomProjet?.trim() === '' ||
+      state.projectInfo.code?.trim() === '' ||
+      state.projectInfo.adresse?.trim() === '' ||
+      !state.projectInfo.dateAutorisationConstruction ||
+      state.projectInfo.surfaceTerrain === '' ||
+      state.projectInfo.prixAcquisition === '' ||
+      state.projectInfo.limiteAnnulationReservation === '' ||
+      state.projectInfo.nombreEtagesMaximum === ''
+    );
   };
 
   return (
@@ -17,7 +30,10 @@ export const GeneralInfoStep = ({
       <div className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label htmlFor="nomProjet" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="nomProjet"
+              className="block text-sm font-medium text-gray-700"
+            >
               Nom de projet <span className="text-red-500">*</span>
             </label>
             <input
@@ -27,16 +43,21 @@ export const GeneralInfoStep = ({
               value={formData.projectInfo.nomProjet}
               onChange={(e) => handleInputChange('nomProjet', e.target.value)}
               className={`block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2 ${
-                errors.projectInfo?.nomProjet && touched.projectInfo?.nomProjet ? 'border-red-500' : ''
+                errors.projectInfo?.nomProjet ? 'border-red-500' : ''
               }`}
             />
-            {errors.projectInfo?.nomProjet && touched.projectInfo?.nomProjet && (
-              <div className="text-red-500 text-sm mt-1">{errors.projectInfo.nomProjet}</div>
+            {errors.projectInfo?.nomProjet && (
+              <div className="text-red-500 text-sm mt-1">
+                {errors.projectInfo.nomProjet}
+              </div>
             )}
           </div>
-          
+
           <div className="space-y-2">
-            <label htmlFor="codeProjet" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="codeProjet"
+              className="block text-sm font-medium text-gray-700"
+            >
               Code de projet <span className="text-red-500">*</span>
             </label>
             <input
@@ -46,17 +67,22 @@ export const GeneralInfoStep = ({
               value={formData.projectInfo.codeProjet}
               onChange={(e) => handleInputChange('codeProjet', e.target.value)}
               className={`block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2 ${
-                errors.projectInfo?.codeProjet && touched.projectInfo?.codeProjet ? 'border-red-500' : ''
+                errors.projectInfo?.codeProjet ? 'border-red-500' : ''
               }`}
             />
-            {errors.projectInfo?.codeProjet && touched.projectInfo?.codeProjet && (
-              <div className="text-red-500 text-sm mt-1">{errors.projectInfo.codeProjet}</div>
+            {errors.projectInfo?.codeProjet && (
+              <div className="text-red-500 text-sm mt-1">
+                {errors.projectInfo.codeProjet}
+              </div>
             )}
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="adresse" className="block text-sm font-medium text-gray-700">
-              Adresse
+            <label
+              htmlFor="adresse"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Adresse <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -69,7 +95,10 @@ export const GeneralInfoStep = ({
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="titreFoncier" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="titreFoncier"
+              className="block text-sm font-medium text-gray-700"
+            >
               Titre de foncier
             </label>
             <input
@@ -77,7 +106,9 @@ export const GeneralInfoStep = ({
               id="titreFoncier"
               name="projectInfo.titreFoncier"
               value={formData.projectInfo.titreFoncier}
-              onChange={(e) => handleInputChange('titreFoncier', e.target.value)}
+              onChange={(e) =>
+                handleInputChange('titreFoncier', e.target.value)
+              }
               className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2"
             />
           </div>
@@ -85,29 +116,43 @@ export const GeneralInfoStep = ({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
           <div className="space-y-2">
-            <label htmlFor="dateAutorisationConstruction" className="block text-sm font-medium text-gray-700">
-              Date d'autorisation construction
+            <label
+              htmlFor="dateAutorisationConstruction"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Date autorisation construction{' '}
+              <span className="text-red-500">*</span>
             </label>
             <input
               type="date"
               id="dateAutorisationConstruction"
               name="projectInfo.dateAutorisationConstruction"
               value={formData.projectInfo.dateAutorisationConstruction}
-              onChange={(e) => handleInputChange('dateAutorisationConstruction', e.target.value)}
+              onChange={(e) =>
+                handleInputChange(
+                  'dateAutorisationConstruction',
+                  e.target.value
+                )
+              }
               className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2"
             />
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="datePermisHabiter" className="block text-sm font-medium text-gray-700">
-              Date permis d'habiter
+            <label
+              htmlFor="datePermisHabiter"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Date permis {"d'"}habiter
             </label>
             <input
               type="date"
               id="datePermisHabiter"
               name="projectInfo.datePermisHabiter"
               value={formData.projectInfo.datePermisHabiter}
-              onChange={(e) => handleInputChange('datePermisHabiter', e.target.value)}
+              onChange={(e) =>
+                handleInputChange('datePermisHabiter', e.target.value)
+              }
               className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2"
             />
           </div>
@@ -115,8 +160,11 @@ export const GeneralInfoStep = ({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
           <div className="space-y-2">
-            <label htmlFor="surfaceTerrain" className="block text-sm font-medium text-gray-700">
-              Surface terrain (m²)
+            <label
+              htmlFor="surfaceTerrain"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Surface terrain (m²) <span className="text-red-500">*</span>
             </label>
             <input
               type="number"
@@ -124,19 +172,27 @@ export const GeneralInfoStep = ({
               name="projectInfo.surfaceTerrain"
               min="0"
               value={formData.projectInfo.surfaceTerrain}
-              onChange={(e) => handleInputChange('surfaceTerrain', e.target.value)}
+              onChange={(e) =>
+                handleInputChange('surfaceTerrain', e.target.value)
+              }
               className={`block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2 ${
-                errors.projectInfo?.surfaceTerrain && touched.projectInfo?.surfaceTerrain ? 'border-red-500' : ''
+                errors.projectInfo?.surfaceTerrain ? 'border-red-500' : ''
               }`}
             />
-            {errors.projectInfo?.surfaceTerrain && touched.projectInfo?.surfaceTerrain && (
-              <div className="text-red-500 text-sm mt-1">{errors.projectInfo.surfaceTerrain}</div>
+
+            {errors.projectInfo?.surfaceTerrain && (
+              <div className="text-red-500 text-sm mt-1">
+                {errors.projectInfo.surfaceTerrain}
+              </div>
             )}
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="prixAcquisition" className="block text-sm font-medium text-gray-700">
-              Prix d'acquisition
+            <label
+              htmlFor="prixAcquisition"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Prix {"d'"}acquisition <span className="text-red-500">*</span>
             </label>
             <input
               type="number"
@@ -144,19 +200,27 @@ export const GeneralInfoStep = ({
               name="projectInfo.prixAcquisition"
               min="0"
               value={formData.projectInfo.prixAcquisition}
-              onChange={(e) => handleInputChange('prixAcquisition', e.target.value)}
+              onChange={(e) =>
+                handleInputChange('prixAcquisition', e.target.value)
+              }
               className={`block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2 ${
-                errors.projectInfo?.prixAcquisition && touched.projectInfo?.prixAcquisition ? 'border-red-500' : ''
+                errors.projectInfo?.prixAcquisition ? 'border-red-500' : ''
               }`}
             />
-            {errors.projectInfo?.prixAcquisition && touched.projectInfo?.prixAcquisition && (
-              <div className="text-red-500 text-sm mt-1">{errors.projectInfo.prixAcquisition}</div>
+            {errors.projectInfo?.prixAcquisition && (
+              <div className="text-red-500 text-sm mt-1">
+                {errors.projectInfo.prixAcquisition}
+              </div>
             )}
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="limiteAnnulationReservation" className="block text-sm font-medium text-gray-700">
-              Limite annulation réservation (jours)
+            <label
+              htmlFor="limiteAnnulationReservation"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Limite annulation réservation (jours){' '}
+              <span className="text-red-500">*</span>
             </label>
             <input
               type="number"
@@ -164,13 +228,27 @@ export const GeneralInfoStep = ({
               name="projectInfo.limiteAnnulationReservation"
               min="0"
               value={formData.projectInfo.limiteAnnulationReservation}
-              onChange={(e) => handleInputChange('limiteAnnulationReservation', e.target.value)}
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2"
+              onChange={(e) =>
+                handleInputChange('limiteAnnulationReservation', e.target.value)
+              }
+              className={`block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2 ${
+                errors.projectInfo?.limiteAnnulationReservation
+                  ? 'border-red-500'
+                  : ''
+              }`}
             />
+            {errors.projectInfo?.limiteAnnulationReservation && (
+              <div className="text-red-500 text-sm mt-1">
+                {errors.projectInfo.limiteAnnulationReservation}
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="prolongationReservation" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="prolongationReservation"
+              className="block text-sm font-medium text-gray-700"
+            >
               Prolongation réservation (jours)
             </label>
             <input
@@ -179,14 +257,20 @@ export const GeneralInfoStep = ({
               name="projectInfo.prolongationReservation"
               min="0"
               value={formData.projectInfo.prolongationReservation}
-              onChange={(e) => handleInputChange('prolongationReservation', e.target.value)}
+              onChange={(e) =>
+                handleInputChange('prolongationReservation', e.target.value)
+              }
               className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2"
             />
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="nombreEtagesMaximum" className="block text-sm font-medium text-gray-700">
-              Nombre d'étages maximum
+            <label
+              htmlFor="nombreEtagesMaximum"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Nombre {"d'"}étages maximum{' '}
+              <span className="text-red-500">*</span>
             </label>
             <input
               type="number"
@@ -194,9 +278,18 @@ export const GeneralInfoStep = ({
               name="projectInfo.nombreEtagesMaximum"
               min="0"
               value={formData.projectInfo.nombreEtagesMaximum}
-              onChange={(e) => handleInputChange('nombreEtagesMaximum', e.target.value)}
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2"
+              onChange={(e) =>
+                handleInputChange('nombreEtagesMaximum', e.target.value)
+              }
+              className={`block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2 ${
+                errors.projectInfo?.nombreEtagesMaximum ? 'border-red-500' : ''
+              }`}
             />
+            {errors.projectInfo?.nombreEtagesMaximum && (
+              <div className="text-red-500 text-sm mt-1">
+                {errors.projectInfo.nombreEtagesMaximum}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -212,7 +305,12 @@ export const GeneralInfoStep = ({
         <button
           type="button"
           onClick={onNext}
-          className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
+          className={`bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 ${
+            isFormIncomplete(formData)
+              ? 'opacity-50 cursor-not-allowed'
+              : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
+          }`}
+          disabled={isFormIncomplete(formData)}
         >
           Suivant
         </button>

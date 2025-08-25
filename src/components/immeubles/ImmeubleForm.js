@@ -1,20 +1,20 @@
-"use client";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import axios from "axios";
-import { APIURL } from "@/configs/api";
-import toast from "react-hot-toast";
-import LoadingSpin from "@/components/LoadingSpin";
-import BreadCrumb from "@/app/(dashboard)/navigation/BreadCrumb";
-import Button from "../Button";
-import InputSelect from "../inputSelect";
-import Input from "../Input";
-import { fetchDataByProjet_params } from "@/configs/api-utils";
+'use client';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import axios from 'axios';
+import { APIURL } from '@/configs/api';
+import toast from 'react-hot-toast';
+import LoadingSpin from '@/components/LoadingSpin';
+import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
+import Button from '../Button';
+import InputSelect from '../inputSelect';
+import Input from '../Input';
+import { fetchDataByProjet_params } from '@/configs/api-utils';
 
 export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false); // For initial data loading
-  const [isSubmitting, setIsSubmitting] = useState(false); // For form submission
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [backendErrors, setBackendErrors] = useState({});
   const [validationErrors, setValidationErrors] = useState({});
   const [blocs, setBlocs] = useState([]);
@@ -23,15 +23,19 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
   const [loadingTranches, setLoadingTranches] = useState(false);
   const [selectedBloc, setSelectedBloc] = useState(null);
   const [selectedTranche, setSelectedTranche] = useState(null);
+  const hasFetchedInitialData = useRef(false);
+  const isSubmittingRef = useRef(false);
 
   // Get selected project from localStorage
-  const selectedProjet = JSON.parse(localStorage.getItem("selectedProjet") || "{}");
+  const selectedProjet = JSON.parse(
+    localStorage.getItem('selectedProjet') || '{}'
+  );
 
   const defaultValues = {
-    nom: "",
-    bloc_id: blocId || "",
-    tranche_id: trancheId || "",
-    titre_foncier: "",
+    nom: '',
+    bloc_id: blocId || '',
+    tranche_id: trancheId || '',
+    titre_foncier: '',
     nbre_biens: 0,
     projet_id: selectedProjet?.id,
   };
@@ -39,93 +43,111 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
   const [formData, setFormData] = useState(defaultValues);
   const isEditing = !!id;
 
+  const fetchImmeubleData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await axios.get(`${APIURL.IMMEUBLES}/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.data?.immeuble) {
+        const immeuble = response.data.immeuble;
+        setFormData({
+          nom: immeuble.nom || '',
+          bloc_id: immeuble.bloc_id || '',
+          tranche_id: immeuble.bloc?.tranche_id || '',
+          titre_foncier: immeuble.titre_foncier || '',
+          nbre_biens: immeuble.nbre_biens || 0,
+          projet_id: immeuble.projet_id || selectedProjet?.id,
+        });
+
+        if (immeuble.tranche) {
+          setSelectedTranche(immeuble.tranche);
+        }
+        if (immeuble.bloc) {
+          setSelectedBloc(immeuble.bloc);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch immeuble:', error);
+      toast.error("Erreur lors du chargement de l'immeuble");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [id, selectedProjet?.id]);
+
   // Fetch immeuble data if editing
   useEffect(() => {
-    if (isEditing) {
-      setIsLoading(true);
-      const fetchImmeubleData = async () => {
-        try {
-          const token = localStorage.getItem("accessToken");
-          const response = await axios.get(`${APIURL.IMMEUBLES}/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-
-          if (response.data?.immeuble) {
-            const immeuble = response.data.immeuble;
-            setFormData({
-              nom: immeuble.nom || "",
-              bloc_id: immeuble.bloc_id || "",
-              tranche_id: immeuble.bloc?.tranche_id || "",
-              titre_foncier: immeuble.titre_foncier || "",
-              nbre_biens: immeuble.nbre_biens || 0,
-              projet_id: immeuble.projet_id || selectedProjet?.id,
-            });
-
-            if (immeuble.tranche) {
-              setSelectedTranche(immeuble.tranche);
-            }
-            if (immeuble.bloc) {
-              setSelectedBloc(immeuble.bloc);
-            }
-          }
-        } catch (error) {
-          console.error("Failed to fetch immeuble:", error);
-          toast.error("Erreur lors du chargement de l'immeuble");
-        } finally {
-          setIsLoading(false);
-        }
-      };
-
+    if (isEditing && id && !hasFetchedInitialData.current) {
+      hasFetchedInitialData.current = true;
       fetchImmeubleData();
-    } else if (blocId) {
+    } else if (blocId && !hasFetchedInitialData.current) {
+      hasFetchedInitialData.current = true;
       setFormData((prev) => ({
         ...prev,
         bloc_id: blocId,
       }));
     }
-  }, [id, isEditing, selectedProjet?.id, blocId]);
+  }, [id, isEditing, fetchImmeubleData, blocId]);
 
   // Fetch tranches and blocs for the project
   useEffect(() => {
     if (!isEditing) {
-      if (selectedProjet.nbre_tranches !== 0 && !trancheId && !formData.tranche_id) {
-        fetchDataByProjet_params("tranches", setTranches, setLoadingTranches);
+      if (
+        selectedProjet.nbre_tranches !== 0 &&
+        !trancheId &&
+        !formData.tranche_id
+      ) {
+        fetchDataByProjet_params('tranches', setTranches, setLoadingTranches);
       }
 
       if (selectedProjet.nbre_blocs !== 0) {
         if (!blocId && trancheId && selectedProjet.nbre_tranches !== 0) {
-          fetchDataByProjet_params("blocs", setBlocs, setLoadingBlocs, {
+          fetchDataByProjet_params('blocs', setBlocs, setLoadingBlocs, {
             tranche_id: trancheId,
           });
         } else if (!blocId && selectedProjet.nbre_tranches === 0) {
-          fetchDataByProjet_params("blocs", setBlocs, setLoadingBlocs);
+          fetchDataByProjet_params('blocs', setBlocs, setLoadingBlocs);
         }
       }
-      
+
       if (selectedProjet.nbre_blocs !== 0 && formData.tranche_id && !blocId) {
-        fetchDataByProjet_params("blocs", setBlocs, setLoadingBlocs, {
+        fetchDataByProjet_params('blocs', setBlocs, setLoadingBlocs, {
           tranche_id: formData.tranche_id,
         });
       }
     }
-  }, [blocId, trancheId, formData.tranche_id, isEditing]);
+  }, [blocId, trancheId, formData.tranche_id, isEditing, selectedProjet]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpin />
+      </div>
+    );
+  }
 
   const handleselectChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
 
-    if (field === "tranche_id") {
-      const selectedTrancheObj = tranches.find((t) => t.id.toString() === value.toString());
+    if (field === 'tranche_id') {
+      const selectedTrancheObj = tranches.find(
+        (t) => t.id.toString() === value.toString()
+      );
       setSelectedTranche(selectedTrancheObj || null);
-      
+
       // Reset bloc selection if tranche changes
       if (value !== formData.tranche_id) {
-        setFormData((prev) => ({ ...prev, bloc_id: "" }));
+        setFormData((prev) => ({ ...prev, bloc_id: '' }));
         setSelectedBloc(null);
       }
     }
 
-    if (field === "bloc_id" && value) {
-      const selectedBlocObj = blocs.find((b) => b.id.toString() === value.toString());
+    if (field === 'bloc_id' && value) {
+      const selectedBlocObj = blocs.find(
+        (b) => b.id.toString() === value.toString()
+      );
       setSelectedBloc(selectedBlocObj || null);
     }
   };
@@ -135,7 +157,7 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
     setFormData((prev) => ({ ...prev, [name]: value }));
 
     if (validationErrors[name]) {
-      setValidationErrors((prev) => ({ ...prev, [name]: "" }));
+      setValidationErrors((prev) => ({ ...prev, [name]: '' }));
     }
   };
 
@@ -143,6 +165,12 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
     const errors = {};
     if (!formData.nom) {
       errors.nom = "Le nom de l'immeuble est requis";
+    }
+    if (tranches.length > 0 && !formData.tranche_id) {
+      errors.tranche_id = 'La tranche est requise';
+    }
+    if (blocs.length > 0 && !formData.bloc_id) {
+      errors.bloc_id = 'Le Bloc est requise';
     }
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
@@ -155,16 +183,20 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
       return;
     }
 
+    // Prevent multiple submissions
+    if (isSubmittingRef.current) return;
+    
     setIsSubmitting(true);
+    isSubmittingRef.current = true;
     setBackendErrors({});
 
-    const token = localStorage.getItem("accessToken");
+    const token = localStorage.getItem('accessToken');
     let url = APIURL.IMMEUBLES;
-    let method = "post";
+    let method = 'post';
 
     if (isEditing) {
       url = `${url}/${id}`;
-      method = "put";
+      method = 'put';
     }
 
     try {
@@ -173,34 +205,50 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
         url,
         data: formData,
         headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
           Authorization: `Bearer ${token}`,
         },
       });
 
-      toast.success(`L'immeuble a été ${isEditing ? "modifié" : "créé"} avec succès`);
-      router.push(router.back());
+      toast.success(
+        `L'immeuble a été ${isEditing ? 'modifié' : 'créé'} avec succès`
+      );
+      
+      // Use setTimeout to ensure state updates complete before navigation
+      setTimeout(() => {
+        router.back();
+      }, 100);
     } catch (error) {
-      console.error("Failed to save immeuble:", error);
+      console.error('Failed to save immeuble:', error);
       const response = error.response;
       if (response?.status === 422) {
         setBackendErrors(response.data.errors || {});
       } else {
-        toast.error("Une erreur s'est produite lors de la soumission du formulaire");
+        toast.error(
+          "Une erreur s'est produite lors de la soumission du formulaire"
+        );
       }
     } finally {
       setIsSubmitting(false);
+      isSubmittingRef.current = false;
     }
   };
 
+  const handleCancel = () => {
+    router.back();
+  };
 
   return (
     <div className="p-3">
       <div className="flex items-center justify-start">
         <BreadCrumb
-          baseUrl={selectedProjet?.id ? `/Projets/${selectedProjet.id}?tab=immeubles` : "/Projets"}
-          step={`${id ? "Modifier" : "Ajouter"} un immeuble`}
+          baseUrl={
+            selectedProjet?.id
+              ? `/Projets/${selectedProjet.id}?tab=immeubles`
+              : '/Projets'
+          }
+          step={`${id ? 'Modifier' : 'Ajouter'} un immeuble`}
         />
       </div>
       <div className="p-6 mt-4 bg-white shadow-md rounded-md">
@@ -223,58 +271,77 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
                 disabled={true}
               />
             )}
-            
+
             {isEditing && selectedProjet.nbre_blocs !== 0 && (
-              <Input
-                label="Bloc"
-                value={selectedBloc?.nom}
-                disabled={true}
-              />
+              <Input label="Bloc" value={selectedBloc?.nom} disabled={true} />
             )}
 
-            {!isEditing && selectedProjet.nbre_tranches !== 0 && !trancheId && !blocId && (
-              <InputSelect
-                label="Tranche"
-                options={tranches.map((t) => ({ label: t.nom, value: t.id }))}
-                value={formData.tranche_id}
-                onChange={(option) => handleselectChange("tranche_id", option?.value || null)}
-                error={validationErrors.tranche_id || backendErrors.tranche_id}
-                isLoading={loadingTranches}
-                required
-              />
-            )}
+            {!isEditing &&
+              selectedProjet.nbre_tranches !== 0 &&
+              !trancheId &&
+              !blocId && (
+                <InputSelect
+                  label="Tranche"
+                  options={tranches.map((t) => ({ label: t.nom, value: t.id }))}
+                  value={formData.tranche_id}
+                  onChange={(option) =>
+                    handleselectChange('tranche_id', option?.value || null)
+                  }
+                  error={
+                    validationErrors.tranche_id || backendErrors.tranche_id
+                  }
+                  isLoading={loadingTranches}
+                  required
+                />
+              )}
 
-            {!isEditing && selectedProjet.nbre_tranches === 0 && selectedProjet.nbre_blocs !== 0 && !blocId && (
-              <InputSelect
-                label="Bloc"
-                options={blocs.map((t) => ({ label: t.nom, value: t.id }))}
-                value={formData.bloc_id}
-                onChange={(option) => handleselectChange("bloc_id", option?.value || null)}
-                error={validationErrors.bloc_id || backendErrors.bloc_id}
-                isLoading={loadingBlocs}
-                required
-              />
-            )}
+            {!isEditing &&
+              selectedProjet.nbre_tranches === 0 &&
+              selectedProjet.nbre_blocs !== 0 &&
+              !blocId && (
+                <InputSelect
+                  label="Bloc"
+                  options={blocs.map((t) => ({ label: t.nom, value: t.id }))}
+                  value={formData.bloc_id}
+                  onChange={(option) =>
+                    handleselectChange('bloc_id', option?.value || null)
+                  }
+                  error={validationErrors.bloc_id || backendErrors.bloc_id}
+                  isLoading={loadingBlocs}
+                  required
+                />
+              )}
 
-            {!isEditing && !formData.tranche_id && selectedProjet.nbre_tranches !== 0 && selectedProjet.nbre_blocs !== 0 && !blocId && !trancheId && (
-              <Input
-                label="Bloc"
-                disabled={true}
-                value="Veuillez d'abord sélectionner une tranche"
-              />
-            )}
+            {!isEditing &&
+              !formData.tranche_id &&
+              selectedProjet.nbre_tranches !== 0 &&
+              selectedProjet.nbre_blocs !== 0 &&
+              !blocId &&
+              !trancheId && (
+                <Input
+                  label="Bloc"
+                  disabled={true}
+                  value="Veuillez d'abord sélectionner une tranche"
+                />
+              )}
 
-            {!isEditing && (formData.tranche_id || trancheId) && selectedProjet.nbre_tranches !== 0 && selectedProjet.nbre_blocs !== 0 && !blocId && (
-              <InputSelect
-                label="Bloc"
-                options={blocs.map((t) => ({ label: t.nom, value: t.id }))}
-                value={formData.bloc_id}
-                onChange={(option) => handleselectChange("bloc_id", option?.value || null)}
-                error={validationErrors.bloc_id || backendErrors.bloc_id}
-                isLoading={loadingBlocs}
-                required
-              />
-            )}
+            {!isEditing &&
+              (formData.tranche_id || trancheId) &&
+              selectedProjet.nbre_tranches !== 0 &&
+              selectedProjet.nbre_blocs !== 0 &&
+              !blocId && (
+                <InputSelect
+                  label="Bloc"
+                  options={blocs.map((t) => ({ label: t.nom, value: t.id }))}
+                  value={formData.bloc_id}
+                  onChange={(option) =>
+                    handleselectChange('bloc_id', option?.value || null)
+                  }
+                  error={validationErrors.bloc_id || backendErrors.bloc_id}
+                  isLoading={loadingBlocs}
+                  required
+                />
+              )}
 
             <Input
               label="Titre foncier"
@@ -294,20 +361,22 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
           </div>
 
           <div className="flex justify-center gap-4 items-center mt-6 mb-6">
-            <Button type="button" onClick={() => router.back()}>
+            <Button type="button" onClick={handleCancel}>
               Annuler
             </Button>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={isSubmitting}
               className="flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
                 <>
-                  {isEditing ? "Modification en cours..." : "Ajout en cours..."}
+                  {isEditing ? 'Modification en cours...' : 'Ajout en cours...'}
                 </>
+              ) : id ? (
+                'Modifier'
               ) : (
-                id ? "Modifier" : "Ajouter"
+                'Ajouter'
               )}
             </Button>
           </div>

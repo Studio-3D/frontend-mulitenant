@@ -30,7 +30,7 @@ const FreinTable = () => {
   const router = useRouter();
   // Declare the entity object in the component scope
   const [filters, setFilters] = useState({
-    description: ''
+    description: '',
   });
   const [tempFilters, setTempFilters] = useState({ ...filters });
 
@@ -62,22 +62,19 @@ const FreinTable = () => {
     selectedProjet,
   ]);
 
-
-
   useEffect(() => {
-        fetchData_table_by_projet(
-          entity,
-          filters,
-          searchTerm,
-          currentPage,
-          rowsPerPage,
-          accesstoken,
-          setLoading,
-          setError,
-          setFreins,
-          setTotalRows
-        );
-      
+    fetchData_table_by_projet(
+      entity,
+      filters,
+      searchTerm,
+      currentPage,
+      rowsPerPage,
+      accesstoken,
+      setLoading,
+      setError,
+      setFreins,
+      setTotalRows
+    );
   }, [
     accesstoken,
     currentPage,
@@ -87,7 +84,6 @@ const FreinTable = () => {
     selectedProjet,
   ]);
 
-
   function handleEdit(FreinId) {
     router.push(`${ENDPOINTS.TYPEFREINS}?id=${FreinId}&action=edit`);
   }
@@ -96,58 +92,50 @@ const FreinTable = () => {
     if (!isOpen) resetFilters(); // Si on ferme, on réinitialise
   };
 
-
-
-  
   // Format users data for table display
   const formatData = () => {
     return freins.map((frein) => ({
       id: frein.id,
       frein: frein.description,
-      
     }));
   };
 
-   const columns = [
-        { key: 'frein', label: 'Frein' },
-        {
-              key: "actions",
-              label: "Actions",
-              render: (row) => (
-                <div className="flex gap-3 items-center">
-                  <button
-                  className="text-blue-500 hover:text-blue-700"
-                  onClick={() => handleEdit(row.id)}
-                  title="Modifier"
-                >
-                  <Pencil className="w-4 h-4" />
-                </button>
-                <button
-                  className="text-red-500 hover:text-red-700"
-                  onClick={() => {
-                    setSelectedId(row.id);
-                    setShowDeleteModal(true);
-                  }}
-                  title="Supprimer"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-                </div>
-              ),
-            },
-      ];
-  
+  const columns = [
+    { key: 'frein', label: 'Frein' },
+    {
+      key: 'actions',
+      label: 'Actions',
+      render: (row) => (
+        <div className="flex gap-3 items-center">
+          <button
+            className="text-blue-500 hover:text-blue-700"
+            onClick={() => handleEdit(row.id)}
+            title="Modifier"
+          >
+            <Pencil className="w-4 h-4" />
+          </button>
+          <button
+            className="text-red-500 hover:text-red-700"
+            onClick={() => {
+              setSelectedId(row.id);
+              setShowDeleteModal(true);
+            }}
+            title="Supprimer"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
+      ),
+    },
+  ];
 
   const data_to_export = () => {
-    return freins.map((ty) => ({ 
+    return freins.map((ty) => ({
       frein: ty.description,
     }));
   };
 
-  const columns_export = [
-    { key: 'frein', label: 'Frein' },
-    
-  ];
+  const columns_export = [{ key: 'frein', label: 'Frein' }];
 
   const handleFilterChange = (field, value) => {
     setTempFilters((prev) => ({ ...prev, [field]: value }));
@@ -158,7 +146,6 @@ const FreinTable = () => {
   const resetFilters = () => {
     const reset = {
       description: '',
-      
     };
     setFilters(reset);
     setTempFilters(reset);
@@ -168,6 +155,7 @@ const FreinTable = () => {
     <>
       <div className="reflative bg-white rounded-lg shadow-md p-4">
         <Table
+          showSearch={false}
           title={'Types Freins'}
           data_to_export={data_to_export()}
           columns_export={columns_export}
@@ -204,11 +192,11 @@ const FreinTable = () => {
                   type="text"
                   placeholder="Frein..."
                   value={tempFilters.description}
-                  onChange={(e) => handleFilterChange('description', e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange('description', e.target.value)
+                  }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-               
-                
               </div>
 
               {/* Boutons */}
@@ -241,7 +229,7 @@ const FreinTable = () => {
           <DeleteData
             route={APIURL.TYPEFREINS}
             Id={selectedId}
-            type='Frein'
+            type="Frein"
             message={'Etes-vous sûr de vouloir supprimer ce Frein ?'}
             accessToken={accesstoken}
             onClose={() => {
@@ -262,8 +250,6 @@ const FreinTable = () => {
           />
         </Modal>
       )}
-
-     
     </>
   );
 };

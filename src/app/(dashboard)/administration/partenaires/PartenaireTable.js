@@ -30,7 +30,8 @@ const PartenaireTable = () => {
   const router = useRouter();
   // Declare the entity object in the component scope
   const [filters, setFilters] = useState({
-   description: "",remise:"" 
+    description: '',
+    remise: '',
   });
   const [tempFilters, setTempFilters] = useState({ ...filters });
 
@@ -62,22 +63,19 @@ const PartenaireTable = () => {
     selectedProjet,
   ]);
 
-
-
   useEffect(() => {
-        fetchData_table_by_projet(
-          entity,
-          filters,
-          searchTerm,
-          currentPage,
-          rowsPerPage,
-          accesstoken,
-          setLoading,
-          setError,
-          setPartenaires,
-          setTotalRows
-        );
-      
+    fetchData_table_by_projet(
+      entity,
+      filters,
+      searchTerm,
+      currentPage,
+      rowsPerPage,
+      accesstoken,
+      setLoading,
+      setError,
+      setPartenaires,
+      setTotalRows
+    );
   }, [
     accesstoken,
     currentPage,
@@ -87,7 +85,6 @@ const PartenaireTable = () => {
     selectedProjet,
   ]);
 
-
   function handleEdit(PartenaireId) {
     router.push(`${ENDPOINTS.PARTENAIRES}?id=${PartenaireId}&action=edit`);
   }
@@ -96,60 +93,59 @@ const PartenaireTable = () => {
     if (!isOpen) resetFilters(); // Si on ferme, on réinitialise
   };
 
-
-
-  
   // Format users data for table display
   const formatData = () => {
     return partenaires.map((item) => ({
       id: item.id,
       description: item.description,
-      remise: item.remise || '0'      
+      remise: item.remise || '0',
+      prospect_length: item.prospect.length,
+      client_length: item.client.lenght,
     }));
   };
 
-   const columns = [
+  const columns = [
     { key: 'description', label: 'Partenaire' },
-    { key: 'remise', label: 'Remise (%)' },        
+    { key: 'remise', label: 'Remise (%)' },
     {
-      key: "actions",
-      label: "Actions",
+      key: 'actions',
+      label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
           <button
-          className="text-blue-500 hover:text-blue-700"
-          onClick={() => handleEdit(row.id)}
-          title="Modifier"
-        >
-          <Pencil className="w-4 h-4" />
-        </button>
-        <button
-          className="text-red-500 hover:text-red-700"
-          onClick={() => {
-            setSelectedId(row.id);
-            setShowDeleteModal(true);
-          }}
-          title="Supprimer"
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
+            className="text-blue-500 hover:text-blue-700"
+            onClick={() => handleEdit(row.id)}
+            title="Modifier"
+          >
+            <Pencil className="w-4 h-4" />
+          </button>
+          {row.prospect_length == 0 && row.client_length == 0 && (
+            <button
+              className="text-red-500 hover:text-red-700"
+              onClick={() => {
+                setSelectedId(row.id);
+                setShowDeleteModal(true);
+              }}
+              title="Supprimer"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
         </div>
-              ),
-            },
-      ];
-  
+      ),
+    },
+  ];
 
   const data_to_export = () => {
-    return partenaires.map((item) => ({ 
+    return partenaires.map((item) => ({
       partenaire: item.description,
-      Remise: item.remise || '0'
+      Remise: item.remise || '0',
     }));
   };
 
   const columns_export = [
     { key: 'partenaire', label: 'Partenaire' },
     { key: 'remise', label: 'Remise' },
-    
   ];
 
   const handleFilterChange = (field, value) => {
@@ -159,7 +155,7 @@ const PartenaireTable = () => {
     setFilters(tempFilters);
   };
   const resetFilters = () => {
-    const reset = { description: "",remise:""  };
+    const reset = { description: '', remise: '' };
 
     setFilters(reset);
     setTempFilters(reset);
@@ -169,6 +165,7 @@ const PartenaireTable = () => {
     <>
       <div className="reflative bg-white rounded-lg shadow-md p-4">
         <Table
+          showSearch={false}
           title={'Partenaires'}
           data_to_export={data_to_export()}
           columns_export={columns_export}
@@ -200,24 +197,24 @@ const PartenaireTable = () => {
                   gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
                 }}
               >
-              <Input
-                label={'Description'}
-                type="text"
-                placeholder="Description..."
-                value={tempFilters.description}
-                onChange={(e) => handleFilterChange("description", e.target.value)}
-                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-              />
-              <Input
-                type="number"
-                label={'Remise'}
-                placeholder="Remise..."
-                value={tempFilters.remise}
-                onChange={(e) => handleFilterChange("remise", e.target.value)}
-                className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-              />
-               
-                
+                <Input
+                  label={'Description'}
+                  type="text"
+                  placeholder="Description..."
+                  value={tempFilters.description}
+                  onChange={(e) =>
+                    handleFilterChange('description', e.target.value)
+                  }
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
+                <Input
+                  type="number"
+                  label={'Remise'}
+                  placeholder="Remise..."
+                  value={tempFilters.remise}
+                  onChange={(e) => handleFilterChange('remise', e.target.value)}
+                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                />
               </div>
 
               {/* Boutons */}
@@ -250,7 +247,7 @@ const PartenaireTable = () => {
           <DeleteData
             route={APIURL.PARTENAIRES}
             Id={selectedId}
-            type='Partenaire'
+            type="Partenaire"
             message={'Etes-vous sûr de vouloir supprimer ce Partenaire ?'}
             accessToken={accesstoken}
             onClose={() => {
@@ -271,8 +268,6 @@ const PartenaireTable = () => {
           />
         </Modal>
       )}
-
-     
     </>
   );
 };

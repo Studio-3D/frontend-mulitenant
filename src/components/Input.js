@@ -154,7 +154,8 @@ export default function Input({
             onChange={onChange}
             readOnly={readOnly}
             disabled={disabled}
-            required={required}
+            //i set this labell=Nom for Module projet pour ne pas utilise le required static' 
+            required={label=='Nom'?false:required} 
             inputMode={inputMode}
             placeholder={placeholder}
             className={`h-[38px] text-[15px] px-4 py-2 outline-none border rounded-md w-full

@@ -21,7 +21,6 @@ const ProjetFilter = ({
         <Input
             label={"Nom"}
             type="text"
-            placeholder="Nom..."
             value={tempFilters.nom}
             onChange={(e) => handleFilterChange("nom", e.target.value)}
             className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
@@ -29,7 +28,6 @@ const ProjetFilter = ({
           <Input
             label={"Code"}
             type="text"
-            placeholder="Code..."
             value={tempFilters.code}
             onChange={(e) => handleFilterChange("code", e.target.value)}
             className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
@@ -37,7 +35,6 @@ const ProjetFilter = ({
           <Input
             label={"Adresse"}
             type="text"
-            placeholder="Adresse..."
             value={tempFilters.adresse}
             onChange={(e) => handleFilterChange("adresse", e.target.value)}
             className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
@@ -58,18 +55,14 @@ const ProjetFilter = ({
             placeholder="Choisir un type..."
             isLoading={loading}
           />
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Date création</label>
-          <input
-            type="text"
-            placeholder="Date création"
-            onFocus={(e) => (e.target.type = "date")}
-            onBlur={(e) => e.target.type = e.target.value ? "date" : "text"}
+          <Input
+            label={"Date Création"}
+            type="date"
             value={tempFilters.date}
             onChange={(e) => handleFilterChange("date", e.target.value)}
-            className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+            className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
           />
-        </div>
+      
       </div>
       <div className="flex justify-end gap-3 pt-2">
         <button
