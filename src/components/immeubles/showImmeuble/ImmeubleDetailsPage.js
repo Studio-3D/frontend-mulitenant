@@ -26,35 +26,35 @@ export const ImmeubleDetailsPage = () => {
   const router = useRouter();
   const {  selectProjet, clearSelectedProjet } = useProjet();
   const { user } = useAuth();
-  const [blocData, setBlocData] = useState(null);
+  const [immeubleData, setImmeubleData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('immeuble');
+  const [activeTab, setActiveTab] = useState('bien');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   
-  const fetchBlocDetails = useCallback(async () => {
+  const fetchImmeubleDetails = useCallback(async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("accessToken");
-      const response = await axios.get(`${APIURL.BLOCS}/${id}`, {
+      const response = await axios.get(`${APIURL.IMMEUBLES}/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      const blocDetails = response.data;
-      setBlocData(blocDetails);
-      console.log('fetched bloc data', blocDetails);
+      const immeubleDetails = response.data;
+      setImmeubleData(immeubleDetails);
+      console.log('fetched immeuble data', immeubleDetails);
       
       // Update the context with the project details if available
-      if (blocDetails.projet) {
-        selectProjet(blocDetails.projet);
+      if (immeubleDetails.projet) {
+        selectProjet(immeubleDetails.projet);
       }
       
       setActiveTab('bien');
     } catch (err) {
-      console.error("Error fetching bloc details:", err);
-      setError(err.message || "Failed to fetch bloc details");
+      console.error("Error fetching immeuble details:", err);
+      setError(err.message || "Failed to fetch immeuble details");
       
-      // If the bloc doesn't exist or we can't access it, clear selection
+      // If the immeuble doesn't exist or we can't access it, clear selection
       if (err.response?.status === 404) {
         clearSelectedProjet();
       }
@@ -65,13 +65,13 @@ export const ImmeubleDetailsPage = () => {
 
   useEffect(() => {
     if (id) {
-      fetchBlocDetails();
+      fetchImmeubleDetails();
     }
-  }, [id, fetchBlocDetails]);
+  }, [id, fetchImmeubleDetails]);
 
   // Handle edit action
   const handleEdit = () => {
-    router.push(`/Blocs/editBloc/${id}`);
+    router.push(`/Immeubles/editImmeuble/${id}`);
   };
 
   // Handle delete action
@@ -85,11 +85,10 @@ export const ImmeubleDetailsPage = () => {
   };
 
  const allTabsData = useMemo(() => {
-  if (!blocData || !blocData.bloc) return {};
+  if (!immeubleData || !immeubleData.immeuble) return {};
 
-  // Access the properties from the bloc object
-  const biensData = blocData.bloc.bien || [];
-  const immeublesData = blocData.bloc.immeuble || [];
+  // Access the properties from the immeuble object
+  const biensData = immeubleData.immeuble.bien || [];
 
   const typeBienOptions = Array.from(
     new Set(
@@ -129,20 +128,7 @@ export const ImmeubleDetailsPage = () => {
     };
   }) || [];
 
-  // Map immeuble data to match your column requirements
-  const immeubles = immeublesData.map(i => ({
-    id: i.id,
-    nom: i.nom,
-    titre_foncier: i.titre_foncier,
-    nbre_biens: i.bien?.length || 0,
-  })) || [];
-
   return {
-    immeuble: {
-      count: immeubles.length,
-      items: immeubles,
-      nbr_count: immeubles.length,
-    },
     bien: {
       count: biens.length,
       statuses: defaultStatuses,
@@ -151,7 +137,7 @@ export const ImmeubleDetailsPage = () => {
       typeBienOptions,
     },
   };
-}, [blocData]);
+}, [immeubleData]);
 
   const filteredTabsData = useMemo(() => {
     return Object.fromEntries(
@@ -197,11 +183,11 @@ export const ImmeubleDetailsPage = () => {
     );
   }
 
-  if (!blocData) {
+  if (!immeubleData) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="text-xl font-semibold mb-4">Bloc Not Found</div>
+          <div className="text-xl font-semibold mb-4">Immeuble Not Found</div>
           <button 
             onClick={() => router.push('/Projets')}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
@@ -218,8 +204,8 @@ export const ImmeubleDetailsPage = () => {
       <div className="flex flex-col lg:flex-row gap-6 h-full">
         <div className="w-full lg:w-1/3">
           <LeftCard 
-            bloc={{...blocData.bloc}} 
-            type="bloc"
+            immeuble={{...immeubleData.immeuble}} 
+            type="immeuble"
             onEdit={handleEdit}  
             onDelete={handleDelete}  
             canEdit={isSuperAdmin(user?.role) || isAdmin(user?.role)}
@@ -230,8 +216,8 @@ export const ImmeubleDetailsPage = () => {
             tabsData={filteredTabsData}
             activeTab={activeTab}
             setActiveTab={setActiveTab}
-            fetchBlocData={fetchBlocDetails}
-            blocId={id}
+            fetchImmeubleData={fetchImmeubleDetails}
+            immeubleId={id}
           />
         </div>
       </div>
@@ -240,10 +226,10 @@ export const ImmeubleDetailsPage = () => {
       {showDeleteModal && (
         <Modal isVisible={true} onClose={() => setShowDeleteModal(false)}>
           <DeleteData
-            route={APIURL.BLOCS}
+            route={APIURL.IMMEUBLES}
             Id={id}
-            type="Bloc"
-            message="Êtes-vous sûr de vouloir supprimer ce bloc ? Cette action est irréversible."
+            type="Immeuble"
+            message="Êtes-vous sûr de vouloir supprimer cet immeuble ? Cette action est irréversible."
             accessToken={localStorage.getItem("accessToken")}
             onClose={() => setShowDeleteModal(false)}
             onSuccess={handleDeleteSuccess}
