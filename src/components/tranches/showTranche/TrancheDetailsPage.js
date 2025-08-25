@@ -84,85 +84,91 @@ export const TrancheDetailsPage = () => {
     router.push("/Projets"); // Redirect to projects page
   };
 
-  const allTabsData = useMemo(() => {
-    if (!trancheData) return {};
+ const allTabsData = useMemo(() => {
+  if (!trancheData || !trancheData.tranche) return {};
 
-    const typeBienOptions = Array.from(
-      new Set(
-        trancheData.bien?.map(b => b.type_bien?.type).filter(Boolean) || []
-      )
-    ).map(type => ({ value: type, label: type }));
+  // Access the properties from the tranche object
+  const biensData = trancheData.tranche.bien || [];
+  const blocsData = trancheData.tranche.bloc || [];
+  const immeublesData = trancheData.tranche.immeuble || [];
+
+  // Rest of your code remains the same...
+  const typeBienOptions = Array.from(
+    new Set(
+      biensData.map(b => b.type_bien?.type).filter(Boolean) || []
+    )
+  ).map(type => ({ value: type, label: type }));
+  
+  // Calculate status counts dynamically
+  const statusCounts = biensData.reduce((acc, b) => {
+    const status = b.etat;
+    if (status) {
+      acc[status] = (acc[status] || 0) + 1;
+    }
+    return acc;
+  }, {});
+
+  // Map to the expected status format with dynamic counts using STATUS_CONFIG
+  const defaultStatuses = Object.entries(STATUS_CONFIG).map(([key, config]) => ({
+    name: config.name,
+    count: statusCounts?.[key] || 0,
+    color: config.color
+  }));
+
+  // Map bien data to match your column requirements
+  const biens = biensData.map(b => {
+    const statusConfig = STATUS_CONFIG[b.etat] || { name: b.etat, color: 'bg-gray-500' };
     
-    // Calculate status counts dynamically
-    const statusCounts = trancheData.bien?.reduce((acc, b) => {
-      const status = b.etat;
-      if (status) {
-        acc[status] = (acc[status] || 0) + 1;
-      }
-      return acc;
-    }, {});
-
-    // Map to the expected status format with dynamic counts using STATUS_CONFIG
-    const defaultStatuses = Object.entries(STATUS_CONFIG).map(([key, config]) => ({
-      name: config.name,
-      count: statusCounts?.[key] || 0,
-      color: config.color
-    }));
-
-    // Map bien data to match your column requirements
-    const biens = trancheData.bien?.map(b => {
-      const statusConfig = STATUS_CONFIG[b.etat] || { name: b.etat, color: 'bg-gray-500' };
-      
-      return {
-        id: b.id,
-        name: b.propriete_dite_bien,
-        type: b.type_bien?.type || 'Inconnu',
-        surface: b.superficie_habitable || b.superficie_architecte,
-        price: b.prix,
-        status: statusConfig.name,
-        statusColor: statusConfig.color,
-        originalStatus: b.etat,
-      };
-    }) || [];
-
-    // Map immeuble data to match your column requirements
-    const immeubles = trancheData.immeuble?.map(i => ({
-      id: i.id,
-      nom: i.nom,
-      bloc_nom: trancheData.bloc?.find(b => b.id === i.bloc_id)?.nom || '',
-      titre_foncier: i.titre_foncier,
-      nbre_biens: i.bien?.length || 0,
-    })) || [];
-
-    // Map bloc data to match your column requirements
-    const blocs = trancheData.bloc?.map(b => ({
-      id: b.id,
-      nom: b.nom,
-      titre_foncier: b.titre_foncier,
-      nbre_immeubles: b.immeuble?.length || 0,
-      nbre_biens: b.bien?.length || 0,
-    })) || [];
-
     return {
-      blocs: {
-        count: blocs.length,
-        items: blocs,
-        nbr_count: blocs.length,
-      },
-      immeuble: {
-        count: immeubles.length,
-        items: immeubles,
-        nbr_count: immeubles.length,
-      },
-      bien: {
-        count: biens.length,
-        statuses: defaultStatuses,
-        items: biens,
-        nbr_count: biens.length,
-        typeBienOptions,
-      },
+      id: b.id,
+      name: b.propriete_dite_bien,
+      type: b.type_bien?.type || 'Inconnu',
+      surface: b.superficie_habitable || b.superficie_architecte,
+      price: b.prix,
+      status: statusConfig.name,
+      statusColor: statusConfig.color,
+      originalStatus: b.etat,
     };
-  }, [trancheData]);
+  }) || [];
+
+  // Map immeuble data to match your column requirements
+  const immeubles = immeublesData.map(i => ({
+    id: i.id,
+    nom: i.nom,
+    bloc_nom: blocsData.find(b => b.id === i.bloc_id)?.nom || '',
+    titre_foncier: i.titre_foncier,
+    nbre_biens: i.bien?.length || 0,
+  })) || [];
+
+  // Map bloc data to match your column requirements
+  const blocs = blocsData.map(b => ({
+    id: b.id,
+    nom: b.nom,
+    titre_foncier: b.titre_foncier,
+    nbre_immeubles: b.immeuble?.length || 0,
+    nbre_biens: b.bien?.length || 0,
+  })) || [];
+
+  return {
+    blocs: {
+      count: blocs.length,
+      items: blocs,
+      nbr_count: blocs.length,
+    },
+    immeuble: {
+      count: immeubles.length,
+      items: immeubles,
+      nbr_count: immeubles.length,
+    },
+    bien: {
+      count: biens.length,
+      statuses: defaultStatuses,
+      items: biens,
+      nbr_count: biens.length,
+      typeBienOptions,
+    },
+  };
+}, [trancheData]);
 
   const filteredTabsData = useMemo(() => {
     return Object.fromEntries(

@@ -20,56 +20,13 @@ import {
 import Table from '@/components/Table';
 
 const TAB_CONFIG = {
-  tranche: {
-    icon: <LayersIcon size={18} />,
-    name: "Tranches",
-    apiEndpoint: APIURL.TRANCHES,
-    addLink: (user) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? '/Tranches/ajouter' : undefined,
-    columns: (user, handleDelete) => [
-      { key: 'nom', label: 'Tranche' },
-      { key: 'date_lancement', label: 'Date lancement' },
-      { key: 'niveau_etages', label: "Niveau d'étages" },
-      { key: 'date_livraison', label: 'Date livraison' },
-      {
-        key: 'actions',
-        label: 'Actions',
-        render: (row) => (
-          <div className="flex gap-4 items-center">
-            <Link
-              href={`/Tranches/${row.id}`}
-              className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
-              title="Voir le tranche"
-            >
-              <Eye className="w-4 h-4" />
-            </Link>
-            
-            {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
-              <>
-                <Link
-                  href={`/Tranches/${row.id}/modifier/?edit=true`}
-                  className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
-                  title="Modifier le tranche"
-                >
-                  <PencilLine className="w-4 h-4" />
-                </Link>
-               <button onClick={() => handleDelete(row.id)} className="flex items-center gap-1 text-red-500 hover:text-red-700">
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </>
-            )}
-          </div>
-        )
-      }
-    ]
-  },
   blocs: {
     icon: <BoxesIcon size={18} />,
     name: "Blocs",
     apiEndpoint: APIURL.BLOCS,
-    addLink: (user,) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? `/Blocs/ajouter` : undefined,
+    addLink: (user, trancheId) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? `/Blocs/ajouter?trancheId=${trancheId}` : undefined,
     columns: (user, handleDelete) => [
       { key: 'nom', label: 'Bloc' },
-      { key: 'tranche_nom', label: 'Tranche' },
       { key: 'titre_foncier', label: 'Titre foncier' },
       { key: 'nbre_immeubles', label: 'Nbr Immeubles' },
       { key: 'nbre_biens', label: 'Nbr Biens' },
@@ -109,10 +66,9 @@ const TAB_CONFIG = {
     icon: <BuildingIcon size={18} />,
     name: "Immeubles",
     apiEndpoint: APIURL.IMMEUBLES,
-    addLink: (user) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? `/Immeubles/ajouter` : undefined,
+    addLink: (user, trancheId) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? `/Immeubles/ajouter?trancheId=${trancheId}` : undefined,
     columns: (user, handleDelete) => [
       { key: 'nom', label: 'Immeuble' },
-      { key: 'tranche_nom', label: 'Tranche' },
       { key: 'bloc_nom', label: 'Bloc' },
       { key: 'titre_foncier', label: 'Titre foncier' },
       { key: 'nbre_biens', label: 'Nbr Biens' },
@@ -152,7 +108,7 @@ const TAB_CONFIG = {
     icon: <HomeIcon size={18} />,
     name: "Biens",
     apiEndpoint: APIURL.BIENS,
-     addLink: (user) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? `/Biens/ajouter` : undefined,
+    addLink: (user, trancheId) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? `/Biens/ajouter?trancheId=${trancheId}` : undefined,
     columns: (user, handleDelete) => [
       { key: 'name', label: 'Nom' },
       { key: 'type', label: 'Type' },
@@ -197,7 +153,7 @@ const TAB_CONFIG = {
   },
 };
 
-export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchProjectData, projectId }) => {
+export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchTrancheData, trancheId }) => {
   const { token, user } = useAuth()
   const router = useRouter();
   const [selectedId, setSelectedId] = useState(null);
@@ -207,23 +163,17 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchProjectData,
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalRows, setTotalRows] = useState(0);
 
-
-   // Define handleAction before it's used
-  const handleAction = useCallback((id) => {
-        handleDelete(id);
-    }, [activeTab, router]);
-
-   const handleDelete = (id) => {
+  const handleDelete = (id) => {
     setSelectedId(id);
     setShowDeleteModal(true);
   };
 
   const handleDeleteSuccess = () => {
-  setShowDeleteModal(false);
-  if (fetchProjectData) {  // Now using the destructured prop
-      fetchProjectData(); 
+    setShowDeleteModal(false);
+    if (fetchTrancheData) {
+      fetchTrancheData(); 
     }
-};
+  };
 
   // Handle page change
   const handlePageChange = useCallback((newPage) => {
@@ -233,7 +183,7 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchProjectData,
   // Handle rows per page change
   const handleRowsPerPageChange = useCallback((newRowsPerPage) => {
     setRowsPerPage(newRowsPerPage);
-    setCurrentPage(1); // Reset to first page when changing rows per page
+    setCurrentPage(1);
   }, []);
 
   // Filter items based on selected type and pagination
@@ -262,9 +212,9 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchProjectData,
     
     const columnConfig = TAB_CONFIG[activeTab].columns;
     return typeof columnConfig === 'function' 
-      ? columnConfig(user, handleDelete, handleAction)  // Pass handleAction here
+      ? columnConfig(user, handleDelete) 
       : columnConfig;
-  }, [activeTab, user, handleDelete, handleAction]);
+  }, [activeTab, user, handleDelete]);
 
   const availableTabs = useMemo(() => {
     return Object.keys(tabsData).filter(tab => 
@@ -282,7 +232,7 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchProjectData,
     return (
       <div className="bg-white rounded-lg shadow-lg h-full flex flex-col">
         <div className="p-6 text-center text-gray-500">
-          Aucune donnée disponible pour ce projet
+          Aucune donnée disponible pour cette tranche
         </div>
       </div>
     );
@@ -305,8 +255,8 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchProjectData,
               }`}
               onClick={() => {
                 setActiveTab(tab);
-                setSelectedType(null); // Reset filter when changing tabs
-                setCurrentPage(1); // Reset to first page when changing tabs
+                setSelectedType(null);
+                setCurrentPage(1);
               }}
             >
               {TAB_CONFIG[tab]?.icon}
@@ -327,7 +277,7 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchProjectData,
                   value={selectedType}
                   onChange={(value) => {
                     setSelectedType(value);
-                    setCurrentPage(1); // Reset to first page when changing filter
+                    setCurrentPage(1);
                   }}
                   width="w-48"
                 />
@@ -352,12 +302,12 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchProjectData,
           <Table
             columns={currentColumns}
             data={hasItems ? filteredItems : []}
-            addLink={TAB_CONFIG[safeActiveTab]?.addLink?.(user, projectId)}
+            addLink={TAB_CONFIG[safeActiveTab]?.addLink?.(user, trancheId)}
             showSearch={false}
             emptyMessage={
               <div className="flex flex-col items-center justify-center py-12 text-gray-500">
                 <p className="text-sm">
-                  Aucun {TAB_CONFIG[safeActiveTab]?.name?.toLowerCase()} disponible pour ce projet
+                  Aucun {TAB_CONFIG[safeActiveTab]?.name?.toLowerCase()} disponible pour cette tranche
                 </p>
               </div>
             }
@@ -368,21 +318,19 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchProjectData,
             onRowsPerPageChange={handleRowsPerPageChange}
           />
           {/* Delete Confirmation Modal */}
-                {showDeleteModal && (
-                  <Modal isVisible={true} onClose={() => setShowDeleteModal(false)}>
-                    <DeleteData
-                      route={TAB_CONFIG[safeActiveTab]?.apiEndpoint}
-                      Id={selectedId}
-                      type={TAB_CONFIG[safeActiveTab]?.name}
-                      message={`Êtes-vous sûr de vouloir supprimer ce ${TAB_CONFIG[safeActiveTab]?.name.toLowerCase()} ?`}
-                      accessToken={token || localStorage.getItem("accessToken")}
-                      onClose={() => {
-                        setShowDeleteModal(false);
-                        handleDeleteSuccess();
-                      }}
-                    />
-                  </Modal>
-                )}
+          {showDeleteModal && (
+            <Modal isVisible={true} onClose={() => setShowDeleteModal(false)}>
+              <DeleteData
+                route={TAB_CONFIG[safeActiveTab]?.apiEndpoint}
+                Id={selectedId}
+                type={TAB_CONFIG[safeActiveTab]?.name}
+                message={`Êtes-vous sûr de vouloir supprimer ce ${TAB_CONFIG[safeActiveTab]?.name.toLowerCase()} ?`}
+                accessToken={token || localStorage.getItem("accessToken")}
+                onClose={() => setShowDeleteModal(false)}
+                onSuccess={handleDeleteSuccess}
+              />
+            </Modal>
+          )}
         </div>
       </div>
     </div>
