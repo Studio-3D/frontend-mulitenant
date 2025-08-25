@@ -21,39 +21,40 @@ const STATUS_CONFIG = {
   ENCOURS_DE_PROPOSITION: { name: 'En cours de proposition', color: 'bg-orange-500' },
 };
 
-export const ProjectDetailsPage = () => {
+export const TrancheDetailsPage = () => {
   const { id } = useParams();
   const router = useRouter();
-  const { selectedProjet, selectProjet, clearSelectedProjet, fetchProjets, removeProjet } = useProjet();
+  const {  selectProjet, clearSelectedProjet } = useProjet();
   const { user } = useAuth();
-  const [projectData, setProjectData] = useState(null);
+  const [trancheData, setTrancheData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('bien');
+  const [activeTab, setActiveTab] = useState('blocs');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   
-  const fetchProjectDetails = useCallback(async () => {
+  const fetchTrancheDetails = useCallback(async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("accessToken");
-      const response = await axios.get(`${APIURL.PROJETS}/${id}`, {
+      const response = await axios.get(`${APIURL.TRANCHES}/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      const projectDetails = response.data;
-      setProjectData(projectDetails);
-      console.log('fetched project data', projectDetails)
-      // Update the context with the full project details
-      if (projectDetails.projet) {
-        selectProjet(projectDetails.projet);
+      const trancheDetails = response.data;
+      setTrancheData(trancheDetails);
+      console.log('fetched tranche data', trancheDetails);
+      
+      // Update the context with the project details if available
+      if (trancheDetails.projet) {
+        selectProjet(trancheDetails.projet);
       }
       
       setActiveTab('bien');
     } catch (err) {
-      console.error("Error fetching project details:", err);
-      setError(err.message || "Failed to fetch project details");
+      console.error("Error fetching tranche details:", err);
+      setError(err.message || "Failed to fetch tranche details");
       
-      // If the project doesn't exist or we can't access it, clear selection
+      // If the tranche doesn't exist or we can't access it, clear selection
       if (err.response?.status === 404) {
         clearSelectedProjet();
       }
@@ -64,13 +65,13 @@ export const ProjectDetailsPage = () => {
 
   useEffect(() => {
     if (id) {
-      fetchProjectDetails();
+      fetchTrancheDetails();
     }
-  }, [id, fetchProjectDetails]);
+  }, [id, fetchTrancheDetails]);
 
   // Handle edit action
   const handleEdit = () => {
-    router.push(`/Projets/editProject/${id}`);
+    router.push(`/Tranches/editTranche/${id}`);
   };
 
   // Handle delete action
@@ -78,25 +79,22 @@ export const ProjectDetailsPage = () => {
     setShowDeleteModal(true);
   };
 
- const handleDeleteSuccess = () => {
-  setShowDeleteModal(false);
-  window.location.href = "/Projets"; // go + reload in one step
-};
-
-
-
+  const handleDeleteSuccess = () => {
+    setShowDeleteModal(false);
+    router.push("/Projets"); // Redirect to projects page
+  };
 
   const allTabsData = useMemo(() => {
-    if (!projectData) return {};
+    if (!trancheData) return {};
 
     const typeBienOptions = Array.from(
       new Set(
-        projectData?.projet.bien?.map(b => b.type_bien?.type).filter(Boolean) || []
+        trancheData.bien?.map(b => b.type_bien?.type).filter(Boolean) || []
       )
     ).map(type => ({ value: type, label: type }));
     
     // Calculate status counts dynamically
-    const statusCounts = projectData?.projet.bien?.reduce((acc, b) => {
+    const statusCounts = trancheData.bien?.reduce((acc, b) => {
       const status = b.etat;
       if (status) {
         acc[status] = (acc[status] || 0) + 1;
@@ -112,7 +110,7 @@ export const ProjectDetailsPage = () => {
     }));
 
     // Map bien data to match your column requirements
-    const biens = projectData?.projet.bien?.map(b => {
+    const biens = trancheData.bien?.map(b => {
       const statusConfig = STATUS_CONFIG[b.etat] || { name: b.etat, color: 'bg-gray-500' };
       
       return {
@@ -127,60 +125,44 @@ export const ProjectDetailsPage = () => {
       };
     }) || [];
 
-    // Map tranche data to match your column requirements
-    const tranches = projectData?.projet.tranche?.map(t => ({
-      id: t.id,
-      nom: t.nom,
-      date_lancement: t.date_lancement,
-      date_livraison: t.date_livraison,
-      niveau_etages: t.niveau_etages || 0,
-    })) || [];
-
     // Map immeuble data to match your column requirements
-    const immeubles = projectData?.projet.immeuble?.map(i => ({
+    const immeubles = trancheData.immeuble?.map(i => ({
       id: i.id,
       nom: i.nom,
-      tranche_nom: projectData?.projet.tranche.find(t => t.id === i.tranche_id)?.nom || '',
-      bloc_nom: projectData?.projet.bloc.find(b => b.id === i.bloc_id)?.nom || '',
+      bloc_nom: trancheData.bloc?.find(b => b.id === i.bloc_id)?.nom || '',
       titre_foncier: i.titre_foncier,
-      nbre_biens: 0,
+      nbre_biens: i.bien?.length || 0,
     })) || [];
 
     // Map bloc data to match your column requirements
-    const blocs = projectData?.projet.bloc?.map(b => ({
+    const blocs = trancheData.bloc?.map(b => ({
       id: b.id,
       nom: b.nom,
-      tranche_nom: projectData?.projet.tranche?.find(t => t.id === b.tranche_id)?.nom || '',
       titre_foncier: b.titre_foncier,
-      nbre_immeubles: b.nbre_immeubles || 0,
-      nbre_biens: b.nbre_biens || 0,
+      nbre_immeubles: b.immeuble?.length || 0,
+      nbre_biens: b.bien?.length || 0,
     })) || [];
 
     return {
-      tranche: {
-        count: projectData?.projet.tranche_count || 0,
-        items: tranches,
-        nbr_count: projectData?.projet.nbre_tranches || 0,
-      },
       blocs: {
-        count: projectData?.projet.bloc_count || 0,
+        count: blocs.length,
         items: blocs,
-        nbr_count: projectData?.projet.nbre_blocs || 0,
+        nbr_count: blocs.length,
       },
       immeuble: {
-        count: projectData?.projet.immeuble_count || 0,
+        count: immeubles.length,
         items: immeubles,
-        nbr_count: projectData?.projet.nbre_immeubles || 0,
+        nbr_count: immeubles.length,
       },
       bien: {
-        count: projectData?.projet.bien_count || 0,
+        count: biens.length,
         statuses: defaultStatuses,
         items: biens,
-        nbr_count: projectData?.projet.nbre_biens,
+        nbr_count: biens.length,
         typeBienOptions,
       },
     };
-  }, [projectData]);
+  }, [trancheData]);
 
   const filteredTabsData = useMemo(() => {
     return Object.fromEntries(
@@ -226,11 +208,11 @@ export const ProjectDetailsPage = () => {
     );
   }
 
-  if (!projectData) {
+  if (!trancheData) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="text-xl font-semibold mb-4">Project Not Found</div>
+          <div className="text-xl font-semibold mb-4">Tranche Not Found</div>
           <button 
             onClick={() => router.push('/Projets')}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
@@ -247,9 +229,10 @@ export const ProjectDetailsPage = () => {
       <div className="flex flex-col lg:flex-row gap-6 h-full">
         <div className="w-full lg:w-1/3">
           <LeftCard 
-            project={{ ...projectData.projet }} 
-            onEdit={handleEdit}
-            onDelete={handleDelete}
+            tranche={{...trancheData.tranche}} 
+            type="tranche"
+            onEdit={handleEdit}  
+            onDelete={handleDelete}  
             canEdit={isSuperAdmin(user?.role) || isAdmin(user?.role)}
           />
         </div>
@@ -258,8 +241,8 @@ export const ProjectDetailsPage = () => {
             tabsData={filteredTabsData}
             activeTab={activeTab}
             setActiveTab={setActiveTab}
-            fetchProjectData={fetchProjectDetails}
-            projectId={id}
+            fetchTrancheData={fetchTrancheDetails}
+            trancheId={id}
           />
         </div>
       </div>
@@ -268,10 +251,10 @@ export const ProjectDetailsPage = () => {
       {showDeleteModal && (
         <Modal isVisible={true} onClose={() => setShowDeleteModal(false)}>
           <DeleteData
-            route={APIURL.PROJETS}
+            route={APIURL.TRANCHES}
             Id={id}
-            type="Projet"
-            message="Êtes-vous sûr de vouloir supprimer ce projet ? Cette action est irréversible."
+            type="Tranche"
+            message="Êtes-vous sûr de vouloir supprimer cette tranche ? Cette action est irréversible."
             accessToken={localStorage.getItem("accessToken")}
             onClose={() => setShowDeleteModal(false)}
             onSuccess={handleDeleteSuccess}
