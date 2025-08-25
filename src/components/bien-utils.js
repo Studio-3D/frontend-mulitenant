@@ -6,9 +6,8 @@ export const ORIENTATIONS = {
   N_E: { code: 5, label: 'Nord-Est', description: 'Orienté vers le Nord-Est' },
   N_O: { code: 6, label: 'Nord-Ouest', description: 'Orienté vers le Nord-Ouest' },
   N_S: { code: 7, label: 'Nord-Sud', description: 'Orienté vers le Nord-Sud' },
-  O_E: { code: 8, label: 'Ouest-Est', description: "Orienté vers l'Ouest-Est" },
-  O_S: { code: 9, label: 'Ouest-Sud', description: "Orienté vers l'Ouest-Sud" },
-  E_S: { code: 10, label: 'Est-Sud', description: "Orienté vers l'Est-Sud" }
+  S_E: { code: 8, label: 'Sud-Est', description: "Orienté vers le Sud Est" },
+  S_O: { code: 9, label: 'Sud-Ouest', description: "Orienté vers l'Ouest-Sud" },
 }
 
 export const getOrientationCode = orientation => ORIENTATIONS[orientation]?.code || ''

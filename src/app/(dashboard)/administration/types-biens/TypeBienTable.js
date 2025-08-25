@@ -117,7 +117,7 @@ const TypeBienTable = () => {
             >
               <Pencil className="w-4 h-4" />
             </button>
-            {row.biens_length == 0 && row.type_bien_appels_length && (
+            {row.biens_length == 0 && row.type_bien_appels_length==0 && (
               <button
                 className="text-red-500 hover:text-red-700"
                 onClick={() => {

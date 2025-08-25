@@ -1,11 +1,11 @@
 'use client';
-import { useState, useEffect,useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import axios from 'axios';
 import { APIURL } from '@/configs/api';
 import ProjectStepper from '@/components/ProjectStepper';
 import toast from 'react-hot-toast';
-import { ORIENTATIONS } from '../bien-utils';
+import { ORIENTATIONS } from '@/components/bien-utils';
 import { fetchDataByProjet_params } from '@/configs/api-utils';
 import SelectInput from '../SelectInput';
 import LoadingSpin from '@/components/LoadingSpin';
@@ -139,9 +139,45 @@ export default function BienForm() {
       nbre_placards: 0,
     });
   };
-
+  //fadwa
   const handleselectChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    if (field == 'bloc_id') {
+     
+      if (
+        projet.nbre_blocs !== 0 &&
+        projet.nbre_immeubles != 0 &&
+        (formData.bloc_id || blocId) &&
+        !immeubleId
+      ) {
+        fetchDataByProjet_params('immeubles', setImmeubles, setLoadingBlocs, {
+          bloc_id: formData.bloc_id ? formData.bloc_id : blocId,
+        });
+      }
+    }
+    if (field == 'tranche_id') {
+      if (
+        projet.nbre_blocs !== 0 &&
+        (formData.tranche_id || trancheId) &&
+        !blocId
+      ) {
+        fetchDataByProjet_params('blocs', setBlocs, setLoadingBlocs, {
+          tranche_id: formData.tranche_id ? formData.tranche_id : trancheId,
+        });
+      }
+
+      if (
+        projet.nbre_tranches !== 0 &&
+        projet.nbre_immeubles != 0 &&
+        (formData.tranche_id || trancheId) &&
+        projet.nbre_blocs == 0 &&
+        !immeubleId
+      ) {
+        fetchDataByProjet_params('immeubles', setImmeubles, setLoadingBlocs, {
+          tranche_id: formData.tranche_id ? formData.tranche_id : trancheId,
+        });
+      }
+    }
   };
 
   // Fonction générique pour vider des champs et relancer les calculs
@@ -235,7 +271,7 @@ export default function BienForm() {
 
       if (projet.nbre_blocs !== 0 && projet.nbre_immeubles !== 0 && !immeubleId && blocId) {
         fetchDataByProjet_params('immeubles', setImmeubles, setLoadingBlocs, { bloc_id: blocId });
-      }
+      }*/
 
       if (
         projet.nbre_tranches !== 0 &&
@@ -245,7 +281,7 @@ export default function BienForm() {
         !immeubleId
       ) {
         fetchDataByProjet_params('immeubles', setImmeubles, setLoadingBlocs, { tranche_id: trancheId });
-      } */
+      } 
       if (
         projet.nbre_blocs !== 0 &&
         (formData.tranche_id || trancheId) &&
@@ -421,8 +457,7 @@ export default function BienForm() {
 
       if (response.data && response.data.bien) {
         const bienData = response.data.bien;
-        console.log('le bien ==>' + bienData.propriete_dite_bien);
-        formData.propriete_dite_bien = bienData.propriete_dite_bien;
+        console.log('Bien data loaded:', bienData);
 
         // Convert checkbox values from 0/1 to boolean
         bienData.conventionne = !!bienData.conventionne;
@@ -439,9 +474,18 @@ export default function BienForm() {
         if (bienData.tranche) {
           setSelectedTranche(bienData.tranche);
         }
+        if (bienData.num_parking != null) {
+          setHasParking(true);
+        }
+        if (bienData.superficie_jardin != 0) {
+          setHasJardin(true);
+        }
+        if (bienData.num_box != null) {
+          setHasBox(true);
+        }
 
-        // Set form data
-        setFormData({
+        // Set form data with proper null/undefined handling
+        const formattedData = {
           ...bienData,
           // Convert nulls to empty strings for form fields
           ...Object.fromEntries(
@@ -458,21 +502,26 @@ export default function BienForm() {
           vue_id: bienData.vue_id || '',
           typologie_id: bienData.typologie_id || '',
           // Ensure etat has a valid value
-          etat: bienData.etat || 'disponible',
-        });
+          etat: bienData.etat || 'DISPONIBLE',
+        };
+
+        setFormData(formattedData);
 
         // After setting basic form data, also trigger area calculations
-        if (bienData.superficie_terrasse) {
-          handleTerraceChange(bienData.superficie_terrasse);
-        }
+        // Use setTimeout to ensure formData is updated first
+        setTimeout(() => {
+          if (bienData.superficie_terrasse) {
+            handleTerraceChange(bienData.superficie_terrasse, formattedData);
+          }
 
-        if (bienData.superficie_balcon) {
-          handleBalconChange(bienData.superficie_balcon);
-        }
+          if (bienData.superficie_balcon) {
+            handleBalconChange(bienData.superficie_balcon, formattedData);
+          }
 
-        if (bienData.superficie_jardin) {
-          handleJardinChange(bienData.superficie_jardin);
-        }
+          if (bienData.superficie_jardin) {
+            handleJardinChange(bienData.superficie_jardin, formattedData);
+          }
+        }, 100);
       }
     } catch (error) {
       console.error('Error fetching bien data:', error);
@@ -482,7 +531,7 @@ export default function BienForm() {
     }
   }, []);
 
-  const handleTerraceChange = (value, currentFormData) => {
+  const handleTerraceChange = (value, currentFormData = formData) => {
     const terraceValue = parseFloat(value) || 0;
     const terraceCalculated = terraceValue * 0.5;
 
@@ -496,7 +545,7 @@ export default function BienForm() {
     updateVendableAndTotalArea(updatedForm);
   };
 
-  const handleBalconChange = (value, currentFormData) => {
+  const handleBalconChange = (value, currentFormData = formData) => {
     const balconValue = parseFloat(value) || 0;
     const balconCalculated = balconValue * 0.5;
 
@@ -510,7 +559,7 @@ export default function BienForm() {
     updateVendableAndTotalArea(updatedForm);
   };
 
-  const handleJardinChange = (value, currentFormData) => {
+  const handleJardinChange = (value, currentFormData = formData) => {
     const jardinValue = parseFloat(value) || 0;
     const jardinCalculated = jardinValue * 0.25;
 
@@ -523,6 +572,24 @@ export default function BienForm() {
     setFormData(updatedForm);
     updateVendableAndTotalArea(updatedForm);
   };
+
+  useEffect(() => {
+    if (id && formData.propriete_dite_bien) {
+      // Trigger area calculations after form data is set
+      if (formData.superficie_terrasse) {
+        handleTerraceChange(formData.superficie_terrasse);
+      }
+      if (formData.superficie_balcon) {
+        handleBalconChange(formData.superficie_balcon);
+      }
+      if (formData.superficie_jardin) {
+        handleJardinChange(formData.superficie_jardin);
+      }
+      if (formData.superficie_habitable) {
+        updateVendableAndTotalArea(formData);
+      }
+    }
+  }, [id, formData.propriete_dite_bien]); // Watch for when the form data is actually loaded
 
   // Calculate vendable and total areas based on all fields
   const updateVendableAndTotalArea = (data) => {
@@ -834,16 +901,13 @@ export default function BienForm() {
         setTimeout(() => {
           if (!isNavigatingRef.current) {
             isNavigatingRef.current = true;
-            router.push(projet?.id ? `/Projets/${projet.id}?tab=biens` : "/Projets");
+            router.push(
+              projet?.id ? `/Projets/${projet.id}?tab=biens` : '/Projets'
+            );
           }
         }, 100);
       }
       console.log('Bien créé ou mis à jour avec succès:', bienCreeId);
-
-      console.log(
-        'Bien créé ou mis à jour avec succès:',
-        response.data.bien.id
-      );
     } catch (error) {
       console.error('Error submitting property:', error);
       if (error.response?.data?.errors) {
@@ -1778,7 +1842,8 @@ export default function BienForm() {
                     type="button"
                     onClick={() => {
                       setShowCompositionModal(false);
-                      router.push(router.back());
+                      router.back();
+                    
                     }}
                   >
                     Non
@@ -1800,7 +1865,7 @@ export default function BienForm() {
                     type="button"
                     onClick={() => {
                       setShowCompositionModal(false);
-                      router.push(router.back());
+                      router.back();
                     }}
                   >
                     Quitter
