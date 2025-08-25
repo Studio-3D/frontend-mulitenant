@@ -30,7 +30,7 @@ const TypologieTable = () => {
   const router = useRouter();
   // Declare the entity object in the component scope
   const [filters, setFilters] = useState({
-    typologie: ''
+    typologie: '',
   });
   const [tempFilters, setTempFilters] = useState({ ...filters });
 
@@ -62,22 +62,19 @@ const TypologieTable = () => {
     selectedProjet,
   ]);
 
-
-
   useEffect(() => {
-        fetchData_table_by_projet(
-          entity,
-          filters,
-          searchTerm,
-          currentPage,
-          rowsPerPage,
-          accesstoken,
-          setLoading,
-          setError,
-          setTypologies,
-          setTotalRows
-        );
-      
+    fetchData_table_by_projet(
+      entity,
+      filters,
+      searchTerm,
+      currentPage,
+      rowsPerPage,
+      accesstoken,
+      setLoading,
+      setError,
+      setTypologies,
+      setTotalRows
+    );
   }, [
     accesstoken,
     currentPage,
@@ -87,7 +84,6 @@ const TypologieTable = () => {
     selectedProjet,
   ]);
 
-
   function handleEdit(TypologieId) {
     router.push(`${ENDPOINTS.TYPOLOGIES}?id=${TypologieId}&action=edit`);
   }
@@ -96,61 +92,56 @@ const TypologieTable = () => {
     if (!isOpen) resetFilters(); // Si on ferme, on réinitialise
   };
 
-
-
-  
   // Format users data for table display
   const formatData = () => {
     return typologies.map((typologie) => ({
       id: typologie.id,
       typologie: typologie.typologie,
-      
+      frein_typologies_length: typologie.frein_typologies.length,
+      bien_length: typologie.bien.length,
     }));
   };
 
-   const columns = [
-        { key: 'typologie', label: 'Typologie' },
-        {
-              key: "actions",
-              label: "Actions",
-              render: (row) => (
-                <div className="flex gap-3 items-center">
-                  <div className="flex gap-3 items-center">
-                    <button
-                    className="text-blue-500 hover:text-blue-700"
-                    onClick={() => handleEdit(row.id)}
-                    title="Modifier"
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </button>
-                  <button
-                    className="text-red-500 hover:text-red-700"
-                    onClick={() => {
-                      setSelectedId(row.id);
-                      setShowDeleteModal(true);
-                    }}
-                    title="Supprimer"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                  </div>
-
-                </div>
-              ),
-            },
-      ];
-  
+  const columns = [
+    { key: 'typologie', label: 'Typologie' },
+    {
+      key: 'actions',
+      label: 'Actions',
+      render: (row) => (
+        <div className="flex gap-3 items-center">
+          <div className="flex gap-3 items-center">
+            <button
+              className="text-blue-500 hover:text-blue-700"
+              onClick={() => handleEdit(row.id)}
+              title="Modifier"
+            >
+              <Pencil className="w-4 h-4" />
+            </button>
+            {row.frein_typologies_length && row.bien_length && (
+              <button
+                className="text-red-500 hover:text-red-700"
+                onClick={() => {
+                  setSelectedId(row.id);
+                  setShowDeleteModal(true);
+                }}
+                title="Supprimer"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
+      ),
+    },
+  ];
 
   const data_to_export = () => {
-    return typologies.map((ty) => ({ 
+    return typologies.map((ty) => ({
       typologie: ty.typologie,
     }));
   };
 
-  const columns_export = [
-    { key: 'typologie', label: 'Typologie' },
-    
-  ];
+  const columns_export = [{ key: 'typologie', label: 'Typologie' }];
 
   const handleFilterChange = (field, value) => {
     setTempFilters((prev) => ({ ...prev, [field]: value }));
@@ -161,7 +152,6 @@ const TypologieTable = () => {
   const resetFilters = () => {
     const reset = {
       typologie: '',
-      
     };
     setFilters(reset);
     setTempFilters(reset);
@@ -171,6 +161,7 @@ const TypologieTable = () => {
     <>
       <div className="reflative bg-white rounded-lg shadow-md p-4">
         <Table
+          showSearch={false}
           title={'Typologies'}
           data_to_export={data_to_export()}
           columns_export={columns_export}
@@ -207,11 +198,11 @@ const TypologieTable = () => {
                   type="text"
                   placeholder="Typologie..."
                   value={tempFilters.typologie}
-                  onChange={(e) => handleFilterChange('typologie', e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange('typologie', e.target.value)
+                  }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-               
-                
               </div>
 
               {/* Boutons */}
@@ -244,7 +235,7 @@ const TypologieTable = () => {
           <DeleteData
             route={APIURL.TYPOLOGIES}
             Id={selectedId}
-            type='Typologie'
+            type="Typologie"
             message={'Etes-vous sûr de vouloir supprimer ce Typologie ?'}
             accessToken={accesstoken}
             onClose={() => {
@@ -265,8 +256,6 @@ const TypologieTable = () => {
           />
         </Modal>
       )}
-
-     
     </>
   );
 };

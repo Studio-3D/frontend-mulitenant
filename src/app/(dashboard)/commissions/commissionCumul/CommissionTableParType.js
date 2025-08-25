@@ -16,7 +16,7 @@ import { useProjet } from '@/context/ProjetContext'; // Import ProjetContext
 import { format } from 'date-fns';
 import Link from 'next/link';
 
-const Trait_accCommissionTable = ({ type }) => {
+const CommissionTableParType = ({ type }) => {
   const [commissions, setCommissions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -277,4 +277,4 @@ const Trait_accCommissionTable = ({ type }) => {
   );
 };
 
-export default Trait_accCommissionTable;
+export default CommissionTableParType;

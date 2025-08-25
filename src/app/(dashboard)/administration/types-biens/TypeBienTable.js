@@ -30,7 +30,7 @@ const TypeBienTable = () => {
   const router = useRouter();
   // Declare the entity object in the component scope
   const [filters, setFilters] = useState({
-    type: ''
+    type: '',
   });
   const [tempFilters, setTempFilters] = useState({ ...filters });
 
@@ -62,22 +62,19 @@ const TypeBienTable = () => {
     selectedProjet,
   ]);
 
-
-
   useEffect(() => {
-        fetchData_table_by_projet(
-          entity,
-          filters,
-          searchTerm,
-          currentPage,
-          rowsPerPage,
-          accesstoken,
-          setLoading,
-          setError,
-          setTypeBiens,
-          setTotalRows
-        );
-      
+    fetchData_table_by_projet(
+      entity,
+      filters,
+      searchTerm,
+      currentPage,
+      rowsPerPage,
+      accesstoken,
+      setLoading,
+      setError,
+      setTypeBiens,
+      setTotalRows
+    );
   }, [
     accesstoken,
     currentPage,
@@ -87,7 +84,6 @@ const TypeBienTable = () => {
     selectedProjet,
   ]);
 
-
   function handleEdit(TypeBienId) {
     router.push(`${ENDPOINTS.TYPEBIENS}?id=${TypeBienId}&action=edit`);
   }
@@ -96,61 +92,56 @@ const TypeBienTable = () => {
     if (!isOpen) resetFilters(); // Si on ferme, on réinitialise
   };
 
-
-
-  
   // Format users data for table display
   const formatData = () => {
     return typebiens.map((typebien) => ({
       id: typebien.id,
       typebien: typebien.type,
-      
+      biens_length: typebien?.bien?.length,
+      type_bien_appels_length: typebien?.type_biens_appels?.length,
     }));
   };
 
-   const columns = [
-        { key: 'typebien', label: 'Type de Bien' },
-        {
-              key: "actions",
-              label: "Actions",
-              render: (row) => (
-                <div className="flex gap-3 items-center">
-                 <div className="flex gap-3 items-center">
-                    <button
-                    className="text-blue-500 hover:text-blue-700"
-                    onClick={() => handleEdit(row.id)}
-                    title="Modifier"
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </button>
-                  <button
-                    className="text-red-500 hover:text-red-700"
-                    onClick={() => {
-                      setSelectedId(row.id);
-                      setShowDeleteModal(true);
-                    }}
-                    title="Supprimer"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                  </div>
-        
-                </div>
-              ),
-            },
-      ];
-  
+  const columns = [
+    { key: 'typebien', label: 'Type de Bien' },
+    {
+      key: 'actions',
+      label: 'Actions',
+      render: (row) => (
+        <div className="flex gap-3 items-center">
+          <div className="flex gap-3 items-center">
+            <button
+              className="text-blue-500 hover:text-blue-700"
+              onClick={() => handleEdit(row.id)}
+              title="Modifier"
+            >
+              <Pencil className="w-4 h-4" />
+            </button>
+            {row.biens_length == 0 && row.type_bien_appels_length && (
+              <button
+                className="text-red-500 hover:text-red-700"
+                onClick={() => {
+                  setSelectedId(row.id);
+                  setShowDeleteModal(true);
+                }}
+                title="Supprimer"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
+      ),
+    },
+  ];
 
   const data_to_export = () => {
-    return typebiens.map((ty) => ({ 
+    return typebiens.map((ty) => ({
       typebien: ty.type,
     }));
   };
 
-  const columns_export = [
-    { key: 'typebien', label: 'Type Bien' },
-    
-  ];
+  const columns_export = [{ key: 'typebien', label: 'Type Bien' }];
 
   const handleFilterChange = (field, value) => {
     setTempFilters((prev) => ({ ...prev, [field]: value }));
@@ -161,7 +152,6 @@ const TypeBienTable = () => {
   const resetFilters = () => {
     const reset = {
       type: '',
-      
     };
     setFilters(reset);
     setTempFilters(reset);
@@ -171,6 +161,7 @@ const TypeBienTable = () => {
     <>
       <div className="reflative bg-white rounded-lg shadow-md p-4">
         <Table
+          showSearch={false}
           title={'Types de Biens'}
           data_to_export={data_to_export()}
           columns_export={columns_export}
@@ -210,8 +201,6 @@ const TypeBienTable = () => {
                   onChange={(e) => handleFilterChange('type', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-               
-                
               </div>
 
               {/* Boutons */}
@@ -244,7 +233,7 @@ const TypeBienTable = () => {
           <DeleteData
             route={APIURL.TYPEBIENS}
             Id={selectedId}
-            type='TypeBien'
+            type="TypeBien"
             message={'Etes-vous sûr de vouloir supprimer ce TypeBien ?'}
             accessToken={accesstoken}
             onClose={() => {
@@ -265,8 +254,6 @@ const TypeBienTable = () => {
           />
         </Modal>
       )}
-
-     
     </>
   );
 };

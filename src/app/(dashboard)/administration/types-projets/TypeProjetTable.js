@@ -58,40 +58,22 @@ const TypeProjetTable = () => {
       setTypeProjets,
       setTotalRows
     );
-  }, [
-    accesstoken,
-    currentPage,
-    rowsPerPage,
-    searchTerm,
-    filters,
-  ]);
-
-
- 
+  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters]);
 
   useEffect(() => {
-        fetchData_table_by_projet(
-          entity,
-          filters,
-          searchTerm,
-          currentPage,
-          rowsPerPage,
-          accesstoken,
-          setLoading,
-          setError,
-          setTypeProjets,
-          setTotalRows
-        );
-      
-  }, [
-    accesstoken,
-    currentPage,
-    rowsPerPage,
-    searchTerm,
-    filters,
-  ]);
-
-  
+    fetchData_table_by_projet(
+      entity,
+      filters,
+      searchTerm,
+      currentPage,
+      rowsPerPage,
+      accesstoken,
+      setLoading,
+      setError,
+      setTypeProjets,
+      setTotalRows
+    );
+  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters]);
 
   function handleEdit(TypeProjetId) {
     router.push(`${ENDPOINTS.TYPEPROJETS}?id=${TypeProjetId}&action=edit`);
@@ -101,44 +83,45 @@ const TypeProjetTable = () => {
     if (!isOpen) resetFilters(); // Si on ferme, on réinitialise
   };
 
-
   const formatData = () => {
     return typeprojets.map((cl) => ({
       id: cl.id,
       type: `${cl.type || ''}`.trim(),
-      
+      projet_lenght: cl.projet.length,
     }));
   };
 
   // Table columns configuration
   const columns = [
-      { key: 'type', label: 'Type de projet' },
-      {
-        key: "actions",
-        label: "Actions",
-        render: (row) => (
-          <div className="flex gap-3 items-center">
-            <button
+    { key: 'type', label: 'Type de projet' },
+    {
+      key: 'actions',
+      label: 'Actions',
+      render: (row) => (
+        <div className="flex gap-3 items-center">
+          <button
             className="text-blue-500 hover:text-blue-700"
             onClick={() => handleEdit(row.id)}
             title="Modifier"
           >
             <Pencil className="w-4 h-4" />
           </button>
-          <button
-            className="text-red-500 hover:text-red-700"
-            onClick={() => {
-              setSelectedId(row.id);
-              setShowDeleteModal(true);
-            }}
-            title="Supprimer"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
-          </div>
-        ),
-      },
-    ];
+          {row.projet_lenght == 0 && (
+            <button
+              className="text-red-500 hover:text-red-700"
+              onClick={() => {
+                setSelectedId(row.id);
+                setShowDeleteModal(true);
+              }}
+              title="Supprimer"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      ),
+    },
+  ];
 
   //EXPORT
 
@@ -148,10 +131,7 @@ const TypeProjetTable = () => {
     }));
   };
 
-  const columns_export = [
-   
-    { key: 'type', label: 'Type' },
-  ];
+  const columns_export = [{ key: 'type', label: 'Type' }];
 
   const handleFilterChange = (field, value) => {
     setTempFilters((prev) => ({ ...prev, [field]: value }));
@@ -162,7 +142,6 @@ const TypeProjetTable = () => {
   const resetFilters = () => {
     const reset = {
       type: '',
-      
     };
     setFilters(reset);
     setTempFilters(reset);
@@ -172,6 +151,7 @@ const TypeProjetTable = () => {
     <>
       <div className="reflative bg-white rounded-lg shadow-md p-4">
         <Table
+        showSearch={false}
           title={'Types de Projets'}
           data_to_export={data_to_export()}
           columns_export={columns_export}
@@ -211,8 +191,6 @@ const TypeProjetTable = () => {
                   onChange={(e) => handleFilterChange('type', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-                
-                
               </div>
 
               {/* Boutons */}
@@ -245,7 +223,7 @@ const TypeProjetTable = () => {
           <DeleteData
             route={APIURL.TYPEPROJETS}
             Id={selectedId}
-            type='Type de projet'
+            type="Type de projet"
             message={'Etes-vous sûr de vouloir supprimer ce TypeProjet ?'}
             accessToken={accesstoken}
             onClose={() => {
@@ -266,8 +244,6 @@ const TypeProjetTable = () => {
           />
         </Modal>
       )}
-
-     
     </>
   );
 };

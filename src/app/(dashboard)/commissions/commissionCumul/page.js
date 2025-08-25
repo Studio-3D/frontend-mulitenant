@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Trait_accCommissionTable from './Trait_accCommissionTable';
+import CommissionTableParType from './CommissionTableParType';
 import { isAdmin, isCommercial, isSuperAdmin } from '@/configs/enum';
 import { useAuth } from '@/context/AuthContext';
 
@@ -31,7 +31,7 @@ export default function Page() {
       ) : (
         <>
           <div>
-            <Trait_accCommissionTable type={0} />
+            <CommissionTableParType type={0} />
           </div>
         </>
       )}
