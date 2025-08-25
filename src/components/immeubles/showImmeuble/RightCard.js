@@ -13,57 +13,15 @@ import { APIURL } from '@/configs/api'
 import {
   ChevronDownIcon,
   HomeIcon,
-  BuildingIcon,
 } from 'lucide-react';
 import Table from '@/components/Table';
 
 const TAB_CONFIG = {
-  immeuble: {
-    icon: <BuildingIcon size={18} />,
-    name: "Immeubles",
-    apiEndpoint: APIURL.IMMEUBLES,
-    addLink: (user, blocId) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? `/Immeubles/ajouter?blocId=${blocId}` : undefined,
-    columns: (user, handleDelete) => [
-      { key: 'nom', label: 'Immeuble' },
-      { key: 'titre_foncier', label: 'Titre foncier' },
-      { key: 'nbre_biens', label: 'Nbr Biens' },
-      {
-        key: 'actions',
-        label: 'Actions',
-        render: (row) => (
-          <div className="flex gap-4 items-center">
-            <Link
-              href={`/Immeubles/${row.id}`}
-              className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
-              title="Voir l'immeuble"
-            >
-              <Eye className="w-4 h-4" />
-            </Link>
-            
-            {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
-              <>
-               <Link
-                  href={`/Immeubles/${row.id}/modifier/?edit=true`}
-                  className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
-                  title="Modifier l'immeuble"
-                >
-                  <PencilLine className="w-4 h-4" />
-                </Link>
-               <button onClick={() => handleDelete(row.id)} className="flex items-center gap-1 text-red-500 hover:text-red-700">
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </>
-            )}
-          </div>
-        )
-      }
-    ]
-  },
   bien: {
     icon: <HomeIcon size={18} />,
     name: "Biens",
     apiEndpoint: APIURL.BIENS,
-    addLink: (user, blocId) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? `/Biens/ajouter?blocId=${blocId}` : undefined,
+    addLink: (user, immeubleId) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? `/Biens/ajouter?immeubleId=${immeubleId}` : undefined,
     columns: (user, handleDelete) => [
       { key: 'name', label: 'Nom' },
       { key: 'type', label: 'Type' },
@@ -108,7 +66,7 @@ const TAB_CONFIG = {
   },
 };
 
-export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchBlocData, blocId }) => {
+export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchImmeubleData, immeubleId }) => {
   const { token, user } = useAuth()
   const router = useRouter();
   const [selectedId, setSelectedId] = useState(null);
@@ -125,8 +83,8 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchBlocData, bl
 
   const handleDeleteSuccess = () => {
     setShowDeleteModal(false);
-    if (fetchBlocData) {
-      fetchBlocData(); 
+    if (fetchImmeubleData) {
+      fetchImmeubleData(); 
     }
   };
 
@@ -187,7 +145,7 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchBlocData, bl
     return (
       <div className="bg-white rounded-lg shadow-lg h-full flex flex-col">
         <div className="p-6 text-center text-gray-500">
-          Aucune donnée disponible pour ce bloc
+          Aucune donnée disponible pour cet immeuble
         </div>
       </div>
     );
@@ -257,12 +215,12 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchBlocData, bl
           <Table
             columns={currentColumns}
             data={hasItems ? filteredItems : []}
-            addLink={TAB_CONFIG[safeActiveTab]?.addLink?.(user, blocId)}
+            addLink={TAB_CONFIG[safeActiveTab]?.addLink?.(user, immeubleId)}
             showSearch={false}
             emptyMessage={
               <div className="flex flex-col items-center justify-center py-12 text-gray-500">
                 <p className="text-sm">
-                  Aucun {TAB_CONFIG[safeActiveTab]?.name?.toLowerCase()} disponible pour ce bloc
+                  Aucun {TAB_CONFIG[safeActiveTab]?.name?.toLowerCase()} disponible pour cet immeuble
                 </p>
               </div>
             }
