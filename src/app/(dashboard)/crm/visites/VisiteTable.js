@@ -219,8 +219,7 @@ const columns = [
   const data_to_export = () => {
     return visites.map((data) => ({
       cc: data.nom_cc,
-      date:
-        data.date != null ? format(new Date(data.date), 'dd/MM/yyyy') : null,
+      date: data.date != null ? formatDate(data.date) : null,
       nomComplet: `${data.nom || ''} ${data.prenom || ''}`.trim(),
       prospect_id: data.prospect_id,
       telephone:
@@ -255,7 +254,7 @@ const columns = [
           onClick: () => {
             localStorage.setItem(
               'selectedClient',
-              JSON.stringify({ dataClient: dataClient })
+              JSON.stringify({ dataClient: { id: dataClient?.id } })
             );
           },
         };
@@ -266,7 +265,7 @@ const columns = [
           onClick: () => {
             localStorage.setItem(
               'selectedProspect',
-              JSON.stringify({ dataProspect: dataProspect })
+              JSON.stringify({ dataProspect: { id: dataProspect?.id } })
             );
           },
         };
