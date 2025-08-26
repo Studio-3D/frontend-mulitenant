@@ -3,25 +3,14 @@ import React, { useEffect, useState, useCallback } from "react";
 import Table from "@/components/Table";
 import { Eye } from "lucide-react";
 
-<<<<<<< HEAD
 import { useAuth } from "../../../../context/AuthContext";
 import { useProjet } from "../../../../context/ProjetContext";
 import { ENDPOINTS } from "../../../../configs/api";
 import { useRouter } from "next/navigation";
 import { fetchData_table_by_projet } from "../../../../../src/configs/api-utils";
 import { isAdmin, isCommercial, isSuperAdmin } from "../../../../configs/enum";
-import format from "date-fns/format";
+import { formatDate } from "../../../../utils/dateUtils";
 import Input from "@/components/Input";
-=======
-import { useAuth } from '../../../../context/AuthContext';
-import { useProjet } from '../../../../context/ProjetContext';
-import { ENDPOINTS } from '../../../../configs/api';
-import { useRouter } from 'next/navigation';
-import { fetchData_table_by_projet } from '../../../../../src/configs/api-utils';
-import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
-import { formatDate } from '../../../../utils/dateUtils';
-import Input from '@/components/Input';
->>>>>>> 6c1a2dfd563dd4840e29c852fbf36ca610b9dbb9
 
 import {
   VISITE_INTERETS,
@@ -119,16 +108,10 @@ const VisiteTable = ({ user_id, dataProspect, dataClient }) => {
     return visites.map((data) => ({
       id: data.id,
       cc: data.nom_cc,
-      date:
-<<<<<<< HEAD
-        data.date != null ? format(new Date(data.date), "dd/MM/yyyy") : null,
+      date: data.date != null ? formatDate(data.date) : null,
       nom: `${data.nom || ""}`.trim(),
       prenom: `${data.prenom || ""}`.trim(),
-=======
-        data.date != null ? formatDate(data.date) : null,
-      nom: `${data.nom || ''}`.trim(),
-      prenom: `${data.prenom || ''}`.trim(),
->>>>>>> 6c1a2dfd563dd4840e29c852fbf36ca610b9dbb9
+
       prospect_id: data.prospect_id,
       telephone:
         (data.telephone ? data.telephone : "") +
@@ -250,14 +233,9 @@ const VisiteTable = ({ user_id, dataProspect, dataClient }) => {
   const data_to_export = () => {
     return visites.map((data) => ({
       cc: data.nom_cc,
-<<<<<<< HEAD
-      date:
-        data.date != null ? format(new Date(data.date), "dd/MM/yyyy") : null,
-      nomComplet: `${data.nom || ""} ${data.prenom || ""}`.trim(),
-=======
+
       date: data.date != null ? formatDate(data.date) : null,
-      nomComplet: `${data.nom || ''} ${data.prenom || ''}`.trim(),
->>>>>>> 6c1a2dfd563dd4840e29c852fbf36ca610b9dbb9
+      nomComplet: `${data.nom || ""} ${data.prenom || ""}`.trim(),
       prospect_id: data.prospect_id,
       telephone:
         (data.telephone ? data.telephone : "") +
@@ -290,13 +268,8 @@ const VisiteTable = ({ user_id, dataProspect, dataClient }) => {
           pathname: `${ENDPOINTS.VISITES}?action=add`,
           onClick: () => {
             localStorage.setItem(
-<<<<<<< HEAD
               "selectedClient",
-              JSON.stringify({ dataClient: dataClient })
-=======
-              'selectedClient',
               JSON.stringify({ dataClient: { id: dataClient?.id } })
->>>>>>> 6c1a2dfd563dd4840e29c852fbf36ca610b9dbb9
             );
           },
         };
@@ -305,13 +278,8 @@ const VisiteTable = ({ user_id, dataProspect, dataClient }) => {
           pathname: `${ENDPOINTS.VISITES}?action=add`,
           onClick: () => {
             localStorage.setItem(
-<<<<<<< HEAD
               "selectedProspect",
-              JSON.stringify({ dataProspect: dataProspect })
-=======
-              'selectedProspect',
               JSON.stringify({ dataProspect: { id: dataProspect?.id } })
->>>>>>> 6c1a2dfd563dd4840e29c852fbf36ca610b9dbb9
             );
           },
         };
