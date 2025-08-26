@@ -6,6 +6,7 @@ import { TikTokConfigTab } from "@/components/config-socials/TikTokConfigTab";
 import FacebookConfigTab from "@/components/config-socials/FacebookConfigTab";
 import InstagramConfigTab from "@/components/config-socials/InstagramConfigTab";
 import WhatsAppConfigTab from "@/components/config-socials/WhatsAppConfigTab";
+import LandingPageConfigTab from "@/components/config-socials/LandingPageConfigTab";
 import { useAuth } from "@/context/AuthContext";
 import { AlertCircleIcon, Loader, Facebook, Instagram, Linkedin, Video, Settings, MessageCircle } from "lucide-react";
 import LinkedInConfigTab from "@/components/config-socials/LinkedInConfigTab";
@@ -65,6 +66,11 @@ export default function ConfigurationSocialsPage() {
       id: "whatsapp",
       label: "WhatsApp",
       icon: <MessageCircle className="h-4 w-4 text-[#25D366]" />
+    },
+    {
+      id: "landing",
+      label: "Landing Page",
+      icon: <Settings className="h-4 w-4" />
     }
   ];
 
@@ -89,6 +95,9 @@ export default function ConfigurationSocialsPage() {
 
       case "whatsapp":
         return <WhatsAppConfigTab />;
+
+      case "landing":
+        return <LandingPageConfigTab />;
 
       default:
         return null;

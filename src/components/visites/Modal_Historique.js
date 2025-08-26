@@ -159,13 +159,13 @@ const Modal_Historique = ({ onClose, rows, loading_histo }) => {
   const formatDate = (dateString) => {
     if (!dateString) return null;
     const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR');
+    return date.toLocaleDateString('fr-FR').replace(/\//g, '-');
   };
 
   const formatDateTime = (dateTimeString) => {
     if (!dateTimeString) return null;
     const date = new Date(dateTimeString);
-    return date.toLocaleString('fr-FR');
+    return date.toLocaleString('fr-FR').replace(/\//g, '-');
   };
 
   const Row = ({ row }) => {

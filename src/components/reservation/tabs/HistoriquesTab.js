@@ -235,7 +235,7 @@ export const HistoriquesTab = ({ reservationData }) => {
     return histo.map((data) => ({
       id: data?.id || '',
       date: data?.created_at
-        ? new Date(data.created_at).toLocaleDateString('fr-FR')
+        ? new Date(data.created_at).toLocaleDateString('fr-FR').replace(/\//g, '-')
         : 'N/A',
       type:
         data?.action== '1'

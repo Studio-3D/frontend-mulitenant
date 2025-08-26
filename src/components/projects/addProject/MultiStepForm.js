@@ -36,11 +36,11 @@ export const MultiStepForm = ({
       titreFoncier: "",
       dateAutorisationConstruction: "",
       datePermisHabiter: "",
-      surfaceTerrain: "",
-      prixAcquisition: "",
-      limiteAnnulationReservation: "",
-      prolongationReservation: "",
-      nombreEtagesMaximum: "",
+      surfaceTerrain: 0,
+      prixAcquisition: 0,
+      limiteAnnulationReservation: 0,
+      prolongationReservation: 0,
+      nombreEtagesMaximum: 0,
     },
     parameters: {
       typesDeBien: [],
@@ -139,16 +139,16 @@ export const MultiStepForm = ({
 
     if (step === 1) {
       if (!formData.projectType) {
-        newErrors.projectType = "Project type is required";
+        newErrors.projectType = "Veuillez sélectionner un type de projet";
       } else if (isNaN(Number(formData.projectType))) {
-        newErrors.projectType = "Invalid project type selected";
+        newErrors.projectType = "le Type de Projet Selectionné est invalide";
       }
       if (
         formData.composition.bien.enabled &&
         !formData.composition.bien.value
       ) {
         newErrors.composition = {
-          bien: { value: "Must be at least 1" },
+          bien: { value: "Mininum 1 " },
         };
       }
     }
@@ -157,13 +157,57 @@ export const MultiStepForm = ({
       if (!formData.projectInfo.nomProjet) {
         newErrors.projectInfo = {
           ...newErrors.projectInfo,
-          nomProjet: "Project name is required",
+          nomProjet: "Le nom du projet est requis",
         };
       }
       if (!formData.projectInfo.codeProjet) {
         newErrors.projectInfo = {
           ...newErrors.projectInfo,
-          codeProjet: "Project code is required",
+          codeProjet: "Le code du projet est requis",
+        };
+      }
+
+      if (!formData.projectInfo.adresse) {
+        newErrors.projectInfo = {
+          ...newErrors.projectInfo,
+          adresse: "L'adresse du projet est requise",
+        };
+      }
+      if (
+        !formData.projectInfo.surfaceTerrain ||
+        formData.projectInfo.surfaceTerrain == 0
+      ) {
+        newErrors.projectInfo = {
+          ...newErrors.projectInfo,
+          surfaceTerrain: "Surface terrain est requise",
+        };
+      }
+      if (
+        !formData.projectInfo.limiteAnnulationReservation ||
+        formData.projectInfo.limiteAnnulationReservation == 0
+      ) {
+        newErrors.projectInfo = {
+          ...newErrors.projectInfo,
+          limiteAnnulationReservation:
+            "Limite annulation réservation est requise",
+        };
+      }
+      if (
+        !formData.projectInfo.prixAcquisition ||
+        formData.projectInfo.prixAcquisition == 0
+      ) {
+        newErrors.projectInfo = {
+          ...newErrors.projectInfo,
+          prixAcquisition: "Prix acquisition est requis",
+        };
+      }
+      if (
+        !formData.projectInfo.nombreEtagesMaximum ||
+        formData.projectInfo.nombreEtagesMaximum == 0
+      ) {
+        newErrors.projectInfo = {
+          ...newErrors.projectInfo,
+          nombreEtagesMaximum: "Max étages est requis",
         };
       }
     }

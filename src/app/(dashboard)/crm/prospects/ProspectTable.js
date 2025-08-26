@@ -101,6 +101,7 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
   const [showAffecterModal, setShowAffecterModal] = useState(false);
   const [commercials, setCommercials] = useState([]);
   const [selectedCommercial, setSelectedCommercial] = useState("");
+  const [assignMode, setAssignMode] = useState("selective");
   const [showCommercialDropdown, setShowCommercialDropdown] = useState(false);
   const [searchCommercial, setSearchCommercial] = useState("");
   const [filters, setFilters] = useState({
@@ -805,107 +806,143 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
                 &times;
               </button>
               <h2 className="text-xl font-semibold mb-4">
-                Affecter à un commercial
+                Affecter des prospects
               </h2>
-              <div className="mb-4">
-                <label className="block mb-2 font-medium text-gray-700">
-                  Sélectionner un commercial
-                </label>
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setShowCommercialDropdown(!showCommercialDropdown)
-                    }
-                    className="flex justify-between items-center w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <span>
-                      {selectedCommercial
-                        ? (() => {
-                            const user = commercials.find(
-                              (u) => u.id == selectedCommercial
-                            );
-                            return user
-                              ? `${user.name} ${user.prenom}`
-                              : "Sélectionner un commercial";
-                          })()
-                        : "Sélectionner un commercial"}
-                    </span>
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d={
-                          showCommercialDropdown
-                            ? "M5 15l7-7 7 7"
-                            : "M19 9l-7 7-7-7"
-                        }
-                      />
-                    </svg>
-                  </button>
-                  {showCommercialDropdown && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                      <div className="p-2 border-b border-gray-200 sticky top-0 bg-white">
-                        <input
-                          type="text"
-                          value={searchCommercial}
-                          onChange={(e) => setSearchCommercial(e.target.value)}
-                          placeholder="Rechercher un commercial..."
-                          className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                        />
-                      </div>
-                      <div className="py-1">
-                        {filteredCommercials.length === 0 ? (
-                          <div className="px-4 py-2 text-sm !text-gray-500">
-                            Aucun commercial trouvé
-                          </div>
-                        ) : (
-                          filteredCommercials.map((user) => (
-                            <div key={user.id} className="px-2 py-1">
-                              <label className="flex items-center cursor-pointer">
-                                <input
-                                  type="radio"
-                                  checked={selectedCommercial == user.id}
-                                  onChange={() => {
-                                    setSelectedCommercial(user.id);
-                                    setShowCommercialDropdown(false);
-                                  }}
-                                  className="h-4 w-4 text-[#009FFF] border-gray-300 rounded focus:ring-blue-500"
-                                />
-                                <span className="ml-2 block text-sm">
-                                  {user.name} {user.prenom}
-                                </span>
-                              </label>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
+
+              {/* Assignment mode toggle */}
+              <div className="mb-4 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setAssignMode("selective")}
+                  className={`px-3 py-1.5 rounded-md border ${
+                    assignMode === "selective"
+                      ? "bg-blue-50 border-blue-500 text-blue-700"
+                      : "bg-white border-gray-300 text-gray-700"
+                  }`}
+                >
+                  Sélective (choisir un commercial)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAssignMode("auto")}
+                  className={`px-3 py-1.5 rounded-md border ${
+                    assignMode === "auto"
+                      ? "bg-blue-50 border-blue-500 text-blue-700"
+                      : "bg-white border-gray-300 text-gray-700"
+                  }`}
+                >
+                  Automatique (répartition équitable)
+                </button>
               </div>
+
+              {/* Selective assignment block */}
+              {assignMode === "selective" && (
+                <div className="mb-4">
+                  <label className="block mb-2 font-medium text-gray-700">
+                    Sélectionner un commercial
+                  </label>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowCommercialDropdown(!showCommercialDropdown)
+                      }
+                      className="flex justify-between items-center w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <span>
+                        {selectedCommercial
+                          ? (() => {
+                              const user = commercials.find(
+                                (u) => u.id == selectedCommercial
+                              );
+                              return user
+                                ? `${user.name} ${user.prenom}`
+                                : "Sélectionner un commercial";
+                            })()
+                          : "Sélectionner un commercial"}
+                      </span>
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d={
+                            showCommercialDropdown
+                              ? "M5 15l7-7 7 7"
+                              : "M19 9l-7 7-7-7"
+                          }
+                        />
+                      </svg>
+                    </button>
+                    {showCommercialDropdown && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                        <div className="p-2 border-b border-gray-200 sticky top-0 bg-white">
+                          <input
+                            type="text"
+                            value={searchCommercial}
+                            onChange={(e) =>
+                              setSearchCommercial(e.target.value)
+                            }
+                            placeholder="Rechercher un commercial..."
+                            className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                          />
+                        </div>
+                        <div className="py-1">
+                          {filteredCommercials.length === 0 ? (
+                            <div className="px-4 py-2 text-sm !text-gray-500">
+                              Aucun commercial trouvé
+                            </div>
+                          ) : (
+                            filteredCommercials.map((user) => (
+                              <div key={user.id} className="px-2 py-1">
+                                <label className="flex items-center cursor-pointer">
+                                  <input
+                                    type="radio"
+                                    checked={selectedCommercial == user.id}
+                                    onChange={() => {
+                                      setSelectedCommercial(user.id);
+                                      setShowCommercialDropdown(false);
+                                    }}
+                                    className="h-4 w-4 text-[#009FFF] border-gray-300 rounded focus:ring-blue-500"
+                                  />
+                                  <span className="ml-2 block text-sm">
+                                    {user.name} {user.prenom}
+                                  </span>
+                                </label>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="flex gap-2 mt-4">
-                <Button
-                  type="button"
-                  onClick={handleAffecterSubmit}
-                  disabled={!selectedCommercial}
-                  className="bg-[#009FFF] text-white"
-                >
-                  Affecter
-                </Button>
-                <Button
-                  type="button"
-                  onClick={handleAffectationAuto}
-                  className="bg-gray-500 text-white"
-                >
-                  Affectation automatique
-                </Button>
+                {assignMode === "selective" ? (
+                  <Button
+                    type="button"
+                    onClick={handleAffecterSubmit}
+                    disabled={!selectedCommercial}
+                    className="bg-[#009FFF] text-white"
+                  >
+                    Affecter
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={handleAffectationAuto}
+                    className="bg-gray-700 text-white"
+                  >
+                    Lancer l'affectation automatique
+                  </Button>
+                )}
               </div>
             </div>
           </div>

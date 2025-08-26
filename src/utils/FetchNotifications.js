@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { format, isValid, parseISO } from 'date-fns';
+import { formatDate, formatDateTime } from './dateUtils';
 
 const fetchNotifications = async ({ setNotifications, setNewNotificationsCount, setIsLoadingNotifications }) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -109,6 +109,12 @@ const fetchNotifications = async ({ setNotifications, setNewNotificationsCount, 
         icon: 'phone',
         color: 'warning',
         subtitle: (prospect, user, avance, reservation, bien, projet, description_type) => description_type || 'Rappel d\'appel'
+      },
+      51: {
+        title: 'Nouveau prospect via WhatsApp',
+        icon: 'message-circle',
+        color: 'info',
+        subtitle: (prospect, user, avance, reservation, bien, projet, description_type) => description_type || `Message WhatsApp entrant${prospect?.telephone ? ' de ' + prospect.telephone : ''}`
       }
     };
 
@@ -128,26 +134,11 @@ const fetchNotifications = async ({ setNotifications, setNewNotificationsCount, 
         // Better date parsing with validation
         let formattedDate;
         try {
-          // Try different parsing methods
-          let dateObj;
-          
-          if (typeof date === 'string') {
-            // Try parsing as ISO string first
-            dateObj = parseISO(date);
-            
-            // If that fails, try direct Date constructor
-            if (!isValid(dateObj)) {
-              dateObj = new Date(date);
-            }
-          } else {
-            dateObj = new Date(date);
-          }
-          
-          if (isValid(dateObj)) {
-            formattedDate = type === 2
-              ? format(dateObj, 'dd/MM/yyyy HH:mm')
-              : format(dateObj, 'dd/MM/yyyy');
-          } else {
+          formattedDate = type === 2
+            ? formatDateTime(date)
+            : formatDate(date);
+
+          if (!formattedDate) {
             console.warn('Invalid date received:', date);
             formattedDate = 'Date invalide';
           }

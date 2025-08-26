@@ -32,7 +32,7 @@ export default function Input({
         control={control}
         defaultValue={defaultValue}
         render={({ field, fieldState }) => {
-          const fieldValue = field.value === null ? '' : field.value;
+          const fieldValue = field.value == null ? '' : field.value;
           const combinedError = fieldState.error?.message || error || backendErrors;
 
           return (
@@ -154,7 +154,8 @@ export default function Input({
             onChange={onChange}
             readOnly={readOnly}
             disabled={disabled}
-            required={required}
+            //i set this labell=Nom for Module projet pour ne pas utilise le required static' 
+            required={label=='Nom'?false:required} 
             inputMode={inputMode}
             placeholder={placeholder}
             className={`h-[38px] text-[15px] px-4 py-2 outline-none border rounded-md w-full

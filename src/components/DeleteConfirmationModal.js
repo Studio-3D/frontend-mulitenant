@@ -9,6 +9,7 @@ import { useState } from "react";
 const DeleteConfirmationModal = ({
   isOpen,
   onClose,
+  onConfirm, // optional override to handle deletion externally
   entityName,
   itemLabel,
   entityId,
@@ -18,6 +19,21 @@ const DeleteConfirmationModal = ({
   const [loading, setLoading] = useState(false);
 
   const handleDelete = async () => {
+    // If a custom onConfirm handler is provided, use it and bypass internal delete logic
+    if (typeof onConfirm === 'function') {
+      setLoading(true);
+      try {
+        await onConfirm();
+        onClose();
+      } catch (error) {
+        console.error(error);
+        toast.error("Erreur lors de la suppression");
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
     const accessToken = localStorage.getItem("accessToken");
     if (!accessToken) {
       toast.error("Token manquant !");
@@ -36,7 +52,7 @@ const DeleteConfirmationModal = ({
         onDeleted?.();
         toast.success(`${itemLabel} supprimé(e) avec succès`);
       }
-      
+
       onClose();
     } catch (error) {
       console.error(error);

@@ -30,7 +30,7 @@ const VueTable = () => {
   const router = useRouter();
   // Declare the entity object in the component scope
   const [filters, setFilters] = useState({
-    vue: ''
+    vue: '',
   });
   const [tempFilters, setTempFilters] = useState({ ...filters });
 
@@ -62,22 +62,19 @@ const VueTable = () => {
     selectedProjet,
   ]);
 
-
-
   useEffect(() => {
-        fetchData_table_by_projet(
-          entity,
-          filters,
-          searchTerm,
-          currentPage,
-          rowsPerPage,
-          accesstoken,
-          setLoading,
-          setError,
-          setVues,
-          setTotalRows
-        );
-      
+    fetchData_table_by_projet(
+      entity,
+      filters,
+      searchTerm,
+      currentPage,
+      rowsPerPage,
+      accesstoken,
+      setLoading,
+      setError,
+      setVues,
+      setTotalRows
+    );
   }, [
     accesstoken,
     currentPage,
@@ -87,7 +84,6 @@ const VueTable = () => {
     selectedProjet,
   ]);
 
-
   function handleEdit(VueId) {
     router.push(`${ENDPOINTS.VUES}?id=${VueId}&action=edit`);
   }
@@ -96,61 +92,56 @@ const VueTable = () => {
     if (!isOpen) resetFilters(); // Si on ferme, on réinitialise
   };
 
-
-
-  
   // Format users data for table display
   const formatData = () => {
     return vues.map((vue) => ({
       id: vue.id,
       vue: vue.vue,
-      
+      frein_vue_length: vue.frein_vue.length,
+      bien_length: vue.bien.length,
     }));
   };
 
-   const columns = [
-        { key: 'vue', label: 'Vue' },
-        {
-              key: "actions",
-              label: "Actions",
-              render: (row) => (
-                <div className="flex gap-3 items-center">
-                  <div className="flex gap-3 items-center">
-                      <button
-                      className="text-blue-500 hover:text-blue-700"
-                      onClick={() => handleEdit(row.id)}
-                      title="Modifier"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    <button
-                      className="text-red-500 hover:text-red-700"
-                      onClick={() => {
-                        setSelectedId(row.id);
-                        setShowDeleteModal(true);
-                      }}
-                      title="Supprimer"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                    </div>
-        
-                </div>
-              ),
-            },
-      ];
-  
+  const columns = [
+    { key: 'vue', label: 'Vue' },
+    {
+      key: 'actions',
+      label: 'Actions',
+      render: (row) => (
+        <div className="flex gap-3 items-center">
+          <div className="flex gap-3 items-center">
+            <button
+              className="text-blue-500 hover:text-blue-700"
+              onClick={() => handleEdit(row.id)}
+              title="Modifier"
+            >
+              <Pencil className="w-4 h-4" />
+            </button>
+            {row.frein_vue_length == 0 && row.bien_length == 0 && (
+              <button
+                className="text-red-500 hover:text-red-700"
+                onClick={() => {
+                  setSelectedId(row.id);
+                  setShowDeleteModal(true);
+                }}
+                title="Supprimer"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
+      ),
+    },
+  ];
 
   const data_to_export = () => {
-    return vues.map((ty) => ({ 
+    return vues.map((ty) => ({
       vue: ty.vue,
     }));
   };
 
-  const columns_export = [
-    { key: 'vue', label: 'Vue' },
-    
-  ];
+  const columns_export = [{ key: 'vue', label: 'Vue' }];
 
   const handleFilterChange = (field, value) => {
     setTempFilters((prev) => ({ ...prev, [field]: value }));
@@ -161,7 +152,6 @@ const VueTable = () => {
   const resetFilters = () => {
     const reset = {
       vue: '',
-      
     };
     setFilters(reset);
     setTempFilters(reset);
@@ -171,6 +161,7 @@ const VueTable = () => {
     <>
       <div className="reflative bg-white rounded-lg shadow-md p-4">
         <Table
+          showSearch={false}
           title={'Vues'}
           data_to_export={data_to_export()}
           columns_export={columns_export}
@@ -210,8 +201,6 @@ const VueTable = () => {
                   onChange={(e) => handleFilterChange('vue', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-               
-                
               </div>
 
               {/* Boutons */}
@@ -244,7 +233,7 @@ const VueTable = () => {
           <DeleteData
             route={APIURL.VUES}
             Id={selectedId}
-            type='Vue'
+            type="Vue"
             message={'Etes-vous sûr de vouloir supprimer ce Vue ?'}
             accessToken={accesstoken}
             onClose={() => {
@@ -265,8 +254,6 @@ const VueTable = () => {
           />
         </Modal>
       )}
-
-     
     </>
   );
 };

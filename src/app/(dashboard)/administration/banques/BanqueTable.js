@@ -29,7 +29,7 @@ const BanqueTable = () => {
   const router = useRouter();
   // Declare the entity object in the component scope
   const [filters, setFilters] = useState({
-    nom: ''
+    nom: '',
   });
   const [tempFilters, setTempFilters] = useState({ ...filters });
 
@@ -52,39 +52,22 @@ const BanqueTable = () => {
       setBanques,
       setTotalRows
     );
-  }, [
-    accesstoken,
-    currentPage,
-    rowsPerPage,
-    searchTerm,
-    filters,
-  ]);
-
-
+  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters]);
 
   useEffect(() => {
-        fetchData_table_by_projet(
-          entity,
-          filters,
-          searchTerm,
-          currentPage,
-          rowsPerPage,
-          accesstoken,
-          setLoading,
-          setError,
-          setBanques,
-          setTotalRows
-        );
-      
-  }, [
-    accesstoken,
-    currentPage,
-    rowsPerPage,
-    searchTerm,
-    filters,
-    
-  ]);
-
+    fetchData_table_by_projet(
+      entity,
+      filters,
+      searchTerm,
+      currentPage,
+      rowsPerPage,
+      accesstoken,
+      setLoading,
+      setError,
+      setBanques,
+      setTotalRows
+    );
+  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters]);
 
   function handleEdit(BanqueId) {
     router.push(`${ENDPOINTS.BANQUES}?id=${BanqueId}&action=edit`);
@@ -94,58 +77,60 @@ const BanqueTable = () => {
     if (!isOpen) resetFilters(); // Si on ferme, on réinitialise
   };
 
-
-
-  
   // Format users data for table display
   const formatData = () => {
     return banques.map((banque) => ({
       id: banque.id,
       banque: banque.nom,
-      
+      all: banque,
     }));
   };
 
-   const columns = [
-        { key: 'banque', label: 'Banque' },
-        {
-              key: "actions",
-              label: "Actions",
-              render: (row) => (
-                <div className="flex gap-3 items-center">
-                  <button
-                  className="text-blue-500 hover:text-blue-700"
-                  onClick={() => handleEdit(row.id)}
-                  title="Modifier"
-                >
-                  <Pencil className="w-4 h-4" />
-                </button>
-                <button
-                  className="text-red-500 hover:text-red-700"
-                  onClick={() => {
-                    setSelectedId(row.id);
-                    setShowDeleteModal(true);
-                  }}
-                  title="Supprimer"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-                </div>
-              ),
-            },
-      ];
-  
+  const columns = [
+    { key: 'banque', label: 'Banque' },
+    {
+      key: 'actions',
+      label: 'Actions',
+      render: (row) => (
+        <div className="flex gap-3 items-center">
+          <button
+            className="text-blue-500 hover:text-blue-700"
+            onClick={() => handleEdit(row.id)}
+            title="Modifier"
+          >
+            <Pencil className="w-4 h-4" />
+          </button>
+          {row.all.avance?.length == 0 &&
+            row.all?.credits?.length == 0 &&
+            row.all?.credits?.length == 0 &&
+            row.all?.desistements?.length == 0 &&
+            row.all?.factures?.length == 0 &&
+            row.all?.historique_avance?.length == 0 &&
+            row.all?.penalite_desistements?.length == 0 &&
+            row.all?.remboursements?.length == 0 && (
+              <button
+                className="text-red-500 hover:text-red-700"
+                onClick={() => {
+                  setSelectedId(row.id);
+                  setShowDeleteModal(true);
+                }}
+                title="Supprimer"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
+        </div>
+      ),
+    },
+  ];
 
   const data_to_export = () => {
-    return banques.map((ty) => ({ 
+    return banques.map((ty) => ({
       banque: ty.nom,
     }));
   };
 
-  const columns_export = [
-    { key: 'banque', label: 'Banque' },
-    
-  ];
+  const columns_export = [{ key: 'banque', label: 'Banque' }];
 
   const handleFilterChange = (field, value) => {
     setTempFilters((prev) => ({ ...prev, [field]: value }));
@@ -156,7 +141,6 @@ const BanqueTable = () => {
   const resetFilters = () => {
     const reset = {
       nom: '',
-      
     };
     setFilters(reset);
     setTempFilters(reset);
@@ -166,6 +150,7 @@ const BanqueTable = () => {
     <>
       <div className="reflative bg-white rounded-lg shadow-md p-4">
         <Table
+          showSearch={false}
           title={'Banques'}
           data_to_export={data_to_export()}
           columns_export={columns_export}
@@ -200,13 +185,11 @@ const BanqueTable = () => {
                 <Input
                   label={'Banque'}
                   type="text"
-                  placeholder="Banque..."
+                  placeholder=""
                   value={tempFilters.nom}
                   onChange={(e) => handleFilterChange('nom', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-               
-                
               </div>
 
               {/* Boutons */}
@@ -239,7 +222,7 @@ const BanqueTable = () => {
           <DeleteData
             route={APIURL.BANQUES}
             Id={selectedId}
-            type='Banque'
+            type="Banque"
             message={'Etes-vous sûr de vouloir supprimer ce Banque ?'}
             accessToken={accesstoken}
             onClose={() => {
@@ -260,8 +243,6 @@ const BanqueTable = () => {
           />
         </Modal>
       )}
-
-     
     </>
   );
 };

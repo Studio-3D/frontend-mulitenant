@@ -10,6 +10,9 @@ import Button from '@/components/Button'; // adjust the path as needed
 import HistoriquesTable from './HistoriquesTable';
 import BreadCrumb from '../../../navigation/BreadCrumb';
 import LoadingSpin from '@/components/LoadingSpin';
+import Modal from '@/components/Modal';
+import SelectInput from '@/components/SelectInput';
+import { useProjet } from '@/context/ProjetContext';
 import VisiteTable from '../../visites/VisiteTable';
 import { format } from 'date-fns'; // Import format from date-fns
 import JournalTable from '../../appels/[appelId]/JournalTable';
@@ -19,6 +22,9 @@ const ProspectDetails = () => {
   const router = useRouter();
   const { prospectId } = useParams(); // Use useParams() to access dynamic params
   const accessToken = token || localStorage.getItem("accessToken");
+  const { projets } = useProjet();
+  const [showProjetModal, setShowProjetModal] = useState(false);
+  const [selectedProjetId, setSelectedProjetId] = useState('');
   const [loading, setLoading] = useState(false);
   const [prospectDetails, setProspectDetails] = useState([]);
   const [activeTab, setActiveTab] = useState("historiques"); // Default to 'historiques' if tab is not present
@@ -43,6 +49,8 @@ const ProspectDetails = () => {
           },
         })
         .then((response) => {
+
+
           setProspectDetails(response.data.prospect);
           setLoading(false);
         })
@@ -51,6 +59,28 @@ const ProspectDetails = () => {
         });
     }
   }, [prospectId, accessToken]);
+  // If WhatsApp-origin prospect with no projet assigned, prompt user to choose projet
+  useEffect(() => {
+    if (prospectDetails && prospectDetails.origin === 'whatssap' && !prospectDetails.projet_id) {
+      setShowProjetModal(true);
+    }
+  }, [prospectDetails]);
+
+  const handleAssignProjet = async () => {
+    if (!selectedProjetId) return;
+    try {
+      await axios.put(`${APIURL.PROSPECTS}/${prospectDetails.id}`, {
+        projet_id: selectedProjetId
+      }, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      setProspectDetails({ ...prospectDetails, projet_id: selectedProjetId });
+      setShowProjetModal(false);
+    } catch (e) {
+      console.error('Erreur lors de la mise à jour du projet du prospect', e);
+    }
+  };
+
   const handleTabClick = (tab) => {
     // Set the active tab state
     setActiveTab(tab);
@@ -257,6 +287,28 @@ const ProspectDetails = () => {
                           <HistoriquesTable id={prospectDetails.id} />
                         </div>
                       </div>
+                    )}
+
+                    {/* Modal to choose projet when WhatsApp prospect has no projet */}
+                    {showProjetModal && (
+                      <Modal isVisible={true} onClose={() => setShowProjetModal(false)}>
+                        <div className="p-4">
+                          <h3 className="text-lg font-semibold mb-3">Assigner un projet au prospect</h3>
+                          <p className="text-sm text-gray-600 mb-3">Ce prospect provient de WhatsApp mais plusieurs configurations partagent le même projet. Veuillez choisir le projet auquel l'assigner.</p>
+                          <div className="mb-4">
+                            <SelectInput
+                              label="Projet"
+                              options={(projets || []).map(p => ({ label: p.nom, value: p.id }))}
+                              value={selectedProjetId}
+                              onChange={(e) => setSelectedProjetId(e.target.value)}
+                            />
+                          </div>
+                          <div className="flex justify-end gap-2">
+                            <button className="px-3 py-2 rounded border" onClick={() => setShowProjetModal(false)}>Annuler</button>
+                            <button className="px-3 py-2 rounded bg-blue-600 text-white" onClick={handleAssignProjet} disabled={!selectedProjetId}>Assigner</button>
+                          </div>
+                        </div>
+                      </Modal>
                     )}
 
                     {activeTab === "visites" && (

@@ -29,7 +29,7 @@ const SourceTable = () => {
   const router = useRouter();
   // Declare the entity object in the component scope
   const [filters, setFilters] = useState({
-    source: ''
+    source: '',
   });
   const [tempFilters, setTempFilters] = useState({ ...filters });
 
@@ -52,39 +52,22 @@ const SourceTable = () => {
       setSources,
       setTotalRows
     );
-  }, [
-    accesstoken,
-    currentPage,
-    rowsPerPage,
-    searchTerm,
-    filters,
-  ]);
-
-
+  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters]);
 
   useEffect(() => {
-        fetchData_table_by_projet(
-          entity,
-          filters,
-          searchTerm,
-          currentPage,
-          rowsPerPage,
-          accesstoken,
-          setLoading,
-          setError,
-          setSources,
-          setTotalRows
-        );
-      
-  }, [
-    accesstoken,
-    currentPage,
-    rowsPerPage,
-    searchTerm,
-    filters,
-    
-  ]);
-
+    fetchData_table_by_projet(
+      entity,
+      filters,
+      searchTerm,
+      currentPage,
+      rowsPerPage,
+      accesstoken,
+      setLoading,
+      setError,
+      setSources,
+      setTotalRows
+    );
+  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters]);
 
   function handleEdit(SourceId) {
     router.push(`${ENDPOINTS.SOURCES}?id=${SourceId}&action=edit`);
@@ -94,58 +77,53 @@ const SourceTable = () => {
     if (!isOpen) resetFilters(); // Si on ferme, on réinitialise
   };
 
-
-
-  
   // Format users data for table display
   const formatData = () => {
     return sources.map((source) => ({
       id: source.id,
       source: source.source,
-      
+      prospect_length: source.prospect.length,
     }));
   };
 
-   const columns = [
-        { key: 'source', label: 'Source' },
-        {
-              key: "actions",
-              label: "Actions",
-              render: (row) => (
-                <div className="flex gap-3 items-center">
-                  <button
-                  className="text-blue-500 hover:text-blue-700"
-                  onClick={() => handleEdit(row.id)}
-                  title="Modifier"
-                >
-                  <Pencil className="w-4 h-4" />
-                </button>
-                <button
-                  className="text-red-500 hover:text-red-700"
-                  onClick={() => {
-                    setSelectedId(row.id);
-                    setShowDeleteModal(true);
-                  }}
-                  title="Supprimer"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-                </div>
-              ),
-            },
-      ];
-  
+  const columns = [
+    { key: 'source', label: 'Source' },
+    {
+      key: 'actions',
+      label: 'Actions',
+      render: (row) => (
+        <div className="flex gap-3 items-center">
+          <button
+            className="text-blue-500 hover:text-blue-700"
+            onClick={() => handleEdit(row.id)}
+            title="Modifier"
+          >
+            <Pencil className="w-4 h-4" />
+          </button>
+          {row.prospect_length == 0 && (
+            <button
+              className="text-red-500 hover:text-red-700"
+              onClick={() => {
+                setSelectedId(row.id);
+                setShowDeleteModal(true);
+              }}
+              title="Supprimer"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      ),
+    },
+  ];
 
   const data_to_export = () => {
-    return sources.map((ty) => ({ 
+    return sources.map((ty) => ({
       source: ty.source,
     }));
   };
 
-  const columns_export = [
-    { key: 'source', label: 'Source' },
-    
-  ];
+  const columns_export = [{ key: 'source', label: 'Source' }];
 
   const handleFilterChange = (field, value) => {
     setTempFilters((prev) => ({ ...prev, [field]: value }));
@@ -156,7 +134,6 @@ const SourceTable = () => {
   const resetFilters = () => {
     const reset = {
       source: '',
-      
     };
     setFilters(reset);
     setTempFilters(reset);
@@ -166,6 +143,7 @@ const SourceTable = () => {
     <>
       <div className="reflative bg-white rounded-lg shadow-md p-4">
         <Table
+          showSearch={false}
           title={'Sources'}
           data_to_export={data_to_export()}
           columns_export={columns_export}
@@ -205,8 +183,6 @@ const SourceTable = () => {
                   onChange={(e) => handleFilterChange('source', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-               
-                
               </div>
 
               {/* Boutons */}
@@ -239,7 +215,7 @@ const SourceTable = () => {
           <DeleteData
             route={APIURL.SOURCES}
             Id={selectedId}
-            type='Source'
+            type="Source"
             message={'Etes-vous sûr de vouloir supprimer ce Source ?'}
             accessToken={accesstoken}
             onClose={() => {
@@ -260,8 +236,6 @@ const SourceTable = () => {
           />
         </Modal>
       )}
-
-     
     </>
   );
 };

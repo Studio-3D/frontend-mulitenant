@@ -12,7 +12,7 @@ import { APIURL, ENDPOINTS, RESOURCE_URL } from "@/configs/api";
 import { fetchData_table_by_projet } from "@/configs/api-utils";
 import { isAdmin, isSuperAdmin, Statuts_Prospect } from "@/configs/enum";
 import { useAuth } from "@/context/AuthContext";
-import { format } from "date-fns";
+import { formatDate } from "../../../utils/dateUtils";
 import { Box, Dialog, DialogContent, DialogTitle, Grid, IconButton, Typography } from "@mui/material";
 import Input from "@/components/Input";
 import axios from "axios";
@@ -182,7 +182,7 @@ const openTraitement = (row) => {
     key: "date_reclamation",
     label: "Date Réclamation",
     sortable: true,
-    render: row => row.created_at ? format(new Date(row.created_at), 'dd/MM/yyyy') : ''
+    render: row => row.created_at ? formatDate(row.created_at) : ''
   },
   {
     key: "client",
