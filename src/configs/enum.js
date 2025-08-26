@@ -353,22 +353,7 @@ export const getProspectStatusColor = (statusLabel) => {
 };
 
 // Final statuses that should prevent assignment/reassignment
-export const FINAL_PROSPECT_STATUSES = [
-  'Perdu',              // Lost prospects should not be assigned
-  'Converti_en_visite', // Converted prospects have moved to next stage
-];
-
-// Helper function to check if a prospect status is final (should not be assigned)
-export const isProspectStatusFinal = (statusValue) => {
-  return FINAL_PROSPECT_STATUSES.includes(statusValue);
-};
-
-// Helper function to check if a prospect can be assigned based on its last status
-export const canProspectBeAssigned = (prospect) => {
-  if (!prospect || !prospect.last_statut) {
-    return true; // Allow assignment if no status (new prospect)
-  }
-
-  const statusValue = prospect.last_statut.statut;
-  return !isProspectStatusFinal(statusValue);
-};
+// Reassignment is always allowed now
+export const FINAL_PROSPECT_STATUSES = [];
+export const isProspectStatusFinal = () => false;
+export const canProspectBeAssigned = () => true;

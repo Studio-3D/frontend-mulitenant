@@ -32,7 +32,7 @@ export default function Input({
         control={control}
         defaultValue={defaultValue}
         render={({ field, fieldState }) => {
-          const fieldValue = field.value === null ? '' : field.value;
+          const fieldValue = field.value == null ? '' : field.value;
           const combinedError = fieldState.error?.message || error || backendErrors;
 
           return (
