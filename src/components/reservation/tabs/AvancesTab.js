@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   ScanEye,
   Pencil,
@@ -11,21 +11,21 @@ import {
   Printer,
   FileText,
   Plus,
-} from 'lucide-react';
-import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
-import Table from '@/components/Table';
-import { APIURL, RESOURCE_URL } from '../../../configs/api';
-import { MODE_PAIEMENT, Avance_Statut } from '../../../configs/enum';
+} from "lucide-react";
+import AutocompleteSelectComponent from "@/components/AutocompleteSelectComponent";
+import Table from "@/components/Table";
+import { APIURL, RESOURCE_URL } from "../../../configs/api";
+import { MODE_PAIEMENT, Avance_Statut } from "../../../configs/enum";
 import {
   fetchData_Select,
   fetchList_fichier_exist_by_Code,
-} from '../../../../src/configs/api-utils';
-import axios from 'axios';
-import { toast } from 'react-hot-toast';
-import { formatDate } from '../../../utils/dateUtils';
-import Autocomplete from '@/components/Autocomplete';
-import Modal from '@/components/Modal';
-import DeleteData from '@/components/DeleteData';
+} from "../../../../src/configs/api-utils";
+import axios from "axios";
+import { toast } from "react-hot-toast";
+import { formatDate } from "../../../utils/dateUtils";
+import Autocomplete from "@/components/Autocomplete";
+import Modal from "@/components/Modal";
+import DeleteData from "@/components/DeleteData";
 
 export const AvancesTab = ({
   reservationData,
@@ -39,14 +39,14 @@ export const AvancesTab = ({
   const [selectedId, setSelectedId] = useState(null);
   const [selectedFiles_avc, setSelectedFiles_avc] = useState([]);
 
-  const accessToken = propAccessToken || localStorage.getItem('accessToken');
+  const accessToken = propAccessToken || localStorage.getItem("accessToken");
   const [loading_list, setLoading_list] = useState(false);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState({
     table: false,
     form: false,
   });
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [totalRows, setTotalRows] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -69,9 +69,9 @@ export const AvancesTab = ({
   const [open_v_r, setOpen_v_r] = useState(false);
   const [ID, setID] = useState(0);
   const [num_recu, set_num_recu] = useState(0);
-  const [Commentaire_r, setCommentaire_r] = useState('');
+  const [Commentaire_r, setCommentaire_r] = useState("");
   const [type_action, set_type_action] = useState(null);
-  const [action, setAction] = useState('');
+  const [action, setAction] = useState("");
   const [date_encaissement_v, set_date_encaissement_v] = useState(null);
   const [num_remise_v, set_num_remise_v] = useState(null);
   const [reste, setReste] = useState(0);
@@ -84,7 +84,7 @@ export const AvancesTab = ({
   const fetchData = async () => {
     try {
       if (!reservationId) {
-        setError('No reservation ID provided');
+        setError("No reservation ID provided");
         return;
       }
 
@@ -92,7 +92,7 @@ export const AvancesTab = ({
       setError(null);
 
       if (!accessToken) {
-        throw new Error('No access token found');
+        throw new Error("No access token found");
       }
 
       const apiUrl = `${APIURL.ROOTV1}/getAvancesByReservation/${reservationId}`;
@@ -103,7 +103,8 @@ export const AvancesTab = ({
         },
       });
 
-      const { data, etat_res, prix, sum_avances ,sum_avances_valides} = response.data;
+      const { data, etat_res, prix, sum_avances, sum_avances_valides } =
+        response.data;
       const processedData = data.map((item, index) => ({
         ...item,
         number: index + 1,
@@ -131,7 +132,7 @@ export const AvancesTab = ({
         });
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error:", error);
       setError(error.message);
     } finally {
       setLoading((prev) => ({ ...prev, table: false }));
@@ -143,7 +144,7 @@ export const AvancesTab = ({
     if (filesList_avc.length == 0) {
       fetchList_fichier_exist_by_Code(
         setfilesList_avc,
-        'avc',
+        "avc",
         reservationData?.reservation?.code_reservation,
         setLoading_list
       );
@@ -159,14 +160,14 @@ export const AvancesTab = ({
   const handleFileClick = (file) => {
     window.open(
       `${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/paiements/${reservationData?.reservation.code_reservation}/${file}`,
-      '_blank'
+      "_blank"
     );
   };
 
   const PrintRecu = (paiementId) => {
-    localStorage.setItem('avanceId', paiementId);
+    localStorage.setItem("avanceId", paiementId);
     const editUrl = `${window.location.origin}/ventes/reservations/printRecuPaiement/${paiementId}`;
-    window.open(editUrl, '_blank');
+    window.open(editUrl, "_blank");
   };
 
   // Add these state variables to your component
@@ -174,16 +175,16 @@ export const AvancesTab = ({
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [currentPaiement, setCurrentPaiement] = useState(null);
   const [formData, setFormData] = useState({
-    date_reglement: new Date().toISOString().split('T')[0],
-    montant: '',
-    mode_paiement: '',
-    banque_id: '',
-    numero_paiement: '',
-    echeance: '',
-    commentaireAvance: '',
+    date_reglement: new Date().toISOString().split("T")[0],
+    montant: "",
+    mode_paiement: "",
+    banque_id: "",
+    numero_paiement: "",
+    echeance: "",
+    commentaireAvance: "",
     sr: 0,
-    num_remise: '',
-    date_encaissement: '',
+    num_remise: "",
+    date_encaissement: "",
   });
   const [banques, setBanques] = useState([]);
   const [loadingBanques, setLoadingBanques] = useState(false);
@@ -196,13 +197,13 @@ export const AvancesTab = ({
       date_reglement: paiement.date_reglement,
       montant: paiement.montant,
       mode_paiement: paiement.mode_paiement,
-      banque_id: paiement.banque?.id || '',
+      banque_id: paiement.banque?.id || "",
       numero_paiement: paiement.numero_paiement,
-      echeance: paiement.echeance || '',
-      commentaireAvance: paiement.commentaireAvance || '',
-      sr: paiement.sr || '',
-      num_remise: paiement.last_statut?.num_remise || '',
-      date_encaissement: paiement.last_statut?.date_encaissement || '',
+      echeance: paiement.echeance || "",
+      commentaireAvance: paiement.commentaireAvance || "",
+      sr: paiement.sr || "",
+      num_remise: paiement.last_statut?.num_remise || "",
+      date_encaissement: paiement.last_statut?.date_encaissement || "",
     });
     set_num_remise_v(paiement.last_statut?.num_remise);
     set_date_encaissement_v(paiement.last_statut?.date_encaissement);
@@ -212,16 +213,16 @@ export const AvancesTab = ({
   const handleAdd = () => {
     setCurrentPaiement(null);
     setFormData({
-      date_reglement: new Date().toISOString().split('T')[0],
-      montant: '',
-      mode_paiement: '',
-      banque_id: '',
-      numero_paiement: '',
-      echeance: '',
-      commentaireAvance: '',
+      date_reglement: new Date().toISOString().split("T")[0],
+      montant: "",
+      mode_paiement: "",
+      banque_id: "",
+      numero_paiement: "",
+      echeance: "",
+      commentaireAvance: "",
       sr: 0,
-      num_remise: '',
-      date_encaissement: '',
+      num_remise: "",
+      date_encaissement: "",
     });
     set_num_remise_v(null);
     set_date_encaissement_v(null);
@@ -238,7 +239,7 @@ export const AvancesTab = ({
 
   const handleInputChange = (e) => {
     // Handle checkbox separately
-    if (e.target && e.target.name == 'sr') {
+    if (e.target && e.target.name == "sr") {
       setFormData((prev) => ({
         ...prev,
         sr: e.target.checked ? 1 : 0, // Set to 1 if checked, 0 if not
@@ -246,12 +247,12 @@ export const AvancesTab = ({
       return;
     }
 
-    const { name, value } = e.target || '';
+    const { name, value } = e.target || "";
 
     // For Autocomplete components that might pass just the value
     const fieldName = name || e.name;
     const fieldValue = value !== undefined ? value : e;
-    if (name == 'banque_id') {
+    if (name == "banque_id") {
       setFormData((prev) => ({
         ...prev,
         [fieldName]: fieldValue?.id,
@@ -264,7 +265,7 @@ export const AvancesTab = ({
     }
 
     // Special handling for montant field
-    if (fieldName == 'montant') {
+    if (fieldName == "montant") {
       const montantValue = parseFloat(fieldValue) || 0;
       let newReste = 0;
 
@@ -284,7 +285,7 @@ export const AvancesTab = ({
       // Check if reste would be negative
       if (newReste < 0) {
         if (!toastShown) {
-          toast.error('Le montant ne doit pas dépasser le prix total!');
+          toast.error("Le montant ne doit pas dépasser le prix total!");
           setToastShown(true);
         }
 
@@ -310,7 +311,7 @@ export const AvancesTab = ({
 
   useEffect(() => {
     if (editDialogOpen || addDialogOpen) {
-      fetchData_Select('banques', setBanques, setLoadingBanques);
+      fetchData_Select("banques", setBanques, setLoadingBanques);
     }
   }, [editDialogOpen, addDialogOpen]);
 
@@ -318,20 +319,20 @@ export const AvancesTab = ({
     const errors = {};
 
     if (!formData.date_reglement)
-      errors.date_reglement = 'Date de règlement requise';
+      errors.date_reglement = "Date de règlement requise";
     if (!formData.montant || isNaN(formData.montant))
-      errors.montant = 'Montant invalide';
+      errors.montant = "Montant invalide";
     if (!formData.mode_paiement)
-      errors.mode_paiement = 'Mode de paiement requis';
+      errors.mode_paiement = "Mode de paiement requis";
 
     if (
       formData.mode_paiement &&
       [2, 3, 4, 5, 6].includes(parseInt(formData.mode_paiement))
     ) {
       // These modes require bank
-      if (!formData.banque_id) errors.banque_id = 'Banque requise';
+      if (!formData.banque_id) errors.banque_id = "Banque requise";
       if (!formData.numero_paiement)
-        errors.numero_paiement = 'Numéro de paiement requis';
+        errors.numero_paiement = "Numéro de paiement requis";
     }
 
     setFormErrors(errors);
@@ -361,7 +362,7 @@ export const AvancesTab = ({
     }
 
     if (newReste < 0) {
-      toast.error('Le montant saisi dépasse le prix total!');
+      toast.error("Le montant saisi dépasse le prix total!");
       return;
     }
     setLoading((prev) => ({ ...prev, form: true }));
@@ -394,7 +395,7 @@ export const AvancesTab = ({
         objects.forEach((file, index) => {
           // Convert object to File before sending
           const blob = new Blob([file.fichier], {
-            type: 'application/octet-stream',
+            type: "application/octet-stream",
           });
           const newFile = new File([blob], file.fichier);
           dataToSend.append(`files_avance[${index}]`, newFile);
@@ -406,24 +407,24 @@ export const AvancesTab = ({
         }
       }
 
-      dataToSend.append('_method', 'PATCH');
+      dataToSend.append("_method", "PATCH");
     }
 
     // Add reservation ID
-    dataToSend.append('reservation_id', reservationId);
+    dataToSend.append("reservation_id", reservationId);
 
     try {
       const response = await axios.post(url, dataToSend, {
         headers: {
-          Accept: 'application/json',
+          Accept: "application/json",
           Authorization: `Bearer ${accessToken}`,
         },
       });
 
       if (response.status == 200) {
         const message = currentPaiement
-          ? 'Le paiement a été modifié avec succès'
-          : 'Le paiement a été créé avec succès';
+          ? "Le paiement a été modifié avec succès"
+          : "Le paiement a été créé avec succès";
         toast.success(message);
         // Close all possible modal states
         setEditDialogOpen(false);
@@ -452,7 +453,7 @@ export const AvancesTab = ({
         }
       }
     } catch (error) {
-      console.error('Error saving paiement:', error);
+      console.error("Error saving paiement:", error);
 
       if (error.response?.status == 422) {
         toast.error(
@@ -486,8 +487,8 @@ export const AvancesTab = ({
 
     try {
       const formData = new FormData();
-      formData.append('avance_id', avanceId);
-      formData.append('fichier_scanner', fichier_scanner);
+      formData.append("avance_id", avanceId);
+      formData.append("fichier_scanner", fichier_scanner);
 
       await axios.post(`${APIURL.ROOTV1}/scanner_file`, formData, {
         headers: {
@@ -495,12 +496,12 @@ export const AvancesTab = ({
         },
       });
 
-      toast.success('Le fichier a été scanné avec succès');
+      toast.success("Le fichier a été scanné avec succès");
       closeScannerPopup();
       fetchData();
     } catch (err) {
-      console.error('Error scanning file:', err);
-      toast.error('Erreur lors du scan du fichier');
+      console.error("Error scanning file:", err);
+      toast.error("Erreur lors du scan du fichier");
     } finally {
       setLoading_scann(false);
     }
@@ -508,7 +509,7 @@ export const AvancesTab = ({
 
   const handle_Histo = (paiementId) => {
     const editUrl = `${window.location.origin}/ventes/reservations/historiquesPaiement/${paiementId}`;
-    window.open(editUrl, '_blank');
+    window.open(editUrl, "_blank");
   };
 
   const handle_valider_rejete = (Id, n_recu, number, text) => {
@@ -517,7 +518,7 @@ export const AvancesTab = ({
     set_num_recu(n_recu);
     set_type_action(text);
     if (number == 1) {
-      setAction('1');
+      setAction("1");
     }
   };
 
@@ -544,37 +545,35 @@ export const AvancesTab = ({
         }
       );
 
-      toast.success("L'avance est traitée avec succès");
+      toast.success("Avance traitée avec succès");
       setCommentaire_r(null);
       set_date_encaissement_v(null);
       set_num_remise_v(null);
       fetchData();
       setOpen_v_r(false);
     } catch (error) {
-      console.error('Error processing avance:', error);
-      toast.error('Erreur lors du traitement');
+      console.error("Error processing avance:", error);
+      toast.error("Erreur lors du traitement");
     }
   };
 
   const show_dos_desiste = (dosId) => {
-    window.open(`/ventes/reservations/${dosId}`, '_blank');
+    window.open(`/ventes/reservations/${dosId}`, "_blank");
   };
 
   const formatData = () => {
     return data.map((Paiement) => ({
       id: Paiement.id,
-      sr: Paiement?.sr == 0 ? Paiement?.num_recu : 'SR',
+      sr: Paiement?.sr == 0 ? Paiement?.num_recu : "SR",
       date_reglement: Paiement?.date_reglement
         ? formatDate(Paiement.date_reglement)
-        : 'N/A',
-      respo: `${Paiement.user.name} ${Paiement.user.prenom || ''}`.trim(),
-      montant: Paiement.montant.toLocaleString() + ' DH',
+        : "N/A",
+      respo: `${Paiement.user.name} ${Paiement.user.prenom || ""}`.trim(),
+      montant: Paiement.montant.toLocaleString() + " DH",
       mode_pai: Paiement.mode_paiement,
       banque: Paiement.banque?.nom || null,
       numero_paiement: Paiement.numero_paiement,
-      echeance: Paiement.echeance
-        ? formatDate(Paiement.echeance)
-        : null,
+      echeance: Paiement.echeance ? formatDate(Paiement.echeance) : null,
       statut: Paiement.statut,
       num_remise: Paiement?.last_statut?.num_remise || null,
       date_encaissement: Paiement?.last_statut?.date_encaissement
@@ -592,40 +591,40 @@ export const AvancesTab = ({
   };
 
   const columns = [
-    { key: 'sr', label: 'N° Reçu' },
-    { key: 'date_reglement', label: 'Date' },
-    { key: 'respo', label: 'Responsable' },
-    { key: 'montant', label: 'Montant' },
+    { key: "sr", label: "N° Reçu" },
+    { key: "date_reglement", label: "Date" },
+    { key: "respo", label: "Responsable" },
+    { key: "montant", label: "Montant" },
     {
-      key: 'mode_pai',
-      label: 'Mode Paiement',
+      key: "mode_pai",
+      label: "Mode Paiement",
       render: (row) => {
         if (!row.mode_pai) return null;
         return (
           <span
             className={`px-2 py-1 rounded text-sm font-semibold ${
               {
-                1: 'bg-purple-100 text-purple-500',
-                2: 'bg-blue-100 text-blue-500',
-                3: 'bg-indigo-100 text-indigo-500',
-                4: 'bg-teal-100 text-teal-500',
-                5: 'bg-green-100 text-green-500',
-                6: 'bg-amber-100 text-amber-500',
-                7: 'bg-gray-100 text-gray-500',
-              }[row.mode_pai] || 'bg-gray-100 text-gray-500'
+                1: "bg-purple-100 text-purple-500",
+                2: "bg-blue-100 text-blue-500",
+                3: "bg-indigo-100 text-indigo-500",
+                4: "bg-teal-100 text-teal-500",
+                5: "bg-green-100 text-green-500",
+                6: "bg-amber-100 text-amber-500",
+                7: "bg-gray-100 text-gray-500",
+              }[row.mode_pai] || "bg-gray-100 text-gray-500"
             }`}
           >
-            {MODE_PAIEMENT[row.mode_pai]?.label || 'Unknown'}
+            {MODE_PAIEMENT[row.mode_pai]?.label || "Unknown"}
           </span>
         );
       },
     },
-    { key: 'banque', label: 'Banque' },
-    { key: 'numero_paiement', label: 'Num paiement' },
-    { key: 'echeance', label: 'Echéance' },
+    { key: "banque", label: "Banque" },
+    { key: "numero_paiement", label: "Num paiement" },
+    { key: "echeance", label: "Echéance" },
     {
-      key: 'statut',
-      label: 'Statut',
+      key: "statut",
+      label: "Statut",
       render: (row) => {
         if (!row.statut) return null;
         //mode paiement 7 transfert  //statut=>1 validé
@@ -646,22 +645,22 @@ export const AvancesTab = ({
           <span
             className={`px-2 py-1 rounded text-sm font-semibold ${
               {
-                1: 'bg-green-100 text-green-500',
-                3: 'bg-blue-100 text-blue-500',
-                2: 'bg-red-100 text-red-500',
-              }[row.statut] || 'bg-gray-100 text-gray-500'
+                1: "bg-green-100 text-green-500",
+                3: "bg-blue-100 text-blue-500",
+                2: "bg-red-100 text-red-500",
+              }[row.statut] || "bg-gray-100 text-gray-500"
             }`}
           >
-            {Avance_Statut[row.statut]?.label || 'Inconnu'}
+            {Avance_Statut[row.statut]?.label || "Inconnu"}
           </span>
         );
       },
     },
-    { key: 'num_remise', label: 'N° remise' },
-    { key: 'date_encaissement', label: 'Date encaissement' },
+    { key: "num_remise", label: "N° remise" },
+    { key: "date_encaissement", label: "Date encaissement" },
     {
-      key: 'recu_scanne',
-      label: 'Reçu scanné',
+      key: "recu_scanne",
+      label: "Reçu scanné",
       render: (row) => {
         if (!row.recu_scanne) return null;
 
@@ -678,8 +677,8 @@ export const AvancesTab = ({
       },
     },
     {
-      key: 'actions',
-      label: 'Actions',
+      key: "actions",
+      label: "Actions",
       render: (row) => {
         const isAdminOrEditor = user?.role == 1 || user?.role == 2;
         const isLastRow = row.number == last_row_number;
@@ -690,7 +689,7 @@ export const AvancesTab = ({
           <div className="flex gap-3 items-center">
             {/* Print Receipt Button */}
 
-            {row.sr !== 'SR' && (
+            {row.sr !== "SR" && (
               <button
                 className="p-1 text-blue-500 hover:text-blue-700"
                 onClick={() => PrintRecu(row.id)}
@@ -758,7 +757,7 @@ export const AvancesTab = ({
                               row.id,
                               row.sr,
                               0,
-                              'validation'
+                              "validation"
                             )
                           }
                           title="Valider le paiement"
@@ -781,7 +780,7 @@ export const AvancesTab = ({
                                 row.id,
                                 row.sr,
                                 1,
-                                'encaissement'
+                                "encaissement"
                               )
                             }
                             title="Ajouter encaissement"
@@ -850,7 +849,7 @@ export const AvancesTab = ({
         let newFileName = fileName;
         let fileNumber = 1;
 
-        const lastDotIndex = fileName.lastIndexOf('.');
+        const lastDotIndex = fileName.lastIndexOf(".");
         const baseName = fileName.substring(0, lastDotIndex);
         const extension = fileName.substring(lastDotIndex + 1);
 
@@ -885,11 +884,11 @@ export const AvancesTab = ({
   };
 
   const getFileIcon = (filename) => {
-    const extension = filename.split('.').pop().toLowerCase();
-    const iconClass = 'w-5 h-5 flex-shrink-0 text-gray-400';
+    const extension = filename.split(".").pop().toLowerCase();
+    const iconClass = "w-5 h-5 flex-shrink-0 text-gray-400";
 
     switch (extension) {
-      case 'pdf':
+      case "pdf":
         return (
           <svg className={iconClass} fill="currentColor" viewBox="0 0 20 20">
             <path
@@ -899,9 +898,9 @@ export const AvancesTab = ({
             />
           </svg>
         );
-      case 'jpg':
-      case 'jpeg':
-      case 'png':
+      case "jpg":
+      case "jpeg":
+      case "png":
         return (
           <svg className={iconClass} fill="currentColor" viewBox="0 0 20 20">
             <path
@@ -911,8 +910,8 @@ export const AvancesTab = ({
             />
           </svg>
         );
-      case 'doc':
-      case 'docx':
+      case "doc":
+      case "docx":
         return (
           <svg className={iconClass} fill="currentColor" viewBox="0 0 20 20">
             <path
@@ -936,7 +935,7 @@ export const AvancesTab = ({
   };
 
   const formatFileSize = (bytes) => {
-    if (!bytes) return 'N/A';
+    if (!bytes) return "N/A";
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / 1048576).toFixed(1)} MB`;
@@ -955,7 +954,7 @@ export const AvancesTab = ({
           <div>
             <p className="text-sm text-gray-500">Total versé</p>
             <p className="text-2xl font-bold">
-              {sum_avances.toLocaleString() + ' DH'}
+              {sum_avances.toLocaleString() + " DH"}
             </p>
           </div>
           <div>
@@ -967,7 +966,7 @@ export const AvancesTab = ({
           <div>
             <p className="text-sm text-gray-500">Pourcentage versé</p>
             <p className="text-2xl font-bold">
-              {Math.round((sum_avances / prix) * 100) + '%'}
+              {Math.round((sum_avances / prix) * 100) + "%"}
             </p>
           </div>
         </div>
@@ -1011,7 +1010,7 @@ export const AvancesTab = ({
               className="text-white p-4 rounded-t-lg sticky top-0 z-10"
             >
               <h2 className="text-xl font-bold">
-                {currentPaiement ? 'Modifier Avance' : 'Ajouter Avance'}
+                {currentPaiement ? "Modifier Avance" : "Ajouter Avance"}
               </h2>
             </div>
 
@@ -1048,8 +1047,8 @@ export const AvancesTab = ({
                         onChange={handleInputChange}
                         className={`w-full p-2 border rounded-md ${
                           formErrors.date_reglement
-                            ? 'border-red-500'
-                            : 'border-gray-300'
+                            ? "border-red-500"
+                            : "border-gray-300"
                         }`}
                       />
                     </div>
@@ -1073,8 +1072,8 @@ export const AvancesTab = ({
                         onChange={handleInputChange}
                         className={`w-full p-2 border rounded-md ${
                           formErrors.montant
-                            ? 'border-red-500'
-                            : 'border-gray-300'
+                            ? "border-red-500"
+                            : "border-gray-300"
                         }`}
                         step="0.01"
                         min="0"
@@ -1089,12 +1088,12 @@ export const AvancesTab = ({
                   {/* In your form, after the montant input */}
                   <div className="mt-1 text-sm">
                     <span className="font-medium">
-                      Reste à payer après cet avance:{' '}
+                      Reste à payer après cet avance:{" "}
                     </span>
                     <span
-                      className={reste < 0 ? 'text-red-500' : 'text-green-500'}
+                      className={reste < 0 ? "text-red-500" : "text-green-500"}
                     >
-                      {reste.toLocaleString() + ' DH'}
+                      {reste.toLocaleString() + " DH"}
                     </span>
                   </div>
                 </div>
@@ -1108,11 +1107,11 @@ export const AvancesTab = ({
                       label="Mode Paiement :"
                       name="mode_paiement"
                       required={true}
-                      value={formData.mode_paiement || ''}
+                      value={formData.mode_paiement || ""}
                       options={MODE_PAIEMENT}
                       onChange={(value) => {
                         handleInputChange({
-                          target: { name: 'mode_paiement', value },
+                          target: { name: "mode_paiement", value },
                         });
                       }}
                     />
@@ -1135,13 +1134,13 @@ export const AvancesTab = ({
                           name="banque_id"
                           required={true}
                           options={banques}
-                          value={formData.banque_id || ''}
+                          value={formData.banque_id || ""}
                           loading={loadingBanques}
                           errors={{}}
                           backendErrors={{}}
                           onChange={(value) => {
                             handleInputChange({
-                              target: { name: 'banque_id', value },
+                              target: { name: "banque_id", value },
                             });
                           }}
                           choix="nom"
@@ -1171,8 +1170,8 @@ export const AvancesTab = ({
                           onChange={handleInputChange}
                           className={`w-full p-2 border rounded-md ${
                             formErrors.numero_paiement
-                              ? 'border-red-500'
-                              : 'border-gray-300'
+                              ? "border-red-500"
+                              : "border-gray-300"
                           }`}
                         />
                         {formErrors.numero_paiement && (
@@ -1194,7 +1193,7 @@ export const AvancesTab = ({
                           <input
                             type="date"
                             name="echeance"
-                            value={formData.echeance || ''}
+                            value={formData.echeance || ""}
                             onChange={handleInputChange}
                             className="w-full p-2 border border-gray-300 rounded-md"
                           />
@@ -1269,7 +1268,7 @@ export const AvancesTab = ({
                               {formatFileSize(data.size)}
                             </span>
                             <button
-                              onClick={() => handleDeleteFile(index, 'rsv')}
+                              onClick={() => handleDeleteFile(index, "rsv")}
                               className="p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 transition-colors"
                               title="Supprimer"
                             >
@@ -1316,7 +1315,7 @@ export const AvancesTab = ({
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         N° Remise
-                        {formData.date_encaissement != '' ? (
+                        {formData.date_encaissement != "" ? (
                           <span className="text-red-500">*</span>
                         ) : null}
                       </label>
@@ -1325,10 +1324,10 @@ export const AvancesTab = ({
                         name="num_remise"
                         type="number"
                         required={
-                          formData.date_encaissement != '' ? true : false
+                          formData.date_encaissement != "" ? true : false
                         }
                         className="w-full p-2 border border-gray-300 rounded-md"
-                        value={formData.num_remise || ''}
+                        value={formData.num_remise || ""}
                         onChange={handleInputChange}
                       />
                     </div>
@@ -1336,7 +1335,7 @@ export const AvancesTab = ({
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Date encaissement
-                        {formData.num_remise != '' ? (
+                        {formData.num_remise != "" ? (
                           <span className="text-red-500">*</span>
                         ) : null}
                       </label>
@@ -1345,8 +1344,8 @@ export const AvancesTab = ({
                           name="date_encaissement"
                           type="date"
                           className="w-full p-2 border border-gray-300 rounded-md"
-                          value={formData.date_encaissement || ''}
-                          required={formData.num_remise != '' ? true : false}
+                          value={formData.date_encaissement || ""}
+                          required={formData.num_remise != "" ? true : false}
                           onChange={handleInputChange}
                         />
                       </div>
@@ -1367,11 +1366,11 @@ export const AvancesTab = ({
                   disabled={loading.form}
                   className={`px-4 py-2 rounded-md flex items-center ${
                     loading.form
-                      ? 'bg-indigo-200 text-indigo-400 cursor-not-allowed' // disabled state
-                      : 'bg-[rgb(26,21,120)] text-white hover:bg-indigo-700' // normal state
+                      ? "bg-indigo-200 text-indigo-400 cursor-not-allowed" // disabled state
+                      : "bg-[rgb(26,21,120)] text-white hover:bg-indigo-700" // normal state
                   }`}
                 >
-                  {currentPaiement ? 'Modifier' : 'Ajouter'}
+                  {currentPaiement ? "Modifier" : "Ajouter"}
                 </button>
               </div>
             </form>
@@ -1387,9 +1386,9 @@ export const AvancesTab = ({
               className=" text-white p-4 rounded-t-lg mb-3"
             >
               <h3 className="text-lg font-bold">
-                {type_action == 'validation'
-                  ? 'Traiter un Avance'
-                  : 'Encaissement'}
+                {type_action == "validation"
+                  ? "Traiter un Avance"
+                  : "Encaissement"}
               </h3>
             </div>
 
@@ -1407,7 +1406,7 @@ export const AvancesTab = ({
                   />
                 </div>
 
-                {type_action == 'validation' && (
+                {type_action == "validation" && (
                   <div>
                     <label className="block text-sm font-medium mb-1">
                       Statut:
@@ -1425,7 +1424,7 @@ export const AvancesTab = ({
                   </div>
                 )}
 
-                {action == '1' && (
+                {action == "1" && (
                   <>
                     <div>
                       <label className="block text-sm font-medium mb-1">
@@ -1434,20 +1433,20 @@ export const AvancesTab = ({
                       <input
                         type="number"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                        value={num_remise_v || ''}
+                        value={num_remise_v || ""}
                         onChange={(e) => set_num_remise_v(e.target.value)}
                         required
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">
-                        Date encaissement:{' '}
+                        Date encaissement:{" "}
                         <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="date"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                        value={date_encaissement_v || ''}
+                        value={date_encaissement_v || ""}
                         onChange={(e) =>
                           set_date_encaissement_v(e.target.value)
                         }
@@ -1457,7 +1456,7 @@ export const AvancesTab = ({
                   </>
                 )}
 
-                {action == '2' && (
+                {action == "2" && (
                   <div>
                     <label className="block text-sm font-medium mb-1">
                       Commentaire: <span className="text-red-500">*</span>
@@ -1508,7 +1507,7 @@ export const AvancesTab = ({
             <div className="grid grid-cols-4 gap-4 mt-10">
               {pjj?.map((pj) => (
                 <div key={pj.id} className="flex items-center">
-                  {pj.fichier?.toLowerCase()?.endsWith('.pdf') ? (
+                  {pj.fichier?.toLowerCase()?.endsWith(".pdf") ? (
                     <FileText className="w-5 h-5 mr-2 text-red-500" />
                   ) : (
                     <div className="relative w-5 h-5 mr-2">
@@ -1549,8 +1548,8 @@ export const AvancesTab = ({
           <DeleteData
             route={APIURL.PAIEMENTS}
             Id={selectedId}
-            type='Avance'
-            message={'Etes-vous sûr de vouloir supprimer cette Avance ?'}
+            type="Avance"
+            message={"Etes-vous sûr de vouloir supprimer cette Avance ?"}
             accessToken={accessToken}
             onClose={() => {
               setShowDeleteModal(false);
@@ -1558,7 +1557,7 @@ export const AvancesTab = ({
             }}
           />
         </Modal>
-      )}{' '}
+      )}{" "}
       {/* Scanner Popup */}
       {popupScanner && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -1601,7 +1600,7 @@ export const AvancesTab = ({
                 onClick={scanner_file}
                 disabled={!fichier_scanner || loading_scann}
               >
-                {loading_scann ? 'Enregistrement...' : 'Enregistrer'}
+                {loading_scann ? "Enregistrement..." : "Enregistrer"}
               </button>
             </div>
           </div>
