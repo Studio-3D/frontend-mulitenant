@@ -20,6 +20,7 @@ import Input from '../Input';
 import Modal from '../Modal';
 import Composition from '@/app/(dashboard)/compositionBien/CompositionTable';
 export default function BienForm() {
+  const [tr_id, set_tr_id] = useState(null);
   const [hasJardin, setHasJardin] = useState(false);
   const [hasParking, setHasParking] = useState(false);
   const [hasBox, setHasBox] = useState(false);
@@ -140,14 +141,15 @@ export default function BienForm() {
     });
   };
   //fadwa
-  const handleselectChange = (field, value) => {
+  /*const handleselectChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+
     if (field == 'bloc_id') {
-     
+      // (formData.bloc_id || blocId)
       if (
         projet.nbre_blocs !== 0 &&
         projet.nbre_immeubles != 0 &&
-        (formData.bloc_id || blocId) &&
+        blocId &&
         !immeubleId
       ) {
         fetchDataByProjet_params('immeubles', setImmeubles, setLoadingBlocs, {
@@ -156,30 +158,76 @@ export default function BienForm() {
       }
     }
     if (field == 'tranche_id') {
-      if (
-        projet.nbre_blocs !== 0 &&
-        (formData.tranche_id || trancheId) &&
-        !blocId
-      ) {
+      //(formData.tranche_id || trancheID)
+      if (projet.nbre_blocs !== 0 && (tr_id != null || trancheId) && !blocId) {
         fetchDataByProjet_params('blocs', setBlocs, setLoadingBlocs, {
           tranche_id: formData.tranche_id ? formData.tranche_id : trancheId,
         });
       }
-
+      //(formData.tranche_id || trancheId)
       if (
         projet.nbre_tranches !== 0 &&
         projet.nbre_immeubles != 0 &&
-        (formData.tranche_id || trancheId) &&
+        (tr_id != null || trancheId) &&
         projet.nbre_blocs == 0 &&
         !immeubleId
       ) {
+        console.log('yumyyy');
         fetchDataByProjet_params('immeubles', setImmeubles, setLoadingBlocs, {
           tranche_id: formData.tranche_id ? formData.tranche_id : trancheId,
         });
       }
     }
-  };
+  };*/
 
+  const handleselectChange = (field, value) => {
+    // Update form data first
+    setFormData((prev) => ({ ...prev, [field]: value }));
+
+    // Use the new value directly instead of formData which hasn't updated yet
+    if (field === 'tranche_id') {
+      const currentTrancheId = value;
+
+      // If project has blocs but no blocs selected yet, fetch blocs for this tranche
+      if (projet.nbre_blocs !== 0 && !blocId) {
+        fetchDataByProjet_params('blocs', setBlocs, setLoadingBlocs, {
+          tranche_id: currentTrancheId || trancheId,
+        });
+      }
+
+      // If project has no blocs but has buildings, fetch buildings directly
+      if (
+        projet.nbre_blocs === 0 &&
+        projet.nbre_immeubles !== 0 &&
+        !immeubleId
+      ) {
+        fetchDataByProjet_params(
+          'immeubles',
+          setImmeubles,
+          setLoadingImmeubles,
+          {
+            tranche_id: currentTrancheId || trancheId,
+          }
+        );
+      }
+    }
+
+    if (field == 'bloc_id') {
+      const currentBlocId = value;
+
+      // If project has buildings and a bloc is selected, fetch buildings for that bloc
+      if (projet.nbre_immeubles !== 0 && currentBlocId && !immeubleId) {
+        fetchDataByProjet_params(
+          'immeubles',
+          setImmeubles,
+          setLoadingImmeubles,
+          {
+            bloc_id: currentBlocId || blocId,
+          }
+        );
+      }
+    }
+  };
   // Fonction générique pour vider des champs et relancer les calculs
   const clearFieldsAndRecalculate = (fieldsToClear) => {
     const updatedForm = { ...formData };
@@ -280,8 +328,10 @@ export default function BienForm() {
         trancheId &&
         !immeubleId
       ) {
-        fetchDataByProjet_params('immeubles', setImmeubles, setLoadingBlocs, { tranche_id: trancheId });
-      } 
+        fetchDataByProjet_params('immeubles', setImmeubles, setLoadingBlocs, {
+          tranche_id: trancheId,
+        });
+      }
       if (
         projet.nbre_blocs !== 0 &&
         (formData.tranche_id || trancheId) &&
@@ -312,16 +362,16 @@ export default function BienForm() {
           bloc_id: formData.bloc_id ? formData.bloc_id : blocId,
         });
       }
-    }
 
-    if (typeBiens.length === 0) {
-      fetchDataByProjet_params('typeBiens', setTypeBiens, setLoading);
-    }
-    if (vues.length === 0) {
-      fetchDataByProjet_params('vues', setVues, setLoading);
-    }
-    if (typologies.length === 0) {
-      fetchDataByProjet_params('typologies', setTypologies, setLoading);
+      if (typeBiens.length === 0) {
+        fetchDataByProjet_params('typeBiens', setTypeBiens, setLoading);
+      }
+      if (vues.length === 0) {
+        fetchDataByProjet_params('vues', setVues, setLoading);
+      }
+      if (typologies.length === 0) {
+        fetchDataByProjet_params('typologies', setTypologies, setLoading);
+      }
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1075,9 +1125,9 @@ export default function BienForm() {
               label="Tranche"
               options={tranches.map((t) => ({ label: t.nom, value: t.id }))}
               value={formData.tranche_id}
-              onChange={(option) =>
-                handleselectChange('tranche_id', option?.value || null)
-              }
+              onChange={(option) => {
+                handleselectChange('tranche_id', option?.value || null);
+              }}
               error={errors.tranche_id}
               isLoading={loadingTranches}
               required
@@ -1843,7 +1893,6 @@ export default function BienForm() {
                     onClick={() => {
                       setShowCompositionModal(false);
                       router.back();
-                    
                     }}
                   >
                     Non

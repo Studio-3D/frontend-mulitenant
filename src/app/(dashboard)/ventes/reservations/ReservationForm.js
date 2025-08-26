@@ -3564,6 +3564,7 @@ export default function ReservationForm({ id }) {
                     width="w-full" // Optionally set width, default is 'w-80'
                     height="h-full" // Optionally set height, default is 'h-10'
                   />
+                   {watch('avance') != '' && watch('avance') != 0 && (
                   <div>
                     <div className="space-y-4F">
                       {/* File Input */}
@@ -3698,7 +3699,7 @@ export default function ReservationForm({ id }) {
                         </>
                       )}
                     </div>
-                  </div>
+                  </div>)}
                 </>
               </div>
             )}
