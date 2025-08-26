@@ -1,16 +1,16 @@
-'use client';
-import { useState, useRef } from 'react';
-import Button from '@/components/Button';
-import axios from 'axios';
-import toast from 'react-hot-toast';
-import { APIURL } from '../../../../configs/api';
-import Modal from '@/components/Modal'; // Make sure you import the Modal component
-import Modal_valider_avance from './Modal_valider_avance'; // Import your Modal_Traite component
-import { Controller, useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-import format from 'date-fns/format';
-import { useAuth } from '../../../../context/AuthContext';
+"use client";
+import { useState, useRef } from "react";
+import Button from "@/components/Button";
+import axios from "axios";
+import toast from "react-hot-toast";
+import { APIURL } from "../../../../configs/api";
+import Modal from "@/components/Modal"; // Make sure you import the Modal component
+import Modal_valider_avance from "./Modal_valider_avance"; // Import your Modal_Traite component
+import { Controller, useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import format from "date-fns/format";
+import { useAuth } from "../../../../context/AuthContext";
 
 export default function Modal_Valider_Reservation({
   onClose,
@@ -30,7 +30,7 @@ export default function Modal_Valider_Reservation({
 
   const [loading, setLoading] = useState({ form: false });
   const { token } = useAuth();
-  const accessToken = token || localStorage.getItem('accessToken');
+  const accessToken = token || localStorage.getItem("accessToken");
   const closeAllModals = () => {
     onClose(); // Close current modal
     closeParentModal(); // Close parent modal
@@ -46,47 +46,47 @@ export default function Modal_Valider_Reservation({
 
   //valider reservation sans avance
   const handle_annuler_avance = () => {
-     setLoading({ ...loading, form: true })
+    setLoading({ ...loading, form: true });
     const formData = new FormData();
-    formData.append('statut_res', 1);
-    formData.append('with_avance', 0);
+    formData.append("statut_res", 1);
+    formData.append("with_avance", 0);
     axios({
-      method: 'put',
+      method: "put",
       url: `${APIURL.ROOTV1}/traiter_reservation/${id}`,
       data: formData,
       headers: {
-        'content-type': 'application/json',
-        Accept: 'application/json',
+        "content-type": "application/json",
+        Accept: "application/json",
         Authorization: `Bearer ${accessToken}`,
       },
     })
       .then(() => {
-             setLoading({ ...loading, form: false })
+        setLoading({ ...loading, form: false });
 
         onClose();
         setOpen_v_avances(false);
-        toast.success('Réservation Validé avec succès');
-          localStorage.setItem('load_data_reservation', 1);
+        toast.success("Réservation Validé avec succès");
+        localStorage.setItem("load_data_reservation", 1);
       })
       .catch(() => {
-        console.log('err');
+        console.log("err");
       });
   };
 
   const defaultValues = {
     cc: commercial,
-    date_res: format(new Date(date_res), 'yyyy-MM-dd'), // Format for date input
+    date_res: format(new Date(date_res), "yyyy-MM-dd"), // Format for date input
   };
 
   const TextField = ({
     label,
     name,
-    type = 'text',
+    type = "text",
     required = false,
     control,
     errors,
-    width = 'w-full',
-    height = 'h-10',
+    width = "w-full",
+    height = "h-10",
     disabled = false,
     value, // Add value prop
   }) => {
@@ -109,11 +109,11 @@ export default function Modal_Valider_Reservation({
               name={name}
               type={type}
               className={`block ${width} ${height} px-3 py-2 mt-1 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
-                errors[name] ? 'border-red-500' : ''
+                errors[name] ? "border-red-500" : ""
               }`}
               required={required}
               disabled={disabled}
-              value={value || field.value || ''} // Use the passed value prop
+              value={value || field.value || ""} // Use the passed value prop
             />
           )}
         />
@@ -150,7 +150,7 @@ export default function Modal_Valider_Reservation({
 
         <div className="flex flex-col items-center justify-center w-full mt-10">
           <div className="w-full max-w-md">
-            {' '}
+            {" "}
             {/* Control width of the content */}
             <TextField
               type="text"
@@ -196,8 +196,8 @@ export default function Modal_Valider_Reservation({
           </div>
         </div>
         <div className="p-3 w-[600px]">
-          <h1 style={{ textAlign: 'center', marginTop: '15px' }}>
-            Etes-vous sûr de Valider la Réservation Code:{code_reservation}?
+          <h1 style={{ textAlign: "center", marginTop: "15px" }}>
+            Etes-vous sûr de vouloir valider la réservation :{code_reservation}?
           </h1>
           <div className="flex justify-center gap-2 mt-[2%]">
             <Button

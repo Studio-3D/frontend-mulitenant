@@ -514,7 +514,7 @@ export default function ReservationForm({ id }) {
       .then((res) => {
         let message = "Quelque chose ne va pas bien";
         if (res.status == 200) {
-          message = `La réservation a été ${
+          message = `Réservation ${
             isEditing ? "modifiée" : "créée"
           } avec succès`;
           toast.success(message);
@@ -3545,7 +3545,7 @@ export default function ReservationForm({ id }) {
                             htmlFor="sr"
                             className="ml-2 block text-sm text-gray-700"
                           >
-                            Voulez vous Enregistrer la Réservation sans montant
+                            Voulez vous Enregistrer la Réservation sans montant?
                             (Prière de saisir un commentaire)
                           </label>
                         </div>

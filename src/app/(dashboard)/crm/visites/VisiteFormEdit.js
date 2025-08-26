@@ -1,30 +1,30 @@
-import { useRouter } from 'next/navigation';
-import axios from 'axios';
-import { useState, useEffect, useRef } from 'react';
+import { useRouter } from "next/navigation";
+import axios from "axios";
+import { useState, useEffect, useRef } from "react";
 import {
   fetchData_Select,
   fetchDataByProjet,
-} from '../../../../../src/configs/api-utils';
+} from "../../../../../src/configs/api-utils";
 
-import BreadCrumb from '../../navigation/BreadCrumb';
-import { Controller, useForm, useWatch } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-import { APIURL, ENDPOINTS } from '../../../../configs/api';
-import toast from 'react-hot-toast';
-import AutocompleteMultiple from '@/components/AutocompleteMultiple';
+import BreadCrumb from "../../navigation/BreadCrumb";
+import { Controller, useForm, useWatch } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { APIURL, ENDPOINTS } from "../../../../configs/api";
+import toast from "react-hot-toast";
+import AutocompleteMultiple from "@/components/AutocompleteMultiple";
 
-import Autocomplete from '@/components/Autocomplete';
+import Autocomplete from "@/components/Autocomplete";
 
-import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
-import TextField from '@/components/Textfield'; // Import the component
-import Button from '@/components/Button'; // adjust the path as needed
-import LoadingSpin from '@/components/LoadingSpin';
+import AutocompleteSelectComponent from "@/components/AutocompleteSelectComponent";
+import TextField from "@/components/Textfield"; // Import the component
+import Button from "@/components/Button"; // adjust the path as needed
+import LoadingSpin from "@/components/LoadingSpin";
 //import { useProjet } from '@/context/ProjetContext';
-import AutocompleteBienEdit from './AutocompleteBien_Edit'; // adjust path if needed
-import AutocompleteStatut_ModeRelance_Biens from './AutocompleteStatut_ModeRelance_Biens';
-import { useAuth } from '../../../../context/AuthContext';
-import FreinsComponent from './FreinsComponent';
+import AutocompleteBienEdit from "./AutocompleteBien_Edit"; // adjust path if needed
+import AutocompleteStatut_ModeRelance_Biens from "./AutocompleteStatut_ModeRelance_Biens";
+import { useAuth } from "../../../../context/AuthContext";
+import FreinsComponent from "./FreinsComponent";
 
 import {
   VISITE_INTERETS,
@@ -34,9 +34,9 @@ import {
   MODE_PAIEMENT,
   ORIENTATIONS,
   ORIENTATION_ABBREVIATIONS,
-} from '@/configs/enum';
-import Pusher from 'pusher-js';
-import ProspectInformations from './ProspectInformations'; // Adjust path as needed
+} from "@/configs/enum";
+import Pusher from "pusher-js";
+import ProspectInformations from "./ProspectInformations"; // Adjust path as needed
 
 export default function VisiteFormEdit({ id }) {
   const [loading_tp_frein, setLoading_tp_frein] = useState(false);
@@ -45,10 +45,10 @@ export default function VisiteFormEdit({ id }) {
 
   const [loading_form, setLoading_form] = useState(false);
   const router = useRouter();
-  const accessToken = localStorage.getItem('accessToken');
+  const accessToken = localStorage.getItem("accessToken");
   const pusher_key_proposition = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_PROP;
   const [loading, setLoading] = useState({ form: false, visites: false });
-  const selectedProjet = JSON.parse(localStorage.getItem('selectedProjet'));
+  const selectedProjet = JSON.parse(localStorage.getItem("selectedProjet"));
   const [backendErrors, setBackendErrors] = useState({});
   const [sources, setSources] = useState([]);
   const [partenaires, setPartenaires] = useState([]);
@@ -62,7 +62,7 @@ export default function VisiteFormEdit({ id }) {
   const current = new Date();
   var new_date = current.setDate(current.getDate());
   const [banques, setBanques] = useState([]);
-  const [expanded, setExpanded] = useState('');
+  const [expanded, setExpanded] = useState("");
   const [loading_bien, setLoading_bien] = useState(false);
   const [type_freins, setType_freins] = useState([]);
   const [list_typologies, setListTyplogies] = useState([]);
@@ -72,7 +72,7 @@ export default function VisiteFormEdit({ id }) {
   const list_etages = [];
   const [disabled_var_source, setDisabled_source] = useState(false);
   const [formData, setFormData] = useState(null);
-  const [bien_propriete_o, setBien_propriete_o] = useState('');
+  const [bien_propriete_o, setBien_propriete_o] = useState("");
   const [info_client, setInfo_client] = useState(null);
   const isEditing = !!id;
   const previousBienRef = useRef(null);
@@ -80,81 +80,81 @@ export default function VisiteFormEdit({ id }) {
   const defaultValues = {
     // selectedProjet.id || ''
     selectedProjet: selectedProjet?.id || 1,
-    prospect_id: '',
-    cin: '',
-    nom: '',
-    email: '',
-    prenom: '',
-    telephone: '',
-    telephone_num2: '',
-    ville: '',
+    prospect_id: "",
+    cin: "",
+    nom: "",
+    email: "",
+    prenom: "",
+    telephone: "",
+    telephone_num2: "",
+    ville: "",
     notifie: 0,
-    source_id: '',
-    source_txt: '',
-    partenaire_id: '',
-    interet: '',
-    date_relance: '',
-    mode_relance: '',
-    rdv: '',
+    source_id: "",
+    source_txt: "",
+    partenaire_id: "",
+    interet: "",
+    date_relance: "",
+    mode_relance: "",
+    rdv: "",
     frein: [],
     frein_array: [],
     tranches: [],
-    etages: '',
+    etages: "",
     orientations: [],
-    avance: '',
+    avance: "",
     typologies: [],
     vues: [],
-    commentaire: '',
-    prix_max: '',
-    prix_min: '',
-    sup_min: '',
-    sup_max: '',
-    bien_id: '',
-    old_bien_id: '',
-    statut: '',
-    description_autre: '',
+    commentaire: "",
+    prix_max: "",
+    prix_min: "",
+    sup_min: "",
+    sup_max: "",
+    bien_id: "",
+    old_bien_id: "",
+    statut: "",
+    description_autre: "",
 
     /**Reservation */
-    date_reservation: '',
-    code_reservation: '',
+    date_reservation: "",
+    code_reservation: "",
     prix: 0,
     reste: 0,
-    mode_financement: '',
+    mode_financement: "",
 
-    commentaire_res: '',
-    avance_res: '',
+    commentaire_res: "",
+    avance_res: "",
     sr: false,
-    banque_id: '',
-    numero_paiement: '',
-    echeance: '',
+    banque_id: "",
+    numero_paiement: "",
+    echeance: "",
     check_montant: false,
 
-    mode_paiement: '',
-    commentaireAvance: '',
+    mode_paiement: "",
+    commentaireAvance: "",
     prix_remise: 0,
     prix_forfetaire: 0,
-    num_remise: '',
-    date_encaissement: '',
+    num_remise: "",
+    date_encaissement: "",
 
     ///
-    bien_pre_reserve: '',
-    bien_val: '',
-    prix_val: '',
+    bien_pre_reserve: "",
+    bien_val: "",
+    prix_val: "",
     Superficie_balcon_calculer: 0,
     superficie_jardin_calculer: 0,
     superficie_terrasse_calculer: 0,
     prix_box: 0,
     prix_parking: 0,
     prix_unitaire: 0,
-    avance_minimale: '',
-    date_reglement: new Date(new_date).toISOString().split('T')[0],
+    avance_minimale: "",
+    date_reglement: new Date(new_date).toISOString().split("T")[0],
   };
 
   let list_statut = VISITE_STATUT_FORM;
 
   const validationSchemaRef = useRef(
     yup.object().shape({
-      interet: yup.string().required('Interêt de visite est requis'),
+      interet: yup.string().required("Interêt de visite est requis"),
     })
   );
 
@@ -170,24 +170,24 @@ export default function VisiteFormEdit({ id }) {
     Pusher.logToConsole = true;
 
     const pusher = new Pusher(`${pusher_key_proposition}`, {
-      cluster: 'eu',
+      cluster: "eu",
       encrypted: true,
     });
 
-    const channel = pusher.subscribe('proposition-updates');
+    const channel = pusher.subscribe("proposition-updates");
 
-    channel.bind('App\\Events\\PropositionUpdated', (data) => {
+    channel.bind("App\\Events\\PropositionUpdated", (data) => {
       fetch_bien_ByProjet(
-        watch('bien_id'),
+        watch("bien_id"),
         bien_propriete_o,
-        'with_proposition'
+        "with_proposition"
       );
     });
-    console.log('bien_to', biensByProjet);
+    console.log("bien_to", biensByProjet);
 
     return () => {
-      channel.unbind('App\\Events\\PropositionUpdated');
-      pusher.unsubscribe('proposition-updates');
+      channel.unbind("App\\Events\\PropositionUpdated");
+      pusher.unsubscribe("proposition-updates");
     };
   };
 
@@ -219,7 +219,7 @@ export default function VisiteFormEdit({ id }) {
       .then((res) => {
         if (res.data.reservation != null) {
           setInfo_reservation(
-            'Le Code Réservation  :' + v + 'est déjà existant '
+            "Le Code Réservation  :" + v + "est déjà existant "
           );
           setLoading_form(true);
         } else {
@@ -234,33 +234,33 @@ export default function VisiteFormEdit({ id }) {
   };
 
   const storebien_en_proposition = async (id) => {
-    var old_id = watch('old_bien_id');
+    var old_id = watch("old_bien_id");
 
     if (old_id == null) {
       old_id = 0;
     }
 
     //si il choisit le bien_pre_reserve autre fois
-    if (id == watch('bien_pre_reserve')) {
+    if (id == watch("bien_pre_reserve")) {
       id = 0;
     }
 
     //si ancien bien_pre_reserve
-    if (old_id === watch('bien_pre_reserve')) {
+    if (old_id === watch("bien_pre_reserve")) {
       old_id = 0;
     }
 
     axios({
-      method: 'put',
+      method: "put",
       url: `${APIURL.ROOT}/v1/setPropostionBien/${id}/` + old_id,
       headers: {
-        'content-type': 'application/json',
-        Accept: 'application/json',
+        "content-type": "application/json",
+        Accept: "application/json",
         Authorization: `Bearer ${accessToken}`,
       },
     })
       .then(() => {
-        console.log('bien est en proposition');
+        console.log("bien est en proposition");
       })
       .catch((err) => {
         const response = err.response;
@@ -281,7 +281,7 @@ export default function VisiteFormEdit({ id }) {
       .then((res) => {
         setType_freins(res.data.typefreins);
         setType_freins((current) => [
-          { id: 'tout', description: 'Autre' },
+          { id: "tout", description: "Autre" },
           ...current,
         ]);
         setLoading_tp_frein(false);
@@ -290,7 +290,7 @@ export default function VisiteFormEdit({ id }) {
   };
 
   const handleChange_interet = (code) => {
-    setValue('interet', code);
+    setValue("interet", code);
     if (code != null) {
       if (code === 2) {
         //setItemm(2)
@@ -298,15 +298,15 @@ export default function VisiteFormEdit({ id }) {
 
       //interesse
       else if (code == 1) {
-        if (watch('cin') === '') {
-          toast.error('Veuillez saisir un cin !');
+        if (watch("cin") === "") {
+          toast.error("Veuillez saisir un cin !");
         }
 
         //setItemm(1)
         fetch_bien_ByProjet(
-          watch('bien_id'),
+          watch("bien_id"),
           bien_propriete_o,
-          'without_proposition'
+          "without_proposition"
         );
       }
 
@@ -315,20 +315,20 @@ export default function VisiteFormEdit({ id }) {
         //setItemm(3)
         fetchTypeFreins();
 
-        fetchDataByProjet('tranches', setTranches, setLoading);
-        fetchDataByProjet('vues', setList_Vues, setLoading);
-        fetchDataByProjet('typologies', setListTyplogies, setLoading);
+        fetchDataByProjet("tranches", setTranches, setLoading);
+        fetchDataByProjet("vues", setList_Vues, setLoading);
+        fetchDataByProjet("typologies", setListTyplogies, setLoading);
       }
     }
   };
 
   useEffect(() => {
-    fetchData_Select('sources', setSources, setLoading);
+    fetchData_Select("sources", setSources, setLoading);
     if (partenaires.length === 0) {
-      fetchDataByProjet('partenaires', setPartenaires, setLoading);
+      fetchDataByProjet("partenaires", setPartenaires, setLoading);
     }
 
-    fetchData_Select('banques', setBanques, setLoading);
+    fetchData_Select("banques", setBanques, setLoading);
     if (isEditing) {
       axios
         .get(`${APIURL.VISITES}/${id}`, {
@@ -341,36 +341,36 @@ export default function VisiteFormEdit({ id }) {
           const visite = res.data.visite;
 
           setFormData({
-            nom: visite?.prospect?.nom || '',
-            prenom: visite?.prospect?.prenom || '',
-            telephone: visite?.prospect?.telephone || '',
-            telephone_num2: visite?.prospect?.telephone_num2 || '',
-            email: visite?.prospect?.email || '',
+            nom: visite?.prospect?.nom || "",
+            prenom: visite?.prospect?.prenom || "",
+            telephone: visite?.prospect?.telephone || "",
+            telephone_num2: visite?.prospect?.telephone_num2 || "",
+            email: visite?.prospect?.email || "",
             notifie: visite?.prospect?.notifie || 0,
-            cin: visite?.prospect?.cin || '',
-            interet: visite?.interet || '',
-            ville: visite?.prospect?.ville || '',
-            source_id: visite?.prospect?.source?.id || '',
-            source_txt: visite?.prospect?.source?.source || '',
+            cin: visite?.prospect?.cin || "",
+            interet: visite?.interet || "",
+            ville: visite?.prospect?.ville || "",
+            source_id: visite?.prospect?.source?.id || "",
+            source_txt: visite?.prospect?.source?.source || "",
             mode_relance: visite?.relance_relation?.mode_relance
               ? visite?.relance_relation?.mode_relance
               : visite?.mode_relance
               ? visite?.mode_relance
-              : '',
+              : "",
             date_relance: visite?.relance_relation?.date_relance
               ? visite?.relance_relation?.date_relance
               : visite?.date_relance
               ? visite?.date_relance
-              : '',
-            commentaire: visite?.commentaire || '',
-            partenaire_id: visite?.prospect?.partenaire_id || '',
-            bien_id: visite?.bien_id ? visite?.bien_id : '',
-            bien_pre_reserve: visite?.bien_id ? visite?.bien_id : '',
-            rdv: visite?.rdv_relation?.rdv ? visite?.rdv_relation?.rdv : '',
-            statut: visite?.interet === '1' ? visite?.statut : '',
-            bien_val: visite?.bien?.propriete_dite_bien || '',
-            prix_val: visite?.bien?.prix || '',
-            prix: visite?.bien?.prix || '',
+              : "",
+            commentaire: visite?.commentaire || "",
+            partenaire_id: visite?.prospect?.partenaire_id || "",
+            bien_id: visite?.bien_id ? visite?.bien_id : "",
+            bien_pre_reserve: visite?.bien_id ? visite?.bien_id : "",
+            rdv: visite?.rdv_relation?.rdv ? visite?.rdv_relation?.rdv : "",
+            statut: visite?.interet === "1" ? visite?.statut : "",
+            bien_val: visite?.bien?.propriete_dite_bien || "",
+            prix_val: visite?.bien?.prix || "",
+            prix: visite?.bien?.prix || "",
             superficie_balcon_calculer:
               visite?.bien != null
                 ? visite?.bien?.superficie_balcon_calculer
@@ -393,78 +393,78 @@ export default function VisiteFormEdit({ id }) {
               visite?.bien != null ? visite?.bien?.avance_minimale : 0,
             date_reservation: visite?.reservation
               ? visite?.reservation?.date_reservation
-              : '',
+              : "",
             code_reservation: visite?.reservation
               ? visite?.reservation?.code_reservation
-              : '',
+              : "",
           });
-          setValue('interet', visite.interet);
-          if (visite.interet === '1') {
+          setValue("interet", visite.interet);
+          if (visite.interet === "1") {
             fetch_bien_ByProjet(
               visite.bien_id,
               NomBienComplet(visite?.bien),
-              'without_proposition'
+              "without_proposition"
             );
 
             setBien_propriete_o(NomBienComplet(visite?.bien));
           }
           setPartenaire_txt(
             !visite.prospect.partenaire_id
-              ? ''
+              ? ""
               : visite.prospect.partenaire.description
           );
           setValue(
-            'partenaire_txt',
+            "partenaire_txt",
             !visite.prospect.partenaire_id
-              ? ''
+              ? ""
               : visite.prospect.partenaire.description
           );
-          if (visite.statut === '3') {
-            const newStatut = { code: 3, label: 'Pré_Réservation_Perdu' };
+          if (visite.statut === "3") {
+            const newStatut = { code: 3, label: "Pré_Réservation_Perdu" };
 
             list_statut[3] = newStatut;
           }
-          if (visite.statut === '4') {
-            const newStatut = { code: 4, label: 'Réservation_Perdu' };
+          if (visite.statut === "4") {
+            const newStatut = { code: 4, label: "Réservation_Perdu" };
 
             list_statut[4] = newStatut;
           }
 
-          if (visite.interet == '3') {
+          if (visite.interet == "3") {
             fetchTypeFreins();
 
-            fetchDataByProjet('tranches', setTranches, setLoading);
-            fetchDataByProjet('vues', setList_Vues, setLoading);
-            fetchDataByProjet('typologies', setListTyplogies, setLoading);
-            console.log('rani here ');
+            fetchDataByProjet("tranches", setTranches, setLoading);
+            fetchDataByProjet("vues", setList_Vues, setLoading);
+            fetchDataByProjet("typologies", setListTyplogies, setLoading);
+            console.log("rani here ");
             let freinValue = [];
 
             if (visite.frein.frein_etage.length > 0) {
               const etages = visite.frein.frein_etage.map((item) => item.etage);
-              setValue('etages', etages);
-              freinValue.push('etage');
+              setValue("etages", etages);
+              freinValue.push("etage");
             }
 
             if (visite.frein.frein_vue.length > 0) {
               const vues = visite.frein.frein_vue.map((item) => item.vue);
-              setValue('vues', vues);
-              freinValue.push('vue');
+              setValue("vues", vues);
+              freinValue.push("vue");
             }
 
             if (visite.frein.frein_typologie.length > 0) {
               const typologies = visite.frein.frein_typologie.map(
                 (item) => item.typologie
               );
-              setValue('typologies', typologies);
-              freinValue.push('typologie');
+              setValue("typologies", typologies);
+              freinValue.push("typologie");
             }
 
             if (visite.frein.frein_tranche.length > 0) {
               const tranches = visite.frein.frein_tranches.map(
                 (item) => item.tranche
               );
-              setValue('tranches', tranches);
-              freinValue.push('tranche');
+              setValue("tranches", tranches);
+              freinValue.push("tranche");
             }
 
             if (visite.frein.frein_orientation.length > 0) {
@@ -489,43 +489,43 @@ export default function VisiteFormEdit({ id }) {
                 }
               );
 
-              setValue('orientations', orientations);
-              freinValue.push('orientation');
+              setValue("orientations", orientations);
+              freinValue.push("orientation");
             }
 
             if (visite.frein.description_autre != null) {
               setValue(
-                'description_autre',
-                visite?.frein?.description_autre || ''
+                "description_autre",
+                visite?.frein?.description_autre || ""
               );
-              freinValue.push('autre');
+              freinValue.push("autre");
             }
 
             if (
               visite.frein.prix_min != null ||
               visite.frein.prix_max != null
             ) {
-              setValue('prix_min', visite?.frein?.prix_min || '');
-              setValue('prix_max', visite?.frein?.prix_max || '');
-              freinValue.push('prix');
+              setValue("prix_min", visite?.frein?.prix_min || "");
+              setValue("prix_max", visite?.frein?.prix_max || "");
+              freinValue.push("prix");
             }
 
             if (
               visite.frein.superficie_min != null ||
               visite.frein.superficie_max != null
             ) {
-              setValue('sup_min', visite?.frein?.superficie_min || '');
-              setValue('sup_max', visite?.frein?.superficie_max || '');
-              freinValue.push('superficie');
+              setValue("sup_min", visite?.frein?.superficie_min || "");
+              setValue("sup_max", visite?.frein?.superficie_max || "");
+              freinValue.push("superficie");
             }
 
             if (visite.frein.avance != null) {
-              setValue('avance', visite.frein.avance);
-              freinValue.push('avance');
+              setValue("avance", visite.frein.avance);
+              freinValue.push("avance");
             }
 
             // Finally set the 'frein' array:
-            setValue('frein', freinValue);
+            setValue("frein", freinValue);
           }
         })
         .catch((error) => console.log(error.message));
@@ -554,60 +554,60 @@ export default function VisiteFormEdit({ id }) {
     defaultValues,
   });
   useEffect(() => {
-    if (watch('avance_res') !== '') {
-      if (watch('avance_res') == 0 && user?.role > 2) {
-        setError('avance_res', {
-          type: 'manual',
-          message: 'Le montant ne peut pas être 0 pour votre rôle',
+    if (watch("avance_res") !== "") {
+      if (watch("avance_res") == 0 && user?.role > 2) {
+        setError("avance_res", {
+          type: "manual",
+          message: "Le montant ne peut pas être 0 pour votre rôle",
         });
       } else if (
-        watch('avance_res') > 0 &&
-        watch('avance_res') < watch('avance_minimale')
+        watch("avance_res") > 0 &&
+        watch("avance_res") < watch("avance_minimale")
       ) {
-        setError('avance_res', {
-          type: 'manual',
-          message: `Le montant doit être au moins ${watch('avance_minimale')}`,
+        setError("avance_res", {
+          type: "manual",
+          message: `Le montant doit être au moins ${watch("avance_minimale")}`,
         });
       } else {
-        clearErrors('avance_res');
+        clearErrors("avance_res");
       }
     }
-  }, [watch('avance_res'), watch('avance_minimale'), user?.role]);
+  }, [watch("avance_res"), watch("avance_minimale"), user?.role]);
 
   const handlePrixChange = (val) => {
     setTimeout(() => {
       let a, b, minField, maxField;
 
       if (val === 1) {
-        a = Number(watch('prix_min'));
-        b = Number(watch('prix_max'));
-        minField = 'prix_min';
-        maxField = 'prix_max';
+        a = Number(watch("prix_min"));
+        b = Number(watch("prix_max"));
+        minField = "prix_min";
+        maxField = "prix_max";
 
         if (a > b) {
           setInfo_prix(
             `Le ${minField.replace(
-              '_',
-              ' '
-            )} doit être inférieur ou égal au ${maxField.replace('_', ' ')}.`
+              "_",
+              " "
+            )} doit être inférieur ou égal au ${maxField.replace("_", " ")}.`
           );
         } else {
           setInfo_prix(null);
         }
       } else if (val === 2) {
-        a = Number(watch('sup_min'));
-        b = Number(watch('sup_max'));
-        minField = 'superficie min';
-        maxField = 'superficie max';
+        a = Number(watch("sup_min"));
+        b = Number(watch("sup_max"));
+        minField = "superficie min";
+        maxField = "superficie max";
 
         if (a > b) {
           setInfo_sup(
             `La ${minField.replace(
-              '_',
-              ' '
+              "_",
+              " "
             )} doit être inférieure ou égale à la ${maxField.replace(
-              '_',
-              ' '
+              "_",
+              " "
             )}.`
           );
         } else {
@@ -622,39 +622,39 @@ export default function VisiteFormEdit({ id }) {
     // Initial validation state
     let errors_validation = true;
 
-    const email = watch('email') || '';
+    const email = watch("email") || "";
     // 1) Required if `email_required` is true
     if (email_required && !email) {
       errors_validation = false;
-      console.error('Email obligatoire');
+      console.error("Email obligatoire");
     }
     // 2) If there’s something in the field, check format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (email && !emailRegex.test(email)) {
       errors_validation = false;
-      console.error('Email invalide');
+      console.error("Email invalide");
     }
     // Perform checks only if 'interet' equals 3
-    if (Number(watch('interet')) === 3) {
+    if (Number(watch("interet")) === 3) {
       const isValid =
-        watch('frein')?.length !== 0 &&
-        (!watch('frein')?.includes('vue') || watch('vues').length !== 0) &&
-        (!watch('frein')?.includes('typologie') ||
-          watch('typologies').length !== 0) &&
-        (!watch('frein')?.includes('orientation') ||
-          watch('orientations').length !== 0) &&
-        (!watch('frein')?.includes('etage') || watch('etages').length !== 0) &&
-        (!watch('frein')?.includes('tranche') ||
-          watch('tranches').length !== 0);
+        watch("frein")?.length !== 0 &&
+        (!watch("frein")?.includes("vue") || watch("vues").length !== 0) &&
+        (!watch("frein")?.includes("typologie") ||
+          watch("typologies").length !== 0) &&
+        (!watch("frein")?.includes("orientation") ||
+          watch("orientations").length !== 0) &&
+        (!watch("frein")?.includes("etage") || watch("etages").length !== 0) &&
+        (!watch("frein")?.includes("tranche") ||
+          watch("tranches").length !== 0);
 
       if (isValid) {
         errors_validation = true;
 
-        console.log('All validations are correct!');
+        console.log("All validations are correct!");
       } else {
         errors_validation = false;
 
-        console.error('Some validations failed.');
+        console.error("Some validations failed.");
       }
     }
 
@@ -664,22 +664,22 @@ export default function VisiteFormEdit({ id }) {
       setBackendErrors({});
 
       let url = APIURL.VISITES;
-      let method = 'post';
+      let method = "post";
 
       // Map object values to string IDs (or join them), depending on the field
       const transformMultiSelectField = (value, key) => {
-        if (!value) return '';
+        if (!value) return "";
 
         if (Array.isArray(value)) {
-          if (value.length === 0) return '';
+          if (value.length === 0) return "";
 
           // If array of objects with ID
-          if (typeof value[0] === 'object') {
-            return value.map((v) => v.id).join(',');
+          if (typeof value[0] === "object") {
+            return value.map((v) => v.id).join(",");
           }
 
           // If array of strings or numbers
-          return value.join(',');
+          return value.join(",");
         }
 
         // If value is already a string or number
@@ -688,11 +688,11 @@ export default function VisiteFormEdit({ id }) {
 
       // Create a list of all fields that need transformation
       const multiSelectFields = [
-        'tranches',
-        'typologies',
-        'vues',
-        'etages',
-        'orientations',
+        "tranches",
+        "typologies",
+        "vues",
+        "etages",
+        "orientations",
       ];
 
       // Clone your original data
@@ -705,27 +705,27 @@ export default function VisiteFormEdit({ id }) {
       //frein MAJUSCULE
       if (preparedData.frein) {
         const freinStr = Array.isArray(preparedData.frein)
-          ? preparedData.frein.join(',')
+          ? preparedData.frein.join(",")
           : String(preparedData.frein);
 
         preparedData.frein = freinStr
-          .split(',')
+          .split(",")
           .map((item) => item.toUpperCase())
-          .join(',');
+          .join(",");
       }
       //ORIENTATION  1,2===>N,S
       if (preparedData.orientations) {
         const idsArray = String(preparedData.orientations)
-          .split(',')
+          .split(",")
           .map((id) => parseInt(id.trim()))
           .filter((id) => ORIENTATIONS[id]);
 
         const mappedCodes = idsArray.map((id) => {
           const label = ORIENTATIONS[id]?.label;
-          return ORIENTATION_ABBREVIATIONS[label] || '';
+          return ORIENTATION_ABBREVIATIONS[label] || "";
         });
 
-        preparedData.orientations = mappedCodes.join(',');
+        preparedData.orientations = mappedCodes.join(",");
       }
 
       const dataToSend = new FormData();
@@ -735,7 +735,7 @@ export default function VisiteFormEdit({ id }) {
 
       if (isEditing) {
         url = `${url}/${id}`;
-        method = 'put';
+        method = "put";
       }
 
       axios({
@@ -743,17 +743,16 @@ export default function VisiteFormEdit({ id }) {
         url: url,
         data: dataToSend,
         headers: {
-          'content-type': 'application/json',
-          Accept: 'application/json',
+          "content-type": "application/json",
+          Accept: "application/json",
           Authorization: `Bearer ${accessToken}`,
         },
       })
         .then((res) => {
-          let message = 'Quelque chose ne va pas bien';
+          let message =
+            "Une erreur s'est produite lors de la soumission du formulaire.";
           if (res.status === 200) {
-            message = `La visite a été ${
-              isEditing ? 'modifiée' : 'créée'
-            } avec succès`;
+            message = `Visite ${isEditing ? "modifiée" : "créée"} avec succès`;
             toast.success(message);
             router.push(ENDPOINTS.VISITES);
             reset(defaultValues);
@@ -786,18 +785,18 @@ export default function VisiteFormEdit({ id }) {
 
   const handleChange_event = (text) => (event) => {
     const value = event.target.value;
-    if (text === 'cin') {
+    if (text === "cin") {
       if (value.length >= 3) {
         const timeout = setTimeout(() => {
-          fetch_event_visite(value, 'search_prospect_by_param', text, 'cin');
+          fetch_event_visite(value, "search_prospect_by_param", text, "cin");
         }, 3000);
 
         return () => clearTimeout(timeout);
       }
-    } else if (text === 'Téléphone' || text === 'Téléphone2') {
+    } else if (text === "Téléphone" || text === "Téléphone2") {
       if (value.length >= 10) {
         const timeout = setTimeout(() => {
-          fetch_event_visite(value, 'search_prospect_by_param', text, 'tel');
+          fetch_event_visite(value, "search_prospect_by_param", text, "tel");
         }, 3000);
 
         return () => clearTimeout(timeout);
@@ -805,7 +804,7 @@ export default function VisiteFormEdit({ id }) {
     } else if (text === "l'email") {
       if (value.length >= 9) {
         const timeout = setTimeout(() => {
-          fetch_event_visite(value, 'search_prospect_by_param', text, 'email');
+          fetch_event_visite(value, "search_prospect_by_param", text, "email");
         }, 3000);
 
         return () => clearTimeout(timeout);
@@ -824,59 +823,59 @@ export default function VisiteFormEdit({ id }) {
         if (res.data.prospect.length != 0) {
           setDisabled(true);
           if (res.data.prospect.cin != null) {
-            setValue('cin', res.data.prospect.cin);
+            setValue("cin", res.data.prospect.cin);
           }
           if (res.data.prospect.nom != null) {
-            setValue('nom', res.data.prospect.nom);
+            setValue("nom", res.data.prospect.nom);
           }
           if (res.data.prospect.prenom != null) {
-            setValue('prenom', res.data.prospect.prenom);
+            setValue("prenom", res.data.prospect.prenom);
           }
           if (res.data.prospect.telephone != null) {
-            setValue('telephone', res.data.prospect.telephone);
+            setValue("telephone", res.data.prospect.telephone);
           }
           if (res.data.prospect.telephone_num2 != null) {
-            setValue('telephone_num2', res.data.prospect.telephone_num2);
+            setValue("telephone_num2", res.data.prospect.telephone_num2);
           }
           if (res.data.prospect.email != null) {
-            setValue('email', res.data.prospect.email);
+            setValue("email", res.data.prospect.email);
           }
 
           if (res.data.prospect.source != null) {
-            setValue('source_id', res.data.prospect.source.id);
-            setValue('source_txt', res.data.prospect.source.source);
+            setValue("source_id", res.data.prospect.source.id);
+            setValue("source_txt", res.data.prospect.source.source);
             setDisabled_source(true);
           } else {
-            setValue('source_id', '');
-            setValue('source_txt', '');
+            setValue("source_id", "");
+            setValue("source_txt", "");
             setDisabled_source(false);
           }
           if (res.data.prospect.partenaire_id != null) {
             setPartenaire_txt(res.data.prospect.partenaire.description);
             setValue(
-              'partenaire_txt',
+              "partenaire_txt",
               res.data.prospect.partenaire.description
             );
-            setValue('partenaire_id', res.data.prospect.partenaire_id);
+            setValue("partenaire_id", res.data.prospect.partenaire_id);
             setDisabled_source(true);
           } else {
             setPartenaire_txt(null);
-            setValue('partenaire_txt', null);
-            setValue('partenaire_id', null);
+            setValue("partenaire_txt", null);
+            setValue("partenaire_id", null);
             setDisabled_source(false);
           }
           if (res.data.prospect.notifie != null) {
-            setValue('notifie', res.data.prospect.notifie);
+            setValue("notifie", res.data.prospect.notifie);
           }
           if (res.data.prospect.is_client === 0) {
             setInfo_client(
-              'le ' +
+              "le " +
                 text +
-                ' :' +
+                " :" +
                 v +
-                ' appartient au prospect ' +
+                " appartient au prospect " +
                 res.data.prospect.nom +
-                ' ' +
+                " " +
                 res.data.prospect.prenom
             );
             setTimeout(() => {
@@ -884,13 +883,13 @@ export default function VisiteFormEdit({ id }) {
             }, 7000);
           } else {
             setInfo_client(
-              'le ' +
+              "le " +
                 text +
-                ' :' +
+                " :" +
                 v +
-                ' appartient au client ' +
+                " appartient au client " +
                 res.data.prospect.nom +
-                ' ' +
+                " " +
                 res.data.prospect.prenom
             );
             setTimeout(() => {
@@ -899,32 +898,32 @@ export default function VisiteFormEdit({ id }) {
           }
         } else {
           if (disabled_var == true) {
-            setValue('nom', '');
-            setValue('prenom', '');
-            if (text == 'Téléphone') {
-              setValue('cin', '');
-              setValue('telephone_num2', null);
-              setValue('email', '');
-            } else if (text == 'Téléphone2') {
-              setValue('cin', '');
-              setValue('telephone', '');
-              setValue('email', '');
-            } else if (text == 'cin') {
-              setValue('telephone', '');
-              setValue('telephone_num2', null);
-              setValue('email', '');
+            setValue("nom", "");
+            setValue("prenom", "");
+            if (text == "Téléphone") {
+              setValue("cin", "");
+              setValue("telephone_num2", null);
+              setValue("email", "");
+            } else if (text == "Téléphone2") {
+              setValue("cin", "");
+              setValue("telephone", "");
+              setValue("email", "");
+            } else if (text == "cin") {
+              setValue("telephone", "");
+              setValue("telephone_num2", null);
+              setValue("email", "");
             } else if (text == "l'email") {
-              setValue('cin', '');
-              setValue('telephone', '');
-              setValue('telephone_num2', null);
-              setValue('email', '');
+              setValue("cin", "");
+              setValue("telephone", "");
+              setValue("telephone_num2", null);
+              setValue("email", "");
             }
           }
-          setValue('source_id', '');
-          setValue('source_id', '');
-          setValue('partenaire_id', null);
-          setPartenaire_txt('');
-          setValue('notifie', 0);
+          setValue("source_id", "");
+          setValue("source_id", "");
+          setValue("partenaire_id", null);
+          setPartenaire_txt("");
+          setValue("notifie", 0);
           setDisabled(false);
           setDisabled_source(false);
         }
@@ -937,7 +936,7 @@ export default function VisiteFormEdit({ id }) {
   };
 
   const fetch_bien_ByProjet = async (bien_id_, bien_propriete, txt) => {
-    if (watch('interet') == 1) {
+    if (watch("interet") == 1) {
       setLoading_bien(true);
       await axios
         .get(
@@ -966,7 +965,7 @@ export default function VisiteFormEdit({ id }) {
             //si on modifier le bien deja pre reservé
             res.data.biens.push({
               propriete_dite_bien: bien_propriete_o,
-              id: watch('bien_id'),
+              id: watch("bien_id"),
             });
           }
           setBiensByProjet(res.data.biens);
@@ -989,38 +988,38 @@ export default function VisiteFormEdit({ id }) {
 
   //10+30+4+10    //10+4500
   const getSurfaceTotal = () =>
-    getParsed(watch('superficie_jardin_calculer')) +
-    getParsed(watch('superficie_habitable')) +
-    getParsed(watch('superficie_balcon_calculer')) +
-    getParsed(watch('superficie_terrasse_calculer'));
+    getParsed(watch("superficie_jardin_calculer")) +
+    getParsed(watch("superficie_habitable")) +
+    getParsed(watch("superficie_balcon_calculer")) +
+    getParsed(watch("superficie_terrasse_calculer"));
 
   const getPrixTotal = (unitPrice) =>
     unitPrice * getSurfaceTotal() +
-    getParsed(watch('prix_box')) +
-    getParsed(watch('prix_parking'));
+    getParsed(watch("prix_box")) +
+    getParsed(watch("prix_parking"));
 
   const handlechangeprix_remise = (event) => {
     const prixRemise = getParsed(event.target.value);
-    const prixForfetaire = getParsed(watch('prix_forfetaire'));
+    const prixForfetaire = getParsed(watch("prix_forfetaire"));
     if (prixRemise !== 0) {
       const total = getPrixTotal(prixRemise);
-      setValue('prix', prixForfetaire ? total - prixForfetaire : total);
+      setValue("prix", prixForfetaire ? total - prixForfetaire : total);
     }
   };
 
   const handlechangeprix_forfetaire = (event) => {
-    const prixRemise = getParsed(watch('prix_remise'));
-    const prixUnitaire = getParsed(watch('prix_unitaire'));
+    const prixRemise = getParsed(watch("prix_remise"));
+    const prixUnitaire = getParsed(watch("prix_unitaire"));
     const prixForfetaire = getParsed(event.target.value);
 
     const totalRemise = getPrixTotal(prixRemise);
     const totalUnitaire = getPrixTotal(prixUnitaire);
 
     if (!prixForfetaire) {
-      setValue('prix', prixRemise ? totalRemise : totalUnitaire);
+      setValue("prix", prixRemise ? totalRemise : totalUnitaire);
     } else {
       setValue(
-        'prix',
+        "prix",
         prixRemise
           ? totalRemise - prixForfetaire
           : totalUnitaire - prixForfetaire
@@ -1029,38 +1028,38 @@ export default function VisiteFormEdit({ id }) {
   };
 
   const handlechangeMontant = (event) => {
-    const prixFinal = parseFloat(watch('prix')) || 0;
+    const prixFinal = parseFloat(watch("prix")) || 0;
     const avance = parseFloat(event.target.value) || 0;
-    setValue('reste', prixFinal - avance);
+    setValue("reste", prixFinal - avance);
   };
 
   // First select: Source
   const handleSourceChange = (newValue) => {
-    setValue('partenaire_id', ''); // Reset partenaire ID when source changes
-    setValue('source_txt', newValue ? newValue.source : ''); // Set source ID
-    setValue('source_id', newValue ? newValue.id : ''); // Set source ID
+    setValue("partenaire_id", ""); // Reset partenaire ID when source changes
+    setValue("source_txt", newValue ? newValue.source : ""); // Set source ID
+    setValue("source_id", newValue ? newValue.id : ""); // Set source ID
     setPartenaire_txt(null);
   };
   // Second select: Partenaire
   const handlePartenaireChange = (newValue) => {
     // setPartenaire_txt(newValue ? newValue : ''); // Set partenaire value
-    setValue('partenaire_id', newValue ? newValue.id : ''); // Set partenaire ID
+    setValue("partenaire_id", newValue ? newValue.id : ""); // Set partenaire ID
   };
 
   const handleChange_freins = (selectedValues) => {
     try {
       const values = selectedValues.map(
-        (item) => item?.description?.toLowerCase() || ''
+        (item) => item?.description?.toLowerCase() || ""
       );
-      setValue('frein', values);
+      setValue("frein", values);
     } catch (error) {
-      console.error('Error in handleChange_freins:', error);
+      console.error("Error in handleChange_freins:", error);
     }
   };
 
   const handleChange_tp_notif = (code) => {
     if (code) {
-      setValue('mode_relance', code);
+      setValue("mode_relance", code);
       if (code == 3) {
         setEmail_required(true);
       } else {
@@ -1071,17 +1070,17 @@ export default function VisiteFormEdit({ id }) {
 
   const handleChange_mode_finance = (code) => {
     if (code) {
-      setValue('mode_financement', code);
+      setValue("mode_financement", code);
     }
   };
   const handleChange_mode_paiement = (code) => {
     if (code) {
-      setValue('mode_paiement', code);
+      setValue("mode_paiement", code);
     }
   };
   const handleinputchange_banuqe = (e) => {
     if (e) {
-      setValue('banque_id', e.target.value);
+      setValue("banque_id", e.target.value);
     }
   };
 
@@ -1089,47 +1088,47 @@ export default function VisiteFormEdit({ id }) {
     loading_form ||
     info_prix != null ||
     info_sup != null ||
-    (watch('statut') == 2 &&
-      (watch('code_reservation') == '' ||
-        watch('bien_val') == null ||
-        watch('prix_val') == null ||
-        watch('date_reservation') == '' ||
-        watch('avance_res') == null ||
-        watch('avance_res') < 0 ||
-        watch('mode_financement') == null ||
-        watch('mode_paiement') == null ||
-        (watch('check_montant') == true &&
-          watch('commentaireAvance') != null &&
-          watch('commentaireAvance').length == 0) ||
-        (watch('avance_res') == 0 && watch('check_montant') == false) ||
+    (watch("statut") == 2 &&
+      (watch("code_reservation") == "" ||
+        watch("bien_val") == null ||
+        watch("prix_val") == null ||
+        watch("date_reservation") == "" ||
+        watch("avance_res") == null ||
+        watch("avance_res") < 0 ||
+        watch("mode_financement") == null ||
+        watch("mode_paiement") == null ||
+        (watch("check_montant") == true &&
+          watch("commentaireAvance") != null &&
+          watch("commentaireAvance").length == 0) ||
+        (watch("avance_res") == 0 && watch("check_montant") == false) ||
         errors.avance_res)); // Add this check for avance_res errors
 
- function NomBienComplet(bien) {
-  console.log('Full bien object:', bien); // Log the entire object
-  const noms = [];
+  function NomBienComplet(bien) {
+    console.log("Full bien object:", bien); // Log the entire object
+    const noms = [];
 
-  if (bien.tranche?.nom) {
-    console.log('Adding tranche:', bien.tranche.nom);
-    noms.push(bien.tranche.nom);
+    if (bien.tranche?.nom) {
+      console.log("Adding tranche:", bien.tranche.nom);
+      noms.push(bien.tranche.nom);
+    }
+
+    if (bien.bloc?.nom) {
+      console.log("Adding bloc:", bien.bloc.nom);
+      noms.push(bien.bloc.nom);
+    }
+
+    if (bien.immeuble?.nom) {
+      console.log("Adding immeuble:", bien.immeuble.nom);
+      noms.push(bien.immeuble.nom);
+    }
+
+    console.log("Adding propriete_dite_bien:", bien.propriete_dite_bien);
+    noms.push(bien.propriete_dite_bien);
+
+    const result = noms.join(" - ");
+    console.log("Final result:", result);
+    return result;
   }
-
-  if (bien.bloc?.nom) {
-    console.log('Adding bloc:', bien.bloc.nom);
-    noms.push(bien.bloc.nom);
-  }
-
-  if (bien.immeuble?.nom) {
-    console.log('Adding immeuble:', bien.immeuble.nom);
-    noms.push(bien.immeuble.nom);
-  }
-
-  console.log('Adding propriete_dite_bien:', bien.propriete_dite_bien);
-  noms.push(bien.propriete_dite_bien);
-
-  const result = noms.join(' - ');
-  console.log('Final result:', result);
-  return result;
-}
   if (isEditing && !formData) {
     return <LoadingSpin />;
   }
@@ -1143,53 +1142,53 @@ export default function VisiteFormEdit({ id }) {
   const handlechangeBien_id = (event, newBien) => {
     const previousBien = previousBienRef.current;
 
-    console.log('✅ New Bien ID:', newBien?.id);
-    console.log('🔁 Previous Bien ID:', previousBien?.id);
+    console.log("✅ New Bien ID:", newBien?.id);
+    console.log("🔁 Previous Bien ID:", previousBien?.id);
 
     if (newBien != null) {
-      localStorage.removeItem('selectedBien');
-      setValue('old_bien_id', previousBien?.id);
+      localStorage.removeItem("selectedBien");
+      setValue("old_bien_id", previousBien?.id);
 
-      setValue('bien_id', newBien?.id);
-      setValue('bien_val', newBien.propriete_dite_bien);
-      setValue('prix_val', newBien.prix);
-      setValue('prix', newBien.prix);
+      setValue("bien_id", newBien?.id);
+      setValue("bien_val", newBien.propriete_dite_bien);
+      setValue("prix_val", newBien.prix);
+      setValue("prix", newBien.prix);
       setValue(
-        'superficie_balcon_calculer',
+        "superficie_balcon_calculer",
         newBien.superficie_balcon_calculer != null
           ? newBien.superficie_balcon_calculer
           : 0
       );
       setValue(
-        'superficie_jardin_calculer',
+        "superficie_jardin_calculer",
         newBien.superficie_jardin_calculer != null
           ? newBien.superficie_jardin_calculer
           : 0
       );
       setValue(
-        'superficie_terrasse_calculer',
+        "superficie_terrasse_calculer",
         newBien.superficie_terrasse_calculer != null
           ? newBien.superficie_terrasse_calculer
           : 0
       );
       setValue(
-        'superficie_habitable',
+        "superficie_habitable",
         newBien.superficie_habitable != null ? newBien.superficie_habitable : 0
       );
-      setValue('prix_box', newBien.prix_box ? newBien.prix_box : 0);
-      setValue('prix_parking', newBien.prix_parking ? newBien.prix_parking : 0);
+      setValue("prix_box", newBien.prix_box ? newBien.prix_box : 0);
+      setValue("prix_parking", newBien.prix_parking ? newBien.prix_parking : 0);
       setValue(
-        'prix_unitaire',
+        "prix_unitaire",
         newBien.prix_unitaire ? newBien.prix_unitaire : 0
       );
       setValue(
-        'avance_minimale',
+        "avance_minimale",
         newBien.avance_minimale ? newBien.avance_minimale : 0
       );
 
-      localStorage.removeItem('selectedBien');
-      localStorage.setItem('selectedBien', newBien.id);
-      const storedBien = localStorage.getItem('selectedBien');
+      localStorage.removeItem("selectedBien");
+      localStorage.setItem("selectedBien", newBien.id);
+      const storedBien = localStorage.getItem("selectedBien");
       if (storedBien) {
         storebien_en_proposition(storedBien);
         pusher_function();
@@ -1204,7 +1203,7 @@ export default function VisiteFormEdit({ id }) {
       <div className="flex items-center justify-start">
         <BreadCrumb
           baseUrl={ENDPOINTS.VISITES}
-          step={`${isEditing ? 'Modifier' : 'Ajouter'} une Visite`}
+          step={`${isEditing ? "Modifier" : "Ajouter"} une Visite`}
         />
       </div>
 
@@ -1222,7 +1221,7 @@ export default function VisiteFormEdit({ id }) {
             <div className="col-span-3">
               <h2
                 className="text-lg font-medium border-b pb-2 mb-4"
-                style={{ color: '#231651' }}
+                style={{ color: "#231651" }}
               >
                 Informations du prospect
               </h2>
@@ -1247,11 +1246,11 @@ export default function VisiteFormEdit({ id }) {
                   disabled_var_source={disabled_var_source}
                   partenaire_txt={partenaire_txt}
                   sourceValue={
-                    sources.find((opt) => opt.id == watch('source_id')) || null
+                    sources.find((opt) => opt.id == watch("source_id")) || null
                   } // Ensure null when undefined
                   partenaireValue={
                     partenaires.find(
-                      (opt) => opt.id == watch('partenaire_id')
+                      (opt) => opt.id == watch("partenaire_id")
                     ) || null
                   } // Ensure null when undefined
                   handleChange_event={handleChange_event}
@@ -1263,7 +1262,7 @@ export default function VisiteFormEdit({ id }) {
             <div className="col-span-3 mt-4">
               <h2
                 className="text-lg font-medium border-b pb-2 mb-4"
-                style={{ color: '#231651' }}
+                style={{ color: "#231651" }}
               >
                 Informations de la visite
               </h2>
@@ -1273,7 +1272,7 @@ export default function VisiteFormEdit({ id }) {
               <AutocompleteSelectComponent
                 label="Intérêt:"
                 name="interet"
-                value={watch('interet')} // should be 1, 2, or 3
+                value={watch("interet")} // should be 1, 2, or 3
                 required={true}
                 options={{
                   1: VISITE_INTERETS[1],
@@ -1283,13 +1282,13 @@ export default function VisiteFormEdit({ id }) {
                 onChange={handleChange_interet}
               />
 
-              {Number(watch('interet')) === 2 && (
+              {Number(watch("interet")) === 2 && (
                 <>
                   <AutocompleteSelectComponent
                     label="Mode Relance:"
                     name="mode_relance"
                     required={false}
-                    value={watch('mode_relance')}
+                    value={watch("mode_relance")}
                     options={VISITE_TYPE_NOTIF}
                     onChange={handleChange_tp_notif}
                   />
@@ -1306,7 +1305,7 @@ export default function VisiteFormEdit({ id }) {
                 </>
               )}
 
-              {Number(watch('interet')) === 3 && (
+              {Number(watch("interet")) === 3 && (
                 <FreinsComponent
                   watch={watch}
                   control={control}
@@ -1331,16 +1330,16 @@ export default function VisiteFormEdit({ id }) {
                 />
               )}
 
-              {Number(watch('interet')) === 1 && (
+              {Number(watch("interet")) === 1 && (
                 <>
                   <AutocompleteBienEdit
                     user={user}
                     biensByProjet={biensByProjet}
-                    value={watch('bien_id')}
+                    value={watch("bien_id")}
                     onChange={handlechangeBien_id}
                     // disabled={[3, 4, 5].includes(watch('statut'))}
                     loading={loading_bien}
-                    error={errors['bien_id'] || backendErrors['bien_id']}
+                    error={errors["bien_id"] || backendErrors["bien_id"]}
                   />
 
                   {/* Statut */}
@@ -1348,15 +1347,15 @@ export default function VisiteFormEdit({ id }) {
                     <AutocompleteSelectComponent
                       label="Statut:"
                       name="statut"
-                      value={watch('statut')}
+                      value={watch("statut")}
                       required={true}
                       options={VISITE_STATUT_FORM}
-                      onChange={(e) => setValue('statut', e)} // or e?.id depending on your options shape
+                      onChange={(e) => setValue("statut", e)} // or e?.id depending on your options shape
                     />
                   </div>
 
                   {/* Conditional RDV / Relance fields */}
-                  {watch('statut') == 1 && (
+                  {watch("statut") == 1 && (
                     <>
                       <TextField
                         label="Rendez Vous:"
@@ -1373,7 +1372,7 @@ export default function VisiteFormEdit({ id }) {
                         label="Mode Relance:"
                         name="mode_relance"
                         required={false}
-                         value={watch('mode_relance')}
+                        value={watch("mode_relance")}
                         options={VISITE_TYPE_NOTIF}
                         onChange={handleChange_tp_notif}
                       />
@@ -1404,23 +1403,23 @@ export default function VisiteFormEdit({ id }) {
               )}
             </div>
 
-            {watch('interet') == 1 &&
-              watch('statut') == 2 &&
-              watch('bien_id') != '' && (
+            {watch("interet") == 1 &&
+              watch("statut") == 2 &&
+              watch("bien_id") != "" && (
                 <div>
-                  {watch('statut') == 2 && watch('bien_id') != null && (
+                  {watch("statut") == 2 && watch("bien_id") != null && (
                     <div className="border rounded-lg  mt-4">
                       {/* Accordion Header */}
                       <div
                         className="flex items-center justify-between px-4 py-2 cursor-pointer"
-                        style={{ background: '#2f8a8bab' }}
+                        style={{ background: "#2f8a8bab" }}
                         onClick={() => handleChange(`panel_res`)}
                       >
                         <h3 className="text-white font-semibold">
-                          Réservation du Bien {watch('bien_val')}
+                          Réservation du Bien {watch("bien_val")}
                         </h3>
                         <span className="text-white">
-                          {expanded.includes(`panel_res`) ? '⌃' : '⌄'}
+                          {expanded.includes(`panel_res`) ? "⌃" : "⌄"}
                         </span>
                       </div>
 
@@ -1495,14 +1494,14 @@ export default function VisiteFormEdit({ id }) {
                         {/* Accordion Header */}
                         <div
                           className="flex items-center justify-between px-4 py-2 cursor-pointer"
-                          style={{ background: '#2f8a8bab' }}
+                          style={{ background: "#2f8a8bab" }}
                           onClick={() => handleChange(`panel_pai`)}
                         >
                           <h3 className="text-white font-semibold">
-                            Paiement du Bien {watch('bien_val')}
+                            Paiement du Bien {watch("bien_val")}
                           </h3>
                           <span className="text-white">
-                            {expanded.includes(`panel_pai`) ? '⌃' : '⌄'}
+                            {expanded.includes(`panel_pai`) ? "⌃" : "⌄"}
                           </span>
                         </div>
 
@@ -1512,17 +1511,17 @@ export default function VisiteFormEdit({ id }) {
                             <div>
                               <label
                                 className="flex items-center space-x-2"
-                                style={{ marginTop: '30px' }}
+                                style={{ marginTop: "30px" }}
                               >
                                 <Controller
                                   name="sr"
                                   control={control}
-                                  defaultValue={defaultValues['sr']} // Make sure it's a boolean
+                                  defaultValue={defaultValues["sr"]} // Make sure it's a boolean
                                   render={({ field }) => (
                                     <div className="flex items-center space-x-2">
                                       <span
                                         className={`text-sm font-medium ${
-                                          field.value ? 'text-purple-600' : ''
+                                          field.value ? "text-purple-600" : ""
                                         }`}
                                       >
                                         Sr:
@@ -1629,7 +1628,7 @@ export default function VisiteFormEdit({ id }) {
                               label="Mode Financement:"
                               name="mode_financement"
                               required={true}
-                              value={watch('mode_financement')}
+                              value={watch("mode_financement")}
                               options={MODE_FINANCE}
                               onChange={handleChange_mode_finance}
                             />
@@ -1638,21 +1637,21 @@ export default function VisiteFormEdit({ id }) {
                               label="Mode Paiement:"
                               name="mode_paiement"
                               required={true}
-                              value={watch('mode_paiement')}
+                              value={watch("mode_paiement")}
                               options={MODE_PAIEMENT}
                               onChange={handleChange_mode_paiement}
                             />
                             {/* Conditional Fields */}
-                            {watch('mode_paiement') !== 1 &&
-                              watch('mode_paiement') !== '' && (
+                            {watch("mode_paiement") !== 1 &&
+                              watch("mode_paiement") !== "" && (
                                 <>
                                   <AutocompleteStatut_ModeRelance_Biens
-                                    name={'banque_id'}
-                                    label={'Banque:'}
-                                    placeholder={'Sélectionner La banque'}
+                                    name={"banque_id"}
+                                    label={"Banque:"}
+                                    placeholder={"Sélectionner La banque"}
                                     options={banques}
-                                    value={watch('banque_id')}
-                                    required={watch('mode_paiement') !== 1}
+                                    value={watch("banque_id")}
+                                    required={watch("mode_paiement") !== 1}
                                     code="id"
                                     labelKey="nom"
                                     onChange={(e) =>
@@ -1664,8 +1663,8 @@ export default function VisiteFormEdit({ id }) {
                                     name="numero_paiement"
                                     type="number"
                                     required={
-                                      watch('mode_paiement') !== 1 &&
-                                      watch('mode_paiement') !== ''
+                                      watch("mode_paiement") !== 1 &&
+                                      watch("mode_paiement") !== ""
                                     }
                                     control={control}
                                     errors={errors}
@@ -1675,16 +1674,16 @@ export default function VisiteFormEdit({ id }) {
                                 </>
                               )}
 
-                            {watch('mode_paiement') !== '' &&
-                              watch('mode_paiement') !== 1 &&
-                              watch('mode_paiement') !== 5 &&
-                              watch('mode_paiement') !== 6 && (
+                            {watch("mode_paiement") !== "" &&
+                              watch("mode_paiement") !== 1 &&
+                              watch("mode_paiement") !== 5 &&
+                              watch("mode_paiement") !== 6 && (
                                 <TextField
                                   label="Date Échéance:"
                                   name="echeance"
                                   required={
-                                    watch('mode_paiement') !== 1 &&
-                                    watch('mode_paiement') !== ''
+                                    watch("mode_paiement") !== 1 &&
+                                    watch("mode_paiement") !== ""
                                   }
                                   type="date"
                                   control={control}
@@ -1693,12 +1692,12 @@ export default function VisiteFormEdit({ id }) {
                                   defaultValues={defaultValues}
                                 />
                               )}
-                            {watch('avance_res') != '' &&
-                              watch('avance_res') == 0 && (
+                            {watch("avance_res") != "" &&
+                              watch("avance_res") == 0 && (
                                 <div>
                                   <label
                                     className="flex items-center space-x-2"
-                                    style={{ marginTop: '19px' }}
+                                    style={{ marginTop: "19px" }}
                                   >
                                     <Controller
                                       name="check_montant"
@@ -1709,8 +1708,8 @@ export default function VisiteFormEdit({ id }) {
                                           <span
                                             className={`text-sm font-medium ${
                                               field.value
-                                                ? 'text-purple-600'
-                                                : ''
+                                                ? "text-purple-600"
+                                                : ""
                                             }`}
                                           >
                                             Voulez vous Enregistrer la
@@ -1722,11 +1721,11 @@ export default function VisiteFormEdit({ id }) {
                                             {...field}
                                             checked={field.value}
                                             required={
-                                              watch('avance_res') !== '' &&
-                                              watch('avance_res') === 0
+                                              watch("avance_res") !== "" &&
+                                              watch("avance_res") === 0
                                             }
                                             className="h-5 w-10 rounded-full bg-gray-300 transition-all duration-300"
-                                            style={{ color: 'green' }}
+                                            style={{ color: "green" }}
                                           />
                                         </div>
                                       )}
@@ -1738,7 +1737,7 @@ export default function VisiteFormEdit({ id }) {
                               label="Commentaire:"
                               name="commentaireAvance"
                               required={
-                                watch('check_montant') == true ? true : false
+                                watch("check_montant") == true ? true : false
                               }
                               multi={true} // Set this to true if you want a multi-line textarea, else leave it out or false
                               control={control} // Passed from useForm hook
@@ -1748,12 +1747,12 @@ export default function VisiteFormEdit({ id }) {
                               width="w-full" // Optionally set width, default is 'w-80'
                               height="h-full" // Optionally set height, default is 'h-10'
                             />
-                            {user.role <= 2 && watch('avance_res') > 0 && (
+                            {user.role <= 2 && watch("avance_res") > 0 && (
                               <>
                                 <div className="col-span-3">
                                   <h2
                                     className="text-lg font-medium border-b pb-2 mb-4"
-                                    style={{ color: '#231651' }}
+                                    style={{ color: "#231651" }}
                                   >
                                     Informations Encaissement
                                   </h2>
@@ -1785,8 +1784,8 @@ export default function VisiteFormEdit({ id }) {
                   )}
                 </div>
               )}
-            {(Number(watch('interet')) === 2 ||
-              Number(watch('interet')) === 3) && (
+            {(Number(watch("interet")) === 2 ||
+              Number(watch("interet")) === 3) && (
               <div className="flex-1 mt-4">
                 <TextField
                   label="Commentaire:"
