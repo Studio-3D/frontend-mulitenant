@@ -1,24 +1,24 @@
-'use client';
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import axios from 'axios';
-import { APIURL } from '@/configs/api';
-import ProjectStepper from '@/components/ProjectStepper';
-import toast from 'react-hot-toast';
-import { ORIENTATIONS } from '@/components/bien-utils';
-import { fetchDataByProjet_params } from '@/configs/api-utils';
-import SelectInput from '../SelectInput';
-import LoadingSpin from '@/components/LoadingSpin';
-import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
-import InputSelect from '../inputSelect';
-import Button from '../Button';
-import { useProjet } from '@/context/ProjetContext';
-import { useParams } from 'next/navigation';
-import { Switch } from '@headlessui/react'; // ou votre composant Switch habituel
+"use client";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import axios from "axios";
+import { APIURL } from "@/configs/api";
+import ProjectStepper from "@/components/ProjectStepper";
+import toast from "react-hot-toast";
+import { ORIENTATIONS } from "@/components/bien-utils";
+import { fetchDataByProjet_params } from "@/configs/api-utils";
+import SelectInput from "../SelectInput";
+import LoadingSpin from "@/components/LoadingSpin";
+import BreadCrumb from "@/app/(dashboard)/navigation/BreadCrumb";
+import InputSelect from "../inputSelect";
+import Button from "../Button";
+import { useProjet } from "@/context/ProjetContext";
+import { useParams } from "next/navigation";
+import { Switch } from "@headlessui/react"; // ou votre composant Switch habituel
 
-import Input from '../Input';
-import Modal from '../Modal';
-import Composition from '@/app/(dashboard)/compositionBien/CompositionTable';
+import Input from "../Input";
+import Modal from "../Modal";
+import Composition from "@/app/(dashboard)/compositionBien/CompositionTable";
 export default function BienForm() {
   const [hasJardin, setHasJardin] = useState(false);
   const [hasParking, setHasParking] = useState(false);
@@ -32,19 +32,19 @@ export default function BienForm() {
   const { id } = useParams();
   const { selectProjet } = useProjet();
 
-  const projetId = searchParams.get('projet');
-  const blocId = searchParams.get('bloc');
-  const trancheId = searchParams.get('tranche');
-  const immeubleId = searchParams.get('immeuble');
+  const projetId = searchParams.get("projet");
+  const blocId = searchParams.get("bloc");
+  const trancheId = searchParams.get("tranche");
+  const immeubleId = searchParams.get("immeuble");
 
   // Reference data
   const [typeBiens, setTypeBiens] = useState([]);
   const [vues, setVues] = useState([]);
   const [typologies, setTypologies] = useState([]);
-  const projet = JSON.parse(localStorage.getItem('selectedProjet') || '{}');
-  const token = localStorage.getItem('accessToken');
+  const projet = JSON.parse(localStorage.getItem("selectedProjet") || "{}");
+  const token = localStorage.getItem("accessToken");
   const [compositionModalMessage, setCompositionModalMessage] = useState(
-    'Voulez-vous ajouter une composition pour ce bien?'
+    "Voulez-vous ajouter une composition pour ce bien?"
   );
   // States for cascade dropdowns
   const [tranches, setTranches] = useState([]);
@@ -58,7 +58,7 @@ export default function BienForm() {
   if (projet?.max_etages !== undefined) {
     for (let i = 0; i <= projet.max_etages; i++) {
       etages.push({
-        label: i === 0 ? 'Rez-de-chaussée' : `Étage ${i}`,
+        label: i === 0 ? "Rez-de-chaussée" : `Étage ${i}`,
         value: i,
       });
     }
@@ -79,37 +79,37 @@ export default function BienForm() {
 
   // Steps
   const steps = [
-    'Détails du bien',
-    'Superficies du bien',
-    'Composition du bien',
+    "Détails du bien",
+    "Superficies du bien",
+    "Composition du bien",
   ];
 
   // Form state with default values
   const [formData, setFormData] = useState({
     // Basic details
-    projet_id: projet?.id || id || '',
-    propriete_dite_bien: '',
-    numero: '',
-    niveau: '',
-    orientation: '',
+    projet_id: projet?.id || id || "",
+    propriete_dite_bien: "",
+    numero: "",
+    niveau: "",
+    orientation: "",
     conventionne: false,
     prix_unitaire: 0,
     prix: 0,
-    tranche_id: '',
-    bloc_id: blocId || '',
-    immeuble_id: immeubleId || '',
-    etat: 'DISPONIBLE',
-    num_box: '',
-    superficie_jardin: '',
-    prix_box: '',
-    prix_parking: '',
-    num_parking: '',
-    superficie_box: '',
-    superficie_parking: '',
-    superficie_balcon_calculer: '',
-    superficie_jardin_calculer: '',
-    superficie_terrasse_calculer: '',
-    superficie_balcon: '',
+    tranche_id: "",
+    bloc_id: blocId || "",
+    immeuble_id: immeubleId || "",
+    etat: "DISPONIBLE",
+    num_box: "",
+    superficie_jardin: "",
+    prix_box: "",
+    prix_parking: "",
+    num_parking: "",
+    superficie_box: "",
+    superficie_parking: "",
+    superficie_balcon_calculer: "",
+    superficie_jardin_calculer: "",
+    superficie_terrasse_calculer: "",
+    superficie_balcon: "",
   });
 
   const [formDataComp, setFormDataComp] = useState({
@@ -142,26 +142,25 @@ export default function BienForm() {
   //fadwa
   const handleselectChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    if (field == 'bloc_id') {
-     
+    if (field == "bloc_id") {
       if (
         projet.nbre_blocs !== 0 &&
         projet.nbre_immeubles != 0 &&
         (formData.bloc_id || blocId) &&
         !immeubleId
       ) {
-        fetchDataByProjet_params('immeubles', setImmeubles, setLoadingBlocs, {
+        fetchDataByProjet_params("immeubles", setImmeubles, setLoadingBlocs, {
           bloc_id: formData.bloc_id ? formData.bloc_id : blocId,
         });
       }
     }
-    if (field == 'tranche_id') {
+    if (field == "tranche_id") {
       if (
         projet.nbre_blocs !== 0 &&
         (formData.tranche_id || trancheId) &&
         !blocId
       ) {
-        fetchDataByProjet_params('blocs', setBlocs, setLoadingBlocs, {
+        fetchDataByProjet_params("blocs", setBlocs, setLoadingBlocs, {
           tranche_id: formData.tranche_id ? formData.tranche_id : trancheId,
         });
       }
@@ -173,7 +172,7 @@ export default function BienForm() {
         projet.nbre_blocs == 0 &&
         !immeubleId
       ) {
-        fetchDataByProjet_params('immeubles', setImmeubles, setLoadingBlocs, {
+        fetchDataByProjet_params("immeubles", setImmeubles, setLoadingBlocs, {
           tranche_id: formData.tranche_id ? formData.tranche_id : trancheId,
         });
       }
@@ -185,7 +184,7 @@ export default function BienForm() {
     const updatedForm = { ...formData };
 
     fieldsToClear.forEach((field) => {
-      updatedForm[field] = '';
+      updatedForm[field] = "";
     });
 
     setFormData(updatedForm);
@@ -196,8 +195,8 @@ export default function BienForm() {
   useEffect(() => {
     if (!hasJardin) {
       clearFieldsAndRecalculate([
-        'superficie_jardin',
-        'superficie_jardin_calculer',
+        "superficie_jardin",
+        "superficie_jardin_calculer",
       ]);
     }
   }, [hasJardin]);
@@ -206,9 +205,9 @@ export default function BienForm() {
   useEffect(() => {
     if (!hasParking) {
       clearFieldsAndRecalculate([
-        'num_parking',
-        'prix_parking',
-        'superficie_parking',
+        "num_parking",
+        "prix_parking",
+        "superficie_parking",
       ]);
     }
   }, [hasParking]);
@@ -216,7 +215,7 @@ export default function BienForm() {
   // Vider les champs si hasBox est désactivé
   useEffect(() => {
     if (!hasBox) {
-      clearFieldsAndRecalculate(['num_box', 'prix_box', 'superficie_box']);
+      clearFieldsAndRecalculate(["num_box", "prix_box", "superficie_box"]);
     }
   }, [hasBox]);
 
@@ -236,7 +235,7 @@ export default function BienForm() {
         tranches.length === 0 &&
         !formData.tranche_id
       ) {
-        fetchDataByProjet_params('tranches', setTranches, setLoadingTranches);
+        fetchDataByProjet_params("tranches", setTranches, setLoadingTranches);
       }
 
       if (
@@ -246,7 +245,7 @@ export default function BienForm() {
         !immeubleId &&
         !formData.bloc_id
       ) {
-        fetchDataByProjet_params('blocs', setBlocs, setLoadingBlocs);
+        fetchDataByProjet_params("blocs", setBlocs, setLoadingBlocs);
       }
 
       if (
@@ -259,7 +258,7 @@ export default function BienForm() {
         !formData.immeuble_id
       ) {
         fetchDataByProjet_params(
-          'immeubles',
+          "immeubles",
           setImmeubles,
           setLoadingImmeubles
         );
@@ -280,14 +279,16 @@ export default function BienForm() {
         trancheId &&
         !immeubleId
       ) {
-        fetchDataByProjet_params('immeubles', setImmeubles, setLoadingBlocs, { tranche_id: trancheId });
-      } 
+        fetchDataByProjet_params("immeubles", setImmeubles, setLoadingBlocs, {
+          tranche_id: trancheId,
+        });
+      }
       if (
         projet.nbre_blocs !== 0 &&
         (formData.tranche_id || trancheId) &&
         !blocId
       ) {
-        fetchDataByProjet_params('blocs', setBlocs, setLoadingBlocs, {
+        fetchDataByProjet_params("blocs", setBlocs, setLoadingBlocs, {
           tranche_id: formData.tranche_id ? formData.tranche_id : trancheId,
         });
       }
@@ -298,7 +299,7 @@ export default function BienForm() {
         projet.nbre_blocs == 0 &&
         !immeubleId
       ) {
-        fetchDataByProjet_params('immeubles', setImmeubles, setLoadingBlocs, {
+        fetchDataByProjet_params("immeubles", setImmeubles, setLoadingBlocs, {
           tranche_id: formData.tranche_id ? formData.tranche_id : trancheId,
         });
       }
@@ -308,20 +309,20 @@ export default function BienForm() {
         (formData.bloc_id || blocId) &&
         !immeubleId
       ) {
-        fetchDataByProjet_params('immeubles', setImmeubles, setLoadingBlocs, {
+        fetchDataByProjet_params("immeubles", setImmeubles, setLoadingBlocs, {
           bloc_id: formData.bloc_id ? formData.bloc_id : blocId,
         });
       }
     }
 
     if (typeBiens.length === 0) {
-      fetchDataByProjet_params('typeBiens', setTypeBiens, setLoading);
+      fetchDataByProjet_params("typeBiens", setTypeBiens, setLoading);
     }
     if (vues.length === 0) {
-      fetchDataByProjet_params('vues', setVues, setLoading);
+      fetchDataByProjet_params("vues", setVues, setLoading);
     }
     if (typologies.length === 0) {
-      fetchDataByProjet_params('typologies', setTypologies, setLoading);
+      fetchDataByProjet_params("typologies", setTypologies, setLoading);
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -340,7 +341,7 @@ export default function BienForm() {
     if (blocId && !id) {
       const fetchBlocDetails = async () => {
         try {
-          const token = localStorage.getItem('accessToken');
+          const token = localStorage.getItem("accessToken");
           const response = await axios.get(`${APIURL.BLOCS}/${blocId}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
@@ -370,7 +371,7 @@ export default function BienForm() {
             }
           }
         } catch (error) {
-          console.error('Error fetching bloc details:', error);
+          console.error("Error fetching bloc details:", error);
         }
       };
 
@@ -383,7 +384,7 @@ export default function BienForm() {
     if (immeubleId && !id) {
       const fetchImmeubleDetails = async () => {
         try {
-          const token = localStorage.getItem('accessToken');
+          const token = localStorage.getItem("accessToken");
           const response = await axios.get(
             `${APIURL.IMMEUBLES}/${immeubleId}`,
             {
@@ -437,7 +438,7 @@ export default function BienForm() {
             }
           }
         } catch (error) {
-          console.error('Error fetching immeuble details:', error);
+          console.error("Error fetching immeuble details:", error);
         }
       };
 
@@ -450,14 +451,14 @@ export default function BienForm() {
   const fetchBienData = useCallback(async (bienId) => {
     setFetchingData(true);
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem("accessToken");
       const response = await axios.get(`${APIURL.BIENS}/${bienId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.data && response.data.bien) {
         const bienData = response.data.bien;
-        console.log('Bien data loaded:', bienData);
+        console.log("Bien data loaded:", bienData);
 
         // Convert checkbox values from 0/1 to boolean
         bienData.conventionne = !!bienData.conventionne;
@@ -491,18 +492,18 @@ export default function BienForm() {
           ...Object.fromEntries(
             Object.entries(bienData).map(([key, value]) => [
               key,
-              value === null ? '' : value,
+              value === null ? "" : value,
             ])
           ),
           // Explicitly set these IDs for dropdowns
-          tranche_id: bienData.tranche_id || '',
-          bloc_id: bienData.bloc_id || '',
-          immeuble_id: bienData.immeuble_id || '',
-          type_id: bienData.type_id || '',
-          vue_id: bienData.vue_id || '',
-          typologie_id: bienData.typologie_id || '',
+          tranche_id: bienData.tranche_id || "",
+          bloc_id: bienData.bloc_id || "",
+          immeuble_id: bienData.immeuble_id || "",
+          type_id: bienData.type_id || "",
+          vue_id: bienData.vue_id || "",
+          typologie_id: bienData.typologie_id || "",
           // Ensure etat has a valid value
-          etat: bienData.etat || 'DISPONIBLE',
+          etat: bienData.etat || "DISPONIBLE",
         };
 
         setFormData(formattedData);
@@ -524,8 +525,8 @@ export default function BienForm() {
         }, 100);
       }
     } catch (error) {
-      console.error('Error fetching bien data:', error);
-      toast.error('Erreur lors du chargement des données du bien');
+      console.error("Error fetching bien data:", error);
+      toast.error("Erreur lors du chargement des données du bien");
     } finally {
       setFetchingData(false);
     }
@@ -629,8 +630,8 @@ export default function BienForm() {
   };
 
   // Handle form input changes with special calculations
-  const handleChange = (field, value, context = 'main') => {
-    if (context === 'comp') {
+  const handleChange = (field, value, context = "main") => {
+    if (context === "comp") {
       setFormDataComp((prev) => ({
         ...prev,
         [field]: value,
@@ -639,18 +640,18 @@ export default function BienForm() {
       setFormData((prev) => {
         const updated = { ...prev, [field]: value };
         // Special field handlers
-        if (field === 'superficie_terrasse') {
+        if (field === "superficie_terrasse") {
           handleTerraceChange(value, updated);
-        } else if (field === 'superficie_balcon') {
+        } else if (field === "superficie_balcon") {
           handleBalconChange(value, updated);
-        } else if (field === 'superficie_jardin') {
+        } else if (field === "superficie_jardin") {
           handleJardinChange(value, updated);
-        } else if (field === 'superficie_habitable') {
+        } else if (field === "superficie_habitable") {
           updateVendableAndTotalArea({
             ...updated,
             superficie_habitable: value,
           });
-        } else if (field === 'prix_unitaire') {
+        } else if (field === "prix_unitaire") {
           recalculatePrice(value, updated.superficie_vendable);
         }
         // Cascade dropdown logic
@@ -674,24 +675,24 @@ export default function BienForm() {
   const validateStep0 = () => {
     const errors = {};
     if (!formData.propriete_dite_bien) {
-      errors.propriete_dite_bien = ['La propriété dite bien est requise'];
+      errors.propriete_dite_bien = ["La propriété dite bien est requise"];
     }
     if (!formData.numero) {
-      errors.numero = ['Le numéro est requis'];
+      errors.numero = ["Le numéro est requis"];
     }
     if (formData.niveau === null || formData.niveau === undefined) {
-      errors.niveau = ['Le niveau est requis'];
+      errors.niveau = ["Le niveau est requis"];
     }
     if (!formData.type_id) {
-      errors.type_id = ['Le type de bien est requis'];
+      errors.type_id = ["Le type de bien est requis"];
     }
 
     if (!formData.nbre_facades) {
-      errors.nbre_facades = ['Le nombre de façades est requis'];
+      errors.nbre_facades = ["Le nombre de façades est requis"];
     }
     if (formData.prix_unitaire == null) {
       // teste null ou undefined
-      errors.prix_unitaire = ['Le prix unitaire est requis'];
+      errors.prix_unitaire = ["Le prix unitaire est requis"];
     }
 
     if (!formData.avance_minimale) {
@@ -709,44 +710,44 @@ export default function BienForm() {
       formData.superficie_habitable === null ||
       formData.superficie_habitable === undefined
     ) {
-      errors.superficie_habitable = ['La  superficie habitable est requise'];
+      errors.superficie_habitable = ["La  superficie habitable est requise"];
     }
     if (
       formData.superficie_architecte === null ||
       formData.superficie_architecte === undefined
     ) {
-      errors.superficie_architecte = ['La  superficie architecte est requise'];
+      errors.superficie_architecte = ["La  superficie architecte est requise"];
     }
     // Si jardin activé
     if (hasJardin) {
       if (!formData.superficie_jardin) {
-        errors.superficie_jardin = ['La superficie du jardin est requise'];
+        errors.superficie_jardin = ["La superficie du jardin est requise"];
       }
     }
 
     // Si parking activé
     if (hasParking) {
       if (!formData.num_parking) {
-        errors.num_parking = ['Le numéro de parking est requis'];
+        errors.num_parking = ["Le numéro de parking est requis"];
       }
       if (!formData.prix_parking) {
-        errors.prix_parking = ['Le prix du parking est requis'];
+        errors.prix_parking = ["Le prix du parking est requis"];
       }
       if (!formData.superficie_parking) {
-        errors.superficie_parking = ['La superficie du parking est requise'];
+        errors.superficie_parking = ["La superficie du parking est requise"];
       }
     }
 
     // Si box activé
     if (hasBox) {
       if (!formData.num_box) {
-        errors.num_box = ['Le numéro du box est requis'];
+        errors.num_box = ["Le numéro du box est requis"];
       }
       if (!formData.prix_box) {
-        errors.prix_box = ['Le prix du box est requis'];
+        errors.prix_box = ["Le prix du box est requis"];
       }
       if (!formData.superficie_box) {
-        errors.superficie_box = ['La superficie du box est requise'];
+        errors.superficie_box = ["La superficie du box est requise"];
       }
     }
     return errors;
@@ -784,54 +785,54 @@ export default function BienForm() {
     if (isSubmittingRef.current) return;
     setLoading(true);
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem("accessToken");
 
       const requiredFields = [
-        'id',
-        'projet_id',
-        'propriete_dite_bien',
-        'numero',
-        'niveau',
-        'orientation',
-        'conventionne',
-        'prix_unitaire',
-        'prix',
-        'tranche_id',
-        'bloc_id',
-        'immeuble_id',
-        'etat',
-        'nbre_facades',
-        'avance_minimale',
-        'titre_foncier',
-        'type_id',
-        'vue_id',
-        'typologie_id',
-        'superficie_habitable',
-        'superficie_architecte',
-        'superficie_terrasse',
-        'superficie_terrasse_calculer',
-        'superficie_balcon',
-        'superficie_balcon_calculer',
-        'superficie_jardin',
-        'superficie_jardin_calculer',
-        'superficie_vendable',
-        'superficie_total',
-        'num_parking',
-        'prix_parking',
-        'superficie_parking',
-        'num_box',
-        'prix_box',
-        'superficie_box',
-        'nbre_chambres',
-        'nbre_salons',
-        'nbre_sdb',
-        'nbre_cuisines',
-        'nbre_terasses',
-        'nbre_balcons',
-        'nbre_halls',
-        'nbre_receptions',
-        'nbre_buanderies',
-        'nbre_placards',
+        "id",
+        "projet_id",
+        "propriete_dite_bien",
+        "numero",
+        "niveau",
+        "orientation",
+        "conventionne",
+        "prix_unitaire",
+        "prix",
+        "tranche_id",
+        "bloc_id",
+        "immeuble_id",
+        "etat",
+        "nbre_facades",
+        "avance_minimale",
+        "titre_foncier",
+        "type_id",
+        "vue_id",
+        "typologie_id",
+        "superficie_habitable",
+        "superficie_architecte",
+        "superficie_terrasse",
+        "superficie_terrasse_calculer",
+        "superficie_balcon",
+        "superficie_balcon_calculer",
+        "superficie_jardin",
+        "superficie_jardin_calculer",
+        "superficie_vendable",
+        "superficie_total",
+        "num_parking",
+        "prix_parking",
+        "superficie_parking",
+        "num_box",
+        "prix_box",
+        "superficie_box",
+        "nbre_chambres",
+        "nbre_salons",
+        "nbre_sdb",
+        "nbre_cuisines",
+        "nbre_terasses",
+        "nbre_balcons",
+        "nbre_halls",
+        "nbre_receptions",
+        "nbre_buanderies",
+        "nbre_placards",
       ];
 
       const dataToSubmit = {};
@@ -844,23 +845,23 @@ export default function BienForm() {
       dataToSubmit.conventionne = dataToSubmit.conventionne ? 1 : 0;
 
       const numericFields = [
-        'prix_unitaire',
-        'prix',
-        'superficie_habitable',
-        'superficie_architecte',
-        'superficie_terrasse',
-        'superficie_terrasse_calculer',
-        'superficie_balcon',
-        'superficie_balcon_calculer',
-        'superficie_jardin',
-        'superficie_jardin_calculer',
-        'superficie_vendable',
-        'superficie_total',
-        'prix_parking',
-        'superficie_parking',
-        'prix_box',
-        'superficie_box',
-        'avance_minimale',
+        "prix_unitaire",
+        "prix",
+        "superficie_habitable",
+        "superficie_architecte",
+        "superficie_terrasse",
+        "superficie_terrasse_calculer",
+        "superficie_balcon",
+        "superficie_balcon_calculer",
+        "superficie_jardin",
+        "superficie_jardin_calculer",
+        "superficie_vendable",
+        "superficie_total",
+        "prix_parking",
+        "superficie_parking",
+        "prix_box",
+        "superficie_box",
+        "avance_minimale",
       ];
 
       numericFields.forEach((field) => {
@@ -872,26 +873,26 @@ export default function BienForm() {
       if (dataToSubmit.etat) {
         dataToSubmit.etat = dataToSubmit.etat.toLowerCase();
       } else {
-        dataToSubmit.etat = 'disponible';
+        dataToSubmit.etat = "disponible";
       }
 
       const urlBase = APIURL.BIENS;
       const url = id ? `${urlBase}/${id}` : urlBase;
-      const method = id ? 'put' : 'post';
+      const method = id ? "put" : "post";
 
       const response = await axios({
         method: method,
         url: url,
         data: dataToSubmit,
         headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
+          "Content-Type": "application/json",
+          Accept: "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
 
       toast.success(
-        id ? 'Bien mis à jour avec succès' : 'Bien créé avec succès'
+        id ? "Bien mis à jour avec succès" : "Bien créé avec succès"
       );
       if (!id) {
         setBienCreeId(response.data.bien.id);
@@ -902,20 +903,20 @@ export default function BienForm() {
           if (!isNavigatingRef.current) {
             isNavigatingRef.current = true;
             router.push(
-              projet?.id ? `/Projets/${projet.id}?tab=biens` : '/Projets'
+              projet?.id ? `/Projets/${projet.id}?tab=biens` : "/Projets"
             );
           }
         }, 100);
       }
-      console.log('Bien créé ou mis à jour avec succès:', bienCreeId);
+      console.log("Bien créé ou mis à jour avec succès:", bienCreeId);
     } catch (error) {
-      console.error('Error submitting property:', error);
+      console.error("Error submitting property:", error);
       if (error.response?.data?.errors) {
         setErrors(error.response.data.errors);
       }
       if (error.response?.data?.message) {
-        console.error('Backend error message:', error.response.data.message);
-        if (error.response.data.message.includes('Unknown column')) {
+        console.error("Backend error message:", error.response.data.message);
+        if (error.response.data.message.includes("Unknown column")) {
           const columnMatch = error.response.data.message.match(
             /Unknown column '([^']+)'/
           );
@@ -942,7 +943,7 @@ export default function BienForm() {
 
     if (allZero) {
       setCompositionModalMessage(
-        'Veuillez renseigner la composition du bien avant de continuer.'
+        "Veuillez renseigner la composition du bien avant de continuer."
       );
       setShowCompositionModal(true);
       return;
@@ -952,7 +953,7 @@ export default function BienForm() {
     const url = APIURL.COMPOSITIONBIENS;
 
     // Ajout de l'identifiant du bien
-    dataToSend.append('bien_id', bienCreeId);
+    dataToSend.append("bien_id", bienCreeId);
 
     // Ajout des champs de composition
     Object.entries(formDataComp).forEach(([key, value]) => {
@@ -970,13 +971,13 @@ export default function BienForm() {
         if (res.status === 200) {
           setLoading(false);
 
-          toast.success('La composition du bien a été créée avec succès');
-          console.log('Bien créé avec succès:', res.data.message);
+          toast.success("La composition du bien a été créée avec succès");
+          console.log("Bien créé avec succès:", res.data.message);
 
           resetFormDataComp();
           setShowCompositionModal(true);
           setCompositionModalMessage(
-            "Voulez-vous ajouter d'autre composition pour ce bien?"
+            "Voulez-vous ajouter d'autres compositions pour ce bien?"
           );
           setDataReloadTrigger((prev) => prev + 1);
         } else if (res.status === 422) {
@@ -1039,7 +1040,7 @@ export default function BienForm() {
         {id && projet.nbre_tranches !== 0 && (
           <Input
             label="Tranche"
-            value={selectedTranche?.nom || ''}
+            value={selectedTranche?.nom || ""}
             fullWidth
             size="small"
             variant="outlined"
@@ -1076,7 +1077,7 @@ export default function BienForm() {
               options={tranches.map((t) => ({ label: t.nom, value: t.id }))}
               value={formData.tranche_id}
               onChange={(option) =>
-                handleselectChange('tranche_id', option?.value || null)
+                handleselectChange("tranche_id", option?.value || null)
               }
               error={errors.tranche_id}
               isLoading={loadingTranches}
@@ -1112,7 +1113,7 @@ export default function BienForm() {
               options={blocs.map((t) => ({ label: t.nom, value: t.id }))}
               value={formData.bloc_id}
               onChange={(option) =>
-                handleselectChange('bloc_id', option?.value || null)
+                handleselectChange("bloc_id", option?.value || null)
               }
               error={errors.bloc_id}
               isLoading={loadingBlocs}
@@ -1127,7 +1128,7 @@ export default function BienForm() {
               options={blocs.map((t) => ({ label: t.nom, value: t.id }))}
               value={formData.bloc_id}
               onChange={(option) =>
-                handleselectChange('bloc_id', option?.value || null)
+                handleselectChange("bloc_id", option?.value || null)
               }
               error={errors.bloc_id}
               isLoading={loadingBlocs}
@@ -1161,7 +1162,7 @@ export default function BienForm() {
               options={immeubles.map((t) => ({ label: t.nom, value: t.id }))}
               value={formData.immeuble_id}
               onChange={(option) =>
-                handleselectChange('immeuble_id', option?.value || null)
+                handleselectChange("immeuble_id", option?.value || null)
               }
               error={errors.immeuble_id}
               isLoading={loadingImmeubles}
@@ -1178,7 +1179,7 @@ export default function BienForm() {
               options={immeubles.map((t) => ({ label: t.nom, value: t.id }))}
               value={formData.immeuble_id}
               onChange={(option) =>
-                handleselectChange('immeuble_id', option?.value || null)
+                handleselectChange("immeuble_id", option?.value || null)
               }
               error={errors.immeuble_id}
               isLoading={loadingImmeubles}
@@ -1209,7 +1210,7 @@ export default function BienForm() {
               options={immeubles.map((t) => ({ label: t.nom, value: t.id }))}
               value={formData.immeuble_id}
               onChange={(option) =>
-                handleselectChange('immeuble_id', option?.value || null)
+                handleselectChange("immeuble_id", option?.value || null)
               }
               error={errors.immeuble_id}
               isLoading={loadingImmeubles}
@@ -1221,7 +1222,7 @@ export default function BienForm() {
           type="text"
           name="propriete_dite_bien"
           value={formData.propriete_dite_bien}
-          onChange={(e) => handleChange('propriete_dite_bien', e.target.value)}
+          onChange={(e) => handleChange("propriete_dite_bien", e.target.value)}
           error={errors.propriete_dite_bien}
           required
         />
@@ -1230,7 +1231,7 @@ export default function BienForm() {
           type="text"
           name="numero"
           value={formData.numero}
-          onChange={(e) => handleChange('numero', e.target.value)}
+          onChange={(e) => handleChange("numero", e.target.value)}
           error={errors.numero}
           required
         />
@@ -1239,7 +1240,7 @@ export default function BienForm() {
           name="niveau"
           value={formData.niveau}
           options={etages.map((t) => ({ label: t.label, value: t.value }))}
-          onChange={(selected) => handleChange('niveau', selected)}
+          onChange={(selected) => handleChange("niveau", selected)}
           required
         />
 
@@ -1252,7 +1253,7 @@ export default function BienForm() {
               label: val.label,
               value: key,
             }))}
-            onChange={(value) => handleChange('orientation', value)}
+            onChange={(value) => handleChange("orientation", value)}
             required
           />
           {errors.orientation && (
@@ -1265,7 +1266,7 @@ export default function BienForm() {
           options={typeBiens.map((t) => ({ label: t.type, value: t.id }))}
           value={formData.type_id}
           onChange={(option) =>
-            handleselectChange('type_id', option?.value || null)
+            handleselectChange("type_id", option?.value || null)
           }
           error={errors.type_id}
           isLoading={loading}
@@ -1277,7 +1278,7 @@ export default function BienForm() {
           options={vues.map((t) => ({ label: t.vue, value: t.id }))}
           value={formData.vue_id}
           onChange={(option) =>
-            handleselectChange('vue_id', option?.value || null)
+            handleselectChange("vue_id", option?.value || null)
           }
           error={errors.vue_id}
           isLoading={loading}
@@ -1287,7 +1288,7 @@ export default function BienForm() {
           options={typologies.map((t) => ({ label: t.typologie, value: t.id }))}
           value={formData.typologie_id}
           onChange={(option) =>
-            handleselectChange('typologie_id', option?.value || null)
+            handleselectChange("typologie_id", option?.value || null)
           }
           error={errors.typologie_id}
           isLoading={loading}
@@ -1297,7 +1298,7 @@ export default function BienForm() {
           label="Nombre de façades"
           name="nbre_facades"
           value={formData.nbre_facades}
-          onChange={(e) => handleChange('nbre_facades', e.target.value)}
+          onChange={(e) => handleChange("nbre_facades", e.target.value)}
           error={errors.nbre_facades}
           required
           type="number"
@@ -1307,7 +1308,7 @@ export default function BienForm() {
           type="number"
           name="prix_unitaire"
           value={formData.prix_unitaire}
-          onChange={(e) => handleChange('prix_unitaire', e.target.value)}
+          onChange={(e) => handleChange("prix_unitaire", e.target.value)}
           error={errors.prix_unitaire}
           required
         />
@@ -1317,7 +1318,7 @@ export default function BienForm() {
           type="number"
           name="avance_minimale"
           value={formData.avance_minimale}
-          onChange={(e) => handleChange('avance_minimale', e.target.value)}
+          onChange={(e) => handleChange("avance_minimale", e.target.value)}
           error={errors.avance_minimale}
           required
         />
@@ -1327,7 +1328,7 @@ export default function BienForm() {
           type="text"
           name="titre_foncier"
           value={formData.titre_foncier}
-          onChange={(e) => handleChange('titre_foncier', e.target.value)}
+          onChange={(e) => handleChange("titre_foncier", e.target.value)}
           error={errors.titre_foncier}
         />
 
@@ -1336,17 +1337,17 @@ export default function BienForm() {
           name="etat"
           value={formData.etat}
           options={[
-            { label: 'Disponible', value: 'DISPONIBLE' },
-            { label: 'Bloqué', value: 'BLOQUE' },
+            { label: "Disponible", value: "DISPONIBLE" },
+            { label: "Bloqué", value: "BLOQUE" },
             ...(id
               ? [
-                  { label: 'Réservé', value: 'RESERVATION' },
-                  { label: 'Pré-réservé', value: 'PRE_RESERVATION' },
-                  { label: 'Vendu', value: 'VENDU' },
+                  { label: "Réservé", value: "RESERVATION" },
+                  { label: "Pré-réservé", value: "PRE_RESERVATION" },
+                  { label: "Vendu", value: "VENDU" },
                 ]
               : []),
           ]}
-          onChange={(value) => handleChange('etat', value)}
+          onChange={(value) => handleChange("etat", value)}
         />
         {errors.etat && (
           <p className="mt-1 text-sm text-red-600">{errors.etat[0]}</p>
@@ -1369,7 +1370,7 @@ export default function BienForm() {
             type="checkbox"
             id="conventionne"
             checked={formData.conventionne || false}
-            onChange={(e) => handleChange('conventionne', e.target.checked)}
+            onChange={(e) => handleChange("conventionne", e.target.checked)}
             className="h-6 w-6 text-[#009FFF] border-gray-300 rounded focus:ring-blue-500"
           />
           <label
@@ -1391,7 +1392,7 @@ export default function BienForm() {
           name="superficie_habitable"
           type="number"
           value={formData.superficie_habitable}
-          onChange={(e) => handleChange('superficie_habitable', e.target.value)}
+          onChange={(e) => handleChange("superficie_habitable", e.target.value)}
           error={errors.superficie_habitable}
           required
         />
@@ -1402,7 +1403,7 @@ export default function BienForm() {
           type="number"
           value={formData.superficie_architecte}
           onChange={(e) =>
-            handleChange('superficie_architecte', e.target.value)
+            handleChange("superficie_architecte", e.target.value)
           }
           error={errors.superficie_architecte}
           required
@@ -1416,7 +1417,7 @@ export default function BienForm() {
             type="number"
             value={formData.superficie_terrasse}
             onChange={(e) =>
-              handleChange('superficie_terrasse', e.target.value)
+              handleChange("superficie_terrasse", e.target.value)
             }
           />
           <Input
@@ -1425,7 +1426,7 @@ export default function BienForm() {
             type="number"
             value={formData.superficie_terrasse_calculer}
             onChange={(e) =>
-              handleChange('superficie_terrasse_calculer', e.target.value)
+              handleChange("superficie_terrasse_calculer", e.target.value)
             }
           />
         </div>
@@ -1437,7 +1438,7 @@ export default function BienForm() {
             name="superficie_balcon"
             type="number"
             value={formData.superficie_balcon}
-            onChange={(e) => handleChange('superficie_balcon', e.target.value)}
+            onChange={(e) => handleChange("superficie_balcon", e.target.value)}
           />
           <Input
             label="Balcon calculée (m²)"
@@ -1445,7 +1446,7 @@ export default function BienForm() {
             type="number"
             value={formData.superficie_balcon_calculer}
             onChange={(e) =>
-              handleChange('superficie_balcon_calculer', e.target.value)
+              handleChange("superficie_balcon_calculer", e.target.value)
             }
           />
         </div>
@@ -1465,13 +1466,13 @@ export default function BienForm() {
                   checked={hasJardin}
                   onChange={setHasJardin}
                   className={`${
-                    hasJardin ? 'bg-green-500' : 'bg-gray-300'
+                    hasJardin ? "bg-green-500" : "bg-gray-300"
                   } relative inline-flex h-6 w-11 items-center rounded-full`}
                 >
                   <span className="sr-only">Jardin</span>
                   <span
                     className={`${
-                      hasJardin ? 'translate-x-6' : 'translate-x-1'
+                      hasJardin ? "translate-x-6" : "translate-x-1"
                     } inline-block h-4 w-4 transform rounded-full bg-white transition`}
                   />
                 </Switch>
@@ -1484,13 +1485,13 @@ export default function BienForm() {
                   checked={hasParking}
                   onChange={setHasParking}
                   className={`${
-                    hasParking ? 'bg-green-500' : 'bg-gray-300'
+                    hasParking ? "bg-green-500" : "bg-gray-300"
                   } relative inline-flex h-6 w-11 items-center rounded-full`}
                 >
                   <span className="sr-only">Parking</span>
                   <span
                     className={`${
-                      hasParking ? 'translate-x-6' : 'translate-x-1'
+                      hasParking ? "translate-x-6" : "translate-x-1"
                     } inline-block h-4 w-4 transform rounded-full bg-white transition`}
                   />
                 </Switch>
@@ -1503,13 +1504,13 @@ export default function BienForm() {
                   checked={hasBox}
                   onChange={setHasBox}
                   className={`${
-                    hasBox ? 'bg-green-500' : 'bg-gray-300'
+                    hasBox ? "bg-green-500" : "bg-gray-300"
                   } relative inline-flex h-6 w-11 items-center rounded-full`}
                 >
                   <span className="sr-only">Box</span>
                   <span
                     className={`${
-                      hasBox ? 'translate-x-6' : 'translate-x-1'
+                      hasBox ? "translate-x-6" : "translate-x-1"
                     } inline-block h-4 w-4 transform rounded-full bg-white transition`}
                   />
                 </Switch>
@@ -1527,7 +1528,7 @@ export default function BienForm() {
               type="number"
               value={formData.superficie_jardin}
               onChange={(e) =>
-                handleChange('superficie_jardin', e.target.value)
+                handleChange("superficie_jardin", e.target.value)
               }
               error={errors.superficie_jardin}
             />
@@ -1537,7 +1538,7 @@ export default function BienForm() {
               type="number"
               value={formData.superficie_jardin_calculer}
               onChange={(e) =>
-                handleChange('superficie_jardin_calculer', e.target.value)
+                handleChange("superficie_jardin_calculer", e.target.value)
               }
             />
           </div>
@@ -1551,7 +1552,7 @@ export default function BienForm() {
               name="num_parking"
               type="number"
               value={formData.num_parking}
-              onChange={(e) => handleChange('num_parking', e.target.value)}
+              onChange={(e) => handleChange("num_parking", e.target.value)}
               error={errors.num_parking}
             />
             <Input
@@ -1559,7 +1560,7 @@ export default function BienForm() {
               name="prix_parking"
               type="number"
               value={formData.prix_parking}
-              onChange={(e) => handleChange('prix_parking', e.target.value)}
+              onChange={(e) => handleChange("prix_parking", e.target.value)}
               error={errors.prix_parking}
             />
             <Input
@@ -1568,7 +1569,7 @@ export default function BienForm() {
               type="number"
               value={formData.superficie_parking}
               onChange={(e) =>
-                handleChange('superficie_parking', e.target.value)
+                handleChange("superficie_parking", e.target.value)
               }
               error={errors.superficie_parking}
             />
@@ -1583,7 +1584,7 @@ export default function BienForm() {
               name="num_box"
               type="number"
               value={formData.num_box}
-              onChange={(e) => handleChange('num_box', e.target.value)}
+              onChange={(e) => handleChange("num_box", e.target.value)}
               error={errors.num_box}
             />
             <Input
@@ -1591,7 +1592,7 @@ export default function BienForm() {
               name="prix_box"
               type="number"
               value={formData.prix_box}
-              onChange={(e) => handleChange('prix_box', e.target.value)}
+              onChange={(e) => handleChange("prix_box", e.target.value)}
               error={errors.prix_box}
             />
             <Input
@@ -1599,7 +1600,7 @@ export default function BienForm() {
               name="superficie_box"
               type="number"
               value={formData.superficie_box}
-              onChange={(e) => handleChange('superficie_box', e.target.value)}
+              onChange={(e) => handleChange("superficie_box", e.target.value)}
               error={errors.superficie_box}
             />
           </div>
@@ -1625,7 +1626,7 @@ export default function BienForm() {
             type="number"
             name="prix"
             value={formData.prix}
-            onChange={(e) => handleChange('prix', e.target.value)}
+            onChange={(e) => handleChange("prix", e.target.value)}
           />
         </div>
       </div>
@@ -1642,7 +1643,7 @@ export default function BienForm() {
           min={0}
           value={formDataComp.nbre_chambres || 0}
           onChange={(e) =>
-            handleChange('nbre_chambres', e.target.value, 'comp')
+            handleChange("nbre_chambres", e.target.value, "comp")
           }
         />
 
@@ -1652,7 +1653,7 @@ export default function BienForm() {
           type="number"
           min={0}
           value={formDataComp.nbre_salons || 0}
-          onChange={(e) => handleChange('nbre_salons', e.target.value, 'comp')}
+          onChange={(e) => handleChange("nbre_salons", e.target.value, "comp")}
         />
 
         <Input
@@ -1661,7 +1662,7 @@ export default function BienForm() {
           type="number"
           min={0}
           value={formDataComp.nbre_sdb || 0}
-          onChange={(e) => handleChange('nbre_sdb', e.target.value, 'comp')}
+          onChange={(e) => handleChange("nbre_sdb", e.target.value, "comp")}
         />
 
         <Input
@@ -1671,7 +1672,7 @@ export default function BienForm() {
           min={0}
           value={formDataComp.nbre_cuisines || 0}
           onChange={(e) =>
-            handleChange('nbre_cuisines', e.target.value, 'comp')
+            handleChange("nbre_cuisines", e.target.value, "comp")
           }
         />
 
@@ -1682,7 +1683,7 @@ export default function BienForm() {
           min={0}
           value={formDataComp.nbre_terasses || 0}
           onChange={(e) =>
-            handleChange('nbre_terasses', e.target.value, 'comp')
+            handleChange("nbre_terasses", e.target.value, "comp")
           }
         />
 
@@ -1692,7 +1693,7 @@ export default function BienForm() {
           type="number"
           min={0}
           value={formDataComp.nbre_balcons || 0}
-          onChange={(e) => handleChange('nbre_balcons', e.target.value, 'comp')}
+          onChange={(e) => handleChange("nbre_balcons", e.target.value, "comp")}
         />
 
         <Input
@@ -1701,7 +1702,7 @@ export default function BienForm() {
           type="number"
           min={0}
           value={formDataComp.nbre_halls || 0}
-          onChange={(e) => handleChange('nbre_halls', e.target.value, 'comp')}
+          onChange={(e) => handleChange("nbre_halls", e.target.value, "comp")}
         />
 
         <Input
@@ -1711,7 +1712,7 @@ export default function BienForm() {
           min={0}
           value={formDataComp.nbre_receptions || 0}
           onChange={(e) =>
-            handleChange('nbre_receptions', e.target.value, 'comp')
+            handleChange("nbre_receptions", e.target.value, "comp")
           }
         />
 
@@ -1722,7 +1723,7 @@ export default function BienForm() {
           min={0}
           value={formDataComp.nbre_buanderies || 0}
           onChange={(e) =>
-            handleChange('nbre_buanderies', e.target.value, 'comp')
+            handleChange("nbre_buanderies", e.target.value, "comp")
           }
         />
 
@@ -1733,7 +1734,7 @@ export default function BienForm() {
           min={0}
           value={formDataComp.nbre_placards || 0}
           onChange={(e) =>
-            handleChange('nbre_placards', e.target.value, 'comp')
+            handleChange("nbre_placards", e.target.value, "comp")
           }
         />
       </div>
@@ -1744,8 +1745,8 @@ export default function BienForm() {
     <div className="p-3">
       <div className="flex items-center justify-start">
         <BreadCrumb
-          baseUrl={projetId ? `/Projets/${projetId}?tab=biens` : '/Projets'}
-          step={`${id ? 'Modifier' : 'Ajouter'} un bien`}
+          baseUrl={projetId ? `/Projets/${projetId}?tab=biens` : "/Projets"}
+          step={`${id ? "Modifier" : "Ajouter"} un bien`}
         />
       </div>
 
@@ -1788,11 +1789,11 @@ export default function BienForm() {
             <Button type="submit" onClick={handleSubmit} disabled={loading}>
               {loading
                 ? id
-                  ? 'Modification en cours...'
-                  : 'Enregistrement...'
+                  ? "Modification en cours..."
+                  : "Enregistrement..."
                 : id
-                ? 'Modifier le bien'
-                : 'Enregistrer le bien'}
+                ? "Modifier le bien"
+                : "Enregistrer le bien"}
             </Button>
           )}
 
@@ -1804,7 +1805,7 @@ export default function BienForm() {
               disabled={loading}
               className="px-4 py-2 bg-green-600 text-white rounded-md"
             >
-              {loading ? 'Enregistrement...' : 'Enregistrer la composition'}
+              {loading ? "Enregistrement..." : "Enregistrer la composition"}
             </Button>
           )}
 
@@ -1836,14 +1837,13 @@ export default function BienForm() {
             <p className="mb-4 font-semibold">{compositionModalMessage}</p>
             <div className="flex gap-4 justify-end">
               {compositionModalMessage ===
-              'Voulez-vous ajouter une composition pour ce bien?' ? (
+              "Voulez-vous ajouter une composition pour ce bien?" ? (
                 <>
                   <Button
                     type="button"
                     onClick={() => {
                       setShowCompositionModal(false);
                       router.back();
-                    
                     }}
                   >
                     Non
@@ -1878,7 +1878,7 @@ export default function BienForm() {
                       // reste sur la même page pour remplir
                     }}
                   >
-                    Remplir
+                    Ajouter
                   </Button>
                 </>
               )}
