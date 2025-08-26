@@ -1013,7 +1013,7 @@ export const CompromisVentesTab = ({
                     clipRule="evenodd"
                   />
                 </svg>
-                Enregistrer le Compromis
+                Enregistrer l'attestation
               </>
             )}
           </button>
