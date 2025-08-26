@@ -339,20 +339,40 @@ export const PROSPECT_STATUS_COLORS = {
 };
 
 // Helper functions for prospect status
+// Map raw backend values to human-readable labels (handles underscores and accents)
+const RAW_TO_LABEL = {
+  En_attente: 'En attente',
+  Planification_RDV: 'Planification Rendez Vous',
+  Injoignable: 'Injoignable',
+  Rappel: 'Rappel',
+  Converti_en_visite: 'Converti en Visite',
+  Nouveau_appel: 'Nouveau Appel',
+  Affecte: 'Affecté',
+  Interesse: 'Intéressé',
+  Perdu: 'Perdu',
+  Receptif: 'Réceptif',
+};
+
 export const getProspectStatusLabel = (statusValue) => {
-  const status = Object.values(Statuts_Prospect).find(s => s.value === statusValue);
-  return status ? status.label : statusValue;
+  if (!statusValue) return '';
+  const byValue = Object.values(Statuts_Prospect).find((s) => s.value === statusValue);
+  if (byValue) return byValue.label;
+  const byLabel = Object.values(Statuts_Prospect).find((s) => s.label === statusValue);
+  if (byLabel) return byLabel.label;
+  if (RAW_TO_LABEL[statusValue]) return RAW_TO_LABEL[statusValue];
+  // Fallback to original
+  return statusValue;
 };
 
 export const getProspectStatusById = (id) => {
   return Statuts_Prospect[id] || null;
 };
 
-export const getProspectStatusColor = (statusLabel) => {
-  return PROSPECT_STATUS_COLORS[statusLabel] || 'bg-gray-100 text-gray-600';
+export const getProspectStatusColor = (status) => {
+  const label = getProspectStatusLabel(status);
+  return PROSPECT_STATUS_COLORS[label] || 'bg-gray-100 text-gray-600';
 };
 
-// Final statuses that should prevent assignment/reassignment
 // Reassignment is always allowed now
 export const FINAL_PROSPECT_STATUSES = [];
 export const isProspectStatusFinal = () => false;
