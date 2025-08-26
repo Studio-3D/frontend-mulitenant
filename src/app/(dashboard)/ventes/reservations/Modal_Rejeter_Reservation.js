@@ -1,14 +1,14 @@
-'use client';
-import { useState, useRef } from 'react'; // Add useRef here
-import Button from '@/components/Button';
-import * as yup from 'yup';
-import { Controller } from 'react-hook-form';
-import toast from 'react-hot-toast';
-import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import axios from 'axios';
-import { APIURL } from '../../../../configs/api';
-import { useAuth } from '../../../../context/AuthContext';
+"use client";
+import { useState, useRef } from "react"; // Add useRef here
+import Button from "@/components/Button";
+import * as yup from "yup";
+import { Controller } from "react-hook-form";
+import toast from "react-hot-toast";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import axios from "axios";
+import { APIURL } from "../../../../configs/api";
+import { useAuth } from "../../../../context/AuthContext";
 
 export default function Modal_Rejeter_Reservation({
   onClose,
@@ -19,17 +19,17 @@ export default function Modal_Rejeter_Reservation({
   const [display_form, set_dislay_form] = useState(false);
   const [backendErrors, setBackendErrors] = useState(null);
   const { token } = useAuth();
-  const accessToken = token || localStorage.getItem('accessToken');
+  const accessToken = token || localStorage.getItem("accessToken");
 
   const TextField = ({
     label,
     name,
-    type = 'text',
+    type = "text",
     required = false,
     control,
     errors,
-    width = 'w-full',
-    height = 'h-10',
+    width = "w-full",
+    height = "h-10",
     disabled = false,
     isTextarea = false, // New prop for handling textareas
   }) => {
@@ -49,16 +49,16 @@ export default function Modal_Rejeter_Reservation({
             // Conditionally render input or textarea
             isTextarea ? (
               <textarea
-                style={{ marginLeft: '-10px!important' }}
+                style={{ marginLeft: "-10px!important" }}
                 {...field}
                 id={name}
                 name={name}
                 className={`block ${width} ${height} px-3 py-2 mt-1 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
-                  errors[name] ? 'border-red-500' : ''
+                  errors[name] ? "border-red-500" : ""
                 }`}
                 disabled={disabled}
                 required={required}
-                value={field.value || ''}
+                value={field.value || ""}
                 onChange={(e) => field.onChange(e.target.value)} // Ensure React Hook Form handles the change
               />
             ) : (
@@ -68,11 +68,11 @@ export default function Modal_Rejeter_Reservation({
                 name={name}
                 type={type}
                 className={`block ${width} ${height} px-3 py-2 mt-1 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
-                  errors[name] ? 'border-red-500' : ''
+                  errors[name] ? "border-red-500" : ""
                 }`}
                 required={required}
                 disabled={disabled}
-                value={field.value || ''}
+                value={field.value || ""}
                 onChange={(e) => field.onChange(e.target.value)} // Ensure React Hook Form handles the change
               />
             )
@@ -88,13 +88,13 @@ export default function Modal_Rejeter_Reservation({
   };
 
   const defaultValues = {
-    commentaire_res: '',
+    commentaire_res: "",
     statut_res: 2,
     with_avance: 0,
   };
 
   const validationSchema = yup.object().shape({
-    commentaire_res: yup.string().required('Le commentaire est requis'),
+    commentaire_res: yup.string().required("Le commentaire est requis"),
   });
 
   const validationSchemaRef = useRef(validationSchema);
@@ -108,7 +108,7 @@ export default function Modal_Rejeter_Reservation({
   } = useForm({
     resolver: yupResolver(validationSchemaRef.current),
     defaultValues: {
-      commentaire_res: '', // or whatever default value you want
+      commentaire_res: "", // or whatever default value you want
       ...defaultValues, // Spread your existing default values
     },
   });
@@ -118,25 +118,24 @@ export default function Modal_Rejeter_Reservation({
     setLoading({ ...loading, form: true });
 
     axios({
-      method: 'put',
+      method: "put",
       url: `${APIURL.ROOTV1}/traiter_reservation/${Number(id)}`,
       data: data,
       headers: {
-        'content-type': 'application/json',
-        Accept: 'application/json',
+        "content-type": "application/json",
+        Accept: "application/json",
         Authorization: `Bearer ${accessToken}`,
       },
     })
       .then(() => {
-            setLoading({ ...loading, form: false });
+        setLoading({ ...loading, form: false });
 
-        onClose(), toast.success('La Réservation et Traité avec succès');
-        localStorage.setItem('load_data_reservation', 1);
+        onClose(), toast.success("Réservation Traitée avec succès");
+        localStorage.setItem("load_data_reservation", 1);
       })
       .catch(() => {
-        console.log('err');
-            setLoading({ ...loading, form: false });
-
+        console.log("err");
+        setLoading({ ...loading, form: false });
       });
   };
 
@@ -170,8 +169,8 @@ export default function Modal_Rejeter_Reservation({
                       height="h-24"
                       width="w-full"
                       onChange={(e) => {
-                        console.log('comment=>' + e);
-                        setValue('commentaire_res', e);
+                        console.log("comment=>" + e);
+                        setValue("commentaire_res", e);
                       }} // Optional: Change height for textarea
                     />
                   </>

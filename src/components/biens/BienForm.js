@@ -140,7 +140,7 @@ export default function BienForm() {
       nbre_placards: 0,
     });
   };
-  //fadwa
+  
   /*const handleselectChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
 

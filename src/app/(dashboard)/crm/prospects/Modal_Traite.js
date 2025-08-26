@@ -210,9 +210,8 @@ export default function Modal_Traite({ onClose, id, num_tel, nom_prenom }) {
                   choix="label"
                   value={field.value}
                   onChange={(selectedOption) => {
-                    // Update the form value with just the ID
-                    field.onChange(selectedOption?.id || '');
-                    // Call your custom handler if needed
+                    // Store the label directly (backend expects string status here)
+                    field.onChange(selectedOption?.label || '');
                     handleStatutChange(selectedOption);
                   }}
                   errors={errors}
