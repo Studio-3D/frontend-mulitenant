@@ -302,7 +302,7 @@ export const MultiStepForm = ({
             "Content-Type": "application/json",
           },
         });
-        toast.success("Project updated successfully");
+        toast.success("Projet modifié avec succès");
       } else {
         // POST request for create
         await axios.post(`${APIURL.PROJETS}`, payload, {

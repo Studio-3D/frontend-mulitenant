@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import Table from '@/components/Table';
+import React, { useEffect, useState } from "react";
+import Table from "@/components/Table";
 import {
   Eye,
   Pencil,
@@ -7,47 +7,47 @@ import {
   CreditCard,
   Trash2,
   PencilLine,
-} from 'lucide-react';
-import Modal from '@/components/Modal';
-import DeleteData from '@/components/DeleteData';
-import { useAuth } from '../../../../context/AuthContext';
-import { APIURL, ENDPOINTS } from '../../../../configs/api';
-import { useRouter } from 'next/navigation';
-import format from 'date-fns/format';
-import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
-import { fetchData_table_by_projet } from '../../../../../src/configs/api-utils';
-import Link from 'next/link';
-import Input from '@/components/Input';
+} from "lucide-react";
+import Modal from "@/components/Modal";
+import DeleteData from "@/components/DeleteData";
+import { useAuth } from "../../../../context/AuthContext";
+import { APIURL, ENDPOINTS } from "../../../../configs/api";
+import { useRouter } from "next/navigation";
+import format from "date-fns/format";
+import { isAdmin, isCommercial, isSuperAdmin } from "../../../../configs/enum";
+import { fetchData_table_by_projet } from "../../../../../src/configs/api-utils";
+import Link from "next/link";
+import Input from "@/components/Input";
 
-import { VISITE_INTERETS } from '../../../../../src/configs/enum';
+import { VISITE_INTERETS } from "../../../../../src/configs/enum";
 const AppelsTable = ({ dataClient }) => {
   const { user, token } = useAuth();
-  const accesstoken = token || localStorage.getItem('accessToken');
+  const accesstoken = token || localStorage.getItem("accessToken");
 
   const router = useRouter();
   const [appels, setAppels] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedId, setSelectedId] = useState(null);
   const [totalRows, setTotalRows] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const [filters, setFilters] = useState({
-    date: '',
-    nom: '',
-    prenom: '',
-    telephone: '',
-    interet: '',
+    date: "",
+    nom: "",
+    prenom: "",
+    telephone: "",
+    interet: "",
   });
   const [tempFilters, setTempFilters] = useState({ ...filters });
 
   const entity = {
-    API_URL: 'appels',
-    dataKey: 'data',
-    searchFields: ['date', 'nom', 'prenom', 'telephone'],
+    API_URL: "appels",
+    dataKey: "data",
+    searchFields: ["date", "nom", "prenom", "telephone"],
   };
 
   useEffect(() => {
@@ -97,7 +97,7 @@ const AppelsTable = ({ dataClient }) => {
           pathname: `${ENDPOINTS.APPELS}?action=add`,
           onClick: () => {
             localStorage.setItem(
-              'selectedClient',
+              "selectedClient",
               JSON.stringify({ dataClient: dataClient })
             );
           },
@@ -110,14 +110,14 @@ const AppelsTable = ({ dataClient }) => {
 
   function handle_convert_to_visite(prospect) {
     localStorage.setItem(
-      'selectedProspect',
+      "selectedProspect",
       JSON.stringify({ dataProspect: prospect })
     );
     router.push(`${ENDPOINTS.VISITES}?action=add`);
   }
 
   const voir_visite = (vId) => {
-    window.open(`/crm/visites/${vId}`, '_blank');
+    window.open(`/crm/visites/${vId}`, "_blank");
   };
 
   // Format users data for table display
@@ -126,17 +126,17 @@ const AppelsTable = ({ dataClient }) => {
       id: data.id,
       date:
         data?.last_traitement_appel?.date != null
-          ? format(new Date(data?.last_traitement_appel?.date), 'dd/MM/yyyy')
+          ? format(new Date(data?.last_traitement_appel?.date), "dd/MM/yyyy")
           : null,
-      nom: `${data.prospect.nom || ''} `.trim(),
-      prenom: `${data.prospect.prenom || ''}`.trim(),
+      nom: `${data.prospect.nom || ""} `.trim(),
+      prenom: `${data.prospect.prenom || ""}`.trim(),
       telephone:
-        (data.prospect.telephone ? data.prospect.telephone : '') +
+        (data.prospect.telephone ? data.prospect.telephone : "") +
           (data.prospect.telephone &&
           data.prospect.telephone_num2 &&
-          data.prospect.telephone_num2 !== 'null'
-            ? ' / ' + data.prospect.telephone_num2
-            : '') || 'Non spécifié',
+          data.prospect.telephone_num2 !== "null"
+            ? " / " + data.prospect.telephone_num2
+            : "") || "Non spécifié",
       cin: data.prospect.cin,
       // source: data.prospect.source?.source,
       prospect: data.prospect,
@@ -158,41 +158,41 @@ const AppelsTable = ({ dataClient }) => {
   };
   // Table columns configuration
   const columns = [
-    { key: 'date', label: 'Date' },
+    { key: "date", label: "Date" },
     {
-      key: 'nom',
-      label: 'Nom',
+      key: "nom",
+      label: "Nom",
       render: (row) => {
         return (
-          <Link href={'/crm/prospects/' + row.prospect.id} target="_blank">
+          <Link href={"/crm/prospects/" + row.prospect.id} target="_blank">
             <strong style={{ fontWeight: 600 }}>{row.nom}</strong>
           </Link>
         );
       },
     },
     {
-      key: 'prenom',
-      label: 'Prénom',
+      key: "prenom",
+      label: "Prénom",
       render: (row) => {
         return (
-          <Link href={'/crm/prospects/' + row.prospect.id} target="_blank">
+          <Link href={"/crm/prospects/" + row.prospect.id} target="_blank">
             <strong style={{ fontWeight: 600 }}>{row.prenom}</strong>
           </Link>
         );
       },
     },
-    { key: 'telephone', label: 'Téléphone' },
+    { key: "telephone", label: "Téléphone" },
     {
-      key: 'interet',
-      label: 'Intéret',
+      key: "interet",
+      label: "Intéret",
       render: (row) => {
         return getInteretBadge(row.interet);
       },
     },
 
     {
-      key: 'actions',
-      label: 'Actions',
+      key: "actions",
+      label: "Actions",
       render: (row) => (
         <div className="flex gap-3 items-center">
           <div title="Voir détails">
@@ -245,51 +245,51 @@ const AppelsTable = ({ dataClient }) => {
 
   const data_to_export = () => {
     return appels.map((data) => ({
-      nomComplet: `${data.prospect.nom || ''} ${
-        data.prospect.prenom || ''
+      nomComplet: `${data.prospect.nom || ""} ${
+        data.prospect.prenom || ""
       }`.trim(),
       telephone:
-        (data.prospect.telephone ? data.prospect.telephone : '') +
+        (data.prospect.telephone ? data.prospect.telephone : "") +
           (data.prospect.telephone &&
           data.prospect.telephone_num2 &&
-          data.prospect.telephone_num2 !== 'null'
-            ? ' / ' + data.prospect.telephone_num2
-            : '') || 'Non spécifié',
+          data.prospect.telephone_num2 !== "null"
+            ? " / " + data.prospect.telephone_num2
+            : "") || "Non spécifié",
       cin: data.prospect.cin,
-      email: data?.prospect.email || '',
+      email: data?.prospect.email || "",
       type_prospect:
-        data?.prospect.partenaire_id === null ? 'Particulier' : 'professionnel',
+        data?.prospect.partenaire_id === null ? "Particulier" : "professionnel",
       partenaire: data?.prospect.partenaire_id
         ? data.partenaire?.description
-        : '',
+        : "",
       source: data?.prospect.source?.source,
       interet: VISITE_INTERETS[data.last_traitement_appel?.interet]?.label,
       date:
-        format(new Date(data?.last_traitement_appel?.date), 'dd/MM/yyyy') || '',
+        format(new Date(data?.last_traitement_appel?.date), "dd/MM/yyyy") || "",
       date_traitement:
         format(
           new Date(data?.last_traitement_appel?.date_traitement),
-          'dd/MM/yyyy'
-        ) || '',
+          "dd/MM/yyyy"
+        ) || "",
       type_appel:
         data?.last_traitement_appel?.type_appel == 1
-          ? 'Entrant'
-          : 'Sortant' || '',
+          ? "Entrant"
+          : "Sortant" || "",
     }));
   };
 
   const columns_export = [
-    { key: 'date', label: 'Date Appel' },
-    { key: 'cin', label: 'Cin' },
-    { key: 'nomComplet', label: 'nomComplet' },
-    { key: 'telephone', label: 'Telephone' },
-    { key: 'email', label: 'Email' },
-    { key: 'type_prospect', label: 'Type Prospect' },
-    { key: 'source', label: 'Source' },
-    { key: 'partenaire', label: 'Partenaire' },
-    { key: 'interet', label: 'Intérêt' },
-    { key: 'date_traitement', label: 'Date traitement' },
-    { key: 'type_appel', label: 'Type Appel' },
+    { key: "date", label: "Date Appel" },
+    { key: "cin", label: "Cin" },
+    { key: "nomComplet", label: "nomComplet" },
+    { key: "telephone", label: "Telephone" },
+    { key: "email", label: "Email" },
+    { key: "type_prospect", label: "Type Prospect" },
+    { key: "source", label: "Source" },
+    { key: "partenaire", label: "Partenaire" },
+    { key: "interet", label: "Intérêt" },
+    { key: "date_traitement", label: "Date traitement" },
+    { key: "type_appel", label: "Type Appel" },
   ];
 
   const handleFilterChange = (field, value) => {
@@ -300,11 +300,11 @@ const AppelsTable = ({ dataClient }) => {
   };
   const resetFilters = () => {
     const reset = {
-      date: '',
-      nom: '',
-      prenom: '',
-      telephone: '',
-      interet: '',
+      date: "",
+      nom: "",
+      prenom: "",
+      telephone: "",
+      interet: "",
     };
     setFilters(reset);
     setTempFilters(reset);
@@ -314,10 +314,10 @@ const AppelsTable = ({ dataClient }) => {
     <>
       <div className="relative bg-white rounded-lg px-4 py-4">
         <Table
-          title={!dataClient && 'Appels'}
+          title={!dataClient && "Appels"}
           data_to_export={data_to_export()}
           columns_export={columns_export}
-          name_file_export={'appels_export'}
+          name_file_export={"appels_export"}
           columns={columns}
           data={formatData()}
           totalRows={totalRows}
@@ -344,7 +344,7 @@ const AppelsTable = ({ dataClient }) => {
               <div
                 className="grid gap-1"
                 style={{
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
                 }}
               >
                 {/* Champs de recherche */}
@@ -353,21 +353,21 @@ const AppelsTable = ({ dataClient }) => {
                   type="date"
                   label="Date"
                   value={tempFilters.date}
-                  onChange={(e) => handleFilterChange('date', e.target.value)}
+                  onChange={(e) => handleFilterChange("date", e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
                 <Input
                   type="text"
                   label="Nom"
                   value={tempFilters.nom}
-                  onChange={(e) => handleFilterChange('nom', e.target.value)}
+                  onChange={(e) => handleFilterChange("nom", e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
                 <Input
                   type="text"
                   label="Prénom"
                   value={tempFilters.prenom}
-                  onChange={(e) => handleFilterChange('prenom', e.target.value)}
+                  onChange={(e) => handleFilterChange("prenom", e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
 
@@ -376,7 +376,7 @@ const AppelsTable = ({ dataClient }) => {
                   label="Téléphone"
                   value={tempFilters.telephone}
                   onChange={(e) =>
-                    handleFilterChange('telephone', e.target.value)
+                    handleFilterChange("telephone", e.target.value)
                   }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
@@ -422,7 +422,7 @@ const AppelsTable = ({ dataClient }) => {
             route={APIURL.APPELS}
             Id={selectedId}
             type="Appel"
-            message={'Etes-vous sûr de vouloir supprimer cette Appel ?'}
+            message={"Etes-vous sûr de vouloir supprimer cette Appel ?"}
             accessToken={accesstoken}
             onClose={() => {
               setShowDeleteModal(false);
@@ -441,7 +441,7 @@ const AppelsTable = ({ dataClient }) => {
             }}
           />
         </Modal>
-      )}{' '}
+      )}{" "}
     </>
   );
 };

@@ -111,10 +111,10 @@ export default function BienForm() {
     num_parking: "",
     superficie_box: "",
     superficie_parking: "",
-    superficie_balcon_calculer:'',
-    superficie_jardin_calculer:'',
-    superficie_terrasse_calculer:'',
-    superficie_balcon:'',
+    superficie_balcon_calculer: "",
+    superficie_jardin_calculer: "",
+    superficie_terrasse_calculer: "",
+    superficie_balcon: "",
   });
 
   const [formDataComp, setFormDataComp] = useState({
@@ -150,50 +150,44 @@ export default function BienForm() {
   };
 
   // Fonction générique pour vider des champs et relancer les calculs
-const clearFieldsAndRecalculate = (fieldsToClear) => {
-  const updatedForm = { ...formData };
+  const clearFieldsAndRecalculate = (fieldsToClear) => {
+    const updatedForm = { ...formData };
 
-  fieldsToClear.forEach((field) => {
-    updatedForm[field] = '';
-  });
+    fieldsToClear.forEach((field) => {
+      updatedForm[field] = "";
+    });
 
-  setFormData(updatedForm);
-  updateVendableAndTotalArea(updatedForm);
-};
+    setFormData(updatedForm);
+    updateVendableAndTotalArea(updatedForm);
+  };
 
-// Vider les champs si hasJardin est désactivé
-useEffect(() => {
-  if (!hasJardin) {
-    clearFieldsAndRecalculate([
-      'superficie_jardin',
-      'superficie_jardin_calculer',
-    ]);
-  }
-}, [hasJardin]);
+  // Vider les champs si hasJardin est désactivé
+  useEffect(() => {
+    if (!hasJardin) {
+      clearFieldsAndRecalculate([
+        "superficie_jardin",
+        "superficie_jardin_calculer",
+      ]);
+    }
+  }, [hasJardin]);
 
-// Vider les champs si hasParking est désactivé
-useEffect(() => {
-  if (!hasParking) {
-    clearFieldsAndRecalculate([
-      'num_parking',
-      'prix_parking',
-      'superficie_parking',
-    ]);
-  }
-}, [hasParking]);
+  // Vider les champs si hasParking est désactivé
+  useEffect(() => {
+    if (!hasParking) {
+      clearFieldsAndRecalculate([
+        "num_parking",
+        "prix_parking",
+        "superficie_parking",
+      ]);
+    }
+  }, [hasParking]);
 
-// Vider les champs si hasBox est désactivé
-useEffect(() => {
-  if (!hasBox) {
-    clearFieldsAndRecalculate([
-      'num_box',
-      'prix_box',
-      'superficie_box',
-    ]);
-  }
-}, [hasBox]);
-
-
+  // Vider les champs si hasBox est désactivé
+  useEffect(() => {
+    if (!hasBox) {
+      clearFieldsAndRecalculate(["num_box", "prix_box", "superficie_box"]);
+    }
+  }, [hasBox]);
 
   // Fetch reference data and initial data on component mount
   useEffect(() => {
@@ -490,49 +484,46 @@ useEffect(() => {
   };
 
   const handleTerraceChange = (value, currentFormData) => {
-  const terraceValue = parseFloat(value) || 0;
-  const terraceCalculated = terraceValue * 0.5;
+    const terraceValue = parseFloat(value) || 0;
+    const terraceCalculated = terraceValue * 0.5;
 
-  const updatedForm = {
-    ...currentFormData,
-    superficie_terrasse: terraceValue,
-    superficie_terrasse_calculer: terraceCalculated,
+    const updatedForm = {
+      ...currentFormData,
+      superficie_terrasse: terraceValue,
+      superficie_terrasse_calculer: terraceCalculated,
+    };
+
+    setFormData(updatedForm);
+    updateVendableAndTotalArea(updatedForm);
   };
-
-  setFormData(updatedForm);
-  updateVendableAndTotalArea(updatedForm);
-};
-
 
   const handleBalconChange = (value, currentFormData) => {
-  const balconValue = parseFloat(value) || 0;
-  const balconCalculated = balconValue * 0.5;
+    const balconValue = parseFloat(value) || 0;
+    const balconCalculated = balconValue * 0.5;
 
-  const updatedForm = {
-    ...currentFormData,
-    superficie_balcon: balconValue,
-    superficie_balcon_calculer: balconCalculated,
+    const updatedForm = {
+      ...currentFormData,
+      superficie_balcon: balconValue,
+      superficie_balcon_calculer: balconCalculated,
+    };
+
+    setFormData(updatedForm);
+    updateVendableAndTotalArea(updatedForm);
   };
-
-  setFormData(updatedForm);
-  updateVendableAndTotalArea(updatedForm);
-};
-
 
   const handleJardinChange = (value, currentFormData) => {
-  const jardinValue = parseFloat(value) || 0;
-  const jardinCalculated = jardinValue * 0.25;
+    const jardinValue = parseFloat(value) || 0;
+    const jardinCalculated = jardinValue * 0.25;
 
-  const updatedForm = {
-    ...currentFormData,
-    superficie_jardin: jardinValue,
-    superficie_jardin_calculer: jardinCalculated,
+    const updatedForm = {
+      ...currentFormData,
+      superficie_jardin: jardinValue,
+      superficie_jardin_calculer: jardinCalculated,
+    };
+
+    setFormData(updatedForm);
+    updateVendableAndTotalArea(updatedForm);
   };
-
-  setFormData(updatedForm);
-  updateVendableAndTotalArea(updatedForm);
-};
-
 
   // Calculate vendable and total areas based on all fields
   const updateVendableAndTotalArea = (data) => {
@@ -840,7 +831,9 @@ useEffect(() => {
         setShowCompositionModal(true);
       } else {
         //router.back();
-        router.push(projet?.id ? `/Projets/${projet.id}?tab=biens` : "/Projets");
+        router.push(
+          projet?.id ? `/Projets/${projet.id}?tab=biens` : "/Projets"
+        );
       }
       console.log("Bien créé ou mis à jour avec succès:", bienCreeId);
 
@@ -910,13 +903,13 @@ useEffect(() => {
         if (res.status === 200) {
           setLoading(false);
 
-          toast.success("La composition du bien a été créée avec succès");
+          toast.success("Composition du bien créée avec succès");
           console.log("Bien créé avec succès:", res.data.message);
 
           resetFormDataComp();
           setShowCompositionModal(true);
           setCompositionModalMessage(
-            "Voulez-vous ajouter d'autre composition pour ce bien?"
+            "Voulez-vous ajouter d'autres compositions pour ce bien?"
           );
           setDataReloadTrigger((prev) => prev + 1);
         } else if (res.status === 422) {
@@ -1384,8 +1377,9 @@ useEffect(() => {
             name="superficie_balcon_calculer"
             type="number"
             value={formData.superficie_balcon_calculer}
-            onChange={(e) => handleChange("superficie_balcon_calculer", e.target.value)}
-
+            onChange={(e) =>
+              handleChange("superficie_balcon_calculer", e.target.value)
+            }
           />
         </div>
 
@@ -1475,8 +1469,9 @@ useEffect(() => {
               name="superficie_jardin_calculer"
               type="number"
               value={formData.superficie_jardin_calculer}
-              onChange={(e) => handleChange("superficie_jardin_calculer", e.target.value)}
-
+              onChange={(e) =>
+                handleChange("superficie_jardin_calculer", e.target.value)
+              }
             />
           </div>
         )}
@@ -1694,32 +1689,32 @@ useEffect(() => {
 
         {/* Boutons navigation */}
         <div className="flex justify-between mt-6 items-center">
-  {/* Bouton "Annuler" ou "Précédent" */}
-        {activeStep === 0 ? (
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="px-4 py-2 border border-gray-300 rounded-md"
-          >
-            Annuler
-          </button>
-        ) : activeStep === 1 ? (
-          <button
-            type="button"
-            onClick={handleBack}
-            className="px-4 py-2 border border-gray-300 rounded-md"
-          >
-            Précédent
-          </button>
-        ) : activeStep === 2 ? (
-          <button
-            type="button"
-            onClick={() => router.back()} // <-- Redirection personnalisée
-            className="px-4 py-2 border border-gray-300 rounded-md"
-          >
-            Annuler
-          </button>
-        ) : null}
+          {/* Bouton "Annuler" ou "Précédent" */}
+          {activeStep === 0 ? (
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="px-4 py-2 border border-gray-300 rounded-md"
+            >
+              Annuler
+            </button>
+          ) : activeStep === 1 ? (
+            <button
+              type="button"
+              onClick={handleBack}
+              className="px-4 py-2 border border-gray-300 rounded-md"
+            >
+              Précédent
+            </button>
+          ) : activeStep === 2 ? (
+            <button
+              type="button"
+              onClick={() => router.back()} // <-- Redirection personnalisée
+              className="px-4 py-2 border border-gray-300 rounded-md"
+            >
+              Annuler
+            </button>
+          ) : null}
 
           {/* Étape 1 : Soumettre bien */}
           {activeStep === 1 && (
@@ -1815,7 +1810,7 @@ useEffect(() => {
                       // reste sur la même page pour remplir
                     }}
                   >
-                    Remplir
+                    Ajouter
                   </Button>
                 </>
               )}
