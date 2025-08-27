@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { getModePaiementLabel } from '@/configs/enum';
-import format from 'date-fns/format';
+import React, { useState, useEffect } from "react";
+import { getModePaiementLabel } from "@/configs/enum";
+import format from "date-fns/format";
 
 export function Changement_De_Bien({
   formData,
@@ -28,22 +28,22 @@ export function Changement_De_Bien({
   }, [formData]);
 
   function NomBienComplet(bien) {
-    if (!bien) return '';
+    if (!bien) return "";
     const noms = [];
     if (bien.tranche?.nom) noms.push(bien.tranche.nom);
     if (bien.bloc?.nom) noms.push(bien.bloc.nom);
     if (bien.immeuble?.nom) noms.push(bien.immeuble.nom);
     noms.push(bien.propriete_dite_bien);
-    return noms.join(' - ');
+    return noms.join(" - ");
   }
 
   const getBanqueLabel = (id) => {
     const found = banques.find((b) => b.id === id);
-    return found ? found.nom : 'Non spécifié';
+    return found ? found.nom : "Non spécifié";
   };
 
   const formatFileSize = (bytes) => {
-    if (!bytes) return 'N/A';
+    if (!bytes) return "N/A";
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / 1048576).toFixed(1)} MB`;
@@ -52,7 +52,7 @@ export function Changement_De_Bien({
   const handleFileClick = (file) => {
     if (file.fichier) {
       const fileUrl = `${FileUrl}/Docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/paiements/${code_reservation}/${file.fichier}`;
-      window.open(fileUrl, '_blank');
+      window.open(fileUrl, "_blank");
     }
   };
 
@@ -90,7 +90,7 @@ export function Changement_De_Bien({
             <p className="text-gray-800 font-medium text-lg">
               <span className="text-indigo-700">
                 {sum_avances_valides.toLocaleString()}
-              </span>{' '}
+              </span>{" "}
               DH
             </p>
           </div>
@@ -134,7 +134,7 @@ export function Changement_De_Bien({
                 <p className="text-gray-800 font-medium text-lg">
                   <span className="text-teal-700">
                     {formData?.bien_nouveau?.avance_minimale.toLocaleString()}
-                  </span>{' '}
+                  </span>{" "}
                   DH
                 </p>
               </div>
@@ -145,7 +145,7 @@ export function Changement_De_Bien({
                 <p className="text-gray-800 font-medium text-lg">
                   <span className="text-teal-700">
                     {formData?.montant_a_ajouter.toLocaleString()}
-                  </span>{' '}
+                  </span>{" "}
                   DH
                 </p>
               </div>
@@ -177,7 +177,7 @@ export function Changement_De_Bien({
           </div>
           <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-              <p className="text-sm font-semibold text-blue-500 mb-1">Sr</p>
+              <p className="text-sm font-semibold text-blue-500 mb-1">SR</p>
               <p className="text-gray-800 font-medium text-lg">
                 {formData?.sr ? (
                   <span className="text-green-500 font-bold">Oui</span>
@@ -203,7 +203,7 @@ export function Changement_De_Bien({
                     N° Paiement
                   </p>
                   <p className="text-gray-800 font-medium text-lg">
-                    {formData?.numero_paiement || 'Non spécifié'}
+                    {formData?.numero_paiement || "Non spécifié"}
                   </p>
                 </div>
 
@@ -226,12 +226,12 @@ export function Changement_De_Bien({
                         {formData?.echeance
                           ? format(
                               new Date(formData?.echeance),
-                              'dd/MM/yyyy ',
+                              "dd/MM/yyyy ",
                               {
-                                timeZone: 'UTC',
+                                timeZone: "UTC",
                               }
                             )
-                          : ''}
+                          : ""}
                       </p>
                     </div>
                   )}

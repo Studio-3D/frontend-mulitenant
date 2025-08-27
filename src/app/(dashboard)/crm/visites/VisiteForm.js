@@ -1,34 +1,34 @@
-'use client';
-import { useRouter } from 'next/navigation';
-import axios from 'axios';
-import { useState, useEffect, useRef } from 'react';
+"use client";
+import { useRouter } from "next/navigation";
+import axios from "axios";
+import { useState, useEffect, useRef } from "react";
 import {
   fetchData_Select,
   fetchDataByProjet,
-} from '../../../../../src/configs/api-utils';
-import Modal from '@/components/Modal';
-import format from 'date-fns/format';
+} from "../../../../../src/configs/api-utils";
+import Modal from "@/components/Modal";
+import format from "date-fns/format";
 
-import BreadCrumb from '../../navigation/BreadCrumb';
-import { Controller, useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-import { APIURL, ENDPOINTS } from '../../../../configs/api';
-import toast from 'react-hot-toast';
-import { useAuth } from '../../../../context/AuthContext';
+import BreadCrumb from "../../navigation/BreadCrumb";
+import { Controller, useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { APIURL, ENDPOINTS } from "../../../../configs/api";
+import toast from "react-hot-toast";
+import { useAuth } from "../../../../context/AuthContext";
 
-import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
-import TextField from '@/components/Textfield'; // Import the component
-import Button from '@/components/Button'; // adjust the path as needed
-import LoadingSpin from '@/components/LoadingSpin';
-import Modal_Propsepct_Exist from './Modal_Propsepct_Exist';
+import AutocompleteSelectComponent from "@/components/AutocompleteSelectComponent";
+import TextField from "@/components/Textfield"; // Import the component
+import Button from "@/components/Button"; // adjust the path as needed
+import LoadingSpin from "@/components/LoadingSpin";
+import Modal_Propsepct_Exist from "./Modal_Propsepct_Exist";
 //import { useProjet } from '@/context/ProjetContext';
-import AutocompleteBien from './AutocompleteBien'; // adjust path if needed
-import AutocompleteStatut_ModeRelance_Biens from './AutocompleteStatut_ModeRelance_Biens';
-import InputField_Biens from './InputField_Biens'; // adjust path if needed
-import ProspectInformations from './ProspectInformations'; // Adjust path as needed
-import { getStoredPerson } from '@/components/storageHelpers';
-import useClearProspect from '../hook/useClearProspect';
+import AutocompleteBien from "./AutocompleteBien"; // adjust path if needed
+import AutocompleteStatut_ModeRelance_Biens from "./AutocompleteStatut_ModeRelance_Biens";
+import InputField_Biens from "./InputField_Biens"; // adjust path if needed
+import ProspectInformations from "./ProspectInformations"; // Adjust path as needed
+import { getStoredPerson } from "@/components/storageHelpers";
+import useClearProspect from "../hook/useClearProspect";
 
 import {
   VISITE_INTERETS,
@@ -37,10 +37,10 @@ import {
   MODE_FINANCE,
   MODE_PAIEMENT,
   ORIENTATIONS,
-} from '@/configs/enum';
-import Pusher from 'pusher-js';
-import Modal_OldVisites_Perdu from './Modal_OldVisites_Perdu';
-import FreinsComponent from './FreinsComponent';
+} from "@/configs/enum";
+import Pusher from "pusher-js";
+import Modal_OldVisites_Perdu from "./Modal_OldVisites_Perdu";
+import FreinsComponent from "./FreinsComponent";
 
 const VisiteForm = ({ prospect_id, origin }) => {
   const router = useRouter();
@@ -55,7 +55,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
   const [client_prospect, setClient_prospect] = useState(null);
   const [id_appel, setId_appel] = useState(null);
   const [id_visite, setId_visite] = useState(null);
-  const accessToken = localStorage.getItem('accessToken');
+  const accessToken = localStorage.getItem("accessToken");
   const { person: selectedPerson, type: personType } = getStoredPerson();
   const pusher_key_proposition = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_PROP;
   const [loading, setLoading] = useState(false);
@@ -65,8 +65,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
   const [loading_form, setLoading_form] = useState(false);
 
   //  const { selectedProjet } = useProjet();
-  const selectedProjet =
-    JSON.parse(localStorage.getItem('selectedProjet')) ;
+  const selectedProjet = JSON.parse(localStorage.getItem("selectedProjet"));
   const [backendErrors, setBackendErrors] = useState({});
   const [sources, setSources] = useState([]);
   const [partenaires, setPartenaires] = useState([]);
@@ -82,9 +81,9 @@ const VisiteForm = ({ prospect_id, origin }) => {
   const current = new Date();
   var new_date = current.setDate(current.getDate());
   const date_reservation = useState(
-    new Date(new_date).toISOString().split('T')[0]
+    new Date(new_date).toISOString().split("T")[0]
   );
-  const date_reglement = new Date(new_date).toISOString().split('T')[0];
+  const date_reglement = new Date(new_date).toISOString().split("T")[0];
   const [check_total, setCheck_total] = useState(0);
   const [banques, setBanques] = useState([]);
   const [expanded, setExpanded] = useState([]);
@@ -114,7 +113,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
     setOpen_D_P(false);
     const hasAnyVisite = old_visites_perdu.length > 0;
     const allActionsEmpty = old_visites_perdu.every(
-      (v) => v.action == 0 || v.action == '' || v.action == null
+      (v) => v.action == 0 || v.action == "" || v.action == null
     );
 
     if (hasAnyVisite && allActionsEmpty) {
@@ -128,50 +127,50 @@ const VisiteForm = ({ prospect_id, origin }) => {
       ? selectedPerson.partenaire.description
       : null
   );
-  console.log('prospect_id==>' + prospect_id);
+  console.log("prospect_id==>" + prospect_id);
   const defaultValues = {
-    interet: '',
+    interet: "",
     selectedProjet: selectedProjet?.id,
-    client_id: personType == 'client' ? selectedPerson?.id : '',
-    id_t_appel: selectedPerson?.id_t_appel || '',
-    prospect_id: selectedPerson?.id || prospect_id || '',
+    client_id: personType == "client" ? selectedPerson?.id : "",
+    id_t_appel: selectedPerson?.id_t_appel || "",
+    prospect_id: selectedPerson?.id || prospect_id || "",
     last_origin_id_of_prospect: null,
-    cin: selectedPerson?.cin || '',
-    nom: selectedPerson?.nom || '',
-    email: selectedPerson?.email || '',
-    prenom: selectedPerson?.prenom || '',
+    cin: selectedPerson?.cin || "",
+    nom: selectedPerson?.nom || "",
+    email: selectedPerson?.email || "",
+    prenom: selectedPerson?.prenom || "",
     telephone:
-      personType == 'prospect'
+      personType == "prospect"
         ? selectedPerson?.telephone
-        : personType == 'client'
+        : personType == "client"
         ? selectedPerson?.telephone_num1
-        : '',
+        : "",
     telephone_num2: selectedPerson?.telephone_num2 || null,
-    ville: selectedPerson?.ville || '',
-    notifie: selectedPerson?.notifie || '',
-    source_id: selectedPerson?.source?.id || '',
-    source_txt: selectedPerson?.source?.source || '',
-    partenaire_id: selectedPerson?.partenaire_id || '',
+    ville: selectedPerson?.ville || "",
+    notifie: selectedPerson?.notifie || "",
+    source_id: selectedPerson?.source?.id || "",
+    source_txt: selectedPerson?.source?.source || "",
+    partenaire_id: selectedPerson?.partenaire_id || "",
     partenaire_txt: partenaire_txt,
-    interet: '',
-    date_relance: '',
-    mode_relance: '',
-    rdv: '',
+    interet: "",
+    date_relance: "",
+    mode_relance: "",
+    rdv: "",
     frein: [],
     tranches: [],
-    etages: '',
+    etages: "",
     orientations: [],
-    avance: '',
+    avance: "",
     typologies: [],
     vues: [],
-    commentaire: '',
-    prix_max: '',
-    prix_min: '',
-    sup_min: '',
-    sup_max: '',
-    description_autre: '',
+    commentaire: "",
+    prix_max: "",
+    prix_min: "",
+    sup_min: "",
+    sup_max: "",
+    description_autre: "",
     loading_b_pre: false,
-    nb_bien_added: '',
+    nb_bien_added: "",
 
     /**request bien interesse*/
 
@@ -182,29 +181,29 @@ const VisiteForm = ({ prospect_id, origin }) => {
   const validationSchemaRef = useRef(
     yup.object().shape({
       ...(!isOrigin && {
-        prenom: yup.string().required('Le prénom est requis'),
+        prenom: yup.string().required("Le prénom est requis"),
         telephone: yup
           .string()
-          .required('Le num de telephone est requis')
-          .matches(/^\d*$/, 'Seulement des chiffres') // allow only digits if filled
-          .min(10, 'Minimum 10 chiffres')
-          .max(14, 'Maximum 14 chiffres'),
+          .required("Le num de telephone est requis")
+          .matches(/^\d*$/, "Seulement des chiffres") // allow only digits if filled
+          .min(10, "Minimum 10 chiffres")
+          .max(14, "Maximum 14 chiffres"),
 
-        source_id: yup.string().required('La Source est requis'),
+        source_id: yup.string().required("La Source est requis"),
         telephone_num2: yup
           .string()
           .transform((value, originalValue) => {
             // Convert string "null" or empty string to actual null
-            return originalValue == 'null' || originalValue == ''
+            return originalValue == "null" || originalValue == ""
               ? null
               : originalValue;
           })
           .nullable()
           .notRequired()
-          .min(10, 'Minimum 10 chiffres')
-          .max(14, 'Maximum 14 chiffres'),
+          .min(10, "Minimum 10 chiffres")
+          .max(14, "Maximum 14 chiffres"),
       }),
-      interet: yup.string().required('Interêt de visite est requis'),
+      interet: yup.string().required("Interêt de visite est requis"),
     })
   );
   const {
@@ -229,21 +228,21 @@ const VisiteForm = ({ prospect_id, origin }) => {
     Pusher.logToConsole = true;
 
     const pusher = new Pusher(`${pusher_key_proposition}`, {
-      cluster: 'eu',
+      cluster: "eu",
       encrypted: true,
     });
 
-    const channel = pusher.subscribe('proposition-updates');
+    const channel = pusher.subscribe("proposition-updates");
 
-    channel.bind('App\\Events\\PropositionUpdated', (data) => {
-      console.log('Proposal status changed:', data);
+    channel.bind("App\\Events\\PropositionUpdated", (data) => {
+      console.log("Proposal status changed:", data);
       fetch_bien_ByProjet();
     });
-    console.log('bien_to', biensByProjet);
+    console.log("bien_to", biensByProjet);
 
     return () => {
-      channel.unbind('App\\Events\\PropositionUpdated');
-      pusher.unsubscribe('proposition-updates');
+      channel.unbind("App\\Events\\PropositionUpdated");
+      pusher.unsubscribe("proposition-updates");
     };
   };
 
@@ -264,7 +263,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
         },
       })
       .then(() => {
-        console.log('bien est liberé');
+        console.log("bien est liberé");
       })
       .catch((err) => {
         const response = err.response;
@@ -285,7 +284,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
       .then((res) => {
         setType_freins(res.data.typefreins);
         setType_freins((current) => [
-          { id: 'tout', description: 'Autre' },
+          { id: "tout", description: "Autre" },
           ...current,
         ]);
         setLoading_tp_frein(false);
@@ -295,17 +294,17 @@ const VisiteForm = ({ prospect_id, origin }) => {
 
   const handleChange_interet = (code) => {
     if (code) {
-      setValue('interet', code);
+      setValue("interet", code);
 
       if (code == 2) {
-        setValue('list_bien_interesse', []);
-        setValue('list_bien_transfere_vendu', []);
-        setValue('nb_bien_added', '');
+        setValue("list_bien_interesse", []);
+        setValue("list_bien_transfere_vendu", []);
+        setValue("nb_bien_added", "");
         setCheck_save(true);
         setdisplay_cin_1(false);
         input_biens.forEach((input) => {
           //check if one of inputs bien_id !=null
-          if (input.bien_id != '') {
+          if (input.bien_id != "") {
             set_bien_disponible(input.bien_id);
           }
         });
@@ -314,15 +313,15 @@ const VisiteForm = ({ prospect_id, origin }) => {
 
       //interesse
       else if (code == 1) {
-        setValue('nb_bien_added', '');
-        setValue('list_bien_transfere_vendu', []);
-        if (watch('cin') == '' && !isOrigin) {
+        setValue("nb_bien_added", "");
+        setValue("list_bien_transfere_vendu", []);
+        if (watch("cin") == "" && !isOrigin) {
           setdisplay_cin_1(true);
-          toast.error('Veuillez saisir un cin !');
+          toast.error("Veuillez saisir un cin !");
         }
-        if (watch('cin') == '' && isOrigin && display_cin) {
+        if (watch("cin") == "" && isOrigin && display_cin) {
           setdisplay_cin_1(true);
-          toast.error('Veuillez saisir un cin !');
+          toast.error("Veuillez saisir un cin !");
         }
         fetch_bien_ByProjet();
         pusher_function();
@@ -330,18 +329,18 @@ const VisiteForm = ({ prospect_id, origin }) => {
 
       //perdu
       else if (code == 3) {
-        setValue('list_bien_interesse', []);
-        setValue('list_bien_transfere_vendu', []);
+        setValue("list_bien_interesse", []);
+        setValue("list_bien_transfere_vendu", []);
         setdisplay_cin_1(false);
-        setValue('nb_bien_added', '');
+        setValue("nb_bien_added", "");
         setCheck_save(true);
         fetchTypeFreins();
-        fetchDataByProjet('tranches', setList_tranches, setLoading);
-        fetchDataByProjet('vues', setList_Vues, setLoading);
-        fetchDataByProjet('typologies', setListTyplogies, setLoading);
+        fetchDataByProjet("tranches", setList_tranches, setLoading);
+        fetchDataByProjet("vues", setList_Vues, setLoading);
+        fetchDataByProjet("typologies", setListTyplogies, setLoading);
         input_biens.forEach((input) => {
           //check if one of inputs bien_id !=null
-          if (input.bien_id != '') {
+          if (input.bien_id != "") {
             set_bien_disponible(input.bien_id);
           }
         });
@@ -352,7 +351,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
 
   const handleChange_tp_notif = (code) => {
     if (code) {
-      setValue('mode_relance', code);
+      setValue("mode_relance", code);
       if (code == 3) {
         setEmail_required(true);
       } else {
@@ -363,7 +362,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
   const fetch_visite_bien_pre_reserve = async () => {
     if (isOrigin) {
       try {
-        setValue('loading_b_pre', true);
+        setValue("loading_b_pre", true);
         const response = await axios.get(
           `${APIURL.ROOTV1}/get_oldBien_visite_pre_reserve/${origin}`,
           {
@@ -417,19 +416,19 @@ const VisiteForm = ({ prospect_id, origin }) => {
           setOldBiens_pre((prev) => [...prev, ...traitementFreins]);
         }
 
-        setValue('loading_b_pre', false);
+        setValue("loading_b_pre", false);
       } catch (error) {
-        console.error('Error fetching visite details:', error);
-        setValue('loading_b_pre', false);
-        toast.error('Erreur lors de la récupération des biens pré-réservés');
+        console.error("Error fetching visite details:", error);
+        setValue("loading_b_pre", false);
+        toast.error("Erreur lors de la récupération des biens pré-réservés");
       }
     }
   };
 
   useEffect(() => {
     //set on show visite le cadre est null pour saffiche par premier cadre
-    localStorage.setItem('v_id_cadre', null);
-    localStorage.setItem('v_id_org', null);
+    localStorage.setItem("v_id_cadre", null);
+    localStorage.setItem("v_id_org", null);
     if (isOrigin) {
       axios
         .get(`${APIURL.VISITES}/${origin}`, {
@@ -444,7 +443,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
           }
           setOld_visites_perdu([]);
           for (var i = 0; i <= Number(response.data.visites.length) - 1; i++) {
-            if (response.data.visites[i].interet == '3') {
+            if (response.data.visites[i].interet == "3") {
               //si le frein est active
               if (
                 response.data.visites[i]?.freins?.etat == 1 ||
@@ -453,31 +452,31 @@ const VisiteForm = ({ prospect_id, origin }) => {
               ) {
                 let date = format(
                   new Date(response.data.visites[i].created_at),
-                  'dd/MM/yyyy '
+                  "dd/MM/yyyy "
                 );
                 let fr_id = response.data.visites[i]?.freins.id;
                 let origin_id = response.data.visites[i].origin_id;
                 let v_cadre_id = response.data.visites[i].related_show_id;
-                let frein_exp = '';
+                let frein_exp = "";
                 if (response.data.visites[i]?.freins.frein_tranche.length > 0) {
-                  frein_exp += 'Tranche ,';
+                  frein_exp += "Tranche ,";
                 }
                 if (response.data.visites[i]?.freins.frein_etage.length > 0) {
-                  frein_exp += 'Etage ,';
+                  frein_exp += "Etage ,";
                 }
 
                 if (
                   response.data.visites[i]?.freins.frein_orientation.length > 0
                 ) {
-                  frein_exp += 'Orientation ,';
+                  frein_exp += "Orientation ,";
                 }
                 if (
                   response.data.visites[i]?.freins.frein_typologie.length > 0
                 ) {
-                  frein_exp += 'Typologie ,';
+                  frein_exp += "Typologie ,";
                 }
                 if (response.data.visites[i]?.freins.frein_vue.length > 0) {
-                  frein_exp += 'Vue ,';
+                  frein_exp += "Vue ,";
                 }
                 if (
                   (response.data.visites[i]?.freins.prix_min != null &&
@@ -485,7 +484,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                   (response.data.visites[i]?.freins.prix_max != null &&
                     response.data.visites[i]?.freins.prix_max != 0)
                 ) {
-                  frein_exp += 'Prix ,';
+                  frein_exp += "Prix ,";
                 }
                 if (
                   (response.data.visites[i]?.freins.superficie_min != null &&
@@ -493,15 +492,15 @@ const VisiteForm = ({ prospect_id, origin }) => {
                   (response.data.visites[i]?.freins.superficie_max != null &&
                     response.data.visites[i]?.freins.superficie_max != 0)
                 ) {
-                  frein_exp += 'Superficie ,';
+                  frein_exp += "Superficie ,";
                 }
                 if (response.data.visites[i]?.freins.avance != null) {
-                  frein_exp += 'Avance ,';
+                  frein_exp += "Avance ,";
                 }
                 if (
                   response.data.visites[i]?.freins.description_autre != null
                 ) {
-                  frein_exp += 'Frein Autre,';
+                  frein_exp += "Frein Autre,";
                 }
 
                 setOld_visites_perdu((v) => [
@@ -519,22 +518,22 @@ const VisiteForm = ({ prospect_id, origin }) => {
             }
           }
           console.log(
-            'les visites Perdus==>' + JSON.stringify(old_visites_perdu)
+            "les visites Perdus==>" + JSON.stringify(old_visites_perdu)
           );
         })
         .catch((error) => {
-          console.error('Error fetching projet details:', error);
+          console.error("Error fetching projet details:", error);
         });
 
       fetch_visite_bien_pre_reserve();
     } else {
-      fetchData_Select('sources', setSources, setLoading);
+      fetchData_Select("sources", setSources, setLoading);
 
       if (partenaires.length == 0) {
-        fetchDataByProjet('partenaires', setPartenaires, setLoading);
+        fetchDataByProjet("partenaires", setPartenaires, setLoading);
       }
     }
-    fetchData_Select('banques', setBanques, setLoading);
+    fetchData_Select("banques", setBanques, setLoading);
 
     // Fetch data using visiteId and update projetDetails state
   }, [accessToken, isOrigin, origin]);
@@ -544,35 +543,35 @@ const VisiteForm = ({ prospect_id, origin }) => {
       let a, b, minField, maxField;
 
       if (val == 1) {
-        a = Number(watch('prix_min')); // Convertir en nombre
-        b = Number(watch('prix_max')); // Convertir en nombre
-        minField = 'prix_min';
-        maxField = 'prix_max';
+        a = Number(watch("prix_min")); // Convertir en nombre
+        b = Number(watch("prix_max")); // Convertir en nombre
+        minField = "prix_min";
+        maxField = "prix_max";
 
         if (a > b) {
           setInfo_prix(
             `Le ${minField.replace(
-              '_',
-              ' '
-            )} doit être inférieur ou égal au ${maxField.replace('_', ' ')}.`
+              "_",
+              " "
+            )} doit être inférieur ou égal au ${maxField.replace("_", " ")}.`
           );
         } else {
           setInfo_prix(null);
         }
       } else if (val == 2) {
-        a = Number(watch('sup_min')); // Convertir en nombre
-        b = Number(watch('sup_max')); // Convertir en nombre
-        minField = 'superficie min';
-        maxField = 'superficie max';
+        a = Number(watch("sup_min")); // Convertir en nombre
+        b = Number(watch("sup_max")); // Convertir en nombre
+        minField = "superficie min";
+        maxField = "superficie max";
 
         if (a > b) {
           setInfo_sup(
             `La ${minField.replace(
-              '_',
-              ' '
+              "_",
+              " "
             )} doit être inférieure ou égale à la ${maxField.replace(
-              '_',
-              ' '
+              "_",
+              " "
             )}.`
           );
         } else {
@@ -585,46 +584,46 @@ const VisiteForm = ({ prospect_id, origin }) => {
   // 1) Extract all your checks into a single function
   const validateFields = () => {
     let valid = true;
-    const email = watch('email') || '';
+    const email = watch("email") || "";
 
     // Email required?
     if (email_required && !email) {
       valid = false;
-      console.error('Email obligatoire');
+      console.error("Email obligatoire");
     }
     // Email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (email && !emailRegex.test(email)) {
       valid = false;
-      console.error('Email invalide');
+      console.error("Email invalide");
     }
     // Partenaire required if source_txt is 'Partenaire'
-    if (watch('source_txt') == 'Partenaire' && !watch('partenaire_id')) {
+    if (watch("source_txt") == "Partenaire" && !watch("partenaire_id")) {
       valid = false;
-      console.error('Partenaire obligatoire');
+      console.error("Partenaire obligatoire");
     }
 
-    if (Number(watch('interet')) == 1) {
-      if (Number(watch('nb_bien_added')) < 0) {
+    if (Number(watch("interet")) == 1) {
+      if (Number(watch("nb_bien_added")) < 0) {
         valid = false;
-        console.error('Nb Bien obligatoire');
+        console.error("Nb Bien obligatoire");
       }
     }
     // If interet == 3, then all those frein checks
-    if (Number(watch('interet')) == 3) {
-      const frein = watch('frein') || [];
+    if (Number(watch("interet")) == 3) {
+      const frein = watch("frein") || [];
       const checks = [
         frein.length > 0,
-        !frein.includes('vue') || (watch('vues') || []).length > 0,
-        !frein.includes('typologie') || (watch('typologies') || []).length > 0,
-        !frein.includes('orientation') ||
-          (watch('orientations') || []).length > 0,
-        !frein.includes('etage') || (watch('etages') || []).length > 0,
-        !frein.includes('tranche') || (watch('tranches') || []).length > 0,
+        !frein.includes("vue") || (watch("vues") || []).length > 0,
+        !frein.includes("typologie") || (watch("typologies") || []).length > 0,
+        !frein.includes("orientation") ||
+          (watch("orientations") || []).length > 0,
+        !frein.includes("etage") || (watch("etages") || []).length > 0,
+        !frein.includes("tranche") || (watch("tranches") || []).length > 0,
       ];
 
       const checkNames = [
-        'frein.length > 0',
+        "frein.length > 0",
         "'vue' => vues.length > 0",
         "'typologie' => typologies.length > 0",
         "'orientation' => orientations.length > 0",
@@ -634,7 +633,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
 
       if (!checks.every(Boolean)) {
         valid = false;
-        console.error('Certains freins ne sont pas remplis correctement.');
+        console.error("Certains freins ne sont pas remplis correctement.");
         checks.forEach((check, index) => {
           if (!check) {
             console.warn(`Échec du test: ${checkNames[index]}`);
@@ -659,8 +658,8 @@ const VisiteForm = ({ prospect_id, origin }) => {
       setLoading_form(true);
     } else {
       //set on show visite le cadre est null pour saffiche par premier cadre
-      localStorage.setItem('v_id_cadre', null);
-      localStorage.setItem('v_id_org', null);
+      localStorage.setItem("v_id_cadre", null);
+      localStorage.setItem("v_id_org", null);
       setOpen_D_P(false);
 
       setIsSubmitting(true);
@@ -668,20 +667,20 @@ const VisiteForm = ({ prospect_id, origin }) => {
 
       const dataToSend = new FormData();
       let url = APIURL.VISITES;
-      let method = 'post';
+      let method = "post";
 
       Object.entries(data).forEach(([key, value]) => {
         //console.log(`Checking key: ${key}, value:`, value, typeof value);
 
         // Always include prospect_id regardless of isOrigin
-        if (key == 'prospect_id') {
+        if (key == "prospect_id") {
           dataToSend.append(key, value);
           return;
         }
         // Normalize value: trim and lowercase
         if (
-          typeof value == 'string' &&
-          value.trim().replace(/['"]/g, '').toLowerCase() == 'null'
+          typeof value == "string" &&
+          value.trim().replace(/['"]/g, "").toLowerCase() == "null"
         ) {
           // console.log(`Converting ${key} from string "null" to actual null`);
           data[key] = null;
@@ -690,16 +689,16 @@ const VisiteForm = ({ prospect_id, origin }) => {
         if (
           isOrigin &&
           [
-            'nom',
-            'email',
-            'prenom',
-            'telephone',
-            'telephone_num2',
-            'source_id',
-            'source_txt',
-            'partenaire_id',
-            'notifie',
-            'ville',
+            "nom",
+            "email",
+            "prenom",
+            "telephone",
+            "telephone_num2",
+            "source_id",
+            "source_txt",
+            "partenaire_id",
+            "notifie",
+            "ville",
           ].includes(key)
         ) {
           // Ne pas ajouter ces champs à `dataToSend`
@@ -719,20 +718,19 @@ const VisiteForm = ({ prospect_id, origin }) => {
         url: url,
         data: dataToSend,
         headers: {
-          'content-type': 'application/json',
-          Accept: 'application/json',
+          "content-type": "application/json",
+          Accept: "application/json",
           Authorization: `Bearer ${accessToken}`,
         },
       })
         .then((res) => {
-          let message = 'Quelque chose ne va pas bien';
+          let message = "Une erreur s'est produite";
           if (res.status == 200) {
-            message = `La visite a été créée
-             avec succès`;
+            message = `Visite créée avec succès`;
             toast.success(message);
-             router.push(ENDPOINTS.VISITES);
-            localStorage.removeItem('selectedProspect');
-            localStorage.removeItem('selectedClient');
+            router.push(ENDPOINTS.VISITES);
+            localStorage.removeItem("selectedProspect");
+            localStorage.removeItem("selectedClient");
             reset(defaultValues);
           } else if (res.status == 422) {
             message = res.data.message;
@@ -765,18 +763,18 @@ const VisiteForm = ({ prospect_id, origin }) => {
 
   const handleChange_event = (text) => (event) => {
     const value = event.target.value;
-    if (text == 'cin') {
+    if (text == "cin") {
       if (value.length >= 3) {
         const timeout = setTimeout(() => {
-          fetch_event_visite(value, 'search_prospect_by_param', text, 'cin');
+          fetch_event_visite(value, "search_prospect_by_param", text, "cin");
         }, 3000);
 
         return () => clearTimeout(timeout);
       }
-    } else if (text == 'Téléphone' || text == 'Téléphone2') {
+    } else if (text == "Téléphone" || text == "Téléphone2") {
       if (value.length >= 10) {
         const timeout = setTimeout(() => {
-          fetch_event_visite(value, 'search_prospect_by_param', text, 'tel');
+          fetch_event_visite(value, "search_prospect_by_param", text, "tel");
         }, 3000);
 
         return () => clearTimeout(timeout);
@@ -784,7 +782,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
     } else if (text == "l'email") {
       if (value.length >= 4) {
         const timeout = setTimeout(() => {
-          fetch_event_visite(value, 'search_prospect_by_param', text, 'email');
+          fetch_event_visite(value, "search_prospect_by_param", text, "email");
         }, 3000);
 
         return () => clearTimeout(timeout);
@@ -848,36 +846,36 @@ const VisiteForm = ({ prospect_id, origin }) => {
 
         // Définir les états et valeurs des champs seulement si `contactData` est défini
         setInfo_client_1(`${nom} ${prenom}`);
-        setClient_prospect(isClient ? 'Est un client' : 'Est un Prospect');
-        setValue('prospect_id', prospect_id);
-        setValue('cin', cin || '');
-        setValue('nom', nom || '');
-        setValue('prenom', prenom || '');
-        setValue('telephone', tel || '');
-        setValue('telephone_num2', tel_2 || null);
-        setValue('email', email || '');
-        setValue('notifie', notifie || 0);
+        setClient_prospect(isClient ? "Est un client" : "Est un Prospect");
+        setValue("prospect_id", prospect_id);
+        setValue("cin", cin || "");
+        setValue("nom", nom || "");
+        setValue("prenom", prenom || "");
+        setValue("telephone", tel || "");
+        setValue("telephone_num2", tel_2 || null);
+        setValue("email", email || "");
+        setValue("notifie", notifie || 0);
 
         // Définir les données de `source`
         if (source) {
-          setValue('source_id', source.id || '');
-          setValue('source_txt', source.source || '');
+          setValue("source_id", source.id || "");
+          setValue("source_txt", source.source || "");
           setDisabled_source(true);
         } else {
-          setValue('source_txt', '');
+          setValue("source_txt", "");
           setDisabled_source(false);
         }
 
         // Définir les données de `partenaire`
         if (partenaire) {
-          setValue('partenaire_id', partenaire.id || '');
-          setValue('partenaire_txt', partenaire.description);
-          setPartenaire_txt(partenaire.description || '');
+          setValue("partenaire_id", partenaire.id || "");
+          setValue("partenaire_txt", partenaire.description);
+          setPartenaire_txt(partenaire.description || "");
           setDisabled_source(true);
         } else {
-          setValue('partenaire_id', '');
+          setValue("partenaire_id", "");
           setPartenaire_txt(null);
-          setValue('partenaire_txt', '');
+          setValue("partenaire_txt", "");
         }
 
         // Traiter les données de `visite_pre_reserves`
@@ -885,7 +883,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
           visite_pre_reserves.length > 0 ||
           biens_traitement_freins.length > 0
         ) {
-          setValue('loading_b_pre', true);
+          setValue("loading_b_pre", true);
           if (visite_pre_reserves.length > 0) {
             const oldBiens = visite_pre_reserves.map(
               ({ bien, bien_id, id }) => ({
@@ -955,20 +953,20 @@ const VisiteForm = ({ prospect_id, origin }) => {
               ]);
             }
           }
-          setValue('loading_b_pre', false);
+          setValue("loading_b_pre", false);
         } else {
-          setValue('loading_b_pre', false);
+          setValue("loading_b_pre", false);
         }
 
         // Gérer les données de dialogue
         if (prospect?.appels) setId_appel(prospect.appels.id);
         if (prospect?.visites?.length) {
-          setValue('last_origin_id_of_prospect', prospect.visites[0].id);
+          setValue("last_origin_id_of_prospect", prospect.visites[0].id);
           setId_visite(prospect.visites[0].id);
 
           setOld_visites_perdu([]);
           for (var i = 0; i <= Number(prospect.visites.length) - 1; i++) {
-            if (prospect.visites[i].interet == '3') {
+            if (prospect.visites[i].interet == "3") {
               if (
                 prospect.visites[i]?.freins?.etat == 1 ||
                 prospect.visites[i]?.freins?.etat == 2 ||
@@ -976,27 +974,27 @@ const VisiteForm = ({ prospect_id, origin }) => {
               ) {
                 let date = format(
                   new Date(prospect.visites[i].created_at),
-                  'dd/MM/yyyy '
+                  "dd/MM/yyyy "
                 );
                 let fr_id = prospect.visites[i]?.freins.id;
                 let v_cadre_id = prospect.visites[i].related_show_id;
                 let origin_id = prospect.visites[i].origin_id;
-                let frein_exp = '';
+                let frein_exp = "";
                 if (prospect.visites[i]?.freins.frein_tranche.length > 0) {
-                  frein_exp += 'Tranche ,';
+                  frein_exp += "Tranche ,";
                 }
                 if (prospect.visites[i]?.freins.frein_etage.length > 0) {
-                  frein_exp += 'Etage ,';
+                  frein_exp += "Etage ,";
                 }
 
                 if (prospect.visites[i]?.freins.frein_orientation.length > 0) {
-                  frein_exp += 'Orientation ,';
+                  frein_exp += "Orientation ,";
                 }
                 if (prospect.visites[i]?.freins.frein_typologie.length > 0) {
-                  frein_exp += 'Typologie ,';
+                  frein_exp += "Typologie ,";
                 }
                 if (prospect.visites[i]?.freins.frein_vue.length > 0) {
-                  frein_exp += 'Vue ,';
+                  frein_exp += "Vue ,";
                 }
                 if (
                   (prospect.visites[i]?.freins.prix_min != null &&
@@ -1004,7 +1002,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                   (prospect.visites[i]?.freins.prix_max != null &&
                     prospect.visites[i]?.freins.prix_max != 0)
                 ) {
-                  frein_exp += 'Prix ,';
+                  frein_exp += "Prix ,";
                 }
                 if (
                   (prospect.visites[i]?.freins.superficie_min != null &&
@@ -1012,13 +1010,13 @@ const VisiteForm = ({ prospect_id, origin }) => {
                   (prospect.visites[i]?.freins.superficie_max != null &&
                     prospect.visites[i]?.freins.superficie_max != 0)
                 ) {
-                  frein_exp += 'Superficie ,';
+                  frein_exp += "Superficie ,";
                 }
                 if (prospect.visites[i]?.freins.avance != null) {
-                  frein_exp += 'Avance ,';
+                  frein_exp += "Avance ,";
                 }
                 if (prospect.visites[i]?.freins.description_autre != null) {
-                  frein_exp += 'Frein Autre,';
+                  frein_exp += "Frein Autre,";
                 }
                 setOld_visites_perdu((v) => [
                   ...v,
@@ -1039,18 +1037,18 @@ const VisiteForm = ({ prospect_id, origin }) => {
         setOpen_Dialog(true);
       } else {
         // Pas de client ni de prospect trouvé, garder les champs inchangés
-        setValue('loading_b_pre', false);
+        setValue("loading_b_pre", false);
         setOpen_Dialog(false);
       }
     } catch (error) {
-      console.error('Erreur lors de la récupération de la visite:', error);
+      console.error("Erreur lors de la récupération de la visite:", error);
       setDisabled(false);
       setDisabled_source(false);
     }
   };
   //selectedProjet?.id
   const fetch_bien_ByProjet = async () => {
-    if (Number(watch('interet')) == 1) {
+    if (Number(watch("interet")) == 1) {
       setLoading_bien(true);
       await axios
 
@@ -1087,7 +1085,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
 
   const handleChange_NbrBien = (e) => {
     const nbBiens = Number(e.target.value);
-    setValue('nb_bien_added', nbBiens);
+    setValue("nb_bien_added", nbBiens);
 
     if (biensByProjet) {
       for (var j = 0; j <= Number(biensByProjet.length) - 1; j++) {
@@ -1101,46 +1099,46 @@ const VisiteForm = ({ prospect_id, origin }) => {
         ...input_biens,
         {
           bien_id: null,
-          old_bien_id: '',
-          propriete_dite_bien: '',
-          statut: '',
-          rdv: '',
-          date_relance: '',
-          mode_relance: '',
-          commentaire: '',
-          prix: '',
-          prix_final: '',
-          superficie_balcon_calculer: '',
-          superficie_terrasse_calculer: '',
-          superficie_jardin_calculer: '',
-          superficie_habitable: '',
-          prix_box: '',
-          prix_parking: '',
-          prix_unitaire: '',
-          avance_minimale: '',
+          old_bien_id: "",
+          propriete_dite_bien: "",
+          statut: "",
+          rdv: "",
+          date_relance: "",
+          mode_relance: "",
+          commentaire: "",
+          prix: "",
+          prix_final: "",
+          superficie_balcon_calculer: "",
+          superficie_terrasse_calculer: "",
+          superficie_jardin_calculer: "",
+          superficie_habitable: "",
+          prix_box: "",
+          prix_parking: "",
+          prix_unitaire: "",
+          avance_minimale: "",
 
           /*Reservation*/
-          code_reservation: '',
-          mode_financement: '',
+          code_reservation: "",
+          mode_financement: "",
           date_reservation: date_reservation[0],
-          commentaire_res: '',
-          avance_res: '',
-          reste: '',
+          commentaire_res: "",
+          avance_res: "",
+          reste: "",
           sr: false,
-          banque_id: '',
-          numero_paiement: '',
-          echeance: '',
-          check_montant: '',
+          banque_id: "",
+          numero_paiement: "",
+          echeance: "",
+          check_montant: "",
           selectedFiles_rsv: [],
 
           //fichier_avance:fich!=null?fich:0,
-          mode_paiement: '',
-          commentaireAvance: '',
+          mode_paiement: "",
+          commentaireAvance: "",
           date_reglement: date_reglement,
           prix_remise: 0,
           prix_forfetaire: 0,
-          docs_resv: '',
-          num_remise: '',
+          docs_resv: "",
+          num_remise: "",
           date_encaissement: null,
           check_save: true,
           selectedFiles_avc: [],
@@ -1155,14 +1153,14 @@ const VisiteForm = ({ prospect_id, origin }) => {
   };
 
   const handleAccordionChange = (panel) => (event, isExpanded) => {
-    console.log('Clicked panel:', panel);
-    console.log('Before update:', expanded);
+    console.log("Clicked panel:", panel);
+    console.log("Before update:", expanded);
     setExpanded((prevExpanded) =>
       prevExpanded.includes(panel)
         ? prevExpanded.filter((p) => p !== panel)
         : [...prevExpanded, panel]
     );
-    console.log('After update:', expanded);
+    console.log("After update:", expanded);
   };
 
   const handlechangeprix_remise = (value, index, name) => {
@@ -1171,14 +1169,14 @@ const VisiteForm = ({ prospect_id, origin }) => {
     const item = list[index];
 
     const superficieTotale =
-      parseFloat(item['superficie_jardin_calculer'] || 0) +
-      parseFloat(item['superficie_habitable'] || 0) +
-      parseFloat(item['superficie_balcon_calculer'] || 0) +
-      parseFloat(item['superficie_terrasse_calculer'] || 0);
+      parseFloat(item["superficie_jardin_calculer"] || 0) +
+      parseFloat(item["superficie_habitable"] || 0) +
+      parseFloat(item["superficie_balcon_calculer"] || 0) +
+      parseFloat(item["superficie_terrasse_calculer"] || 0);
 
-    const prixBox = parseFloat(item['prix_box'] || 0);
-    const prixParking = parseFloat(item['prix_parking'] || 0);
-    const prixUnitaire = parseFloat(item['prix_unitaire'] || 0);
+    const prixBox = parseFloat(item["prix_box"] || 0);
+    const prixParking = parseFloat(item["prix_parking"] || 0);
+    const prixUnitaire = parseFloat(item["prix_unitaire"] || 0);
     const remiseValue = parseFloat(value || 0);
 
     const prixM2 = value ? remiseValue : prixUnitaire;
@@ -1188,8 +1186,8 @@ const VisiteForm = ({ prospect_id, origin }) => {
     setCheck_total(0); // Reset before any logic
 
     if (remiseValue !== 0) {
-      const prixForfetaire = parseFloat(item['prix_forfetaire'] || 0);
-      item['prix_final'] = prixForfetaire ? total - prixForfetaire : total;
+      const prixForfetaire = parseFloat(item["prix_forfetaire"] || 0);
+      item["prix_final"] = prixForfetaire ? total - prixForfetaire : total;
     }
 
     setCheck_total(check_total + 1);
@@ -1203,15 +1201,15 @@ const VisiteForm = ({ prospect_id, origin }) => {
     const item = list[index];
 
     const superficieTotale =
-      parseFloat(item['superficie_jardin_calculer'] || 0) +
-      parseFloat(item['superficie_habitable'] || 0) +
-      parseFloat(item['superficie_balcon_calculer'] || 0) +
-      parseFloat(item['superficie_terrasse_calculer'] || 0);
+      parseFloat(item["superficie_jardin_calculer"] || 0) +
+      parseFloat(item["superficie_habitable"] || 0) +
+      parseFloat(item["superficie_balcon_calculer"] || 0) +
+      parseFloat(item["superficie_terrasse_calculer"] || 0);
 
-    const prixBox = parseFloat(item['prix_box'] || 0);
-    const prixParking = parseFloat(item['prix_parking'] || 0);
-    const prixRemise = parseFloat(item['prix_remise'] || 0);
-    const prixUnitaire = parseFloat(item['prix_unitaire'] || 0);
+    const prixBox = parseFloat(item["prix_box"] || 0);
+    const prixParking = parseFloat(item["prix_parking"] || 0);
+    const prixRemise = parseFloat(item["prix_remise"] || 0);
+    const prixUnitaire = parseFloat(item["prix_unitaire"] || 0);
     const prixForfetaire = parseFloat(value || 0);
 
     const totalRemise = prixRemise * superficieTotale + prixBox + prixParking;
@@ -1230,7 +1228,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
         : totalUnitaire - prixForfetaire;
     }
 
-    item['prix_final'] = parseFloat(finalPrice);
+    item["prix_final"] = parseFloat(finalPrice);
 
     setCheck_total(check_total + 1);
     name != null ? setinput_biens_vendu(list) : setinput_biens(list);
@@ -1246,23 +1244,23 @@ const VisiteForm = ({ prospect_id, origin }) => {
       .then((res) => {
         const list = [...input_biens];
         if (res.data.bien.length != 0) {
-          list[index]['old_bien_id'] = v;
-          list[index]['propriete_dite_bien'] =
+          list[index]["old_bien_id"] = v;
+          list[index]["propriete_dite_bien"] =
             res.data.bien.propriete_dite_bien;
-          list[index]['prix'] = res.data.bien.prix;
-          list[index]['prix_final'] = res.data.bien.prix;
-          list[index]['superficie_balcon_calculer'] =
+          list[index]["prix"] = res.data.bien.prix;
+          list[index]["prix_final"] = res.data.bien.prix;
+          list[index]["superficie_balcon_calculer"] =
             res.data.bien.superficie_balcon_calculer;
-          list[index]['superficie_jardin_calculer'] =
+          list[index]["superficie_jardin_calculer"] =
             res.data.bien.superficie_jardin_calculer;
-          list[index]['superficie_terrasse_calculer'] =
+          list[index]["superficie_terrasse_calculer"] =
             res.data.bien.superficie_terrasse_calculer;
-          list[index]['superficie_habitable'] =
+          list[index]["superficie_habitable"] =
             res.data.bien.superficie_habitable;
-          list[index]['prix_box'] = res.data.bien.prix_box;
-          list[index]['prix_parking'] = res.data.bien.prix_parking;
-          list[index]['prix_unitaire'] = res.data.bien.prix_unitaire;
-          list[index]['avance_minimale'] = res.data.bien.avance_minimale;
+          list[index]["prix_box"] = res.data.bien.prix_box;
+          list[index]["prix_parking"] = res.data.bien.prix_parking;
+          list[index]["prix_unitaire"] = res.data.bien.prix_unitaire;
+          list[index]["avance_minimale"] = res.data.bien.avance_minimale;
         }
       })
       .catch(() => {});
@@ -1280,7 +1278,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
       .then((res) => {
         if (res.data.reservation != null) {
           setInfo_reservation(
-            'Le Code Réservation  :' + v + 'est déjà existant '
+            "Le Code Réservation  :" + v + "est déjà existant "
           );
           setLoading_form(true);
         } else {
@@ -1298,43 +1296,43 @@ const VisiteForm = ({ prospect_id, origin }) => {
     const { name, value } = e.target;
     const list = [...input_biens_vendu];
     list[index][name] = value;
-    if (name == 'sr') {
-      list[index]['sr'] = e.target.checked;
+    if (name == "sr") {
+      list[index]["sr"] = e.target.checked;
     }
-    if (name == 'check_montant') {
-      list[index]['check_montant'] = e.target.checked;
+    if (name == "check_montant") {
+      list[index]["check_montant"] = e.target.checked;
     }
-    if (name == 'avance_res') {
-      list[index]['reste'] = list[index]['prix_final'] - e.target.value;
+    if (name == "avance_res") {
+      list[index]["reste"] = list[index]["prix_final"] - e.target.value;
     }
     setinput_biens_vendu(list);
-    setValue('list_bien_transfere_vendu', JSON.stringify(list));
-    console.log('les biens =>' + JSON.stringify(input_biens_vendu));
+    setValue("list_bien_transfere_vendu", JSON.stringify(list));
+    console.log("les biens =>" + JSON.stringify(input_biens_vendu));
 
     if (
-      list[index]['statut'] == 2 &&
-      (list[index]['code_reservation'] == '' ||
-        list[index]['bien_id'] == '' ||
-        list[index]['prix'] == '' ||
-        list[index]['date_reservation'] == '' ||
-        Number(list[index]['avance_res']) < 0 || // Ensure it's treated as a number
-        list[index]['mode_financement'] == '' ||
-        list[index]['mode_paiement'] == '' ||
-        (list[index]['check_montant'] == true &&
-          list[index]['commentaireAvance'].length == 0) ||
-        (Number(list[index]['avance_res']) == 0 &&
-          list[index]['check_montant'] == false))
+      list[index]["statut"] == 2 &&
+      (list[index]["code_reservation"] == "" ||
+        list[index]["bien_id"] == "" ||
+        list[index]["prix"] == "" ||
+        list[index]["date_reservation"] == "" ||
+        Number(list[index]["avance_res"]) < 0 || // Ensure it's treated as a number
+        list[index]["mode_financement"] == "" ||
+        list[index]["mode_paiement"] == "" ||
+        (list[index]["check_montant"] == true &&
+          list[index]["commentaireAvance"].length == 0) ||
+        (Number(list[index]["avance_res"]) == 0 &&
+          list[index]["check_montant"] == false))
     ) {
-      list[index]['check_save'] = false;
+      list[index]["check_save"] = false;
     } else {
-      list[index]['check_save'] = true;
+      list[index]["check_save"] = true;
     }
     setCheck_save(true); //check save principal
-    if (name == 'prix_remise') {
-      handlechangeprix_remise(value, index, 'bien_transfere_vendu');
+    if (name == "prix_remise") {
+      handlechangeprix_remise(value, index, "bien_transfere_vendu");
     }
-    if (name == 'prix_forfetaire') {
-      handlechangeprix_forfetaire(value, index, 'bien_transfere_vendu');
+    if (name == "prix_forfetaire") {
+      handlechangeprix_forfetaire(value, index, "bien_transfere_vendu");
     }
     input_biens_vendu.forEach((input) => {
       //check if one of inputs check_save == false  btn enregistrer=disabled
@@ -1346,7 +1344,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
 
     //added
 
-    if (name == 'code_reservation') {
+    if (name == "code_reservation") {
       if (value.length >= 3) {
         setInfo_reservation(null);
         setTimeout(() => {
@@ -1360,13 +1358,13 @@ const VisiteForm = ({ prospect_id, origin }) => {
     const { name, value } = e.target;
     const list = [...OldBiens_pre];
     list[index][name] = value;
-    if (param == 'action') {
-      list[index]['action'] = value;
+    if (param == "action") {
+      list[index]["action"] = value;
     }
     setOldBiens_pre(list);
 
     const allActionsFilled = OldBiens_pre.every(
-      (input) => input.action && input.action.trim() !== ''
+      (input) => input.action && input.action.trim() !== ""
     );
     setCheck_save_1(!allActionsFilled);
 
@@ -1382,27 +1380,27 @@ const VisiteForm = ({ prospect_id, origin }) => {
     setReset_perdu(reset_perdu + 1);
     setCheck_save_perdu(true);
     console.log(
-      'les action du perdu est  =>' + JSON.stringify(old_visites_perdu)
+      "les action du perdu est  =>" + JSON.stringify(old_visites_perdu)
     );
   };
 
   const show_visite = (origin_id, v_id) => {
-    localStorage.setItem('v_id_cadre', v_id);
-    localStorage.setItem('v_id_org', origin_id);
-    window.open(`/visites/show/${origin_id}`, '_blank');
+    localStorage.setItem("v_id_cadre", v_id);
+    localStorage.setItem("v_id_org", origin_id);
+    window.open(`/visites/show/${origin_id}`, "_blank");
   };
 
   const handle_action_change_perdu = (e, index, param) => {
     const { name, value } = e.target;
     const list = [...old_visites_perdu];
     list[index][name] = value;
-    if (param == 'action') {
-      list[index]['action'] = value;
+    if (param == "action") {
+      list[index]["action"] = value;
     }
     setOld_visites_perdu(list);
 
     const allActionsFilled = old_visites_perdu.every(
-      (input) => input.action && input.action.trim() !== ''
+      (input) => input.action && input.action.trim() !== ""
     );
     setCheck_save_perdu(!allActionsFilled);
 
@@ -1420,26 +1418,26 @@ const VisiteForm = ({ prospect_id, origin }) => {
 
     setLoading_button_save_perdu(true);
     axios({
-      method: 'put',
+      method: "put",
       url: `${APIURL.ROOTV1}/desactiver_freins/0`,
       data: requestData_action_perdu,
       headers: {
-        'content-type': 'application/json',
-        Accept: 'application/json',
+        "content-type": "application/json",
+        Accept: "application/json",
         Authorization: `Bearer ${accessToken}`,
       },
     })
       .then(() => {
         setOpen_D_P(false);
         setLoading_button_save_perdu(false);
-        toast.success('Données enregistrées avec succès');
+        toast.success("Données enregistrées avec succès");
         setOld_visites_perdu([]);
 
         //active Enregistrer du form
         setLoading_form(false);
       })
       .catch(() => {
-        console.log('errror');
+        console.log("errror");
       });
   };
 
@@ -1459,7 +1457,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
         let prixx = OldBiens_pre[i].prix;
         let prixx_uni = OldBiens_pre[i].prix_unitaire;
         let sup_jardin = OldBiens_pre[i].superficie_jardin_calculer;
-        console.log('on submit vendu ==>' + sup_jardin);
+        console.log("on submit vendu ==>" + sup_jardin);
         let sup_habit = OldBiens_pre[i].superficie_habitable;
         let sup_balcon = OldBiens_pre[i].superficie_balcon_calculer;
         let sup_terrase = OldBiens_pre[i].superficie_terrasse_calculer;
@@ -1474,13 +1472,13 @@ const VisiteForm = ({ prospect_id, origin }) => {
             visite_id: visite_idd,
             traitement_frein_id: t_f_id,
             bien_id: bien_idd,
-            old_bien_id: '',
+            old_bien_id: "",
             propriete_dite_bien: bien_proprietee,
             statut: 2,
-            rdv: '',
-            date_relance: '',
-            mode_relance: '',
-            commentaire: '',
+            rdv: "",
+            date_relance: "",
+            mode_relance: "",
+            commentaire: "",
             prix: prixx,
             prix_final: prixx,
             superficie_balcon_calculer: sup_balcon,
@@ -1493,34 +1491,34 @@ const VisiteForm = ({ prospect_id, origin }) => {
             avance_minimale: avancee,
 
             /*Reservation*/
-            code_reservation: '',
-            mode_financement: '',
+            code_reservation: "",
+            mode_financement: "",
             date_reservation: date_reservation[0],
-            commentaire_res: '',
-            avance_res: '',
+            commentaire_res: "",
+            avance_res: "",
             reste: prixx,
             sr: false,
-            banque_id: '',
-            numero_paiement: '',
-            echeance: '',
-            check_montant: '',
+            banque_id: "",
+            numero_paiement: "",
+            echeance: "",
+            check_montant: "",
             selectedFiles_rsv: [],
 
             //fichier_avance:fich!=null?fich:0,
-            mode_paiement: '',
-            commentaireAvance: '',
+            mode_paiement: "",
+            commentaireAvance: "",
             date_reglement: date_reglement,
             prix_remise: 0,
             prix_forfetaire: 0,
-            docs_resv: '',
-            num_remise: '',
+            docs_resv: "",
+            num_remise: "",
             date_encaissement: null,
             check_save: true,
             selectedFiles_avc: [],
           },
         ]);
         setValue(
-          'list_bien_transfere_vendu',
+          "list_bien_transfere_vendu",
           JSON.stringify(input_biens_vendu)
         );
       }
@@ -1532,24 +1530,24 @@ const VisiteForm = ({ prospect_id, origin }) => {
     }
 
     axios({
-      method: 'put',
+      method: "put",
       url: `${APIURL.ROOTV1}/update_visite_bien_pre_reserve/0`,
       data: requestData_action,
       headers: {
-        'content-type': 'application/json',
-        Accept: 'application/json',
+        "content-type": "application/json",
+        Accept: "application/json",
         Authorization: `Bearer ${accessToken}`,
       },
     })
       .then(() => {
         setLoading_button_save_1(false);
-        toast.success('Données enregistrées avec succès');
+        toast.success("Données enregistrées avec succès");
         setOldBiens_pre([]);
-        setValue('loading_b_pre', false);
+        setValue("loading_b_pre", false);
         setpaper_exist(1);
       })
       .catch(() => {
-        console.log('errror');
+        console.log("errror");
       });
   };
 
@@ -1557,11 +1555,11 @@ const VisiteForm = ({ prospect_id, origin }) => {
   const set_all_action_null = () => {
     setReset1(0);
     for (var j = 0; j <= Number(OldBiens_pre.length) - 1; j++) {
-      OldBiens_pre[j].action = '';
+      OldBiens_pre[j].action = "";
     }
     setReset1(reset1 + 1);
     setCheck_save_1(true);
-    console.log('les action du bien est  =>' + JSON.stringify(OldBiens_pre));
+    console.log("les action du bien est  =>" + JSON.stringify(OldBiens_pre));
   };
 
   const handleinputchange = (e, index) => {
@@ -1570,61 +1568,61 @@ const VisiteForm = ({ prospect_id, origin }) => {
     list[index][name] = value;
 
     // Handle bien_id changes
-    if (name == 'bien_id') {
+    if (name == "bien_id") {
       show_bien(value, index);
       storebien_en_proposition(value, index);
       pusher_function();
     }
 
     // Handle avance_res and other fields
-    if (name == 'avance_res') {
-      list[index]['reste'] = list[index]['prix_final'] - e.target.value;
+    if (name == "avance_res") {
+      list[index]["reste"] = list[index]["prix_final"] - e.target.value;
     }
-    if (name == 'sr') {
-      list[index]['sr'] = e.target.checked;
+    if (name == "sr") {
+      list[index]["sr"] = e.target.checked;
     }
-    if (name == 'check_montant') {
-      list[index]['check_montant'] = e.target.checked;
+    if (name == "check_montant") {
+      list[index]["check_montant"] = e.target.checked;
     }
 
     // Update input_biens state
     setinput_biens(list);
 
     // Set the form value for list_bien_interesse
-    setValue('list_bien_interesse', JSON.stringify(list));
+    setValue("list_bien_interesse", JSON.stringify(list));
 
     // Additional checks and updates
     if (
-      list[index]['statut'] == 2 &&
-      (list[index]['code_reservation'] == '' ||
-        list[index]['bien_id'] == '' ||
-        list[index]['prix'] == '' ||
-        list[index]['date_reservation'] == '' ||
-        Number(list[index]['avance_res']) < 0 || // Ensure it's treated as a number
-        list[index]['mode_financement'] == '' ||
-        list[index]['mode_paiement'] == '' ||
-        (list[index]['check_montant'] == true &&
-          list[index]['commentaireAvance'].length == 0) ||
-        (Number(list[index]['avance_res']) == 0 &&
-          list[index]['check_montant'] == false))
+      list[index]["statut"] == 2 &&
+      (list[index]["code_reservation"] == "" ||
+        list[index]["bien_id"] == "" ||
+        list[index]["prix"] == "" ||
+        list[index]["date_reservation"] == "" ||
+        Number(list[index]["avance_res"]) < 0 || // Ensure it's treated as a number
+        list[index]["mode_financement"] == "" ||
+        list[index]["mode_paiement"] == "" ||
+        (list[index]["check_montant"] == true &&
+          list[index]["commentaireAvance"].length == 0) ||
+        (Number(list[index]["avance_res"]) == 0 &&
+          list[index]["check_montant"] == false))
     ) {
-      console.log('hop', list[index]);
+      console.log("hop", list[index]);
 
-      list[index]['check_save'] = false;
+      list[index]["check_save"] = false;
     } else {
-      list[index]['check_save'] = true;
+      list[index]["check_save"] = true;
     }
 
     setCheck_save(true);
 
     input_biens.forEach((input) => {
-      if (name == 'bien_id') {
+      if (name == "bien_id") {
         for (let j = 0; j <= Number(biensByProjet.length) - 1; j++) {
           if (biensByProjet[j].id == JSON.stringify(input.bien_id)) {
             biensByProjet[j].disabled = true;
           }
-          if (list[index]['old_bien_id'] !== '') {
-            if (biensByProjet[j].id == list[index]['old_bien_id']) {
+          if (list[index]["old_bien_id"] !== "") {
+            if (biensByProjet[j].id == list[index]["old_bien_id"]) {
               biensByProjet[j].disabled = false;
             }
           }
@@ -1634,14 +1632,14 @@ const VisiteForm = ({ prospect_id, origin }) => {
       //vente
       if (
         input.check_save == false ||
-        input.bien_id == '' ||
-        input.statut == ''
+        input.bien_id == "" ||
+        input.statut == ""
       ) {
-        console.log('faaadwa');
+        console.log("faaadwa");
         setCheck_save(false);
       }
 
-      if (name == 'code_reservation') {
+      if (name == "code_reservation") {
         if (value.length >= 3) {
           setInfo_reservation(null);
           setTimeout(() => {
@@ -1651,35 +1649,35 @@ const VisiteForm = ({ prospect_id, origin }) => {
       }
     });
 
-    if (name == 'prix_remise') {
+    if (name == "prix_remise") {
       handlechangeprix_remise(value, index, null);
     }
-    if (name == 'prix_forfetaire') {
+    if (name == "prix_forfetaire") {
       handlechangeprix_forfetaire(value, index, null);
     }
 
-    console.log('les biens =>' + JSON.stringify(input_biens));
-    setValue('list_bien_interesse', JSON.stringify(input_biens));
+    console.log("les biens =>" + JSON.stringify(input_biens));
+    setValue("list_bien_interesse", JSON.stringify(input_biens));
   };
 
   const storebien_en_proposition = async (id, index) => {
     const list = [...input_biens];
-    var old_id = list[index]['old_bien_id'];
-    if (old_id == null || old_id == '') {
+    var old_id = list[index]["old_bien_id"];
+    if (old_id == null || old_id == "") {
       old_id = 0;
     }
     axios({
-      method: 'put',
+      method: "put",
 
       url: `${APIURL.ROOT}/v1/setPropostionBien/${id}/` + old_id,
       headers: {
-        'content-type': 'application/json',
-        Accept: 'application/json',
+        "content-type": "application/json",
+        Accept: "application/json",
         Authorization: `Bearer ${accessToken}`,
       },
     })
       .then(() => {
-        console.log('bien est en proposition');
+        console.log("bien est en proposition");
       })
       .catch((err) => {
         const response = err.response;
@@ -1691,27 +1689,27 @@ const VisiteForm = ({ prospect_id, origin }) => {
 
   // First select: Source
   const handleSourceChange = (newValue) => {
-    setValue('partenaire_id', ''); // Reset partenaire ID when source changes
-    setValue('source_txt', newValue ? newValue.source : ''); // Set source ID
-    setValue('source_id', newValue ? newValue.id : ''); // Set source ID
+    setValue("partenaire_id", ""); // Reset partenaire ID when source changes
+    setValue("source_txt", newValue ? newValue.source : ""); // Set source ID
+    setValue("source_id", newValue ? newValue.id : ""); // Set source ID
     setPartenaire_txt(null);
   };
   // Second select: Partenaire
   const handlePartenaireChange = (newValue) => {
     // setPartenaire_txt(newValue ? newValue : ''); // Set partenaire value
-    setValue('partenaire_id', newValue ? newValue.id : ''); // Set partenaire ID
+    setValue("partenaire_id", newValue ? newValue.id : ""); // Set partenaire ID
   };
   const handleChange_freins = (selectedValues) => {
     try {
-      console.log('Changed:', selectedValues);
+      console.log("Changed:", selectedValues);
       const descriptions = selectedValues
-        .map((item) => item?.description?.toLowerCase() || '')
-        .join(', ');
-      console.log('Descriptions:', descriptions);
+        .map((item) => item?.description?.toLowerCase() || "")
+        .join(", ");
+      console.log("Descriptions:", descriptions);
 
-      setValue('frein', descriptions);
+      setValue("frein", descriptions);
     } catch (error) {
-      console.error('Error in handleChange_freins:', error);
+      console.error("Error in handleChange_freins:", error);
     }
   };
   const isDisabled =
@@ -1722,22 +1720,22 @@ const VisiteForm = ({ prospect_id, origin }) => {
     (OldBiens_pre.length > 0 && !isOrigin) ||
     info_reservation != null ||
     open_D_P ||
-    (watch('list_bien_transfere_vendu').length == 0 &&
-      watch('interet') == 1 &&
-      watch('nb_bien_added') == 0) ||
+    (watch("list_bien_transfere_vendu").length == 0 &&
+      watch("interet") == 1 &&
+      watch("nb_bien_added") == 0) ||
     // Add new conditions for avance_res validation
     input_biens.some(
       (x) =>
         x.statut == 2 &&
         x.bien_id != null &&
-        ((x.avance_res != '' && x.avance_res == 0 && user?.role > 2) ||
+        ((x.avance_res != "" && x.avance_res == 0 && user?.role > 2) ||
           (x.avance_res > 0 && x.avance_res < x.avance_minimale))
     ) ||
     input_biens_vendu.some(
       (x) =>
         x.statut == 2 &&
         x.bien_id != null &&
-        ((x.avance_res != '' && x.avance_res == 0 && user?.role > 2) ||
+        ((x.avance_res != "" && x.avance_res == 0 && user?.role > 2) ||
           (x.avance_res > 0 && x.avance_res < x.avance_minimale))
     );
 
@@ -1766,7 +1764,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
             onClose={() => setOpen_Dialog(false)}
           />
         </>
-      )}{' '}
+      )}{" "}
       <div className="">
         <div className="flex items-center justify-start">
           <BreadCrumb baseUrl={ENDPOINTS.VISITES} step={`Ajouter Visite`} />
@@ -1777,7 +1775,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
           (isOrigin && OldBiens_pre.length > 0 && paper_exist == 1) ||
           (isOrigin &&
             OldBiens_pre.length == 0 &&
-            !watch('loading_b_pre'))) && (
+            !watch("loading_b_pre"))) && (
           <div className="p-6 mt-4 min-h-[89vh] bg-white shadow-md rounded-md">
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="space-y-4">
@@ -1804,7 +1802,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                         partenaires={partenaires}
                         handlePartenaireChange={handlePartenaireChange}
                         disabled_var={disabled_var}
-                        source_d={watch('source_id')}
+                        source_d={watch("source_id")}
                         disabled_var_source={disabled_var_source}
                         partenaire_txt={partenaire_txt}
                         handleChange_event={handleChange_event}
@@ -1828,8 +1826,8 @@ const VisiteForm = ({ prospect_id, origin }) => {
                         errors={errors}
                         backendErrors={backendErrors}
                         defaultValues={defaultValues}
-                        onChange={handleChange_event('cin')}
-                        required={Number(watch('interet')) == 1}
+                        onChange={handleChange_event("cin")}
+                        required={Number(watch("interet")) == 1}
                       />
                     </div>
                   </>
@@ -1844,7 +1842,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
                   {input_biens_vendu.length == 0 && (
                     <>
-                      {watch('loading_b_pre') == false && (
+                      {watch("loading_b_pre") == false && (
                         <>
                           <div className="">
                             <AutocompleteSelectComponent
@@ -1864,11 +1862,11 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                       3: VISITE_INTERETS[3],
                                     }
                               }
-                              disabled={!isOrigin && watch('telephone') == ''}
+                              disabled={!isOrigin && watch("telephone") == ""}
                               onChange={handleChange_interet}
                             />
                           </div>
-                          {Number(watch('interet')) == 1 && (
+                          {Number(watch("interet")) == 1 && (
                             <>
                               <TextField
                                 label="Nombre de Biens à ajouter:"
@@ -1879,20 +1877,20 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                   ...errors,
                                   nb_bien_added:
                                     formSubmitted &&
-                                    Number(watch('interet')) == 1 &&
-                                    !watch('nb_bien_added') &&
-                                    watch('nb_bien_added') !== 0
-                                      ? 'Ce champ est obligatoire lorsque interet est Intéressé.'
-                                      : Number(watch('nb_bien_added')) < 0
-                                      ? 'Veuillez entrer un nombre positif.'
+                                    Number(watch("interet")) == 1 &&
+                                    !watch("nb_bien_added") &&
+                                    watch("nb_bien_added") !== 0
+                                      ? "Ce champ est obligatoire lorsque interet est Intéressé."
+                                      : Number(watch("nb_bien_added")) < 0
+                                      ? "Veuillez entrer un nombre positif."
                                       : null,
                                 }}
                                 backendErrors={backendErrors}
                                 defaultValues={{ nb_bien_added: 0 }}
-                                required={Number(watch('interet')) == 1}
+                                required={Number(watch("interet")) == 1}
                                 inputProps={{
                                   min: 0,
-                                  inputMode: 'numeric',
+                                  inputMode: "numeric",
                                 }}
                                 onChange={(e) => {
                                   let value = e.target.value;
@@ -1900,9 +1898,9 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                   // Remove leading 0 when user starts typing
                                   if (
                                     value.length > 1 &&
-                                    value.startsWith('0')
+                                    value.startsWith("0")
                                   ) {
-                                    value = value.replace(/^0+/, '');
+                                    value = value.replace(/^0+/, "");
                                   }
 
                                   // Only allow digits (optional extra check)
@@ -1919,7 +1917,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                     </>
                   )}
 
-                  {Number(watch('interet')) == 2 && (
+                  {Number(watch("interet")) == 2 && (
                     <>
                       <div className="">
                         <AutocompleteSelectComponent
@@ -1943,7 +1941,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                       </div>
                     </>
                   )}
-                  {Number(watch('interet')) == 3 && (
+                  {Number(watch("interet")) == 3 && (
                     <FreinsComponent
                       watch={watch}
                       control={control}
@@ -1994,15 +1992,15 @@ const VisiteForm = ({ prospect_id, origin }) => {
                           className="w-full flex justify-between items-center px-4 py-3  text-white text-base font-medium focus:outline-none"
                           style={{
                             background:
-                              'rgb(35 22 81 / var(--tw-text-opacity, 1))',
+                              "rgb(35 22 81 / var(--tw-text-opacity, 1))",
                           }}
                           onClick={handleAccordionChange(`panel_bienn${j + 1}`)}
                         >
                           <span>{`Bien  ${j + 1}`}</span>
                           <span className="text-xl">
                             {expanded.includes(`panel_bienn${j + 1}`)
-                              ? '−'
-                              : '+'}
+                              ? "−"
+                              : "+"}
                           </span>
                         </button>
 
@@ -2031,7 +2029,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                     label="Statut"
                                     name=""
                                     type="text"
-                                    value={'Vendu'}
+                                    value={"Vendu"}
                                     disabled
                                   />
                                 </div>
@@ -2057,7 +2055,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                 {/* Accordion Header */}
                                 <div
                                   className="flex items-center justify-between px-4 py-2 cursor-pointer"
-                                  style={{ background: '#2f8a8bab' }}
+                                  style={{ background: "#2f8a8bab" }}
                                   onClick={() =>
                                     handleChange(`panel_ress${j + 1}`)
                                   }
@@ -2067,8 +2065,8 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                   </h3>
                                   <span className="text-white">
                                     {expanded.includes(`panel_ress${j + 1}`)
-                                      ? '⌃'
-                                      : '⌄'}
+                                      ? "⌃"
+                                      : "⌄"}
                                   </span>
                                 </div>
 
@@ -2078,7 +2076,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                     {info_reservation && (
                                       <div
                                         className="bg-red-100 border-l-4 border-red-500 p-4 text-center rounded"
-                                        style={{ color: 'red!important' }}
+                                        style={{ color: "red!important" }}
                                       >
                                         {info_reservation}
                                       </div>
@@ -2143,7 +2141,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                 {/* Accordion Header */}
                                 <div
                                   className="flex items-center justify-between px-4 py-2 cursor-pointer"
-                                  style={{ background: '#2f8a8bab' }}
+                                  style={{ background: "#2f8a8bab" }}
                                   onClick={() =>
                                     handleChange(`panel_paii${j + 1}`)
                                   }
@@ -2153,8 +2151,8 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                   </h3>
                                   <span className="text-white">
                                     {expanded.includes(`panel_paii${j + 1}`)
-                                      ? '⌃'
-                                      : '⌄'}
+                                      ? "⌃"
+                                      : "⌄"}
                                   </span>
                                 </div>
 
@@ -2164,16 +2162,16 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                     <div>
                                       <label
                                         className="flex items-center space-x-2"
-                                        style={{ marginTop: '30px' }}
+                                        style={{ marginTop: "30px" }}
                                       >
                                         <span
                                           className={`text-sm font-medium ${
                                             x.sr == true
-                                              ? 'text-purple-600'
-                                              : ''
+                                              ? "text-purple-600"
+                                              : ""
                                           }`}
                                         >
-                                          Sr:
+                                          SR:
                                         </span>
                                         <input
                                           type="checkbox"
@@ -2246,26 +2244,25 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                       type="number"
                                       required
                                       value={x.avance_res}
-                                       error={
-                                          x.avance_res != '' &&
-                                          x.avance_res == 0 &&
-                                          user?.role > 2
-                                            ? 'Le montant ne peut pas être 0 pour votre rôle'
-                                            : x.avance_res > 0 &&
-                                              x.avance_res < x.avance_minimale
-                                            ? `Le montant doit être au moins ${x.avance_minimale}`
-                                            : null
-                                        }
+                                      error={
+                                        x.avance_res != "" &&
+                                        x.avance_res == 0 &&
+                                        user?.role > 2
+                                          ? "Le montant ne peut pas être 0 pour votre rôle"
+                                          : x.avance_res > 0 &&
+                                            x.avance_res < x.avance_minimale
+                                          ? `Le montant doit être au moins ${x.avance_minimale}`
+                                          : null
+                                      }
                                       onChange={(e) =>
                                         handleinputchange_bien_vendu(e, j)
                                       }
                                     />
-                                    
                                     <AutocompleteStatut_ModeRelance_Biens
-                                      name={'mode_financement'}
-                                      label={'Mode Financement:'}
+                                      name={"mode_financement"}
+                                      label={"Mode Financement:"}
                                       placeholder={
-                                        'Sélectionner un Mode de Financement'
+                                        "Sélectionner un Mode de Financement"
                                       }
                                       code="code"
                                       labelKey="label"
@@ -2275,12 +2272,12 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                         handleinputchange_bien_vendu(e, j)
                                       }
                                       required
-                                    />{' '}
+                                    />{" "}
                                     <AutocompleteStatut_ModeRelance_Biens
-                                      name={'mode_paiement'}
-                                      label={'Mode Paiement:'}
+                                      name={"mode_paiement"}
+                                      label={"Mode Paiement:"}
                                       placeholder={
-                                        'Sélectionner un Mode de Paiement'
+                                        "Sélectionner un Mode de Paiement"
                                       }
                                       options={Object.values(MODE_PAIEMENT)}
                                       value={x.mode_paiement}
@@ -2293,13 +2290,13 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                     />
                                     {/* Conditional Fields */}
                                     {x.mode_paiement !== 1 &&
-                                      x.mode_paiement !== '' && (
+                                      x.mode_paiement !== "" && (
                                         <>
                                           <AutocompleteStatut_ModeRelance_Biens
-                                            name={'banque_id'}
-                                            label={'Banque:'}
+                                            name={"banque_id"}
+                                            label={"Banque:"}
                                             placeholder={
-                                              'Sélectionner un Mode de Paiement'
+                                              "Sélectionner un Mode de Paiement"
                                             }
                                             options={banques}
                                             value={x.banque_id}
@@ -2322,7 +2319,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                           />
                                         </>
                                       )}
-                                    {x.mode_paiement !== '' &&
+                                    {x.mode_paiement !== "" &&
                                       x.mode_paiement !== 1 &&
                                       x.mode_paiement !== 5 &&
                                       x.mode_paiement !== 6 && (
@@ -2337,33 +2334,33 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                           }
                                         />
                                       )}
-                                    {x.avance_res != '' &&
+                                    {x.avance_res != "" &&
                                       x.avance_res == 0 && (
                                         <div>
                                           <label
                                             className="flex items-center space-x-2"
-                                            style={{ marginTop: '19px' }}
+                                            style={{ marginTop: "19px" }}
                                           >
                                             <span
                                               className={`text-sm font-medium ${
                                                 x.check_montant == true
-                                                  ? 'text-purple-600'
-                                                  : ''
+                                                  ? "text-purple-600"
+                                                  : ""
                                               }`}
                                             >
-                                              {' '}
+                                              {" "}
                                               Voulez vous Enregistrer la
                                               Réservation sans montant (Prière
                                               de saisir un commentaire)
                                             </span>
                                             <input
-                                              style={{ color: 'green' }}
+                                              style={{ color: "green" }}
                                               type="checkbox"
                                               name="check_montant"
                                               value={x.check_montant}
                                               checked={x.check_montant}
                                               required={
-                                                x.avance_res != '' &&
+                                                x.avance_res != "" &&
                                                 x.avance_res == 0
                                               }
                                               onChange={(e) =>
@@ -2394,7 +2391,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                         <div className="col-span-3">
                                           <h2
                                             className="text-lg font-medium border-b pb-2 mb-4"
-                                            style={{ color: '#231651' }}
+                                            style={{ color: "#231651" }}
                                           >
                                             Informations Encaissement
                                           </h2>
@@ -2434,7 +2431,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {input_biens_vendu.length > 0 && (
                     <>
-                      {watch('loading_b_pre') == false && (
+                      {watch("loading_b_pre") == false && (
                         <>
                           <div className="">
                             <AutocompleteSelectComponent
@@ -2454,11 +2451,11 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                       3: VISITE_INTERETS[3],
                                     }
                               }
-                              disabled={watch('telephone') == ''}
+                              disabled={watch("telephone") == ""}
                               onChange={handleChange_interet}
                             />
                           </div>
-                          {Number(watch('interet')) == 1 && (
+                          {Number(watch("interet")) == 1 && (
                             <>
                               <TextField
                                 label="Nombre de Biens à ajouter:"
@@ -2469,15 +2466,15 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                   ...errors,
                                   nb_bien_added:
                                     formSubmitted &&
-                                    Number(watch('interet')) == 1 &&
-                                    !watch('nb_bien_added')
-                                      ? 'Ce champ est obligatoire lorsque interet est Intéressé.'
+                                    Number(watch("interet")) == 1 &&
+                                    !watch("nb_bien_added")
+                                      ? "Ce champ est obligatoire lorsque interet est Intéressé."
                                       : null,
                                 }}
                                 backendErrors={backendErrors}
                                 defaultValues={defaultValues}
                                 onChange={handleChange_NbrBien}
-                                required={Number(watch('interet')) == 1}
+                                required={Number(watch("interet")) == 1}
                               />
                             </>
                           )}
@@ -2492,8 +2489,8 @@ const VisiteForm = ({ prospect_id, origin }) => {
                             errors={errors}
                             backendErrors={backendErrors}
                             defaultValues={defaultValues}
-                            onChange={handleChange_event('cin')}
-                            required={Number(watch('interet')) == 1}
+                            onChange={handleChange_event("cin")}
+                            required={Number(watch("interet")) == 1}
                           />
                         </div>
                       )}
@@ -2518,7 +2515,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                       VISITE_STATUT_FORM={VISITE_STATUT_FORM}
                     />
                   )*/}
-                  {watch('nb_bien_added') !== '' &&
+                  {watch("nb_bien_added") !== "" &&
                     input_biens.map((x, i) => (
                       <div key={`panel_bien${i + 1}`}>
                         {/* Top Divider */}
@@ -2537,8 +2534,8 @@ const VisiteForm = ({ prospect_id, origin }) => {
                             }`}</span>
                             <span className="text-xl">
                               {expanded.includes(`panel_bien${i + 1}`)
-                                ? '−'
-                                : '+'}
+                                ? "−"
+                                : "+"}
                             </span>
                           </button>
 
@@ -2563,9 +2560,9 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                   {/* Statut */}
                                   <div>
                                     <AutocompleteStatut_ModeRelance_Biens
-                                      name={'statut'}
-                                      label={'statut'}
-                                      placeholder={'Sélectionner un statut'}
+                                      name={"statut"}
+                                      label={"statut"}
+                                      placeholder={"Sélectionner un statut"}
                                       options={Object.values(
                                         VISITE_STATUT_FORM
                                       )}
@@ -2593,10 +2590,10 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                       </div>
                                       <div>
                                         <AutocompleteStatut_ModeRelance_Biens
-                                          name={'mode_relance'}
-                                          label={'Mode de Relance'}
+                                          name={"mode_relance"}
+                                          label={"Mode de Relance"}
                                           placeholder={
-                                            'Sélectionner un Mode de Relance'
+                                            "Sélectionner un Mode de Relance"
                                           }
                                           options={Object.values(
                                             VISITE_TYPE_NOTIF
@@ -2643,19 +2640,19 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                   {/* Accordion Header */}
                                   <div
                                     className="flex items-center justify-between px-4 py-2 cursor-pointer"
-                                    style={{ background: '#2f8a8bab' }}
+                                    style={{ background: "#2f8a8bab" }}
                                     onClick={() =>
                                       handleChange(`panel_res${i + 1}`)
                                     }
                                   >
                                     <h3 className="text-white font-semibold">
-                                      Réservation du Bien{' '}
+                                      Réservation du Bien{" "}
                                       {input_biens_vendu.length + (i + 1)}
                                     </h3>
                                     <span className="text-white">
                                       {expanded.includes(`panel_res${i + 1}`)
-                                        ? '⌃'
-                                        : '⌄'}
+                                        ? "⌃"
+                                        : "⌄"}
                                     </span>
                                   </div>
 
@@ -2727,19 +2724,19 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                   {/* Accordion Header */}
                                   <div
                                     className="flex items-center justify-between px-4 py-2 cursor-pointer"
-                                    style={{ background: '#2f8a8bab' }}
+                                    style={{ background: "#2f8a8bab" }}
                                     onClick={() =>
                                       handleChange(`panel_pai${i + 1}`)
                                     }
                                   >
                                     <h3 className="text-white font-semibold">
-                                      Paiement du Bien{' '}
+                                      Paiement du Bien{" "}
                                       {input_biens_vendu.length + (i + 1)}
                                     </h3>
                                     <span className="text-white">
                                       {expanded.includes(`panel_pai${i + 1}`)
-                                        ? '⌃'
-                                        : '⌄'}
+                                        ? "⌃"
+                                        : "⌄"}
                                     </span>
                                   </div>
 
@@ -2749,16 +2746,16 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                       <div>
                                         <label
                                           className="flex items-center space-x-2"
-                                          style={{ marginTop: '30px' }}
+                                          style={{ marginTop: "30px" }}
                                         >
                                           <span
                                             className={`text-sm font-medium ${
                                               x.sr == true
-                                                ? 'text-purple-600'
-                                                : ''
+                                                ? "text-purple-600"
+                                                : ""
                                             }`}
                                           >
-                                            Sr:
+                                            SR:
                                           </span>
                                           <input
                                             type="checkbox"
@@ -2832,10 +2829,10 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                         required
                                         value={x.avance_res}
                                         error={
-                                          x.avance_res != '' &&
+                                          x.avance_res != "" &&
                                           x.avance_res == 0 &&
                                           user?.role > 2
-                                            ? 'Le montant ne peut pas être 0 pour votre rôle'
+                                            ? "Le montant ne peut pas être 0 pour votre rôle"
                                             : x.avance_res > 0 &&
                                               x.avance_res < x.avance_minimale
                                             ? `Le montant doit être au moins ${x.avance_minimale}`
@@ -2846,10 +2843,10 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                         }
                                       />
                                       <AutocompleteStatut_ModeRelance_Biens
-                                        name={'mode_financement'}
-                                        label={'Mode Financement:'}
+                                        name={"mode_financement"}
+                                        label={"Mode Financement:"}
                                         placeholder={
-                                          'Sélectionner un Mode de Financement'
+                                          "Sélectionner un Mode de Financement"
                                         }
                                         code="code"
                                         labelKey="label"
@@ -2859,12 +2856,12 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                           handleinputchange(e, i)
                                         }
                                         required
-                                      />{' '}
+                                      />{" "}
                                       <AutocompleteStatut_ModeRelance_Biens
-                                        name={'mode_paiement'}
-                                        label={'Mode Paiement:'}
+                                        name={"mode_paiement"}
+                                        label={"Mode Paiement:"}
                                         placeholder={
-                                          'Sélectionner un Mode de Paiement'
+                                          "Sélectionner un Mode de Paiement"
                                         }
                                         options={Object.values(MODE_PAIEMENT)}
                                         value={x.mode_paiement}
@@ -2877,13 +2874,13 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                       />
                                       {/* Conditional Fields */}
                                       {x.mode_paiement !== 1 &&
-                                        x.mode_paiement !== '' && (
+                                        x.mode_paiement !== "" && (
                                           <>
                                             <AutocompleteStatut_ModeRelance_Biens
-                                              name={'banque_id'}
-                                              label={'Banque:'}
+                                              name={"banque_id"}
+                                              label={"Banque:"}
                                               placeholder={
-                                                'Sélectionner un Mode de Paiement'
+                                                "Sélectionner un Mode de Paiement"
                                               }
                                               options={banques}
                                               value={x.banque_id}
@@ -2906,7 +2903,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                             />
                                           </>
                                         )}
-                                      {x.mode_paiement !== '' &&
+                                      {x.mode_paiement !== "" &&
                                         x.mode_paiement !== 1 &&
                                         x.mode_paiement !== 5 &&
                                         x.mode_paiement !== 6 && (
@@ -2921,33 +2918,33 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                             }
                                           />
                                         )}
-                                      {x.avance_res != '' &&
+                                      {x.avance_res != "" &&
                                         x.avance_res == 0 && (
                                           <div>
                                             <label
                                               className="flex items-center space-x-2"
-                                              style={{ marginTop: '19px' }}
+                                              style={{ marginTop: "19px" }}
                                             >
                                               <span
                                                 className={`text-sm font-medium ${
                                                   x.check_montant == true
-                                                    ? 'text-purple-600'
-                                                    : ''
+                                                    ? "text-purple-600"
+                                                    : ""
                                                 }`}
                                               >
-                                                {' '}
+                                                {" "}
                                                 Voulez vous Enregistrer la
                                                 Réservation sans montant (Prière
                                                 de saisir un commentaire)
                                               </span>
                                               <input
-                                                style={{ color: 'green' }}
+                                                style={{ color: "green" }}
                                                 type="checkbox"
                                                 name="check_montant"
                                                 value={x.check_montant}
                                                 checked={x.check_montant}
                                                 required={
-                                                  x.avance_res != '' &&
+                                                  x.avance_res != "" &&
                                                   x.avance_res == 0
                                                 }
                                                 onChange={(e) =>
@@ -2975,7 +2972,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                           <div className="col-span-3">
                                             <h2
                                               className="text-lg font-medium border-b pb-2 mb-4"
-                                              style={{ color: '#231651' }}
+                                              style={{ color: "#231651" }}
                                             >
                                               Informations Encaissement
                                             </h2>
@@ -3011,8 +3008,8 @@ const VisiteForm = ({ prospect_id, origin }) => {
                       </div>
                     ))}
                 </div>
-                {(Number(watch('interet')) == 2 ||
-                  Number(watch('interet')) == 3) && (
+                {(Number(watch("interet")) == 2 ||
+                  Number(watch("interet")) == 3) && (
                   <div className="flex-1 mt-4">
                     <TextField
                       label="Commentaire:"
@@ -3059,7 +3056,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                       Enregistrement...
                     </div>
                   ) : (
-                    'Enregistrer'
+                    "Enregistrer"
                   )}
                 </Button>
               </div>
@@ -3067,10 +3064,10 @@ const VisiteForm = ({ prospect_id, origin }) => {
           </div>
         )}
       </div>
-      {watch('loading_b_pre') && isOrigin ? (
+      {watch("loading_b_pre") && isOrigin ? (
         <LoadingSpin />
       ) : (
-        ((watch('loading_b_pre') === true && !isOrigin) ||
+        ((watch("loading_b_pre") === true && !isOrigin) ||
           (isOrigin && OldBiens_pre.length > 0)) && (
           <div className="p-3">
             <div className="p-6 mt-4 bg-white shadow-md rounded-md">
@@ -3088,8 +3085,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                     <>
                       <div className="col-span-1">
                         <h5 className="text-left mt-5  text-lg font-medium">
-                          Ce Client à déja des Pré Réservations des biens
-                          suivant :
+                          Ce Client à déja les pré-réservations suivantes :
                         </h5>
                       </div>
 
@@ -3104,7 +3100,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                 Bien {i + 1}
                               </p>
                               <input
-                                width={'70%'}
+                                width={"70%"}
                                 type="text"
                                 value={x.propriete_dite_bien}
                                 onChange={(e) =>
@@ -3117,19 +3113,19 @@ const VisiteForm = ({ prospect_id, origin }) => {
 
                             <div className="sm:col-span-1 ml-5">
                               <p className="text-base font-medium">
-                                Action du Pré Réservation Bien {i + 1}:
+                                Veuillez choisir une action :
                               </p>
                               <div className="flex gap-2">
                                 <button
                                   type="button"
                                   value="1"
                                   className={`py-1 px-2 rounded-md ${
-                                    x.action == '1'
-                                      ? 'bg-blue-500 text-white'
-                                      : 'bg-[rgb(231,239,255)]'
+                                    x.action == "1"
+                                      ? "bg-blue-500 text-white"
+                                      : "bg-[rgb(231,239,255)]"
                                   }`}
                                   onClick={(e) =>
-                                    handle_action_change(e, i, 'action')
+                                    handle_action_change(e, i, "action")
                                   }
                                 >
                                   Garder
@@ -3138,12 +3134,12 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                   type="button"
                                   value="2"
                                   className={`py-1 px-2 rounded-md ${
-                                    x.action == '2'
-                                      ? 'bg-red-500 text-white'
-                                      : 'bg-[rgb(231,239,255)]'
+                                    x.action == "2"
+                                      ? "bg-red-500 text-white"
+                                      : "bg-[rgb(231,239,255)]"
                                   }`}
                                   onClick={(e) =>
-                                    handle_action_change(e, i, 'action')
+                                    handle_action_change(e, i, "action")
                                   }
                                 >
                                   Annuler
@@ -3152,12 +3148,12 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                   type="button"
                                   value="3"
                                   className={`py-1 px-2 rounded-md ${
-                                    x.action == '3'
-                                      ? 'bg-green-500 text-white'
-                                      : 'bg-[rgb(231,239,255)]'
+                                    x.action == "3"
+                                      ? "bg-green-500 text-white"
+                                      : "bg-[rgb(231,239,255)]"
                                   }`}
                                   onClick={(e) =>
-                                    handle_action_change(e, i, 'action')
+                                    handle_action_change(e, i, "action")
                                   }
                                 >
                                   Vente

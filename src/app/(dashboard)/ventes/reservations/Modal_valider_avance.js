@@ -1,14 +1,14 @@
-'use client';
-import { useState, useRef } from 'react';
-import axios from 'axios';
-import Button from '@/components/Button';
-import toast from 'react-hot-toast';
-import { APIURL } from '../../../../configs/api';
-import { useAuth } from '../../../../context/AuthContext';
-import { Controller, useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-import SelectInput from '@/components/SelectInput';
+"use client";
+import { useState, useRef } from "react";
+import axios from "axios";
+import Button from "@/components/Button";
+import toast from "react-hot-toast";
+import { APIURL } from "../../../../configs/api";
+import { useAuth } from "../../../../context/AuthContext";
+import { Controller, useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import SelectInput from "@/components/SelectInput";
 export default function Modal_valider_avance({
   onload_res_false,
   onload_res_true,
@@ -21,20 +21,20 @@ export default function Modal_valider_avance({
   avance,
 }) {
   const { token } = useAuth();
-  const accessToken = token || localStorage.getItem('accessToken');
+  const accessToken = token || localStorage.getItem("accessToken");
   const [loading, setLoading] = useState({ form: false });
   const [backendErrors, setBackendErrors] = useState(null);
-  const [action, setAction] = useState(''); // Define action state
+  const [action, setAction] = useState(""); // Define action state
 
   const defaultValues = {
-    action: '',
+    action: "",
     statut_res: 1, // Make sure all fields you need are presen
     with_avance: 1,
-    n_remise: '',
-    date_encaiss: '',
-    commentaire_av: '',
+    n_remise: "",
+    date_encaiss: "",
+    commentaire_av: "",
     av_id: av_id,
-    statut_av: '',
+    statut_av: "",
     prix: prix,
     avance: avance,
   };
@@ -57,19 +57,19 @@ export default function Modal_valider_avance({
   //valider reservation with avance
 
   const onSubmit = (data) => {
-    console.log('Form data:', data); // Should now show all form values
+    console.log("Form data:", data); // Should now show all form values
 
     // Manual validation
     const errors = {};
 
-    if (data.action == '1') {
+    if (data.action == "1") {
       if (!data.n_remise) {
-        errors.n_remise = 'Le numéro de remise est requis';
+        errors.n_remise = "Le numéro de remise est requis";
       }
       if (!data.date_encaiss) {
         errors.date_encaiss = "La date d'encaissement est requise";
       }
-    } else if (data.action == '2') {
+    } else if (data.action == "2") {
       if (!data.commentaire_av) {
         errors.commentaire_av = "Le commentaire d'avance est requis";
       }
@@ -78,7 +78,7 @@ export default function Modal_valider_avance({
     if (Object.keys(errors).length > 0) {
       Object.keys(errors).forEach((key) => {
         setError(key, {
-          type: 'manual',
+          type: "manual",
           message: errors[key],
         });
       });
@@ -89,21 +89,21 @@ export default function Modal_valider_avance({
     setLoading({ ...loading, form: true });
     setBackendErrors(null);
     axios({
-      method: 'put',
+      method: "put",
       url: `${APIURL.ROOTV1}/traiter_reservation/${Number(id)}`,
       data: data,
       headers: {
-        'content-type': 'application/json',
-        Accept: 'application/json',
+        "content-type": "application/json",
+        Accept: "application/json",
         Authorization: `Bearer ${accessToken}`,
       },
     })
       .then((res) => {
         setLoading({ ...loading, form: false });
         if (res.status == 200) {
-          toast.success("La Réservation et l'avance sont Traités avec succès");
+          toast.success("Réservation et Avance Traitées avec succès");
           onClose_all();
-          localStorage.setItem('load_data_reservation', 1);
+          localStorage.setItem("load_data_reservation", 1);
         }
       })
       .catch((error) => {
@@ -111,7 +111,7 @@ export default function Modal_valider_avance({
         const response = error.response;
         if (response?.status == 422) {
           setBackendErrors(response.data.message || {});
-          toast.error(response.data.message || 'Erreur de validation.');
+          toast.error(response.data.message || "Erreur de validation.");
         } else {
           toast.error("Une erreur s'est produite.");
         }
@@ -121,12 +121,12 @@ export default function Modal_valider_avance({
   const TextField = ({
     label,
     name,
-    type = 'text',
+    type = "text",
     required = false,
     control,
     errors,
-    width = 'w-full',
-    height = 'h-10',
+    width = "w-full",
+    height = "h-10",
     disabled = false,
     isTextarea = false, // New prop for handling textareas
   }) => {
@@ -146,16 +146,16 @@ export default function Modal_valider_avance({
             // Conditionally render input or textarea
             isTextarea ? (
               <textarea
-                style={{ marginLeft: '-10px!important' }}
+                style={{ marginLeft: "-10px!important" }}
                 {...field}
                 id={name}
                 name={name}
                 className={`block ${width} ${height} px-3 py-2 mt-1 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
-                  errors[name] ? 'border-red-500' : ''
+                  errors[name] ? "border-red-500" : ""
                 }`}
                 disabled={disabled}
                 required={required}
-                value={field.value || ''}
+                value={field.value || ""}
                 onChange={(e) => field.onChange(e.target.value)} // Ensure React Hook Form handles the change
               />
             ) : (
@@ -165,11 +165,11 @@ export default function Modal_valider_avance({
                 name={name}
                 type={type}
                 className={`block ${width} ${height} px-3 py-2 mt-1 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
-                  errors[name] ? 'border-red-500' : ''
+                  errors[name] ? "border-red-500" : ""
                 }`}
                 required={required}
                 disabled={disabled}
-                value={field.value || ''}
+                value={field.value || ""}
                 onChange={(e) => field.onChange(e.target.value)} // Ensure React Hook Form handles the change
               />
             )
@@ -184,8 +184,8 @@ export default function Modal_valider_avance({
     );
   };
   const statuts = [
-    { id: '1', label: 'Validé ' },
-    { id: '2', label: 'Rejeté' },
+    { id: "1", label: "Validé " },
+    { id: "2", label: "Rejeté" },
     // ... more statuses
   ];
 
@@ -194,27 +194,27 @@ export default function Modal_valider_avance({
     onClose();
     onload_res_true();
     const formData = new FormData();
-    formData.append('statut_res', 1);
-    formData.append('with_avance', 0);
+    formData.append("statut_res", 1);
+    formData.append("with_avance", 0);
     axios({
-      method: 'put',
+      method: "put",
       url: `${APIURL.ROOTV1}/traiter_reservation/${Number(id)}`,
       data: formData,
       headers: {
-        'content-type': 'application/json',
-        Accept: 'application/json',
+        "content-type": "application/json",
+        Accept: "application/json",
         Authorization: `Bearer ${accessToken}`,
       },
     })
       .then(() => {
-        toast.success('Réservation Validé avec succès');
+        toast.success("Réservation Validé avec succès");
 
         onload_res_false();
         onClose_all();
-        localStorage.setItem('load_data_reservation', 1);
+        localStorage.setItem("load_data_reservation", 1);
       })
       .catch(() => {
-        console.log('err');
+        console.log("err");
       });
   };
 
@@ -235,7 +235,7 @@ export default function Modal_valider_avance({
         >
           <div className="flex flex-col items-center justify-center w-full ">
             <div className="w-full max-w-md">
-              {' '}
+              {" "}
               {/* Control width of the content */}
               <TextField
                 type="text"
@@ -250,7 +250,7 @@ export default function Modal_valider_avance({
           </div>
           <div className="flex flex-col items-center justify-center w-full">
             <div className="w-full max-w-md">
-              {' '}
+              {" "}
               {/* Control width of the content */}
               <TextField
                 type="text"
@@ -266,11 +266,11 @@ export default function Modal_valider_avance({
           <div className="flex flex-col items-center justify-center w-full ">
             <div className="w-full max-w-md">
               <SelectInput
-                value={watch('action')}
+                value={watch("action")}
                 onChange={(e) => {
-                  console.log('e==>' + JSON.stringify(e));
-                  setValue('action', e);
-                  setValue('statut_av', e); // Also update statut_av
+                  console.log("e==>" + JSON.stringify(e));
+                  setValue("action", e);
+                  setValue("statut_av", e); // Also update statut_av
                   setAction(e);
                 }}
                 options={statuts.map((status) => ({
@@ -284,11 +284,11 @@ export default function Modal_valider_avance({
             </div>
           </div>
           {/* Row for Input and MdPrint */}
-          {watch('action') == 1 && (
+          {watch("action") == 1 && (
             <>
               <div className="flex flex-col items-center justify-center w-full ">
                 <div className="w-full max-w-md">
-                  {' '}
+                  {" "}
                   {
                     <>
                       <TextField
@@ -306,7 +306,7 @@ export default function Modal_valider_avance({
               </div>
               <div className="flex flex-col items-center justify-center w-full ">
                 <div className="w-full max-w-md">
-                  {' '}
+                  {" "}
                   {
                     <>
                       <TextField
@@ -325,10 +325,10 @@ export default function Modal_valider_avance({
             </>
           )}
 
-          {watch('action') == 2 && (
+          {watch("action") == 2 && (
             <div className="flex flex-col items-center justify-center w-full ">
               <div className="w-full max-w-md">
-                {' '}
+                {" "}
                 {
                   <>
                     <TextField

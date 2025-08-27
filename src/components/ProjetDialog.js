@@ -94,7 +94,7 @@ const ProjetDialog = ({
         {/* Create project link */}
         <div className="text-center pb-4">
           <Link 
-            href="/Projets/ajouter" 
+            href="/Projets/addProject" 
             className="text-[#009FFF] hover:underline text-sm"
             onClick={onClose} // Close the dialog when clicking the link
           >
