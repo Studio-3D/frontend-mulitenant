@@ -91,74 +91,32 @@ export const LeftCard = ({ tranche,onEdit, onDelete, canEdit = false  }) => {
       <div className="p-6 flex-grow">
         <div className="mb-6">
           <h2 className="text-lg font-semibold mb-3 text-gray-800">
-            Détails du projet
+            Détails du Tranche
           </h2>
           <p className="text-gray-600">{tranche.description}</p>
-          <div className="grid grid-cols-1 gap-2 text-sm mt-6">
+          <div className="grid grid-cols-1 gap-2 text-sm mt-6">            
             <div className="flex items-center justify-between border-b border-gray-100 pb-2">
               <div className="flex items-center text-gray-700">
-                <MapPinIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
-                <span>Adresse:</span>
+                <CalendarIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
+                <span>Date de lancement:</span>
               </div>
-              <div className="text-gray-600 text-right">
-                {tranche?.adresse || "Adresse non spécifiée"}
-              </div>
+              <div className="text-gray-600 text-right">{tranche?.date_lancement || "Date non spécifiée"}</div>
             </div>
             
             <div className="flex items-center justify-between border-b border-gray-100 pb-2">
               <div className="flex items-center text-gray-700">
                 <CalendarIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
-                <span>Date d'autorisation:</span>
+                <span>Date livraison:</span>
               </div>
-              <div className="text-gray-600 text-right">{tranche?.date_autorisation_construction || "Date non spécifiée"}</div>
-            </div>
-            
-            <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-              <div className="flex items-center text-gray-700">
-                <CalendarIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
-                <span>Date permis d'habiter:</span>
-              </div>
-              <div className="text-gray-600 text-right">{tranche?.date_permis_habiter || "Date non spécifiée"}</div>
+              <div className="text-gray-600 text-right">{tranche?.date_livraison || "Date non spécifiée"}</div>
             </div>
             
             <div className="flex items-center justify-between border-b border-gray-100 pb-2">
               <div className="flex items-center text-gray-700">
                 <FileTextIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
-                <span>Titre foncier:</span>
+                <span>Niveau d'étages:</span>
               </div>
-              <div className="text-gray-600 text-right">{tranche?.titre_foncier || "Titre non spécifié"}</div>
-            </div>
-            
-            <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-              <div className="flex items-center text-gray-700">
-                <SquareIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
-                <span>Surface terrain:</span>
-              </div>
-              <div className="text-gray-600 text-right">{tranche?.surface_terrain ? `${tranche.surface_terrain} m²` : "Surface non spécifiée"}</div>
-            </div>
-            
-            <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-              <div className="flex items-center text-gray-700">
-                <DollarSignIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
-                <span>Prix d'acquisition:</span>
-              </div>
-              <div className="text-gray-600 text-right">{tranche?.prix_acquisition ? `${tranche.prix_acquisition} Dhs` : "Prix non spécifié"}</div>
-            </div>
-            
-            <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-              <div className="flex items-center text-gray-700">
-                <ClockIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
-                <span>Limite annulation:</span>
-              </div>
-              <div className="text-gray-600 text-right">{tranche?.limite_annulation_reservation || "Date non spécifiée"}</div>
-            </div>
-            
-            <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-              <div className="flex items-center text-gray-700">
-                <ClockIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
-                <span>Prolongation réservation:</span>
-              </div>
-              <div className="text-gray-600 text-right">{tranche?.prolongation_reservation || "Durée non spécifiée"}</div>
+              <div className="text-gray-600 text-right">{tranche?.niveau_etages || "Titre non spécifié"}</div>
             </div>
             
             {shouldShowStat(tranche?.nbre_tranches) && (
