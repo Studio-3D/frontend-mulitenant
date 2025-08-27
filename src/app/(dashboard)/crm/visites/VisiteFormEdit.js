@@ -1524,7 +1524,7 @@ export default function VisiteFormEdit({ id }) {
                                           field.value ? "text-purple-600" : ""
                                         }`}
                                       >
-                                        Sr:
+                                        SR:
                                       </span>
                                       <input
                                         type="checkbox"

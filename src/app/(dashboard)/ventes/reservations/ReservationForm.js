@@ -3313,7 +3313,7 @@ export default function ReservationForm({ id }) {
                           htmlFor="sr"
                           className="ml-2 block text-sm text-gray-700"
                         >
-                          Sr
+                          SR
                         </label>
                       </div>
                     )}

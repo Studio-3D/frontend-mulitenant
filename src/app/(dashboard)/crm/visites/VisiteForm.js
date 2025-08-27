@@ -2171,7 +2171,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                               : ""
                                           }`}
                                         >
-                                          Sr:
+                                          SR:
                                         </span>
                                         <input
                                           type="checkbox"
@@ -2755,7 +2755,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                                 : ""
                                             }`}
                                           >
-                                            Sr:
+                                            SR:
                                           </span>
                                           <input
                                             type="checkbox"

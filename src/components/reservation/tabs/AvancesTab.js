@@ -1032,7 +1032,7 @@ export const AvancesTab = ({
                       htmlFor="sr"
                       className="ml-2 block text-sm text-gray-700"
                     >
-                      Sr
+                      SR
                     </label>
                   </div>
                   <div>
@@ -1087,9 +1087,7 @@ export const AvancesTab = ({
                   </div>
                   {/* In your form, after the montant input */}
                   <div className="mt-1 text-sm">
-                    <span className="font-medium">
-                      Reste à payer après cet avance:{" "}
-                    </span>
+                    <span className="font-medium">Montant restant : </span>
                     <span
                       className={reste < 0 ? "text-red-500" : "text-green-500"}
                     >
