@@ -270,13 +270,13 @@ export const Statuts_Prospect = {
 
 // Filtered prospect statuses for treatment modal - using string labels as backend expects
 export const Statuts_Prospect_Traitement = {
-  1: { id: 'Planification Rendez Vous', label: 'Planification Rendez Vous' },
-  2: { id: 'Injoignable', label: 'Injoignable' },
-  3: { id: 'Rappel', label: 'Rappel' },
-  5: { id: 'Nouveau Appel', label: 'Nouveau Appel' },
-  7: { id: 'Intéressé', label: 'Intéressé' },
-  8: { id: 'Perdu', label: 'Perdu' },
-  9: { id: 'Réceptif', label: 'Réceptif' },
+  1: { id: 1, label: 'Planification Rendez Vous', value: 'Planification_RDV' },
+  2: { id: 2, label: 'Injoignable', value: 'Injoignable' },
+  3: { id: 3, label: 'Rappel', value: 'Rappel' },
+  5: { id: 5, label: 'Nouveau Appel', value: 'Nouveau_appel' },
+  7: { id: 7, label: 'Intéressé', value: 'Interesse' },
+  8: { id: 8, label: 'Perdu', value: 'Perdu' },
+  9: { id: 9, label: 'Réceptif', value: 'Receptif' },
 };
 
 export const TYPES_APPELS = {
@@ -353,15 +353,45 @@ const RAW_TO_LABEL = {
   Receptif: 'Réceptif',
 };
 
+// Normalize any backend/frontend status into a user-facing label
 export const getProspectStatusLabel = (statusValue) => {
-  if (!statusValue) return '';
+  if (statusValue === undefined || statusValue === null) return '';
+  // If numeric or numeric string, map by id
+  const num = typeof statusValue === 'number' || (/^\d+$/.test(String(statusValue)))
+    ? Number(statusValue)
+    : null;
+  if (num !== null && Statuts_Prospect.hasOwnProperty(num)) {
+    return Statuts_Prospect[num].label;
+  }
+  // Direct match by enum value
   const byValue = Object.values(Statuts_Prospect).find((s) => s.value === statusValue);
   if (byValue) return byValue.label;
+  // Direct match by label
   const byLabel = Object.values(Statuts_Prospect).find((s) => s.label === statusValue);
   if (byLabel) return byLabel.label;
+  // Raw underscore name mapping
   if (RAW_TO_LABEL[statusValue]) return RAW_TO_LABEL[statusValue];
-  // Fallback to original
-  return statusValue;
+  // Fallback to string form
+  return String(statusValue);
+};
+
+// Get numeric id from any representation (id number/string, label, or value)
+export const getProspectStatusId = (statusValue) => {
+       if (statusValue === undefined || statusValue === null) return null;
+  if (typeof statusValue === 'number' || (/^\d+$/.test(String(statusValue)))) {
+    const n = Number(statusValue);
+    return Statuts_Prospect.hasOwnProperty(n) ? n : null;
+  }
+  const byValueEntry = Object.entries(Statuts_Prospect).find(([, s]) => s.value === statusValue);
+  if (byValueEntry) return Number(byValueEntry[0]);
+  const byLabelEntry = Object.entries(Statuts_Prospect).find(([, s]) => s.label === statusValue);
+  if (byLabelEntry) return Number(byLabelEntry[0]);
+  const rawMapped = RAW_TO_LABEL[statusValue];
+  if (rawMapped) {
+    const byRawLabelEntry = Object.entries(Statuts_Prospect).find(([, s]) => s.label === rawMapped);
+    if (byRawLabelEntry) return Number(byRawLabelEntry[0]);
+  }
+  return null;
 };
 
 export const getProspectStatusById = (id) => {

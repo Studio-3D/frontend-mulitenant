@@ -44,7 +44,7 @@ export function SideBar({
     return value || '0 DH';
   };
 
-  // Format date to dd-mm-yyyy
+  // Format date to dd/mm/yyyy
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
 
@@ -56,7 +56,7 @@ export function SideBar({
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const year = date.getFullYear();
 
-      return `${day}-${month}-${year}`;
+      return `${day}/${month}/${year}`;
     } catch {
       return 'N/A';
     }

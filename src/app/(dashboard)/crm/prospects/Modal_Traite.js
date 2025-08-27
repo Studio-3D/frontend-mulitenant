@@ -5,7 +5,7 @@ import Button from '@/components/Button';
 import toast from 'react-hot-toast';
 import { APIURL } from '../../../../configs/api';
 import { useAuth } from '../../../../context/AuthContext';
-import { Statuts_Prospect_Traitement } from '../../../../../src/configs/enum';
+import { Statuts_Prospect_Traitement, getProspectStatusLabel } from '../../../../../src/configs/enum';
 import Autocomplete from '@/components/Autocomplete';
 import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -210,8 +210,8 @@ export default function Modal_Traite({ onClose, id, num_tel, nom_prenom }) {
                   choix="label"
                   value={field.value}
                   onChange={(selectedOption) => {
-                    // Store the label directly (backend expects string status here)
-                    field.onChange(selectedOption?.label || '');
+                    // Store the numeric id; backend will store numbers, frontend maps to labels
+                    field.onChange(selectedOption?.id || '');
                     handleStatutChange(selectedOption);
                   }}
                   errors={errors}
@@ -221,7 +221,7 @@ export default function Modal_Traite({ onClose, id, num_tel, nom_prenom }) {
               )}
             />
           </div>
-          {watch('statut') == 'Planification Rendez Vous' && (
+          {getProspectStatusLabel(watch('statut')) == 'Planification Rendez Vous' && (
             <div className="flex items-center space-x-2 w-full">
               {
                 <>
@@ -237,7 +237,7 @@ export default function Modal_Traite({ onClose, id, num_tel, nom_prenom }) {
               }
             </div>
           )}
-          {watch('statut') == 'Rappel' && (
+          {getProspectStatusLabel(watch('statut')) == 'Rappel' && (
             <div className="flex items-center space-x-2 w-full">
               {
                 <>
