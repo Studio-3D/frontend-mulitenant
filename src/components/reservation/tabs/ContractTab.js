@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import format from 'date-fns/format';
-import toast, { Toaster } from 'react-hot-toast';
-import axios from 'axios';
+import { useState, useEffect } from "react";
+import format from "date-fns/format";
+import toast, { Toaster } from "react-hot-toast";
+import axios from "axios";
 import {
   Edit2,
   CheckCircle,
@@ -13,9 +13,9 @@ import {
   Check,
   X,
   File,
-} from 'lucide-react';
-import { PDFDownloadLink } from '@react-pdf/renderer';
-import Document_Contrat from '../../../app/(dashboard)/ventes/reservations/contrat_vente/recu';
+} from "lucide-react";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import Document_Contrat from "../../../app/(dashboard)/ventes/reservations/contrat_vente/recu";
 export const ContractTab = ({
   reservationData,
   user,
@@ -34,7 +34,7 @@ export const ContractTab = ({
   const [date_enreg, setDate_enreg] = useState(null);
   const [commentaire, setCommentaire] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [bien, setBien] = useState('');
+  const [bien, setBien] = useState("");
   const [sum_avances_valides, setSum_av_valide] = useState(0);
   const [contrat_sign, set_contrat_signe] = useState(null);
   const [contrat_id, setContrat_id] = useState(null);
@@ -48,16 +48,16 @@ export const ContractTab = ({
   const [popupScanner, setPopupScanner] = useState(false);
   const [loading_scann, setLoading_scann] = useState(false);
 
-  const color_var = '#5A5FE0';
+  const color_var = "#5A5FE0";
 
   const modifierErreur = (message) => {
     setErrors(message);
-    setTimeout(() => setErrors(''), 5000);
+    setTimeout(() => setErrors(""), 5000);
   };
 
-  const showToast = (message, type = 'success') => {
+  const showToast = (message, type = "success") => {
     toast[type](message, {
-      position: 'top-right',
+      position: "top-right",
       duration: 3000,
     });
   };
@@ -66,10 +66,10 @@ export const ContractTab = ({
     setLoading_btn(true);
     e.preventDefault();
     const formData = new FormData();
-    formData.append('date_sign_client', date_sign_client);
-    formData.append('date_sign_mo', date_sign_mo);
-    formData.append('date_enreg', date_enreg);
-    formData.append('commentaire', commentaire);
+    formData.append("date_sign_client", date_sign_client);
+    formData.append("date_sign_mo", date_sign_mo);
+    formData.append("date_enreg", date_enreg);
+    formData.append("commentaire", commentaire);
 
     axios
       .post(`${apiUrl}/store_contrat_vente/${reservationId}`, formData, {
@@ -78,7 +78,7 @@ export const ContractTab = ({
       .then(() => {
         fetchData();
         setLoading_btn(false);
-        showToast('Contrat ajouté avec succès');
+        showToast("Contrat ajouté avec succès");
         if (updateReservationData) {
           updateReservationData({
             reservation: {
@@ -111,7 +111,7 @@ export const ContractTab = ({
             set_num_recu(response.data.contrat?.num_recu);
             set_respo(
               response.data.contrat?.user.name +
-                ' ' +
+                " " +
                 response.data.contrat?.user.prenom
             );
             setDate_sign_client(response.data.contrat?.date_sign_client);
@@ -129,12 +129,12 @@ export const ContractTab = ({
             setLoading(false);
           })
           .catch((error) => {
-            console.error('Error fetching reservation details:', error);
+            console.error("Error fetching reservation details:", error);
             setLoading(false);
           });
       }
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error("Error fetching data:", error);
       setLoading(true);
     }
   };
@@ -142,7 +142,7 @@ export const ContractTab = ({
   const handleFileClick = (file) => {
     window.open(
       `${FileUrl}/Docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/contrat_vente/${reservationData?.reservation?.code_reservation}/${file}`,
-      '_blank'
+      "_blank"
     );
   };
 
@@ -159,25 +159,25 @@ export const ContractTab = ({
     e.preventDefault();
 
     const formData = new FormData();
-    formData.append('date_sign_client', date_sign_client);
-    formData.append('date_sign_mo', date_sign_mo);
-    formData.append('date_enreg', date_enreg);
-    formData.append('comment', commentaire);
+    formData.append("date_sign_client", date_sign_client);
+    formData.append("date_sign_mo", date_sign_mo);
+    formData.append("date_enreg", date_enreg);
+    formData.append("comment", commentaire);
 
     axios({
-      method: 'put',
+      method: "put",
       url: `${apiUrl}/update_contrat/${contrat_id}`,
       data: formData,
       headers: {
-        'content-type': 'application/json',
-        Accept: 'application/json',
+        "content-type": "application/json",
+        Accept: "application/json",
         Authorization: `Bearer ${accessToken}`,
       },
     })
       .then(() => {
         setOpen_edit(false);
         fetchData();
-        showToast('Modification enregistrée avec succès');
+        showToast("Modification enregistrée avec succès");
         setLoading_btn(false);
       })
       .catch((err) => {
@@ -203,21 +203,21 @@ export const ContractTab = ({
     setLoading_scann(true);
 
     const formData = new FormData();
-    formData.append('contrat_id', contrat_id);
-    formData.append('fichier_scanner', fichier_scanner);
+    formData.append("contrat_id", contrat_id);
+    formData.append("fichier_scanner", fichier_scanner);
 
     axios
       .post(`${apiUrl}/scanner_contrat`, formData, {
         headers: { Authorization: `Bearer ${accessToken}` },
       })
       .then(() => {
-        showToast('Fichier scanné avec succès');
+        showToast("Fichier scanné avec succès");
         setLoading_scann(false);
         closeScannerPopup();
         fetchData();
       })
       .catch((err) => {
-        console.log('err' + err);
+        console.log("err" + err);
         setLoading_scann(false);
       });
   };
@@ -277,7 +277,7 @@ export const ContractTab = ({
                     <div className="space-y-1">
                       <label className="block text-sm font-medium text-gray-700 flex items-center">
                         <Calendar className="mr-2 text-blue-600" />
-                        Date Signature Client{' '}
+                        Date Signature Client{" "}
                         <span className="text-red-500 ml-1">*</span>
                       </label>
                       <div className="relative">
@@ -293,7 +293,7 @@ export const ContractTab = ({
                     <div className="space-y-1">
                       <label className="block text-sm font-medium text-gray-700 flex items-center">
                         <Calendar className="mr-2 text-blue-600" />
-                        Date Signature MO{' '}
+                        Date Signature MO{" "}
                         <span className="text-red-500 ml-1">*</span>
                       </label>
                       <div className="relative">
@@ -309,7 +309,7 @@ export const ContractTab = ({
                     <div className="space-y-1">
                       <label className="block text-sm font-medium text-gray-700 flex items-center">
                         <Calendar className="mr-2 text-blue-600" />
-                        Date Enregistrement{' '}
+                        Date Enregistrement{" "}
                         <span className="text-red-500 ml-1">*</span>
                       </label>
                       <div className="relative">
@@ -382,10 +382,10 @@ export const ContractTab = ({
                     </h3>
                     <div className="flex justify-center space-x-6">
                       <p className="text-sm text-gray-600">
-                        Dossier: {data_reservation?.code_reservation || ''}
+                        Dossier: {data_reservation?.code_reservation || ""}
                       </p>
                       <p className="text-sm text-gray-600">
-                        N°: {data_reservation?.num_recu || 'XXXX'}
+                        N°: {data_reservation?.num_recu || "XXXX"}
                       </p>
                     </div>
                   </div>
@@ -426,26 +426,26 @@ export const ContractTab = ({
                             <p className="text-sm font-semibold">
                               {data_reservation.aquereurs[key].client
                                 .civilite == 1
-                                ? 'Mr'
+                                ? "Mr"
                                 : data_reservation.aquereurs[key].client
                                     .civilite == 2
-                                ? 'Mme'
-                                : 'Mlle'}{' '}
-                              {data_reservation.aquereurs[key].client.nom}{' '}
+                                ? "Mme"
+                                : "Mlle"}{" "}
+                              {data_reservation.aquereurs[key].client.nom}{" "}
                               {data_reservation.aquereurs[key].client.prenom}
                             </p>
                             <p className="text-sm">
-                              CIN:{' '}
+                              CIN:{" "}
                               {data_reservation.aquereurs[key].client.cin ||
-                                'Non renseigné'}
+                                "Non renseigné"}
                             </p>
                             <p className="text-sm">
-                              Adresse:{' '}
+                              Adresse:{" "}
                               {data_reservation.aquereurs[key].client.adresse ||
-                                'Non renseigné'}
+                                "Non renseigné"}
                               {data_reservation.aquereurs[key].client.ville
                                 ? `, ${data_reservation.aquereurs[key].client.ville}`
-                                : ''}
+                                : ""}
                             </p>
                           </div>
                         ))
@@ -462,17 +462,17 @@ export const ContractTab = ({
                     </h4>
                     <div className="bg-[#F5F0F5] p-4 rounded-lg border-l-4 border-[#5A5FE0]">
                       <p className="text-sm mb-3">
-                        Ce bien immobilier est un{' '}
+                        Ce bien immobilier est un{" "}
                         {data_reservation?.bien?.type_bien?.type ||
-                          'type non spécifié'}
-                        , identifié par le numéro{' '}
-                        {data_reservation?.bien?.numero || 'non renseigné'}. Il
-                        est situé au{' '}
+                          "type non spécifié"}
+                        , identifié par le numéro{" "}
+                        {data_reservation?.bien?.numero || "non renseigné"}. Il
+                        est situé au{" "}
                         {data_reservation?.bien?.niveau == 0
-                          ? 'rez-de-chaussée'
-                          : `${data_reservation?.bien?.niveau}ème étage`}{' '}
-                        et offre une superficie habitable de{' '}
-                        {data_reservation?.bien?.superficie_habitable || '0'}{' '}
+                          ? "rez-de-chaussée"
+                          : `${data_reservation?.bien?.niveau}ème étage`}{" "}
+                        et offre une superficie habitable de{" "}
+                        {data_reservation?.bien?.superficie_habitable || "0"}{" "}
                         m².
                         {data_reservation?.bien?.superficie_balcon > 0 &&
                           ` Le bien comprend un balcon de ${data_reservation.bien.superficie_balcon} m².`}
@@ -523,8 +523,8 @@ export const ContractTab = ({
                                   <span className="bg-blue-50 text-blue-800 px-2 py-1 rounded text-xs">
                                     {summedComposition.nbre_halls} Hall
                                     {summedComposition.nbre_halls > 1
-                                      ? 's'
-                                      : ''}
+                                      ? "s"
+                                      : ""}
                                   </span>
                                 )}
                                 {summedComposition.nbre_salons > 0 && (
@@ -536,8 +536,8 @@ export const ContractTab = ({
                                   <span className="bg-purple-50 text-purple-800 px-2 py-1 rounded text-xs">
                                     {summedComposition.nbre_chambres} Chambre
                                     {summedComposition.nbre_chambres > 1
-                                      ? 's'
-                                      : ''}
+                                      ? "s"
+                                      : ""}
                                   </span>
                                 )}
                                 {summedComposition.nbre_cuisines > 0 && (
@@ -549,8 +549,8 @@ export const ContractTab = ({
                                   <span className="bg-red-50 text-red-800 px-2 py-1 rounded text-xs">
                                     {summedComposition.nbre_sdb} Salle
                                     {summedComposition.nbre_sdb > 1
-                                      ? 's'
-                                      : ''}{' '}
+                                      ? "s"
+                                      : ""}{" "}
                                     de bain
                                   </span>
                                 )}
@@ -558,13 +558,13 @@ export const ContractTab = ({
                                   <span className="bg-indigo-50 text-indigo-800 px-2 py-1 rounded text-xs">
                                     {summedComposition.nbre_balcons} Balcon
                                     {summedComposition.nbre_balcons > 1
-                                      ? 's'
-                                      : ''}
+                                      ? "s"
+                                      : ""}
                                   </span>
                                 )}
                                 {summedComposition.nbre_buanderies > 0 && (
                                   <span className="bg-teal-50 text-teal-800 px-2 py-1 rounded text-xs">
-                                    {summedComposition.nbre_buanderies}{' '}
+                                    {summedComposition.nbre_buanderies}{" "}
                                     Buanderie
                                   </span>
                                 )}
@@ -572,17 +572,17 @@ export const ContractTab = ({
                                   <span className="bg-orange-50 text-orange-800 px-2 py-1 rounded text-xs">
                                     {summedComposition.nbre_placards} Placard
                                     {summedComposition.nbre_placards > 1
-                                      ? 's'
-                                      : ''}
+                                      ? "s"
+                                      : ""}
                                   </span>
                                 )}
                                 {summedComposition.nbre_receptions > 0 && (
                                   <span className="bg-pink-50 text-pink-800 px-2 py-1 rounded text-xs">
-                                    {summedComposition.nbre_receptions}{' '}
+                                    {summedComposition.nbre_receptions}{" "}
                                     Réception
                                     {summedComposition.nbre_receptions > 1
-                                      ? 's'
-                                      : ''}
+                                      ? "s"
+                                      : ""}
                                   </span>
                                 )}
                               </div>
@@ -602,38 +602,36 @@ export const ContractTab = ({
                     <div className="bg-[#F0F7F0] p-4 rounded-lg border-l-4 border-[#5A5FE0]">
                       <div className="flex justify-between mb-2">
                         <span className="text-sm font-semibold">
-                          Prix global:
+                          Prix global (DHS):
                         </span>
                         <span className="text-sm font-bold text-[#5A5FE0]">
                           {data_reservation?.bien?.prix
                             ? `${data_reservation.bien.prix.toLocaleString(
-                                'fr-FR'
-                              )} DHS`
-                            : ''}
+                                "fr-FR"
+                              )} `
+                            : ""}
                         </span>
                       </div>
                       <div className="flex justify-between mb-2">
                         <span className="text-sm font-semibold">
-                          Acompte versé:
+                          Acompte versé (DHS):
                         </span>
                         <span className="text-sm font-bold text-[#5A5FE0]">
                           {sum_avances_valides
-                            ? `${sum_avances_valides.toLocaleString(
-                                'fr-FR'
-                              )} DHS`
-                            : '0 DHS'}
+                            ? `${sum_avances_valides.toLocaleString("fr-FR")}`
+                            : "0"}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm font-semibold">
-                          Reste à payer:
+                          Reste à payer (DHS):
                         </span>
                         <span className="text-sm font-bold text-[#5A5FE0]">
                           {data_reservation?.bien?.prix && sum_avances_valides
                             ? `${(
                                 data_reservation.bien.prix - sum_avances_valides
-                              ).toLocaleString('fr-FR')} DHS`
-                            : ''}
+                              ).toLocaleString("fr-FR")}`
+                            : ""}
                         </span>
                       </div>
                     </div>
@@ -646,23 +644,23 @@ export const ContractTab = ({
                     </h4>
                     <div className="bg-[#F0F5FF] p-4 rounded-lg border-l-4 border-[#5A5FE0]">
                       <p className="text-sm">
-                        Il est énoncé que le client a signé le contrat en{' '}
+                        Il est énoncé que le client a signé le contrat en{" "}
                         <span className="font-semibold">
                           {date_sign_client
-                            ? format(new Date(date_sign_client), 'dd/MM/yyyy')
-                            : 'date non renseignée'}
-                        </span>{' '}
-                        et le Maitre {"d' "}Ouvrage en{' '}
+                            ? format(new Date(date_sign_client), "dd/MM/yyyy")
+                            : "date non renseignée"}
+                        </span>{" "}
+                        et le Maitre {"d' "}Ouvrage en{" "}
                         <span className="font-semibold">
                           {date_sign_mo
-                            ? format(new Date(date_sign_mo), 'dd/MM/yyyy')
-                            : 'date non renseignée'}
-                        </span>{' '}
-                        et enregistré en{' '}
+                            ? format(new Date(date_sign_mo), "dd/MM/yyyy")
+                            : "date non renseignée"}
+                        </span>{" "}
+                        et enregistré en{" "}
                         <span className="font-semibold">
                           {date_enreg
-                            ? format(new Date(date_enreg), 'dd/MM/yyyy')
-                            : 'date non renseignée'}
+                            ? format(new Date(date_enreg), "dd/MM/yyyy")
+                            : "date non renseignée"}
                         </span>
                         .
                       </p>
@@ -678,7 +676,7 @@ export const ContractTab = ({
                       <div className="w-[45%] text-center">
                         <div
                           className="border-t border-black mb-2 mx-auto"
-                          style={{ width: '70%' }}
+                          style={{ width: "70%" }}
                         ></div>
                         <p className="text-sm text-gray-600">
                           Signature du Client
@@ -687,7 +685,7 @@ export const ContractTab = ({
                       <div className="w-[45%] text-center">
                         <div
                           className="border-t border-black mb-2 mx-auto"
-                          style={{ width: '70%' }}
+                          style={{ width: "70%" }}
                         ></div>
                         <p className="text-sm text-gray-600">
                           Signature du Responsable
@@ -720,8 +718,8 @@ export const ContractTab = ({
                 </div>
                 <div className="bg-emerald-500 px-3 py-1 rounded-full text-sm font-medium text-white">
                   {contrat_sign
-                    ? 'Signé et enregistré'
-                    : 'En attente de signature'}
+                    ? "Signé et enregistré"
+                    : "En attente de signature"}
                 </div>
               </div>
             </div>
@@ -756,8 +754,8 @@ export const ContractTab = ({
                     </h3>
                     <p className="text-lg font-semibold">
                       {date_enreg
-                        ? format(new Date(date_enreg), 'dd/MM/yyyy')
-                        : ''}
+                        ? format(new Date(date_enreg), "dd/MM/yyyy")
+                        : ""}
                     </p>
                   </div>
                 </div>
@@ -774,8 +772,8 @@ export const ContractTab = ({
                     </h3>
                     <p className="text-lg font-semibold">
                       {contrat_sign
-                        ? 'Signé et enregistré'
-                        : 'En attente de signature'}
+                        ? "Signé et enregistré"
+                        : "En attente de signature"}
                     </p>
                   </div>
                 </div>
@@ -798,7 +796,7 @@ export const ContractTab = ({
                       <CheckCircle className="text-white" />
                     </div>
                     <div className="flex justify-between items-start pl-10">
-                      {' '}
+                      {" "}
                       {/* Added pl-10 for padding */}
                       <div>
                         <h4 className="font-semibold text-gray-800">
@@ -806,8 +804,8 @@ export const ContractTab = ({
                         </h4>
                         <p className="text-sm text-gray-600">
                           {date_enreg
-                            ? format(new Date(date_enreg), 'dd/MM/yyyy')
-                            : 'Date non définie'}
+                            ? format(new Date(date_enreg), "dd/MM/yyyy")
+                            : "Date non définie"}
                         </p>
                       </div>
                       <div className="bg-green-100 px-3 py-1 rounded-full text-green-600 text-sm font-medium">
@@ -823,7 +821,7 @@ export const ContractTab = ({
                       </div>
                     )}
                     <div className="flex justify-between items-start pl-10">
-                      {' '}
+                      {" "}
                       {/* Added pl-10 for padding */}
                       <div>
                         <h4 className="font-semibold text-gray-800">
@@ -831,12 +829,12 @@ export const ContractTab = ({
                         </h4>
                         <p className="text-sm text-gray-600">
                           {date_sign_client
-                            ? format(new Date(date_sign_client), 'dd/MM/yyyy')
-                            : 'Date non définie'}
+                            ? format(new Date(date_sign_client), "dd/MM/yyyy")
+                            : "Date non définie"}
                         </p>
                       </div>
                       <div className="bg-blue-100 px-3 py-1 rounded-full text-blue-700 text-sm font-medium">
-                        {contrat_sign ? 'Terminé' : 'En Attente'}
+                        {contrat_sign ? "Terminé" : "En Attente"}
                       </div>
                     </div>
                   </div>
@@ -849,7 +847,7 @@ export const ContractTab = ({
                       </div>
                     )}
                     <div className="flex justify-between items-start pl-10">
-                      {' '}
+                      {" "}
                       {/* Added pl-10 for padding */}
                       <div>
                         <h4 className="font-semibold text-gray-800">
@@ -857,12 +855,12 @@ export const ContractTab = ({
                         </h4>
                         <p className="text-sm text-gray-600">
                           {date_sign_mo
-                            ? format(new Date(date_sign_mo), 'dd/MM/yyyy')
-                            : 'Date non définie'}
+                            ? format(new Date(date_sign_mo), "dd/MM/yyyy")
+                            : "Date non définie"}
                         </p>
                       </div>
                       <div className="bg-indigo-100 px-3 py-1 rounded-full text-indigo-700 text-sm font-medium">
-                        {contrat_sign ? 'Terminé' : 'En Attente'}
+                        {contrat_sign ? "Terminé" : "En Attente"}
                       </div>
                     </div>
                   </div>
@@ -898,11 +896,11 @@ export const ContractTab = ({
                             commentaire,
                             sum_avances_valides,
                             societe: user?.societe,
-                            num_recu: num_recu || 'temp',
+                            num_recu: num_recu || "temp",
                           }}
                         />
                       }
-                      fileName={`contrat_vente_${num_recu || 'temp'}.pdf`}
+                      fileName={`contrat_vente_${num_recu || "temp"}.pdf`}
                     >
                       {({ loading }) => (
                         <>
@@ -938,7 +936,7 @@ export const ContractTab = ({
               {contrat_sign ? (
                 <div className="border border-gray-200 rounded-lg p-4 bg-gray-50 flex items-center justify-between">
                   <div className="flex items-center">
-                    {contrat_sign?.toLowerCase()?.endsWith('.pdf') ? (
+                    {contrat_sign?.toLowerCase()?.endsWith(".pdf") ? (
                       <File className="text-red-500 text-3xl mr-4" />
                     ) : (
                       <img
@@ -1014,7 +1012,7 @@ export const ContractTab = ({
                 <div className="space-y-1">
                   <label className="block text-sm font-medium text-gray-700 flex items-center">
                     <Calendar className="mr-2 text-blue-600" />
-                    Date Signature Client{' '}
+                    Date Signature Client{" "}
                     <span className="text-red-500 ml-1">*</span>
                   </label>
                   <input
@@ -1029,7 +1027,7 @@ export const ContractTab = ({
                 <div className="space-y-1">
                   <label className="block text-sm font-medium text-gray-700 flex items-center">
                     <Calendar className="mr-2 text-blue-600" />
-                    Date Signature Maitre Ouvrage{' '}
+                    Date Signature Maitre Ouvrage{" "}
                     <span className="text-red-500 ml-1">*</span>
                   </label>
                   <input
@@ -1044,7 +1042,7 @@ export const ContractTab = ({
                 <div className="space-y-1">
                   <label className="block text-sm font-medium text-gray-700 flex items-center">
                     <Calendar className="mr-2 text-blue-600" />
-                    Date Enregistrement{' '}
+                    Date Enregistrement{" "}
                     <span className="text-red-500 ml-1">*</span>
                   </label>
                   <input
@@ -1116,8 +1114,8 @@ export const ContractTab = ({
             <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-4 rounded-t-xl">
               <h3 className="text-xl font-bold text-white">
                 {contrat_sign
-                  ? 'Modifier le contrat signé'
-                  : 'Ajouter le contrat signé'}
+                  ? "Modifier le contrat signé"
+                  : "Ajouter le contrat signé"}
               </h3>
             </div>
 
@@ -1125,7 +1123,7 @@ export const ContractTab = ({
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
                   <Upload className="mr-2 text-blue-600" />
-                  Téléverser le document signé{' '}
+                  Téléverser le document signé{" "}
                   <span className="text-red-500 ml-1">*</span>
                 </label>
 
@@ -1180,8 +1178,8 @@ export const ContractTab = ({
                   disabled={!fichier_scanner || loading_scann}
                   className={`px-5 py-2.5 rounded-lg flex items-center ${
                     fichier_scanner && !loading_scann
-                      ? 'bg-gradient-to-r from-blue-600 to-indigo-700 text-white hover:from-blue-700 hover:to-indigo-800 shadow-md'
-                      : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                      ? "bg-gradient-to-r from-blue-600 to-indigo-700 text-white hover:from-blue-700 hover:to-indigo-800 shadow-md"
+                      : "bg-gray-200 text-gray-500 cursor-not-allowed"
                   }`}
                 >
                   {loading_scann ? (
@@ -1189,7 +1187,7 @@ export const ContractTab = ({
                   ) : (
                     <Check className="mr-2" />
                   )}
-                  {contrat_sign ? 'Mettre à jour' : 'Enregistrer'}
+                  {contrat_sign ? "Mettre à jour" : "Enregistrer"}
                 </button>
               </div>
             </div>

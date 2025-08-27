@@ -198,7 +198,7 @@ const Res_Show = () => {
       },
       {
         id: "contract",
-        label: "Contract",
+        label: "Contrat de vente",
         icon: "file-text",
         visible:
           userRole <= 3 &&
