@@ -1,45 +1,43 @@
-"use client";
+'use client';
 
-import DeleteData from "@/components/DeleteData";
-import Modal from "@/components/Modal";
-import Table from "@/components/Table";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import axios from "axios";
-import { APIURL, ENDPOINTS } from "@/configs/api";
-import { fetchData_table_by_projet } from "@/configs/api-utils";
-import { isAdmin, isSuperAdmin } from "@/configs/enum";
-import { useAuth } from "@/context/AuthContext";
-import Input from "@/components/Input";
-import InputSelect from "@/components/inputSelect";
-import { useProjet } from "@/context/ProjetContext"; // Import ProjetContext
-import ProjetDialog from "@/components/ProjetDialog"; // Import ProjetDialog
+import DeleteData from '@/components/DeleteData';
+import Modal from '@/components/Modal';
+import Table from '@/components/Table';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import { APIURL, ENDPOINTS } from '@/configs/api';
+import { fetchData_table_by_projet } from '@/configs/api-utils';
+import { isAdmin, isSuperAdmin } from '@/configs/enum';
+import { useAuth } from '@/context/AuthContext';
+import Input from '@/components/Input';
+import InputSelect from '@/components/inputSelect';
+import { useProjet } from '@/context/ProjetContext'; // Import ProjetContext
+import ProjetDialog from '@/components/ProjetDialog'; // Import ProjetDialog
 import Select from 'react-select';
-import { Eye, Pencil, Trash2 } from "lucide-react";
-import toast from "react-hot-toast";
+import { Eye, Pencil, Trash2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
-export default function Composition({bien,reloadTrigger}) {
+export default function Composition({ bien, reloadTrigger }) {
   const [prestataires, setPrestataires] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
+  const [error, setError] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedId, setSelectedId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [totalRows, setTotalRows] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [compositionBiens, setCompositionBien] = useState([]);
-  const accessToken = localStorage.getItem("accessToken");
+  const accessToken = localStorage.getItem('accessToken');
   const { user, token } = useAuth();
-  const accesstoken = token || localStorage.getItem("accessToken");
+  const accesstoken = token || localStorage.getItem('accessToken');
   const router = useRouter();
   const { selectedProjet, projets, fetchProjets } = useProjet(); // Get data from ProjetContext
   const [showProjetModal, setShowProjetModal] = useState(false); // State for project modal
   const [selectedCompositionBien, setSelectedCompositionBien] = useState(null);
-  const selectedBien= localStorage.getItem('selectedBien')
-const [showEditModal, setShowEditModal] = useState(false);
-
-
+  const selectedBien = localStorage.getItem('selectedBien');
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const [filters, setFilters] = useState({
     nbre_balcons: '',
@@ -47,213 +45,205 @@ const [showEditModal, setShowEditModal] = useState(false);
     nbre_chambres: '',
     nbre_cuisines: '',
     nbre_salons: '',
-
-  })
+  });
   const [tempFilters, setTempFilters] = useState({ ...filters });
 
-  const fetchCompositionBiensFromApi = pageNumber => {
-    setLoading(true)
-    const selectedBienId = bien ? bien : selectedBien
+  const fetchCompositionBiensFromApi = (pageNumber) => {
+    setLoading(true);
+    const selectedBienId = bien ? bien : selectedBien;
     axios
       .get(APIURL.COMPOSITIONBIENS, {
         headers: {
-          Authorization: `Bearer ${accessToken}`
+          Authorization: `Bearer ${accessToken}`,
         },
-        params: { page: pageNumber + 1, currentPage,bien_id: selectedBienId, ...filters } // Increment page number by 1 for API
+        params: {
+          page: pageNumber + 1,
+          currentPage,
+          bien_id: selectedBienId,
+          ...filters,
+        }, // Increment page number by 1 for API
       })
-      .then(response => {
-       const { compositionBiens, pagination } = response.data
+      .then((response) => {
+        const { compositionBiens, pagination } = response.data;
 
-      const itemsPerPage = pagination.perPage || 10 // ou pagination.pageSize
+        const itemsPerPage = pagination.perPage || 10; // ou pagination.pageSize
 
-      const updatedBiens = compositionBiens.map((item, idx) => ({
-        ...item,
-        classement: (pageNumber * itemsPerPage) + idx + 1 // index global
-      }))
+        const updatedBiens = compositionBiens.map((item, idx) => ({
+          ...item,
+          classement: pageNumber * itemsPerPage + idx + 1, // index global
+        }));
 
-      setCompositionBien(updatedBiens)
-    })
-      .catch(error => {
-        console.error('Error fetching users:', error)
+        setCompositionBien(updatedBiens);
+      })
+      .catch((error) => {
+        console.error('Error fetching users:', error);
       })
       .finally(() => {
-        setLoading(false)
-      })
-  }
-  
- 
-    const [selectedRow, setSelectedRow] = useState(null);
-const [showModal, setShowModal] = useState(false);
+        setLoading(false);
+      });
+  };
 
-const handleShow = (id) => {
-  const row = compositionBiens.find((item) => item.id === id);
-  setSelectedRow(row);
-  setShowModal(true);
-};
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
-const handleClose = () => {
-  setShowModal(false);
-  setSelectedRow(null);
-};
+  const handleShow = (id) => {
+    const row = compositionBiens.find((item) => item.id === id);
+    setSelectedRow(row);
+    setShowModal(true);
+  };
 
+  const handleClose = () => {
+    setShowModal(false);
+    setSelectedRow(null);
+  };
 
-    const handleFilterToggle = (isOpen) => {
-      if (!isOpen) resetFilters(); // Si on ferme, on réinitialise
-    };
+  const handleFilterToggle = (isOpen) => {
+    if (!isOpen) resetFilters(); // Si on ferme, on réinitialise
+  };
 
   useEffect(() => {
-     fetchCompositionBiensFromApi(0); // Fetch initial data for the first page 
-   
-    }, [searchTerm, currentPage, rowsPerPage, accesstoken,filters,reloadTrigger]);
+    fetchCompositionBiensFromApi(0); // Fetch initial data for the first page
+  }, [
+    searchTerm,
+    currentPage,
+    rowsPerPage,
+    accesstoken,
+    filters,
+    reloadTrigger,
+  ]);
 
-    
-    
-    
+  const handleEdit = (id) => {
+    const row = compositionBiens.find((item) => item.id === id);
+    if (row) {
+      setSelectedRow({ ...row }); // copier les données
+      setShowEditModal(true);
+    }
+  };
 
+  const onUpdate = async (data) => {
+    setLoading({ ...loading, form: true });
+    const filteredData = Object.fromEntries(
+      Object.entries(data).filter(([key]) => key.startsWith('nbre'))
+    );
 
-
-
- const handleEdit = (id) => {
-  const row = compositionBiens.find((item) => item.id === id);
-  if (row) {
-    setSelectedRow({ ...row }); // copier les données
-    setShowEditModal(true);
-  }
-}
-
-const onUpdate = async (data) => {
-  setLoading({ ...loading, form: true });
-  const filteredData = Object.fromEntries(
-    Object.entries(data).filter(([key]) => key.startsWith('nbre'))
-  );
-
-  const allZero = Object.values(filteredData).every(value => {
-    const num = Number(value);
-    return num === 0 || value === '' || value === null;
-  });
-
-  if (allZero) {
-    toast.error('Toutes les données commençant par "nbre" sont égales à 0 ou vides');
-    setLoading({ ...loading, form: false });
-    return;
-  }
-
-  filteredData.bien_id = bien ? bien : selectedBien;
-
-  try {
-    const url = `${APIURL.COMPOSITIONBIENS}/${selectedRow.id}`;
-    const method = 'put';
-
-    const response = await axios({
-      method,
-      url,
-      data: filteredData, // 👉 JSON object, not FormData
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
+    const allZero = Object.values(filteredData).every((value) => {
+      const num = Number(value);
+      return num === 0 || value === '' || value === null;
     });
 
-    if (response.status === 200) {
-      toast.success("Composition modifiée avec succès");
-      setShowEditModal(false);
-      fetchCompositionBiensFromApi(0);
+    if (allZero) {
+      toast.error(
+        'Toutes les données commençant par "nbre" sont égales à 0 ou vides'
+      );
+      setLoading({ ...loading, form: false });
+      return;
     }
-  } catch (error) {
-    console.error("Erreur lors de la mise à jour:", error);
-    const response = error.response;
 
-    if (response?.status === 422) {
-      setBackendErrors(response.data.errors);
-      Object.values(response.data.errors).forEach((messages) => {
-        messages.forEach((msg) => toast.error(msg));
+    filteredData.bien_id = bien ? bien : selectedBien;
+
+    try {
+      const url = `${APIURL.COMPOSITIONBIENS}/${selectedRow.id}`;
+      const method = 'put';
+
+      const response = await axios({
+        method,
+        url,
+        data: filteredData, // 👉 JSON object, not FormData
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
       });
-      setTimeout(() => setBackendErrors({}), 5000);
-    } else {
-      toast.error("Une erreur s'est produite lors de la mise à jour.");
+
+      if (response.status === 200) {
+        toast.success('Composition modifiée avec succès');
+        setShowEditModal(false);
+        fetchCompositionBiensFromApi(0);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour:', error);
+      const response = error.response;
+
+      if (response?.status === 422) {
+        setBackendErrors(response.data.errors);
+        Object.values(response.data.errors).forEach((messages) => {
+          messages.forEach((msg) => toast.error(msg));
+        });
+        setTimeout(() => setBackendErrors({}), 5000);
+      } else {
+        toast.error("Une erreur s'est produite lors de la mise à jour.");
+      }
+    } finally {
+      setLoading({ ...loading, form: false });
     }
-  } finally {
-    setLoading({ ...loading, form: false });
-  }
-};
-
-
+  };
 
   const columns = [
-  {
-    key: 'classement',
-  label: '#',
-  render: (row) => (
-    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-sm font-semibold text-gray-700">
-      {row.classement}
-    </div>
-  )
-  },
-  { key: 'nbre_balcons', label: 'Nbre balcons' },
-  { key: 'nbre_buanderies', label: 'Nbre buanderies' },
-  { key: 'nbre_chambres', label: 'Nbre chambres' },
-  { key: 'nbre_cuisines', label: 'Nbre cuisines' },
-  { key: 'nbre_halls', label: 'Nbre halls' },
-  { key: 'nbre_placards', label: 'Nbre placards' },
-  {
-  key: 'actions',
-  label: 'Actions',
-  render: (row) => (  // ✅ correction ici
-    <div className="flex gap-3 items-center">
-      <button
-        className="text-teal-500 hover:text-teal-700"
-        onClick={() => handleShow(row.id)} // ✅ Ouvre la popup
-        title="Voir"
-      >
-        <Eye className="w-4 h-4" />
-      </button>
-      <button
-        className="text-blue-500 hover:text-blue-700"
-        onClick={() => handleEdit(row.id)}
-        title="Modifier"
-      >
-        <Pencil className="w-4 h-4" />
-      </button>
-      <button
-        className="text-red-500 hover:text-red-700"
-        onClick={() => {
-          setSelectedId(row.id);
-          setShowDeleteModal(true);
-        }}
-        title="Supprimer"
-      >
-        <Trash2 className="w-4 h-4" />
-      </button>
-    </div>
-  ),
-},
+    {
+      key: 'classement',
+      label: '#',
+      render: (row) => (
+        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-sm font-semibold text-gray-700">
+          {row.classement}
+        </div>
+      ),
+    },
+    { key: 'nbre_balcons', label: 'Nbre balcons' },
+    { key: 'nbre_buanderies', label: 'Nbre buanderies' },
+    { key: 'nbre_chambres', label: 'Nbre chambres' },
+    { key: 'nbre_cuisines', label: 'Nbre cuisines' },
+    { key: 'nbre_halls', label: 'Nbre halls' },
+    { key: 'nbre_placards', label: 'Nbre placards' },
+    {
+      key: 'actions',
+      label: 'Actions',
+      render: (
+        row // ✅ correction ici
+      ) => (
+        <div className="flex gap-3 items-center">
+          <button
+            className="text-teal-500 hover:text-teal-700"
+            onClick={() => handleShow(row.id)} // ✅ Ouvre la popup
+            title="Voir"
+          >
+            <Eye className="w-4 h-4" />
+          </button>
+          <button
+            className="text-blue-500 hover:text-blue-700"
+            onClick={() => handleEdit(row.id)}
+            title="Modifier"
+          >
+            <Pencil className="w-4 h-4" />
+          </button>
+          <button
+            className="text-red-500 hover:text-red-700"
+            onClick={() => {
+              setSelectedId(row.id);
+              setShowDeleteModal(true);
+            }}
+            title="Supprimer"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
+      ),
+    },
+  ];
 
-];
+  const formatData = compositionBiens.map((c, index) => ({
+    ...c,
+    index, // pour le render du numéro
+  }));
 
-const formatData = compositionBiens.map((c, index) => ({
-  ...c,
-  index, // pour le render du numéro
-}));
-
-  
-  
-
-
-
-  
-  
   return (
-    < div >
+    <div>
       {/* Project Selection Modal */}
-      
+
       <Table
-        
         columns={columns}
         onFilterToggle={handleFilterToggle}
         data={compositionBiens}
-        addLink={
-          `/Biens/${bien}/ajouter-composition`
-        }        
+        addLink={`/Biens/${bien}/ajouter-composition`}
         totalRows={totalRows}
         loading={loading}
         error={error}
@@ -270,13 +260,11 @@ const formatData = compositionBiens.map((c, index) => ({
             route={APIURL.COMPOSITIONBIENS}
             Id={selectedId}
             type="composition"
-            message={`Êtes-vous sûr de vouloir supprimer cette composition ?`
-            }
+            message={`Êtes-vous sûr de vouloir supprimer cette composition ?`}
             accessToken={accesstoken}
             onClose={() => {
               setShowDeleteModal(false);
               fetchCompositionBiensFromApi(0); // Recharger les données après suppression
-              
             }}
           />
         </Modal>
@@ -287,14 +275,18 @@ const formatData = compositionBiens.map((c, index) => ({
             <h2 className="text-xl font-bold mb-6 text-center text-gray-800">
               Détails des pièces
             </h2>
-            
+
             <div className="grid grid-cols-2 gap-4">
               {Object.entries(selectedRow)
                 .filter(([key]) => key.startsWith('nbre_'))
                 .map(([key, value]) => (
                   <div key={key} className="flex flex-col">
-                    <span className="text-sm text-gray-500 capitalize">{key.replace('nbre_', '').replace('_', ' ')}</span>
-                    <span className="text-base font-medium text-gray-900">{value}</span>
+                    <span className="text-sm text-gray-500 capitalize">
+                      {key.replace('nbre_', '').replace('_', ' ')}
+                    </span>
+                    <span className="text-base font-medium text-gray-900">
+                      {value}
+                    </span>
                   </div>
                 ))}
             </div>
@@ -317,17 +309,21 @@ const formatData = compositionBiens.map((c, index) => ({
               Modifier les pièces
             </h2>
 
-            <form onSubmit={(e) => {
+            <form
+              onSubmit={(e) => {
                 e.preventDefault();
                 onUpdate(selectedRow); // 🔁 utilise onUpdate ici
-              }}>
-
+              }}
+            >
               <div className="grid grid-cols-2 gap-4">
                 {Object.entries(selectedRow)
                   .filter(([key]) => key.startsWith('nbre_'))
                   .map(([key, value]) => (
                     <div key={key} className="flex flex-col">
-                      <label htmlFor={key} className="text-sm text-gray-600 capitalize mb-1">
+                      <label
+                        htmlFor={key}
+                        className="text-sm text-gray-600 capitalize mb-1"
+                      >
                         {key.replace('nbre_', '').replace('_', ' ')}
                       </label>
                       <input
@@ -366,10 +362,6 @@ const formatData = compositionBiens.map((c, index) => ({
           </div>
         </div>
       )}
-
-
-
     </div>
   );
-};
-
+}

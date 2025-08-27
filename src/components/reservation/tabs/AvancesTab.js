@@ -1210,7 +1210,7 @@ export const AvancesTab = ({
                 </label>
                 <input
                   type="file"
-                  name="paiement_files"
+                  name=""
                   accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" // Specify accepted file types
                   onChange={(e) => handleFileChange(e, 2)}
                   className="w-full p-2 border border-gray-300 rounded-md"
