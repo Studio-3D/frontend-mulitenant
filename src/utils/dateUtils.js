@@ -1,10 +1,10 @@
 import { format, parseISO, isValid } from 'date-fns';
 
 /**
- * Standard date format: dd-mm-yyyy
+ * Standard date format: dd/MM/yyyy
  */
-export const DATE_FORMAT = 'dd-MM-yyyy';
-export const DATETIME_FORMAT = 'dd-MM-yyyy HH:mm';
+export const DATE_FORMAT = 'dd/MM/yyyy';
+export const DATETIME_FORMAT = 'dd/MM/yyyy HH:mm';
 
 /**
  * Format a date to dd-mm-yyyy format

@@ -138,9 +138,10 @@ const styles = StyleSheet.create({
   preReservationVendu: { color: "#16A085", fontWeight: "bold" },
 });
 
-// const formatDate = (dateString) => {
-//   return dateString ? formatDate(dateString) : "";
-// };
+const formatDate = (dateString) => {
+  return dateString ? moment(dateString).format('DD/MM/YYYY') : '';
+};
+
 
 const formatCurrency = (amount) => {
   return amount

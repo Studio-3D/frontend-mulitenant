@@ -221,17 +221,17 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
       appels: pro.appels,
       origin: pro.origin,
       date: pro.created_at
-        ? format(new Date(pro.created_at), "yyyy-MM-dd")
+        ? format(new Date(pro.created_at), "dd/MM/yyyy")
         : "",
       statut: getProspectStatusLabel(pro.last_statut?.statut || ""),
       commercial_affecte: pro.commercial_affecte || null,
       affecte_par_admin: pro.affecte_par_admin || null,
       traite_par_user: pro.traite_par_user || null,
       date_affectation: pro.date_affectation
-        ? format(new Date(pro.date_affectation), "yyyy-MM-dd HH:mm")
+        ? format(new Date(pro.date_affectation), "dd/MM/yyyy HH:mm")
         : "",
       date_traitement: pro.date_traitement
-        ? format(new Date(pro.date_traitement), "yyyy-MM-dd HH:mm")
+        ? format(new Date(pro.date_traitement), "dd/MM/yyyy HH:mm")
         : "",
       prospect: pro,
     }));

@@ -70,7 +70,8 @@ const ProspectDetails = () => {
     if (!selectedProjetId) return;
     try {
       await axios.put(`${APIURL.PROSPECTS}/${prospectDetails.id}`, {
-        projet_id: selectedProjetId
+        projet_id: selectedProjetId,
+        telephone: prospectDetails?.telephone,
       }, {
         headers: { Authorization: `Bearer ${accessToken}` }
       });
@@ -300,7 +301,7 @@ const ProspectDetails = () => {
                               label="Projet"
                               options={(projets || []).map(p => ({ label: p.nom, value: p.id }))}
                               value={selectedProjetId}
-                              onChange={(e) => setSelectedProjetId(e.target.value)}
+                              onChange={(val) => setSelectedProjetId(val)}
                             />
                           </div>
                           <div className="flex justify-end gap-2">
