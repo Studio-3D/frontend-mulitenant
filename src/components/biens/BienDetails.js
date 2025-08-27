@@ -1,11 +1,11 @@
-"use client";
-import { useState, useEffect } from "react";
-import axios from "axios";
-import { APIURL } from "@/configs/api";
-import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
-import { useAuth } from "@/context/AuthContext";
-import Link from "next/link";
+'use client';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import { APIURL } from '@/configs/api';
+import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
+import { useAuth } from '@/context/AuthContext';
+import Link from 'next/link';
 import {
   Pencil,
   ArrowLeft,
@@ -20,22 +20,22 @@ import {
   CreditCard,
   Receipt,
   Image,
-} from "lucide-react";
-import { getEtatLabel, getFullOrientation } from "@/configs/enum";
-import BienSuperficies from "./BienSuperficies";
-import BienComposition from "./BienComposition";
-import BienDescriptionGenerator from "./BienDescriptionGenerator";
-import BienDossiers from "./BienDossiers";
-import BienEncaissements from "./BienEncaissements";
-import BienTvaCollecte from "./BienTvaCollecte";
-import BienMedia from "./BienMedia";
+} from 'lucide-react';
+import { getEtatLabel, getFullOrientation } from '@/configs/enum';
+import BienSuperficies from './BienSuperficies';
+import BienComposition from './BienComposition';
+import BienDescriptionGenerator from './BienDescriptionGenerator';
+import BienDossiers from './BienDossiers';
+import BienEncaissements from './BienEncaissements';
+import BienTvaCollecte from './BienTvaCollecte';
+import BienMedia from './BienMedia';
 
 export default function BienDetails({ id }) {
   const [bien, setBien] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState("superficies");
-  const [bienDescription, setBienDescription] = useState("");
+  const [activeTab, setActiveTab] = useState('superficies');
+  const [bienDescription, setBienDescription] = useState('');
   const router = useRouter();
   const { user } = useAuth();
 
@@ -45,14 +45,14 @@ export default function BienDetails({ id }) {
   useEffect(() => {
     const fetchBienDetails = async () => {
       try {
-        const token = localStorage.getItem("accessToken");
+        const token = localStorage.getItem('accessToken');
         const response = await axios.get(`${APIURL.BIENS}/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
         if (response.data && response.data.bien) {
           setBien(response.data.bien);
-          setBienDescription(response.data.bien.description || "");
+          setBienDescription(response.data.bien.description || '');
 
           // If the property belongs to a project, store the project in localStorage
           if (response.data.bien.projet_id) {
@@ -64,21 +64,21 @@ export default function BienDetails({ id }) {
 
               if (projectResponse.data && projectResponse.data.projet) {
                 localStorage.setItem(
-                  "selectedProjet",
+                  'selectedProjet',
                   JSON.stringify(projectResponse.data.projet)
                 );
               }
             } catch (err) {
-              console.error("Error fetching project details:", err);
+              console.error('Error fetching project details:', err);
             }
           }
         } else {
-          setError("Bien non trouvé");
+          setError('Bien non trouvé');
         }
       } catch (err) {
-        console.error("Error fetching bien details:", err);
+        console.error('Error fetching bien details:', err);
         setError(
-          err.response?.data?.message || "Erreur lors du chargement du bien"
+          err.response?.data?.message || 'Erreur lors du chargement du bien'
         );
       } finally {
         setLoading(false);
@@ -113,21 +113,21 @@ export default function BienDetails({ id }) {
 
   // Format price with thousand separators
   const formatPrice = (price) => {
-    return price ? price.toLocaleString("fr-FR") + " Dhs" : "N/A";
+    return price ? price.toLocaleString('fr-FR') + ' Dhs' : 'N/A';
   };
 
   // Get the status badge with proper formatting
   const getStatusBadge = (etat) => {
     const statusClasses = {
-      DISPONIBLE: "bg-green-100 !text-green-800 border border-green-300",
-      RESERVE: "bg-blue-100 !text-blue-800 border border-blue-300",
-      VENDU: "bg-purple-100 text-purple-800 border border-purple-300",
+      DISPONIBLE: 'bg-green-100 !text-green-800 border border-green-300',
+      RESERVE: 'bg-blue-100 !text-blue-800 border border-blue-300',
+      VENDU: 'bg-purple-100 text-purple-800 border border-purple-300',
     };
 
     return (
       <span
         className={`px-3 py-1.5 rounded-full text-sm font-semibold ${
-          statusClasses[etat] || "bg-gray-100 !text-gray-800"
+          statusClasses[etat] || 'bg-gray-100 !text-gray-800'
         }`}
       >
         {getEtatLabel(etat)}
@@ -138,43 +138,45 @@ export default function BienDetails({ id }) {
   // Define tabs with description - ADD media tab
   const tabs = [
     {
-      id: "superficies",
-      label: "Superficies",
+      id: 'superficies',
+      label: 'Superficies',
       icon: <MapPin className="w-4 h-4" />,
     },
     {
-      id: "composition",
-      label: "Composition",
+      id: 'composition',
+      label: 'Composition',
       icon: <Home className="w-4 h-4" />,
     },
-    { id: "media", label: "Médias", icon: <Image className="w-4 h-4" /> },
-    { id: "dossiers", label: "Dossiers", icon: <Files className="w-4 h-4" /> },
+    { id: 'media', label: 'Médias', icon: <Image className="w-4 h-4" /> },
+    { id: 'dossiers', label: 'Dossiers', icon: <Files className="w-4 h-4" /> },
     {
-      id: "encaissements",
-      label: "Encaissements",
+      id: 'encaissements',
+      label: 'Encaissements',
       icon: <CreditCard className="w-4 h-4" />,
     },
-    {
-      id: "tva_collecte",
-      label: "TVA Collecté",
-      icon: <Receipt className="w-4 h-4" />,
-    },
   ];
+  if (bien.etat == 'RESERVATION') {
+    tabs.push({
+      id: 'tva_collecte',
+      label: 'TVA Collecté',
+      icon: <Receipt className="w-4 h-4" />,
+    });
+  }
 
   // Render the appropriate content for the active tab - ADD media case
   const renderTabContent = () => {
     switch (activeTab) {
-      case "superficies":
+      case 'superficies':
         return <BienSuperficies bien={bien} />;
-      case "composition":
+      case 'composition':
         return <BienComposition bien={bien} />;
-      case "media":
+      case 'media':
         return <BienMedia bienId={id} />;
-      case "dossiers":
+      case 'dossiers':
         return <BienDossiers bienId={id} />;
-      case "encaissements":
+      case 'encaissements':
         return <BienEncaissements bienId={id} />;
-      case "tva_collecte":
+      case 'tva_collecte':
         return <BienTvaCollecte bienId={id} bien={bien} />;
       default:
         return <BienSuperficies bien={bien} />;
@@ -182,7 +184,7 @@ export default function BienDetails({ id }) {
   };
 
   // Helper function to render avatar with icon
-  const renderIconAvatar = (icon, bgColor = "bg-blue-100") => (
+  const renderIconAvatar = (icon, bgColor = 'bg-blue-100') => (
     <div
       className={`flex items-center justify-center w-8 h-8 rounded-full ${bgColor} !text-blue-600 flex-shrink-0`}
     >
@@ -198,7 +200,7 @@ export default function BienDetails({ id }) {
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-2 ">
               <Link
-                href={bien.projet_id ? `/Projets/${bien.projet_id}` : "/Biens"}
+                href={bien.projet_id ? `/Projets/${bien.projet_id}` : '/Biens'}
                 className="text-gray-600 hover:text-gray-800"
               >
                 <ArrowLeft className="w-5 h-5" />
@@ -215,7 +217,7 @@ export default function BienDetails({ id }) {
                     bien.immeuble?.nom,
                   ]
                     .filter(Boolean)
-                    .join(" • ")}
+                    .join(' • ')}
                 </p>
               </div>
             </div>
@@ -259,11 +261,14 @@ export default function BienDetails({ id }) {
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {/* Basic information */}
               <div className="flex items-start gap-2">
-                {renderIconAvatar(<Home className="w-4 h-4" />, "bg-indigo-100")}
+                {renderIconAvatar(
+                  <Home className="w-4 h-4" />,
+                  'bg-indigo-100'
+                )}
                 <div className="min-w-0">
                   <h3 className="text-xs font-medium !text-gray-500">Numéro</h3>
                   <p className="mt-0.5 font-semibold text-sm truncate">
-                    {bien.numero || "N/A"}
+                    {bien.numero || 'N/A'}
                   </p>
                 </div>
               </div>
@@ -271,42 +276,45 @@ export default function BienDetails({ id }) {
               <div className="flex items-start gap-2">
                 {renderIconAvatar(
                   <Building className="w-4 h-4" />,
-                  "bg-purple-100"
+                  'bg-purple-100'
                 )}
                 <div className="min-w-0">
                   <h3 className="text-xs font-medium !text-gray-500">
                     Type de bien
                   </h3>
                   <p className="mt-0.5 font-semibold text-sm truncate">
-                    {bien.type_bien?.type || "N/A"}
+                    {bien.type_bien?.type || 'N/A'}
                   </p>
                 </div>
               </div>
 
               <div className="flex items-start gap-2">
-                {renderIconAvatar(<Tag className="w-4 h-4" />, "bg-teal-100")}
+                {renderIconAvatar(<Tag className="w-4 h-4" />, 'bg-teal-100')}
                 <div className="min-w-0">
                   <h3 className="text-xs font-medium !text-gray-500">
                     Typologie
                   </h3>
                   <p className="mt-0.5 font-semibold text-sm truncate">
-                    {bien.typologie?.typologie || "N/A"}
+                    {bien.typologie?.typologie || 'N/A'}
                   </p>
                 </div>
               </div>
 
               <div className="flex items-start gap-2">
-                {renderIconAvatar(<MapPin className="w-4 h-4" />, "bg-amber-100")}
+                {renderIconAvatar(
+                  <MapPin className="w-4 h-4" />,
+                  'bg-amber-100'
+                )}
                 <div className="min-w-0">
                   <h3 className="text-xs font-medium !text-gray-500">Niveau</h3>
                   <p className="mt-0.5 font-semibold text-sm">
-                    {bien.niveau !== null ? bien.niveau : "N/A"}
+                    {bien.niveau !== null ? bien.niveau : 'N/A'}
                   </p>
                 </div>
               </div>
 
               <div className="flex items-start gap-2">
-                {renderIconAvatar(<Euro className="w-4 h-4" />, "bg-green-200")}
+                {renderIconAvatar(<Euro className="w-4 h-4" />, 'bg-green-200')}
                 <div className="min-w-0">
                   <h3 className="text-xs font-medium !text-gray-500">Prix</h3>
                   <p className="mt-0.5 font-semibold text-sm !text-green-600 truncate">
@@ -329,7 +337,7 @@ export default function BienDetails({ id }) {
                   >
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                   </svg>,
-                  "bg-pink-100"
+                  'bg-pink-100'
                 )}
                 <div className="min-w-0">
                   <h3 className="text-xs font-medium !text-gray-500">
@@ -338,14 +346,17 @@ export default function BienDetails({ id }) {
                   <p className="mt-0.5 font-semibold text-sm truncate">
                     {bien.orientation
                       ? getFullOrientation(bien.orientation)
-                      : "N/A"}
+                      : 'N/A'}
                   </p>
                 </div>
               </div>
 
               {/* Prix unitaire */}
               <div className="flex items-start gap-2">
-                {renderIconAvatar(<Euro className="w-4 h-4" />, "bg-purple-100")}
+                {renderIconAvatar(
+                  <Euro className="w-4 h-4" />,
+                  'bg-purple-100'
+                )}
                 <div className="min-w-0">
                   <h3 className="text-xs font-medium !text-gray-500">
                     Prix unitaire
@@ -358,7 +369,7 @@ export default function BienDetails({ id }) {
 
               {/* Avance minimale */}
               <div className="flex items-start gap-2">
-                {renderIconAvatar(<Euro className="w-4 h-4" />, "bg-amber-100")}
+                {renderIconAvatar(<Euro className="w-4 h-4" />, 'bg-amber-100')}
                 <div className="min-w-0">
                   <h3 className="text-xs font-medium !text-gray-500">
                     Avance minimale
@@ -386,14 +397,14 @@ export default function BienDetails({ id }) {
                     <path d="M3 9h18" />
                     <path d="M9 21V9" />
                   </svg>,
-                  "bg-blue-100"
+                  'bg-blue-100'
                 )}
                 <div className="min-w-0">
                   <h3 className="text-xs font-medium !text-gray-500">
                     Nombre de façades
                   </h3>
                   <p className="mt-0.5 font-semibold text-sm">
-                    {bien.nbre_facades || "N/A"}
+                    {bien.nbre_facades || 'N/A'}
                   </p>
                 </div>
               </div>
@@ -416,7 +427,7 @@ export default function BienDetails({ id }) {
                       <path d="M10 14 21 3" />
                       <path d="M19 10v11H3V5h11" />
                     </svg>,
-                    "bg-cyan-100"
+                    'bg-cyan-100'
                   )}
                   <div className="min-w-0">
                     <h3 className="text-xs font-medium !text-gray-500">Vue</h3>
@@ -445,7 +456,7 @@ export default function BienDetails({ id }) {
                       <path d="M7 13h10" />
                       <path d="M7 17h4" />
                     </svg>,
-                    "bg-orange-100"
+                    'bg-orange-100'
                   )}
                   <div className="min-w-0">
                     <h3 className="text-xs font-medium !text-gray-500">
@@ -474,7 +485,7 @@ export default function BienDetails({ id }) {
                     <polyline points="9 11 12 14 22 4" />
                     <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
                   </svg>,
-                  bien.conventionne ? "bg-green-200" : "bg-red-200"
+                  bien.conventionne ? 'bg-green-200' : 'bg-red-200'
                 )}
                 <div className="min-w-0">
                   <h3 className="text-xs font-medium !text-gray-500">
@@ -482,10 +493,10 @@ export default function BienDetails({ id }) {
                   </h3>
                   <p
                     className={`mt-0.5 font-semibold text-sm ${
-                      bien.conventionne ? "text-green-600" : "text-red-500"
+                      bien.conventionne ? 'text-green-600' : 'text-red-500'
                     }`}
                   >
-                    {bien.conventionne ? "Oui" : "Non"}
+                    {bien.conventionne ? 'Oui' : 'Non'}
                   </p>
                 </div>
               </div>
@@ -503,8 +514,8 @@ export default function BienDetails({ id }) {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center px-3 py-2 font-medium text-sm border-b-2 whitespace-nowrap ${
                     activeTab === tab.id
-                      ? "border-blue-500 !text-blue-600 bg-blue-50"
-                      : "border-transparent !text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                      ? 'border-blue-500 !text-blue-600 bg-blue-50'
+                      : 'border-transparent !text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
                   <span className="mr-2">{tab.icon}</span>

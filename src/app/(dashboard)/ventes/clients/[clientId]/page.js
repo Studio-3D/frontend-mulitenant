@@ -109,10 +109,13 @@ const ClientDetails = () => {
                   <hr className="border-indigo-400 mb-4" />
 
                   <div className="space-y-2 text-sm text-gray-700">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Profession:</span>
-                      <span>{clientDetails?.profession || '—'}</span>
-                    </div>
+                    {clientDetails?.profession && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Profession:</span>
+                        <span>{clientDetails?.profession || '—'}</span>
+                      </div>
+                    )}
+
                     <div className="flex justify-between">
                       <span className="text-gray-600">
                         Accepte {"d'"}être contacté:
@@ -135,81 +138,110 @@ const ClientDetails = () => {
                         </span>
                       </div>
                     )}
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Email:</span>
-                      <span>{clientDetails?.email}</span>
-                    </div>
+                    {clientDetails?.email && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Email:</span>
+                        <span>{clientDetails?.email}</span>
+                      </div>
+                    )}
+
                     <div className="flex justify-between">
                       <span className="text-gray-600">Téléphone 1:</span>
                       <span>{clientDetails?.telephone_num1}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Téléphone 2:</span>
-                      <span>{clientDetails?.telephone_num2}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Adresse:</span>
-                      <span>{clientDetails?.adresse}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Ville / Pays:</span>
-                      <span>
-                        {clientDetails?.ville} / {clientDetails?.pays}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Nationalité:</span>
-                      <span>{clientDetails?.nationalite}</span>
-                    </div>
+                    {clientDetails?.telephone_num2 && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Téléphone 2:</span>
+                        <span>{clientDetails?.telephone_num2}</span>
+                      </div>
+                    )}
+                    {clientDetails?.adresse && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Adresse:</span>
+                        <span>{clientDetails?.adresse}</span>
+                      </div>
+                    )}
+                    {(clientDetails?.ville || clientDetails?.pays) && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Ville / Pays:</span>
+                        <span>
+                          {clientDetails?.ville} / {clientDetails?.pays}
+                        </span>
+                      </div>
+                    )}
+                    {clientDetails?.nationalite && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Nationalité:</span>
+                        <span>{clientDetails?.nationalite}</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Section : Infos Personnelles */}
                   {/* <h3 className="text-indigo-600 font-semibold text-sm mt-6 mb-2">Infos Personnelles</h3> */}
-                  <hr className="border-indigo-400 mb-4" />
+                  {(clientDetails?.lieu_naissance ||
+                    clientDetails?.date_naissance||clientDetails?.age|| clientDetails?.nom_responsable||clientDetails?.relation_familliale||clientDetails?.nom_pere||clientDetails?.nom_mere) && (
+                    <hr className="border-indigo-400 mb-4" />
+                  )}
 
                   {/* <div className="space-y-2 text-sm text-gray-700"> */}
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Lieu Naissance:</span>
-                    <span>{clientDetails?.lieu_naissance}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Date Naissance:</span>
-                    <span>
-                      {clientDetails?.date_naissance &&
-                        format(
-                          new Date(clientDetails?.date_naissance),
-                          'dd/MM/yyyy'
-                        )}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Age:</span>
-                    <span>{clientDetails?.age}</span>
-                  </div>
-                  {clientDetails?.age < 18 && (
-                    <>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Nom Responsable:</span>
-                        <span>{clientDetails?.nom_responsable}</span>
-                      </div>
-
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">
-                          Relation familiale:
-                        </span>
-                        <span>{clientDetails?.relation_familliale}</span>
-                      </div>
-                    </>
+                  {clientDetails?.lieu_naissance && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Lieu Naissance:</span>
+                      <span>{clientDetails?.lieu_naissance}</span>
+                    </div>
                   )}
+                  {clientDetails?.date_naissance && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Date Naissance:</span>
+                      <span>
+                        {clientDetails?.date_naissance &&
+                          format(
+                            new Date(clientDetails?.date_naissance),
+                            'dd/MM/yyyy'
+                          )}
+                      </span>
+                    </div>
+                  )}
+                  {clientDetails?.age && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Age:</span>
+                      <span>{clientDetails?.age}</span>
+                    </div>
+                  )}
+                  {clientDetails?.age < 18 &&
+                    clientDetails?.nom_responsable &&
+                    clientDetails?.relation_familliale && (
+                      <>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">
+                            Nom Responsable:
+                          </span>
+                          <span>{clientDetails?.nom_responsable}</span>
+                        </div>
+
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">
+                            Relation familiale:
+                          </span>
+                          <span>{clientDetails?.relation_familliale}</span>
+                        </div>
+                      </>
+                    )}
                   {/* </div> */}
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Nom Père:</span>
-                    <span>{clientDetails?.nom_pere}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Nom Mère:</span>
-                    <span>{clientDetails?.nom_mere}</span>
-                  </div>
+                  {clientDetails?.nom_pere && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Nom Père:</span>
+                      <span>{clientDetails?.nom_pere}</span>
+                    </div>
+                  )}
+                  {clientDetails?.nom_mere && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Nom Mère:</span>
+                      <span>{clientDetails?.nom_mere}</span>
+                    </div>
+                  )}
+
                   {/* Situation familiale */}
                   <h3 className="text-indigo-600 font-semibold text-sm mt-6 mb-2">
                     Situation familiale
