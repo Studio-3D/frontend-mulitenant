@@ -79,21 +79,7 @@ export const LeftCard = ({ immeuble, onEdit, onDelete, canEdit = false }) => {
               </div>
             </div>
             
-            <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-              <div className="flex items-center text-gray-700">
-                <CalendarIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
-                <span>Date de lancement:</span>
-              </div>
-              <div className="text-gray-600 text-right">{immeuble?.date_lancement || "Date non spécifiée"}</div>
-            </div>
             
-            <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-              <div className="flex items-center text-gray-700">
-                <CalendarIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
-                <span>Date de livraison:</span>
-              </div>
-              <div className="text-gray-600 text-right">{immeuble?.date_livraison || "Date non spécifiée"}</div>
-            </div>
             
             <div className="flex items-center justify-between border-b border-gray-100 pb-2">
               <div className="flex items-center text-gray-700">
@@ -101,38 +87,6 @@ export const LeftCard = ({ immeuble, onEdit, onDelete, canEdit = false }) => {
                 <span>Titre foncier:</span>
               </div>
               <div className="text-gray-600 text-right">{immeuble?.titre_foncier || "Titre non spécifié"}</div>
-            </div>
-            
-            <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-              <div className="flex items-center text-gray-700">
-                <SquareIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
-                <span>Surface terrain:</span>
-              </div>
-              <div className="text-gray-600 text-right">{immeuble?.surface_terrain ? `${immeuble.surface_terrain} m²` : "Surface non spécifiée"}</div>
-            </div>
-            
-            <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-              <div className="flex items-center text-gray-700">
-                <DollarSignIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
-                <span>Prix d'acquisition:</span>
-              </div>
-              <div className="text-gray-600 text-right">{immeuble?.prix_acquisition ? `${immeuble.prix_acquisition} Dhs` : "Prix non spécifié"}</div>
-            </div>
-            
-            <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-              <div className="flex items-center text-gray-700">
-                <ClockIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
-                <span>Limite annulation:</span>
-              </div>
-              <div className="text-gray-600 text-right">{immeuble?.limite_annulation_reservation || "Date non spécifiée"}</div>
-            </div>
-            
-            <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-              <div className="flex items-center text-gray-700">
-                <ClockIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
-                <span>Prolongation réservation:</span>
-              </div>
-              <div className="text-gray-600 text-right">{immeuble?.prolongation_reservation || "Durée non spécifiée"}</div>
             </div>
             
             {shouldShowStat(immeuble?.nbre_biens) && (
