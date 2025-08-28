@@ -88,10 +88,13 @@ const Page = () => {
         response.data.pagination?.totalItems || filteredUsers.length
       );
     } catch (err) {
-      setError(err.response?.data?.message || "Erreur lors du chargement");
+      const msg = err.response?.data?.message || "Erreur lors du chargement";
+      setError(msg);
       if (err.response?.status === 401) {
         router.push("/");
-        toast.error("Session expirée, veuillez vous reconnecter.");
+        // Avoid duplicate toast: Auth guards or other layers may already notify on logout
+      } else {
+        toast.error(msg);
       }
     } finally {
       setLoading(false);
