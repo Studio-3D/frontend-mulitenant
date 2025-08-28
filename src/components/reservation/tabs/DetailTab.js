@@ -29,6 +29,10 @@ export const DetailTab = ({ reservationData, sum_avances_valides }) => {
       </div>
     );
   }
+  const handleDesiste = (res_id) => {
+    //aucun desistement
+    window.open(`/ventes/desistements/ajouter_desistement/${res_id}`)
+  };
   const handleEdit = (reservationId) => {
     window.localStorage.setItem('step_res_edit', 0);
     const editUrl = `${window.location.origin}/ventes/reservations/?id=${reservationId}&action=edit`;
@@ -49,6 +53,24 @@ export const DetailTab = ({ reservationData, sum_avances_valides }) => {
   const { reservation } = reservationData;
   return (
     <div className="space-y-6">
+      <div className='flex justify-end space-x-4'>
+        {reservation?.etat == 1 && reservation?.contrat_vente == null && (
+          <div className="flex justify-end">
+            <Button type="submit" onClick={() => handleEdit(reservation.id)}>
+              Modifier
+            </Button>
+          </div>
+        )}
+        {reservation?.statut == 1 &&
+          reservation?.etat == 1 &&
+          reservation?.desistement_att_validation_rejete == null && (
+            <div className="flex justify-end">
+              <Button type="edit" onClick={() => handleDesiste(reservation.id)}>
+                Désister
+              </Button>
+            </div>
+          )}
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Left Column */}
         <div className="space-y-4">
@@ -289,13 +311,6 @@ export const DetailTab = ({ reservationData, sum_avances_valides }) => {
           )}
         </div>
       </div>
-      {reservation?.etat == 1 && reservation?.contrat_vente == null && (
-        <div className="flex justify-end">
-          <Button type="submit" onClick={() => handleEdit(reservation.id)}>
-            Modifier
-          </Button>
-        </div>
-      )}
     </div>
   );
 };
