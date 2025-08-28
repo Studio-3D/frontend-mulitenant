@@ -137,7 +137,7 @@ export const TrancheDetailsPage = () => {
     nom: i.nom,
     bloc_nom: blocsData.find(b => b.id === i.bloc_id)?.nom || '',
     titre_foncier: i.titre_foncier,
-    nbre_biens: i.bien?.length || 0,
+    nbre_biens: i.nbre_biens || 0,
   })) || [];
 
   // Map bloc data to match your column requirements
@@ -145,8 +145,8 @@ export const TrancheDetailsPage = () => {
     id: b.id,
     nom: b.nom,
     titre_foncier: b.titre_foncier,
-    nbre_immeubles: b.immeuble?.length || 0,
-    nbre_biens: b.bien?.length || 0,
+    nbre_immeubles: b.nbre_immeubles || 0,
+    nbre_biens: b.nbre_biens || 0,
   })) || [];
 
   return {

@@ -22,7 +22,8 @@ const TAB_CONFIG = {
     icon: <BuildingIcon size={18} />,
     name: "Immeubles",
     apiEndpoint: APIURL.IMMEUBLES,
-    addLink: (user, blocId) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? `/Immeubles/ajouter?blocId=${blocId}` : undefined,
+    addLink: (user, trancheId, projetId, blocId) => (isSuperAdmin(user?.role) || isAdmin(user?.role))  ? `/Immeubles/ajouter?projet=${projetId}${blocId ? `&bloc=${blocId}` : ''}${trancheId ? `&tranche=${trancheId}` : ''}`
+    : "",
     filters: (tabsData, blocId) => [
       { 
         key: 'nom', 
@@ -79,7 +80,9 @@ const TAB_CONFIG = {
     icon: <HomeIcon size={18} />,
     name: "Biens",
     apiEndpoint: APIURL.BIENS,
-    addLink: (user, blocId) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? `/Biens/ajouter?blocId=${blocId}` : undefined,
+    addLink: (user, trancheId, projetId, blocId, immeubleId) => (isSuperAdmin(user?.role) || isAdmin(user?.role))
+          ? `/Biens/ajouter?projet=${projetId}${blocId ? `&bloc=${blocId}` : ''}${immeubleId ? `&immeuble=${immeubleId}` : ''}${trancheId ? `&tranche=${trancheId}` : ''}`
+          : undefined,
     filters: (tabsData, blocId) => {
       // Get unique status values from the biens data
       const statusOptions = tabsData.bien?.items 
