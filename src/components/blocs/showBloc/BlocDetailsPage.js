@@ -134,7 +134,7 @@ export const BlocDetailsPage = () => {
     id: i.id,
     nom: i.nom,
     titre_foncier: i.titre_foncier,
-    nbre_biens: i.bien?.length || 0,
+    nbre_biens: i.nbre_biens || 0,
   })) || [];
 
   return {

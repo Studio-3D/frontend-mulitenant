@@ -24,7 +24,7 @@ const TAB_CONFIG = {
     icon: <BoxesIcon size={18} />,
     name: "Blocs",
     apiEndpoint: APIURL.BLOCS,
-    addLink: (user, trancheId) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? `/Blocs/ajouter?trancheId=${trancheId}` : undefined,
+    addLink: (user, trancheId, projetId) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? `/Blocs/ajouter?projet=${projetId}${trancheId ? `&tranche=${trancheId}` : ''}` : undefined,
     filters: (tabsData, trancheId) => [
       { 
         key: 'nom', 
@@ -240,7 +240,7 @@ const TAB_CONFIG = {
   },
 };
 
-export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchTrancheData, trancheId }) => {
+export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchTrancheData, trancheId, projetId }) => {
   const { token, user } = useAuth()
   const router = useRouter();
   const [selectedId, setSelectedId] = useState(null);
@@ -378,78 +378,78 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchTrancheData,
   }, [activeTab, availableTabs]);
 
   // Filter component for all tabs
-const filterComponent = useMemo(() => {
-  if (!TAB_CONFIG[safeActiveTab]?.filters) return null;
-  
-  const filterConfig = TAB_CONFIG[safeActiveTab].filters(tabsData, trancheId);
-  
-  return (
-    <div className="space-y-4 ">
-      <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
-        {filterConfig.map(filter => {
-          if (filter.type === 'select') {
-            return (
-              <div key={filter.key} className="flex flex-col">
-                <label className="text-xs font-medium text-gray-700 mb-1">{filter.label}</label>
-                <SelectInput
-                  options={filter.options || []}
-                  placeholder={filter.placeholder}
-                  value={tempFilters[filter.key] || ''}
-                  onChange={(selectedValue) => handleFilterChange(filter.key, selectedValue)}
-                  width="w-full"
-                />
-              </div>
-            );
-          } else if (filter.type === 'number') {
-            return (
-              <div key={filter.key} className="flex flex-col">
-                <label className="text-xs font-medium text-gray-700 mb-1">{filter.label}</label>
-                <Input
-                  type="number"
-                  name={filter.key}
-                  value={tempFilters[filter.key] || ''}
-                  onChange={(e) => handleFilterChange(filter.key, e.target.value)}
-                  placeholder={filter.placeholder}
-                  className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
-                />
-              </div>
-            );
-          } else {
-            return (
-              <div key={filter.key} className="flex flex-col">
-                <label className="text-xs font-medium text-gray-700 mb-1">{filter.label}</label>
-                <Input
-                  type="text"
-                  name={filter.key}
-                  value={tempFilters[filter.key] || ''}
-                  onChange={(e) => handleFilterChange(filter.key, e.target.value)}
-                  placeholder={filter.placeholder}
-                  className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
-                />
-              </div>
-            );
-          }
-        })}
+  const filterComponent = useMemo(() => {
+    if (!TAB_CONFIG[safeActiveTab]?.filters) return null;
+    
+    const filterConfig = TAB_CONFIG[safeActiveTab].filters(tabsData, trancheId);
+    
+    return (
+      <div className="space-y-4 ">
+        <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
+          {filterConfig.map(filter => {
+            if (filter.type === 'select') {
+              return (
+                <div key={filter.key} className="flex flex-col">
+                  <label className="text-xs font-medium text-gray-700 mb-1">{filter.label}</label>
+                  <SelectInput
+                    options={filter.options || []}
+                    placeholder={filter.placeholder}
+                    value={tempFilters[filter.key] || ''}
+                    onChange={(selectedValue) => handleFilterChange(filter.key, selectedValue)}
+                    width="w-full"
+                  />
+                </div>
+              );
+            } else if (filter.type === 'number') {
+              return (
+                <div key={filter.key} className="flex flex-col">
+                  <label className="text-xs font-medium text-gray-700 mb-1">{filter.label}</label>
+                  <Input
+                    type="number"
+                    name={filter.key}
+                    value={tempFilters[filter.key] || ''}
+                    onChange={(e) => handleFilterChange(filter.key, e.target.value)}
+                    placeholder={filter.placeholder}
+                    className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+                  />
+                </div>
+              );
+            } else {
+              return (
+                <div key={filter.key} className="flex flex-col">
+                  <label className="text-xs font-medium text-gray-700 mb-1">{filter.label}</label>
+                  <Input
+                    type="text"
+                    name={filter.key}
+                    value={tempFilters[filter.key] || ''}
+                    onChange={(e) => handleFilterChange(filter.key, e.target.value)}
+                    placeholder={filter.placeholder}
+                    className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+                  />
+                </div>
+              );
+            }
+          })}
+        </div>
+        <div className="flex justify-end gap-3 pt-2">
+          <button
+            type="button"
+            onClick={resetFilters}
+            className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
+          >
+            Réinitialiser
+          </button>
+          <button
+            type="button"
+            onClick={applyFilters}
+            className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+          >
+            Appliquer les filtres
+          </button>
+        </div>
       </div>
-      <div className="flex justify-end gap-3 pt-2">
-        <button
-          type="button"
-          onClick={resetFilters}
-          className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
-        >
-          Réinitialiser
-        </button>
-        <button
-          type="button"
-          onClick={applyFilters}
-          className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-        >
-          Appliquer les filtres
-        </button>
-      </div>
-    </div>
-  );
-}, [safeActiveTab, tabsData, trancheId, tempFilters]);
+    );
+  }, [safeActiveTab, tabsData, trancheId, tempFilters]);
 
   if (!safeActiveTab) {
     return (
@@ -525,7 +525,7 @@ const filterComponent = useMemo(() => {
           <Table
             columns={currentColumns}
             data={hasItems ? filteredItems : []}
-            addLink={TAB_CONFIG[safeActiveTab]?.addLink?.(user, trancheId)}
+            addLink={TAB_CONFIG[safeActiveTab]?.addLink?.(user, trancheId, projetId)}
             showSearch={false}
             filterComponent={filterComponent}
             onFilterToggle={handleFilterToggle}
