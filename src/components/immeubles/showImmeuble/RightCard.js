@@ -239,11 +239,13 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchImmeubleData
       : columnConfig;
   }, [activeTab, user, handleDelete]);
 
-  const availableTabs = useMemo(() => {
-    return Object.keys(tabsData).filter(tab => 
-      tabsData[tab]?.nbr_count > 0
-    );
-  }, [tabsData]);
+   // Show all tabs regardless of count
+    const availableTabs = useMemo(() => {
+      return Object.keys(tabsData).filter(tab => 
+        tabsData[tab] !== undefined && tabsData[tab] !== null
+      );
+    }, [tabsData]);
+  
 
   const safeActiveTab = useMemo(() => {
     return availableTabs.includes(activeTab) 
