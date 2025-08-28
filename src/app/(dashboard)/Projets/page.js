@@ -140,10 +140,11 @@ const Page = () => {
     setShowFilter(isVisible);
   };
 
-  const filteredProjets = useMemo(() => {
+  // Get ALL filtered projects (not just current page)
+  const getAllFilteredProjects = useMemo(() => {
     if (!projects) return [];
     
-    let filtered = projects.filter(projet => {
+    return projects.filter(projet => {
       const projetType = projet.type_projet?.type || '';
       const projetDate = new Date(projet.created_at);
       const filterDate = appliedFilters.date;
@@ -175,24 +176,28 @@ const Page = () => {
       formatted_type: projet.type_projet?.type || 'Non spécifié',
       formatted_date: formatDate(projet.created_at)
     }));
-    
-    setTotalRows(filtered.length);
+  }, [projects, appliedFilters]);
+
+  // Get paginated projects for table display
+  const filteredProjets = useMemo(() => {
+    setTotalRows(getAllFilteredProjects.length);
     
     const startIndex = (currentPage - 1) * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
     
-    return filtered.slice(startIndex, endIndex);
-  }, [projects, appliedFilters, currentPage, rowsPerPage]);
+    return getAllFilteredProjects.slice(startIndex, endIndex);
+  }, [getAllFilteredProjects, currentPage, rowsPerPage]);
 
+  // Data for export - use ALL filtered projects, not just current page
   const dataToExport = useMemo(() => {
-    return filteredProjets.map((projet) => ({
+    return getAllFilteredProjects.map((projet) => ({
       'Nom du projet': projet.nom,
       'Code': projet.code,
       'Type': projet.type,
       'Adresse': projet.adresse,
       'Date création': projet.date,
     }));
-  }, [filteredProjets]);
+  }, [getAllFilteredProjects]);
 
   // Filter component for projets
   const filterComponent = useMemo(() => {
@@ -406,10 +411,17 @@ const Page = () => {
         emptyMessage="Aucun projet trouvé"
         filterComponent={filterComponent}
         onFilterToggle={handleFilterToggle}
-        enableExport={filteredProjets.length > 0}
-        dataToExport={dataToExport}
-        exportFileName="liste_des_projets"
-      />
+        enableExport={getAllFilteredProjects.length > 0}
+        data_to_export={dataToExport} 
+          columns_export={[ 
+            { key: 'Nom du projet', label: 'Nom du projet' },
+            { key: 'Code', label: 'Code' },
+            { key: 'Type', label: 'Type' },
+            { key: 'Adresse', label: 'Adresse' },
+            { key: 'Date création', label: 'Date création' },
+          ]}
+          name_file_export="liste_des_projets" 
+              />
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
