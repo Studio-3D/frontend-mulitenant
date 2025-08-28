@@ -1,29 +1,29 @@
-"use client";
-import React, { useState, useEffect, useRef } from "react";
-import { SideBar } from "./SideBar";
-import { Desistement_Definitif } from "./Desistement_Definitif";
-import { Desistement_Au_Profit } from "./Desistement_Au_Profit";
-import { Changement_De_Bien } from "./Changement_De_Bien";
-import { useRouter, useParams } from "next/navigation";
-import { APIURL } from "../../../../../../configs/api";
-import axios from "axios";
-import Modal_select_type_dst from "./Modal_select_type_dst";
-import Modal from "@/components/Modal";
-import SelectInput from "@/components/SelectInput";
-import { type_dst } from "@/configs/enum";
-import { useAuth } from "../../../../../../context/AuthContext";
+'use client';
+import React, { useState, useEffect, useRef } from 'react';
+import { SideBar } from './SideBar';
+import { Desistement_Definitif } from './Desistement_Definitif';
+import { Desistement_Au_Profit } from './Desistement_Au_Profit';
+import { Changement_De_Bien } from './Changement_De_Bien';
+import { useRouter, useParams } from 'next/navigation';
+import { APIURL } from '../../../../../../configs/api';
+import axios from 'axios';
+import Modal_select_type_dst from './Modal_select_type_dst';
+import Modal from '@/components/Modal';
+import SelectInput from '@/components/SelectInput';
+import { type_dst } from '@/configs/enum';
+import { useAuth } from '../../../../../../context/AuthContext';
 import {
   fetchData_Select,
   fetchList_fichier_exist_by_Code,
-} from "../../../../../../../src/configs/api-utils";
+} from '../../../../../../../src/configs/api-utils';
 
-import LoadingSpin from "@/components/LoadingSpin";
-import { useForm, FormProvider } from "react-hook-form";
-import TextField from "@/components/Textfield";
-import AutocompleteSelectComponent from "@/components/AutocompleteSelectComponent";
-import { modes_penalites } from "@/configs/enum";
-import { MODE_PAIEMENT } from "@/configs/enum";
-import Autocomplete from "@/components/Autocomplete";
+import LoadingSpin from '@/components/LoadingSpin';
+import { useForm, FormProvider } from 'react-hook-form';
+import TextField from '@/components/Textfield';
+import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
+import { modes_penalites } from '@/configs/enum';
+import { MODE_PAIEMENT } from '@/configs/enum';
+import Autocomplete from '@/components/Autocomplete';
 
 export default function Page() {
   const [dossierInfos, setDossierInfos] = useState({});
@@ -33,7 +33,7 @@ export default function Page() {
   const params = useParams();
   const { user, token } = useAuth();
   const reservationId = params.reservationId;
-  const accessToken = token || localStorage.getItem("accessToken");
+  const accessToken = token || localStorage.getItem('accessToken');
   const selectedProjet_id = 1;
   //JSON.parse(localStorage.getItem('selectedProjet'))?.id ;
   const [selectedFiles_dst, setSelectedFiles_dst] = useState([]);
@@ -92,11 +92,11 @@ export default function Page() {
   // Form methods
   const methods = useForm({
     defaultValues: {
-      mode_penalite: "",
+      mode_penalite: '',
       penalite_montant: 0, // or your preferred default value
-      penalite_par: "avance",
+      penalite_par: 'avance',
       sr_pen: false,
-      commentaire: "",
+      commentaire: '',
       // other default values...
     },
   });
@@ -111,7 +111,7 @@ export default function Page() {
   } = methods;
 
   useEffect(() => {
-    console.log("Form values updated:", methods.getValues());
+    console.log('Form values updated:', methods.getValues());
   }, [methods.watch()]);
 
   // Set default values based on active model
@@ -119,23 +119,23 @@ export default function Page() {
     if (!reservationData.inputListRemb) return; // Wait for data to load
 
     if (!reservationData.bien) return; // Wait for bien data to load
-    console.log("im here ");
+    console.log('im here ');
     let newDefaultValues = {};
 
     switch (activeModel) {
       case 1:
         newDefaultValues = {
-          motif: "",
-          type_remb: "",
+          motif: '',
+          type_remb: '',
           /*sum_avances_valides: reservationData.sumAvances || 0,
           inputList_remb: reservationData.inputListRemb || [],*/
-          dossier_id: "",
+          dossier_id: '',
           // reservationId: reservationId,
         };
         break;
       case 2:
         newDefaultValues = {
-          type_dp: "",
+          type_dp: '',
           desisteurs: reservationData.desisteurs,
           desisteurs_testt: reservationData.desisteursTest,
           desisteutrs_profit_dp_partiel: reservationData.desisteursProfit || [],
@@ -189,12 +189,12 @@ export default function Page() {
         const messages = {
           1: "le Client a déjà effectué un Désistement au profit d'un proche",
           2: "le Client a déjà effectué un Désistement au profit d'un co-reservataire",
-          3: "le Client a déjà effectué un Désistement changement de bien",
+          3: 'le Client a déjà effectué un Désistement changement de bien',
         };
         setMessageAlert(messages[reservation.desistements_ancien.type_dp || 3]);
       }
 
-      const transformAquereur = (aq, suffix = "") => ({
+      const transformAquereur = (aq, suffix = '') => ({
         id: aq.id,
         cl_id: aq.client.id,
         cin: aq.client.cin,
@@ -205,7 +205,7 @@ export default function Page() {
 
       const processedAquereurs = aquereurs.map((aq) => transformAquereur(aq));
       const processedAquereurs_part = aquereurs.map((aq) =>
-        transformAquereur(aq, "_")
+        transformAquereur(aq, '_')
       );
       const rembourseList = aquereurs.map((aq) => ({
         aq_id: aq.id,
@@ -213,21 +213,21 @@ export default function Page() {
         nom: aq.client.nom,
         prenom: aq.client.prenom,
         pourcentage: aq.pourcentage,
-        date_rembourse: "",
-        mode_rembourse: "",
-        type_remb: "direct",
-        dossier_id: "",
-        montant_transferer: "",
+        date_rembourse: '',
+        mode_rembourse: '',
+        type_remb: 'direct',
+        dossier_id: '',
+        montant_transferer: '',
         reste_a_rembourse: (
           sum_avances_valides *
           (aq.pourcentage / 100)
         ).toFixed(2),
-        num_paiement: "",
+        num_paiement: '',
         cheque_recu: null,
-        pour_le_compte: "",
+        pour_le_compte: '',
         fichier_autorisation: null,
       }));
-      console.log("Fetched rembourseList:", rembourseList); // Should show your array
+      console.log('Fetched rembourseList:', rembourseList); // Should show your array
 
       setReservationData({
         bien: bien,
@@ -244,12 +244,12 @@ export default function Page() {
         inputListRemb: rembourseList,
       });
     } catch (error) {
-      console.error("Error fetching reservation:", error);
+      console.error('Error fetching reservation:', error);
     } finally {
       setLoading((prev) => ({ ...prev, form: false }));
     }
   };
-  console.log("code ress==>" + reservationData?.codeRes);
+  console.log('code ress==>' + reservationData?.codeRes);
   // Fetch files
   const fetchFiles = async () => {
     if (hasFetchedFiles.current) return;
@@ -261,21 +261,21 @@ export default function Page() {
         !files.avc &&
           fetchList_fichier_exist_by_Code(
             setFilesList_avc,
-            "avc",
+            'avc',
             codeResRef.current,
             setLoading_list
           ),
         !files.dst &&
           fetchList_fichier_exist_by_Code(
             setFilesList_dst,
-            "dst",
+            'dst',
             codeResRef.current,
             setLoading_list
           ),
         !files.plt &&
           fetchList_fichier_exist_by_Code(
             setFilesList_plt,
-            "plt",
+            'plt',
             codeResRef.current,
             setLoading_list
           ),
@@ -283,7 +283,7 @@ export default function Page() {
 
       await Promise.all(filesPromises);
     } catch (error) {
-      console.error("Error fetching files:", error);
+      console.error('Error fetching files:', error);
     } finally {
       setLoading((prev) => ({ ...prev, files: false }));
     }
@@ -302,11 +302,11 @@ export default function Page() {
         // Then fetch other data in parallel
         await Promise.all([
           banques.length == 0 &&
-            fetchData_Select("banques", setBanques, setLoading_bnq),
+            fetchData_Select('banques', setBanques, setLoading_bnq),
           fetchFiles(),
         ]);
       } catch (error) {
-        console.error("Error loading initial data:", error);
+        console.error('Error loading initial data:', error);
       } finally {
         setLoading((prev) => ({ ...prev, general: false }));
       }
@@ -331,28 +331,28 @@ export default function Page() {
     try {
       setLoading((prev) => ({ ...prev, submit: true }));
       const formData = new FormData();
-      formData.append("reservation_id", reservationId);
-      formData.append("projet_id", selectedProjet_id);
-      formData.append("bien_id_ancien", reservationData.bienIdAncien);
+      formData.append('reservation_id', reservationId);
+      formData.append('projet_id', selectedProjet_id);
+      formData.append('bien_id_ancien', reservationData.bienIdAncien);
 
       // Ajoutez les données globales
-      formData.append("avec_pieces_jointes", avecPiecesJointes);
+      formData.append('avec_pieces_jointes', avecPiecesJointes);
       //on utiliser pour store desistement premier fois
-      formData.append("desistement_id_rejete", null);
-      formData.append("sum_avances_valides", reservationData.sumAvances);
-      formData.append("commentaire", watch("commentaire"));
+      formData.append('desistement_id_rejete', null);
+      formData.append('sum_avances_valides', reservationData.sumAvances);
+      formData.append('commentaire', watch('commentaire'));
 
       //penalite
       if (avecPenalite) {
-        formData.append("sr_pen", watch("sr_pen"));
-        formData.append("checked_penalite", avecPenalite);
-        formData.append("penalite_par", watch("penalite_par"));
-        formData.append("mode_penalite", watch("mode_penalite"));
-        formData.append("penalite_montant", watch("penalite_montant"));
-        formData.append("mode_paiement_pen", watch("mode_paiement_pen"));
-        formData.append("banque_id_pen", watch("banque_pen"));
-        formData.append("numero_paiement_pen", watch("numero_paiement_pen"));
-        formData.append("echeance_pen", watch("echeance_pen"));
+        formData.append('sr_pen', watch('sr_pen'));
+        formData.append('checked_penalite', avecPenalite);
+        formData.append('penalite_par', watch('penalite_par'));
+        formData.append('mode_penalite', watch('mode_penalite'));
+        formData.append('penalite_montant', watch('penalite_montant'));
+        formData.append('mode_paiement_pen', watch('mode_paiement_pen'));
+        formData.append('banque_id_pen', watch('banque_pen'));
+        formData.append('numero_paiement_pen', watch('numero_paiement_pen'));
+        formData.append('echeance_pen', watch('echeance_pen'));
       }
       // Append files as binary data with array notation
       selectedFiles_dst.forEach((file, index) => {
@@ -398,7 +398,7 @@ export default function Page() {
         });
 
         // Append the remboursement list as JSON
-        formData.append("inputlist_remb", JSON.stringify(data.inputList_remb));
+        formData.append('inputlist_remb', JSON.stringify(data.inputList_remb));
       } else if (activeModel == 2) {
         processedData = processAuProfitData(data);
       } else if (activeModel == 3) {
@@ -413,30 +413,30 @@ export default function Page() {
         if (value !== null && value !== undefined && !(value instanceof File)) {
           formData.append(
             key,
-            typeof value === "object" ? JSON.stringify(value) : value
+            typeof value === 'object' ? JSON.stringify(value) : value
           );
         }
       });
 
       const response = await axios.post(APIURL.DESISTEMENT, formData, {
         headers: {
-          "Content-Type": "multipart/form-data",
+          'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${accessToken}`,
         },
       });
 
       if (response.status == 201 || response.status == 200) {
         if (user.role <= 2) {
-          localStorage.setItem("etat_dst", "1");
-          router.push("/ventes/desistements");
+          localStorage.setItem('etat_dst', '1');
+          router.push('/ventes/desistements');
         } else {
           //commercial
-          localStorage.setItem("etat_dst", "5");
-          router.push("/ventes/desistements/attente_encours");
+          localStorage.setItem('etat_dst', '5');
+          router.push('/ventes/desistements/attente_encours');
         }
       }
     } catch (error) {
-      console.error("Error submitting form:", error);
+      console.error('Error submitting form:', error);
     } finally {
       setLoading((prev) => ({ ...prev, submit: false }));
     }
@@ -509,18 +509,18 @@ export default function Page() {
 
     if (activeModel == 1) {
       // Basic form validations
-      if (!formValues.motif) errors.push("Le motif est requis");
+      if (!formValues.motif) errors.push('Le motif est requis');
       if (reservationData.sumAvances > 0) {
         if (!formValues.type_remb)
-          errors.push("Le type de remboursement est requis");
+          errors.push('Le type de remboursement est requis');
 
         // Validate based on remboursement type
-        if (formValues.type_remb === "direct") {
+        if (formValues.type_remb === 'direct') {
           if (
             !formValues.inputList_remb ||
             formValues.inputList_remb.length === 0
           ) {
-            errors.push("Au moins un remboursement doit être configuré");
+            errors.push('Au moins un remboursement doit être configuré');
           } else {
             formValues.inputList_remb.forEach((item, index) => {
               const clientPrefix = `Client ${index + 1}:`;
@@ -535,8 +535,8 @@ export default function Page() {
 
               // Validate transfer section if mode is transfert or transfert_remb
               if (
-                currentMode === "transfert" ||
-                currentMode === "transfert_remb"
+                currentMode === 'transfert' ||
+                currentMode === 'transfert_remb'
               ) {
                 if (!item.dossier_id) {
                   errors.push(
@@ -545,13 +545,13 @@ export default function Page() {
                 }
 
                 // Additional validation for transfert_remb mode
-                if (currentMode === "transfert_remb") {
+                if (currentMode === 'transfert_remb') {
                   const sum_avance_by_aq_percent =
                     (item.pourcentage / 100) * reservationData.sumAvances;
 
                   // Validate montant_transferer
                   if (
-                    item.montant_transferer === "" ||
+                    item.montant_transferer === '' ||
                     item.montant_transferer === null
                   ) {
                     errors.push(
@@ -603,7 +603,7 @@ export default function Page() {
 
                   // Validate reste_a_rembourse
                   if (
-                    item.reste_a_rembourse === "" ||
+                    item.reste_a_rembourse === '' ||
                     item.reste_a_rembourse === null
                   ) {
                     errors.push(
@@ -630,7 +630,7 @@ export default function Page() {
                   }
 
                   // Validate direct remboursement fields if type_remb_transfere is immediat
-                  if (item.type_remb_transfere === "immediat") {
+                  if (item.type_remb_transfere === 'immediat') {
                     if (!item.date_rembourse) {
                       errors.push(
                         `${clientPrefix} La date de remboursement est requise pour le remboursement immédiat`
@@ -651,13 +651,13 @@ export default function Page() {
                         `${clientPrefix} Le compte bénéficiaire est requis pour le remboursement immédiat`
                       );
                     }
-                    if (item.mode_rembourse === "cheque" && !item.cheque_recu) {
+                    if (item.mode_rembourse === 'cheque' && !item.cheque_recu) {
                       errors.push(
                         `${clientPrefix} Le reçu de chèque est requis pour le remboursement immédiat`
                       );
                     }
                     if (
-                      item.pour_le_compte === "autre" &&
+                      item.pour_le_compte === 'autre' &&
                       !item.fichier_autorisation
                     ) {
                       errors.push(
@@ -669,7 +669,7 @@ export default function Page() {
               }
 
               // Validate direct remboursement fields if mode is direct
-              if (currentMode === "direct") {
+              if (currentMode === 'direct') {
                 if (!item.date_rembourse) {
                   errors.push(
                     `${clientPrefix} La date de remboursement est requise`
@@ -690,11 +690,11 @@ export default function Page() {
                     `${clientPrefix} Le compte bénéficiaire est requis`
                   );
                 }
-                if (item.mode_rembourse === "cheque" && !item.cheque_recu) {
+                if (item.mode_rembourse === 'cheque' && !item.cheque_recu) {
                   errors.push(`${clientPrefix} Le reçu de chèque est requis`);
                 }
                 if (
-                  item.pour_le_compte === "autre" &&
+                  item.pour_le_compte === 'autre' &&
                   !item.fichier_autorisation
                 ) {
                   errors.push(
@@ -704,7 +704,7 @@ export default function Page() {
               }
 
               // Validate the sum makes sense for transfert_remb
-              if (currentMode === "transfert_remb") {
+              if (currentMode === 'transfert_remb') {
                 const montantTransferer =
                   parseFloat(item.montant_transferer) || 0;
                 const resteARembourser =
@@ -732,7 +732,7 @@ export default function Page() {
     } else if (activeModel == 2) {
       // Désistement au Profit
       if (!formValues.type_dp) {
-        errors.push("Le type de désistement au profit est requis");
+        errors.push('Le type de désistement au profit est requis');
       } else if (formValues.type_dp == 1) {
         // Désistement au profit d'un proche
         const inputList = formValues.inputList || [];
@@ -743,13 +743,13 @@ export default function Page() {
             (item) =>
               !item ||
               Object.keys(item).length == 0 ||
-              Object.values(item).every((val) => val == "" || val == 0)
+              Object.values(item).every((val) => val == '' || val == 0)
           )
         ) {
-          errors.push("Au moins un nouveau client doit être ajouté");
+          errors.push('Au moins un nouveau client doit être ajouté');
         } else {
           inputList.forEach((client, index) => {
-            if (!client || typeof client !== "object") {
+            if (!client || typeof client !== 'object') {
               errors.push(
                 `Client ${index + 1}: Les données du client sont invalides`
               );
@@ -803,7 +803,7 @@ export default function Page() {
           !formValues.profit_dp_co_reser ||
           formValues.profit_dp_co_reser.length == 0
         ) {
-          errors.push("Au moins un bénéficiaire doit être sélectionné");
+          errors.push('Au moins un bénéficiaire doit être sélectionné');
         } else {
           let totalPercentage = 0;
           formValues.profit_dp_co_reser.forEach((beneficiary, index) => {
@@ -841,7 +841,7 @@ export default function Page() {
           !formValues.desisteutrs_profit_dp_partiel ||
           formValues.desisteutrs_profit_dp_partiel.length == 0
         ) {
-          errors.push("Au moins un désisteur doit être sélectionné");
+          errors.push('Au moins un désisteur doit être sélectionné');
         } else {
           // Validate each desisteur's percentage
           let totalOldPercentage = 0;
@@ -949,22 +949,22 @@ export default function Page() {
         errors.push("L'ancien bien est requis");
       }
       if (!formValues.new_bien_id) {
-        errors.push("Le nouveau bien est requis");
+        errors.push('Le nouveau bien est requis');
       }
 
       // Validate payment section if montant_a_ajouter > 0
       if (formValues.montant_a_ajouter > 0) {
         if (!formValues.mode_paiement) {
-          errors.push("Le mode de paiement est requis");
+          errors.push('Le mode de paiement est requis');
         } else {
           // Validate payment details based on payment method
           if (formValues.mode_paiement != 1) {
             // If not cash
             if (!formValues.banque_id) {
-              errors.push("La banque est requise pour ce mode de paiement");
+              errors.push('La banque est requise pour ce mode de paiement');
             }
             if (!formValues.numero_paiement) {
-              errors.push("Le numéro de paiement est requis");
+              errors.push('Le numéro de paiement est requis');
             }
 
             // Validate echeance for certain payment methods
@@ -982,16 +982,16 @@ export default function Page() {
     // Penalty validation (applies to all activeModel cases if avecPenalite is true)
     if (avecPenalite) {
       if (!formValues.mode_penalite) {
-        errors.push("Le mode de pénalité est requis");
+        errors.push('Le mode de pénalité est requis');
       } else {
         if (!formValues.penalite_montant || formValues.penalite_montant <= 0) {
-          errors.push("Le montant de la pénalité doit être supérieur à 0");
+          errors.push('Le montant de la pénalité doit être supérieur à 0');
         }
 
-        if (formValues.mode_penalite !== "Montant") {
+        if (formValues.mode_penalite !== 'Montant') {
           if (!formValues.penalite_par) {
             errors.push(
-              "Le type de calcul de pénalité est requis (Prix/Avance)"
+              'Le type de calcul de pénalité est requis (Prix/Avance)'
             );
           }
         }
@@ -999,17 +999,17 @@ export default function Page() {
         // Payment method validation if penalty amount is set
         if (formValues.penalite_montant > 0) {
           if (!formValues.mode_paiement_pen) {
-            errors.push("Le mode de paiement de la pénalité est requis");
+            errors.push('Le mode de paiement de la pénalité est requis');
           } else {
             if (formValues.mode_paiement_pen != 1) {
               // If not cash
               if (!formValues.banque_pen) {
                 errors.push(
-                  "La banque pour le paiement de la pénalité est requise"
+                  'La banque pour le paiement de la pénalité est requise'
                 );
               }
               if (!formValues.numero_paiement_pen) {
-                errors.push("Le numéro de paiement de la pénalité est requis");
+                errors.push('Le numéro de paiement de la pénalité est requis');
               }
 
               // Validate echeance for certain payment methods
@@ -1046,7 +1046,7 @@ export default function Page() {
     const setSelectedFiles = isDst
       ? setSelectedFiles_dst
       : setSelectedFiles_plt;
-    const formField = isDst ? "files_desistement" : "files_penalite";
+    const formField = isDst ? 'files_desistement' : 'files_penalite';
 
     const updatedFiles = [...selectedFiles];
     const existingFileNames = new Set(Object.values(filesList));
@@ -1056,11 +1056,11 @@ export default function Page() {
 
     for (const file of files) {
       const fileName = file.name;
-      const lastDotIndex = fileName.lastIndexOf(".");
+      const lastDotIndex = fileName.lastIndexOf('.');
       const baseName =
         lastDotIndex == -1 ? fileName : fileName.substring(0, lastDotIndex);
       const extension =
-        lastDotIndex == -1 ? "" : fileName.substring(lastDotIndex + 1);
+        lastDotIndex == -1 ? '' : fileName.substring(lastDotIndex + 1);
 
       let finalFileName = fileName;
 
@@ -1110,7 +1110,7 @@ export default function Page() {
     const setSelectedFiles = isDst
       ? setSelectedFiles_dst
       : setSelectedFiles_plt;
-    const formField = isDst ? "files_desistement" : "files_penalite";
+    const formField = isDst ? 'files_desistement' : 'files_penalite';
 
     const updatedFiles = selectedFiles.filter((_, i) => i !== index);
     setSelectedFiles(updatedFiles);
@@ -1120,11 +1120,11 @@ export default function Page() {
 
   // Helper functions (add these outside your component)
   const getFileIcon = (filename) => {
-    const extension = filename.split(".").pop().toLowerCase();
-    const iconClass = "w-5 h-5 flex-shrink-0 text-gray-400";
+    const extension = filename.split('.').pop().toLowerCase();
+    const iconClass = 'w-5 h-5 flex-shrink-0 text-gray-400';
 
     switch (extension) {
-      case "pdf":
+      case 'pdf':
         return (
           <svg className={iconClass} fill="currentColor" viewBox="0 0 20 20">
             <path
@@ -1134,9 +1134,9 @@ export default function Page() {
             />
           </svg>
         );
-      case "jpg":
-      case "jpeg":
-      case "png":
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
         return (
           <svg className={iconClass} fill="currentColor" viewBox="0 0 20 20">
             <path
@@ -1146,8 +1146,8 @@ export default function Page() {
             />
           </svg>
         );
-      case "doc":
-      case "docx":
+      case 'doc':
+      case 'docx':
         return (
           <svg className={iconClass} fill="currentColor" viewBox="0 0 20 20">
             <path
@@ -1171,7 +1171,7 @@ export default function Page() {
   };
 
   const formatFileSize = (bytes) => {
-    if (!bytes) return "N/A";
+    if (!bytes) return 'N/A';
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / 1048576).toFixed(1)} MB`;
@@ -1179,38 +1179,38 @@ export default function Page() {
 
   const handlechange_penalite = (event) => {
     const selectedType = event.target.value; // "prix" or "avance"
-    setValue("penalite_par", selectedType);
+    setValue('penalite_par', selectedType);
 
     // Recalculate only if a penalty mode is selected and it's not "Montant"
-    const currentMode = watch("mode_penalite");
-    if (currentMode && currentMode != "Montant") {
+    const currentMode = watch('mode_penalite');
+    if (currentMode && currentMode != 'Montant') {
       const percentage = parseFloat(currentMode);
       const amount =
-        selectedType == "prix"
+        selectedType == 'prix'
           ? reservationData.prix
           : reservationData.sumAvances;
 
-      setValue("penalite_montant", (amount * percentage) / 100);
+      setValue('penalite_montant', (amount * percentage) / 100);
     }
   };
 
   const handlechange_mode_penalite = (code) => {
     const selectedMode = modes_penalites[code];
     if (selectedMode) {
-      console.log("Selected Mode:", selectedMode.label);
-      setValue("mode_penalite", selectedMode.label);
+      console.log('Selected Mode:', selectedMode.label);
+      setValue('mode_penalite', selectedMode.label);
 
       // Calculate penalty amount
-      if (selectedMode.label != "Montant") {
+      if (selectedMode.label != 'Montant') {
         const percentage = parseFloat(selectedMode.label);
-        if (watch("penalite_par") == "prix") {
+        if (watch('penalite_par') == 'prix') {
           setValue(
-            "penalite_montant",
+            'penalite_montant',
             (reservationData.prix * percentage) / 100
           );
         } else {
           setValue(
-            "penalite_montant",
+            'penalite_montant',
             (reservationData.sumAvances * percentage) / 100
           );
         }
@@ -1319,7 +1319,7 @@ export default function Page() {
                 <div className="flex justify-between items-center">
                   <div>
                     <h3 className="text-md font-medium">
-                      {" "}
+                      {' '}
                       Ajouter Pièces Jointes
                     </h3>
                   </div>
@@ -1463,8 +1463,8 @@ export default function Page() {
                       checked={avecPenalite}
                       onChange={() => {
                         setAvecPenalite(!avecPenalite);
-                        if (watch("penalite_montant") != null) {
-                          setValue("penalite_montant", 0);
+                        if (watch('penalite_montant') != null) {
+                          setValue('penalite_montant', 0);
                         }
                       }}
                       className="sr-only peer"
@@ -1476,11 +1476,11 @@ export default function Page() {
               {avecPenalite && (
                 <div className="border-t border-gray-200 py-4 px-6 space-y-4">
                   <div className="flex flex-col md:flex-row gap-4 items-center">
-                    {" "}
+                    {' '}
                     {/* Ensures alignment */}
                     {/* Mode Pénalité Dropdown */}
                     <div className="flex-1 min-w-[200px] mt-1">
-                      {" "}
+                      {' '}
                       {/* Added mt-1 */}
                       <AutocompleteSelectComponent
                         label="Mode Pénalité"
@@ -1492,9 +1492,9 @@ export default function Page() {
                       />
                     </div>
                     {/* Conditional Fields (aligned at the same height) */}
-                    {watch("mode_penalite") && (
+                    {watch('mode_penalite') && (
                       <>
-                        {watch("mode_penalite") == "Montant" ? (
+                        {watch('mode_penalite') == 'Montant' ? (
                           /* Manual Penalty Amount Input (same height as other fields) */
                           <div className="flex-1 min-w-[180px]">
                             <TextField
@@ -1506,14 +1506,14 @@ export default function Page() {
                               backendErrors={{}}
                               required
                               onChange={(e) =>
-                                setValue("penalite_montant", e.target.value)
+                                setValue('penalite_montant', e.target.value)
                               }
                             />
                           </div>
                         ) : (
                           /* Percentage-based Penalty (keeps same height) */
                           <div className="flex flex-1 flex-col md:flex-row gap-4 items-center">
-                            {" "}
+                            {' '}
                             {/* Ensures inner alignment */}
                             {/* Radio Buttons (Prix/Avance) */}
                             <div className="min-w-[220px]">
@@ -1527,7 +1527,7 @@ export default function Page() {
                                       type="radio"
                                       name="penalite_par"
                                       value="prix"
-                                      checked={watch("penalite_par") == "prix"}
+                                      checked={watch('penalite_par') == 'prix'}
                                       onChange={handlechange_penalite}
                                       className="h-4 w-4 text-blue-600 focus:ring-blue-500"
                                     />
@@ -1539,7 +1539,7 @@ export default function Page() {
                                       name="penalite_par"
                                       value="avance"
                                       checked={
-                                        watch("penalite_par") == "avance"
+                                        watch('penalite_par') == 'avance'
                                       }
                                       onChange={handlechange_penalite}
                                       className="h-4 w-4 text-purple-600 focus:ring-purple-500"
@@ -1560,7 +1560,7 @@ export default function Page() {
                                 backendErrors={{}}
                                 required
                                 disabled
-                                value={watch("penalite_montant") || ""}
+                                value={watch('penalite_montant') || ''}
                               />
                             </div>
                           </div>
@@ -1570,9 +1570,9 @@ export default function Page() {
                   </div>
                   <div className="border-t border-gray-200 py-4">
                     {/* Only show penalty payment section if mode_penalite is selected AND penalite_montant has a valid value */}
-                    {watch("mode_penalite") &&
-                      watch("penalite_montant") &&
-                      watch("penalite_montant") > 0 && (
+                    {watch('mode_penalite') &&
+                      watch('penalite_montant') &&
+                      watch('penalite_montant') > 0 && (
                         <>
                           <div className="mt-4">
                             <h3 className="text-md font-medium text-gray-900">
@@ -1586,9 +1586,9 @@ export default function Page() {
                                 <input
                                   type="checkbox"
                                   name="sr_pen"
-                                  checked={watch("sr_pen") || false}
+                                  checked={watch('sr_pen') || false}
                                   onChange={(e) =>
-                                    setValue("sr_pen", e.target.checked)
+                                    setValue('sr_pen', e.target.checked)
                                   }
                                   className="text-blue-600 focus:ring-blue-500"
                                 />
@@ -1605,27 +1605,27 @@ export default function Page() {
                                 options={MODE_PAIEMENT}
                                 errors={errors}
                                 onChange={(value) =>
-                                  setValue("mode_paiement_pen", value)
+                                  setValue('mode_paiement_pen', value)
                                 }
                               />
                             </div>
                           </div>
 
-                          {watch("mode_paiement_pen") &&
-                            watch("mode_paiement_pen") != 1 && (
+                          {watch('mode_paiement_pen') &&
+                            watch('mode_paiement_pen') != 1 && (
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                 <div>
                                   <Autocomplete
                                     label="Banque:"
                                     name="banque_pen"
-                                    required={watch("mode_paiement_pen") != "1"}
+                                    required={watch('mode_paiement_pen') != '1'}
                                     options={banques}
-                                    value={watch("banque_pen")}
+                                    value={watch('banque_pen')}
                                     control={control}
                                     errors={{}}
                                     backendErrors={{}}
                                     onChange={(e) => {
-                                      setValue("banque_pen", e.id);
+                                      setValue('banque_pen', e.id);
                                     }}
                                     choix="nom"
                                   />
@@ -1642,7 +1642,7 @@ export default function Page() {
                                     required
                                     onChange={(e) =>
                                       setValue(
-                                        "numero_paiement_pen",
+                                        'numero_paiement_pen',
                                         e.target.value
                                       )
                                     }
@@ -1650,10 +1650,10 @@ export default function Page() {
                                 </div>
                               </div>
                             )}
-                          {watch("mode_paiement_pen") &&
-                            watch("mode_paiement_pen") != 1 &&
-                            watch("mode_paiement_pen") != 5 &&
-                            watch("mode_paiement_pen") != 6 && (
+                          {watch('mode_paiement_pen') &&
+                            watch('mode_paiement_pen') != 1 &&
+                            watch('mode_paiement_pen') != 5 &&
+                            watch('mode_paiement_pen') != 6 && (
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                 <div>
                                   <TextField
@@ -1665,7 +1665,7 @@ export default function Page() {
                                     backendErrors={{}}
                                     required
                                     onChange={(e) =>
-                                      setValue("echeance_pen", e.target.value)
+                                      setValue('echeance_pen', e.target.value)
                                     }
                                     InputLabelProps={{ shrink: true }}
                                   />
@@ -1809,8 +1809,8 @@ export default function Page() {
                   }
                   className={`px-4 py-2 rounded-md focus:outline-none focus:ring-2 transition-colors ${
                     loading.submit || (formSubmitted && errors_s.length > 0)
-                      ? "bg-indigo-100 text-indigo-600 cursor-not-allowed"
-                      : "bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500"
+                      ? 'bg-indigo-100 text-indigo-600 cursor-not-allowed'
+                      : 'bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500'
                   }`}
                 >
                   {loading.submit ? (
@@ -1819,7 +1819,7 @@ export default function Page() {
                       Enregistrer
                     </span>
                   ) : (
-                    "Enregistrer"
+                    'Enregistrer'
                   )}
                 </button>
               </div>
