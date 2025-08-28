@@ -192,7 +192,7 @@ export const CompromisVentesTab = ({
               {/* Modal Header */}
               <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-5 text-white">
                 <h3 className="text-xl font-semibold">
-                  Prévisualisation de l'attestation de Vente
+                  Prévisualisation de {'l\''}attestation de Vente
                 </h3>
               </div>
 
@@ -231,7 +231,7 @@ export const CompromisVentesTab = ({
                         <span className="text-sm font-medium text-gray-500 w-20">
                           N°:
                         </span>
-                        <span className="text-gray-800 font-medium">XXXX</span>
+                        <span className="text-gray-800 font-medium"></span>
                       </div>
                       <div className="flex items-center">
                         <span className="text-sm font-medium text-gray-500 w-20">
@@ -789,7 +789,7 @@ export const CompromisVentesTab = ({
                   d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                 />
               </svg>
-              Information Compromis
+              Information Signature
             </h3>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               <TextField
@@ -1013,7 +1013,7 @@ export const CompromisVentesTab = ({
                     clipRule="evenodd"
                   />
                 </svg>
-                Enregistrer le Compromis
+                Enregistrer {'l\''}attestation
               </>
             )}
           </button>

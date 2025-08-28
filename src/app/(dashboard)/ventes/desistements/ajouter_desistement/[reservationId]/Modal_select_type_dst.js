@@ -1,17 +1,17 @@
-'use client';
-import { useState, useRef } from 'react';
-import Button from '@/components/Button';
-import { Controller, useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-import SelectInput from '@/components/SelectInput';
-import { type_dst } from '@/configs/enum';
+"use client";
+import { useState, useRef } from "react";
+import Button from "@/components/Button";
+import { Controller, useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import SelectInput from "@/components/SelectInput";
+import { type_dst } from "@/configs/enum";
 export default function Modal_select_type_dst({ onSelect, onClose }) {
   const validationSchemaRef = useRef(
     yup.object().shape({
       type_dst: yup
         .string()
-        .required('Veuillez sélectionner un type de désistement'),
+        .required("Veuillez sélectionner un type de désistement"),
     })
   );
 
@@ -23,7 +23,7 @@ export default function Modal_select_type_dst({ onSelect, onClose }) {
   } = useForm({
     resolver: yupResolver(validationSchemaRef.current),
     defaultValues: {
-      type_dst: '',
+      type_dst: "",
     },
   });
 
@@ -40,7 +40,7 @@ export default function Modal_select_type_dst({ onSelect, onClose }) {
   };
 
   const handleSelectChange = (value) => {
-    if (watch('type_dst')) {
+    if (watch("type_dst")) {
       setHasValueChanged(true);
     }
   };
@@ -50,21 +50,22 @@ export default function Modal_select_type_dst({ onSelect, onClose }) {
       <div className="w-full h-[60px] bg-green-600 px-4">
         <div className="flex items-center justify-center h-full">
           <h1 className="text-xl md:text-2xl font-bold text-center text-white">
-            Choisissez un type de désistement
+            Type de désistement
           </h1>
         </div>
       </div>
 
       <div className="p-6 w-full">
+        <p>Veuillez Choisir un Type de Désistement :</p>
         <form
           onSubmit={handleSubmit(onSubmit)}
           className="mx-auto w-full flex flex-col items-center"
         >
           <div
             className={`w-full max-w-md ${
-              (clickedDiv && watch('type_dst') == '') || hasValueChanged
-                ? 'mb-20'
-                : 'mb-6'
+              (clickedDiv && watch("type_dst") == "") || hasValueChanged
+                ? "mb-20"
+                : "mb-6"
             } transition-all duration-200`}
             onClick={handleDivClick}
           >

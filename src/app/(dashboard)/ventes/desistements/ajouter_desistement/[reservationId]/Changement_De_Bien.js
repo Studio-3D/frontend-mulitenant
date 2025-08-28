@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { useFormContext } from 'react-hook-form';
-import TextField from '@/components/Textfield';
-import AutocompleteBien from './AutocompleteBien';
-import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
-import Autocomplete from '@/components/Autocomplete';
+import React, { useState, useEffect } from "react";
+import { useFormContext } from "react-hook-form";
+import TextField from "@/components/Textfield";
+import AutocompleteBien from "./AutocompleteBien";
+import AutocompleteSelectComponent from "@/components/AutocompleteSelectComponent";
+import Autocomplete from "@/components/Autocomplete";
 
-import { APIURL } from '../../../../../../configs/api';
-import Pusher from 'pusher-js';
-import axios from 'axios';
-import { useAuth } from '../../../../../../context/AuthContext';
-import { MODE_PAIEMENT } from '@/configs/enum';
+import { APIURL } from "../../../../../../configs/api";
+import Pusher from "pusher-js";
+import axios from "axios";
+import { useAuth } from "../../../../../../context/AuthContext";
+import { MODE_PAIEMENT } from "@/configs/enum";
 
 export function Changement_De_Bien({
   formData,
@@ -28,7 +28,7 @@ export function Changement_De_Bien({
     formState: { errors },
   } = useFormContext();
   const { user, token } = useAuth();
-  const accessToken = token || localStorage.getItem('accessToken');
+  const accessToken = token || localStorage.getItem("accessToken");
   const [selectedFiles_avc, setSelectedFiles_avc] = useState([]);
 
   const [loading_bien_id, setLoading_bien_id] = useState(true);
@@ -41,28 +41,28 @@ export function Changement_De_Bien({
   // Add this useEffect to pre-fill form data when in editing mode
   useEffect(() => {
     if (isEditing && formData) {
-      setValue('commentaire_rejete', formData.commentaire_rejete);
+      setValue("commentaire_rejete", formData.commentaire_rejete);
 
       fetch_bien_ByProjet(formData?.bien_nouveau);
       set_new_bien_id(formData.bien_id_new);
-      setValue('bien_id', formData.bien_id_new);
-      setValue('new_bien_id', formData.bien_id_new);
+      setValue("bien_id", formData.bien_id_new);
+      setValue("new_bien_id", formData.bien_id_new);
       //  show_bien(formData.bien_id_new);
-      setValue('new_avance', formData?.bien_nouveau?.avance_minimale);
+      setValue("new_avance", formData?.bien_nouveau?.avance_minimale);
       set_montant_a_ajouter(formData.montant_a_ajouter);
-      setValue('montant_a_ajouter', formData.montant_a_ajouter);
-      setValue('sr', formData.sr);
-      setValue('mode_paiement', formData.mode_paiement);
-      setValue('numero_paiement', formData.numero_paiement);
-      setValue('banque_id', formData.banque_id);
-      setValue('echeance', formData.echeance);
+      setValue("montant_a_ajouter", formData.montant_a_ajouter);
+      setValue("sr", formData.sr);
+      setValue("mode_paiement", formData.mode_paiement);
+      setValue("numero_paiement", formData.numero_paiement);
+      setValue("banque_id", formData.banque_id);
+      setValue("echeance", formData.echeance);
       setSelectedFiles_avc(
         formData?.piece_jointes_des_montant_a_ajouter
           ? formData.piece_jointes_des_montant_a_ajouter
           : []
       );
       setValue(
-        'files_avance',
+        "files_avance",
         formData?.piece_jointes_des_montant_a_ajouter
           ? formData.piece_jointes_des_montant_a_ajouter
           : []
@@ -79,15 +79,15 @@ export function Changement_De_Bien({
 
     noms.push(bien.propriete_dite_bien);
 
-    return noms.join(' - ');
+    return noms.join(" - ");
   }
   // Helper functions (add these outside your component)
   const getFileIcon = (filename) => {
-    const extension = filename.split('.').pop().toLowerCase();
-    const iconClass = 'w-5 h-5 flex-shrink-0 text-gray-400';
+    const extension = filename.split(".").pop().toLowerCase();
+    const iconClass = "w-5 h-5 flex-shrink-0 text-gray-400";
 
     switch (extension) {
-      case 'pdf':
+      case "pdf":
         return (
           <svg className={iconClass} fill="currentColor" viewBox="0 0 20 20">
             <path
@@ -97,9 +97,9 @@ export function Changement_De_Bien({
             />
           </svg>
         );
-      case 'jpg':
-      case 'jpeg':
-      case 'png':
+      case "jpg":
+      case "jpeg":
+      case "png":
         return (
           <svg className={iconClass} fill="currentColor" viewBox="0 0 20 20">
             <path
@@ -109,8 +109,8 @@ export function Changement_De_Bien({
             />
           </svg>
         );
-      case 'doc':
-      case 'docx':
+      case "doc":
+      case "docx":
         return (
           <svg className={iconClass} fill="currentColor" viewBox="0 0 20 20">
             <path
@@ -134,7 +134,7 @@ export function Changement_De_Bien({
   };
 
   const formatFileSize = (bytes) => {
-    if (!bytes) return 'N/A';
+    if (!bytes) return "N/A";
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / 1048576).toFixed(1)} MB`;
@@ -157,7 +157,7 @@ export function Changement_De_Bien({
       }
       setBiensByProjet(response.data.biens);
     } catch (error) {
-      console.error('Error fetching biens:', error);
+      console.error("Error fetching biens:", error);
     } finally {
       setLoading_bien(false);
     }
@@ -165,8 +165,8 @@ export function Changement_De_Bien({
 
   useEffect(() => {
     // Set initial values
-    setValue('bien_ancien', bien_ancien);
-    setValue('sum_avances_valides', sum_avances_valides);
+    setValue("bien_ancien", bien_ancien);
+    setValue("sum_avances_valides", sum_avances_valides);
     if (!isEditing) {
       fetch_bien_ByProjet(null);
     } else {
@@ -178,7 +178,7 @@ export function Changement_De_Bien({
     if (v != null) {
       const newId = v.id;
       set_new_bien_id(newId);
-      setValue('new_bien_id', newId);
+      setValue("new_bien_id", newId);
       show_bien(newId);
 
       // Store in proposition - first time old_id is 0, subsequent times it's the previous new_bien_id
@@ -196,7 +196,7 @@ export function Changement_De_Bien({
         headers: { Authorization: `Bearer ${accessToken}` },
       });
       const avance_minimale = response.data.bien.avance_minimale;
-      setValue('new_avance', avance_minimale);
+      setValue("new_avance", avance_minimale);
 
       // Calculate amount to add
       const amountToAdd =
@@ -204,9 +204,9 @@ export function Changement_De_Bien({
           ? 0
           : avance_minimale - sum_avances_valides;
       set_montant_a_ajouter(amountToAdd);
-      setValue('montant_a_ajouter', amountToAdd);
+      setValue("montant_a_ajouter", amountToAdd);
     } catch (error) {
-      console.error('Error fetching bien details:', error);
+      console.error("Error fetching bien details:", error);
     } finally {
       setLoading_bien_id(false);
     }
@@ -219,14 +219,14 @@ export function Changement_De_Bien({
         {},
         {
           headers: {
-            'content-type': 'application/json',
+            "content-type": "application/json",
             Authorization: `Bearer ${accessToken}`,
           },
         }
       );
-      console.log('Bien en proposition updated');
+      console.log("Bien en proposition updated");
     } catch (error) {
-      console.error('Error updating bien proposition:', error);
+      console.error("Error updating bien proposition:", error);
     }
   };
 
@@ -244,11 +244,11 @@ export function Changement_De_Bien({
 
     for (const file of files) {
       const fileName = file.name;
-      const lastDotIndex = fileName.lastIndexOf('.');
+      const lastDotIndex = fileName.lastIndexOf(".");
       const baseName =
         lastDotIndex === -1 ? fileName : fileName.substring(0, lastDotIndex);
       const extension =
-        lastDotIndex === -1 ? '' : fileName.substring(lastDotIndex + 1);
+        lastDotIndex === -1 ? "" : fileName.substring(lastDotIndex + 1);
 
       let finalFileName = fileName;
 
@@ -284,7 +284,7 @@ export function Changement_De_Bien({
 
     if (updatedFiles.length > selectedFiles_avc.length) {
       setSelectedFiles_avc(updatedFiles);
-      setValue('files_avance', updatedFiles);
+      setValue("files_avance", updatedFiles);
     }
   };
   const handleFileClick = (filename) => {
@@ -301,18 +301,18 @@ export function Changement_De_Bien({
     const updatedFiles = selectedFiles_avc.filter((_, i) => i !== index);
     setSelectedFiles_avc(updatedFiles);
     await Promise.resolve(); // Ensures state is updated
-    setValue('files_avance', updatedFiles);
+    setValue("files_avance", updatedFiles);
   };
 
   const pusher_function = () => {
     const pusher = new Pusher(pusher_key_proposition, {
-      cluster: 'eu',
+      cluster: "eu",
       encrypted: true,
     });
 
-    const channel = pusher.subscribe('proposition-updates');
-    channel.bind('App\\Events\\PropositionUpdated', (data) => {
-      console.log('Proposal status changed:', data);
+    const channel = pusher.subscribe("proposition-updates");
+    channel.bind("App\\Events\\PropositionUpdated", (data) => {
+      console.log("Proposal status changed:", data);
       if (!isEditing) {
         fetch_bien_ByProjet(null);
       } else {
@@ -321,8 +321,8 @@ export function Changement_De_Bien({
     });
 
     return () => {
-      channel.unbind('App\\Events\\PropositionUpdated');
-      pusher.unsubscribe('proposition-updates');
+      channel.unbind("App\\Events\\PropositionUpdated");
+      pusher.unsubscribe("proposition-updates");
     };
   };
 
@@ -336,7 +336,7 @@ export function Changement_De_Bien({
       {isEditing && (
         <div className="mb-4 p-3 bg-red-50 !text-red-800 rounded-md">
           <p className="font-medium">
-            le Désistement est Rejeté a cause de {watch('commentaire_rejete')}
+            le Désistement est Rejeté a cause de {watch("commentaire_rejete")}
           </p>
         </div>
       )}
@@ -371,7 +371,7 @@ export function Changement_De_Bien({
             user={user}
             control={control}
             biensByProjet={uniqueBiens}
-            value={watch('bien_id')}
+            value={watch("bien_id")}
             onChange={handlechangeBien_id}
             loading={loading_bien}
             error={errors.bien_id}
@@ -399,7 +399,7 @@ export function Changement_De_Bien({
                 onChange={(e) => {
                   const value = parseFloat(e.target.value) || 0;
                   set_montant_a_ajouter(value);
-                  setValue('montant_a_ajouter', value);
+                  setValue("montant_a_ajouter", value);
                 }}
                 required
               />
@@ -421,35 +421,35 @@ export function Changement_De_Bien({
                 <input
                   type="checkbox"
                   id="sr-checkbox"
-                  checked={watch('sr') == 1} // This checks if sr equals 1
+                  checked={watch("sr") == 1} // This checks if sr equals 1
                   className="h-4 w-4 text-indigo-600 rounded"
-                  onChange={(e) => setValue('sr', e.target.checked ? 1 : 0)} // Sets to 1 when checked, 0 when unchecked
+                  onChange={(e) => setValue("sr", e.target.checked ? 1 : 0)} // Sets to 1 when checked, 0 when unchecked
                 />
                 <label
                   htmlFor="sr-checkbox"
                   className="ml-2 text-sm text-gray-700"
                 >
-                  Sr
+                  SR
                 </label>
               </div>
               <AutocompleteSelectComponent
                 label="Mode de Paiement"
                 required
-                value={watch('mode_paiement')}
+                value={watch("mode_paiement")}
                 name="mode_paiement"
                 control={control}
                 options={MODE_PAIEMENT}
                 errors={errors}
-                onChange={(value) => setValue('mode_paiement', value)}
+                onChange={(value) => setValue("mode_paiement", value)}
               />
 
-              {watch('mode_paiement') && watch('mode_paiement') !== 1 && (
+              {watch("mode_paiement") && watch("mode_paiement") !== 1 && (
                 <>
                   <TextField
                     label="N° Paiement"
                     name="numero_paiement"
-                    value={watch('numero_paiement')}
-                    required={watch('mode_paiement') != '1'}
+                    value={watch("numero_paiement")}
+                    required={watch("mode_paiement") != "1"}
                     control={control}
                     errors={errors}
                     backendErrors={{}}
@@ -458,29 +458,29 @@ export function Changement_De_Bien({
                   <Autocomplete
                     label="Banque:"
                     name="banque_id"
-                    required={watch('mode_paiement') != '1'}
+                    required={watch("mode_paiement") != "1"}
                     options={banques}
-                    value={watch('banque_id')}
+                    value={watch("banque_id")}
                     control={control}
                     errors={{}}
                     backendErrors={{}}
                     onChange={(e) => {
-                      setValue('banque_id', e.id);
+                      setValue("banque_id", e.id);
                     }}
                     choix="nom"
                   />
 
-                  {watch('mode_paiement') &&
-                    ![1, 5, 6].includes(watch('mode_paiement')) && (
+                  {watch("mode_paiement") &&
+                    ![1, 5, 6].includes(watch("mode_paiement")) && (
                       <TextField
                         label="Échéance"
                         name="echeance"
-                        value={watch('echeance')}
+                        value={watch("echeance")}
                         control={control}
                         required={
-                          watch('mode_paiement') != 1 &&
-                          watch('mode_paiement') != 6 &&
-                          watch('mode_paiement') != 5
+                          watch("mode_paiement") != 1 &&
+                          watch("mode_paiement") != 6 &&
+                          watch("mode_paiement") != 5
                         }
                         errors={errors}
                         backendErrors={{}}
@@ -491,7 +491,7 @@ export function Changement_De_Bien({
               )}
             </div>
 
-           {/* <div>
+            {/* <div>
               <div className="space-y-4">
                 {/* File Input 
                 <div className="relative">

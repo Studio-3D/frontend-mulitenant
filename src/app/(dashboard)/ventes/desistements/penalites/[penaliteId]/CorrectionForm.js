@@ -1,16 +1,16 @@
-'use client';
-import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
-import TextField from '@/components/Textfield';
-import Autocomplete from '@/components/Autocomplete';
+"use client";
+import React, { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import AutocompleteSelectComponent from "@/components/AutocompleteSelectComponent";
+import TextField from "@/components/Textfield";
+import Autocomplete from "@/components/Autocomplete";
 import {
   MODE_PAIEMENT,
   modes_penalites,
   getModePenaliteCode,
   getModePenaliteLabel,
-} from '@/configs/enum';
-import Button from '@/components/Button';
+} from "@/configs/enum";
+import Button from "@/components/Button";
 
 const CorrectionForm = ({
   penalite,
@@ -30,7 +30,7 @@ const CorrectionForm = ({
       mode_penalite_value: getModePenaliteLabel(penalite.mode_penalite),
       mode_penalite: getModePenaliteCode(penalite.mode_penalite),
       penalite_montant: penalite.montant,
-      penalite_par: penalite.penalite_par || 'avance',
+      penalite_par: penalite.penalite_par || "avance",
       sr_pen: penalite.sr || false,
       mode_paiement_pen: penalite.mode_paiement,
       banque_pen: penalite.banque_id,
@@ -51,22 +51,22 @@ const CorrectionForm = ({
 
   const handlechange_mode_penalite = (code) => {
     const selectedMode = modes_penalites[code];
-    console.log('Selected Mode:', selectedMode.label);
+    console.log("Selected Mode:", selectedMode.label);
 
     if (selectedMode) {
-      setValue('mode_penalite', getModePenaliteCode(selectedMode.label));
+      setValue("mode_penalite", getModePenaliteCode(selectedMode.label));
       setValue(
-        'mode_penalite_value',
+        "mode_penalite_value",
         modes_penalites[selectedMode.code]?.label
       );
 
       // Calculate penalty amount
-      if (selectedMode.value != 'Montant') {
+      if (selectedMode.value != "Montant") {
         const percentage = parseFloat(selectedMode.label);
-        if (watch('penalite_par') == 'prix') {
-          setValue('penalite_montant', (prix * percentage) / 100);
+        if (watch("penalite_par") == "prix") {
+          setValue("penalite_montant", (prix * percentage) / 100);
         } else {
-          setValue('penalite_montant', (sumAvances * percentage) / 100);
+          setValue("penalite_montant", (sumAvances * percentage) / 100);
         }
       }
     }
@@ -74,15 +74,15 @@ const CorrectionForm = ({
 
   const handlechange_penalite = (event) => {
     const selectedType = event.target.value; // "prix" or "avance"
-    setValue('penalite_par', selectedType);
+    setValue("penalite_par", selectedType);
 
     // Recalculate only if a penalty mode is selected and it's not "Montant"
-    const currentMode = watch('mode_penalite');
-    if (currentMode && currentMode != 'Montant') {
+    const currentMode = watch("mode_penalite");
+    if (currentMode && currentMode != "Montant") {
       const percentage = parseFloat(currentMode);
-      const amount = selectedType == 'prix' ? prix : sumAvances;
+      const amount = selectedType == "prix" ? prix : sumAvances;
 
-      setValue('penalite_montant', (amount * percentage) / 100);
+      setValue("penalite_montant", (amount * percentage) / 100);
     }
   };
   const handleFileChange = (e, type) => {
@@ -103,11 +103,11 @@ const CorrectionForm = ({
   };
 
   const getFileIcon = (filename) => {
-    const extension = filename?.split('.').pop().toLowerCase();
-    const iconClass = 'w-5 h-5 flex-shrink-0 text-gray-400';
+    const extension = filename?.split(".").pop().toLowerCase();
+    const iconClass = "w-5 h-5 flex-shrink-0 text-gray-400";
 
     switch (extension) {
-      case 'pdf':
+      case "pdf":
         return (
           <svg className={iconClass} fill="currentColor" viewBox="0 0 20 20">
             <path
@@ -117,9 +117,9 @@ const CorrectionForm = ({
             />
           </svg>
         );
-      case 'jpg':
-      case 'jpeg':
-      case 'png':
+      case "jpg":
+      case "jpeg":
+      case "png":
         return (
           <svg className={iconClass} fill="currentColor" viewBox="0 0 20 20">
             <path
@@ -129,8 +129,8 @@ const CorrectionForm = ({
             />
           </svg>
         );
-      case 'doc':
-      case 'docx':
+      case "doc":
+      case "docx":
         return (
           <svg className={iconClass} fill="currentColor" viewBox="0 0 20 20">
             <path
@@ -154,7 +154,7 @@ const CorrectionForm = ({
   };
 
   const formatFileSize = (bytes) => {
-    if (!bytes) return '';
+    if (!bytes) return "";
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / 1048576).toFixed(1)} MB`;
@@ -163,14 +163,14 @@ const CorrectionForm = ({
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit({
-      mode_penalite: watch('mode_penalite_value'),
-      penalite_montant: watch('penalite_montant'),
-      penalite_par: watch('penalite_par'),
-      sr_pen: watch('sr_pen'),
-      mode_paiement_pen: watch('mode_paiement_pen'),
-      banque_pen: watch('banque_pen'),
-      numero_paiement_pen: watch('numero_paiement_pen'),
-      echeance_pen: watch('echeance_pen'),
+      mode_penalite: watch("mode_penalite_value"),
+      penalite_montant: watch("penalite_montant"),
+      penalite_par: watch("penalite_par"),
+      sr_pen: watch("sr_pen"),
+      mode_paiement_pen: watch("mode_paiement_pen"),
+      banque_pen: watch("banque_pen"),
+      numero_paiement_pen: watch("numero_paiement_pen"),
+      echeance_pen: watch("echeance_pen"),
       files: selectedFiles,
     });
   };
@@ -184,7 +184,7 @@ const CorrectionForm = ({
             <AutocompleteSelectComponent
               label="Mode Pénalité"
               name="mode_penalite"
-              value={watch('mode_penalite')}
+              value={watch("mode_penalite")}
               control={control}
               options={modes_penalites}
               errors={errors}
@@ -192,22 +192,22 @@ const CorrectionForm = ({
             />
           </div>
           {/* Conditional Fields */}
-          {watch('mode_penalite') && (
+          {watch("mode_penalite") && (
             <>
-              {watch('mode_penalite') == 'Montant' ||
-              watch('mode_penalite') == '13' ? (
+              {watch("mode_penalite") == "Montant" ||
+              watch("mode_penalite") == "13" ? (
                 <div className="flex-1 min-w-[200px] mt-3">
                   <TextField
                     label="Pénalité Montant "
                     name="penalite_montant"
                     type="number"
-                    value={watch('penalite_montant')}
+                    value={watch("penalite_montant")}
                     control={control}
                     errors={{}}
                     backendErrors={{}}
                     required
                     onChange={(e) =>
-                      setValue('penalite_montant', e.target.value)
+                      setValue("penalite_montant", e.target.value)
                     }
                   />
                 </div>
@@ -225,7 +225,7 @@ const CorrectionForm = ({
                             type="radio"
                             name="penalite_par"
                             value="prix"
-                            checked={watch('penalite_par') == 'prix'}
+                            checked={watch("penalite_par") == "prix"}
                             onChange={handlechange_penalite}
                             className="h-4 w-4 text-blue-600 focus:ring-blue-500"
                           />
@@ -236,7 +236,7 @@ const CorrectionForm = ({
                             type="radio"
                             name="penalite_par"
                             value="avance"
-                            checked={watch('penalite_par') == 'avance'}
+                            checked={watch("penalite_par") == "avance"}
                             onChange={handlechange_penalite}
                             className="h-4 w-4 text-purple-600 focus:ring-purple-500"
                           />
@@ -256,7 +256,7 @@ const CorrectionForm = ({
                       backendErrors={{}}
                       required
                       disabled
-                      value={watch('penalite_montant') || ''}
+                      value={watch("penalite_montant") || ""}
                     />
                   </div>
                 </div>
@@ -266,7 +266,7 @@ const CorrectionForm = ({
         </div>
 
         {/* Payment Details Section */}
-        {watch('mode_penalite') && watch('penalite_montant') != '' && (
+        {watch("mode_penalite") && watch("penalite_montant") != "" && (
           <div className="border-t border-gray-200 py-4">
             <div className="mt-4">
               <h3 className="text-md font-medium text-gray-900">
@@ -280,13 +280,13 @@ const CorrectionForm = ({
                   <input
                     type="checkbox"
                     name="sr_pen"
-                    checked={watch('sr_pen') || false}
+                    checked={watch("sr_pen") || false}
                     onChange={(e) =>
-                      setValue('sr_pen', e.target.checked ? 1 : 0)
+                      setValue("sr_pen", e.target.checked ? 1 : 0)
                     }
                     className="text-blue-600 focus:ring-blue-500"
                   />
-                  <span className="ml-2">Sr</span>
+                  <span className="ml-2">SR</span>
                 </label>
               </div>
 
@@ -294,30 +294,30 @@ const CorrectionForm = ({
                 <AutocompleteSelectComponent
                   label="Mode de Paiement"
                   required
-                  value={watch('mode_paiement_pen')}
+                  value={watch("mode_paiement_pen")}
                   name="mode_paiement_pen"
                   control={control}
                   options={MODE_PAIEMENT}
                   errors={errors}
-                  onChange={(value) => setValue('mode_paiement_pen', value)}
+                  onChange={(value) => setValue("mode_paiement_pen", value)}
                 />
               </div>
             </div>
 
-            {watch('mode_paiement_pen') && watch('mode_paiement_pen') != 1 && (
+            {watch("mode_paiement_pen") && watch("mode_paiement_pen") != 1 && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div>
                   <Autocomplete
                     label="Banque:"
                     name="banque_pen"
-                    required={watch('mode_paiement_pen') != '1'}
+                    required={watch("mode_paiement_pen") != "1"}
                     options={banques}
-                    value={watch('banque_pen')}
+                    value={watch("banque_pen")}
                     control={control}
                     errors={{}}
                     backendErrors={{}}
                     onChange={(e) => {
-                      setValue('banque_pen', e.id);
+                      setValue("banque_pen", e.id);
                     }}
                     choix="nom"
                   />
@@ -333,17 +333,17 @@ const CorrectionForm = ({
                     backendErrors={{}}
                     required
                     onChange={(e) =>
-                      setValue('numero_paiement_pen', e.target.value)
+                      setValue("numero_paiement_pen", e.target.value)
                     }
                   />
                 </div>
               </div>
             )}
 
-            {watch('mode_paiement_pen') &&
-              watch('mode_paiement_pen') != 1 &&
-              watch('mode_paiement_pen') != 5 &&
-              watch('mode_paiement_pen') != 6 && (
+            {watch("mode_paiement_pen") &&
+              watch("mode_paiement_pen") != 1 &&
+              watch("mode_paiement_pen") != 5 &&
+              watch("mode_paiement_pen") != 6 && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                   <div>
                     <TextField
@@ -354,7 +354,7 @@ const CorrectionForm = ({
                       errors={errors}
                       backendErrors={{}}
                       required
-                      onChange={(e) => setValue('echeance_pen', e.target.value)}
+                      onChange={(e) => setValue("echeance_pen", e.target.value)}
                       InputLabelProps={{ shrink: true }}
                     />
                   </div>

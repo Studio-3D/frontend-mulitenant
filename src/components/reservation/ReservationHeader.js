@@ -8,6 +8,7 @@ import {
   UsersIcon,
   PaperclipIcon,
   CalendarIcon,
+  Coins,
 } from 'lucide-react';
 import LoadingSpin from '@/components/LoadingSpin';
 import Button from '@/components/Button'; // adjust the path as needed
@@ -108,11 +109,11 @@ export const ReservationHeader = ({ reservationData ,userRole}) => {
           </div>
           <div className="bg-red-50 p-3 rounded-md">
             <div className="flex items-center gap-2">
-              <HistoryIcon className="h-5 w-5 text-red-500" />
-              <p className="text-gray-600">Historiques</p>
+              <Coins className="h-5 w-5 text-red-500" />
+              <p className="text-gray-600">Avances</p>
             </div>
             <p className="text-lg font-semibold">
-              {reservation?.historiques?.length || 0}
+              {reservation?.avances?.length || 0}
             </p>
           </div>
         </div>

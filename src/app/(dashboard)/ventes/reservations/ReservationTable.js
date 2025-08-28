@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import Table from '@/components/Table';
+import React, { useEffect, useState } from "react";
+import Table from "@/components/Table";
 import {
   Edit,
   ThumbsDown,
@@ -11,37 +11,37 @@ import {
   X,
   Trash2,
   PencilLine,
-} from 'lucide-react';
-import Modal from '@/components/Modal';
-import DeleteData from '@/components/DeleteData';
-import { useAuth } from '../../../../context/AuthContext';
-import { APIURL, ENDPOINTS } from '../../../../configs/api';
-import { useRouter } from 'next/navigation';
-import { formatDate, formatDateTime } from '../../../../utils/dateUtils';
-import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
-import { fetchData_table_by_projet } from '../../../../configs/api-utils';
-import Link from 'next/link';
-import Input from '@/components/Input';
+} from "lucide-react";
+import Modal from "@/components/Modal";
+import DeleteData from "@/components/DeleteData";
+import { useAuth } from "../../../../context/AuthContext";
+import { APIURL, ENDPOINTS } from "../../../../configs/api";
+import { useRouter } from "next/navigation";
+import { formatDate, formatDateTime } from "../../../../utils/dateUtils";
+import { isAdmin, isCommercial, isSuperAdmin } from "../../../../configs/enum";
+import { fetchData_table_by_projet } from "../../../../configs/api-utils";
+import Link from "next/link";
+import Input from "@/components/Input";
 
-import { MODE_FINANCE } from '../../../../configs/enum';
-import Modal_Valider_Reservation from './Modal_Valider_Reservation';
+import { MODE_FINANCE } from "../../../../configs/enum";
+import Modal_Valider_Reservation from "./Modal_Valider_Reservation";
 
-import Modal_Rejeter_Reservation from './Modal_Rejeter_Reservation';
+import Modal_Rejeter_Reservation from "./Modal_Rejeter_Reservation";
 
-import Modal_show_info from './Modal_show_info';
-import DateRangePicker from '@/components/DateRangePicker';
+import Modal_show_info from "./Modal_show_info";
+import DateRangePicker from "@/components/DateRangePicker";
 
 const ReservationTable = ({ dataClient, user_id }) => {
   const { user, token } = useAuth();
   const userRole = user.role;
-  const accesstoken = token || localStorage.getItem('accessToken');
+  const accesstoken = token || localStorage.getItem("accessToken");
 
   const router = useRouter();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedId, setSelectedId] = useState(null);
   const [totalRows, setTotalRows] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -66,12 +66,12 @@ const ReservationTable = ({ dataClient, user_id }) => {
   const [txt_info, set_txt_info] = useState(null);
 
   const [filters, setFilters] = useState({
-    code_reservation: '',
-    date_start: '',
-    date_end: '',
-    bien: '',
-    client: '',
-    cc: '',
+    code_reservation: "",
+    date_start: "",
+    date_end: "",
+    bien: "",
+    client: "",
+    cc: "",
   });
   const [tempFilters, setTempFilters] = useState({ ...filters });
 
@@ -80,7 +80,7 @@ const ReservationTable = ({ dataClient, user_id }) => {
   };
   const resetFilters = () => {
     const reset = Object.fromEntries(
-      Object.keys(filters).map((key) => [key, ''])
+      Object.keys(filters).map((key) => [key, ""])
     );
     setFilters(reset);
     setTempFilters(reset);
@@ -89,8 +89,8 @@ const ReservationTable = ({ dataClient, user_id }) => {
     setFilters(tempFilters);
   };
   const entity = {
-    API_URL: 'reservations',
-    dataKey: 'data',
+    API_URL: "reservations",
+    dataKey: "data",
     searchFields: [],
   };
 
@@ -134,12 +134,12 @@ const ReservationTable = ({ dataClient, user_id }) => {
 
     noms.push(bien.propriete_dite_bien);
 
-    return noms.join(' - ');
+    return noms.join(" - ");
   }
   useEffect(() => {
     //Implementing the setInterval method
     const interval = setInterval(() => {
-      if (localStorage.getItem('load_data_reservation') == 1) {
+      if (localStorage.getItem("load_data_reservation") == 1) {
         fetchData_table_by_projet(
           entity,
           {},
@@ -152,7 +152,7 @@ const ReservationTable = ({ dataClient, user_id }) => {
           setData,
           setTotalRows
         );
-        localStorage.removeItem('load_data_reservation');
+        localStorage.removeItem("load_data_reservation");
       }
     }, 1000);
 
@@ -177,10 +177,10 @@ const ReservationTable = ({ dataClient, user_id }) => {
       if (statut_dstt == 0) {
         //attend validation
         setStatut_des(0);
-        set_txt_info('Le Désistement est en Attente de validation');
+        set_txt_info("Le Désistement est en Attente de validation");
       } else {
         setStatut_des(2);
-        set_txt_info('Le Désistement est rejeté en raison  de ' + msg_rejete);
+        set_txt_info("Le Désistement est rejeté en raison  de " + msg_rejete);
       }
       setOpen_info(true);
     }
@@ -191,7 +191,7 @@ const ReservationTable = ({ dataClient, user_id }) => {
       return {
         id: pro.id,
         code_reservation: pro.code_reservation,
-        cc: pro.user.name + ' ' + pro.user.prenom,
+        cc: pro.user.name + " " + pro.user.prenom,
         user_id: pro.user.id,
         date_reservation: pro.date_reservation,
         aquereurs: pro.aquereurs,
@@ -232,8 +232,8 @@ const ReservationTable = ({ dataClient, user_id }) => {
   // Dynamically build columns based on type
   const columns = [
     {
-      key: 'cc',
-      label: 'Responsable',
+      key: "cc",
+      label: "Responsable",
       render: (row) => {
         return isSuperAdmin(userRole) || isAdmin(userRole) ? (
           <>
@@ -241,7 +241,7 @@ const ReservationTable = ({ dataClient, user_id }) => {
               <>
                 <Link
                   target="_blank"
-                  href={'/Utilisateurs/afficher-utilisateur/' + row.user_id}
+                  href={"/Utilisateurs/afficher-utilisateur/" + row.user_id}
                 >
                   <strong style={{ fontWeight: 600 }}>{row.cc}</strong>
                 </Link>
@@ -255,22 +255,20 @@ const ReservationTable = ({ dataClient, user_id }) => {
     },
 
     {
-      key: 'date_reservation',
-      label: 'Date',
+      key: "date_reservation",
+      label: "Date",
       render: (row) => (
         <div className="flex items-center gap-3">
           <span>
-            {row.date_reservation
-              ? formatDate(row.date_reservation)
-              : ''}
+            {row.date_reservation ? formatDate(row.date_reservation) : ""}
           </span>
         </div>
       ),
     },
-    { key: 'code_reservation', label: 'Code' },
+    { key: "code_reservation", label: "Code" },
     {
-      key: 'propriete_dite_bien',
-      label: 'Bien',
+      key: "propriete_dite_bien",
+      label: "Bien",
       render: (row) => (
         <Link target="_blank" href={`/Biens/${row.bien_id}`}>
           <strong style={{ fontWeight: 600 }}>
@@ -280,39 +278,39 @@ const ReservationTable = ({ dataClient, user_id }) => {
       ),
     },
     {
-      key: 'prix',
-      label: 'Prix',
+      key: "prix",
+      label: "Prix",
       render: (row) => (
-        <b style={{ color: 'blue' }}>
-          {row.prix ? `${row.prix.toLocaleString()} DH` : ''}
+        <b style={{ color: "blue" }}>
+          {row.prix ? `${row.prix.toLocaleString()} DH` : ""}
         </b>
       ),
     },
     {
-      key: 'avance',
-      label: 'Avance',
+      key: "avance",
+      label: "Avance",
       render: (row) => (
-        <b style={{ color: 'green' }}>
+        <b style={{ color: "green" }}>
           {row.avances_sum_montant
             ? `${row.avances_sum_montant.toLocaleString()} DH`
-            : ''}
+            : ""}
         </b>
       ),
     },
     {
-      key: 'reste',
-      label: 'Reste',
+      key: "reste",
+      label: "Reste",
       render: (row) => (
-        <b style={{ color: 'red' }}>
+        <b style={{ color: "red" }}>
           {row.prix - row.avances_sum_montant
-            ? (row.prix - row.avances_sum_montant).toLocaleString() + ' DH'
-            : ''}{' '}
+            ? (row.prix - row.avances_sum_montant).toLocaleString() + " DH"
+            : ""}{" "}
         </b>
       ),
     },
     {
-      key: 'actions',
-      label: 'Actions',
+      key: "actions",
+      label: "Actions",
       render: (row) => (
         <div className="flex gap-3 items-center">
           <Eye
@@ -343,7 +341,7 @@ const ReservationTable = ({ dataClient, user_id }) => {
                         row.data_res.first_avance?.num_recu,
                         row.data_res.first_avance?.id,
                         row.data_res.first_avance?.statut,
-                        row.data_res.user.name + ' ' + row.data_res.user.prenom,
+                        row.data_res.user.name + " " + row.data_res.user.prenom,
                         row.data_res.aquereurs,
                         row.data_res.date_reservation,
                         row.data_res.prix,
@@ -370,7 +368,7 @@ const ReservationTable = ({ dataClient, user_id }) => {
               ) : (
                 <Clock
                   className="w-4 h-4 !text-gray-500 hover:text-gray-700 cursor-pointer"
-                  title="La Réservation est en Attente de Validation"
+                  title="En Attente de Validation"
                   onClick={() => handle_show_info_2(row.code_reservation)}
                 />
               )}
@@ -389,7 +387,7 @@ const ReservationTable = ({ dataClient, user_id }) => {
           ) : row.statut == 1 && row.data_res.first_avance?.statut == 3 ? (
             <Clock
               className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
-              title="Premier avance en attente de validation"
+              title="Première avance en attente de validation"
               onClick={() => handle_show_info(row.code_reservation)}
             />
           ) : null}
@@ -400,19 +398,19 @@ const ReservationTable = ({ dataClient, user_id }) => {
               <X
                 className={`w-4 h-4 cursor-pointer ${
                   row.data_res.desistement_att_validation_rejete?.statut == 0
-                    ? 'text-orange-500 hover:text-orange-700'
+                    ? "text-orange-500 hover:text-orange-700"
                     : row.data_res.desistement_att_validation_rejete?.statut ==
                       2
-                    ? 'text-red-500 hover:text-red-700'
-                    : 'text-gray-500 hover:text-gray-700'
+                    ? "text-red-500 hover:text-red-700"
+                    : "text-gray-500 hover:text-gray-700"
                 }`}
                 title={
                   row.data_res.desistement_att_validation_rejete?.statut == 0
-                    ? 'désistement en attente'
+                    ? "désistement en attente"
                     : row.data_res.desistement_att_validation_rejete?.statut ==
                       2
-                    ? 'Désistement rejeté'
-                    : 'Désister la réservation'
+                    ? "Désistement rejeté"
+                    : "Désister la réservation"
                 }
                 onClick={() =>
                   row.data_res.desistement_att_validation_rejete != null
@@ -437,54 +435,54 @@ const ReservationTable = ({ dataClient, user_id }) => {
       const acquereursNames = item?.aquereurs
         ? item.aquereurs
             .map(
-              (acq) => (acq.client?.nom + ' ' + acq.client?.prenom).trim() || ''
+              (acq) => (acq.client?.nom + " " + acq.client?.prenom).trim() || ""
             )
             .filter((name) => name)
-            .join(' / ')
-        : '';
+            .join(" / ")
+        : "";
 
       const acquereursCin = item?.aquereurs
         ? item.aquereurs
-            .map((acq) => acq.client?.cin || '')
+            .map((acq) => acq.client?.cin || "")
             .filter((cin) => cin)
-            .join(' / ')
-        : '';
+            .join(" / ")
+        : "";
 
       const acquereursTele = item?.aquereurs
         ? item.aquereurs
-            .map((acq) => acq.client?.telephone_num1 || '')
+            .map((acq) => acq.client?.telephone_num1 || "")
             .filter((tele) => tele)
-            .join(' / ')
-        : '';
+            .join(" / ")
+        : "";
 
       return {
-        code_reservation: item.code_reservation || '',
+        code_reservation: item.code_reservation || "",
         date_reservation: item.date_reservation
           ? formatDate(item.date_reservation)
-          : '',
-        bien: item.bien?.propriete_dite_bien || '',
-        prix: item.prix ? `${item.prix.toLocaleString()} DH` : '',
+          : "",
+        bien: item.bien?.propriete_dite_bien || "",
+        prix: item.prix ? `${item.prix.toLocaleString()} DH` : "",
         avance: item.avances_sum_montant
           ? `${item.avances_sum_montant.toLocaleString()} DH`
-          : '',
+          : "",
         Reste:
           item.prix && item.avances_sum_montant
             ? `${(item.prix - item.avances_sum_montant).toLocaleString()} DH`
-            : '',
+            : "",
         date_validation:
           item.last_statut?.statut == 1 && item.last_statut?.date_validation
             ? formatDateTime(item.last_statut.date_validation)
-            : '',
+            : "",
         responsable_validation:
           item.last_statut?.statut == 1 && item.last_statut?.user
-            ? `${item.last_statut.user.name || ''} ${
-                item.last_statut.user.name || ''
+            ? `${item.last_statut.user.name || ""} ${
+                item.last_statut.user.name || ""
               }`.trim()
-            : '',
-        nb_acquereurs: item.nb_acquereurs || '',
-        mode_financement: MODE_FINANCE[item.mode_financement]?.label || '',
-        prix_remise: item.prix_remise || '',
-        prix_forfetaire: item.prix_forfetaire || '',
+            : "",
+        nb_acquereurs: item.nb_acquereurs || "",
+        mode_financement: MODE_FINANCE[item.mode_financement]?.label || "",
+        prix_remise: item.prix_remise || "",
+        prix_forfetaire: item.prix_forfetaire || "",
         noms_acquereurs: acquereursNames,
         cins_acquereurs: acquereursCin,
         tele_acquereurs: acquereursTele,
@@ -493,21 +491,21 @@ const ReservationTable = ({ dataClient, user_id }) => {
   };
 
   const columns_export = [
-    { key: 'code_reservation', label: 'Code reservation' },
-    { key: 'date_reservation', label: 'Date reservation' },
-    { key: 'bien', label: 'Bien' },
-    { key: 'prix', label: 'Prix' },
-    { key: 'avance', label: 'Avance' },
-    { key: 'Reste', label: 'Reste' },
-    { key: 'date_validation', label: 'Date validation' },
-    { key: 'responsable_validation', label: 'Responsable validation' },
-    { key: 'nb_acquereurs', label: 'Nbrs acquereurs' },
-    { key: 'mode_financement', label: 'Mode financement' },
-    { key: 'prix_remise', label: 'Prix remise' },
-    { key: 'prix_forfetaire', label: 'Prix forfetaire' },
-    { key: 'noms_acquereurs', label: 'Nom client' },
-    { key: 'cins_acquereurs', label: 'Cin client' },
-    { key: 'tele_acquereurs', label: 'Tele client' },
+    { key: "code_reservation", label: "Code reservation" },
+    { key: "date_reservation", label: "Date reservation" },
+    { key: "bien", label: "Bien" },
+    { key: "prix", label: "Prix" },
+    { key: "avance", label: "Avance" },
+    { key: "Reste", label: "Reste" },
+    { key: "date_validation", label: "Date validation" },
+    { key: "responsable_validation", label: "Responsable validation" },
+    { key: "nb_acquereurs", label: "Nbrs acquereurs" },
+    { key: "mode_financement", label: "Mode financement" },
+    { key: "prix_remise", label: "Prix remise" },
+    { key: "prix_forfetaire", label: "Prix forfetaire" },
+    { key: "noms_acquereurs", label: "Nom client" },
+    { key: "cins_acquereurs", label: "Cin client" },
+    { key: "tele_acquereurs", label: "Tele client" },
   ];
 
   const handle_valider = (
@@ -541,18 +539,20 @@ const ReservationTable = ({ dataClient, user_id }) => {
     setCode_reservation(code);
   };
   const handle_show_info_2 = (code) => {
-    set_txt_info('La Réservation ' + code + ' est  en attente de validation !');
+    set_txt_info("La Réservation " + code + " est  en attente de validation !");
     setOpen_info(true);
   };
 
   const handle_show_comment_rejete = (code, msg) => {
-    set_txt_info('La Réservation ' + code + ' est rejeté en raison  de ' + msg);
+    set_txt_info(
+      "La Réservation " + code + " est rejetée en raison  de " + msg
+    );
     setOpen_info(true);
   };
 
   const handle_show_info = (code) => {
     set_txt_info(
-      'Premier avance du Réservation ' + code + ' en attente de validation !'
+      "Premier avance du Réservation " + code + " en attente de validation !"
     );
     setOpen_info(true);
   };
@@ -563,7 +563,7 @@ const ReservationTable = ({ dataClient, user_id }) => {
         pathname: `${ENDPOINTS.RESERVATIONS}?action=add`,
         onClick: () => {
           localStorage.setItem(
-            'selectedClient_show_client',
+            "selectedClient_show_client",
             JSON.stringify(dataClient?.id)
           );
         },
@@ -575,10 +575,10 @@ const ReservationTable = ({ dataClient, user_id }) => {
     <>
       <div className="reflative bg-white rounded-lg p-4">
         <Table
-          title={user_id ? 'Liste des Ventes' : ''}
+          title={user_id ? "Liste des Ventes" : ""}
           data_to_export={data_to_export()}
           columns_export={columns_export}
-          name_file_export={'reservations_export'}
+          name_file_export={"reservations_export"}
           columns={columns}
           data={formatData()}
           totalRows={totalRows}
@@ -605,7 +605,7 @@ const ReservationTable = ({ dataClient, user_id }) => {
               <div
                 className="grid gap-5"
                 style={{
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
                 }}
               >
                 <Input
@@ -613,7 +613,7 @@ const ReservationTable = ({ dataClient, user_id }) => {
                   label="Code Réservation"
                   value={tempFilters.code_reservation}
                   onChange={(e) =>
-                    handleFilterChange('code_reservation', e.target.value)
+                    handleFilterChange("code_reservation", e.target.value)
                   }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
@@ -622,7 +622,7 @@ const ReservationTable = ({ dataClient, user_id }) => {
                   type="text"
                   label="Bien"
                   value={tempFilters.bien}
-                  onChange={(e) => handleFilterChange('bien', e.target.value)}
+                  onChange={(e) => handleFilterChange("bien", e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
                 {/*<Input
@@ -636,7 +636,7 @@ const ReservationTable = ({ dataClient, user_id }) => {
                   type="text"
                   label="Commercial"
                   value={tempFilters.cc}
-                  onChange={(e) => handleFilterChange('cc', e.target.value)}
+                  onChange={(e) => handleFilterChange("cc", e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
               </div>
@@ -678,7 +678,7 @@ const ReservationTable = ({ dataClient, user_id }) => {
           <DeleteData
             route={APIURL.RESERVATIONS}
             Id={selectedId}
-            message={'Etes-vous sûr de vouloir supprimer cete Réservation ?'}
+            message={"Etes-vous sûr de vouloir supprimer cete Réservation ?"}
             accessToken={accesstoken}
             onClose={() => {
               setShowDeleteModal(false);

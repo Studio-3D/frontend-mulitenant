@@ -1,43 +1,43 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import Table from '@/components/Table';
-import { ThumbsDown, ThumbsUp, Clock, Eye, X } from 'lucide-react';
-import Modal from '@/components/Modal';
-import { useAuth } from '../../../../../context/AuthContext';
+import React, { useEffect, useState } from "react";
+import Table from "@/components/Table";
+import { ThumbsDown, ThumbsUp, Clock, Eye, X } from "lucide-react";
+import Modal from "@/components/Modal";
+import { useAuth } from "../../../../../context/AuthContext";
 
-import { useRouter } from 'next/navigation';
-import format from 'date-fns/format';
-import { isAdmin, isSuperAdmin } from '../../../../../configs/enum';
-import { fetchData_table_by_id } from '../../../../../configs/api-utils';
-import Link from 'next/link';
-import Input from '@/components/Input';
-import { MODE_FINANCE } from '../../../../../configs/enum';
-import Modal_Valider_Reservation from '../../../ventes/reservations/Modal_Valider_Reservation';
-import Modal_Rejeter_Reservation from '../../../ventes/reservations/Modal_Rejeter_Reservation';
-import Modal_show_info from '../../../ventes/reservations/Modal_show_info';
-import LoadingSpin from '@/components/LoadingSpin';
-import VenteNavbar from '@/components/VenteNavbar';
-import DateRangePicker from '@/components/DateRangePicker';
+import { useRouter } from "next/navigation";
+import format from "date-fns/format";
+import { isAdmin, isSuperAdmin } from "../../../../../configs/enum";
+import { fetchData_table_by_id } from "../../../../../configs/api-utils";
+import Link from "next/link";
+import Input from "@/components/Input";
+import { MODE_FINANCE } from "../../../../../configs/enum";
+import Modal_Valider_Reservation from "../../../ventes/reservations/Modal_Valider_Reservation";
+import Modal_Rejeter_Reservation from "../../../ventes/reservations/Modal_Rejeter_Reservation";
+import Modal_show_info from "../../../ventes/reservations/Modal_show_info";
+import LoadingSpin from "@/components/LoadingSpin";
+import VenteNavbar from "@/components/VenteNavbar";
+import DateRangePicker from "@/components/DateRangePicker";
 
 const PageTraitement_Validation_rejets = () => {
   const etat_res =
-    typeof window !== 'undefined'
-      ? JSON.parse(localStorage.getItem('etat_res'))
+    typeof window !== "undefined"
+      ? JSON.parse(localStorage.getItem("etat_res"))
       : null;
   const { user, token } = useAuth();
   const userRole = user?.role;
   const accessToken =
     token ||
-    (typeof window !== 'undefined'
-      ? localStorage.getItem('accessToken')
+    (typeof window !== "undefined"
+      ? localStorage.getItem("accessToken")
       : null);
 
   const router = useRouter();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [error, setError] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [totalRows, setTotalRows] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -62,21 +62,21 @@ const PageTraitement_Validation_rejets = () => {
   const [txt_info, set_txt_info] = useState(null);
 
   const [filters, setFilters] = useState({
-    code_reservation: '',
-    date_start: '',
-    date_end: '',
-    bien: '',
-    client: '',
-    cc: '',
+    code_reservation: "",
+    date_start: "",
+    date_end: "",
+    bien: "",
+    client: "",
+    cc: "",
   });
   const [tempFilters, setTempFilters] = useState({ ...filters });
 
   // API configuration
   const entity = {
-    id: JSON.parse(localStorage.getItem('selectedProjet'))?.id + '/' + etat_res,
-    API_URL: 'reservations_by_etat',
-    dataKey: 'data',
-    searchFields: [''],
+    id: JSON.parse(localStorage.getItem("selectedProjet"))?.id + "/" + etat_res,
+    API_URL: "reservations_by_etat",
+    dataKey: "data",
+    searchFields: [""],
   };
 
   // Fetch data effect
@@ -102,7 +102,7 @@ const PageTraitement_Validation_rejets = () => {
   useEffect(() => {
     //Implementing the setInterval method
     const interval = setInterval(() => {
-      if (localStorage.getItem('load_data_reservation') == 1) {
+      if (localStorage.getItem("load_data_reservation") == 1) {
         fetchData_table_by_id(
           entity,
           {},
@@ -115,7 +115,7 @@ const PageTraitement_Validation_rejets = () => {
           setData,
           setTotalRows
         );
-        localStorage.removeItem('load_data_reservation');
+        localStorage.removeItem("load_data_reservation");
       }
     }, 1000);
 
@@ -125,7 +125,7 @@ const PageTraitement_Validation_rejets = () => {
 
   const resetFilters = () => {
     const reset = Object.fromEntries(
-      Object.keys(filters).map((key) => [key, ''])
+      Object.keys(filters).map((key) => [key, ""])
     );
     setFilters(reset);
     setTempFilters(reset);
@@ -144,7 +144,7 @@ const PageTraitement_Validation_rejets = () => {
 
     if (bien?.propriete_dite_bien) noms.push(bien.propriete_dite_bien);
 
-    return noms.join(' - ');
+    return noms.join(" - ");
   }
 
   const handleShow = (resId) => {
@@ -156,7 +156,7 @@ const PageTraitement_Validation_rejets = () => {
       return {
         id: pro.id,
         code_reservation: pro.code_reservation,
-        cc: pro.user?.name + ' ' + pro.user?.prenom,
+        cc: pro.user?.name + " " + pro.user?.prenom,
         user_id: pro.user?.id,
         date_reservation: pro.date_reservation,
         aquereurs: pro.aquereurs,
@@ -174,14 +174,17 @@ const PageTraitement_Validation_rejets = () => {
 
   const columns = [
     {
-      key: 'cc',
-      label: 'Responsable',
+      key: "cc",
+      label: "Responsable",
       render: (row) => {
         return isSuperAdmin(userRole) || isAdmin(userRole) ? (
           <>
             {row.data_res.user && (
               <>
-                <Link target="_blank" href={'/Utilisateurs/afficher-utilisateur/' + row.user_id}>
+                <Link
+                  target="_blank"
+                  href={"/Utilisateurs/afficher-utilisateur/" + row.user_id}
+                >
                   <strong style={{ fontWeight: 600 }}>{row.cc}</strong>
                 </Link>
               </>
@@ -193,24 +196,24 @@ const PageTraitement_Validation_rejets = () => {
       },
     },
     {
-      key: 'date_reservation',
-      label: 'Date',
+      key: "date_reservation",
+      label: "Date",
       render: (row) => (
         <div className="flex items-center gap-3">
           <span>
             {row.date_reservation
-              ? format(new Date(row.date_reservation), 'dd/MM/yyyy ', {
-                  timeZone: 'UTC',
+              ? format(new Date(row.date_reservation), "dd/MM/yyyy ", {
+                  timeZone: "UTC",
                 })
-              : ''}
+              : ""}
           </span>
         </div>
       ),
     },
-    { key: 'code_reservation', label: 'Code' },
+    { key: "code_reservation", label: "Code" },
     {
-      key: 'propriete_dite_bien',
-      label: 'Bien',
+      key: "propriete_dite_bien",
+      label: "Bien",
       render: (row) => (
         <Link target="_blank" href={`/Biens/${row.bien_id}`}>
           <strong style={{ fontWeight: 600 }}>
@@ -220,33 +223,33 @@ const PageTraitement_Validation_rejets = () => {
       ),
     },
     {
-      key: 'prix',
-      label: 'Prix',
+      key: "prix",
+      label: "Prix",
       render: (row) => (
-        <b style={{ color: 'blue' }}>
-          {row.prix ? `${row.prix.toLocaleString()} DH` : ''}
+        <b style={{ color: "blue" }}>
+          {row.prix ? `${row.prix.toLocaleString()} DH` : ""}
         </b>
       ),
     },
     {
-      key: 'avance',
-      label: 'Avance',
+      key: "avance",
+      label: "Avance",
       render: (row) => (
-        <b style={{ color: 'green' }}>
+        <b style={{ color: "green" }}>
           {row.avances_sum_montant
             ? `${row.avances_sum_montant.toLocaleString()} DH`
-            : ''}
+            : ""}
         </b>
       ),
     },
     {
-      key: 'reste',
-      label: 'Reste',
+      key: "reste",
+      label: "Reste",
       render: (row) => (
-        <b style={{ color: 'red' }}>
+        <b style={{ color: "red" }}>
           {row.prix - row.avances_sum_montant
-            ? (row.prix - row.avances_sum_montant).toLocaleString() + ' DH'
-            : ''}{' '}
+            ? (row.prix - row.avances_sum_montant).toLocaleString() + " DH"
+            : ""}{" "}
         </b>
       ),
     },
@@ -254,8 +257,8 @@ const PageTraitement_Validation_rejets = () => {
       (isAdmin(userRole)
         ? [
             {
-              key: 'actions',
-              label: 'Actions',
+              key: "actions",
+              label: "Actions",
               render: (row) => {
                 return (
                   <div className="flex gap-3 items-center">
@@ -279,7 +282,7 @@ const PageTraitement_Validation_rejets = () => {
                               row.data_res.first_avance?.id,
                               row.data_res.first_avance?.statut,
                               row.data_res.user.name +
-                                ' ' +
+                                " " +
                                 row.data_res.user.prenom,
                               row.data_res.aquereurs,
                               row.data_res.date_reservation,
@@ -323,57 +326,57 @@ const PageTraitement_Validation_rejets = () => {
       const acquereursNames = item?.aquereurs
         ? item.aquereurs
             .map(
-              (acq) => (acq.client?.nom + ' ' + acq.client?.prenom).trim() || ''
+              (acq) => (acq.client?.nom + " " + acq.client?.prenom).trim() || ""
             )
             .filter((name) => name)
-            .join(' / ')
-        : '';
+            .join(" / ")
+        : "";
 
       const acquereursCin = item?.aquereurs
         ? item.aquereurs
-            .map((acq) => acq.client?.cin || '')
+            .map((acq) => acq.client?.cin || "")
             .filter((cin) => cin)
-            .join(' / ')
-        : '';
+            .join(" / ")
+        : "";
 
       const acquereursTele = item?.aquereurs
         ? item.aquereurs
-            .map((acq) => acq.client?.telephone_num1 || '')
+            .map((acq) => acq.client?.telephone_num1 || "")
             .filter((tele) => tele)
-            .join(' / ')
-        : '';
+            .join(" / ")
+        : "";
 
       return {
-        code_reservation: item.code_reservation || '',
+        code_reservation: item.code_reservation || "",
         date_reservation: item.date_reservation
-          ? format(new Date(item.date_reservation), 'dd/MM/yyyy')
-          : '',
-        bien: item.bien?.propriete_dite_bien || '',
-        prix: item.prix ? `${item.prix.toLocaleString()} DH` : '',
+          ? format(new Date(item.date_reservation), "dd/MM/yyyy")
+          : "",
+        bien: item.bien?.propriete_dite_bien || "",
+        prix: item.prix ? `${item.prix.toLocaleString()} DH` : "",
         avance: item.avances_sum_montant
           ? `${item.avances_sum_montant.toLocaleString()} DH`
-          : '',
+          : "",
         Reste:
           item.prix && item.avances_sum_montant
             ? `${(item.prix - item.avances_sum_montant).toLocaleString()} DH`
-            : '',
+            : "",
         date_validation:
           item.last_statut?.statut == 1 && item.last_statut?.date_validation
             ? format(
                 new Date(item.last_statut.date_validation),
-                'dd/MM/yyyy kk:mm'
+                "dd/MM/yyyy kk:mm"
               )
-            : '',
+            : "",
         responsable_validation:
           item.last_statut?.statut == 1 && item.last_statut?.user
-            ? `${item.last_statut.user.name || ''} ${
-                item.last_statut.user.name || ''
+            ? `${item.last_statut.user.name || ""} ${
+                item.last_statut.user.name || ""
               }`.trim()
-            : '',
-        nb_acquereurs: item.nb_acquereurs || '',
-        mode_financement: MODE_FINANCE[item.mode_financement]?.label || '',
-        prix_remise: item.prix_remise || '',
-        prix_forfetaire: item.prix_forfetaire || '',
+            : "",
+        nb_acquereurs: item.nb_acquereurs || "",
+        mode_financement: MODE_FINANCE[item.mode_financement]?.label || "",
+        prix_remise: item.prix_remise || "",
+        prix_forfetaire: item.prix_forfetaire || "",
         noms_acquereurs: acquereursNames,
         cins_acquereurs: acquereursCin,
         tele_acquereurs: acquereursTele,
@@ -382,21 +385,21 @@ const PageTraitement_Validation_rejets = () => {
   };
 
   const columns_export = [
-    { key: 'code_reservation', label: 'Code reservation' },
-    { key: 'date_reservation', label: 'Date reservation' },
-    { key: 'bien', label: 'Bien' },
-    { key: 'prix', label: 'Prix' },
-    { key: 'avance', label: 'Avance' },
-    { key: 'Reste', label: 'Reste' },
-    { key: 'date_validation', label: 'Date validation' },
-    { key: 'responsable_validation', label: 'Responsable validation' },
-    { key: 'nb_acquereurs', label: 'Nbrs acquereurs' },
-    { key: 'mode_financement', label: 'Mode financement' },
-    { key: 'prix_remise', label: 'Prix remise' },
-    { key: 'prix_forfetaire', label: 'Prix forfetaire' },
-    { key: 'noms_acquereurs', label: 'Nom client' },
-    { key: 'cins_acquereurs', label: 'Cin client' },
-    { key: 'tele_acquereurs', label: 'Tele client' },
+    { key: "code_reservation", label: "Code reservation" },
+    { key: "date_reservation", label: "Date reservation" },
+    { key: "bien", label: "Bien" },
+    { key: "prix", label: "Prix" },
+    { key: "avance", label: "Avance" },
+    { key: "Reste", label: "Reste" },
+    { key: "date_validation", label: "Date validation" },
+    { key: "responsable_validation", label: "Responsable validation" },
+    { key: "nb_acquereurs", label: "Nbrs acquereurs" },
+    { key: "mode_financement", label: "Mode financement" },
+    { key: "prix_remise", label: "Prix remise" },
+    { key: "prix_forfetaire", label: "Prix forfetaire" },
+    { key: "noms_acquereurs", label: "Nom client" },
+    { key: "cins_acquereurs", label: "Cin client" },
+    { key: "tele_acquereurs", label: "Tele client" },
   ];
 
   const handle_valider = (
@@ -431,7 +434,7 @@ const PageTraitement_Validation_rejets = () => {
   };
 
   const handle_show_comment_rejete = (code, msg) => {
-    set_txt_info('La Réservation ' + code + ' est rejeté en raison de ' + msg);
+    set_txt_info("La Réservation " + code + " est rejetée en raison de " + msg);
     setOpen_info(true);
   };
 
@@ -442,14 +445,14 @@ const PageTraitement_Validation_rejets = () => {
       <VenteNavbar />
       <div className="relative bg-white shadow-md rounded-lg p-4">
         <p className="text-lg font-semibold mb-4">
-          Réservation{' '}
-          {etat_res == 3 ? 'En Attentes' : etat_res == 2 ? 'Rejetés' : null}
+          Réservation{" "}
+          {etat_res == 3 ? "En Attente" : etat_res == 2 ? "Rejetée" : null}
         </p>
 
         <Table
           data_to_export={data_to_export()}
           columns_export={columns_export}
-          name_file_export={'reservations_export'}
+          name_file_export={"reservations_export"}
           columns={columns}
           data={formatData()}
           totalRows={totalRows}
@@ -469,7 +472,7 @@ const PageTraitement_Validation_rejets = () => {
               <div
                 className="grid gap-5"
                 style={{
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
                 }}
               >
                 <Input
@@ -477,7 +480,7 @@ const PageTraitement_Validation_rejets = () => {
                   placeholder="Code Réservation"
                   value={tempFilters.code_reservation}
                   onChange={(e) =>
-                    handleFilterChange('code_reservation', e.target.value)
+                    handleFilterChange("code_reservation", e.target.value)
                   }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
@@ -486,14 +489,14 @@ const PageTraitement_Validation_rejets = () => {
                   type="text"
                   placeholder="Bien"
                   value={tempFilters.bien}
-                  onChange={(e) => handleFilterChange('bien', e.target.value)}
+                  onChange={(e) => handleFilterChange("bien", e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
                 <Input
                   type="text"
                   placeholder="Responsable"
                   value={tempFilters.cc}
-                  onChange={(e) => handleFilterChange('cc', e.target.value)}
+                  onChange={(e) => handleFilterChange("cc", e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
               </div>
