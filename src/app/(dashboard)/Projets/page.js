@@ -11,15 +11,8 @@ import Link from 'next/link'
 import { isAdmin, isSuperAdmin } from '@/configs/enum';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
-import ProjetFilter from './ProjetFilter';
-
-const INITIAL_FILTERS = { 
-  nom: '', 
-  code: '', 
-  type: '', 
-  adresse: '', 
-  date: '' 
-};
+import Input from '@/components/Input';
+import SelectInput from '@/components/SelectInput';
 
 const Page = () => {
   // State Management
@@ -34,8 +27,78 @@ const Page = () => {
   const [totalRows, setTotalRows] = useState(0);
   const [selectedId, setSelectedId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [filters, setFilters] = useState(INITIAL_FILTERS);
-  const [tempFilters, setTempFilters] = useState(INITIAL_FILTERS);
+  
+  // State for filters
+  const [tempFilters, setTempFilters] = useState({});
+  const [appliedFilters, setAppliedFilters] = useState({});
+  const [showFilter, setShowFilter] = useState(false);
+
+  // Extract unique types from projects
+  const typeOptions = useMemo(() => {
+    if (!projects || projects.length === 0) return [];
+    
+    const uniqueTypes = new Set();
+    projects.forEach(project => {
+      if (project.type_projet?.type) {
+        uniqueTypes.add(project.type_projet.type);
+      }
+    });
+    
+    return Array.from(uniqueTypes).map(type => ({
+      label: type,
+      value: type
+    }));
+  }, [projects]);
+
+  // Define filter configuration for Projets
+  const PROJET_FILTERS = useMemo(() => [
+    { 
+      key: 'nom', 
+      label: 'Nom', 
+      type: 'text', 
+      placeholder: 'Nom du projet...',
+      className: "h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+    },
+    { 
+      key: 'code', 
+      label: 'Code', 
+      type: 'text', 
+      placeholder: 'Code du projet...',
+      className: "h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+    },
+    { 
+      key: 'type', 
+      label: 'Type', 
+      type: 'select', 
+      placeholder: 'Type de projet...',
+      options: typeOptions,
+      className: "h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+    },
+    { 
+      key: 'adresse', 
+      label: 'Adresse', 
+      type: 'text', 
+      placeholder: 'Adresse...',
+      className: "h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+    },
+    { 
+      key: 'date', 
+      label: 'Date création', 
+      type: 'date', 
+      placeholder: 'Sélectionner une date',
+      className: "h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+    },
+  ], [typeOptions]);
+
+  // Initialize filters when component mounts or when filters change
+  useEffect(() => {
+    const initialFilters = {};
+    PROJET_FILTERS.forEach(filter => {
+      initialFilters[filter.key] = '';
+    });
+    setTempFilters(initialFilters);
+    setAppliedFilters(initialFilters);
+  }, [PROJET_FILTERS]);
 
   const formatDate = (dateString) => {
     if (!dateString) return '';
@@ -47,18 +110,60 @@ const Page = () => {
     }
   };
 
+  // Handle filter change
+  const handleFilterChange = (key, value) => {
+    setTempFilters(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+
+  // Apply filters
+  const applyFilters = () => {
+    setAppliedFilters({...tempFilters}); 
+    setCurrentPage(1);
+  };
+
+  // Reset filters
+  const resetFilters = () => {
+    const resetFilters = {};
+    PROJET_FILTERS.forEach(filter => {
+      resetFilters[filter.key] = '';
+    });
+    setTempFilters(resetFilters);
+    setAppliedFilters(resetFilters);
+    setCurrentPage(1);
+  };
+
+  // Handle filter toggle
+  const handleFilterToggle = (isVisible) => {
+    setShowFilter(isVisible);
+  };
+
   const filteredProjets = useMemo(() => {
     if (!projects) return [];
-    return projects.filter(projet => {
+    
+    let filtered = projects.filter(projet => {
       const projetType = projet.type_projet?.type || '';
-      const projetDate = formatDate(projet.created_at);
+      const projetDate = new Date(projet.created_at);
+      const filterDate = appliedFilters.date;
+      
+      // Date filtering logic - compare dates without time
+      let dateMatches = true;
+      if (filterDate) {
+        const filterDateObj = new Date(filterDate);
+        dateMatches = 
+          projetDate.getFullYear() === filterDateObj.getFullYear() &&
+          projetDate.getMonth() === filterDateObj.getMonth() &&
+          projetDate.getDate() === filterDateObj.getDate();
+      }
       
       return (
-        (projet.nom || '').toLowerCase().includes(filters.nom.toLowerCase()) &&
-        (projet.code || '').toLowerCase().includes(filters.code.toLowerCase()) &&
-        (filters.type === '' || projetType.toLowerCase().includes(filters.type.toLowerCase())) &&
-        (projet.adresse || '').toLowerCase().includes(filters.adresse.toLowerCase()) &&
-        (filters.date === '' || projetDate.includes(filters.date))
+        (projet.nom || '').toLowerCase().includes(appliedFilters.nom.toLowerCase()) &&
+        (projet.code || '').toLowerCase().includes(appliedFilters.code.toLowerCase()) &&
+        (appliedFilters.type === '' || projetType.toLowerCase() === appliedFilters.type.toLowerCase()) &&
+        (projet.adresse || '').toLowerCase().includes(appliedFilters.adresse.toLowerCase()) &&
+        dateMatches
       );
     }).map(projet => ({
       ...projet,
@@ -70,7 +175,14 @@ const Page = () => {
       formatted_type: projet.type_projet?.type || 'Non spécifié',
       formatted_date: formatDate(projet.created_at)
     }));
-  }, [projects, filters]);
+    
+    setTotalRows(filtered.length);
+    
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    
+    return filtered.slice(startIndex, endIndex);
+  }, [projects, appliedFilters, currentPage, rowsPerPage]);
 
   const dataToExport = useMemo(() => {
     return filteredProjets.map((projet) => ({
@@ -82,26 +194,80 @@ const Page = () => {
     }));
   }, [filteredProjets]);
 
-  const handleFilterChange = useCallback((field, value) => {
-    setTempFilters(prev => ({ ...prev, [field]: value }));
-  }, []);
-
-  const applyFilters = useCallback(() => {
-    setFilters(tempFilters);
-    setCurrentPage(1);
-  }, [tempFilters]);
-
-  const resetFilters = useCallback(() => {
-    setFilters(INITIAL_FILTERS);
-    setTempFilters(INITIAL_FILTERS);
-    setCurrentPage(1);
-  }, []);
+  // Filter component for projets
+  const filterComponent = useMemo(() => {
+    return (
+      <div className="space-y-4 ">
+        <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
+          {PROJET_FILTERS.map(filter => {
+            if (filter.type === 'select') {
+              return (
+                <div key={filter.key} className="flex flex-col">
+                  <label className="text-xs font-medium text-gray-700 mb-1">{filter.label}</label>
+                  <SelectInput
+                    options={filter.options || []}
+                    placeholder={filter.placeholder}
+                    value={tempFilters[filter.key] || ''}
+                    onChange={(selectedValue) => handleFilterChange(filter.key, selectedValue)}
+                    width="w-full"
+                  />
+                </div>
+              );
+            } else if (filter.type === 'date') {
+              return (
+                <div key={filter.key} className="flex flex-col">
+                  <label className="text-xs font-medium text-gray-700 mb-1">{filter.label}</label>
+                  <Input
+                    type="date"
+                    name={filter.key}
+                    value={tempFilters[filter.key] || ''}
+                    onChange={(e) => handleFilterChange(filter.key, e.target.value)}
+                    placeholder={filter.placeholder}
+                    className={filter.className}
+                  />
+                </div>
+              );
+            } else {
+              return (
+                <div key={filter.key} className="flex flex-col">
+                  <label className="text-xs font-medium text-gray-700 mb-1">{filter.label}</label>
+                  <Input
+                    type={filter.type}
+                    name={filter.key}
+                    value={tempFilters[filter.key] || ''}
+                    onChange={(e) => handleFilterChange(filter.key, e.target.value)}
+                    placeholder={filter.placeholder}
+                    className={filter.className}
+                  />
+                </div>
+              );
+            }
+          })}
+        </div>
+        <div className="flex justify-end gap-3 pt-2">
+          <button
+            type="button"
+            onClick={resetFilters}
+            className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
+          >
+            Réinitialiser
+          </button>
+          <button
+            type="button"
+            onClick={applyFilters}
+            className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+          >
+            Appliquer les filtres
+          </button>
+        </div>
+      </div>
+    );
+  }, [PROJET_FILTERS, tempFilters]);
 
   // Fetch projects data with pagination
   const fetchProjects = useCallback(async () => {
     const accessToken = token || localStorage.getItem("accessToken")
     
-    // Redirect if no token
     if (!accessToken) {
       router.push('/login') 
       return
@@ -114,12 +280,10 @@ const Page = () => {
         size: rowsPerPage,
       };
 
-      // For non-super admins, filter by user's société
       if (!isSuperAdmin(user?.role) && user?.societe_id) {
         params.societe_id = user.societe_id;
       }
 
-      // If you still want user-specific projects for non-admin roles
       if (user?.id && !isSuperAdmin(user?.role) && !isAdmin(user?.role)) {
         params.user_id = user.id;
       }
@@ -129,7 +293,6 @@ const Page = () => {
         params
       })
       
-      console.log("API Response:", response.data);
       if (response.data?.projets) {
         setProjects(response.data.projets)
         setTotalRows(response.data.total || response.data.pagination?.totalItems || 0)
@@ -157,7 +320,7 @@ const Page = () => {
   // Handle rows per page change
   const handleRowsPerPageChange = (newRowsPerPage) => {
     setRowsPerPage(newRowsPerPage);
-    setCurrentPage(1); // Reset to first page when changing rows per page
+    setCurrentPage(1);
   };
 
   // Handle delete action
@@ -169,9 +332,9 @@ const Page = () => {
   const handleDeleteSuccess = () => {
     setShowDeleteModal(false);
     if (selectedId) {
-      removeProjet(selectedId); // Remove from context
+      removeProjet(selectedId);
     }
-    fetchProjects(); // Refresh the list after deletion
+    fetchProjects();
   };
 
   // Table Columns
@@ -241,15 +404,8 @@ const Page = () => {
         onPageChange={handlePageChange}
         onRowsPerPageChange={handleRowsPerPageChange}
         emptyMessage="Aucun projet trouvé"
-        filterComponent={
-          <ProjetFilter
-            tempFilters={tempFilters}
-            handleFilterChange={handleFilterChange}
-            resetFilters={resetFilters}
-            applyFilters={applyFilters}
-            loading={loading}
-          />
-        }
+        filterComponent={filterComponent}
+        onFilterToggle={handleFilterToggle}
         enableExport={filteredProjets.length > 0}
         dataToExport={dataToExport}
         exportFileName="liste_des_projets"
