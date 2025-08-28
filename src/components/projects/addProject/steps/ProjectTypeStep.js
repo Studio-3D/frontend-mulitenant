@@ -1,5 +1,5 @@
-'use client';
-import React, { useState } from 'react';
+"use client";
+import React, { useState } from "react";
 import {
   PlusIcon,
   CheckIcon,
@@ -7,9 +7,9 @@ import {
   GridIcon,
   BuildingIcon,
   HomeIcon,
-} from 'lucide-react';
-import toast from 'react-hot-toast';
-import SelectInput from '@/components/SelectInput';
+} from "lucide-react";
+import toast from "react-hot-toast";
+import SelectInput from "@/components/SelectInput";
 
 export const ProjectTypeStep = ({
   formData,
@@ -22,7 +22,7 @@ export const ProjectTypeStep = ({
   onAddNewType,
 }) => {
   const [showNewTypeInput, setShowNewTypeInput] = useState(false);
-  const [newType, setNewType] = useState('');
+  const [newType, setNewType] = useState("");
   const [addingType, setAddingType] = useState(false);
 
   const handleCompositionChange = (field, value) => {
@@ -55,7 +55,7 @@ export const ProjectTypeStep = ({
   const handleAddNewType = async () => {
     const trimmedType = newType.trim();
     if (!trimmedType) {
-      toast.error('Please enter a valid type name');
+      toast.error("Please enter a valid type name");
       return;
     }
 
@@ -63,13 +63,13 @@ export const ProjectTypeStep = ({
     try {
       const newTypeObj = await onAddNewType(trimmedType);
       if (newTypeObj) {
-        updateFormData('projectType', newTypeObj.id.toString());
-        toast.success('Type de projet ajouté avec succès');
-        setNewType('');
+        updateFormData("projectType", newTypeObj.id.toString());
+        toast.success("Type de projet ajouté avec succès");
+        setNewType("");
         setShowNewTypeInput(false);
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to add type');
+      toast.error(error.response?.data?.message || "Failed to add type");
     } finally {
       setAddingType(false);
     }
@@ -111,10 +111,10 @@ export const ProjectTypeStep = ({
                     onClick={handleAddNewType}
                     disabled={addingType || !newType.trim()}
                     className={`bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 ${
-                      addingType ? 'opacity-50 cursor-not-allowed' : ''
+                      addingType ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                   >
-                    {addingType ? 'Ajout en cours...' : 'Ajouter'}
+                    {addingType ? "Ajout en cours..." : "Ajouter"}
                   </button>
                   <button
                     type="button"
@@ -133,10 +133,10 @@ export const ProjectTypeStep = ({
                   name="projectType"
                   value={formData.projectType}
                   onChange={(selectedId) =>
-                    updateFormData('projectType', selectedId)
+                    updateFormData("projectType", selectedId)
                   }
                   options={[
-                    { value: '', label: 'Sélectionnez un type' },
+                    { value: "", label: "Sélectionnez un type" },
                     ...typeOptions.map((type) => ({
                       value: type.id.toString(),
                       label: type.type,
@@ -185,23 +185,20 @@ export const ProjectTypeStep = ({
         <div className="flex flex-wrap gap-4">
           <div
             className={`flex-1 border rounded-md p-4  ${
-              formData.composition.tranche.enabled ? 'bg-white' : 'bg-gray-50'
+              formData.composition.tranche.enabled ? "bg-white" : "bg-gray-50"
             }`}
           >
             <div className="flex flex-col items-center text-center mb-3">
               <LayersIcon size={32} className="text-blue-500 mb-2" />
               <h4 className="font-medium">Tranche</h4>
-              <p className="text-xs text-gray-500 mt-6">
-                Ce projet se compose des tranches
-              </p>
             </div>
             <div className="flex items-center gap-3 mb-3 justify-center">
               <div
-                onClick={() => handleCompositionToggle('tranche')}
+                onClick={() => handleCompositionToggle("tranche")}
                 className={`w-5 h-5 border rounded flex items-center justify-center cursor-pointer ${
                   formData.composition.tranche.enabled
-                    ? 'bg-blue-600 border-blue-600'
-                    : 'border-gray-300'
+                    ? "bg-blue-600 border-blue-600"
+                    : "border-gray-300"
                 }`}
               >
                 {formData.composition.tranche.enabled && (
@@ -221,9 +218,9 @@ export const ProjectTypeStep = ({
               name="composition.tranche.value"
               min="0"
               disabled={!formData.composition.tranche.enabled}
-              value={formData.composition.tranche.value || ''}
+              value={formData.composition.tranche.value || ""}
               onChange={(e) =>
-                handleCompositionChange('tranche', e.target.value)
+                handleCompositionChange("tranche", e.target.value)
               }
               className="block w-full mt-6 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2 disabled:bg-gray-100 disabled:text-gray-500"
             />
@@ -231,23 +228,20 @@ export const ProjectTypeStep = ({
 
           <div
             className={`flex-1 border rounded-md p-4 ${
-              formData.composition.blocs.enabled ? 'bg-white' : 'bg-gray-50'
+              formData.composition.blocs.enabled ? "bg-white" : "bg-gray-50"
             }`}
           >
             <div className="flex flex-col items-center text-center mb-3">
               <GridIcon size={32} className="text-blue-500 mb-2" />
               <h4 className="font-medium">Blocs</h4>
-              <p className="text-xs text-gray-500 mt-6">
-                Ce projet se compose des blocs
-              </p>
             </div>
             <div className="flex items-center gap-3 mb-3 justify-center">
               <div
-                onClick={() => handleCompositionToggle('blocs')}
+                onClick={() => handleCompositionToggle("blocs")}
                 className={`w-5 h-5 border rounded flex items-center justify-center cursor-pointer ${
                   formData.composition.blocs.enabled
-                    ? 'bg-blue-600 border-blue-600'
-                    : 'border-gray-300'
+                    ? "bg-blue-600 border-blue-600"
+                    : "border-gray-300"
                 }`}
               >
                 {formData.composition.blocs.enabled && (
@@ -267,31 +261,28 @@ export const ProjectTypeStep = ({
               name="composition.blocs.value"
               min="0"
               disabled={!formData.composition.blocs.enabled}
-              value={formData.composition.blocs.value || ''}
-              onChange={(e) => handleCompositionChange('blocs', e.target.value)}
+              value={formData.composition.blocs.value || ""}
+              onChange={(e) => handleCompositionChange("blocs", e.target.value)}
               className="block w-full mt-6 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2 disabled:bg-gray-100 disabled:text-gray-500"
             />
           </div>
 
           <div
             className={`flex-1 border rounded-md p-4 ${
-              formData.composition.immeuble.enabled ? 'bg-white' : 'bg-gray-50'
+              formData.composition.immeuble.enabled ? "bg-white" : "bg-gray-50"
             }`}
           >
             <div className="flex flex-col items-center text-center mb-3">
               <BuildingIcon size={32} className="text-blue-500 mb-2" />
               <h4 className="font-medium">Immeuble</h4>
-              <p className="text-xs text-gray-500 mt-6">
-                Ce projet se compose des immeubles
-              </p>
             </div>
             <div className="flex items-center gap-3 mb-3 justify-center">
               <div
-                onClick={() => handleCompositionToggle('immeuble')}
+                onClick={() => handleCompositionToggle("immeuble")}
                 className={`w-5 h-5 border rounded flex items-center justify-center cursor-pointer ${
                   formData.composition.immeuble.enabled
-                    ? 'bg-blue-600 border-blue-600'
-                    : 'border-gray-300'
+                    ? "bg-blue-600 border-blue-600"
+                    : "border-gray-300"
                 }`}
               >
                 {formData.composition.immeuble.enabled && (
@@ -311,9 +302,9 @@ export const ProjectTypeStep = ({
               name="composition.immeuble.value"
               min="0"
               disabled={!formData.composition.immeuble.enabled}
-              value={formData.composition.immeuble.value || ''}
+              value={formData.composition.immeuble.value || ""}
               onChange={(e) =>
-                handleCompositionChange('immeuble', e.target.value)
+                handleCompositionChange("immeuble", e.target.value)
               }
               className="block w-full rounded-md mt-6 border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2 disabled:bg-gray-100 disabled:text-gray-500"
             />
@@ -321,23 +312,20 @@ export const ProjectTypeStep = ({
 
           <div
             className={`flex-1 border rounded-md p-4 ${
-              formData.composition.bien.enabled ? 'bg-white' : 'bg-gray-50'
+              formData.composition.bien.enabled ? "bg-white" : "bg-gray-50"
             }`}
           >
             <div className="flex flex-col items-center text-center mb-3">
               <HomeIcon size={32} className="text-blue-500 mb-2" />
               <h4 className="font-medium">Bien</h4>
-              <p className="text-xs text-gray-500 mt-6">
-                Ce projet se compose des biens
-              </p>
             </div>
             <div className="flex items-center gap-3 mb-3 justify-center">
               <div
-                onClick={() => handleCompositionToggle('bien')}
+                onClick={() => handleCompositionToggle("bien")}
                 className={`w-5 h-5 border rounded flex items-center justify-center cursor-pointer ${
                   formData.composition.bien.enabled
-                    ? 'bg-blue-600 border-blue-600'
-                    : 'border-gray-300'
+                    ? "bg-blue-600 border-blue-600"
+                    : "border-gray-300"
                 }`}
               >
                 {formData.composition.bien.enabled && (
@@ -357,8 +345,8 @@ export const ProjectTypeStep = ({
               name="composition.bien.value"
               min="0"
               disabled={!formData.composition.bien.enabled}
-              value={formData.composition.bien.value || ''}
-              onChange={(e) => handleCompositionChange('bien', e.target.value)}
+              value={formData.composition.bien.value || ""}
+              onChange={(e) => handleCompositionChange("bien", e.target.value)}
               className="block w-full rounded-md mt-6 border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2 disabled:bg-gray-100 disabled:text-gray-500"
             />
           </div>
@@ -390,8 +378,8 @@ export const ProjectTypeStep = ({
               !formData.composition.blocs.value) ||
             (formData.composition.tranche.enabled &&
               !formData.composition.tranche.value)
-              ? 'opacity-50 cursor-not-allowed'
-              : ''
+              ? "opacity-50 cursor-not-allowed"
+              : ""
           }`}
         >
           Suivant
