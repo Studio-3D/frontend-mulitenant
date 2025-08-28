@@ -4,8 +4,13 @@ export default function BienSuperficies({ bien }) {
   
   // Format area with m²
   const formatArea = (value) => {
-    if (value === null || value === undefined) return 'N/A';
+    if (value === null || value === undefined || value === 0 || value === "0" || value === "000") return 'N/A';
     return `${value} m²`;
+  };
+
+  // Helper function to check if a value should be displayed
+  const shouldDisplay = (value) => {
+    return value !== null && value !== undefined && value !== 0 && value !== "0" && value !== "000";
   };
 
   return (
@@ -38,73 +43,85 @@ export default function BienSuperficies({ bien }) {
           </div>
           
           {/* Terrasse */}
-          {(bien.superficie_terrasse || bien.superficie_terrasse_calculer) && (
+          {(shouldDisplay(bien.superficie_terrasse) || shouldDisplay(bien.superficie_terrasse_calculer)) && (
             <>
-              <div>
-                <h3 className="text-sm font-medium !text-gray-500">Superficie terrasse</h3>
-                <p className="mt-1">{formatArea(bien.superficie_terrasse)}</p>
-              </div>
+              {shouldDisplay(bien.superficie_terrasse) && (
+                <div>
+                  <h3 className="text-sm font-medium !text-gray-500">Superficie terrasse</h3>
+                  <p className="mt-1">{formatArea(bien.superficie_terrasse)}</p>
+                </div>
+              )}
               
-              <div>
-                <h3 className="text-sm font-medium !text-gray-500">Superficie terrasse calculée</h3>
-                <p className="mt-1">{formatArea(bien.superficie_terrasse_calculer)}</p>
-              </div>
+              {shouldDisplay(bien.superficie_terrasse_calculer) && (
+                <div>
+                  <h3 className="text-sm font-medium !text-gray-500">Superficie terrasse calculée</h3>
+                  <p className="mt-1">{formatArea(bien.superficie_terrasse_calculer)}</p>
+                </div>
+              )}
             </>
           )}
           
           {/* Balcon */}
-          {(bien.superficie_balcon || bien.superficie_balcon_calculer) && (
+          {(shouldDisplay(bien.superficie_balcon) || shouldDisplay(bien.superficie_balcon_calculer)) && (
             <>
-              <div>
-                <h3 className="text-sm font-medium !text-gray-500">Superficie balcon</h3>
-                <p className="mt-1">{formatArea(bien.superficie_balcon)}</p>
-              </div>
+              {shouldDisplay(bien.superficie_balcon) && (
+                <div>
+                  <h3 className="text-sm font-medium !text-gray-500">Superficie balcon</h3>
+                  <p className="mt-1">{formatArea(bien.superficie_balcon)}</p>
+                </div>
+              )}
               
-              <div>
-                <h3 className="text-sm font-medium !text-gray-500">Superficie balcon calculée</h3>
-                <p className="mt-1">{formatArea(bien.superficie_balcon_calculer)}</p>
-              </div>
+              {shouldDisplay(bien.superficie_balcon_calculer) && (
+                <div>
+                  <h3 className="text-sm font-medium !text-gray-500">Superficie balcon calculée</h3>
+                  <p className="mt-1">{formatArea(bien.superficie_balcon_calculer)}</p>
+                </div>
+              )}
             </>
           )}
           
           {/* Jardin */}
-          {(bien.superficie_jardin || bien.superficie_jardin_calculer) && (
+          {(shouldDisplay(bien.superficie_jardin) || shouldDisplay(bien.superficie_jardin_calculer)) && (
             <>
-              <div>
-                <h3 className="text-sm font-medium !text-gray-500">Superficie jardin</h3>
-                <p className="mt-1">{formatArea(bien.superficie_jardin)}</p>
-              </div>
+              {shouldDisplay(bien.superficie_jardin) && (
+                <div>
+                  <h3 className="text-sm font-medium !text-gray-500">Superficie jardin</h3>
+                  <p className="mt-1">{formatArea(bien.superficie_jardin)}</p>
+                </div>
+              )}
               
-              <div>
-                <h3 className="text-sm font-medium !text-gray-500">Superficie jardin calculée</h3>
-                <p className="mt-1">{formatArea(bien.superficie_jardin_calculer)}</p>
-              </div>
+              {shouldDisplay(bien.superficie_jardin_calculer) && (
+                <div>
+                  <h3 className="text-sm font-medium !text-gray-500">Superficie jardin calculée</h3>
+                  <p className="mt-1">{formatArea(bien.superficie_jardin_calculer)}</p>
+                </div>
+              )}
             </>
           )}
         </div>
         
         {/* Parking and Box section */}
-        {(bien.num_parking || bien.superficie_parking || bien.prix_parking || 
-          bien.num_box || bien.superficie_box || bien.prix_box) && (
+        {(shouldDisplay(bien.num_parking) || shouldDisplay(bien.superficie_parking) || shouldDisplay(bien.prix_parking) || 
+          shouldDisplay(bien.num_box) || shouldDisplay(bien.superficie_box) || shouldDisplay(bien.prix_box)) && (
           <div className="mt-8 border-t pt-6">
             <h3 className="text-lg font-medium mb-4">Parking et Box</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Parking */}
-              {bien.num_parking && (
+              {shouldDisplay(bien.num_parking) && (
                 <div>
                   <h4 className="text-sm font-medium !text-gray-500">Numéro parking</h4>
                   <p className="mt-1">{bien.num_parking}</p>
                 </div>
               )}
               
-              {bien.superficie_parking && (
+              {shouldDisplay(bien.superficie_parking) && (
                 <div>
                   <h4 className="text-sm font-medium !text-gray-500">Superficie parking</h4>
                   <p className="mt-1">{formatArea(bien.superficie_parking)}</p>
                 </div>
               )}
               
-              {bien.prix_parking && (
+              {shouldDisplay(bien.prix_parking) && (
                 <div>
                   <h4 className="text-sm font-medium !text-gray-500">Prix parking</h4>
                   <p className="mt-1">{bien.prix_parking.toLocaleString('fr-FR')} Dhs</p>
@@ -112,21 +129,21 @@ export default function BienSuperficies({ bien }) {
               )}
               
               {/* Box */}
-              {bien.num_box && (
+              {shouldDisplay(bien.num_box) && (
                 <div>
                   <h4 className="text-sm font-medium !text-gray-500">Numéro box</h4>
                   <p className="mt-1">{bien.num_box}</p>
                 </div>
               )}
               
-              {bien.superficie_box && (
+              {shouldDisplay(bien.superficie_box) && (
                 <div>
                   <h4 className="text-sm font-medium !text-gray-500">Superficie box</h4>
                   <p className="mt-1">{formatArea(bien.superficie_box)}</p>
                 </div>
               )}
               
-              {bien.prix_box && (
+              {shouldDisplay(bien.prix_box) && (
                 <div>
                   <h4 className="text-sm font-medium !text-gray-500">Prix box</h4>
                   <p className="mt-1">{bien.prix_box.toLocaleString('fr-FR')} Dhs</p>

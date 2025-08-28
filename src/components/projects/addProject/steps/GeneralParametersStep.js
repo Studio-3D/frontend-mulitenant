@@ -219,170 +219,230 @@ export const GeneralParametersStep = ({
         <h3 className="text-lg font-medium text-gray-800">
           Paramètres généraux
         </h3>
+        {editMode ? (
+          <div className="space-y-3 mb-6">
+            <label className="block text-sm font-medium text-gray-700">
+              Utilisateurs avec accès au projet{' '}
+              <span className="text-red-500">*</span>
+            </label>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Left Column */}
-          <div>
-            {renderParameterField('typesDeBien', 'Types de bien')}
-            {renderParameterField('vues', 'Vues')}
-            {renderParameterField('typologies', 'Typologies')}
-          </div>
+            <SelectInput
+              isMulti
+              label=""
+              placeholder="Sélectionnez des utilisateurs"
+              options={userOptions}
+              value={selectedUserIds}
+              onChange={handleUserSelection}
+              error={errors.parameters?.utilisateursAcces}
+              submitted={touched.parameters?.utilisateursAcces}
+              required
+            />
 
-          {/* Right Column */}
-          <div>
-            {/* Partners Section */}
-            <div className="space-y-3 mb-6">
-              <label className="block text-sm font-medium text-gray-700">
-                Partenaires{' '}
-                <span className="text-gray-500 text-xs">(optionnel)</span>
-              </label>
-
-              {/* Input to add new partners */}
-              <div className="flex gap-2">
-                <div className="flex-1 flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Description du partenaire"
-                    value={partenaireInputs.description}
-                    onChange={(e) =>
-                      setPartenaireInputs((prev) => ({
-                        ...prev,
-                        description: e.target.value,
-                      }))
-                    }
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2"
-                  />
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    placeholder="Remise %"
-                    value={partenaireInputs.remise}
-                    onChange={(e) =>
-                      setPartenaireInputs((prev) => ({
-                        ...prev,
-                        remise: e.target.value,
-                      }))
-                    }
-                    className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2"
-                  />
+            {/* Display selected users */}
+            {selectedUsers.length > 0 && (
+              <div className="mt-3">
+                <h4 className="text-sm font-medium text-gray-700 mb-2">
+                  {editMode ? 'Utilisateurs existants' : 'Utilisateurs ajoutés'}{' '}
+                  ({selectedUsers.length})
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {selectedUsers.map((user) => (
+                    <div
+                      key={user.id}
+                      className="flex items-center bg-blue-50 rounded-full px-3 py-1 border border-blue-100"
+                    >
+                      <span className="text-sm text-blue-800">{`${user.prenom} ${user.name}`}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updatedIds = selectedUserIds.filter(
+                            (id) => id !== user.id.toString()
+                          );
+                          handleUserSelection(updatedIds);
+                        }}
+                        className="ml-2 text-blue-500 hover:text-blue-700"
+                        aria-label={`Retirer ${user.prenom} ${user.name}`}
+                      >
+                        <XIcon size={14} />
+                      </button>
+                    </div>
+                  ))}
                 </div>
-                <button
-                  type="button"
-                  onClick={handleAddPartenaire}
-                  className="bg-gray-100 hover:bg-gray-200 text-gray-800 p-2 rounded-md"
-                  aria-label="Ajouter partenaire"
-                >
-                  <PlusIcon size={20} />
-                </button>
+              </div>
+            )}
+            {display_errors_users && (
+              <div className="text-red-500 text-sm mt-1">
+                {'Veuillez sélectionner au moins un utilisateur'}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Left Column */}
+            <div>
+              {renderParameterField('typesDeBien', 'Types de bien')}
+              {renderParameterField('vues', 'Vues')}
+              {renderParameterField('typologies', 'Typologies')}
+            </div>
+
+            {/* Right Column */}
+            <div>
+              {/* Partners Section */}
+              <div className="space-y-3 mb-6">
+                <label className="block text-sm font-medium text-gray-700">
+                  Partenaires{' '}
+                  <span className="text-gray-500 text-xs">(optionnel)</span>
+                </label>
+
+                {/* Input to add new partners */}
+                <div className="flex gap-2">
+                  <div className="flex-1 flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Description du partenaire"
+                      value={partenaireInputs.description}
+                      onChange={(e) =>
+                        setPartenaireInputs((prev) => ({
+                          ...prev,
+                          description: e.target.value,
+                        }))
+                      }
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2"
+                    />
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      placeholder="Remise %"
+                      value={partenaireInputs.remise}
+                      onChange={(e) =>
+                        setPartenaireInputs((prev) => ({
+                          ...prev,
+                          remise: e.target.value,
+                        }))
+                      }
+                      className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddPartenaire}
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-800 p-2 rounded-md"
+                    aria-label="Ajouter partenaire"
+                  >
+                    <PlusIcon size={20} />
+                  </button>
+                </div>
+
+                {/* Display all partners */}
+                {(formData.parameters.partenaires || []).length > 0 && (
+                  <div className="mt-2">
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">
+                      {editMode
+                        ? 'Partenaires existants'
+                        : 'Partenaires ajoutés'}{' '}
+                      ({formData.parameters.partenaires.length})
+                    </h4>
+                    <div className="flex flex-col gap-2">
+                      {formData.parameters.partenaires.map(
+                        (partenaire, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between bg-gray-100 rounded-md px-3 py-2"
+                          >
+                            <div>
+                              <span className="font-medium">
+                                {getItemDisplayValue(partenaire, 'partenaires')}
+                              </span>
+                              {partenaire.remise && (
+                                <span className="ml-2 text-sm text-gray-500">
+                                  Remise: {partenaire.remise}%
+                                </span>
+                              )}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleRemoveItem('partenaires', index)
+                              }
+                              className="text-gray-500 hover:text-gray-700"
+                              aria-label={`Retirer ${getItemDisplayValue(
+                                partenaire,
+                                'partenaires'
+                              )}`}
+                            >
+                              <XIcon size={14} />
+                            </button>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* Display all partners */}
-              {(formData.parameters.partenaires || []).length > 0 && (
-                <div className="mt-2">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">
-                    {editMode ? 'Partenaires existants' : 'Partenaires ajoutés'}{' '}
-                    ({formData.parameters.partenaires.length})
-                  </h4>
-                  <div className="flex flex-col gap-2">
-                    {formData.parameters.partenaires.map(
-                      (partenaire, index) => (
+              {/* Users Access Section */}
+              <div className="space-y-3 mb-6">
+                <label className="block text-sm font-medium text-gray-700">
+                  Utilisateurs avec accès au projet{' '}
+                  <span className="text-red-500">*</span>
+                </label>
+
+                <SelectInput
+                  isMulti
+                  label=""
+                  placeholder="Sélectionnez des utilisateurs"
+                  options={userOptions}
+                  value={selectedUserIds}
+                  onChange={handleUserSelection}
+                  error={errors.parameters?.utilisateursAcces}
+                  submitted={touched.parameters?.utilisateursAcces}
+                  required
+                />
+
+                {/* Display selected users */}
+                {selectedUsers.length > 0 && (
+                  <div className="mt-3">
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">
+                      {editMode
+                        ? 'Utilisateurs existants'
+                        : 'Utilisateurs ajoutés'}{' '}
+                      ({selectedUsers.length})
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedUsers.map((user) => (
                         <div
-                          key={index}
-                          className="flex items-center justify-between bg-gray-100 rounded-md px-3 py-2"
+                          key={user.id}
+                          className="flex items-center bg-blue-50 rounded-full px-3 py-1 border border-blue-100"
                         >
-                          <div>
-                            <span className="font-medium">
-                              {getItemDisplayValue(partenaire, 'partenaires')}
-                            </span>
-                            {partenaire.remise && (
-                              <span className="ml-2 text-sm text-gray-500">
-                                Remise: {partenaire.remise}%
-                              </span>
-                            )}
-                          </div>
+                          <span className="text-sm text-blue-800">{`${user.prenom} ${user.name}`}</span>
                           <button
                             type="button"
-                            onClick={() =>
-                              handleRemoveItem('partenaires', index)
-                            }
-                            className="text-gray-500 hover:text-gray-700"
-                            aria-label={`Retirer ${getItemDisplayValue(
-                              partenaire,
-                              'partenaires'
-                            )}`}
+                            onClick={() => {
+                              const updatedIds = selectedUserIds.filter(
+                                (id) => id !== user.id.toString()
+                              );
+                              handleUserSelection(updatedIds);
+                            }}
+                            className="ml-2 text-blue-500 hover:text-blue-700"
+                            aria-label={`Retirer ${user.prenom} ${user.name}`}
                           >
                             <XIcon size={14} />
                           </button>
                         </div>
-                      )
-                    )}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-
-            {/* Users Access Section */}
-            <div className="space-y-3 mb-6">
-              <label className="block text-sm font-medium text-gray-700">
-                Utilisateurs avec accès au projet{' '}
-                <span className="text-red-500">*</span>
-              </label>
-
-              <SelectInput
-                isMulti
-                label=""
-                placeholder="Sélectionnez des utilisateurs"
-                options={userOptions}
-                value={selectedUserIds}
-                onChange={handleUserSelection}
-                error={errors.parameters?.utilisateursAcces}
-                submitted={touched.parameters?.utilisateursAcces}
-                required
-              />
-
-              {/* Display selected users */}
-              {selectedUsers.length > 0 && (
-                <div className="mt-3">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">
-                    {editMode
-                      ? 'Utilisateurs existants'
-                      : 'Utilisateurs ajoutés'}{' '}
-                    ({selectedUsers.length})
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedUsers.map((user) => (
-                      <div
-                        key={user.id}
-                        className="flex items-center bg-blue-50 rounded-full px-3 py-1 border border-blue-100"
-                      >
-                        <span className="text-sm text-blue-800">{`${user.prenom} ${user.name}`}</span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const updatedIds = selectedUserIds.filter(
-                              (id) => id !== user.id.toString()
-                            );
-                            handleUserSelection(updatedIds);
-                          }}
-                          className="ml-2 text-blue-500 hover:text-blue-700"
-                          aria-label={`Retirer ${user.prenom} ${user.name}`}
-                        >
-                          <XIcon size={14} />
-                        </button>
-                      </div>
-                    ))}
+                )}
+                {display_errors_users && (
+                  <div className="text-red-500 text-sm mt-1">
+                    {'Veuillez sélectionner au moins un utilisateur'}
                   </div>
-                </div>
-              )}
-              {display_errors_users && (
-                <div className="text-red-500 text-sm mt-1">
-                  {'Veuillez sélectionner au moins un utilisateur'}
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Navigation Buttons */}

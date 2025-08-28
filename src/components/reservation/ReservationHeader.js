@@ -9,15 +9,18 @@ import {
   PaperclipIcon,
   CalendarIcon,
   Coins,
+  Home,
 } from 'lucide-react';
 import LoadingSpin from '@/components/LoadingSpin';
 import Button from '@/components/Button'; // adjust the path as needed
 import Modal from '@/components/Modal';
 import Modal_Relance from './Modal_Relance';
+import { ENDPOINTS } from '@/configs/api';
+import { useRouter } from 'next/navigation';
 
-export const ReservationHeader = ({ reservationData ,userRole}) => {
+export const ReservationHeader = ({ reservationData, userRole }) => {
   const [open_dialog, setOpen_dialog] = useState(false);
-
+  const router = useRouter();
   // Add null checks and default values
   if (!reservationData) {
     return (
@@ -41,7 +44,10 @@ export const ReservationHeader = ({ reservationData ,userRole}) => {
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <FileTextIcon className="h-8 w-8 text-blue-500 mr-3" />
+            <Home
+              className="h-8 w-8 text-blue-500 mr-3 cursor-pointer"
+              onClick={() => router.back()}
+            />
             <div>
               <h1 className="text-2xl font-bold text-gray-800">
                 Détails de réservation{' '}
@@ -69,7 +75,7 @@ export const ReservationHeader = ({ reservationData ,userRole}) => {
             </span>
           </div>
         </div>
-        {reservation.statut == 2 && userRole==3 &&  (
+        {reservation.statut == 2 && userRole == 3 && (
           <div className="flex justify-end">
             <Button type="delete" onClick={() => handle_relance()}>
               Relancer

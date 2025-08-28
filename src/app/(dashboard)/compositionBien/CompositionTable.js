@@ -6,20 +6,14 @@ import Table from '@/components/Table';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { APIURL, ENDPOINTS } from '@/configs/api';
-import { fetchData_table_by_projet } from '@/configs/api-utils';
-import { isAdmin, isSuperAdmin } from '@/configs/enum';
+import { APIURL } from '@/configs/api';
+
 import { useAuth } from '@/context/AuthContext';
-import Input from '@/components/Input';
-import InputSelect from '@/components/inputSelect';
-import { useProjet } from '@/context/ProjetContext'; // Import ProjetContext
-import ProjetDialog from '@/components/ProjetDialog'; // Import ProjetDialog
-import Select from 'react-select';
+
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function Composition({ bien, reloadTrigger }) {
-  const [prestataires, setPrestataires] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -33,9 +27,6 @@ export default function Composition({ bien, reloadTrigger }) {
   const { user, token } = useAuth();
   const accesstoken = token || localStorage.getItem('accessToken');
   const router = useRouter();
-  const { selectedProjet, projets, fetchProjets } = useProjet(); // Get data from ProjetContext
-  const [showProjetModal, setShowProjetModal] = useState(false); // State for project modal
-  const [selectedCompositionBien, setSelectedCompositionBien] = useState(null);
   const selectedBien = localStorage.getItem('selectedBien');
   const [showEditModal, setShowEditModal] = useState(false);
 
@@ -188,12 +179,12 @@ export default function Composition({ bien, reloadTrigger }) {
         </div>
       ),
     },
-    { key: 'nbre_balcons', label: 'Nbre balcons' },
-    { key: 'nbre_buanderies', label: 'Nbre buanderies' },
     { key: 'nbre_chambres', label: 'Nbre chambres' },
-    { key: 'nbre_cuisines', label: 'Nbre cuisines' },
-    { key: 'nbre_halls', label: 'Nbre halls' },
-    { key: 'nbre_placards', label: 'Nbre placards' },
+    { key: 'nbre_salons', label: 'Nbre salons' },
+
+    { key: 'nbre_sdb', label: 'Nbre Salle de Bains' },
+    { key: 'nbre_balcons', label: 'Nbre balcons' },
+    { key: 'nbre_terasses', label: 'Nbre terasses' },
     {
       key: 'actions',
       label: 'Actions',
@@ -272,23 +263,44 @@ export default function Composition({ bien, reloadTrigger }) {
       {showModal && selectedRow && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white w-full max-w-xl p-6 rounded-lg shadow-xl">
-            <h2 className="text-xl font-bold mb-6 text-center text-gray-800">
-              Détails des pièces
-            </h2>
+            <div className="w-full h-[60px] bg-blue-600 px-4 mb-5">
+              <div className="flex items-center justify-center h-full">
+                <h1 className="text-3xl font-bold text-center text-white">
+                  Détails des pièces
+                </h1>
+              </div>
+            </div>
 
             <div className="grid grid-cols-2 gap-4">
               {Object.entries(selectedRow)
                 .filter(([key]) => key.startsWith('nbre_'))
-                .map(([key, value]) => (
-                  <div key={key} className="flex flex-col">
-                    <span className="text-sm text-gray-500 capitalize">
-                      {key.replace('nbre_', '').replace('_', ' ')}
-                    </span>
-                    <span className="text-base font-medium text-gray-900">
-                      {value}
-                    </span>
-                  </div>
-                ))}
+                .map(([key, value]) => {
+                  // Extract the part after 'nbre_'
+                  const roomType = key.replace('nbre_', '');
+
+                  // Create a mapping for special cases
+                  const roomNames = {
+                    sdb: 'salon de bain',
+                    // Add other mappings if needed
+                    // 'wc': 'toilettes',
+                    // 'autres': 'autres pièces'
+                  };
+
+                  // Get the display name, fallback to replacing underscores with spaces
+                  const displayName =
+                    roomNames[roomType] || roomType.replace('_', ' ');
+
+                  return (
+                    <div key={key} className="flex flex-col">
+                      <span className="text-sm text-gray-500 capitalize">
+                        {displayName}
+                      </span>
+                      <span className="text-base font-medium text-gray-900">
+                        {value}
+                      </span>
+                    </div>
+                  );
+                })}
             </div>
 
             <div className="mt-6 text-right">
@@ -305,9 +317,13 @@ export default function Composition({ bien, reloadTrigger }) {
       {showEditModal && selectedRow && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white w-full max-w-xl p-6 rounded-lg shadow-xl">
-            <h2 className="text-xl font-bold mb-6 text-center text-gray-800">
-              Modifier les pièces
-            </h2>
+            <div className="w-full h-[60px] bg-blue-600 px-4 mb-5">
+              <div className="flex items-center justify-center h-full">
+                <h1 className="text-3xl font-bold text-center text-white">
+                  Modifier les piéces
+                </h1>
+              </div>
+            </div>
 
             <form
               onSubmit={(e) => {

@@ -20,7 +20,6 @@ import Input from '../Input';
 import Modal from '../Modal';
 import Composition from '@/app/(dashboard)/compositionBien/CompositionTable';
 export default function BienForm() {
-  const [tr_id, set_tr_id] = useState(null);
   const [hasJardin, setHasJardin] = useState(false);
   const [hasParking, setHasParking] = useState(false);
   const [hasBox, setHasBox] = useState(false);
