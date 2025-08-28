@@ -143,7 +143,7 @@ export const ProjectDetailsPage = () => {
       tranche_nom: projectData?.projet.tranche.find(t => t.id === i.tranche_id)?.nom || '',
       bloc_nom: projectData?.projet.bloc.find(b => b.id === i.bloc_id)?.nom || '',
       titre_foncier: i.titre_foncier,
-      nbre_biens: 0,
+      nbre_biens: i.nbre_biens ||0,
     })) || [];
 
     // Map bloc data to match your column requirements
