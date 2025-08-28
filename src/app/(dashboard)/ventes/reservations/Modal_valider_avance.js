@@ -101,7 +101,7 @@ export default function Modal_valider_avance({
       .then((res) => {
         setLoading({ ...loading, form: false });
         if (res.status == 200) {
-          toast.success("Réservation et Avance Traitées avec succès");
+          toast.success("Réservation et Avance validées avec succès");
           onClose_all();
           localStorage.setItem("load_data_reservation", 1);
         }
@@ -223,7 +223,7 @@ export default function Modal_valider_avance({
       <div className="w-full h-[60px] bg-green-600 px-4">
         <div className="flex items-center justify-center h-full">
           <h1 className="text-3xl font-bold text-center text-white">
-            Etape 2: Traiter Premier Avance N° {first_num_recu}
+            Etape 2: Valider Première Avance
           </h1>
         </div>
       </div>

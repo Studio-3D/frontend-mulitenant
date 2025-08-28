@@ -1560,7 +1560,7 @@ export default function VisiteFormEdit({ id }) {
                               defaultValues={defaultValues}
                             />
                             <TextField
-                              label="Prix Remisé:"
+                              label="Prix Unitaire Remisé:"
                               name="prix_remise"
                               type="number"
                               control={control}
@@ -1570,7 +1570,7 @@ export default function VisiteFormEdit({ id }) {
                               onChange={(e) => handlechangeprix_remise(e)}
                             />
                             <TextField
-                              label="Prix Forfetaire:"
+                              label="Remise Forfetaire:"
                               name="prix_forfetaire"
                               type="number"
                               control={control}
