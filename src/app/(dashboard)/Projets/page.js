@@ -28,77 +28,36 @@ const Page = () => {
   const [selectedId, setSelectedId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   
-  // State for filters
-  const [tempFilters, setTempFilters] = useState({});
-  const [appliedFilters, setAppliedFilters] = useState({});
-  const [showFilter, setShowFilter] = useState(false);
+  // State for filters - use 'type' to match backend expectation
+  const [filters, setFilters] = useState({
+    nom: "",
+    code: "",
+    type: "", // Changed back to 'type' to match backend
+    adresse: "",
+    date: ""
+  });
 
-  // Extract unique types from projects
+  const [tempFilters, setTempFilters] = useState({ ...filters });
+
+  const accesstoken = token || localStorage.getItem("accessToken");
+
+  // Extract unique types from projects with IDs
   const typeOptions = useMemo(() => {
     if (!projects || projects.length === 0) return [];
     
-    const uniqueTypes = new Set();
+    const uniqueTypes = new Map();
     projects.forEach(project => {
-      if (project.type_projet?.type) {
-        uniqueTypes.add(project.type_projet.type);
+      if (project.type_projet?.id && project.type_projet?.type) {
+        // Use ID as value, name as label
+        uniqueTypes.set(project.type_projet.id, project.type_projet.type);
       }
     });
     
-    return Array.from(uniqueTypes).map(type => ({
+    return Array.from(uniqueTypes, ([id, type]) => ({
       label: type,
-      value: type
+      value: id.toString() // Convert to string for SelectInput
     }));
   }, [projects]);
-
-  // Define filter configuration for Projets
-  const PROJET_FILTERS = useMemo(() => [
-    { 
-      key: 'nom', 
-      label: 'Nom', 
-      type: 'text', 
-      placeholder: 'Nom du projet...',
-      className: "h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
-    },
-    { 
-      key: 'code', 
-      label: 'Code', 
-      type: 'text', 
-      placeholder: 'Code du projet...',
-      className: "h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
-    },
-    { 
-      key: 'type', 
-      label: 'Type', 
-      type: 'select', 
-      placeholder: 'Type de projet...',
-      options: typeOptions,
-      className: "h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
-    },
-    { 
-      key: 'adresse', 
-      label: 'Adresse', 
-      type: 'text', 
-      placeholder: 'Adresse...',
-      className: "h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
-    },
-    { 
-      key: 'date', 
-      label: 'Date création', 
-      type: 'date', 
-      placeholder: 'Sélectionner une date',
-      className: "h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
-    },
-  ], [typeOptions]);
-
-  // Initialize filters when component mounts or when filters change
-  useEffect(() => {
-    const initialFilters = {};
-    PROJET_FILTERS.forEach(filter => {
-      initialFilters[filter.key] = '';
-    });
-    setTempFilters(initialFilters);
-    setAppliedFilters(initialFilters);
-  }, [PROJET_FILTERS]);
 
   const formatDate = (dateString) => {
     if (!dateString) return '';
@@ -111,167 +70,33 @@ const Page = () => {
   };
 
   // Handle filter change
-  const handleFilterChange = (key, value) => {
-    setTempFilters(prev => ({
-      ...prev,
-      [key]: value
-    }));
+  const handleFilterChange = (field, value) => {
+    setTempFilters(prev => ({ ...prev, [field]: value }));
   };
 
   // Apply filters
   const applyFilters = () => {
-    setAppliedFilters({...tempFilters}); 
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset to first page when filters change
+    setFilters(tempFilters);
   };
 
   // Reset filters
   const resetFilters = () => {
-    const resetFilters = {};
-    PROJET_FILTERS.forEach(filter => {
-      resetFilters[filter.key] = '';
-    });
-    setTempFilters(resetFilters);
-    setAppliedFilters(resetFilters);
+    const reset = {
+      nom: "",
+      code: "",
+      type: "", // Changed back to 'type'
+      adresse: "",
+      date: ""
+    };
     setCurrentPage(1);
+    setFilters(reset);
+    setTempFilters(reset);
   };
 
-  // Handle filter toggle
-  const handleFilterToggle = (isVisible) => {
-    setShowFilter(isVisible);
-  };
-
-  // Get ALL filtered projects (not just current page)
-  const getAllFilteredProjects = useMemo(() => {
-    if (!projects) return [];
-    
-    return projects.filter(projet => {
-      const projetType = projet.type_projet?.type || '';
-      const projetDate = new Date(projet.created_at);
-      const filterDate = appliedFilters.date;
-      
-      // Date filtering logic - compare dates without time
-      let dateMatches = true;
-      if (filterDate) {
-        const filterDateObj = new Date(filterDate);
-        dateMatches = 
-          projetDate.getFullYear() === filterDateObj.getFullYear() &&
-          projetDate.getMonth() === filterDateObj.getMonth() &&
-          projetDate.getDate() === filterDateObj.getDate();
-      }
-      
-      return (
-        (projet.nom || '').toLowerCase().includes(appliedFilters.nom.toLowerCase()) &&
-        (projet.code || '').toLowerCase().includes(appliedFilters.code.toLowerCase()) &&
-        (appliedFilters.type === '' || projetType.toLowerCase() === appliedFilters.type.toLowerCase()) &&
-        (projet.adresse || '').toLowerCase().includes(appliedFilters.adresse.toLowerCase()) &&
-        dateMatches
-      );
-    }).map(projet => ({
-      ...projet,
-      nom: projet.nom || 'Sans nom',
-      code: projet.code || '',
-      type: projet.type_projet?.type || 'Non spécifié',
-      adresse: projet.adresse || '',
-      date: formatDate(projet.created_at),
-      formatted_type: projet.type_projet?.type || 'Non spécifié',
-      formatted_date: formatDate(projet.created_at)
-    }));
-  }, [projects, appliedFilters]);
-
-  // Get paginated projects for table display
-  const filteredProjets = useMemo(() => {
-    setTotalRows(getAllFilteredProjects.length);
-    
-    const startIndex = (currentPage - 1) * rowsPerPage;
-    const endIndex = startIndex + rowsPerPage;
-    
-    return getAllFilteredProjects.slice(startIndex, endIndex);
-  }, [getAllFilteredProjects, currentPage, rowsPerPage]);
-
-  // Data for export - use ALL filtered projects, not just current page
-  const dataToExport = useMemo(() => {
-    return getAllFilteredProjects.map((projet) => ({
-      'Nom du projet': projet.nom,
-      'Code': projet.code,
-      'Type': projet.type,
-      'Adresse': projet.adresse,
-      'Date création': projet.date,
-    }));
-  }, [getAllFilteredProjects]);
-
-  // Filter component for projets
-  const filterComponent = useMemo(() => {
-    return (
-      <div className="space-y-4 ">
-        <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
-          {PROJET_FILTERS.map(filter => {
-            if (filter.type === 'select') {
-              return (
-                <div key={filter.key} className="flex flex-col">
-                  <label className="text-xs font-medium text-gray-700 mb-1">{filter.label}</label>
-                  <SelectInput
-                    options={filter.options || []}
-                    placeholder={filter.placeholder}
-                    value={tempFilters[filter.key] || ''}
-                    onChange={(selectedValue) => handleFilterChange(filter.key, selectedValue)}
-                    width="w-full"
-                  />
-                </div>
-              );
-            } else if (filter.type === 'date') {
-              return (
-                <div key={filter.key} className="flex flex-col">
-                  <label className="text-xs font-medium text-gray-700 mb-1">{filter.label}</label>
-                  <Input
-                    type="date"
-                    name={filter.key}
-                    value={tempFilters[filter.key] || ''}
-                    onChange={(e) => handleFilterChange(filter.key, e.target.value)}
-                    placeholder={filter.placeholder}
-                    className={filter.className}
-                  />
-                </div>
-              );
-            } else {
-              return (
-                <div key={filter.key} className="flex flex-col">
-                  <label className="text-xs font-medium text-gray-700 mb-1">{filter.label}</label>
-                  <Input
-                    type={filter.type}
-                    name={filter.key}
-                    value={tempFilters[filter.key] || ''}
-                    onChange={(e) => handleFilterChange(filter.key, e.target.value)}
-                    placeholder={filter.placeholder}
-                    className={filter.className}
-                  />
-                </div>
-              );
-            }
-          })}
-        </div>
-        <div className="flex justify-end gap-3 pt-2">
-          <button
-            type="button"
-            onClick={resetFilters}
-            className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
-          >
-            Réinitialiser
-          </button>
-          <button
-            type="button"
-            onClick={applyFilters}
-            className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-          >
-            Appliquer les filtres
-          </button>
-        </div>
-      </div>
-    );
-  }, [PROJET_FILTERS, tempFilters]);
-
-  // Fetch projects data with pagination
+  // Fetch projects data with pagination and filtering
   const fetchProjects = useCallback(async () => {
-    const accessToken = token || localStorage.getItem("accessToken")
+    const accessToken = accesstoken;
     
     if (!accessToken) {
       router.push('/login') 
@@ -280,10 +105,23 @@ const Page = () => {
 
     setLoading(true)
     try {
+      // Create a clean params object with only defined values
       const params = {
         page: currentPage,
         size: rowsPerPage,
       };
+
+      // Add filters only if they have values
+      if (filters.nom) params.nom = filters.nom;
+      if (filters.code) params.code = filters.code;
+      if (filters.type) params.type = filters.type; // Use 'type' to match backend
+      if (filters.adresse) params.adresse = filters.adresse;
+      
+      // Format date for API if needed
+      if (filters.date) {
+        const dateObj = new Date(filters.date);
+        params.date = dateObj.toISOString().split('T')[0];
+      }
 
       if (!isSuperAdmin(user?.role) && user?.societe_id) {
         params.societe_id = user.societe_id;
@@ -310,12 +148,106 @@ const Page = () => {
     } finally {
       setLoading(false)
     }
-  }, [token, router, currentPage, rowsPerPage, user])
+  }, [accesstoken, router, currentPage, rowsPerPage, filters, user])
 
   // Fetch data when dependencies change
   useEffect(() => {
-    fetchProjects()
-  }, [fetchProjects])
+    fetchProjects();
+  }, [fetchProjects]);
+
+  // Format projects for display
+  const formattedProjects = useMemo(() => {
+    return projects.map(projet => ({
+      ...projet,
+      nom: projet.nom || 'Sans nom',
+      code: projet.code || '',
+      type: projet.type_projet?.type || 'Non spécifié',
+      adresse: projet.adresse || '',
+      date: formatDate(projet.created_at),
+      formatted_type: projet.type_projet?.type || 'Non spécifié',
+      formatted_date: formatDate(projet.created_at)
+    }));
+  }, [projects]);
+
+  // Data for export
+  const dataToExport = useMemo(() => {
+    return formattedProjects.map((projet) => ({
+      'Nom du projet': projet.nom,
+      'Code': projet.code,
+      'Type': projet.type,
+      'Adresse': projet.adresse,
+      'Date création': projet.date,
+    }));
+  }, [formattedProjects]);
+
+  // Filter component for projets
+  const filterComponent = (
+    <div className="space-y-4">
+      <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
+        <Input
+          label="Nom"
+          type="text"
+          placeholder="Nom du projet..."
+          value={tempFilters.nom}
+          onChange={(e) => handleFilterChange("nom", e.target.value)}
+          className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+        />
+
+        <Input
+          label="Code"
+          type="text"
+          placeholder="Code du projet..."
+          value={tempFilters.code}
+          onChange={(e) => handleFilterChange("code", e.target.value)}
+          className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+        />
+
+        <SelectInput
+          label="Type"
+          value={tempFilters.type} // Use 'type' to match backend
+          onChange={(value) => handleFilterChange("type", value)} // Use 'type' to match backend
+          options={typeOptions}
+          placeholder="Type de projet"
+          className="h-10 text-sm w-full"
+        />
+
+        <Input
+          label="Adresse"
+          type="text"
+          placeholder="Adresse..."
+          value={tempFilters.adresse}
+          onChange={(e) => handleFilterChange("adresse", e.target.value)}
+          className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+        />
+
+        <Input
+          label="Date création"
+          type="date"
+          placeholder="Sélectionner une date"
+          value={tempFilters.date}
+          onChange={(e) => handleFilterChange("date", e.target.value)}
+          className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+        />
+      </div>
+
+      <div className="flex justify-end gap-3 pt-2">
+        <button
+          type="button"
+          onClick={applyFilters}
+          className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+        >
+          Appliquer les filtres
+        </button>
+        <button
+          type="button"
+          onClick={resetFilters}
+          className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
+        >
+          Réinitialiser
+        </button>
+      </div>
+    </div>
+  );
 
   // Handle page change
   const handlePageChange = (newPage) => {
@@ -398,7 +330,7 @@ const Page = () => {
       <Table
         title="Liste des Projets"
         showSearch={false}
-        data={filteredProjets} 
+        data={formattedProjects} 
         columns={columns}
         loading={loading}
         totalRows={totalRows}
@@ -410,18 +342,17 @@ const Page = () => {
         onRowsPerPageChange={handleRowsPerPageChange}
         emptyMessage="Aucun projet trouvé"
         filterComponent={filterComponent}
-        onFilterToggle={handleFilterToggle}
-        enableExport={getAllFilteredProjects.length > 0}
-        data_to_export={dataToExport} 
-          columns_export={[ 
-            { key: 'Nom du projet', label: 'Nom du projet' },
-            { key: 'Code', label: 'Code' },
-            { key: 'Type', label: 'Type' },
-            { key: 'Adresse', label: 'Adresse' },
-            { key: 'Date création', label: 'Date création' },
-          ]}
-          name_file_export="liste_des_projets" 
-              />
+        enableExport={formattedProjects.length > 0}
+        data_to_export={dataToExport}
+        columns_export={[
+          { key: 'Nom du projet', label: 'Nom du projet' },
+          { key: 'Code', label: 'Code' },
+          { key: 'Type', label: 'Type' },
+          { key: 'Adresse', label: 'Adresse' },
+          { key: 'Date création', label: 'Date création' },
+        ]}
+        name_file_export="liste_des_projets"
+      />
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
@@ -431,13 +362,12 @@ const Page = () => {
             Id={selectedId}
             type="Projet"
             message="Êtes-vous sûr de vouloir supprimer ce projet ?"
-            accessToken={token || localStorage.getItem("accessToken")}
+            accessToken={accesstoken}
             onClose={() => {
               setShowDeleteModal(false);
               handleDeleteSuccess();
             }}
           />
-          
         </Modal>
       )}
     </div>

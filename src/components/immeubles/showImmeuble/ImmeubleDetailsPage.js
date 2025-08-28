@@ -141,7 +141,7 @@ export const ImmeubleDetailsPage = () => {
 
   const filteredTabsData = useMemo(() => {
     return Object.fromEntries(
-      Object.entries(allTabsData).filter(([_, tabData]) => tabData.nbr_count > 0)
+      Object.entries(allTabsData).filter(([_, tabData]) => tabData.nbr_count >= 0)
     );
   }, [allTabsData]);
 

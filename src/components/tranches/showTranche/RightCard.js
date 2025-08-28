@@ -367,9 +367,10 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchTrancheData,
       : columnConfig;
   }, [activeTab, user, handleDelete]);
 
+  // Show all tabs regardless of count
   const availableTabs = useMemo(() => {
     return Object.keys(tabsData).filter(tab => 
-      tabsData[tab]?.nbr_count > 0
+      tabsData[tab] !== undefined && tabsData[tab] !== null
     );
   }, [tabsData]);
 
