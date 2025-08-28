@@ -7,7 +7,7 @@ const fetchNotifications = async ({ setNotifications, setNewNotificationsCount, 
   const selectedProject = JSON.parse(localStorage.getItem('selectedProjet'));
 
   if (!accessToken || !selectedProject) {
-    console.error('Missing access token or selected project');
+    // Likely during logout or no project selected; silently skip
     return;
   }
 

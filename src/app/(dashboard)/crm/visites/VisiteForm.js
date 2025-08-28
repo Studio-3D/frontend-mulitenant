@@ -2200,7 +2200,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                       disabled
                                     />
                                     <InputField_Biens
-                                      label="Prix Remisé:"
+                                      label="Prix Unitaire Remisé:"
                                       name="prix_remise"
                                       type="number"
                                       value={x.prix_remise}
@@ -2209,7 +2209,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                       }
                                     />
                                     <InputField_Biens
-                                      label="Prix Forfaitaire:"
+                                      label="Remise Forfaitaire:"
                                       name="prix_forfetaire"
                                       type="number"
                                       value={x.prix_forfetaire}
@@ -2784,7 +2784,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                         disabled
                                       />
                                       <InputField_Biens
-                                        label="Prix Remisé:"
+                                        label="Prix Unitaire Remisé:"
                                         name="prix_remise"
                                         type="number"
                                         value={x.prix_remise}
@@ -2793,7 +2793,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                         }
                                       />
                                       <InputField_Biens
-                                        label="Prix Forfaitaire:"
+                                        label="Remise Forfaitaire:"
                                         name="prix_forfetaire"
                                         type="number"
                                         value={x.prix_forfetaire}
@@ -2806,20 +2806,6 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                         name="prix_final"
                                         type="number"
                                         value={check_total >= 0 && x.prix_final}
-                                        disabled
-                                      />
-                                      <InputField_Biens
-                                        label="Reste Avance:"
-                                        name="avance_minimale"
-                                        type="number"
-                                        value={x.avance_minimale}
-                                        disabled
-                                      />
-                                      <InputField_Biens
-                                        label="Reste:"
-                                        name="reste"
-                                        type="number"
-                                        value={x.reste}
                                         disabled
                                       />
                                       <InputField_Biens
@@ -2841,6 +2827,13 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                         onChange={(e) =>
                                           handleinputchange(e, i)
                                         }
+                                      />
+                                      <InputField_Biens
+                                        label="Reste:"
+                                        name="reste"
+                                        type="number"
+                                        value={x.reste}
+                                        disabled
                                       />
                                       <AutocompleteStatut_ModeRelance_Biens
                                         name={"mode_financement"}
@@ -3085,7 +3078,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                     <>
                       <div className="col-span-1">
                         <h5 className="text-left mt-5  text-lg font-medium">
-                          Ce Client à déja les pré-réservations suivantes :
+                          Ce Client a déja les pré-réservations suivantes :
                         </h5>
                       </div>
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Document,
   Page,
@@ -6,93 +6,93 @@ import {
   Image,
   StyleSheet,
   View,
-} from '@react-pdf/renderer';
-import { MODE_PAIEMENT } from '../../../../../../configs/enum';
+} from "@react-pdf/renderer";
+import { MODE_PAIEMENT } from "../../../../../../configs/enum";
 
 // Créez des styles
 const styles = StyleSheet.create({
   page: {
-    flexDirection: 'column',
+    flexDirection: "column",
     padding: 20,
   },
   logoContainer: {
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 20,
   },
   logo: {
     width: 50, // Ajustez la taille ici
-    height: 'auto',
+    height: "auto",
     marginBottom: 10,
   },
   title: {
     fontSize: 24,
     marginBottom: 20,
-    textAlign: 'center',
-    fontWeight: 'bold',
-    textDecoration: 'underline',
-    fontStyle: 'italic',
+    textAlign: "center",
+    fontWeight: "bold",
+    textDecoration: "underline",
+    fontStyle: "italic",
   },
 
   section: {
     fontSize: 14,
     marginBottom: 18,
-    textAlign: 'left',
+    textAlign: "left",
     paddingLeft: 20,
     textIndent: 30, // Ajouter un peu de retrait à gauche
   },
   label: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   line: {
     borderBottomWidth: 1,
-    borderBottomColor: '#000', // Couleur de la barre (noire ici)
+    borderBottomColor: "#000", // Couleur de la barre (noire ici)
     marginBottom: 20, // Espace entre la barre et le titre
   },
   erpText: {
-    color: 'red', // Couleur rouge
+    color: "red", // Couleur rouge
     //textAlign: 'center',
     //marginBottom: 10, // Espace entre "ERP_IMMOBILIER" et la barre
   },
   TextHeader: {
-    color: 'green',
-    textAlign: 'left',
+    color: "green",
+    textAlign: "left",
     fontSize: 17,
-    fontWeight: 'bold',
+    fontWeight: "bold",
 
     //textAlign: 'center',
     //marginBottom: 10, // Espace entre "ERP_IMMOBILIER" et la barre
   },
   bold: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
     fontSize: 13,
   },
   underline: {
-    textDecoration: 'underline',
+    textDecoration: "underline",
   },
   highlight: {
     fontSize: 10,
-    color: 'red',
+    color: "red",
   },
   companyName: {
-    textTransform: 'uppercase',
-    fontWeight: 'bold',
+    textTransform: "uppercase",
+    fontWeight: "bold",
     fontSize: 12,
   },
   normalText: {
-    textAlign: 'justify',
+    textAlign: "justify",
     fontSize: 11,
     fontWeight: 50,
     textIndent: 30, // Ajout d'un texte plus fin
   },
   TextFin: {
-    textAlign: 'right',
+    textAlign: "right",
     fontSize: 15,
-    fontWeight: 'bold',
-    textDecoration: 'underline',
+    fontWeight: "bold",
+    textDecoration: "underline",
     marginTop: 15,
   },
   boldIndentedText: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
     fontSize: 13, // Ajuste selon tes besoins
     textIndent: 20, // Ajoute le retrait ici
     marginBottom: 10, // Optionnel, espace entre paragraphes
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
 
 const MyDocument = ({ data }) => {
   const formValues = data[0];
-  const selectedProjet = JSON.parse(localStorage.getItem('selectedProjet'));
+  const selectedProjet = JSON.parse(localStorage.getItem("selectedProjet"));
 
   const imageUrl = `/Docs/${formValues.user.societe.raison_sociale_concatene}_${formValues.user.societe.id}/logos/${formValues.user.societe.logo}`;
 
@@ -128,15 +128,15 @@ const MyDocument = ({ data }) => {
         {/* Section 2: LA SOCIÉTÉ */}
         <View style={styles.section}>
           <Text style={styles.normalText}>
-            LA SOCIÉTÉ{' '}
+            LA SOCIÉTÉ{" "}
             <Text style={styles.bold}>« {formValues.raison_social}»</Text>,
             société à responsabilité limitée de droit Marocain, au capital
-            social de{' '}
+            social de{" "}
             <Text style={styles.bold}>{formValues.capital} de dirhams</Text>,
             ayant son siège social à&nbsp;{formValues.adresse}, immatriculée au
             registre du commerce sous n°
             <Text style={styles.bold}>{formValues.registre_commerce}</Text> et
-            dont le numéro de l’identifiant fiscal est le n°{' '}
+            dont le numéro de l’identifiant fiscal est le n°{" "}
             <Text style={styles.bold}>{formValues.id_fiscal}</Text>.
           </Text>
         </View>
@@ -147,19 +147,19 @@ const MyDocument = ({ data }) => {
               const isLast = index === formValues.clientsList.length - 1;
 
               const separator = isLast
-                ? ''
+                ? ""
                 : index === formValues.clientsList.length - 2
-                ? ' et '
-                : ', ';
+                ? " et "
+                : ", ";
 
               return (
                 <React.Fragment key={index}>
                   <Text style={styles.bold}>
                     {clientData.civilite == 1
-                      ? 'Mr'
+                      ? "Mr"
                       : clientData.civilite == 2
-                      ? 'Mme'
-                      : 'Mlle'}{' '}
+                      ? "Mme"
+                      : "Mlle"}{" "}
                     {clientData.nom} {clientData.prenom}
                   </Text>
                   {separator}
@@ -168,16 +168,16 @@ const MyDocument = ({ data }) => {
             })}
             &nbsp; la somme de&nbsp;
             <Text style={styles.bold}>
-              {formValues.montant.toLocaleString('fr-FR', {
+              {formValues.montant.toLocaleString("fr-FR", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
-              })}{' '}
+              })}{" "}
               DIRHAMS
             </Text>
             &nbsp;
             {formValues.mode_paiement != 1 ? (
               <>
-                au moyen {'d\''}un&nbsp;
+                au moyen {"d'"}un&nbsp;
                 <Text style={styles.bold}>
                   {MODE_PAIEMENT[formValues.mode_paiement]?.label}
                 </Text>
@@ -199,15 +199,11 @@ const MyDocument = ({ data }) => {
         </View>
         <View style={styles.section}>
           <Text style={styles.normalText}>
-            Représentant{' '}
-            <Text style={[styles.bold, styles.underline]}>
-              partie du prix d’acquisition
-            </Text>{' '}
-            de la propriété sise
+            Représentant partie du prix d’acquisition de la propriété sise
             {selectedProjet?.nbre_tranches !== 0 && (
               <Text style={styles.bold}>
-                {' '}
-                au tranche «{formValues.tranche}»
+                {" "}
+                à la tranche «{formValues.tranche}»
               </Text>
             )}
             {selectedProjet?.nbre_blocs !== 0 && (
@@ -215,48 +211,50 @@ const MyDocument = ({ data }) => {
             )}
             {selectedProjet?.nbre_immeubles !== 0 && (
               <Text style={styles.bold}>
-                {' '}
-                de l’immeuble «{formValues.immeuble}»
+                {" "}
+                à l’immeuble «{formValues.immeuble}»
               </Text>
             )}
             ,
             <Text style={styles.bold}>
+              {" "}
               {formValues.etage != 0
                 ? `à l'étage ${formValues.etage} `
-                : ' RDC '}
+                : " RDC "}
             </Text>
             &nbsp;
             <Text style={styles.bold}>
               {formValues.propriete_dite_bien}
-            </Text>{' '}
+            </Text>{" "}
             numéro&nbsp;
             <Text style={styles.bold}>{formValues.numero}</Text> situé à&nbsp;
             <Text style={styles.bold}>{formValues.adresse_projet}</Text>,
             consistant en un&nbsp;
             <Text style={styles.bold}>{formValues.type}</Text> en copropriété à
-            usage d’habitation d’une superficie approximative&nbsp; de{' '}
+            usage d’habitation d’une superficie approximative&nbsp; de{" "}
             <Text style={styles.bold}>
-              {' '}
+              {" "}
               {formValues.superficie_habitable} m²
             </Text>
             {formValues.isParkingAvailable && (
               <>
-                , avec un parking de superficie{' '}
+                , avec un parking de superficie{" "}
                 <Text style={styles.bold}>
                   {formValues.superficie_parking} m²
-                </Text>{' '}
+                </Text>{" "}
                 de prix&nbsp;
                 <Text style={styles.bold}>
-                  {formValues.prix_parking.toLocaleString('fr-FR', {
+                  {formValues.prix_parking.toLocaleString("fr-FR", {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
-                  })}{' '}
+                  })}{" "}
                   DH
                 </Text>
               </>
             )}
-            , le bien faisant partie {'d\''}un ensemble immobilier actuellement en
-            futur {'d\''}achèvement, faisant {'l\''}objet{'d\''}un titre foncier mère Numéro{' '}
+            , le bien faisant partie {"d'"}un ensemble immobilier actuellement
+            en futur {"d'"}achèvement, faisant {"l'"}objet{"d'"}un titre foncier
+            mère Numéro{" "}
             <Text style={styles.bold}> {formValues.titre_foncier}</Text>, et
             donne en conséquence quittance définitive et entière pour la dite
             somme.
@@ -266,35 +264,35 @@ const MyDocument = ({ data }) => {
           <Text style={[styles.underline, styles.boldIndentedText]}>
             DONT QUITTANCE POUR LA SOMME DE (
             <Text style={styles.bold}>
-              {formValues.montant.toLocaleString('fr-FR', {
+              {formValues.montant.toLocaleString("fr-FR", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}
               &nbsp; DH
-            </Text>{' '}
+            </Text>{" "}
             )
           </Text>
         </View>
         <View style={styles.section}>
           <Text style={[styles.boldIndentedText]}>
             Etant précisé que le prix de la propriété objet de la présente
-            quittance est de{' '}
+            quittance est de{" "}
             <Text style={styles.bold}>
-              {formValues.prix.toLocaleString('fr-FR', {
+              {formValues.prix.toLocaleString("fr-FR", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}
-            </Text>{' '}
+            </Text>{" "}
             <Text style={[styles.erpText]}>DIRHAMS</Text>
           </Text>
         </View>
         <View style={styles.section}>
           <Text style={[styles.boldIndentedText]}>
-            Etant entendu {'qu\''}au cas où il existerait une différence de métrage
-            entre la superficie définitive telle {'qu\''}établie par le titre foncier
-            et la superficie définie ci-dessus, le prix de vente sera ajusté en
-            conséquence en plus ou en moins sur la base du prix de vente au
-            mètre carré.
+            Etant entendu {"qu'"}au cas où il existerait une différence de
+            métrage entre la superficie définitive telle {"qu'"}établie par le
+            titre foncier et la superficie définie ci-dessus, le prix de vente
+            sera ajusté en conséquence en plus ou en moins sur la base du prix
+            de vente au mètre carré.
           </Text>
         </View>
         <View style={styles.section}>

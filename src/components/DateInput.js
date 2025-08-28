@@ -15,11 +15,11 @@ export default function DateInput({ label, value, onChange, placeholderText, err
       <DatePicker
         selected={value ? new Date(value) : null}
         onChange={handleDateChange}
-        dateFormat="dd-MM-yyyy"
+        dateFormat="dd/MM/yyyy"
         className={`p-2 w-full xl:w-[380px] h-[38px] outline-none border rounded-md hover:border-gray-500 focus:border-gray-500 duration-200 bg-inherit ${
           error ? "border-red-500" : "border-gray-300"
         }`}
-        placeholderText={placeholderText || "dd-mm-yyyy"}
+        placeholderText={placeholderText || "dd/mm/yyyy"}
       />
       {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
     </div>

@@ -88,21 +88,7 @@ export const LeftCard = ({ bloc, onEdit, onDelete, canEdit = false }) => {
               </div>
             </div>
             
-            <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-              <div className="flex items-center text-gray-700">
-                <CalendarIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
-                <span>Date de lancement:</span>
-              </div>
-              <div className="text-gray-600 text-right">{bloc?.date_lancement || "Date non spécifiée"}</div>
-            </div>
             
-            <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-              <div className="flex items-center text-gray-700">
-                <CalendarIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
-                <span>Date de livraison:</span>
-              </div>
-              <div className="text-gray-600 text-right">{bloc?.date_livraison || "Date non spécifiée"}</div>
-            </div>
             
             <div className="flex items-center justify-between border-b border-gray-100 pb-2">
               <div className="flex items-center text-gray-700">
@@ -111,39 +97,7 @@ export const LeftCard = ({ bloc, onEdit, onDelete, canEdit = false }) => {
               </div>
               <div className="text-gray-600 text-right">{bloc?.titre_foncier || "Titre non spécifié"}</div>
             </div>
-            
-            <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-              <div className="flex items-center text-gray-700">
-                <SquareIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
-                <span>Surface terrain:</span>
-              </div>
-              <div className="text-gray-600 text-right">{bloc?.surface_terrain ? `${bloc.surface_terrain} m²` : "Surface non spécifiée"}</div>
-            </div>
-            
-            <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-              <div className="flex items-center text-gray-700">
-                <DollarSignIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
-                <span>Prix d'acquisition:</span>
-              </div>
-              <div className="text-gray-600 text-right">{bloc?.prix_acquisition ? `${bloc.prix_acquisition} Dhs` : "Prix non spécifié"}</div>
-            </div>
-            
-            <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-              <div className="flex items-center text-gray-700">
-                <ClockIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
-                <span>Limite annulation:</span>
-              </div>
-              <div className="text-gray-600 text-right">{bloc?.limite_annulation_reservation || "Date non spécifiée"}</div>
-            </div>
-            
-            <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-              <div className="flex items-center text-gray-700">
-                <ClockIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
-                <span>Prolongation réservation:</span>
-              </div>
-              <div className="text-gray-600 text-right">{bloc?.prolongation_reservation || "Durée non spécifiée"}</div>
-            </div>
-            
+
             {shouldShowStat(bloc?.nbre_immeubles) && (
               <div className="flex items-center justify-between border-b border-gray-100 pb-2">
                 <div className="flex items-center text-gray-700">

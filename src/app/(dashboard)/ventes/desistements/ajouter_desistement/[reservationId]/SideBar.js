@@ -1,6 +1,6 @@
-import React from 'react';
-import { ClipboardList, Ticket, UserIcon } from 'lucide-react';
-import Link from 'next/link';
+import React from "react";
+import { ClipboardList, Ticket, UserIcon } from "lucide-react";
+import Link from "next/link";
 
 export function SideBar({
   code_reservation,
@@ -14,11 +14,11 @@ export function SideBar({
   bien_id,
 }) {
   const handleView_dossier = (resId) => {
-    window.open(`/ventes/reservations/${resId}`, '_blank');
+    window.open(`/ventes/reservations/${resId}`, "_blank");
   };
   // Format desisteurs as an object with client details
   const renderDesisteurs = () => {
-    if (!desisteurs || typeof desisteurs !== 'object') {
+    if (!desisteurs || typeof desisteurs !== "object") {
       return <div className="font-medium">Aucun client</div>;
     }
 
@@ -27,9 +27,9 @@ export function SideBar({
         {Object.keys(desisteurs).map((key) => (
           <div key={key} className="text-sm">
             <span className="font-semibold">
-              Client {parseFloat(key) + 1}:{' '}
+              Client {parseFloat(key) + 1}:{" "}
             </span>
-            {desisteurs[key]?.client?.nom} {desisteurs[key]?.client?.prenom}{' '}
+            {desisteurs[key]?.client?.nom} {desisteurs[key]?.client?.prenom}{" "}
             {desisteurs[key]?.pourcentage}%
           </div>
         ))}
@@ -38,30 +38,30 @@ export function SideBar({
   };
   // Format price values
   const formatPrice = (value) => {
-    if (typeof value == 'number') {
+    if (typeof value == "number") {
       return `${value.toLocaleString()} DH`;
     }
-    return value || '0 DH';
+    return value || "0 DH";
   };
 
-  // Format date to dd-mm-yyyy
+  // Format date to dd/mm/yyyy
   const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return "N/A";
 
     try {
       const date = new Date(dateString);
-      if (isNaN(date.getTime())) return 'Invalid Date';
+      if (isNaN(date.getTime())) return "Invalid Date";
 
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, "0");
+      const month = String(date.getMonth() + 1).padStart(2, "0");
       const year = date.getFullYear();
 
-      return `${day}-${month}-${year}`;
+      return `${day}/${month}/${year}`;
     } catch {
-      return 'N/A';
+      return "N/A";
     }
   };
-   function NomBienComplet(bien) {
+  function NomBienComplet(bien) {
     const noms = [];
     if (bien.tranche?.nom) noms.push(bien.tranche.nom);
     if (bien.bloc?.nom) noms.push(bien.bloc.nom);
@@ -69,7 +69,7 @@ export function SideBar({
 
     noms.push(bien.propriete_dite_bien);
 
-    return noms.join(' - ');
+    return noms.join(" - ");
   }
   return (
     <div className="bg-white rounded-lg shadow">
@@ -79,9 +79,9 @@ export function SideBar({
             <div>
               <div className="text-sm !text-gray-500">Code Réservation:</div>
               <div className="font-medium">
-                {' '}
+                {" "}
                 <Link
-                  href={'/ventes/reservations/' + reservationId}
+                  href={"/ventes/reservations/" + reservationId}
                   target="_blank"
                 >
                   <strong style={{ fontWeight: 600 }}>
@@ -93,9 +93,11 @@ export function SideBar({
             <div>
               <div className="text-sm !text-gray-500">Bien:</div>
               <div className="font-medium">
-                {' '}
-                <Link href={'/Biens/' + bien_id} target="_blank">
-                  <strong style={{ fontWeight: 600 }}>{NomBienComplet(bien)}</strong>
+                {" "}
+                <Link href={"/Biens/" + bien_id} target="_blank">
+                  <strong style={{ fontWeight: 600 }}>
+                    {NomBienComplet(bien)}
+                  </strong>
                 </Link>
               </div>
             </div>
@@ -108,7 +110,7 @@ export function SideBar({
           </div>
           <div className="space-y-4">
             <div>
-              <div className="text-sm !text-gray-500">Avances:</div>
+              <div className="text-sm !text-gray-500">Somme Avances:</div>
               <div className="font-medium !text-green-600">
                 {formatPrice(sum_avances_valides)}
               </div>

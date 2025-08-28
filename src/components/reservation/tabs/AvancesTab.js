@@ -447,8 +447,10 @@ export const AvancesTab = ({
 
       if (response.status == 200) {
         const message = currentPaiement
-          ? 'Le paiement a été modifié avec succès'
-          : 'Le paiement a été créé avec succès';
+
+          ? "Paiement modifié avec succès"
+          : "Paiement ajouté avec succès";
+
         toast.success(message);
         // Close all possible modal states
         setEditDialogOpen(false);
@@ -665,7 +667,7 @@ export const AvancesTab = ({
         ) {
           return (
             <span className="px-2 py-1 rounded text-sm font-semibold bg-blue-100 text-blue-500">
-              Validé en attente d{"'"}encaissement
+              En attente d{"'"}encaissement
             </span>
           );
         }
@@ -1248,7 +1250,7 @@ export const AvancesTab = ({
                 </div>
               </div>
 
-              <div className="relative">
+              <div className="relative mt-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Fichier Paiements
                 </label>
@@ -1340,7 +1342,7 @@ export const AvancesTab = ({
               )}
               {/* Commentaire */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1 mt-4">
                   Commentaire
                 </label>
                 <textarea
