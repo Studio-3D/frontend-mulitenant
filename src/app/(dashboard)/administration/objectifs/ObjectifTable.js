@@ -14,6 +14,7 @@ import { fetchData_table_by_projet } from "../../../../configs/api-utils";
 import { isAdmin, isCommercial, isSuperAdmin } from "../../../../configs/enum";
 import Input from "@/components/Input";
 import { format } from "date-fns";
+import { formatDate } from "@/utils/dateUtils";
 
 const ObjectifTable = () => {
   const [objectifs, setObjectifs] = useState([]);
@@ -88,6 +89,7 @@ const ObjectifTable = () => {
   ]);
 
   function handleEdit(ObjectifId) {
+    console.log('jjj')
     router.push(`${ENDPOINTS.OBJECTIFS}?id=${ObjectifId}&action=edit`);
   }
 
