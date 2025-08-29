@@ -21,6 +21,18 @@ const STATUS_CONFIG = {
   ENCOURS_DE_PROPOSITION: { name: 'En cours de proposition', color: 'bg-orange-500' },
 };
 
+// Helper function to get/set active tab from localStorage
+const getStoredActiveTab = (projectId) => {
+  if (typeof window === 'undefined') return null;
+  const stored = localStorage.getItem(`project-${projectId}-activeTab`);
+  return stored || null;
+};
+
+const setStoredActiveTab = (projectId, tabName) => {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(`project-${projectId}-activeTab`, tabName);
+};
+
 export const ProjectDetailsPage = () => {
   const { id } = useParams();
   const router = useRouter();
@@ -29,9 +41,15 @@ export const ProjectDetailsPage = () => {
   const [projectData, setProjectData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('bien');
+  const [activeTab, setActiveTab] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   
+  // Custom setActiveTab function that also persists to localStorage
+  const setActiveTabPersistent = useCallback((tabName) => {
+    setActiveTab(tabName);
+    setStoredActiveTab(id, tabName);
+  }, [id]);
+
   const fetchProjectDetails = useCallback(async () => {
     try {
       setLoading(true);
@@ -48,7 +66,7 @@ export const ProjectDetailsPage = () => {
         selectProjet(projectDetails.projet);
       }
       
-      setActiveTab('bien');
+      // Don't reset activeTab here - we'll handle it after checking localStorage
     } catch (err) {
       console.error("Error fetching project details:", err);
       setError(err.message || "Failed to fetch project details");
@@ -78,13 +96,10 @@ export const ProjectDetailsPage = () => {
     setShowDeleteModal(true);
   };
 
- const handleDeleteSuccess = () => {
-  setShowDeleteModal(false);
-  window.location.href = "/Projets"; // go + reload in one step
-};
-
-
-
+  const handleDeleteSuccess = () => {
+    setShowDeleteModal(false);
+    window.location.href = "/Projets"; // go + reload in one step
+  };
 
   const allTabsData = useMemo(() => {
     if (!projectData) return {};
@@ -188,11 +203,22 @@ export const ProjectDetailsPage = () => {
     );
   }, [allTabsData]);
 
+  // Set active tab based on localStorage or first available tab
   useEffect(() => {
-    if (!filteredTabsData[activeTab] && Object.keys(filteredTabsData).length > 0) {
-      setActiveTab(Object.keys(filteredTabsData)[0]);
+    if (Object.keys(filteredTabsData).length > 0) {
+      // Try to get the stored active tab for this project
+      const storedTab = getStoredActiveTab(id);
+      
+      // If we have a stored tab and it exists in the current tabs, use it
+      if (storedTab && filteredTabsData[storedTab]) {
+        setActiveTab(storedTab);
+      } 
+      // Otherwise use the first available tab
+      else if (!activeTab || !filteredTabsData[activeTab]) {
+        setActiveTabPersistent(Object.keys(filteredTabsData)[0]);
+      }
     }
-  }, [filteredTabsData, activeTab]);
+  }, [filteredTabsData, id, activeTab, setActiveTabPersistent]);
 
   if (loading) {
     return (
@@ -257,7 +283,7 @@ export const ProjectDetailsPage = () => {
           <RightCard
             tabsData={filteredTabsData}
             activeTab={activeTab}
-            setActiveTab={setActiveTab}
+            setActiveTab={setActiveTabPersistent} // Use the persistent version
             fetchProjectData={fetchProjectDetails}
             projectId={id}
           />
