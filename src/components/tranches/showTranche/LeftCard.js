@@ -6,30 +6,37 @@ import {
   LayersIcon,
   BuildingIcon,
   BoxesIcon,
-  MapPinIcon,
   CalendarIcon,
   FileTextIcon,
-  SquareIcon,
-  DollarSignIcon,
-  ClockIcon,
 } from 'lucide-react';
 
-export const LeftCard = ({ tranche,onEdit, onDelete, canEdit = false  }) => {
+export const LeftCard = ({ tranche, onEdit, onDelete, canEdit = false }) => {
   // Helper function to check if value exists and is greater than 0
   const shouldShowStat = (value) => {
     return value !== undefined && value !== null && value > 0;
   };
 
+  // Check which stats should be shown based on project counts
+  const showBiens = shouldShowStat(tranche?.projet?.nbre_biens);
+  const showImmeubles = shouldShowStat(tranche?.projet?.nbre_immeubles);
+  const showBlocs = shouldShowStat(tranche?.projet?.nbre_blocs);
+
   // Count visible stats for grid layout
-  const visibleStats = [
-    shouldShowStat(tranche?.nbre_biens),
-    shouldShowStat(tranche?.nbre_tranches),
-    shouldShowStat(tranche?.nbre_immeubles),
-    shouldShowStat(tranche?.nbre_blocs)
-  ].filter(Boolean).length;
+  const visibleStats = [showBiens, showImmeubles, showBlocs].filter(Boolean).length;
 
   // Determine grid class based on number of visible stats
-  const gridClass = visibleStats > 0 ? `grid grid-cols-${visibleStats} divide-x border-b` : 'hidden';
+  const getGridClass = () => {
+    switch (visibleStats) {
+      case 1:
+        return 'flex justify-center';
+      case 2:
+        return 'grid grid-cols-2 divide-x border-b';
+      case 3:
+        return 'grid grid-cols-3 divide-x border-b';
+      default:
+        return 'hidden';
+    }
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden h-full flex flex-col">
@@ -56,33 +63,26 @@ export const LeftCard = ({ tranche,onEdit, onDelete, canEdit = false  }) => {
       
       {/* Stats section - Only show if at least one stat is > 0 */}
       {visibleStats > 0 && (
-        <div className={gridClass}>
-          {shouldShowStat(tranche?.nbre_biens) && (
+        <div className={getGridClass()}>
+          {showBiens && (
             <div className="flex flex-col items-center justify-center py-3 px-2">
               <HomeIcon className="text-blue-600 mb-1" size={20} />
               <div className="text-xs text-gray-600">Biens</div>
-              <div className="font-bold text-sm">{tranche?.bien_count}</div>
+              <div className="font-bold text-sm">{tranche?.bien_count || 0}</div>
             </div>
           )}
-          {shouldShowStat(tranche?.nbre_tranches) && (
-            <div className="flex flex-col items-center justify-center py-3 px-2">
-              <LayersIcon className="text-green-600 mb-1" size={20} />
-              <div className="text-xs text-gray-600">Tranches</div>
-              <div className="font-bold text-sm">{tranche?.tranche_count}</div>
-            </div>
-          )}
-          {shouldShowStat(tranche?.nbre_immeubles) && (
-            <div className="flex flex-col items-center justify-center py-3 px-2">
-              <BuildingIcon className="text-purple-600 mb-1" size={20} />
-              <div className="text-xs text-gray-600">Immeubles</div>
-              <div className="font-bold text-sm">{tranche?.immeuble_count}</div>
-            </div>
-          )}
-          {shouldShowStat(tranche?.nbre_blocs) && (
+          {showBlocs && (
             <div className="flex flex-col items-center justify-center py-3 px-2">
               <BoxesIcon className="text-orange-600 mb-1" size={20} />
               <div className="text-xs text-gray-600">Blocs</div>
-              <div className="font-bold text-sm">{tranche?.bloc_count}</div>
+              <div className="font-bold text-sm">{tranche?.bloc_count || 0}</div>
+            </div>
+          )}
+          {showImmeubles && (
+            <div className="flex flex-col items-center justify-center py-3 px-2">
+              <BuildingIcon className="text-purple-600 mb-1" size={20} />
+              <div className="text-xs text-gray-600">Immeubles</div>
+              <div className="font-bold text-sm">{tranche?.immeuble_count || 0}</div>
             </div>
           )}
         </div>
@@ -164,23 +164,23 @@ export const LeftCard = ({ tranche,onEdit, onDelete, canEdit = false  }) => {
       </div>
       
       {canEdit && (
-    <div className="p-6 bg-gray-50 flex justify-center gap-3">
-      <button 
-        onClick={onEdit}
-        className="px-4 py-2 bg-blue-600 text-white rounded-md flex items-center gap-2 hover:bg-blue-700 transition"
-      >
-        <PencilIcon size={16} />
-        Modifier
-      </button>
-      <button 
-        onClick={onDelete}
-        className="px-4 py-2 bg-red-600 text-white rounded-md flex items-center gap-2 hover:bg-red-700 transition"
-      >
-        <TrashIcon size={16} />
-        Supprimer
-      </button>
-    </div>
-  )}
+        <div className="p-6 bg-gray-50 flex justify-center gap-3">
+          <button 
+            onClick={onEdit}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md flex items-center gap-2 hover:bg-blue-700 transition"
+          >
+            <PencilIcon size={16} />
+            Modifier
+          </button>
+          <button 
+            onClick={onDelete}
+            className="px-4 py-2 bg-red-600 text-white rounded-md flex items-center gap-2 hover:bg-red-700 transition"
+          >
+            <TrashIcon size={16} />
+            Supprimer
+          </button>
+        </div>
+      )}
     </div>
   );
 };
