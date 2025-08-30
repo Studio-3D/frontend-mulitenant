@@ -52,7 +52,7 @@ export const LeftCard = ({ immeuble, onEdit, onDelete, canEdit = false }) => {
       {/* Stats section - Only show if at least one stat is > 0 */}
       {visibleStats > 0 && (
         <div className={gridClass}>
-          {shouldShowStat(immeuble?.nbre_biens) && (
+          {shouldShowStat(immeuble?.bien_count) && (
             <div className="flex flex-col items-center justify-center py-3 px-2">
               <HomeIcon className="text-blue-600 mb-1" size={20} />
               <div className="text-xs text-gray-600">Biens</div>
@@ -65,7 +65,7 @@ export const LeftCard = ({ immeuble, onEdit, onDelete, canEdit = false }) => {
       <div className="p-6 flex-grow">
         <div className="mb-6">
           <h2 className="text-lg font-semibold mb-3 text-gray-800">
-            Détails de l'immeuble
+            Détails de {'l\''}immeuble
           </h2>
           <p className="text-gray-600">{immeuble.description}</p>
           <div className="grid grid-cols-1 gap-2 text-sm mt-6">
@@ -89,13 +89,13 @@ export const LeftCard = ({ immeuble, onEdit, onDelete, canEdit = false }) => {
               <div className="text-gray-600 text-right">{immeuble?.titre_foncier || "Titre non spécifié"}</div>
             </div>
             
-            {shouldShowStat(immeuble?.nbre_biens) && (
+            {shouldShowStat(immeuble?.bien_count) && (
               <div className="flex items-center justify-between border-b border-gray-100 pb-2">
                 <div className="flex items-center text-gray-700">
                   <HomeIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
                   <span>Nombre de biens:</span>
                 </div>
-                <div className="text-gray-600 text-right">{immeuble.nbre_biens}</div>
+                <div className="text-gray-600 text-right">{immeuble.bien_count}</div>
               </div>
             )}
           </div>

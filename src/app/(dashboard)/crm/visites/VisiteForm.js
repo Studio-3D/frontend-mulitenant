@@ -1863,7 +1863,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                       3: VISITE_INTERETS[3],
                                     }
                               }
-                              disabled={!isOrigin && watch('telephone') == ''}
+disabled={isOrigin ? false : watch('telephone') === ''}
                               onChange={handleChange_interet}
                             />
                           </div>
@@ -2452,7 +2452,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                       3: VISITE_INTERETS[3],
                                     }
                               }
-                              disabled={watch('telephone') == ''}
+disabled={isOrigin ? false : watch('telephone') === ''}
                               onChange={handleChange_interet}
                             />
                           </div>

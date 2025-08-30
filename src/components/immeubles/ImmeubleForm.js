@@ -91,35 +91,46 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
     }
   }, [id, isEditing, fetchImmeubleData, blocId]);
 
-  // Fetch tranches and blocs for the project
-  useEffect(() => {
-    if (!isEditing) {
+ // Fetch tranches and blocs for the project
+useEffect(() => {
+  if (!isEditing && !hasFetchedInitialData.current) {
+    const fetchData = async () => {
+      // Fetch tranches if needed
       if (
         selectedProjet.nbre_tranches !== 0 &&
         !trancheId &&
-        !formData.tranche_id
+        !formData.tranche_id && 
+        !blocId
       ) {
-        fetchDataByProjet_params('tranches', setTranches, setLoadingTranches);
+        await fetchDataByProjet_params('tranches', setTranches, setLoadingTranches);
       }
 
+      // Fetch blocs if needed
       if (selectedProjet.nbre_blocs !== 0) {
-        if (!blocId && trancheId && selectedProjet.nbre_tranches !== 0) {
-          fetchDataByProjet_params('blocs', setBlocs, setLoadingBlocs, {
-            tranche_id: trancheId,
+        if (!blocId && (trancheId || formData.tranche_id) && selectedProjet.nbre_tranches !== 0) {
+          await fetchDataByProjet_params('blocs', setBlocs, setLoadingBlocs, {
+            tranche_id: trancheId || formData.tranche_id,
           });
         } else if (!blocId && selectedProjet.nbre_tranches === 0) {
-          fetchDataByProjet_params('blocs', setBlocs, setLoadingBlocs);
+          await fetchDataByProjet_params('blocs', setBlocs, setLoadingBlocs);
         }
       }
+    };
 
-      if (selectedProjet.nbre_blocs !== 0 && formData.tranche_id && !blocId) {
-        fetchDataByProjet_params('blocs', setBlocs, setLoadingBlocs, {
-          tranche_id: formData.tranche_id,
-        });
-      }
-    }
-  }, [blocId, trancheId, formData.tranche_id, isEditing, selectedProjet]);
+    fetchData();
+    hasFetchedInitialData.current = true;
+  }
+}, [
+  blocId, 
+  trancheId, 
+  formData.tranche_id, 
+  isEditing, 
+  selectedProjet.nbre_tranches,
+  selectedProjet.nbre_blocs,
+  selectedProjet.id
+]);
 
+  
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -132,16 +143,23 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
     setFormData((prev) => ({ ...prev, [field]: value }));
 
     if (field === 'tranche_id') {
+      const currentTrancheId = value;
       const selectedTrancheObj = tranches.find(
         (t) => t.id.toString() === value.toString()
       );
       setSelectedTranche(selectedTrancheObj || null);
 
       // Reset bloc selection if tranche changes
-      if (value !== formData.tranche_id) {
+      if (currentTrancheId !== formData.tranche_id) {
         setFormData((prev) => ({ ...prev, bloc_id: '' }));
         setSelectedBloc(null);
       }
+
+      if (!blocId && ( currentTrancheId) && selectedProjet.nbre_tranches !== 0) {
+          fetchDataByProjet_params('blocs', setBlocs, setLoadingBlocs, {
+            tranche_id: currentTrancheId,
+          });
+        }
     }
 
     if (field === 'bloc_id' && value) {
@@ -220,7 +238,6 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
         router.back();
       }, 100);
     } catch (error) {
-      console.error('Failed to save immeuble:', error);
       const response = error.response;
       if (response?.status === 422) {
         setBackendErrors(response.data.errors || {});

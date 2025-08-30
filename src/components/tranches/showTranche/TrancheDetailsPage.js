@@ -71,7 +71,7 @@ export const TrancheDetailsPage = () => {
 
   // Handle edit action
   const handleEdit = () => {
-    router.push(`/Tranches/editTranche/${id}`);
+    router.push(`/Tranches/${id}/modifier`);
   };
 
   // Handle delete action
@@ -249,7 +249,7 @@ export const TrancheDetailsPage = () => {
             setActiveTab={setActiveTab}
             fetchTrancheData={fetchTrancheDetails}
             trancheId={id}
-          />
+            projetId={trancheData?.tranche?.projet_id}          />
         </div>
       </div>
 

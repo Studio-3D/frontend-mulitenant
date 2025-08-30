@@ -57,18 +57,11 @@ export const LeftCard = ({ tranche,onEdit, onDelete, canEdit = false  }) => {
       {/* Stats section - Only show if at least one stat is > 0 */}
       {visibleStats > 0 && (
         <div className={gridClass}>
-          {shouldShowStat(tranche?.nbre_biens) && (
+           {shouldShowStat(tranche?.nbre_blocs) && (
             <div className="flex flex-col items-center justify-center py-3 px-2">
-              <HomeIcon className="text-blue-600 mb-1" size={20} />
-              <div className="text-xs text-gray-600">Biens</div>
-              <div className="font-bold text-sm">{tranche?.bien_count}</div>
-            </div>
-          )}
-          {shouldShowStat(tranche?.nbre_tranches) && (
-            <div className="flex flex-col items-center justify-center py-3 px-2">
-              <LayersIcon className="text-green-600 mb-1" size={20} />
-              <div className="text-xs text-gray-600">Tranches</div>
-              <div className="font-bold text-sm">{tranche?.tranche_count}</div>
+              <BoxesIcon className="text-orange-600 mb-1" size={20} />
+              <div className="text-xs text-gray-600">Blocs</div>
+              <div className="font-bold text-sm">{tranche?.bloc_count}</div>
             </div>
           )}
           {shouldShowStat(tranche?.nbre_immeubles) && (
@@ -78,13 +71,12 @@ export const LeftCard = ({ tranche,onEdit, onDelete, canEdit = false  }) => {
               <div className="font-bold text-sm">{tranche?.immeuble_count}</div>
             </div>
           )}
-          {shouldShowStat(tranche?.nbre_blocs) && (
-            <div className="flex flex-col items-center justify-center py-3 px-2">
-              <BoxesIcon className="text-orange-600 mb-1" size={20} />
-              <div className="text-xs text-gray-600">Blocs</div>
-              <div className="font-bold text-sm">{tranche?.bloc_count}</div>
+         
+           <div className="flex flex-col items-center justify-center py-3 px-2">
+              <HomeIcon className="text-blue-600 mb-1" size={20} />
+              <div className="text-xs text-gray-600">Biens</div>
+              <div className="font-bold text-sm">{tranche?.bien_count}</div>
             </div>
-          )}
         </div>
       )}
       
@@ -114,7 +106,7 @@ export const LeftCard = ({ tranche,onEdit, onDelete, canEdit = false  }) => {
             <div className="flex items-center justify-between border-b border-gray-100 pb-2">
               <div className="flex items-center text-gray-700">
                 <FileTextIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
-                <span>Niveau d'étages:</span>
+                <span>Niveau {'d\''}étages:</span>
               </div>
               <div className="text-gray-600 text-right">{tranche?.niveau_etages || "Titre non spécifié"}</div>
             </div>
@@ -143,7 +135,7 @@ export const LeftCard = ({ tranche,onEdit, onDelete, canEdit = false  }) => {
               <div className="flex items-center justify-between border-b border-gray-100 pb-2">
                 <div className="flex items-center text-gray-700">
                   <BuildingIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
-                  <span>Nombre d'immeubles:</span>
+                  <span>Nombre {'d\''}immeubles:</span>
                 </div>
                 <div className="text-gray-600 text-right">{tranche.nbre_immeubles}</div>
               </div>

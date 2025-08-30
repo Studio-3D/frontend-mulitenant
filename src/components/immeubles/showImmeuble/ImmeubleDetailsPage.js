@@ -71,7 +71,7 @@ export const ImmeubleDetailsPage = () => {
 
   // Handle edit action
   const handleEdit = () => {
-    router.push(`/Immeubles/editImmeuble/${id}`);
+    router.push(`/Immeubles/${id}`);
   };
 
   // Handle delete action

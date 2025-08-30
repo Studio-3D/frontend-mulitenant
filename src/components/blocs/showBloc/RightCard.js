@@ -16,7 +16,7 @@ import {
   BuildingIcon,
 } from 'lucide-react';
 import Table from '@/components/Table';
-
+  
 const TAB_CONFIG = {
   immeuble: {
     icon: <BuildingIcon size={18} />,
@@ -175,7 +175,7 @@ const TAB_CONFIG = {
   },
 };
 
-export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchBlocData, blocId }) => {
+export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchBlocData, blocId,projectId }) => {
   const { token, user } = useAuth()
   const router = useRouter();
   const [selectedId, setSelectedId] = useState(null);
@@ -462,7 +462,7 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchBlocData, bl
           <Table
             columns={currentColumns}
             data={hasItems ? filteredItems : []}
-            addLink={TAB_CONFIG[safeActiveTab]?.addLink?.(user, blocId)}
+            addLink={TAB_CONFIG[safeActiveTab]?.addLink?.(user, null, projectId, blocId)}
             showSearch={false}
             filterComponent={filterComponent}
             onFilterToggle={handleFilterToggle}

@@ -919,18 +919,18 @@ export function VisitDetails({
                                 )}
                             </div>
 
-                            {/* Add this new row below the Traiter buttons */}
+                            {/* Add this new row below the Traiter buttons *
                             <div className="flex items-center space-x-4 mt-3">
-                              {/* Status tag */}
+                              {/* Status tag 
                               {visite.interet == 1 && (
                                 <div className="flex items-center">
                                   {getStatutBadge(visite.statut)}
                                 </div>
                               )}
 
-                              {/* Action buttons */}
+                              {/* Action buttons *
                               <div className="flex space-x-2">
-                                {/* View Reservation button */}
+                                {/* View Reservation button *
                                 {visite.reservation != null && (
                                   <button
                                     title="Détail du Réservation"
@@ -945,7 +945,7 @@ export function VisitDetails({
                                   </button>
                                 )}
 
-                                {/* Download PDF button */}
+                                {/* Download PDF button *
                                 {(visite.statut == 1 ||
                                   visite.statut == 3 ||
                                   visite.statut == 5) && (
@@ -1000,13 +1000,69 @@ export function VisitDetails({
                             visite.user.prenom.toUpperCase()
                           }
                         />
+
                         <InfoCard
                           icon={<TagIcon className="h-5 w-5" />}
-                          title="Intérêt"
+                          title={visite.interet == 1 ? 'Statut' : 'Intérêt'}
                           value={
                             <div className="flex items-center space-x-2">
-                              {getInteretBadge(visite.interet)}
-
+                              {visite.interet == 1
+                                ? getStatutBadge(visite.statut)
+                                : getInteretBadge(visite.interet)}
+                              {visite.reservation != null && (
+                                <button
+                                  title="Détail du Réservation"
+                                  onClick={() =>
+                                    handleView_Reservation(
+                                      visite?.reservation?.id
+                                    )
+                                  }
+                                  className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+                                >
+                                  <EyeIcon className="h-5 w-5 text-gray-700" />
+                                </button>
+                              )}
+                              {/* Download PDF button */}
+                              {(visite.statut == 1 ||
+                                visite.statut == 3 ||
+                                visite.statut == 5) && (
+                                <PDFDownloadLink
+                                  document={
+                                    <Document
+                                      data={[
+                                        visite.id,
+                                        visite.pre_reservation_visite
+                                          ?.code_pre_reserve,
+                                        visite.rdv_relation?.rdv,
+                                        visite.pre_reservation_visite
+                                          ?.date_pre_reserve,
+                                        visite.bien.propriete_dite_bien,
+                                        visite.bien.niveau,
+                                        visite.bien.superficie_architecte,
+                                        visite.bien.orientation,
+                                        visite.bien.prix,
+                                        visite.user.name,
+                                        visite.user.prenom,
+                                      ]}
+                                    />
+                                  }
+                                  fileName="bon_pre_reservation.pdf"
+                                >
+                                  {({ loading }) => (
+                                    <button
+                                      title="Télecharger Bon de Pré Réservation"
+                                      className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+                                      disabled={loading}
+                                    >
+                                      {loading ? (
+                                        <span>Loading...</span>
+                                      ) : (
+                                        <DownloadIcon className="h-5 w-5 text-gray-700" />
+                                      )}
+                                    </button>
+                                  )}
+                                </PDFDownloadLink>
+                              )}
                               {visite.interet == 3 && (
                                 <>
                                   {visite?.frein?.etat == 4 && (
@@ -1076,7 +1132,7 @@ export function VisitDetails({
                               }
                             />
 
-                           {/* <InfoCard
+                            {/* <InfoCard
                               icon={<BadgeCheckIcon className="h-5 w-5" />}
                               title="Statut"
                               value={getStatutBadge(visite.statut)}

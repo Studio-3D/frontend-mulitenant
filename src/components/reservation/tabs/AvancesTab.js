@@ -447,9 +447,8 @@ export const AvancesTab = ({
 
       if (response.status == 200) {
         const message = currentPaiement
-
-          ? "Paiement modifié avec succès"
-          : "Paiement ajouté avec succès";
+          ? 'Paiement modifié avec succès'
+          : 'Paiement ajouté avec succès';
 
         toast.success(message);
         // Close all possible modal states
@@ -595,7 +594,7 @@ export const AvancesTab = ({
         ? formatDate(Paiement.date_reglement)
         : 'N/A',
       respo: `${Paiement.user.name} ${Paiement.user.prenom || ''}`.trim(),
-      montant: Paiement.montant.toLocaleString() + ' DH',
+      montant: Paiement.montant.toLocaleString() + ' DH' || null,
       mode_pai: Paiement.mode_paiement,
       banque: Paiement.banque?.nom || null,
       numero_paiement: Paiement.numero_paiement || null,
@@ -621,10 +620,15 @@ export const AvancesTab = ({
     { key: 'date_reglement', label: 'Date' },
     { key: 'respo', label: 'Responsable' },
     {
-    key: 'montant',
-    label: 'Montant',
-    render: (row) => <b style={{ color: 'blue' }}>{row.montant}</b>,
-  },
+      key: 'montant',
+      label: 'Montant',
+      render: (row) => (
+        <strong key={`montant-${row.id}`} style={{ color: 'blue' }}>
+          {row.montant}
+        </strong>
+      ),
+    },
+
     {
       key: 'mode_pai',
       label: 'Mode Paiement',
@@ -649,9 +653,7 @@ export const AvancesTab = ({
         );
       },
     },
-    {
-     
-    },
+    {},
     { key: 'echeance', label: 'Echéance' },
     {
       key: 'statut',
@@ -663,7 +665,7 @@ export const AvancesTab = ({
           Number(row.statut) == 1 &&
           parseFloat(row.montant) > 0 &&
           Number(row.mode_pai) !== 7 &&
-          (row.date_encaissement == null || row.num_remise == null)
+          (row.date_encaissement == null)
         ) {
           return (
             <span className="px-2 py-1 rounded text-sm font-semibold bg-blue-100 text-blue-500">
@@ -687,7 +689,7 @@ export const AvancesTab = ({
         );
       },
     },
-   
+
     {
       key: 'recu_scanne',
       label: 'Reçu scanné',
@@ -820,8 +822,7 @@ export const AvancesTab = ({
                       {Number(row.mode_pai) != 7 &&
                         parseFloat(row.montant) > 0 &&
                         Number(row.statut) == 1 &&
-                        (row.date_encaissement == null ||
-                          row.num_remise == null) && (
+                        (row.date_encaissement == null) && (
                           <button
                             className="p-1 text-blue-500 hover:text-blue-700"
                             onClick={() =>
@@ -1015,7 +1016,7 @@ export const AvancesTab = ({
           <div>
             <p className="text-sm text-gray-500">Pourcentage versé</p>
             <p className="text-2xl font-bold">
-              {data.length>0 && Math.round((sum_avances / prix) * 100) + '%'}
+              {data.length > 0 && Math.round((sum_avances / prix) * 100) + '%'}
             </p>
           </div>
         </div>
@@ -1362,17 +1363,17 @@ export const AvancesTab = ({
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         N° Remise
-                        {formData.date_encaissement != '' ? (
+                        {/*formData.date_encaissement != '' ? (
                           <span className="text-red-500">*</span>
-                        ) : null}
+                        ) : null*/}
                       </label>
 
                       <input
                         name="num_remise"
                         type="number"
-                        required={
+                       /* required={
                           formData.date_encaissement != '' ? true : false
-                        }
+                        }*/
                         className="w-full p-2 border border-gray-300 rounded-md"
                         value={formData.num_remise || ''}
                         onChange={handleInputChange}
@@ -1475,14 +1476,14 @@ export const AvancesTab = ({
                   <>
                     <div>
                       <label className="block text-sm font-medium mb-1">
-                        N° Remise: <span className="text-red-500">*</span>
+                        N° Remise: 
                       </label>
                       <input
                         type="number"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
                         value={num_remise_v || ''}
                         onChange={(e) => set_num_remise_v(e.target.value)}
-                        required
+                        
                       />
                     </div>
                     <div>
