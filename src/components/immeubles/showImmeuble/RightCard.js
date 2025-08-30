@@ -21,7 +21,7 @@ const TAB_CONFIG = {
     icon: <HomeIcon size={18} />,
     name: "Biens",
     apiEndpoint: APIURL.BIENS,
-    addLink: (user, immeubleId) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? `/Biens/ajouter?immeubleId=${immeubleId}` : undefined,
+    addLink: (user, immeubleId) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? `/Biens/ajouter?immeuble=${immeubleId}` : undefined,
     filters: (tabsData, immeubleId) => {
       // Get unique status values from the biens data
       const statusOptions = tabsData.bien?.items 

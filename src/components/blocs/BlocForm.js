@@ -83,7 +83,7 @@ export default function BlocForm({ id, projetId, trancheId }) {
         tranche_id: trancheId,
       }));
     }
-  }, [id, isEditing, fetchBlocData, trancheId]);
+  }, [id, isEditing, trancheId]);
 
   // Fetch tranches for the project
   useEffect(() => {

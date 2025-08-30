@@ -1,17 +1,22 @@
-import React, { useMemo, useState, useCallback, useEffect } from "react";
-import { StatusCard } from "./StatusCard";
-import { Eye, PencilLine, Trash2 } from "lucide-react";
-import Link from "next/link";
-import { isAdmin, isSuperAdmin } from "@/configs/enum";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
-import SelectInput from "@/components/SelectInput";
-import Modal from "@/components/Modal";
-import DeleteData from "@/components/DeleteData";
-import { APIURL } from "@/configs/api";
-import Input from "@/components/Input";
-import { ChevronDownIcon, HomeIcon, BuildingIcon } from "lucide-react";
-import Table from "@/components/Table";
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
+import { StatusCard } from './StatusCard';
+import { Eye, PencilLine, Trash2 } from "lucide-react"
+import Link from 'next/link';
+import { isAdmin, isSuperAdmin } from '@/configs/enum';
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/context/AuthContext'
+import SelectInput from '@/components/SelectInput';
+import Modal from '@/components/Modal';
+import DeleteData from '@/components/DeleteData';
+import { APIURL } from '@/configs/api'
+import Input from '@/components/Input';
+import {
+  ChevronDownIcon,
+  HomeIcon,
+  BuildingIcon,
+} from 'lucide-react';
+import Table from '@/components/Table';
+  
 
 const TAB_CONFIG = {
   immeuble: {
@@ -188,14 +193,8 @@ const TAB_CONFIG = {
   },
 };
 
-export const RightCard = ({
-  tabsData,
-  activeTab,
-  setActiveTab,
-  fetchBlocData,
-  blocId,
-}) => {
-  const { token, user } = useAuth();
+export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchBlocData, blocId,projectId }) => {
+  const { token, user } = useAuth()
   const router = useRouter();
   const [selectedId, setSelectedId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -507,7 +506,7 @@ export const RightCard = ({
           <Table
             columns={currentColumns}
             data={hasItems ? filteredItems : []}
-            addLink={TAB_CONFIG[safeActiveTab]?.addLink?.(user, blocId)}
+            addLink={TAB_CONFIG[safeActiveTab]?.addLink?.(user, null, projectId, blocId)}
             showSearch={false}
             filterComponent={filterComponent}
             onFilterToggle={handleFilterToggle}

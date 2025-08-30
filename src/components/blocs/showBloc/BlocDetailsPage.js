@@ -71,7 +71,7 @@ export const BlocDetailsPage = () => {
 
   // Handle edit action
   const handleEdit = () => {
-    router.push(`/Blocs/editBloc/${id}`);
+    router.push(`/Blocs/${id}/modifier`);
   };
 
   // Handle delete action
@@ -88,8 +88,17 @@ export const BlocDetailsPage = () => {
   if (!blocData || !blocData.bloc) return {};
 
   // Access the properties from the bloc object
+
+   const projet = blocData.bloc.projet;
+  // Check project counts to determine which tabs to show
+  const showBiens = projet?.nbre_biens > 0;
+  const showImmeubles = projet?.nbre_immeubles > 0;
+
+  const biensData = showBiens ? blocData.bloc.bien || [] : [];
+  const immeublesData = showImmeubles ? blocData.bloc.immeuble || [] : [];
+  /* in OLDONE
   const biensData = blocData.bloc.bien || [];
-  const immeublesData = blocData.bloc.immeuble || [];
+  const immeublesData = blocData.bloc.immeuble || [];*/
 
   const typeBienOptions = Array.from(
     new Set(
@@ -137,7 +146,7 @@ export const BlocDetailsPage = () => {
     nbre_biens: i.nbre_biens || 0,
   })) || [];
 
-  return {
+  /*return {
     immeuble: {
       count: immeubles.length,
       items: immeubles,
@@ -150,8 +159,37 @@ export const BlocDetailsPage = () => {
       nbr_count: biens.length,
       typeBienOptions,
     },
-  };
+  };*/
+  // Only include tabs if their corresponding project count is > 0
+  const tabs = {};
+
+  if (showImmeubles) {
+    tabs.immeuble = {
+      count: immeubles.length,
+      items: immeubles,
+      nbr_count: immeubles.length,
+    };
+  }
+
+  if (showBiens) {
+    tabs.bien = {
+      count: biens.length,
+      statuses: defaultStatuses,
+      items: biens,
+      nbr_count: biens.length,
+      typeBienOptions,
+    };
+  }
+
+  return tabs;
+
+  
 }, [blocData]);
+
+
+
+
+
 
   const filteredTabsData = useMemo(() => {
     return Object.fromEntries(
@@ -232,6 +270,7 @@ export const BlocDetailsPage = () => {
             setActiveTab={setActiveTab}
             fetchBlocData={fetchBlocDetails}
             blocId={id}
+            projectId={blocData?.bloc?.projet_id}
           />
         </div>
       </div>

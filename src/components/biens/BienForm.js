@@ -140,44 +140,6 @@ export default function BienForm() {
     });
   };
 
-  /*const handleselectChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-
-    if (field == 'bloc_id') {
-      // (formData.bloc_id || blocId)
-      if (
-        projet.nbre_blocs !== 0 &&
-        projet.nbre_immeubles != 0 &&
-        blocId &&
-        !immeubleId
-      ) {
-        fetchDataByProjet_params('immeubles', setImmeubles, setLoadingBlocs, {
-          bloc_id: formData.bloc_id ? formData.bloc_id : blocId,
-        });
-      }
-    }
-    if (field == 'tranche_id') {
-      //(formData.tranche_id || trancheID)
-      if (projet.nbre_blocs !== 0 && (tr_id != null || trancheId) && !blocId) {
-        fetchDataByProjet_params('blocs', setBlocs, setLoadingBlocs, {
-          tranche_id: formData.tranche_id ? formData.tranche_id : trancheId,
-        });
-      }
-      //(formData.tranche_id || trancheId)
-      if (
-        projet.nbre_tranches !== 0 &&
-        projet.nbre_immeubles != 0 &&
-        (tr_id != null || trancheId) &&
-        projet.nbre_blocs == 0 &&
-        !immeubleId
-      ) {
-        console.log('yumyyy');
-        fetchDataByProjet_params('immeubles', setImmeubles, setLoadingBlocs, {
-          tranche_id: formData.tranche_id ? formData.tranche_id : trancheId,
-        });
-      }
-    }
-  };*/
 
   const handleselectChange = (field, value) => {
     // Update form data first

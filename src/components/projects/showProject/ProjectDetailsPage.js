@@ -268,6 +268,10 @@ export const ProjectDetailsPage = () => {
     );
   }
 
+  const handleBack = () => {
+    setShowDeleteModal(false) 
+    router.push(`/Projets`);
+  };
   return (
     <div className="w-full">
       <div className="flex flex-col lg:flex-row gap-6 h-full">
@@ -299,7 +303,7 @@ export const ProjectDetailsPage = () => {
             type="Projet"
             message="Êtes-vous sûr de vouloir supprimer ce projet ? Cette action est irréversible."
             accessToken={localStorage.getItem("accessToken")}
-            onClose={() => setShowDeleteModal(false)}
+            onClose={() => handleBack()}
             onSuccess={handleDeleteSuccess}
           />
         </Modal>
