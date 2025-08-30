@@ -87,19 +87,23 @@ export const TrancheDetailsPage = () => {
  const allTabsData = useMemo(() => {
   if (!trancheData || !trancheData.tranche) return {};
 
-  // Access the properties from the tranche object
-  const biensData = trancheData.tranche.bien || [];
-  const blocsData = trancheData.tranche.bloc || [];
-  const immeublesData = trancheData.tranche.immeuble || [];
+  const projet = trancheData.tranche.projet;
+  // Check project counts to determine which tabs to show
+  const showBiens = projet?.nbre_biens > 0;
+  const showBlocs = projet?.nbre_blocs > 0;
+  const showImmeubles = projet?.nbre_immeubles > 0;
 
-  // Rest of your code remains the same...
+  const biensData = showBiens ? trancheData.tranche.bien || [] : [];
+  const blocsData = showBlocs ? trancheData.tranche.bloc || [] : [];
+  const immeublesData = showImmeubles ? trancheData.tranche.immeuble || [] : [];
+
+  // Rest of your existing tab data processing...
   const typeBienOptions = Array.from(
     new Set(
       biensData.map(b => b.type_bien?.type).filter(Boolean) || []
     )
   ).map(type => ({ value: type, label: type }));
   
-  // Calculate status counts dynamically
   const statusCounts = biensData.reduce((acc, b) => {
     const status = b.etat;
     if (status) {
@@ -108,14 +112,12 @@ export const TrancheDetailsPage = () => {
     return acc;
   }, {});
 
-  // Map to the expected status format with dynamic counts using STATUS_CONFIG
   const defaultStatuses = Object.entries(STATUS_CONFIG).map(([key, config]) => ({
     name: config.name,
     count: statusCounts?.[key] || 0,
     color: config.color
   }));
 
-  // Map bien data to match your column requirements
   const biens = biensData.map(b => {
     const statusConfig = STATUS_CONFIG[b.etat] || { name: b.etat, color: 'bg-gray-500' };
     
@@ -131,7 +133,6 @@ export const TrancheDetailsPage = () => {
     };
   }) || [];
 
-  // Map immeuble data to match your column requirements
   const immeubles = immeublesData.map(i => ({
     id: i.id,
     nom: i.nom,
@@ -140,7 +141,6 @@ export const TrancheDetailsPage = () => {
     nbre_biens: i.nbre_biens || 0,
   })) || [];
 
-  // Map bloc data to match your column requirements
   const blocs = blocsData.map(b => ({
     id: b.id,
     nom: b.nom,
@@ -149,25 +149,36 @@ export const TrancheDetailsPage = () => {
     nbre_biens: b.nbre_biens || 0,
   })) || [];
 
-  return {
-    blocs: {
+  // Only include tabs if their corresponding project count is > 0
+  const tabs = {};
+  
+  if (showBlocs) {
+    tabs.blocs = {
       count: blocs.length,
       items: blocs,
       nbr_count: blocs.length,
-    },
-    immeuble: {
+    };
+  }
+
+  if (showImmeubles) {
+    tabs.immeuble = {
       count: immeubles.length,
       items: immeubles,
       nbr_count: immeubles.length,
-    },
-    bien: {
+    };
+  }
+
+  if (showBiens) {
+    tabs.bien = {
       count: biens.length,
       statuses: defaultStatuses,
       items: biens,
       nbr_count: biens.length,
       typeBienOptions,
-    },
-  };
+    };
+  }
+
+  return tabs;
 }, [trancheData]);
 
   const filteredTabsData = useMemo(() => {

@@ -172,7 +172,7 @@ export default function TrancheForm({ id, projetId }) {
               ? `/Projets/${selectedProjet.id}?tab=tranches`
               : "/Projets"
           }
-          step={`${id ? "Modifier" : "Ajouter"} un tranche`}
+          step={`${id ? "Modifier" : "Ajouter"} une tranche`}
         />
       </div>
       <div className="p-6 mt-4 bg-white shadow-md rounded-md">
