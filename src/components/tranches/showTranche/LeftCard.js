@@ -114,12 +114,12 @@ export const LeftCard = ({ tranche, onEdit, onDelete, canEdit = false }) => {
             <div className="flex items-center justify-between border-b border-gray-100 pb-2">
               <div className="flex items-center text-gray-700">
                 <FileTextIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
-                <span>Niveau d'étages:</span>
+                <span>Niveau {"d'"}étages:</span>
               </div>
               <div className="text-gray-600 text-right">{tranche?.niveau_etages || "Titre non spécifié"}</div>
             </div>
             
-            {shouldShowStat(tranche?.nbre_tranches) && (
+            {shouldShowStat(tranche?.tranche_count) && (
               <div className="flex items-center justify-between border-b border-gray-100 pb-2">
                 <div className="flex items-center text-gray-700">
                   <LayersIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
@@ -129,7 +129,7 @@ export const LeftCard = ({ tranche, onEdit, onDelete, canEdit = false }) => {
               </div>
             )}
             
-            {shouldShowStat(tranche?.nbre_blocs) && (
+            {shouldShowStat(tranche?.bloc_count) && (
               <div className="flex items-center justify-between border-b border-gray-100 pb-2">
                 <div className="flex items-center text-gray-700">
                   <BoxesIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
@@ -139,17 +139,17 @@ export const LeftCard = ({ tranche, onEdit, onDelete, canEdit = false }) => {
               </div>
             )}
             
-            {shouldShowStat(tranche?.nbre_immeubles) && (
+            {shouldShowStat(tranche?.immeuble_count) && (
               <div className="flex items-center justify-between border-b border-gray-100 pb-2">
                 <div className="flex items-center text-gray-700">
                   <BuildingIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
-                  <span>Nombre d'immeubles:</span>
+                  <span>Nombre {"d'"}immeubles:</span>
                 </div>
                 <div className="text-gray-600 text-right">{tranche.nbre_immeubles}</div>
               </div>
             )}
             
-            {shouldShowStat(tranche?.nbre_biens) && (
+            {shouldShowStat(tranche?.bien_count) && (
               <div className="flex items-center justify-between border-b border-gray-100 pb-2">
                 <div className="flex items-center text-gray-700">
                   <BuildingIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />

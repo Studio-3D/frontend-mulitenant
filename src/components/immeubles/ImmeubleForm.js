@@ -91,46 +91,53 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
     }
   }, [id, isEditing, fetchImmeubleData, blocId]);
 
- // Fetch tranches and blocs for the project
-useEffect(() => {
-  if (!isEditing && !hasFetchedInitialData.current) {
-    const fetchData = async () => {
-      // Fetch tranches if needed
-      if (
-        selectedProjet.nbre_tranches !== 0 &&
-        !trancheId &&
-        !formData.tranche_id && 
-        !blocId
-      ) {
-        await fetchDataByProjet_params('tranches', setTranches, setLoadingTranches);
-      }
-
-      // Fetch blocs if needed
-      if (selectedProjet.nbre_blocs !== 0) {
-        if (!blocId && (trancheId || formData.tranche_id) && selectedProjet.nbre_tranches !== 0) {
-          await fetchDataByProjet_params('blocs', setBlocs, setLoadingBlocs, {
-            tranche_id: trancheId || formData.tranche_id,
-          });
-        } else if (!blocId && selectedProjet.nbre_tranches === 0) {
-          await fetchDataByProjet_params('blocs', setBlocs, setLoadingBlocs);
+  // Fetch tranches and blocs for the project
+  useEffect(() => {
+    if (!isEditing && !hasFetchedInitialData.current) {
+      const fetchData = async () => {
+        // Fetch tranches if needed
+        if (
+          selectedProjet.nbre_tranches !== 0 &&
+          !trancheId &&
+          !formData.tranche_id &&
+          !blocId
+        ) {
+          await fetchDataByProjet_params(
+            'tranches',
+            setTranches,
+            setLoadingTranches
+          );
         }
-      }
-    };
 
-    fetchData();
-    hasFetchedInitialData.current = true;
-  }
-}, [
-  blocId, 
-  trancheId, 
-  formData.tranche_id, 
-  isEditing, 
-  selectedProjet.nbre_tranches,
-  selectedProjet.nbre_blocs,
-  selectedProjet.id
-]);
+        // Fetch blocs if needed
+        if (selectedProjet.nbre_blocs !== 0) {
+          if (
+            !blocId &&
+            (trancheId || formData.tranche_id) &&
+            selectedProjet.nbre_tranches !== 0
+          ) {
+            await fetchDataByProjet_params('blocs', setBlocs, setLoadingBlocs, {
+              tranche_id: trancheId || formData.tranche_id,
+            });
+          } else if (!blocId && selectedProjet.nbre_tranches === 0) {
+            await fetchDataByProjet_params('blocs', setBlocs, setLoadingBlocs);
+          }
+        }
+      };
 
-  
+      fetchData();
+      hasFetchedInitialData.current = true;
+    }
+  }, [
+    blocId,
+    trancheId,
+    formData.tranche_id,
+    isEditing,
+    selectedProjet.nbre_tranches,
+    selectedProjet.nbre_blocs,
+    selectedProjet.id,
+  ]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -155,11 +162,11 @@ useEffect(() => {
         setSelectedBloc(null);
       }
 
-      if (!blocId && ( currentTrancheId) && selectedProjet.nbre_tranches !== 0) {
-          fetchDataByProjet_params('blocs', setBlocs, setLoadingBlocs, {
-            tranche_id: currentTrancheId,
-          });
-        }
+      if (!blocId && currentTrancheId && selectedProjet.nbre_tranches !== 0) {
+        fetchDataByProjet_params('blocs', setBlocs, setLoadingBlocs, {
+          tranche_id: currentTrancheId,
+        });
+      }
     }
 
     if (field === 'bloc_id' && value) {
@@ -203,7 +210,7 @@ useEffect(() => {
 
     // Prevent multiple submissions
     if (isSubmittingRef.current) return;
-    
+
     setIsSubmitting(true);
     isSubmittingRef.current = true;
     setBackendErrors({});
@@ -232,10 +239,31 @@ useEffect(() => {
       toast.success(
         `L'immeuble a été ${isEditing ? 'modifié' : 'créé'} avec succès`
       );
-      
+
       // Use setTimeout to ensure state updates complete before navigation
       setTimeout(() => {
-        router.back();
+        if (selectedProjet?.bloc_id) {
+          localStorage.setItem(
+            `bloc-${selectedProjet?.bloc_id}-activeTab`,
+            'immeuble'
+          );
+          router.push(`/Blocs/${selectedProjet?.bloc_id}`);
+        } else if (selectedProjet?.tranche_id) {
+          localStorage.setItem(
+            `tranche-${selectedProjet?.tranche_id}-activeTab`,
+            'immeuble'
+          );
+
+          router.push(`/Tranches/${selectedProjet?.tranche_id}`);
+        } else if (selectedProjet.id) {
+          localStorage.setItem(
+            `project-${iselectedProjet.id}-activeTab`,
+            'immeuble'
+          );
+          router.push(`/Projets/${selectedProjet.id}`);
+        } else {
+          router.push('/Projets');
+        }
       }, 100);
     } catch (error) {
       const response = error.response;
@@ -261,11 +289,35 @@ useEffect(() => {
       <div className="flex items-center justify-start">
         <BreadCrumb
           baseUrl={
-            selectedProjet?.id
-              ? `/Projets/${selectedProjet.id}?tab=immeubles`
+            selectedProjet?.bloc_id
+              ? `/Blocs/${selectedProjet.bloc_id}`
+              : selectedProjet?.tranche_id
+              ? `/Tranches/${selectedProjet?.tranche_id}`
+              : selectedProjet?.id
+              ? `/Projets/${selectedProjet?.id}`
               : '/Projets'
           }
-          step={`${id ? 'Modifier' : 'Ajouter'} un immeuble`}
+          onNavigate={() => {
+            if (selectedProjet?.bloc_id) {
+              localStorage.setItem(
+                `bloc-${selectedProjet?.bloc_id}-activeTab`,
+                'immeuble'
+              );
+            } else if (selectedProjet?.tranche_id) {
+              localStorage.setItem(
+                `tranche-${selectedProjet?.tranche_id}-activeTab`,
+                'immeuble'
+              );
+            } else if (selectedProjet.id) {
+              localStorage.setItem(
+                `project-${iselectedProjet.id}-activeTab`,
+                'immeuble'
+              );
+            } else {
+              router.push('/Projets');
+            }
+          }}
+          step={`${id ? 'Modifier' : 'Ajouter'} une immeuble`}
         />
       </div>
       <div className="p-6 mt-4 bg-white shadow-md rounded-md">

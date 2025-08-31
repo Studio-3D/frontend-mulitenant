@@ -95,7 +95,7 @@ export const LeftCard = ({ immeuble, onEdit, onDelete, canEdit = false }) => {
                   <HomeIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
                   <span>Nombre de biens:</span>
                 </div>
-                <div className="text-gray-600 text-right">{immeuble.bien_count}</div>
+                <div className="text-gray-600 text-right">{immeuble.nbre_biens}</div>
               </div>
             )}
           </div>

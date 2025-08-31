@@ -1,13 +1,13 @@
 'use client';
-import { useState, useEffect, useMemo, useCallback } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { LeftCard } from './LeftCard';
 import { RightCard } from './RightCard';
-import { APIURL } from "@/configs/api";
-import { useProjet } from "@/context/ProjetContext";
-import { useAuth } from "@/context/AuthContext";
-import { isAdmin, isSuperAdmin } from "@/configs/enum";
-import axios from "axios";
+import { APIURL } from '@/configs/api';
+import { useProjet } from '@/context/ProjetContext';
+import { useAuth } from '@/context/AuthContext';
+import { isAdmin, isSuperAdmin } from '@/configs/enum';
+import axios from 'axios';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
 
@@ -18,42 +18,57 @@ const STATUS_CONFIG = {
   RESERVATION: { name: 'Réservé', color: 'bg-blue-500' },
   BLOQUE: { name: 'Bloqué', color: 'bg-red-500' },
   VENDU: { name: 'Vendu', color: 'bg-purple-500' },
-  ENCOURS_DE_PROPOSITION: { name: 'En cours de proposition', color: 'bg-orange-500' },
+  ENCOURS_DE_PROPOSITION: {
+    name: 'En cours de proposition',
+    color: 'bg-orange-500',
+  },
+};
+
+// Helper function to get/set active tab from localStorage
+const getStoredActiveTab = (blocId) => {
+  if (typeof window === 'undefined') return null;
+  const stored = localStorage.getItem(`bloc-${blocId}-activeTab`);
+  return stored || null;
+};
+
+const setStoredActiveTab = (blocId, tabName) => {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(`bloc-${blocId}-activeTab`, tabName);
 };
 
 export const BlocDetailsPage = () => {
   const { id } = useParams();
   const router = useRouter();
-  const {  selectProjet, clearSelectedProjet } = useProjet();
+  const { selectProjet, clearSelectedProjet } = useProjet();
   const { user } = useAuth();
   const [blocData, setBlocData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('immeuble');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  
+
   const fetchBlocDetails = useCallback(async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem('accessToken');
       const response = await axios.get(`${APIURL.BLOCS}/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
-      
+
       const blocDetails = response.data;
       setBlocData(blocDetails);
       console.log('fetched bloc data', blocDetails);
-      
+
       // Update the context with the project details if available
       if (blocDetails.projet) {
         selectProjet(blocDetails.projet);
       }
-      
+
       setActiveTab('bien');
     } catch (err) {
-      console.error("Error fetching bloc details:", err);
-      setError(err.message || "Failed to fetch bloc details");
-      
+      console.error('Error fetching bloc details:', err);
+      setError(err.message || 'Failed to fetch bloc details');
+
       // If the bloc doesn't exist or we can't access it, clear selection
       if (err.response?.status === 404) {
         clearSelectedProjet();
@@ -81,72 +96,93 @@ export const BlocDetailsPage = () => {
 
   const handleDeleteSuccess = () => {
     setShowDeleteModal(false);
-    router.push("/Projets"); // Redirect to projects page
+    //router.push("/Projets"); // Redirect to projects page
+    // Redirect to the tranche page if available, otherwise to the project page
+    if (blocData?.bloc?.tranche_id) {
+      localStorage.setItem(
+        `tranche-${blocData?.bloc?.tranche_id}-activeTab`,
+        'blocs'
+      );
+      router.push(`/Tranches/${blocData?.bloc?.tranche_id}`);
+    } else if (blocData?.bloc?.projet_id) {
+      localStorage.setItem(
+        `project-${blocData?.bloc?.projet_id}-activeTab`,
+        'blocs'
+      );
+      router.push(`/Projets/${blocData?.bloc?.projet_id}`);
+    } else {
+      router.push('/Projets');
+    }
   };
 
- const allTabsData = useMemo(() => {
-  if (!blocData || !blocData.bloc) return {};
+  const allTabsData = useMemo(() => {
+    if (!blocData || !blocData.bloc) return {};
 
-  // Access the properties from the bloc object
+    // Access the properties from the bloc object
 
-   const projet = blocData.bloc.projet;
-  // Check project counts to determine which tabs to show
-  const showBiens = projet?.nbre_biens > 0;
-  const showImmeubles = projet?.nbre_immeubles > 0;
+    const projet = blocData.bloc.projet;
+    // Check project counts to determine which tabs to show
+    const showBiens = projet?.nbre_biens > 0;
+    const showImmeubles = projet?.nbre_immeubles > 0;
 
-  const biensData = showBiens ? blocData.bloc.bien || [] : [];
-  const immeublesData = showImmeubles ? blocData.bloc.immeuble || [] : [];
-  /* in OLDONE
+    const biensData = showBiens ? blocData.bloc.bien || [] : [];
+    const immeublesData = showImmeubles ? blocData.bloc.immeuble || [] : [];
+    /* in OLDONE
   const biensData = blocData.bloc.bien || [];
   const immeublesData = blocData.bloc.immeuble || [];*/
 
-  const typeBienOptions = Array.from(
-    new Set(
-      biensData.map(b => b.type_bien?.type).filter(Boolean) || []
-    )
-  ).map(type => ({ value: type, label: type }));
-  
-  // Calculate status counts dynamically
-  const statusCounts = biensData.reduce((acc, b) => {
-    const status = b.etat;
-    if (status) {
-      acc[status] = (acc[status] || 0) + 1;
-    }
-    return acc;
-  }, {});
+    const typeBienOptions = Array.from(
+      new Set(biensData.map((b) => b.type_bien?.type).filter(Boolean) || [])
+    ).map((type) => ({ value: type, label: type }));
 
-  // Map to the expected status format with dynamic counts using STATUS_CONFIG
-  const defaultStatuses = Object.entries(STATUS_CONFIG).map(([key, config]) => ({
-    name: config.name,
-    count: statusCounts?.[key] || 0,
-    color: config.color
-  }));
+    // Calculate status counts dynamically
+    const statusCounts = biensData.reduce((acc, b) => {
+      const status = b.etat;
+      if (status) {
+        acc[status] = (acc[status] || 0) + 1;
+      }
+      return acc;
+    }, {});
 
-  // Map bien data to match your column requirements
-  const biens = biensData.map(b => {
-    const statusConfig = STATUS_CONFIG[b.etat] || { name: b.etat, color: 'bg-gray-500' };
-    
-    return {
-      id: b.id,
-      name: b.propriete_dite_bien,
-      type: b.type_bien?.type || 'Inconnu',
-      surface: b.superficie_habitable || b.superficie_architecte,
-      price: b.prix,
-      status: statusConfig.name,
-      statusColor: statusConfig.color,
-      originalStatus: b.etat,
-    };
-  }) || [];
+    // Map to the expected status format with dynamic counts using STATUS_CONFIG
+    const defaultStatuses = Object.entries(STATUS_CONFIG).map(
+      ([key, config]) => ({
+        name: config.name,
+        count: statusCounts?.[key] || 0,
+        color: config.color,
+      })
+    );
 
-  // Map immeuble data to match your column requirements
-  const immeubles = immeublesData.map(i => ({
-    id: i.id,
-    nom: i.nom,
-    titre_foncier: i.titre_foncier,
-    nbre_biens: i.nbre_biens || 0,
-  })) || [];
+    // Map bien data to match your column requirements
+    const biens =
+      biensData.map((b) => {
+        const statusConfig = STATUS_CONFIG[b.etat] || {
+          name: b.etat,
+          color: 'bg-gray-500',
+        };
 
-  /*return {
+        return {
+          id: b.id,
+          name: b.propriete_dite_bien,
+          type: b.type_bien?.type || 'Inconnu',
+          surface: b.superficie_habitable || b.superficie_architecte,
+          price: b.prix,
+          status: statusConfig.name,
+          statusColor: statusConfig.color,
+          originalStatus: b.etat,
+        };
+      }) || [];
+
+    // Map immeuble data to match your column requirements
+    const immeubles =
+      immeublesData.map((i) => ({
+        id: i.id,
+        nom: i.nom,
+        titre_foncier: i.titre_foncier,
+        nbre_biens: i.nbre_biens || 0,
+      })) || [];
+
+    /*return {
     immeuble: {
       count: immeubles.length,
       items: immeubles,
@@ -160,48 +196,67 @@ export const BlocDetailsPage = () => {
       typeBienOptions,
     },
   };*/
-  // Only include tabs if their corresponding project count is > 0
-  const tabs = {};
+    // Only include tabs if their corresponding project count is > 0
+    const tabs = {};
 
-  if (showImmeubles) {
-    tabs.immeuble = {
-      count: immeubles.length,
-      items: immeubles,
-      nbr_count: immeubles.length,
-    };
-  }
+    if (showImmeubles) {
+      tabs.immeuble = {
+        count: immeubles.length,
+        items: immeubles,
+        nbr_count: immeubles.length,
+      };
+    }
 
-  if (showBiens) {
-    tabs.bien = {
-      count: biens.length,
-      statuses: defaultStatuses,
-      items: biens,
-      nbr_count: biens.length,
-      typeBienOptions,
-    };
-  }
+    if (showBiens) {
+      tabs.bien = {
+        count: biens.length,
+        statuses: defaultStatuses,
+        items: biens,
+        nbr_count: biens.length,
+        typeBienOptions,
+      };
+    }
 
-  return tabs;
-
-  
-}, [blocData]);
-
-
-
-
-
+    return tabs;
+  }, [blocData]);
 
   const filteredTabsData = useMemo(() => {
     return Object.fromEntries(
-      Object.entries(allTabsData).filter(([_, tabData]) => tabData.nbr_count >= 0)
+      Object.entries(allTabsData).filter(
+        ([_, tabData]) => tabData.nbr_count >= 0
+      )
     );
   }, [allTabsData]);
 
-  useEffect(() => {
+  /*  useEffect(() => {
     if (!filteredTabsData[activeTab] && Object.keys(filteredTabsData).length > 0) {
       setActiveTab(Object.keys(filteredTabsData)[0]);
     }
-  }, [filteredTabsData, activeTab]);
+  }, [filteredTabsData, activeTab]);*/
+  // Custom setActiveTab function that also persists to localStorage
+  const setActiveTabPersistent = useCallback(
+    (tabName) => {
+      setActiveTab(tabName);
+      setStoredActiveTab(id, tabName);
+    },
+    [id]
+  );
+  // Set active tab based on localStorage or first available tab
+  useEffect(() => {
+    if (Object.keys(filteredTabsData).length > 0) {
+      // Try to get the stored active tab for this project
+      const storedTab = getStoredActiveTab(id);
+
+      // If we have a stored tab and it exists in the current tabs, use it
+      if (storedTab && filteredTabsData[storedTab]) {
+        setActiveTab(storedTab);
+      }
+      // Otherwise use the first available tab
+      else if (!activeTab || !filteredTabsData[activeTab]) {
+        setActiveTabPersistent(Object.keys(filteredTabsData)[0]);
+      }
+    }
+  }, [filteredTabsData, id, activeTab, setActiveTabPersistent]);
 
   if (loading) {
     return (
@@ -224,7 +279,7 @@ export const BlocDetailsPage = () => {
         <div className="text-center">
           <div className="text-red-500 text-xl font-semibold mb-4">Error</div>
           <div className="text-gray-600 mb-6">{error}</div>
-          <button 
+          <button
             onClick={() => router.push('/Projets')}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
           >
@@ -240,7 +295,7 @@ export const BlocDetailsPage = () => {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="text-xl font-semibold mb-4">Bloc Not Found</div>
-          <button 
+          <button
             onClick={() => router.push('/Projets')}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
           >
@@ -255,11 +310,11 @@ export const BlocDetailsPage = () => {
     <div className="w-full">
       <div className="flex flex-col lg:flex-row gap-6 h-full">
         <div className="w-full lg:w-1/3">
-          <LeftCard 
-            bloc={{...blocData.bloc}} 
+          <LeftCard
+            bloc={{ ...blocData.bloc }}
             type="bloc"
-            onEdit={handleEdit}  
-            onDelete={handleDelete}  
+            onEdit={handleEdit}
+            onDelete={handleDelete}
             canEdit={isSuperAdmin(user?.role) || isAdmin(user?.role)}
           />
         </div>
@@ -267,7 +322,7 @@ export const BlocDetailsPage = () => {
           <RightCard
             tabsData={filteredTabsData}
             activeTab={activeTab}
-            setActiveTab={setActiveTab}
+            setActiveTab={setActiveTabPersistent}
             fetchBlocData={fetchBlocDetails}
             blocId={id}
             projectId={blocData?.bloc?.projet_id}
@@ -283,7 +338,7 @@ export const BlocDetailsPage = () => {
             Id={id}
             type="Bloc"
             message="Êtes-vous sûr de vouloir supprimer ce bloc ? Cette action est irréversible."
-            accessToken={localStorage.getItem("accessToken")}
+            accessToken={localStorage.getItem('accessToken')}
             onClose={() => setShowDeleteModal(false)}
             onSuccess={handleDeleteSuccess}
           />
