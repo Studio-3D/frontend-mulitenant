@@ -1,10 +1,14 @@
 import { useRouter } from 'next/navigation';
 import { HomeIcon } from '@heroicons/react/24/outline';
 
-export default function BreadCrumb({ step, baseUrl }) {
+// BreadCrumb component
+export default function BreadCrumb({ step, baseUrl, onNavigate }) {
   const router = useRouter();
 
-  const handleClick = url => {
+  const handleClick = (url) => {
+    if (onNavigate) {
+      onNavigate();
+    }
     router.push(url);
   };
 

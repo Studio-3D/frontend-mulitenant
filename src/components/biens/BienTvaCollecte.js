@@ -264,6 +264,7 @@ export default function BienTvaCollecte({ bienId, bien }) {
           <div className="p-6">
             <Table 
               title=""
+              showSearch={false}
               data={tvaCollectes}
               columns={columns}
               totalRows={totalRows}

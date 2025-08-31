@@ -217,13 +217,11 @@ export default function BienEncaissements({ bienId }) {
 
   return (
     <div className="bg-white shadow-sm rounded-lg">
-      <div className="border-b border-gray-200 px-6 py-4">
-        <h2 className="text-lg font-medium">Encaissements</h2>
-      </div>
-      
+     
       <div className="p-6">
         <Table 
           title=""
+          showSearch={false}
           data={encaissements}
           columns={columns}
           totalRows={totalRows}

@@ -11,7 +11,8 @@ export default function DeleteData({
   accessToken,
   onClose,
   message,
-  type='Donnée',
+  type = 'Donnée',
+  onSuccess,
 }) {
   const [loading, setLoading] = useState(false); // State for loading spinner
 
@@ -43,6 +44,7 @@ export default function DeleteData({
       }
 
       toast.success(`${type} supprimé avec succès`);
+      if (onSuccess) onSuccess();
       if (onClose) onClose();
     } catch (error) {
       console.error(

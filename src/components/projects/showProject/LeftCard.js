@@ -213,7 +213,7 @@ export const LeftCard = ({ project, onEdit, onDelete, canEdit = false }) => {
               </div>
             </div>
 
-            {shouldShowStat(project?.nbre_tranches) && (
+            {shouldShowStat(project?.tranche_count) && (
               <div className="flex items-center justify-between border-b border-gray-100 pb-2">
                 <div className="flex items-center text-gray-700">
                   <LayersIcon
@@ -228,7 +228,7 @@ export const LeftCard = ({ project, onEdit, onDelete, canEdit = false }) => {
               </div>
             )}
 
-            {shouldShowStat(project?.nbre_blocs) && (
+            {shouldShowStat(project?.bloc_count) && (
               <div className="flex items-center justify-between border-b border-gray-100 pb-2">
                 <div className="flex items-center text-gray-700">
                   <BoxesIcon
@@ -243,7 +243,7 @@ export const LeftCard = ({ project, onEdit, onDelete, canEdit = false }) => {
               </div>
             )}
 
-            {shouldShowStat(project?.nbre_immeubles) && (
+            {shouldShowStat(project?.immeuble_count) && (
               <div className="flex items-center justify-between border-b border-gray-100 pb-2">
                 <div className="flex items-center text-gray-700">
                   <BuildingIcon
@@ -258,7 +258,7 @@ export const LeftCard = ({ project, onEdit, onDelete, canEdit = false }) => {
               </div>
             )}
 
-            {shouldShowStat(project?.nbre_biens) && (
+            {shouldShowStat(project?.bien_count) && (
               <div className="flex items-center justify-between border-b border-gray-100 pb-2">
                 <div className="flex items-center text-gray-700">
                   <BuildingIcon
