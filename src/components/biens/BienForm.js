@@ -30,7 +30,7 @@ export default function BienForm() {
   const [fetchingData, setFetchingData] = useState(false);
   const searchParams = useSearchParams();
   const { id } = useParams();
-  const { selectProjet } = useProjet();
+  const { selectProjet, selectedProjet } = useProjet();
 
   const projetId = searchParams.get('projet');
   const blocId = searchParams.get('bloc');
@@ -1760,16 +1760,14 @@ export default function BienForm() {
     <div className="p-3">
       <div className="flex items-center justify-start">
         <BreadCrumb
-          baseUrl={projetId ? `/Projets/${projetId}` : '/Projets'}
-          onNavigate={() => {
-            if (projet?.id) {
-              localStorage.setItem(`project-${projet?.id}-activeTab`, 'bien');
-              router.push(`/Projets/${projet?.id}`);
-            } else {
-              router.push('/Projets');
-            }
-          }}
-          step={`${id ? 'Modifier' : 'Ajouter'} un bien`}
+          onRoot={{ href: '/Projets' }}
+          items={[
+            (projetId || selectedProjet?.id)
+              ? { label: `Projet #${projetId || selectedProjet.id}`, href: `/Projets/${projetId || selectedProjet.id}` }
+              : { label: 'Projets', href: '/Projets' },
+            trancheId ? { label: `Tranche #${trancheId}`, href: `/Tranches/${trancheId}` } : null,
+            { label: `${id ? 'Modifier' : 'Ajouter'} un bien` },
+          ].filter(Boolean)}
         />
       </div>
 

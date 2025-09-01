@@ -17,7 +17,6 @@
     "@fullcalendar/react": "^6.1.17",
     "@fullcalendar/timegrid": "^6.1.17",
     "@headlessui/react": "^2.2.4",
-    "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^5.0.1",
     "@mui/material": "^7.0.2",
     "@radix-ui/react-avatar": "^1.1.3",

@@ -274,6 +274,18 @@ export const ProjectDetailsPage = () => {
   };
   return (
     <div className="w-full">
+      {/* Breadcrumbs */}
+      <div className="mb-4">
+        {/* On project details, allow returning to projects list */}
+        <div className="inline-block">
+          <span className="text-sm text-gray-500">Chemin: </span>
+          <span className="inline-flex items-center gap-2 text-sm">
+            <a href="/Projets" className="text-[#009FFF] hover:text-blue-700">Projets</a>
+            <span className="text-gray-400">/</span>
+            <span className="text-gray-900">Projet #{id}</span>
+          </span>
+        </div>
+      </div>
       <div className="flex flex-col lg:flex-row gap-6 h-full">
         <div className="w-full lg:w-1/3">
           <LeftCard 

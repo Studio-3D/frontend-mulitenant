@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
 import { LeftCard } from './LeftCard';
 import { RightCard } from './RightCard';
 import { APIURL } from '@/configs/api';
@@ -298,6 +299,21 @@ export const TrancheDetailsPage = () => {
 
   return (
     <div className="w-full">
+      {/* Breadcrumbs */}
+      <div className="mb-4">
+        <BreadCrumb
+          onRoot={{ href: '/Projets' }}
+          items={[
+            trancheData?.tranche?.projet_id
+              ? {
+                  label: `Projet #${trancheData.tranche.projet_id}`,
+                  href: `/Projets/${trancheData.tranche.projet_id}`,
+                }
+              : { label: 'Projet inconnu' },
+            { label: `Tranche #${id}` },
+          ]}
+        />
+      </div>
       <div className="flex flex-col lg:flex-row gap-6 h-full">
         <div className="w-full lg:w-1/3">
           <LeftCard
