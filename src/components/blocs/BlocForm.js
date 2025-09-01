@@ -254,7 +254,7 @@ export default function BlocForm({ id, projetId, trancheId }) {
               localStorage.setItem(`project-${trancheId}-activeTab`, 'blocs');
             }
           }}
-          step={`${id ? 'Modifier' : 'Ajouter'} une tranche`}
+          step={`${id ? 'Modifier' : 'Ajouter'} un Bloc`}
         />
       </div>
       <div className="p-6 mt-4 bg-white shadow-md rounded-md">

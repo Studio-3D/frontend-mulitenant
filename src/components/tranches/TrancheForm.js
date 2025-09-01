@@ -11,6 +11,8 @@ import Button from '../Button';
 
 export default function TrancheForm({ id, projet }) {
   const router = useRouter();
+  const [loading_btn, setLoading_btn] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [backendErrors, setBackendErrors] = useState({});
   const [validationErrors, setValidationErrors] = useState({});
@@ -110,7 +112,7 @@ export default function TrancheForm({ id, projet }) {
       return;
     }
 
-    setLoading(true);
+    setLoading_btn(true);
     setBackendErrors({});
 
     const token = localStorage.getItem('accessToken');
@@ -134,11 +136,14 @@ export default function TrancheForm({ id, projet }) {
         },
       });
 
-      toast.success(`Tranche ${isEditing ? 'modifiée' : 'créée'} avec succès`);
+      toast.success(`Tranche ${isEditing ? 'modifié' : 'créée'} avec succès`);
 
       // Navigate back to the project details page with tranches tab active
       if (selectedProjet?.id) {
-        localStorage.setItem(`project-${selectedProjet.id}-activeTab`, 'tranche');
+        localStorage.setItem(
+          `project-${selectedProjet.id}-activeTab`,
+          'tranche'
+        );
         router.push(`/Projets/${selectedProjet.id}`);
       } else {
         router.push('/Projets');
@@ -156,7 +161,7 @@ export default function TrancheForm({ id, projet }) {
         );
       }
     } finally {
-      setLoading(false);
+      setLoading_btn(false);
     }
   };
 
@@ -309,8 +314,8 @@ export default function TrancheForm({ id, projet }) {
             <Button type="button" onClick={() => router.back()}>
               Annuler
             </Button>
-            <Button type="submit" loading={loading}>
-              {loading ? 'Chargement...' : id ? 'Modifier' : 'Ajouter'}
+            <Button type="submit" loading={loading_btn}>
+              {loading_btn ? 'Chargement...' : id ? 'Modifier' : 'Ajouter'}
             </Button>
           </div>
         </form>

@@ -65,7 +65,7 @@ export const LeftCard = ({ immeuble, onEdit, onDelete, canEdit = false }) => {
       <div className="p-6 flex-grow">
         <div className="mb-6">
           <h2 className="text-lg font-semibold mb-3 text-gray-800">
-            Détails de {'l\''}immeuble
+            Détails Immeuble
           </h2>
           <p className="text-gray-600">{immeuble.description}</p>
           <div className="grid grid-cols-1 gap-2 text-sm mt-6">

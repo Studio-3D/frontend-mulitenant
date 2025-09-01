@@ -1,59 +1,74 @@
 import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { StatusCard } from './StatusCard';
-import { Eye, PencilLine, Trash2 } from "lucide-react"
+import { Eye, PencilLine, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { isAdmin, isSuperAdmin } from '@/configs/enum';
-import { useRouter } from 'next/navigation'
-import { useAuth } from '@/context/AuthContext'
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 import SelectInput from '@/components/SelectInput';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
-import { APIURL } from '@/configs/api'
+import { APIURL } from '@/configs/api';
 import Input from '@/components/Input';
-import {
-  ChevronDownIcon,
-  HomeIcon,
-  BuildingIcon,
-} from 'lucide-react';
+import { ChevronDownIcon, HomeIcon, BuildingIcon } from 'lucide-react';
 import Table from '@/components/Table';
-  
 
 const TAB_CONFIG = {
   immeuble: {
     icon: <BuildingIcon size={18} />,
-    name: "Immeubles",
+    name: 'Immeubles',
     apiEndpoint: APIURL.IMMEUBLES,
     addLink: (user, trancheId, projetId, blocId) =>
       isSuperAdmin(user?.role) || isAdmin(user?.role)
         ? `/Immeubles/ajouter?projet=${projetId}${
-            blocId ? `&bloc=${blocId}` : ""
-          }${trancheId ? `&tranche=${trancheId}` : ""}`
-        : "",
-    filters: (tabsData, blocId) => [
+            blocId ? `&bloc=${blocId}` : ''
+          }${trancheId ? `&tranche=${trancheId}` : ''}`
+        : '',
+    filters: (tabsData, blocId, nbre_tranches) => [
       {
-        key: "nom",
-        label: "Nom",
-        type: "text",
-        placeholder: "Nom...",
+        key: 'nom',
+        label: 'Nom',
+        type: 'text',
+        placeholder: 'Nom...',
         className:
-          "h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full",
+          'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
       },
       {
-        key: "titre_foncier",
-        label: "Titre foncier",
-        type: "text",
-        placeholder: "Titre foncier...",
+        key: 'titre_foncier',
+        label: 'Titre foncier',
+        type: 'text',
+        placeholder: 'Titre foncier...',
         className:
-          "h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full",
+          'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
       },
+      ...(nbre_tranches > 0
+        ? [
+            {
+              key: 'tranche_nom',
+              label: 'Tranche',
+              type: 'select',
+              placeholder: 'Sélectionner une tranche',
+              options:
+                tabsData.tranche?.items?.map((t) => ({
+                  label: t.nom,
+                  value: t.nom,
+                })) || [],
+              className:
+                'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+            },
+          ]
+        : []),
+    
     ],
-    columns: (user, handleDelete) => [
-      { key: "nom", label: "Immeuble" },
-      { key: "titre_foncier", label: "Titre foncier" },
-      { key: "nbre_biens", label: "Nbr Biens" },
+    columns: (user, handleDelete,nbre_tranches) => [
+      { key: 'nom', label: 'Immeuble' },
+      ...(nbre_tranches > 0 ? [{ key: 'tranche_nom', label: 'Tranche' }] : []),
+
+      { key: 'titre_foncier', label: 'Titre foncier' },
+      { key: 'nbre_biens', label: 'Nbr Biens' },
       {
-        key: "actions",
-        label: "Actions",
+        key: 'actions',
+        label: 'Actions',
         render: (row) => (
           <div className="flex gap-4 items-center">
             <Link
@@ -88,15 +103,15 @@ const TAB_CONFIG = {
   },
   bien: {
     icon: <HomeIcon size={18} />,
-    name: "Biens",
+    name: 'Biens',
     apiEndpoint: APIURL.BIENS,
     addLink: (user, trancheId, projetId, blocId, immeubleId) =>
       isSuperAdmin(user?.role) || isAdmin(user?.role)
-        ? `/Biens/ajouter?projet=${projetId}${blocId ? `&bloc=${blocId}` : ""}${
-            immeubleId ? `&immeuble=${immeubleId}` : ""
-          }${trancheId ? `&tranche=${trancheId}` : ""}`
+        ? `/Biens/ajouter?projet=${projetId}${blocId ? `&bloc=${blocId}` : ''}${
+            immeubleId ? `&immeuble=${immeubleId}` : ''
+          }${trancheId ? `&tranche=${trancheId}` : ''}`
         : undefined,
-    filters: (tabsData, blocId) => {
+    filters: (tabsData, blocId, nbre_immeubles, nbre_tranches) => {
       // Get unique status values from the biens data
       const statusOptions = tabsData.bien?.items
         ? [...new Set(tabsData.bien.items.map((item) => item.status))]
@@ -106,58 +121,138 @@ const TAB_CONFIG = {
 
       return [
         {
-          key: "name",
-          label: "Nom",
-          type: "text",
-          placeholder: "Nom...",
+          key: 'name',
+          label: 'Nom',
+          type: 'text',
+          placeholder: 'Nom...',
           className:
-            "h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full",
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
         },
         {
-          key: "type",
-          label: "Type",
-          type: "select",
-          placeholder: "Sélectionner un type",
+          key: 'numero',
+          label: 'Numéro',
+          type: 'text',
+          placeholder: '',
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
+        {
+          key: 'type',
+          label: 'Type',
+          type: 'select',
+          placeholder: 'Sélectionner un type',
           options: tabsData.bien?.typeBienOptions || [],
           className:
-            "h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full",
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
         },
         {
-          key: "surface",
-          label: "Surface",
-          type: "number",
-          placeholder: "Surface...",
+          key: 'surface',
+          label: 'Surface',
+          type: 'number',
+          placeholder: 'Surface...',
           className:
-            "h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full",
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
         },
         {
-          key: "price",
-          label: "Prix",
-          type: "number",
-          placeholder: "Prix...",
+          key: 'price',
+          label: 'Prix',
+          type: 'number',
+          placeholder: 'Prix...',
           className:
-            "h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full",
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
         },
         {
-          key: "status",
-          label: "Statut",
-          type: "select",
-          placeholder: "Sélectionner un statut",
+          key: 'status',
+          label: 'Statut',
+          type: 'select',
+          placeholder: 'Sélectionner un statut',
           options: statusOptions,
           className:
-            "h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full",
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
         },
+        ...(nbre_tranches > 0
+          ? [
+              {
+                key: 'tranche_nom',
+                label: 'Tranche',
+                type: 'select',
+                placeholder: 'Sélectionner une tranche',
+                options:
+                  tabsData.tranche?.items?.map((t) => ({
+                    label: t.nom,
+                    value: t.nom,
+                  })) || [],
+                className:
+                  'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+              },
+            ]
+          : []),
+
+        ...(nbre_immeubles > 0
+          ? [
+              {
+                key: 'immeuble_nom',
+                label: 'Immeuble',
+                type: 'select',
+                placeholder: 'Sélectionner un immeuble',
+                options:
+                  tabsData.immeuble?.items?.map((b) => ({
+                    label: b.nom,
+                    value: b.nom,
+                  })) || [],
+                className:
+                  'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+              },
+            ]
+          : []),
+          
       ];
     },
-    columns: (user, handleDelete) => [
-      { key: "name", label: "Nom" },
-      { key: "type", label: "Type" },
-      { key: "surface", label: "Surface" },
-      { key: "price", label: "Prix" },
-      { key: "status", label: "Statut" },
+    columns: (user, handleDelete, nbre_immeubles, nbre_tranches) => [
+      { key: 'name', label: 'Nom' },
+      { key: 'numero', label: 'Numéro' },
+      { key: 'type', label: 'Type' },
+      ...(nbre_tranches > 0 ? [{ key: 'tranche_nom', label: 'Tranche' }] : []),
+
+      ...(nbre_immeubles > 0
+        ? [{ key: 'immeuble_nom', label: 'Immeuble' }]
+        : []),
+
+      { key: 'surface', label: 'Surface' },
+      { key: 'price', label: 'Prix' },
       {
-        key: "actions",
-        label: "Actions",
+        key: 'status',
+        label: 'Statut',
+        render: (row) => {
+          let color = 'bg-gray-500'; // Default color
+
+          // Add conditions based on the status value
+          if (row.status === 'Disponible') {
+            color = 'bg-green-500';
+          } else if (row.status === 'Pré-réservé') {
+            color = 'bg-yellow-500';
+          } else if (row.status === 'Réservé') {
+            color = 'bg-blue-500';
+          } else if (row.status === 'Bloqué') {
+            color = 'bg-red-500';
+          } else if (row.status === 'Vendu') {
+            color = 'bg-purple-500';
+          } else if (row.status === 'En cours de proposition') {
+            color = 'bg-orange-500';
+          }
+
+          return (
+            <span
+              className={`text-xs font-medium px-2.5 py-0.5 rounded ${color} text-white`}
+            >
+              {row.status}
+            </span>
+          );
+        },
+      },
+      {
+        key: 'actions',
+        label: 'Actions',
         render: (row) => (
           <div className="flex gap-4 items-center text-sm">
             <Link
@@ -193,8 +288,17 @@ const TAB_CONFIG = {
   },
 };
 
-export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchBlocData, blocId,projectId }) => {
-  const { token, user } = useAuth()
+export const RightCard = ({
+  tabsData,
+  activeTab,
+  setActiveTab,
+  fetchBlocData,
+  blocId,
+  projectId,
+  nbre_immeubles,
+  nbre_tranches,
+}) => {
+  const { token, user } = useAuth();
   const router = useRouter();
   const [selectedId, setSelectedId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -212,9 +316,14 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchBlocData, bl
   useEffect(() => {
     const initialFilters = {};
     if (TAB_CONFIG[activeTab]?.filters) {
-      const filterConfig = TAB_CONFIG[activeTab].filters(tabsData, blocId);
+      const filterConfig = TAB_CONFIG[activeTab].filters(
+        tabsData,
+        blocId,
+        nbre_immeubles,
+        nbre_tranches
+      );
       filterConfig.forEach((filter) => {
-        initialFilters[filter.key] = "";
+        initialFilters[filter.key] = '';
       });
     }
     setTempFilters(initialFilters);
@@ -253,9 +362,14 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchBlocData, bl
   const resetFilters = () => {
     const resetFilters = {};
     if (TAB_CONFIG[activeTab]?.filters) {
-      const filterConfig = TAB_CONFIG[activeTab].filters(tabsData, blocId);
+      const filterConfig = TAB_CONFIG[activeTab].filters(
+        tabsData,
+        blocId,
+        nbre_immeubles,
+        nbre_tranches
+      );
       filterConfig.forEach((filter) => {
-        resetFilters[filter.key] = "";
+        resetFilters[filter.key] = '';
       });
     }
     setTempFilters(resetFilters);
@@ -286,7 +400,7 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchBlocData, bl
     let items = tabsData[activeTab].items;
 
     // Apply type filter if activeTab is 'bien' and a type is selected
-    if (activeTab === "bien" && selectedType) {
+    if (activeTab === 'bien' && selectedType) {
       items = items.filter((item) => item.type === selectedType);
     }
 
@@ -323,10 +437,24 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchBlocData, bl
     if (!activeTab || !TAB_CONFIG[activeTab]) return [];
 
     const columnConfig = TAB_CONFIG[activeTab].columns;
-    return typeof columnConfig === "function"
-      ? columnConfig(user, handleDelete)
-      : columnConfig;
-  }, [activeTab, user, handleDelete]);
+
+    if (typeof columnConfig === 'function') {
+      // Pass the appropriate parameters based on the active tab
+      switch (activeTab) {
+        case 'immeuble':
+          return columnConfig(user, handleDelete, nbre_tranches);
+        case 'bien':
+          return columnConfig(
+            user,
+            handleDelete,
+            nbre_immeubles,
+            nbre_tranches
+          );
+        default:
+          return columnConfig(user, handleDelete);
+      }
+    }
+  }, [activeTab, user, handleDelete, nbre_immeubles, nbre_tranches]);
 
   // Show all tabs regardless of count
   const availableTabs = useMemo(() => {
@@ -345,18 +473,22 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchBlocData, bl
   const filterComponent = useMemo(() => {
     if (!TAB_CONFIG[safeActiveTab]?.filters) return null;
 
-    const filterConfig = TAB_CONFIG[safeActiveTab].filters(tabsData, blocId);
-
+    const filterConfig = TAB_CONFIG[safeActiveTab].filters(
+      tabsData,
+      blocId,
+      nbre_immeubles,
+      nbre_tranches
+    );
     return (
       <div className="space-y-4 ">
         <div
           className="grid gap-3"
           style={{
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
           }}
         >
           {filterConfig.map((filter) => {
-            if (filter.type === "select") {
+            if (filter.type === 'select') {
               return (
                 <div key={filter.key} className="flex flex-col">
                   <label className="text-xs font-medium text-gray-700 mb-1">
@@ -365,7 +497,7 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchBlocData, bl
                   <SelectInput
                     options={filter.options || []}
                     placeholder={filter.placeholder}
-                    value={tempFilters[filter.key] || ""}
+                    value={tempFilters[filter.key] || ''}
                     onChange={(selectedValue) =>
                       handleFilterChange(filter.key, selectedValue)
                     }
@@ -373,7 +505,7 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchBlocData, bl
                   />
                 </div>
               );
-            } else if (filter.type === "number") {
+            } else if (filter.type === 'number') {
               return (
                 <div key={filter.key} className="flex flex-col">
                   <label className="text-xs font-medium text-gray-700 mb-1">
@@ -382,7 +514,7 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchBlocData, bl
                   <Input
                     type="number"
                     name={filter.key}
-                    value={tempFilters[filter.key] || ""}
+                    value={tempFilters[filter.key] || ''}
                     onChange={(e) =>
                       handleFilterChange(filter.key, e.target.value)
                     }
@@ -400,7 +532,7 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchBlocData, bl
                   <Input
                     type="text"
                     name={filter.key}
-                    value={tempFilters[filter.key] || ""}
+                    value={tempFilters[filter.key] || ''}
                     onChange={(e) =>
                       handleFilterChange(filter.key, e.target.value)
                     }
@@ -430,7 +562,14 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchBlocData, bl
         </div>
       </div>
     );
-  }, [safeActiveTab, tabsData, blocId, tempFilters]);
+  }, [
+    safeActiveTab,
+    tabsData,
+    blocId,
+    tempFilters,
+    nbre_immeubles,
+    nbre_tranches,
+  ]);
 
   if (!safeActiveTab) {
     return (
@@ -454,8 +593,8 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchBlocData, bl
               key={tab}
               className={`px-6 py-4 text-sm font-medium whitespace-nowrap flex items-center gap-2 ${
                 safeActiveTab === tab
-                  ? "border-b-2 border-blue-600 text-blue-600"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? 'border-b-2 border-blue-600 text-blue-600'
+                  : 'text-gray-500 hover:text-gray-700'
               }`}
               onClick={() => {
                 setActiveTab(tab);
@@ -470,7 +609,7 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchBlocData, bl
         </div>
       </div>
       <div className="p-6 flex-grow">
-        {safeActiveTab === "bien" && (
+        {safeActiveTab === 'bien' && (
           <>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold text-gray-800">Biens</h2>
@@ -506,7 +645,12 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchBlocData, bl
           <Table
             columns={currentColumns}
             data={hasItems ? filteredItems : []}
-            addLink={TAB_CONFIG[safeActiveTab]?.addLink?.(user, null, projectId, blocId)}
+            addLink={TAB_CONFIG[safeActiveTab]?.addLink?.(
+              user,
+              null,
+              projectId,
+              blocId
+            )}
             showSearch={false}
             filterComponent={filterComponent}
             onFilterToggle={handleFilterToggle}
@@ -531,7 +675,7 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchBlocData, bl
                 message={`Êtes-vous sûr de vouloir supprimer ce ${TAB_CONFIG[
                   safeActiveTab
                 ]?.name.toLowerCase()} ?`}
-                accessToken={token || localStorage.getItem("accessToken")}
+                accessToken={token || localStorage.getItem('accessToken')}
                 onClose={() => setShowDeleteModal(false)}
                 onSuccess={handleDeleteSuccess}
               />
