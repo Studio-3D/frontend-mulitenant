@@ -74,6 +74,6 @@ export default function AddTranchePage() {
 
   return (
     
-      <TrancheForm projetId={projetId} />
+      <TrancheForm projetId={projet}  />
   );
 }

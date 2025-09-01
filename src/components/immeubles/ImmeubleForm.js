@@ -1,15 +1,15 @@
-'use client';
-import { useEffect, useState, useCallback, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import axios from 'axios';
-import { APIURL } from '@/configs/api';
-import toast from 'react-hot-toast';
-import LoadingSpin from '@/components/LoadingSpin';
-import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
-import Button from '../Button';
-import InputSelect from '../inputSelect';
-import Input from '../Input';
-import { fetchDataByProjet_params } from '@/configs/api-utils';
+"use client";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
+import axios from "axios";
+import { APIURL } from "@/configs/api";
+import toast from "react-hot-toast";
+import LoadingSpin from "@/components/LoadingSpin";
+import BreadCrumb from "@/app/(dashboard)/navigation/BreadCrumb";
+import Button from "../Button";
+import InputSelect from "../inputSelect";
+import Input from "../Input";
+import { fetchDataByProjet_params } from "@/configs/api-utils";
 
 export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
   const router = useRouter();
@@ -28,14 +28,14 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
 
   // Get selected project from localStorage
   const selectedProjet = JSON.parse(
-    localStorage.getItem('selectedProjet') || '{}'
+    localStorage.getItem("selectedProjet") || "{}"
   );
 
   const defaultValues = {
-    nom: '',
-    bloc_id: blocId || '',
-    tranche_id: trancheId || '',
-    titre_foncier: '',
+    nom: "",
+    bloc_id: blocId || "",
+    tranche_id: trancheId || "",
+    titre_foncier: "",
     nbre_biens: 0,
     projet_id: selectedProjet?.id,
   };
@@ -46,7 +46,7 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
   const fetchImmeubleData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem("accessToken");
       const response = await axios.get(`${APIURL.IMMEUBLES}/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -54,10 +54,10 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
       if (response.data?.immeuble) {
         const immeuble = response.data.immeuble;
         setFormData({
-          nom: immeuble.nom || '',
-          bloc_id: immeuble.bloc_id || '',
-          tranche_id: immeuble.bloc?.tranche_id || '',
-          titre_foncier: immeuble.titre_foncier || '',
+          nom: immeuble.nom || "",
+          bloc_id: immeuble.bloc_id || "",
+          tranche_id: immeuble.tranche_id || "",
+          titre_foncier: immeuble.titre_foncier || "",
           nbre_biens: immeuble.nbre_biens || 0,
           projet_id: immeuble.projet_id || selectedProjet?.id,
         });
@@ -70,7 +70,7 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
         }
       }
     } catch (error) {
-      console.error('Failed to fetch immeuble:', error);
+      console.error("Failed to fetch immeuble:", error);
       toast.error("Erreur lors du chargement de l'immeuble");
     } finally {
       setIsLoading(false);
@@ -103,7 +103,7 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
           !blocId
         ) {
           await fetchDataByProjet_params(
-            'tranches',
+            "tranches",
             setTranches,
             setLoadingTranches
           );
@@ -116,11 +116,11 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
             (trancheId || formData.tranche_id) &&
             selectedProjet.nbre_tranches !== 0
           ) {
-            await fetchDataByProjet_params('blocs', setBlocs, setLoadingBlocs, {
+            await fetchDataByProjet_params("blocs", setBlocs, setLoadingBlocs, {
               tranche_id: trancheId || formData.tranche_id,
             });
           } else if (!blocId && selectedProjet.nbre_tranches === 0) {
-            await fetchDataByProjet_params('blocs', setBlocs, setLoadingBlocs);
+            await fetchDataByProjet_params("blocs", setBlocs, setLoadingBlocs);
           }
         }
       };
@@ -149,7 +149,7 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
   const handleselectChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
 
-    if (field === 'tranche_id') {
+    if (field === "tranche_id") {
       const currentTrancheId = value;
       const selectedTrancheObj = tranches.find(
         (t) => t.id.toString() === value.toString()
@@ -158,18 +158,18 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
 
       // Reset bloc selection if tranche changes
       if (currentTrancheId !== formData.tranche_id) {
-        setFormData((prev) => ({ ...prev, bloc_id: '' }));
+        setFormData((prev) => ({ ...prev, bloc_id: "" }));
         setSelectedBloc(null);
       }
 
       if (!blocId && currentTrancheId && selectedProjet.nbre_tranches !== 0) {
-        fetchDataByProjet_params('blocs', setBlocs, setLoadingBlocs, {
+        fetchDataByProjet_params("blocs", setBlocs, setLoadingBlocs, {
           tranche_id: currentTrancheId,
         });
       }
     }
 
-    if (field === 'bloc_id' && value) {
+    if (field === "bloc_id" && value) {
       const selectedBlocObj = blocs.find(
         (b) => b.id.toString() === value.toString()
       );
@@ -182,7 +182,7 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
     setFormData((prev) => ({ ...prev, [name]: value }));
 
     if (validationErrors[name]) {
-      setValidationErrors((prev) => ({ ...prev, [name]: '' }));
+      setValidationErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
@@ -192,10 +192,10 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
       errors.nom = "Le nom de l'immeuble est requis";
     }
     if (tranches.length > 0 && !formData.tranche_id) {
-      errors.tranche_id = 'La tranche est requise';
+      errors.tranche_id = "La tranche est requise";
     }
     if (blocs.length > 0 && !formData.bloc_id) {
-      errors.bloc_id = 'Le Bloc est requise';
+      errors.bloc_id = "Le Bloc est requise";
     }
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
@@ -215,13 +215,13 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
     isSubmittingRef.current = true;
     setBackendErrors({});
 
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem("accessToken");
     let url = APIURL.IMMEUBLES;
-    let method = 'post';
+    let method = "post";
 
     if (isEditing) {
       url = `${url}/${id}`;
-      method = 'put';
+      method = "put";
     }
 
     try {
@@ -230,14 +230,14 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
         url,
         data: formData,
         headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
+          "Content-Type": "application/json",
+          Accept: "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
 
       toast.success(
-        `L'immeuble a été ${isEditing ? 'modifié' : 'créé'} avec succès`
+        `L'immeuble a été ${isEditing ? "modifié" : "créé"} avec succès`
       );
 
       // Use setTimeout to ensure state updates complete before navigation
@@ -245,24 +245,24 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
         if (selectedProjet?.bloc_id) {
           localStorage.setItem(
             `bloc-${selectedProjet?.bloc_id}-activeTab`,
-            'immeuble'
+            "immeuble"
           );
           router.push(`/Blocs/${selectedProjet?.bloc_id}`);
         } else if (selectedProjet?.tranche_id) {
           localStorage.setItem(
             `tranche-${selectedProjet?.tranche_id}-activeTab`,
-            'immeuble'
+            "immeuble"
           );
 
           router.push(`/Tranches/${selectedProjet?.tranche_id}`);
         } else if (selectedProjet.id) {
           localStorage.setItem(
-            `project-${iselectedProjet.id}-activeTab`,
-            'immeuble'
+            `project-${selectedProjet.id}-activeTab`,
+            "immeuble"
           );
           router.push(`/Projets/${selectedProjet.id}`);
         } else {
-          router.push('/Projets');
+          router.push("/Projets");
         }
       }, 100);
     } catch (error) {
@@ -295,29 +295,29 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
               ? `/Tranches/${selectedProjet?.tranche_id}`
               : selectedProjet?.id
               ? `/Projets/${selectedProjet?.id}`
-              : '/Projets'
+              : "/Projets"
           }
           onNavigate={() => {
             if (selectedProjet?.bloc_id) {
               localStorage.setItem(
                 `bloc-${selectedProjet?.bloc_id}-activeTab`,
-                'immeuble'
+                "immeuble"
               );
             } else if (selectedProjet?.tranche_id) {
               localStorage.setItem(
                 `tranche-${selectedProjet?.tranche_id}-activeTab`,
-                'immeuble'
+                "immeuble"
               );
             } else if (selectedProjet.id) {
               localStorage.setItem(
-                `project-${iselectedProjet.id}-activeTab`,
-                'immeuble'
+                `project-${selectedProjet.id}-activeTab`,
+                "immeuble"
               );
             } else {
-              router.push('/Projets');
+              router.push("/Projets");
             }
           }}
-          step={`${id ? 'Modifier' : 'Ajouter'} une immeuble`}
+          step={`${id ? "Modifier" : "Ajouter"} un immeuble`}
         />
       </div>
       <div className="p-6 mt-4 bg-white shadow-md rounded-md">
@@ -354,7 +354,7 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
                   options={tranches.map((t) => ({ label: t.nom, value: t.id }))}
                   value={formData.tranche_id}
                   onChange={(option) =>
-                    handleselectChange('tranche_id', option?.value || null)
+                    handleselectChange("tranche_id", option?.value || null)
                   }
                   error={
                     validationErrors.tranche_id || backendErrors.tranche_id
@@ -373,7 +373,7 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
                   options={blocs.map((t) => ({ label: t.nom, value: t.id }))}
                   value={formData.bloc_id}
                   onChange={(option) =>
-                    handleselectChange('bloc_id', option?.value || null)
+                    handleselectChange("bloc_id", option?.value || null)
                   }
                   error={validationErrors.bloc_id || backendErrors.bloc_id}
                   isLoading={loadingBlocs}
@@ -404,7 +404,7 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
                   options={blocs.map((t) => ({ label: t.nom, value: t.id }))}
                   value={formData.bloc_id}
                   onChange={(option) =>
-                    handleselectChange('bloc_id', option?.value || null)
+                    handleselectChange("bloc_id", option?.value || null)
                   }
                   error={validationErrors.bloc_id || backendErrors.bloc_id}
                   isLoading={loadingBlocs}
@@ -440,12 +440,12 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
             >
               {isSubmitting ? (
                 <>
-                  {isEditing ? 'Modification en cours...' : 'Ajout en cours...'}
+                  {isEditing ? "Modification en cours..." : "Ajout en cours..."}
                 </>
               ) : id ? (
-                'Modifier'
+                "Modifier"
               ) : (
-                'Ajouter'
+                "Ajouter"
               )}
             </Button>
           </div>
