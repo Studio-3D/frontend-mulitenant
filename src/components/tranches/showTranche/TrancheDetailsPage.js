@@ -306,11 +306,11 @@ export const TrancheDetailsPage = () => {
           items={[
             trancheData?.tranche?.projet_id
               ? {
-                  label: `Projet #${trancheData.tranche.projet_id}`,
+                  label: trancheData?.tranche?.projet?.nom || `Projet #${trancheData.tranche.projet_id}`,
                   href: `/Projets/${trancheData.tranche.projet_id}`,
                 }
               : { label: 'Projet inconnu' },
-            { label: `Tranche #${id}` },
+            { label: trancheData?.tranche?.nom || `Tranche #${id}` },
           ]}
         />
       </div>

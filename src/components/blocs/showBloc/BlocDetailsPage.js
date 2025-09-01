@@ -10,6 +10,7 @@ import { isAdmin, isSuperAdmin } from '@/configs/enum';
 import axios from 'axios';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
+import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
 
 // Define status mapping outside component to avoid recreation
 const STATUS_CONFIG = {
@@ -308,6 +309,17 @@ export const BlocDetailsPage = () => {
 
   return (
     <div className="w-full">
+      {/* Breadcrumbs */}
+      <div className="mb-4">
+        <BreadCrumb
+          onRoot={{ href: '/Projets' }}
+          items={[
+            blocData?.bloc?.projet ? { label: blocData.bloc.projet.nom, href: `/Projets/${blocData.bloc.projet_id}` } : null,
+            blocData?.bloc?.tranche ? { label: blocData.bloc.tranche.nom, href: `/Tranches/${blocData.bloc.tranche_id}` } : null,
+            { label: blocData?.bloc?.nom || 'Bloc' },
+          ].filter(Boolean)}
+        />
+      </div>
       <div className="flex flex-col lg:flex-row gap-6 h-full">
         <div className="w-full lg:w-1/3">
           <LeftCard

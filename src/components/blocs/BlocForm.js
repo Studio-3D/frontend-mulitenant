@@ -10,6 +10,7 @@ import Button from "../Button";
 import InputSelect from "../inputSelect";
 import Input from "../Input";
 import { fetchDataByProjet_params } from "@/configs/api-utils";
+import { useSearchParams } from "next/navigation";
 
 export default function BlocForm({ id, projetId, trancheId }) {
   const router = useRouter();
@@ -22,6 +23,8 @@ export default function BlocForm({ id, projetId, trancheId }) {
   const [selectedTranche, setSelectedTranche] = useState(null);
   const hasFetchedInitialData = useRef(false);
   const isSubmittingRef = useRef(false);
+  const searchParams = useSearchParams();
+  trancheId = trancheId || searchParams.get('tranche');
 
   // Get selected project from localStorage
   const selectedProjet = JSON.parse(
@@ -65,6 +68,23 @@ export default function BlocForm({ id, projetId, trancheId }) {
     } catch (error) {
       console.error("Failed to fetch bloc:", error);
       toast.error("Erreur lors du chargement du bloc");
+  // Ensure tranche name if trancheId provided
+  useEffect(() => {
+    const loadTrancheIfNeeded = async () => {
+      if (trancheId && !selectedTranche?.nom) {
+        try {
+          const token = localStorage.getItem('accessToken');
+          const res = await axios.get(`${APIURL.TRANCHES}/${trancheId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (res.data?.tranche) setSelectedTranche(res.data.tranche);
+        } catch (e) {
+          console.error('Failed to fetch tranche', e);
+        }
+      }
+    };
+    loadTrancheIfNeeded();
+  }, [trancheId, selectedTranche?.nom]);
     } finally {
       setIsLoading(false);
     }
@@ -240,21 +260,14 @@ export default function BlocForm({ id, projetId, trancheId }) {
     <div className="p-3">
       <div className="flex items-center justify-start">
         <BreadCrumb
-          baseUrl={
-            selectedProjet.nbre_tranches !== 0 && trancheId
-              ? `/Tranches/${trancheId}`
-              : selectedProjet?.id
-              ? `/Projets/${selectedProjet.id}`
-              : "/Projets"
-          }
-          onNavigate={() => {
-            if (selectedProjet.nbre_tranches !== 0 && trancheId) {
-              localStorage.setItem(`tranche-${trancheId}-activeTab`, "blocs");
-            } else if (selectedProjet?.id) {
-              localStorage.setItem(`project-${trancheId}-activeTab`, "blocs");
-            }
-          }}
-          step={`${id ? "Modifier" : "Ajouter"} un Bloc`}
+          onRoot={{ href: '/Projets' }}
+          items={[
+            selectedProjet?.id
+              ? { label: selectedProjet?.nom || `Projet #${selectedProjet.id}`, href: `/Projets/${selectedProjet.id}` }
+              : { label: 'Projets', href: '/Projets' },
+            selectedTranche?.nom ? { label: selectedTranche.nom, href: `/Tranches/${trancheId}` } : null,
+            { label: `${id ? 'Modifier' : 'Ajouter'} un Bloc` }
+          ].filter(Boolean)}
         />
       </div>
       <div className="p-6 mt-4 bg-white shadow-md rounded-md">

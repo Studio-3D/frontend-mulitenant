@@ -77,6 +77,24 @@ export default function BienForm() {
   const isSubmittingRef = useRef(false);
   const isNavigatingRef = useRef(false);
 
+  // Ensure tranche name is always available if trancheId provided
+  useEffect(() => {
+    const loadTrancheIfNeeded = async () => {
+      if (trancheId && !selectedTranche?.nom) {
+        try {
+          const token = localStorage.getItem('accessToken');
+          const res = await axios.get(`${APIURL.TRANCHES}/${trancheId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (res.data?.tranche) setSelectedTranche(res.data.tranche);
+        } catch (e) {
+          console.error('Failed to fetch tranche', e);
+        }
+      }
+    };
+    loadTrancheIfNeeded();
+  }, [trancheId, selectedTranche?.nom]);
+
   // Steps
   const steps = [
     'Détails du bien',
@@ -1763,9 +1781,11 @@ export default function BienForm() {
           onRoot={{ href: '/Projets' }}
           items={[
             (projetId || selectedProjet?.id)
-              ? { label: `Projet #${projetId || selectedProjet.id}`, href: `/Projets/${projetId || selectedProjet.id}` }
+              ? { label: (selectedProjet?.nom || 'Projet'), href: `/Projets/${projetId || selectedProjet.id}` }
               : { label: 'Projets', href: '/Projets' },
-            trancheId ? { label: `Tranche #${trancheId}`, href: `/Tranches/${trancheId}` } : null,
+            selectedTranche?.nom ? { label: selectedTranche.nom, href: `/Tranches/${trancheId}` } : null,
+            selectedBloc?.nom ? { label: selectedBloc.nom, href: `/Blocs/${blocId}` } : null,
+            selectedImmeuble?.nom ? { label: selectedImmeuble.nom, href: `/Immeubles/${immeubleId}` } : null,
             { label: `${id ? 'Modifier' : 'Ajouter'} un bien` },
           ].filter(Boolean)}
         />
