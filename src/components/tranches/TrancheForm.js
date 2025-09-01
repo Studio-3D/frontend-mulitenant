@@ -9,15 +9,19 @@ import LoadingSpin from '@/components/LoadingSpin';
 import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
 import Button from '../Button';
 
-export default function TrancheForm({ id, projetId }) {
+export default function TrancheForm({ id, projet }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [backendErrors, setBackendErrors] = useState({});
   const [validationErrors, setValidationErrors] = useState({});
 
   // Get selected project from localStorage if not provided via props
-  const selectedProjet = projetId
-    ? { id: projetId }
+  const selectedProjet = projet
+    ? {
+        id: projet?.id,
+        nbre_blocs: projet?.nbre_blocs,
+        nbre_immeubles: projet?.nbre_immeubles,
+      }
     : JSON.parse(localStorage.getItem('selectedProjet') || '{}');
 
   const defaultValues = {
@@ -134,7 +138,7 @@ export default function TrancheForm({ id, projetId }) {
 
       // Navigate back to the project details page with tranches tab active
       if (selectedProjet?.id) {
-        localStorage.setItem(`project-${trancheId}-activeTab`, 'tranche');
+        localStorage.setItem(`project-${selectedProjet.id}-activeTab`, 'tranche');
         router.push(`/Projets/${selectedProjet.id}`);
       } else {
         router.push('/Projets');
@@ -254,7 +258,7 @@ export default function TrancheForm({ id, projetId }) {
             </div>
 
             {/* Nombre de blocs */}
-            {selectedProjet?.nbre_blocs !== 0 && (
+            {selectedProjet?.nbre_blocs != 0 && (
               <div>
                 <label className="block text-sm font-medium !text-gray-700 mb-1">
                   Nombre de blocs

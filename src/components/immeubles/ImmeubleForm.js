@@ -257,7 +257,7 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
           router.push(`/Tranches/${selectedProjet?.tranche_id}`);
         } else if (selectedProjet.id) {
           localStorage.setItem(
-            `project-${iselectedProjet.id}-activeTab`,
+            `project-${selectedProjet.id}-activeTab`,
             'immeuble'
           );
           router.push(`/Projets/${selectedProjet.id}`);
