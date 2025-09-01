@@ -8,20 +8,70 @@ import classNames from "classnames";
 import { Eye } from 'lucide-react';
 
 export default function ProjetsDropDown() {
-    const { selectedProjet, projets, selectProjet, loading, fetchProjets } = useProjet();
+    const { selectedProjet, projets, selectProjet, loading, fetchProjets, addProjet } = useProjet();
     const [isSelectorOpened, setIsSelectorOpened] = useState(false);
     const [inputValue, setInputValue] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [hasFetchAttempted, setHasFetchAttempted] = useState(false); 
     const dropdownRef = useRef(null);
 
+    // Listen for custom event when a new project is created
+    useEffect(() => {
+        const handleNewProject = (event) => {
+            console.log("New project created, refreshing projects list", event.detail);
+            
+            // If we have the project details, add it to context and select it
+            if (event.detail && event.detail.project) {
+                addProjet(event.detail.project);
+            } else {
+                setHasFetchAttempted(false); // Reset to allow fresh fetch
+                if (isSelectorOpened) {
+                    fetchProjets(); // Refresh if dropdown is open
+                }
+            }
+        };
+
+        // Listen for custom event when a project is deleted
+        const handleProjectDeleted = (event) => {
+            console.log("Project deleted, refreshing projects list", event.detail);
+            setHasFetchAttempted(false); // Reset to allow fresh fetch
+            
+            // If dropdown is open, refresh the projects list
+            if (isSelectorOpened) {
+                fetchProjets();
+            }
+        };
+
+        // Listen for custom events
+        window.addEventListener('projectCreated', handleNewProject);
+        window.addEventListener('projectDeleted', handleProjectDeleted);
+        
+        // Also listen for storage changes (in case another tab creates/deletes a project)
+        const handleStorageChange = (e) => {
+            if (e.key === 'selectedProjet' || e.key === 'newProjectAdded' || e.key === 'projectDeleted') {
+                setHasFetchAttempted(false);
+                if (isSelectorOpened) {
+                    fetchProjets();
+                }
+            }
+        };
+        
+        window.addEventListener('storage', handleStorageChange);
+
+        return () => {
+            window.removeEventListener('projectCreated', handleNewProject);
+            window.removeEventListener('projectDeleted', handleProjectDeleted);
+            window.removeEventListener('storage', handleStorageChange);
+        };
+    }, [isSelectorOpened, fetchProjets, addProjet]);
+
     // Fetch projets when the dropdown is opened
     useEffect(() => {
-        if (isSelectorOpened && projets.length === 0 && !loading && !hasFetchAttempted) {
+        if (isSelectorOpened && (!projets.length || !hasFetchAttempted)) {
             setHasFetchAttempted(true);
             fetchProjets();
         }
-    }, [isSelectorOpened, projets.length, loading, fetchProjets, hasFetchAttempted]);
+    }, [isSelectorOpened, projets.length, fetchProjets, hasFetchAttempted]);
 
     // Attempt to restore project from localStorage on component mount
     useEffect(() => {
@@ -59,6 +109,7 @@ export default function ProjetsDropDown() {
         if (!isSelectorOpened) {
             const timer = setTimeout(() => {
                 setHasFetchAttempted(false);
+                setInputValue(""); // Also reset search input
             }, 500);
             return () => clearTimeout(timer);
         }

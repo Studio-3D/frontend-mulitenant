@@ -28,10 +28,7 @@ export function ProjetProvider({ children }) {
   const [initialized, setInitialized] = useState(false);
   const [projetLoadAttempted, setProjetLoadAttempted] = useState(false);
 
-
-
   useEffect(() => {
-  
     try {
       console.log("INITIAL MOUNT: Checking localStorage for selected project");
       const savedProjetString = localStorage.getItem('selectedProjet');
@@ -45,7 +42,6 @@ export function ProjetProvider({ children }) {
           }
         } catch (err) {
           console.error('Error parsing saved projet during initialization:', err);
-        
         }
       } else {
         console.log("INITIAL MOUNT: No project found in localStorage");
@@ -56,7 +52,6 @@ export function ProjetProvider({ children }) {
       setProjetLoadAttempted(true);
     }
   }, []);
-
 
   const fetchProjets = useCallback(async () => {
     if (!selectedSociete) {
@@ -76,14 +71,12 @@ export function ProjetProvider({ children }) {
       const fetchedProjets = response.data.projets || [];
       setProjets(fetchedProjets);
       
-    
       if (!selectedProjet) {
         const savedProjet = localStorage.getItem('selectedProjet');
         if (savedProjet) {
           try {
             const parsedProjet = JSON.parse(savedProjet);
             if (parsedProjet && parsedProjet.id) {
-            
               const projectExists = fetchedProjets.some(p => p.id === parsedProjet.id);
               
               if (projectExists) {
@@ -107,33 +100,26 @@ export function ProjetProvider({ children }) {
     }
   }, [selectedSociete, selectedProjet]);
 
-
   useEffect(() => {
     if (selectedSociete && projetLoadAttempted) {
-    
       const previousSocieteId = localStorage.getItem('previousSocieteId');
       
-    
       if (previousSocieteId && previousSocieteId !== selectedSociete.id.toString()) {
         console.log("Société changed from", previousSocieteId, "to", selectedSociete.id, "clearing selected project");
         clearSelectedProjet();
       }
       
-    
       localStorage.setItem('previousSocieteId', selectedSociete.id.toString());
       
-    
       fetchProjets();
     }
   }, [selectedSociete, fetchProjets, projetLoadAttempted]);
-
 
   useEffect(() => {
     if (!user && initialized) {
       clearSelectedProjet();
     }
   }, [user, initialized]);
-
 
   const selectProjet = useCallback((projet) => {
     if (!projet || !projet.id) {
@@ -143,13 +129,10 @@ export function ProjetProvider({ children }) {
     
     console.log("Explicitly selecting project:", projet.id);
     
-  
     localStorage.setItem('selectedProjet', JSON.stringify(projet));
     
-  
     setSelectedProjet(projet);
     
-  
     if (pathname) {
       const projectMatch = pathname.match(/^\/Projets\/(\d+)(\/.*)?$/);
       
@@ -167,17 +150,45 @@ export function ProjetProvider({ children }) {
     return true;
   }, [pathname, router]);
 
-
   const clearSelectedProjet = useCallback(() => {
     console.log("Explicitly clearing selected project");
     setSelectedProjet(null);
     localStorage.removeItem('selectedProjet');
   }, []);
 
+  const removeProjet = useCallback((projetId) => {
+    // Remove from projets list
+    setProjets(prev => prev.filter(p => p.id !== projetId));
+    
+    // If the deleted project is the currently selected one, clear selection
+    if (selectedProjet && selectedProjet.id === projetId) {
+      clearSelectedProjet();
+      
+      // Try to select another project if available
+      if (projets.length > 1) {
+        const otherProjects = projets.filter(p => p.id !== projetId);
+        if (otherProjects.length > 0) {
+          selectProjet(otherProjects[0]);
+        }
+      }
+    }
+  }, [selectedProjet, projets, selectProjet, clearSelectedProjet]);
 
+  // NEW: Add a project to the list
+  const addProjet = useCallback((newProjet) => {
+    setProjets(prev => {
+      // Check if project already exists to avoid duplicates
+      if (!prev.some(p => p.id === newProjet.id)) {
+        return [...prev, newProjet];
+      }
+      return prev;
+    });
+    
+    // Automatically select the new project
+    selectProjet(newProjet);
+  }, [selectProjet]);
 
   useEffect(() => {
-  
     if (initialized && projetLoadAttempted && !selectedProjet) {
       const savedProjet = localStorage.getItem('selectedProjet');
       if (savedProjet) {
@@ -203,7 +214,9 @@ export function ProjetProvider({ children }) {
         error,
         fetchProjets,
         selectProjet,
-        clearSelectedProjet
+        clearSelectedProjet,
+        removeProjet,
+        addProjet // Add the new function to context
       }}
     >
       {children}
