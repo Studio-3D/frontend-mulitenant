@@ -236,9 +236,7 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
         },
       });
 
-      toast.success(
-        `L'immeuble a été ${isEditing ? "modifié" : "créé"} avec succès`
-      );
+      toast.success(`Immeuble ${isEditing ? "modifié" : "créé"} avec succès`);
 
       // Use setTimeout to ensure state updates complete before navigation
       setTimeout(() => {
