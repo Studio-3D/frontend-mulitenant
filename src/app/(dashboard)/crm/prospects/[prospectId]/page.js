@@ -61,7 +61,7 @@ const ProspectDetails = () => {
   }, [prospectId, accessToken]);
   // If WhatsApp-origin prospect with no projet assigned, prompt user to choose projet
   useEffect(() => {
-    if (prospectDetails && prospectDetails.origin === 'whatssap' && !prospectDetails.projet_id) {
+    if (prospectDetails && prospectDetails.origin === 'whatsapp' && !prospectDetails.projet_id) {
       setShowProjetModal(true);
     }
   }, [prospectDetails]);
