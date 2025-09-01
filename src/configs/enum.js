@@ -266,6 +266,7 @@ export const Statuts_Prospect = {
   7: { id: '7', label: 'Intéressé', value: 'Interesse' },
   8: { id: '8', label: 'Perdu', value: 'Perdu' },
   9: { id: '9', label: 'Réceptif', value: 'Receptif' },
+  10: { id: '10', label: 'Converti en client', value: 'Converti_en_client' },
 };
 
 // Filtered prospect statuses for treatment modal - using string labels as backend expects
@@ -331,6 +332,7 @@ export const PROSPECT_STATUS_COLORS = {
   'Injoignable': 'bg-purple-100 text-purple-600',
   'Rappel': 'bg-yellow-100 text-yellow-600',
   'Converti en Visite': 'bg-green-100 text-green-600',
+  'Converti en client': 'bg-green-100 text-green-700',
   'Nouveau Appel': 'bg-cyan-100 text-cyan-600',
   'Affecté': 'bg-indigo-100 text-indigo-600',
   'Intéressé': 'bg-emerald-100 text-emerald-600',
