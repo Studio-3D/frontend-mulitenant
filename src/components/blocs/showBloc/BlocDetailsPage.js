@@ -329,8 +329,8 @@ export const BlocDetailsPage = () => {
             setActiveTab={setActiveTabPersistent}
             fetchBlocData={fetchBlocDetails}
             blocId={id}
-            nbre_tranches={blocData?.bloc?.nbre_tranches}
-            nbre_immeubles={blocData?.bloc?.nbre_immeubles}
+            nbre_tranches={blocData?.bloc?.projet?.nbre_tranches}
+            nbre_immeubles={blocData?.bloc?.projet?.nbre_immeubles}
             projectId={blocData?.bloc?.projet_id}
           />
         </div>

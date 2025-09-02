@@ -323,9 +323,9 @@ export const TrancheDetailsPage = () => {
             // setActiveTab={setActiveTab}
             fetchTrancheData={fetchTrancheDetails}
             trancheId={id}
-            nbre_blocs={trancheData?.tranche?.nbre_blocs}
-            nbre_immeubles={trancheData?.tranche?.nbre_immeubles}
-            nbre_biens={trancheData?.tranche?.nbre_biens}
+            nbre_blocs={trancheData?.tranche?.projet?.nbre_blocs}
+            nbre_immeubles={trancheData?.tranche?.projet?.nbre_immeubles}
+            nbre_biens={trancheData?.tranche?.projet?.nbre_biens}
             projetId={trancheData?.tranche?.projet_id}
           />
         </div>

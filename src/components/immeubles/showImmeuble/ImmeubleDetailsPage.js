@@ -294,8 +294,8 @@ export const ImmeubleDetailsPage = () => {
             // setActiveTab={setActiveTab}
             setActiveTab={setActiveTabPersistent}
             fetchImmeubleData={fetchImmeubleDetails}
-            nbre_tranches={immeubleData?.immeuble?.nbre_tranches}
-            nbre_blocs={immeubleData?.immeuble?.nbre_blocs}
+            nbre_tranches={immeubleData?.immeuble?.projet?.nbre_tranches}
+            nbre_blocs={immeubleData?.immeuble?.projet?.nbre_blocs}
             immeubleId={id}
           />
         </div>

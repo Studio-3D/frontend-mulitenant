@@ -25,8 +25,8 @@ export const LeftCard = ({ bloc, onEdit, onDelete, canEdit = false }) => {
     shouldShowStat(bloc?.nbre_immeubles)
   ].filter(Boolean).length;*/
 
-  const showBiens = shouldShowStat(bloc?.nbre_biens);
-  const showImmeubles = shouldShowStat(bloc?.nbre_immeubles);
+  const showBiens = shouldShowStat(bloc?.projet?.nbre_biens);
+  const showImmeubles = shouldShowStat(bloc?.projet?.nbre_immeubles);
 
   // Count visible stats for grid layout
   const visibleStats = [showBiens, showImmeubles].filter(Boolean).length;

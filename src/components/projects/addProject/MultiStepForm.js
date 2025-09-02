@@ -293,91 +293,102 @@ export const MultiStepForm = ({
   }, []);
 
   const handleSubmit = async () => {
-    setIsSubmitting(true);
-    const accessToken = token || localStorage.getItem("accessToken");
+  setIsSubmitting(true);
+  const accessToken = token || localStorage.getItem("accessToken");
 
-    if (!accessToken) {
-      toast.error("User not authenticated");
-      setIsSubmitting(false);
-      return;
+  if (!accessToken) {
+    toast.error("User not authenticated");
+    setIsSubmitting(false);
+    return;
+  }
+
+  try {
+    const payload = {
+      nom: formData.projectInfo.nomProjet,
+      code: formData.projectInfo.codeProjet,
+      adresse: formData.projectInfo.adresse,
+      date_autorisation_construction:
+        formData.projectInfo.dateAutorisationConstruction,
+      date_permis_habiter: formData.projectInfo.datePermisHabiter,
+      titre_foncier: formData.projectInfo.titreFoncier,
+      surface_terrain: formData.projectInfo.surfaceTerrain,
+      prix_acquisition: formData.projectInfo.prixAcquisition,
+      limite_annulation_reservation:
+        formData.projectInfo.limiteAnnulationReservation,
+      type_id: Number(formData.projectType),
+      prolongation_reservation:
+        formData.projectInfo.prolongationReservation || 0,
+      nbre_tranches: formData.composition.tranche.enabled
+        ? formData.composition.tranche.value
+        : 0,
+      nbre_blocs: formData.composition.blocs.enabled
+        ? formData.composition.blocs.value
+        : 0,
+      nbre_immeubles: formData.composition.immeuble.enabled
+        ? formData.composition.immeuble.value
+        : 0,
+      max_etages: formData.projectInfo.nombreEtagesMaximum,
+      nbre_biens: formData.composition.bien.enabled
+        ? formData.composition.bien.value
+        : 0,
+      donneesTypeBien: JSON.stringify(formData.parameters.typesDeBien),
+      donneesVue: JSON.stringify(formData.parameters.vues),
+      donneesTypologie: JSON.stringify(formData.parameters.typologies),
+      partenaires: JSON.stringify(formData.parameters.partenaires),
+      selectedUsers: JSON.stringify(formData.parameters.utilisateursAcces),
+    };
+
+    let response;
+    if (editMode) {
+      // PUT request for update
+      response = await axios.put(`${APIURL.PROJETS}/${projetId}`, payload, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+      toast.success("Projet modifié avec succès");
+    } else {
+      // POST request for create
+      response = await axios.post(`${APIURL.PROJETS}`, payload, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+      toast.success("Projet ajouté avec succès");
+      
+      // Dispatch custom event to notify about new project
+      // Adjust the property name based on your API response structure
+      const newProject = response.data.projet || response.data;
+      window.dispatchEvent(new CustomEvent('projectCreated', { 
+        detail: { project: newProject } 
+      }));
+      
+      // Store the new project in localStorage for immediate access
+      localStorage.setItem('selectedProjet', JSON.stringify(newProject));
     }
 
-    try {
-      const payload = {
-        nom: formData.projectInfo.nomProjet,
-        code: formData.projectInfo.codeProjet,
-        adresse: formData.projectInfo.adresse,
-        date_autorisation_construction:
-          formData.projectInfo.dateAutorisationConstruction,
-        date_permis_habiter: formData.projectInfo.datePermisHabiter,
-        titre_foncier: formData.projectInfo.titreFoncier,
-        surface_terrain: formData.projectInfo.surfaceTerrain,
-        prix_acquisition: formData.projectInfo.prixAcquisition,
-        limite_annulation_reservation:
-          formData.projectInfo.limiteAnnulationReservation,
-        type_id: Number(formData.projectType),
-        prolongation_reservation:
-          formData.projectInfo.prolongationReservation || 0,
-        nbre_tranches: formData.composition.tranche.enabled
-          ? formData.composition.tranche.value
-          : 0,
-        nbre_blocs: formData.composition.blocs.enabled
-          ? formData.composition.blocs.value
-          : 0,
-        nbre_immeubles: formData.composition.immeuble.enabled
-          ? formData.composition.immeuble.value
-          : 0,
-        max_etages: formData.projectInfo.nombreEtagesMaximum,
-        nbre_biens: formData.composition.bien.enabled
-          ? formData.composition.bien.value
-          : 0,
-        donneesTypeBien: JSON.stringify(formData.parameters.typesDeBien),
-        donneesVue: JSON.stringify(formData.parameters.vues),
-        donneesTypologie: JSON.stringify(formData.parameters.typologies),
-        partenaires: JSON.stringify(formData.parameters.partenaires),
-        selectedUsers: JSON.stringify(formData.parameters.utilisateursAcces),
-      };
+    router.push("/Projets");
+  } catch (error) {
+    console.error("Error submitting form:", error);
+    let errorMessage = editMode
+      ? "Failed to update the project. Please try again."
+      : "Failed to create the project. Please try again.";
 
-      if (editMode) {
-        // PUT request for update
-        await axios.put(`${APIURL.PROJETS}/${projetId}`, payload, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-        });
-        toast.success("Projet modifié avec succès");
-      } else {
-        // POST request for create
-        await axios.post(`${APIURL.PROJETS}`, payload, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-        });
-        toast.success("Projet ajouté avec succès");
+    if (error.response) {
+      if (error.response.data && error.response.data.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response.data && error.response.data.errors) {
+        errorMessage = Object.values(error.response.data.errors).join("\n");
       }
-
-      router.push("/Projets");
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      let errorMessage = editMode
-        ? "Failed to update the project. Please try again."
-        : "Failed to create the project. Please try again.";
-
-      if (error.response) {
-        if (error.response.data && error.response.data.message) {
-          errorMessage = error.response.data.message;
-        } else if (error.response.data && error.response.data.errors) {
-          errorMessage = Object.values(error.response.data.errors).join("\n");
-        }
-      }
-
-      toast.error(errorMessage);
-    } finally {
-      setIsSubmitting(false);
     }
-  };
+
+    toast.error(errorMessage);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const updateFormData = (field, value) => {
     if (typeof field === "string") {

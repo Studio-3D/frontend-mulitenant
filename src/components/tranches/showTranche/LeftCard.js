@@ -119,15 +119,7 @@ export const LeftCard = ({ tranche, onEdit, onDelete, canEdit = false }) => {
               <div className="text-gray-600 text-right">{tranche?.niveau_etages || "Titre non spécifié"}</div>
             </div>
             
-            {shouldShowStat(tranche?.tranche_count) && (
-              <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-                <div className="flex items-center text-gray-700">
-                  <LayersIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
-                  <span>Nombre de tranches:</span>
-                </div>
-                <div className="text-gray-600 text-right">{tranche.nbre_tranches}</div>
-              </div>
-            )}
+           
             
             {shouldShowStat(tranche?.bloc_count) && (
               <div className="flex items-center justify-between border-b border-gray-100 pb-2">
