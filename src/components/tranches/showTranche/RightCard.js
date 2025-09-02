@@ -140,7 +140,7 @@ const TAB_CONFIG = {
     ],
     columns: (user, handleDelete,nbre_blocs) => [
       { key: 'nom', label: 'Immeuble' },
-      { key: 'bloc_nom', label: 'Bloc' },
+      ...(nbre_blocs > 0 ? [{ key: 'bloc_nom', label: 'Bloc' }] : []),
       { key: 'titre_foncier', label: 'Titre foncier' },
       { key: 'nbre_biens', label: 'Nbr Biens' },
       {
