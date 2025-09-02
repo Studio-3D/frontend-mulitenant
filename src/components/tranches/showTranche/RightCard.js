@@ -278,11 +278,18 @@ export const RightCard = ({
   fetchTrancheData,
   trancheId,
   projetId,
+  breadcrumbContext,
 }) => {
   const { token, user } = useAuth();
   const router = useRouter();
   const [selectedId, setSelectedId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const persistAddBienContext = useCallback(() => {
+    try {
+      const ctx = breadcrumbContext || {};
+      localStorage.setItem('bienBreadcrumbContext', JSON.stringify(ctx));
+    } catch {}
+  }, [breadcrumbContext]);
   const [selectedType, setSelectedType] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -591,11 +598,7 @@ export const RightCard = ({
           <Table
             columns={currentColumns}
             data={hasItems ? filteredItems : []}
-            addLink={TAB_CONFIG[safeActiveTab]?.addLink?.(
-              user,
-              trancheId,
-              projetId
-            )}
+            addLink={{ pathname: TAB_CONFIG[safeActiveTab]?.addLink?.(user, trancheId, projetId), onClick: persistAddBienContext }}
             showSearch={false}
             filterComponent={filterComponent}
             onFilterToggle={handleFilterToggle}

@@ -85,6 +85,22 @@ export const BlocDetailsPage = () => {
     }
   }, [id, fetchBlocDetails]);
 
+  // Persist breadcrumb context for fast "Ajouter bien" page
+  useEffect(() => {
+    if (blocData?.bloc) {
+      try {
+        const ctx = {
+          projet: blocData.bloc.projet ? { id: blocData.bloc.projet_id, nom: blocData.bloc.projet.nom } : undefined,
+          tranche: blocData.bloc.tranche ? { id: blocData.bloc.tranche_id, nom: blocData.bloc.tranche.nom } : undefined,
+          bloc: { id: blocData.bloc.id, nom: blocData.bloc.nom },
+        };
+        localStorage.setItem('bienBreadcrumbContext', JSON.stringify(ctx));
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, [blocData]);
+
   // Handle edit action
   const handleEdit = () => {
     router.push(`/Blocs/${id}/modifier`);
@@ -338,6 +354,11 @@ export const BlocDetailsPage = () => {
             fetchBlocData={fetchBlocDetails}
             blocId={id}
             projectId={blocData?.bloc?.projet_id}
+            breadcrumbContext={{
+              projet: blocData?.bloc?.projet ? { id: blocData.bloc.projet_id, nom: blocData.bloc.projet.nom } : undefined,
+              tranche: blocData?.bloc?.tranche ? { id: blocData.bloc.tranche_id, nom: blocData.bloc.tranche.nom } : undefined,
+              bloc: blocData?.bloc ? { id: blocData.bloc.id, nom: blocData.bloc.nom } : undefined,
+            }}
           />
         </div>
       </div>

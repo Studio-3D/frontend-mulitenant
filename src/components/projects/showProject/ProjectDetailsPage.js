@@ -44,7 +44,7 @@ export const ProjectDetailsPage = () => {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  
+
   // Custom setActiveTab function that also persists to localStorage
   const setActiveTabPersistent = useCallback((tabName) => {
     setActiveTab(tabName);
@@ -58,7 +58,7 @@ export const ProjectDetailsPage = () => {
       const response = await axios.get(`${APIURL.PROJETS}/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      
+
       const projectDetails = response.data;
       setProjectData(projectDetails);
       console.log('fetched project data', projectDetails)
@@ -66,12 +66,12 @@ export const ProjectDetailsPage = () => {
       if (projectDetails.projet) {
         selectProjet(projectDetails.projet);
       }
-      
+
       // Don't reset activeTab here - we'll handle it after checking localStorage
     } catch (err) {
       console.error("Error fetching project details:", err);
       setError(err.message || "Failed to fetch project details");
-      
+
       // If the project doesn't exist or we can't access it, clear selection
       if (err.response?.status === 404) {
         clearSelectedProjet();
@@ -80,6 +80,16 @@ export const ProjectDetailsPage = () => {
       setLoading(false);
     }
   }, [id, selectProjet, clearSelectedProjet]);
+
+  // Persist breadcrumb context for fast "Ajouter bien" navigation
+  useEffect(() => {
+    if (projectData?.projet) {
+      try {
+        const ctx = { projet: { id: projectData.projet.id, nom: projectData.projet.nom } };
+        localStorage.setItem('bienBreadcrumbContext', JSON.stringify(ctx));
+      } catch (e) {}
+    }
+  }, [projectData]);
 
   useEffect(() => {
     if (id) {
@@ -110,7 +120,7 @@ export const ProjectDetailsPage = () => {
         projectData?.projet.bien?.map(b => b.type_bien?.type).filter(Boolean) || []
       )
     ).map(type => ({ value: type, label: type }));
-    
+
     // Calculate status counts dynamically
     const statusCounts = projectData?.projet.bien?.reduce((acc, b) => {
       const status = b.etat;
@@ -130,7 +140,7 @@ export const ProjectDetailsPage = () => {
     // Map bien data to match your column requirements
     const biens = projectData?.projet.bien?.map(b => {
       const statusConfig = STATUS_CONFIG[b.etat] || { name: b.etat, color: 'bg-gray-500' };
-      
+
       return {
         id: b.id,
         name: b.propriete_dite_bien,
@@ -209,11 +219,11 @@ export const ProjectDetailsPage = () => {
     if (Object.keys(filteredTabsData).length > 0) {
       // Try to get the stored active tab for this project
       const storedTab = getStoredActiveTab(id);
-      
+
       // If we have a stored tab and it exists in the current tabs, use it
       if (storedTab && filteredTabsData[storedTab]) {
         setActiveTab(storedTab);
-      } 
+      }
       // Otherwise use the first available tab
       else if (!activeTab || !filteredTabsData[activeTab]) {
         setActiveTabPersistent(Object.keys(filteredTabsData)[0]);
@@ -242,7 +252,7 @@ export const ProjectDetailsPage = () => {
         <div className="text-center">
           <div className="text-red-500 text-xl font-semibold mb-4">Error</div>
           <div className="text-gray-600 mb-6">{error}</div>
-          <button 
+          <button
             onClick={() => router.push('/Projets')}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
           >
@@ -258,7 +268,7 @@ export const ProjectDetailsPage = () => {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="text-xl font-semibold mb-4">Project Not Found</div>
-          <button 
+          <button
             onClick={() => router.push('/Projets')}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
           >
@@ -270,7 +280,7 @@ export const ProjectDetailsPage = () => {
   }
 
   const handleBack = () => {
-    setShowDeleteModal(false) 
+    setShowDeleteModal(false)
     router.push(`/Projets`);
   };
   return (
@@ -286,8 +296,8 @@ export const ProjectDetailsPage = () => {
       </div>
       <div className="flex flex-col lg:flex-row gap-6 h-full">
         <div className="w-full lg:w-1/3">
-          <LeftCard 
-            project={{ ...projectData.projet }} 
+          <LeftCard
+            project={{ ...projectData.projet }}
             onEdit={handleEdit}
             onDelete={handleDelete}
             canEdit={isSuperAdmin(user?.role) || isAdmin(user?.role)}

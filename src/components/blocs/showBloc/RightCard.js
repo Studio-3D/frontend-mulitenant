@@ -16,7 +16,7 @@ import {
   BuildingIcon,
 } from 'lucide-react';
 import Table from '@/components/Table';
-  
+
 
 const TAB_CONFIG = {
   immeuble: {
@@ -193,7 +193,7 @@ const TAB_CONFIG = {
   },
 };
 
-export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchBlocData, blocId,projectId }) => {
+export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchBlocData, blocId, projectId, breadcrumbContext }) => {
   const { token, user } = useAuth()
   const router = useRouter();
   const [selectedId, setSelectedId] = useState(null);
@@ -204,6 +204,12 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchBlocData, bl
   const [totalRows, setTotalRows] = useState(0);
 
   // State for filters
+  const persistAddBienContext = useCallback(() => {
+    try {
+      const ctx = breadcrumbContext || {};
+      localStorage.setItem('bienBreadcrumbContext', JSON.stringify(ctx));
+    } catch {}
+  }, [breadcrumbContext]);
   const [tempFilters, setTempFilters] = useState({});
   const [appliedFilters, setAppliedFilters] = useState({});
   const [showFilter, setShowFilter] = useState(false);
@@ -482,6 +488,7 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchBlocData, bl
                   onChange={(value) => {
                     setSelectedType(value);
                     setCurrentPage(1);
+
                   }}
                   width="w-48"
                 />
@@ -506,7 +513,7 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchBlocData, bl
           <Table
             columns={currentColumns}
             data={hasItems ? filteredItems : []}
-            addLink={TAB_CONFIG[safeActiveTab]?.addLink?.(user, null, projectId, blocId)}
+            addLink={{ pathname: TAB_CONFIG[safeActiveTab]?.addLink?.(user, null, projectId, blocId), onClick: persistAddBienContext }}
             showSearch={false}
             filterComponent={filterComponent}
             onFilterToggle={handleFilterToggle}

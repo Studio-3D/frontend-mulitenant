@@ -73,27 +73,37 @@ export default function BienForm() {
   const [dataReloadTrigger, setDataReloadTrigger] = useState(0);
 
   // Refs for preventing multiple submissions and redirects
+  // Read breadcrumb context for names without fetching
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('bienBreadcrumbContext');
+      if (!raw) return;
+      const ctx = JSON.parse(raw);
+
+      // Set project name in context (won't navigate on this route)
+      if (ctx?.projet && (!selectedProjet || !selectedProjet?.nom)) {
+        try { selectProjet(ctx.projet); } catch (e) {}
+      }
+
+      // Always hydrate names from context when present (no need to match query ids)
+      if (ctx?.tranche && !selectedTranche?.nom) {
+        setSelectedTranche((prev) => prev || { id: ctx.tranche.id, nom: ctx.tranche.nom });
+      }
+      if (ctx?.bloc && !selectedBloc?.nom) {
+        setSelectedBloc((prev) => prev || { id: ctx.bloc.id, nom: ctx.bloc.nom });
+      }
+      if (ctx?.immeuble && !selectedImmeuble?.nom) {
+        setSelectedImmeuble((prev) => prev || { id: ctx.immeuble.id, nom: ctx.immeuble.nom });
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [selectProjet, selectedProjet, selectedTranche?.nom, selectedBloc?.nom, selectedImmeuble?.nom]);
   const hasFetchedInitialData = useRef(false);
   const isSubmittingRef = useRef(false);
   const isNavigatingRef = useRef(false);
 
-  // Ensure tranche name is always available if trancheId provided
-  useEffect(() => {
-    const loadTrancheIfNeeded = async () => {
-      if (trancheId && !selectedTranche?.nom) {
-        try {
-          const token = localStorage.getItem('accessToken');
-          const res = await axios.get(`${APIURL.TRANCHES}/${trancheId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (res.data?.tranche) setSelectedTranche(res.data.tranche);
-        } catch (e) {
-          console.error('Failed to fetch tranche', e);
-        }
-      }
-    };
-    loadTrancheIfNeeded();
-  }, [trancheId, selectedTranche?.nom]);
+
 
   // Steps
   const steps = [
@@ -365,7 +375,7 @@ export default function BienForm() {
 
   // If blocId is provided, fetch its details and set tranche_id accordingly
   useEffect(() => {
-    if (blocId && !id) {
+    if (blocId && !id && !selectedBloc?.nom) {
       const fetchBlocDetails = async () => {
         try {
           const token = localStorage.getItem('accessToken');
@@ -408,7 +418,7 @@ export default function BienForm() {
 
   // If immeubleId is provided, fetch its details and set bloc_id and tranche_id
   useEffect(() => {
-    if (immeubleId && !id) {
+    if (immeubleId && !id && !selectedImmeuble?.nom) {
       const fetchImmeubleDetails = async () => {
         try {
           const token = localStorage.getItem('accessToken');
@@ -1783,9 +1793,9 @@ export default function BienForm() {
             (projetId || selectedProjet?.id)
               ? { label: (selectedProjet?.nom || 'Projet'), href: `/Projets/${projetId || selectedProjet.id}` }
               : { label: 'Projets', href: '/Projets' },
-            selectedTranche?.nom ? { label: selectedTranche.nom, href: `/Tranches/${trancheId}` } : null,
-            selectedBloc?.nom ? { label: selectedBloc.nom, href: `/Blocs/${blocId}` } : null,
-            selectedImmeuble?.nom ? { label: selectedImmeuble.nom, href: `/Immeubles/${immeubleId}` } : null,
+            selectedTranche?.nom ? { label: selectedTranche.nom, href: `/Tranches/${trancheId || selectedTranche?.id}` } : null,
+            selectedBloc?.nom ? { label: selectedBloc.nom, href: `/Blocs/${blocId || selectedBloc?.id}` } : null,
+            selectedImmeuble?.nom ? { label: selectedImmeuble.nom, href: `/Immeubles/${immeubleId || selectedImmeuble?.id}` } : null,
             { label: `${id ? 'Modifier' : 'Ajouter'} un bien` },
           ].filter(Boolean)}
         />

@@ -83,6 +83,20 @@ export const TrancheDetailsPage = () => {
       fetchTrancheDetails();
     }
   }, [id, fetchTrancheDetails]);
+  // Persist breadcrumb context for fast "Ajouter bien" page
+  useEffect(() => {
+    if (trancheData?.tranche) {
+      try {
+        const ctx = {
+          projet: trancheData.tranche.projet ? { id: trancheData.tranche.projet_id, nom: trancheData.tranche.projet.nom } : undefined,
+          tranche: { id: trancheData.tranche.id, nom: trancheData.tranche.nom },
+        };
+        localStorage.setItem('bienBreadcrumbContext', JSON.stringify(ctx));
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, [trancheData]);
 
   // Handle edit action
   const handleEdit = () => {
@@ -333,6 +347,10 @@ export const TrancheDetailsPage = () => {
             fetchTrancheData={fetchTrancheDetails}
             trancheId={id}
             projetId={trancheData?.tranche?.projet_id}
+            breadcrumbContext={{
+              projet: trancheData?.tranche?.projet ? { id: trancheData.tranche.projet_id, nom: trancheData.tranche.projet.nom } : undefined,
+              tranche: trancheData?.tranche ? { id: trancheData.tranche.id, nom: trancheData.tranche.nom } : undefined,
+            }}
           />
         </div>
       </div>

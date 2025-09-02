@@ -114,7 +114,7 @@ const TAB_CONFIG = {
   },
 };
 
-export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchImmeubleData, immeubleId }) => {
+export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchImmeubleData, immeubleId, breadcrumbContext }) => {
   const { token, user } = useAuth()
   const router = useRouter();
   const [selectedId, setSelectedId] = useState(null);
@@ -340,6 +340,14 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchImmeubleData
   const currentTabData = tabsData[safeActiveTab];
   const hasItems = filteredItems.length > 0;
 
+  const persistAddBienContext = useCallback(() => {
+    try {
+      if (!tabsData) return;
+      const ctx = breadcrumbContext || {};
+      localStorage.setItem('bienBreadcrumbContext', JSON.stringify(ctx));
+    } catch {}
+  }, [breadcrumbContext, tabsData]);
+
   return (
     <div className="bg-white rounded-lg shadow-lg h-full flex flex-col">
       <div className="border-b">
@@ -401,7 +409,7 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchImmeubleData
           <Table
             columns={currentColumns}
             data={hasItems ? filteredItems : []}
-            addLink={TAB_CONFIG[safeActiveTab]?.addLink?.(user, immeubleId)}
+            addLink={{ pathname: TAB_CONFIG[safeActiveTab]?.addLink?.(user, immeubleId), onClick: persistAddBienContext }}
             showSearch={false}
             filterComponent={filterComponent}
             onFilterToggle={handleFilterToggle}

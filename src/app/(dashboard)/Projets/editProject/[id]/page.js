@@ -7,6 +7,7 @@ import { APIURL } from '@/configs/api'
 import { useAuth } from '@/context/AuthContext'
 import LoadingSpin from '@/components/LoadingSpin'
 
+import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
 
 const EditProjectPage = () => {
   const params = useParams()
@@ -49,7 +50,7 @@ const EditProjectPage = () => {
     return (
       <div className="p-4 text-red-500">
         <p>{error}</p>
-        <button 
+        <button
           onClick={() => router.push('/Projets')}
           className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
         >
@@ -63,7 +64,7 @@ const EditProjectPage = () => {
     return (
       <div className="p-4">
         <p>Project not found</p>
-        <button 
+        <button
           onClick={() => router.push('/Projets')}
           className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
         >
@@ -75,7 +76,13 @@ const EditProjectPage = () => {
 
   return (
     <div className="">
-      <MultiStepForm 
+      <div className="mb-4">
+        <BreadCrumb
+          onRoot={{ href: '/Projets' }}
+          items={[{ label: projectData?.projet?.nom || 'Projet' }, { label: 'Modifier' }]}
+        />
+      </div>
+      <MultiStepForm
         editMode={true}
         initialData={projectData}
         projetId={params.id}

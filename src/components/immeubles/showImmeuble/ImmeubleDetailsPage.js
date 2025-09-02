@@ -85,6 +85,23 @@ export const ImmeubleDetailsPage = () => {
     }
   }, [id, fetchImmeubleDetails]);
 
+  // Persist breadcrumb context for fast "Ajouter bien" page
+  useEffect(() => {
+    if (immeubleData?.immeuble) {
+      try {
+        const ctx = {
+          projet: immeubleData.immeuble.projet ? { id: immeubleData.immeuble.projet_id, nom: immeubleData.immeuble.projet.nom } : undefined,
+          tranche: immeubleData.immeuble.tranche ? { id: immeubleData.immeuble.tranche_id, nom: immeubleData.immeuble.tranche.nom } : undefined,
+          bloc: immeubleData.immeuble.bloc ? { id: immeubleData.immeuble.bloc_id, nom: immeubleData.immeuble.bloc.nom } : undefined,
+          immeuble: { id: immeubleData.immeuble.id, nom: immeubleData.immeuble.nom },
+        };
+        localStorage.setItem('bienBreadcrumbContext', JSON.stringify(ctx));
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, [immeubleData]);
+
   // Handle edit action
   const handleEdit = () => {
     router.push(`/Immeubles/${id}`);
@@ -304,6 +321,12 @@ export const ImmeubleDetailsPage = () => {
             setActiveTab={setActiveTabPersistent}
             fetchImmeubleData={fetchImmeubleDetails}
             immeubleId={id}
+            breadcrumbContext={{
+              projet: immeubleData?.immeuble?.projet ? { id: immeubleData.immeuble.projet_id, nom: immeubleData.immeuble.projet.nom } : undefined,
+              tranche: immeubleData?.immeuble?.tranche ? { id: immeubleData.immeuble.tranche_id, nom: immeubleData.immeuble.tranche.nom } : undefined,
+              bloc: immeubleData?.immeuble?.bloc ? { id: immeubleData.immeuble.bloc_id, nom: immeubleData.immeuble.bloc.nom } : undefined,
+              immeuble: immeubleData?.immeuble ? { id: immeubleData.immeuble.id, nom: immeubleData.immeuble.nom } : undefined,
+            }}
           />
         </div>
       </div>
