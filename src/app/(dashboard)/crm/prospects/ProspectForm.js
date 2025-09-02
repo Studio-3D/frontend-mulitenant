@@ -340,10 +340,10 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
   };
 
   // Second select: Partenaire
-  const handlePartenaireChange = (newValue) => {
-    setPartenaire(newValue ? newValue : ''); // Set partenaire value
-    setValue('partenaire_id', newValue ? newValue.id : ''); // Set partenaire ID
-  };
+    const handlePartenaireChange = (newValue) => {
+      setPartenaire(newValue ? newValue.id : ''); // Set partenaire ID
+      setValue('partenaire_id', newValue ? newValue.id : ''); // Set partenaire ID in form
+    };
 
   if (isEditing && !formData) {
     return (
