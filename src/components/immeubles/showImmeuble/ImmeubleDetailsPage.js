@@ -128,6 +128,13 @@ export const ImmeubleDetailsPage = () => {
     // Access the properties from the immeuble object
     const biensData = immeubleData.immeuble.bien || [];
 
+    // Get tranche and bloc data from immeubleData
+    const trancheData = immeubleData.immeuble.tranche
+      ? [immeubleData.immeuble.tranche]
+      : [];
+    const blocData = immeubleData.immeuble.bloc
+      ? [immeubleData.immeuble.bloc]
+      : [];
     const typeBienOptions = Array.from(
       new Set(biensData.map((b) => b.type_bien?.type).filter(Boolean) || [])
     ).map((type) => ({ value: type, label: type }));
@@ -174,6 +181,18 @@ export const ImmeubleDetailsPage = () => {
         };
       }) || [];
 
+    // Map tranche data for filtering
+    const tranches = trancheData.map((t) => ({
+      id: t.id,
+      nom: t.nom,
+    }));
+
+    // Map bloc data for filtering
+    const blocs = blocData.map((b) => ({
+      id: b.id,
+      nom: b.nom,
+    }));
+
     return {
       bien: {
         count: biens.length,
@@ -181,6 +200,9 @@ export const ImmeubleDetailsPage = () => {
         items: biens,
         nbr_count: biens.length,
         typeBienOptions,
+        // Include tranche and bloc data for filtering
+        tranches: tranches,
+        blocs: blocs,
       },
     };
   }, [immeubleData]);
@@ -297,6 +319,7 @@ export const ImmeubleDetailsPage = () => {
             nbre_tranches={immeubleData?.immeuble?.projet?.nbre_tranches}
             nbre_blocs={immeubleData?.immeuble?.projet?.nbre_blocs}
             immeubleId={id}
+            projetId={immeubleData?.immeuble?.projet_id}
           />
         </div>
       </div>

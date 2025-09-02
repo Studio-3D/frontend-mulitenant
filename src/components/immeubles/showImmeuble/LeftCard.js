@@ -120,7 +120,7 @@ export const LeftCard = ({ immeuble, onEdit, onDelete, canEdit = false }) => {
               </div>
             </div>
 
-            {shouldShowStat(immeuble?.bien_count) && (
+            {/*shouldShowStat(immeuble?.bien_count) && (
               <div className="flex items-center justify-between border-b border-gray-100 pb-2">
                 <div className="flex items-center text-gray-700">
                   <HomeIcon
@@ -133,7 +133,7 @@ export const LeftCard = ({ immeuble, onEdit, onDelete, canEdit = false }) => {
                   {immeuble.nbre_biens}
                 </div>
               </div>
-            )}
+            )*/}
           </div>
         </div>
       </div>

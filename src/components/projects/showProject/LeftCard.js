@@ -214,7 +214,7 @@ export const LeftCard = ({ project, onEdit, onDelete, canEdit = false }) => {
               </div>
             </div>
 
-            {shouldShowStat(project?.tranche_count) && (
+            {/*shouldShowStat(project?.tranche_count) && (
               <div className="flex items-center justify-between border-b border-gray-100 pb-2">
                 <div className="flex items-center text-gray-700">
                   <LayersIcon
@@ -272,7 +272,7 @@ export const LeftCard = ({ project, onEdit, onDelete, canEdit = false }) => {
                   {project.nbre_biens}
                 </div>
               </div>
-            )}
+            )*/}
           </div>
         </div>
 
