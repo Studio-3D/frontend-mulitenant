@@ -1696,10 +1696,15 @@ const VisiteForm = ({ prospect_id, origin }) => {
     setPartenaire_txt(null);
   };
   // Second select: Partenaire
-  const handlePartenaireChange = (newValue) => {
-    // setPartenaire_txt(newValue ? newValue : ''); // Set partenaire value
-    setValue('partenaire_id', newValue ? newValue.id : ''); // Set partenaire ID
-  };
+  const handlePartenaireChange = (selectedOption) => {
+  // Set the partenaire ID in the form
+  setValue('partenaire_id', selectedOption ? selectedOption.id : '');
+  
+  // If you need to store the partenaire text for display
+  setPartenaire_txt(selectedOption ? selectedOption.description : '');
+  setValue('partenaire_txt', selectedOption ? selectedOption.description : '');
+};
+
   const handleChange_freins = (selectedValues) => {
     try {
       console.log('Changed:', selectedValues);

@@ -340,10 +340,10 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
   };
 
   // Second select: Partenaire
-    const handlePartenaireChange = (newValue) => {
-      setPartenaire(newValue ? newValue.id : ''); // Set partenaire ID
-      setValue('partenaire_id', newValue ? newValue.id : ''); // Set partenaire ID in form
-    };
+const handlePartenaireChange = (newValue) => {
+  setPartenaire(newValue ? newValue.id : ''); // Set partenaire ID
+  setValue('partenaire_id', newValue ? newValue.id : ''); // Set partenaire ID in form
+};
 
   if (isEditing && !formData) {
     return (
@@ -510,9 +510,7 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
                       name="partenaire_id"
                       label="Partenaire:"
                       options={partenaires}
-                      value={
-                        partenaires.find((opt) => opt.id == partenaire) || null
-                      }
+                      value={partenaires.find(opt => opt.id === watch('partenaire_id')) || null}
                       loading={loading_auto}
                       choix="description"
                       onChange={handlePartenaireChange}
