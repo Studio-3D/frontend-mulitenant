@@ -25,8 +25,8 @@ export const LeftCard = ({ bloc, onEdit, onDelete, canEdit = false }) => {
     shouldShowStat(bloc?.nbre_immeubles)
   ].filter(Boolean).length;*/
 
-  const showBiens = shouldShowStat(bloc?.nbre_biens);
-  const showImmeubles = shouldShowStat(bloc?.nbre_immeubles);
+  const showBiens = shouldShowStat(bloc?.projet?.nbre_biens);
+  const showImmeubles = shouldShowStat(bloc?.projet?.nbre_immeubles);
 
   // Count visible stats for grid layout
   const visibleStats = [showBiens, showImmeubles].filter(Boolean).length;
@@ -73,13 +73,6 @@ export const LeftCard = ({ bloc, onEdit, onDelete, canEdit = false }) => {
       {/* Stats section - Only show if at least one stat is > 0 */}
       {visibleStats > 0 && (
         <div className={getGridClass()}>
-          {showBiens && (
-            <div className="flex flex-col items-center justify-center py-3 px-2">
-              <HomeIcon className="text-blue-600 mb-1" size={20} />
-              <div className="text-xs text-gray-600">Biens</div>
-              <div className="font-bold text-sm">{bloc?.bien_count || 0}</div>
-            </div>
-          )}
           {showImmeubles && (
             <div className="flex flex-col items-center justify-center py-3 px-2">
               <BuildingIcon className="text-purple-600 mb-1" size={20} />
@@ -89,13 +82,21 @@ export const LeftCard = ({ bloc, onEdit, onDelete, canEdit = false }) => {
               </div>
             </div>
           )}
+          {showBiens && (
+            <div className="flex flex-col items-center justify-center py-3 px-2">
+              <HomeIcon className="text-blue-600 mb-1" size={20} />
+              <div className="text-xs text-gray-600">Biens</div>
+              <div className="font-bold text-sm">{bloc?.bien_count || 0}</div>
+            </div>
+          )}
+          
         </div>
       )}
 
       <div className="p-6 flex-grow">
         <div className="mb-6">
           <h2 className="text-lg font-semibold mb-3 text-gray-800">
-            Détails du bloc
+            Détails  bloc
           </h2>
           <p className="text-gray-600">{bloc.description}</p>
           <div className="grid grid-cols-1 gap-2 text-sm mt-6">

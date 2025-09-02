@@ -25,6 +25,7 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
   const [selectedTranche, setSelectedTranche] = useState(null);
   const hasFetchedInitialData = useRef(false);
   const isSubmittingRef = useRef(false);
+  const [trancheHasNoBlocs, setTrancheHasNoBlocs] = useState(false);
 
   // Get selected project from localStorage
   const selectedProjet = JSON.parse(
@@ -165,6 +166,9 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
       if (!blocId && currentTrancheId && selectedProjet.nbre_tranches !== 0) {
         fetchDataByProjet_params("blocs", setBlocs, setLoadingBlocs, {
           tranche_id: currentTrancheId,
+        }).then(() => {
+          // Check if blocs array is empty after fetching
+          setTrancheHasNoBlocs(blocs.length === 0);
         });
       }
     }
@@ -309,12 +313,14 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
             } else if (selectedProjet.id) {
               localStorage.setItem(
                 `project-${selectedProjet.id}-activeTab`,
+
                 "immeuble"
               );
             } else {
               router.push("/Projets");
             }
           }}
+
           step={`${id ? "Modifier" : "Ajouter"} un immeuble`}
         />
       </div>
@@ -397,17 +403,27 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
               selectedProjet.nbre_tranches !== 0 &&
               selectedProjet.nbre_blocs !== 0 &&
               !blocId && (
-                <InputSelect
-                  label="Bloc"
-                  options={blocs.map((t) => ({ label: t.nom, value: t.id }))}
-                  value={formData.bloc_id}
-                  onChange={(option) =>
-                    handleselectChange("bloc_id", option?.value || null)
-                  }
-                  error={validationErrors.bloc_id || backendErrors.bloc_id}
-                  isLoading={loadingBlocs}
-                  required
-                />
+
+                <>
+                  <InputSelect
+                    label="Bloc"
+                    options={blocs.map((t) => ({ label: t.nom, value: t.id }))}
+                    value={formData.bloc_id}
+                    onChange={(option) =>
+                      handleselectChange('bloc_id', option?.value || null)
+                    }
+                    error={validationErrors.bloc_id || backendErrors.bloc_id}
+                    isLoading={loadingBlocs}
+                    required
+                  />
+
+                  {trancheHasNoBlocs && blocs.length === 0 && (
+                    <p className="text-red-500 text-sm mt-1">
+                      Cette tranche ne contient aucun bloc
+                    </p>
+                  )}
+                </>
+
               )}
 
             <Input

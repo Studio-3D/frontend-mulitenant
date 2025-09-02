@@ -18,7 +18,7 @@ export const LeftCard = ({ immeuble, onEdit, onDelete, canEdit = false }) => {
     return value !== undefined && value !== null && value > 0;
   };
 
-  // Count visible stats for grid layout
+  /*// Count visible stats for grid layout
   const visibleStats = [
     shouldShowStat(immeuble?.nbre_biens)
   ].filter(Boolean).length;
@@ -26,19 +26,42 @@ export const LeftCard = ({ immeuble, onEdit, onDelete, canEdit = false }) => {
   // Determine grid class based on number of visible stats
   const gridClass = visibleStats > 0 ? `grid grid-cols-${visibleStats} divide-x border-b` : 'hidden';
 
+
+*/
+  const showBiens = shouldShowStat(immeuble?.projet?.nbre_biens);
+
+  // Count visible stats for grid layout
+  const visibleStats = [showBiens].filter(Boolean).length;
+
+  // Determine grid class based on number of visible stats
+  //  const gridClass = visibleStats > 0 ? `grid grid-cols-${visibleStats} divide-x border-b` : 'hidden';
+
+  const getGridClass = () => {
+    switch (visibleStats) {
+      case 1:
+        return 'flex justify-center';
+      case 2:
+        return 'grid grid-cols-2 divide-x border-b';
+      case 3:
+        return 'grid grid-cols-3 divide-x border-b';
+      default:
+        return 'hidden';
+    }
+  };
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden h-full flex flex-col">
       <div
         className="relative h-40 bg-cover bg-center"
         style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1000&auto=format&fit=crop)',
+          backgroundImage:
+            'url(https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1000&auto=format&fit=crop)',
         }}
       >
         <div className="absolute inset-0 bg-black bg-opacity-40"></div>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <div className="bg-white p-1 rounded-full mb-2 shadow-md">
             <img
-              src='https://images.unsplash.com/photo-1560179707-f14e90ef3623?q=80&w=200&auto=format&fit=crop'
+              src="https://images.unsplash.com/photo-1560179707-f14e90ef3623?q=80&w=200&auto=format&fit=crop"
               alt={`${immeuble.nom} logo`}
               className="w-20 h-20 object-cover rounded-full"
             />
@@ -48,71 +71,83 @@ export const LeftCard = ({ immeuble, onEdit, onDelete, canEdit = false }) => {
           </h1>
         </div>
       </div>
-      
+
       {/* Stats section - Only show if at least one stat is > 0 */}
+
       {visibleStats > 0 && (
-        <div className={gridClass}>
-          {shouldShowStat(immeuble?.bien_count) && (
+        <div className={getGridClass()}>
+          {showBiens && (
             <div className="flex flex-col items-center justify-center py-3 px-2">
               <HomeIcon className="text-blue-600 mb-1" size={20} />
               <div className="text-xs text-gray-600">Biens</div>
-              <div className="font-bold text-sm">{immeuble?.bien_count}</div>
+              <div className="font-bold text-sm">
+                {immeuble?.bien_count || 0}
+              </div>
             </div>
           )}
         </div>
       )}
-      
       <div className="p-6 flex-grow">
         <div className="mb-6">
           <h2 className="text-lg font-semibold mb-3 text-gray-800">
-            Détails de {'l\''}immeuble
+            Détails Immeuble
           </h2>
           <p className="text-gray-600">{immeuble.description}</p>
           <div className="grid grid-cols-1 gap-2 text-sm mt-6">
             <div className="flex items-center justify-between border-b border-gray-100 pb-2">
               <div className="flex items-center text-gray-700">
-                <MapPinIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
+                <MapPinIcon
+                  size={16}
+                  className="mr-2 text-gray-500 flex-shrink-0"
+                />
                 <span>Adresse:</span>
               </div>
               <div className="text-gray-600 text-right">
-                {immeuble?.adresse || "Adresse non spécifiée"}
+                {immeuble?.adresse || 'Adresse non spécifiée'}
               </div>
             </div>
-            
-            
-            
+
             <div className="flex items-center justify-between border-b border-gray-100 pb-2">
               <div className="flex items-center text-gray-700">
-                <FileTextIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
+                <FileTextIcon
+                  size={16}
+                  className="mr-2 text-gray-500 flex-shrink-0"
+                />
                 <span>Titre foncier:</span>
               </div>
-              <div className="text-gray-600 text-right">{immeuble?.titre_foncier || "Titre non spécifié"}</div>
+              <div className="text-gray-600 text-right">
+                {immeuble?.titre_foncier || 'Titre non spécifié'}
+              </div>
             </div>
-            
+
             {shouldShowStat(immeuble?.bien_count) && (
               <div className="flex items-center justify-between border-b border-gray-100 pb-2">
                 <div className="flex items-center text-gray-700">
-                  <HomeIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
+                  <HomeIcon
+                    size={16}
+                    className="mr-2 text-gray-500 flex-shrink-0"
+                  />
                   <span>Nombre de biens:</span>
                 </div>
-                <div className="text-gray-600 text-right">{immeuble.nbre_biens}</div>
+                <div className="text-gray-600 text-right">
+                  {immeuble.nbre_biens}
+                </div>
               </div>
             )}
           </div>
         </div>
-        
       </div>
-      
+
       {canEdit && (
         <div className="p-6 bg-gray-50 flex justify-center gap-3">
-          <button 
+          <button
             onClick={onEdit}
             className="px-4 py-2 bg-blue-600 text-white rounded-md flex items-center gap-2 hover:bg-blue-700 transition"
           >
             <PencilIcon size={16} />
             Modifier
           </button>
-          <button 
+          <button
             onClick={onDelete}
             className="px-4 py-2 bg-red-600 text-white rounded-md flex items-center gap-2 hover:bg-red-700 transition"
           >

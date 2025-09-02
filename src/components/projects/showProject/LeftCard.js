@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   PencilIcon,
   TrashIcon,
@@ -12,8 +12,8 @@ import {
   SquareIcon,
   DollarSignIcon,
   ClockIcon,
-} from "lucide-react";
-import { format } from "date-fns";
+} from 'lucide-react';
+import { format } from 'date-fns';
 
 export const LeftCard = ({ project, onEdit, onDelete, canEdit = false }) => {
   // Helper function to check if value exists and is greater than 0
@@ -33,7 +33,7 @@ export const LeftCard = ({ project, onEdit, onDelete, canEdit = false }) => {
   const gridClass =
     visibleStats > 0
       ? `grid grid-cols-${visibleStats} divide-x border-b`
-      : "hidden";
+      : 'hidden';
 
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden h-full flex flex-col">
@@ -41,7 +41,7 @@ export const LeftCard = ({ project, onEdit, onDelete, canEdit = false }) => {
         className="relative h-40 bg-cover bg-center"
         style={{
           backgroundImage:
-            "url(https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1000&auto=format&fit=crop)",
+            'url(https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1000&auto=format&fit=crop)',
         }}
       >
         <div className="absolute inset-0 bg-black bg-opacity-40"></div>
@@ -69,13 +69,6 @@ export const LeftCard = ({ project, onEdit, onDelete, canEdit = false }) => {
               <div className="font-bold text-sm">{project?.tranche_count}</div>
             </div>
           )}
-          {shouldShowStat(project?.nbre_immeubles) && (
-            <div className="flex flex-col items-center justify-center py-3 px-2">
-              <BuildingIcon className="text-purple-600 mb-1" size={20} />
-              <div className="text-xs text-gray-600">Immeubles</div>
-              <div className="font-bold text-sm">{project?.immeuble_count}</div>
-            </div>
-          )}
           {shouldShowStat(project?.nbre_blocs) && (
             <div className="flex flex-col items-center justify-center py-3 px-2">
               <BoxesIcon className="text-orange-600 mb-1" size={20} />
@@ -83,6 +76,14 @@ export const LeftCard = ({ project, onEdit, onDelete, canEdit = false }) => {
               <div className="font-bold text-sm">{project?.bloc_count}</div>
             </div>
           )}
+          {shouldShowStat(project?.nbre_immeubles) && (
+            <div className="flex flex-col items-center justify-center py-3 px-2">
+              <BuildingIcon className="text-purple-600 mb-1" size={20} />
+              <div className="text-xs text-gray-600">Immeubles</div>
+              <div className="font-bold text-sm">{project?.immeuble_count}</div>
+            </div>
+          )}
+
           {shouldShowStat(project?.nbre_biens) && (
             <div className="flex flex-col items-center justify-center py-3 px-2">
               <HomeIcon className="text-blue-600 mb-1" size={20} />
@@ -109,7 +110,7 @@ export const LeftCard = ({ project, onEdit, onDelete, canEdit = false }) => {
                 <span>Adresse:</span>
               </div>
               <div className="text-gray-600 text-right">
-                {project?.adresse || "Adresse non spécifiée"}
+                {project?.adresse || 'Adresse non spécifiée'}
               </div>
             </div>
 
@@ -125,7 +126,7 @@ export const LeftCard = ({ project, onEdit, onDelete, canEdit = false }) => {
                 {project.date_autorisation_construction &&
                   format(
                     new Date(project.date_autorisation_construction),
-                    "dd/MM/yyyy"
+                    'dd/MM/yyyy'
                   )}
               </div>
             </div>
@@ -140,7 +141,7 @@ export const LeftCard = ({ project, onEdit, onDelete, canEdit = false }) => {
               </div>
               <div className="text-gray-600 text-right">
                 {project.date_permis_habiter &&
-                  format(new Date(project.date_permis_habiter), "dd/MM/yyyy")}
+                  format(new Date(project.date_permis_habiter), 'dd/MM/yyyy')}
               </div>
             </div>
 
@@ -153,7 +154,7 @@ export const LeftCard = ({ project, onEdit, onDelete, canEdit = false }) => {
                 <span>Titre foncier:</span>
               </div>
               <div className="text-gray-600 text-right">
-                {project?.titre_foncier || "Titre non spécifié"}
+                {project?.titre_foncier || 'Titre non spécifié'}
               </div>
             </div>
 
@@ -168,7 +169,7 @@ export const LeftCard = ({ project, onEdit, onDelete, canEdit = false }) => {
               <div className="text-gray-600 text-right">
                 {project?.surface_terrain
                   ? `${project.surface_terrain} m²`
-                  : "Surface non spécifiée"}
+                  : 'Surface non spécifiée'}
               </div>
             </div>
 
@@ -183,7 +184,7 @@ export const LeftCard = ({ project, onEdit, onDelete, canEdit = false }) => {
               <div className="text-gray-600 text-right">
                 {project?.prix_acquisition
                   ? `${project.prix_acquisition} Dhs`
-                  : "Prix non spécifié"}
+                  : 'Prix non spécifié'}
               </div>
             </div>
 
@@ -196,7 +197,7 @@ export const LeftCard = ({ project, onEdit, onDelete, canEdit = false }) => {
                 <span>Limite annulation:</span>
               </div>
               <div className="text-gray-600 text-right">
-                {project?.limite_annulation_reservation || "Date non spécifiée"}
+                {project?.limite_annulation_reservation || 'Date non spécifiée'}
               </div>
             </div>
 
@@ -209,7 +210,7 @@ export const LeftCard = ({ project, onEdit, onDelete, canEdit = false }) => {
                 <span>Prolongation réservation:</span>
               </div>
               <div className="text-gray-600 text-right">
-                {project?.prolongation_reservation || "Durée non spécifiée"}
+                {project?.prolongation_reservation || 'Durée non spécifiée'}
               </div>
             </div>
 

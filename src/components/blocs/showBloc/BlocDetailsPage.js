@@ -163,6 +163,7 @@ export const BlocDetailsPage = () => {
 
         return {
           id: b.id,
+          numero: b.numero,
           name: b.propriete_dite_bien,
           type: b.type_bien?.type || 'Inconnu',
           surface: b.superficie_habitable || b.superficie_architecte,
@@ -170,6 +171,9 @@ export const BlocDetailsPage = () => {
           status: statusConfig.name,
           statusColor: statusConfig.color,
           originalStatus: b.etat,
+          tranche_nom: b?.tranche?.nom || '',
+          bloc_nom: b?.bloc?.nom || '',
+          immeuble_nom: b?.immeuble?.nom || '',
         };
       }) || [];
 
@@ -325,6 +329,8 @@ export const BlocDetailsPage = () => {
             setActiveTab={setActiveTabPersistent}
             fetchBlocData={fetchBlocDetails}
             blocId={id}
+            nbre_tranches={blocData?.bloc?.projet?.nbre_tranches}
+            nbre_immeubles={blocData?.bloc?.projet?.nbre_immeubles}
             projectId={blocData?.bloc?.projet_id}
           />
         </div>

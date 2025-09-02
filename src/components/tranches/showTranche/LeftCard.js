@@ -91,7 +91,7 @@ export const LeftCard = ({ tranche, onEdit, onDelete, canEdit = false }) => {
       <div className="p-6 flex-grow">
         <div className="mb-6">
           <h2 className="text-lg font-semibold mb-3 text-gray-800">
-            Détails du Tranche
+            Détails Tranche
           </h2>
           <p className="text-gray-600">{tranche.description}</p>
           <div className="grid grid-cols-1 gap-2 text-sm mt-6">            
@@ -119,15 +119,7 @@ export const LeftCard = ({ tranche, onEdit, onDelete, canEdit = false }) => {
               <div className="text-gray-600 text-right">{tranche?.niveau_etages || "Titre non spécifié"}</div>
             </div>
             
-            {shouldShowStat(tranche?.tranche_count) && (
-              <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-                <div className="flex items-center text-gray-700">
-                  <LayersIcon size={16} className="mr-2 text-gray-500 flex-shrink-0" />
-                  <span>Nombre de tranches:</span>
-                </div>
-                <div className="text-gray-600 text-right">{tranche.nbre_tranches}</div>
-              </div>
-            )}
+           
             
             {shouldShowStat(tranche?.bloc_count) && (
               <div className="flex items-center justify-between border-b border-gray-100 pb-2">

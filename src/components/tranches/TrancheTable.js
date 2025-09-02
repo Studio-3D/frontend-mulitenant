@@ -1,14 +1,15 @@
-"use client";
+'use client';
 import { useState, useEffect } from 'react';
 import { APIURL } from '@/configs/api';
 import Table from '@/components/Table';
 import { useRouter } from 'next/navigation';
-import { useAuth } from "@/context/AuthContext";
-import { Eye, PencilLine, Trash2 } from "lucide-react";
+import { useAuth } from '@/context/AuthContext';
+import { Eye, PencilLine, Trash2 } from 'lucide-react';
 import Input from '../Input';
 import axios from 'axios';
 import Modal from '../Modal';
 import DeleteData from '../DeleteData';
+import { formatDate } from '@/utils/dateUtils';
 
 export default function TrancheTable({ projetId }) {
   const [tranches, setTranches] = useState([]);
@@ -21,7 +22,7 @@ export default function TrancheTable({ projetId }) {
   const { user } = useAuth();
   const [filters, setFilters] = useState({ nom: '', niveau_etages: '' });
   const [tempFilters, setTempFilters] = useState({ ...filters });
-  const accessToken = localStorage.getItem("accessToken");
+  const accessToken = localStorage.getItem('accessToken');
   const [totalRows, setTotalRows] = useState(0);
   const [selectedId, setSelectedId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -31,8 +32,8 @@ export default function TrancheTable({ projetId }) {
   const columns = [
     { key: 'nom', label: 'Tranche' },
     { key: 'date_lancement', label: 'Date lancement' },
-    { key: 'niveau_etages', label: 'Niveau d\'étages' },
-    { key: 'date_livraison', label: 'Date livraison' },
+    { key: 'niveau_etages', label: "Niveau d'étages" },
+    { key: 'date_livraison', label: 'Date Livraison' },
     {
       key: 'actions',
       label: 'Actions',
@@ -45,7 +46,7 @@ export default function TrancheTable({ projetId }) {
           >
             <Eye className="w-4 h-4" />
           </button>
-          
+
           {canManageTranches && (
             <>
               <button
@@ -60,7 +61,7 @@ export default function TrancheTable({ projetId }) {
                 onClick={() => {
                   setSelectedId(row.id);
                   setShowDeleteModal(true);
-                }}  
+                }}
                 title="Supprimer Tranche"
               >
                 <Trash2 className="w-4 h-4" />
@@ -68,8 +69,8 @@ export default function TrancheTable({ projetId }) {
             </>
           )}
         </div>
-      )
-    }
+      ),
+    },
   ];
 
   const loadData = async () => {
@@ -85,19 +86,25 @@ export default function TrancheTable({ projetId }) {
 
       const response = await axios.get(`${APIURL.TRANCHES}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
-        params
+        params,
       });
 
       if (response.data?.data) {
         setTranches(response.data.data);
         // Use either the pagination total or direct total from response
-        setTotalRows(response.data.pagination?.totalItems || response.data.total || 0);
+        setTotalRows(
+          response.data.pagination?.totalItems || response.data.total || 0
+        );
       } else {
-        throw new Error("Format de données API invalide");
+        throw new Error('Format de données API invalide');
       }
     } catch (err) {
       console.error('Error loading data:', err);
-      setError(err.response?.data?.message || err.message || "Erreur lors du chargement des données");
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          'Erreur lors du chargement des données'
+      );
     } finally {
       setLoading(false);
     }
@@ -131,12 +138,16 @@ export default function TrancheTable({ projetId }) {
     if (!isOpen) resetFilters();
   };
 
-  const formattedTranches = tranches.map(tranche => ({
+  const formattedTranches = tranches.map((tranche) => ({
     id: tranche.id,
     nom: tranche.nom || 'Sans nom',
-    date_lancement: tranche.date_lancement ? new Date(tranche.date_lancement).toLocaleDateString('fr-FR') : '',
+    date_lancement: tranche.date_lancement
+      ? new Date(tranche.date_lancement).toLocaleDateString('fr-FR')
+      : '',
     niveau_etages: tranche.niveau_etages || '',
-    date_livraison: tranche.date_livraison ? new Date(tranche.date_livraison).toLocaleDateString('fr-FR') : ''
+    date_lancement: tranche.date_livraison
+      ? new Date(tranche.date_livraison).toLocaleDateString('fr-FR')
+      : '',
   }));
 
   const handleSearchChange = (term) => {
@@ -154,17 +165,17 @@ export default function TrancheTable({ projetId }) {
   };
 
   const data_to_export = formattedTranches.map((tranche) => ({
-    'Tranche': tranche.nom,
-    "Date lancement": tranche.date_lancement,
+    Tranche: tranche.nom,
+    'Date lancement': tranche.date_lancement,
     "Niveau d'étages": tranche.niveau_etages,
-    "Date livraison": tranche.date_livraison
+    'Date livraison': tranche.date_livraison,
   }));
 
   const columns_export = [
-    { key: "Tranche", label: "Tranche" },
-    { key: "Date lancement", label: "Date de lancement" },
+    { key: 'Tranche', label: 'Tranche' },
+    { key: 'Date lancement', label: 'Date de lancement' },
     { key: "Niveau d'étages", label: "Niveau d'étages" },
-    { key: "Date livraison", label: "Date de livraison" },
+    { key: 'Date livraison', label: 'Date de livraison' },
   ];
 
   const handleAction = (action, id) => {
@@ -180,7 +191,9 @@ export default function TrancheTable({ projetId }) {
     }
   };
 
-  const addButtonUrl = canManageTranches ? `/Tranches/ajouter?projet=${projetId}` : "";
+  const addButtonUrl = canManageTranches
+    ? `/Tranches/ajouter?projet=${projetId}`
+    : '';
 
   if (error) {
     return <div className="text-red-500 p-4">Error: {error}</div>;
@@ -197,7 +210,12 @@ export default function TrancheTable({ projetId }) {
         loading={loading}
         filterComponent={
           <div className="space-y-4 p-4 rounded-lg">
-            <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
+            <div
+              className="grid gap-3"
+              style={{
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              }}
+            >
               <Input
                 label="Nom"
                 type="text"
@@ -208,11 +226,13 @@ export default function TrancheTable({ projetId }) {
                 className="h-9 px-3 py-2 border border-gray-300 rounded-md w-full text-sm"
               />
               <Input
-                label={'Niveau d\'étage'}
+                label={"Niveau d'étage"}
                 type="text"
                 name="niveau_etages"
                 value={tempFilters.niveau_etages}
-                onChange={(e) => handleFilterChange('niveau_etages', e.target.value)}
+                onChange={(e) =>
+                  handleFilterChange('niveau_etages', e.target.value)
+                }
                 placeholder="Niveau d'étage..."
                 className="h-9 px-3 py-2 border border-gray-300 rounded-md w-full text-sm"
               />
@@ -245,7 +265,7 @@ export default function TrancheTable({ projetId }) {
         enableExport={formattedTranches.length > 0}
         data_to_export={data_to_export}
         columns_export={columns_export}
-        name_file_export={"tranche_export"}
+        name_file_export={'tranche_export'}
         onFilterToggle={handleFilterToggle}
       />
       {showDeleteModal && selectedId && (
