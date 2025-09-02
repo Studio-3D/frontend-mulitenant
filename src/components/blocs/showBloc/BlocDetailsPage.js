@@ -127,9 +127,7 @@ export const BlocDetailsPage = () => {
 
     const biensData = showBiens ? blocData.bloc.bien || [] : [];
     const immeublesData = showImmeubles ? blocData.bloc.immeuble || [] : [];
-    /* in OLDONE
-  const biensData = blocData.bloc.bien || [];
-  const immeublesData = blocData.bloc.immeuble || [];*/
+    const trancheData = blocData.bloc.tranche ? [blocData.bloc.tranche] : [];
 
     const typeBienOptions = Array.from(
       new Set(biensData.map((b) => b.type_bien?.type).filter(Boolean) || [])
@@ -184,30 +182,28 @@ export const BlocDetailsPage = () => {
         nom: i.nom,
         titre_foncier: i.titre_foncier,
         nbre_biens: i.nbre_biens || 0,
+        tranche_nom: i?.tranche?.nom || '',
       })) || [];
 
-    /*return {
-    immeuble: {
-      count: immeubles.length,
-      items: immeubles,
-      nbr_count: immeubles.length,
-    },
-    bien: {
-      count: biens.length,
-      statuses: defaultStatuses,
-      items: biens,
-      nbr_count: biens.length,
-      typeBienOptions,
-    },
-  };*/
+    // Map tranche data for filtering - FIXED: Use items array structure
+    const tranches = trancheData.map((t) => ({
+      id: t.id,
+      nom: t.nom,
+    }));
     // Only include tabs if their corresponding project count is > 0
     const tabs = {};
-
+    // Always include tranche tab if we have tranche data
+    if (tranches.length > 0) {
+      tabs.tranche = {
+        items: tranches, // This should be an array of items
+      };
+    }
     if (showImmeubles) {
       tabs.immeuble = {
         count: immeubles.length,
         items: immeubles,
         nbr_count: immeubles.length,
+        tranches: tranches,
       };
     }
 
@@ -218,6 +214,7 @@ export const BlocDetailsPage = () => {
         items: biens,
         nbr_count: biens.length,
         typeBienOptions,
+        tranches: tranches, // This should be an array, not an object with items
       };
     }
 
