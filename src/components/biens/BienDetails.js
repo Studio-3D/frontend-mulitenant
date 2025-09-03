@@ -20,6 +20,7 @@ import {
   CreditCard,
   Receipt,
   Image,
+  EyeIcon,
 } from 'lucide-react';
 import { getEtatLabel, getFullOrientation } from '@/configs/enum';
 import BienSuperficies from './BienSuperficies';
@@ -120,8 +121,13 @@ export default function BienDetails({ id }) {
   const getStatusBadge = (etat) => {
     const statusClasses = {
       DISPONIBLE: 'bg-green-100 !text-green-800 border border-green-300',
-      RESERVE: 'bg-blue-100 !text-blue-800 border border-blue-300',
+      PRE_RESERVATION:
+        'bg-yellow-100 !text-yellow-800 border border-yellow-300',
+      RESERVATION: 'bg-blue-100 !text-blue-800 border border-blue-300',
+      BLOQUE: 'bg-red-100 !text-red-800 border border-red-300',
       VENDU: 'bg-purple-100 text-purple-800 border border-purple-300',
+      ENCOURS_DE_PROPOSITION:
+        'bg-orange-100 text-orange-800 border border-orange-300',
     };
 
     return (
@@ -192,6 +198,10 @@ export default function BienDetails({ id }) {
     </div>
   );
 
+   const handleView_Reservation = (reservationId) => {
+    window.open(`/ventes/reservations/${reservationId}`, '_blank');
+  };
+
   return (
     <div className=" ">
       <div className="space-y-6 ">
@@ -224,7 +234,19 @@ export default function BienDetails({ id }) {
 
             <div className="flex items-center gap-3">
               {/* État actuel badge */}
+
               {getStatusBadge(bien.etat)}
+              {bien.etat == 'RESERVATION' && (
+                <button
+                  title="Détail du Réservation"
+                  onClick={() =>
+                    handleView_Reservation(bien?.reservation?.id)
+                  }
+                  className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+                >
+                  <EyeIcon className="h-5 w-5 text-gray-700" />
+                </button>
+              )}
 
               {/* Partager button */}
               {canEditBien && (

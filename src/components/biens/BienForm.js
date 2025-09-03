@@ -391,7 +391,7 @@ export default function BienForm() {
             }
           }
         } catch (error) {
-          console.error('Error fetching bloc details:', error);
+         console.log('Error fetching bloc details:', error);
         }
       };
 
@@ -458,7 +458,7 @@ export default function BienForm() {
             }
           }
         } catch (error) {
-          console.error('Error fetching immeuble details:', error);
+         console.log('Error fetching immeuble details:', error);
         }
       };
 
@@ -545,7 +545,7 @@ export default function BienForm() {
         }, 100);
       }
     } catch (error) {
-      console.error('Error fetching bien data:', error);
+     console.log('Error fetching bien data:', error);
       toast.error('Erreur lors du chargement des données du bien');
     } finally {
       setFetchingData(false);
@@ -953,12 +953,12 @@ export default function BienForm() {
       }
       console.log('Bien créé ou mis à jour avec succès:', bienCreeId);
     } catch (error) {
-      console.error('Error submitting property:', error);
+     console.log('Error submitting property:', error);
       if (error.response?.data?.errors) {
         setErrors(error.response.data.errors);
       }
       if (error.response?.data?.message) {
-        console.error('Backend error message:', error.response.data.message);
+       console.log('Backend error message:', error.response.data.message);
         if (error.response.data.message.includes('Unknown column')) {
           const columnMatch = error.response.data.message.match(
             /Unknown column '([^']+)'/
@@ -1875,15 +1875,31 @@ export default function BienForm() {
 
           {/* Étape 1 : Soumettre bien */}
           {activeStep === 1 && (
-            <Button type="submit" onClick={handleSubmit} disabled={loading}>
-              {loading
-                ? id
-                  ? 'Modification en cours...'
-                  : 'Enregistrement...'
-                : id
-                ? 'Modifier le bien'
-                : 'Enregistrer le bien'}
-            </Button>
+            <>
+              {Object.keys(errors).length > 0 && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                  <h3 className="text-red-800 font-medium mb-2">
+                    Erreurs de validation:
+                  </h3>
+                  <ul className="list-disc list-inside text-red-700 text-sm">
+                    {Object.entries(errors).map(([field, errors]) => (
+                      <li key={field}>
+                        {Array.isArray(errors) ? errors.join(', ') : errors}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              <Button type="submit" onClick={handleSubmit} disabled={loading}>
+                {loading
+                  ? id
+                    ? 'Modification en cours...'
+                    : 'Enregistrement...'
+                  : id
+                  ? 'Modifier le bien'
+                  : 'Enregistrer le bien'}
+              </Button>
+            </>
           )}
 
           {/* Étape 2 : Soumettre composition (si pas d'id) */}

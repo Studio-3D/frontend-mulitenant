@@ -1,7 +1,13 @@
-"use client";
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
-import axios from "axios";
-import { fetchNotifications as fetchNotificationsUtil } from "../utils/FetchNotifications";
+'use client';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from 'react';
+import axios from 'axios';
+import { fetchNotifications as fetchNotificationsUtil } from '../utils/FetchNotifications';
 
 const NotificationContext = createContext();
 
@@ -16,7 +22,7 @@ export function NotificationProvider({ children }) {
       await fetchNotificationsUtil({
         setNotifications,
         setNewNotificationsCount,
-        setIsLoadingNotifications
+        setIsLoadingNotifications,
       });
     }
   }, []);
@@ -25,11 +31,13 @@ export function NotificationProvider({ children }) {
   const markAsSeen = useCallback(async (notificationId) => {
     try {
       const accessToken = localStorage.getItem('accessToken');
-      const selectedProject = JSON.parse(localStorage.getItem('selectedProjet'));
+      const selectedProject = JSON.parse(
+        localStorage.getItem('selectedProjet')
+      );
 
       // Optimistically update the UI first
-      setNotifications(prev =>
-        prev.map(n => n.id === notificationId ? { ...n, seen: true } : n)
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notificationId ? { ...n, seen: true } : n))
       );
 
       // Then make the API call
@@ -41,8 +49,8 @@ export function NotificationProvider({ children }) {
     } catch (error) {
       console.error('Error marking notification as seen:', error);
       // Revert the optimistic update on error
-      setNotifications(prev =>
-        prev.map(n => n.id === notificationId ? { ...n, seen: false } : n)
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notificationId ? { ...n, seen: false } : n))
       );
     }
   }, []);
@@ -51,13 +59,13 @@ export function NotificationProvider({ children }) {
   const markAllAsSeen = useCallback(async () => {
     try {
       const accessToken = localStorage.getItem('accessToken');
-      const selectedProject = JSON.parse(localStorage.getItem('selectedProjet'));
-      const allNotificationIds = notifications.map(notif => notif.id);
+      const selectedProject = JSON.parse(
+        localStorage.getItem('selectedProjet')
+      );
+      const allNotificationIds = notifications.map((notif) => notif.id);
 
       // Optimistically update the UI first
-      setNotifications(prev =>
-        prev.map(n => ({ ...n, seen: true }))
-      );
+      setNotifications((prev) => prev.map((n) => ({ ...n, seen: true })));
 
       // Then make the API call
       await axios.post(
@@ -68,21 +76,20 @@ export function NotificationProvider({ children }) {
     } catch (error) {
       console.error('Error marking all notifications as seen:', error);
       // Revert the optimistic update on error
-      setNotifications(prev =>
-        prev.map(n => ({ ...n, seen: false }))
-      );
+      setNotifications((prev) => prev.map((n) => ({ ...n, seen: false })));
     }
   }, [notifications]);
 
   // Utility
   const isNotificationSeen = useCallback(
     (notificationId) => {
-      const notif = notifications.find(n => n.id === notificationId);
+      const notif = notifications.find((n) => n.id === notificationId);
       return notif ? notif.seen : false;
     },
     [notifications]
   );
 
+  
   // Initial fetch
   useEffect(() => {
     fetchNotifications();
@@ -100,7 +107,7 @@ export function NotificationProvider({ children }) {
         isNotificationSeen,
         setNotifications,
         setNewNotificationsCount,
-        setIsLoadingNotifications
+        setIsLoadingNotifications,
       }}
     >
       {children}
@@ -111,7 +118,9 @@ export function NotificationProvider({ children }) {
 export function useNotifications() {
   const context = useContext(NotificationContext);
   if (!context) {
-    throw new Error("useNotifications must be used within a NotificationProvider");
+    throw new Error(
+      'useNotifications must be used within a NotificationProvider'
+    );
   }
   return context;
 }

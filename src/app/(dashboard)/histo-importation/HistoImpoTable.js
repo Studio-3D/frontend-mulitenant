@@ -81,7 +81,7 @@ const getStatutBadge = (statutValue) => {
     };
 
     function handleShow(Id) {
-      router.push(`/historique-importation/${Id}`);
+      router.push(`/histo-importation/${Id}`);
   }
 
     const handleFileClick = file => {
@@ -157,12 +157,12 @@ const getStatutBadge = (statutValue) => {
         <button title="visualiser" onClick={() => handleFileClick(row.fichier)}>
           <Download className="w-5 h-5" />
         </button>
-        {row.statut == 2 && (
+        {/*row.statut == 2 && (
           <Eye
             className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
             onClick={() => handleShow(row.id)}
           />        
-        )}
+        )*/}
         {row.statut == 0 && (
           <button
             className="text-red-500 hover:text-red-700"
