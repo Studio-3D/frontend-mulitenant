@@ -41,6 +41,7 @@ import {
 import Pusher from 'pusher-js';
 import Modal_OldVisites_Perdu from './Modal_OldVisites_Perdu';
 import FreinsComponent from './FreinsComponent';
+import SelectInput from '@/components/SelectInput';
 
 const VisiteForm = ({ prospect_id, origin }) => {
   const router = useRouter();
@@ -292,6 +293,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
     setLoading_tp_frein(false);
   }
 };
+
 
   const handleChange_interet = (code) => {
     if (code) {
@@ -1852,24 +1854,22 @@ const VisiteForm = ({ prospect_id, origin }) => {
                       {watch('loading_b_pre') == false && (
                         <>
                           <div className="">
-                            <AutocompleteSelectComponent
+                            <SelectInput
                               label="Intérêt :"
                               name="interet"
+                              value={watch('interet')}
                               required={true}
-                              //  options={VISITE_INTERETS}
                               options={
                                 input_biens_vendu.length > 0
-                                  ? {
-                                      1: VISITE_INTERETS[1],
-                                      // 3: VISITE_INTERETS[3],
-                                    }
-                                  : {
-                                      1: VISITE_INTERETS[1],
-                                      2: VISITE_INTERETS[2],
-                                      3: VISITE_INTERETS[3],
-                                    }
+                                  ? [{ value: "1", label: "Intéressé" }] // Only interested option
+                                  : Object.values(VISITE_INTERETS)
+                                      .filter(interet => interet.code !== 4) // Exclude "Injoignable"
+                                      .map(interet => ({
+                                        value: interet.code.toString(),
+                                        label: interet.label
+                                      }))
                               }
-disabled={isOrigin ? false : watch('telephone') === ''}
+                              disabled={isOrigin ? false : watch('telephone') === ''}
                               onChange={handleChange_interet}
                             />
                           </div>

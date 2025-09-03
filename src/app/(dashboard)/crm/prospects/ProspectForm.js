@@ -330,18 +330,31 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
       .catch(() => {});
   };
 
-  // First select: Source
-  const handleSourceChange = (newValue) => {
-    setValue('partenaire_id', ''); // Reset partenaire ID when source changes
-    setSource_txt(newValue ? newValue.source : ''); // Set source_txt value
-    setValue('source', newValue ? newValue.id : ''); // Set source ID
-  };
-
-  // Second select: Partenaire
-const handlePartenaireChange = (newValue) => {
-  setPartenaire(newValue ? newValue.id : ''); // Set partenaire ID
-  setValue('partenaire_id', newValue ? newValue.id : ''); // Set partenaire ID in form
+// Update your handleSourceChange function
+const handleSourceChange = (optionValue) => {
+  const selectedOption = sourceOptions.find(opt => opt.value === optionValue);
+  setValue('partenaire_id', '');
+  setSource_txt(selectedOption ? selectedOption.label : '');
+  setValue('source', optionValue || '');
 };
+
+// Update your handlePartenaireChange function
+const handlePartenaireChange = (optionValue) => {
+  const selectedOption = partenaireOptions.find(opt => opt.value === optionValue);
+  setPartenaire(optionValue || '');
+  setValue('partenaire_id', optionValue || '');
+};
+
+// Transform your data
+const sourceOptions = sources.map(source => ({
+  value: source.id.toString(),
+  label: source.source
+}));
+
+const partenaireOptions = partenaires.map(partenaire => ({
+  value: partenaire.id.toString(),
+  label: partenaire.description
+}));
 
   if (isEditing && !formData) {
     return (
@@ -455,21 +468,19 @@ const handlePartenaireChange = (newValue) => {
                   />
                 </div>
                 {/* Source Select */}
-                <div className="">
-                  <Autocomplete
-                    name="source"
-                    label="Source:"
-                    options={sources}
-                    value={
-                      sources.find((opt) => opt.id == watch('source')) || null
-                    }
-                    loading={loading_auto}
-                    choix="source"
-                    errors={errors}
-                    backendErrors={backendErrors}
-                    onChange={handleSourceChange}
-                  />
-                </div>
+                  <div className="">
+                    <SelectInput
+                      placeholder='Sélectionner une source'
+                      name="source"
+                      label="Source:"
+                      options={sourceOptions}
+                      value={watch('source')?.toString()}
+                      loading={loading_auto} // Pass loading state to component
+                      errors={errors}
+                      backendErrors={backendErrors}
+                      onChange={handleSourceChange}
+                    />
+                  </div>
 
                 {/* Third set of fields (Responsive grid) */}
                 {/* Accepte d'être contacté */}
@@ -504,13 +515,13 @@ const handlePartenaireChange = (newValue) => {
                 {/* Partenaire Select (conditionally rendered) */}
                 <div className="">
                   {source_txt === 'Partenaire' && (
-                    <Autocomplete
+                    <SelectInput
+                      placeholder='Sélectionner un partenaire'
                       name="partenaire_id"
                       label="Partenaire:"
-                      options={partenaires}
-                      value={partenaires.find(opt => opt.id === watch('partenaire_id')) || null}
-                      loading={loading_auto}
-                      choix="description"
+                      options={partenaireOptions}
+                      value={watch('partenaire_id')?.toString()}
+                      loading={loading_auto} // Pass loading state to component
                       onChange={handlePartenaireChange}
                       errors={errors}
                       backendErrors={backendErrors}

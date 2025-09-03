@@ -6,7 +6,7 @@ import classNames from "classnames";
 
 export default function SelectInput({
   label,
-  placeholder = "Sélectionner",
+  placeholder = "",
   options = [],
   value,
   onChange = () => {},
@@ -17,6 +17,7 @@ export default function SelectInput({
   onBlur,
   submitted = false,
   isMulti = false,
+  loading = false, // Added loading prop
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isTouched, setIsTouched] = useState(false);
@@ -141,7 +142,9 @@ export default function SelectInput({
 
         {isOpen && (
           <ul className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
-            {options.length > 0 ? (
+            {loading ? ( // Added loading state
+              <li className="px-4 py-2 text-gray-500">Chargement...</li>
+            ) : options.length > 0 ? (
               options.map((option) => (
                 <li
                   key={option.value}
