@@ -174,6 +174,20 @@ export function ProjetProvider({ children }) {
     }
   }, [selectedProjet, projets, selectProjet, clearSelectedProjet]);
 
+  // NEW: Add a project to the list
+  const addProjet = useCallback((newProjet) => {
+    setProjets(prev => {
+      // Check if project already exists to avoid duplicates
+      if (!prev.some(p => p.id === newProjet.id)) {
+        return [...prev, newProjet];
+      }
+      return prev;
+    });
+    
+    // Automatically select the new project
+    selectProjet(newProjet);
+  }, [selectProjet]);
+
   useEffect(() => {
     if (initialized && projetLoadAttempted && !selectedProjet) {
       const savedProjet = localStorage.getItem('selectedProjet');
@@ -201,7 +215,8 @@ export function ProjetProvider({ children }) {
         fetchProjets,
         selectProjet,
         clearSelectedProjet,
-        removeProjet
+        removeProjet,
+        addProjet // Add the new function to context
       }}
     >
       {children}

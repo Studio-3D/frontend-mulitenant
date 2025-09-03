@@ -39,6 +39,9 @@ export const ProjectTypeStep = ({
   };
 
   const handleCompositionToggle = (field) => {
+    // Prevent toggling for "bien" field
+    if (field === "bien") return;
+    
     const currentValue = formData.composition[field].enabled;
     updateFormData({
       composition: {
@@ -310,33 +313,20 @@ export const ProjectTypeStep = ({
             />
           </div>
 
-          <div
-            className={`flex-1 border rounded-md p-4 ${
-              formData.composition.bien.enabled ? "bg-white" : "bg-gray-50"
-            }`}
-          >
+          <div className="flex-1 border rounded-md p-4 bg-white">
             <div className="flex flex-col items-center text-center mb-3">
               <HomeIcon size={32} className="text-blue-500 mb-2" />
               <h4 className="font-medium">Bien</h4>
             </div>
             <div className="flex items-center gap-3 mb-3 justify-center">
-              <div
-                onClick={() => handleCompositionToggle("bien")}
-                className={`w-5 h-5 border rounded flex items-center justify-center cursor-pointer ${
-                  formData.composition.bien.enabled
-                    ? "bg-blue-600 border-blue-600"
-                    : "border-gray-300"
-                }`}
-              >
-                {formData.composition.bien.enabled && (
-                  <CheckIcon size={14} className="text-white" />
-                )}
+              <div className="w-5 h-5 border rounded flex items-center justify-center bg-blue-600 border-blue-600 cursor-not-allowed">
+                <CheckIcon size={14} className="text-white" />
               </div>
               <label
                 htmlFor="bien"
                 className="text-sm font-medium text-gray-700"
               >
-                Activer
+                 Activé
               </label>
             </div>
             <input
@@ -344,10 +334,9 @@ export const ProjectTypeStep = ({
               id="bien"
               name="composition.bien.value"
               min="0"
-              disabled={!formData.composition.bien.enabled}
               value={formData.composition.bien.value || ""}
               onChange={(e) => handleCompositionChange("bien", e.target.value)}
-              className="block w-full rounded-md mt-6 border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2 disabled:bg-gray-100 disabled:text-gray-500"
+              className="block w-full rounded-md mt-6 border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2"
             />
           </div>
         </div>

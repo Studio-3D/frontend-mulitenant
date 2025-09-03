@@ -14,7 +14,7 @@ import Button1 from '../Button';
 
 
 
-export default function BienImport({ open, onClose,projetId, trancheId, blocId, immeubleId }) {
+export default function BienImport({ open, onClose,projetId }) {
   const [file, setFile] = useState(null)
   const [backendErrors, setBackendErrors] = useState([])
   const [disabled_var, setDisabled_var] = useState(true)
