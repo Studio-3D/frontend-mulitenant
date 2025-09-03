@@ -1,6 +1,6 @@
 import React from 'react';
-import AutocompleteMultiple from '@/components/AutocompleteMultiple'; // Adjust the path as needed
-import TextField from '@/components/Textfield'; // Import the component
+import TextField from '@/components/Textfield';
+import SelectInput from '@/components/SelectInput';
 
 const FreinsComponent = ({
   watch,
@@ -22,72 +22,100 @@ const FreinsComponent = ({
   setValue,
   info_prix,
   info_sup,
-  isEditMode, // Boolean: whether it's editing mode or not
+  isEditMode,
 }) => {
+  // Transform data for SelectInput with safety checks
+  const freinOptions = type_freins
+    .filter(frein => frein && frein.description)
+    .map(frein => ({
+      value: frein.description?.toLowerCase() || '',
+      label: frein.description || ''
+    }))
+    .filter(option => option.value && option.label);
+
+  const trancheOptions = list_tranches
+    .filter(tranche => tranche && tranche.id && tranche.nom)
+    .map(tranche => ({
+      value: tranche.id.toString(),
+      label: tranche.nom
+    }));
+
+  const etageOptions = list_etages
+    .filter(etage => etage && etage.value !== undefined && etage.value !== null)
+    .map(etage => ({
+      value: etage.value.toString(),
+      label: etage.value.toString()
+    }));
+
+  const orientationSelectOptions = orientationOptions
+    .filter(orientation => orientation && orientation.code && orientation.label)
+    .map(orientation => ({
+      value: orientation.code.toString(),
+      label: orientation.label
+    }));
+
+  const typologieOptions = list_typologies
+    .filter(typologie => typologie && typologie.id && typologie.typologie)
+    .map(typologie => ({
+      value: typologie.id.toString(),
+      label: typologie.typologie
+    }));
+
+  const vueOptions = list_vues
+    .filter(vue => vue && vue.id && vue.vue)
+    .map(vue => ({
+      value: vue.id.toString(),
+      label: vue.vue
+    }));
+
+  // Helper function to handle SelectInput changes
+  const handleSelectChange = (fieldName, selectedValues) => {
+    setValue(fieldName, selectedValues || []);
+  };
+
   return (
     <>
       {/* Freins Field */}
       <div>
-        <AutocompleteMultiple
+        <SelectInput
           label="Freins :"
           name="frein"
           required={true}
-          options={type_freins}
-          value={
-            isEditMode
-              ? (Array.isArray(watch('frein')) ? watch('frein') : []).map(
-                  (word) =>
-                    typeof word == 'string'
-                      ? word.toLowerCase()
-                      : word?.description?.toLowerCase()
-                )
-              : []
-          } // Differentiate for edit mode
-          choiceKey="description"
-          valueKey="description"
-          onChange={handleChange_freins}
+          isMulti={true}
+          options={freinOptions}
+          value={watch('frein') || []}
+          onChange={(selectedValues) => handleChange_freins(selectedValues)}
           placeholder="Sélectionnez un ou plusieurs freins"
           errors={{
             ...errors,
             frein:
-              formSubmitted && watch('frein')?.length === 0
+              formSubmitted && (!watch('frein') || watch('frein').length === 0)
                 ? 'Veuillez renseigner le champ frein.'
                 : null,
           }}
           loading={loading_tp_frein}
           backendErrors={backendErrors}
-          
         />
       </div>
-
-      
 
       {/* Tranches Field */}
       {watch('frein')?.includes('tranche') && (
         <div>
-          <AutocompleteMultiple
+          <SelectInput
             label="Tranches :"
             name="tranches"
             required={true}
-            value={watch('tranches')}
-            options={list_tranches}
-            choiceKey="nom"
-            valueKey="id"
-            onChange={(newValue) => {
-              if (Array.isArray(newValue)) {
-                const selectedIds = newValue.map((option) => option?.id);
-                setValue('tranches', selectedIds);
-              } else {
-                console.error('Expected array but got:', newValue);
-              }
-            }}
+            isMulti={true}
+            options={trancheOptions}
+            value={watch('tranches') || []}
+            onChange={(selectedValues) => handleSelectChange('tranches', selectedValues)}
             placeholder="sélectionnez un ou plusieurs Tranches"
             errors={{
               ...errors,
               tranches:
                 formSubmitted &&
                 watch('frein')?.includes('tranche') &&
-                watch('tranches')?.length === 0
+                (!watch('tranches') || watch('tranches').length === 0)
                   ? "Ce champ est obligatoire lorsque 'frein' inclut 'tranche'."
                   : null,
             }}
@@ -100,36 +128,21 @@ const FreinsComponent = ({
       {/* Etages Field */}
       {watch('frein')?.includes('etage') && (
         <div>
-          <AutocompleteMultiple
+          <SelectInput
             label="Etages :"
             name="etages"
             required={true}
-            value={
-              isEditMode
-                ? Array.isArray(watch('etages'))
-                  ? watch('etages')
-                  : []
-                : []
-            }
-            options={list_etages}
-            choiceKey="value"
-            valueKey="value"
-            onChange={(newValue) => {
-              if (Array.isArray(newValue)) {
-                const selectedValues = newValue.map((option) => option?.value);
-                const etagesArray = selectedValues.join(',');
-                setValue('etages', etagesArray);
-              } else {
-                console.error('Expected array but got:', newValue);
-              }
-            }}
+            isMulti={true}
+            options={etageOptions}
+            value={watch('etages') || []}
+            onChange={(selectedValues) => handleSelectChange('etages', selectedValues)}
             placeholder="sélectionnez un ou plusieurs étages"
             errors={{
               ...errors,
               etages:
                 formSubmitted &&
                 watch('frein')?.includes('etage') &&
-                watch('etages')?.length === 0
+                (!watch('etages') || watch('etages').length === 0)
                   ? "Ce champ est obligatoire lorsque 'frein' inclut 'etage'."
                   : null,
             }}
@@ -142,37 +155,21 @@ const FreinsComponent = ({
       {/* Orientations Field */}
       {watch('frein')?.includes('orientation') && (
         <div>
-          <AutocompleteMultiple
+          <SelectInput
             label="Orientations :"
             name="orientations"
             required={true}
-            value={
-              isEditMode
-                ? Array.isArray(watch('orientations'))
-                  ? orientationOptions.filter((opt) =>
-                      watch('orientations').includes(opt.code)
-                    )
-                  : []
-                : []
-            }
-            options={orientationOptions}
-            choiceKey="label"
-            valueKey="code"
-            onChange={(newValue) => {
-              if (Array.isArray(newValue)) {
-                const selectedCodes = newValue.map((option) => option?.code);
-                setValue('orientations', selectedCodes);
-              } else {
-                console.error('Expected array but got:', newValue);
-              }
-            }}
+            isMulti={true}
+            options={orientationSelectOptions}
+            value={watch('orientations') || []}
+            onChange={(selectedValues) => handleSelectChange('orientations', selectedValues)}
             placeholder="sélectionnez un ou plusieurs orientations"
             errors={{
               ...errors,
               orientations:
                 formSubmitted &&
                 watch('frein')?.includes('orientation') &&
-                watch('orientations')?.length === 0
+                (!watch('orientations') || watch('orientations').length === 0)
                   ? "Ce champ est obligatoire lorsque 'frein' inclut 'orientation'."
                   : null,
             }}
@@ -197,110 +194,103 @@ const FreinsComponent = ({
           />
         </div>
       )}
+
       {/* Prix Fields */}
-{watch('frein')?.includes('prix') && (
-  <>
-    <div className="sm:col-span-2 flex gap-4">
-      <div className="w-1/2">
-        <TextField
-          label="Prix Min:"
-          name="prix_min"
-          type="number"
-          control={control}
-          errors={errors}
-          backendErrors={backendErrors}
-          defaultValues={defaultValues}
-          onChange={handlePrixChange(1)}
-          required={watch('frein')?.includes('prix')}
-        />
-        {info_prix != null && (
-          <div className="text-red-500 text-sm mt-1">
-            {info_prix}
+      {watch('frein')?.includes('prix') && (
+        <>
+          <div className="sm:col-span-2 flex gap-4">
+            <div className="w-1/2">
+              <TextField
+                label="Prix Min:"
+                name="prix_min"
+                type="number"
+                control={control}
+                errors={errors}
+                backendErrors={backendErrors}
+                defaultValues={defaultValues}
+                onChange={handlePrixChange(1)}
+                required={watch('frein')?.includes('prix')}
+              />
+              {info_prix != null && (
+                <div className="text-red-500 text-sm mt-1">
+                  {info_prix}
+                </div>
+              )}
+            </div>
+            <div className="w-1/2">
+              <TextField
+                label="Prix Max:"
+                name="prix_max"
+                type="number"
+                control={control}
+                errors={errors}
+                backendErrors={backendErrors}
+                defaultValues={defaultValues}
+                onChange={handlePrixChange(1)}
+                required={watch('frein')?.includes('prix')}
+              />
+            </div>
           </div>
-        )}
-      </div>
-      <div className="w-1/2">
-        <TextField
-          label="Prix Max:"
-          name="prix_max"
-          type="number"
-          control={control}
-          errors={errors}
-          backendErrors={backendErrors}
-          defaultValues={defaultValues}
-          onChange={handlePrixChange(1)}
-          required={watch('frein')?.includes('prix')}
-        />
-      </div>
-    </div>
-  </>
-)}
+        </>
+      )}
 
       {/* Superficie Fields */}
-{watch('frein')?.includes('superficie') && (
-  <>
-    <div className="sm:col-span-2 flex gap-4">
-      <div className="w-1/2">
-        <TextField
-          label="Sup Min:"
-          name="sup_min"
-          type="number"
-          control={control}
-          errors={errors}
-          backendErrors={backendErrors}
-          defaultValues={defaultValues}
-          onChange={handlePrixChange(2)}
-          required={watch('frein')?.includes('superficie')}
-        />
-        {info_sup != null && (
-          <div className="text-red-500 text-sm mt-1">
-            {info_sup}
+      {watch('frein')?.includes('superficie') && (
+        <>
+          <div className="sm:col-span-2 flex gap-4">
+            <div className="w-1/2">
+              <TextField
+                label="Sup Min:"
+                name="sup_min"
+                type="number"
+                control={control}
+                errors={errors}
+                backendErrors={backendErrors}
+                defaultValues={defaultValues}
+                onChange={handlePrixChange(2)}
+                required={watch('frein')?.includes('superficie')}
+              />
+              {info_sup != null && (
+                <div className="text-red-500 text-sm mt-1">
+                  {info_sup}
+                </div>
+              )}
+            </div>
+            <div className="w-1/2">
+              <TextField
+                label="Sup Max:"
+                name="sup_max"
+                type="number"
+                control={control}
+                errors={errors}
+                backendErrors={backendErrors}
+                defaultValues={defaultValues}
+                onChange={handlePrixChange(2)}
+                required={watch('frein')?.includes('superficie')}
+              />
+            </div>
           </div>
-        )}
-      </div>
-      <div className="w-1/2">
-        <TextField
-          label="Sup Max:"
-          name="sup_max"
-          type="number"
-          control={control}
-          errors={errors}
-          backendErrors={backendErrors}
-          defaultValues={defaultValues}
-          onChange={handlePrixChange(2)}
-          required={watch('frein')?.includes('superficie')}
-        />
-      </div>
-    </div>
-  </>
-)}
+        </>
+      )}
 
       {/* Typologies Field */}
       {watch('frein')?.includes('typologie') && (
         <div>
-          <AutocompleteMultiple
+          <SelectInput
             label="Typologies :"
             name="typologies"
             required={true}
-            value={watch('typologies')}
-            options={list_typologies}
-            choiceKey="typologie"
-            valueKey="id"
-            onChange={(newValue) => {
-              if (Array.isArray(newValue)) {
-                const selectedIds = newValue.map((option) => option?.id);
-                setValue('typologies', selectedIds);
-              } else {
-                console.error('Expected array but got:', newValue);
-              }
-            }}
+            isMulti={true}
+            options={typologieOptions}
+            value={watch('typologies') || []}
+            onChange={(selectedValues) => handleSelectChange('typologies', selectedValues)}
             placeholder="sélectionnez un ou plusieurs Typologies"
             errors={{
               ...errors,
               typologies:
                 formSubmitted &&
                 watch('frein')?.includes('typologie') &&
-                watch('typologies')?.length === 0
+                (!watch('typologies') || watch('typologies').length === 0)
                   ? "Ce champ est obligatoire lorsque 'frein' inclut 'typologie'."
                   : null,
             }}
@@ -313,28 +303,21 @@ const FreinsComponent = ({
       {/* Vues Field */}
       {watch('frein')?.includes('vue') && (
         <div>
-          <AutocompleteMultiple
+          <SelectInput
             label="Vue :"
             name="vues"
             required={true}
-            options={list_vues}
+            isMulti={true}
+            options={vueOptions}
             value={watch('vues') || []}
-            valueKey="id"
-            choiceKey="vue"
-            onChange={(newValue) => {
-              const ids = Array.isArray(newValue)
-                ? newValue.map((option) => option.id)
-                : [];
-              const payload = ids.length > 0 ? ids.join(',') : '';
-              setValue('vues', payload);
-            }}
+            onChange={(selectedValues) => handleSelectChange('vues', selectedValues)}
             placeholder="sélectionnez un ou plusieurs Vues"
             errors={{
               ...errors,
               vues:
                 formSubmitted &&
                 watch('frein')?.includes('vue') &&
-                watch('vues')?.length === 0
+                (!watch('vues') || watch('vues').length === 0)
                   ? "Ce champ est obligatoire lorsque 'frein' inclut 'vue'."
                   : null,
             }}
@@ -343,6 +326,7 @@ const FreinsComponent = ({
           />
         </div>
       )}
+
       {/* Description Autre Field */}
       {watch('frein')?.includes('autre') && (
         <div>

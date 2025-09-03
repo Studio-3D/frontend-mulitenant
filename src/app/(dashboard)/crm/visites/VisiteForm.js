@@ -274,7 +274,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
       });
   };
 
- const fetchTypeFreins = async () => {
+const fetchTypeFreins = async () => {
   setLoading_tp_frein(true);
   try {
     const res = await axios.get(`${APIURL.ROOTV1}/typefreins`, {
@@ -283,6 +283,8 @@ const VisiteForm = ({ prospect_id, origin }) => {
       },
     });
     console.log('frein', res.data.typefreins);
+    
+    // The API returns objects with 'description' field, not 'frein.description'
     setType_freins([
       { id: 'tout', description: 'Autre' },
       ...(res.data.typefreins || []),
@@ -613,37 +615,38 @@ const VisiteForm = ({ prospect_id, origin }) => {
       }
     }
     // If interet == 3, then all those frein checks
-    if (Number(watch('interet')) == 3) {
-      const frein = watch('frein') || [];
-      const checks = [
-        frein.length > 0,
-        !frein.includes('vue') || (watch('vues') || []).length > 0,
-        !frein.includes('typologie') || (watch('typologies') || []).length > 0,
-        !frein.includes('orientation') ||
-          (watch('orientations') || []).length > 0,
-        !frein.includes('etage') || (watch('etages') || []).length > 0,
-        !frein.includes('tranche') || (watch('tranches') || []).length > 0,
-      ];
+ // In validateFields function, update the frein checks:
+if (Number(watch('interet')) == 3) {
+  const frein = watch('frein') || []; // Already an array
+  
+  const checks = [
+    frein.length > 0,
+    !frein.some(f => f === 'vue') || (watch('vues') || []).length > 0,
+    !frein.some(f => f === 'typologie') || (watch('typologies') || []).length > 0,
+    !frein.some(f => f === 'orientation') || (watch('orientations') || []).length > 0,
+    !frein.some(f => f === 'etage') || (watch('etages') || []).length > 0,
+    !frein.some(f => f === 'tranche') || (watch('tranches') || []).length > 0,
+  ];
 
-      const checkNames = [
-        'frein.length > 0',
-        "'vue' => vues.length > 0",
-        "'typologie' => typologies.length > 0",
-        "'orientation' => orientations.length > 0",
-        "'etage' => etages.length > 0",
-        "'tranche' => tranches.length > 0",
-      ];
+  const checkNames = [
+    'frein.length > 0',
+    "'vue' => vues.length > 0",
+    "'typologie' => typologies.length > 0",
+    "'orientation' => orientations.length > 0",
+    "'etage' => etages.length > 0",
+    "'tranche' => tranches.length > 0",
+  ];
 
-      if (!checks.every(Boolean)) {
-        valid = false;
-        console.error('Certains freins ne sont pas remplis correctement.');
-        checks.forEach((check, index) => {
-          if (!check) {
-            console.warn(`Échec du test: ${checkNames[index]}`);
-          }
-        });
+  if (!checks.every(Boolean)) {
+    valid = false;
+    console.error('Certains freins ne sont pas remplis correctement.');
+    checks.forEach((check, index) => {
+      if (!check) {
+        console.warn(`Échec du test: ${checkNames[index]}`);
       }
-    }
+    });
+  }
+}
 
     return valid;
   };
@@ -1714,19 +1717,14 @@ const handlePartenaireChange = (optionValue) => {
   setValue('partenaire_txt', selectedOption ? selectedOption.description : '');
 };
 
-  const handleChange_freins = (selectedValues) => {
-    try {
-      console.log('Changed:', selectedValues);
-      const descriptions = selectedValues
-        .map((item) => item?.description?.toLowerCase() || '')
-        .join(', ');
-      console.log('Descriptions:', descriptions);
-
-      setValue('frein', descriptions);
-    } catch (error) {
-      console.error('Error in handleChange_freins:', error);
-    }
-  };
+// In VisiteForm component
+const handleChange_freins = (selectedValues) => {
+  try {
+    setValue('frein', selectedValues); // This should be an array of strings
+  } catch (error) {
+    console.error('Error in handleChange_freins:', error);
+  }
+};
   const isDisabled =
     loading_form ||
     info_prix != null ||
@@ -1934,11 +1932,16 @@ const handlePartenaireChange = (optionValue) => {
                   {Number(watch('interet')) == 2 && (
                     <>
                       <div className="">
-                        <AutocompleteSelectComponent
+                        <SelectInput
+                          placeholder='selectionner un mode de relance'
                           label="Mode Relance:"
                           name="mode_relance"
                           required={false}
-                          options={VISITE_TYPE_NOTIF}
+                          options={Object.values(VISITE_TYPE_NOTIF).map(notif => ({
+                            value: notif.code.toString(),
+                            label: notif.label
+                          }))}
+                          value={watch('mode_relance')?.toString()}
                           onChange={handleChange_tp_notif}
                         />
                       </div>
