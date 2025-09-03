@@ -9,6 +9,7 @@ import { useAuth } from '@/context/AuthContext';
 import { isAdmin, isSuperAdmin } from '@/configs/enum';
 import axios from 'axios';
 import Modal from '@/components/Modal';
+import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
 import DeleteData from '@/components/DeleteData';
 
 // Define status mapping outside component to avoid recreation
@@ -80,8 +81,10 @@ export const ProjectDetailsPage = () => {
 
       // Don't reset activeTab here - we'll handle it after checking localStorage
     } catch (err) {
-      console.error('Error fetching project details:', err);
-      setError(err.message || 'Failed to fetch project details');
+
+      console.error("Error fetching project details:", err);
+      setError(err.message || "Failed to fetch project details");
+
 
       // If the project doesn't exist or we can't access it, clear selection
       if (err.response?.status === 404) {
@@ -91,6 +94,16 @@ export const ProjectDetailsPage = () => {
       setLoading(false);
     }
   }, [id, selectProjet, clearSelectedProjet]);
+
+  // Persist breadcrumb context for fast "Ajouter bien" navigation
+  useEffect(() => {
+    if (projectData?.projet) {
+      try {
+        const ctx = { projet: { id: projectData.projet.id, nom: projectData.projet.nom } };
+        localStorage.setItem('bienBreadcrumbContext', JSON.stringify(ctx));
+      } catch (e) {}
+    }
+  }, [projectData]);
 
   useEffect(() => {
     if (id) {
@@ -122,6 +135,7 @@ export const ProjectDetailsPage = () => {
           ?.map((b) => b.type_bien?.type)
           .filter(Boolean) || []
       )
+
     ).map((type) => ({ value: type, label: type }));
 
     // Calculate status counts dynamically
@@ -143,6 +157,7 @@ export const ProjectDetailsPage = () => {
     );
 
     // Map bien data to match your column requirements
+
     const biens =
       projectData?.projet.bien?.map((b) => {
         const statusConfig = STATUS_CONFIG[b.etat] || {
@@ -165,6 +180,7 @@ export const ProjectDetailsPage = () => {
           immeuble_nom: b?.immeuble?.nom || '',
         };
       }) || [];
+
 
     // Map tranche data to match your column requirements
     const tranches =
@@ -298,11 +314,21 @@ export const ProjectDetailsPage = () => {
   }
 
   const handleBack = () => {
+
     setShowDeleteModal(false);
     router.push(`/Projets`);
   };
   return (
     <div className="w-full">
+      {/* Breadcrumbs */}
+      <div className="mb-4">
+        <BreadCrumb
+          onRoot={{ href: '/Projets' }}
+          items={[
+            { label: projectData?.projet?.nom || `Projet #${id}` },
+          ]}
+        />
+      </div>
       <div className="flex flex-col lg:flex-row gap-6 h-full">
         <div className="w-full lg:w-1/3">
           <LeftCard

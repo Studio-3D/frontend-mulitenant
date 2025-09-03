@@ -30,6 +30,7 @@ import BienEncaissements from './BienEncaissements';
 import BienTvaCollecte from './BienTvaCollecte';
 import BienMedia from './BienMedia';
 
+import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
 export default function BienDetails({ id }) {
   const [bien, setBien] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -196,30 +197,24 @@ export default function BienDetails({ id }) {
     <div className=" ">
       <div className="space-y-6 ">
         {/* Header with actions - Redesigned with professional white background */}
+              <div className="mb-1">
+                <BreadCrumb
+                  onRoot={{ href: '/Projets' }}
+                  items={[
+                    bien.projet ? { label: bien.projet.nom, href: `/Projets/${bien.projet_id}` } : null,
+                    bien.tranche ? { label: bien.tranche.nom, href: `/Tranches/${bien.tranche_id}` } : null,
+                    bien.bloc ? { label: bien.bloc.nom, href: `/Blocs/${bien.bloc_id}` } : null,
+                    bien.immeuble ? { label: bien.immeuble.nom, href: `/Immeubles/${bien.immeuble_id}` } : null,
+                    { label: bien.propriete_dite_bien },
+                  ].filter(Boolean)}
+                />
+              </div>
         <div className="bg-white rounded-lg p-6 shadow border border-gray-200">
           <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-2 ">
-              <Link
-                href={bien.projet_id ? `/Projets/${bien.projet_id}` : '/Biens'}
-                className="text-gray-600 hover:text-gray-800"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </Link>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-800">
-                  {bien.propriete_dite_bien}
-                </h1>
-                <p className="text-gray-500">
-                  {[
-                    bien.projet?.nom,
-                    bien.tranche?.nom,
-                    bien.bloc?.nom,
-                    bien.immeuble?.nom,
-                  ]
-                    .filter(Boolean)
-                    .join(' • ')}
-                </p>
-              </div>
+            <div className="flex flex-col gap-2">
+              <h1 className="text-2xl font-bold text-gray-800">
+                {bien.propriete_dite_bien}
+              </h1>
             </div>
 
             <div className="flex items-center gap-3">

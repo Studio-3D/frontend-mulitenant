@@ -10,6 +10,7 @@ import { isAdmin, isSuperAdmin } from '@/configs/enum';
 import axios from 'axios';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
+import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
 
 // Define status mapping outside component to avoid recreation
 const STATUS_CONFIG = {
@@ -83,6 +84,22 @@ export const BlocDetailsPage = () => {
       fetchBlocDetails();
     }
   }, [id, fetchBlocDetails]);
+
+  // Persist breadcrumb context for fast "Ajouter bien" page
+  useEffect(() => {
+    if (blocData?.bloc) {
+      try {
+        const ctx = {
+          projet: blocData.bloc.projet ? { id: blocData.bloc.projet_id, nom: blocData.bloc.projet.nom } : undefined,
+          tranche: blocData.bloc.tranche ? { id: blocData.bloc.tranche_id, nom: blocData.bloc.tranche.nom } : undefined,
+          bloc: { id: blocData.bloc.id, nom: blocData.bloc.nom },
+        };
+        localStorage.setItem('bienBreadcrumbContext', JSON.stringify(ctx));
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, [blocData]);
 
   // Handle edit action
   const handleEdit = () => {
@@ -309,6 +326,17 @@ export const BlocDetailsPage = () => {
 
   return (
     <div className="w-full">
+      {/* Breadcrumbs */}
+      <div className="mb-4">
+        <BreadCrumb
+          onRoot={{ href: '/Projets' }}
+          items={[
+            blocData?.bloc?.projet ? { label: blocData.bloc.projet.nom, href: `/Projets/${blocData.bloc.projet_id}` } : null,
+            blocData?.bloc?.tranche ? { label: blocData.bloc.tranche.nom, href: `/Tranches/${blocData.bloc.tranche_id}` } : null,
+            { label: blocData?.bloc?.nom || 'Bloc' },
+          ].filter(Boolean)}
+        />
+      </div>
       <div className="flex flex-col lg:flex-row gap-6 h-full">
         <div className="w-full lg:w-1/3">
           <LeftCard
@@ -329,6 +357,11 @@ export const BlocDetailsPage = () => {
             nbre_tranches={blocData?.bloc?.projet?.nbre_tranches}
             nbre_immeubles={blocData?.bloc?.projet?.nbre_immeubles}
             projectId={blocData?.bloc?.projet_id}
+            breadcrumbContext={{
+              projet: blocData?.bloc?.projet ? { id: blocData.bloc.projet_id, nom: blocData.bloc.projet.nom } : undefined,
+              tranche: blocData?.bloc?.tranche ? { id: blocData.bloc.tranche_id, nom: blocData.bloc.tranche.nom } : undefined,
+              bloc: blocData?.bloc ? { id: blocData.bloc.id, nom: blocData.bloc.nom } : undefined,
+            }}
           />
         </div>
       </div>

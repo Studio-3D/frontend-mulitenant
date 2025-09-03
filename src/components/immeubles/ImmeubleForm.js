@@ -10,6 +10,7 @@ import Button from "../Button";
 import InputSelect from "../inputSelect";
 import Input from "../Input";
 import { fetchDataByProjet_params } from "@/configs/api-utils";
+import { useSearchParams } from "next/navigation";
 
 export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
   const router = useRouter();
@@ -23,6 +24,9 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
   const [loadingTranches, setLoadingTranches] = useState(false);
   const [selectedBloc, setSelectedBloc] = useState(null);
   const [selectedTranche, setSelectedTranche] = useState(null);
+  const searchParams = useSearchParams();
+  trancheId = trancheId || searchParams.get('tranche');
+  blocId = blocId || searchParams.get('bloc');
   const hasFetchedInitialData = useRef(false);
   const isSubmittingRef = useRef(false);
   const [trancheHasNoBlocs, setTrancheHasNoBlocs] = useState(false);
@@ -72,6 +76,23 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
       }
     } catch (error) {
       console.error("Failed to fetch immeuble:", error);
+  // Ensure tranche and bloc names when IDs provided
+  useEffect(() => {
+    const loadNamesIfNeeded = async () => {
+      try {
+        const token = localStorage.getItem('accessToken');
+        if (trancheId && !selectedTranche?.nom) {
+          const tres = await axios.get(`${APIURL.TRANCHES}/${trancheId}`, { headers: { Authorization: `Bearer ${token}` } });
+          if (tres.data?.tranche) setSelectedTranche(tres.data.tranche);
+        }
+        if (blocId && !selectedBloc?.nom) {
+          const bres = await axios.get(`${APIURL.BLOCS}/${blocId}`, { headers: { Authorization: `Bearer ${token}` } });
+          if (bres.data?.bloc) setSelectedBloc(bres.data.bloc);
+        }
+      } catch (e) { console.error('Failed to fetch names', e); }
+    };
+    loadNamesIfNeeded();
+  }, [trancheId, blocId, selectedTranche?.nom, selectedBloc?.nom]);
       toast.error("Erreur lors du chargement de l'immeuble");
     } finally {
       setIsLoading(false);
@@ -290,38 +311,17 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
     <div className="p-3">
       <div className="flex items-center justify-start">
         <BreadCrumb
-          baseUrl={
-            selectedProjet?.bloc_id
-              ? `/Blocs/${selectedProjet.bloc_id}`
-              : selectedProjet?.tranche_id
-              ? `/Tranches/${selectedProjet?.tranche_id}`
-              : selectedProjet?.id
-              ? `/Projets/${selectedProjet?.id}`
-              : "/Projets"
-          }
-          onNavigate={() => {
-            if (selectedProjet?.bloc_id) {
-              localStorage.setItem(
-                `bloc-${selectedProjet?.bloc_id}-activeTab`,
-                "immeuble"
-              );
-            } else if (selectedProjet?.tranche_id) {
-              localStorage.setItem(
-                `tranche-${selectedProjet?.tranche_id}-activeTab`,
-                "immeuble"
-              );
-            } else if (selectedProjet.id) {
-              localStorage.setItem(
-                `project-${selectedProjet.id}-activeTab`,
 
-                "immeuble"
-              );
-            } else {
-              router.push("/Projets");
-            }
-          }}
+          onRoot={{ href: '/Projets' }}
+          items={[
+            selectedProjet?.id
+              ? { label: selectedProjet?.nom || `Projet #${selectedProjet?.id}`, href: `/Projets/${selectedProjet?.id}` }
+              : { label: 'Projets', href: '/Projets' },
+            selectedProjet?.tranche_id ? { label: selectedProjet?.tranche_nom || `Tranche #${selectedProjet?.tranche_id}`, href: `/Tranches/${selectedProjet?.tranche_id}` } : null,
+            selectedProjet?.bloc_id ? { label: selectedProjet?.bloc_nom || `Bloc #${selectedProjet?.bloc_id}`, href: `/Blocs/${selectedProjet?.bloc_id}` } : null,
+            { label: `${id ? 'Modifier' : 'Ajouter'} un immeuble` }
+          ].filter(Boolean)}
 
-          step={`${id ? "Modifier" : "Ajouter"} un immeuble`}
         />
       </div>
       <div className="p-6 mt-4 bg-white shadow-md rounded-md">

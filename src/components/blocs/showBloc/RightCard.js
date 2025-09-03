@@ -14,6 +14,7 @@ import { ChevronDownIcon, HomeIcon, BuildingIcon } from 'lucide-react';
 import Table from '@/components/Table';
 import BienImport from '@/components/biens/BienImport';
 
+
 const TAB_CONFIG = {
   immeuble: {
     icon: <BuildingIcon size={18} />,
@@ -344,19 +345,11 @@ const TAB_CONFIG = {
   },
 };
 
-export const RightCard = ({
-  tabsData,
-  activeTab,
-  setActiveTab,
-  fetchBlocData,
-  blocId,
-  projectId,
-  nbre_immeubles,
-  nbre_tranches,
-}) => {
-  const [showImportModal, setShowImportModal] = useState(false);
 
-  const { token, user } = useAuth();
+export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchBlocData, blocId, projectId, nbre_immeubles, nbre_tranches, breadcrumbContext }) => {
+  const [showImportModal, setShowImportModal] = useState(false);
+  const { token, user } = useAuth()
+
   const router = useRouter();
   const [selectedId, setSelectedId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -366,6 +359,12 @@ export const RightCard = ({
   const [totalRows, setTotalRows] = useState(0);
 
   // State for filters
+  const persistAddBienContext = useCallback(() => {
+    try {
+      const ctx = breadcrumbContext || {};
+      localStorage.setItem('bienBreadcrumbContext', JSON.stringify(ctx));
+    } catch {}
+  }, [breadcrumbContext]);
   const [tempFilters, setTempFilters] = useState({});
   const [appliedFilters, setAppliedFilters] = useState({});
   const [showFilter, setShowFilter] = useState(false);
@@ -822,7 +821,9 @@ export const RightCard = ({
       <div className="p-6 flex-grow">
         {safeActiveTab === 'bien' && (
           <>
+
             {statusCardsData && (
+
               <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
                 {statusCardsData.map((status, index) => (
                   <StatusCard
@@ -841,12 +842,9 @@ export const RightCard = ({
           <Table
             columns={currentColumns}
             data={hasItems ? filteredItems : []}
-            addLink={TAB_CONFIG[safeActiveTab]?.addLink?.(
-              user,
-              null,
-              projectId,
-              blocId
-            )}
+
+            addLink={{ pathname: TAB_CONFIG[safeActiveTab]?.addLink?.(user, null, projectId, blocId), onClick: persistAddBienContext }}
+
             showSearch={false}
             filterComponent={filterComponent}
             onFilterToggle={handleFilterToggle}
