@@ -35,11 +35,12 @@ export default function CombinedNavbar() {
           cluster: 'eu',
           encrypted: true
         });
+
         
         const channel = pusher.subscribe('Notifications');
-        
+
         channel.bind('App\\Events\\NotificationEvent', () => {
-          console.log('Received notification event');
+          console.log('Received notification event pusher');
           fetchNotifications();
         });
         
@@ -75,6 +76,7 @@ export default function CombinedNavbar() {
             newNotificationsCount={newNotificationsCount}
             onFetchNotifications={fetchNotifications}
             isLoadingNotifications={isLoadingNotifications}
+          
           />
 
           {/* User Dropdown */}

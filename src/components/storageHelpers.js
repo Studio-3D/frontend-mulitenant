@@ -4,7 +4,7 @@ export const getStoredPerson = () => {
   const storedClient = JSON.parse(localStorage.getItem('selectedClient'));
   
   return {
-    person: storedProspect?.dataProspect || storedClient?.dataClient  || null,
+    person: storedProspect?.info?.dataProspect || storedClient?.info?.dataClient  || null,
     type: storedProspect ? 'prospect' : storedClient ? 'client' : null
   };
 };

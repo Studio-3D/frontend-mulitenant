@@ -127,7 +127,8 @@ const VisiteForm = ({ prospect_id, origin }) => {
       ? selectedPerson.partenaire.description
       : null
   );
-  console.log('prospect_id==>' + prospect_id);
+  
+
   const defaultValues = {
     interet: '',
     selectedProjet: selectedProjet?.id,
@@ -3024,8 +3025,8 @@ disabled={isOrigin ? false : watch('telephone') === ''}
                 <Button type="button" onClick={() => router.back()}>
                   Annuler
                 </Button>
-                <Button type="submit" disabled={isDisabled || isSubmitting}>
-                  {isSubmitting ? (
+                <Button type="submit" /*disabled={isDisabled || isSubmitting}*/>
+                  {(isSubmitting||isDisabled) ? (
                     <div className="flex items-center gap-2">
                       <svg
                         className="animate-spin h-5 w-5 text-white"
