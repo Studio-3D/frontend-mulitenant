@@ -16,6 +16,12 @@ export default function useClearProspect() {
       if(localStorage.getItem('selectedClient_show_client')){
         localStorage.removeItem('selectedClient_show_client')
       }
+       if(localStorage.getItem('selectedProspect')){
+        localStorage.removeItem('selectedProspect')
+      }
+       if(localStorage.getItem('selectedClient')){
+        localStorage.removeItem('selectedClient')
+      }
 
     };
 

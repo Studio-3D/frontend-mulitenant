@@ -371,7 +371,7 @@ const Menu = () => {
     {
       label: "Historique Importation",
       icon: <History size={20} />,
-      href: "/Historique-importation",
+      href: "/histo-importation",
       needsSociete: user.role === 1,
       needsProjet: true,
     },

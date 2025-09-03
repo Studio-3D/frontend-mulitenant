@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState, useEffect } from 'react';
 import {
@@ -14,18 +14,19 @@ import {
   Share,
   MessageCircle,
   ThumbsUp,
-  Phone
+  Phone,
 } from 'lucide-react';
 import { useNotifications } from '@/context/NotificationContext';
+import { useRouter } from 'next/navigation'; // Import useRouter
 
 // Helper function to get color classes based on notification color
 const getColorClass = (color) => {
   const colorMap = {
-    'primary': 'bg-blue-100 text-blue-600',
-    'success': 'bg-green-100 text-green-600',
-    'warning': 'bg-yellow-100 text-yellow-600',
-    'error': 'bg-red-100 text-red-600',
-    'info': 'bg-cyan-100 text-cyan-600',
+    primary: 'bg-blue-100 text-blue-600',
+    success: 'bg-green-100 text-green-600',
+    warning: 'bg-yellow-100 text-yellow-600',
+    error: 'bg-red-100 text-red-600',
+    info: 'bg-cyan-100 text-cyan-600',
   };
   return colorMap[color] || 'bg-gray-100 text-gray-600';
 };
@@ -34,15 +35,15 @@ const getColorClass = (color) => {
 const getIconComponent = (iconName) => {
   const iconMap = {
     'refresh-cw': <RefreshCw className="h-6 w-6" />,
-    'calendar': <Calendar className="h-6 w-6" />,
-    'home': <Home className="h-6 w-6" />,
+    calendar: <Calendar className="h-6 w-6" />,
+    home: <Home className="h-6 w-6" />,
     'alert-triangle': <AlertTriangle className="h-6 w-6" />,
-    'clock': <Clock className="h-6 w-6" />,
+    clock: <Clock className="h-6 w-6" />,
     'check-circle': <CheckCircle className="h-6 w-6" />,
-    'share': <Share className="h-6 w-6" />,
+    share: <Share className="h-6 w-6" />,
     'message-circle': <MessageCircle className="h-6 w-6" />,
     'thumbs-up': <ThumbsUp className="h-6 w-6" />,
-    'phone': <Phone className="h-6 w-6" />,
+    phone: <Phone className="h-6 w-6" />,
   };
   return iconMap[iconName] || <Bell className="h-6 w-6" />;
 };
@@ -53,12 +54,13 @@ export default function NotificationsPage() {
     isLoadingNotifications,
     markAsSeen,
     markAllAsSeen,
-    isNotificationSeen
+    isNotificationSeen,
   } = useNotifications();
   const [filter, setFilter] = useState('all'); // 'all', 'unseen', 'seen'
+  const router = useRouter(); // Initialize router
 
   // Filter notifications based on seen status
-  const filteredNotifications = notifications.filter(notification => {
+  const filteredNotifications = notifications.filter((notification) => {
     const isSeen = isNotificationSeen(notification.id);
     switch (filter) {
       case 'unseen':
@@ -70,7 +72,22 @@ export default function NotificationsPage() {
     }
   });
 
-  const unseenCount = notifications.filter(notif => !isNotificationSeen(notif.id)).length;
+  const unseenCount = notifications.filter(
+    (notif) => !isNotificationSeen(notif.id)
+  ).length;
+
+  // Handle notification click
+  const handleNotificationClick = (notification) => {
+    // Mark as seen when clicked
+    if (!isNotificationSeen(notification.id)) {
+      markAsSeen(notification.id);
+    }
+
+    // Navigate to the link if it exists
+    if (notification.url) {
+      window.open(notification.url, '_blank');
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -79,7 +96,9 @@ export default function NotificationsPage() {
         <div className="p-6 border-b border-gray-200">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Notifications
+              </h1>
               <p className="text-sm text-gray-500 mt-1">
                 {notifications.length} notifications • {unseenCount} non lues
               </p>
@@ -102,7 +121,7 @@ export default function NotificationsPage() {
             {[
               { key: 'all', label: 'Toutes' },
               { key: 'unseen', label: 'Non lues' },
-              { key: 'seen', label: 'Lues' }
+              { key: 'seen', label: 'Lues' },
             ].map(({ key, label }) => (
               <button
                 key={key}
@@ -129,15 +148,19 @@ export default function NotificationsPage() {
           {isLoadingNotifications ? (
             <div className="p-8 text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-              <p className="text-sm text-gray-500 mt-4">Chargement des notifications...</p>
+              <p className="text-sm text-gray-500 mt-4">
+                Chargement des notifications...
+              </p>
             </div>
           ) : filteredNotifications.length === 0 ? (
             <div className="p-8 text-center text-gray-500">
               <Bell className="h-12 w-12 mx-auto mb-4 text-gray-300" />
               <p className="text-lg font-medium">
-                {filter === 'unseen' ? 'Aucune notification non lue' : 
-                 filter === 'seen' ? 'Aucune notification lue' : 
-                 'Aucune notification'}
+                {filter === 'unseen'
+                  ? 'Aucune notification non lue'
+                  : filter === 'seen'
+                  ? 'Aucune notification lue'
+                  : 'Aucune notification'}
               </p>
             </div>
           ) : (
@@ -146,20 +169,27 @@ export default function NotificationsPage() {
               return (
                 <div
                   key={notification.id}
-                  className={`p-6 hover:bg-gray-50 transition-colors ${
+                  className={`p-6 hover:bg-gray-50 transition-colors cursor-pointer ${
                     !isSeen ? 'bg-blue-50 border-l-4 border-blue-500' : ''
                   }`}
+                  onClick={() => handleNotificationClick(notification)}
                 >
                   <div className="flex items-start space-x-4">
-                    <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${getColorClass(notification.color)}`}>
+                    <div
+                      className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${getColorClass(
+                        notification.color
+                      )}`}
+                    >
                       {getIconComponent(notification.icon)}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <p className={`text-base font-medium ${
-                            !isSeen ? 'text-gray-900' : 'text-gray-600'
-                          }`}>
+                          <p
+                            className={`text-base font-medium ${
+                              !isSeen ? 'text-gray-900' : 'text-gray-600'
+                            }`}
+                          >
                             {notification.title}
                           </p>
                           <p className="text-sm text-gray-500 mt-1">
@@ -168,13 +198,21 @@ export default function NotificationsPage() {
                           <p className="text-xs text-gray-400 mt-2">
                             {notification.date}
                           </p>
+                          {notification.lien && (
+                            <p className="text-xs text-blue-500 mt-1">
+                              Cliquez pour voir plus →
+                            </p>
+                          )}
                         </div>
                         <div className="flex items-center space-x-2 ml-4">
                           {!isSeen ? (
                             <>
                               <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
                               <button
-                                onClick={() => markAsSeen(notification.id)}
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Prevent triggering the div click
+                                  markAsSeen(notification.id);
+                                }}
                                 className="p-2 text-gray-400 hover:text-blue-500 rounded-md hover:bg-gray-100"
                                 title="Marquer comme lu"
                               >
@@ -182,7 +220,9 @@ export default function NotificationsPage() {
                               </button>
                             </>
                           ) : (
-                            <span className="text-xs text-gray-400 font-medium">Lu</span>
+                            <span className="text-xs text-gray-400 font-medium">
+                              Lu
+                            </span>
                           )}
                         </div>
                       </div>
@@ -197,5 +237,3 @@ export default function NotificationsPage() {
     </div>
   );
 }
-
-

@@ -356,6 +356,7 @@ export const RightCard = ({
   nbre_tranches,
 }) => {
   const [showImportModal, setShowImportModal] = useState(false);
+  const { token, user } = useAuth()
 
   const { token, user } = useAuth();
   const router = useRouter();

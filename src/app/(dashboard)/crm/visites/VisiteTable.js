@@ -108,8 +108,7 @@ const VisiteTable = ({ user_id, dataProspect, dataClient }) => {
     return visites.map((data) => ({
       id: data.id,
       cc: data.nom_cc,
-      date:
-        data.date != null ? formatDate(data.date) : null,
+      date: data.date != null ? formatDate(data.date) : null,
       nom: `${data.nom || ''}`.trim(),
       prenom: `${data.prenom || ''}`.trim(),
       prospect_id: data.prospect_id,
@@ -151,64 +150,78 @@ const VisiteTable = ({ user_id, dataProspect, dataClient }) => {
   };
 
   // Table columns configuration
- // Table columns configuration
-const columns = [
-  {
-    key: 'responsable',
-    label: 'Responsable',
-    render: (row) => (
-      <div className="flex items-center gap-3">
-        <span>{row.cc}</span>
-      </div>
-    ),
-  },
-  { key: 'date', label: 'Date' },
-  // Only show nom column if prospect_id exists
-  ...(prospectId==null ? [{
-    key: 'nom',
-    label: 'Nom',
-    render: (row) => {
-      return row.prospect_id ? (
-        <Link href={'/crm/prospects/' + row.prospect_id} target="_blank">
-          <strong style={{ fontWeight: 600 }}>{row.nom}</strong>
-        </Link>
-      ) : null;
+  // Table columns configuration
+  const columns = [
+    {
+      key: 'responsable',
+      label: 'Responsable',
+      render: (row) => (
+        <div className="flex items-center gap-3">
+          <span>{row.cc}</span>
+        </div>
+      ),
     },
-  }] : []),
-  // Only show prenom column if prospect_id exists
-  ...(prospectId==null ? [{
-    key: 'prenom',
-    label: 'Prénom',
-    render: (row) => {
-      return row.prospect_id ? (
-        <Link href={'/crm/prospects/' + row.prospect_id} target="_blank">
-          <strong style={{ fontWeight: 600 }}>{row.prenom}</strong>
-        </Link>
-      ) : null;
+    { key: 'date', label: 'Date' },
+    // Only show nom column if prospect_id exists
+    ...(prospectId == null
+      ? [
+          {
+            key: 'nom',
+            label: 'Nom',
+            render: (row) => {
+              return row.prospect_id ? (
+                <Link
+                  href={'/crm/prospects/' + row.prospect_id}
+                  target="_blank"
+                >
+                  <strong style={{ fontWeight: 600 }}>{row.nom}</strong>
+                </Link>
+              ) : null;
+            },
+          },
+        ]
+      : []),
+    // Only show prenom column if prospect_id exists
+    ...(prospectId == null
+      ? [
+          {
+            key: 'prenom',
+            label: 'Prénom',
+            render: (row) => {
+              return row.prospect_id ? (
+                <Link
+                  href={'/crm/prospects/' + row.prospect_id}
+                  target="_blank"
+                >
+                  <strong style={{ fontWeight: 600 }}>{row.prenom}</strong>
+                </Link>
+              ) : null;
+            },
+          },
+        ]
+      : []),
+    { key: 'telephone', label: 'Téléphone' },
+    {
+      key: 'interet',
+      label: 'Intéret',
+      render: (row) => {
+        return getInteretBadge(row.interet);
+      },
     },
-  }] : []),
-  { key: 'telephone', label: 'Téléphone' },
-  {
-    key: 'interet',
-    label: 'Intéret',
-    render: (row) => {
-      return getInteretBadge(row.interet);
+    {
+      key: 'actions',
+      label: 'Actions',
+      render: (row) => (
+        <div className="flex gap-3 items-center">
+          <Eye
+            className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
+            title="Voir détails"
+            onClick={() => handleShow(row.origin_id)}
+          />
+        </div>
+      ),
     },
-  },
-  {
-    key: 'actions',
-    label: 'Actions',
-    render: (row) => (
-      <div className="flex gap-3 items-center">
-        <Eye
-          className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
-          title="Voir détails"
-          onClick={() => handleShow(row.origin_id)}
-        />
-      </div>
-    ),
-  },
-].filter(Boolean); // This removes any falsy values from the array
+  ].filter(Boolean); // This removes any falsy values from the array
 
   {
     /* Dynamic Modals Import */
@@ -248,24 +261,25 @@ const columns = [
 
   function getAddLinkForVisite(user) {
     if (canAddVisite) {
-      if (dataClient) {      
+      if (dataClient) {
         return {
           pathname: `${ENDPOINTS.VISITES}?action=add`,
           onClick: () => {
             localStorage.setItem(
               'selectedClient',
-              JSON.stringify({ dataClient: { id: dataClient?.id } })
+              JSON.stringify({ info: { dataClient} })
             );
           },
         };
-      }
-      else if (dataProspect) {
+      } else if (dataProspect) {
         return {
           pathname: `${ENDPOINTS.VISITES}?action=add`,
           onClick: () => {
             localStorage.setItem(
               'selectedProspect',
-              JSON.stringify({ dataProspect: { id: dataProspect?.id } })
+              JSON.stringify({
+                info: {dataProspect},
+              })
             );
           },
         };
@@ -314,7 +328,7 @@ const columns = [
           onSearchChange={setSearchTerm}
           enableExport={true}
           showSearch={false}
-          addLink={!user_id  && getAddLinkForVisite(user)}
+          addLink={!user_id && getAddLinkForVisite(user)}
           filterComponent={
             <div className="space-y-4 p-4 rounded-lg ">
               <div

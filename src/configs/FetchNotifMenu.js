@@ -12,7 +12,6 @@ const FetchNotifMenu = async (
         const { get_nb_relances_rdv_visites, get_nb_menu } = await import('../../src/configs/get_data_menu_horizontal')
         switch (param) {
           case 'D':
-            console.log('param D  crm')
             get_nb_relances_rdv_visites(
               'notifications_menu_horizontal_crm',
               set_nb_rel_appel,
