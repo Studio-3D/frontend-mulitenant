@@ -877,7 +877,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
           setDisabled_source(true);
         } else {
           setValue('partenaire_id', '');
-          setPartenaire_txt(null);
+          setPartenaire_txt(partenaire.description || '');
           setValue('partenaire_txt', '');
         }
 
@@ -1691,19 +1691,25 @@ const VisiteForm = ({ prospect_id, origin }) => {
       });
   };
 
-  // First select: Source
-  const handleSourceChange = (newValue) => {
-    setValue('partenaire_id', ''); // Reset partenaire ID when source changes
-    setValue('source_txt', newValue ? newValue.source : ''); // Set source ID
-    setValue('source_id', newValue ? newValue.id : ''); // Set source ID
-    setPartenaire_txt(null);
-  };
-  // Second select: Partenaire
-  const handlePartenaireChange = (selectedOption) => {
-  // Set the partenaire ID in the form
-  setValue('partenaire_id', selectedOption ? selectedOption.id : '');
+// Update handleSourceChange to work with SelectInput
+const handleSourceChange = (optionValue) => {
+  const selectedOption = sources.find(source => source.id.toString() === optionValue);
+  setValue('partenaire_id', ''); // Reset partenaire ID when source changes
+  setValue('source_txt', selectedOption ? selectedOption.source : ''); // Set source text
+  setValue('source_id', optionValue || ''); // Set source ID
   
-  // If you need to store the partenaire text for display
+  // Only clear partenaire_txt if the new source is not "Partenaire"
+  if (selectedOption && selectedOption.source !== 'Partenaire') {
+    setPartenaire_txt(null);
+  }
+};
+
+// Update handlePartenaireChange to work with SelectInput
+const handlePartenaireChange = (optionValue) => {
+  const selectedOption = partenaires.find(partenaire => partenaire.id.toString() === optionValue);
+  setValue('partenaire_id', optionValue || ''); // Set partenaire ID
+  
+  // Set the partenaire text for display
   setPartenaire_txt(selectedOption ? selectedOption.description : '');
   setValue('partenaire_txt', selectedOption ? selectedOption.description : '');
 };
@@ -1855,6 +1861,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                         <>
                           <div className="">
                             <SelectInput
+                              placeholder='selectionner un intérêt'
                               label="Intérêt :"
                               name="interet"
                               value={watch('interet')}
