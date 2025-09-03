@@ -45,6 +45,7 @@ export default function DeleteData({
 
       toast.success(`${type} supprimé avec succès`);
       if (onSuccess) onSuccess();
+      //window.location.reload()
       if (onClose) onClose();
     } catch (error) {
       console.error(

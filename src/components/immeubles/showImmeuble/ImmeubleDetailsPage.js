@@ -146,6 +146,13 @@ export const ImmeubleDetailsPage = () => {
     // Access the properties from the immeuble object
     const biensData = immeubleData.immeuble.bien || [];
 
+    // Get tranche and bloc data from immeubleData
+    const trancheData = immeubleData.immeuble.tranche
+      ? [immeubleData.immeuble.tranche]
+      : [];
+    const blocData = immeubleData.immeuble.bloc
+      ? [immeubleData.immeuble.bloc]
+      : [];
     const typeBienOptions = Array.from(
       new Set(biensData.map((b) => b.type_bien?.type).filter(Boolean) || [])
     ).map((type) => ({ value: type, label: type }));
@@ -178,6 +185,7 @@ export const ImmeubleDetailsPage = () => {
 
         return {
           id: b.id,
+          numero: b.numero,
           name: b.propriete_dite_bien,
           type: b.type_bien?.type || 'Inconnu',
           surface: b.superficie_habitable || b.superficie_architecte,
@@ -185,8 +193,23 @@ export const ImmeubleDetailsPage = () => {
           status: statusConfig.name,
           statusColor: statusConfig.color,
           originalStatus: b.etat,
+          tranche_nom: b?.tranche?.nom || '',
+          bloc_nom: b?.bloc?.nom || '',
+          immeuble_nom: b?.immeuble?.nom || '',
         };
       }) || [];
+
+    // Map tranche data for filtering
+    const tranches = trancheData.map((t) => ({
+      id: t.id,
+      nom: t.nom,
+    }));
+
+    // Map bloc data for filtering
+    const blocs = blocData.map((b) => ({
+      id: b.id,
+      nom: b.nom,
+    }));
 
     return {
       bien: {
@@ -195,6 +218,9 @@ export const ImmeubleDetailsPage = () => {
         items: biens,
         nbr_count: biens.length,
         typeBienOptions,
+        // Include tranche and bloc data for filtering
+        tranches: tranches,
+        blocs: blocs,
       },
     };
   }, [immeubleData]);
@@ -320,6 +346,8 @@ export const ImmeubleDetailsPage = () => {
             // setActiveTab={setActiveTab}
             setActiveTab={setActiveTabPersistent}
             fetchImmeubleData={fetchImmeubleDetails}
+            nbre_tranches={immeubleData?.immeuble?.projet?.nbre_tranches}
+            nbre_blocs={immeubleData?.immeuble?.projet?.nbre_blocs}
             immeubleId={id}
             breadcrumbContext={{
               projet: immeubleData?.immeuble?.projet ? { id: immeubleData.immeuble.projet_id, nom: immeubleData.immeuble.projet.nom } : undefined,
@@ -327,6 +355,7 @@ export const ImmeubleDetailsPage = () => {
               bloc: immeubleData?.immeuble?.bloc ? { id: immeubleData.immeuble.bloc_id, nom: immeubleData.immeuble.bloc.nom } : undefined,
               immeuble: immeubleData?.immeuble ? { id: immeubleData.immeuble.id, nom: immeubleData.immeuble.nom } : undefined,
             }}
+            projetId={immeubleData?.immeuble?.projet_id}
           />
         </div>
       </div>

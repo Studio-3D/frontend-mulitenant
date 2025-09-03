@@ -31,7 +31,8 @@ export default function BienForm() {
   const searchParams = useSearchParams();
   const { id } = useParams();
   const { selectProjet, selectedProjet } = useProjet();
-
+  const [trancheHasNoBlocs, setTrancheHasNoBlocs] = useState(false);
+  const [blocHasNoImmeubles, setBlocHasNoImmeubles] = useState(false);
   const projetId = searchParams.get('projet');
   const blocId = searchParams.get('bloc');
   const trancheId = searchParams.get('tranche');
@@ -177,9 +178,13 @@ export default function BienForm() {
       const currentTrancheId = value;
 
       // If project has blocs but no blocs selected yet, fetch blocs for this tranche
+
       if (projet.nbre_blocs !== 0 && !blocId) {
         fetchDataByProjet_params('blocs', setBlocs, setLoadingBlocs, {
           tranche_id: currentTrancheId || trancheId,
+        }).then(() => {
+          // Check if blocs array is empty after fetching
+          setTrancheHasNoBlocs(blocs.length === 0);
         });
       }
 
@@ -196,7 +201,10 @@ export default function BienForm() {
           {
             tranche_id: currentTrancheId || trancheId,
           }
-        );
+        ).then(() => {
+          // Check if immeubles array is empty after fetching
+          setTrancheHasNoBlocs(immeubles.length === 0);
+        });
       }
     }
 
@@ -212,7 +220,10 @@ export default function BienForm() {
           {
             bloc_id: currentBlocId || blocId,
           }
-        );
+        ).then(() => {
+          // Check if immeubles array is empty after fetching
+          setBlocHasNoImmeubles(immeubles.length === 0);
+        });
       }
     }
   };
@@ -935,8 +946,25 @@ export default function BienForm() {
         setBienCreeId(response.data.bien.id);
         setShowCompositionModal(true);
       } else {
-        // Use setTimeout to ensure state updates complete before navigation
         setTimeout(() => {
+          if (projet?.tranche_id) {
+            localStorage.setItem(
+              `tranche-${projet?.tranche_id}-activeTab`,
+              'bien'
+            );
+            router.push(`/Tranches/${projet?.tranche_id}`);
+          } else if (projet?.bloc_id) {
+            localStorage.setItem(`bloc-${projet?.bloc_id}-activeTab`, 'bien');
+            router.push(`/Blocs/${projet?.bloc_id}`);
+          } else if (projet.id) {
+            localStorage.setItem(`project-${projet.id}-activeTab`, 'bien');
+            router.push(`/Projets/${projet.id}`);
+          } else {
+            router.push('/Projets');
+          }
+        }, 100);
+        // Use setTimeout to ensure state updates complete before navigation
+        /* setTimeout(() => {
           if (!isNavigatingRef.current) {
             isNavigatingRef.current = true;
             if (projet?.id) {
@@ -947,9 +975,9 @@ export default function BienForm() {
             }
             /* router.push(
               projet?.id ? `/Projets/${projet.id}?tab=biens` : "/Projets"
-            );*/
+            );
           }
-        }, 100);
+        }, 100);*/
       }
       console.log('Bien créé ou mis à jour avec succès:', bienCreeId);
     } catch (error) {
@@ -1151,32 +1179,46 @@ export default function BienForm() {
             projet.nbre_blocs !== 0 &&
             !blocId &&
             !immeubleId ? (
-            <InputSelect
-              label="Bloc"
-              options={blocs.map((t) => ({ label: t.nom, value: t.id }))}
-              value={formData.bloc_id}
-              onChange={(option) =>
-                handleselectChange('bloc_id', option?.value || null)
-              }
-              error={errors.bloc_id}
-              isLoading={loadingBlocs}
-              required
-            />
+            <div>
+              <InputSelect
+                label="Bloc"
+                options={blocs.map((t) => ({ label: t.nom, value: t.id }))}
+                value={formData.bloc_id}
+                onChange={(option) =>
+                  handleselectChange('bloc_id', option?.value || null)
+                }
+                error={errors.bloc_id}
+                isLoading={loadingBlocs}
+                required
+              />
+              {trancheHasNoBlocs && blocs.length === 0 && (
+                <p className="text-red-500 text-sm mt-1">
+                  Cette tranche ne contient aucun bloc
+                </p>
+              )}
+            </div>
           ) : projet.nbre_tranches === 0 &&
             projet.nbre_blocs !== 0 &&
             !blocId &&
             !immeubleId ? (
-            <InputSelect
-              label="Bloc"
-              options={blocs.map((t) => ({ label: t.nom, value: t.id }))}
-              value={formData.bloc_id}
-              onChange={(option) =>
-                handleselectChange('bloc_id', option?.value || null)
-              }
-              error={errors.bloc_id}
-              isLoading={loadingBlocs}
-              required
-            />
+            <div>
+              <InputSelect
+                label="Bloc"
+                options={blocs.map((t) => ({ label: t.nom, value: t.id }))}
+                value={formData.bloc_id}
+                onChange={(option) =>
+                  handleselectChange('bloc_id', option?.value || null)
+                }
+                error={errors.bloc_id}
+                isLoading={loadingBlocs}
+                required
+              />
+              {trancheHasNoBlocs && blocs.length === 0 && (
+                <p className="text-red-500 text-sm mt-1">
+                  Aucun bloc disponible pour ce projet
+                </p>
+              )}
+            </div>
           ) : null)}
 
         {!id &&
@@ -1200,66 +1242,90 @@ export default function BienForm() {
             projet.nbre_blocs !== 0 &&
             projet.nbre_immeubles !== 0 &&
             !immeubleId ? (
-            <InputSelect
-              label="Immeuble"
-              options={immeubles.map((t) => ({ label: t.nom, value: t.id }))}
-              value={formData.immeuble_id}
-              onChange={(option) =>
-                handleselectChange('immeuble_id', option?.value || null)
-              }
-              error={errors.immeuble_id}
-              isLoading={loadingImmeubles}
-              required
-            />
+            <div>
+              <InputSelect
+                label="Immeuble"
+                options={immeubles.map((t) => ({ label: t.nom, value: t.id }))}
+                value={formData.immeuble_id}
+                onChange={(option) =>
+                  handleselectChange('immeuble_id', option?.value || null)
+                }
+                error={errors.immeuble_id}
+                isLoading={loadingImmeubles}
+                required
+              />
+              {blocHasNoImmeubles && immeubles.length === 0 && (
+                <p className="text-red-500 text-sm mt-1">
+                  Ce bloc ne contient aucun immeuble
+                </p>
+              )}
+            </div>
           ) : projet.nbre_blocs === 0 &&
             projet.nbre_tranches === 0 &&
             projet.nbre_immeubles !== 0 &&
             !blocId &&
             !trancheId &&
             !immeubleId ? (
-            <InputSelect
-              label="Immeuble"
-              options={immeubles.map((t) => ({ label: t.nom, value: t.id }))}
-              value={formData.immeuble_id}
-              onChange={(option) =>
-                handleselectChange('immeuble_id', option?.value || null)
-              }
-              error={errors.immeuble_id}
-              isLoading={loadingImmeubles}
-              required
-            />
+            <div>
+              <InputSelect
+                label="Immeuble"
+                options={immeubles.map((t) => ({ label: t.nom, value: t.id }))}
+                value={formData.immeuble_id}
+                onChange={(option) =>
+                  handleselectChange('immeuble_id', option?.value || null)
+                }
+                error={errors.immeuble_id}
+                isLoading={loadingImmeubles}
+                required
+              />
+              {blocHasNoImmeubles && immeubles.length === 0 && (
+                <p className="text-red-500 text-sm mt-1">
+                  Aucun immeuble disponible pour ce projet
+                </p>
+              )}
+            </div>
           ) : !formData.tranche_id &&
             projet.nbre_blocs === 0 &&
             projet.nbre_tranches !== 0 &&
             projet.nbre_immeubles !== 0 &&
             !trancheId &&
             !immeubleId ? (
-            <Input
-              label="Immeuble"
-              placeholder="Veuillez d'abord sélectionner une tranche"
-              value={selectedImmeuble?.nom}
-              fullWidth
-              size="small"
-              variant="outlined"
-              disabled={true}
-            />
+            <div>
+              <Input
+                label="Immeuble"
+                placeholder="Veuillez d'abord sélectionner une tranche"
+                value={selectedImmeuble?.nom}
+                fullWidth
+                size="small"
+                variant="outlined"
+                disabled={true}
+              />
+            </div>
           ) : (formData.tranche_id || trancheId) &&
             projet.nbre_blocs === 0 &&
             projet.nbre_tranches !== 0 &&
             projet.nbre_immeubles !== 0 &&
             !immeubleId ? (
-            <InputSelect
-              label="Immeuble"
-              options={immeubles.map((t) => ({ label: t.nom, value: t.id }))}
-              value={formData.immeuble_id}
-              onChange={(option) =>
-                handleselectChange('immeuble_id', option?.value || null)
-              }
-              error={errors.immeuble_id}
-              isLoading={loadingImmeubles}
-              required
-            />
+            <div>
+              <InputSelect
+                label="Immeuble"
+                options={immeubles.map((t) => ({ label: t.nom, value: t.id }))}
+                value={formData.immeuble_id}
+                onChange={(option) =>
+                  handleselectChange('immeuble_id', option?.value || null)
+                }
+                error={errors.immeuble_id}
+                isLoading={loadingImmeubles}
+                required
+              />
+              {trancheHasNoBlocs && immeubles.length === 0 && (
+                <p className="text-red-500 text-sm mt-1">
+                  Cette tranche ne contient aucun immeuble
+                </p>
+              )}
+            </div>
           ) : null)}
+
         <Input
           label="Propriété dite bien"
           type="text"

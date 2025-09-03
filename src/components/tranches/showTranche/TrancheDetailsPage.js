@@ -110,7 +110,7 @@ export const TrancheDetailsPage = () => {
 
   const handleDeleteSuccess = () => {
     setShowDeleteModal(false);
-   if (trancheData?.tranche?.projet_id) {
+    if (trancheData?.tranche?.projet_id) {
       localStorage.setItem(
         `project-${trancheData?.tranche?.projet_id}-activeTab`,
         'tranche'
@@ -166,6 +166,7 @@ export const TrancheDetailsPage = () => {
 
         return {
           id: b.id,
+          numero: b.numero,
           name: b.propriete_dite_bien,
           type: b.type_bien?.type || 'Inconnu',
           surface: b.superficie_habitable || b.superficie_architecte,
@@ -173,6 +174,9 @@ export const TrancheDetailsPage = () => {
           status: statusConfig.name,
           statusColor: statusConfig.color,
           originalStatus: b.etat,
+          tranche_nom: b?.tranche?.nom || '',
+          bloc_nom: b?.bloc?.nom || '',
+          immeuble_nom: b?.immeuble?.nom || '',
         };
       }) || [];
 
@@ -180,7 +184,7 @@ export const TrancheDetailsPage = () => {
       immeublesData.map((i) => ({
         id: i.id,
         nom: i.nom,
-        bloc_nom: blocsData.find((b) => b.id === i.bloc_id)?.nom || '',
+        bloc_nom: i?.bloc?.nom || '',
         titre_foncier: i.titre_foncier,
         nbre_biens: i.nbre_biens || 0,
       })) || [];
@@ -241,11 +245,14 @@ export const TrancheDetailsPage = () => {
   }, [filteredTabsData, activeTab]);
 */
 
- // Custom setActiveTab function that also persists to localStorage
-  const setActiveTabPersistent = useCallback((tabName) => {
-    setActiveTab(tabName);
-    setStoredActiveTab(id, tabName);
-  }, [id]);
+  // Custom setActiveTab function that also persists to localStorage
+  const setActiveTabPersistent = useCallback(
+    (tabName) => {
+      setActiveTab(tabName);
+      setStoredActiveTab(id, tabName);
+    },
+    [id]
+  );
   // Set active tab based on localStorage or first available tab
   useEffect(() => {
     if (Object.keys(filteredTabsData).length > 0) {
@@ -346,6 +353,9 @@ export const TrancheDetailsPage = () => {
             // setActiveTab={setActiveTab}
             fetchTrancheData={fetchTrancheDetails}
             trancheId={id}
+            nbre_blocs={trancheData?.tranche?.projet?.nbre_blocs}
+            nbre_immeubles={trancheData?.tranche?.projet?.nbre_immeubles}
+            nbre_biens={trancheData?.tranche?.projet?.nbre_biens}
             projetId={trancheData?.tranche?.projet_id}
             breadcrumbContext={{
               projet: trancheData?.tranche?.projet ? { id: trancheData.tranche.projet_id, nom: trancheData.tranche.projet.nom } : undefined,

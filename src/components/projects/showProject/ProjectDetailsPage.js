@@ -1,13 +1,13 @@
 'use client';
-import { useState, useEffect, useMemo, useCallback } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { LeftCard } from './LeftCard';
 import { RightCard } from './RightCard';
-import { APIURL } from "@/configs/api";
-import { useProjet } from "@/context/ProjetContext";
-import { useAuth } from "@/context/AuthContext";
-import { isAdmin, isSuperAdmin } from "@/configs/enum";
-import axios from "axios";
+import { APIURL } from '@/configs/api';
+import { useProjet } from '@/context/ProjetContext';
+import { useAuth } from '@/context/AuthContext';
+import { isAdmin, isSuperAdmin } from '@/configs/enum';
+import axios from 'axios';
 import Modal from '@/components/Modal';
 import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
 import DeleteData from '@/components/DeleteData';
@@ -19,7 +19,10 @@ const STATUS_CONFIG = {
   RESERVATION: { name: 'Réservé', color: 'bg-blue-500' },
   BLOQUE: { name: 'Bloqué', color: 'bg-red-500' },
   VENDU: { name: 'Vendu', color: 'bg-purple-500' },
-  ENCOURS_DE_PROPOSITION: { name: 'En cours de proposition', color: 'bg-orange-500' },
+  ENCOURS_DE_PROPOSITION: {
+    name: 'En cours de proposition',
+    color: 'bg-orange-500',
+  },
 };
 
 // Helper function to get/set active tab from localStorage
@@ -37,7 +40,13 @@ const setStoredActiveTab = (projectId, tabName) => {
 export const ProjectDetailsPage = () => {
   const { id } = useParams();
   const router = useRouter();
-  const { selectedProjet, selectProjet, clearSelectedProjet, fetchProjets, removeProjet } = useProjet();
+  const {
+    selectedProjet,
+    selectProjet,
+    clearSelectedProjet,
+    fetchProjets,
+    removeProjet,
+  } = useProjet();
   const { user } = useAuth();
   const [projectData, setProjectData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -46,22 +55,25 @@ export const ProjectDetailsPage = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // Custom setActiveTab function that also persists to localStorage
-  const setActiveTabPersistent = useCallback((tabName) => {
-    setActiveTab(tabName);
-    setStoredActiveTab(id, tabName);
-  }, [id]);
+  const setActiveTabPersistent = useCallback(
+    (tabName) => {
+      setActiveTab(tabName);
+      setStoredActiveTab(id, tabName);
+    },
+    [id]
+  );
 
   const fetchProjectDetails = useCallback(async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem('accessToken');
       const response = await axios.get(`${APIURL.PROJETS}/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       const projectDetails = response.data;
       setProjectData(projectDetails);
-      console.log('fetched project data', projectDetails)
+      console.log('fetched project data', projectDetails);
       // Update the context with the full project details
       if (projectDetails.projet) {
         selectProjet(projectDetails.projet);
@@ -69,8 +81,8 @@ export const ProjectDetailsPage = () => {
 
       // Don't reset activeTab here - we'll handle it after checking localStorage
     } catch (err) {
-      console.error("Error fetching project details:", err);
-      setError(err.message || "Failed to fetch project details");
+      console.error('Error fetching project details:', err);
+      setError(err.message || 'Failed to fetch project details');
 
       // If the project doesn't exist or we can't access it, clear selection
       if (err.response?.status === 404) {
@@ -109,7 +121,7 @@ export const ProjectDetailsPage = () => {
 
   const handleDeleteSuccess = () => {
     setShowDeleteModal(false);
-    window.location.href = "/Projets"; // go + reload in one step
+    window.location.href = '/Projets'; // go + reload in one step
   };
 
   const allTabsData = useMemo(() => {
@@ -117,9 +129,11 @@ export const ProjectDetailsPage = () => {
 
     const typeBienOptions = Array.from(
       new Set(
-        projectData?.projet.bien?.map(b => b.type_bien?.type).filter(Boolean) || []
+        projectData?.projet.bien
+          ?.map((b) => b.type_bien?.type)
+          .filter(Boolean) || []
       )
-    ).map(type => ({ value: type, label: type }));
+    ).map((type) => ({ value: type, label: type }));
 
     // Calculate status counts dynamically
     const statusCounts = projectData?.projet.bien?.reduce((acc, b) => {
@@ -131,56 +145,69 @@ export const ProjectDetailsPage = () => {
     }, {});
 
     // Map to the expected status format with dynamic counts using STATUS_CONFIG
-    const defaultStatuses = Object.entries(STATUS_CONFIG).map(([key, config]) => ({
-      name: config.name,
-      count: statusCounts?.[key] || 0,
-      color: config.color
-    }));
+    const defaultStatuses = Object.entries(STATUS_CONFIG).map(
+      ([key, config]) => ({
+        name: config.name,
+        count: statusCounts?.[key] || 0,
+        color: config.color,
+      })
+    );
 
     // Map bien data to match your column requirements
-    const biens = projectData?.projet.bien?.map(b => {
-      const statusConfig = STATUS_CONFIG[b.etat] || { name: b.etat, color: 'bg-gray-500' };
+    const biens =
+      projectData?.projet.bien?.map((b) => {
+        const statusConfig = STATUS_CONFIG[b.etat] || {
+          name: b.etat,
+          color: 'bg-gray-500',
+        };
 
-      return {
-        id: b.id,
-        name: b.propriete_dite_bien,
-        type: b.type_bien?.type || 'Inconnu',
-        surface: b.superficie_habitable || b.superficie_architecte,
-        price: b.prix,
-        status: statusConfig.name,
-        statusColor: statusConfig.color,
-        originalStatus: b.etat,
-      };
-    }) || [];
+        return {
+          id: b.id,
+          numero: b.numero,
+          name: b.propriete_dite_bien,
+          type: b.type_bien?.type || 'Inconnu',
+          surface: b.superficie_habitable || b.superficie_architecte,
+          price: b.prix,
+          status: statusConfig.name,
+          statusColor: statusConfig.color,
+          originalStatus: b.etat,
+          tranche_nom: b?.tranche?.nom || '',
+          bloc_nom: b?.bloc?.nom || '',
+          immeuble_nom: b?.immeuble?.nom || '',
+        };
+      }) || [];
 
     // Map tranche data to match your column requirements
-    const tranches = projectData?.projet.tranche?.map(t => ({
-      id: t.id,
-      nom: t.nom,
-      date_lancement: t.date_lancement,
-      date_livraison: t.date_livraison,
-      niveau_etages: t.niveau_etages || 0,
-    })) || [];
+    const tranches =
+      projectData?.projet.tranche?.map((t) => ({
+        id: t.id,
+        nom: t.nom,
+        date_lancement: t.date_lancement,
+        date_livraison: t.date_livraison,
+        niveau_etages: t.niveau_etages || 0,
+      })) || [];
 
     // Map immeuble data to match your column requirements
-    const immeubles = projectData?.projet.immeuble?.map(i => ({
-      id: i.id,
-      nom: i.nom,
-      tranche_nom: projectData?.projet.tranche.find(t => t.id === i.tranche_id)?.nom || '',
-      bloc_nom: projectData?.projet.bloc.find(b => b.id === i.bloc_id)?.nom || '',
-      titre_foncier: i.titre_foncier,
-      nbre_biens: i.nbre_biens ||0,
-    })) || [];
+    const immeubles =
+      projectData?.projet.immeuble?.map((i) => ({
+        id: i.id,
+        nom: i.nom,
+        tranche_nom: i?.tranche?.nom || '',
+        bloc_nom: i?.bloc?.nom || '',
+        titre_foncier: i.titre_foncier,
+        nbre_biens: i.nbre_biens || 0,
+      })) || [];
 
     // Map bloc data to match your column requirements
-    const blocs = projectData?.projet.bloc?.map(b => ({
-      id: b.id,
-      nom: b.nom,
-      tranche_nom: projectData?.projet.tranche?.find(t => t.id === b.tranche_id)?.nom || '',
-      titre_foncier: b.titre_foncier,
-      nbre_immeubles: b.nbre_immeubles || 0,
-      nbre_biens: b.nbre_biens || 0,
-    })) || [];
+    const blocs =
+      projectData?.projet.bloc?.map((b) => ({
+        id: b.id,
+        nom: b.nom,
+        tranche_nom: b?.tranche?.nom,
+        titre_foncier: b.titre_foncier,
+        nbre_immeubles: b.nbre_immeubles || 0,
+        nbre_biens: b.nbre_biens || 0,
+      })) || [];
 
     return {
       tranche: {
@@ -210,7 +237,9 @@ export const ProjectDetailsPage = () => {
 
   const filteredTabsData = useMemo(() => {
     return Object.fromEntries(
-      Object.entries(allTabsData).filter(([_, tabData]) => tabData.nbr_count > 0)
+      Object.entries(allTabsData).filter(
+        ([_, tabData]) => tabData.nbr_count > 0
+      )
     );
   }, [allTabsData]);
 
@@ -280,7 +309,7 @@ export const ProjectDetailsPage = () => {
   }
 
   const handleBack = () => {
-    setShowDeleteModal(false)
+    setShowDeleteModal(false);
     router.push(`/Projets`);
   };
   return (
@@ -309,6 +338,10 @@ export const ProjectDetailsPage = () => {
             activeTab={activeTab}
             setActiveTab={setActiveTabPersistent} // Use the persistent version
             fetchProjectData={fetchProjectDetails}
+            nbre_blocs={projectData?.projet.nbre_blocs}
+            nbre_immeubles={projectData?.projet?.nbre_immeubles}
+            nbre_biens={projectData?.projet?.nbre_biens}
+            nbre_tranches={projectData?.projet?.nbre_tranches}
             projectId={id}
           />
         </div>
@@ -322,7 +355,7 @@ export const ProjectDetailsPage = () => {
             Id={id}
             type="Projet"
             message="Êtes-vous sûr de vouloir supprimer ce projet ? Cette action est irréversible."
-            accessToken={localStorage.getItem("accessToken")}
+            accessToken={localStorage.getItem('accessToken')}
             onClose={() => handleBack()}
             onSuccess={handleDeleteSuccess}
           />

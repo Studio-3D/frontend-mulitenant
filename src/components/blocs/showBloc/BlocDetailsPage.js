@@ -144,9 +144,7 @@ export const BlocDetailsPage = () => {
 
     const biensData = showBiens ? blocData.bloc.bien || [] : [];
     const immeublesData = showImmeubles ? blocData.bloc.immeuble || [] : [];
-    /* in OLDONE
-  const biensData = blocData.bloc.bien || [];
-  const immeublesData = blocData.bloc.immeuble || [];*/
+    const trancheData = blocData.bloc.tranche ? [blocData.bloc.tranche] : [];
 
     const typeBienOptions = Array.from(
       new Set(biensData.map((b) => b.type_bien?.type).filter(Boolean) || [])
@@ -180,6 +178,7 @@ export const BlocDetailsPage = () => {
 
         return {
           id: b.id,
+          numero: b.numero,
           name: b.propriete_dite_bien,
           type: b.type_bien?.type || 'Inconnu',
           surface: b.superficie_habitable || b.superficie_architecte,
@@ -187,6 +186,9 @@ export const BlocDetailsPage = () => {
           status: statusConfig.name,
           statusColor: statusConfig.color,
           originalStatus: b.etat,
+          tranche_nom: b?.tranche?.nom || '',
+          bloc_nom: b?.bloc?.nom || '',
+          immeuble_nom: b?.immeuble?.nom || '',
         };
       }) || [];
 
@@ -197,30 +199,28 @@ export const BlocDetailsPage = () => {
         nom: i.nom,
         titre_foncier: i.titre_foncier,
         nbre_biens: i.nbre_biens || 0,
+        tranche_nom: i?.tranche?.nom || '',
       })) || [];
 
-    /*return {
-    immeuble: {
-      count: immeubles.length,
-      items: immeubles,
-      nbr_count: immeubles.length,
-    },
-    bien: {
-      count: biens.length,
-      statuses: defaultStatuses,
-      items: biens,
-      nbr_count: biens.length,
-      typeBienOptions,
-    },
-  };*/
+    // Map tranche data for filtering - FIXED: Use items array structure
+    const tranches = trancheData.map((t) => ({
+      id: t.id,
+      nom: t.nom,
+    }));
     // Only include tabs if their corresponding project count is > 0
     const tabs = {};
-
+    // Always include tranche tab if we have tranche data
+    if (tranches.length > 0) {
+      tabs.tranche = {
+        items: tranches, // This should be an array of items
+      };
+    }
     if (showImmeubles) {
       tabs.immeuble = {
         count: immeubles.length,
         items: immeubles,
         nbr_count: immeubles.length,
+        tranches: tranches,
       };
     }
 
@@ -231,6 +231,7 @@ export const BlocDetailsPage = () => {
         items: biens,
         nbr_count: biens.length,
         typeBienOptions,
+        tranches: tranches, // This should be an array, not an object with items
       };
     }
 
@@ -353,6 +354,8 @@ export const BlocDetailsPage = () => {
             setActiveTab={setActiveTabPersistent}
             fetchBlocData={fetchBlocDetails}
             blocId={id}
+            nbre_tranches={blocData?.bloc?.projet?.nbre_tranches}
+            nbre_immeubles={blocData?.bloc?.projet?.nbre_immeubles}
             projectId={blocData?.bloc?.projet_id}
             breadcrumbContext={{
               projet: blocData?.bloc?.projet ? { id: blocData.bloc.projet_id, nom: blocData.bloc.projet.nom } : undefined,

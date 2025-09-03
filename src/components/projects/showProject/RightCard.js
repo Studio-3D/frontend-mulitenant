@@ -1,51 +1,77 @@
-import React, { useMemo, useState, useCallback, useEffect } from "react";
-import { StatusCard } from "./StatusCard";
-import { Eye, PencilLine, Trash2 } from "lucide-react";
-import Link from "next/link";
-import { isAdmin, isSuperAdmin } from "@/configs/enum";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
-import SelectInput from "@/components/SelectInput";
-import Modal from "@/components/Modal";
-import DeleteData from "@/components/DeleteData";
-import { APIURL } from "@/configs/api";
-import { HomeIcon, LayersIcon, BuildingIcon, BoxesIcon } from "lucide-react";
-import Table from "@/components/Table";
-import Input from "@/components/Input"; // Make sure to import your Input component
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
+import { StatusCard } from './StatusCard';
+import { Eye, PencilLine, Trash2 } from 'lucide-react';
+import Link from 'next/link';
+import { isAdmin, isSuperAdmin } from '@/configs/enum';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import SelectInput from '@/components/SelectInput';
+import Modal from '@/components/Modal';
+import DeleteData from '@/components/DeleteData';
+import { APIURL } from '@/configs/api';
+import { HomeIcon, LayersIcon, BuildingIcon, BoxesIcon } from 'lucide-react';
+import Table from '@/components/Table';
+import Input from '@/components/Input'; // Make sure to import your Input component
+import BienImport from '@/components/biens/BienImport';
 
 const TAB_CONFIG = {
   tranche: {
     icon: <LayersIcon size={18} />,
-    name: "Tranches",
+    name: 'Tranches',
     apiEndpoint: APIURL.TRANCHES,
-    addLink: (user,projectId) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? `/Tranches/ajouter?projet=${projectId}` : undefined,
+    addLink: (user, projectId) =>
+      isSuperAdmin(user?.role) || isAdmin(user?.role)
+        ? `/Tranches/ajouter?projet=${projectId}`
+        : undefined,
 
-    filters: (tabsData, projectId) => [
+    filters: (
+      tabsData,
+      projectId,
+      nbre_tranches,
+      nbre_blocs,
+      nbre_immeubles
+    ) => [
       {
-        key: "nom",
-        label: "Nom",
-        type: "text",
-        placeholder: "Nom...",
+        key: 'nom',
+        label: 'Nom',
+        type: 'text',
+        placeholder: 'Nom...',
         className:
-          "h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full",
+          'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
       },
       {
-        key: "niveau_etages",
+        key: 'niveau_etages',
         label: "Niveau d'étages",
-        type: "text",
+        type: 'text',
         placeholder: "Niveau d'étage...",
         className:
-          "h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full",
+          'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
       },
     ],
     columns: (user, handleDelete) => [
-      { key: "nom", label: "Tranche" },
-      { key: "date_lancement", label: "Date lancement" },
-      { key: "niveau_etages", label: "Niveau d'étages" },
-      { key: "date_livraison", label: "Date livraison" },
+      { key: 'nom', label: 'Tranche' },
       {
-        key: "actions",
-        label: "Actions",
+        key: 'date_lancement',
+        label: 'Date lancement',
+        render: (row) => {
+          return row.date_lancement
+            ? new Date(row.date_lancement).toLocaleDateString('fr-FR')
+            : '';
+        },
+      },
+      { key: 'niveau_etages', label: "Niveau d'étages" },
+      {
+        key: 'date_livraison',
+        label: 'Date livraison',
+        render: (row) => {
+          return row.date_livraison
+            ? new Date(row.date_livraison).toLocaleDateString('fr-FR')
+            : '';
+        },
+      },
+      {
+        key: 'actions',
+        label: 'Actions',
         render: (row) => (
           <div className="flex gap-4 items-center">
             <Link
@@ -77,53 +103,86 @@ const TAB_CONFIG = {
         ),
       },
     ],
+    exportConfig: (items) => ({
+      data_to_export: items.map((item) => ({
+        Tranche: item.nom || '',
+        'Date lancement': item.date_lancement
+          ? new Date(item.date_lancement).toLocaleDateString('fr-FR')
+          : '',
+        "Niveau d'étages": item.niveau_etages || '',
+        'Date livraison': item.date_livraison
+          ? new Date(item.date_livraison).toLocaleDateString('fr-FR')
+          : '',
+      })),
+      columns_export: [
+        { key: 'Tranche', label: 'Tranche' },
+        { key: 'Date lancement', label: 'Date lancement' },
+        { key: "Niveau d'étages", label: "Niveau d'étages" },
+        { key: 'Date livraison', label: 'Date livraison' },
+      ],
+      name_file_export: 'tranches_export',
+    }),
   },
   blocs: {
     icon: <BoxesIcon size={18} />,
-    name: "Blocs",
+    name: 'Blocs',
     apiEndpoint: APIURL.BLOCS,
-    addLink: (user,projectId) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? `/Blocs/ajouter?projet=${projectId}` : undefined,
+    addLink: (user, projectId) =>
+      isSuperAdmin(user?.role) || isAdmin(user?.role)
+        ? `/Blocs/ajouter?projet=${projectId}`
+        : undefined,
 
-    filters: (tabsData, projectId) => [
+    filters: (
+      tabsData,
+      projectId,
+      nbre_tranches,
+      nbre_blocs,
+      nbre_immeubles
+    ) => [
       {
-        key: "nom",
-        label: "Nom",
-        type: "text",
-        placeholder: "Nom...",
+        key: 'nom',
+        label: 'Nom',
+        type: 'text',
+        placeholder: 'Nom...',
         className:
-          "h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full",
+          'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
       },
       {
-        key: "titre_foncier",
-        label: "Titre foncier",
-        type: "text",
-        placeholder: "Titre foncier...",
+        key: 'titre_foncier',
+        label: 'Titre foncier',
+        type: 'text',
+        placeholder: 'Titre foncier...',
         className:
-          "h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full",
+          'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
       },
-      {
-        key: "tranche_nom",
-        label: "Tranche",
-        type: "select",
-        placeholder: "Sélectionner une tranche",
-        options:
-          tabsData.tranche?.items?.map((t) => ({
-            label: t.nom,
-            value: t.nom,
-          })) || [],
-        className:
-          "h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full",
-      },
+      ...(nbre_tranches > 0
+        ? [
+            {
+              key: 'tranche_nom',
+              label: 'Tranche',
+              type: 'select',
+              placeholder: 'Sélectionner une tranche',
+              options:
+                tabsData.tranche?.items?.map((t) => ({
+                  label: t.nom,
+                  value: t.nom,
+                })) || [],
+              className:
+                'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+            },
+          ]
+        : []),
     ],
-    columns: (user, handleDelete) => [
-      { key: "nom", label: "Bloc" },
-      { key: "tranche_nom", label: "Tranche" },
-      { key: "titre_foncier", label: "Titre foncier" },
-      { key: "nbre_immeubles", label: "Nbr Immeubles" },
-      { key: "nbre_biens", label: "Nbr Biens" },
+    columns: (user, handleDelete, nbre_tranches) => [
+      { key: 'nom', label: 'Bloc' },
+
+      ...(nbre_tranches > 0 ? [{ key: 'tranche_nom', label: 'Tranche' }] : []),
+      { key: 'titre_foncier', label: 'Titre foncier' },
+      { key: 'nbre_immeubles', label: 'Nbr Immeubles' },
+      { key: 'nbre_biens', label: 'Nbr Biens' },
       {
-        key: "actions",
-        label: "Actions",
+        key: 'actions',
+        label: 'Actions',
         render: (row) => (
           <div className="flex gap-4 items-center">
             <Link
@@ -155,63 +214,101 @@ const TAB_CONFIG = {
         ),
       },
     ],
+    exportConfig: (items, nbre_tranches) => ({
+      data_to_export: items.map((item) => ({
+        Bloc: item.nom || '',
+        ...(nbre_tranches > 0 && { Tranche: item.tranche_nom || '' }),
+        'Titre foncier': item.titre_foncier || '',
+        'Nbr Immeubles': item.nbre_immeubles || 0,
+        'Nbr Biens': item.nbre_biens || 0,
+      })),
+      columns_export: [
+        { key: 'Bloc', label: 'Bloc' },
+        ...(nbre_tranches > 0 ? [{ key: 'Tranche', label: 'Tranche' }] : []),
+        { key: 'Titre foncier', label: 'Titre foncier' },
+        { key: 'Nbr Immeubles', label: 'Nbr Immeubles' },
+        { key: 'Nbr Biens', label: 'Nbr Biens' },
+      ],
+      name_file_export: 'blocs_export',
+    }),
   },
   immeuble: {
     icon: <BuildingIcon size={18} />,
-    name: "Immeubles",
+    name: 'Immeubles',
     apiEndpoint: APIURL.IMMEUBLES,
-    addLink: (user,projectId) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? `/Immeubles/ajouter?projet=${projectId}` : undefined,
-    filters: (tabsData, projectId) => [
+    addLink: (user, projectId) =>
+      isSuperAdmin(user?.role) || isAdmin(user?.role)
+        ? `/Immeubles/ajouter?projet=${projectId}`
+        : undefined,
+    filters: (
+      tabsData,
+      projectId,
+      nbre_tranches,
+      nbre_blocs,
+      nbre_immeubles
+    ) => [
       {
-        key: "nom",
-        label: "Nom",
-        type: "text",
-        placeholder: "Nom...",
+        key: 'nom',
+        label: 'Nom',
+        type: 'text',
+        placeholder: 'Nom...',
         className:
-          "h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full",
+          'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
       },
+      // Conditionally show tranche select
+      ...(nbre_tranches > 0
+        ? [
+            {
+              key: 'tranche_nom',
+              label: 'Tranche',
+              type: 'select',
+              placeholder: 'Sélectionner une tranche',
+              options:
+                tabsData.tranche?.items?.map((t) => ({
+                  label: t.nom,
+                  value: t.nom,
+                })) || [],
+              className:
+                'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+            },
+          ]
+        : []),
+      // Conditionally show bloc select
+      ...(nbre_blocs > 0
+        ? [
+            {
+              key: 'bloc_nom',
+              label: 'Bloc',
+              type: 'select',
+              placeholder: 'Sélectionner un bloc',
+              options:
+                tabsData.blocs?.items?.map((b) => ({
+                  label: b.nom,
+                  value: b.nom,
+                })) || [],
+              className:
+                'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+            },
+          ]
+        : []),
       {
-        key: "tranche_nom",
-        label: "Tranche",
-        type: "select",
-        placeholder: "Sélectionner une tranche",
-        options:
-          tabsData.tranche?.items?.map((t) => ({
-            label: t.nom,
-            value: t.nom,
-          })) || [],
+        key: 'titre_foncier',
+        label: 'Titre foncier',
+        type: 'text',
+        placeholder: 'Titre foncier...',
         className:
-          "h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full",
-      },
-      {
-        key: "bloc_nom",
-        label: "Bloc",
-        type: "select",
-        placeholder: "Sélectionner un bloc",
-        options:
-          tabsData.blocs?.items?.map((b) => ({ label: b.nom, value: b.nom })) ||
-          [],
-        className:
-          "h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full",
-      },
-      {
-        key: "titre_foncier",
-        label: "Titre foncier",
-        type: "text",
-        placeholder: "Titre foncier...",
-        className:
-          "h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full",
+          'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
       },
     ],
-    columns: (user, handleDelete) => [
-      { key: "nom", label: "Immeuble" },
-      { key: "tranche_nom", label: "Tranche" },
-      { key: "bloc_nom", label: "Bloc" },
-      { key: "titre_foncier", label: "Titre foncier" },
-      { key: "nbre_biens", label: "Nbr Biens" },
+    columns: (user, handleDelete, nbre_tranches, nbre_blocs) => [
+      { key: 'nom', label: 'Immeuble' },
+      ...(nbre_tranches > 0 ? [{ key: 'tranche_nom', label: 'Tranche' }] : []),
+      ...(nbre_blocs > 0 ? [{ key: 'bloc_nom', label: 'Bloc' }] : []),
+      { key: 'titre_foncier', label: 'Titre foncier' },
+      { key: 'nbre_biens', label: 'Nbr Biens' },
       {
-        key: "actions",
-        label: "Actions",
+        key: 'actions',
+        label: 'Actions',
         render: (row) => (
           <div className="flex gap-4 items-center">
             <Link
@@ -243,14 +340,40 @@ const TAB_CONFIG = {
         ),
       },
     ],
+    exportConfig: (items, nbre_tranches, nbre_blocs) => ({
+      data_to_export: items.map((item) => ({
+        Immeuble: item.nom || '',
+        ...(nbre_tranches > 0 && { Tranche: item.tranche_nom || '' }),
+        ...(nbre_blocs > 0 && { Bloc: item.bloc_nom || '' }),
+        'Titre foncier': item.titre_foncier || '',
+        'Nbr Biens': item.nbre_biens || 0,
+      })),
+      columns_export: [
+        { key: 'Immeuble', label: 'Immeuble' },
+        ...(nbre_tranches > 0 ? [{ key: 'Tranche', label: 'Tranche' }] : []),
+        ...(nbre_blocs > 0 ? [{ key: 'Bloc', label: 'Bloc' }] : []),
+        { key: 'Titre foncier', label: 'Titre foncier' },
+        { key: 'Nbr Biens', label: 'Nombre Biens' },
+      ],
+      name_file_export: 'immeubles_export',
+    }),
   },
   bien: {
     icon: <HomeIcon size={18} />,
-    name: "Biens",
+    name: 'Biens',
     apiEndpoint: APIURL.BIENS,
-     addLink: (user,projectId) => (isSuperAdmin(user?.role) || isAdmin(user?.role)) ? `/Biens/ajouter?projet=${projectId}` : undefined,
+    addLink: (user, projectId) =>
+      isSuperAdmin(user?.role) || isAdmin(user?.role)
+        ? `/Biens/ajouter?projet=${projectId}`
+        : undefined,
 
-    filters: (tabsData, projectId) => {
+    filters: (
+      tabsData,
+      projectId,
+      nbre_tranches,
+      nbre_blocs,
+      nbre_immeubles
+    ) => {
       // Get unique status values from the biens data
       const statusOptions = tabsData.bien?.items
         ? [...new Set(tabsData.bien.items.map((item) => item.status))]
@@ -260,58 +383,178 @@ const TAB_CONFIG = {
 
       return [
         {
-          key: "name",
-          label: "Nom",
-          type: "text",
-          placeholder: "Nom...",
+          key: 'name',
+          label: 'Nom',
+          type: 'text',
+          placeholder: 'Nom...',
           className:
-            "h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full",
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
         },
         {
-          key: "type",
-          label: "Type",
-          type: "select",
-          placeholder: "Sélectionner un type",
+          key: 'numero',
+          label: 'Numéro',
+          type: 'text',
+          placeholder: '',
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
+        {
+          key: 'type',
+          label: 'Type',
+          type: 'select',
+          placeholder: 'Sélectionner un type',
           options: tabsData.bien?.typeBienOptions || [],
           className:
-            "h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full",
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
         },
+      
         {
-          key: "surface",
-          label: "Surface",
-          type: "number",
-          placeholder: "Surface...",
-          className:
-            "h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full",
-        },
-        {
-          key: "price",
-          label: "Prix",
-          type: "number",
-          placeholder: "Prix...",
-          className:
-            "h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full",
-        },
-        {
-          key: "status",
-          label: "Statut",
-          type: "select",
-          placeholder: "Sélectionner un statut",
+          key: 'status',
+          label: 'Statut',
+          type: 'select',
+          placeholder: 'Sélectionner un statut',
           options: statusOptions,
           className:
-            "h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full",
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
+
+        ...(nbre_tranches > 0
+          ? [
+              {
+                key: 'tranche_nom',
+                label: 'Tranche',
+                type: 'select',
+                placeholder: 'Sélectionner une tranche',
+                options:
+                  tabsData.tranche?.items?.map((t) => ({
+                    label: t.nom,
+                    value: t.nom,
+                  })) || [],
+                className:
+                  'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+              },
+            ]
+          : []),
+        ...(nbre_blocs > 0
+          ? [
+              {
+                key: 'bloc_nom',
+                label: 'Bloc',
+                type: 'select',
+                placeholder: 'Sélectionner un bloc',
+                options:
+                  tabsData.blocs?.items?.map((b) => ({
+                    label: b.nom,
+                    value: b.nom,
+                  })) || [],
+                className:
+                  'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+              },
+            ]
+          : []),
+        ...(nbre_immeubles > 0
+          ? [
+              {
+                key: 'immeuble_nom',
+                label: 'Immeuble',
+                type: 'select',
+                placeholder: 'Sélectionner un immeuble',
+                options:
+                  tabsData.immeuble?.items?.map((b) => ({
+                    label: b.nom,
+                    value: b.nom,
+                  })) || [],
+                className:
+                  'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+              },
+            ]
+          : []),  // Replace the single surface filter with min and max
+        {
+          key: 'surface_min',
+          label: 'Surface min',
+          type: 'number',
+          placeholder: 'Min...',
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
+        {
+          key: 'surface_max',
+          label: 'Surface max',
+          type: 'number',
+          placeholder: 'Max...',
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
+        // Prix min and max
+        {
+          key: 'price_min',
+          label: 'Prix min',
+          type: 'number',
+          placeholder: 'Min...',
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
+        {
+          key: 'price_max',
+          label: 'Prix max',
+          type: 'number',
+          placeholder: 'Max...',
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
         },
       ];
     },
-    columns: (user, handleDelete) => [
-      { key: "name", label: "Nom" },
-      { key: "type", label: "Type" },
-      { key: "surface", label: "Surface" },
-      { key: "price", label: "Prix" },
-      { key: "status", label: "Statut" },
+    columns: (
+      user,
+      handleDelete,
+      nbre_tranches,
+      nbre_blocs,
+      nbre_immeubles,
+      statusConfig
+    ) => [
+      { key: 'name', label: 'Nom' },
+      { key: 'numero', label: 'Numéro' },
+      { key: 'type', label: 'Type' },
+      ...(nbre_tranches > 0 ? [{ key: 'tranche_nom', label: 'Tranche' }] : []),
+      ...(nbre_blocs > 0 ? [{ key: 'bloc_nom', label: 'Bloc' }] : []),
+      ...(nbre_immeubles > 0
+        ? [{ key: 'immeuble_nom', label: 'Immeuble' }]
+        : []),
+      { key: 'surface', label: 'Surface' },
+      { key: 'price', label: 'Prix' },
       {
-        key: "actions",
-        label: "Actions",
+        key: 'status',
+        label: 'Statut',
+        render: (row) => {
+          let color = 'bg-gray-500'; // Default color
+
+          // Add conditions based on the status value
+          if (row.status === 'Disponible') {
+            color = 'bg-green-500';
+          } else if (row.status === 'Pré-réservé') {
+            color = 'bg-yellow-500';
+          } else if (row.status === 'Réservé') {
+            color = 'bg-blue-500';
+          } else if (row.status === 'Bloqué') {
+            color = 'bg-red-500';
+          } else if (row.status === 'Vendu') {
+            color = 'bg-purple-500';
+          } else if (row.status === 'En cours de proposition') {
+            color = 'bg-orange-500';
+          }
+
+          return (
+            <span
+              className={`text-xs font-medium px-2.5 py-0.5 rounded ${color} text-white`}
+            >
+              {row.status}
+            </span>
+          );
+        },
+      },
+      {
+        key: 'actions',
+        label: 'Actions',
         render: (row) => (
           <div className="flex gap-4 items-center text-sm">
             <Link
@@ -344,6 +587,31 @@ const TAB_CONFIG = {
         ),
       },
     ],
+    exportConfig: (items, nbre_tranches, nbre_blocs, nbre_immeubles) => ({
+      data_to_export: items.map((item) => ({
+        Nom: item.name || '',
+        Numéro: item.numero || '',
+        Type: item.type || '',
+        ...(nbre_tranches > 0 && { Tranche: item.tranche_nom || '' }),
+        ...(nbre_blocs > 0 && { Bloc: item.bloc_nom || '' }),
+        ...(nbre_immeubles > 0 && { Immeuble: item.immeuble_nom || '' }),
+        Surface: item.surface || '',
+        Prix: item.price || '',
+        Statut: item.status || '',
+      })),
+      columns_export: [
+        { key: 'Nom', label: 'Nom' },
+        { key: 'Numéro', label: 'Numéro' },
+        { key: 'Type', label: 'Type' },
+        ...(nbre_tranches > 0 ? [{ key: 'Tranche', label: 'Tranche' }] : []),
+        ...(nbre_blocs > 0 ? [{ key: 'Bloc', label: 'Bloc' }] : []),
+        ...(nbre_immeubles > 0 ? [{ key: 'Immeuble', label: 'Immeuble' }] : []),
+        { key: 'Surface', label: 'Surface' },
+        { key: 'Prix', label: 'Prix' },
+        { key: 'Statut', label: 'Statut' },
+      ],
+      name_file_export: 'biens_export',
+    }),
   },
 };
 
@@ -353,7 +621,12 @@ export const RightCard = ({
   setActiveTab,
   fetchProjectData,
   projectId,
+  nbre_blocs,
+  nbre_tranches,
+  nbre_immeubles,
 }) => {
+  const [showImportModal, setShowImportModal] = useState(false);
+
   const { token, user } = useAuth();
   const router = useRouter();
   const [selectedId, setSelectedId] = useState(null);
@@ -372,23 +645,29 @@ export const RightCard = ({
   useEffect(() => {
     const initialFilters = {};
     if (TAB_CONFIG[activeTab]?.filters) {
-      const filterConfig = TAB_CONFIG[activeTab].filters(tabsData, projectId);
+      // Pass individual count props to the filters function
+      const filterConfig = TAB_CONFIG[activeTab].filters(
+        tabsData,
+        projectId,
+        nbre_tranches,
+        nbre_blocs,
+        nbre_immeubles
+      );
       filterConfig.forEach((filter) => {
-        initialFilters[filter.key] = "";
+        initialFilters[filter.key] = '';
       });
     }
     setTempFilters(initialFilters);
     setAppliedFilters(initialFilters);
-    setShowFilter(false); // Hide filter when tab changes
-  }, [activeTab, tabsData, projectId]);
-
-  // Define handleAction before it's used
-  const handleAction = useCallback(
-    (id) => {
-      handleDelete(id);
-    },
-    [activeTab, router]
-  );
+    setShowFilter(false);
+  }, [
+    activeTab,
+    tabsData,
+    projectId,
+    nbre_tranches,
+    nbre_blocs,
+    nbre_immeubles,
+  ]); // Define handleAction before it's used
 
   const handleDelete = (id) => {
     setSelectedId(id);
@@ -422,14 +701,21 @@ export const RightCard = ({
   const resetFilters = () => {
     const resetFilters = {};
     if (TAB_CONFIG[activeTab]?.filters) {
-      const filterConfig = TAB_CONFIG[activeTab].filters(tabsData, projectId);
+      // Pass individual count props to the filters function
+      const filterConfig = TAB_CONFIG[activeTab].filters(
+        tabsData,
+        projectId,
+        nbre_tranches,
+        nbre_blocs,
+        nbre_immeubles
+      );
       filterConfig.forEach((filter) => {
-        resetFilters[filter.key] = "";
+        resetFilters[filter.key] = '';
       });
     }
     setTempFilters(resetFilters);
     setAppliedFilters(resetFilters);
-    setCurrentPage(1); // Reset to first page when resetting filters
+    setCurrentPage(1);
   };
 
   // Handle filter toggle
@@ -449,25 +735,62 @@ export const RightCard = ({
   }, []);
 
   // Filter items based on selected type, applied filters and pagination
+
   const filteredItems = useMemo(() => {
     if (!tabsData[activeTab]?.items) return [];
 
     let items = tabsData[activeTab].items;
 
     // Apply type filter if activeTab is 'bien' and a type is selected
-    if (activeTab === "bien" && selectedType) {
+    if (activeTab === 'bien' && selectedType) {
       items = items.filter((item) => item.type === selectedType);
     }
 
     // Apply text filters
     Object.keys(appliedFilters).forEach((key) => {
       if (appliedFilters[key]) {
-        items = items.filter((item) =>
-          item[key]
-            ?.toString()
-            .toLowerCase()
-            .includes(appliedFilters[key].toLowerCase())
-        );
+        // Handle surface range filtering
+        if (key === 'surface_min' && appliedFilters[key]) {
+          const minValue = parseFloat(appliedFilters[key]);
+          items = items.filter((item) => {
+            const itemSurface = parseFloat(item.surface);
+            return !isNaN(itemSurface) && itemSurface >= minValue;
+          });
+        } else if (key === 'surface_max' && appliedFilters[key]) {
+          const maxValue = parseFloat(appliedFilters[key]);
+          items = items.filter((item) => {
+            const itemSurface = parseFloat(item.surface);
+            return !isNaN(itemSurface) && itemSurface <= maxValue;
+          });
+        }
+        // Handle price range filtering
+        else if (key === 'price_min' && appliedFilters[key]) {
+          const minValue = parseFloat(appliedFilters[key]);
+          items = items.filter((item) => {
+            const itemPrice = parseFloat(item.price);
+            return !isNaN(itemPrice) && itemPrice >= minValue;
+          });
+        } else if (key === 'price_max' && appliedFilters[key]) {
+          const maxValue = parseFloat(appliedFilters[key]);
+          items = items.filter((item) => {
+            const itemPrice = parseFloat(item.price);
+            return !isNaN(itemPrice) && itemPrice <= maxValue;
+          });
+        }
+        // Handle other text filters
+        else if (
+          key !== 'surface_min' &&
+          key !== 'surface_max' &&
+          key !== 'price_min' &&
+          key !== 'price_max'
+        ) {
+          items = items.filter((item) =>
+            item[key]
+              ?.toString()
+              .toLowerCase()
+              .includes(appliedFilters[key].toLowerCase())
+          );
+        }
       }
     });
 
@@ -487,16 +810,33 @@ export const RightCard = ({
     currentPage,
     rowsPerPage,
   ]);
-
   const currentColumns = useMemo(() => {
     if (!activeTab || !TAB_CONFIG[activeTab]) return [];
 
     const columnConfig = TAB_CONFIG[activeTab].columns;
-    return typeof columnConfig === "function"
-      ? columnConfig(user, handleDelete, handleAction) // Pass handleAction here
-      : columnConfig;
-  }, [activeTab, user, handleDelete, handleAction]);
 
+    if (typeof columnConfig === 'function') {
+      // Pass the appropriate parameters based on the active tab
+      switch (activeTab) {
+        case 'blocs':
+          return columnConfig(user, handleDelete, nbre_tranches);
+        case 'immeuble':
+          return columnConfig(user, handleDelete, nbre_tranches, nbre_blocs);
+        case 'bien':
+          return columnConfig(
+            user,
+            handleDelete,
+            nbre_tranches,
+            nbre_blocs,
+            nbre_immeubles
+          );
+        default:
+          return columnConfig(user, handleDelete);
+      }
+    }
+
+    return columnConfig;
+  }, [activeTab, user, handleDelete, nbre_tranches, nbre_blocs]);
   const availableTabs = useMemo(() => {
     return Object.keys(tabsData).filter((tab) => tabsData[tab]?.nbr_count > 0);
   }, [tabsData]);
@@ -508,96 +848,232 @@ export const RightCard = ({
   }, [activeTab, availableTabs]);
 
   // Filter component for all tabs
-  const filterComponent = useMemo(() => {
-    if (!TAB_CONFIG[safeActiveTab]?.filters) return null;
+const filterComponent = useMemo(() => {
+  if (!TAB_CONFIG[safeActiveTab]?.filters) return null;
 
-    const filterConfig = TAB_CONFIG[safeActiveTab].filters(tabsData, projectId);
-
-    return (
-      <div className="space-y-4 ">
-        <div
-          className="grid gap-3"
-          style={{
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-          }}
-        >
-          {filterConfig.map((filter) => {
-            if (filter.type === "select") {
+  const filterConfig = TAB_CONFIG[safeActiveTab].filters(
+    tabsData,
+    projectId,
+    nbre_tranches,
+    nbre_blocs,
+    nbre_immeubles
+  );
+  
+  return (
+    <div className="space-y-4">
+      <div
+        className="grid gap-3"
+        style={{
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        }}
+      >
+        {filterConfig.map((filter) => {
+          // Group surface min and max in the same row
+          if (filter.key === 'surface_min' || filter.key === 'surface_max') {
+            const minFilter = filterConfig.find(f => f.key === 'surface_min');
+            const maxFilter = filterConfig.find(f => f.key === 'surface_max');
+            
+            // Only render once (for surface_min)
+            if (filter.key === 'surface_min') {
               return (
-                <div key={filter.key} className="flex flex-col">
+                <div key="surface_range" className="flex flex-col">
                   <label className="text-xs font-medium text-gray-700 mb-1">
-                    {filter.label}
+                    Surface
                   </label>
-                  <SelectInput
-                    options={filter.options || []}
-                    placeholder={filter.placeholder}
-                    value={tempFilters[filter.key] || ""}
-                    onChange={(selectedValue) =>
-                      handleFilterChange(filter.key, selectedValue)
-                    }
-                    width="w-full"
-                  />
-                </div>
-              );
-            } else if (filter.type === "number") {
-              return (
-                <div key={filter.key} className="flex flex-col">
-                  <label className="text-xs font-medium text-gray-700 mb-1">
-                    {filter.label}
-                  </label>
-                  <Input
-                    type="number"
-                    name={filter.key}
-                    value={tempFilters[filter.key] || ""}
-                    onChange={(e) =>
-                      handleFilterChange(filter.key, e.target.value)
-                    }
-                    placeholder={filter.placeholder}
-                    className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
-                  />
-                </div>
-              );
-            } else {
-              return (
-                <div key={filter.key} className="flex flex-col">
-                  <label className="text-xs font-medium text-gray-700 mb-1">
-                    {filter.label}
-                  </label>
-                  <Input
-                    type="text"
-                    name={filter.key}
-                    value={tempFilters[filter.key] || ""}
-                    onChange={(e) =>
-                      handleFilterChange(filter.key, e.target.value)
-                    }
-                    placeholder={filter.placeholder}
-                    className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
-                  />
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <Input
+                        type="number"
+                        name="surface_min"
+                        value={tempFilters.surface_min || ''}
+                        onChange={(e) =>
+                          handleFilterChange('surface_min', e.target.value)
+                        }
+                        placeholder={minFilter.placeholder}
+                        className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <Input
+                        type="number"
+                        name="surface_max"
+                        value={tempFilters.surface_max || ''}
+                        onChange={(e) =>
+                          handleFilterChange('surface_max', e.target.value)
+                        }
+                        placeholder={maxFilter.placeholder}
+                        className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+                      />
+                    </div>
+                  </div>
                 </div>
               );
             }
-          })}
-        </div>
-        <div className="flex justify-end gap-3 pt-2">
-          <button
-            type="button"
-            onClick={resetFilters}
-            className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
-          >
-            Réinitialiser
-          </button>
-          <button
-            type="button"
-            onClick={applyFilters}
-            className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-          >
-            Appliquer les filtres
-          </button>
-        </div>
+            return null;
+          }
+          
+          // Group price min and max in the same row
+          if (filter.key === 'price_min' || filter.key === 'price_max') {
+            const minFilter = filterConfig.find(f => f.key === 'price_min');
+            const maxFilter = filterConfig.find(f => f.key === 'price_max');
+            
+            // Only render once (for price_min)
+            if (filter.key === 'price_min') {
+              return (
+                <div key="price_range" className="flex flex-col">
+                  <label className="text-xs font-medium text-gray-700 mb-1">
+                    Prix
+                  </label>
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <Input
+                        type="number"
+                        name="price_min"
+                        value={tempFilters.price_min || ''}
+                        onChange={(e) =>
+                          handleFilterChange('price_min', e.target.value)
+                        }
+                        placeholder={minFilter.placeholder}
+                        className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <Input
+                        type="number"
+                        name="price_max"
+                        value={tempFilters.price_max || ''}
+                        onChange={(e) =>
+                          handleFilterChange('price_max', e.target.value)
+                        }
+                        placeholder={maxFilter.placeholder}
+                        className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+                      />
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+            return null;
+          }
+          
+          // Handle other filter types (select, text, number)
+          if (filter.type === 'select') {
+            return (
+              <div key={filter.key} className="flex flex-col">
+                <label className="text-xs font-medium text-gray-700 mb-1">
+                  {filter.label}
+                </label>
+                <SelectInput
+                  options={filter.options || []}
+                  placeholder={filter.placeholder}
+                  value={tempFilters[filter.key] || ''}
+                  onChange={(selectedValue) =>
+                    handleFilterChange(filter.key, selectedValue)
+                  }
+                  width="w-full"
+                />
+              </div>
+            );
+          } else {
+            return (
+              <div key={filter.key} className="flex flex-col">
+                <label className="text-xs font-medium text-gray-700 mb-1">
+                  {filter.label}
+                </label>
+                <Input
+                  type={filter.type || 'text'}
+                  name={filter.key}
+                  value={tempFilters[filter.key] || ''}
+                  onChange={(e) =>
+                    handleFilterChange(filter.key, e.target.value)
+                  }
+                  placeholder={filter.placeholder}
+                  className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+                />
+              </div>
+            );
+          }
+        })}
       </div>
-    );
-  }, [safeActiveTab, tabsData, projectId, tempFilters]);
+      <div className="flex justify-end gap-3 pt-2">
+        <button
+          type="button"
+          onClick={resetFilters}
+          className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
+        >
+          Réinitialiser
+        </button>
+        <button
+          type="button"
+          onClick={applyFilters}
+          className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+        >
+          Appliquer les filtres
+        </button>
+      </div>
+    </div>
+  );
+}, [
+  safeActiveTab,
+  tabsData,
+  projectId,
+  tempFilters,
+  nbre_tranches,
+  nbre_blocs,
+  nbre_immeubles,
+]);
 
+  // Inside the RightCard component, add this code to get the export configuration
+  const exportConfig = useMemo(() => {
+    if (!TAB_CONFIG[safeActiveTab]?.exportConfig) return null;
+
+    const exportConfigFn = TAB_CONFIG[safeActiveTab].exportConfig;
+
+    // Pass the appropriate parameters based on the active tab
+    switch (safeActiveTab) {
+      case 'blocs':
+        return exportConfigFn(filteredItems, nbre_tranches);
+      case 'immeuble':
+        return exportConfigFn(filteredItems, nbre_tranches, nbre_blocs);
+      case 'bien':
+        return exportConfigFn(
+          filteredItems,
+          nbre_tranches,
+          nbre_blocs,
+          nbre_immeubles
+        );
+      default:
+        return exportConfigFn(filteredItems);
+    }
+  }, [safeActiveTab, filteredItems, nbre_tranches, nbre_blocs, nbre_immeubles]);
+
+  const currentTabData = tabsData[safeActiveTab];
+  const hasItems = filteredItems.length > 0;
+
+  // Calculate status counts for filtered items (for bien tab only)
+  const filteredStatusCounts = useMemo(() => {
+    if (safeActiveTab !== 'bien' || !filteredItems.length) return null;
+
+    const counts = {};
+    filteredItems.forEach((item) => {
+      if (item.status) {
+        counts[item.status] = (counts[item.status] || 0) + 1;
+      }
+    });
+
+    return counts;
+  }, [safeActiveTab, filteredItems]);
+
+  // Get the status cards data with filtered counts
+  const statusCardsData = useMemo(() => {
+    if (safeActiveTab !== 'bien' || !currentTabData.statuses) return null;
+
+    return currentTabData.statuses.map((status) => ({
+      ...status,
+      // Use filtered count if available, otherwise fall back to original count
+      count: filteredStatusCounts?.[status.name] || 0,
+    }));
+  }, [safeActiveTab, currentTabData.statuses, filteredStatusCounts]);
   if (!safeActiveTab) {
     return (
       <div className="bg-white rounded-lg shadow-lg h-full flex flex-col">
@@ -608,9 +1084,6 @@ export const RightCard = ({
     );
   }
 
-  const currentTabData = tabsData[safeActiveTab];
-  const hasItems = filteredItems.length > 0;
-
   return (
     <div className="bg-white rounded-lg shadow-lg h-full flex flex-col">
       <div className="border-b">
@@ -620,8 +1093,8 @@ export const RightCard = ({
               key={tab}
               className={`px-6 py-4 text-sm font-medium whitespace-nowrap flex items-center gap-2 ${
                 safeActiveTab === tab
-                  ? "border-b-2 border-blue-600 text-blue-600"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? 'border-b-2 border-blue-600 text-blue-600'
+                  : 'text-gray-500 hover:text-gray-700'
               }`}
               onClick={() => {
                 setActiveTab(tab);
@@ -636,26 +1109,11 @@ export const RightCard = ({
         </div>
       </div>
       <div className="p-6 flex-grow">
-        {safeActiveTab === "bien" && (
+        {safeActiveTab === 'bien' && (
           <>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold text-gray-800">Biens</h2>
-              <div className="relative">
-                <SelectInput
-                  options={tabsData.bien?.typeBienOptions || []}
-                  placeholder="Filtrer par type"
-                  value={selectedType}
-                  onChange={(value) => {
-                    setSelectedType(value);
-                    setCurrentPage(1); // Reset to first page when changing filter
-                  }}
-                  width="w-48"
-                />
-              </div>
-            </div>
-            {currentTabData.statuses && (
+            {statusCardsData && (
               <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-                {currentTabData.statuses.map((status, index) => (
+                {statusCardsData.map((status, index) => (
                   <StatusCard
                     key={index}
                     name={status.name}
@@ -688,6 +1146,17 @@ export const RightCard = ({
             totalRows={totalRows}
             onPageChange={handlePageChange}
             onRowsPerPageChange={handleRowsPerPageChange}
+            enableImport={safeActiveTab == 'bien'} // Only enable import for bien tab
+            onImportClick={() => setShowImportModal(true)}
+            data_to_export={exportConfig?.data_to_export || []}
+            columns_export={exportConfig?.columns_export || []}
+            name_file_export={exportConfig?.name_file_export || 'export'}
+            enableExport={filteredItems.length > 0}
+          />
+          <BienImport
+            open={showImportModal}
+            onClose={() => setShowImportModal(false)}
+            projetId={projectId}
           />
           {/* Delete Confirmation Modal */}
           {showDeleteModal && (
@@ -695,15 +1164,19 @@ export const RightCard = ({
               <DeleteData
                 route={TAB_CONFIG[safeActiveTab]?.apiEndpoint}
                 Id={selectedId}
-                type={TAB_CONFIG[safeActiveTab]?.name}
-                message={`Êtes-vous sûr de vouloir supprimer ce ${TAB_CONFIG[
-                  safeActiveTab
-                ]?.name.toLowerCase()} ?`}
-                accessToken={token || localStorage.getItem("accessToken")}
-                onClose={() => {
-                  setShowDeleteModal(false);
-                  handleDeleteSuccess();
-                }}
+                type={
+                  TAB_CONFIG[safeActiveTab]?.name.endsWith('s')
+                    ? TAB_CONFIG[safeActiveTab]?.name.slice(0, -1)
+                    : TAB_CONFIG[safeActiveTab]?.name
+                }
+                message={`Êtes-vous sûr de vouloir supprimer ce ${
+                  TAB_CONFIG[safeActiveTab]?.name.endsWith('s')
+                    ? TAB_CONFIG[safeActiveTab]?.name.slice(0, -1).toLowerCase()
+                    : TAB_CONFIG[safeActiveTab]?.name.toLowerCase()
+                } ?`}
+                accessToken={token || localStorage.getItem('accessToken')}
+                onClose={() => setShowDeleteModal(false)}
+                onSuccess={handleDeleteSuccess}
               />
             </Modal>
           )}
