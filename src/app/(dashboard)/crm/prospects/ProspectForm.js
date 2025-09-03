@@ -3,10 +3,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useState, useEffect, useRef } from 'react';
-import {
-  fetchData_Select,
-  fetchDataByProjet,
-} from '../../../../../src/configs/api-utils';
+import { fetchData_Select, fetchDataByProjet, } from '../../../../../src/configs/api-utils';
 
 import BreadCrumb from '../../navigation/BreadCrumb';
 import { Controller, useForm } from 'react-hook-form';
@@ -19,6 +16,7 @@ import Autocomplete from '@/components/Autocomplete';
 import TextField from '@/components/Textfield'; // Import the component
 import Button from '@/components/Button'; // adjust the path as needed
 import LoadingSpin from '@/components/LoadingSpin';
+import SelectInput from '@/components/SelectInput';
 export default function ProspectForm({ id, onClose, onSuccess }) {
   const { token } = useAuth();
   const router = useRouter();

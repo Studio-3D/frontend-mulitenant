@@ -273,24 +273,25 @@ const VisiteForm = ({ prospect_id, origin }) => {
       });
   };
 
-  const fetchTypeFreins = async () => {
-    setLoading_tp_frein(true);
-    await axios
-      .get(`${APIURL.ROOTV1}/typefreins`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      })
-      .then((res) => {
-        setType_freins(res.data.typefreins);
-        setType_freins((current) => [
-          { id: 'tout', description: 'Autre' },
-          ...current,
-        ]);
-        setLoading_tp_frein(false);
-      })
-      .catch(() => {});
-  };
+ const fetchTypeFreins = async () => {
+  setLoading_tp_frein(true);
+  try {
+    const res = await axios.get(`${APIURL.ROOTV1}/typefreins`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    console.log('frein', res.data.typefreins);
+    setType_freins([
+      { id: 'tout', description: 'Autre' },
+      ...(res.data.typefreins || []),
+    ]);
+  } catch (e) {
+    // Optionally handle error here
+  } finally {
+    setLoading_tp_frein(false);
+  }
+};
 
   const handleChange_interet = (code) => {
     if (code) {

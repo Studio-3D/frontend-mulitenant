@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ChevronDown } from "lucide-react";
 
 const Autocomplete = ({
@@ -17,6 +17,7 @@ const Autocomplete = ({
   name,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   // Find the selected option based on the value
   const selectedOption = typeof value === 'object' 
@@ -43,11 +44,25 @@ const Autocomplete = ({
     return '';
   };
 
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const errorMessage = getErrorMessage();
   const hasError = Boolean(errorMessage);
 
   return (
-    <div className={`relative ${width}`}>
+    <div className={`relative ${width}`} ref={dropdownRef}>
       {/* Label */}
       <label className="block font-medium !text-gray-700">
         {label}
