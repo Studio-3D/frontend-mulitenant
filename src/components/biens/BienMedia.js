@@ -426,27 +426,7 @@ export default function BienMedia({ bienId }) {
     );
   };
 
-  // Check LinkedIn configuration when bien data is loaded
-  useEffect(() => {
-    const checkLinkedInConfig = async () => {
-      if (bien?.projet_id) {
-        try {
-          const token = localStorage.getItem("accessToken");
-          const response = await axios.get(
-            `${APIURL.ROOTV1}/linkedin-config/project/${bien.projet_id}`,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
-          );
-          setHasLinkedInConfig(response.data.success);
-        } catch (error) {
-          setHasLinkedInConfig(false);
-        }
-      }
-    };
 
-    checkLinkedInConfig();
-  }, [bien]);
 
   // Render loading state
   if (loading) {

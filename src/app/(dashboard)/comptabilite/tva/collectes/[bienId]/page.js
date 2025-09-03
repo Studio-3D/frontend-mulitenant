@@ -145,7 +145,7 @@ const TvaCollectesPage = () => {
             <div className="p-4 space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-600 font-medium">Prix Vente TTC:</span>
-                <span className="font-semibold">{biensDetail.bien_tva?.prix_ttc?.toLocaleString()} DH</span>
+                <span className="font-semibold">{biensDetail.Bien_Tva?.prix_ttc?.toLocaleString()} DH</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600 font-medium">% TVA Appliqué:</span>
@@ -153,11 +153,11 @@ const TvaCollectesPage = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600 font-medium">QP Terrain En Valeur:</span>
-                <span className="font-semibold">{biensDetail.bien_tva?.qp_terrain_valeur?.toLocaleString()}</span>
+                <span className="font-semibold">{biensDetail.Bien_Tva?.qp_terrain_valeur?.toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-blue-600 font-medium">TVA Globale:</span>
-                <span className="text-blue-600 font-semibold">{biensDetail.bien_tva?.tva?.toLocaleString()}</span>
+                <span className="text-blue-600 font-semibold">{biensDetail.Bien_Tva?.tva?.toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-green-600 font-medium">Cumul TVA Déclarée:</span>
@@ -166,7 +166,7 @@ const TvaCollectesPage = () => {
               <div className="flex justify-between">
                 <span className="text-red-600 font-medium">TVA Reste à Déclarer:</span>
                 <span className="text-red-600 font-semibold">
-                  {(biensDetail.bien_tva?.tva - biensDetail.tva_collectes_sum_tva_a_payer).toFixed(2)} DH
+                  {(biensDetail.Bien_Tva?.tva - biensDetail.tva_collectes_sum_tva_a_payer).toFixed(2)} DH
                 </span>
               </div>
             </div>

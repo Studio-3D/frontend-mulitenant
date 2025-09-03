@@ -115,6 +115,42 @@ const fetchNotifications = async ({ setNotifications, setNewNotificationsCount, 
         icon: 'message-circle',
         color: 'info',
         subtitle: (prospect, user, avance, reservation, bien, projet, description_type) => description_type || `Message WhatsApp entrant${prospect?.telephone ? ' de ' + prospect.telephone : ''}`
+      },
+      91: {
+        title: 'Mention Facebook',
+        icon: 'at-sign',
+        color: 'info',
+        subtitle: (prospect, user, avance, reservation, bien, projet, description_type) => description_type || 'Vous avez été mentionné sur Facebook'
+      },
+      92: {
+        title: 'Publication Instagram',
+        icon: 'camera',
+        color: 'info',
+        subtitle: (prospect, user, avance, reservation, bien, projet, description_type) => description_type || 'Nouvelle publication Instagram'
+      },
+      93: {
+        title: 'Commentaire Facebook',
+        icon: 'message-square',
+        color: 'info',
+        subtitle: (prospect, user, avance, reservation, bien, projet, description_type) => description_type || 'Nouveau commentaire Facebook'
+      },
+      94: {
+        title: 'Mention Instagram',
+        icon: 'at-sign',
+        color: 'info',
+        subtitle: (prospect, user, avance, reservation, bien, projet, description_type) => description_type || 'Vous avez été mentionné sur Instagram'
+      },
+      95: {
+        title: 'Réaction Instagram',
+        icon: 'heart',
+        color: 'info',
+        subtitle: (prospect, user, avance, reservation, bien, projet, description_type) => description_type || 'Quelqu\'un a réagi à votre message Instagram'
+      },
+      99: {
+        title: 'Nouveau Message WhatsApp',
+        icon: 'message-circle',
+        color: 'success',
+        subtitle: (prospect, user, avance, reservation, bien, projet, description_type) => description_type || 'Nouveau message WhatsApp reçu'
       }
     };
 
