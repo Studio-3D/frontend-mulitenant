@@ -242,14 +242,15 @@ export const RightCard = ({
   setActiveTab,
   fetchImmeubleData,
   immeubleId,
+  breadcrumbContext,
   nbre_tranches,
   nbre_blocs,
   projetId,
-  breadcrumbContext,
 }) => {
+  console.log("nb blocs ==>" + nbre_blocs);
   const [showImportModal, setShowImportModal] = useState(false);
-  const { token, user } = useAuth();
 
+  const { token, user } = useAuth();
   const router = useRouter();
   const [selectedId, setSelectedId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -672,9 +673,6 @@ export const RightCard = ({
       </div>
     );
   }
-
-  const currentTabData = tabsData[safeActiveTab];
-  const hasItems = filteredItems.length > 0;
 
   const persistAddBienContext = useCallback(() => {
     try {

@@ -311,7 +311,6 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
     <div className="p-3">
       <div className="flex items-center justify-start">
         <BreadCrumb
-
           onRoot={{ href: '/Projets' }}
           items={[
             selectedProjet?.id
@@ -321,7 +320,6 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
             selectedProjet?.bloc_id ? { label: selectedProjet?.bloc_nom || `Bloc #${selectedProjet?.bloc_id}`, href: `/Blocs/${selectedProjet?.bloc_id}` } : null,
             { label: `${id ? 'Modifier' : 'Ajouter'} un immeuble` }
           ].filter(Boolean)}
-
         />
       </div>
       <div className="p-6 mt-4 bg-white shadow-md rounded-md">

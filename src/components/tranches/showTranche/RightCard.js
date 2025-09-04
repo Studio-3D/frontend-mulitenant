@@ -448,7 +448,6 @@ export const RightCard = ({
   breadcrumbContext,
   nbre_blocs,
   nbre_immeubles,
-
 }) => {
   const [showImportModal, setShowImportModal] = useState(false);
 

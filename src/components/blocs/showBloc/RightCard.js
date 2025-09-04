@@ -14,7 +14,6 @@ import { ChevronDownIcon, HomeIcon, BuildingIcon } from 'lucide-react';
 import Table from '@/components/Table';
 import BienImport from '@/components/biens/BienImport';
 
-
 const TAB_CONFIG = {
   immeuble: {
     icon: <BuildingIcon size={18} />,
@@ -345,11 +344,19 @@ const TAB_CONFIG = {
   },
 };
 
-
-export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchBlocData, blocId, projectId, nbre_immeubles, nbre_tranches, breadcrumbContext }) => {
+export const RightCard = ({
+  tabsData,
+  activeTab,
+  setActiveTab,
+  fetchBlocData,
+  blocId,
+  projectId,
+  breadcrumbContext,
+  nbre_immeubles,
+  nbre_tranches,
+}) => {
   const [showImportModal, setShowImportModal] = useState(false);
-  const { token, user } = useAuth()
-
+  const { token, user } = useAuth();
   const router = useRouter();
   const [selectedId, setSelectedId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -821,9 +828,22 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchBlocData, bl
       <div className="p-6 flex-grow">
         {safeActiveTab === 'bien' && (
           <>
-
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold text-gray-800">Biens</h2>
+              <div className="relative">
+                <SelectInput
+                  options={tabsData.bien?.typeBienOptions || []}
+                  placeholder="Filtrer par type"
+                  value={selectedType}
+                  onChange={(value) => {
+                    setSelectedType(value);
+                    setCurrentPage(1);
+                  }}
+                  width="w-48"
+                />
+              </div>
+            </div>
             {statusCardsData && (
-
               <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
                 {statusCardsData.map((status, index) => (
                   <StatusCard
@@ -842,9 +862,7 @@ export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchBlocData, bl
           <Table
             columns={currentColumns}
             data={hasItems ? filteredItems : []}
-
             addLink={{ pathname: TAB_CONFIG[safeActiveTab]?.addLink?.(user, null, projectId, blocId), onClick: persistAddBienContext }}
-
             showSearch={false}
             filterComponent={filterComponent}
             onFilterToggle={handleFilterToggle}
