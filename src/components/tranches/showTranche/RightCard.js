@@ -99,7 +99,7 @@ const TAB_CONFIG = {
         'Nbr Biens': item.nbre_biens || 0,
       })),
       columns_export: [
-        { key: 'nom', label: 'Bloc' },
+        { key: 'Bloc', label: 'Bloc' },
         { key: 'Titre foncier', label: 'Titre foncier' },
         ...(nbre_immeubles > 0
           ? [{ key: 'Nbr Immeubles', label: 'Nbr Immeubles' }]
@@ -447,7 +447,8 @@ export const RightCard = ({
   projetId,
   breadcrumbContext,
   nbre_blocs,
-  nbre_immeubles,max_etages
+  nbre_immeubles,
+  max_etages,
 }) => {
   const [showImportModal, setShowImportModal] = useState(false);
 
@@ -552,8 +553,6 @@ export const RightCard = ({
     setCurrentPage(1);
   }, []);
 
-  // Filter items based on selected type, applied filters and pagination
-  // Filter items based on selected type, applied filters and pagination
   const filteredItems = useMemo(() => {
     if (!tabsData[activeTab]?.items) return [];
 
@@ -612,23 +611,20 @@ export const RightCard = ({
       }
     });
 
-    // Update total rows count
-    setTotalRows(items.length);
+    return items;
+  }, [tabsData, activeTab, selectedType, appliedFilters]);
+
+  // Step 2: Calculate paginated items separately
+  const paginatedItems = useMemo(() => {
+    // Update total rows count based on filtered data
+    setTotalRows(filteredItems.length);
 
     // Apply pagination
     const startIndex = (currentPage - 1) * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
 
-    return items.slice(startIndex, endIndex);
-  }, [
-    tabsData,
-    activeTab,
-    selectedType,
-    appliedFilters,
-    currentPage,
-    rowsPerPage,
-  ]);
-
+    return filteredItems.slice(startIndex, endIndex);
+  }, [filteredItems, currentPage, rowsPerPage]);
   const currentColumns = useMemo(() => {
     if (!activeTab || !TAB_CONFIG[activeTab]) return [];
 
@@ -840,7 +836,6 @@ export const RightCard = ({
     nbre_immeubles,
   ]);
 
-  // Inside the RightCard component, add this code to get the export configuration
   const exportConfig = useMemo(() => {
     if (!TAB_CONFIG[safeActiveTab]?.exportConfig) return null;
 
@@ -849,13 +844,17 @@ export const RightCard = ({
     // Pass the appropriate parameters based on the active tab
     switch (safeActiveTab) {
       case 'blocs':
-        return exportConfigFn(filteredItems);
+        return exportConfigFn(filteredItems); // Use filteredItems
       case 'immeuble':
-        return exportConfigFn(filteredItems, nbre_blocs);
+        return exportConfigFn(filteredItems, nbre_blocs); // Use filteredItems
       case 'bien':
-        return exportConfigFn(filteredItems, nbre_blocs, nbre_immeubles);
+        return exportConfigFn(
+          filteredItems, // Use filteredItems
+          nbre_blocs,
+          nbre_immeubles
+        );
       default:
-        return exportConfigFn(filteredItems);
+        return exportConfigFn(filteredItems); // Use filteredItems
     }
   }, [safeActiveTab, filteredItems, nbre_blocs, nbre_immeubles]);
 
@@ -874,8 +873,7 @@ export const RightCard = ({
     });
 
     return counts;
-  }, [safeActiveTab, filteredItems]);
-
+  }, [safeActiveTab, filteredItems]); // Use filteredItems instead of paginatedItems
   // Get the status cards data with filtered counts
   const statusCardsData = useMemo(() => {
     if (safeActiveTab !== 'bien' || !currentTabData.statuses) return null;
@@ -942,7 +940,7 @@ export const RightCard = ({
         <div className="mb-6">
           <Table
             columns={currentColumns}
-            data={hasItems ? filteredItems : []}
+            data={hasItems ? paginatedItems : []}
             addLink={{
               pathname: TAB_CONFIG[safeActiveTab]?.addLink?.(
                 user,

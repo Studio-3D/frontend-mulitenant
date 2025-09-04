@@ -216,7 +216,7 @@ const TAB_CONFIG = {
     ],
     exportConfig: (items, nbre_tranches) => ({
       data_to_export: items.map((item) => ({
-        Bloc: item.nom || '',
+        Bloc: item.bloc_nom || '',
         ...(nbre_tranches > 0 && { Tranche: item.tranche_nom || '' }),
         'Titre foncier': item.titre_foncier || '',
         'Nbr Immeubles': item.nbre_immeubles || 0,
@@ -737,7 +737,7 @@ export const RightCard = ({
 
   // Filter items based on selected type, applied filters and pagination
 
-  const filteredItems = useMemo(() => {
+  /*const filteredItems = useMemo(() => {
     if (!tabsData[activeTab]?.items) return [];
 
     let items = tabsData[activeTab].items;
@@ -810,7 +810,80 @@ export const RightCard = ({
     appliedFilters,
     currentPage,
     rowsPerPage,
-  ]);
+  ]);*/
+
+  const filteredItems = useMemo(() => {
+    if (!tabsData[activeTab]?.items) return [];
+
+    let items = tabsData[activeTab].items;
+
+    // Apply type filter if activeTab is 'bien' and a type is selected
+    if (activeTab === 'bien' && selectedType) {
+      items = items.filter((item) => item.type === selectedType);
+    }
+
+    // Apply text filters
+    Object.keys(appliedFilters).forEach((key) => {
+      if (appliedFilters[key]) {
+        // Handle surface range filtering
+        if (key === 'surface_min' && appliedFilters[key]) {
+          const minValue = parseFloat(appliedFilters[key]);
+          items = items.filter((item) => {
+            const itemSurface = parseFloat(item.surface);
+            return !isNaN(itemSurface) && itemSurface >= minValue;
+          });
+        } else if (key === 'surface_max' && appliedFilters[key]) {
+          const maxValue = parseFloat(appliedFilters[key]);
+          items = items.filter((item) => {
+            const itemSurface = parseFloat(item.surface);
+            return !isNaN(itemSurface) && itemSurface <= maxValue;
+          });
+        }
+        // Handle price range filtering
+        else if (key === 'price_min' && appliedFilters[key]) {
+          const minValue = parseFloat(appliedFilters[key]);
+          items = items.filter((item) => {
+            const itemPrice = parseFloat(item.price);
+            return !isNaN(itemPrice) && itemPrice >= minValue;
+          });
+        } else if (key === 'price_max' && appliedFilters[key]) {
+          const maxValue = parseFloat(appliedFilters[key]);
+          items = items.filter((item) => {
+            const itemPrice = parseFloat(item.price);
+            return !isNaN(itemPrice) && itemPrice <= maxValue;
+          });
+        }
+        // Handle other text filters
+        else if (
+          key !== 'surface_min' &&
+          key !== 'surface_max' &&
+          key !== 'price_min' &&
+          key !== 'price_max'
+        ) {
+          items = items.filter((item) =>
+            item[key]
+              ?.toString()
+              .toLowerCase()
+              .includes(appliedFilters[key].toLowerCase())
+          );
+        }
+      }
+    });
+
+    return items;
+  }, [tabsData, activeTab, selectedType, appliedFilters]);
+
+  // Step 2: Calculate paginated items separately
+  const paginatedItems = useMemo(() => {
+    // Update total rows count based on filtered data
+    setTotalRows(filteredItems.length);
+
+    // Apply pagination
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+
+    return filteredItems.slice(startIndex, endIndex);
+  }, [filteredItems, currentPage, rowsPerPage]);
   const currentColumns = useMemo(() => {
     if (!activeTab || !TAB_CONFIG[activeTab]) return [];
 
@@ -1028,7 +1101,7 @@ export const RightCard = ({
     nbre_immeubles,
   ]);
 
-  // Inside the RightCard component, add this code to get the export configuration
+
   const exportConfig = useMemo(() => {
     if (!TAB_CONFIG[safeActiveTab]?.exportConfig) return null;
 
@@ -1037,25 +1110,37 @@ export const RightCard = ({
     // Pass the appropriate parameters based on the active tab
     switch (safeActiveTab) {
       case 'blocs':
-        return exportConfigFn(filteredItems, nbre_tranches);
+        return exportConfigFn(filteredItems, nbre_tranches); // Use filteredItems
       case 'immeuble':
-        return exportConfigFn(filteredItems, nbre_tranches, nbre_blocs);
+        return exportConfigFn(filteredItems, nbre_tranches, nbre_blocs); // Use filteredItems
       case 'bien':
         return exportConfigFn(
-          filteredItems,
+          filteredItems, // Use filteredItems
           nbre_tranches,
           nbre_blocs,
           nbre_immeubles
         );
       default:
-        return exportConfigFn(filteredItems);
+        return exportConfigFn(filteredItems); // Use filteredItems
     }
   }, [safeActiveTab, filteredItems, nbre_tranches, nbre_blocs, nbre_immeubles]);
-
   const currentTabData = tabsData[safeActiveTab];
   const hasItems = filteredItems.length > 0;
 
   // Calculate status counts for filtered items (for bien tab only)
+  /*  const filteredStatusCounts = useMemo(() => {
+    if (safeActiveTab !== 'bien' || !filteredItems.length) return null;
+
+    const counts = {};
+    filteredItems.forEach((item) => {
+      if (item.status) {
+        counts[item.status] = (counts[item.status] || 0) + 1;
+      }
+    });
+
+    return counts;
+  }, [safeActiveTab, filteredItems]);*/
+
   const filteredStatusCounts = useMemo(() => {
     if (safeActiveTab !== 'bien' || !filteredItems.length) return null;
 
@@ -1067,8 +1152,7 @@ export const RightCard = ({
     });
 
     return counts;
-  }, [safeActiveTab, filteredItems]);
-
+  }, [safeActiveTab, filteredItems]); // Use filteredItems instead of paginatedItems
   // Get the status cards data with filtered counts
   const statusCardsData = useMemo(() => {
     if (safeActiveTab !== 'bien' || !currentTabData.statuses) return null;
@@ -1134,7 +1218,8 @@ export const RightCard = ({
         <div className="mb-6">
           <Table
             columns={currentColumns}
-            data={hasItems ? filteredItems : []}
+            data={hasItems ? paginatedItems : []}
+            //   data={hasItems ? filteredItems : []}
             addLink={TAB_CONFIG[safeActiveTab]?.addLink?.(user, projectId)}
             showSearch={false}
             filterComponent={filterComponent}

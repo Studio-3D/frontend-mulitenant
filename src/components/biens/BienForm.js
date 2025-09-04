@@ -373,16 +373,15 @@ export default function BienForm() {
           bloc_id: formData.bloc_id ? formData.bloc_id : blocId,
         });
       }
-
-      if (typeBiens.length === 0) {
-        fetchDataByProjet_params('typeBiens', setTypeBiens, setLoading);
-      }
-      if (vues.length === 0) {
-        fetchDataByProjet_params('vues', setVues, setLoading);
-      }
-      if (typologies.length === 0) {
-        fetchDataByProjet_params('typologies', setTypologies, setLoading);
-      }
+    }
+    if (typeBiens.length === 0) {
+      fetchDataByProjet_params('typeBiens', setTypeBiens, setLoading);
+    }
+    if (vues.length === 0) {
+      fetchDataByProjet_params('vues', setVues, setLoading);
+    }
+    if (typologies.length === 0) {
+      fetchDataByProjet_params('typologies', setTypologies, setLoading);
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -976,19 +975,13 @@ export default function BienForm() {
       } else {
         setTimeout(() => {
           if (immeubleId) {
-            localStorage.setItem(
-              `immeuble-${immeubleId}-activeTab`,
-              'bien'
-            );
+            localStorage.setItem(`immeuble-${immeubleId}-activeTab`, 'bien');
             router.push(`/Immeubles/${immeubleId}`);
           } else if (blocId) {
             localStorage.setItem(`bloc-${blocId}-activeTab`, 'bien');
             router.push(`/Blocs/${blocId}`);
           } else if (trancheId) {
-            localStorage.setItem(
-              `tranche-${trancheId}-activeTab`,
-              'bien'
-            );
+            localStorage.setItem(`tranche-${trancheId}-activeTab`, 'bien');
             router.push(`/Tranches/${trancheId}`);
           } else if (projet.id) {
             localStorage.setItem(`project-${projet.id}-activeTab`, 'bien');
@@ -1392,7 +1385,6 @@ export default function BienForm() {
             <p className="mt-1 text-sm text-red-600">{errors.orientation[0]}</p>
           )}
         </div>
-
         <InputSelect
           label="Type de bien"
           options={typeBiens.map((t) => ({ label: t.type, value: t.id }))}
