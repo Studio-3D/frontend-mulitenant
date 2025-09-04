@@ -30,11 +30,9 @@ export default function BienForm() {
   const [fetchingData, setFetchingData] = useState(false);
   const searchParams = useSearchParams();
   const { id } = useParams();
-
-  const { selectProjet } = useProjet();
+  const { selectProjet, selectedProjet } = useProjet();
   const [trancheHasNoBlocs, setTrancheHasNoBlocs] = useState(false);
   const [blocHasNoImmeubles, setBlocHasNoImmeubles] = useState(false);
-
   const projetId = searchParams.get('projet');
   const blocId = searchParams.get('bloc');
   const trancheId = searchParams.get('tranche');

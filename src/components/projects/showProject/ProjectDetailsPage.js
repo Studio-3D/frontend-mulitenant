@@ -81,10 +81,8 @@ export const ProjectDetailsPage = () => {
 
       // Don't reset activeTab here - we'll handle it after checking localStorage
     } catch (err) {
-
-      console.error("Error fetching project details:", err);
-      setError(err.message || "Failed to fetch project details");
-
+      console.error('Error fetching project details:', err);
+      setError(err.message || 'Failed to fetch project details');
 
       // If the project doesn't exist or we can't access it, clear selection
       if (err.response?.status === 404) {
@@ -135,7 +133,6 @@ export const ProjectDetailsPage = () => {
           ?.map((b) => b.type_bien?.type)
           .filter(Boolean) || []
       )
-
     ).map((type) => ({ value: type, label: type }));
 
     // Calculate status counts dynamically
@@ -157,7 +154,6 @@ export const ProjectDetailsPage = () => {
     );
 
     // Map bien data to match your column requirements
-
     const biens =
       projectData?.projet.bien?.map((b) => {
         const statusConfig = STATUS_CONFIG[b.etat] || {
@@ -180,7 +176,6 @@ export const ProjectDetailsPage = () => {
           immeuble_nom: b?.immeuble?.nom || '',
         };
       }) || [];
-
 
     // Map tranche data to match your column requirements
     const tranches =
@@ -314,7 +309,6 @@ export const ProjectDetailsPage = () => {
   }
 
   const handleBack = () => {
-
     setShowDeleteModal(false);
     router.push(`/Projets`);
   };

@@ -53,11 +53,11 @@ export default function BienTvaCollecte({ bienId, bien }) {
           
           // Set TVA summary information
           setTvaSummary({
-            prix_ttc: bienData.bien_tva?.prix_ttc || 0,
-            qp_terrain_valeur: bienData.bien_tva?.qp_terrain_valeur || 0,
-            tva: bienData.bien_tva?.tva || 0,
+            prix_ttc: bienData.Bien_Tva?.prix_ttc || 0,
+            qp_terrain_valeur: bienData.Bien_Tva?.qp_terrain_valeur || 0,
+            tva: bienData.Bien_Tva?.tva || 0,
             tva_declaree: bienData.tva_collectes_sum_tva_a_payer || 0,
-            tva_reste: (bienData.bien_tva?.tva || 0) - (bienData.tva_collectes_sum_tva_a_payer || 0)
+            tva_reste: (bienData.Bien_Tva?.tva || 0) - (bienData.tva_collectes_sum_tva_a_payer || 0)
           });
         }
       } catch (err) {

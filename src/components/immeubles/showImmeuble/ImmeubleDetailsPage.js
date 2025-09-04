@@ -349,14 +349,13 @@ export const ImmeubleDetailsPage = () => {
             nbre_tranches={immeubleData?.immeuble?.projet?.nbre_tranches}
             nbre_blocs={immeubleData?.immeuble?.projet?.nbre_blocs}
             immeubleId={id}
-
             breadcrumbContext={{
               projet: immeubleData?.immeuble?.projet ? { id: immeubleData.immeuble.projet_id, nom: immeubleData.immeuble.projet.nom } : undefined,
               tranche: immeubleData?.immeuble?.tranche ? { id: immeubleData.immeuble.tranche_id, nom: immeubleData.immeuble.tranche.nom } : undefined,
               bloc: immeubleData?.immeuble?.bloc ? { id: immeubleData.immeuble.bloc_id, nom: immeubleData.immeuble.bloc.nom } : undefined,
               immeuble: immeubleData?.immeuble ? { id: immeubleData.immeuble.id, nom: immeubleData.immeuble.nom } : undefined,
             }}
-
+            projetId={immeubleData?.immeuble?.projet_id}
           />
         </div>
       </div>

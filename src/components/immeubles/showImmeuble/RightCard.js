@@ -236,11 +236,21 @@ const TAB_CONFIG = {
   },
 };
 
-
-export const RightCard = ({ tabsData, activeTab, setActiveTab, fetchImmeubleData, immeubleId, nbre_tranches, nbre_blocs, projetId, breadcrumbContext }) => {
+export const RightCard = ({
+  tabsData,
+  activeTab,
+  setActiveTab,
+  fetchImmeubleData,
+  immeubleId,
+  breadcrumbContext,
+  nbre_tranches,
+  nbre_blocs,
+  projetId,
+}) => {
+  console.log('nb blocs ==>' + nbre_blocs);
   const [showImportModal, setShowImportModal] = useState(false);
-  const { token, user } = useAuth()
 
+  const { token, user } = useAuth();
   const router = useRouter();
   const [selectedId, setSelectedId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -663,10 +673,6 @@ const filterComponent = useMemo(() => {
     );
   }
 
-
-  const currentTabData = tabsData[safeActiveTab];
-  const hasItems = filteredItems.length > 0;
-
   const persistAddBienContext = useCallback(() => {
     try {
       if (!tabsData) return;
@@ -674,8 +680,6 @@ const filterComponent = useMemo(() => {
       localStorage.setItem('bienBreadcrumbContext', JSON.stringify(ctx));
     } catch {}
   }, [breadcrumbContext, tabsData]);
-
-
   return (
     <div className="bg-white rounded-lg shadow-lg h-full flex flex-col">
       <div className="border-b">
