@@ -2561,32 +2561,56 @@ disabled={isOrigin ? false : watch('telephone') === ''}
                             <>
                               <div className="p-4 space-y-4">
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-x-5 gap-y-4">
-                                  {/* Bien Autocomplete */}
                                   <div>
-                                    {/* Replace with your own Autocomplete or HeadlessUI */}
-                                    <AutocompleteBien
-                                      x={x}
-                                      i={i}
-                                      user={user}
-                                      biensByProjet={biensByProjet}
-                                      handleinputchange={handleinputchange}
+                                    {/* Bien Selection */}
+                                    <SelectInput
+                                      label="Bien:"
+                                      name="bien_id"
+                                      options={biensByProjet
+                                        .filter(bien => bien && bien.id && bien.propriete_dite_bien)
+                                        .map(bien => ({
+                                          value: bien.id.toString(),
+                                          label: bien.propriete_dite_bien,
+                                          disabled: bien.disabled || false
+                                        }))}
+                                      value={x.bien_id}
+                                      onChange={(selectedValue) => {
+                                        // Create a synthetic event to match handleinputchange's expected format
+                                        const syntheticEvent = {
+                                          target: {
+                                            name: 'bien_id',
+                                            value: selectedValue
+                                          }
+                                        };
+                                        handleinputchange(syntheticEvent, i);
+                                      }}
+                                      placeholder="Sélectionner un bien"
                                       loading={loading_bien}
+                                      required={x.statut == 2} // Required if status is "Vendu"
                                     />
                                   </div>
 
-                                  {/* Statut */}
+                                  {/* Statut Selection */}
                                   <div>
-                                    <AutocompleteStatut_ModeRelance_Biens
-                                      name={'statut'}
-                                      label={'statut'}
-                                      placeholder={'Sélectionner un statut'}
-                                      options={Object.values(
-                                        VISITE_STATUT_FORM
-                                      )}
-                                      value={x.statut}
-                                      code="code"
-                                      labelKey="label"
-                                      onChange={(e) => handleinputchange(e, i)}
+                                    <SelectInput
+                                      label="Statut:"
+                                      name="statut"
+                                      options={Object.values(VISITE_STATUT_FORM).map(statut => ({
+                                        value: statut.code.toString(),
+                                        label: statut.label
+                                      }))}
+                                      value={x.statut?.toString()}
+                                      onChange={(selectedValue) => {
+                                        // Create a synthetic event to match handleinputchange's expected format
+                                        const syntheticEvent = {
+                                          target: {
+                                            name: 'statut',
+                                            value: selectedValue
+                                          }
+                                        };
+                                        handleinputchange(syntheticEvent, i);
+                                      }}
+                                      placeholder="Sélectionner un statut"
                                       required
                                     />
                                   </div>
@@ -2606,21 +2630,24 @@ disabled={isOrigin ? false : watch('telephone') === ''}
                                         />
                                       </div>
                                       <div>
-                                        <AutocompleteStatut_ModeRelance_Biens
-                                          name={'mode_relance'}
-                                          label={'Mode de Relance'}
-                                          placeholder={
-                                            'Sélectionner un Mode de Relance'
-                                          }
-                                          options={Object.values(
-                                            VISITE_TYPE_NOTIF
-                                          )}
-                                          code="code"
-                                          labelKey="label"
-                                          value={x.mode_relance}
-                                          onChange={(e) =>
-                                            handleinputchange(e, i)
-                                          }
+                                        <SelectInput
+                                          label="Mode de Relance:"
+                                          name="mode_relance"
+                                          options={Object.values(VISITE_TYPE_NOTIF).map(notif => ({
+                                            value: notif.code.toString(),
+                                            label: notif.label
+                                          }))}
+                                          value={x.mode_relance?.toString()}
+                                          onChange={(selectedValue) => {
+                                            const syntheticEvent = {
+                                              target: {
+                                                name: 'mode_relance',
+                                                value: selectedValue
+                                              }
+                                            };
+                                            handleinputchange(syntheticEvent, i);
+                                          }}
+                                          placeholder="Sélectionner un Mode de Relance"
                                         />
                                       </div>
                                       <div>
@@ -2852,54 +2879,78 @@ disabled={isOrigin ? false : watch('telephone') === ''}
                                         value={x.reste}
                                         disabled
                                       />
-                                      <AutocompleteStatut_ModeRelance_Biens
-                                        name={'mode_financement'}
-                                        label={'Mode Financement:'}
-                                        placeholder={
-                                          'Sélectionner un Mode de Financement'
-                                        }
-                                        code="code"
-                                        labelKey="label"
-                                        options={Object.values(MODE_FINANCE)}
-                                        value={x.mode_financement}
-                                        onChange={(e) =>
-                                          handleinputchange(e, i)
-                                        }
-                                        required
-                                      />{' '}
-                                      <AutocompleteStatut_ModeRelance_Biens
-                                        name={'mode_paiement'}
-                                        label={'Mode Paiement:'}
-                                        placeholder={
-                                          'Sélectionner un Mode de Paiement'
-                                        }
-                                        options={Object.values(MODE_PAIEMENT)}
-                                        value={x.mode_paiement}
-                                        code="code"
-                                        labelKey="label"
-                                        onChange={(e) =>
-                                          handleinputchange(e, i)
-                                        }
-                                        required
-                                      />
+                                     {/* Mode Financement Selection */}
+                                      <div>
+                                        <SelectInput
+                                          label="Mode Financement:"
+                                          name="mode_financement"
+                                          options={Object.values(MODE_FINANCE).map(finance => ({
+                                            value: finance.code.toString(),
+                                            label: finance.label
+                                          }))}
+                                          value={x.mode_financement?.toString()}
+                                          onChange={(selectedValue) => {
+                                            // Create a synthetic event to match handleinputchange's expected format
+                                            const syntheticEvent = {
+                                              target: {
+                                                name: 'mode_financement',
+                                                value: selectedValue
+                                              }
+                                            };
+                                            handleinputchange(syntheticEvent, i);
+                                          }}
+                                          placeholder="Sélectionner un Mode de Financement"
+                                          required
+                                        />
+                                      </div>
+
+                                      {/* Mode Paiement Selection */}
+                                      <div>
+                                        <SelectInput
+                                          label="Mode Paiement:"
+                                          name="mode_paiement"
+                                          options={Object.values(MODE_PAIEMENT).map(paiement => ({
+                                            value: paiement.code.toString(),
+                                            label: paiement.label
+                                          }))}
+                                          value={x.mode_paiement?.toString()}
+                                          onChange={(selectedValue) => {
+                                            // Create a synthetic event to match handleinputchange's expected format
+                                            const syntheticEvent = {
+                                              target: {
+                                                name: 'mode_paiement',
+                                                value: selectedValue
+                                              }
+                                            };
+                                            handleinputchange(syntheticEvent, i);
+                                          }}
+                                          placeholder="Sélectionner un Mode de Paiement"
+                                          required
+                                        />
+                                      </div>
                                       {/* Conditional Fields */}
                                       {x.mode_paiement !== 1 &&
                                         x.mode_paiement !== '' && (
                                           <>
-                                            <AutocompleteStatut_ModeRelance_Biens
-                                              name={'banque_id'}
-                                              label={'Banque:'}
-                                              placeholder={
-                                                'Sélectionner un Mode de Paiement'
-                                              }
-                                              options={banques}
-                                              value={x.banque_id}
+                                            <SelectInput
+                                              label="Banque:"
+                                              name="banque_id"
+                                              options={banques.map(banque => ({
+                                                value: banque.id.toString(),
+                                                label: banque.nom
+                                              }))}
+                                              value={x.banque_id?.toString()}
+                                              onChange={(selectedValue) => {
+                                                const syntheticEvent = {
+                                                  target: {
+                                                    name: 'banque_id',
+                                                    value: selectedValue
+                                                  }
+                                                };
+                                                handleinputchange(syntheticEvent, i);
+                                              }}
+                                              placeholder="Sélectionner une Banque"
                                               required={x.mode_paiement !== 1}
-                                              code="id"
-                                              labelKey="nom"
-                                              onChange={(e) =>
-                                                handleinputchange(e, i)
-                                              }
                                             />
                                             <InputField_Biens
                                               label="N° Paiment:"
