@@ -56,6 +56,7 @@ export const BlocDetailsPage = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      
       const blocDetails = response.data;
       setBlocData(blocDetails);
       console.log('fetched bloc data', blocDetails);
