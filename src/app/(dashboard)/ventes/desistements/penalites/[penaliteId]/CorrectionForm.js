@@ -411,7 +411,7 @@ const CorrectionForm = ({
                             <a
                               href={
                                 file.fichier
-                                  ? `${process.env.NEXT_PUBLIC_IMG_URL}/Docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/penalites/${codeRes}/${file.fichier}`
+                                  ? `${process.env.NEXT_PUBLIC_IMG_URL}/docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/penalites/${codeRes}/${file.fichier}`
                                   : URL.createObjectURL(file.file)
                               }
                               target="_blank"

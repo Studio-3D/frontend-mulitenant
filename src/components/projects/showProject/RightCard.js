@@ -407,7 +407,7 @@ const TAB_CONFIG = {
           className:
             'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
         },
-      
+
         {
           key: 'status',
           label: 'Statut',
@@ -468,7 +468,7 @@ const TAB_CONFIG = {
                   'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
               },
             ]
-          : []),  // Replace the single surface filter with min and max
+          : []), // Replace the single surface filter with min and max
         {
           key: 'surface_min',
           label: 'Surface min',
@@ -624,6 +624,7 @@ export const RightCard = ({
   nbre_blocs,
   nbre_tranches,
   nbre_immeubles,
+  max_etages,
 }) => {
   const [showImportModal, setShowImportModal] = useState(false);
 
@@ -848,180 +849,184 @@ export const RightCard = ({
   }, [activeTab, availableTabs]);
 
   // Filter component for all tabs
-const filterComponent = useMemo(() => {
-  if (!TAB_CONFIG[safeActiveTab]?.filters) return null;
+  const filterComponent = useMemo(() => {
+    if (!TAB_CONFIG[safeActiveTab]?.filters) return null;
 
-  const filterConfig = TAB_CONFIG[safeActiveTab].filters(
+    const filterConfig = TAB_CONFIG[safeActiveTab].filters(
+      tabsData,
+      projectId,
+      nbre_tranches,
+      nbre_blocs,
+      nbre_immeubles
+    );
+
+    return (
+      <div className="space-y-4">
+        <div
+          className="grid gap-3"
+          style={{
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          }}
+        >
+          {filterConfig.map((filter) => {
+            // Group surface min and max in the same row
+            if (filter.key === 'surface_min' || filter.key === 'surface_max') {
+              const minFilter = filterConfig.find(
+                (f) => f.key === 'surface_min'
+              );
+              const maxFilter = filterConfig.find(
+                (f) => f.key === 'surface_max'
+              );
+
+              // Only render once (for surface_min)
+              if (filter.key === 'surface_min') {
+                return (
+                  <div key="surface_range" className="flex flex-col">
+                    <label className="text-xs font-medium text-gray-700 mb-1">
+                      Surface
+                    </label>
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <Input
+                          type="number"
+                          name="surface_min"
+                          value={tempFilters.surface_min || ''}
+                          onChange={(e) =>
+                            handleFilterChange('surface_min', e.target.value)
+                          }
+                          placeholder={minFilter.placeholder}
+                          className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <Input
+                          type="number"
+                          name="surface_max"
+                          value={tempFilters.surface_max || ''}
+                          onChange={(e) =>
+                            handleFilterChange('surface_max', e.target.value)
+                          }
+                          placeholder={maxFilter.placeholder}
+                          className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            }
+
+            // Group price min and max in the same row
+            if (filter.key === 'price_min' || filter.key === 'price_max') {
+              const minFilter = filterConfig.find((f) => f.key === 'price_min');
+              const maxFilter = filterConfig.find((f) => f.key === 'price_max');
+
+              // Only render once (for price_min)
+              if (filter.key === 'price_min') {
+                return (
+                  <div key="price_range" className="flex flex-col">
+                    <label className="text-xs font-medium text-gray-700 mb-1">
+                      Prix
+                    </label>
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <Input
+                          type="number"
+                          name="price_min"
+                          value={tempFilters.price_min || ''}
+                          onChange={(e) =>
+                            handleFilterChange('price_min', e.target.value)
+                          }
+                          placeholder={minFilter.placeholder}
+                          className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <Input
+                          type="number"
+                          name="price_max"
+                          value={tempFilters.price_max || ''}
+                          onChange={(e) =>
+                            handleFilterChange('price_max', e.target.value)
+                          }
+                          placeholder={maxFilter.placeholder}
+                          className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            }
+
+            // Handle other filter types (select, text, number)
+            if (filter.type === 'select') {
+              return (
+                <div key={filter.key} className="flex flex-col">
+                  <label className="text-xs font-medium text-gray-700 mb-1">
+                    {filter.label}
+                  </label>
+                  <SelectInput
+                    options={filter.options || []}
+                    placeholder={filter.placeholder}
+                    value={tempFilters[filter.key] || ''}
+                    onChange={(selectedValue) =>
+                      handleFilterChange(filter.key, selectedValue)
+                    }
+                    width="w-full"
+                  />
+                </div>
+              );
+            } else {
+              return (
+                <div key={filter.key} className="flex flex-col">
+                  <label className="text-xs font-medium text-gray-700 mb-1">
+                    {filter.label}
+                  </label>
+                  <Input
+                    type={filter.type || 'text'}
+                    name={filter.key}
+                    value={tempFilters[filter.key] || ''}
+                    onChange={(e) =>
+                      handleFilterChange(filter.key, e.target.value)
+                    }
+                    placeholder={filter.placeholder}
+                    className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+                  />
+                </div>
+              );
+            }
+          })}
+        </div>
+        <div className="flex justify-end gap-3 pt-2">
+          <button
+            type="button"
+            onClick={resetFilters}
+            className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
+          >
+            Réinitialiser
+          </button>
+          <button
+            type="button"
+            onClick={applyFilters}
+            className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+          >
+            Appliquer les filtres
+          </button>
+        </div>
+      </div>
+    );
+  }, [
+    safeActiveTab,
     tabsData,
     projectId,
+    tempFilters,
     nbre_tranches,
     nbre_blocs,
-    nbre_immeubles
-  );
-  
-  return (
-    <div className="space-y-4">
-      <div
-        className="grid gap-3"
-        style={{
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        }}
-      >
-        {filterConfig.map((filter) => {
-          // Group surface min and max in the same row
-          if (filter.key === 'surface_min' || filter.key === 'surface_max') {
-            const minFilter = filterConfig.find(f => f.key === 'surface_min');
-            const maxFilter = filterConfig.find(f => f.key === 'surface_max');
-            
-            // Only render once (for surface_min)
-            if (filter.key === 'surface_min') {
-              return (
-                <div key="surface_range" className="flex flex-col">
-                  <label className="text-xs font-medium text-gray-700 mb-1">
-                    Surface
-                  </label>
-                  <div className="flex gap-2">
-                    <div className="flex-1">
-                      <Input
-                        type="number"
-                        name="surface_min"
-                        value={tempFilters.surface_min || ''}
-                        onChange={(e) =>
-                          handleFilterChange('surface_min', e.target.value)
-                        }
-                        placeholder={minFilter.placeholder}
-                        className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <Input
-                        type="number"
-                        name="surface_max"
-                        value={tempFilters.surface_max || ''}
-                        onChange={(e) =>
-                          handleFilterChange('surface_max', e.target.value)
-                        }
-                        placeholder={maxFilter.placeholder}
-                        className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
-                      />
-                    </div>
-                  </div>
-                </div>
-              );
-            }
-            return null;
-          }
-          
-          // Group price min and max in the same row
-          if (filter.key === 'price_min' || filter.key === 'price_max') {
-            const minFilter = filterConfig.find(f => f.key === 'price_min');
-            const maxFilter = filterConfig.find(f => f.key === 'price_max');
-            
-            // Only render once (for price_min)
-            if (filter.key === 'price_min') {
-              return (
-                <div key="price_range" className="flex flex-col">
-                  <label className="text-xs font-medium text-gray-700 mb-1">
-                    Prix
-                  </label>
-                  <div className="flex gap-2">
-                    <div className="flex-1">
-                      <Input
-                        type="number"
-                        name="price_min"
-                        value={tempFilters.price_min || ''}
-                        onChange={(e) =>
-                          handleFilterChange('price_min', e.target.value)
-                        }
-                        placeholder={minFilter.placeholder}
-                        className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <Input
-                        type="number"
-                        name="price_max"
-                        value={tempFilters.price_max || ''}
-                        onChange={(e) =>
-                          handleFilterChange('price_max', e.target.value)
-                        }
-                        placeholder={maxFilter.placeholder}
-                        className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
-                      />
-                    </div>
-                  </div>
-                </div>
-              );
-            }
-            return null;
-          }
-          
-          // Handle other filter types (select, text, number)
-          if (filter.type === 'select') {
-            return (
-              <div key={filter.key} className="flex flex-col">
-                <label className="text-xs font-medium text-gray-700 mb-1">
-                  {filter.label}
-                </label>
-                <SelectInput
-                  options={filter.options || []}
-                  placeholder={filter.placeholder}
-                  value={tempFilters[filter.key] || ''}
-                  onChange={(selectedValue) =>
-                    handleFilterChange(filter.key, selectedValue)
-                  }
-                  width="w-full"
-                />
-              </div>
-            );
-          } else {
-            return (
-              <div key={filter.key} className="flex flex-col">
-                <label className="text-xs font-medium text-gray-700 mb-1">
-                  {filter.label}
-                </label>
-                <Input
-                  type={filter.type || 'text'}
-                  name={filter.key}
-                  value={tempFilters[filter.key] || ''}
-                  onChange={(e) =>
-                    handleFilterChange(filter.key, e.target.value)
-                  }
-                  placeholder={filter.placeholder}
-                  className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
-                />
-              </div>
-            );
-          }
-        })}
-      </div>
-      <div className="flex justify-end gap-3 pt-2">
-        <button
-          type="button"
-          onClick={resetFilters}
-          className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
-        >
-          Réinitialiser
-        </button>
-        <button
-          type="button"
-          onClick={applyFilters}
-          className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-        >
-          Appliquer les filtres
-        </button>
-      </div>
-    </div>
-  );
-}, [
-  safeActiveTab,
-  tabsData,
-  projectId,
-  tempFilters,
-  nbre_tranches,
-  nbre_blocs,
-  nbre_immeubles,
-]);
+    nbre_immeubles,
+  ]);
 
   // Inside the RightCard component, add this code to get the export configuration
   const exportConfig = useMemo(() => {
@@ -1157,6 +1162,7 @@ const filterComponent = useMemo(() => {
             open={showImportModal}
             onClose={() => setShowImportModal(false)}
             projetId={projectId}
+            max_etages={max_etages}
           />
           {/* Delete Confirmation Modal */}
           {showDeleteModal && (
@@ -1169,7 +1175,13 @@ const filterComponent = useMemo(() => {
                     ? TAB_CONFIG[safeActiveTab]?.name.slice(0, -1)
                     : TAB_CONFIG[safeActiveTab]?.name
                 }
-                message={`Êtes-vous sûr de vouloir supprimer ce ${
+                message={`Êtes-vous sûr de vouloir supprimer ${
+                  TAB_CONFIG[safeActiveTab]?.name === 'Tranches'
+                    ? 'cette'
+                    : TAB_CONFIG[safeActiveTab]?.name === 'Immeubles'
+                    ? 'cet'
+                    : 'ce'
+                } ${
                   TAB_CONFIG[safeActiveTab]?.name.endsWith('s')
                     ? TAB_CONFIG[safeActiveTab]?.name.slice(0, -1).toLowerCase()
                     : TAB_CONFIG[safeActiveTab]?.name.toLowerCase()

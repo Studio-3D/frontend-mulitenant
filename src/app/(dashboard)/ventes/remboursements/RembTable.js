@@ -147,7 +147,7 @@ export default function RembTable({ etat }) {
 
   const handleFileClick = (file, code_reservation) => {
     window.open(
-      `${FileUrl}/Docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/remboursements/cheques_reçus/${code_reservation}/${file}`,
+      `${FileUrl}/docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/remboursements/cheques_reçus/${code_reservation}/${file}`,
       '_blank'
     );
   };

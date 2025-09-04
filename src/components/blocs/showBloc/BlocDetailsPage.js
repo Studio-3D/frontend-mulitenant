@@ -90,8 +90,12 @@ export const BlocDetailsPage = () => {
     if (blocData?.bloc) {
       try {
         const ctx = {
-          projet: blocData.bloc.projet ? { id: blocData.bloc.projet_id, nom: blocData.bloc.projet.nom } : undefined,
-          tranche: blocData.bloc.tranche ? { id: blocData.bloc.tranche_id, nom: blocData.bloc.tranche.nom } : undefined,
+          projet: blocData.bloc.projet
+            ? { id: blocData.bloc.projet_id, nom: blocData.bloc.projet.nom }
+            : undefined,
+          tranche: blocData.bloc.tranche
+            ? { id: blocData.bloc.tranche_id, nom: blocData.bloc.tranche.nom }
+            : undefined,
           bloc: { id: blocData.bloc.id, nom: blocData.bloc.nom },
         };
         localStorage.setItem('bienBreadcrumbContext', JSON.stringify(ctx));
@@ -331,8 +335,18 @@ export const BlocDetailsPage = () => {
         <BreadCrumb
           onRoot={{ href: '/Projets' }}
           items={[
-            blocData?.bloc?.projet ? { label: blocData.bloc.projet.nom, href: `/Projets/${blocData.bloc.projet_id}` } : null,
-            blocData?.bloc?.tranche ? { label: blocData.bloc.tranche.nom, href: `/Tranches/${blocData.bloc.tranche_id}` } : null,
+            blocData?.bloc?.projet
+              ? {
+                  label: blocData.bloc.projet.nom,
+                  href: `/Projets/${blocData.bloc.projet_id}`,
+                }
+              : null,
+            blocData?.bloc?.tranche
+              ? {
+                  label: blocData.bloc.tranche.nom,
+                  href: `/Tranches/${blocData.bloc.tranche_id}`,
+                }
+              : null,
             { label: blocData?.bloc?.nom || 'Bloc' },
           ].filter(Boolean)}
         />
@@ -358,10 +372,20 @@ export const BlocDetailsPage = () => {
             nbre_immeubles={blocData?.bloc?.projet?.nbre_immeubles}
             projectId={blocData?.bloc?.projet_id}
             breadcrumbContext={{
-              projet: blocData?.bloc?.projet ? { id: blocData.bloc.projet_id, nom: blocData.bloc.projet.nom } : undefined,
-              tranche: blocData?.bloc?.tranche ? { id: blocData.bloc.tranche_id, nom: blocData.bloc.tranche.nom } : undefined,
-              bloc: blocData?.bloc ? { id: blocData.bloc.id, nom: blocData.bloc.nom } : undefined,
+              projet: blocData?.bloc?.projet
+                ? { id: blocData.bloc.projet_id, nom: blocData.bloc.projet.nom }
+                : undefined,
+              tranche: blocData?.bloc?.tranche
+                ? {
+                    id: blocData.bloc.tranche_id,
+                    nom: blocData.bloc.tranche.nom,
+                  }
+                : undefined,
+              bloc: blocData?.bloc
+                ? { id: blocData.bloc.id, nom: blocData.bloc.nom }
+                : undefined,
             }}
+            max_etages={blocData?.bloc?.projet?.max_etages}
           />
         </div>
       </div>
