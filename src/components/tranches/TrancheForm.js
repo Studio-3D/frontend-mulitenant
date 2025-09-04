@@ -21,6 +21,7 @@ export default function TrancheForm({ id, projet }) {
   const selectedProjet = projet
     ? {
         id: projet?.id,
+        nom: projet?.nom,
         nbre_blocs: projet?.nbre_blocs,
         nbre_immeubles: projet?.nbre_immeubles,
       }
@@ -184,7 +185,7 @@ export default function TrancheForm({ id, projet }) {
           onRoot={{ href: "/Projets" }}
           items={[
             selectedProjet?.id
-              ? { label: `Projet #${selectedProjet.id}`, href: `/Projets/${selectedProjet.id}` }
+              ? { label: selectedProjet?.nom || `Projet #${selectedProjet.id}`, href: `/Projets/${selectedProjet.id}` }
               : { label: 'Projets', href: '/Projets' },
             { label: `${id ? 'Modifier' : 'Ajouter'} une tranche` }
           ]}
