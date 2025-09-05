@@ -25,8 +25,8 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
   const [selectedBloc, setSelectedBloc] = useState(null);
   const [selectedTranche, setSelectedTranche] = useState(null);
   const searchParams = useSearchParams();
-  trancheId = trancheId || searchParams.get("tranche");
-  blocId = blocId || searchParams.get("bloc");
+  trancheId = trancheId || searchParams.get('tranche');
+  blocId = blocId || searchParams.get('bloc');
   const hasFetchedInitialData = useRef(false);
   const isSubmittingRef = useRef(false);
   const [trancheHasNoBlocs, setTrancheHasNoBlocs] = useState(false);
@@ -76,29 +76,23 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
       }
     } catch (error) {
       console.error("Failed to fetch immeuble:", error);
-      // Ensure tranche and bloc names when IDs provided
-      useEffect(() => {
-        const loadNamesIfNeeded = async () => {
-          try {
-            const token = localStorage.getItem("accessToken");
-            if (trancheId && !selectedTranche?.nom) {
-              const tres = await axios.get(`${APIURL.TRANCHES}/${trancheId}`, {
-                headers: { Authorization: `Bearer ${token}` },
-              });
-              if (tres.data?.tranche) setSelectedTranche(tres.data.tranche);
-            }
-            if (blocId && !selectedBloc?.nom) {
-              const bres = await axios.get(`${APIURL.BLOCS}/${blocId}`, {
-                headers: { Authorization: `Bearer ${token}` },
-              });
-              if (bres.data?.bloc) setSelectedBloc(bres.data.bloc);
-            }
-          } catch (e) {
-            console.error("Failed to fetch names", e);
-          }
-        };
-        loadNamesIfNeeded();
-      }, [trancheId, blocId, selectedTranche?.nom, selectedBloc?.nom]);
+  // Ensure tranche and bloc names when IDs provided
+  useEffect(() => {
+    const loadNamesIfNeeded = async () => {
+      try {
+        const token = localStorage.getItem('accessToken');
+        if (trancheId && !selectedTranche?.nom) {
+          const tres = await axios.get(`${APIURL.TRANCHES}/${trancheId}`, { headers: { Authorization: `Bearer ${token}` } });
+          if (tres.data?.tranche) setSelectedTranche(tres.data.tranche);
+        }
+        if (blocId && !selectedBloc?.nom) {
+          const bres = await axios.get(`${APIURL.BLOCS}/${blocId}`, { headers: { Authorization: `Bearer ${token}` } });
+          if (bres.data?.bloc) setSelectedBloc(bres.data.bloc);
+        }
+      } catch (e) { console.error('Failed to fetch names', e); }
+    };
+    loadNamesIfNeeded();
+  }, [trancheId, blocId, selectedTranche?.nom, selectedBloc?.nom]);
       toast.error("Erreur lors du chargement de l'immeuble");
     } finally {
       setIsLoading(false);
@@ -226,7 +220,7 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
       errors.tranche_id = "La tranche est requise";
     }
     if (blocs.length > 0 && !formData.bloc_id) {
-      errors.bloc_id = "Le Bloc est requis";
+      errors.bloc_id = "Le Bloc est requise";
     }
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
@@ -317,31 +311,14 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
     <div className="p-3">
       <div className="flex items-center justify-start">
         <BreadCrumb
-          onRoot={{ href: "/Projets" }}
+          onRoot={{ href: '/Projets' }}
           items={[
             selectedProjet?.id
-              ? {
-                  label: selectedProjet?.nom || `Projet #${selectedProjet?.id}`,
-                  href: `/Projets/${selectedProjet?.id}`,
-                }
-              : { label: "Projets", href: "/Projets" },
-            selectedProjet?.tranche_id
-              ? {
-                  label:
-                    selectedProjet?.tranche_nom ||
-                    `Tranche #${selectedProjet?.tranche_id}`,
-                  href: `/Tranches/${selectedProjet?.tranche_id}`,
-                }
-              : null,
-            selectedProjet?.bloc_id
-              ? {
-                  label:
-                    selectedProjet?.bloc_nom ||
-                    `Bloc #${selectedProjet?.bloc_id}`,
-                  href: `/Blocs/${selectedProjet?.bloc_id}`,
-                }
-              : null,
-            { label: `${id ? "Modifier" : "Ajouter"} un immeuble` },
+              ? { label: selectedProjet?.nom || `Projet #${selectedProjet?.id}`, href: `/Projets/${selectedProjet?.id}` }
+              : { label: 'Projets', href: '/Projets' },
+            selectedProjet?.tranche_id ? { label: selectedProjet?.tranche_nom || `Tranche #${selectedProjet?.tranche_id}`, href: `/Tranches/${selectedProjet?.tranche_id}` } : null,
+            selectedProjet?.bloc_id ? { label: selectedProjet?.bloc_nom || `Bloc #${selectedProjet?.bloc_id}`, href: `/Blocs/${selectedProjet?.bloc_id}` } : null,
+            { label: `${id ? 'Modifier' : 'Ajouter'} un immeuble` }
           ].filter(Boolean)}
         />
       </div>
@@ -424,13 +401,14 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
               selectedProjet.nbre_tranches !== 0 &&
               selectedProjet.nbre_blocs !== 0 &&
               !blocId && (
+
                 <>
                   <InputSelect
                     label="Bloc"
                     options={blocs.map((t) => ({ label: t.nom, value: t.id }))}
                     value={formData.bloc_id}
                     onChange={(option) =>
-                      handleselectChange("bloc_id", option?.value || null)
+                      handleselectChange('bloc_id', option?.value || null)
                     }
                     error={validationErrors.bloc_id || backendErrors.bloc_id}
                     isLoading={loadingBlocs}
@@ -443,6 +421,7 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
                     </p>
                   )}
                 </>
+
               )}
 
             <Input

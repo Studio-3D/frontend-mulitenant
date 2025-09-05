@@ -86,10 +86,25 @@ export default function ImportDetail() {
     );
   }
 
-  const ligneEchouee = Number(importInfo.ligne_echou);
   const totalLignes = importInfo.data?.length || 0;
-  const lignesTraitees = ligneEchouee - 1;
-  const lignesRestantes = totalLignes - lignesTraitees;
+  const ligneEchouee = importInfo.ligne_echou ? Number(importInfo.ligne_echou) : null;
+
+  // Calculate lines processed based on import status
+  let lignesTraitees, lignesRestantes;
+
+  if (importInfo.statut === '2') {
+    // Import successful - all lines processed
+    lignesTraitees = totalLignes;
+    lignesRestantes = 0;
+  } else if (importInfo.statut === '3' && ligneEchouee) {
+    // Import failed - lines processed up to the error
+    lignesTraitees = ligneEchouee - 1;
+    lignesRestantes = totalLignes - lignesTraitees;
+  } else {
+    // Import pending or in progress
+    lignesTraitees = 0;
+    lignesRestantes = totalLignes;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-6 flex justify-center">
@@ -102,12 +117,22 @@ export default function ImportDetail() {
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
           <div
             className={`ml-auto px-4 py-1 rounded-full font-semibold text-sm ${
-              importInfo.statut === '2'
-                ? 'bg-red-200 text-red-900'
-                : 'bg-green-200 text-green-900'
+              importInfo.statut === '0'
+                ? 'bg-gray-200 text-gray-900'
+                : importInfo.statut === '1'
+                ? 'bg-yellow-200 text-yellow-900'
+                : importInfo.statut === '2'
+                ? 'bg-green-200 text-green-900'
+                : 'bg-red-200 text-red-900'
             }`}
           >
-            {importInfo.statut === '2' ? 'Échec' : 'Succès'}
+            {importInfo.statut === '0'
+              ? 'En Attente'
+              : importInfo.statut === '1'
+              ? 'En Cours'
+              : importInfo.statut === '2'
+              ? 'Importé'
+              : 'Échoué'}
           </div>
         </div>
 
@@ -136,7 +161,7 @@ export default function ImportDetail() {
           </p>
         </div>
 
-        {importInfo.statut === '2' && (
+        {importInfo.statut === '3' && (
           <div
             role="alert"
             className="bg-orange-100 border border-red-400 px-4 py-3 rounded relative mb-6"
