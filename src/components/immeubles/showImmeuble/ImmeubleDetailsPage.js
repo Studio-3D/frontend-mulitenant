@@ -90,10 +90,28 @@ export const ImmeubleDetailsPage = () => {
     if (immeubleData?.immeuble) {
       try {
         const ctx = {
-          projet: immeubleData.immeuble.projet ? { id: immeubleData.immeuble.projet_id, nom: immeubleData.immeuble.projet.nom } : undefined,
-          tranche: immeubleData.immeuble.tranche ? { id: immeubleData.immeuble.tranche_id, nom: immeubleData.immeuble.tranche.nom } : undefined,
-          bloc: immeubleData.immeuble.bloc ? { id: immeubleData.immeuble.bloc_id, nom: immeubleData.immeuble.bloc.nom } : undefined,
-          immeuble: { id: immeubleData.immeuble.id, nom: immeubleData.immeuble.nom },
+          projet: immeubleData.immeuble.projet
+            ? {
+                id: immeubleData.immeuble.projet_id,
+                nom: immeubleData.immeuble.projet.nom,
+              }
+            : undefined,
+          tranche: immeubleData.immeuble.tranche
+            ? {
+                id: immeubleData.immeuble.tranche_id,
+                nom: immeubleData.immeuble.tranche.nom,
+              }
+            : undefined,
+          bloc: immeubleData.immeuble.bloc
+            ? {
+                id: immeubleData.immeuble.bloc_id,
+                nom: immeubleData.immeuble.bloc.nom,
+              }
+            : undefined,
+          immeuble: {
+            id: immeubleData.immeuble.id,
+            nom: immeubleData.immeuble.nom,
+          },
         };
         localStorage.setItem('bienBreadcrumbContext', JSON.stringify(ctx));
       } catch (e) {
@@ -322,10 +340,25 @@ export const ImmeubleDetailsPage = () => {
         <BreadCrumb
           onRoot={{ href: '/Projets' }}
           items={[
-            immeubleData?.immeuble?.projet ? { label: immeubleData.immeuble.projet.nom, href: `/Projets/${immeubleData.immeuble.projet_id}` } : null,
-            immeubleData?.immeuble?.tranche ? { label: immeubleData.immeuble.tranche.nom, href: `/Tranches/${immeubleData.immeuble.tranche_id}` } : null,
-            immeubleData?.immeuble?.bloc ? { label: immeubleData.immeuble.bloc.nom, href: `/Blocs/${immeubleData.immeuble.bloc_id}` } : null,
-            { label: immeubleData?.immeuble?.nom || 'Immeuble' }
+            immeubleData?.immeuble?.projet
+              ? {
+                  label: immeubleData.immeuble.projet.nom,
+                  href: `/Projets/${immeubleData.immeuble.projet_id}`,
+                }
+              : null,
+            immeubleData?.immeuble?.tranche
+              ? {
+                  label: immeubleData.immeuble.tranche.nom,
+                  href: `/Tranches/${immeubleData.immeuble.tranche_id}`,
+                }
+              : null,
+            immeubleData?.immeuble?.bloc
+              ? {
+                  label: immeubleData.immeuble.bloc.nom,
+                  href: `/Blocs/${immeubleData.immeuble.bloc_id}`,
+                }
+              : null,
+            { label: immeubleData?.immeuble?.nom || 'Immeuble' },
           ].filter(Boolean)}
         />
       </div>
@@ -350,12 +383,33 @@ export const ImmeubleDetailsPage = () => {
             nbre_blocs={immeubleData?.immeuble?.projet?.nbre_blocs}
             immeubleId={id}
             breadcrumbContext={{
-              projet: immeubleData?.immeuble?.projet ? { id: immeubleData.immeuble.projet_id, nom: immeubleData.immeuble.projet.nom } : undefined,
-              tranche: immeubleData?.immeuble?.tranche ? { id: immeubleData.immeuble.tranche_id, nom: immeubleData.immeuble.tranche.nom } : undefined,
-              bloc: immeubleData?.immeuble?.bloc ? { id: immeubleData.immeuble.bloc_id, nom: immeubleData.immeuble.bloc.nom } : undefined,
-              immeuble: immeubleData?.immeuble ? { id: immeubleData.immeuble.id, nom: immeubleData.immeuble.nom } : undefined,
+              projet: immeubleData?.immeuble?.projet
+                ? {
+                    id: immeubleData.immeuble.projet_id,
+                    nom: immeubleData.immeuble.projet.nom,
+                  }
+                : undefined,
+              tranche: immeubleData?.immeuble?.tranche
+                ? {
+                    id: immeubleData.immeuble.tranche_id,
+                    nom: immeubleData.immeuble.tranche.nom,
+                  }
+                : undefined,
+              bloc: immeubleData?.immeuble?.bloc
+                ? {
+                    id: immeubleData.immeuble.bloc_id,
+                    nom: immeubleData.immeuble.bloc.nom,
+                  }
+                : undefined,
+              immeuble: immeubleData?.immeuble
+                ? {
+                    id: immeubleData.immeuble.id,
+                    nom: immeubleData.immeuble.nom,
+                  }
+                : undefined,
             }}
             projetId={immeubleData?.immeuble?.projet_id}
+            max_etages={immeubleData?.immmeuble?.projet?.max_etages}
           />
         </div>
       </div>
