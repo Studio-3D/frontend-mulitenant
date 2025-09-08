@@ -857,16 +857,10 @@ export const RightCard = ({
         <div className="mb-6">
           <Table
             columns={currentColumns}
-            data={hasItems ? paginatedItems : []}
-            addLink={{
-              pathname: TAB_CONFIG[safeActiveTab]?.addLink?.(
-                user,
-                null,
-                projectId,
-                blocId
-              ),
-              onClick: persistAddBienContext,
-            }}
+
+            data={hasItems ? filteredItems : []}
+            addLink={{ pathname: TAB_CONFIG[safeActiveTab]?.addLink?.(user, null, projectId, blocId), onClick: persistAddBienContext }}
+
             showSearch={false}
             filterComponent={filterComponent}
             onFilterToggle={handleFilterToggle}
@@ -899,18 +893,12 @@ export const RightCard = ({
               <DeleteData
                 route={TAB_CONFIG[safeActiveTab]?.apiEndpoint}
                 Id={selectedId}
-                type={
-                  TAB_CONFIG[safeActiveTab]?.name.endsWith('s')
-                    ? TAB_CONFIG[safeActiveTab]?.name.slice(0, -1)
-                    : TAB_CONFIG[safeActiveTab]?.name
-                }
-                message={`Êtes-vous sûr de vouloir supprimer ${
-                  TAB_CONFIG[safeActiveTab]?.name === 'Immeubles' ? 'cet' : 'ce'
-                } ${
-                  TAB_CONFIG[safeActiveTab]?.name.endsWith('s')
-                    ? TAB_CONFIG[safeActiveTab]?.name.slice(0, -1).toLowerCase()
-                    : TAB_CONFIG[safeActiveTab]?.name.toLowerCase()
-                } ?`}
+
+                type={TAB_CONFIG[safeActiveTab]?.name}
+                message={`Êtes-vous sûr de vouloir supprimer ce ${TAB_CONFIG[
+                  safeActiveTab
+                ]?.name.toLowerCase()} ?`}
+
                 accessToken={token || localStorage.getItem('accessToken')}
                 onClose={() => setShowDeleteModal(false)}
                 onSuccess={handleDeleteSuccess}

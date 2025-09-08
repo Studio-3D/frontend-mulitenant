@@ -248,6 +248,9 @@ export const RightCard = ({
   projetId,
   max_etages,
 }) => {
+
+  console.log('nb blocs ==>' + nbre_blocs);
+
   const [showImportModal, setShowImportModal] = useState(false);
 
   const { token, user } = useAuth();
@@ -441,6 +444,7 @@ export const RightCard = ({
   }, [activeTab, availableTabs]);
 
   // Filter component for all tabs
+
   // Filter component for all tabs
   // Filter component for all tabs
   const filterComponent = useMemo(() => {
@@ -556,69 +560,157 @@ export const RightCard = ({
 
             // Handle other filter types (select, text, number)
             if (filter.type === 'select') {
+
               return (
-                <div key={filter.key} className="flex flex-col">
+                <div key="surface_range" className="flex flex-col">
                   <label className="text-xs font-medium text-gray-700 mb-1">
-                    {filter.label}
+                    Surface
                   </label>
-                  <SelectInput
-                    options={filter.options || []}
-                    placeholder={filter.placeholder}
-                    value={tempFilters[filter.key] || ''}
-                    onChange={(selectedValue) =>
-                      handleFilterChange(filter.key, selectedValue)
-                    }
-                    width="w-full"
-                  />
-                </div>
-              );
-            } else {
-              return (
-                <div key={filter.key} className="flex flex-col">
-                  <label className="text-xs font-medium text-gray-700 mb-1">
-                    {filter.label}
-                  </label>
-                  <Input
-                    type={filter.type || 'text'}
-                    name={filter.key}
-                    value={tempFilters[filter.key] || ''}
-                    onChange={(e) =>
-                      handleFilterChange(filter.key, e.target.value)
-                    }
-                    placeholder={filter.placeholder}
-                    className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
-                  />
+
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <Input
+                        type="number"
+                        name="surface_min"
+                        value={tempFilters.surface_min || ''}
+                        onChange={(e) =>
+                          handleFilterChange('surface_min', e.target.value)
+                        }
+                        placeholder={minFilter.placeholder}
+                        className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <Input
+                        type="number"
+                        name="surface_max"
+                        value={tempFilters.surface_max || ''}
+                        onChange={(e) =>
+                          handleFilterChange('surface_max', e.target.value)
+                        }
+                        placeholder={maxFilter.placeholder}
+                        className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+                      />
+                    </div>
+                  </div>
+
                 </div>
               );
             }
-          })}
-        </div>
-        <div className="flex justify-end gap-3 pt-2">
-          <button
-            type="button"
-            onClick={resetFilters}
-            className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
-          >
-            Réinitialiser
-          </button>
-          <button
-            type="button"
-            onClick={applyFilters}
-            className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-          >
-            Appliquer les filtres
-          </button>
-        </div>
+            return null;
+          }
+          
+          // Group price min and max in the same row
+          if (filter.key === 'price_min' || filter.key === 'price_max') {
+            const minFilter = filterConfig.find(f => f.key === 'price_min');
+            const maxFilter = filterConfig.find(f => f.key === 'price_max');
+            
+            // Only render once (for price_min)
+            if (filter.key === 'price_min') {
+              return (
+                <div key="price_range" className="flex flex-col">
+                  <label className="text-xs font-medium text-gray-700 mb-1">
+                    Prix
+                  </label>
+
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <Input
+                        type="number"
+                        name="price_min"
+                        value={tempFilters.price_min || ''}
+                        onChange={(e) =>
+                          handleFilterChange('price_min', e.target.value)
+                        }
+                        placeholder={minFilter.placeholder}
+                        className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <Input
+                        type="number"
+                        name="price_max"
+                        value={tempFilters.price_max || ''}
+                        onChange={(e) =>
+                          handleFilterChange('price_max', e.target.value)
+                        }
+                        placeholder={maxFilter.placeholder}
+                        className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+                      />
+                    </div>
+                  </div>
+
+                </div>
+              );
+            }
+            return null;
+          }
+          
+          // Handle other filter types (select, text, number)
+          if (filter.type === 'select') {
+            return (
+              <div key={filter.key} className="flex flex-col">
+                <label className="text-xs font-medium text-gray-700 mb-1">
+                  {filter.label}
+                </label>
+                <SelectInput
+                  options={filter.options || []}
+                  placeholder={filter.placeholder}
+                  value={tempFilters[filter.key] || ''}
+                  onChange={(selectedValue) =>
+                    handleFilterChange(filter.key, selectedValue)
+                  }
+                  width="w-full"
+                />
+              </div>
+            );
+          } else {
+            return (
+              <div key={filter.key} className="flex flex-col">
+                <label className="text-xs font-medium text-gray-700 mb-1">
+                  {filter.label}
+                </label>
+                <Input
+                  type={filter.type || 'text'}
+                  name={filter.key}
+                  value={tempFilters[filter.key] || ''}
+                  onChange={(e) =>
+                    handleFilterChange(filter.key, e.target.value)
+                  }
+                  placeholder={filter.placeholder}
+                  className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+                />
+              </div>
+            );
+          }
+        })}
       </div>
-    );
-  }, [
-    safeActiveTab,
-    tabsData,
-    immeubleId,
-    tempFilters,
-    nbre_tranches,
-    nbre_blocs,
-  ]);
+      <div className="flex justify-end gap-3 pt-2">
+        <button
+          type="button"
+          onClick={resetFilters}
+          className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
+        >
+          Réinitialiser
+        </button>
+        <button
+          type="button"
+          onClick={applyFilters}
+          className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+        >
+          Appliquer les filtres
+        </button>
+      </div>
+    </div>
+  );
+}, [
+  safeActiveTab,
+  tabsData,
+  immeubleId,
+  tempFilters,
+  nbre_tranches,
+  nbre_blocs,
+]);
 
   // Inside the RightCard component, add this code to get the export configuration
   const exportConfig = useMemo(() => {
@@ -680,6 +772,15 @@ export const RightCard = ({
     );
   }
 
+
+  const persistAddBienContext = useCallback(() => {
+    try {
+      if (!tabsData) return;
+      const ctx = breadcrumbContext || {};
+      localStorage.setItem('bienBreadcrumbContext', JSON.stringify(ctx));
+    } catch {}
+  }, [breadcrumbContext, tabsData]);
+
   return (
     <div className="bg-white rounded-lg shadow-lg h-full flex flex-col">
       <div className="border-b">
@@ -725,11 +826,10 @@ export const RightCard = ({
         <div className="mb-6">
           <Table
             columns={currentColumns}
-            data={hasItems ? paginatedItems : []}
-            addLink={{
-              pathname: TAB_CONFIG[safeActiveTab]?.addLink?.(user, immeubleId),
-              onClick: persistAddBienContext,
-            }}
+
+            data={hasItems ? filteredItems : []}
+            addLink={{ pathname: TAB_CONFIG[safeActiveTab]?.addLink?.(user, immeubleId), onClick: persistAddBienContext }}
+
             showSearch={false}
             filterComponent={filterComponent}
             onFilterToggle={handleFilterToggle}
@@ -765,16 +865,12 @@ export const RightCard = ({
               <DeleteData
                 route={TAB_CONFIG[safeActiveTab]?.apiEndpoint}
                 Id={selectedId}
-                type={
-                  TAB_CONFIG[safeActiveTab]?.name.endsWith('s')
-                    ? TAB_CONFIG[safeActiveTab]?.name.slice(0, -1)
-                    : TAB_CONFIG[safeActiveTab]?.name
-                }
-                message={`Êtes-vous sûr de vouloir supprimer ce ${
-                  TAB_CONFIG[safeActiveTab]?.name.endsWith('s')
-                    ? TAB_CONFIG[safeActiveTab]?.name.slice(0, -1).toLowerCase()
-                    : TAB_CONFIG[safeActiveTab]?.name.toLowerCase()
-                } ?`}
+
+                type={TAB_CONFIG[safeActiveTab]?.name}
+                message={`Êtes-vous sûr de vouloir supprimer ce ${TAB_CONFIG[
+                  safeActiveTab
+                ]?.name.toLowerCase()} ?`}
+
                 accessToken={token || localStorage.getItem('accessToken')}
                 onClose={() => setShowDeleteModal(false)}
                 onSuccess={handleDeleteSuccess}

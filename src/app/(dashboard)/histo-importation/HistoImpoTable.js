@@ -57,9 +57,10 @@ const HistoImpoTable = () => {
   }, [selectedProjet, showProjetModal, fetchProjets]);
 
   const statut = {
-  1: { code: 1, label: 'Importé', color: 'bg-green-100 text-green-800' },
-  0: { code: 0, label: 'En Cours', color: 'bg-yellow-100 text-yellow-800' },
-  2: { code: 2, label: 'Échoué', color: 'bg-red-100 text-red-800' },
+  0: { code: 0, label: 'En Attente', color: 'bg-gray-100 text-gray-800' },
+  1: { code: 1, label: 'En Cours', color: 'bg-yellow-100 text-yellow-800' },
+  2: { code: 2, label: 'Importé', color: 'bg-green-100 text-green-800' },
+  3: { code: 3, label: 'Échoué', color: 'bg-red-100 text-red-800' },
 };
 
 const getStatutBadge = (statutValue) => {
@@ -154,26 +155,38 @@ const getStatutBadge = (statutValue) => {
     label: 'Actions',
     render: (row) => (
       <div className="flex gap-2 items-center">
-        <button title="visualiser" onClick={() => handleFileClick(row.fichier)}>
-          <Download className="w-5 h-5" />
+        {/* Download button - always visible */}
+        <button
+          title="Télécharger le fichier"
+          onClick={() => handleFileClick(row.fichier)}
+          className="text-blue-500 hover:text-blue-700 transition-colors"
+        >
+          <Download className="w-4 h-4" />
         </button>
-        {row.statut == 2 && (
-          <Eye
-            className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
-            onClick={() => handleShow(row.id)}
-          />        
-        )}
+
+
+        {/* Visualiser button - redirect to details page */}
+        <button
+          title="Voir les détails"
+          onClick={() => handleShow(row.id)}
+          className="text-green-500 hover:text-green-700 transition-colors"
+        >
+          <Eye className="w-4 h-4" />
+        </button>
+
+        {/* Remove button - only for "en_attente" status (0) */}
+
         {row.statut == 0 && (
           <button
-            className="text-red-500 hover:text-red-700"
+            className="text-red-500 hover:text-red-700 transition-colors"
             onClick={() => {
               setSelectedId(row.id);
               setShowDeleteModal(true);
-            }}            
+            }}
             title="Supprimer"
           >
             <Trash2 className="w-4 h-4" />
-          </button>        
+          </button>
         )}
       </div>
     ),
@@ -265,9 +278,10 @@ const getStatutBadge = (statutValue) => {
                 name="statut"
                 placeholder="Sélectionnez un statut"
                 options={[
-                  { label: 'En cours', value: '0' },
-                  { label: 'Succès', value: '1' },
-                  { label: 'Échoué', value: '2' }
+                  { label: 'En Attente', value: '0' },
+                  { label: 'En Cours', value: '1' },
+                  { label: 'Importé', value: '2' },
+                  { label: 'Échoué', value: '3' }
                 ]}
                 value={tempFilters.statut}
                 onChange={(value) => handleFilterChange('statut', value)}
