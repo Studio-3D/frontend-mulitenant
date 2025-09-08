@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ChevronDown } from 'lucide-react';
 
 const AutocompleteSelectComponent = ({
@@ -15,6 +15,7 @@ const AutocompleteSelectComponent = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState('');
+  const dropdownRef = useRef(null);
 
   const optionsArray = Object.values(options);
 
@@ -30,6 +31,20 @@ const AutocompleteSelectComponent = ({
     }
     setSearchQuery('');
   }, [value]);
+
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const filteredOptions = searchQuery
     ? optionsArray.filter((option) =>
@@ -64,7 +79,7 @@ const AutocompleteSelectComponent = ({
   };
 
   return (
-    <div className={`relative ${width}`}>
+    <div className={`relative ${width}`} ref={dropdownRef}>
       <label
         htmlFor={name}
         className="block text-[15px] font-medium text-gray-700 mb-1"
@@ -87,7 +102,6 @@ const AutocompleteSelectComponent = ({
             if (disabled) return;
             setIsOpen(true);
           }}
-          onBlur={() => setTimeout(() => setIsOpen(false), 150)}
           placeholder="Choisissez un élément"
           className={`
             w-full ${height} p-2 border border-gray-300 rounded-md 

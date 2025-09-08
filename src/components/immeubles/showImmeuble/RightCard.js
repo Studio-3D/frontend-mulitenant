@@ -246,8 +246,11 @@ export const RightCard = ({
   nbre_tranches,
   nbre_blocs,
   projetId,
+  max_etages,
 }) => {
+
   console.log('nb blocs ==>' + nbre_blocs);
+
   const [showImportModal, setShowImportModal] = useState(false);
 
   const { token, user } = useAuth();
@@ -346,7 +349,6 @@ export const RightCard = ({
   }, []);
 
   // Filter items based on selected type, applied filters and pagination
-  // Filter items based on selected type, applied filters and pagination
   const filteredItems = useMemo(() => {
     if (!tabsData[activeTab]?.items) return [];
 
@@ -405,23 +407,20 @@ export const RightCard = ({
       }
     });
 
-    // Update total rows count
-    setTotalRows(items.length);
+    return items;
+  }, [tabsData, activeTab, selectedType, appliedFilters]);
+
+  // Step 2: Calculate paginated items separately
+  const paginatedItems = useMemo(() => {
+    // Update total rows count based on filtered data
+    setTotalRows(filteredItems.length);
 
     // Apply pagination
     const startIndex = (currentPage - 1) * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
 
-    return items.slice(startIndex, endIndex);
-  }, [
-    tabsData,
-    activeTab,
-    selectedType,
-    appliedFilters,
-    currentPage,
-    rowsPerPage,
-  ]);
-
+    return filteredItems.slice(startIndex, endIndex);
+  }, [filteredItems, currentPage, rowsPerPage]);
   const currentColumns = useMemo(() => {
     if (!activeTab || !TAB_CONFIG[activeTab]) return [];
 
@@ -445,39 +444,129 @@ export const RightCard = ({
   }, [activeTab, availableTabs]);
 
   // Filter component for all tabs
- // Filter component for all tabs
-// Filter component for all tabs
-const filterComponent = useMemo(() => {
-  if (!TAB_CONFIG[safeActiveTab]?.filters) return null;
 
-  const filterConfig = TAB_CONFIG[safeActiveTab].filters(
-    tabsData,
-    immeubleId,
-    nbre_tranches,
-    nbre_blocs
-  );
-  
-  return (
-    <div className="space-y-4">
-      <div
-        className="grid gap-3"
-        style={{
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        }}
-      >
-        {filterConfig.map((filter) => {
-          // Group surface min and max in the same row
-          if (filter.key === 'surface_min' || filter.key === 'surface_max') {
-            const minFilter = filterConfig.find(f => f.key === 'surface_min');
-            const maxFilter = filterConfig.find(f => f.key === 'surface_max');
-            
-            // Only render once (for surface_min)
-            if (filter.key === 'surface_min') {
+  // Filter component for all tabs
+  // Filter component for all tabs
+  const filterComponent = useMemo(() => {
+    if (!TAB_CONFIG[safeActiveTab]?.filters) return null;
+
+    const filterConfig = TAB_CONFIG[safeActiveTab].filters(
+      tabsData,
+      immeubleId,
+      nbre_tranches,
+      nbre_blocs
+    );
+
+    return (
+      <div className="space-y-4">
+        <div
+          className="grid gap-3"
+          style={{
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          }}
+        >
+          {filterConfig.map((filter) => {
+            // Group surface min and max in the same row
+            if (filter.key === 'surface_min' || filter.key === 'surface_max') {
+              const minFilter = filterConfig.find(
+                (f) => f.key === 'surface_min'
+              );
+              const maxFilter = filterConfig.find(
+                (f) => f.key === 'surface_max'
+              );
+
+              // Only render once (for surface_min)
+              if (filter.key === 'surface_min') {
+                return (
+                  <div key="surface_range" className="flex flex-col">
+                    <label className="text-xs font-medium text-gray-700 mb-1">
+                      Surface
+                    </label>
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <Input
+                          type="number"
+                          name="surface_min"
+                          value={tempFilters.surface_min || ''}
+                          onChange={(e) =>
+                            handleFilterChange('surface_min', e.target.value)
+                          }
+                          placeholder={minFilter.placeholder}
+                          className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <Input
+                          type="number"
+                          name="surface_max"
+                          value={tempFilters.surface_max || ''}
+                          onChange={(e) =>
+                            handleFilterChange('surface_max', e.target.value)
+                          }
+                          placeholder={maxFilter.placeholder}
+                          className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            }
+
+            // Group price min and max in the same row
+            if (filter.key === 'price_min' || filter.key === 'price_max') {
+              const minFilter = filterConfig.find((f) => f.key === 'price_min');
+              const maxFilter = filterConfig.find((f) => f.key === 'price_max');
+
+              // Only render once (for price_min)
+              if (filter.key === 'price_min') {
+                return (
+                  <div key="price_range" className="flex flex-col">
+                    <label className="text-xs font-medium text-gray-700 mb-1">
+                      Prix
+                    </label>
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <Input
+                          type="number"
+                          name="price_min"
+                          value={tempFilters.price_min || ''}
+                          onChange={(e) =>
+                            handleFilterChange('price_min', e.target.value)
+                          }
+                          placeholder={minFilter.placeholder}
+                          className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <Input
+                          type="number"
+                          name="price_max"
+                          value={tempFilters.price_max || ''}
+                          onChange={(e) =>
+                            handleFilterChange('price_max', e.target.value)
+                          }
+                          placeholder={maxFilter.placeholder}
+                          className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            }
+
+            // Handle other filter types (select, text, number)
+            if (filter.type === 'select') {
+
               return (
                 <div key="surface_range" className="flex flex-col">
                   <label className="text-xs font-medium text-gray-700 mb-1">
                     Surface
                   </label>
+
                   <div className="flex gap-2">
                     <div className="flex-1">
                       <Input
@@ -504,6 +593,7 @@ const filterComponent = useMemo(() => {
                       />
                     </div>
                   </div>
+
                 </div>
               );
             }
@@ -522,6 +612,7 @@ const filterComponent = useMemo(() => {
                   <label className="text-xs font-medium text-gray-700 mb-1">
                     Prix
                   </label>
+
                   <div className="flex gap-2">
                     <div className="flex-1">
                       <Input
@@ -548,6 +639,7 @@ const filterComponent = useMemo(() => {
                       />
                     </div>
                   </div>
+
                 </div>
               );
             }
@@ -650,8 +742,7 @@ const filterComponent = useMemo(() => {
     });
 
     return counts;
-  }, [safeActiveTab, filteredItems]);
-
+  }, [safeActiveTab, filteredItems]); // Use filteredItems instead of paginatedItems
   // Get the status cards data with filtered counts
   const statusCardsData = useMemo(() => {
     if (safeActiveTab !== 'bien' || !currentTabData.statuses) return null;
@@ -663,6 +754,14 @@ const filterComponent = useMemo(() => {
     }));
   }, [safeActiveTab, currentTabData.statuses, filteredStatusCounts]);
 
+  const persistAddBienContext = useCallback(() => {
+    try {
+      if (!tabsData) return;
+      const ctx = breadcrumbContext || {};
+      localStorage.setItem('bienBreadcrumbContext', JSON.stringify(ctx));
+    } catch {}
+  }, [breadcrumbContext, tabsData]);
+
   if (!safeActiveTab) {
     return (
       <div className="bg-white rounded-lg shadow-lg h-full flex flex-col">
@@ -673,6 +772,7 @@ const filterComponent = useMemo(() => {
     );
   }
 
+
   const persistAddBienContext = useCallback(() => {
     try {
       if (!tabsData) return;
@@ -680,6 +780,7 @@ const filterComponent = useMemo(() => {
       localStorage.setItem('bienBreadcrumbContext', JSON.stringify(ctx));
     } catch {}
   }, [breadcrumbContext, tabsData]);
+
   return (
     <div className="bg-white rounded-lg shadow-lg h-full flex flex-col">
       <div className="border-b">
@@ -725,8 +826,10 @@ const filterComponent = useMemo(() => {
         <div className="mb-6">
           <Table
             columns={currentColumns}
+
             data={hasItems ? filteredItems : []}
             addLink={{ pathname: TAB_CONFIG[safeActiveTab]?.addLink?.(user, immeubleId), onClick: persistAddBienContext }}
+
             showSearch={false}
             filterComponent={filterComponent}
             onFilterToggle={handleFilterToggle}
@@ -754,6 +857,7 @@ const filterComponent = useMemo(() => {
             open={showImportModal}
             onClose={() => setShowImportModal(false)}
             projetId={projetId}
+            max_etages={max_etages}
           />
           {/* Delete Confirmation Modal */}
           {showDeleteModal && (
@@ -761,10 +865,12 @@ const filterComponent = useMemo(() => {
               <DeleteData
                 route={TAB_CONFIG[safeActiveTab]?.apiEndpoint}
                 Id={selectedId}
+
                 type={TAB_CONFIG[safeActiveTab]?.name}
                 message={`Êtes-vous sûr de vouloir supprimer ce ${TAB_CONFIG[
                   safeActiveTab
                 ]?.name.toLowerCase()} ?`}
+
                 accessToken={token || localStorage.getItem('accessToken')}
                 onClose={() => setShowDeleteModal(false)}
                 onSuccess={handleDeleteSuccess}

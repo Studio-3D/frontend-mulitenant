@@ -141,7 +141,7 @@ export const ContractTab = ({
 
   const handleFileClick = (file) => {
     window.open(
-      `${FileUrl}/Docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/contrat_vente/${reservationData?.reservation?.code_reservation}/${file}`,
+      `${FileUrl}/docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/contrat_vente/${reservationData?.reservation?.code_reservation}/${file}`,
       "_blank"
     );
   };
@@ -940,7 +940,7 @@ export const ContractTab = ({
                       <File className="text-red-500 text-3xl mr-4" />
                     ) : (
                       <img
-                        src={`${FileUrl}/Docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/contrat_vente/${reservationData?.reservation?.code_reservation}/${contrat_sign}`}
+                        src={`${FileUrl}/docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/contrat_vente/${reservationData?.reservation?.code_reservation}/${contrat_sign}`}
                         alt="Document preview"
                         className="w-12 h-12 object-cover rounded mr-4"
                       />

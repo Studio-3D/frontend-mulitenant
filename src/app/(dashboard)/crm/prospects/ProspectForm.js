@@ -3,10 +3,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useState, useEffect, useRef } from 'react';
-import {
-  fetchData_Select,
-  fetchDataByProjet,
-} from '../../../../../src/configs/api-utils';
+import { fetchData_Select, fetchDataByProjet, } from '../../../../../src/configs/api-utils';
 
 import BreadCrumb from '../../navigation/BreadCrumb';
 import { Controller, useForm } from 'react-hook-form';
@@ -19,6 +16,7 @@ import Autocomplete from '@/components/Autocomplete';
 import TextField from '@/components/Textfield'; // Import the component
 import Button from '@/components/Button'; // adjust the path as needed
 import LoadingSpin from '@/components/LoadingSpin';
+import SelectInput from '@/components/SelectInput';
 export default function ProspectForm({ id, onClose, onSuccess }) {
   const { token } = useAuth();
   const router = useRouter();
@@ -332,18 +330,31 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
       .catch(() => {});
   };
 
-  // First select: Source
-  const handleSourceChange = (newValue) => {
-    setValue('partenaire_id', ''); // Reset partenaire ID when source changes
-    setSource_txt(newValue ? newValue.source : ''); // Set source_txt value
-    setValue('source', newValue ? newValue.id : ''); // Set source ID
-  };
+// Update your handleSourceChange function
+const handleSourceChange = (optionValue) => {
+  const selectedOption = sourceOptions.find(opt => opt.value === optionValue);
+  setValue('partenaire_id', '');
+  setSource_txt(selectedOption ? selectedOption.label : '');
+  setValue('source', optionValue || '');
+};
 
-  // Second select: Partenaire
-  const handlePartenaireChange = (newValue) => {
-    setPartenaire(newValue ? newValue : ''); // Set partenaire value
-    setValue('partenaire_id', newValue ? newValue.id : ''); // Set partenaire ID
-  };
+// Update your handlePartenaireChange function
+const handlePartenaireChange = (optionValue) => {
+  const selectedOption = partenaireOptions.find(opt => opt.value === optionValue);
+  setPartenaire(optionValue || '');
+  setValue('partenaire_id', optionValue || '');
+};
+
+// Transform your data
+const sourceOptions = sources.map(source => ({
+  value: source.id.toString(),
+  label: source.source
+}));
+
+const partenaireOptions = partenaires.map(partenaire => ({
+  value: partenaire.id.toString(),
+  label: partenaire.description
+}));
 
   if (isEditing && !formData) {
     return (
@@ -457,21 +468,19 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
                   />
                 </div>
                 {/* Source Select */}
-                <div className="">
-                  <Autocomplete
-                    name="source"
-                    label="Source:"
-                    options={sources}
-                    value={
-                      sources.find((opt) => opt.id == watch('source')) || null
-                    }
-                    loading={loading_auto}
-                    choix="source"
-                    errors={errors}
-                    backendErrors={backendErrors}
-                    onChange={handleSourceChange}
-                  />
-                </div>
+                  <div className="">
+                    <SelectInput
+                      placeholder='Sélectionner une source'
+                      name="source"
+                      label="Source:"
+                      options={sourceOptions}
+                      value={watch('source')?.toString()}
+                      loading={loading_auto} // Pass loading state to component
+                      errors={errors}
+                      backendErrors={backendErrors}
+                      onChange={handleSourceChange}
+                    />
+                  </div>
 
                 {/* Third set of fields (Responsive grid) */}
                 {/* Accepte d'être contacté */}
@@ -506,15 +515,13 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
                 {/* Partenaire Select (conditionally rendered) */}
                 <div className="">
                   {source_txt === 'Partenaire' && (
-                    <Autocomplete
+                    <SelectInput
+                      placeholder='Sélectionner un partenaire'
                       name="partenaire_id"
                       label="Partenaire:"
-                      options={partenaires}
-                      value={
-                        partenaires.find((opt) => opt.id == partenaire) || null
-                      }
-                      loading={loading_auto}
-                      choix="description"
+                      options={partenaireOptions}
+                      value={watch('partenaire_id')?.toString()}
+                      loading={loading_auto} // Pass loading state to component
                       onChange={handlePartenaireChange}
                       errors={errors}
                       backendErrors={backendErrors}

@@ -354,6 +354,7 @@ export const RightCard = ({
   breadcrumbContext,
   nbre_immeubles,
   nbre_tranches,
+  max_etages,
 }) => {
   const [showImportModal, setShowImportModal] = useState(false);
   const { token, user } = useAuth();
@@ -457,8 +458,6 @@ export const RightCard = ({
     setCurrentPage(1);
   }, []);
 
-  // Filter items based on selected type, applied filters and pagination
-  // Filter items based on selected type, applied filters and pagination
   const filteredItems = useMemo(() => {
     if (!tabsData[activeTab]?.items) return [];
 
@@ -517,22 +516,20 @@ export const RightCard = ({
       }
     });
 
-    // Update total rows count
-    setTotalRows(items.length);
+    return items;
+  }, [tabsData, activeTab, selectedType, appliedFilters]);
+
+  // Step 2: Calculate paginated items separately
+  const paginatedItems = useMemo(() => {
+    // Update total rows count based on filtered data
+    setTotalRows(filteredItems.length);
 
     // Apply pagination
     const startIndex = (currentPage - 1) * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
 
-    return items.slice(startIndex, endIndex);
-  }, [
-    tabsData,
-    activeTab,
-    selectedType,
-    appliedFilters,
-    currentPage,
-    rowsPerPage,
-  ]);
+    return filteredItems.slice(startIndex, endIndex);
+  }, [filteredItems, currentPage, rowsPerPage]);
 
   const currentColumns = useMemo(() => {
     if (!activeTab || !TAB_CONFIG[activeTab]) return [];
@@ -585,7 +582,6 @@ export const RightCard = ({
         return exportConfigFn(filteredItems);
     }
   }, [safeActiveTab, filteredItems, nbre_tranches, nbre_immeubles]);
-  // Filter component for all tabs
   // Filter component for all tabs
   const filterComponent = useMemo(() => {
     if (!TAB_CONFIG[safeActiveTab]?.filters) return null;
@@ -778,7 +774,7 @@ export const RightCard = ({
     });
 
     return counts;
-  }, [safeActiveTab, filteredItems]);
+  }, [safeActiveTab, filteredItems]); // Use filteredItems instead of paginatedItems
 
   // Get the status cards data with filtered counts
   const statusCardsData = useMemo(() => {
@@ -861,8 +857,10 @@ export const RightCard = ({
         <div className="mb-6">
           <Table
             columns={currentColumns}
+
             data={hasItems ? filteredItems : []}
             addLink={{ pathname: TAB_CONFIG[safeActiveTab]?.addLink?.(user, null, projectId, blocId), onClick: persistAddBienContext }}
+
             showSearch={false}
             filterComponent={filterComponent}
             onFilterToggle={handleFilterToggle}
@@ -887,6 +885,7 @@ export const RightCard = ({
             open={showImportModal}
             onClose={() => setShowImportModal(false)}
             projetId={projectId}
+            max_etages={max_etages}
           />
           {/* Delete Confirmation Modal */}
           {showDeleteModal && (
@@ -894,10 +893,12 @@ export const RightCard = ({
               <DeleteData
                 route={TAB_CONFIG[safeActiveTab]?.apiEndpoint}
                 Id={selectedId}
+
                 type={TAB_CONFIG[safeActiveTab]?.name}
                 message={`Êtes-vous sûr de vouloir supprimer ce ${TAB_CONFIG[
                   safeActiveTab
                 ]?.name.toLowerCase()} ?`}
+
                 accessToken={token || localStorage.getItem('accessToken')}
                 onClose={() => setShowDeleteModal(false)}
                 onSuccess={handleDeleteSuccess}
