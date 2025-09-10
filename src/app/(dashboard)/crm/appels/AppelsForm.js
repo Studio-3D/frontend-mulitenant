@@ -43,7 +43,6 @@ export default function AppelsForm({ id }) {
   const [prospect_id, setProspect_id] = useState(null);
 
   const accessToken = token || localStorage.getItem('accessToken');
-  const { user } = useAuth();
 
   //dialog
   const [info_client, setInfo_client] = useState(null);

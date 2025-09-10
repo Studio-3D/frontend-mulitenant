@@ -199,7 +199,7 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
       let message = 'Quelque chose ne va pas bien';
       if (res.status === 200 || res.status === 201) {
         message = `Le prospect a été ${
-          isEditing ? 'modifiée' : 'créée'
+          isEditing ? 'modifié' : 'créé'
         } avec succès`;
         reset(defaultValues);
         toast.success(message);
