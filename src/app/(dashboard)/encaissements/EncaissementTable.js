@@ -1,21 +1,16 @@
 'use client';
 
-import DeleteData from '@/components/DeleteData';
-import Modal from '@/components/Modal';
 import Table from '@/components/Table';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Eye } from 'lucide-react';
-import axios from 'axios';
-import { APIURL } from '@/configs/api';
+
 import { fetchData_table_by_projet } from '@/configs/api-utils';
 import { MODE_PAIEMENT } from '@/configs/enum';
 import { useAuth } from '@/context/AuthContext';
 import Input from '@/components/Input';
 import format from 'date-fns/format';
 import Link from 'next/link';
-import { useProjet } from '@/context/ProjetContext';
-import InputSelect from '@/components/inputSelect';
+
 import DateRangePicker from '@/components/DateRangePicker';
 import SelectInput from '@/components/SelectInput';
 
@@ -24,22 +19,17 @@ const EncaissementTable = ({ dataClient_id, bien_id }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedId, setSelectedId] = useState(null);
   const [totalRows, setTotalRows] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const accessToken = localStorage.getItem('accessToken');
-  const [clients, setClients] = useState([]);
-  const [biens, setBiens] = useState([]);
-  const { selectedProjet } = useProjet();
 
-  const { user, token } = useAuth();
+  const { token } = useAuth();
   const accesstoken = token || localStorage.getItem('accessToken');
-  const router = useRouter();
   const [filters, setFilters] = useState({
     code_reservation: '',
     bienId: '',
-    client_id: dataClient_id?.id ? dataClient_id?.id : '',
+    client: '',
+    //client_id: dataClient_id?.id ? dataClient_id?.id : '',
     montant: '',
     type_encaissement: '',
     de: '',
@@ -60,6 +50,7 @@ const EncaissementTable = ({ dataClient_id, bien_id }) => {
     const reset = {
       code_reservation: '',
       bienId: '',
+      client: '',
       client_id: '',
       montant: '',
       type_encaissement: '',
@@ -76,61 +67,42 @@ const EncaissementTable = ({ dataClient_id, bien_id }) => {
     searchFields: [''],
   };
 
-  const fetchBiens = async () => {
-    try {
-      setLoading(true);
-
-      const response = await axios.get(
-        `${APIURL.ROOT}/v1/projets/${selectedProjet?.id}/biens/`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      const { data } = response;
-      setBiens(data.biens);
-
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching data:', error);
+  const handleShow = (type_encaissement, res_id, des_id, pen_des_id) => {
+    let route,
+      id = null;
+    if (type_encaissement == 1) {
+      //avances
+      route = '/ventes/reservations/';
+      id = res_id;
+    } else if (type_encaissement == 3) {
+      //DESISTEMENTS
+      route = '/ventes/desistements/show';
+      id = des_id;
+    } else if (type_encaissement == 6) {
+      //PENALITES
+      route = '/ventes/desistements/show';
+      id = pen_des_id;
     }
+    window.open(`${route}/${id}`, '_blank');
   };
-
-  const fetchClients = async () => {
-    try {
-      setLoading(true);
-
-      const response = await axios.get(
-        `${APIURL.ROOT}/v1/projets/${selectedProjet?.id}/clients/`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      const { data } = response;
-      setClients(data.clients);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-
-  function handleShow(Id) {
-    router.push(`/sav/encaissements/show/${Id}`);
-  }
 
   const handleFilterToggle = (isOpen) => {
     if (!isOpen) resetFilters(); // Si on ferme, on réinitialise
   };
 
   useEffect(() => {
-    fetchBiens();
-    fetchClients();
+    // fetchBiens();
+    // fetchClients();
+    const params_url = dataClient_id
+      ? { client_id: dataClient_id?.id }
+      : bien_id
+      ? { bien_id: bien_id }
+      : {};
+    const combinedFilters = { ...filters, ...params_url };
+
     fetchData_table_by_projet(
       entity,
-      filters,
+      combinedFilters,
       searchTerm,
       currentPage,
       rowsPerPage,
@@ -174,61 +146,75 @@ const EncaissementTable = ({ dataClient_id, bien_id }) => {
         </Link>
       ),
     },
-    {
-      key: 'bien',
-      label: 'Bien',
-      render: (row) =>
-        !bien_id && (
-          <Link target="_blank" href={'/Biens/' + row.reservations.bien_id}>
-            <strong style={{ fontWeight: 600 }}>
-              {row.reservations.bien.propriete_dite_bien}
-            </strong>
-          </Link>
-        ),
-    },
-    {
-      key: 'client',
-      label: 'Client',
-      render: (row) =>
-        !dataClient_id && (
-          <>
-            {row.reservations.aquereurs.length > 0
-              ? Object.keys(row.reservations.aquereurs).map((key) => (
-                  <Link
-                    key={key}
-                    target="_blank"
-                    href={
-                      '/clients/show/' +
-                      row.reservations.aquereurs[key].client.id
-                    }
-                  >
-                    <strong>
-                      {row.reservations.aquereurs[key].client.nom}{' '}
-                      {row.reservations.aquereurs[key].client.prenom}
-                    </strong>
-                    <br />
-                  </Link>
-                ))
-              : row.reservations.aquereurs_ancien &&
-                Object.keys(row.reservations.aquereurs_ancien).map((key) => (
-                  <Link
-                    key={key}
-                    target="_blank"
-                    href={
-                      '/clients/show/' +
-                      row.reservations.aquereurs_ancien[key].client.id
-                    }
-                  >
-                    <strong>
-                      {row.reservations.aquereurs_ancien[key].client.nom}{' '}
-                      {row.reservations.aquereurs_ancien[key].client.prenom}
-                    </strong>
-                    <br />
-                  </Link>
-                ))}
-          </>
-        ),
-    },
+
+    // Conditionally show Bien column only if bien_id is not provided
+    ...(!bien_id
+      ? [
+          {
+            key: 'bien',
+            label: 'Bien',
+            render: (row) => (
+              <Link target="_blank" href={'/Biens/' + row.reservations.bien_id}>
+                <strong style={{ fontWeight: 600 }}>
+                  {row.reservations.bien.propriete_dite_bien}
+                </strong>
+              </Link>
+            ),
+          },
+        ]
+      : []),
+    // Conditionally show Client column only if dataClient_id is not provided
+    ...(!dataClient_id
+      ? [
+          {
+            key: 'client',
+            label: 'Client',
+            render: (row) => (
+              <>
+                {row.reservations.aquereurs.length > 0
+                  ? Object.keys(row.reservations.aquereurs).map((key) => (
+                      <Link
+                        key={key}
+                        target="_blank"
+                        href={
+                          '/ventes/clients/' +
+                          row.reservations.aquereurs[key].client.id
+                        }
+                      >
+                        <strong>
+                          {row.reservations.aquereurs[key].client.nom}{' '}
+                          {row.reservations.aquereurs[key].client.prenom}
+                        </strong>
+                        <br />
+                      </Link>
+                    ))
+                  : row.reservations.aquereurs_ancien &&
+                    Object.keys(row.reservations.aquereurs_ancien).map(
+                      (key) => (
+                        <Link
+                          key={key}
+                          target="_blank"
+                          href={
+                            '/ventes/clients/' +
+                            row.reservations.aquereurs_ancien[key].client.id
+                          }
+                        >
+                          <strong>
+                            {row.reservations.aquereurs_ancien[key].client.nom}{' '}
+                            {
+                              row.reservations.aquereurs_ancien[key].client
+                                .prenom
+                            }
+                          </strong>
+                          <br />
+                        </Link>
+                      )
+                    )}
+              </>
+            ),
+          },
+        ]
+      : []),
     {
       key: 'type_encaissement',
       label: 'Type Encaissement',
@@ -356,6 +342,20 @@ const EncaissementTable = ({ dataClient_id, bien_id }) => {
           item.date_encaissement != null
             ? format(new Date(item.date_encaissement), 'dd/MM/yyyy')
             : null,
+        type_enc:
+          item.type_encaissement == '1'
+            ? 'Avances'
+            : item.type_encaissement == '2'
+            ? 'Restitution'
+            : item.type_encaissement == '3'
+            ? 'Remboursement'
+            : item.type_encaissement == '4'
+            ? 'Décharge Reliquat'
+            : item.type_encaissement == '5'
+            ? 'Déblocage Crédit'
+            : item.type_encaissement == '6'
+            ? 'Pénalité'
+            : null,
         // ... reste du code inchangé ...
         code_res: item.reservations?.code_reservation || '',
         date_res:
@@ -429,28 +429,27 @@ const EncaissementTable = ({ dataClient_id, bien_id }) => {
                 />
 
                 {!dataClient_id && (
-                  <SelectInput
+                  <Input
+                    type="text"
+                    label={'Client'}
+                    placeholder="Client"
                     value={tempFilters.client}
-                    onChange={(value) => handleFilterChange('client_id', value)}
-                    options={Object.values(clients).map((data) => ({
-                      value: data.id,
-                      label: data.nom + ' ' + data.prenom,
-                    }))}
-                    label="Choisir un Client"
-                    className="h-10 text-sm w-full"
+                    onChange={(e) =>
+                      handleFilterChange('client', e.target.value)
+                    }
+                    className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                   />
                 )}
-
-                <SelectInput
-                  value={tempFilters.bienId}
-                  onChange={(value) => handleFilterChange('bienId', value)}
-                  options={Object.values(biens).map((data) => ({
-                    value: data.id,
-                    label: data.propriete_dite_bien,
-                  }))}
-                  label="Choisir un Bien"
-                  className="h-10 text-sm w-full"
-                />
+                {!bien_id && (
+                  <Input
+                    type="text"
+                    label={'Propriete dite Bien'}
+                    placeholder="Propriete dite Bien"
+                    value={tempFilters.bien}
+                    onChange={(e) => handleFilterChange('bien', e.target.value)}
+                    className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
+                  />
+                )}
 
                 <Input
                   label="Montant"
@@ -467,6 +466,7 @@ const EncaissementTable = ({ dataClient_id, bien_id }) => {
               {/* Second row - remaining inputs */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <SelectInput
+                  placeholder="Choisir un type"
                   value={tempFilters.type_encaissement}
                   onChange={(value) =>
                     handleFilterChange('type_encaissement', value)
