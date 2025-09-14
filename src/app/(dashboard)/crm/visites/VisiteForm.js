@@ -2562,20 +2562,19 @@ disabled={isOrigin ? false : watch('telephone') === ''}
                               <div className="p-4 space-y-4">
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-x-5 gap-y-4">
                                   <div>
-                                    {/* Bien Selection */}
                                     <SelectInput
                                       label="Bien:"
                                       name="bien_id"
-                                      options={biensByProjet
-                                        .filter(bien => bien && bien.id && bien.propriete_dite_bien)
-                                        .map(bien => ({
-                                          value: bien.id.toString(),
-                                          label: bien.propriete_dite_bien,
-                                          disabled: bien.disabled || false
-                                        }))}
+                                      options={biensByProjet 
+                                        ? biensByProjet.filter(bien => bien && bien.id && bien.propriete_dite_bien)
+                                            .map(bien => ({
+                                              value: bien.id.toString(),
+                                              label: bien.propriete_dite_bien,
+                                              disabled: bien.disabled || false
+                                            }))
+                                        : []} // Provide empty array as fallback
                                       value={x.bien_id}
                                       onChange={(selectedValue) => {
-                                        // Create a synthetic event to match handleinputchange's expected format
                                         const syntheticEvent = {
                                           target: {
                                             name: 'bien_id',
@@ -2586,7 +2585,7 @@ disabled={isOrigin ? false : watch('telephone') === ''}
                                       }}
                                       placeholder="Sélectionner un bien"
                                       loading={loading_bien}
-                                      required={x.statut == 2} // Required if status is "Vendu"
+                                      required={x.statut == 2}
                                     />
                                   </div>
 
