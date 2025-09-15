@@ -27,11 +27,11 @@ import BienSuperficies from './BienSuperficies';
 import BienComposition from './BienComposition';
 import BienDescriptionGenerator from './BienDescriptionGenerator';
 import BienDossiers from './BienDossiers';
-import BienEncaissements from './BienEncaissements';
 import BienTvaCollecte from './BienTvaCollecte';
 import BienMedia from './BienMedia';
 
 import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
+import EncaissementTable from '@/app/(dashboard)/encaissements/EncaissementTable';
 export default function BienDetails({ id }) {
   const [bien, setBien] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -182,7 +182,7 @@ export default function BienDetails({ id }) {
       case 'dossiers':
         return <BienDossiers bienId={id} />;
       case 'encaissements':
-        return <BienEncaissements bienId={id} />;
+        return <EncaissementTable bien_id={id} />;
       case 'tva_collecte':
         return <BienTvaCollecte bienId={id} bien={bien} />;
       default:

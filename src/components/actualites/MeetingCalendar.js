@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { format, addMonths, subMonths, getDaysInMonth, startOfMonth, getDay, isSameDay, parseISO } from 'date-fns';
+import { fr } from 'date-fns/locale'; // Import French locale
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 
 export default function MeetingCalendar({ meetings = [] }) {
@@ -80,7 +81,7 @@ export default function MeetingCalendar({ meetings = [] }) {
             <ChevronLeftIcon size={18} />
           </button>
           <span className="text-sm font-medium">
-            {format(currentDate, 'MMMM yyyy')}
+            {format(currentDate, 'MMMM yyyy', { locale: fr })} {/* Add locale here */}
           </span>
           <button onClick={nextMonth} className="p-1 rounded-full hover:bg-gray-100">
             <ChevronRightIcon size={18} />
@@ -128,7 +129,7 @@ export default function MeetingCalendar({ meetings = [] }) {
         {selectedDate && (
           <div className="mt-4 border-t pt-3">
             <h3 className="text-sm font-medium !text-gray-700 mb-2">
-              {format(selectedDate, 'EEEE d MMMM')}
+              {format(selectedDate, 'EEEE d MMMM', { locale: fr })} {/* Add locale here */}
             </h3>
             
             <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -166,7 +167,7 @@ export default function MeetingCalendar({ meetings = [] }) {
                     {meeting.visite?.prospect?.nom} {meeting.visite?.prospect?.prenom}
                   </div>
                   <div className="text-xs !text-gray-500">
-                    {meeting.date_relance || meeting.rdv}
+                    {format(parseISO(meeting.date_relance || meeting.rdv), 'd MMMM yyyy', { locale: fr })} {/* Add locale here too */}
                     {meeting.date_relance ? ' (Relance)' : ' (RDV)'}
                   </div>
                 </div>
