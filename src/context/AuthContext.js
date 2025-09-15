@@ -1,9 +1,17 @@
-"use client";
+'use client';
 
-import { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { useRouter } from "next/navigation";
-import axios from "axios";
-import authConfig from "../configs/auth"; // Assuming this path is correct
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from 'react';
+import { useRouter } from 'next/navigation';
+import axios from 'axios';
+import authConfig from '../configs/auth'; // Assuming this path is correct
 
 const AuthContext = createContext(null);
 
@@ -21,7 +29,7 @@ export function AuthProvider({ children }) {
     const instance = axios.create({
       baseURL: memoizedAuthConfig.baseURL, // If you have a base URL for your API
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
     });
 
@@ -44,17 +52,24 @@ export function AuthProvider({ children }) {
         const originalRequest = error.config;
 
         // If the error is 401 and it's not a retry request and not already refreshing
-        if (error.response && error.response.status === 401 && !originalRequest._retry && !isRefreshing.current) {
+        if (
+          error.response &&
+          error.response.status === 401 &&
+          !originalRequest._retry &&
+          !isRefreshing.current
+        ) {
           originalRequest._retry = true; // Mark as retried
           isRefreshing.current = true;
 
-          console.warn("401 Unauthorized: Access token expired or invalid. Logging out.");
-          
+          console.warn(
+            '401 Unauthorized: Access token expired or invalid. Logging out.'
+          );
+
           // Clear all authentication and application state
           clearAuthData();
           setUser(null);
           router.push('/login');
-          
+
           isRefreshing.current = false;
           return Promise.reject(error); // Reject the original request
         }
@@ -80,10 +95,16 @@ export function AuthProvider({ children }) {
       if (token) {
         try {
           // Validate token by fetching user data from dashboard endpoint
-          const response = await axiosInstance.get(memoizedAuthConfig.dashboardEndpoint);
+          const response = await axiosInstance.get(
+            memoizedAuthConfig.dashboardEndpoint
+          );
           setUser(response.data.user);
+          window.localStorage.setItem(
+            'authUser',
+            JSON.stringify(response.data.user)
+          );
         } catch (error) {
-          console.error("Failed to initialize authentication:", error);
+          console.error('Failed to initialize authentication:', error);
           clearAuthData();
         }
       }
@@ -94,26 +115,34 @@ export function AuthProvider({ children }) {
   }, [axiosInstance, memoizedAuthConfig, clearAuthData]);
 
   // Login function
-  const login = useCallback(async (params) => {
-    setLoading(true);
-    try {
-      const response = await axiosInstance.post(memoizedAuthConfig.loginEndpoint, params);
-      const token = response.data.access_token;
-      
-      window.localStorage.setItem('accessToken', token);
-      
-      // Fetch user data after successful login
-      const userResponse = await axiosInstance.get(memoizedAuthConfig.dashboardEndpoint);
-      setUser(userResponse.data.user);
-      router.push('/tableau-de-bord'); // Redirect to dashboard after login
-      return true;
-    } catch (error) {
-      console.error("Login error:", error);
-      throw error; // Re-throw to allow component to handle specific login errors
-    } finally {
-      setLoading(false);
-    }
-  }, [axiosInstance, router, memoizedAuthConfig]);
+  const login = useCallback(
+    async (params) => {
+      setLoading(true);
+      try {
+        const response = await axiosInstance.post(
+          memoizedAuthConfig.loginEndpoint,
+          params
+        );
+        const token = response.data.access_token;
+
+        window.localStorage.setItem('accessToken', token);
+
+        // Fetch user data after successful login
+        const userResponse = await axiosInstance.get(
+          memoizedAuthConfig.dashboardEndpoint
+        );
+        setUser(userResponse.data.user);
+        router.push('/tableau-de-bord'); // Redirect to dashboard after login
+        return true;
+      } catch (error) {
+        console.error('Login error:', error);
+        throw error; // Re-throw to allow component to handle specific login errors
+      } finally {
+        setLoading(false);
+      }
+    },
+    [axiosInstance, router, memoizedAuthConfig]
+  );
 
   // Logout function
   const logout = useCallback(async () => {
@@ -121,33 +150,35 @@ export function AuthProvider({ children }) {
       // It's good practice to invalidate the token on the server
       await axiosInstance.post(memoizedAuthConfig.LogoutEndpoint, null);
     } catch (error) {
-      console.error("Logout error (server-side):", error);
+      console.error('Logout error (server-side):', error);
       // Even if server logout fails, clear client-side data
     } finally {
       clearAuthData();
       setUser(null);
-      router.push("/login");
+      router.push('/login');
     }
   }, [axiosInstance, router, memoizedAuthConfig, clearAuthData]);
 
   // Protected logout for LinkedIn flows (or similar external authentication)
   const protectedLogout = useCallback(() => {
-    const isLinkedInFlow = localStorage.getItem('linkedin_admin_flow') === 'true' ||
-                           localStorage.getItem('linkedin_state') !== null ||
-                           window.location.pathname.includes('linkedin-callback');
-    
+    const isLinkedInFlow =
+      localStorage.getItem('linkedin_admin_flow') === 'true' ||
+      localStorage.getItem('linkedin_state') !== null ||
+      window.location.pathname.includes('linkedin-callback');
+
     if (isLinkedInFlow) {
       console.log('Preventing logout during LinkedIn auth flow');
       return;
     }
-    
+
     logout();
   }, [logout]);
 
   // Handle potential token loss during external redirects (e.g., OAuth flows)
   useEffect(() => {
     const handleBeforeUnload = () => {
-      const isLinkedInFlow = localStorage.getItem('linkedin_admin_flow') === 'true';
+      const isLinkedInFlow =
+        localStorage.getItem('linkedin_admin_flow') === 'true';
       if (isLinkedInFlow) {
         // Backup token before potential loss on redirect
         const token = localStorage.getItem('accessToken');
@@ -169,10 +200,15 @@ export function AuthProvider({ children }) {
         const initAuthAfterRestore = async () => {
           setLoading(true);
           try {
-            const response = await axiosInstance.get(memoizedAuthConfig.dashboardEndpoint);
+            const response = await axiosInstance.get(
+              memoizedAuthConfig.dashboardEndpoint
+            );
             setUser(response.data.user);
           } catch (error) {
-            console.error("Failed to re-initialize auth after token restore:", error);
+            console.error(
+              'Failed to re-initialize auth after token restore:',
+              error
+            );
             clearAuthData();
           } finally {
             setLoading(false);
@@ -191,18 +227,19 @@ export function AuthProvider({ children }) {
     };
   }, [axiosInstance, memoizedAuthConfig, clearAuthData]);
 
-  const contextValue = useMemo(() => ({
-    user,
-    login,
-    logout: protectedLogout,
-    isAuthenticated: !!user,
-    loading
-  }), [user, login, protectedLogout, loading]);
+  const contextValue = useMemo(
+    () => ({
+      user,
+      login,
+      logout: protectedLogout,
+      isAuthenticated: !!user,
+      loading,
+    }),
+    [user, login, protectedLogout, loading]
+  );
 
   return (
-    <AuthContext.Provider value={contextValue}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
 }
 

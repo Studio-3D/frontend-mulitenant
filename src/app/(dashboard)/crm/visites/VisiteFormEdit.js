@@ -331,7 +331,7 @@ export default function VisiteFormEdit({ id }) {
     fetchData_Select("banques", setBanques, setLoading);
     if (isEditing) {
       axios
-        .get(`${APIURL.VISITES}/${id}`, {
+        .get(`${APIURL.ROOTV1}/edit_visite/${id}`, {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
