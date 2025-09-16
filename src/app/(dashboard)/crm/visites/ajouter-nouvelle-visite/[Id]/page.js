@@ -22,7 +22,7 @@ export default function Nouvel_Visite_Page() {
   const fetchData = async () => {
     setLoading(true);
     axios
-      .get(`${APIURL.VISITES}/${Id}`, {
+      .get(`${APIURL.ROOTV1}/edit_visite/${Id}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
