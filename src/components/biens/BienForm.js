@@ -30,7 +30,7 @@ export default function BienForm() {
   const [fetchingData, setFetchingData] = useState(false);
   const searchParams = useSearchParams();
   const { id } = useParams();
-  const { selectProjet } = useProjet();
+  const { selectProjet, selectedProjet } = useProjet();
   const [trancheHasNoBlocs, setTrancheHasNoBlocs] = useState(false);
   const [blocHasNoImmeubles, setBlocHasNoImmeubles] = useState(false);
   const projetId = searchParams.get('projet');
@@ -74,6 +74,46 @@ export default function BienForm() {
   const [dataReloadTrigger, setDataReloadTrigger] = useState(0);
 
   // Refs for preventing multiple submissions and redirects
+  // Read breadcrumb context for names without fetching
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('bienBreadcrumbContext');
+      if (!raw) return;
+      const ctx = JSON.parse(raw);
+
+      // Set project name in context (won't navigate on this route)
+      if (ctx?.projet && (!selectedProjet || !selectedProjet?.nom)) {
+        try {
+          selectProjet(ctx.projet);
+        } catch (e) {}
+      }
+
+      // Always hydrate names from context when present (no need to match query ids)
+      if (ctx?.tranche && !selectedTranche?.nom) {
+        setSelectedTranche(
+          (prev) => prev || { id: ctx.tranche.id, nom: ctx.tranche.nom }
+        );
+      }
+      if (ctx?.bloc && !selectedBloc?.nom) {
+        setSelectedBloc(
+          (prev) => prev || { id: ctx.bloc.id, nom: ctx.bloc.nom }
+        );
+      }
+      if (ctx?.immeuble && !selectedImmeuble?.nom) {
+        setSelectedImmeuble(
+          (prev) => prev || { id: ctx.immeuble.id, nom: ctx.immeuble.nom }
+        );
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [
+    selectProjet,
+    selectedProjet,
+    selectedTranche?.nom,
+    selectedBloc?.nom,
+    selectedImmeuble?.nom,
+  ]);
   const hasFetchedInitialData = useRef(false);
   const isSubmittingRef = useRef(false);
   const isNavigatingRef = useRef(false);
@@ -333,16 +373,15 @@ export default function BienForm() {
           bloc_id: formData.bloc_id ? formData.bloc_id : blocId,
         });
       }
-
-      if (typeBiens.length === 0) {
-        fetchDataByProjet_params('typeBiens', setTypeBiens, setLoading);
-      }
-      if (vues.length === 0) {
-        fetchDataByProjet_params('vues', setVues, setLoading);
-      }
-      if (typologies.length === 0) {
-        fetchDataByProjet_params('typologies', setTypologies, setLoading);
-      }
+    }
+    if (typeBiens.length === 0) {
+      fetchDataByProjet_params('typeBiens', setTypeBiens, setLoading);
+    }
+    if (vues.length === 0) {
+      fetchDataByProjet_params('vues', setVues, setLoading);
+    }
+    if (typologies.length === 0) {
+      fetchDataByProjet_params('typologies', setTypologies, setLoading);
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -358,7 +397,7 @@ export default function BienForm() {
 
   // If blocId is provided, fetch its details and set tranche_id accordingly
   useEffect(() => {
-    if (blocId && !id) {
+    if (blocId && !id && !selectedBloc?.nom) {
       const fetchBlocDetails = async () => {
         try {
           const token = localStorage.getItem('accessToken');
@@ -391,7 +430,7 @@ export default function BienForm() {
             }
           }
         } catch (error) {
-          console.error('Error fetching bloc details:', error);
+          console.log('Error fetching bloc details:', error);
         }
       };
 
@@ -401,7 +440,7 @@ export default function BienForm() {
 
   // If immeubleId is provided, fetch its details and set bloc_id and tranche_id
   useEffect(() => {
-    if (immeubleId && !id) {
+    if (immeubleId && !id && !selectedImmeuble?.nom) {
       const fetchImmeubleDetails = async () => {
         try {
           const token = localStorage.getItem('accessToken');
@@ -458,7 +497,7 @@ export default function BienForm() {
             }
           }
         } catch (error) {
-          console.error('Error fetching immeuble details:', error);
+          console.log('Error fetching immeuble details:', error);
         }
       };
 
@@ -545,7 +584,7 @@ export default function BienForm() {
         }, 100);
       }
     } catch (error) {
-      console.error('Error fetching bien data:', error);
+      console.log('Error fetching bien data:', error);
       toast.error('Erreur lors du chargement des données du bien');
     } finally {
       setFetchingData(false);
@@ -700,9 +739,16 @@ export default function BienForm() {
     if (!formData.numero) {
       errors.numero = ['Le numéro est requis'];
     }
-    if (formData.niveau === null || formData.niveau === undefined) {
-      errors.niveau = ['Le niveau est requis'];
+    if (
+      projet?.nbre_tranches > 0 ||
+      projet?.nbre_blocs > 0 ||
+      projet?.nbre_immeubles > 0
+    ) {
+      if (formData.niveau === null || formData.niveau === undefined) {
+        errors.niveau = ['Le niveau est requis'];
+      }
     }
+
     if (!formData.type_id) {
       errors.type_id = ['Le type de bien est requis'];
     }
@@ -806,13 +852,13 @@ export default function BienForm() {
     setLoading(true);
     try {
       const token = localStorage.getItem('accessToken');
-
+      // 'niveau',
       const requiredFields = [
         'id',
         'projet_id',
         'propriete_dite_bien',
         'numero',
-        'niveau',
+
         'orientation',
         'conventionne',
         'prix_unitaire',
@@ -855,6 +901,15 @@ export default function BienForm() {
         'nbre_placards',
       ];
 
+      // Ajouter conditionnellement 'etage' si project.nbre_tranches > 0  || blocs || immeubles
+      if (
+        projet &&
+        (projet.nbre_tranches > 0 ||
+          projet.nbre_blocs > 0 ||
+          projet.nbre_immeubles)
+      ) {
+        requiredFields.push('niveau');
+      }
       const dataToSubmit = {};
       requiredFields.forEach((field) => {
         if (formData[field] !== undefined) {
@@ -919,15 +974,15 @@ export default function BienForm() {
         setShowCompositionModal(true);
       } else {
         setTimeout(() => {
-          if (projet?.tranche_id) {
-            localStorage.setItem(
-              `tranche-${projet?.tranche_id}-activeTab`,
-              'bien'
-            );
-            router.push(`/Tranches/${projet?.tranche_id}`);
-          } else if (projet?.bloc_id) {
-            localStorage.setItem(`bloc-${projet?.bloc_id}-activeTab`, 'bien');
-            router.push(`/Blocs/${projet?.bloc_id}`);
+          if (immeubleId) {
+            localStorage.setItem(`immeuble-${immeubleId}-activeTab`, 'bien');
+            router.push(`/Immeubles/${immeubleId}`);
+          } else if (blocId) {
+            localStorage.setItem(`bloc-${blocId}-activeTab`, 'bien');
+            router.push(`/Blocs/${blocId}`);
+          } else if (trancheId) {
+            localStorage.setItem(`tranche-${trancheId}-activeTab`, 'bien');
+            router.push(`/Tranches/${trancheId}`);
           } else if (projet.id) {
             localStorage.setItem(`project-${projet.id}-activeTab`, 'bien');
             router.push(`/Projets/${projet.id}`);
@@ -935,30 +990,15 @@ export default function BienForm() {
             router.push('/Projets');
           }
         }, 100);
-        // Use setTimeout to ensure state updates complete before navigation
-        /* setTimeout(() => {
-          if (!isNavigatingRef.current) {
-            isNavigatingRef.current = true;
-            if (projet?.id) {
-              localStorage.setItem(`project-${projet?.id}-activeTab`, 'bien');
-              router.push(`/Projets/${projet?.id}`);
-            } else {
-              router.push('/Projets');
-            }
-            /* router.push(
-              projet?.id ? `/Projets/${projet.id}?tab=biens` : "/Projets"
-            );
-          }
-        }, 100);*/
       }
       console.log('Bien créé ou mis à jour avec succès:', bienCreeId);
     } catch (error) {
-      console.error('Error submitting property:', error);
+      console.log('Error submitting property:', error);
       if (error.response?.data?.errors) {
         setErrors(error.response.data.errors);
       }
       if (error.response?.data?.message) {
-        console.error('Backend error message:', error.response.data.message);
+        console.log('Backend error message:', error.response.data.message);
         if (error.response.data.message.includes('Unknown column')) {
           const columnMatch = error.response.data.message.match(
             /Unknown column '([^']+)'/
@@ -1316,14 +1356,18 @@ export default function BienForm() {
           error={errors.numero}
           required
         />
-        <SelectInput
-          label="Niveau"
-          name="niveau"
-          value={formData.niveau}
-          options={etages.map((t) => ({ label: t.label, value: t.value }))}
-          onChange={(selected) => handleChange('niveau', selected)}
-          required
-        />
+        {(projet.nbre_tranches > 0 ||
+          projet.nbre_bocs > 0 ||
+          projet.nbre_immeubles > 0) && (
+          <SelectInput
+            label="Niveau"
+            name="niveau"
+            value={formData.niveau}
+            options={etages.map((t) => ({ label: t.label, value: t.value }))}
+            onChange={(selected) => handleChange('niveau', selected)}
+            required
+          />
+        )}
 
         <div>
           <SelectInput
@@ -1341,7 +1385,6 @@ export default function BienForm() {
             <p className="mt-1 text-sm text-red-600">{errors.orientation[0]}</p>
           )}
         </div>
-
         <InputSelect
           label="Type de bien"
           options={typeBiens.map((t) => ({ label: t.type, value: t.id }))}
@@ -1826,16 +1869,34 @@ export default function BienForm() {
     <div className="p-3">
       <div className="flex items-center justify-start">
         <BreadCrumb
-          baseUrl={projetId ? `/Projets/${projetId}` : '/Projets'}
-          onNavigate={() => {
-            if (projet?.id) {
-              localStorage.setItem(`project-${projet?.id}-activeTab`, 'bien');
-              router.push(`/Projets/${projet?.id}`);
-            } else {
-              router.push('/Projets');
-            }
-          }}
-          step={`${id ? 'Modifier' : 'Ajouter'} un bien`}
+          onRoot={{ href: '/Projets' }}
+          items={[
+            projetId || selectedProjet?.id
+              ? {
+                  label: selectedProjet?.nom || 'Projet',
+                  href: `/Projets/${projetId || selectedProjet.id}`,
+                }
+              : { label: 'Projets', href: '/Projets' },
+            selectedTranche?.nom
+              ? {
+                  label: selectedTranche.nom,
+                  href: `/Tranches/${trancheId || selectedTranche?.id}`,
+                }
+              : null,
+            selectedBloc?.nom
+              ? {
+                  label: selectedBloc.nom,
+                  href: `/Blocs/${blocId || selectedBloc?.id}`,
+                }
+              : null,
+            selectedImmeuble?.nom
+              ? {
+                  label: selectedImmeuble.nom,
+                  href: `/Immeubles/${immeubleId || selectedImmeuble?.id}`,
+                }
+              : null,
+            { label: `${id ? 'Modifier' : 'Ajouter'} un bien` },
+          ].filter(Boolean)}
         />
       </div>
 
@@ -1875,15 +1936,31 @@ export default function BienForm() {
 
           {/* Étape 1 : Soumettre bien */}
           {activeStep === 1 && (
-            <Button type="submit" onClick={handleSubmit} disabled={loading}>
-              {loading
-                ? id
-                  ? 'Modification en cours...'
-                  : 'Enregistrement...'
-                : id
-                ? 'Modifier le bien'
-                : 'Enregistrer le bien'}
-            </Button>
+            <>
+              {Object.keys(errors).length > 0 && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                  <h3 className="text-red-800 font-medium mb-2">
+                    Erreurs de validation:
+                  </h3>
+                  <ul className="list-disc list-inside text-red-700 text-sm">
+                    {Object.entries(errors).map(([field, errors]) => (
+                      <li key={field}>
+                        {Array.isArray(errors) ? errors.join(', ') : errors}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              <Button type="submit" onClick={handleSubmit} disabled={loading}>
+                {loading
+                  ? id
+                    ? 'Modification en cours...'
+                    : 'Enregistrement...'
+                  : id
+                  ? 'Modifier le bien'
+                  : 'Enregistrer le bien'}
+              </Button>
+            </>
           )}
 
           {/* Étape 2 : Soumettre composition (si pas d'id) */}

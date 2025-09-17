@@ -10,6 +10,7 @@ import { isAdmin, isSuperAdmin } from '@/configs/enum';
 import axios from 'axios';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
+import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
 
 // Define status mapping outside component to avoid recreation
 const STATUS_CONFIG = {
@@ -55,6 +56,7 @@ export const BlocDetailsPage = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      
       const blocDetails = response.data;
       setBlocData(blocDetails);
       console.log('fetched bloc data', blocDetails);
@@ -83,6 +85,26 @@ export const BlocDetailsPage = () => {
       fetchBlocDetails();
     }
   }, [id, fetchBlocDetails]);
+
+  // Persist breadcrumb context for fast "Ajouter bien" page
+  useEffect(() => {
+    if (blocData?.bloc) {
+      try {
+        const ctx = {
+          projet: blocData.bloc.projet
+            ? { id: blocData.bloc.projet_id, nom: blocData.bloc.projet.nom }
+            : undefined,
+          tranche: blocData.bloc.tranche
+            ? { id: blocData.bloc.tranche_id, nom: blocData.bloc.tranche.nom }
+            : undefined,
+          bloc: { id: blocData.bloc.id, nom: blocData.bloc.nom },
+        };
+        localStorage.setItem('bienBreadcrumbContext', JSON.stringify(ctx));
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, [blocData]);
 
   // Handle edit action
   const handleEdit = () => {
@@ -127,9 +149,7 @@ export const BlocDetailsPage = () => {
 
     const biensData = showBiens ? blocData.bloc.bien || [] : [];
     const immeublesData = showImmeubles ? blocData.bloc.immeuble || [] : [];
-    /* in OLDONE
-  const biensData = blocData.bloc.bien || [];
-  const immeublesData = blocData.bloc.immeuble || [];*/
+    const trancheData = blocData.bloc.tranche ? [blocData.bloc.tranche] : [];
 
     const typeBienOptions = Array.from(
       new Set(biensData.map((b) => b.type_bien?.type).filter(Boolean) || [])
@@ -184,30 +204,28 @@ export const BlocDetailsPage = () => {
         nom: i.nom,
         titre_foncier: i.titre_foncier,
         nbre_biens: i.nbre_biens || 0,
+        tranche_nom: i?.tranche?.nom || '',
       })) || [];
 
-    /*return {
-    immeuble: {
-      count: immeubles.length,
-      items: immeubles,
-      nbr_count: immeubles.length,
-    },
-    bien: {
-      count: biens.length,
-      statuses: defaultStatuses,
-      items: biens,
-      nbr_count: biens.length,
-      typeBienOptions,
-    },
-  };*/
+    // Map tranche data for filtering - FIXED: Use items array structure
+    const tranches = trancheData.map((t) => ({
+      id: t.id,
+      nom: t.nom,
+    }));
     // Only include tabs if their corresponding project count is > 0
     const tabs = {};
-
+    // Always include tranche tab if we have tranche data
+    if (tranches.length > 0) {
+      tabs.tranche = {
+        items: tranches, // This should be an array of items
+      };
+    }
     if (showImmeubles) {
       tabs.immeuble = {
         count: immeubles.length,
         items: immeubles,
         nbr_count: immeubles.length,
+        tranches: tranches,
       };
     }
 
@@ -218,6 +236,7 @@ export const BlocDetailsPage = () => {
         items: biens,
         nbr_count: biens.length,
         typeBienOptions,
+        tranches: tranches, // This should be an array, not an object with items
       };
     }
 
@@ -312,6 +331,27 @@ export const BlocDetailsPage = () => {
 
   return (
     <div className="w-full">
+      {/* Breadcrumbs */}
+      <div className="mb-4">
+        <BreadCrumb
+          onRoot={{ href: '/Projets' }}
+          items={[
+            blocData?.bloc?.projet
+              ? {
+                  label: blocData.bloc.projet.nom,
+                  href: `/Projets/${blocData.bloc.projet_id}`,
+                }
+              : null,
+            blocData?.bloc?.tranche
+              ? {
+                  label: blocData.bloc.tranche.nom,
+                  href: `/Tranches/${blocData.bloc.tranche_id}`,
+                }
+              : null,
+            { label: blocData?.bloc?.nom || 'Bloc' },
+          ].filter(Boolean)}
+        />
+      </div>
       <div className="flex flex-col lg:flex-row gap-6 h-full">
         <div className="w-full lg:w-1/3">
           <LeftCard
@@ -332,6 +372,21 @@ export const BlocDetailsPage = () => {
             nbre_tranches={blocData?.bloc?.projet?.nbre_tranches}
             nbre_immeubles={blocData?.bloc?.projet?.nbre_immeubles}
             projectId={blocData?.bloc?.projet_id}
+            breadcrumbContext={{
+              projet: blocData?.bloc?.projet
+                ? { id: blocData.bloc.projet_id, nom: blocData.bloc.projet.nom }
+                : undefined,
+              tranche: blocData?.bloc?.tranche
+                ? {
+                    id: blocData.bloc.tranche_id,
+                    nom: blocData.bloc.tranche.nom,
+                  }
+                : undefined,
+              bloc: blocData?.bloc
+                ? { id: blocData.bloc.id, nom: blocData.bloc.nom }
+                : undefined,
+            }}
+            max_etages={blocData?.bloc?.projet?.max_etages}
           />
         </div>
       </div>

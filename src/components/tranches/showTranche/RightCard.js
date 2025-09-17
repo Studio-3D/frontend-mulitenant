@@ -18,6 +18,7 @@ import {
   BoxesIcon,
 } from 'lucide-react';
 import Table from '@/components/Table';
+import BienImport from '@/components/biens/BienImport';
 
 const TAB_CONFIG = {
   blocs: {
@@ -90,6 +91,24 @@ const TAB_CONFIG = {
         ),
       },
     ],
+    exportConfig: (items, nbre_immeubles) => ({
+      data_to_export: items.map((item) => ({
+        Bloc: item.nom || '',
+        'Titre foncier': item.titre_foncier || '',
+        'Nbr Immeubles': item.nbre_immeubles || 0,
+        'Nbr Biens': item.nbre_biens || 0,
+      })),
+      columns_export: [
+        { key: 'Bloc', label: 'Bloc' },
+        { key: 'Titre foncier', label: 'Titre foncier' },
+        ...(nbre_immeubles > 0
+          ? [{ key: 'Nbr Immeubles', label: 'Nbr Immeubles' }]
+          : []),
+
+        { key: 'Nbr Biens', label: 'Nbr Biens' },
+      ],
+      name_file_export: 'blocs_export',
+    }),
   },
   immeuble: {
     icon: <BuildingIcon size={18} />,
@@ -138,7 +157,7 @@ const TAB_CONFIG = {
           'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
       },
     ],
-    columns: (user, handleDelete,nbre_blocs) => [
+    columns: (user, handleDelete, nbre_blocs) => [
       { key: 'nom', label: 'Immeuble' },
       ...(nbre_blocs > 0 ? [{ key: 'bloc_nom', label: 'Bloc' }] : []),
       { key: 'titre_foncier', label: 'Titre foncier' },
@@ -177,6 +196,21 @@ const TAB_CONFIG = {
         ),
       },
     ],
+    exportConfig: (items, nbre_blocs) => ({
+      data_to_export: items.map((item) => ({
+        Immeuble: item.nom || '',
+        ...(nbre_blocs > 0 && { Bloc: item.bloc_nom || '' }),
+        'Titre foncier': item.titre_foncier || '',
+        'Nbr Biens': item.nbre_biens || 0,
+      })),
+      columns_export: [
+        { key: 'Immeuble', label: 'Immeuble' },
+        ...(nbre_blocs > 0 ? [{ key: 'Bloc', label: 'Bloc' }] : []),
+        { key: 'Titre foncier', label: 'Titre foncier' },
+        { key: 'Nbr Biens', label: 'Nbr Biens' },
+      ],
+      name_file_export: 'immeubles_export',
+    }),
   },
   bien: {
     icon: <HomeIcon size={18} />,
@@ -188,12 +222,7 @@ const TAB_CONFIG = {
             immeubleId ? `&immeuble=${immeubleId}` : ''
           }${trancheId ? `&tranche=${trancheId}` : ''}`
         : undefined,
-    filters: (
-      tabsData,
-      trancheId,
-      nbre_blocs,
-      nbre_immeubles
-    ) => {
+    filters: (tabsData, trancheId, nbre_blocs, nbre_immeubles) => {
       // Get unique status values from the biens data
       const statusOptions = tabsData.bien?.items
         ? [...new Set(tabsData.bien.items.map((item) => item.status))]
@@ -224,22 +253,6 @@ const TAB_CONFIG = {
           type: 'select',
           placeholder: 'Sélectionner un type',
           options: tabsData.bien?.typeBienOptions || [],
-          className:
-            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
-        },
-        {
-          key: 'surface',
-          label: 'Surface',
-          type: 'number',
-          placeholder: 'Surface...',
-          className:
-            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
-        },
-        {
-          key: 'price',
-          label: 'Prix',
-          type: 'number',
-          placeholder: 'Prix...',
           className:
             'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
         },
@@ -288,6 +301,40 @@ const TAB_CONFIG = {
               },
             ]
           : []),
+        // Surface min and max
+        {
+          key: 'surface_min',
+          label: 'Surface min',
+          type: 'number',
+          placeholder: 'Min...',
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
+        {
+          key: 'surface_max',
+          label: 'Surface max',
+          type: 'number',
+          placeholder: 'Max...',
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
+        // Prix min and max
+        {
+          key: 'price_min',
+          label: 'Prix min',
+          type: 'number',
+          placeholder: 'Min...',
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
+        {
+          key: 'price_max',
+          label: 'Prix max',
+          type: 'number',
+          placeholder: 'Max...',
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
       ];
     },
     columns: (user, handleDelete, nbre_blocs, nbre_immeubles) => [
@@ -365,6 +412,29 @@ const TAB_CONFIG = {
         ),
       },
     ],
+    exportConfig: (items, nbre_blocs, nbre_immeubles) => ({
+      data_to_export: items.map((item) => ({
+        Nom: item.name || '',
+        Numéro: item.numero || '',
+        Type: item.type || '',
+        ...(nbre_blocs > 0 && { Bloc: item.bloc_nom || '' }),
+        ...(nbre_immeubles > 0 && { Immeuble: item.immeuble_nom || '' }),
+        Surface: item.surface || '',
+        Prix: item.price || '',
+        Statut: item.status || '',
+      })),
+      columns_export: [
+        { key: 'Nom', label: 'Nom' },
+        { key: 'Numéro', label: 'Numéro' },
+        { key: 'Type', label: 'Type' },
+        ...(nbre_blocs > 0 ? [{ key: 'Bloc', label: 'Bloc' }] : []),
+        ...(nbre_immeubles > 0 ? [{ key: 'Immeuble', label: 'Immeuble' }] : []),
+        { key: 'Surface', label: 'Surface' },
+        { key: 'Prix', label: 'Prix' },
+        { key: 'Statut', label: 'Statut' },
+      ],
+      name_file_export: 'biens_export',
+    }),
   },
 };
 
@@ -375,13 +445,23 @@ export const RightCard = ({
   fetchTrancheData,
   trancheId,
   projetId,
+  breadcrumbContext,
   nbre_blocs,
   nbre_immeubles,
+  max_etages,
 }) => {
+  const [showImportModal, setShowImportModal] = useState(false);
+
   const { token, user } = useAuth();
   const router = useRouter();
   const [selectedId, setSelectedId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const persistAddBienContext = useCallback(() => {
+    try {
+      const ctx = breadcrumbContext || {};
+      localStorage.setItem('bienBreadcrumbContext', JSON.stringify(ctx));
+    } catch {}
+  }, [breadcrumbContext]);
   const [selectedType, setSelectedType] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -400,8 +480,8 @@ export const RightCard = ({
         tabsData,
         trancheId,
         nbre_blocs,
-        nbre_immeubles,
-              );
+        nbre_immeubles
+      );
       filterConfig.forEach((filter) => {
         initialFilters[filter.key] = '';
       });
@@ -473,7 +553,6 @@ export const RightCard = ({
     setCurrentPage(1);
   }, []);
 
-  // Filter items based on selected type, applied filters and pagination
   const filteredItems = useMemo(() => {
     if (!tabsData[activeTab]?.items) return [];
 
@@ -487,32 +566,65 @@ export const RightCard = ({
     // Apply text filters
     Object.keys(appliedFilters).forEach((key) => {
       if (appliedFilters[key]) {
-        items = items.filter((item) =>
-          item[key]
-            ?.toString()
-            .toLowerCase()
-            .includes(appliedFilters[key].toLowerCase())
-        );
+        // Handle surface range filtering
+        if (key === 'surface_min' && appliedFilters[key]) {
+          const minValue = parseFloat(appliedFilters[key]);
+          items = items.filter((item) => {
+            const itemSurface = parseFloat(item.surface);
+            return !isNaN(itemSurface) && itemSurface >= minValue;
+          });
+        } else if (key === 'surface_max' && appliedFilters[key]) {
+          const maxValue = parseFloat(appliedFilters[key]);
+          items = items.filter((item) => {
+            const itemSurface = parseFloat(item.surface);
+            return !isNaN(itemSurface) && itemSurface <= maxValue;
+          });
+        }
+        // Handle price range filtering
+        else if (key === 'price_min' && appliedFilters[key]) {
+          const minValue = parseFloat(appliedFilters[key]);
+          items = items.filter((item) => {
+            const itemPrice = parseFloat(item.price);
+            return !isNaN(itemPrice) && itemPrice >= minValue;
+          });
+        } else if (key === 'price_max' && appliedFilters[key]) {
+          const maxValue = parseFloat(appliedFilters[key]);
+          items = items.filter((item) => {
+            const itemPrice = parseFloat(item.price);
+            return !isNaN(itemPrice) && itemPrice <= maxValue;
+          });
+        }
+        // Handle other text filters
+        else if (
+          key !== 'surface_min' &&
+          key !== 'surface_max' &&
+          key !== 'price_min' &&
+          key !== 'price_max'
+        ) {
+          items = items.filter((item) =>
+            item[key]
+              ?.toString()
+              .toLowerCase()
+              .includes(appliedFilters[key].toLowerCase())
+          );
+        }
       }
     });
 
-    // Update total rows count
-    setTotalRows(items.length);
+    return items;
+  }, [tabsData, activeTab, selectedType, appliedFilters]);
+
+  // Step 2: Calculate paginated items separately
+  const paginatedItems = useMemo(() => {
+    // Update total rows count based on filtered data
+    setTotalRows(filteredItems.length);
 
     // Apply pagination
     const startIndex = (currentPage - 1) * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
 
-    return items.slice(startIndex, endIndex);
-  }, [
-    tabsData,
-    activeTab,
-    selectedType,
-    appliedFilters,
-    currentPage,
-    rowsPerPage,
-  ]);
-
+    return filteredItems.slice(startIndex, endIndex);
+  }, [filteredItems, currentPage, rowsPerPage]);
   const currentColumns = useMemo(() => {
     if (!activeTab || !TAB_CONFIG[activeTab]) return [];
 
@@ -556,8 +668,9 @@ export const RightCard = ({
       nbre_blocs,
       nbre_immeubles
     );
+
     return (
-      <div className="space-y-4 ">
+      <div className="space-y-4">
         <div
           className="grid gap-3"
           style={{
@@ -565,6 +678,99 @@ export const RightCard = ({
           }}
         >
           {filterConfig.map((filter) => {
+            // Group surface min and max in the same row
+            if (filter.key === 'surface_min' || filter.key === 'surface_max') {
+              const minFilter = filterConfig.find(
+                (f) => f.key === 'surface_min'
+              );
+              const maxFilter = filterConfig.find(
+                (f) => f.key === 'surface_max'
+              );
+
+              // Only render once (for surface_min)
+              if (filter.key === 'surface_min') {
+                return (
+                  <div key="surface_range" className="flex flex-col ">
+                    <label className="text-xs font-medium text-gray-700 mb-1">
+                      Surface
+                    </label>
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <Input
+                          type="number"
+                          name="surface_min"
+                          value={tempFilters.surface_min || ''}
+                          onChange={(e) =>
+                            handleFilterChange('surface_min', e.target.value)
+                          }
+                          placeholder={minFilter.placeholder}
+                          className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <Input
+                          type="number"
+                          name="surface_max"
+                          value={tempFilters.surface_max || ''}
+                          onChange={(e) =>
+                            handleFilterChange('surface_max', e.target.value)
+                          }
+                          placeholder={maxFilter.placeholder}
+                          className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            }
+
+            // Group price min and max in the same row
+            if (filter.key === 'price_min' || filter.key === 'price_max') {
+              const minFilter = filterConfig.find((f) => f.key === 'price_min');
+              const maxFilter = filterConfig.find((f) => f.key === 'price_max');
+
+              // Only render once (for price_min)
+              if (filter.key === 'price_min') {
+                return (
+                  <div key="price_range" className="flex flex-col">
+                    <label className="text-xs font-medium text-gray-700 mb-1">
+                      Prix
+                    </label>
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <Input
+                          type="number"
+                          name="price_min"
+                          value={tempFilters.price_min || ''}
+                          onChange={(e) =>
+                            handleFilterChange('price_min', e.target.value)
+                          }
+                          placeholder={minFilter.placeholder}
+                          className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <Input
+                          type="number"
+                          name="price_max"
+                          value={tempFilters.price_max || ''}
+                          onChange={(e) =>
+                            handleFilterChange('price_max', e.target.value)
+                          }
+                          placeholder={maxFilter.placeholder}
+                          className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            }
+
+            // Handle other filter types (select, text, number)
             if (filter.type === 'select') {
               return (
                 <div key={filter.key} className="flex flex-col">
@@ -582,24 +788,6 @@ export const RightCard = ({
                   />
                 </div>
               );
-            } else if (filter.type === 'number') {
-              return (
-                <div key={filter.key} className="flex flex-col">
-                  <label className="text-xs font-medium text-gray-700 mb-1">
-                    {filter.label}
-                  </label>
-                  <Input
-                    type="number"
-                    name={filter.key}
-                    value={tempFilters[filter.key] || ''}
-                    onChange={(e) =>
-                      handleFilterChange(filter.key, e.target.value)
-                    }
-                    placeholder={filter.placeholder}
-                    className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
-                  />
-                </div>
-              );
             } else {
               return (
                 <div key={filter.key} className="flex flex-col">
@@ -607,7 +795,7 @@ export const RightCard = ({
                     {filter.label}
                   </label>
                   <Input
-                    type="text"
+                    type={filter.type || 'text'}
                     name={filter.key}
                     value={tempFilters[filter.key] || ''}
                     onChange={(e) =>
@@ -648,6 +836,55 @@ export const RightCard = ({
     nbre_immeubles,
   ]);
 
+  const exportConfig = useMemo(() => {
+    if (!TAB_CONFIG[safeActiveTab]?.exportConfig) return null;
+
+    const exportConfigFn = TAB_CONFIG[safeActiveTab].exportConfig;
+
+    // Pass the appropriate parameters based on the active tab
+    switch (safeActiveTab) {
+      case 'blocs':
+        return exportConfigFn(filteredItems); // Use filteredItems
+      case 'immeuble':
+        return exportConfigFn(filteredItems, nbre_blocs); // Use filteredItems
+      case 'bien':
+        return exportConfigFn(
+          filteredItems, // Use filteredItems
+          nbre_blocs,
+          nbre_immeubles
+        );
+      default:
+        return exportConfigFn(filteredItems); // Use filteredItems
+    }
+  }, [safeActiveTab, filteredItems, nbre_blocs, nbre_immeubles]);
+
+  const currentTabData = tabsData[safeActiveTab];
+  const hasItems = filteredItems.length > 0;
+
+  // Calculate status counts for filtered items (for bien tab only)
+  const filteredStatusCounts = useMemo(() => {
+    if (safeActiveTab !== 'bien' || !filteredItems.length) return null;
+
+    const counts = {};
+    filteredItems.forEach((item) => {
+      if (item.status) {
+        counts[item.status] = (counts[item.status] || 0) + 1;
+      }
+    });
+
+    return counts;
+  }, [safeActiveTab, filteredItems]); // Use filteredItems instead of paginatedItems
+  // Get the status cards data with filtered counts
+  const statusCardsData = useMemo(() => {
+    if (safeActiveTab !== 'bien' || !currentTabData.statuses) return null;
+
+    return currentTabData.statuses.map((status) => ({
+      ...status,
+      // Use filtered count if available, otherwise fall back to original count
+      count: filteredStatusCounts?.[status.name] || 0,
+    }));
+  }, [safeActiveTab, currentTabData.statuses, filteredStatusCounts]);
+
   if (!safeActiveTab) {
     return (
       <div className="bg-white rounded-lg shadow-lg h-full flex flex-col">
@@ -657,9 +894,6 @@ export const RightCard = ({
       </div>
     );
   }
-
-  const currentTabData = tabsData[safeActiveTab];
-  const hasItems = filteredItems.length > 0;
 
   return (
     <div className="bg-white rounded-lg shadow-lg h-full flex flex-col">
@@ -688,24 +922,9 @@ export const RightCard = ({
       <div className="p-6 flex-grow">
         {safeActiveTab === 'bien' && (
           <>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold text-gray-800">Biens</h2>
-              <div className="relative">
-                <SelectInput
-                  options={tabsData.bien?.typeBienOptions || []}
-                  placeholder="Filtrer par type"
-                  value={selectedType}
-                  onChange={(value) => {
-                    setSelectedType(value);
-                    setCurrentPage(1);
-                  }}
-                  width="w-48"
-                />
-              </div>
-            </div>
-            {currentTabData.statuses && (
+            {statusCardsData && (
               <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-                {currentTabData.statuses.map((status, index) => (
+                {statusCardsData.map((status, index) => (
                   <StatusCard
                     key={index}
                     name={status.name}
@@ -721,12 +940,15 @@ export const RightCard = ({
         <div className="mb-6">
           <Table
             columns={currentColumns}
-            data={hasItems ? filteredItems : []}
-            addLink={TAB_CONFIG[safeActiveTab]?.addLink?.(
-              user,
-              trancheId,
-              projetId
-            )}
+            data={hasItems ? paginatedItems : []}
+            addLink={{
+              pathname: TAB_CONFIG[safeActiveTab]?.addLink?.(
+                user,
+                trancheId,
+                projetId
+              ),
+              onClick: persistAddBienContext,
+            }}
             showSearch={false}
             filterComponent={filterComponent}
             onFilterToggle={handleFilterToggle}
@@ -742,6 +964,18 @@ export const RightCard = ({
             totalRows={totalRows}
             onPageChange={handlePageChange}
             onRowsPerPageChange={handleRowsPerPageChange}
+            data_to_export={exportConfig?.data_to_export || []}
+            columns_export={exportConfig?.columns_export || []}
+            name_file_export={exportConfig?.name_file_export || 'export'}
+            enableExport={filteredItems.length > 0}
+            enableImport={safeActiveTab == 'bien'} // Only enable import for bien tab
+            onImportClick={() => setShowImportModal(true)}
+          />
+          <BienImport
+            open={showImportModal}
+            onClose={() => setShowImportModal(false)}
+            projetId={projetId}
+            max_etages={max_etages}
           />
           {/* Delete Confirmation Modal    */}
           {showDeleteModal && (
@@ -754,7 +988,9 @@ export const RightCard = ({
                     ? TAB_CONFIG[safeActiveTab]?.name.slice(0, -1)
                     : TAB_CONFIG[safeActiveTab]?.name
                 }
-                message={`Êtes-vous sûr de vouloir supprimer ce ${
+                message={`Êtes-vous sûr de vouloir supprimer ${
+                  TAB_CONFIG[safeActiveTab]?.name === 'Immeubles' ? 'cet' : 'ce'
+                } ${
                   TAB_CONFIG[safeActiveTab]?.name.endsWith('s')
                     ? TAB_CONFIG[safeActiveTab]?.name.slice(0, -1).toLowerCase()
                     : TAB_CONFIG[safeActiveTab]?.name.toLowerCase()

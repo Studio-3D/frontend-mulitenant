@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { InformationCircleIcon } from '@heroicons/react/24/outline';
+import { Info } from 'lucide-react';
 import { type_dst_dp, lien_parentes } from '@/configs/enum';
 
 export function Desistement_Au_Profit({ formData, desisteur_dp_proche_co }) {
@@ -103,7 +103,7 @@ export function Desistement_Au_Profit({ formData, desisteur_dp_proche_co }) {
                 <div className="px-6 pb-6">
                   <div className="mb-4 pt-4 border-t border-gray-100">
                     <h3 className="text-md font-semibold text-gray-700 flex items-center">
-                      <InformationCircleIcon className="h-5 w-5 text-blue-500 mr-2" />
+                      <Info className="h-5 w-5 text-blue-500 mr-2" />
                       Les Nouveaux Acquéreurs
                     </h3>
                   </div>
@@ -179,7 +179,7 @@ export function Desistement_Au_Profit({ formData, desisteur_dp_proche_co }) {
                 <div className="px-6 pb-6">
                   <div className="mb-4 pt-4 border-t border-gray-100">
                     <h3 className="text-md font-semibold text-gray-700 flex items-center">
-                      <InformationCircleIcon className="h-5 w-5 text-green-500 mr-2" />
+                      <Info className="h-5 w-5 text-green-500 mr-2" />
                       Au Profit de
                     </h3>
                   </div>

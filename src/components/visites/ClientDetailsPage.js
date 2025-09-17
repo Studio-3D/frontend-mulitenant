@@ -8,10 +8,9 @@ import { useAuth } from '../../context/AuthContext';
 import LoadingSpin from '@/components/LoadingSpin';
 
 export function ClientDetailsPage(visiteId) {
-  const [loading, setLoading] = useState(true); // Add a loading state
+  const [loading, setLoading] = useState(true);
   const [visites_all, setvisites_all] = useState([]);
   const [visites_all_show, setvisites_all_show] = useState([]);
-  const [visite, setvisite] = useState(null);
   const [last_related_id, setLast_Related_id] = useState(0);
 
   const { token } = useAuth();
@@ -19,7 +18,7 @@ export function ClientDetailsPage(visiteId) {
 
   const fetch_visite = async () => {
     if (Number(visiteId.visiteId)) {
-      setLoading(true); // Data is loaded, set loading to false
+      setLoading(true);
 
       axios
         .get(`${APIURL.VISITES}/${Number(visiteId.visiteId)}`, {
@@ -30,21 +29,17 @@ export function ClientDetailsPage(visiteId) {
         .then((response) => {
           setvisites_all(response.data.visites);
           setvisites_all_show(response.data.visites_show);
-          setvisite(response.data.visite);
-          for (
-            var i = 0;
-            i <= Number(response.data.visites_show.length) - 1;
-            i++
-          ) {
-            if (i == 0) {
-              setLast_Related_id(response.data.visites_show[0].related_show_id);
-            }
+          
+          // Set the last_related_id from the first item in visites_all_show
+          if (response.data.visites_show.length > 0) {
+            setLast_Related_id(response.data.visites_show[0].related_show_id);
           }
-          setLoading(false); // Data is loaded, set loading to false
+          
+          setLoading(false);
         })
         .catch((error) => {
           console.error('Error fetching visite details:', error);
-          setLoading(false); // Data is loaded, set loading to false
+          setLoading(false);
         });
     }
   };
@@ -54,16 +49,13 @@ export function ClientDetailsPage(visiteId) {
   }, []);
 
   useEffect(() => {
-    //Implementing the setInterval method
     const interval = setInterval(() => {
-     // console.log('cron visite fetch shoow',localStorage.getItem('visite_fetch_show'))
       if (localStorage.getItem('visite_fetch_show') == 1) {
         fetch_visite();
         localStorage.removeItem('visite_fetch_show');
       }
     }, 1000);
 
-    //Clearing the interval
     return () => clearInterval(interval);
   }, []);
 
@@ -74,9 +66,11 @@ export function ClientDetailsPage(visiteId) {
       </div>
     );
   }
+
   return (
     <div className=" space-y-2">
-      <ClientDetails Prospect={visite?.prospect} />
+      {/* Use the first item from visites_all array for prospect data */}
+      <ClientDetails Prospect={visites_all[0]?.prospect} />
       <VisitDetails
         visites_all_show={visites_all_show}
         visites_all={visites_all}

@@ -1,15 +1,16 @@
-"use client";
-import { useEffect, useState, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
-import axios from "axios";
-import { APIURL } from "@/configs/api";
-import toast from "react-hot-toast";
-import LoadingSpin from "@/components/LoadingSpin";
-import BreadCrumb from "@/app/(dashboard)/navigation/BreadCrumb";
-import Button from "../Button";
-import InputSelect from "../inputSelect";
-import Input from "../Input";
-import { fetchDataByProjet_params } from "@/configs/api-utils";
+'use client';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import axios from 'axios';
+import { APIURL } from '@/configs/api';
+import toast from 'react-hot-toast';
+import LoadingSpin from '@/components/LoadingSpin';
+import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
+import Button from '../Button';
+import InputSelect from '../inputSelect';
+import Input from '../Input';
+import { fetchDataByProjet_params } from '@/configs/api-utils';
+import { useSearchParams } from 'next/navigation';
 
 export default function BlocForm({ id, projetId, trancheId }) {
   const router = useRouter();
@@ -22,16 +23,18 @@ export default function BlocForm({ id, projetId, trancheId }) {
   const [selectedTranche, setSelectedTranche] = useState(null);
   const hasFetchedInitialData = useRef(false);
   const isSubmittingRef = useRef(false);
+  const searchParams = useSearchParams();
+  trancheId = trancheId || searchParams.get('tranche');
 
   // Get selected project from localStorage
   const selectedProjet = JSON.parse(
-    localStorage.getItem("selectedProjet") || "{}"
+    localStorage.getItem('selectedProjet') || '{}'
   );
 
   const defaultValues = {
-    nom: "",
-    tranche_id: trancheId || "",
-    titre_foncier: "",
+    nom: '',
+    tranche_id: trancheId || '',
+    titre_foncier: '',
     nbre_immeubles: 0,
     nbre_biens: 0,
     projet_id: selectedProjet?.id,
@@ -42,7 +45,7 @@ export default function BlocForm({ id, projetId, trancheId }) {
 
   const fetchBlocData = useCallback(async () => {
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem('accessToken');
       const response = await axios.get(`${APIURL.BLOCS}/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -50,9 +53,9 @@ export default function BlocForm({ id, projetId, trancheId }) {
       if (response.data?.bloc) {
         const bloc = response.data.bloc;
         setFormData({
-          nom: bloc.nom || "",
-          tranche_id: bloc.tranche_id || "",
-          titre_foncier: bloc.titre_foncier || "",
+          nom: bloc.nom || '',
+          tranche_id: bloc.tranche_id || '',
+          titre_foncier: bloc.titre_foncier || '',
           nbre_immeubles: bloc.nbre_immeubles || 0,
           nbre_biens: bloc.nbre_biens || 0,
           projet_id: bloc.projet_id || selectedProjet?.id,
@@ -63,13 +66,30 @@ export default function BlocForm({ id, projetId, trancheId }) {
         }
       }
     } catch (error) {
-      console.error("Failed to fetch bloc:", error);
-      toast.error("Erreur lors du chargement du bloc");
+      console.error('Failed to fetch bloc:', error);
+      toast.error('Erreur lors du chargement du bloc');
+      // Ensure tranche name if trancheId provided
     } finally {
       setIsLoading(false);
     }
   }, [id, selectedProjet?.id]);
 
+  useEffect(() => {
+    const loadTrancheIfNeeded = async () => {
+      if (trancheId && !selectedTranche?.nom) {
+        try {
+          const token = localStorage.getItem('accessToken');
+          const res = await axios.get(`${APIURL.TRANCHES}/${trancheId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (res.data?.tranche) setSelectedTranche(res.data.tranche);
+        } catch (e) {
+          console.error('Failed to fetch tranche', e);
+        }
+      }
+    };
+    loadTrancheIfNeeded();
+  }, [trancheId, selectedTranche?.nom]);
   // Fetch bloc data if editing
   useEffect(() => {
     if (isEditing && id && !hasFetchedInitialData.current) {
@@ -93,7 +113,7 @@ export default function BlocForm({ id, projetId, trancheId }) {
       tranches.length === 0 &&
       !trancheId
     ) {
-      fetchDataByProjet_params("tranches", setTranches, setLoadingTranches);
+      fetchDataByProjet_params('tranches', setTranches, setLoadingTranches);
     }
   }, [selectedProjet?.id, trancheId]);
 
@@ -104,7 +124,7 @@ export default function BlocForm({ id, projetId, trancheId }) {
       [name]: value,
     }));
 
-    if (name === "tranche_id" && value) {
+    if (name === 'tranche_id' && value) {
       const selectedTrancheObj = tranches.find(
         (t) => t.id.toString() === value.toString()
       );
@@ -114,7 +134,7 @@ export default function BlocForm({ id, projetId, trancheId }) {
     if (validationErrors[name]) {
       setValidationErrors((prev) => ({
         ...prev,
-        [name]: "",
+        [name]: '',
       }));
     }
   };
@@ -126,7 +146,7 @@ export default function BlocForm({ id, projetId, trancheId }) {
     if (validationErrors[field]) {
       setValidationErrors((prev) => ({
         ...prev,
-        [field]: "",
+        [field]: '',
       }));
     }
 
@@ -134,7 +154,7 @@ export default function BlocForm({ id, projetId, trancheId }) {
     if (backendErrors[field]) {
       setBackendErrors((prev) => ({
         ...prev,
-        [field]: "",
+        [field]: '',
       }));
     }
   };
@@ -142,11 +162,11 @@ export default function BlocForm({ id, projetId, trancheId }) {
   const validateForm = () => {
     const errors = {};
     if (!formData.nom) {
-      errors.nom = "Le nom du bloc est requis";
+      errors.nom = 'Le nom du bloc est requis';
     }
 
     if (tranches.length > 0 && !formData.tranche_id) {
-      errors.tranche_id = "La tranche est requise";
+      errors.tranche_id = 'La tranche est requise';
     }
 
     setValidationErrors(errors);
@@ -175,13 +195,13 @@ export default function BlocForm({ id, projetId, trancheId }) {
     isSubmittingRef.current = true;
     setBackendErrors({});
 
-    const token = localStorage.getItem("accessToken");
+    const token = localStorage.getItem('accessToken');
     let url = APIURL.BLOCS;
-    let method = "post";
+    let method = 'post';
 
     if (isEditing) {
       url = `${url}/${id}`;
-      method = "put";
+      method = 'put';
     }
 
     try {
@@ -190,28 +210,31 @@ export default function BlocForm({ id, projetId, trancheId }) {
         url,
         data: formData,
         headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
           Authorization: `Bearer ${token}`,
         },
       });
 
-      toast.success(`Bloc ${isEditing ? "modifié" : "créé"} avec succès`);
+      toast.success(`Bloc ${isEditing ? 'modifié' : 'créé'} avec succès`);
 
       // Use setTimeout to ensure state updates complete before navigation
       setTimeout(() => {
-        if (selectedProjet.nbre_tranches !== 0 && trancheId) {
-          localStorage.setItem(`tranche-${trancheId}-activeTab`, "blocs");
+        if (trancheId) {
+          localStorage.setItem(`tranche-${trancheId}-activeTab`, 'blocs');
           router.push(`/Tranches/${trancheId}`);
         } else if (selectedProjet?.id) {
-          localStorage.setItem(`project-${trancheId}-activeTab`, "blocs");
+          localStorage.setItem(
+            `project-${selectedProjet.id}-activeTab`,
+            'blocs'
+          );
           router.push(`/Projets/${selectedProjet.id}`);
         } else {
-          router.push("/Projets");
+          router.push('/Projets');
         }
       }, 100);
     } catch (error) {
-      console.error("Failed to save bloc:", error);
+      console.error('Failed to save bloc:', error);
 
       const response = error.response;
       if (response?.status === 422) {
@@ -229,10 +252,10 @@ export default function BlocForm({ id, projetId, trancheId }) {
 
   const handleCancel = () => {
     if (selectedProjet?.id) {
-      localStorage.setItem(`project-${selectedProjet.id}-activeTab`, "blocs");
+      localStorage.setItem(`project-${selectedProjet.id}-activeTab`, 'blocs');
       router.push(`/Projets/${selectedProjet.id}`);
     } else {
-      router.push("/Projets");
+      router.push('/Projets');
     }
   };
 
@@ -240,21 +263,19 @@ export default function BlocForm({ id, projetId, trancheId }) {
     <div className="p-3">
       <div className="flex items-center justify-start">
         <BreadCrumb
-          baseUrl={
-            selectedProjet.nbre_tranches !== 0 && trancheId
-              ? `/Tranches/${trancheId}`
-              : selectedProjet?.id
-              ? `/Projets/${selectedProjet.id}`
-              : "/Projets"
-          }
-          onNavigate={() => {
-            if (selectedProjet.nbre_tranches !== 0 && trancheId) {
-              localStorage.setItem(`tranche-${trancheId}-activeTab`, "blocs");
-            } else if (selectedProjet?.id) {
-              localStorage.setItem(`project-${trancheId}-activeTab`, "blocs");
-            }
-          }}
-          step={`${id ? "Modifier" : "Ajouter"} un Bloc`}
+          onRoot={{ href: '/Projets' }}
+          items={[
+            selectedProjet?.id
+              ? {
+                  label: selectedProjet?.nom || `Projet #${selectedProjet.id}`,
+                  href: `/Projets/${selectedProjet.id}`,
+                }
+              : { label: 'Projets', href: '/Projets' },
+            selectedTranche?.nom
+              ? { label: selectedTranche.nom, href: `/Tranches/${trancheId}` }
+              : null,
+            { label: `${id ? 'Modifier' : 'Ajouter'} un Bloc` },
+          ].filter(Boolean)}
         />
       </div>
       <div className="p-6 mt-4 bg-white shadow-md rounded-md">
@@ -284,7 +305,7 @@ export default function BlocForm({ id, projetId, trancheId }) {
                 options={tranches.map((t) => ({ label: t.nom, value: t.id }))}
                 value={formData.tranche_id}
                 onChange={(option) =>
-                  handleselectChange("tranche_id", option?.value || null)
+                  handleselectChange('tranche_id', option?.value || null)
                 }
                 error={validationErrors.tranche_id || backendErrors.tranche_id}
                 isLoading={loadingTranches}
@@ -333,12 +354,12 @@ export default function BlocForm({ id, projetId, trancheId }) {
             >
               {isSubmitting ? (
                 <>
-                  {isEditing ? "Modification en cours..." : "Ajout en cours..."}
+                  {isEditing ? 'Modification en cours...' : 'Ajout en cours...'}
                 </>
               ) : id ? (
-                "Modifier"
+                'Modifier'
               ) : (
-                "Ajouter"
+                'Ajouter'
               )}
             </Button>
           </div>

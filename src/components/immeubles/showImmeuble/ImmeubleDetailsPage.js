@@ -10,6 +10,7 @@ import { isAdmin, isSuperAdmin } from '@/configs/enum';
 import axios from 'axios';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
+import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
 
 // Define status mapping outside component to avoid recreation
 const STATUS_CONFIG = {
@@ -84,6 +85,41 @@ export const ImmeubleDetailsPage = () => {
     }
   }, [id, fetchImmeubleDetails]);
 
+  // Persist breadcrumb context for fast "Ajouter bien" page
+  useEffect(() => {
+    if (immeubleData?.immeuble) {
+      try {
+        const ctx = {
+          projet: immeubleData.immeuble.projet
+            ? {
+                id: immeubleData.immeuble.projet_id,
+                nom: immeubleData.immeuble.projet.nom,
+              }
+            : undefined,
+          tranche: immeubleData.immeuble.tranche
+            ? {
+                id: immeubleData.immeuble.tranche_id,
+                nom: immeubleData.immeuble.tranche.nom,
+              }
+            : undefined,
+          bloc: immeubleData.immeuble.bloc
+            ? {
+                id: immeubleData.immeuble.bloc_id,
+                nom: immeubleData.immeuble.bloc.nom,
+              }
+            : undefined,
+          immeuble: {
+            id: immeubleData.immeuble.id,
+            nom: immeubleData.immeuble.nom,
+          },
+        };
+        localStorage.setItem('bienBreadcrumbContext', JSON.stringify(ctx));
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, [immeubleData]);
+
   // Handle edit action
   const handleEdit = () => {
     router.push(`/Immeubles/${id}`);
@@ -128,6 +164,13 @@ export const ImmeubleDetailsPage = () => {
     // Access the properties from the immeuble object
     const biensData = immeubleData.immeuble.bien || [];
 
+    // Get tranche and bloc data from immeubleData
+    const trancheData = immeubleData.immeuble.tranche
+      ? [immeubleData.immeuble.tranche]
+      : [];
+    const blocData = immeubleData.immeuble.bloc
+      ? [immeubleData.immeuble.bloc]
+      : [];
     const typeBienOptions = Array.from(
       new Set(biensData.map((b) => b.type_bien?.type).filter(Boolean) || [])
     ).map((type) => ({ value: type, label: type }));
@@ -174,6 +217,18 @@ export const ImmeubleDetailsPage = () => {
         };
       }) || [];
 
+    // Map tranche data for filtering
+    const tranches = trancheData.map((t) => ({
+      id: t.id,
+      nom: t.nom,
+    }));
+
+    // Map bloc data for filtering
+    const blocs = blocData.map((b) => ({
+      id: b.id,
+      nom: b.nom,
+    }));
+
     return {
       bien: {
         count: biens.length,
@@ -181,6 +236,9 @@ export const ImmeubleDetailsPage = () => {
         items: biens,
         nbr_count: biens.length,
         typeBienOptions,
+        // Include tranche and bloc data for filtering
+        tranches: tranches,
+        blocs: blocs,
       },
     };
   }, [immeubleData]);
@@ -277,6 +335,33 @@ export const ImmeubleDetailsPage = () => {
 
   return (
     <div className="w-full">
+      {/* Breadcrumbs */}
+      <div className="mb-4">
+        <BreadCrumb
+          onRoot={{ href: '/Projets' }}
+          items={[
+            immeubleData?.immeuble?.projet
+              ? {
+                  label: immeubleData.immeuble.projet.nom,
+                  href: `/Projets/${immeubleData.immeuble.projet_id}`,
+                }
+              : null,
+            immeubleData?.immeuble?.tranche
+              ? {
+                  label: immeubleData.immeuble.tranche.nom,
+                  href: `/Tranches/${immeubleData.immeuble.tranche_id}`,
+                }
+              : null,
+            immeubleData?.immeuble?.bloc
+              ? {
+                  label: immeubleData.immeuble.bloc.nom,
+                  href: `/Blocs/${immeubleData.immeuble.bloc_id}`,
+                }
+              : null,
+            { label: immeubleData?.immeuble?.nom || 'Immeuble' },
+          ].filter(Boolean)}
+        />
+      </div>
       <div className="flex flex-col lg:flex-row gap-6 h-full">
         <div className="w-full lg:w-1/3">
           <LeftCard
@@ -297,6 +382,34 @@ export const ImmeubleDetailsPage = () => {
             nbre_tranches={immeubleData?.immeuble?.projet?.nbre_tranches}
             nbre_blocs={immeubleData?.immeuble?.projet?.nbre_blocs}
             immeubleId={id}
+            breadcrumbContext={{
+              projet: immeubleData?.immeuble?.projet
+                ? {
+                    id: immeubleData.immeuble.projet_id,
+                    nom: immeubleData.immeuble.projet.nom,
+                  }
+                : undefined,
+              tranche: immeubleData?.immeuble?.tranche
+                ? {
+                    id: immeubleData.immeuble.tranche_id,
+                    nom: immeubleData.immeuble.tranche.nom,
+                  }
+                : undefined,
+              bloc: immeubleData?.immeuble?.bloc
+                ? {
+                    id: immeubleData.immeuble.bloc_id,
+                    nom: immeubleData.immeuble.bloc.nom,
+                  }
+                : undefined,
+              immeuble: immeubleData?.immeuble
+                ? {
+                    id: immeubleData.immeuble.id,
+                    nom: immeubleData.immeuble.nom,
+                  }
+                : undefined,
+            }}
+            projetId={immeubleData?.immeuble?.projet_id}
+            max_etages={immeubleData?.immmeuble?.projet?.max_etages}
           />
         </div>
       </div>

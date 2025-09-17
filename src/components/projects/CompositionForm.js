@@ -1,11 +1,11 @@
-"use client";
-import { useState, useEffect } from "react";
-import axios from "axios";
-import { APIURL } from "@/configs/api";
-import { Archive, Layers, Building2, Home, Plus } from "lucide-react";
-import Modal from "@/components/Modal";
-import toast from "react-hot-toast";
-import SelectInput from "../SelectInput";
+'use client';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import { APIURL } from '@/configs/api';
+import { Archive, Layers, Building2, Home, Plus } from 'lucide-react';
+import Modal from '@/components/Modal';
+import toast from 'react-hot-toast';
+import SelectInput from '../SelectInput';
 
 export default function CompositionForm({
   state,
@@ -17,7 +17,7 @@ export default function CompositionForm({
   const [typeOptions, setTypeOptions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showAddTypeModal, setShowAddTypeModal] = useState(false);
-  const [newTypeProjet, setNewTypeProjet] = useState("");
+  const [newTypeProjet, setNewTypeProjet] = useState('');
   const [addingType, setAddingType] = useState(false);
 
   // Checkbox states for toggling composition elements
@@ -29,7 +29,7 @@ export default function CompositionForm({
   // Initialize bien count if it exists in state, otherwise default to 0
   useEffect(() => {
     if (hasBien && !state.bienCount) {
-      handleChange("bienCount", 0);
+      handleChange('bienCount', 0);
     }
   }, [hasBien]);
 
@@ -38,18 +38,18 @@ export default function CompositionForm({
     async function fetchTypeProjects() {
       setLoading(true);
       try {
-        const token = localStorage.getItem("accessToken");
+        const token = localStorage.getItem('accessToken');
         const response = await axios.get(APIURL.TYPEPROJETS, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        console.log("Type projects response:", response.data);
+        console.log('Type projects response:', response.data);
 
         // Make sure we're correctly parsing the response
         const typesData = response.data.typeProjets || [];
         setTypeOptions(typesData);
       } catch (error) {
-        console.error("Error fetching project types:", error);
+        console.error('Error fetching project types:', error);
       } finally {
         setLoading(false);
       }
@@ -66,28 +66,28 @@ export default function CompositionForm({
   const handleTranchesChange = (checked) => {
     setHasTranches(checked);
     if (!checked) {
-      handleChange("tranches", 0);
+      handleChange('tranches', 0);
     }
   };
 
   const handleBlocksChange = (checked) => {
     setHasBlocks(checked);
     if (!checked) {
-      handleChange("blocks", 0);
+      handleChange('blocks', 0);
     }
   };
 
   const handleBuildingChange = (checked) => {
     setHasBuilding(checked);
     if (!checked) {
-      handleChange("building", 0);
+      handleChange('building', 0);
     }
   };
 
   const handleBienChange = (checked) => {
     setHasBien(checked);
     if (!checked) {
-      handleChange("bienCount", 0);
+      handleChange('bienCount', 0);
     }
   };
 
@@ -96,14 +96,14 @@ export default function CompositionForm({
     e.preventDefault();
 
     if (!newTypeProjet.trim()) {
-      toast.error("Veuillez entrer un type de projet");
+      toast.error('Veuillez entrer un type de projet');
       return;
     }
 
     setAddingType(true);
 
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem('accessToken');
       const response = await axios.post(
         APIURL.TYPEPROJETS,
         { type: newTypeProjet.trim() },
@@ -116,18 +116,18 @@ export default function CompositionForm({
         setTypeOptions([...typeOptions, newType]);
 
         // Automatically select the new type
-        handleChange("typeId", newType.id);
-        handleChange("type", newType.type);
+        handleChange('typeId', newType.id);
+        handleChange('type', newType.type);
 
-        toast.success("Type de projet ajouté avec succès");
+        toast.success('Type de projet ajouté avec succès');
         setShowAddTypeModal(false);
-        setNewTypeProjet("");
+        setNewTypeProjet('');
       }
     } catch (error) {
-      console.error("Error creating project type:", error);
+      console.error('Error creating project type:', error);
       toast.error(
         error.response?.data?.message ||
-          "Erreur lors de la création du type de projet"
+          'Erreur lors de la création du type de projet'
       );
     } finally {
       setAddingType(false);
@@ -137,19 +137,19 @@ export default function CompositionForm({
   // Validate form before proceeding
   const handleFormSubmit = () => {
     if (!state.typeId) {
-      toast.error("Veuillez sélectionner un type de projet");
+      toast.error('Veuillez sélectionner un type de projet');
       return;
     }
     if (hasBien && !state.bienCount) {
-      toast.error("Veuillez entrer le nombre de biens");
+      toast.error('Veuillez entrer le nombre de biens');
       return;
     }
     if (hasTranches && !state.tranches) {
-      toast.error("Veuillez entrer le nombre de tranches");
+      toast.error('Veuillez entrer le nombre de tranches');
       return;
     }
     if (hasBlocks && !state.blocks) {
-      toast.error("Veuillez entrer le nombre de blocs");
+      toast.error('Veuillez entrer le nombre de blocs');
       return;
     }
     if (hasBuilding && !state.building) {
@@ -173,12 +173,12 @@ export default function CompositionForm({
   }) => (
     <div
       className={`border rounded-lg p-4 flex flex-col cursor-pointer items-center transition-all duration-200 hover:shadow-md ${
-        isChecked ? `border-${colorClass}-500` : "border-gray-200"
-      } ${disabled ? "opacity-70" : ""}`}
+        isChecked ? `border-${colorClass}-500` : 'border-gray-200'
+      } ${disabled ? 'opacity-70' : ''}`}
     >
       <div
         className={`text-4xl mb-3 ${
-          isChecked ? `text-${colorClass}-500` : "text-gray-400"
+          isChecked ? `text-${colorClass}-500` : 'text-gray-400'
         }`}
       >
         {icon}
@@ -202,7 +202,7 @@ export default function CompositionForm({
           <input
             type="number"
             min="1"
-            value={inputValue || ""}
+            value={inputValue || ''}
             onChange={(e) => onInputChange(parseInt(e.target.value) || 0)}
             className={`mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-${colorClass}-500 focus:border-${colorClass}-500`}
             placeholder={`Nombre de ${title.toLowerCase()}`}
@@ -233,15 +233,15 @@ export default function CompositionForm({
                         label: option.type,
                       }))
                 }
-                value={state.typeId || ""}
+                value={state.typeId || ''}
                 onChange={(selectedId) => {
                   const selectedOption = typeOptions.find(
                     (opt) => opt.id === selectedId
                   );
-                  handleChange("typeId", selectedId);
+                  handleChange('typeId', selectedId);
                   handleChange(
-                    "type",
-                    selectedOption ? selectedOption.type : ""
+                    'type',
+                    selectedOption ? selectedOption.type : ''
                   );
                 }}
                 error={errors?.type_id?.[0]}
@@ -252,8 +252,8 @@ export default function CompositionForm({
 
               {typeOptions.length === 0 && !loading && (
                 <p className="mt-1 text-sm text-amber-600">
-                  Aucun type de projet trouvé. Veuillez d'abord créer des types
-                  de projets.
+                  Aucun type de projet trouvé. Veuillez {"d'"}abord créer des
+                  types de projets.
                 </p>
               )}
             </div>
@@ -285,7 +285,7 @@ export default function CompositionForm({
             onCheckChange={handleTranchesChange}
             colorClass="green"
             inputValue={state.tranches}
-            onInputChange={(val) => handleChange("tranches", val)}
+            onInputChange={(val) => handleChange('tranches', val)}
             disabled={isEdit}
           />
 
@@ -298,7 +298,7 @@ export default function CompositionForm({
             onCheckChange={handleBlocksChange}
             colorClass="orange"
             inputValue={state.blocks}
-            onInputChange={(val) => handleChange("blocks", val)}
+            onInputChange={(val) => handleChange('blocks', val)}
             disabled={isEdit}
           />
 
@@ -311,7 +311,7 @@ export default function CompositionForm({
             onCheckChange={handleBuildingChange}
             colorClass="red"
             inputValue={state.building}
-            onInputChange={(val) => handleChange("building", val)}
+            onInputChange={(val) => handleChange('building', val)}
             disabled={isEdit}
           />
 
@@ -324,7 +324,7 @@ export default function CompositionForm({
             onCheckChange={handleBienChange}
             colorClass="blue"
             inputValue={state.bienCount}
-            onInputChange={(val) => handleChange("bienCount", val)}
+            onInputChange={(val) => handleChange('bienCount', val)}
             disabled={isEdit}
           />
         </div>
@@ -347,8 +347,8 @@ export default function CompositionForm({
             (hasTranches && !state.tranches) ||
             (hasBlocks && !state.blocks) ||
             (hasBuilding && !state.building)
-              ? "bg-blue-300 cursor-not-allowed"
-              : "bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              ? 'bg-blue-300 cursor-not-allowed'
+              : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
           }`}
           disabled={
             !state.typeId ||
@@ -423,7 +423,7 @@ export default function CompositionForm({
                     Création...
                   </>
                 ) : (
-                  "Ajouter"
+                  'Ajouter'
                 )}
               </button>
             </div>

@@ -51,7 +51,7 @@ export function Changement_De_Bien({
 
   const handleFileClick = (file) => {
     if (file.fichier) {
-      const fileUrl = `${FileUrl}/Docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/paiements/${code_reservation}/${file.fichier}`;
+      const fileUrl = `${FileUrl}/docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/paiements/${code_reservation}/${file.fichier}`;
       window.open(fileUrl, "_blank");
     }
   };

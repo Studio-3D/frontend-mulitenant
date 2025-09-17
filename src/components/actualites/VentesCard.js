@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 
 export default function VentesCard({ ventes = [], sumVentes = 0, avances = [], sumAvances = 0 }) {
-  const [activeTab, setActiveTab] = useState('ventes');
+  const [activeTab, setActiveTab] = useState('avances');
   
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden h-full">
       <div className="px-6 py-4 border-b flex justify-between items-center">
-        <div className="text-lg font-semibold">
+        {/*<div className="text-lg font-semibold">
           {activeTab === 'ventes' ? 'Ventes' : 'Paiements'}
-        </div>
+        </div>*/}
         <div className="text-xl font-bold !text-green-600">
           {activeTab === 'ventes' ? sumVentes : sumAvances} DH
         </div>
@@ -16,12 +16,12 @@ export default function VentesCard({ ventes = [], sumVentes = 0, avances = [], s
       
       <div className="px-6 pt-4 pb-2">
         <div className="flex mb-4 border-b">
-          <button 
+         {/*} <button 
             onClick={() => setActiveTab('ventes')} 
             className={`pb-2 px-4 ${activeTab === 'ventes' ? 'border-b-2 border-blue-500 font-medium !text-blue-600' : '!text-gray-500'}`}
           >
             Ventes
-          </button>
+          </button>*/}
           <button 
             onClick={() => setActiveTab('avances')} 
             className={`pb-2 px-4 ${activeTab === 'avances' ? 'border-b-2 border-blue-500 font-medium !text-blue-600' : '!text-gray-500'}`}
@@ -65,7 +65,7 @@ export default function VentesCard({ ventes = [], sumVentes = 0, avances = [], s
         ) : (
           <>
             <div className="flex justify-between mb-4 !text-gray-500 text-sm font-medium">
-              <div>Propriété dite Bien</div>
+              <div>Propriétédd dite Bien</div>
               <div>Avances</div>
             </div>
             

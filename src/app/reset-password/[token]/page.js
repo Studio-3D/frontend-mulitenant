@@ -61,10 +61,9 @@ export default function ResetPassword({ params }) {
     setIsLoading(true);
     try {
       // Use the correct endpoint from authConfig
-      await axios.post(authConfig.resetPasswordEndpoint, {
+      await axios.post(`${authConfig.resetPasswordEndpoint}/${token}`, {
         email,
         password,
-        token,
         password_confirmation: confirmPassword
       });
       

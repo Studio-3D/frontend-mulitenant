@@ -121,15 +121,10 @@ export default function BienDescriptionGenerator({
       // Check LinkedIn configuration
       try {
         const linkedinResponse = await axios.get(
-          `${APIURL.ROOTV1}/linkedin-configurations`,
+          `${APIURL.LINKEDIN_CONFIG}/project/${bien.projet_id}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        
-        if (linkedinResponse.data?.configurations?.length > 0) {
-          configurations.linkedin = linkedinResponse.data.configurations.some(
-            config => config.projet_id === bien.projet_id
-          );
-        }
+        configurations.linkedin = !!linkedinResponse.data.configuration;
       } catch (error) {
         console.log('No LinkedIn configuration found for this project');
       }

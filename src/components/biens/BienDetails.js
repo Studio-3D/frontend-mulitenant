@@ -20,16 +20,18 @@ import {
   CreditCard,
   Receipt,
   Image,
+  EyeIcon,
 } from 'lucide-react';
 import { getEtatLabel, getFullOrientation } from '@/configs/enum';
 import BienSuperficies from './BienSuperficies';
 import BienComposition from './BienComposition';
 import BienDescriptionGenerator from './BienDescriptionGenerator';
 import BienDossiers from './BienDossiers';
-import BienEncaissements from './BienEncaissements';
 import BienTvaCollecte from './BienTvaCollecte';
 import BienMedia from './BienMedia';
 
+import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
+import EncaissementTable from '@/app/(dashboard)/encaissements/EncaissementTable';
 export default function BienDetails({ id }) {
   const [bien, setBien] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -113,15 +115,20 @@ export default function BienDetails({ id }) {
 
   // Format price with thousand separators
   const formatPrice = (price) => {
-    return price ? price.toLocaleString('fr-FR') + ' Dhs' : 'N/A';
+    return price ? price.toLocaleString('fr-FR') + ' Dhs' : '';
   };
 
   // Get the status badge with proper formatting
   const getStatusBadge = (etat) => {
     const statusClasses = {
       DISPONIBLE: 'bg-green-100 !text-green-800 border border-green-300',
-      RESERVE: 'bg-blue-100 !text-blue-800 border border-blue-300',
+      PRE_RESERVATION:
+        'bg-yellow-100 !text-yellow-800 border border-yellow-300',
+      RESERVATION: 'bg-blue-100 !text-blue-800 border border-blue-300',
+      BLOQUE: 'bg-red-100 !text-red-800 border border-red-300',
       VENDU: 'bg-purple-100 text-purple-800 border border-purple-300',
+      ENCOURS_DE_PROPOSITION:
+        'bg-orange-100 text-orange-800 border border-orange-300',
     };
 
     return (
@@ -175,7 +182,7 @@ export default function BienDetails({ id }) {
       case 'dossiers':
         return <BienDossiers bienId={id} />;
       case 'encaissements':
-        return <BienEncaissements bienId={id} />;
+        return <EncaissementTable bien_id={id} />;
       case 'tva_collecte':
         return <BienTvaCollecte bienId={id} bien={bien} />;
       default:
@@ -192,39 +199,49 @@ export default function BienDetails({ id }) {
     </div>
   );
 
+   const handleView_Reservation = (reservationId) => {
+    window.open(`/ventes/reservations/${reservationId}`, '_blank');
+  };
+
   return (
     <div className=" ">
       <div className="space-y-6 ">
         {/* Header with actions - Redesigned with professional white background */}
+              <div className="mb-1">
+                <BreadCrumb
+                  onRoot={{ href: '/Projets' }}
+                  items={[
+                    bien.projet ? { label: bien.projet.nom, href: `/Projets/${bien.projet_id}` } : null,
+                    bien.tranche ? { label: bien.tranche.nom, href: `/Tranches/${bien.tranche_id}` } : null,
+                    bien.bloc ? { label: bien.bloc.nom, href: `/Blocs/${bien.bloc_id}` } : null,
+                    bien.immeuble ? { label: bien.immeuble.nom, href: `/Immeubles/${bien.immeuble_id}` } : null,
+                    { label: bien.propriete_dite_bien },
+                  ].filter(Boolean)}
+                />
+              </div>
         <div className="bg-white rounded-lg p-6 shadow border border-gray-200">
           <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-2 ">
-              <Link
-                href={bien.projet_id ? `/Projets/${bien.projet_id}` : '/Biens'}
-                className="text-gray-600 hover:text-gray-800"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </Link>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-800">
-                  {bien.propriete_dite_bien}
-                </h1>
-                <p className="text-gray-500">
-                  {[
-                    bien.projet?.nom,
-                    bien.tranche?.nom,
-                    bien.bloc?.nom,
-                    bien.immeuble?.nom,
-                  ]
-                    .filter(Boolean)
-                    .join(' • ')}
-                </p>
-              </div>
+            <div className="flex flex-col gap-2">
+              <h1 className="text-2xl font-bold text-gray-800">
+                {bien.propriete_dite_bien}
+              </h1>
             </div>
 
             <div className="flex items-center gap-3">
               {/* État actuel badge */}
+
               {getStatusBadge(bien.etat)}
+              {bien.etat == 'RESERVATION' && (
+                <button
+                  title="Détail du Réservation"
+                  onClick={() =>
+                    handleView_Reservation(bien?.reservation?.id)
+                  }
+                  className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+                >
+                  <EyeIcon className="h-5 w-5 text-gray-700" />
+                </button>
+              )}
 
               {/* Partager button */}
               {canEditBien && (
@@ -268,7 +285,7 @@ export default function BienDetails({ id }) {
                 <div className="min-w-0">
                   <h3 className="text-xs font-medium !text-gray-500">Numéro</h3>
                   <p className="mt-0.5 font-semibold text-sm truncate">
-                    {bien.numero || 'N/A'}
+                    {bien.numero || ''}
                   </p>
                 </div>
               </div>
@@ -283,7 +300,7 @@ export default function BienDetails({ id }) {
                     Type de bien
                   </h3>
                   <p className="mt-0.5 font-semibold text-sm truncate">
-                    {bien.type_bien?.type || 'N/A'}
+                    {bien.type_bien?.type || ''}
                   </p>
                 </div>
               </div>
@@ -295,7 +312,7 @@ export default function BienDetails({ id }) {
                     Typologie
                   </h3>
                   <p className="mt-0.5 font-semibold text-sm truncate">
-                    {bien.typologie?.typologie || 'N/A'}
+                    {bien.typologie?.typologie || ''}
                   </p>
                 </div>
               </div>
@@ -308,7 +325,7 @@ export default function BienDetails({ id }) {
                 <div className="min-w-0">
                   <h3 className="text-xs font-medium !text-gray-500">Niveau</h3>
                   <p className="mt-0.5 font-semibold text-sm">
-                    {bien.niveau !== null ? bien.niveau : 'N/A'}
+                    {bien.niveau !== null ? bien.niveau : ''}
                   </p>
                 </div>
               </div>
@@ -346,7 +363,7 @@ export default function BienDetails({ id }) {
                   <p className="mt-0.5 font-semibold text-sm truncate">
                     {bien.orientation
                       ? getFullOrientation(bien.orientation)
-                      : 'N/A'}
+                      : ''}
                   </p>
                 </div>
               </div>
@@ -404,7 +421,7 @@ export default function BienDetails({ id }) {
                     Nombre de façades
                   </h3>
                   <p className="mt-0.5 font-semibold text-sm">
-                    {bien.nbre_facades || 'N/A'}
+                    {bien.nbre_facades || ''}
                   </p>
                 </div>
               </div>

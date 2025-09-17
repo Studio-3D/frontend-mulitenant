@@ -295,7 +295,7 @@ const ProspectDetails = () => {
                       <Modal isVisible={true} onClose={() => setShowProjetModal(false)}>
                         <div className="p-4">
                           <h3 className="text-lg font-semibold mb-3">Assigner un projet au prospect</h3>
-                          <p className="text-sm text-gray-600 mb-3">Ce prospect provient de WhatsApp mais plusieurs configurations partagent le même projet. Veuillez choisir le projet auquel l'assigner.</p>
+                          <p className="text-sm text-gray-600 mb-3">Ce prospect provient de WhatsApp mais plusieurs configurations partagent le même projet. Veuillez choisir le projet auquel {"l'"}assigner.</p>
                           <div className="mb-4">
                             <SelectInput
                               label="Projet"

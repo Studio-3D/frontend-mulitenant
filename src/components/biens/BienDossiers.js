@@ -10,6 +10,21 @@ import {
   lien_parentes,
 } from '@/configs/enum';
 import { fetchData_table_by_id } from '@/configs/api-utils';
+// Add this helper function to extract text from React elements
+const extractTextFromElement = (element) => {
+  if (typeof element === 'string') return element;
+  if (!element || !element.props) return '';
+
+  if (element.props.children) {
+    if (Array.isArray(element.props.children)) {
+      return element.props.children
+        .map((child) => extractTextFromElement(child))
+        .join('');
+    }
+    return extractTextFromElement(element.props.children);
+  }
+  return '';
+};
 export default function BienDossiers({ bienId }) {
   const [dossiers, setDossiers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -511,7 +526,7 @@ export default function BienDossiers({ bienId }) {
   ];
 
   // Create exportable data - combine main and desistement columns
-  const exportData = dossiers.map((dossier) => {
+  /*const exportData = dossiers.map((dossier) => {
     let row = {};
 
     // Add main columns data
@@ -537,8 +552,59 @@ export default function BienDossiers({ bienId }) {
     });
 
     return row;
-  });
+  });*/
 
+
+ // Update the exportData function
+  const exportData = dossiers.map((dossier) => {
+    let row = {};
+
+    // Add main columns data
+    columns.forEach((col) => {
+      if (col.key !== 'actions' && col.key !== 'expandToggle') {
+        if (col.key === 'acquereurs_ancien') {
+          // Special handling for acquereurs column
+          let acquereursText = '';
+          
+          if (dossier.histo?.reservation) {
+            const acquereurs =
+              dossier.histo.reservation.aquereurs_ancien?.length > 0
+                ? dossier.histo.reservation.aquereurs_ancien
+                : dossier.histo.reservation.aquereurs || [];
+
+            acquereursText = acquereurs
+              .map((acq) => 
+                `${acq.client?.nom || ''} ${acq.client?.prenom || ''} (${acq.pourcentage}%)`
+              )
+              .join(', ');
+          } else if (dossier.histo?.desistement?.reservation_ancien?.aquereurs_ancien) {
+            acquereursText = Object.values(
+              dossier.histo.desistement.reservation_ancien.aquereurs_ancien
+            )
+              .map((acq) => 
+                `${acq.client?.nom || ''} ${acq.client?.prenom || ''} (${acq.pourcentage}%)`
+              )
+              .join(', ');
+          }
+          
+          row[col.key] = acquereursText;
+        } else if (col.render) {
+          const rendered = col.render(dossier);
+          row[col.key] = extractTextFromElement(rendered);
+        }
+      }
+    });
+
+    // Add desistement columns data
+    Object.values(allDesistementColumns).forEach((col) => {
+      if (col.render) {
+        const rendered = col.render(dossier);
+        row[col.key] = extractTextFromElement(rendered);
+      }
+    });
+
+    return row;
+  });
   // Render the expanded row with dynamic columns based on desistement type
   const renderExpandedRow = (row, idx) => {
     const rowId = row.id || idx;
@@ -616,7 +682,7 @@ export default function BienDossiers({ bienId }) {
     <div className="bg-white shadow-sm rounded-lg">
       <div className="p-6">
         <Table
-          title="Historique des dossiers"
+          title=""
           data={dossiers}
           columns={columns}
           totalRows={totalRows}

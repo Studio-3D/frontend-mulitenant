@@ -631,7 +631,7 @@ export function Desistement_Definitif({
                                   <p className="font-medium text-gray-800">
                                     {item.cheque_recu ? (
                                       <a
-                                        href={`${FileUrl}/Docs/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/remboursements/cheques_reçus/${code_reservation}/${item.cheque_recu}`}
+                                        href={`${FileUrl}/docs/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/remboursements/cheques_reçus/${code_reservation}/${item.cheque_recu}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="text-indigo-500 hover:text-indigo-800 flex items-center transition-colors"
@@ -664,7 +664,7 @@ export function Desistement_Definitif({
                                     <p className="font-medium text-gray-800">
                                       {item.fichier_autorisation ? (
                                         <a
-                                          href={`${FileUrl}/Docs/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/remboursements/fichier_autorisations/${code_reservation}/${item.fichier_autorisation}`}
+                                          href={`${FileUrl}/docs/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/remboursements/fichier_autorisations/${code_reservation}/${item.fichier_autorisation}`}
                                           target="_blank"
                                           rel="noopener noreferrer"
                                           className="text-indigo-500 hover:text-indigo-800 flex items-center transition-colors"
@@ -689,7 +689,7 @@ export function Desistement_Definitif({
                                     <p className="font-medium text-gray-800">
                                       {item.cheque_client_signe ? (
                                         <a
-                                          href={`${FileUrl}/Docs/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/remboursements/cheques_reçus/${code_reservation}/${item.cheque_client_signe}`}
+                                          href={`${FileUrl}/docs/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/remboursements/cheques_reçus/${code_reservation}/${item.cheque_client_signe}`}
                                           target="_blank"
                                           rel="noopener noreferrer"
                                           className="text-indigo-500 hover:text-indigo-800 flex items-center transition-colors"

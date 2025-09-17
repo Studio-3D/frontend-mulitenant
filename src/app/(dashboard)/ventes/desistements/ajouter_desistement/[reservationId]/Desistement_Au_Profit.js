@@ -4,7 +4,7 @@ import { Controller, useFormContext } from 'react-hook-form';
 import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
 import { lien_parentes, type_dst_dp } from '@/configs/enum';
 import TextField from '@/components/Textfield'; // Import the component
-import { InformationCircleIcon } from '@heroicons/react/24/outline';
+import { Info } from 'lucide-react';
 import AutocompleteMultipleDes from './AutocompleteMultipleDes';
 import Inputs_des_Profit from './Inputs_des_Profit';
 export function Desistement_Au_Profit({
@@ -1063,7 +1063,7 @@ export function Desistement_Au_Profit({
                         <div className="bg-blue-50 border-l-4 border-blue-400 p-4">
                           <div className="flex">
                             <div className="flex-shrink-0">
-                              <InformationCircleIcon className="h-5 w-5 text-blue-400" />
+                              <Info className="h-5 w-5 text-blue-400" />
                             </div>
                             <div className="ml-3">
                               <p className="text-sm text-blue-700">

@@ -21,6 +21,7 @@ export default function TrancheForm({ id, projet }) {
   const selectedProjet = projet
     ? {
         id: projet?.id,
+        nom: projet?.nom,
         nbre_blocs: projet?.nbre_blocs,
         nbre_immeubles: projet?.nbre_immeubles,
       }
@@ -181,18 +182,13 @@ export default function TrancheForm({ id, projet }) {
     <div className="p-3">
       <div className="flex items-center justify-start">
         <BreadCrumb
-          baseUrl={
-            selectedProjet?.id ? `/Projets/${selectedProjet.id}` : "/Projets"
-          }
-          onNavigate={() => {
-            if (selectedProjet?.id) {
-              localStorage.setItem(
-                `project-${selectedProjet.id}-activeTab`,
-                "tranche"
-              );
-            }
-          }}
-          step={`${id ? "Modifier" : "Ajouter"} une tranche`}
+          onRoot={{ href: "/Projets" }}
+          items={[
+            selectedProjet?.id
+              ? { label: selectedProjet?.nom || `Projet #${selectedProjet.id}`, href: `/Projets/${selectedProjet.id}` }
+              : { label: 'Projets', href: '/Projets' },
+            { label: `${id ? 'Modifier' : 'Ajouter'} une tranche` }
+          ]}
         />
       </div>
       <div className="p-6 mt-4 bg-white shadow-md rounded-md">

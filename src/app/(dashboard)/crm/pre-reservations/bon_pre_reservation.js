@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
 
 const MyDocument = ({ data }) => {
   const user = JSON.parse(localStorage.getItem('authUser'));
-  const imageUrl = `/Docs/${user.societe.raison_sociale_concatene}_${user.societe.id}/logos/${user.societe.logo}`;
+  const imageUrl = `/docs/${user.societe.raison_sociale_concatene}_${user.societe.id}/logos/${user.societe.logo}`;
 
   return (
     <Document>

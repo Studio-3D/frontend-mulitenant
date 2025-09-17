@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
 import { LeftCard } from './LeftCard';
 import { RightCard } from './RightCard';
 import { APIURL } from '@/configs/api';
@@ -82,6 +83,20 @@ export const TrancheDetailsPage = () => {
       fetchTrancheDetails();
     }
   }, [id, fetchTrancheDetails]);
+  // Persist breadcrumb context for fast "Ajouter bien" page
+  useEffect(() => {
+    if (trancheData?.tranche) {
+      try {
+        const ctx = {
+          projet: trancheData.tranche.projet ? { id: trancheData.tranche.projet_id, nom: trancheData.tranche.projet.nom } : undefined,
+          tranche: { id: trancheData.tranche.id, nom: trancheData.tranche.nom },
+        };
+        localStorage.setItem('bienBreadcrumbContext', JSON.stringify(ctx));
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, [trancheData]);
 
   // Handle edit action
   const handleEdit = () => {
@@ -305,6 +320,21 @@ export const TrancheDetailsPage = () => {
 
   return (
     <div className="w-full">
+      {/* Breadcrumbs */}
+      <div className="mb-4">
+        <BreadCrumb
+          onRoot={{ href: '/Projets' }}
+          items={[
+            trancheData?.tranche?.projet_id
+              ? {
+                  label: trancheData?.tranche?.projet?.nom || `Projet #${trancheData.tranche.projet_id}`,
+                  href: `/Projets/${trancheData.tranche.projet_id}`,
+                }
+              : { label: 'Projet inconnu' },
+            { label: trancheData?.tranche?.nom || `Tranche #${id}` },
+          ]}
+        />
+      </div>
       <div className="flex flex-col lg:flex-row gap-6 h-full">
         <div className="w-full lg:w-1/3">
           <LeftCard
@@ -327,6 +357,11 @@ export const TrancheDetailsPage = () => {
             nbre_immeubles={trancheData?.tranche?.projet?.nbre_immeubles}
             nbre_biens={trancheData?.tranche?.projet?.nbre_biens}
             projetId={trancheData?.tranche?.projet_id}
+            breadcrumbContext={{
+              projet: trancheData?.tranche?.projet ? { id: trancheData.tranche.projet_id, nom: trancheData.tranche.projet.nom } : undefined,
+              tranche: trancheData?.tranche ? { id: trancheData.tranche.id, nom: trancheData.tranche.nom } : undefined,
+            }}
+            max_etages={trancheData?.tranche?.projet?.max_etages}
           />
         </div>
       </div>

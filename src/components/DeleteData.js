@@ -43,7 +43,9 @@ export default function DeleteData({
         });
       }
 
-      toast.success(`${type} supprimé avec succès`);
+      toast.success(
+        `${type} ${type == ('Tranche'||'Visite') ? ' supprimée' : 'supprimé'}  avec succès`
+      );
       if (onSuccess) onSuccess();
       //window.location.reload()
       if (onClose) onClose();
