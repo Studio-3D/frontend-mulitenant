@@ -1,3 +1,5 @@
+'use client';
+
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useState, useEffect, useRef } from 'react';
@@ -10,13 +12,10 @@ import * as yup from 'yup';
 import { APIURL, ENDPOINTS } from '../../../../configs/api';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../../../context/AuthContext';
-import AutocompleteMultiple from '@/components/AutocompleteMultiple';
+import SelectInput from '@/components/SelectInput'; // Updated import
 
-import Autocomplete from '@/components/Autocomplete';
-
-import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
-import TextField from '@/components/Textfield'; // Import the component
-import Button from '@/components/Button'; // adjust the path as needed
+import TextField from '@/components/Textfield';
+import Button from '@/components/Button';
 import LoadingSpin from '@/components/LoadingSpin';
 import Modal_Propsepct_Exist from '../visites/Modal_Propsepct_Exist';
 
@@ -79,7 +78,7 @@ export default function AppelsForm({ id }) {
 
   const { person: selectedPerson, type: personType } = getStoredPerson();
   const orientationOptions = Object.keys(ORIENTATIONS).map((key) => ({
-    code: ORIENTATIONS[key].code,
+    value: ORIENTATIONS[key].code,
     label: ORIENTATIONS[key].label,
     description: ORIENTATIONS[key].description,
     key: key,
@@ -1012,111 +1011,113 @@ const prospect_appel = getProspectFromStorage();
                 backendErrors={backendErrors}
                 defaultValues={defaultValues}
               />
-              <Autocomplete
+              <SelectInput
+                placeholder='selectionner un projet'
                 label="Projet:"
                 required
-                name="projet_id" // Name for field identification
-                options={PROJETS}
-                loading={loading}
-                value={
-                  PROJETS.find((opt) => opt.id == watch('projet_id')) || null
-                }
-                choix="nom"
-                control={control}
-                errors={errors}
-                backendErrors={backendErrors}
-                onChange={(newValue) => {
-                  setValue('projet_id', newValue ? newValue.id : '');
+                name="projet_id"
+                options={PROJETS.map(projet => ({ 
+                  value: projet.id, 
+                  label: projet.nom 
+                }))}
+                value={watch('projet_id')}
+                onChange={(value) => {
+                  setValue('projet_id', value);
                   setValue('tranche_id', '');
                   setValue('bloc_id', '');
                   setValue('immeuble_id', '');
                   setValue('etage', '');
-                  if (newValue?.id) {
-                    fetchPartenaires(newValue.id);
-                    fetch_data_by_projetId(newValue.id);
-                    fetch_type_biens(newValue.id);
+                  if (value) {
+                    fetchPartenaires(value);
+                    fetch_data_by_projetId(value);
+                    fetch_type_biens(value);
                   }
                 }}
+                error={errors.projet_id?.message || backendErrors.projet_id}
+                submitted={formSubmitted}
               />
-              <AutocompleteSelectComponent
+              <SelectInput
+              placeholder='selectionner un type dappel'
                 label="Type Appel :"
                 name="type_appel"
                 value={watch('type_appel')}
-                errors={errors}
-                backendErrors={backendErrors}
                 required={true}
-                control={control}
-                options={TYPES_APPELS}
-                onChange={(code) => {
-                  setValue('type_appel', code);
+                options={Object.values(TYPES_APPELS).map(type => ({ 
+                  value: type.code, 
+                  label: type.label 
+                }))}
+                onChange={(value) => {
+                  setValue('type_appel', value);
                 }}
+                error={errors.type_appel?.message || backendErrors.type_appel}
+                submitted={formSubmitted}
               />
-              <Autocomplete
+              <SelectInput
+              placeholder='selectionner une source'
                 label="Source:"
                 required
-                name="source" // Name for field identification
-                options={SOURCES}
-                loading={loading}
-                choix="source"
-                value={SOURCES.find((opt) => opt.id == watch('source')) || null}
-                control={control}
-                errors={errors}
-                backendErrors={backendErrors}
-                onChange={(newValue) => {
-                  setSource(newValue ? newValue.source : '');
-                  setValue('source', newValue ? newValue.id : '');
+                name="source"
+                options={SOURCES.map(source => ({ 
+                  value: source.id, 
+                  label: source.source 
+                }))}
+                value={watch('source')}
+                onChange={(value) => {
+                  setSource(SOURCES.find(s => s.id === value)?.source || '');
+                  setValue('source', value);
 
-                  if (newValue?.source == 'Partenaire') {
+                  if (SOURCES.find(s => s.id === value)?.source === 'Partenaire') {
                     setValue('source_txt', 'Partenaire');
                   } else {
                     setValue('source_txt', '');
                   }
-                  if (
-                    !watch('projet_id') &&
-                    watch('source_txt', 'Partenaire')
-                  ) {
+                  if (!watch('projet_id') && watch('source_txt') === 'Partenaire') {
                     toast.error('Veuillez Choisir un Projet');
                   }
                 }}
+                error={errors.source?.message || backendErrors.source}
+                submitted={formSubmitted}
               />
               {source?.toLowerCase() == 'partenaire' && (
-                <Autocomplete
+                <SelectInput
+                placeholder='selectionner un partenaire'
                   label="Partenaire:"
                   name="partenaire_id"
                   required={watch('source_txt') == 'Partenaire'}
-                  options={list_partenaires}
-                  value={
-                    list_partenaires.find((opt) => opt.id == partenaire) || null
+                  options={list_partenaires.map(partenaire => ({ 
+                    value: partenaire.id, 
+                    label: partenaire.description 
+                  }))}
+                  value={watch('partenaire_id')}
+                  onChange={(value) => {
+                    setValue('partenaire_id', value);
+                  }}
+                  error={
+                    (formSubmitted &&
+                    watch('source_txt') == 'Partenaire' &&
+                    !watch('partenaire_id')
+                      ? 'Partenaire est obligatoire'
+                      : null) || backendErrors.partenaire_id
                   }
-                  loading={loading}
-                  choix="description"
-                  control={control}
-                  errors={{
-                    ...errors,
-                    partenaire_id:
-                      // 1) required if email_required and empty on submit
-                      formSubmitted &&
-                      watch('source_txt') == 'Partenaire' &&
-                      !watch('partenaire_id')
-                        ? { message: 'Prtenaire est  obligatoire' }
-                        : null,
-                  }}
-                  backendErrors={backendErrors}
-                  onChange={(newValue) => {
-                    setValue('partenaire_id', newValue ? newValue.id : ''); // Set partenaire ID
-                  }}
+                  submitted={formSubmitted}
                 />
               )}
               {/* Intérêt (toujours visible) */}
               <div className="sm:col-span-1">
-                <AutocompleteSelectComponent
+                <SelectInput
+                  placeholder='selectionner un intérêt'
                   label="Intérêt:"
                   name="interet"
                   value={watch('interet')}
                   required={true}
-                  options={VISITE_INTERETS}
+                  options={Object.values(VISITE_INTERETS).map(interet => ({ 
+                    value: interet.code, 
+                    label: interet.label 
+                  }))}
                   disabled={watch('telephone') == ''}
                   onChange={handleChange_interet}
+                  error={errors.interet?.message || backendErrors.interet}
+                  submitted={formSubmitted}
                 />
               </div>
             </div>
@@ -1135,145 +1136,113 @@ const prospect_appel = getProspectFromStorage();
               {/* Tranche et Bloc si interet == 1 */}
               {Number(watch('interet')) == 1 && (
                 <>
-                  <Autocomplete
+                  <SelectInput
+                    placeholder='selectionner une tranche'
                     label="Tranche:"
                     name="tranche_id"
-                    options={tranches}
-                    loading={loading}
-                    value={
-                      tranches.find((opt) => opt.id == watch('tranche_id')) ||
-                      null
-                    }
-                    choix="nom"
-                    control={control}
-                    errors={errors}
-                    backendErrors={backendErrors}
-                    onChange={(newValue) => {
-                      setValue('tranche_id', newValue ? newValue.id : '');
+                    options={tranches.map(tranche => ({ 
+                      value: tranche.id, 
+                      label: tranche.nom 
+                    }))}
+                    value={watch('tranche_id')}
+                    onChange={(value) => {
+                      setValue('tranche_id', value);
                     }}
+                    error={errors.tranche_id?.message || backendErrors.tranche_id}
+                    submitted={formSubmitted}
                   />
                   <div className="mt-1">
-                    <Autocomplete
+                    <SelectInput
+                      placeholder='selectionner un bloc'
                       label="Bloc:"
                       name="bloc_id"
-                      value={
-                        blocs.find((opt) => opt.id == watch('bloc_id')) || null
-                      }
-                      options={blocs}
-                      loading={loading}
-                      choix="nom"
-                      control={control}
-                      errors={errors}
-                      backendErrors={backendErrors}
-                      onChange={(newValue) => {
-                        setValue('bloc_id', newValue ? newValue.id : '');
+                      value={watch('bloc_id')}
+                      options={blocs.map(bloc => ({ 
+                        value: bloc.id, 
+                        label: bloc.nom 
+                      }))}
+                      onChange={(value) => {
+                        setValue('bloc_id', value);
                       }}
+                      error={errors.bloc_id?.message || backendErrors.bloc_id}
+                      submitted={formSubmitted}
                     />
                   </div>
                   <div className="mt-1">
-                    <Autocomplete
+                    <SelectInput
+                      placeholder='selectionner un immeuble'
                       label="Immeuble:"
                       name="immeuble_id"
-                      options={immeubles}
-                      value={
-                        immeubles.find(
-                          (opt) => opt.id == watch('immeuble_id')
-                        ) || null
-                      }
-                      loading={loading}
-                      choix="nom"
-                      control={control}
-                      errors={errors}
-                      backendErrors={backendErrors}
-                      onChange={(newValue) => {
-                        setValue('immeuble_id', newValue ? newValue.id : '');
+                      options={immeubles.map(immeuble => ({ 
+                        value: immeuble.id, 
+                        label: immeuble.nom 
+                      }))}
+                      value={watch('immeuble_id')}
+                      onChange={(value) => {
+                        setValue('immeuble_id', value);
                       }}
+                      error={errors.immeuble_id?.message || backendErrors.immeuble_id}
+                      submitted={formSubmitted}
                     />
                   </div>
 
                   <div className="mt-1">
-                    <AutocompleteMultiple
+                    <SelectInput
+                      placeholder='selectionner un type de bien'
                       label="Types Biens :"
                       name="type_biens"
                       required={true}
-                      options={list_type_biens}
-                      value={list_type_biens.filter((opt) =>
-                        watch('type_biens')?.includes(opt.id)
-                      )}
-                      choiceKey="type"
-                      onChange={(newValue) => {
-                        try {
-                          if (Array.isArray(newValue)) {
-                            const selectedIds = newValue.map(
-                              (option) => option?.id
-                            );
-                            console.log('ids tp b', selectedIds);
-                            setValue('type_biens', selectedIds); // Set only IDs to the form field
-                          } else {
-                            console.error(
-                              'Expected newValue to be an array of selected options, but received:',
-                              newValue
-                            );
-                          }
-                        } catch (error) {
-                          console.error(
-                            'Error in type biens onChange handler:',
-                            error
-                          );
-                        }
+                      options={list_type_biens.map(type => ({ 
+                        value: type.id, 
+                        label: type.type 
+                      }))}
+                      value={watch('type_biens')}
+                      isMulti={true}
+                      onChange={(value) => {
+                        setValue('type_biens', value);
                       }}
-                      placeholder="sélectionnez un ou plusieurs Typologies"
-                      errors={{
-                        ...errors,
-                        type_biens:
-                          formSubmitted && Number(watch('interet')) == 1
-                            ? "Ce champ est obligatoire lorsque 'interet' est 'interessé'."
-                            : null,
-                      }}
-                      loading={loading}
-                      backendErrors={backendErrors}
+                      error={
+                        (formSubmitted && Number(watch('interet')) == 1
+                          ? "Ce champ est obligatoire lorsque 'interet' est 'interessé'."
+                          : null) || backendErrors.type_biens
+                      }
+                      submitted={formSubmitted}
                     />
                   </div>
                   <div className="mt-1">
-                    <AutocompleteSelectComponent
+                    <SelectInput
+                      placeholder='selectionner une orientation'
                       label="Orientation :"
                       name="orientation"
                       value={watch('orientation')}
-                      errors={{
-                        ...errors,
-                        orientation:
-                          formSubmitted && Number(watch('interet')) == 1
-                            ? "Ce champ est obligatoire lorsque 'interet' est 'interessé'."
-                            : null,
-                      }}
-                      backendErrors={backendErrors}
-                      required={true}
-                      control={control}
                       options={orientationOptions}
-                      onChange={(code) => {
-                        setValue('orientation', code);
+                      onChange={(value) => {
+                        setValue('orientation', value);
                       }}
+                      error={
+                        (formSubmitted && Number(watch('interet')) == 1
+                          ? "Ce champ est obligatoire lorsque 'interet' est 'interessé'."
+                          : null) || backendErrors.orientation
+                      }
+                      submitted={formSubmitted}
                     />
                   </div>
 
                   <div className="mt-1">
-                    <Autocomplete
+                    <SelectInput
+                      placeholder='selectionner un etage'
                       label="Etage:"
                       name="etage"
-                      options={list_etages}
-                      value={
-                        list_etages.find(
-                          (opt) => opt.value == Number(watch('etage'))
-                        ) || null
-                      }
-                      loading={loading}
-                      choix="value"
-                      control={control}
-                      errors={errors}
-                      backendErrors={backendErrors}
-                      onChange={(newValue) => {
-                        setValue('etage', newValue ? newValue.value : '');
+                      options={list_etages.map(etage => ({ 
+                        value: etage.value, 
+                        label: etage.value 
+                      }))}
+                      value={watch('etage')}
+                      onChange={(value) => {
+                        setValue('etage', value);
                       }}
+                      error={errors.etage?.message || backendErrors.etage}
+                      submitted={formSubmitted}
                     />
                   </div>
 
@@ -1290,15 +1259,18 @@ const prospect_appel = getProspectFromStorage();
                     />
                   </div>
                   <div className="mt-1">
-                    <AutocompleteSelectComponent
+                    <SelectInput
+                      placeholder='selectionner un mode de relance'
                       label="Mode Relance:"
                       name="mode_relance"
                       value={watch('mode_relance')}
-                      control={control}
-                      options={VISITE_TYPE_NOTIF}
-                      errors={errors}
-                      backendErrors={backendErrors}
-                      onChange={(code) => setValue('mode_relance', code)}
+                      options={Object.values(VISITE_TYPE_NOTIF).map(notif => ({ 
+                        value: notif.code, 
+                        label: notif.label 
+                      }))}
+                      onChange={(value) => setValue('mode_relance', value)}
+                      error={errors.mode_relance?.message || backendErrors.mode_relance}
+                      submitted={formSubmitted}
                     />
                   </div>
                   <div className="mt-1">
@@ -1319,15 +1291,18 @@ const prospect_appel = getProspectFromStorage();
               {/* Mode Relance et Date Relance si interet == 2 */}
               {Number(watch('interet')) == 2 && (
                 <>
-                  <AutocompleteSelectComponent
+                  <SelectInput
+                    placeholder='selectionner un mode de relance'
                     label="Mode Relance:"
                     name="mode_relance"
                     value={watch('mode_relance')}
-                    control={control}
-                    options={VISITE_TYPE_NOTIF}
-                    errors={errors}
-                    backendErrors={backendErrors}
-                    onChange={(code) => setValue('mode_relance', code)}
+                    options={Object.values(VISITE_TYPE_NOTIF).map(notif => ({ 
+                      value: notif.code, 
+                      label: notif.label 
+                    }))}
+                    onChange={(value) => setValue('mode_relance', value)}
+                    error={errors.mode_relance?.message || backendErrors.mode_relance}
+                    submitted={formSubmitted}
                   />
                   <TextField
                     label="Date Relance:"
@@ -1345,182 +1320,98 @@ const prospect_appel = getProspectFromStorage();
 
               {Number(watch('interet')) == 3 && (
                 <>
-                  <AutocompleteMultiple
+                  <SelectInput
+                    placeholder='selectionner des freins'
                     label="Freins :"
                     name="freins"
-                    value={(Array.isArray(watch('freins'))
-                      ? watch('freins')
-                      : []
-                    ).map((word) =>
-                      typeof word === 'string'
-                        ? word.toLowerCase()
-                        : word?.description?.toLowerCase()
-                    )}
+                    value={watch('freins')}
                     required={true}
-                    options={type_freins}
-                    choiceKey="description"
-                    onChange={handleChange_freins}
-                    placeholder="sélectionnez un ou plusieurs freins"
-                    errors={{
-                      ...errors,
-                      freins:
-                        formSubmitted && watch('freins').length == 0
-                          ? 'Veuillez renseigner le champ frein.'
-                          : null,
+                    options={type_freins.map(frein => ({ 
+                      value: frein.description.toLowerCase(), 
+                      label: frein.description 
+                    }))}
+                    isMulti={true}
+                    onChange={(value) => {
+                      setValue('freins', value);
                     }}
-                    loading={loading_tp_frein}
-                    backendErrors={backendErrors}
+                    error={
+                      (formSubmitted && (!watch('freins') || watch('freins').length == 0)
+                        ? 'Veuillez renseigner le champ frein.'
+                        : null) || backendErrors.freins
+                    }
+                    submitted={formSubmitted}
                   />
 
                   {watch('freins')?.includes('tranche') && ( // Safe access using optional chaining
-                    <AutocompleteMultiple
+                    <SelectInput
+                      placeholder='selectionner des tranches'
                       label="Tranches :"
                       name="tranches_id"
-                      value={watch('tranches_id')} // e.g. [12, 17]
-                      valueKey="id"
-                      required={true}
-                      options={tranches}
-                      choiceKey="nom"
-                      onChange={(newValue) => {
-                        try {
-                          console.log('Selected tranches:', newValue);
-
-                          if (Array.isArray(newValue)) {
-                            const selectedIds = newValue.map(
-                              (option) => option?.id
-                            );
-                            console.log('ids tranches', selectedIds);
-                            setValue('tranches_id', selectedIds); // Set only IDs to the form field
-                          } else {
-                            console.error(
-                              'Expected newValue to be an array of selected options, but received:',
-                              newValue
-                            );
-                          }
-                        } catch (error) {
-                          console.error(
-                            'Error in tranches onChange handler:',
-                            error
-                          );
-                        }
+                      value={watch('tranches_id')}
+                      isMulti={true}
+                      options={tranches.map(tranche => ({ 
+                        value: tranche.id, 
+                        label: tranche.nom 
+                      }))}
+                      onChange={(value) => {
+                        setValue('tranches_id', value);
                       }}
-                      placeholder="sélectionnez un ou plusieurs Tranches"
-                      errors={{
-                        ...errors,
-                        tranche:
-                          formSubmitted &&
-                          watch('freins')?.includes('tranche') &&
-                          watch('tranches_id').length == 0
-                            ? "Ce champ est obligatoire lorsque 'frein' inclut 'tranche'."
-                            : null,
-                      }}
-                      backendErrors={backendErrors}
-                      loading={loading}
+                      error={
+                        (formSubmitted &&
+                        watch('freins')?.includes('tranche') &&
+                        (!watch('tranches_id') || watch('tranches_id').length == 0)
+                          ? "Ce champ est obligatoire lorsque 'frein' inclut 'tranche'."
+                          : null) || backendErrors.tranches_id
+                      }
+                      submitted={formSubmitted}
                     />
                   )}
 
                   {watch('freins')?.includes('etage') && (
-                    <AutocompleteMultiple
+                    <SelectInput
+                      placeholder='selectionner des etages'
                       label="Etages :"
                       name="etages"
                       required={true}
-                      options={list_etages}
-                      choiceKey="value"
-                      valueKey="value"
-                      value={
-                        Array.isArray(watch('etages')) ? watch('etages') : []
+                      options={list_etages.map(etage => ({ 
+                        value: etage.value, 
+                        label: etage.value 
+                      }))}
+                      value={watch('etages')}
+                      isMulti={true}
+                      onChange={(value) => {
+                        setValue('etages', value);
+                      }}
+                      error={
+                        (formSubmitted &&
+                        watch('freins')?.includes('etage') &&
+                        (!watch('etages') || watch('etages').length == 0)
+                          ? "Ce champ est obligatoire lorsque 'frein' inclut 'etage'."
+                          : null) || backendErrors.etages
                       }
-                      onChange={(newValue) => {
-                        try {
-                          console.log('Selected etages:', newValue);
-                          if (Array.isArray(newValue)) {
-                            const selectedVal = newValue.map(
-                              (option) => option?.value
-                            ); // option.value should be a number like 1 or 2
-                            const etagesArray = selectedVal.join(','); // no need to map again!
-                            console.log('etagesArray:', etagesArray); // Output: "1,2"
-                            setValue('etages', etagesArray); // ✔️ correct usage
-                          } else {
-                            console.error(
-                              'Expected newValue to be an array of selected options, but received:',
-                              newValue
-                            );
-                          }
-                        } catch (error) {
-                          console.error(
-                            'Error in etages onChange handler:',
-                            error
-                          );
-                        }
-                      }}
-                      placeholder="sélectionnez un ou plusieurs etages"
-                      errors={{
-                        ...errors,
-                        etages:
-                          formSubmitted &&
-                          watch('freins')?.includes('etage') &&
-                          watch('etages').length == 0
-                            ? "Ce champ est obligatoire lorsque 'frein' inclut 'etage'."
-                            : null,
-                      }}
-                      loading={loading}
-                      backendErrors={backendErrors}
+                      submitted={formSubmitted}
                     />
                   )}
                   {watch('freins')?.includes('orientation') && (
                     <div>
-                      <AutocompleteMultiple
-                        label="Orientations :"
-                        name="orientations"
-                        required={true}
-                        options={orientationOptions}
-                        choiceKey="label"
-                        value={
-                          Array.isArray(watch('orientations'))
-                            ? orientationOptions.filter((opt) =>
-                                watch('orientations').includes(opt.code)
-                              )
-                            : []
+                      <SelectInput
+                        placeholder='selectionner des orientations'
+                        label="Orientation :"
+                        name="orientation"
+                        value={watch('orientation')}
+                        options={orientationOptions.map(opt => ({ 
+                          value: opt.value, 
+                          label: opt.label 
+                        }))}
+                        onChange={(value) => {
+                          setValue('orientation', value);
+                        }}
+                        error={
+                          (formSubmitted && Number(watch('interet')) == 1
+                            ? "Ce champ est obligatoire lorsque 'interet' est 'interessé'."
+                            : null) || backendErrors.orientation
                         }
-                        valueKey="code"
-                        onChange={(newValue) => {
-                          try {
-                            console.log(
-                              'Selected orientationOptions:',
-                              newValue
-                            );
-
-                            if (Array.isArray(newValue)) {
-                              const selectedCode = newValue.map(
-                                (option) => option?.code
-                              );
-                              console.log('code orientations', selectedCode);
-                              setValue('orientations', selectedCode); // Set only IDs to the form field
-                            } else {
-                              console.error(
-                                'Expected newValue orientations to be an array of selected options, but received:',
-                                newValue
-                              );
-                            }
-                          } catch (error) {
-                            console.error(
-                              'Error in orientations onChange handler:',
-                              error
-                            );
-                          }
-                        }}
-                        placeholder="sélectionnez un ou plusieurs orientations"
-                        errors={{
-                          ...errors,
-                          orientations:
-                            formSubmitted &&
-                            watch('freins')?.includes('orientation') &&
-                            watch('orientations').length == 0
-                              ? "Ce champ est obligatoire lorsque 'frein' inclut 'orientation'."
-                              : null,
-                        }}
-                        loading={loading}
-                        backendErrors={backendErrors}
+                        submitted={formSubmitted}
                       />
                     </div>
                   )}
@@ -1620,97 +1511,55 @@ const prospect_appel = getProspectFromStorage();
 
                   {watch('freins')?.includes('typologie') && (
                     <div>
-                      <AutocompleteMultiple
+                      <SelectInput
+                        placeholder='selectionner des typologies'
                         label="Typologies :"
                         name="typologies"
                         required={true}
                         value={watch('typologies')}
-                        options={list_typologies}
-                        choiceKey="typologie"
-                        valueKey="id"
-                        onChange={(newValue) => {
-                          try {
-                            console.log('Selected typologies:', newValue);
-
-                            if (Array.isArray(newValue)) {
-                              const selectedIds = newValue.map(
-                                (option) => option?.id
-                              );
-                              console.log('ids tranches', selectedIds);
-                              setValue('typologies', selectedIds); // Set only IDs to the form field
-                            } else {
-                              console.error(
-                                'Expected newValue to be an array of selected options, but received:',
-                                newValue
-                              );
-                            }
-                          } catch (error) {
-                            console.error(
-                              'Error in typologies onChange handler:',
-                              error
-                            );
-                          }
+                        options={list_typologies.map(typologie => ({ 
+                          value: typologie.id, 
+                          label: typologie.typologie 
+                        }))}
+                        isMulti={true}
+                        onChange={(value) => {
+                          setValue('typologies', value);
                         }}
-                        placeholder="sélectionnez un ou plusieurs Typologies"
-                        errors={{
-                          ...errors,
-                          typologies:
-                            formSubmitted &&
-                            watch('freins')?.includes('typologie') &&
-                            watch('typologies').length == 0
-                              ? "Ce champ est obligatoire lorsque 'frein' inclut 'typologie'."
-                              : null,
-                        }}
-                        loading={loading}
-                        backendErrors={backendErrors}
+                        error={
+                          (formSubmitted &&
+                          watch('freins')?.includes('typologie') &&
+                          (!watch('typologies') || watch('typologies').length == 0)
+                            ? "Ce champ est obligatoire lorsque 'frein' inclut 'typologie'."
+                            : null) || backendErrors.typologies
+                        }
+                        submitted={formSubmitted}
                       />
                     </div>
                   )}
                   {watch('freins')?.includes('vue') && (
                     <div>
-                      <AutocompleteMultiple
+                      <SelectInput
+                        placeholder='selectionner des vues'
                         label="vue :"
                         name="vues"
                         required={true}
-                        options={list_vues}
-                        choiceKey="vue"
-                        value={watch('vues') || []}
-                        valueKey="id"
-                        onChange={(newValue) => {
-                          try {
-                            console.log('Selected vues:', newValue);
-
-                            if (Array.isArray(newValue)) {
-                              const selectedIds = newValue.map(
-                                (option) => option?.id
-                              );
-                              console.log('ids vues', selectedIds);
-                              setValue('vues', selectedIds); // Set only IDs to the form field
-                            } else {
-                              console.error(
-                                'Expected newValue to be an array of selected options, but received:',
-                                newValue
-                              );
-                            }
-                          } catch (error) {
-                            console.error(
-                              'Error in vues onChange handler:',
-                              error
-                            );
-                          }
+                        options={list_vues.map(vue => ({ 
+                          value: vue.id, 
+                          label: vue.vue 
+                        }))}
+                        value={watch('vues')}
+                        isMulti={true}
+                        onChange={(value) => {
+                          setValue('vues', value);
                         }}
-                        placeholder="sélectionnez un ou plusieurs Vues"
-                        errors={{
-                          ...errors,
-                          vues:
-                            formSubmitted &&
-                            watch('freins')?.includes('vue') &&
-                            watch('vues').length == 0
-                              ? "Ce champ est obligatoire lorsque 'frein' inclut 'vue'."
-                              : null,
-                        }}
-                        loading={loading}
-                        backendErrors={backendErrors}
+                        error={
+                          (formSubmitted &&
+                          watch('freins')?.includes('vue') &&
+                          (!watch('vues') || watch('vues').length == 0)
+                            ? "Ce champ est obligatoire lorsque 'frein' inclut 'vue'."
+                            : null) || backendErrors.vues
+                        }
+                        submitted={formSubmitted}
                       />
                     </div>
                   )}

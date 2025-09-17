@@ -1,3 +1,4 @@
+
 'use client';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
@@ -2580,25 +2581,19 @@ const VisiteForm = ({ prospect_id, origin }) => {
                               <div className="p-4 space-y-4">
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-x-5 gap-y-4">
                                   <div>
-                                    {/* Bien Selection */}
                                     <SelectInput
                                       label="Bien:"
                                       name="bien_id"
-                                      options={biensByProjet
-                                        .filter(
-                                          (bien) =>
-                                            bien &&
-                                            bien.id &&
-                                            bien.propriete_dite_bien
-                                        )
-                                        .map((bien) => ({
-                                          value: bien.id.toString(),
-                                          label: bien.propriete_dite_bien,
-                                          disabled: bien.disabled || false,
-                                        }))}
+                                      options={biensByProjet 
+                                        ? biensByProjet.filter(bien => bien && bien.id && bien.propriete_dite_bien)
+                                            .map(bien => ({
+                                              value: bien.id.toString(),
+                                              label: bien.propriete_dite_bien,
+                                              disabled: bien.disabled || false
+                                            }))
+                                        : []} // Provide empty array as fallback
                                       value={x.bien_id}
                                       onChange={(selectedValue) => {
-                                        // Create a synthetic event to match handleinputchange's expected format
                                         const syntheticEvent = {
                                           target: {
                                             name: 'bien_id',
@@ -2609,7 +2604,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                       }}
                                       placeholder="Sélectionner un bien"
                                       loading={loading_bien}
-                                      required={true} // Required if status is "Vendu"
+                                      required={x.statut == 2}
                                     />
                                   </div>
 
