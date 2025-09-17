@@ -25,7 +25,7 @@ import LoadingSpin from "@/components/LoadingSpin";
 import AutocompleteBienEdit from "./AutocompleteBien_Edit"; // adjust path if needed
 import AutocompleteStatut_ModeRelance_Biens from "./AutocompleteStatut_ModeRelance_Biens";
 import { useAuth } from "../../../../context/AuthContext";
-import FreinsComponent from "./FreinsComponent";
+import FreinsComponentEdit from "./FreinsComponentEdit";
 
 import {
   VISITE_INTERETS,
@@ -1337,7 +1337,7 @@ const handlePartenaireChange = (partenaireId) => {
               )}
 
               {Number(watch("interet")) === 3 && (
-                <FreinsComponent
+                <FreinsComponentEdit
                   watch={watch}
                   control={control}
                   errors={errors}

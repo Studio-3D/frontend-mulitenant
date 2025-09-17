@@ -24,11 +24,33 @@ const FreinsComponent = ({
   info_sup,
   isEditMode,
 }) => {
+  // Helper function to get selected values in the correct format
+  const getSelectedValues = (fieldName, options) => {
+    const storedValues = watch(fieldName) || [];
+    
+    // If values are already in the correct format (array of strings)
+    if (storedValues.length > 0 && typeof storedValues[0] === 'string') {
+      return storedValues;
+    }
+    
+    // If values are objects, extract the IDs
+    if (storedValues.length > 0 && typeof storedValues[0] === 'object') {
+      return storedValues.map(item => item.id.toString());
+    }
+    
+    return [];
+  };
+
+  // Helper function to handle SelectInput changes
+  const handleSelectChange = (fieldName, selectedValues) => {
+    setValue(fieldName, selectedValues || []);
+  };
+
   // Transform data for SelectInput with safety checks
   const freinOptions = type_freins
     .filter(frein => frein && frein.description)
     .map(frein => ({
-      value: frein.description?.toLowerCase() || '',
+      value: frein.description?.toUpperCase() || '', // UPPERCASE to match conditional checks
       label: frein.description || ''
     }))
     .filter(option => option.value && option.label);
@@ -68,11 +90,6 @@ const FreinsComponent = ({
       label: vue.vue
     }));
 
-  // Helper function to handle SelectInput changes
-  const handleSelectChange = (fieldName, selectedValues) => {
-    setValue(fieldName, selectedValues || []);
-  };
-
   return (
     <>
       {/* Freins Field */}
@@ -99,7 +116,7 @@ const FreinsComponent = ({
       </div>
 
       {/* Tranches Field */}
-      {watch('frein')?.includes('tranche') && (
+      {watch('frein')?.includes('TRANCHE') && (
         <div>
           <SelectInput
             label="Tranches :"
@@ -107,14 +124,14 @@ const FreinsComponent = ({
             required={true}
             isMulti={true}
             options={trancheOptions}
-            value={watch('tranches') || []}
+            value={getSelectedValues('tranches', trancheOptions)}
             onChange={(selectedValues) => handleSelectChange('tranches', selectedValues)}
             placeholder="sélectionnez un ou plusieurs Tranches"
             errors={{
               ...errors,
               tranches:
                 formSubmitted &&
-                watch('frein')?.includes('tranche') &&
+                watch('frein')?.includes('TRANCHE') &&
                 (!watch('tranches') || watch('tranches').length === 0)
                   ? "Ce champ est obligatoire lorsque 'frein' inclut 'tranche'."
                   : null,
@@ -126,7 +143,7 @@ const FreinsComponent = ({
       )}
 
       {/* Etages Field */}
-      {watch('frein')?.includes('etage') && (
+      {watch('frein')?.includes('ETAGE') && (
         <div>
           <SelectInput
             label="Etages :"
@@ -134,14 +151,14 @@ const FreinsComponent = ({
             required={true}
             isMulti={true}
             options={etageOptions}
-            value={watch('etages') || []}
+            value={getSelectedValues('etages', etageOptions)}
             onChange={(selectedValues) => handleSelectChange('etages', selectedValues)}
             placeholder="sélectionnez un ou plusieurs étages"
             errors={{
               ...errors,
               etages:
                 formSubmitted &&
-                watch('frein')?.includes('etage') &&
+                watch('frein')?.includes('ETAGE') &&
                 (!watch('etages') || watch('etages').length === 0)
                   ? "Ce champ est obligatoire lorsque 'frein' inclut 'etage'."
                   : null,
@@ -153,7 +170,7 @@ const FreinsComponent = ({
       )}
 
       {/* Orientations Field */}
-      {watch('frein')?.includes('orientation') && (
+      {watch('frein')?.includes('ORIENTATION') && (
         <div>
           <SelectInput
             label="Orientations :"
@@ -161,14 +178,14 @@ const FreinsComponent = ({
             required={true}
             isMulti={true}
             options={orientationSelectOptions}
-            value={watch('orientations') || []}
+            value={getSelectedValues('orientations', orientationSelectOptions)}
             onChange={(selectedValues) => handleSelectChange('orientations', selectedValues)}
             placeholder="sélectionnez un ou plusieurs orientations"
             errors={{
               ...errors,
               orientations:
                 formSubmitted &&
-                watch('frein')?.includes('orientation') &&
+                watch('frein')?.includes('ORIENTATION') &&
                 (!watch('orientations') || watch('orientations').length === 0)
                   ? "Ce champ est obligatoire lorsque 'frein' inclut 'orientation'."
                   : null,
@@ -180,7 +197,7 @@ const FreinsComponent = ({
       )}
 
       {/* Avance Field */}
-      {watch('frein')?.includes('avance') && (
+      {watch('frein')?.includes('AVANCE') && (
         <div>
           <TextField
             label="Avance:"
@@ -190,13 +207,13 @@ const FreinsComponent = ({
             errors={errors}
             backendErrors={backendErrors}
             defaultValues={defaultValues}
-            required={watch('frein')?.includes('avance')}
+            required={watch('frein')?.includes('AVANCE')}
           />
         </div>
       )}
 
       {/* Prix Fields */}
-      {watch('frein')?.includes('prix') && (
+      {watch('frein')?.includes('PRIX') && (
         <>
           <div className="sm:col-span-2 flex gap-4">
             <div className="w-1/2">
@@ -209,7 +226,7 @@ const FreinsComponent = ({
                 backendErrors={backendErrors}
                 defaultValues={defaultValues}
                 onChange={handlePrixChange(1)}
-                required={watch('frein')?.includes('prix')}
+                required={watch('frein')?.includes('PRIX')}
               />
               {info_prix != null && (
                 <div className="text-red-500 text-sm mt-1">
@@ -227,7 +244,7 @@ const FreinsComponent = ({
                 backendErrors={backendErrors}
                 defaultValues={defaultValues}
                 onChange={handlePrixChange(1)}
-                required={watch('frein')?.includes('prix')}
+                required={watch('frein')?.includes('PRIX')}
               />
             </div>
           </div>
@@ -235,7 +252,7 @@ const FreinsComponent = ({
       )}
 
       {/* Superficie Fields */}
-      {watch('frein')?.includes('superficie') && (
+      {watch('frein')?.includes('SUPERFICIE') && (
         <>
           <div className="sm:col-span-2 flex gap-4">
             <div className="w-1/2">
@@ -248,7 +265,7 @@ const FreinsComponent = ({
                 backendErrors={backendErrors}
                 defaultValues={defaultValues}
                 onChange={handlePrixChange(2)}
-                required={watch('frein')?.includes('superficie')}
+                required={watch('frein')?.includes('SUPERFICIE')}
               />
               {info_sup != null && (
                 <div className="text-red-500 text-sm mt-1">
@@ -266,7 +283,7 @@ const FreinsComponent = ({
                 backendErrors={backendErrors}
                 defaultValues={defaultValues}
                 onChange={handlePrixChange(2)}
-                required={watch('frein')?.includes('superficie')}
+                required={watch('frein')?.includes('SUPERFICIE')}
               />
             </div>
           </div>
@@ -274,7 +291,7 @@ const FreinsComponent = ({
       )}
 
       {/* Typologies Field */}
-      {watch('frein')?.includes('typologie') && (
+      {watch('frein')?.includes('TYPOLOGIE') && (
         <div>
           <SelectInput
             label="Typologies :"
@@ -282,14 +299,14 @@ const FreinsComponent = ({
             required={true}
             isMulti={true}
             options={typologieOptions}
-            value={watch('typologies') || []}
+            value={getSelectedValues('typologies', typologieOptions)}
             onChange={(selectedValues) => handleSelectChange('typologies', selectedValues)}
             placeholder="sélectionnez un ou plusieurs Typologies"
             errors={{
               ...errors,
               typologies:
                 formSubmitted &&
-                watch('frein')?.includes('typologie') &&
+                watch('frein')?.includes('TYPOLOGIE') &&
                 (!watch('typologies') || watch('typologies').length === 0)
                   ? "Ce champ est obligatoire lorsque 'frein' inclut 'typologie'."
                   : null,
@@ -301,7 +318,7 @@ const FreinsComponent = ({
       )}
 
       {/* Vues Field */}
-      {watch('frein')?.includes('vue') && (
+      {watch('frein')?.includes('VUE') && (
         <div>
           <SelectInput
             label="Vue :"
@@ -309,14 +326,14 @@ const FreinsComponent = ({
             required={true}
             isMulti={true}
             options={vueOptions}
-            value={watch('vues') || []}
+            value={getSelectedValues('vues', vueOptions)}
             onChange={(selectedValues) => handleSelectChange('vues', selectedValues)}
             placeholder="sélectionnez un ou plusieurs Vues"
             errors={{
               ...errors,
               vues:
                 formSubmitted &&
-                watch('frein')?.includes('vue') &&
+                watch('frein')?.includes('VUE') &&
                 (!watch('vues') || watch('vues').length === 0)
                   ? "Ce champ est obligatoire lorsque 'frein' inclut 'vue'."
                   : null,
@@ -328,7 +345,7 @@ const FreinsComponent = ({
       )}
 
       {/* Description Autre Field */}
-      {watch('frein')?.includes('autre') && (
+      {watch('frein')?.includes('AUTRE') && (
         <div>
           <TextField
             label="Description Frein Autre:"
@@ -338,7 +355,7 @@ const FreinsComponent = ({
             errors={errors}
             backendErrors={backendErrors}
             defaultValues={defaultValues}
-            required={watch('frein')?.includes('autre')}
+            required={watch('frein')?.includes('AUTRE')}
             width="w-full"
             height="h-full"
           />
