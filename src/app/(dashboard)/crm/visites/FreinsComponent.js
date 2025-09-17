@@ -99,7 +99,7 @@ const FreinsComponent = ({
       </div>
 
       {/* Tranches Field */}
-      {watch('frein')?.includes('tranche') && (
+      {watch('frein')?.includes('TRANCHE') && (
         <div>
           <SelectInput
             label="Tranches :"
@@ -126,7 +126,7 @@ const FreinsComponent = ({
       )}
 
       {/* Etages Field */}
-      {watch('frein')?.includes('etage') && (
+      {watch('frein')?.includes('ETAGE') && (
         <div>
           <SelectInput
             label="Etages :"
@@ -153,7 +153,7 @@ const FreinsComponent = ({
       )}
 
       {/* Orientations Field */}
-      {watch('frein')?.includes('orientation') && (
+      {watch('frein')?.includes('ORIENTATION') && (
         <div>
           <SelectInput
             label="Orientations :"
@@ -180,7 +180,7 @@ const FreinsComponent = ({
       )}
 
       {/* Avance Field */}
-      {watch('frein')?.includes('avance') && (
+      {watch('frein')?.includes('AVANCE') && (
         <div>
           <TextField
             label="Avance:"
@@ -196,7 +196,7 @@ const FreinsComponent = ({
       )}
 
       {/* Prix Fields */}
-      {watch('frein')?.includes('prix') && (
+      {watch('frein')?.includes('PRIX') && (
         <>
           <div className="sm:col-span-2 flex gap-4">
             <div className="w-1/2">
@@ -235,7 +235,7 @@ const FreinsComponent = ({
       )}
 
       {/* Superficie Fields */}
-      {watch('frein')?.includes('superficie') && (
+      {watch('frein')?.includes('SUPERFICIE') && (
         <>
           <div className="sm:col-span-2 flex gap-4">
             <div className="w-1/2">
@@ -274,7 +274,7 @@ const FreinsComponent = ({
       )}
 
       {/* Typologies Field */}
-      {watch('frein')?.includes('typologie') && (
+      {watch('frein')?.includes('TYPOLOGIE') && (
         <div>
           <SelectInput
             label="Typologies :"
@@ -301,7 +301,7 @@ const FreinsComponent = ({
       )}
 
       {/* Vues Field */}
-      {watch('frein')?.includes('vue') && (
+      {watch('frein')?.includes('VUE') && (
         <div>
           <SelectInput
             label="Vue :"
@@ -328,7 +328,7 @@ const FreinsComponent = ({
       )}
 
       {/* Description Autre Field */}
-      {watch('frein')?.includes('autre') && (
+      {watch('frein')?.includes('AUTRE') && (
         <div>
           <TextField
             label="Description Frein Autre:"

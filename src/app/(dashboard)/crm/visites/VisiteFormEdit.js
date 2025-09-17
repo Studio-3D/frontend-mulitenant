@@ -12,6 +12,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { APIURL, ENDPOINTS } from "../../../../configs/api";
 import toast from "react-hot-toast";
+import SelectInput from "@/components/SelectInput";
 import AutocompleteMultiple from "@/components/AutocompleteMultiple";
 
 import Autocomplete from "@/components/Autocomplete";
@@ -76,6 +77,7 @@ export default function VisiteFormEdit({ id }) {
   const [info_client, setInfo_client] = useState(null);
   const isEditing = !!id;
   const previousBienRef = useRef(null);
+  const [currentSourceText, setSourceText] = useState("");
 
   const defaultValues = {
     // selectedProjet.id || ''
@@ -331,15 +333,18 @@ export default function VisiteFormEdit({ id }) {
     fetchData_Select("banques", setBanques, setLoading);
     if (isEditing) {
       axios
-        .get(`${APIURL.VISITES}/${id}`, {
+        .get(`${APIURL.ROOTV1}/edit_visite/${id}`, {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
         })
         .then((res) => {
+          console.log("Full API response:", res.data); // Debug the entire response
+          console.log("Visite object:", res.data.visite); // Debug the visite object
           if (res.status !== 200) router.back();
           const visite = res.data.visite;
-
+          console.log("Frein data structure:", visite.frein);
+          console.log("Does frein exist?", visite.hasOwnProperty('frein'));
           setFormData({
             nom: visite?.prospect?.nom || "",
             prenom: visite?.prospect?.prenom || "",
@@ -432,100 +437,96 @@ export default function VisiteFormEdit({ id }) {
 
           if (visite.interet == "3") {
             fetchTypeFreins();
-
             fetchDataByProjet("tranches", setTranches, setLoading);
             fetchDataByProjet("vues", setList_Vues, setLoading);
             fetchDataByProjet("typologies", setListTyplogies, setLoading);
-            console.log("rani here ");
+            
+            console.log("Processing freins data for interet 3:", visite.freins);
+            
             let freinValue = [];
 
-            if (visite.frein.frein_etage.length > 0) {
-              const etages = visite.frein.frein_etage.map((item) => item.etage);
-              setValue("etages", etages);
-              freinValue.push("etage");
-            }
+            // Check if freins data exists
+            if (visite.freins) {
+              // Handle etage from frein_etage array
+              if (visite.freins && visite.freins.frein_etage && visite.freins.frein_etage.length > 0) {
+                const etages = visite.freins.frein_etage.map((item) => item.etage.toString()); // Convert to string
+                setValue("etages", etages);
+                freinValue.push("ETAGE");
+                console.log("Found etage freins:", etages);
+              }
 
-            if (visite.frein.frein_vue.length > 0) {
-              const vues = visite.frein.frein_vue.map((item) => item.vue);
-              setValue("vues", vues);
-              freinValue.push("vue");
-            }
+              // Handle vue from frein_vue array  
+              if (visite.freins.frein_vue && visite.freins.frein_vue.length > 0) {
+                const vues = visite.freins.frein_vue.map((item) => item.vue);
+                setValue("vues", vues);
+                freinValue.push("VUE");
+                console.log("Found vue freins:", vues);
+              }
 
-            if (visite.frein.frein_typologie.length > 0) {
-              const typologies = visite.frein.frein_typologie.map(
-                (item) => item.typologie
-              );
-              setValue("typologies", typologies);
-              freinValue.push("typologie");
-            }
+              // Handle typologie from frein_typologie array
+              if (visite.freins.frein_typologie && visite.freins.frein_typologie.length > 0) {
+                const typologies = visite.freins.frein_typologie.map((item) => item.typologie);
+                setValue("typologies", typologies);
+                freinValue.push("TYPOLOGIE");
+                console.log("Found typologie freins:", typologies);
+              }
 
-            if (visite.frein.frein_tranche.length > 0) {
-              const tranches = visite.frein.frein_tranches.map(
-                (item) => item.tranche
-              );
-              setValue("tranches", tranches);
-              freinValue.push("tranche");
-            }
+              // Handle tranche from frein_tranche array
+              if (visite.freins.frein_tranche && visite.freins.frein_tranche.length > 0) {
+                const tranches = visite.freins.frein_tranche.map((item) => item.tranche);
+                setValue("tranches", tranches);
+                freinValue.push("TRANCHE");
+                console.log("Found tranche freins:", tranches);
+              }
 
-            if (visite.frein.frein_orientation.length > 0) {
-              const firstLetterToCode = {
-                N: ORIENTATIONS[1].code, // Nord
-                S: ORIENTATIONS[2].code, // Sud
-                E: ORIENTATIONS[3].code, // Est
-                O: ORIENTATIONS[4].code, // Ouest
-                N_E: ORIENTATIONS[5].code, // Ouest
-                N_o: ORIENTATIONS[6].code, // Ouest
-                S_E: ORIENTATIONS[7].code, // Ouest
-                S_O: ORIENTATIONS[8].code, // Ouest
-              };
+              // Handle orientation from frein_orientation array
+              if (visite.freins && visite.freins.frein_orientation && visite.freins.frein_orientation.length > 0) {
+                const orientationMap = {
+                  'N': '1', 'S': '2', 'E': '3', 'O': '4', 
+                  'N-E': '5', 'N-O': '6', 'S-E': '7', 'S-O': '8'
+                };
 
-              const orientations = visite.frein.frein_orientation.map(
-                (item) => {
-                  const letter = item.orientation
-                    ?.trim()
-                    .charAt(0)
-                    .toUpperCase();
-                  return firstLetterToCode[letter];
-                }
-              );
+                const orientations = visite.freins.frein_orientation.map((item) => {
+                  const orientationLetter = item.orientation?.trim().toUpperCase();
+                  return orientationMap[orientationLetter] || '';
+                }).filter(Boolean);
 
-              setValue("orientations", orientations);
-              freinValue.push("orientation");
-            }
+                setValue("orientations", orientations);
+                freinValue.push("ORIENTATION");
+                console.log("Found orientation freins:", orientations);
+              }
 
-            if (visite.frein.description_autre != null) {
-              setValue(
-                "description_autre",
-                visite?.frein?.description_autre || ""
-              );
-              freinValue.push("autre");
-            }
+              // Handle direct properties on freins object
+              if (visite.freins.description_autre != null) {
+                setValue("description_autre", visite.freins.description_autre || "");
+                freinValue.push("AUTRE");
+                console.log("Found autre frein:", visite.freins.description_autre);
+              }
 
-            if (
-              visite.frein.prix_min != null ||
-              visite.frein.prix_max != null
-            ) {
-              setValue("prix_min", visite?.frein?.prix_min || "");
-              setValue("prix_max", visite?.frein?.prix_max || "");
-              freinValue.push("prix");
-            }
+              if (visite.freins.prix_min != null || visite.freins.prix_max != null) {
+                setValue("prix_min", visite.freins.prix_min || "");
+                setValue("prix_max", visite.freins.prix_max || "");
+                freinValue.push("PRIX");
+                console.log("Found prix frein:", visite.freins.prix_min, visite.freins.prix_max);
+              }
 
-            if (
-              visite.frein.superficie_min != null ||
-              visite.frein.superficie_max != null
-            ) {
-              setValue("sup_min", visite?.frein?.superficie_min || "");
-              setValue("sup_max", visite?.frein?.superficie_max || "");
-              freinValue.push("superficie");
-            }
+              if (visite.freins.superficie_min != null || visite.freins.superficie_max != null) {
+                setValue("sup_min", visite.freins.superficie_min || "");
+                setValue("sup_max", visite.freins.superficie_max || "");
+                freinValue.push("SUPERFICIE");
+                console.log("Found superficie frein:", visite.freins.superficie_min, visite.freins.superficie_max);
+              }
 
-            if (visite.frein.avance != null) {
-              setValue("avance", visite.frein.avance);
-              freinValue.push("avance");
+              if (visite.freins.avance != null) {
+                setValue("avance", visite.freins.avance);
+                freinValue.push("AVANCE");
+                console.log("Found avance frein:", visite.freins.avance);
+              }
             }
 
             // Finally set the 'frein' array:
             setValue("frein", freinValue);
+            console.log("Final freinValue array:", freinValue);
           }
         })
         .catch((error) => console.log(error.message));
@@ -1033,29 +1034,53 @@ export default function VisiteFormEdit({ id }) {
     setValue("reste", prixFinal - avance);
   };
 
-  // First select: Source
-  const handleSourceChange = (newValue) => {
-    setValue("partenaire_id", ""); // Reset partenaire ID when source changes
-    setValue("source_txt", newValue ? newValue.source : ""); // Set source ID
-    setValue("source_id", newValue ? newValue.id : ""); // Set source ID
-    setPartenaire_txt(null);
-  };
-  // Second select: Partenaire
-  const handlePartenaireChange = (newValue) => {
-    // setPartenaire_txt(newValue ? newValue : ''); // Set partenaire value
-    setValue("partenaire_id", newValue ? newValue.id : ""); // Set partenaire ID
-  };
+ // First select: Source
+const handleSourceChange = (sourceId) => {
+  const selectedSource = sources.find(source => source.id.toString() === sourceId);
+  const sourceText = selectedSource ? selectedSource.source : "";
+  
+  setValue("partenaire_id", ""); // Reset partenaire ID when source changes
+  setValue("source_txt", sourceText); // Set source text
+  setValue("source_id", selectedSource ? selectedSource.id : ""); // Set source ID
+  setPartenaire_txt(null);
+  
+  // Also update the source text in state for conditional rendering
+  setSourceText(sourceText);
+};
+
+// Second select: Partenaire
+const handlePartenaireChange = (partenaireId) => {
+  const selectedPartenaire = partenaires.find(part => part.id.toString() === partenaireId);
+  setValue("partenaire_id", selectedPartenaire ? selectedPartenaire.id : ""); // Set partenaire ID
+  setValue("partenaire_txt", selectedPartenaire ? selectedPartenaire.description : ""); // Set partenaire text
+};
 
   const handleChange_freins = (selectedValues) => {
-    try {
-      const values = selectedValues.map(
-        (item) => item?.description?.toLowerCase() || ""
-      );
-      setValue("frein", values);
-    } catch (error) {
-      console.error("Error in handleChange_freins:", error);
+  try {
+    console.log("Selected freins:", selectedValues);
+    
+    let values = [];
+    
+    // If selectedValues is an array of objects (from SelectInput), extract values
+    if (Array.isArray(selectedValues) && selectedValues.length > 0 && typeof selectedValues[0] === 'object') {
+      values = selectedValues.map(item => (item.value || '').toUpperCase());
+    } 
+    // If it's already an array of strings (from initial data), use as is but convert to uppercase
+    else if (Array.isArray(selectedValues)) {
+      values = selectedValues.map(val => val.toUpperCase());
     }
-  };
+    // Fallback for single value or empty
+    else {
+      values = selectedValues ? [selectedValues.toUpperCase()] : [];
+    }
+    
+    console.log("Processed frein values (uppercase):", values);
+    setValue("frein", values);
+    
+  } catch (error) {
+    console.error("Error in handleChange_freins:", error);
+  }
+};
 
   const handleChange_tp_notif = (code) => {
     if (code) {
@@ -1269,30 +1294,36 @@ export default function VisiteFormEdit({ id }) {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
-              <AutocompleteSelectComponent
+              <SelectInput
                 label="Intérêt:"
                 name="interet"
-                value={watch("interet")} // should be 1, 2, or 3
+                value={watch("interet")}
                 required={true}
-                options={{
-                  1: VISITE_INTERETS[1],
-                  2: VISITE_INTERETS[2],
-                  3: VISITE_INTERETS[3],
-                }}
-                onChange={handleChange_interet}
+                options={Object.values(VISITE_INTERETS).map(item => ({
+                  value: item.code,
+                  label: item.label
+                }))}
+                onChange={(value) => handleChange_interet(value)}
+                error={errors.interet?.message || backendErrors.interet}
+                submitted={formSubmitted}
               />
 
               {Number(watch("interet")) === 2 && (
                 <>
-                  <AutocompleteSelectComponent
+                  <SelectInput
                     label="Mode Relance:"
                     name="mode_relance"
+                    placeholder="Sélectionner le mode de relance"
                     required={false}
                     value={watch("mode_relance")}
-                    options={VISITE_TYPE_NOTIF}
-                    onChange={handleChange_tp_notif}
+                    options={Object.values(VISITE_TYPE_NOTIF).map(item => ({
+                      value: item.code,
+                      label: item.label
+                    }))}
+                    onChange={(value) => handleChange_tp_notif(value)}
+                    error={errors.mode_relance?.message || backendErrors.mode_relance}
+                    submitted={formSubmitted}
                   />
-
                   <TextField
                     label="Date Relance:"
                     name="date_relance"
@@ -1332,25 +1363,39 @@ export default function VisiteFormEdit({ id }) {
 
               {Number(watch("interet")) === 1 && (
                 <>
-                  <AutocompleteBienEdit
-                    user={user}
-                    biensByProjet={biensByProjet}
+                  <SelectInput
+                    label="Bien:"
+                    placeholder="Sélectionner le bien"
+                    name="bien_id"
                     value={watch("bien_id")}
-                    onChange={handlechangeBien_id}
-                    // disabled={[3, 4, 5].includes(watch('statut'))}
+                    options={biensByProjet.map(bien => ({
+                      value: bien.id,
+                      label: bien.propriete_dite_bien
+                    }))}
+                    onChange={(value) => {
+                      const selectedBien = biensByProjet.find(b => b.id === value);
+                      handlechangeBien_id(null, selectedBien);
+                    }}
                     loading={loading_bien}
-                    error={errors["bien_id"] || backendErrors["bien_id"]}
+                    error={errors.bien_id?.message || backendErrors.bien_id}
+                    submitted={formSubmitted}
                   />
 
                   {/* Statut */}
                   <div>
-                    <AutocompleteSelectComponent
+                    <SelectInput
                       label="Statut:"
+                      placeholder="Sélectionner le statut"
                       name="statut"
                       value={watch("statut")}
                       required={true}
-                      options={VISITE_STATUT_FORM}
-                      onChange={(e) => setValue("statut", e)} // or e?.id depending on your options shape
+                      options={Object.values(VISITE_STATUT_FORM).map(item => ({
+                        value: item.code,
+                        label: item.label
+                      }))}
+                      onChange={(value) => setValue("statut", value)}
+                      error={errors.statut?.message || backendErrors.statut}
+                      submitted={formSubmitted}
                     />
                   </div>
 
@@ -1368,13 +1413,18 @@ export default function VisiteFormEdit({ id }) {
                         defaultValues={defaultValues}
                       />
 
-                      <AutocompleteSelectComponent
+                      <SelectInput
                         label="Mode Relance:"
                         name="mode_relance"
                         required={false}
                         value={watch("mode_relance")}
-                        options={VISITE_TYPE_NOTIF}
-                        onChange={handleChange_tp_notif}
+                        options={Object.values(VISITE_TYPE_NOTIF).map(item => ({
+                          value: item.code,
+                          label: item.label
+                        }))}
+                        onChange={(value) => handleChange_tp_notif(value)}
+                        error={errors.mode_relance?.message || backendErrors.mode_relance}
+                        submitted={formSubmitted}
                       />
                       <TextField
                         label="Date Relance:"
@@ -1624,39 +1674,52 @@ export default function VisiteFormEdit({ id }) {
                               onChange={(e) => handlechangeMontant(e)}
                             />
 
-                            <AutocompleteSelectComponent
+                            <SelectInput
                               label="Mode Financement:"
+                              placeholder="Sélectionner le mode de financement"
                               name="mode_financement"
                               required={true}
                               value={watch("mode_financement")}
-                              options={MODE_FINANCE}
-                              onChange={handleChange_mode_finance}
+                              options={Object.values(MODE_FINANCE).map(item => ({
+                                value: item.code,
+                                label: item.label
+                              }))}
+                              onChange={(value) => handleChange_mode_finance(value)}
+                              error={errors.mode_financement?.message || backendErrors.mode_financement}
+                              submitted={formSubmitted}
                             />
 
-                            <AutocompleteSelectComponent
+                            <SelectInput
+                              placeholder="Sélectionner le mode de paiement"
                               label="Mode Paiement:"
                               name="mode_paiement"
                               required={true}
                               value={watch("mode_paiement")}
-                              options={MODE_PAIEMENT}
-                              onChange={handleChange_mode_paiement}
+                              options={Object.values(MODE_PAIEMENT).map(item => ({
+                                value: item.code,
+                                label: item.label
+                              }))}
+                              onChange={(value) => handleChange_mode_paiement(value)}
+                              error={errors.mode_paiement?.message || backendErrors.mode_paiement}
+                              submitted={formSubmitted}
                             />
                             {/* Conditional Fields */}
                             {watch("mode_paiement") !== 1 &&
                               watch("mode_paiement") !== "" && (
                                 <>
-                                  <AutocompleteStatut_ModeRelance_Biens
-                                    name={"banque_id"}
-                                    label={"Banque:"}
-                                    placeholder={"Sélectionner La banque"}
-                                    options={banques}
+                                  <SelectInput
+                                    label="Banque:"
+                                    name="banque_id"
+                                    placeholder="Sélectionner La banque"
                                     value={watch("banque_id")}
                                     required={watch("mode_paiement") !== 1}
-                                    code="id"
-                                    labelKey="nom"
-                                    onChange={(e) =>
-                                      handleinputchange_banuqe(e)
-                                    }
+                                    options={banques.map(banque => ({
+                                      value: banque.id,
+                                      label: banque.nom
+                                    }))}
+                                    onChange={(value) => setValue("banque_id", value)}
+                                    error={errors.banque_id?.message || backendErrors.banque_id}
+                                    submitted={formSubmitted}
                                   />
                                   <TextField
                                     label="N° Paiement:"
@@ -1806,61 +1869,6 @@ export default function VisiteFormEdit({ id }) {
             <Button type="button" onClick={() => router.back()}>
               Annuler
             </Button>
-            {/*isDisabled && (
-              <ul className="text-sm !text-red-500 mt-2 list-disc ml-5">
-                {loading_form && <li>Chargement du formulaire</li>}
-                {info_prix && <li>Conflit avec les informations de prix</li>}
-                {info_sup && (
-                  <li>Conflit avec les informations supplémentaires</li>
-                )}
-
-                {watch('statut') == 2 && (
-                  <>
-                    {watch('code_reservation') === '' && (
-                      <li>Le code de réservation est requis</li>
-                    )}
-                    {watch('bien_val') == null && (
-                      <li>Le bien doit être sélectionné</li>
-                    )}
-                    {watch('prix_val') == null && (
-                      <li>Le prix doit être défini</li>
-                    )}
-                    {watch('date_reservation') === '' && (
-                      <li>La date de réservation est requise</li>
-                    )}
-                    {(watch('avance_res') == null ||
-                      watch('avance_res') === '') && (
-                      <li>L'avance est requise</li>
-                    )}
-                    {watch('avance_res') < 0 && (
-                      <li>L'avance ne peut pas être négative</li>
-                    )}
-                    {watch('mode_financement') == null && (
-                      <li>Le mode de financement doit être défini</li>
-                    )}
-                    {watch('mode_paiement') == null && (
-                      <li>Le mode de paiement doit être défini</li>
-                    )}
-                    {watch('check_montant') === true &&
-                      watch('commentaireAvance') != null &&
-                      watch('commentaireAvance').length === 0 && (
-                        <li>
-                          Un commentaire est requis si vous cochez "sans
-                          montant"
-                        </li>
-                      )}
-                    {watch('avance_res') == 0 &&
-                      watch('check_montant') === false && (
-                        <li>
-                          Si l'avance est 0, la case "sans montant" doit être
-                          cochée
-                        </li>
-                      )}
-                  </>
-                )}
-              </ul>
-            )*/}
-
             <Button type="submit" disabled={isDisabled} loading={loading_form}>
               Enregistrer
             </Button>
