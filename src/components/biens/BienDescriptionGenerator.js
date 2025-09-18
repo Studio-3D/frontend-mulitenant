@@ -171,11 +171,9 @@ export default function BienDescriptionGenerator({
     setErrorMessage("");
     
     try {
-      // Use the built-in API key or the mock service
-      const generatedText = process.env.NEXT_PUBLIC_OPENAI_API_KEY
-        ? await LLMService.generatePropertyDescription(bien)
-        : await LLMService.generateMockDescription(bien);
-      
+      // Use the updated LLMService that tries multiple AI services
+      const generatedText = await LLMService.generatePropertyDescription(bien);
+
       setGeneratedDescription(generatedText);
       setHasGeneratedOnce(true);
       toast.success("Description générée avec succès!");
@@ -194,13 +192,11 @@ export default function BienDescriptionGenerator({
       toast.error("Veuillez fournir des instructions pour améliorer la description");
       return;
     }
-    
+
     setIsGenerating(true);
     setErrorMessage("");
-    
+
     try {
-      let refinedText;
-      
       // Create feedback prompt
       const feedbackPrompt = `
 Voici une description existante d'un bien immobilier:
@@ -212,14 +208,9 @@ L'utilisateur souhaite modifier cette description avec les instructions suivante
 
 Veuillez générer une nouvelle description qui intègre ces commentaires.`;
 
-      if (process.env.NEXT_PUBLIC_OPENAI_API_KEY) {
-        // Use OpenAI API if key is available
-        refinedText = await LLMService.generateRefinedDescription(feedbackPrompt);
-      } else {
-        // Use improved mock service
-        refinedText = await LLMService.generateMockRefinedDescription(generatedDescription, userFeedback);
-      }
-      
+      // Use the updated LLMService that tries multiple AI services
+      const refinedText = await LLMService.generateRefinedDescription(feedbackPrompt);
+
       setGeneratedDescription(refinedText);
       setUserFeedback("");
       toast.success("Description mise à jour avec succès!");

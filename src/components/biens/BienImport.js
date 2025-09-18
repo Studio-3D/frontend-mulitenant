@@ -400,6 +400,8 @@ export default function BienImport({ open, onClose, projetId }) {
         </Button>
       </Box>
 
+
+
       <DialogContent className="bg-blue-50 px-10 py-8">
         <form
           onSubmit={onSubmit_file}
@@ -535,6 +537,35 @@ export default function BienImport({ open, onClose, projetId }) {
                 <tr>
                   <td className="px-4 py-2">3</td>
                   <td className="px-4 py-2">3ème étage</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <hr className="w-full border-t border-gray-300 my-4" />
+
+          {/* Calculs automatiques table */}
+          <div className="w-full">
+            <p className="text-indigo-700 font-semibold mb-2">Calculs automatiques:</p>
+            <table className="min-w-full bg-white rounded shadow text-sm text-left">
+              <thead className="bg-amber-500 text-white">
+                <tr>
+                  <th className="px-4 py-2">Colonne</th>
+                  <th className="px-4 py-2">Calcul automatique si vide</th>
+                </tr>
+              </thead>
+              <tbody className="bg-amber-50">
+                <tr className="border-b border-amber-200">
+                  <td className="px-4 py-2 font-medium">Superficie balcon calculée</td>
+                  <td className="px-4 py-2">Superficie balcon ÷ 2</td>
+                </tr>
+                <tr className="border-b border-amber-200">
+                  <td className="px-4 py-2 font-medium">Superficie jardin calculée</td>
+                  <td className="px-4 py-2">Superficie jardin ÷ 2</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2 font-medium">Superficie terrasse calculée</td>
+                  <td className="px-4 py-2">Superficie terrasse ÷ 2</td>
                 </tr>
               </tbody>
             </table>

@@ -1,12 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { APIURL, RESOURCE_URL } from '@/configs/api';
+import { ArrowLeft } from 'lucide-react';
 
 export default function ImportDetail() {
   const params = useParams();
+  const router = useRouter();
   const [importInfo, setImportInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -87,19 +89,38 @@ export default function ImportDetail() {
   }
 
   const totalLignes = importInfo.data?.length || 0;
-  const ligneEchouee = importInfo.ligne_echou ? Number(importInfo.ligne_echou) : null;
+
+  // Parse error information if available
+  let errorInfo = null;
+  if (importInfo.message_echou) {
+    try {
+      errorInfo = JSON.parse(importInfo.message_echou);
+    } catch (e) {
+      // If it's not JSON, treat as old format
+      errorInfo = null;
+    }
+  }
 
   // Calculate lines processed based on import status
-  let lignesTraitees, lignesRestantes;
+  let lignesTraitees, lignesRestantes, lignesEchouees = 0;
 
   if (importInfo.statut === '2') {
     // Import successful - all lines processed
     lignesTraitees = totalLignes;
     lignesRestantes = 0;
-  } else if (importInfo.statut === '3' && ligneEchouee) {
-    // Import failed - lines processed up to the error
-    lignesTraitees = ligneEchouee - 1;
-    lignesRestantes = totalLignes - lignesTraitees;
+  } else if (importInfo.statut === '3') {
+    if (errorInfo && errorInfo.lignes_reussies !== undefined) {
+      // New format with detailed error info
+      lignesTraitees = errorInfo.lignes_reussies;
+      lignesEchouees = errorInfo.lignes_echouees;
+      lignesRestantes = 0; // All lines were processed
+    } else {
+      // Old format - lines processed up to the error
+      const ligneEchouee = importInfo.ligne_echou ? Number(importInfo.ligne_echou) : null;
+      lignesTraitees = ligneEchouee ? ligneEchouee - 1 : 0;
+      lignesRestantes = totalLignes - lignesTraitees;
+      lignesEchouees = lignesRestantes;
+    }
   } else {
     // Import pending or in progress
     lignesTraitees = 0;
@@ -109,11 +130,22 @@ export default function ImportDetail() {
   return (
     <div className="min-h-screen bg-gray-50 p-6 flex justify-center">
       <div className="max-w-4xl w-full bg-white rounded-lg shadow-lg p-8 space-y-8">
+        {/* Back button */}
+        <div className="flex items-center gap-4 mb-6">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+            title="Retour"
+          >
+            <ArrowLeft size={20} />
+            <span className="font-medium">Retour</span>
+          </button>
+        </div>
+
         <h1 className="text-3xl font-bold text-blue-700">
           Détails de {"l'"}import
         </h1>
 
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4"></div>
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
           <div
             className={`ml-auto px-4 py-1 rounded-full font-semibold text-sm ${
@@ -132,7 +164,9 @@ export default function ImportDetail() {
               ? 'En Cours'
               : importInfo.statut === '2'
               ? 'Importé'
-              : 'Échoué'}
+              : errorInfo && errorInfo.lignes_reussies > 0
+              ? 'Importé avec erreurs'
+              : 'Échec complet'}
           </div>
         </div>
 
@@ -162,34 +196,104 @@ export default function ImportDetail() {
         </div>
 
         {importInfo.statut === '3' && (
-          <div
-            role="alert"
-            className="bg-orange-100 border border-red-400 px-4 py-3 rounded relative mb-6"
-          >
-            <p className="text-black-900 font-bold mb-1">
-              Message {"d'"}erreur :
-            </p>
-            <p className="text-red-800 whitespace-pre-line">
-              {importInfo.message_echou || "Aucun message d'erreur disponible."}
-            </p>
+          <div className="space-y-4">
+            {errorInfo ? (
+              // New format with detailed error information
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-orange-800 mb-4">
+                  Résumé de l'import
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className="bg-green-100 p-3 rounded text-center">
+                    <p className="text-green-800 font-semibold">Lignes réussies</p>
+                    <p className="text-2xl font-bold text-green-900">{errorInfo.lignes_reussies}</p>
+                  </div>
+                  <div className="bg-red-100 p-3 rounded text-center">
+                    <p className="text-red-800 font-semibold">Lignes échouées</p>
+                    <p className="text-2xl font-bold text-red-900">{errorInfo.lignes_echouees}</p>
+                  </div>
+                  <div className="bg-blue-100 p-3 rounded text-center">
+                    <p className="text-blue-800 font-semibold">Total lignes</p>
+                    <p className="text-2xl font-bold text-blue-900">{errorInfo.total_lignes}</p>
+                  </div>
+                </div>
+
+                {errorInfo.erreurs && errorInfo.erreurs.length > 0 && (
+                  <div>
+                    <h4 className="text-md font-semibold text-orange-800 mb-3">
+                      Détails des erreurs :
+                    </h4>
+                    <div className="max-h-96 overflow-y-auto">
+                      <table className="min-w-full bg-white rounded shadow text-sm">
+                        <thead className="bg-red-500 text-white sticky top-0">
+                          <tr>
+                            <th className="px-4 py-2 text-left">Ligne</th>
+                            <th className="px-4 py-2 text-left">Erreur</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {errorInfo.erreurs.map((error, index) => (
+                            <tr key={index} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
+                              <td className="px-4 py-2 font-medium">{error.ligne}</td>
+                              <td className="px-4 py-2 text-red-700">{error.message}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              // Old format fallback
+              <div
+                role="alert"
+                className="bg-orange-100 border border-red-400 px-4 py-3 rounded relative mb-6"
+              >
+                <p className="text-black-900 font-bold mb-1">
+                  Message {"d'"}erreur :
+                </p>
+                <p className="text-red-800 whitespace-pre-line">
+                  {importInfo.message_echou || "Aucun message d'erreur disponible."}
+                </p>
+              </div>
+            )}
           </div>
         )}
 
-        {/* Lignes traitées et restantes */}
-        <div className="flex flex-col sm:flex-row gap-6">
-          <div className="flex-1 bg-blue-200 p-4 rounded-md text-center">
-            <p className="text-black-900 font-semibold">Lignes traitées</p>
-            <p className="text-2xl font-bold text-blue-900">
-              {lignesTraitees} / {totalLignes}
-            </p>
+        {/* Lignes traitées et restantes - Only show if not using new error format */}
+        {!(importInfo.statut === '3' && errorInfo) && (
+          <div className="flex flex-col sm:flex-row gap-6">
+            <div className="flex-1 bg-green-200 p-4 rounded-md text-center">
+              <p className="text-green-900 font-semibold">Lignes réussies</p>
+              <p className="text-2xl font-bold text-green-900">
+                {lignesTraitees}
+              </p>
+            </div>
+            {lignesEchouees > 0 && (
+              <div className="flex-1 bg-red-200 p-4 rounded-md text-center">
+                <p className="text-red-900 font-semibold">Lignes échouées</p>
+                <p className="text-2xl font-bold text-red-900">
+                  {lignesEchouees}
+                </p>
+              </div>
+            )}
+            {lignesRestantes > 0 && (
+              <div className="flex-1 bg-yellow-200 p-4 rounded-md text-center">
+                <p className="text-yellow-900 font-semibold">Lignes restantes</p>
+                <p className="text-2xl font-bold text-yellow-900">
+                  {lignesRestantes}
+                </p>
+              </div>
+            )}
+            <div className="flex-1 bg-blue-200 p-4 rounded-md text-center">
+              <p className="text-blue-900 font-semibold">Total lignes</p>
+              <p className="text-2xl font-bold text-blue-900">
+                {totalLignes}
+              </p>
+            </div>
           </div>
-          <div className="flex-1 bg-yellow-200 p-4 rounded-md text-center">
-            <p className="text-yellow-900 font-semibold">Lignes restantes</p>
-            <p className="text-2xl font-bold text-yellow-900">
-              {lignesRestantes}
-            </p>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
