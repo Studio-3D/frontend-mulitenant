@@ -464,6 +464,7 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
         open={showImportModal}
         onClose={() => setShowImportModal(false)}
         projetId={projetId}
+        max_etages={0}
       />
     </div>
   );

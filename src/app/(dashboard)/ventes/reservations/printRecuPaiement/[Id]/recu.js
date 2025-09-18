@@ -103,7 +103,7 @@ const MyDocument = ({ data }) => {
   const formValues = data[0];
   const selectedProjet = JSON.parse(localStorage.getItem("selectedProjet"));
 
-  const imageUrl = `/Docs/${formValues.user.societe.raison_sociale_concatene}_${formValues.user.societe.id}/logos/${formValues.user.societe.logo}`;
+  const imageUrl = `/docs/${formValues.user.societe.raison_sociale_concatene}_${formValues.user.societe.id}/logos/${formValues.user.societe.logo}`;
 
   return (
     <Document>

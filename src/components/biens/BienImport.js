@@ -19,7 +19,8 @@ import { PlusSquare, Trash2 } from 'lucide-react';
 import Button1 from '../Button';
 //import {Button as Button1} from '../Button'
 
-export default function BienImport({ open, onClose, projetId }) {
+export default function BienImport({ open, onClose, projetId, max_etages }) {
+  console.log('max etages==>' + max_etages);
   const [file, setFile] = useState(null);
   const [backendErrors, setBackendErrors] = useState([]);
   const [disabled_var, setDisabled_var] = useState(true);
@@ -88,8 +89,11 @@ export default function BienImport({ open, onClose, projetId }) {
           'superficie totale',
           'superficie habitable',
           'type bien',
-          'etage',
+          // 'etage',
         ];
+        if (hasBlocs || hasTranches || hasImmeubles) {
+          requiredHeaders.push('etage');
+        }
 
         if (hasTranches) {
           requiredHeaders.push('tranche');
@@ -256,26 +260,29 @@ export default function BienImport({ open, onClose, projetId }) {
     let fileName = '';
 
     if (hasTranches && hasBlocs && hasImmeubles) {
-      fileName = 'import_bien_tr_bl_imm.xlsx';
+      fileName = 'exemplaire_tranches_blocs_immeubles.xlsx';
     } else if (hasTranches && hasBlocs) {
-      fileName = 'import_bien_tr_bl.xlsx';
+      fileName = 'exemplaire_tranches_blocs.xlsx';
     } else if (hasTranches && hasImmeubles) {
-      fileName = 'import_bien_tr_imm.xlsx';
+      fileName = 'exemplaire_tranches_immeubles.xlsx';
     } else if (hasBlocs && hasImmeubles) {
-      fileName = 'import_bien_bl_imm.xlsx';
+      fileName = 'exemplaire_blocs_immeubles.xlsx';
     } else if (hasTranches) {
-      fileName = 'import_bien_tr.xlsx';
+      fileName = 'exemplaire_tranches.xlsx';
     } else if (hasBlocs) {
-      fileName = 'import_bien_bl.xlsx';
+      fileName = 'exemplaire_blocs.xlsx';
     } else if (hasImmeubles) {
-      fileName = 'import_bien_imm.xlsx';
+      fileName = 'exemplaire_immeubles.xlsx';
     } else if (!hasTranches && !hasBlocs && !hasImmeubles) {
-      fileName = 'import_bien_.xlsx';
+      fileName = 'exemplaire_biens.xlsx';
     } else {
       return; // Aucun fichier à ouvrir
     }
 
-    window.open(`${RESOURCE_URL.DOCS}/exemplaires/${fileName}`, '_blank');
+    window.open(
+      `${RESOURCE_URL.DOCS}/exemplaires-import-biens/${fileName}`,
+      '_blank'
+    );
   };
 
   //ajouter types de biens
@@ -508,39 +515,44 @@ export default function BienImport({ open, onClose, projetId }) {
             )}
           </div>
 
-          <hr className="w-full border-t border-gray-300 my-4" />
+          {max_etages > 0 && (
+            <>
+              <hr className="w-full border-t border-gray-300 my-4" />
 
-          <div className="w-full">
-            <p className="text-indigo-700 font-semibold mb-2">Étages:</p>
-            <table className="min-w-full bg-white rounded shadow text-sm text-left">
-              <thead className="bg-blue-500 text-white">
-                <tr>
-                  <th className="px-4 py-2">Étage</th>
-                  <th className="px-4 py-2">
-                    Nombre à renseigner dans le fichier
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-blue-100">
-                <tr>
-                  <td className="px-4 py-2">0</td>
-                  <td className="px-4 py-2">RDC</td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-2">1</td>
-                  <td className="px-4 py-2">1er étage</td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-2">2</td>
-                  <td className="px-4 py-2">2ème étage</td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-2">3</td>
-                  <td className="px-4 py-2">3ème étage</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+              <div className="w-full">
+                <p className="text-indigo-700 font-semibold mb-2">Étages:</p>
+                <table className="min-w-full bg-white rounded shadow text-sm text-left">
+                  <thead className="bg-blue-500 text-white">
+                    <tr>
+                      <th className="px-4 py-2">Étage</th>
+                      <th className="px-4 py-2">
+                        Nombre à renseigner dans le fichier
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-blue-100">
+                    {/* Always show RDC (0) */}
+                    <tr>
+                      <td className="px-4 py-2">0</td>
+                      <td className="px-4 py-2">RDC</td>
+                    </tr>
+
+                    {/* Dynamic rows for each floor from 1 to max_etages */}
+                    {Array.from({ length: max_etages }, (_, i) => i + 1).map(
+                      (floor) => (
+                        <tr key={floor}>
+                          <td className="px-4 py-2">{floor}</td>
+                          <td className="px-4 py-2">
+                            {floor === 1 ? '1er étage' : `${floor}ème étage`}
+                          </td>
+                        </tr>
+                      )
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
 
           <hr className="w-full border-t border-gray-300 my-4" />
 

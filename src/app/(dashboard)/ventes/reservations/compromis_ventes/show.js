@@ -253,7 +253,7 @@ const Compromis_show = ({
 
   const handleFileClick = (file) => {
     window.open(
-      `${FileUrl}/Docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/compromis_vente/${file}`,
+      `${FileUrl}/docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/compromis_vente/${file}`,
       '_blank'
     );
   };

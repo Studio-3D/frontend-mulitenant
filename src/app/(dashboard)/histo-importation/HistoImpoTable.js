@@ -164,6 +164,7 @@ const getStatutBadge = (statutValue) => {
           <Download className="w-4 h-4" />
         </button>
 
+
         {/* Visualiser button - redirect to details page */}
         <button
           title="Voir les détails"
@@ -174,6 +175,7 @@ const getStatutBadge = (statutValue) => {
         </button>
 
         {/* Remove button - only for "en_attente" status (0) */}
+
         {row.statut == 0 && (
           <button
             className="text-red-500 hover:text-red-700 transition-colors"

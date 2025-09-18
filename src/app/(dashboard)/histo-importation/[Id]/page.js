@@ -179,7 +179,7 @@ export default function ImportDetail() {
           </h2>
           <button
             onClick={() => handleFileClick(importInfo.fichier)}
-            className="text-blue-700 underline hover:text-blue-900 transition"
+            className="text-blue-700  hover:text-blue-900 transition "
             title="Ouvrir le fichier importé"
           >
             {importInfo.fichier}

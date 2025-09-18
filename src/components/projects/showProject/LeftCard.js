@@ -12,6 +12,7 @@ import {
   SquareIcon,
   DollarSignIcon,
   ClockIcon,
+  SquarePiIcon,
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -213,6 +214,20 @@ export const LeftCard = ({ project, onEdit, onDelete, canEdit = false }) => {
                 {project?.prolongation_reservation || 'Durée non spécifiée'}
               </div>
             </div>
+            {project?.max_etages > 0 && (
+              <div className="flex items-center justify-between border-b border-gray-100 pb-2">
+                <div className="flex items-center text-gray-700">
+                  <SquarePiIcon
+                    size={16}
+                    className="mr-2 text-gray-500 flex-shrink-0"
+                  />
+                  <span>Max Etages :</span>
+                </div>
+                <div className="text-gray-600 text-right">
+                  {project?.max_etages || 'Durée non spécifiée'}
+                </div>
+              </div>
+            )}
 
             {/*shouldShowStat(project?.tranche_count) && (
               <div className="flex items-center justify-between border-b border-gray-100 pb-2">

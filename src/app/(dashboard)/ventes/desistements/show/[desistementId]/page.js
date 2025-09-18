@@ -362,7 +362,7 @@ export default function Page() {
                   <div className="flex items-center mb-2">
                     {getFileIcon(file.fichier)}
                     <a
-                      href={`${FileUrl}/Docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/desistements/${reservationData.codeRes}/${file.fichier}`}
+                      href={`${FileUrl}/docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/desistements/${reservationData.codeRes}/${file.fichier}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="ml-2 text-sm font-medium text-gray-700 hover:text-blue-600 truncate"
@@ -592,7 +592,7 @@ export default function Page() {
                         </div>
                         <div className="ml-3 flex-1 min-w-0">
                           <a
-                            href={`${FileUrl}/Docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/penalites/${reservationData.codeRes}/${file.fichier}`}
+                            href={`${FileUrl}/docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/penalites/${reservationData.codeRes}/${file.fichier}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-sm font-medium text-gray-700 hover:text-blue-600 truncate block"

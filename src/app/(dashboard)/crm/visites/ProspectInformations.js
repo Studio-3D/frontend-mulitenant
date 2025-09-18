@@ -1,7 +1,7 @@
 import React from 'react';
 import { Controller } from 'react-hook-form';
-import Autocomplete from '@/components/Autocomplete';
 import Input from '@/components/Input';
+import SelectInput from '@/components/SelectInput';
 
 const ProspectInformations = ({
   control,
@@ -23,6 +23,19 @@ const ProspectInformations = ({
   partenaireValue,
   handleChange_event,
 }) => {
+  
+  // Transform sources data for SelectInput
+  const sourceOptions = sources.map(source => ({
+    value: source.id.toString(),
+    label: source.source
+  }));
+
+  // Transform partenaires data for SelectInput
+  const partenaireOptions = partenaires.map(partenaire => ({
+    value: partenaire.id.toString(),
+    label: partenaire.description
+  }));
+
   return (
     <>
       <div>
@@ -51,7 +64,6 @@ const ProspectInformations = ({
           name="email"
           type="email"
           placeholder="email@example.com"
-          
           control={control}
           rules={{
             required: false,
@@ -173,7 +185,6 @@ const ProspectInformations = ({
             });
           }}
         />
-      
       </div>
       <div>
         <Input
@@ -184,77 +195,66 @@ const ProspectInformations = ({
           defaultValue={defaultValues?.ville}
         />
       </div>
-      {source_d!='' || disabled_var_source ? (
+
+      {/* Source Select */}
+      {source_d !== '' || disabled_var_source ? (
         <div>
-          <Autocomplete
-            options={sources}
+          <SelectInput
+            placeholder='Sélectionner une source'
+            options={sourceOptions}
             label="Source:"
             name="source_id"
+            value={watch('source_id')?.toString()}
             disabled
-            control={control}
+            loading={loading}
             errors={errors}
             backendErrors={backendErrors}
-            value={watch('source_id')} // Should be the full object or ID
             onChange={handleSourceChange}
-            choix="source" // This tells the Autocomplete to use the "source" property
           />
         </div>
       ) : (
         <div>
-          <Autocomplete
+          <SelectInput
+            placeholder='Sélectionner une source'
             label="Source:"
             required
             name="source_id"
-            value={sourceValue}
-            options={sources}
+            value={watch('source_id')?.toString()}
+            options={sourceOptions}
             loading={loading}
-            control={control}
             errors={errors}
             backendErrors={backendErrors}
             onChange={handleSourceChange}
-            choix="source"
           />
         </div>
       )}
-      {watch('source_txt') === 'Partenaire' &&
-        (partenaire_txt != null ? (
-          <div>
-            <Input
-              label="Partenaire:"
-              name="partenaire_txt"
-              disabled
-              control={control}
-              error={
-                errors?.partenaire_txt?.message || backendErrors?.partenaire_txt
-              }
-              defaultValue={defaultValues?.partenaire_txt}
-            />
-          </div>
-        ) : (
-          <div>
-            <Autocomplete
-              label="Partenaire:"
-              name="partenaire_id"
-              required={watch('source_txt') === 'Partenaire'}
-              options={partenaires}
-              value={partenaireValue}
-              loading={loading}
-              control={control}
-              errors={{
-                ...errors,
-                partenaire_id:
-                  formSubmitted &&
-                  watch('source_txt') === 'Partenaire' &&
-                  !watch('partenaire_id')
-                    ? { message: 'Partenaire est obligatoire' }
-                    : null,
-              }}
-              backendErrors={backendErrors}
-              onChange={handlePartenaireChange}
-              choix="description"
-            />
-          </div>
-        ))}
+
+      {/* Partenaire Select - Always show when source is Partenaire */}
+      {watch('source_txt') === 'Partenaire' && (
+        <div>
+          <SelectInput
+            placeholder='Sélectionner un partenaire'
+            label="Partenaire:"
+            name="partenaire_id"
+            required={watch('source_txt') === 'Partenaire'}
+            options={partenaireOptions}
+            value={watch('partenaire_id')?.toString()}
+            loading={loading}
+            errors={{
+              ...errors,
+              partenaire_id:
+                formSubmitted &&
+                watch('source_txt') === 'Partenaire' &&
+                !watch('partenaire_id')
+                  ? 'Partenaire est obligatoire'
+                  : null,
+            }}
+            backendErrors={backendErrors}
+            onChange={handlePartenaireChange}
+          />
+        </div>
+      )}
+
       <div className="flex items-center justify-between w-full mt-4">
         <Controller
           name="notifie"

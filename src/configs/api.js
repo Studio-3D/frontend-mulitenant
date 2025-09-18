@@ -6,7 +6,7 @@ const BASERESOURCEURL =
   process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:8000';
 
 export const RESOURCE_URL = {
-  DOCS: `${BASERESOURCEURL}/Docs`,
+  DOCS: `${BASERESOURCEURL}/docs`,
   BASE: BASERESOURCEURL,
 };
 
@@ -65,8 +65,8 @@ export const APIURL = {
   //COMMISSSIONCONFIG: `${APIBASEURL}/v1/commisssionConfig`,
   COMMISSIONSCONFIGURATIONS: `${APIBASEURL}/v1/commissionsConfigurations`,
   FACTURES_BY_DECOMPTE: `${APIBASEURL}/v1/factures_by_decompte`,
-  DOCUMENTS_FACTURES: `${BASERESOURCEURL}/Docs/factures`,
-  DOCUMENTS_CPS: `${BASERESOURCEURL}/Docs/cps`,
+  DOCUMENTS_FACTURES: `${BASERESOURCEURL}/docs/factures`,
+  DOCUMENTS_CPS: `${BASERESOURCEURL}/docs/cps`,
   HISTOIMPORTATION: `${APIBASEURL}/v1/delete_fichier_import`,
   COMPOSITIONBIENS: `${APIBASEURL}/v1/compositionBiens`,
 

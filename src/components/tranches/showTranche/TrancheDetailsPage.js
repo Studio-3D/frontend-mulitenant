@@ -361,6 +361,7 @@ export const TrancheDetailsPage = () => {
               projet: trancheData?.tranche?.projet ? { id: trancheData.tranche.projet_id, nom: trancheData.tranche.projet.nom } : undefined,
               tranche: trancheData?.tranche ? { id: trancheData.tranche.id, nom: trancheData.tranche.nom } : undefined,
             }}
+            max_etages={trancheData?.tranche?.projet?.max_etages}
           />
         </div>
       </div>

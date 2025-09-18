@@ -115,7 +115,7 @@ export default function BienDetails({ id }) {
 
   // Format price with thousand separators
   const formatPrice = (price) => {
-    return price ? price.toLocaleString('fr-FR') + ' Dhs' : 'N/A';
+    return price ? price.toLocaleString('fr-FR') + ' Dhs' : '';
   };
 
   // Get the status badge with proper formatting
@@ -285,7 +285,7 @@ export default function BienDetails({ id }) {
                 <div className="min-w-0">
                   <h3 className="text-xs font-medium !text-gray-500">Numéro</h3>
                   <p className="mt-0.5 font-semibold text-sm truncate">
-                    {bien.numero || 'N/A'}
+                    {bien.numero || ''}
                   </p>
                 </div>
               </div>
@@ -300,7 +300,7 @@ export default function BienDetails({ id }) {
                     Type de bien
                   </h3>
                   <p className="mt-0.5 font-semibold text-sm truncate">
-                    {bien.type_bien?.type || 'N/A'}
+                    {bien.type_bien?.type || ''}
                   </p>
                 </div>
               </div>
@@ -312,7 +312,7 @@ export default function BienDetails({ id }) {
                     Typologie
                   </h3>
                   <p className="mt-0.5 font-semibold text-sm truncate">
-                    {bien.typologie?.typologie || 'N/A'}
+                    {bien.typologie?.typologie || ''}
                   </p>
                 </div>
               </div>
@@ -325,7 +325,7 @@ export default function BienDetails({ id }) {
                 <div className="min-w-0">
                   <h3 className="text-xs font-medium !text-gray-500">Niveau</h3>
                   <p className="mt-0.5 font-semibold text-sm">
-                    {bien.niveau !== null ? bien.niveau : 'N/A'}
+                    {bien.niveau !== null ? bien.niveau : ''}
                   </p>
                 </div>
               </div>
@@ -363,7 +363,7 @@ export default function BienDetails({ id }) {
                   <p className="mt-0.5 font-semibold text-sm truncate">
                     {bien.orientation
                       ? getFullOrientation(bien.orientation)
-                      : 'N/A'}
+                      : ''}
                   </p>
                 </div>
               </div>
@@ -421,7 +421,7 @@ export default function BienDetails({ id }) {
                     Nombre de façades
                   </h3>
                   <p className="mt-0.5 font-semibold text-sm">
-                    {bien.nbre_facades || 'N/A'}
+                    {bien.nbre_facades || ''}
                   </p>
                 </div>
               </div>

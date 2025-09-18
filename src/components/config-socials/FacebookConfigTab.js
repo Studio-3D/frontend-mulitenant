@@ -477,7 +477,7 @@ export default function FacebookConfigTab() {
                               <div className="flex items-start space-x-1">
                                 <AlertCircleIcon className="h-3 w-3 text-yellow-600 mt-0.5 flex-shrink-0" />
                                 <div className="text-yellow-700">
-                                  <p className="font-medium">Avant d'activer le webhook :</p>
+                                  <p className="font-medium">Avant {"d'"}activer le webhook :</p>
                                   <ol className="list-decimal pl-3 mt-1 space-y-0.5">
                                     <li>Configurez votre webhook dans <strong>Facebook Developer Console</strong></li>
                                     <li>Abonnez-vous aux événements : <strong>feed</strong> et <strong>mention</strong></li>
@@ -506,7 +506,7 @@ export default function FacebookConfigTab() {
                                   <li>URL du webhook : <code className="bg-white px-1 rounded">https://immogestion.alemsafi.live/api/webhookFcb_Insta</code></li>
                                   <li>Token de vérification : Utilisez le token que vous saisissez ci-dessous</li>
                                   <li>Événements à sélectionner : <strong>feed</strong> et <strong>mention</strong> uniquement</li>
-                                  <li>Testez la vérification du webhook avant d'activer</li>
+                                  <li>Testez la vérification du webhook avant {"d'"}activer</li>
                                 </ul>
                               </div>
                             </div>
@@ -525,7 +525,7 @@ export default function FacebookConfigTab() {
                                 placeholder="Saisissez un token de vérification unique"
                               />
                               <p className="text-xs text-blue-600 mt-1">
-                                Ce token sera utilisé par Facebook pour vérifier l'authenticité du webhook
+                                Ce token sera utilisé par Facebook pour vérifier {"l'"}authenticité du webhook
                               </p>
                             </div>
                             <div className="flex space-x-2">
@@ -653,7 +653,7 @@ export default function FacebookConfigTab() {
               <h3 className="text-lg font-medium">Démonstration vidéo</h3>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-sm text-gray-700 mb-4">
-                  Regardez cette vidéo pour voir étape par étape comment obtenir votre token d'accès Facebook :
+                  Regardez cette vidéo pour voir étape par étape comment obtenir votre token {"d'"}accès Facebook :
                 </p>
                 <div className="relative w-full mx-auto">
                   <video 
@@ -846,7 +846,7 @@ export default function FacebookConfigTab() {
                   <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
                   <div>
                     <strong>feed</strong> - Notifications pour les nouveaux posts sur votre page
-                    <p className="text-xs text-blue-600">Recevez des notifications quand quelqu'un publie sur votre page</p>
+                    <p className="text-xs text-blue-600">Recevez des notifications quand quelq{"u'"}un publie sur votre page</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-2">
