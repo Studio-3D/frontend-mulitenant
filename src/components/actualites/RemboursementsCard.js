@@ -1,12 +1,13 @@
+
 import React from 'react';
 
-export default function RemboursementsCard({ remboursements = [], sumRemb = 0 }) {
+export default function RemboursementsCard({ remboursements = [] }) {
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden h-full">
-      <div className="px-6 py-4 border-b flex justify-between items-center">
+    <div className="">
+      {/*<div className="px-6 py-4 border-b flex justify-between items-center">
         <div className="text-lg font-semibold">Remboursements</div>
         <div className="text-lg font-bold text-indigo-600">{sumRemb} DH</div>
-      </div>
+      </div>*/}
       
       <div className="px-6 pt-4 pb-2">
         <div className="flex justify-between mb-4 text-sm font-medium border-b pb-2">
@@ -42,3 +43,4 @@ export default function RemboursementsCard({ remboursements = [], sumRemb = 0 })
     </div>
   );
 }
+
