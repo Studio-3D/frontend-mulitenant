@@ -18,6 +18,7 @@ import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
 import { fetchData_table_by_projet } from '../../../../../src/configs/api-utils';
 import Link from 'next/link';
 import Input from '@/components/Input';
+import { format } from 'date-fns'; // Add this import
 
 import { VISITE_INTERETS } from '../../../../../src/configs/enum';
 const AppelsTable = ({ dataClient }) => {
@@ -50,6 +51,7 @@ const AppelsTable = ({ dataClient }) => {
     searchFields: ['date', 'nom', 'prenom', 'telephone'],
   };
 
+  
   useEffect(() => {
     const params_url = dataClient ? { client_id: dataClient?.id } : {};
     const combinedFilters = { ...filters, ...params_url };

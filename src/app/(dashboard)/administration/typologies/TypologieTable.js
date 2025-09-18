@@ -117,7 +117,7 @@ const TypologieTable = () => {
             >
               <Pencil className="w-4 h-4" />
             </button>
-            {row.frein_typologies_length && row.bien_length && (
+            {row.frein_typologies_length==0 && row.bien_length==0 && (
               <button
                 className="text-red-500 hover:text-red-700"
                 onClick={() => {

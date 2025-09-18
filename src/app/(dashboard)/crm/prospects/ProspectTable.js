@@ -1,38 +1,38 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import Table from "@/components/Table";
-import { Eye, Pencil, Check, RefreshCw, Trash2, Plus } from "lucide-react";
-import Modal from "@/components/Modal";
-import DeleteData from "@/components/DeleteData";
-import { useAuth } from "@/context/AuthContext";
-import { useProjet } from "@/context/ProjetContext";
-import { APIURL, ENDPOINTS } from "@/configs/api";
-import { useRouter } from "next/navigation";
-import { fetchData_table_by_projet } from "@/configs/api-utils";
-import { isAdmin, isCommercial, isSuperAdmin } from "@/configs/enum";
-import Modal_Traite from "./Modal_Traite";
+import React, { useEffect, useState } from 'react';
+import Table from '@/components/Table';
+import { Eye, Pencil, Check, RefreshCw, Trash2, Plus } from 'lucide-react';
+import Modal from '@/components/Modal';
+import DeleteData from '@/components/DeleteData';
+import { useAuth } from '@/context/AuthContext';
+import { useProjet } from '@/context/ProjetContext';
+import { APIURL, ENDPOINTS } from '@/configs/api';
+import { useRouter } from 'next/navigation';
+import { fetchData_table_by_projet } from '@/configs/api-utils';
+import { isAdmin, isCommercial, isSuperAdmin } from '@/configs/enum';
+import Modal_Traite from './Modal_Traite';
 import {
   Statuts_Prospect,
   getProspectStatusColor,
   getProspectStatusLabel,
   canProspectBeAssigned,
-} from "@/configs/enum";
-import { Check as CheckIcon } from "lucide-react";
-import Input from "@/components/Input";
-import SelectInput from "@/components/SelectInput";
-import Modal_Import from "@/components/Modal_Import";
-import Button from "@/components/Button";
-import { format } from "date-fns";
+} from '@/configs/enum';
+import { Check as CheckIcon } from 'lucide-react';
+import Input from '@/components/Input';
+import SelectInput from '@/components/SelectInput';
+import Modal_Import from '@/components/Modal_Import';
+import Button from '@/components/Button';
+import { format } from 'date-fns';
 
 // Custom Checkbox Component
 const CustomCheckbox = ({
   checked,
   onChange,
   disabled = false,
-  className = "",
-  title = "",
-  ariaLabel = "",
+  className = '',
+  title = '',
+  ariaLabel = '',
 }) => {
   return (
     <div className="flex items-center justify-center">
@@ -44,13 +44,13 @@ const CustomCheckbox = ({
           relative w-5 h-5 rounded border-2 transition-all duration-200 ease-in-out transform
           ${
             checked
-              ? "bg-blue-600 border-blue-600 shadow-lg scale-105"
-              : "bg-white border-gray-300 hover:border-blue-400 hover:bg-blue-50"
+              ? 'bg-blue-600 border-blue-600 shadow-lg scale-105'
+              : 'bg-white border-gray-300 hover:border-blue-400 hover:bg-blue-50'
           }
           ${
             disabled
-              ? "opacity-50 cursor-not-allowed bg-gray-100 border-gray-200"
-              : "cursor-pointer hover:shadow-md active:scale-95"
+              ? 'opacity-50 cursor-not-allowed bg-gray-100 border-gray-200'
+              : 'cursor-pointer hover:shadow-md active:scale-95'
           }
           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50
           ${className}
@@ -63,14 +63,14 @@ const CustomCheckbox = ({
         <div
           className={`
           absolute inset-0 rounded transition-all duration-200
-          ${checked ? "bg-blue-600" : "bg-transparent"}
+          ${checked ? 'bg-blue-600' : 'bg-transparent'}
         `}
         >
           {checked && (
             <CheckIcon
               className={`
                 absolute inset-0 w-3 h-3 m-auto text-white animate-in zoom-in duration-200
-                ${disabled ? "text-gray-400" : "text-white"}
+                ${disabled ? 'text-gray-400' : 'text-white'}
               `}
               strokeWidth={3}
             />
@@ -85,9 +85,9 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
   // --- State ---
   const [prospects, setProspects] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedId, setSelectedId] = useState(null);
   const [totalRows, setTotalRows] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -100,23 +100,23 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
   const [checkedProspects, setCheckedProspects] = useState([]);
   const [showAffecterModal, setShowAffecterModal] = useState(false);
   const [commercials, setCommercials] = useState([]);
-  const [selectedCommercial, setSelectedCommercial] = useState("");
-  const [assignMode, setAssignMode] = useState("selective");
+  const [selectedCommercial, setSelectedCommercial] = useState('');
+  const [assignMode, setAssignMode] = useState('selective');
   const [showCommercialDropdown, setShowCommercialDropdown] = useState(false);
-  const [searchCommercial, setSearchCommercial] = useState("");
+  const [searchCommercial, setSearchCommercial] = useState('');
   const [filters, setFilters] = useState({
-    nom: "",
-    prenom: "",
-    cin: "",
-    telephone: "",
-    email: "",
-    statut: "",
+    nom: '',
+    prenom: '',
+    cin: '',
+    telephone: '',
+    email: '',
+    statut: '',
   });
   const [tempFilters, setTempFilters] = useState({ ...filters });
 
   const { user, token } = useAuth();
   const { selectedProjet } = useProjet();
-  const accesstoken = token || localStorage.getItem("accessToken");
+  const accesstoken = token || localStorage.getItem('accessToken');
   const router = useRouter();
 
   // Check if user is commercial to disable assignment features
@@ -127,9 +127,9 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
     // Don't add filtering in the API call, we'll filter in frontend
     fetchData_table_by_projet(
       {
-        API_URL: "prospects",
-        dataKey: "prospects",
-        searchFields: ["nom", "prenom", "email", "telephone", "cin"],
+        API_URL: 'prospects',
+        dataKey: 'prospects',
+        searchFields: ['nom', 'prenom', 'email', 'telephone', 'cin'],
       },
       filters,
       searchTerm,
@@ -158,12 +158,12 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (localStorage.getItem("load_data_prospect") == 1) {
+      if (localStorage.getItem('load_data_prospect') == 1) {
         fetchData_table_by_projet(
           {
-            API_URL: "prospects",
-            dataKey: "prospects",
-            searchFields: ["nom", "prenom", "email", "telephone", "cin"],
+            API_URL: 'prospects',
+            dataKey: 'prospects',
+            searchFields: ['nom', 'prenom', 'email', 'telephone', 'cin'],
           },
           filters,
           searchTerm,
@@ -175,7 +175,7 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
           setProspects,
           setTotalRows
         );
-        localStorage.removeItem("load_data_prospect");
+        localStorage.removeItem('load_data_prospect');
       }
     }, 1000);
     return () => clearInterval(interval);
@@ -206,33 +206,33 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
 
     return filteredProspects.map((pro) => ({
       id: pro.id,
-      nom: `${pro.nom || ""}`.trim(),
-      prenom: `${pro.prenom || ""}`.trim(),
-      nomComplet: `${pro.nom || ""} ${pro.prenom || ""}`.trim(),
+      nom: `${pro.nom || ''}`.trim(),
+      prenom: `${pro.prenom || ''}`.trim(),
+      nomComplet: `${pro.nom || ''} ${pro.prenom || ''}`.trim(),
       email: pro.email,
       telephone:
-        (pro.telephone ? pro.telephone : "") +
-          (pro.telephone && pro.telephone_num2 && pro.telephone_num2 !== "null"
-            ? " / " + pro.telephone_num2
-            : "") || "Non spécifié",
+        (pro.telephone ? pro.telephone : '') +
+          (pro.telephone && pro.telephone_num2 && pro.telephone_num2 !== 'null'
+            ? ' / ' + pro.telephone_num2
+            : '') || 'Non spécifié',
       cin: pro.cin,
       client: pro.client,
       visites: pro.visites,
       appels: pro.appels,
       origin: pro.origin,
       date: pro.created_at
-        ? format(new Date(pro.created_at), "dd/MM/yyyy")
-        : "",
-      statut: getProspectStatusLabel(pro.last_statut?.statut || ""),
+        ? format(new Date(pro.created_at), 'dd/MM/yyyy')
+        : '',
+      statut: getProspectStatusLabel(pro.last_statut?.statut || ''),
       commercial_affecte: pro.commercial_affecte || null,
       affecte_par_admin: pro.affecte_par_admin || null,
       traite_par_user: pro.traite_par_user || null,
       date_affectation: pro.date_affectation
-        ? format(new Date(pro.date_affectation), "dd/MM/yyyy HH:mm")
-        : "",
+        ? format(new Date(pro.date_affectation), 'dd/MM/yyyy HH:mm')
+        : '',
       date_traitement: pro.date_traitement
-        ? format(new Date(pro.date_traitement), "dd/MM/yyyy HH:mm")
-        : "",
+        ? format(new Date(pro.date_traitement), 'dd/MM/yyyy HH:mm')
+        : '',
       prospect: pro,
     }));
   };
@@ -264,34 +264,34 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
     }
 
     return filteredProspects.map((pro) => ({
-      nomComplet: `${pro.nom || ""} ${pro.prenom || ""}`.trim(),
+      nomComplet: `${pro.nom || ''} ${pro.prenom || ''}`.trim(),
       email: pro.email,
       telephone:
-        (pro.telephone ? pro.telephone : "") +
-          (pro.telephone && pro.telephone_num2 && pro.telephone_num2 !== "null"
-            ? " / " + pro.telephone_num2
-            : "") || "Non spécifié",
+        (pro.telephone ? pro.telephone : '') +
+          (pro.telephone && pro.telephone_num2 && pro.telephone_num2 !== 'null'
+            ? ' / ' + pro.telephone_num2
+            : '') || 'Non spécifié',
       cin: pro.cin,
-      type_client: pro.partenaire_id === null ? "Particulier" : "professionnel",
-      partenaire: pro.partenaire_id ? pro.partenaire?.description : "",
+      type_client: pro.partenaire_id === null ? 'Particulier' : 'professionnel',
+      partenaire: pro.partenaire_id ? pro.partenaire?.description : '',
       source: pro?.source?.source,
       origin: pro.origin,
       date: pro.created_at
-        ? format(new Date(pro.created_at), "yyyy-MM-dd")
-        : "",
+        ? format(new Date(pro.created_at), 'yyyy-MM-dd')
+        : '',
     }));
   };
 
   const columns_export = [
-    { key: "nomComplet", label: "nomComplet" },
-    { key: "telephone", label: "Telephone" },
-    { key: "cin", label: "Cin" },
-    { key: "email", label: "Email" },
-    { key: "type_client", label: "Type Prospect" },
-    { key: "source", label: "Source" },
-    { key: "partenaire", label: "Partenaire" },
-    { key: "origin", label: "Origine" },
-    { key: "date", label: "Date" },
+    { key: 'nomComplet', label: 'nomComplet' },
+    { key: 'telephone', label: 'Telephone' },
+    { key: 'cin', label: 'Cin' },
+    { key: 'email', label: 'Email' },
+    { key: 'type_client', label: 'Type Prospect' },
+    { key: 'source', label: 'Source' },
+    { key: 'partenaire', label: 'Partenaire' },
+    { key: 'origin', label: 'Origine' },
+    { key: 'date', label: 'Date' },
   ];
 
   // --- Table Columns ---
@@ -300,7 +300,7 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
     ...(!isCommercialUser
       ? [
           {
-            key: "__checkbox__",
+            key: '__checkbox__',
             label: (() => {
               const assignableProspects = formatData().filter((row) =>
                 canProspectBeAssigned(row.prospect)
@@ -337,7 +337,7 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
                   ariaLabel={`Sélectionner le prospect ${row.nom} ${row.prenom}`}
                   title={
                     !canBeAssigned
-                      ? "Ce prospect ne peut pas être assigné (statut final)"
+                      ? 'Ce prospect ne peut pas être assigné (statut final)'
                       : `Sélectionner ${row.nom} ${row.prenom}`
                   }
                 />
@@ -347,8 +347,8 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
         ]
       : []),
     {
-      key: "nom",
-      label: "Nom",
+      key: 'nom',
+      label: 'Nom',
       render: (row) => (
         <div className="flex items-center gap-3">
           <span>{row.nom}</span>
@@ -356,30 +356,30 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
       ),
     },
     {
-      key: "prenom",
-      label: "Prénom",
+      key: 'prenom',
+      label: 'Prénom',
       render: (row) => (
         <div className="flex items-center gap-3">
           <span>{row.prenom}</span>
         </div>
       ),
     },
-    { key: "telephone", label: "Téléphone" },
+    { key: 'telephone', label: 'Téléphone' },
     {
-      key: "commercial_affecte",
-      label: "Commercial affecté",
+      key: 'commercial_affecte',
+      label: 'Commercial affecté',
       render: (row) => (
         <div>
           <span>
             {row.commercial_affecte
-              ? `${row.commercial_affecte.name || ""} ${
-                  row.commercial_affecte.prenom || ""
+              ? `${row.commercial_affecte.name || ''} ${
+                  row.commercial_affecte.prenom || ''
                 }`
-              : ""}
+              : ''}
           </span>
           {row.affecte_par_admin && (
             <div className="text-xs text-gray-500">
-              Affecté par: {row.affecte_par_admin.name}{" "}
+              Affecté par: {row.affecte_par_admin.name}{' '}
               {row.affecte_par_admin.prenom}
               {row.date_affectation && <div>Le: {row.date_affectation}</div>}
             </div>
@@ -388,10 +388,10 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
       ),
     },
     {
-      key: "statut",
-      label: "Statut",
+      key: 'statut',
+      label: 'Statut',
       render: (row) => {
-        if (!row.statut) return "";
+        if (!row.statut) return '';
         return (
           <div>
             <span
@@ -403,7 +403,7 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
             </span>
             {row.traite_par_user && (
               <div className="text-xs text-gray-500 mt-1">
-                Traité par: {row.traite_par_user.name}{" "}
+                Traité par: {row.traite_par_user.name}{' '}
                 {row.traite_par_user.prenom}
                 {row.date_traitement && <div>Le: {row.date_traitement}</div>}
               </div>
@@ -413,18 +413,18 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
       },
     },
     {
-      key: "origin",
-      label: "Origine",
+      key: 'origin',
+      label: 'Origine',
       render: (row) => <span>{row.origin}</span>,
     },
     {
-      key: "date",
-      label: "Date",
-      render: (row) => <span>{row.date || ""}</span>,
+      key: 'date',
+      label: 'Date',
+      render: (row) => <span>{row.date || ''}</span>,
     },
     {
-      key: "actions",
-      label: "Actions",
+      key: 'actions',
+      label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
           <div title="Voir détails">
@@ -485,7 +485,7 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
   };
   const handle_convert_to_visite = (row) => {
     localStorage.setItem(
-      "selectedProspect",
+      'selectedProspect',
       JSON.stringify({ dataProspect: row })
     );
     router.push(`${ENDPOINTS.VISITES}?action=add`);
@@ -495,12 +495,12 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
   const applyFilters = () => setFilters(tempFilters);
   const resetFilters = () => {
     const reset = {
-      nom: "",
-      prenom: "",
-      cin: "",
-      telephone: "",
-      email: "",
-      statut: "",
+      nom: '',
+      prenom: '',
+      cin: '',
+      telephone: '',
+      email: '',
+      statut: '',
     };
     setFilters(reset);
     setTempFilters(reset);
@@ -523,7 +523,7 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
   const handleOpenAffecter = () => setShowAffecterModal(true);
   const handleCloseAffecter = () => {
     setShowAffecterModal(false);
-    setSelectedCommercial("");
+    setSelectedCommercial('');
   };
   const handleAffecterSubmit = async () => {
     if (!selectedCommercial) return;
@@ -536,12 +536,12 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
         selectedProspects.map((pro) => {
           // Clean up fields: convert "null" string to null or empty string
           const clean = (val) =>
-            val === "null" || val === null || val === undefined ? "" : val;
+            val === 'null' || val === null || val === undefined ? '' : val;
           return fetch(`${APIURL.PROSPECTS}/${pro.id}`, {
-            method: "PUT",
+            method: 'PUT',
             headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
               Authorization: `Bearer ${accesstoken}`,
             },
             body: JSON.stringify({
@@ -563,13 +563,13 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
         })
       );
       setShowAffecterModal(false);
-      setSelectedCommercial("");
+      setSelectedCommercial('');
       setCheckedProspects([]);
       fetchData_table_by_projet(
         {
-          API_URL: "prospects",
-          dataKey: "prospects",
-          searchFields: ["nom", "prenom", "email", "telephone", "cin"],
+          API_URL: 'prospects',
+          dataKey: 'prospects',
+          searchFields: ['nom', 'prenom', 'email', 'telephone', 'cin'],
         },
         filters,
         searchTerm,
@@ -589,10 +589,10 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
     if (!checkedProspects.length) return;
     try {
       const response = await fetch(`${APIURL.ROOT}/v1/prospects/auto-assign`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
           Authorization: `Bearer ${accesstoken}`,
         },
         body: JSON.stringify({
@@ -608,14 +608,14 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
       const result = await response.json();
 
       setShowAffecterModal(false);
-      setSelectedCommercial("");
+      setSelectedCommercial('');
       setCheckedProspects([]);
 
       fetchData_table_by_projet(
         {
-          API_URL: "prospects",
-          dataKey: "prospects",
-          searchFields: ["nom", "prenom", "email", "telephone", "cin"],
+          API_URL: 'prospects',
+          dataKey: 'prospects',
+          searchFields: ['nom', 'prenom', 'email', 'telephone', 'cin'],
         },
         filters,
         searchTerm,
@@ -629,9 +629,9 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
       );
 
       // Show success message
-      console.log("Auto-assignment completed:", result.assignments);
+      console.log('Auto-assignment completed:', result.assignments);
     } catch (e) {
-      console.error("Auto-assignment failed:", e);
+      console.error('Auto-assignment failed:', e);
       // Handle error - maybe show a toast notification
     }
   };
@@ -673,7 +673,7 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
         <Table
           data_to_export={data_to_export()}
           columns_export={columns_export}
-          name_file_export={"propects_export"}
+          name_file_export={'propects_export'}
           columns={columns}
           data={formatData()}
           totalRows={getFilteredTotalRows()}
@@ -714,28 +714,28 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
               <div
                 className="grid gap-5"
                 style={{
-                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
                 }}
               >
                 <Input
                   type="text"
                   label="Cin"
                   value={tempFilters.cin}
-                  onChange={(e) => handleFilterChange("cin", e.target.value)}
+                  onChange={(e) => handleFilterChange('cin', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
                 <Input
                   type="text"
                   label="Nom"
                   value={tempFilters.nom}
-                  onChange={(e) => handleFilterChange("nom", e.target.value)}
+                  onChange={(e) => handleFilterChange('nom', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
                 <Input
                   type="text"
                   label="Prénom"
                   value={tempFilters.prenom}
-                  onChange={(e) => handleFilterChange("prenom", e.target.value)}
+                  onChange={(e) => handleFilterChange('prenom', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
                 <Input
@@ -743,7 +743,7 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
                   label="Téléphone"
                   value={tempFilters.telephone}
                   onChange={(e) =>
-                    handleFilterChange("telephone", e.target.value)
+                    handleFilterChange('telephone', e.target.value)
                   }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
@@ -751,12 +751,12 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
                   type="email"
                   label="Email"
                   value={tempFilters.email}
-                  onChange={(e) => handleFilterChange("email", e.target.value)}
+                  onChange={(e) => handleFilterChange('email', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
                 <SelectInput
                   value={tempFilters.statut}
-                  onChange={(value) => handleFilterChange("statut", value)}
+                  onChange={(value) => handleFilterChange('statut', value)}
                   options={Object.values(Statuts_Prospect).map((data) => ({
                     value: data.id,
                     label: data.label,
@@ -785,12 +785,12 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
           }
           rowClassName={(row) => {
             if (!isCommercialUser && checkedProspects.includes(row.id)) {
-              return "bg-blue-50";
+              return 'bg-blue-50';
             }
             if (!canProspectBeAssigned(row.prospect)) {
-              return "bg-gray-50 opacity-60";
+              return 'bg-gray-50 opacity-60';
             }
-            return "";
+            return '';
           }}
         />
 
@@ -813,22 +813,22 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
               <div className="mb-4 flex gap-2">
                 <button
                   type="button"
-                  onClick={() => setAssignMode("selective")}
+                  onClick={() => setAssignMode('selective')}
                   className={`px-3 py-1.5 rounded-md border ${
-                    assignMode === "selective"
-                      ? "bg-blue-50 border-blue-500 text-blue-700"
-                      : "bg-white border-gray-300 text-gray-700"
+                    assignMode === 'selective'
+                      ? 'bg-blue-50 border-blue-500 text-blue-700'
+                      : 'bg-white border-gray-300 text-gray-700'
                   }`}
                 >
                   Sélective (choisir un commercial)
                 </button>
                 <button
                   type="button"
-                  onClick={() => setAssignMode("auto")}
+                  onClick={() => setAssignMode('auto')}
                   className={`px-3 py-1.5 rounded-md border ${
-                    assignMode === "auto"
-                      ? "bg-blue-50 border-blue-500 text-blue-700"
-                      : "bg-white border-gray-300 text-gray-700"
+                    assignMode === 'auto'
+                      ? 'bg-blue-50 border-blue-500 text-blue-700'
+                      : 'bg-white border-gray-300 text-gray-700'
                   }`}
                 >
                   Automatique (répartition équitable)
@@ -836,7 +836,7 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
               </div>
 
               {/* Selective assignment block */}
-              {assignMode === "selective" && (
+              {assignMode === 'selective' && (
                 <div className="mb-4">
                   <label className="block mb-2 font-medium text-gray-700">
                     Sélectionner un commercial
@@ -857,9 +857,9 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
                               );
                               return user
                                 ? `${user.name} ${user.prenom}`
-                                : "Sélectionner un commercial";
+                                : 'Sélectionner un commercial';
                             })()
-                          : "Sélectionner un commercial"}
+                          : 'Sélectionner un commercial'}
                       </span>
                       <svg
                         className="w-5 h-5"
@@ -873,8 +873,8 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
                           strokeWidth="2"
                           d={
                             showCommercialDropdown
-                              ? "M5 15l7-7 7 7"
-                              : "M19 9l-7 7-7-7"
+                              ? 'M5 15l7-7 7 7'
+                              : 'M19 9l-7 7-7-7'
                           }
                         />
                       </svg>
@@ -925,7 +925,7 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
               )}
 
               <div className="flex gap-2 mt-4">
-                {assignMode === "selective" ? (
+                {assignMode === 'selective' ? (
                   <Button
                     type="button"
                     onClick={handleAffecterSubmit}
@@ -940,7 +940,7 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
                     onClick={handleAffectationAuto}
                     className="bg-gray-700 text-white"
                   >
-                    Lancer l'affectation automatique
+                    Lancer {"l'"}affectation automatique
                   </Button>
                 )}
               </div>
@@ -958,15 +958,15 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
             route={APIURL.PROSPECTS}
             Id={selectedId}
             type="Prospect"
-            message={"Etes-vous sûr de vouloir supprimer ce Prospect ?"}
+            message={'Etes-vous sûr de vouloir supprimer ce Prospect ?'}
             accessToken={accesstoken}
             onClose={() => {
               setShowDeleteModal(false);
               fetchData_table_by_projet(
                 {
-                  API_URL: "prospects",
-                  dataKey: "prospects",
-                  searchFields: ["nom", "prenom", "email", "telephone", "cin"],
+                  API_URL: 'prospects',
+                  dataKey: 'prospects',
+                  searchFields: ['nom', 'prenom', 'email', 'telephone', 'cin'],
                 },
                 {},
                 searchTerm,

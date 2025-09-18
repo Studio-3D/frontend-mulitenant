@@ -38,6 +38,7 @@ import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import { useProjet } from "@/context/ProjetContext";
 import { APIURL } from "../../configs/api";
+import LoadingSpin from '../../components/LoadingSpin';
 
 export const Dashboard = () => {
   const today = new Date();
@@ -269,12 +270,9 @@ export const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen p-4 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Chargement des données...</p>
-        </div>
-      </div>
+      <div className="flex items-center justify-center min-h-screen">
+      <LoadingSpin />
+    </div>
     );
   }
 

@@ -1,7 +1,7 @@
-import { useState, useRef } from 'react';
-import toast from 'react-hot-toast';
-import axios from 'axios';
-import { Box } from '@mui/material';
+import { useState, useRef } from "react";
+import toast from "react-hot-toast";
+import axios from "axios";
+import { Box } from "@mui/material";
 import {
   Dialog,
   DialogContent,
@@ -12,22 +12,22 @@ import {
   IconButton,
   Button,
   Alert,
-} from '@mui/material';
-import { APIURL, RESOURCE_URL } from '@/configs/api';
+} from "@mui/material";
+import { APIURL, RESOURCE_URL } from "@/configs/api";
 
-import { PlusSquare, Trash2 } from 'lucide-react';
-import Button1 from '../Button';
+import { PlusSquare, Trash2 } from "lucide-react";
+import Button1 from "../Button";
 //import {Button as Button1} from '../Button'
 
 export default function BienImport({ open, onClose, projetId, max_etages }) {
-  console.log('max etages==>' + max_etages);
+  console.log("max etages==>" + max_etages);
   const [file, setFile] = useState(null);
   const [backendErrors, setBackendErrors] = useState([]);
   const [disabled_var, setDisabled_var] = useState(true);
   const fileInputRef = useRef(null);
-  const [inputs, setInputs] = useState([{ type: '' }]);
+  const [inputs, setInputs] = useState([{ type: "" }]);
   const [type_biens, setTypesBiens] = useState([]);
-  const accessToken = localStorage.getItem('accessToken');
+  const accessToken = localStorage.getItem("accessToken");
 
   //pour consulter si errur de surface en cas d'importation
   var err = 0;
@@ -35,7 +35,7 @@ export default function BienImport({ open, onClose, projetId, max_etages }) {
 
   const [loading, setLoading] = useState({ form: false });
 
-  const selectedProjet = JSON.parse(localStorage.getItem('selectedProjet'));
+  const selectedProjet = JSON.parse(localStorage.getItem("selectedProjet"));
   //const [open, setOpen] = useState(false)
   const FileUrl = process.env.NEXT_PUBLIC_IMG_URL;
   const handleDialogToggle = () => {
@@ -51,7 +51,7 @@ export default function BienImport({ open, onClose, projetId, max_etages }) {
 
     //setDisabled_var(true)
     if (file != null) {
-      console.log('File upload confirmed:', file);
+      console.log("File upload confirmed:", file);
       handleImportClick(file);
     }
   };
@@ -62,12 +62,12 @@ export default function BienImport({ open, onClose, projetId, max_etages }) {
 
   const handleImportClick = async (file) => {
     try {
-      const XLSX = await import('xlsx');
+      const XLSX = await import("xlsx");
       const reader = new FileReader();
 
       reader.onload = (e) => {
         const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
+        const workbook = XLSX.read(data, { type: "array" });
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
         const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 }); // 2D array
@@ -77,27 +77,27 @@ export default function BienImport({ open, onClose, projetId, max_etages }) {
         const normalizedHeaders = rawHeaders.map((h) =>
           h?.toString().trim().toLowerCase()
         );
-        console.log('Headers Excel normalisés :', normalizedHeaders);
+        console.log("Headers Excel normalisés :", normalizedHeaders);
 
         let msg_error = [];
 
         // Colonnes obligatoires (normalisées en minuscules)
         let requiredHeaders = [
-          'numero',
-          'prix unitaire',
+          "numero",
+          "prix unitaire",
           // 'superficie architecte', ← retiré si non présent
-          'superficie totale',
-          'superficie habitable',
-          'type bien',
+          "superficie totale",
+          "superficie habitable",
+          "type bien",
           // 'etage',
         ];
         if (hasBlocs || hasTranches || hasImmeubles) {
-          requiredHeaders.push('etage');
+          requiredHeaders.push("etage");
         }
 
         if (hasTranches) {
-          requiredHeaders.push('tranche');
-        } else if (normalizedHeaders.includes('Tranche')) {
+          requiredHeaders.push("tranche");
+        } else if (normalizedHeaders.includes("Tranche")) {
           msg_error.push({
             id: 0,
             msg: `Le projet ne contient pas de tranches, mais la colonne "Tranche" est présente dans le fichier Excel. Supprime-la.`,
@@ -105,8 +105,8 @@ export default function BienImport({ open, onClose, projetId, max_etages }) {
         }
 
         if (hasBlocs) {
-          requiredHeaders.push('bloc');
-        } else if (normalizedHeaders.includes('Bloc')) {
+          requiredHeaders.push("bloc");
+        } else if (normalizedHeaders.includes("Bloc")) {
           msg_error.push({
             id: 0,
             msg: `Le projet ne contient pas de blocs, mais la colonne "Bloc" est présente dans le fichier Excel. Supprime-la.`,
@@ -114,8 +114,8 @@ export default function BienImport({ open, onClose, projetId, max_etages }) {
         }
 
         if (hasImmeubles) {
-          requiredHeaders.push('immeuble');
-        } else if (normalizedHeaders.includes('Immeuble')) {
+          requiredHeaders.push("immeuble");
+        } else if (normalizedHeaders.includes("Immeuble")) {
           msg_error.push({
             id: 0,
             msg: `Le projet ne contient pas d’immeubles, mais la colonne "Immeuble" est présente dans le fichier Excel. Supprime-la.`,
@@ -130,7 +130,7 @@ export default function BienImport({ open, onClose, projetId, max_etages }) {
           msg_error.push({
             id: 0,
             msg: `Les colonnes suivantes sont manquantes dans le fichier Excel : ${missingHeaders.join(
-              ', '
+              ", "
             )}`,
           });
         }
@@ -144,10 +144,10 @@ export default function BienImport({ open, onClose, projetId, max_etages }) {
           for (let i = 0; i < rows.length; i++) {
             const row = rows[i];
 
-            if ('Superficie totale' in row && 'Superficie habitable' in row) {
+            if ("Superficie totale" in row && "Superficie habitable" in row) {
               if (
-                row['Superficie totale'] == 0 &&
-                row['Superficie habitable'] == 0
+                row["Superficie totale"] == 0 &&
+                row["Superficie habitable"] == 0
               ) {
                 msg_error.push({
                   id: i,
@@ -158,10 +158,10 @@ export default function BienImport({ open, onClose, projetId, max_etages }) {
                 err = 1;
               }
             } else if (
-              !('Superficie totale' in row) &&
-              'Superficie habitable' in row
+              !("Superficie totale" in row) &&
+              "Superficie habitable" in row
             ) {
-              if (row['Superficie habitable'] == 0) {
+              if (row["Superficie habitable"] == 0) {
                 msg_error.push({
                   id: i,
                   msg: `La ligne ${
@@ -171,10 +171,10 @@ export default function BienImport({ open, onClose, projetId, max_etages }) {
                 err = 1;
               }
             } else if (
-              !('Superficie habitable' in row) &&
-              'Superficie totale' in row
+              !("Superficie habitable" in row) &&
+              "Superficie totale" in row
             ) {
-              if (row['Superficie totale'] == 0) {
+              if (row["Superficie totale"] == 0) {
                 msg_error.push({
                   id: i,
                   msg: `La ligne ${
@@ -205,7 +205,7 @@ export default function BienImport({ open, onClose, projetId, max_etages }) {
           setBackendErrors([
             {
               id: 1,
-              msg: 'Le fichier est vide. Veuillez renseigner les colonnes.',
+              msg: "Le fichier est vide. Veuillez renseigner les colonnes.",
             },
           ]);
           setDisabled_var(true);
@@ -223,17 +223,17 @@ export default function BienImport({ open, onClose, projetId, max_etages }) {
     if (err == 0) {
       onClose();
       const dataToSend = new FormData();
-      dataToSend.append('projet_id', projetId);
-      dataToSend.append('jsonData', JSON.stringify(jsonData));
+      dataToSend.append("projet_id", projetId);
+      dataToSend.append("jsonData", JSON.stringify(jsonData));
 
       //dataToSend.append('tranche_id', trancheId)
       if (file != null) {
-        dataToSend.append('piece_jointe', file);
+        dataToSend.append("piece_jointe", file);
       }
       axios
         .post(`${APIURL.ROOT}/v1/upload_excel_bien`, dataToSend, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
           },
         })
         .then(() => {
@@ -242,7 +242,7 @@ export default function BienImport({ open, onClose, projetId, max_etages }) {
           //load nb tranche bloc immeuble apres store du fichier
           // localStorage.setItem('load_data_bien', 1)
           toast.success(
-            `Le fichier est en cours d'importation,consulter le Menu Importation des ficiher`
+            `Import programmé avec succès, consulter l'historique des imports pour plus de détails`
           );
 
           setBackendErrors([]);
@@ -257,31 +257,31 @@ export default function BienImport({ open, onClose, projetId, max_etages }) {
   };
 
   const handleFileClick = () => {
-    let fileName = '';
+    let fileName = "";
 
     if (hasTranches && hasBlocs && hasImmeubles) {
-      fileName = 'exemplaire_tranches_blocs_immeubles.xlsx';
+      fileName = "exemplaire_tranches_blocs_immeubles.xlsx";
     } else if (hasTranches && hasBlocs) {
-      fileName = 'exemplaire_tranches_blocs.xlsx';
+      fileName = "exemplaire_tranches_blocs.xlsx";
     } else if (hasTranches && hasImmeubles) {
-      fileName = 'exemplaire_tranches_immeubles.xlsx';
+      fileName = "exemplaire_tranches_immeubles.xlsx";
     } else if (hasBlocs && hasImmeubles) {
-      fileName = 'exemplaire_blocs_immeubles.xlsx';
+      fileName = "exemplaire_blocs_immeubles.xlsx";
     } else if (hasTranches) {
-      fileName = 'exemplaire_tranches.xlsx';
+      fileName = "exemplaire_tranches.xlsx";
     } else if (hasBlocs) {
-      fileName = 'exemplaire_blocs.xlsx';
+      fileName = "exemplaire_blocs.xlsx";
     } else if (hasImmeubles) {
-      fileName = 'exemplaire_immeubles.xlsx';
+      fileName = "exemplaire_immeubles.xlsx";
     } else if (!hasTranches && !hasBlocs && !hasImmeubles) {
-      fileName = 'exemplaire_biens.xlsx';
+      fileName = "exemplaire_biens.xlsx";
     } else {
       return; // Aucun fichier à ouvrir
     }
 
     window.open(
       `${RESOURCE_URL.DOCS}/exemplaires-import-biens/${fileName}`,
-      '_blank'
+      "_blank"
     );
   };
 
@@ -301,13 +301,13 @@ export default function BienImport({ open, onClose, projetId, max_etages }) {
   };
 
   const handleAddInput = () => {
-    setInputs([...inputs, { type: '' }]);
+    setInputs([...inputs, { type: "" }]);
   };
 
   const style = {
-    height: '30px',
-    marginTop: '13px',
-    marginLeft: '8px',
+    height: "30px",
+    marginTop: "13px",
+    marginLeft: "8px",
   };
 
   const handleSubmit_type_bien = () => {
@@ -329,7 +329,7 @@ export default function BienImport({ open, onClose, projetId, max_etages }) {
 
     if (dupli.length > 0) {
       setBackendErrors_tp(
-        'Veuillez corriger les doublons présents dans la liste.'
+        "Veuillez corriger les doublons présents dans la liste."
       );
       return;
     }
@@ -338,13 +338,13 @@ export default function BienImport({ open, onClose, projetId, max_etages }) {
     setLoading((prev) => ({ ...prev, form: true }));
 
     const formData = new FormData();
-    formData.append('donneesTypeBien', JSON.stringify(inputs));
-    formData.append('projet_id', selectedProjet?.id);
+    formData.append("donneesTypeBien", JSON.stringify(inputs));
+    formData.append("projet_id", selectedProjet?.id);
 
     axios
       .post(`${APIURL.ROOTV1}/store_multiple_type_biens`, formData, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
       })
       .then((res) => {
@@ -352,7 +352,7 @@ export default function BienImport({ open, onClose, projetId, max_etages }) {
         setDisabled_var(false);
 
         if (res.status === 200) {
-          toast.success('Types des Biens créés avec succès');
+          toast.success("Types des Biens créés avec succès");
         } else if (res.status === 422) {
           setBackendErrors_tp(res.data.errors);
           setTimeout(() => setBackendErrors_tp({}), 5000);
@@ -543,7 +543,7 @@ export default function BienImport({ open, onClose, projetId, max_etages }) {
                         <tr key={floor}>
                           <td className="px-4 py-2">{floor}</td>
                           <td className="px-4 py-2">
-                            {floor === 1 ? '1er étage' : `${floor}ème étage`}
+                            {floor === 1 ? "1er étage" : `${floor}ème étage`}
                           </td>
                         </tr>
                       )

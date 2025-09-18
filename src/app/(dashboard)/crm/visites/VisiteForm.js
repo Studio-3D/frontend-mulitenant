@@ -1,3 +1,4 @@
+
 'use client';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
@@ -128,7 +129,6 @@ const VisiteForm = ({ prospect_id, origin }) => {
       ? selectedPerson.partenaire.description
       : null
   );
-  
 
   const defaultValues = {
     interet: '',
@@ -275,28 +275,27 @@ const VisiteForm = ({ prospect_id, origin }) => {
       });
   };
 
-const fetchTypeFreins = async () => {
-  setLoading_tp_frein(true);
-  try {
-    const res = await axios.get(`${APIURL.ROOTV1}/typefreins`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-    console.log('frein', res.data.typefreins);
-    
-    // The API returns objects with 'description' field, not 'frein.description'
-    setType_freins([
-      { id: 'tout', description: 'Autre' },
-      ...(res.data.typefreins || []),
-    ]);
-  } catch (e) {
-    // Optionally handle error here
-  } finally {
-    setLoading_tp_frein(false);
-  }
-};
+  const fetchTypeFreins = async () => {
+    setLoading_tp_frein(true);
+    try {
+      const res = await axios.get(`${APIURL.ROOTV1}/typefreins`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      console.log('frein', res.data.typefreins);
 
+      // The API returns objects with 'description' field, not 'frein.description'
+      setType_freins([
+        { id: 'tout', description: 'Autre' },
+        ...(res.data.typefreins || []),
+      ]);
+    } catch (e) {
+      // Optionally handle error here
+    } finally {
+      setLoading_tp_frein(false);
+    }
+  };
 
   const handleChange_interet = (code) => {
     if (code) {
@@ -444,9 +443,10 @@ const fetchTypeFreins = async () => {
         })
         .then((response) => {
           //setFirst_visite(response.data.visite)
-          if (response.data.visite.prospect.cin == null) {
+          if (response.data.visites[0].prospect.cin == null) {
             setdisplay_cin(true);
           }
+          setValue('prospect_id', response.data.visites[0]?.prospect?.id);
           setOld_visites_perdu([]);
           for (var i = 0; i <= Number(response.data.visites.length) - 1; i++) {
             if (response.data.visites[i].interet == '3') {
@@ -616,38 +616,41 @@ const fetchTypeFreins = async () => {
       }
     }
     // If interet == 3, then all those frein checks
- // In validateFields function, update the frein checks:
-if (Number(watch('interet')) == 3) {
-  const frein = watch('frein') || []; // Already an array
-  
-  const checks = [
-    frein.length > 0,
-    !frein.some(f => f === 'vue') || (watch('vues') || []).length > 0,
-    !frein.some(f => f === 'typologie') || (watch('typologies') || []).length > 0,
-    !frein.some(f => f === 'orientation') || (watch('orientations') || []).length > 0,
-    !frein.some(f => f === 'etage') || (watch('etages') || []).length > 0,
-    !frein.some(f => f === 'tranche') || (watch('tranches') || []).length > 0,
-  ];
+    // In validateFields function, update the frein checks:
+    if (Number(watch('interet')) == 3) {
+      const frein = watch('frein') || []; // Already an array
 
-  const checkNames = [
-    'frein.length > 0',
-    "'vue' => vues.length > 0",
-    "'typologie' => typologies.length > 0",
-    "'orientation' => orientations.length > 0",
-    "'etage' => etages.length > 0",
-    "'tranche' => tranches.length > 0",
-  ];
+      const checks = [
+        frein.length > 0,
+        !frein.some((f) => f === 'vue') || (watch('vues') || []).length > 0,
+        !frein.some((f) => f === 'typologie') ||
+          (watch('typologies') || []).length > 0,
+        !frein.some((f) => f === 'orientation') ||
+          (watch('orientations') || []).length > 0,
+        !frein.some((f) => f === 'etage') || (watch('etages') || []).length > 0,
+        !frein.some((f) => f === 'tranche') ||
+          (watch('tranches') || []).length > 0,
+      ];
 
-  if (!checks.every(Boolean)) {
-    valid = false;
-    console.error('Certains freins ne sont pas remplis correctement.');
-    checks.forEach((check, index) => {
-      if (!check) {
-        console.warn(`Échec du test: ${checkNames[index]}`);
+      const checkNames = [
+        'frein.length > 0',
+        "'vue' => vues.length > 0",
+        "'typologie' => typologies.length > 0",
+        "'orientation' => orientations.length > 0",
+        "'etage' => etages.length > 0",
+        "'tranche' => tranches.length > 0",
+      ];
+
+      if (!checks.every(Boolean)) {
+        valid = false;
+        console.error('Certains freins ne sont pas remplis correctement.');
+        checks.forEach((check, index) => {
+          if (!check) {
+            console.warn(`Échec du test: ${checkNames[index]}`);
+          }
+        });
       }
-    });
-  }
-}
+    }
 
     return valid;
   };
@@ -1046,7 +1049,8 @@ if (Number(watch('interet')) == 3) {
         // Pas de client ni de prospect trouvé, garder les champs inchangés
         setValue('loading_b_pre', false);
         setOpen_Dialog(false);
-        setValue('prospect_id', '');
+        //si on store_n_visite tjr garder meme prospect_id  else ''
+        setValue('prospect_id', isOrigin ? watch('prospect_id') : '');
       }
     } catch (error) {
       console.error('Erreur lors de la récupération de la visite:', error);
@@ -1695,37 +1699,44 @@ if (Number(watch('interet')) == 3) {
       });
   };
 
-// Update handleSourceChange to work with SelectInput
-const handleSourceChange = (optionValue) => {
-  const selectedOption = sources.find(source => source.id.toString() === optionValue);
-  setValue('partenaire_id', ''); // Reset partenaire ID when source changes
-  setValue('source_txt', selectedOption ? selectedOption.source : ''); // Set source text
-  setValue('source_id', optionValue || ''); // Set source ID
-  
-  // Only clear partenaire_txt if the new source is not "Partenaire"
-  if (selectedOption && selectedOption.source !== 'Partenaire') {
-    setPartenaire_txt(null);
-  }
-};
+  // Update handleSourceChange to work with SelectInput
+  const handleSourceChange = (optionValue) => {
+    const selectedOption = sources.find(
+      (source) => source.id.toString() === optionValue
+    );
+    setValue('partenaire_id', ''); // Reset partenaire ID when source changes
+    setValue('source_txt', selectedOption ? selectedOption.source : ''); // Set source text
+    setValue('source_id', optionValue || ''); // Set source ID
 
-// Update handlePartenaireChange to work with SelectInput
-const handlePartenaireChange = (optionValue) => {
-  const selectedOption = partenaires.find(partenaire => partenaire.id.toString() === optionValue);
-  setValue('partenaire_id', optionValue || ''); // Set partenaire ID
-  
-  // Set the partenaire text for display
-  setPartenaire_txt(selectedOption ? selectedOption.description : '');
-  setValue('partenaire_txt', selectedOption ? selectedOption.description : '');
-};
+    // Only clear partenaire_txt if the new source is not "Partenaire"
+    if (selectedOption && selectedOption.source !== 'Partenaire') {
+      setPartenaire_txt(null);
+    }
+  };
 
-// In VisiteForm component
-const handleChange_freins = (selectedValues) => {
-  try {
-    setValue('frein', selectedValues); // This should be an array of strings
-  } catch (error) {
-    console.error('Error in handleChange_freins:', error);
-  }
-};
+  // Update handlePartenaireChange to work with SelectInput
+  const handlePartenaireChange = (optionValue) => {
+    const selectedOption = partenaires.find(
+      (partenaire) => partenaire.id.toString() === optionValue
+    );
+    setValue('partenaire_id', optionValue || ''); // Set partenaire ID
+
+    // Set the partenaire text for display
+    setPartenaire_txt(selectedOption ? selectedOption.description : '');
+    setValue(
+      'partenaire_txt',
+      selectedOption ? selectedOption.description : ''
+    );
+  };
+
+  // In VisiteForm component
+  const handleChange_freins = (selectedValues) => {
+    try {
+      setValue('frein', selectedValues); // This should be an array of strings
+    } catch (error) {
+      console.error('Error in handleChange_freins:', error);
+    }
+  };
   const isDisabled =
     loading_form ||
     info_prix != null ||
@@ -1832,6 +1843,7 @@ const handleChange_freins = (selectedValues) => {
                         Informations du prospect
                       </h2>
                     </div>
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
                       <TextField
                         label="Cin:"
@@ -1860,22 +1872,24 @@ const handleChange_freins = (selectedValues) => {
                         <>
                           <div className="">
                             <SelectInput
-                              placeholder='selectionner un intérêt'
+                              placeholder="selectionner un intérêt"
                               label="Intérêt :"
                               name="interet"
                               value={watch('interet')}
                               required={true}
                               options={
                                 input_biens_vendu.length > 0
-                                  ? [{ value: "1", label: "Intéressé" }] // Only interested option
+                                  ? [{ value: '1', label: 'Intéressé' }] // Only interested option
                                   : Object.values(VISITE_INTERETS)
-                                      .filter(interet => interet.code !== 4) // Exclude "Injoignable"
-                                      .map(interet => ({
+                                      .filter((interet) => interet.code !== 4) // Exclude "Injoignable"
+                                      .map((interet) => ({
                                         value: interet.code.toString(),
-                                        label: interet.label
+                                        label: interet.label,
                                       }))
                               }
-                              disabled={isOrigin ? false : watch('telephone') === ''}
+                              disabled={
+                                isOrigin ? false : watch('telephone') === ''
+                              }
                               onChange={handleChange_interet}
                             />
                           </div>
@@ -1934,14 +1948,16 @@ const handleChange_freins = (selectedValues) => {
                     <>
                       <div className="">
                         <SelectInput
-                          placeholder='selectionner un mode de relance'
+                          placeholder="selectionner un mode de relance"
                           label="Mode Relance:"
                           name="mode_relance"
                           required={false}
-                          options={Object.values(VISITE_TYPE_NOTIF).map(notif => ({
-                            value: notif.code.toString(),
-                            label: notif.label
-                          }))}
+                          options={Object.values(VISITE_TYPE_NOTIF).map(
+                            (notif) => ({
+                              value: notif.code.toString(),
+                              label: notif.label,
+                            })
+                          )}
                           value={watch('mode_relance')?.toString()}
                           onChange={handleChange_tp_notif}
                         />
@@ -2469,7 +2485,9 @@ const handleChange_freins = (selectedValues) => {
                                       3: VISITE_INTERETS[3],
                                     }
                               }
-disabled={isOrigin ? false : watch('telephone') === ''}
+                              disabled={
+                                isOrigin ? false : watch('telephone') === ''
+                              }
                               onChange={handleChange_interet}
                             />
                           </div>
@@ -2563,31 +2581,30 @@ disabled={isOrigin ? false : watch('telephone') === ''}
                               <div className="p-4 space-y-4">
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-x-5 gap-y-4">
                                   <div>
-                                    {/* Bien Selection */}
                                     <SelectInput
                                       label="Bien:"
                                       name="bien_id"
-                                      options={biensByProjet
-                                        .filter(bien => bien && bien.id && bien.propriete_dite_bien)
-                                        .map(bien => ({
-                                          value: bien.id.toString(),
-                                          label: bien.propriete_dite_bien,
-                                          disabled: bien.disabled || false
-                                        }))}
+                                      options={biensByProjet 
+                                        ? biensByProjet.filter(bien => bien && bien.id && bien.propriete_dite_bien)
+                                            .map(bien => ({
+                                              value: bien.id.toString(),
+                                              label: bien.propriete_dite_bien,
+                                              disabled: bien.disabled || false
+                                            }))
+                                        : []} // Provide empty array as fallback
                                       value={x.bien_id}
                                       onChange={(selectedValue) => {
-                                        // Create a synthetic event to match handleinputchange's expected format
                                         const syntheticEvent = {
                                           target: {
                                             name: 'bien_id',
-                                            value: selectedValue
-                                          }
+                                            value: selectedValue,
+                                          },
                                         };
                                         handleinputchange(syntheticEvent, i);
                                       }}
                                       placeholder="Sélectionner un bien"
                                       loading={loading_bien}
-                                      required={x.statut == 2} // Required if status is "Vendu"
+                                      required={x.statut == 2}
                                     />
                                   </div>
 
@@ -2596,9 +2613,11 @@ disabled={isOrigin ? false : watch('telephone') === ''}
                                     <SelectInput
                                       label="Statut:"
                                       name="statut"
-                                      options={Object.values(VISITE_STATUT_FORM).map(statut => ({
+                                      options={Object.values(
+                                        VISITE_STATUT_FORM
+                                      ).map((statut) => ({
                                         value: statut.code.toString(),
-                                        label: statut.label
+                                        label: statut.label,
                                       }))}
                                       value={x.statut?.toString()}
                                       onChange={(selectedValue) => {
@@ -2606,8 +2625,8 @@ disabled={isOrigin ? false : watch('telephone') === ''}
                                         const syntheticEvent = {
                                           target: {
                                             name: 'statut',
-                                            value: selectedValue
-                                          }
+                                            value: selectedValue,
+                                          },
                                         };
                                         handleinputchange(syntheticEvent, i);
                                       }}
@@ -2634,19 +2653,24 @@ disabled={isOrigin ? false : watch('telephone') === ''}
                                         <SelectInput
                                           label="Mode de Relance:"
                                           name="mode_relance"
-                                          options={Object.values(VISITE_TYPE_NOTIF).map(notif => ({
+                                          options={Object.values(
+                                            VISITE_TYPE_NOTIF
+                                          ).map((notif) => ({
                                             value: notif.code.toString(),
-                                            label: notif.label
+                                            label: notif.label,
                                           }))}
                                           value={x.mode_relance?.toString()}
                                           onChange={(selectedValue) => {
                                             const syntheticEvent = {
                                               target: {
                                                 name: 'mode_relance',
-                                                value: selectedValue
-                                              }
+                                                value: selectedValue,
+                                              },
                                             };
-                                            handleinputchange(syntheticEvent, i);
+                                            handleinputchange(
+                                              syntheticEvent,
+                                              i
+                                            );
                                           }}
                                           placeholder="Sélectionner un Mode de Relance"
                                         />
@@ -2880,14 +2904,16 @@ disabled={isOrigin ? false : watch('telephone') === ''}
                                         value={x.reste}
                                         disabled
                                       />
-                                     {/* Mode Financement Selection */}
+                                      {/* Mode Financement Selection */}
                                       <div>
                                         <SelectInput
                                           label="Mode Financement:"
                                           name="mode_financement"
-                                          options={Object.values(MODE_FINANCE).map(finance => ({
+                                          options={Object.values(
+                                            MODE_FINANCE
+                                          ).map((finance) => ({
                                             value: finance.code.toString(),
-                                            label: finance.label
+                                            label: finance.label,
                                           }))}
                                           value={x.mode_financement?.toString()}
                                           onChange={(selectedValue) => {
@@ -2895,10 +2921,13 @@ disabled={isOrigin ? false : watch('telephone') === ''}
                                             const syntheticEvent = {
                                               target: {
                                                 name: 'mode_financement',
-                                                value: selectedValue
-                                              }
+                                                value: selectedValue,
+                                              },
                                             };
-                                            handleinputchange(syntheticEvent, i);
+                                            handleinputchange(
+                                              syntheticEvent,
+                                              i
+                                            );
                                           }}
                                           placeholder="Sélectionner un Mode de Financement"
                                           required
@@ -2910,9 +2939,11 @@ disabled={isOrigin ? false : watch('telephone') === ''}
                                         <SelectInput
                                           label="Mode Paiement:"
                                           name="mode_paiement"
-                                          options={Object.values(MODE_PAIEMENT).map(paiement => ({
+                                          options={Object.values(
+                                            MODE_PAIEMENT
+                                          ).map((paiement) => ({
                                             value: paiement.code.toString(),
-                                            label: paiement.label
+                                            label: paiement.label,
                                           }))}
                                           value={x.mode_paiement?.toString()}
                                           onChange={(selectedValue) => {
@@ -2920,10 +2951,13 @@ disabled={isOrigin ? false : watch('telephone') === ''}
                                             const syntheticEvent = {
                                               target: {
                                                 name: 'mode_paiement',
-                                                value: selectedValue
-                                              }
+                                                value: selectedValue,
+                                              },
                                             };
-                                            handleinputchange(syntheticEvent, i);
+                                            handleinputchange(
+                                              syntheticEvent,
+                                              i
+                                            );
                                           }}
                                           placeholder="Sélectionner un Mode de Paiement"
                                           required
@@ -2936,19 +2970,24 @@ disabled={isOrigin ? false : watch('telephone') === ''}
                                             <SelectInput
                                               label="Banque:"
                                               name="banque_id"
-                                              options={banques.map(banque => ({
-                                                value: banque.id.toString(),
-                                                label: banque.nom
-                                              }))}
+                                              options={banques.map(
+                                                (banque) => ({
+                                                  value: banque.id.toString(),
+                                                  label: banque.nom,
+                                                })
+                                              )}
                                               value={x.banque_id?.toString()}
                                               onChange={(selectedValue) => {
                                                 const syntheticEvent = {
                                                   target: {
                                                     name: 'banque_id',
-                                                    value: selectedValue
-                                                  }
+                                                    value: selectedValue,
+                                                  },
                                                 };
-                                                handleinputchange(syntheticEvent, i);
+                                                handleinputchange(
+                                                  syntheticEvent,
+                                                  i
+                                                );
                                               }}
                                               placeholder="Sélectionner une Banque"
                                               required={x.mode_paiement !== 1}
@@ -3093,7 +3132,7 @@ disabled={isOrigin ? false : watch('telephone') === ''}
                   Annuler
                 </Button>
                 <Button type="submit" /*disabled={isDisabled || isSubmitting}*/>
-                  {(isSubmitting||isDisabled) ? (
+                  {isSubmitting || isDisabled ? (
                     <div className="flex items-center gap-2">
                       <svg
                         className="animate-spin h-5 w-5 text-white"
