@@ -13,7 +13,8 @@ import {
   isAfter,
   isBefore,
   parseISO,
-  isEqual
+  isEqual,
+  isValid
 } from 'date-fns';
 import { CalendarIcon, ChevronDownIcon, XIcon, CheckIcon } from 'lucide-react';
 
@@ -24,6 +25,12 @@ export const DateFilter = ({ startDate, endDate, onChange }) => {
   const [customEnd, setCustomEnd] = useState(endDate);
   const dropdownRef = useRef(null);
   const today = new Date();
+
+  // Safe format function with dd/MM/yyyy format for display
+  const safeFormat = (date, formatString = 'dd/MM/yyyy') => {
+    if (!date || !isValid(date)) return '';
+    return format(date, formatString);
+  };
 
   const presets = [
     {
@@ -67,6 +74,7 @@ export const DateFilter = ({ startDate, endDate, onChange }) => {
     for (const preset of presets) {
       const [presetStart, presetEnd] = preset.getRange();
       if (
+        startDate && endDate &&
         isEqual(startDate, presetStart) && 
         isEqual(endDate, presetEnd)
       ) {
@@ -100,7 +108,7 @@ export const DateFilter = ({ startDate, endDate, onChange }) => {
   };
 
   const handleCustomDateChange = () => {
-    if (isAfter(customStart, customEnd)) {
+    if (!customStart || !customEnd || isAfter(customStart, customEnd)) {
       return; // Prevent invalid date ranges
     }
     onChange(customStart, customEnd);
@@ -109,7 +117,7 @@ export const DateFilter = ({ startDate, endDate, onChange }) => {
 
   const getDisplayText = () => {
     if (activePreset === 'custom') {
-      return `${format(startDate, 'd MMM')} - ${format(endDate, 'd MMM yyyy')}`;
+      return `${safeFormat(startDate, 'dd/MM/yyyy')} - ${safeFormat(endDate, 'dd/MM/yyyy')}`;
     }
     const preset = presets.find((p) => p.id === activePreset);
     return preset ? preset.label : 'Sélectionner une période';
@@ -163,8 +171,11 @@ export const DateFilter = ({ startDate, endDate, onChange }) => {
                     </label>
                     <input
                       type="date"
-                      value={format(customStart, 'yyyy-MM-dd')}
-                      onChange={(e) => setCustomStart(parseISO(e.target.value))}
+                      value={customStart ? format(customStart, 'yyyy-MM-dd') : ''}
+                      onChange={(e) => {
+                        const date = e.target.value ? parseISO(e.target.value) : null;
+                        setCustomStart(date);
+                      }}
                       className="w-full px-2 py-1 text-xs border border-gray-200 rounded"
                     />
                   </div>
@@ -174,8 +185,11 @@ export const DateFilter = ({ startDate, endDate, onChange }) => {
                     </label>
                     <input
                       type="date"
-                      value={format(customEnd, 'yyyy-MM-dd')}
-                      onChange={(e) => setCustomEnd(parseISO(e.target.value))}
+                      value={customEnd ? format(customEnd, 'yyyy-MM-dd') : ''}
+                      onChange={(e) => {
+                        const date = e.target.value ? parseISO(e.target.value) : null;
+                        setCustomEnd(date);
+                      }}
                       className="w-full px-2 py-1 text-xs border border-gray-200 rounded"
                     />
                   </div>
@@ -185,7 +199,8 @@ export const DateFilter = ({ startDate, endDate, onChange }) => {
             {activePreset === 'custom' && (
               <button
                 onClick={handleCustomDateChange}
-                className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors"
+                disabled={!customStart || !customEnd || isAfter(customStart, customEnd)}
+                className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-sm font-medium rounded-md transition-colors"
               >
                 Appliquer
               </button>

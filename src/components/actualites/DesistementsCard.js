@@ -2,10 +2,16 @@ import React, { useState } from 'react';
 
 export default function DesistementsCard({
   desistements = [],
-  sumPenalites = 0,
-  sumMontantAAjouter = 0,
+  itemsPerPage = 6,
 }) {
   const [activeTab, setActiveTab] = useState('DD');
+  const [currentPages, setCurrentPages] = useState({
+    DD: 1,
+    'DP PROCHE': 1,
+    'DP CO': 1,
+    'DP PARTIEL': 1,
+    CHANGE: 1,
+  });
 
   const getType = (type, type_dp) => {
     const typeNum = parseInt(type);
@@ -62,19 +68,36 @@ export default function DesistementsCard({
     'Autre',
   ];
 
-  return (
-    <div className="bg-white rounded-lg shadow overflow-hidden h-full">
-      <div className="px-6 py-4 border-b">
-        <div className="text-lg font-semibold">Désistements</div>
-      </div>
+  // Get current items for active tab
+  const currentData = categorizedData[tabToDataMap[activeTab]] || [];
+  const currentPage = currentPages[activeTab] || 1;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedData = currentData.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
+  const totalPages = Math.ceil(currentData.length / itemsPerPage);
 
+  const handlePageChange = (page) => {
+    setCurrentPages({
+      ...currentPages,
+      [activeTab]: page,
+    });
+  };
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+  };
+
+  return (
+    <div className="">
       {/* Tabs */}
       <div className="px-6 pt-4">
         <div className="flex space-x-4 overflow-x-auto pb-2">
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabChange(tab.id)}
               className={`flex flex-col items-center justify-center py-2 px-3 rounded-lg transition-colors ${
                 activeTab === tab.id
                   ? 'border-2 border-blue-500 bg-blue-50'
@@ -101,16 +124,16 @@ export default function DesistementsCard({
               <tr className="border-b">
                 {activeTab === 'DD' && (
                   <>
-                    <th className="py-2 text-left text-sm font-medium !text-gray-500">
+                    <th className="py-2 text-left text-sm font-semibold ">
                       Code Réservation
                     </th>
-                    <th className="py-2 text-left text-sm font-medium !text-gray-500">
+                    <th className="py-2 text-left text-sm font-semibold ">
                       Bien
                     </th>
-                    <th className="py-2 text-left text-sm font-medium !text-gray-500">
+                    <th className="py-2 text-left text-sm font-semibold ">
                       Motif
                     </th>
-                    <th className="py-2 text-left text-sm font-medium !text-gray-500">
+                    <th className="py-2 text-left text-sm font-semibold ">
                       Pénalité
                     </th>
                   </>
@@ -119,29 +142,29 @@ export default function DesistementsCard({
                   activeTab === 'DP CO' ||
                   activeTab === 'DP PARTIEL') && (
                   <>
-                    <th className="py-2 text-left text-sm font-medium !text-gray-500">
+                    <th className="py-2 text-left text-sm font-semibold ">
                       Bien
                     </th>
-                    <th className="py-2 text-left text-sm font-medium !text-gray-500">
+                    <th className="py-2 text-left text-sm font-medium ">
                       Lien de Parenté
                     </th>
-                    <th className="py-2 text-left text-sm font-medium !text-gray-500">
+                    <th className="py-2 text-left text-sm font-medium ">
                       Pénalité
                     </th>
                   </>
                 )}
                 {activeTab === 'CHANGE' && (
                   <>
-                    <th className="py-2 text-left text-sm font-medium !text-gray-500">
+                    <th className="py-2 text-left text-sm font-semibold">
                       Ancien Bien
                     </th>
-                    <th className="py-2 text-left text-sm font-medium !text-gray-500">
+                    <th className="py-2 text-left text-sm font-semibold">
                       Nouveau Bien
                     </th>
-                    <th className="py-2 text-left text-sm font-medium !text-gray-500">
+                    <th className="py-2 text-left text-sm font-semibold">
                       Montant à Ajouter
                     </th>
-                    <th className="py-2 text-left text-sm font-medium !text-gray-500">
+                    <th className="py-2 text-left text-sm font-semibold">
                       Pénalité
                     </th>
                   </>
@@ -149,12 +172,17 @@ export default function DesistementsCard({
               </tr>
             </thead>
             <tbody>
-              {categorizedData[tabToDataMap[activeTab]].map((item, index) => (
+              {paginatedData.map((item, index) => (
                 <tr key={index} className="border-b">
                   {activeTab === 'DD' && (
                     <>
                       <td className="py-3 text-sm">{item.code_reservation}</td>
-                      <td className="py-3 text-sm">{item.bien}</td>
+                      <td className="py-3 text-sm">
+                        {item.bien}{' '}
+                        {item.tranche_nom ? `-${item.tranche_nom}` : ''}
+                        {item.bloc_nom ? `-${item.bloc_nom}` : ''}
+                        {item.immeuble_nom ? `-${item.immeuble_nom}` : ''}
+                      </td>
                       <td className="py-3">
                         <span
                           className={`${
@@ -200,8 +228,20 @@ export default function DesistementsCard({
 
                   {activeTab === 'CHANGE' && (
                     <>
-                      <td className="py-3 text-sm">{item.bien}</td>
-                      <td className="py-3 text-sm">{item.new_bien}</td>
+                      <td className="py-3 text-sm">
+                        {item.bien}{' '}
+                        {item.tranche_nom ? `-${item.tranche_nom}` : ''}
+                        {item.bloc_nom ? `-${item.bloc_nom}` : ''}
+                        {item.immeuble_nom ? `-${item.immeuble_nom}` : ''}
+                      </td>
+                      <td className="py-3 text-sm">
+                        {item.new_bien}{' '}
+                        {item.new_tranche_nom ? `-${item.new_tranche_nom}` : ''}
+                        {item.new_bloc_nom ? `-${item.new_bloc_nom}` : ''}
+                        {item.new_immeuble_nom
+                          ? `-${item.new_immeuble_nom}`
+                          : ''}
+                      </td>
                       <td className="py-3">
                         <span className="bg-green-100 !text-green-800 text-xs px-2 py-1 rounded-full">
                           {item.montant_a_ajouter} DH
@@ -219,7 +259,7 @@ export default function DesistementsCard({
                 </tr>
               ))}
 
-              {categorizedData[tabToDataMap[activeTab]].length === 0 && (
+              {paginatedData.length === 0 && (
                 <tr>
                   <td
                     colSpan={
@@ -234,6 +274,43 @@ export default function DesistementsCard({
             </tbody>
           </table>
         </div>
+
+        {/* Pagination for desistements */}
+        {currentData.length > itemsPerPage && (
+          <div className="flex justify-center mt-4">
+            <nav className="flex items-center gap-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-3 py-1 rounded border disabled:opacity-50"
+              >
+                Précédent
+              </button>
+
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (page) => (
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page)}
+                    className={`px-3 py-1 rounded ${
+                      currentPage === page ? 'bg-blue-500 text-white' : 'border'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                )
+              )}
+
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 rounded border disabled:opacity-50"
+              >
+                Suivant
+              </button>
+            </nav>
+          </div>
+        )}
       </div>
     </div>
   );
