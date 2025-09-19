@@ -343,7 +343,7 @@ const RelancesRdvAppelsTable = (type) => {
           onPageChange={setCurrentPage}
           onRowsPerPageChange={setRowsPerPage}
           onSearchChange={setSearchTerm}
-          enableExport={true}
+           enableExport={formatData().length > 0}
           filterComponent={
             <div className="space-y-4 p-4 rounded-lg ">
               <div

@@ -39,7 +39,6 @@ import AutocompleteBien from './AutocompleteBien';
 import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
 import Autocomplete from '@/components/Autocomplete';
 import LoadingSpin from '@/components/LoadingSpin';
-import SelectInput from '@/components/SelectInput';
 
 import {
   fetchData_Select,
@@ -74,7 +73,6 @@ export default function ReservationForm({ id }) {
   const [bien_id, setBien_id] = useState(null);
   const [selectedFiles_rsv, setSelectedFiles_rsv] = useState([]);
   const [selectedFiles_avc, setSelectedFiles_avc] = useState([]);
-  const [fetchedProjetId, setFetchedProjetId] = useState(null); 
 
   const { user, token } = useAuth();
   const router = useRouter();
@@ -622,46 +620,40 @@ export default function ReservationForm({ id }) {
       pusher_function();
     }
   };
-
-
- const fetch_bien_ByProjet = async (bien_id, bien_propriete, prix) => {
-  setLoading_bien(true);
-  try {
-    const response = await axios.get(
-      `${APIURL.ROOTV1}/getBiensByProjet_Concat/${selectedProjet.id}`,
-      {
+  const fetch_bien_ByProjet = async (bien_id, bien_propriete, prix, text) => {
+    setLoading_bien(true);
+    await axios
+      .get(`${APIURL.ROOTV1}/getBiensByProjet_Concat/` + selectedProjet.id, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
-      }
-    );
+      })
+      .then((res) => {
+        //add bien pre reserve ou vendu to res data biens(disponible)
+        if (bien_propriete != undefined) {
+          res.data.biens.push({
+            propriete_dite_bien: bien_propriete,
+            id: bien_id,
+            prix: prix,
+          });
+        }
+        setBiensByProjet(res.data.biens);
+        if (text == 'without_proposition') {
+          if (bien_id != null) {
+            for (var i = 0; i <= Number(res.data.biens.length) - 1; i++) {
+              if (bien_id == res.data.biens[i].id) {
+                //setBienKey(i)
+              }
+            }
+          }
+        }
+        setLoading_bien(false);
+      })
 
-    let biens = response.data.biens;
-
-    if (bien_propriete && bien_id) {
-      const bienExists = biens.some(bien => bien.id === bien_id);
-
-      if (!bienExists) {
-        const customBien = {
-          id: bien_id,
-          prix: prix,
-          propriete_dite_bien: bien_propriete,
-          designation: `Bien #${bien_id}`,
-        };
-        biens = [...biens, customBien];
-      }
-    }
-
-    setBiensByProjet(biens);
-    setFetchedProjetId(selectedProjet.id); // ✅ remember last projet
-  } catch (error) {
-    console.error("Error fetching biens:", error);
-    toast.error("Erreur lors du chargement des biens");
-  } finally {
-    setLoading_bien(false);
-  }
-};
-
+      .catch(() => {
+        setLoading_bien(false);
+      });
+  };
   const pusher_function = async () => {
     Pusher.logToConsole = true;
 
@@ -1448,28 +1440,17 @@ export default function ReservationForm({ id }) {
               </div>
 
               <div>
-                <SelectInput
-                  label="Bien:"
-                  name="bien_id"
-                  required={true}
-                  loading={loading_bien}
-                  options={biensByProjet.map((bien, index) => ({
-                    value: bien.id,
-                    label:
-                      index === 0
-                        ? `${bien.propriete_dite_bien || `Bien #${bien.id}`} - proposé par moi`
-                        : bien.propriete_dite_bien || `Bien #${bien.id}`,
-                    original: bien
-                  }))}
-                  value={watch('bien_id')}
-                  onChange={(value) => {
-                    const selectedOption = biensByProjet.find(b => b.id === value);
-                    handleSelectBien(null, selectedOption);
-                  }}
-                  error={errors['bien_id']?.message || backendErrors['bien_id']?.[0]}
-                  disabled={isEditing && user.role <= 2}
-                  placeholder="Sélectionnez un bien"
-                />
+                <>
+                  <AutocompleteBien
+                    user={user}
+                    biensByProjet={biensByProjet}
+                    value={watch('bien_id')}
+                    onChange={handleSelectBien}
+                    disabled={isEditing && user.role <= 2 ? false : true}
+                    loading={loading_bien}
+                    error={errors['bien_id'] || backendErrors['bien_id']}
+                  />
+                </>
               </div>
               <div>
                 <TextField

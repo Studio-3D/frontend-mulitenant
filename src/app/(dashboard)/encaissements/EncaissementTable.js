@@ -15,7 +15,6 @@ import DateRangePicker from '@/components/DateRangePicker';
 import SelectInput from '@/components/SelectInput';
 
 const EncaissementTable = ({ dataClient_id, bien_id }) => {
-  const user = localStorage.getItem('authUser');
   const [encaissements, setEncaissements] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -24,72 +23,45 @@ const EncaissementTable = ({ dataClient_id, bien_id }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const { token } = useAuth();
+  const { user, token } = useAuth();
   const accesstoken = token || localStorage.getItem('accessToken');
 
-  // Use useRef to track if we've already processed stored filters
-  const hasProcessedStoredFilters = useRef(false);
-  const shouldFetchData = useRef(true); // Add this ref to control when to fetch data
+  // Store filter info separately for display
+  const [filterInfo, setFilterInfo] = useState(null);
+  
+  // Initialize filters from localStorage if available
+  const storedFilters = localStorage.getItem('encaissement_filters');
+  const initialFilters = storedFilters ? JSON.parse(storedFilters) : null;
 
+  // Set the filters for the API call
   const [filters, setFilters] = useState({
     code_reservation: '',
     bienId: '',
     client: '',
-    //client_id: dataClient_id?.id ? dataClient_id?.id : '',
     montant: '',
-    type_encaissement: '',
-    de: '',
-    a: '',
-    user_id: '',
+    type_encaissement: initialFilters?.type_encaissement || '',
+    de: initialFilters?.start || '',
+    a: initialFilters?.end || '',
+    user_id: initialFilters?.commercial !== 'tous' ? initialFilters?.commercial : '',
   });
+
   const [tempFilters, setTempFilters] = useState({ ...filters });
-  const [appliedFiltersInfo, setAppliedFiltersInfo] = useState(null);
 
+  // Set filter info for display
   useEffect(() => {
-    // Check if there are stored filters from Actualites page and we haven't processed them yet
-    const storedFilters = localStorage.getItem('encaissement_filters');
-
-    if (storedFilters && !hasProcessedStoredFilters.current) {
-      try {
-        const filterParams = JSON.parse(storedFilters);
-
-        // Set the filters for the API call
-        const newFilters = {
-          ...filters,
-          type_encaissement: filterParams.type_encaissement || '',
-          de: filterParams.start || '',
-          a: filterParams.end || '',
-          user_id:
-            filterParams.commercial !== 'tous' ? filterParams.commercial : '',
-        };
-
-        setFilters(newFilters);
-        setTempFilters(newFilters);
-
-        // Set the info for display
-        setAppliedFiltersInfo({
-          commercial: filterParams.commercial_name,
-          type: filterParams.type_encaissement === 1 ? 'Avances' : '',
-          start: filterParams.start,
-          end: filterParams.end,
-        });
-
-        // Mark as processed
-        hasProcessedStoredFilters.current = true;
-
-        // Don't fetch data now, wait for the filters to be set and then the useEffect below will handle it
-        shouldFetchData.current = false;
-
-        // Clear the stored filters after use
-        localStorage.removeItem('encaissement_filters');
-      } catch (error) {
-        console.error('Error parsing stored filters:', error);
-        shouldFetchData.current = true; // If error, allow normal fetch
-      }
-    } else {
-      shouldFetchData.current = true; // No stored filters, allow normal fetch
+    if (initialFilters) {
+      setFilterInfo({
+        commercial_name: initialFilters.commercial_name,
+        type_encaissement: initialFilters.type_encaissement,
+        start: initialFilters.start,
+        end: initialFilters.end
+      });
+      
+      // Clear the stored filters after use (but keep for display)
+      localStorage.removeItem('encaissement_filters');
     }
-  }, [filters]);
+  }, []);
+
   const handleFilterChange = (field, value) => {
     // Only reset user_id if we're changing a different field
     if (field !== 'user_id') {
@@ -102,11 +74,11 @@ const EncaissementTable = ({ dataClient_id, bien_id }) => {
       setTempFilters((prev) => ({ ...prev, [field]: value }));
     }
   };
+  
   const applyFilters = () => {
     setFilters(tempFilters);
-    setAppliedFiltersInfo(null); // Clear the stored filter info when manually applying filters
-
-    // Ici, tu peux déclencher ton fetch ou filtrer localement
+    // Clear filter info when applying new filters
+    setFilterInfo(null);
   };
 
   const resetFilters = () => {
@@ -123,8 +95,10 @@ const EncaissementTable = ({ dataClient_id, bien_id }) => {
     };
     setFilters(reset);
     setTempFilters(reset);
-    setAppliedFiltersInfo(null);
+    // Clear filter info when resetting filters
+    setFilterInfo(null);
   };
+  
   const entity = {
     API_URL: 'encaissements',
     dataKey: 'data',
@@ -156,11 +130,6 @@ const EncaissementTable = ({ dataClient_id, bien_id }) => {
   };
 
   useEffect(() => {
-    // Only fetch data if shouldFetchData is true
-    if (!shouldFetchData.current) {
-      shouldFetchData.current = true; // Reset for next time
-      return;
-    }
     const params_url = dataClient_id
       ? { client_id: dataClient_id?.id }
       : bien_id
@@ -469,26 +438,34 @@ const EncaissementTable = ({ dataClient_id, bien_id }) => {
     <>
       <div className="reflative bg-white rounded-lg p-4">
         {/* Show filter info if parameters were passed from Actualites */}
-        {appliedFiltersInfo && (
+        {user.role <= 2 && filterInfo && (
           <div className="mb-4 p-3 bg-blue-50 border-l-4 border-blue-500">
             <p className="font-medium">Filtres appliqués:</p>
-            {appliedFiltersInfo.commercial && (
+            {filterInfo.commercial_name && (
               <p className="text-sm">
-                Commercial: {appliedFiltersInfo.commercial}
+                Commercial: {filterInfo.commercial_name}
               </p>
             )}
 
-            <p className="text-sm">Type Encaissement: {'Avances'}</p>
+            <p className="text-sm">
+              Type Encaissement: {'Avances'
+              /*filterInfo.type_encaissement === '1' ? 'Avances' : 
+                filterInfo.type_encaissement === '2' ? 'Restitution' :
+                filterInfo.type_encaissement === '3' ? 'Remboursements' :
+                filterInfo.type_encaissement === '4' ? 'Décharge Reliquat' :
+                filterInfo.type_encaissement === '5' ? 'Déblocage Crédit' :
+                filterInfo.type_encaissement === '6' ? 'Pénalités' : ''*/}
+            </p>
 
-            {appliedFiltersInfo.start && appliedFiltersInfo.end && (
+            {filterInfo.start && filterInfo.end && (
               <p className="text-sm">
-                Période:{' '}
-                {format(new Date(appliedFiltersInfo.start), 'dd/MM/yyyy')} -{' '}
-                {format(new Date(appliedFiltersInfo.end), 'dd/MM/yyyy')}
+                Période: {format(new Date(filterInfo.start), 'dd/MM/yyyy')} -{' '}
+                {format(new Date(filterInfo.end), 'dd/MM/yyyy')}
               </p>
             )}
           </div>
         )}
+
         <Table
           showSearch={false}
           title={!dataClient_id && 'Encaissements'}

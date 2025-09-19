@@ -173,12 +173,13 @@ const TAB_CONFIG = {
           ]
         : []),
     ],
-    columns: (user, handleDelete, nbre_tranches) => [
+    columns: (user, handleDelete, nbre_tranches,nbre_immeubles) => [
       { key: 'nom', label: 'Bloc' },
 
       ...(nbre_tranches > 0 ? [{ key: 'tranche_nom', label: 'Tranche' }] : []),
       { key: 'titre_foncier', label: 'Titre foncier' },
-      { key: 'nbre_immeubles', label: 'Nbr Immeubles' },
+      ...(nbre_immeubles > 0 ? [ { key: 'nbre_immeubles', label: 'Nbr Immeubles' }] : []),
+     
       { key: 'nbre_biens', label: 'Nbr Biens' },
       {
         key: 'actions',
@@ -214,7 +215,7 @@ const TAB_CONFIG = {
         ),
       },
     ],
-    exportConfig: (items, nbre_tranches) => ({
+    exportConfig: (items, nbre_tranches,nbre_immeubles) => ({
       data_to_export: items.map((item) => ({
         Bloc: item.bloc_nom || '',
         ...(nbre_tranches > 0 && { Tranche: item.tranche_nom || '' }),
@@ -226,7 +227,7 @@ const TAB_CONFIG = {
         { key: 'Bloc', label: 'Bloc' },
         ...(nbre_tranches > 0 ? [{ key: 'Tranche', label: 'Tranche' }] : []),
         { key: 'Titre foncier', label: 'Titre foncier' },
-        { key: 'Nbr Immeubles', label: 'Nbr Immeubles' },
+          ...(nbre_immeubles > 0 ? [{ key: 'Nbr Immeubles', label: 'Nbr Immeubles' }] : []),
         { key: 'Nbr Biens', label: 'Nbr Biens' },
       ],
       name_file_export: 'blocs_export',
