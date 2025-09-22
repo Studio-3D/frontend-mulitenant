@@ -621,7 +621,7 @@ export default function BienForm() {
 
   const handleJardinChange = (value, currentFormData = formData) => {
     const jardinValue = parseFloat(value) || 0;
-    const jardinCalculated = jardinValue * 0.25;
+    const jardinCalculated = jardinValue * 0.5;
 
     const updatedForm = {
       ...currentFormData,

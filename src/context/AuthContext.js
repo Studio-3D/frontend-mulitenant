@@ -155,23 +155,36 @@ export function AuthProvider({ children }) {
     } finally {
       clearAuthData();
       setUser(null);
-      router.push('/login');
+
+      // Import toast dynamically to avoid SSR issues
+      const { default: toast } = await import('react-hot-toast');
+      toast.success("Déconnexion réussie.");
+
+      // Small delay to allow toast to show before redirect
+      setTimeout(() => {
+        try {
+          router.push("/login");
+        } catch (error) {
+          // Fallback to window.location if router.push fails
+          console.warn("Router.push failed, using window.location:", error);
+          window.location.href = "/login";
+        }
+      }, 100);
     }
   }, [axiosInstance, router, memoizedAuthConfig, clearAuthData]);
 
   // Protected logout for LinkedIn flows (or similar external authentication)
-  const protectedLogout = useCallback(() => {
-    const isLinkedInFlow =
-      localStorage.getItem('linkedin_admin_flow') === 'true' ||
-      localStorage.getItem('linkedin_state') !== null ||
-      window.location.pathname.includes('linkedin-callback');
+  const protectedLogout = useCallback(async () => {
+    const isLinkedInFlow = localStorage.getItem('linkedin_admin_flow') === 'true' ||
+                           localStorage.getItem('linkedin_state') !== null ||
+                           window.location.pathname.includes('linkedin-callback');
 
     if (isLinkedInFlow) {
       console.log('Preventing logout during LinkedIn auth flow');
       return;
     }
 
-    logout();
+    await logout();
   }, [logout]);
 
   // Handle potential token loss during external redirects (e.g., OAuth flows)
@@ -227,16 +240,14 @@ export function AuthProvider({ children }) {
     };
   }, [axiosInstance, memoizedAuthConfig, clearAuthData]);
 
-  const contextValue = useMemo(
-    () => ({
-      user,
-      login,
-      logout: protectedLogout,
-      isAuthenticated: !!user,
-      loading,
-    }),
-    [user, login, protectedLogout, loading]
-  );
+  const contextValue = useMemo(() => ({
+    user,
+    login,
+    logout: protectedLogout,
+    forceLogout: logout, // Direct logout without LinkedIn protection
+    isAuthenticated: !!user,
+    loading
+  }), [user, login, protectedLogout, logout, loading]);
 
   return (
     <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>

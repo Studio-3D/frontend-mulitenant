@@ -8,16 +8,26 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
 const DropdownMenuDemo = () => {
-  const { logout, user } = useAuth();
+  const { forceLogout, user } = useAuth();
   const router = useRouter();
 
   const handleLogout = async () => {
-  
     try {
-      await logout();
-    toast.success("Déconnexion réussie.");
+      // Use forceLogout to bypass LinkedIn protection and ensure logout works
+      await forceLogout();
+      // Don't show toast here - the logout function handles the redirect
+      // The toast will be shown after successful redirect
     } catch (error) {
+      console.error("Logout error:", error);
       toast.error("Erreur lors de la déconnexion.");
+      // Force redirect to login even if logout fails
+      try {
+        router.push('/login');
+      } catch (error) {
+        // Fallback to window.location if router.push fails
+        console.warn("Router.push failed, using window.location:", error);
+        window.location.href = '/login';
+      }
     }
   };
 

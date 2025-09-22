@@ -5,7 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useProjet } from "@/context/ProjetContext";
 import axios from "axios";
 import { APIURL } from "@/configs/api";
-import { Box, SaveIcon, AlertCircleIcon, Loader, Trash2, Plus, CheckCircle, Settings, Globe } from "lucide-react";
+import { Box, SaveIcon, AlertCircleIcon, Loader, Trash2, Plus, CheckCircle, Settings, Globe, Edit, ChevronDown, ChevronUp, HelpCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
 
@@ -18,6 +18,8 @@ export default function InstagramConfigTab() {
   const [showForm, setShowForm] = useState(false);
   const [webhooks, setWebhooks] = useState([]);
   const [showWebhookForm, setShowWebhookForm] = useState(null);
+  const [editingConfig, setEditingConfig] = useState(null);
+  const [showGuide, setShowGuide] = useState(false);
   const [instagramConfig, setInstagramConfig] = useState({
     instagram_id: "",
     acces_token_user: "",
@@ -81,12 +83,12 @@ export default function InstagramConfigTab() {
     }));
   };
 
-  // Save Instagram configuration
+  // Save or Update Instagram configuration
   const handleSaveInstagram = async () => {
     try {
       setSaving(true);
       const token = localStorage.getItem("accessToken");
-      
+
       if (!instagramConfig.instagram_id || !instagramConfig.acces_token_user || !instagramConfig.projet_id) {
         toast.error("Veuillez remplir tous les champs");
         return;
@@ -98,36 +100,71 @@ export default function InstagramConfigTab() {
         projet_id: instagramConfig.projet_id,
       };
 
-      await axios.post(
-        `${APIURL.ROOTV1}/instagram-configurations`,
-        dataToSave,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      
-      // Verify configuration after saving
-      await verifyInstagramConfiguration();
-      
-      toast.success("Configuration Instagram enregistrée avec succès");
-      
+      if (editingConfig) {
+        // Update existing configuration
+        await axios.put(
+          `${APIURL.ROOTV1}/instagram-configurations/${editingConfig.id}`,
+          dataToSave,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        toast.success("Configuration Instagram mise à jour avec succès");
+      } else {
+        // Create new configuration
+        await axios.post(
+          `${APIURL.ROOTV1}/instagram-configurations`,
+          dataToSave,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        // Verify configuration after saving
+        await verifyInstagramConfiguration();
+        toast.success("Configuration Instagram enregistrée avec succès");
+      }
+
       // Reset form and refresh configurations
       setInstagramConfig({
         instagram_id: "",
         acces_token_user: "",
         projet_id: "",
       });
+      setEditingConfig(null);
       setShowForm(false);
-      
+
       // Refresh configurations list
       window.location.reload();
-      
+
     } catch (error) {
       console.error("Error saving Instagram configuration:", error);
       toast.error(error.response?.data?.message || "Erreur lors de l'enregistrement de la configuration Instagram");
     } finally {
       setSaving(false);
     }
+  };
+
+  // Edit Instagram configuration
+  const handleEditInstagram = (config) => {
+    setInstagramConfig({
+      instagram_id: config.instagram_id,
+      acces_token_user: config.acces_token_user,
+      projet_id: config.projet_id,
+    });
+    setEditingConfig(config);
+    setShowForm(true);
+  };
+
+  // Cancel edit
+  const handleCancelEdit = () => {
+    setInstagramConfig({
+      instagram_id: "",
+      acces_token_user: "",
+      projet_id: "",
+    });
+    setEditingConfig(null);
+    setShowForm(false);
   };
 
   // Save webhook configuration - webhook starts disabled by default
@@ -340,6 +377,13 @@ export default function InstagramConfigTab() {
                           Actif
                         </span>
                         <button
+                          onClick={() => handleEditInstagram(config)}
+                          className="text-blue-600 hover:text-blue-800 p-1 rounded-full hover:bg-blue-50"
+                          title="Modifier"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                        <button
                           onClick={() => handleDeleteConfiguration(config.id)}
                           className="text-red-600 hover:text-red-800 p-1 rounded-full hover:bg-red-50"
                           title="Supprimer"
@@ -541,9 +585,11 @@ export default function InstagramConfigTab() {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
-              <h3 className="text-lg font-medium">Guide de configuration</h3>
+          {/* Setup Guide - Show for new configurations or when explicitly requested */}
+          {(!editingConfig || showGuide) && (
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
+                <h3 className="text-lg font-medium">Guide de configuration</h3>
               <div className="space-y-3 text-sm">
                 <p className="text-gray-700">
                   <strong>1. Convertir en compte professionnel :</strong>
@@ -621,10 +667,27 @@ export default function InstagramConfigTab() {
               </div>
             </div>
           </div>
+          )}
 
           {/* Configuration Form */}
           <div className="mt-8 border-t pt-6">
-            <h3 className="text-lg font-medium mb-4">Nouvelle Configuration Instagram</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium">
+                {editingConfig ? 'Modifier Configuration Instagram' : 'Nouvelle Configuration Instagram'}
+              </h3>
+
+              {/* Show guide toggle button when editing */}
+              {editingConfig && (
+                <button
+                  onClick={() => setShowGuide(!showGuide)}
+                  className="flex items-center gap-2 px-3 py-1 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
+                >
+                  <HelpCircle className="h-4 w-4" />
+                  {showGuide ? 'Masquer le guide' : 'Afficher le guide'}
+                  {showGuide ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </button>
+              )}
+            </div>
             <div className="max-w-2xl space-y-4">
               <div className="space-y-1">
                 <label className="block text-sm font-medium text-gray-700">
@@ -638,16 +701,14 @@ export default function InstagramConfigTab() {
                   required
                 >
                   <option value="">Sélectionner un projet</option>
-                  {projets
-                    .filter(projet => !configurations.some(config => config.projet_id === projet.id))
-                    .map((projet) => (
-                      <option key={projet.id} value={projet.id}>
-                        {projet.nom}
-                      </option>
-                    ))}
+                  {projets.map((projet) => (
+                    <option key={projet.id} value={projet.id}>
+                      {projet.nom}
+                    </option>
+                  ))}
                 </select>
                 <p className="text-xs text-gray-500">
-                  Sélectionnez le projet immobilier à associer à ce compte Instagram
+                  Sélectionnez le projet immobilier à associer à ce compte Instagram. Un même projet peut être utilisé par plusieurs configurations.
                 </p>
               </div>
 
@@ -701,13 +762,13 @@ export default function InstagramConfigTab() {
                   ) : (
                     <>
                       <SaveIcon className="h-4 w-4" />
-                      Enregistrer la configuration
+                      {editingConfig ? 'Mettre à jour' : 'Enregistrer la configuration'}
                     </>
                   )}
                 </button>
-                
+
                 <button
-                  onClick={() => setShowForm(false)}
+                  onClick={handleCancelEdit}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
                 >
                   Annuler
