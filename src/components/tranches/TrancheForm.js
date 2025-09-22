@@ -137,17 +137,14 @@ export default function TrancheForm({ id, projet }) {
         },
       });
 
-
-      toast.success(`Tranche ${isEditing ? 'modifié' : 'créée'} avec succès`);
-
+      toast.success(`Tranche ${isEditing ? "modifiée" : "créée"} avec succès`);
 
       // Navigate back to the project details page with tranches tab active
       if (selectedProjet?.id) {
         localStorage.setItem(
           `project-${selectedProjet.id}-activeTab`,
 
-          'tranche'
-
+          "tranche"
         );
         router.push(`/Projets/${selectedProjet.id}`);
       } else {
@@ -185,9 +182,12 @@ export default function TrancheForm({ id, projet }) {
           onRoot={{ href: "/Projets" }}
           items={[
             selectedProjet?.id
-              ? { label: selectedProjet?.nom || `Projet #${selectedProjet.id}`, href: `/Projets/${selectedProjet.id}` }
-              : { label: 'Projets', href: '/Projets' },
-            { label: `${id ? 'Modifier' : 'Ajouter'} une tranche` }
+              ? {
+                  label: selectedProjet?.nom || `Projet #${selectedProjet.id}`,
+                  href: `/Projets/${selectedProjet.id}`,
+                }
+              : { label: "Projets", href: "/Projets" },
+            { label: `${id ? "Modifier" : "Ajouter"} une tranche` },
           ]}
         />
       </div>
@@ -315,9 +315,7 @@ export default function TrancheForm({ id, projet }) {
               Annuler
             </Button>
             <Button type="submit" loading={loading_btn}>
-
-              {loading_btn ? 'Chargement...' : id ? 'Modifier' : 'Ajouter'}
-
+              {loading_btn ? "Chargement..." : id ? "Modifier" : "Ajouter"}
             </Button>
           </div>
         </form>
