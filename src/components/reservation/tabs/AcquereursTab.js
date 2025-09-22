@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Table from '@/components/Table';
-import { Eye, Pencil } from 'lucide-react';
-import Button from '@/components/Button'; // adjust the path as needed
+import { Eye, Pencil, Edit } from 'lucide-react'; // Added Edit icon
+import Button from '@/components/Button';
 import { APIURL } from '../../../configs/api';
 import axios from 'axios';
 
@@ -12,12 +12,9 @@ export const AcquereursTab = ({
   user_role,
   reservationId,
 }) => {
-  // Format users data for table
-
   const handleEdit_pourcentage = () => {
     window.localStorage.setItem('step_res_edit', 1);
     const editUrl = `${window.location.origin}/ventes/reservations/?id=${reservationId}&action=edit`;
-
     window.open(editUrl, '_blank');
   };
 
@@ -43,7 +40,6 @@ export const AcquereursTab = ({
           data.client.telephone2 !== 'null'
             ? ' / ' + data.client.telephone2
             : '') || 'Non spécifié',
-      // source: data.prospect.source?.source,
       pourcentage: data.pourcentage,
       client_id: data.client_id,
     }));
@@ -62,7 +58,6 @@ export const AcquereursTab = ({
           data.client.telephone2 !== 'null'
             ? ' / ' + data.client.telephone2
             : '') || 'Non spécifié',
-      // source: data.prospect.source?.source,
       pourcentage: data.pourcentage,
     }));
   };
@@ -77,16 +72,9 @@ export const AcquereursTab = ({
 
   const columns = [
     { key: 'cin', label: 'Cin' },
-    {
-      key: 'nom',
-      label: 'Nom',
-    },
-    {
-      key: 'prenom',
-      label: 'Prénom',
-    },
+    { key: 'nom', label: 'Nom' },
+    { key: 'prenom', label: 'Prénom' },
     { key: 'telephone', label: 'Téléphone' },
-
     { key: 'pourcentage', label: 'Pourcentage' },
     {
       key: 'actions',
@@ -114,31 +102,31 @@ export const AcquereursTab = ({
     },
   ];
 
-  return (
-    <>
-      <div className="flex justify-end">
-        {etat == 1 && contrat_vente == null && (
-          <Button
-            className="mb-5"
-            type="submit"
-            onClick={() => handleEdit_pourcentage()}
-          >
-            Modifier aquéreurs
-          </Button>
-        )}
-      </div>
+  // Define custom actions for the table
+  const customActions = [];
+  
+  // Add the "Modifier aquéreurs" button as a custom action if conditions are met
+  if (etat == 1 && contrat_vente == null) {
+    customActions.push({
+      label: "Modifier aquéreurs",
+      icon: <Edit className="w-5 h-5" />,
+      className: "bg-green-600 hover:bg-green-700",
+      onClick: handleEdit_pourcentage
+    });
+  }
 
-      <div className="space-y-6">
-        <Table
-          showSearch={false}
-          columns={columns}
-          data={formatData()}
-          enableExport
-          data_to_export={data_to_export()}
-          columns_export={columns_export}
-          name_file_export={'acquereurs_export'}
-        />
-      </div>
-    </>
+  return (
+    <div className="space-y-6">
+      <Table
+        showSearch={false}
+        columns={columns}
+        data={formatData()}
+        enableExport
+        data_to_export={data_to_export()}
+        columns_export={columns_export}
+        name_file_export={'acquereurs_export'}
+        customActions={customActions} // Pass custom actions to the table
+      />
+    </div>
   );
 };

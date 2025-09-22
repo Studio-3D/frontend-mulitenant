@@ -348,6 +348,7 @@ export default function ReservationForm({ id }) {
         .then((response) => {
           if (response.status !== 200) router.back();
           const reservation = response.data.reservation;
+          console.log('Reservation data:', reservation);
           console.log('le mode finance==>' + reservation?.mode_financement);
           setFormData({
             code_reservation: reservation.code_reservation,
@@ -393,7 +394,8 @@ export default function ReservationForm({ id }) {
             reservation.bien_id,
             response.data.propriete_dite_bien.original,
             reservation.prix,
-            'without_proposition'
+            'without_proposition',
+            'edit_mode'
           );
 
           // Initialize inputList1 with existing aquereurs
@@ -624,9 +626,12 @@ export default function ReservationForm({ id }) {
   };
 
 
- const fetch_bien_ByProjet = async (bien_id, bien_propriete, prix) => {
+ const fetch_bien_ByProjet = async (bien_id, from) => {
   setLoading_bien(true);
+  console.log('fetch_bien_ByProjet called with:', { bien_id, from });
+  
   try {
+    // Fetch all biens for the project from the single endpoint
     const response = await axios.get(
       `${APIURL.ROOTV1}/getBiensByProjet_Concat/${selectedProjet.id}`,
       {
@@ -637,23 +642,30 @@ export default function ReservationForm({ id }) {
     );
 
     let biens = response.data.biens;
+    console.log('API response biens:', biens);
 
-    if (bien_propriete && bien_id) {
-      const bienExists = biens.some(bien => bien.id === bien_id);
-
-      if (!bienExists) {
-        const customBien = {
-          id: bien_id,
-          prix: prix,
-          propriete_dite_bien: bien_propriete,
-          designation: `Bien #${bien_id}`,
-        };
-        biens = [...biens, customBien];
-      }
+    // If we're in edit mode and have a bien_id, check if it exists in the response
+    if (bien_id && from === 'edit_mode' && !biens.some(b => b.id === bien_id)) {
+      // If the bien is not in the API response, we need to handle this case
+      console.warn(`Bien ID ${bien_id} not found in API response`);
+      
+      // Since we can't call the other API, we'll create a minimal representation
+      // OR you might want to show an error/toast to the user
+      toast.error(`Le bien sélectionné (ID: ${bien_id}) n'est plus disponible`);
+      
+      // Optional: Add a placeholder if you still want to show it
+      const placeholderBien = {
+        id: bien_id,
+        propriete_dite_bien: `Bien #${bien_id} (Non disponible)`,
+        prix: 0,
+        etat: 'NON_DISPONIBLE',
+      };
+      biens = [placeholderBien, ...biens];
     }
 
     setBiensByProjet(biens);
-    setFetchedProjetId(selectedProjet.id); // ✅ remember last projet
+    console.log('Final biens array:', biens);
+    
   } catch (error) {
     console.error("Error fetching biens:", error);
     toast.error("Erreur lors du chargement des biens");
@@ -661,6 +673,7 @@ export default function ReservationForm({ id }) {
     setLoading_bien(false);
   }
 };
+
 
   const pusher_function = async () => {
     Pusher.logToConsole = true;
@@ -1453,18 +1466,17 @@ export default function ReservationForm({ id }) {
                   name="bien_id"
                   required={true}
                   loading={loading_bien}
-                  options={biensByProjet.map((bien, index) => ({
+                  options={biensByProjet.map((bien) => ({
                     value: bien.id,
-                    label:
-                      index === 0
-                        ? `${bien.propriete_dite_bien || `Bien #${bien.id}`} - proposé par moi`
-                        : bien.propriete_dite_bien || `Bien #${bien.id}`,
+                    label: bien.propriete_dite_bien || `Bien #${bien.id}`,
                     original: bien
                   }))}
                   value={watch('bien_id')}
                   onChange={(value) => {
                     const selectedOption = biensByProjet.find(b => b.id === value);
-                    handleSelectBien(null, selectedOption);
+                    if (selectedOption) {
+                      handleSelectBien(null, selectedOption);
+                    }
                   }}
                   error={errors['bien_id']?.message || backendErrors['bien_id']?.[0]}
                   disabled={isEditing && user.role <= 2}
