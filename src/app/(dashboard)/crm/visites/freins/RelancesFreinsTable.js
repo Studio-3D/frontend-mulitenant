@@ -85,8 +85,8 @@ const RelancesFreinsTable = () => {
 
     return () => clearTimeout(timer); // Clean up the timeout on each render
   }, [searchTerm]);
-  const handleShow = (origin_id,visite_id) => {
-    localStorage.setItem('v_id_cadre',visite_id);
+  const handleShow = (origin_id, visite_id) => {
+    localStorage.setItem('v_id_cadre', visite_id);
     window.open(`/crm/visites/${origin_id}`, '_blank');
   };
   const handle_Bien = (frId, nom_prenom) => {
@@ -108,7 +108,7 @@ const RelancesFreinsTable = () => {
               ? ' / ' + pro.telephone_2
               : '') || 'Non spécifié',
         frein_id_origin: pro.id_origin,
-        visiteId:pro.visite_id
+        visiteId: pro.visite_id,
       };
     });
   };
@@ -148,7 +148,7 @@ const RelancesFreinsTable = () => {
             <Eye
               className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
               title="Voir détails"
-              onClick={() => handleShow(row.frein_id_origin,row.visiteId)}
+              onClick={() => handleShow(row.frein_id_origin, row.visiteId)}
             />
           </div>
           <div title="Traiter les Biens Disponibles">
@@ -213,7 +213,7 @@ const RelancesFreinsTable = () => {
           onPageChange={setCurrentPage}
           onRowsPerPageChange={setRowsPerPage}
           onSearchChange={setSearchTerm}
-          enableExport={true}
+          enableExport={formatData().length > 0}
           filterComponent={
             <div className="space-y-4 p-4 rounded-lg ">
               <div

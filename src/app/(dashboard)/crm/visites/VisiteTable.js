@@ -248,7 +248,7 @@ const VisiteTable = ({ user_id, dataProspect, dataClient }) => {
   };
 
   const columns_export = [
-    { key: 'responsable', label: 'Commercial' },
+    { key: 'cc', label: 'Commercial' },
     { key: 'date', label: 'Date' },
     { key: 'nomComplet', label: 'nomComplet' },
     { key: 'telephone', label: 'Telephone' },
@@ -326,7 +326,7 @@ const VisiteTable = ({ user_id, dataProspect, dataClient }) => {
           onPageChange={setCurrentPage}
           onRowsPerPageChange={setRowsPerPage}
           onSearchChange={setSearchTerm}
-          enableExport={true}
+          enableExport={formatData().length > 0}
           showSearch={false}
           addLink={!user_id && getAddLinkForVisite(user)}
           filterComponent={

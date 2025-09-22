@@ -225,7 +225,7 @@ export const GeneralParametersStep = ({
               Utilisateurs avec accès au projet{' '}
               <span className="text-red-500">*</span>
             </label>
-
+            <p>selectedUserIds{selectedUserIds}</p>
             <SelectInput
               isMulti
               label=""

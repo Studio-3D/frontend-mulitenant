@@ -382,7 +382,7 @@ const PreReservationTable = () => {
           onPageChange={setCurrentPage}
           onRowsPerPageChange={setRowsPerPage}
           onSearchChange={setSearchTerm}
-          enableExport={true}
+          enableExport={formatData().length > 0}
           showSearch={false}
           filterComponent={
             <div className="space-y-4 p-4 rounded-lg ">
