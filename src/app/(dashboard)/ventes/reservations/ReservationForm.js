@@ -39,13 +39,13 @@ import AutocompleteBien from './AutocompleteBien';
 import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
 import Autocomplete from '@/components/Autocomplete';
 import LoadingSpin from '@/components/LoadingSpin';
+import SelectInput from '@/components/SelectInput';
 
 import {
   fetchData_Select,
   fetchDataByProjet_2,
   fetchList_fichier_exist_by_Code,
 } from '../../../../../src/configs/api-utils';
-import { usePathname } from 'next/navigation';
 
 //import Modal from '@/components/Modal';
 //import Modal_File from './Modal_file';
@@ -73,6 +73,7 @@ export default function ReservationForm({ id }) {
   const [bien_id, setBien_id] = useState(null);
   const [selectedFiles_rsv, setSelectedFiles_rsv] = useState([]);
   const [selectedFiles_avc, setSelectedFiles_avc] = useState([]);
+  const [fetchedProjetId, setFetchedProjetId] = useState(null);
 
   const { user, token } = useAuth();
   const router = useRouter();
@@ -346,6 +347,7 @@ export default function ReservationForm({ id }) {
         .then((response) => {
           if (response.status !== 200) router.back();
           const reservation = response.data.reservation;
+          console.log('Reservation data:', reservation);
           console.log('le mode finance==>' + reservation?.mode_financement);
           setFormData({
             code_reservation: reservation.code_reservation,
@@ -389,9 +391,10 @@ export default function ReservationForm({ id }) {
           //set_Bien_prop_vendu(response.data.propriete_dite_bien.original)
           fetch_bien_ByProjet(
             reservation.bien_id,
-            response.data.propriete_dite_bien.original,
+          /*  response.data.propriete_dite_bien.original,
             reservation.prix,
-            'without_proposition'
+            'without_proposition',*/
+            'edit_mode'
           );
 
           // Initialize inputList1 with existing aquereurs
@@ -620,40 +623,67 @@ export default function ReservationForm({ id }) {
       pusher_function();
     }
   };
-  const fetch_bien_ByProjet = async (bien_id, bien_propriete, prix, text) => {
-    setLoading_bien(true);
-    await axios
-      .get(`${APIURL.ROOTV1}/getBiensByProjet_Concat/` + selectedProjet.id, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      })
-      .then((res) => {
-        //add bien pre reserve ou vendu to res data biens(disponible)
-        if (bien_propriete != undefined) {
-          res.data.biens.push({
-            propriete_dite_bien: bien_propriete,
-            id: bien_id,
-            prix: prix,
-          });
-        }
-        setBiensByProjet(res.data.biens);
-        if (text == 'without_proposition') {
-          if (bien_id != null) {
-            for (var i = 0; i <= Number(res.data.biens.length) - 1; i++) {
-              if (bien_id == res.data.biens[i].id) {
-                //setBienKey(i)
-              }
-            }
-          }
-        }
-        setLoading_bien(false);
-      })
 
-      .catch(() => {
-        setLoading_bien(false);
-      });
+  const fetch_bien_ByProjet = async (bien_id, from) => {
+    setLoading_bien(true);
+    console.log('fetch_bien_ByProjet called with:', { bien_id, from });
+
+    let route = null;
+    //on reservation edit
+    if (bien_id) {
+      route = 'getBiensByProjet_Concat_for_reservation_visite/' + bien_id;
+    } else {
+      route = 'getBiensByProjet_Concat';
+    }
+    try {
+      // Fetch all biens for the project from the single endpoint
+      const response = await axios.get(
+        `${APIURL.ROOTV1}/${route}/${selectedProjet.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      let biens = response.data.biens;
+      console.log('API response biens:', biens);
+
+      // If we're in edit mode and have a bien_id, check if it exists in the response
+      if (
+        bien_id &&
+        from === 'edit_mode' &&
+        !biens.some((b) => b.id === bien_id)
+      ) {
+        // If the bien is not in the API response, we need to handle this case
+        console.warn(`Bien ID ${bien_id} not found in API response`);
+
+        // Since we can't call the other API, we'll create a minimal representation
+        // OR you might want to show an error/toast to the user
+        toast.error(
+          `Le bien sélectionné (ID: ${bien_id}) n'est plus disponible`
+        );
+
+        // Optional: Add a placeholder if you still want to show it
+        const placeholderBien = {
+          id: bien_id,
+          propriete_dite_bien: `Bien #${bien_id} (Non disponible)`,
+          prix: 0,
+          etat: 'NON_DISPONIBLE',
+        };
+        biens = [placeholderBien, ...biens];
+      }
+
+      setBiensByProjet(biens);
+      console.log('Final biens array:', biens);
+    } catch (error) {
+      console.error('Error fetching biens:', error);
+      toast.error('Erreur lors du chargement des biens');
+    } finally {
+      setLoading_bien(false);
+    }
   };
+
   const pusher_function = async () => {
     Pusher.logToConsole = true;
 
@@ -665,7 +695,7 @@ export default function ReservationForm({ id }) {
     const channel = pusher.subscribe('proposition-updates');
 
     channel.bind('App\\Events\\PropositionUpdated', (data) => {
-      if (isEditing) fetch_bien_ByProjet();
+      if (isEditing) fetch_bien_ByProjet(watch('bien_id'),'edit');
       else
         fetchDataByProjet_2(
           'getBiensByProjet_Concat',
@@ -1440,17 +1470,31 @@ export default function ReservationForm({ id }) {
               </div>
 
               <div>
-                <>
-                  <AutocompleteBien
-                    user={user}
-                    biensByProjet={biensByProjet}
-                    value={watch('bien_id')}
-                    onChange={handleSelectBien}
-                    disabled={isEditing && user.role <= 2 ? false : true}
-                    loading={loading_bien}
-                    error={errors['bien_id'] || backendErrors['bien_id']}
-                  />
-                </>
+                <SelectInput
+                  label="Bien:"
+                  name="bien_id"
+                  required={true}
+                  loading={loading_bien}
+                  options={biensByProjet.map((bien) => ({
+                    value: bien.id,
+                    label: bien.propriete_dite_bien || `Bien #${bien.id}`,
+                    original: bien,
+                  }))}
+                  value={watch('bien_id')}
+                  onChange={(value) => {
+                    const selectedOption = biensByProjet.find(
+                      (b) => b.id === value
+                    );
+                    if (selectedOption) {
+                      handleSelectBien(null, selectedOption);
+                    }
+                  }}
+                  error={
+                    errors['bien_id']?.message || backendErrors['bien_id']?.[0]
+                  }
+                  disabled={isEditing && user.role <= 2}
+                  placeholder="Sélectionnez un bien"
+                />
               </div>
               <div>
                 <TextField
