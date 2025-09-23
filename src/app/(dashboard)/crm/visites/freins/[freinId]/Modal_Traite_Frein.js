@@ -764,6 +764,7 @@ export default function Modal_Traite_Frein({ onClose, id, biens }) {
                 <>
                   <div>
                     <div style={{ display: 'flex', gap: '1rem' }}>
+                      
                       <TextField
                         label="Prix Min:"
                         name="prix_min"
