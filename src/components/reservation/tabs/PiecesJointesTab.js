@@ -7,20 +7,21 @@ import {
   TrashIcon,
   PlusIcon,
 } from 'lucide-react';
+import { useRouter } from "next/navigation";
 
 export const PiecesJointesTab = ({ reservationData, user,piecesJointesData}) => {
+  const router = useRouter();
   const { reservation } = reservationData;
   const FileUrl = process.env.NEXT_PUBLIC_IMG_URL;
 
   const handleEdit_PJ = () => {
     window.localStorage.setItem('step_res_edit', 0);
-    const editUrl = `${window.location.origin}/ventes/reservations/?id=${reservation.id}&action=edit`;
-    window.open(editUrl, '_blank');
+    router.push(`/ventes/reservations/?id=${reservation.id}&action=edit`);
   };
 
   const handleFileClick = (fileName) => {
     const fileUrl = `${FileUrl}/docs/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/reservations/${reservation.code_reservation}/${fileName}`;
-    window.open(fileUrl, '_blank');
+    router.push(fileUrl); // opens in same tab
   };
 
   // Function to extract file extension and type

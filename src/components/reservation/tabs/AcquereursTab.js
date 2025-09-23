@@ -23,7 +23,7 @@ const AcquereursTabComponent = ({
   }, [router]);
 
   const handleEdit = useCallback((aqId) => {
-    router.push(`/ventes/clients/edit/${aqId}`);
+    router.push(`/ventes/clients/?id=${aqId}&action=edit`);
   }, [router]);
 
   const formatData = useMemo(() => {
