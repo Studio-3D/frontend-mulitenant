@@ -1,33 +1,32 @@
-import React, { useState, useEffect } from 'react';
+'use client';
+import React, { useMemo, useCallback, memo } from 'react';
+import { useRouter } from "next/navigation"; 
 import Table from '@/components/Table';
-import { Eye, Pencil, Edit } from 'lucide-react'; // Added Edit icon
-import Button from '@/components/Button';
-import { APIURL } from '../../../configs/api';
-import axios from 'axios';
+import { Eye, Pencil, Edit } from 'lucide-react';
 
-export const AcquereursTab = ({
+const AcquereursTabComponent = ({
   etat,
   contrat_vente,
   aquereurs,
   user_role,
   reservationId,
 }) => {
-  const handleEdit_pourcentage = () => {
+  const router = useRouter();
+
+  const handleEdit_pourcentage = useCallback(() => {
     window.localStorage.setItem('step_res_edit', 1);
-    const editUrl = `${window.location.origin}/ventes/reservations/?id=${reservationId}&action=edit`;
-    window.open(editUrl, '_blank');
-  };
+    router.push(`/ventes/reservations/?id=${reservationId}&action=edit`);
+  }, [reservationId, router]);
 
-  const handleShow = (aqId) => {
-    window.open(`/ventes/clients/${aqId}`, '_blank');
-  };
+  const handleShow = useCallback((aqId) => {
+    router.push(`/ventes/clients/${aqId}`);
+  }, [router]);
 
-  const handleEdit = (aqId) => {
-    window.open(`/ventes/clients/edit/${aqId}`, '_blank');
-  };
- 
-  // Format users data for table display
-  const formatData = () => {
+  const handleEdit = useCallback((aqId) => {
+    router.push(`/ventes/clients/edit/${aqId}`);
+  }, [router]);
+
+  const formatData = useMemo(() => {
     return aquereurs.map((data) => ({
       id: data.id,
       cin: data.client.cin,
@@ -43,9 +42,9 @@ export const AcquereursTab = ({
       pourcentage: data.pourcentage,
       client_id: data.client_id,
     }));
-  };
+  }, [aquereurs]);
 
-  const data_to_export = () => {
+  const data_to_export = useMemo(() => {
     return aquereurs.map((data) => ({
       id: data.id,
       cin: data.client.cin,
@@ -60,17 +59,17 @@ export const AcquereursTab = ({
             : '') || 'Non spécifié',
       pourcentage: data.pourcentage,
     }));
-  };
+  }, [aquereurs]);
 
-  const columns_export = [
+  const columns_export = useMemo(() => [
     { key: 'cin', label: 'Cin' },
     { key: 'nom', label: 'nomComplet' },
     { key: 'prenom', label: 'Prénom' },
     { key: 'telephone', label: 'Telephone' },
     { key: 'pourcentage', label: 'Pourcentage' },
-  ];
+  ], []);
 
-  const columns = [
+  const columns = useMemo(() => [
     { key: 'cin', label: 'Cin' },
     { key: 'nom', label: 'Nom' },
     { key: 'prenom', label: 'Prénom' },
@@ -81,52 +80,56 @@ export const AcquereursTab = ({
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <Eye
-            className="w-4 h-4 text-blue-500 hover:text-blue-700 cursor-pointer"
+          <button
+            className="text-blue-500 hover:text-blue-700 cursor-pointer"
             title="Voir détails"
             onClick={() => handleShow(row.client_id)}
-          />
-          {etat == 1 && (
-            <>
-              {user_role <= 3 && (
-                <Pencil
-                  className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
-                  title="Modifier"
-                  onClick={() => handleEdit(row.client_id)}
-                />
-              )}
-            </>
+          >
+            <Eye className='w-4 h-4' />
+          </button>
+
+          {etat == 1 && user_role <= 3 && (
+            <button
+              className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
+              title="Modifier"
+              onClick={() => handleEdit(row.client_id)}
+            >
+              <Pencil className='w-4 h-4' />
+            </button>
           )}
         </div>
       ),
     },
-  ];
+  ], [etat, user_role, handleShow, handleEdit]);
 
-  // Define custom actions for the table
-  const customActions = [];
-  
-  // Add the "Modifier aquéreurs" button as a custom action if conditions are met
-  if (etat == 1 && contrat_vente == null) {
-    customActions.push({
-      label: "Modifier aquéreurs",
-      icon: <Edit className="w-5 h-5" />,
-      className: "bg-green-600 hover:bg-green-700",
-      onClick: handleEdit_pourcentage
-    });
-  }
+  const customActions = useMemo(() => {
+    const actions = [];
+    if (etat == 1 && contrat_vente == null) {
+      actions.push({
+        label: "Modifier aquéreurs",
+        icon: <Edit className="w-5 h-5" />,
+        className: "bg-green-600 hover:bg-green-700",
+        onClick: handleEdit_pourcentage,
+      });
+    }
+    return actions;
+  }, [etat, contrat_vente, handleEdit_pourcentage]);
 
   return (
     <div className="space-y-6">
       <Table
         showSearch={false}
         columns={columns}
-        data={formatData()}
+        data={formatData}
         enableExport
-        data_to_export={data_to_export()}
+        data_to_export={data_to_export}
         columns_export={columns_export}
         name_file_export={'acquereurs_export'}
-        customActions={customActions} // Pass custom actions to the table
+        customActions={customActions}
       />
     </div>
   );
 };
+
+export const AcquereursTab = memo(AcquereursTabComponent);
+AcquereursTab.displayName = 'AcquereursTab';
