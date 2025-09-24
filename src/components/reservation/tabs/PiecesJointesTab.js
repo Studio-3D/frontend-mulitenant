@@ -34,12 +34,12 @@ export const PiecesJointesTab = ({ reservationData, user,piecesJointesData}) => 
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-h-[50vh]">
       {/* Header with add button */}
       <div className="flex justify-end">
         {reservation?.etat == 1 && reservation?.contrat_vente == null && (
           <button
-            className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm flex items-center"
+            className="px-3 py-2 bg-blue-600 text-white rounded-md text-sm flex items-center"
             onClick={handleEdit_PJ}
           >
             <PlusIcon className="h-4 w-4 mr-1" />

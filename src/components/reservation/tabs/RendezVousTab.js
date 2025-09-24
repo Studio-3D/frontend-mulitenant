@@ -286,7 +286,7 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
   }
 
   return (
-    <div className="space-y-6 p-4">
+    <div className="space-y-6 p-4 min-h-[50vh]">
       {/* Header section */}
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-gray-800 flex items-center">

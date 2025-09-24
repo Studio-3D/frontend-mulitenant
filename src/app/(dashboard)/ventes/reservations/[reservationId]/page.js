@@ -317,7 +317,7 @@ const Res_Show = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen">
       {loading && !reservationData ? (
         <div className="flex items-center justify-center min-h-screen">
           <LoadingSpin /> {/* Use your loading spinner here */}
