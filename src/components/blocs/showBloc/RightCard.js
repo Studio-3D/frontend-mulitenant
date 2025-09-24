@@ -13,6 +13,7 @@ import Input from '@/components/Input';
 import { ChevronDownIcon, HomeIcon, BuildingIcon } from 'lucide-react';
 import Table from '@/components/Table';
 import BienImport from '@/components/biens/BienImport';
+import { getOrientationLabel } from '@/components/bien-utils'; // Import the new config
 
 const TAB_CONFIG = {
   immeuble: {
@@ -133,6 +134,44 @@ const TAB_CONFIG = {
             .filter((status) => status) // Remove empty/null values
             .map((status) => ({ label: status, value: status }))
         : [];
+      // Get unique values for the new filters from ACTUAL project data
+      const orientationOptions = tabsData.bien?.items
+        ? [
+            ...new Set(
+              tabsData.bien.items
+                .map((item) => item.orientation)
+                .filter(Boolean)
+            ),
+          ].map((orientation) => {
+            // Use the getOrientationLabel function to get the French label
+            const label = getOrientationLabel(orientation);
+            return { label: label, value: orientation };
+          })
+        : [];
+
+      const typologieOptions = tabsData.bien?.items
+        ? [
+            ...new Set(
+              tabsData.bien.items.map((item) => item.typologie).filter(Boolean)
+            ),
+          ].map((typologie) => ({ label: typologie, value: typologie }))
+        : [];
+
+      const vueOptions = tabsData.bien?.items
+        ? [
+            ...new Set(
+              tabsData.bien.items.map((item) => item.vue).filter(Boolean)
+            ),
+          ].map((vue) => ({ label: vue, value: vue }))
+        : [];
+
+      const niveauOptions = tabsData.bien?.items
+        ? [
+            ...new Set(
+              tabsData.bien.items.map((item) => item.etage).filter(Boolean)
+            ),
+          ].map((niveau) => ({ label: niveau, value: niveau }))
+        : [];
 
       return [
         {
@@ -167,6 +206,43 @@ const TAB_CONFIG = {
           type: 'select',
           placeholder: 'Sélectionner un statut',
           options: statusOptions,
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
+        // New filters for orientation, typologie, vue, and niveau
+        {
+          key: 'orientation',
+          label: 'Orientation',
+          type: 'select',
+          placeholder: 'Sélectionner une orientation',
+          options: orientationOptions, // This will only show orientations that exist in the data
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
+        {
+          key: 'typologie',
+          label: 'Typologie',
+          type: 'select',
+          placeholder: 'Sélectionner une typologie',
+          options: typologieOptions,
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
+        {
+          key: 'vue',
+          label: 'Vue',
+          type: 'select',
+          placeholder: 'Sélectionner une vue',
+          options: vueOptions,
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
+        {
+          key: 'etage',
+          label: 'Niveau',
+          type: 'select',
+          placeholder: 'Sélectionner un niveau',
+          options: niveauOptions,
           className:
             'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
         },
@@ -497,6 +573,26 @@ export const RightCard = ({
           items = items.filter((item) => {
             const itemPrice = parseFloat(item.price);
             return !isNaN(itemPrice) && itemPrice <= maxValue;
+          });
+        }
+        // Handle select filters (orientation, typologie, vue, etage, etc.)
+        else if (
+          [
+            'orientation',
+            'typologie',
+            'vue',
+            'etage',
+            'status',
+            'type',
+            'tranche_nom',
+            'immeuble_nom',
+          ].includes(key)
+        ) {
+          // For select filters, do exact matching
+          items = items.filter((item) => {
+            const itemValue = item[key]?.toString().toLowerCase();
+            const filterValue = appliedFilters[key]?.toString().toLowerCase();
+            return itemValue === filterValue;
           });
         }
         // Handle other text filters
@@ -857,10 +953,16 @@ export const RightCard = ({
         <div className="mb-6">
           <Table
             columns={currentColumns}
-
             data={hasItems ? filteredItems : []}
-            addLink={{ pathname: TAB_CONFIG[safeActiveTab]?.addLink?.(user, null, projectId, blocId), onClick: persistAddBienContext }}
-
+            addLink={{
+              pathname: TAB_CONFIG[safeActiveTab]?.addLink?.(
+                user,
+                null,
+                projectId,
+                blocId
+              ),
+              onClick: persistAddBienContext,
+            }}
             showSearch={false}
             filterComponent={filterComponent}
             onFilterToggle={handleFilterToggle}
@@ -878,7 +980,9 @@ export const RightCard = ({
             columns_export={exportConfig?.columns_export || []}
             name_file_export={exportConfig?.name_file_export || 'export'}
             enableExport={filteredItems.length > 0}
-            enableImport={safeActiveTab == 'bien'} // Only enable import for bien tab
+            enableImport={
+              user.role <= 2 && safeActiveTab == 'bien' ? true : false
+            } // Only enable import for bien tab
             onImportClick={() => setShowImportModal(true)}
           />
           <BienImport
@@ -893,12 +997,10 @@ export const RightCard = ({
               <DeleteData
                 route={TAB_CONFIG[safeActiveTab]?.apiEndpoint}
                 Id={selectedId}
-
                 type={TAB_CONFIG[safeActiveTab]?.name}
                 message={`Êtes-vous sûr de vouloir supprimer ce ${TAB_CONFIG[
                   safeActiveTab
                 ]?.name.toLowerCase()} ?`}
-
                 accessToken={token || localStorage.getItem('accessToken')}
                 onClose={() => setShowDeleteModal(false)}
                 onSuccess={handleDeleteSuccess}
