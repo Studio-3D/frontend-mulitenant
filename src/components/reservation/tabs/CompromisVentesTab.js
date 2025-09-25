@@ -4,6 +4,7 @@ import format from "date-fns/format";
 import TextField from "@/components/Textfield";
 import SelectInput from "@/components/SelectInput";
 import Compromis_show from "../../../app/(dashboard)/ventes/reservations/compromis_ventes/show";
+import { UserRound, FileText, Signature } from "lucide-react";
 
 export const CompromisVentesTab = ({
   reservationData,
@@ -615,19 +616,19 @@ export const CompromisVentesTab = ({
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         {/* Form Header */}
         {/* Form Header */}
-        <div className="bg-gradient-to-r from-indigo-700 to-blue-800 px-8 py-6">
+        <div className="bg-[#009FFF] px-8 py-6">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-semibold text-white">
                 Nouvelle attestation de Vente
               </h2>
-              <p className="mt-1 text-blue-100">
+              <p className="text-white font-normal">
                 Remplissez les informations nécessaires pour établir le
                 compromis
               </p>
             </div>
             <div className="hidden md:block">
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white text-[#009FFF]">
                 {reservationData.reservation?.code_reservation || "Nouveau"}
               </span>
             </div>
@@ -636,46 +637,24 @@ export const CompromisVentesTab = ({
 
         <div className="p-6">
           {/* Client Information Section */}
-          <div className="mb-8">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-              <svg
-                className="h-5 w-5 text-blue-500 mr-2"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                />
-              </svg>
-              Information du Client
-            </h3>
+          <div className="">
+            <div className="flex items-center space-x-2 text-gray-500" >
+              <UserRound className="w-5 h-5 text-blue-500"/>
+              <h3 className="text-lg font-semibold  flex items-center">
+                Information du Client
+              </h3>
+            </div>
 
             <div className="space-y-4">
               {data.clients?.map((client, idx) => (
                 <div
                   key={idx}
-                  className="relative flex flex-col md:flex-row gap-4 p-6 rounded-xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200"
+                  className=""
                 >
-                  {/* Client badge with subtle accent */}
-                  <div className="absolute top-0 left-0 h-full w-2 bg-blue-500 rounded-l-xl" />
-
-                  <div className="flex items-start md:items-center gap-4 min-w-[120px]">
-                    <div className="flex items-center justify-center h-10 w-10 rounded-full bg-blue-500 text-blue-600 font-semibold">
-                      {idx + 1}
-                    </div>
-                    <h4 className="font-medium text-gray-900">
-                      Client {idx + 1}
-                    </h4>
-                  </div>
-
                   <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
                     <TextField
                       control={false}
-                      label="CIN"
+                      label="CIN :"
                       name="cin"
                       value={client.client.cin || ""}
                       disabled
@@ -686,7 +665,7 @@ export const CompromisVentesTab = ({
 
                     <TextField
                       control={false}
-                      label="Nom"
+                      label="Nom :"
                       name="nom"
                       value={client.client.nom || ""}
                       disabled
@@ -697,7 +676,7 @@ export const CompromisVentesTab = ({
 
                     <TextField
                       control={false}
-                      label="Prénom"
+                      label="Prénom :"
                       name="prenom"
                       value={client.client.prenom || ""}
                       disabled
@@ -713,23 +692,13 @@ export const CompromisVentesTab = ({
 
           {/* General Information Section */}
           <div className="mb-8">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-              <svg
-                className="h-5 w-5 text-blue-500 mr-2"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                />
-              </svg>
-              Information Générale
-            </h3>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="flex items-center space-x-2 text-gray-500">
+              <FileText className="w-5 h-5 text-blue-500"/>
+              <h3 className="text-lg font-semibold  flex items-center">
+                Information Générale
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <TextField
                 control={false}
                 label="Code Réservation"
@@ -775,22 +744,12 @@ export const CompromisVentesTab = ({
 
           {/* Compromis Information Section */}
           <div className="mb-8">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-              <svg
-                className="h-5 w-5 text-blue-500 mr-2"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-              Information Signature
-            </h3>
+            <div className="flex items-center space-x-2 text-gray-500">
+              <Signature className="w-5 h-5 text-blue-500"/>
+              <h3 className="text-lg font-semibold  flex items-center">
+                Information Signature
+              </h3>
+            </div>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               <TextField
                 control={false}
