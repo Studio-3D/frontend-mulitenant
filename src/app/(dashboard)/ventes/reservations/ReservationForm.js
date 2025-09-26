@@ -3486,46 +3486,60 @@ export default function ReservationForm({ id }) {
                 />
               )}
             </div>
+            
+
             {!isEditing && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <AutocompleteSelectComponent
+                 <SelectInput
                   label="Mode Financement :"
+                  placeholder='Sélectionner un mode de financement'
                   name="mode_financement"
                   value={watch('mode_financement')}
                   required={true}
-                  options={MODE_FINANCE}
-                  onChange={(e) => {
-                    setValue('mode_financement', e);
+                  options={Object.values(MODE_FINANCE || {}).map(item => ({
+                    value: item.code || item.value,
+                    label: item.label || item.name
+                  }))}
+                  onChange={(value) => {
+                    setValue('mode_financement', value);
                   }}
+                  error={errors.mode_financement?.message || backendErrors?.mode_financement}
                 />
 
                 <>
-                  <AutocompleteSelectComponent
-                    label="Mode Paiement :"
-                    name="mode_paiement"
-                    required={true}
-                    options={MODE_PAIEMENT}
-                    onChange={(e) => {
-                      setValue('mode_paiement', e);
-                    }}
-                  />
+                    <SelectInput
+                      label="Mode Paiement :"
+                      placeholder='Sélectionner un mode de paiement'
+                      name="mode_paiement"
+                      value={watch('mode_paiement')}
+                      required={true}
+                      options={Object.values(MODE_PAIEMENT || {}).map(item => ({
+                        value: item.code || item.value,
+                        label: item.label || item.name
+                      }))}
+                      onChange={(value) => {
+                        setValue('mode_paiement', value);
+                      }}
+                      error={errors.mode_paiement?.message || backendErrors?.mode_paiement}
+                    />
                   {watch('mode_paiement') != 1 &&
                     watch('mode_paiement') != '' && (
                       <>
-                        <Autocomplete
+                        <SelectInput
                           label="Banque:"
+                          placeholder='Sélectionner une banque'
                           name="banque_id"
-                          required={true}
-                          options={banques}
                           value={watch('banque_id')}
+                          required={true}
+                          options={Array.isArray(banques) ? banques.map(banque => ({
+                            value: banque.id,
+                            label: banque.nom || banque.name || `Banque ${banque.id}`
+                          })) : []}
                           loading={loading_1}
-                          control={control}
-                          errors={errors}
-                          backendErrors={backendErrors}
-                          onChange={(e) => {
-                            setValue('banque_id', e.id);
+                          onChange={(value) => {
+                            setValue('banque_id', value);
                           }}
-                          choix="nom"
+                          error={errors.banque_id?.message || backendErrors?.banque_id}
                         />
 
                         <TextField

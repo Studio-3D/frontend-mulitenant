@@ -4,7 +4,7 @@ import format from "date-fns/format";
 import TextField from "@/components/Textfield";
 import SelectInput from "@/components/SelectInput";
 import Compromis_show from "../../../app/(dashboard)/ventes/reservations/compromis_ventes/show";
-import { UserRound, FileText, Signature } from "lucide-react";
+import { UserRound, FileText, Signature, Clock, Eye, XCircle } from "lucide-react";
 
 export const CompromisVentesTab = ({
   reservationData,
@@ -138,17 +138,7 @@ export const CompromisVentesTab = ({
         <div className="bg-red-50 border-l-4 border-red-500 p-4">
           <div className="flex">
             <div className="flex-shrink-0">
-              <svg
-                className="h-5 w-5 text-red-500"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                  clipRule="evenodd"
-                />
-              </svg>
+              <XCircle className="h-5 w-5 text-red-400" />
             </div>
             <div className="ml-3">
               <p className="text-sm text-red-500">
@@ -615,7 +605,6 @@ export const CompromisVentesTab = ({
       {/* Main Form */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         {/* Form Header */}
-        {/* Form Header */}
         <div className="bg-[#009FFF] px-8 py-6">
           <div className="flex items-center justify-between">
             <div>
@@ -635,346 +624,260 @@ export const CompromisVentesTab = ({
           </div>
         </div>
 
-        <div className="p-6">
-          {/* Client Information Section */}
-          <div className="">
-            <div className="flex items-center space-x-2 text-gray-500" >
-              <UserRound className="w-5 h-5 text-blue-500"/>
-              <h3 className="text-lg font-semibold  flex items-center">
-                Information du Client
-              </h3>
-            </div>
-
-            <div className="space-y-4">
-              {data.clients?.map((client, idx) => (
-                <div
-                  key={idx}
-                  className=""
-                >
-                  <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <TextField
-                      control={false}
-                      label="CIN :"
-                      name="cin"
-                      value={client.client.cin || ""}
-                      disabled
-                      errors={{}}
-                      backendErrors={{}}
-                      className="bg-gray-50"
-                    />
-
-                    <TextField
-                      control={false}
-                      label="Nom :"
-                      name="nom"
-                      value={client.client.nom || ""}
-                      disabled
-                      errors={{}}
-                      backendErrors={{}}
-                      className="bg-gray-50"
-                    />
-
-                    <TextField
-                      control={false}
-                      label="Prénom :"
-                      name="prenom"
-                      value={client.client.prenom || ""}
-                      disabled
-                      errors={{}}
-                      backendErrors={{}}
-                      className="bg-gray-50"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* General Information Section */}
-          <div className="mb-8">
-            <div className="flex items-center space-x-2 text-gray-500">
-              <FileText className="w-5 h-5 text-blue-500"/>
-              <h3 className="text-lg font-semibold  flex items-center">
-                Information Générale
-              </h3>
-            </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <TextField
-                control={false}
-                label="Code Réservation"
-                name="code_reservation"
-                value={data.reservationDetails?.code_reservation || ""}
-                disabled
-                className="bg-gray-50"
-              />
-              <TextField
-                control={false}
-                label="Projet"
-                name="projet"
-                value={data.reservationDetails?.bien?.projet?.nom || ""}
-                disabled
-                className="bg-gray-50"
-              />
-              <TextField
-                control={false}
-                label="Bien"
-                name="bien"
-                value={NomBienComplet(data.reservationDetails?.bien)}
-                disabled
-                className="bg-gray-50"
-              />
-              <TextField
-                control={false}
-                label="Prix (DH)"
-                name="prix"
-                value={data.reservationDetails?.prix || ""}
-                disabled
-                className="bg-gray-50"
-              />
-              <TextField
-                control={false}
-                label="Avances (DH)"
-                name="avances"
-                value={data.sum_avances_valides}
-                disabled
-                className="bg-gray-50"
-              />
-            </div>
-          </div>
-
-          {/* Compromis Information Section */}
-          <div className="mb-8">
-            <div className="flex items-center space-x-2 text-gray-500">
-              <Signature className="w-5 h-5 text-blue-500"/>
-              <h3 className="text-lg font-semibold  flex items-center">
-                Information Signature
-              </h3>
-            </div>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              <TextField
-                control={false}
-                label="Date Signature Client"
-                name="date_sign_client"
-                type="date"
-                value={form.date_sign_client}
-                onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    date_sign_client: e.target.value,
-                  }))
-                }
-                required
-              />
-              <TextField
-                control={false}
-                label="Date Signature MO"
-                name="date_sign_mo"
-                type="date"
-                value={form.date_sign_mo}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, date_sign_mo: e.target.value }))
-                }
-                required
-              />
-              <TextField
-                control={false}
-                label="Date Enregistrement"
-                name="date_enreg"
-                type="date"
-                value={form.date_enreg}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, date_enreg: e.target.value }))
-                }
-                required
-              />
-            </div>
-          </div>
-
-          {/* Echéance Section */}
-          <div className="bg-gray-50 rounded-lg border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-              <svg
-                className="h-5 w-5 text-blue-500 mr-2"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              Échéance
-            </h3>
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Durée Echéance
-                </label>
-                <SelectInput
-                  options={durationOptions}
-                  value={form.duree_echeance}
-                  onChange={(value) => {
-                    setForm((prev) => ({ ...prev, duree_echeance: value }));
-                    if (value !== "Autre") {
-                      const newDate = new Date();
-                      newDate.setMonth(
-                        newDate.getMonth() + parseInt(value, 10)
-                      );
-                      setForm((prev) => ({
-                        ...prev,
-                        date_echeance: format(newDate, "yyyy-MM-dd"),
-                      }));
-                    } else {
-                      setForm((prev) => ({ ...prev, date_echeance: null }));
-                    }
-                  }}
-                  placeholder="Sélectionnez une durée"
-                  className="w-full"
-                />
+        <div>
+            {/* Client Information Section */}
+            <div className="px-6 py-4 border-b">
+              <div className="flex items-center space-x-2 text-gray-500">
+                <UserRound className="w-5 h-5 text-blue-500" />
+                <h3 className="text-lg font-semibold flex items-center">
+                  Information du Client
+                </h3>
               </div>
-              <div>
+
+              <div className="space-y-4 mt-4">
+                {data.clients?.map((client, idx) => (
+                  <div key={idx}>
+                    <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <TextField
+                        control={false}
+                        label="CIN :"
+                        name="cin"
+                        value={client.client.cin || ""}
+                        disabled
+                        errors={{}}
+                        backendErrors={{}}
+                        className="bg-gray-50"
+                      />
+
+                      <TextField
+                        control={false}
+                        label="Nom :"
+                        name="nom"
+                        value={client.client.nom || ""}
+                        disabled
+                        errors={{}}
+                        backendErrors={{}}
+                        className="bg-gray-50"
+                      />
+
+                      <TextField
+                        control={false}
+                        label="Prénom :"
+                        name="prenom"
+                        value={client.client.prenom || ""}
+                        disabled
+                        errors={{}}
+                        backendErrors={{}}
+                        className="bg-gray-50"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* General Information Section */}
+            <div className="px-6 py-4 border-b">
+              <div className="flex items-center space-x-2 text-gray-500">
+                <FileText className="w-5 h-5 text-blue-500" />
+                <h3 className="text-lg font-semibold flex items-center">
+                  Information Générale
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-4">
                 <TextField
                   control={false}
-                  label="Date Echéance"
-                  name="date_echeance"
+                  label="Code Réservation :"
+                  name="code_reservation"
+                  value={data.reservationDetails?.code_reservation || ""}
+                  disabled
+                  className="bg-gray-50"
+                />
+                <TextField
+                  control={false}
+                  label="Projet :"
+                  name="projet"
+                  value={data.reservationDetails?.bien?.projet?.nom || ""}
+                  disabled
+                  className="bg-gray-50"
+                />
+                <TextField
+                  control={false}
+                  label="Bien :"
+                  name="bien"
+                  value={NomBienComplet(data.reservationDetails?.bien)}
+                  disabled
+                  className="bg-gray-50"
+                />
+                <TextField
+                  control={false}
+                  label="Prix (DH) :"
+                  name="prix"
+                  value={data.reservationDetails?.prix || ""}
+                  disabled
+                  className="bg-gray-50"
+                />
+                <TextField
+                  control={false}
+                  label="Avances (DH) :"
+                  name="avances"
+                  value={data.sum_avances_valides}
+                  disabled
+                  className="bg-gray-50"
+                />
+              </div>
+            </div>
+
+            {/* Compromis Information Section */}
+            <div className="px-6 py-4 border-b">
+              <div className="flex items-center space-x-2 text-gray-500">
+                <Signature className="w-5 h-5 text-blue-500" />
+                <h3 className="text-lg font-semibold flex items-center">
+                  Information Signature
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-4">
+                <TextField
+                  control={false}
+                  label="Date Signature Client :"
+                  name="date_sign_client"
                   type="date"
-                  value={form.date_echeance}
+                  value={form.date_sign_client}
                   onChange={(e) =>
                     setForm((prev) => ({
                       ...prev,
-                      date_echeance: e.target.value,
+                      date_sign_client: e.target.value,
                     }))
                   }
-                  disabled={form.duree_echeance !== "Autre"}
+                  required
+                />
+                <TextField
+                  control={false}
+                  label="Date Signature MO :"
+                  name="date_sign_mo"
+                  type="date"
+                  value={form.date_sign_mo}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, date_sign_mo: e.target.value }))
+                  }
+                  required
+                />
+                <TextField
+                  control={false}
+                  label="Date Enregistrement :"
+                  name="date_enreg"
+                  type="date"
+                  value={form.date_enreg}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, date_enreg: e.target.value }))
+                  }
+                  required
                 />
               </div>
             </div>
-            <div className="mt-6">
-              <TextField
-                control={false}
-                label="Commentaire"
-                name="commentaire"
-                type="textarea"
-                isTextarea={true} // Specify it's a textarea
-                height="h-24"
-                rows={3}
-                value={form.commentaire}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, commentaire: e.target.value }))
-                }
-                placeholder="Ajoutez un commentaire si nécessaire"
-                className="bg-white"
-              />
-            </div>
-          </div>
 
-          {/* Error Display */}
-          {data.errors && (
-            <div className="mt-6 bg-red-50 border-l-4 border-red-500 p-4">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <svg
-                    className="h-5 w-5 text-red-500"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
+            {/* Échéance Section */}
+            <div className="px-6 py-4">
+              <div className="flex items-center space-x-2 text-gray-500">
+                <Clock className="w-5 h-5 text-blue-500" />
+                <h3 className="text-lg font-semibold flex items-center">Échéance</h3>
+              </div>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 mt-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Durée Echéance :
+                  </label>
+                  <SelectInput
+                    options={durationOptions}
+                    value={form.duree_echeance}
+                    onChange={(value) => {
+                      setForm((prev) => ({ ...prev, duree_echeance: value }));
+                      if (value !== "Autre") {
+                        const newDate = new Date();
+                        newDate.setMonth(newDate.getMonth() + parseInt(value, 10));
+                        setForm((prev) => ({
+                          ...prev,
+                          date_echeance: format(newDate, "yyyy-MM-dd"),
+                        }));
+                      } else {
+                        setForm((prev) => ({ ...prev, date_echeance: null }));
+                      }
+                    }}
+                    placeholder="Sélectionnez une durée"
+                    className="w-full"
+                  />
                 </div>
-                <div className="ml-3">
-                  {Object.keys(data.errors).map((key) => (
-                    <p key={key} className="text-sm text-red-700">
-                      {data.errors[key][0]}
-                    </p>
-                  ))}
+                <div>
+                  <TextField
+                    control={false}
+                    label="Date Echéance :"
+                    name="date_echeance"
+                    type="date"
+                    value={form.date_echeance}
+                    onChange={(e) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        date_echeance: e.target.value,
+                      }))
+                    }
+                    disabled={form.duree_echeance !== "Autre"}
+                  />
                 </div>
               </div>
+              <div className="mt-6">
+                <TextField
+                  control={false}
+                  label="Commentaire"
+                  name="commentaire"
+                  type="textarea"
+                  isTextarea={true}
+                  height="h-24"
+                  rows={3}
+                  value={form.commentaire}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, commentaire: e.target.value }))
+                  }
+                  placeholder="Ajoutez un commentaire si nécessaire"
+                  className="bg-white"
+                />
+              </div>
             </div>
-          )}
-        </div>
+
+            {/* Error Display */}
+            {data.errors && (
+              <div className="px-6 py-4 bg-red-50 border-l-4 border-red-500">
+                <div className="flex">
+                  <XCircle className="h-5 w-5 text-red-400" />
+                  <div className="ml-3">
+                    {Object.keys(data.errors).map((key) => (
+                      <p key={key} className="text-sm text-red-700">
+                        {data.errors[key][0]}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
 
         {/* Form Footer */}
-        <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-between items-center">
+        <div className="py-4 border-t border-gray-200 flex justify-end items-center gap-4">
           <button
             type="button"
-            className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="inline-flex items-center gap-2 px-4 py-3 border border-gray-300 shadow-sm  rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             onClick={() => setData((prev) => ({ ...prev, openPreview: true }))}
           >
-            <svg
-              className="-ml-1 mr-2 h-5 w-5 text-gray-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-              />
-            </svg>
+            <Eye className="w-5 h-5 text-gray-700" />
             Prévisualiser
           </button>
           <button
             type="button"
-            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             onClick={handleSubmit}
             disabled={data.loadingBtn}
+            className="inline-flex items-center justify-center px-6 py-3  rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {data.loadingBtn ? (
-              <>
-                <svg
-                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-                Enregistrement...
-              </>
-            ) : (
-              <>
-                <svg
-                  className="-ml-1 mr-3 h-5 w-5"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                Enregistrer {'l\''}attestation
-              </>
-            )}
+            {data.loadingBtn ? "Enregistrement..." : "Enregistrer l'attestation"}
           </button>
         </div>
       </div>
