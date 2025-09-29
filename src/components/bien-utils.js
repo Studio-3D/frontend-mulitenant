@@ -14,7 +14,13 @@ export const getOrientationCode = orientation => ORIENTATIONS[orientation]?.code
 
 export const getOrientationLabel = orientation => ORIENTATIONS[orientation]?.label || ''
 
-
+// Get options for select inputs
+export const getOrientationOptions = () => {
+  return Object.entries(ORIENTATIONS).map(([key, value]) => ({
+    value: key, // Use the key (N, E, S, etc.) as value
+    label: value.label, // Use the French label for display
+  }));
+};
 
 export const BIEN_ETATS = {
   DISPONIBLE: { code: 'DISPONIBLE', label: 'Disponible' },

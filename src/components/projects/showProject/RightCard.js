@@ -13,6 +13,7 @@ import { HomeIcon, LayersIcon, BuildingIcon, BoxesIcon } from 'lucide-react';
 import Table from '@/components/Table';
 import Input from '@/components/Input'; // Make sure to import your Input component
 import BienImport from '@/components/biens/BienImport';
+import { getOrientationLabel  } from '@/components/bien-utils'; // Import the new config
 
 const TAB_CONFIG = {
   tranche: {
@@ -173,12 +174,15 @@ const TAB_CONFIG = {
           ]
         : []),
     ],
-    columns: (user, handleDelete, nbre_tranches) => [
+    columns: (user, handleDelete, nbre_tranches, nbre_immeubles) => [
       { key: 'nom', label: 'Bloc' },
 
       ...(nbre_tranches > 0 ? [{ key: 'tranche_nom', label: 'Tranche' }] : []),
       { key: 'titre_foncier', label: 'Titre foncier' },
-      { key: 'nbre_immeubles', label: 'Nbr Immeubles' },
+      ...(nbre_immeubles > 0
+        ? [{ key: 'nbre_immeubles', label: 'Nbr Immeubles' }]
+        : []),
+
       { key: 'nbre_biens', label: 'Nbr Biens' },
       {
         key: 'actions',
@@ -214,7 +218,7 @@ const TAB_CONFIG = {
         ),
       },
     ],
-    exportConfig: (items, nbre_tranches) => ({
+    exportConfig: (items, nbre_tranches, nbre_immeubles) => ({
       data_to_export: items.map((item) => ({
         Bloc: item.bloc_nom || '',
         ...(nbre_tranches > 0 && { Tranche: item.tranche_nom || '' }),
@@ -226,7 +230,9 @@ const TAB_CONFIG = {
         { key: 'Bloc', label: 'Bloc' },
         ...(nbre_tranches > 0 ? [{ key: 'Tranche', label: 'Tranche' }] : []),
         { key: 'Titre foncier', label: 'Titre foncier' },
-        { key: 'Nbr Immeubles', label: 'Nbr Immeubles' },
+        ...(nbre_immeubles > 0
+          ? [{ key: 'Nbr Immeubles', label: 'Nbr Immeubles' }]
+          : []),
         { key: 'Nbr Biens', label: 'Nbr Biens' },
       ],
       name_file_export: 'blocs_export',
@@ -381,6 +387,42 @@ const TAB_CONFIG = {
             .map((status) => ({ label: status, value: status }))
         : [];
 
+      // Get unique values for the new filters from ACTUAL project data
+      const orientationOptions = tabsData.bien?.items
+        ? [
+            ...new Set(
+              tabsData.bien.items.map((item) => item.orientation).filter(Boolean)
+            ),
+          ].map((orientation) => {
+            // Use the getOrientationLabel function to get the French label
+            const label = getOrientationLabel(orientation);
+            return { label: label, value: orientation };
+          })
+        : [];
+
+      const typologieOptions = tabsData.bien?.items
+        ? [
+            ...new Set(
+              tabsData.bien.items.map((item) => item.typologie).filter(Boolean)
+            ),
+          ].map((typologie) => ({ label: typologie, value: typologie }))
+        : [];
+
+      const vueOptions = tabsData.bien?.items
+        ? [
+            ...new Set(
+              tabsData.bien.items.map((item) => item.vue).filter(Boolean)
+            ),
+          ].map((vue) => ({ label: vue, value: vue }))
+        : [];
+
+      const niveauOptions = tabsData.bien?.items
+        ? [
+            ...new Set(
+              tabsData.bien.items.map((item) => item.etage).filter(Boolean)
+            ),
+          ].map((niveau) => ({ label: niveau, value: niveau }))
+        : [];
       return [
         {
           key: 'name',
@@ -417,7 +459,43 @@ const TAB_CONFIG = {
           className:
             'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
         },
-
+        // New filters for orientation, typologie, vue, and niveau
+        {
+          key: 'orientation',
+          label: 'Orientation',
+          type: 'select',
+          placeholder: 'Sélectionner une orientation',
+          options: orientationOptions, // This will only show orientations that exist in the data
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
+        {
+          key: 'typologie',
+          label: 'Typologie',
+          type: 'select',
+          placeholder: 'Sélectionner une typologie',
+          options: typologieOptions,
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
+        {
+          key: 'vue',
+          label: 'Vue',
+          type: 'select',
+          placeholder: 'Sélectionner une vue',
+          options: vueOptions,
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
+        {
+          key: 'etage',
+          label: 'Niveau',
+          type: 'select',
+          placeholder: 'Sélectionner un niveau',
+          options: niveauOptions,
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
         ...(nbre_tranches > 0
           ? [
               {
@@ -737,82 +815,7 @@ export const RightCard = ({
 
   // Filter items based on selected type, applied filters and pagination
 
-  /*const filteredItems = useMemo(() => {
-    if (!tabsData[activeTab]?.items) return [];
-
-    let items = tabsData[activeTab].items;
-
-    // Apply type filter if activeTab is 'bien' and a type is selected
-    if (activeTab === 'bien' && selectedType) {
-      items = items.filter((item) => item.type === selectedType);
-    }
-
-    // Apply text filters
-    Object.keys(appliedFilters).forEach((key) => {
-      if (appliedFilters[key]) {
-        // Handle surface range filtering
-        if (key === 'surface_min' && appliedFilters[key]) {
-          const minValue = parseFloat(appliedFilters[key]);
-          items = items.filter((item) => {
-            const itemSurface = parseFloat(item.surface);
-            return !isNaN(itemSurface) && itemSurface >= minValue;
-          });
-        } else if (key === 'surface_max' && appliedFilters[key]) {
-          const maxValue = parseFloat(appliedFilters[key]);
-          items = items.filter((item) => {
-            const itemSurface = parseFloat(item.surface);
-            return !isNaN(itemSurface) && itemSurface <= maxValue;
-          });
-        }
-        // Handle price range filtering
-        else if (key === 'price_min' && appliedFilters[key]) {
-          const minValue = parseFloat(appliedFilters[key]);
-          items = items.filter((item) => {
-            const itemPrice = parseFloat(item.price);
-            return !isNaN(itemPrice) && itemPrice >= minValue;
-          });
-        } else if (key === 'price_max' && appliedFilters[key]) {
-          const maxValue = parseFloat(appliedFilters[key]);
-          items = items.filter((item) => {
-            const itemPrice = parseFloat(item.price);
-            return !isNaN(itemPrice) && itemPrice <= maxValue;
-          });
-        }
-        // Handle other text filters
-        else if (
-          key !== 'surface_min' &&
-          key !== 'surface_max' &&
-          key !== 'price_min' &&
-          key !== 'price_max'
-        ) {
-          items = items.filter((item) =>
-            item[key]
-              ?.toString()
-              .toLowerCase()
-              .includes(appliedFilters[key].toLowerCase())
-          );
-        }
-      }
-    });
-
-    // Update total rows count
-    setTotalRows(items.length);
-
-    // Apply pagination
-    const startIndex = (currentPage - 1) * rowsPerPage;
-    const endIndex = startIndex + rowsPerPage;
-
-    return items.slice(startIndex, endIndex);
-  }, [
-    tabsData,
-    activeTab,
-    selectedType,
-    appliedFilters,
-    currentPage,
-    rowsPerPage,
-  ]);*/
-
-  const filteredItems = useMemo(() => {
+  /* const filteredItems = useMemo(() => {
     if (!tabsData[activeTab]?.items) return [];
 
     let items = tabsData[activeTab].items;
@@ -872,7 +875,89 @@ export const RightCard = ({
 
     return items;
   }, [tabsData, activeTab, selectedType, appliedFilters]);
+*/
+  // Fix the filtering logic to handle select values properly
+  const filteredItems = useMemo(() => {
+    if (!tabsData[activeTab]?.items) return [];
 
+    let items = tabsData[activeTab].items;
+
+    // Apply type filter if activeTab is 'bien' and a type is selected
+    if (activeTab === 'bien' && selectedType) {
+      items = items.filter((item) => item.type === selectedType);
+    }
+
+    // Apply text filters
+    Object.keys(appliedFilters).forEach((key) => {
+      if (appliedFilters[key]) {
+        // Handle surface range filtering
+        if (key === 'surface_min' && appliedFilters[key]) {
+          const minValue = parseFloat(appliedFilters[key]);
+          items = items.filter((item) => {
+            const itemSurface = parseFloat(item.surface);
+            return !isNaN(itemSurface) && itemSurface >= minValue;
+          });
+        } else if (key === 'surface_max' && appliedFilters[key]) {
+          const maxValue = parseFloat(appliedFilters[key]);
+          items = items.filter((item) => {
+            const itemSurface = parseFloat(item.surface);
+            return !isNaN(itemSurface) && itemSurface <= maxValue;
+          });
+        }
+        // Handle price range filtering
+        else if (key === 'price_min' && appliedFilters[key]) {
+          const minValue = parseFloat(appliedFilters[key]);
+          items = items.filter((item) => {
+            const itemPrice = parseFloat(item.price);
+            return !isNaN(itemPrice) && itemPrice >= minValue;
+          });
+        } else if (key === 'price_max' && appliedFilters[key]) {
+          const maxValue = parseFloat(appliedFilters[key]);
+          items = items.filter((item) => {
+            const itemPrice = parseFloat(item.price);
+            return !isNaN(itemPrice) && itemPrice <= maxValue;
+          });
+        }
+        // Handle select filters (orientation, typologie, vue, etage, etc.)
+        else if (
+          [
+            'orientation',
+            'typologie',
+            'vue',
+            'etage',
+            'status',
+            'type',
+            'tranche_nom',
+            'bloc_nom',
+            'immeuble_nom',
+          ].includes(key)
+        ) {
+          // For select filters, do exact matching
+          items = items.filter((item) => {
+            const itemValue = item[key]?.toString().toLowerCase();
+            const filterValue = appliedFilters[key]?.toString().toLowerCase();
+            return itemValue === filterValue;
+          });
+        }
+        // Handle other text filters with partial matching
+        else if (
+          key !== 'surface_min' &&
+          key !== 'surface_max' &&
+          key !== 'price_min' &&
+          key !== 'price_max'
+        ) {
+          items = items.filter((item) =>
+            item[key]
+              ?.toString()
+              .toLowerCase()
+              .includes(appliedFilters[key].toString().toLowerCase())
+          );
+        }
+      }
+    });
+
+    return items;
+  }, [tabsData, activeTab, selectedType, appliedFilters]);
   // Step 2: Calculate paginated items separately
   const paginatedItems = useMemo(() => {
     // Update total rows count based on filtered data
@@ -1101,7 +1186,6 @@ export const RightCard = ({
     nbre_immeubles,
   ]);
 
-
   const exportConfig = useMemo(() => {
     if (!TAB_CONFIG[safeActiveTab]?.exportConfig) return null;
 
@@ -1236,7 +1320,7 @@ export const RightCard = ({
             totalRows={totalRows}
             onPageChange={handlePageChange}
             onRowsPerPageChange={handleRowsPerPageChange}
-            enableImport={safeActiveTab == 'bien'} // Only enable import for bien tab
+            enableImport={user.role <= 2 && safeActiveTab == 'bien'} // Only enable import for bien tab
             onImportClick={() => setShowImportModal(true)}
             data_to_export={exportConfig?.data_to_export || []}
             columns_export={exportConfig?.columns_export || []}

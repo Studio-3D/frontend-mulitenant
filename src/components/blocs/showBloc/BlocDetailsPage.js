@@ -56,7 +56,6 @@ export const BlocDetailsPage = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      
       const blocDetails = response.data;
       setBlocData(blocDetails);
       console.log('fetched bloc data', blocDetails);
@@ -194,6 +193,10 @@ export const BlocDetailsPage = () => {
           tranche_nom: b?.tranche?.nom || '',
           bloc_nom: b?.bloc?.nom || '',
           immeuble_nom: b?.immeuble?.nom || '',
+          orientation: b?.orientation || '',
+          etage: b?.niveau || '',
+          typologie: b?.typologie?.typologie || '',
+          vue: b?.vue?.vue || '',
         };
       }) || [];
 

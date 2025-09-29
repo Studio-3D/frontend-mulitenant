@@ -416,6 +416,12 @@ const fetchNotifications = async ({
         color: 'info',
         subtitle: (prospect, user, avance, reservation, bien, projet, description_type) => description_type || `Message WhatsApp entrant${prospect?.telephone ? ' de ' + prospect.telephone : ''}`
       },
+      90: {
+        title: 'Message Facebook',
+        icon: 'message-circle',
+        color: 'info',
+        subtitle: (prospect, user, avance, reservation, bien, projet, description_type) => description_type || 'Nouveau message Facebook reçu'
+      },
       91: {
         title: 'Mention Facebook',
         icon: 'at-sign',
@@ -445,6 +451,12 @@ const fetchNotifications = async ({
         icon: 'heart',
         color: 'info',
         subtitle: (prospect, user, avance, reservation, bien, projet, description_type) => description_type || 'Quelqu\'un a réagi à votre message Instagram'
+      },
+       100: {
+        title: 'Nouveau Message Instagram',
+        icon: 'message-circle',
+        color: 'success',
+        subtitle: (prospect, user, avance, reservation, bien, projet, description_type) => description_type || 'Nouveau message Instagram'
       },
       99: {
         title: 'Nouveau Message WhatsApp',

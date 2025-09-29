@@ -51,7 +51,6 @@ const AppelsTable = ({ dataClient }) => {
     searchFields: ['date', 'nom', 'prenom', 'telephone'],
   };
 
-  
   useEffect(() => {
     const params_url = dataClient ? { client_id: dataClient?.id } : {};
     const combinedFilters = { ...filters, ...params_url };
@@ -330,7 +329,7 @@ const AppelsTable = ({ dataClient }) => {
           onPageChange={setCurrentPage}
           onRowsPerPageChange={setRowsPerPage}
           onSearchChange={setSearchTerm}
-          enableExport={true}
+          enableExport={formatData().length > 0}
           enableImport={false}
           showSearch={false}
           addLink={getAddLinkForAppel(user)}

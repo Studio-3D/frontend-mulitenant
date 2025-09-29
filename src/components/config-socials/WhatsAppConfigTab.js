@@ -5,7 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useProjet } from "@/context/ProjetContext";
 import axios from "axios";
 import { APIURL } from "@/configs/api";
-import { SaveIcon, AlertCircleIcon, Loader, Trash2, Plus, CheckCircle, MessageCircle, Globe } from "lucide-react";
+import { SaveIcon, AlertCircleIcon, Loader, Trash2, Plus, CheckCircle, MessageCircle, Globe, Edit, ChevronDown, ChevronUp, HelpCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
 
@@ -18,6 +18,8 @@ export default function WhatsAppConfigTab() {
   const [webhooks, setWebhooks] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [showWebhookForm, setShowWebhookForm] = useState(null);
+  const [editingConfig, setEditingConfig] = useState(null);
+  const [showGuide, setShowGuide] = useState(false);
 
   const [whatsappConfig, setWhatsappConfig] = useState({
     phone_number_id: "",
@@ -85,12 +87,12 @@ export default function WhatsAppConfigTab() {
     }));
   };
 
-  // Save WhatsApp configuration
+  // Save or Update WhatsApp configuration
   const handleSaveWhatsApp = async () => {
     try {
       setSaving(true);
       const token = localStorage.getItem("accessToken");
-      
+
       if (!whatsappConfig.phone_number_id || !whatsappConfig.access_token || !whatsappConfig.projet_id) {
         toast.error("Veuillez remplir tous les champs obligatoires");
         setSaving(false);
@@ -105,15 +107,27 @@ export default function WhatsAppConfigTab() {
         projet_id: whatsappConfig.projet_id,
       };
 
-      await axios.post(
-        `${APIURL.ROOTV1}/whatsapp-configurations`,
-        dataToSave,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      toast.success("Configuration WhatsApp enregistrée avec succès!");
+      if (editingConfig) {
+        // Update existing configuration
+        await axios.put(
+          `${APIURL.ROOTV1}/whatsapp-configurations/${editingConfig.id}`,
+          dataToSave,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        toast.success("Configuration WhatsApp mise à jour avec succès!");
+      } else {
+        // Create new configuration
+        await axios.post(
+          `${APIURL.ROOTV1}/whatsapp-configurations`,
+          dataToSave,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        toast.success("Configuration WhatsApp enregistrée avec succès!");
+      }
 
       // Reset form
       setWhatsappConfig({
@@ -123,17 +137,44 @@ export default function WhatsAppConfigTab() {
         app_secret: "",
         projet_id: "",
       });
+      setEditingConfig(null);
       setShowForm(false);
 
       // Refresh configurations list
       window.location.reload();
-      
+
     } catch (error) {
       console.error("Error saving WhatsApp configuration:", error);
       toast.error("Erreur lors de l'enregistrement de la configuration");
     } finally {
       setSaving(false);
     }
+  };
+
+  // Edit WhatsApp configuration
+  const handleEditWhatsApp = (config) => {
+    setWhatsappConfig({
+      phone_number_id: config.phone_number_id,
+      access_token: config.access_token,
+      app_id: config.app_id || "",
+      app_secret: config.app_secret || "",
+      projet_id: config.projet_id,
+    });
+    setEditingConfig(config);
+    setShowForm(true);
+  };
+
+  // Cancel edit
+  const handleCancelEdit = () => {
+    setWhatsappConfig({
+      phone_number_id: "",
+      access_token: "",
+      app_id: "",
+      app_secret: "",
+      projet_id: "",
+    });
+    setEditingConfig(null);
+    setShowForm(false);
   };
 
   // Save webhook configuration - webhook starts disabled by default
@@ -342,17 +383,27 @@ export default function WhatsAppConfigTab() {
                           </p>
                         </div>
                       </div>
-                      <button
-                        onClick={() => setDeleteModal({
-                          isOpen: true,
-                          type: 'configuration',
-                          itemId: config.id,
-                          itemLabel: config.projet_nom || 'Configuration'
-                        })}
-                        className="text-red-600 hover:text-red-800 p-2 rounded-full hover:bg-red-50"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => handleEditWhatsApp(config)}
+                          className="text-blue-600 hover:text-blue-800 p-2 rounded-full hover:bg-blue-50"
+                          title="Modifier"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => setDeleteModal({
+                            isOpen: true,
+                            type: 'configuration',
+                            itemId: config.id,
+                            itemLabel: config.projet_nom || 'Configuration'
+                          })}
+                          className="text-red-600 hover:text-red-800 p-2 rounded-full hover:bg-red-50"
+                          title="Supprimer"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
                     </div>
 
                     {/* Webhook Section */}
@@ -512,8 +563,9 @@ export default function WhatsAppConfigTab() {
         </div>
       </div>
 
-      {/* Information Section */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg">
+      {/* Information Section - Setup Guide */}
+      {(!editingConfig || showGuide) && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg">
         <div className="px-6 py-4">
           <div className="flex items-start">
             <MessageCircle className="h-5 w-5 text-blue-600 mt-0.5 mr-3" />
@@ -560,12 +612,29 @@ export default function WhatsAppConfigTab() {
           </div>
         </div>
       </div>
+      )}
 
       {/* Configuration Form */}
       {showForm && (
         <div className="bg-white border border-gray-200 rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">Nouvelle Configuration WhatsApp</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-medium text-gray-900">
+                {editingConfig ? 'Modifier Configuration WhatsApp' : 'Nouvelle Configuration WhatsApp'}
+              </h3>
+
+              {/* Show guide toggle button when editing */}
+              {editingConfig && (
+                <button
+                  onClick={() => setShowGuide(!showGuide)}
+                  className="flex items-center gap-2 px-3 py-1 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
+                >
+                  <HelpCircle className="h-4 w-4" />
+                  {showGuide ? 'Masquer le guide' : 'Afficher le guide'}
+                  {showGuide ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </button>
+              )}
+            </div>
             <p className="mt-1 text-sm text-gray-600">
               Configurez votre instance UltraMsg pour un projet
             </p>
@@ -681,13 +750,13 @@ export default function WhatsAppConfigTab() {
                   ) : (
                     <>
                       <SaveIcon className="h-4 w-4" />
-                      Enregistrer la configuration
+                      {editingConfig ? 'Mettre à jour' : 'Enregistrer la configuration'}
                     </>
                   )}
                 </button>
 
                 <button
-                  onClick={() => setShowForm(false)}
+                  onClick={handleCancelEdit}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
                 >
                   Annuler
