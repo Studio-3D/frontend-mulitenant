@@ -264,10 +264,10 @@ export const ContractTab = ({
           ) : (
             <div className="w-full">
               {/* Add Contract Form - Now above preview */}
-              <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 mb-8">
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-4">
+              <div className="bg-white rounded-xl overflow-hidden border border-gray-100 mb-8">
+                <div className="bg-[#009FFF] px-6 py-4 flex items-center space-x-3">
+                  <FileText className="w-5 h-5 text-white" />
                   <h2 className="text-xl font-bold text-white flex items-center">
-                    <FileText className="mr-2" />
                     Ajouter un nouveau contrat
                   </h2>
                 </div>
@@ -275,86 +275,71 @@ export const ContractTab = ({
                 <form onSubmit={onsubmit_ajouter} className="p-6 space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="space-y-1">
-                      <label className="block text-sm font-medium text-gray-700 flex items-center">
-                        <Calendar className="mr-2 text-blue-600" />
-                        Date Signature Client{" "}
-                        <span className="text-red-500 ml-1">*</span>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Date Signature Client
+                        <span className="text-red-500 ml-1">*</span> :
                       </label>
-                      <div className="relative">
-                        <input
-                          type="date"
-                          required
-                          onChange={(e) => setDate_sign_client(e.target.value)}
-                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        />
-                      </div>
+                      <input
+                        type="date"
+                        required
+                        onChange={(e) => setDate_sign_client(e.target.value)}
+                        className="w-full px-4 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:border-[#009FFF]"
+                      />
                     </div>
-
                     <div className="space-y-1">
-                      <label className="block text-sm font-medium text-gray-700 flex items-center">
-                        <Calendar className="mr-2 text-blue-600" />
-                        Date Signature MO{" "}
-                        <span className="text-red-500 ml-1">*</span>
+                      <label
+                        htmlFor="date-sign-mo"
+                        className="block text-sm font-medium text-gray-700"
+                      >
+                        Date Signature MO
+                        <span className="text-red-500 ml-1">*</span> :
                       </label>
-                      <div className="relative">
-                        <input
-                          type="date"
-                          required
-                          onChange={(e) => setDate_sign_mo(e.target.value)}
-                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        />
-                      </div>
+
+                      <input
+                        id="date-sign-mo"
+                        type="date"
+                        required
+                        onChange={(e) => setDate_sign_mo(e.target.value)}
+                        className="w-full px-4 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:border-[#009FFF]"
+                      />
                     </div>
-
                     <div className="space-y-1">
-                      <label className="block text-sm font-medium text-gray-700 flex items-center">
-                        <Calendar className="mr-2 text-blue-600" />
-                        Date Enregistrement{" "}
-                        <span className="text-red-500 ml-1">*</span>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Date Enregistrement
+                        <span className="text-red-500 ml-1">*</span> :
                       </label>
-                      <div className="relative">
-                        <input
-                          type="date"
-                          required
-                          onChange={(e) => setDate_enreg(e.target.value)}
-                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        />
-                      </div>
+                      <input
+                        type="date"
+                        required
+                        onChange={(e) => setDate_enreg(e.target.value)}
+                        className="w-full px-4 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:border-[#009FFF]"
+                      />
                     </div>
                   </div>
-
                   <div className="space-y-1">
-                    <label className="block text-sm font-medium text-gray-700 flex items-center">
-                      <Edit2 className="mr-2 text-blue-600" />
-                      Commentaire
+                    <label className="block text-sm font-medium text-gray-700">
+                      Commentaire :
                     </label>
                     <textarea
                       rows={3}
                       onChange={(e) => setCommentaire(e.target.value)}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-4 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:border-[#009FFF]"
                       placeholder="Ajoutez des notes ou détails importants..."
                     />
                   </div>
-
-                  <div className="flex justify-end space-x-4 pt-4">
+                  <div className="flex justify-end space-x-4">
                     <button
                       type="reset"
                       className="px-5 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200 flex items-center"
                     >
-                      <X className="mr-2" />
                       Annuler
                     </button>
 
                     <button
                       type="submit"
-                      className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-lg hover:from-blue-700 hover:to-indigo-800 transition-all duration-200 shadow-md hover:shadow-lg flex items-center"
+                      className="px-5 py-2.5 bg-[#009FFF] text-white rounded-lg  shadow-md hover:shadow-lg flex items-center"
                       disabled={loading_btn}
                     >
-                      {loading_btn ? (
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                      ) : (
-                        <Check className="mr-2" />
-                      )}
                       Enregistrer le contrat
                     </button>
                   </div>
@@ -362,17 +347,19 @@ export const ContractTab = ({
               </div>
 
               {/* Contract Preview - Now below form */}
-              <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-4">
+              <div className="bg-white rounded-xl  overflow-hidden border border-gray-100">
+                <div className="bg-[#009FFF] px-6 py-4 ">
                   <div className="flex justify-between items-center">
-                    <h2 className="text-xl font-bold text-white flex items-center">
-                      <FileText className="mr-2" />
-                      Aperçu du contrat
-                    </h2>
-                    <div className="bg-white/20 px-3 py-1 rounded-full text-xs font-medium text-white">
-                      Bientôt généré
+                    <div className="flex items-center space-x-3">
+                      <FileText className="w-5 h-5 text-white" />
+                      <h2 className="text-xl font-bold text-white flex items-center">
+                        Aperçu du contrat
+                      </h2>
                     </div>
-                  </div>
+                      <div className="text-md font-bold text-white">
+                        Bientôt généré
+                      </div>
+                    </div>
                 </div>
                 <div className="p-6 bg-white rounded-lg shadow-sm">
                   {/* Header */}
@@ -699,15 +686,17 @@ export const ContractTab = ({
           )}
         </>
       ) : (
-        <div className="max-w-5xl mx-auto">
+        <div className="">
           {/* Contract Header */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between bg-gradient-to-r from-blue-600 to-indigo-700 rounded-t-xl px-6 py-5">
+          <div className="flex flex-col md:flex-row md:items-center justify-between bg-[#009FFF] rounded-t-xl px-6 py-5">
             <div>
-              <h1 className="text-2xl font-bold text-white flex items-center">
-                <FileText className="mr-3 text-white" />
-                Contrat de Vente
-              </h1>
-              <p className="text-blue-100 mt-1">
+              <div className="flex items-center space-x-3">
+                <FileText className="w-5 h-5 text-white"/>
+                <h1 className="text-xl font-bold text-white flex items-center">
+                  Contrat de Vente
+                </h1>
+              </div>
+              <p className="text-white font-semibold">
                 Dossier: {data_reservation?.code_reservation}
               </p>
             </div>
@@ -1001,7 +990,7 @@ export const ContractTab = ({
       {open_edit && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl">
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-4 rounded-t-xl">
+            <div className="bg-[#009FFF] px-6 py-4 rounded-t-xl">
               <h3 className="text-xl font-bold text-white">
                 Modifier le contrat
               </h3>
@@ -1010,64 +999,59 @@ export const ContractTab = ({
             <form onSubmit={onSubmit_edit} className="p-6 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-700 flex items-center">
-                    <Calendar className="mr-2 text-blue-600" />
-                    Date Signature Client{" "}
-                    <span className="text-red-500 ml-1">*</span>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Date Signature Client
+                    <span className="text-red-500 ml-1">*</span> :
                   </label>
                   <input
                     type="date"
                     required
                     defaultValue={date_sign_client}
                     onChange={(e) => setDate_sign_client(e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-4 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:border-[#009FFF]"
                   />
                 </div>
-
                 <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-700 flex items-center">
-                    <Calendar className="mr-2 text-blue-600" />
-                    Date Signature Maitre Ouvrage{" "}
-                    <span className="text-red-500 ml-1">*</span>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Date Signature Maitre Ouvrage
+                    <span className="text-red-500 ml-1">*</span> :
                   </label>
                   <input
                     type="date"
                     required
                     defaultValue={date_sign_mo}
                     onChange={(e) => setDate_sign_mo(e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-4 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:border-[#009FFF]"
                   />
                 </div>
-
                 <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-700 flex items-center">
-                    <Calendar className="mr-2 text-blue-600" />
-                    Date Enregistrement{" "}
-                    <span className="text-red-500 ml-1">*</span>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Date Enregistrement
+                    <span className="text-red-500 ml-1">*</span> :
                   </label>
                   <input
                     type="date"
                     required
                     defaultValue={date_enreg}
                     onChange={(e) => setDate_enreg(e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-4 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:border-[#009FFF]"
                   />
                 </div>
               </div>
 
               <div className="space-y-1">
-                <label className="block text-sm font-medium text-gray-700 flex items-center">
-                  <Edit2 className="mr-2 text-blue-600" />
-                  Commentaire
-                </label>
-                <textarea
-                  rows={3}
-                  defaultValue={commentaire}
-                  onChange={(e) => setCommentaire(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Ajoutez des notes ou détails importants..."
-                />
-              </div>
+              <label className="block text-sm font-medium text-gray-700">
+                Commentaire :
+              </label>
+              <textarea
+                rows={3}
+                defaultValue={commentaire}
+                onChange={(e) => setCommentaire(e.target.value)}
+                className="w-full px-4 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:border-[#009FFF]"
+                placeholder="Ajoutez des notes ou détails importants..."
+              />
+            </div>
+
 
               {errors && (
                 <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
@@ -1085,20 +1069,14 @@ export const ContractTab = ({
                   onClick={handleEdit}
                   className="px-5 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200 flex items-center"
                 >
-                  <X className="mr-2" />
                   Annuler
                 </button>
 
                 <button
                   type="submit"
-                  className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-lg hover:from-blue-700 hover:to-indigo-800 transition-all duration-200 shadow-md hover:shadow-lg flex items-center"
+                  className="px-5 py-2.5 bg-[#009FFF] text-white rounded-lg  shadow-md hover:shadow-lg flex items-center"
                   disabled={loading_btn}
                 >
-                  {loading_btn ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                  ) : (
-                    <Check className="mr-2" />
-                  )}
                   Enregistrer les modifications
                 </button>
               </div>
@@ -1121,7 +1099,7 @@ export const ContractTab = ({
 
             <div className="p-6">
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   <Upload className="mr-2 text-blue-600" />
                   Téléverser le document signé{" "}
                   <span className="text-red-500 ml-1">*</span>

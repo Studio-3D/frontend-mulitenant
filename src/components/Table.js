@@ -41,6 +41,7 @@ const Table = ({
   onImportClick = () => {},
   onConfigClick = () => {},
   extraActions = null,
+  customActions = []
 
 }) => {
   const [showModal, setShowModal] = useState(null);
@@ -175,6 +176,16 @@ const Table = ({
               <span>Importer</span>
             </button>
           )}
+          {customActions.map((action, index) => (
+            <button
+              key={index}
+              className={`flex gap-1 items-center ${action.className || 'bg-gray-500'} text-white font-medium rounded-lg px-3 py-1.5`}
+              onClick={action.onClick}
+            >
+              {action.icon || <Plus className="w-5 h-5" />}
+              <span>{action.label}</span>
+            </button>
+          ))}
           {enableConfig && (
             <button
               className="flex gap-1 items-center bg-orange-300 text-white font-medium rounded-lg px-3 py-1.5 hover:bg-orange-100 transition"

@@ -74,7 +74,7 @@ const TextField = ({
     } else {
       return (
         <div className="mb-2">
-          <label htmlFor={name} className="block text-[15px] font-medium text-gray-700 mb-1">
+          <label htmlFor={name} className="block text-[14px] font-medium text-gray-700 mb-1">
             {label}
             {required && <span className="text-red-500 ml-1">*</span>}
           </label>
