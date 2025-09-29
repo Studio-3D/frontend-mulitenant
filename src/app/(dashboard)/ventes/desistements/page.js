@@ -139,8 +139,7 @@ const ViewDes = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <VenteNavbar />
-
-      <div className="container mx-auto px-4 py-8">
+      <div className="">
         <div className="bg-white rounded-xl shadow-md overflow-hidden">
           {/* Tabs Navigation */}
           <div className="border-b border-gray-200">
@@ -150,9 +149,9 @@ const ViewDes = () => {
                   <button
                     key={tab.id}
                     onClick={() => handleChange(tab.id)}
-                    className={`px-4 py-3 text-sm font-medium rounded-t-lg flex items-center space-x-2 transition-colors duration-200 ${
+                    className={`p-3 text-sm font-medium rounded-t-lg flex items-center gap-2  transition-colors duration-200 ${
                       activeTab === tab.id
-                        ? "bg-blue-600 text-white shadow-md"
+                        ? "bg-blue-500 text-white shadow-md"
                         : "text-gray-600 hover:bg-gray-100 hover:text-gray-800"
                     }`}
                   >
@@ -170,7 +169,7 @@ const ViewDes = () => {
           </div>
 
           {/* Tab Content */}
-          <div className="p-6">
+          <div className="">
             {tabs.map((tab) => (
               <div
                 key={tab.id}
