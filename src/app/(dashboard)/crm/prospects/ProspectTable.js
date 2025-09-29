@@ -684,7 +684,7 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
           onPageChange={setCurrentPage}
           onRowsPerPageChange={setRowsPerPage}
           onSearchChange={setSearchTerm}
-          enableExport={true}
+          enableExport={formatData().length > 0}
           enableImport={true}
           onImportClick={handleImportClick}
           showSearch={false}

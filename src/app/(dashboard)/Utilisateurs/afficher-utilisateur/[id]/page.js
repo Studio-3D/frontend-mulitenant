@@ -58,9 +58,9 @@ export default function UserDetailsPage() { // Renamed to PascalCase
         {/* Dynamic Content */}
         <div className=' w-full h-full  '>
           {selectedMenu === 'Profil' && <ProfileContent userId={id}  token={token}/>}
-          {selectedMenu === 'Projets' && <ProjetsContent />}
-          {selectedMenu === 'Visites' && <VisitesContent />}
-          {selectedMenu === 'Ventes' && <VentesContent />}
+          {selectedMenu === 'Projets' && <ProjetsContent user_id={id} />}
+          {selectedMenu === 'Visites' && <VisitesContent  user_id={id}/>}
+          {selectedMenu === 'Ventes' && <VentesContent  user_id={id}/>}
         </div>
         </div>
     </div>

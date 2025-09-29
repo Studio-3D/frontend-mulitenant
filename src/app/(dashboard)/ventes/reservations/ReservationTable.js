@@ -589,7 +589,7 @@ const ReservationTable = ({ dataClient, user_id }) => {
           onPageChange={setCurrentPage}
           onRowsPerPageChange={setRowsPerPage}
           onSearchChange={setSearchTerm}
-          enableExport={true}
+          enableExport={formatData().length>0}
           enableImport={false}
           showSearch={false}
           addLink={

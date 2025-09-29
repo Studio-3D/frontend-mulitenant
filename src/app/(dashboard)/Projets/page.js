@@ -1,61 +1,61 @@
-'use client'
-import React, { useEffect, useState, useCallback, useMemo } from 'react'
-import { APIURL } from '@/configs/api'
-import axios from 'axios'
-import { useRouter } from 'next/navigation'
-import { useAuth } from '@/context/AuthContext'
-import { useProjet } from '@/context/ProjetContext'
-import { Eye, PencilLine, Trash2 } from "lucide-react"
-import Table from "@/components/Table"
-import Link from 'next/link'
+'use client';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { APIURL } from '@/configs/api';
+import axios from 'axios';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { useProjet } from '@/context/ProjetContext';
+import { Eye, PencilLine, Trash2 } from 'lucide-react';
+import Table from '@/components/Table';
+import Link from 'next/link';
 import { isAdmin, isSuperAdmin } from '@/configs/enum';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
 import Input from '@/components/Input';
 import SelectInput from '@/components/SelectInput';
 
-const Page = () => {
+const Page = ({ user_id }) => {
   // State Management
-  const { token, user } = useAuth()
-  const { removeProjet } = useProjet()
-  const router = useRouter()
-  const [loading, setLoading] = useState(true)
-  const [projects, setProjects] = useState([])
+  const { token, user } = useAuth();
+  const { removeProjet } = useProjet();
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [projects, setProjects] = useState([]);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalRows, setTotalRows] = useState(0);
   const [selectedId, setSelectedId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  
+
   // State for filters - use 'type' to match backend expectation
   const [filters, setFilters] = useState({
-    nom: "",
-    code: "",
-    type: "", // Changed back to 'type' to match backend
-    adresse: "",
-    date: ""
+    nom: '',
+    code: '',
+    type: '', // Changed back to 'type' to match backend
+    adresse: '',
+    date: '',
   });
 
   const [tempFilters, setTempFilters] = useState({ ...filters });
 
-  const accesstoken = token || localStorage.getItem("accessToken");
+  const accesstoken = token || localStorage.getItem('accessToken');
 
   // Extract unique types from projects with IDs
   const typeOptions = useMemo(() => {
     if (!projects || projects.length === 0) return [];
-    
+
     const uniqueTypes = new Map();
-    projects.forEach(project => {
+    projects.forEach((project) => {
       if (project.type_projet?.id && project.type_projet?.type) {
         // Use ID as value, name as label
         uniqueTypes.set(project.type_projet.id, project.type_projet.type);
       }
     });
-    
+
     return Array.from(uniqueTypes, ([id, type]) => ({
       label: type,
-      value: id.toString() // Convert to string for SelectInput
+      value: id.toString(), // Convert to string for SelectInput
     }));
   }, [projects]);
 
@@ -71,7 +71,7 @@ const Page = () => {
 
   // Handle filter change
   const handleFilterChange = (field, value) => {
-    setTempFilters(prev => ({ ...prev, [field]: value }));
+    setTempFilters((prev) => ({ ...prev, [field]: value }));
   };
 
   // Apply filters
@@ -83,11 +83,11 @@ const Page = () => {
   // Reset filters
   const resetFilters = () => {
     const reset = {
-      nom: "",
-      code: "",
-      type: "", // Changed back to 'type'
-      adresse: "",
-      date: ""
+      nom: '',
+      code: '',
+      type: '', // Changed back to 'type'
+      adresse: '',
+      date: '',
     };
     setCurrentPage(1);
     setFilters(reset);
@@ -97,13 +97,13 @@ const Page = () => {
   // Fetch projects data with pagination and filtering
   const fetchProjects = useCallback(async () => {
     const accessToken = accesstoken;
-    
+
     if (!accessToken) {
-      router.push('/login') 
-      return
+      router.push('/login');
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
     try {
       // Create a clean params object with only defined values
       const params = {
@@ -116,7 +116,7 @@ const Page = () => {
       if (filters.code) params.code = filters.code;
       if (filters.type) params.type = filters.type; // Use 'type' to match backend
       if (filters.adresse) params.adresse = filters.adresse;
-      
+
       // Format date for API if needed
       if (filters.date) {
         const dateObj = new Date(filters.date);
@@ -127,28 +127,32 @@ const Page = () => {
         params.societe_id = user.societe_id;
       }
 
-      if (user?.id && !isSuperAdmin(user?.role) && !isAdmin(user?.role)) {
+      /*if (user?.id && !isSuperAdmin(user?.role) && !isAdmin(user?.role)) {
         params.user_id = user.id;
+      }*/
+      if (user_id) {
+        params.user_id = user_id;
       }
-
       const response = await axios.get(`${APIURL.PROJETS}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
-        params
-      })
-      
+        params,
+      });
+
       if (response.data?.projets) {
-        setProjects(response.data.projets)
-        setTotalRows(response.data.total || response.data.pagination?.totalItems || 0)
+        setProjects(response.data.projets);
+        setTotalRows(
+          response.data.total || response.data.pagination?.totalItems || 0
+        );
       } else {
-        throw new Error("Invalid API response format")
+        throw new Error('Invalid API response format');
       }
     } catch (error) {
-      console.error("Error fetching data:", error)
-      setError(error.response?.data?.message || "Failed to load projects")
+      console.error('Error fetching data:', error);
+      setError(error.response?.data?.message || 'Failed to load projects');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [accesstoken, router, currentPage, rowsPerPage, filters, user])
+  }, [accesstoken, router, currentPage, rowsPerPage, filters, user]);
 
   // Fetch data when dependencies change
   useEffect(() => {
@@ -157,7 +161,7 @@ const Page = () => {
 
   // Format projects for display
   const formattedProjects = useMemo(() => {
-    return projects.map(projet => ({
+    return projects.map((projet) => ({
       ...projet,
       nom: projet.nom || 'Sans nom',
       code: projet.code || '',
@@ -165,7 +169,7 @@ const Page = () => {
       adresse: projet.adresse || '',
       date: formatDate(projet.created_at),
       formatted_type: projet.type_projet?.type || 'Non spécifié',
-      formatted_date: formatDate(projet.created_at)
+      formatted_date: formatDate(projet.created_at),
     }));
   }, [projects]);
 
@@ -173,9 +177,9 @@ const Page = () => {
   const dataToExport = useMemo(() => {
     return formattedProjects.map((projet) => ({
       'Nom du projet': projet.nom,
-      'Code': projet.code,
-      'Type': projet.type,
-      'Adresse': projet.adresse,
+      Code: projet.code,
+      Type: projet.type,
+      Adresse: projet.adresse,
       'Date création': projet.date,
     }));
   }, [formattedProjects]);
@@ -183,13 +187,16 @@ const Page = () => {
   // Filter component for projets
   const filterComponent = (
     <div className="space-y-4">
-      <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
+      <div
+        className="grid gap-3"
+        style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}
+      >
         <Input
           label="Nom"
           type="text"
           placeholder="Nom du projet..."
           value={tempFilters.nom}
-          onChange={(e) => handleFilterChange("nom", e.target.value)}
+          onChange={(e) => handleFilterChange('nom', e.target.value)}
           className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
         />
 
@@ -198,14 +205,14 @@ const Page = () => {
           type="text"
           placeholder="Code du projet..."
           value={tempFilters.code}
-          onChange={(e) => handleFilterChange("code", e.target.value)}
+          onChange={(e) => handleFilterChange('code', e.target.value)}
           className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
         />
 
         <SelectInput
           label="Type"
           value={tempFilters.type} // Use 'type' to match backend
-          onChange={(value) => handleFilterChange("type", value)} // Use 'type' to match backend
+          onChange={(value) => handleFilterChange('type', value)} // Use 'type' to match backend
           options={typeOptions}
           placeholder="Type de projet"
           className="h-10 text-sm w-full"
@@ -216,7 +223,7 @@ const Page = () => {
           type="text"
           placeholder="Adresse..."
           value={tempFilters.adresse}
-          onChange={(e) => handleFilterChange("adresse", e.target.value)}
+          onChange={(e) => handleFilterChange('adresse', e.target.value)}
           className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
         />
 
@@ -225,7 +232,7 @@ const Page = () => {
           type="date"
           placeholder="Sélectionner une date"
           value={tempFilters.date}
-          onChange={(e) => handleFilterChange("date", e.target.value)}
+          onChange={(e) => handleFilterChange('date', e.target.value)}
           className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
         />
       </div>
@@ -278,20 +285,20 @@ const Page = () => {
   const columns = [
     { key: 'nom', label: 'Nom du projet' },
     { key: 'code', label: 'Code' },
-    { 
-      key: 'type', 
+    {
+      key: 'type',
       label: 'Type',
-      render: (row) => row.type_projet?.type || ''
+      render: (row) => row.type_projet?.type || '',
     },
     { key: 'adresse', label: 'Adresse' },
-    { 
-      key: 'created_at', 
+    {
+      key: 'created_at',
       label: 'Date création',
-      render: (row) => formatDate(row.created_at)
+      render: (row) => formatDate(row.created_at),
     },
-    { 
-      key: "actions", 
-      label: "Actions",
+    {
+      key: 'actions',
+      label: 'Actions',
       render: (row) => (
         <div className="flex gap-4 items-center text-sm">
           <Link
@@ -321,21 +328,27 @@ const Page = () => {
             </>
           )}
         </div>
-      )
-    }
-  ]
+      ),
+    },
+  ];
 
   return (
     <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
+      {/*cacher button ajouter si on est dans show user module projet*/}
       <Table
-        title="Liste des Projets"
+        title={'Liste des Projets'}
         showSearch={false}
-        data={formattedProjects} 
+        data={formattedProjects}
         columns={columns}
         loading={loading}
         totalRows={totalRows}
         error={error}
-        addLink={(isSuperAdmin(user?.role) || isAdmin(user?.role)) ? "/Projets/addProject" : undefined}
+        addLink={
+          user_id == null &&
+          (isSuperAdmin(user?.role) || isAdmin(user?.role)
+            ? '/Projets/addProject'
+            : undefined)
+        }
         currentPage={currentPage}
         rowsPerPage={rowsPerPage}
         onPageChange={handlePageChange}
@@ -371,7 +384,7 @@ const Page = () => {
         </Modal>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default Page
+export default Page;

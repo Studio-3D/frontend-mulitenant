@@ -1,50 +1,51 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState, useCallback } from "react";
-import Table from "@/components/Table";
-import Link from "next/link";
-import { Eye, PencilLine , ShieldX, ShieldCheck, Trash2 } from "lucide-react";
-import Modal from "@/components/Modal";
-import BlockUser from "@/components/Utilisateurs/BlockUser";
-import UnblockUser from "@/components/Utilisateurs/UnblockUser";
-import axios from "axios";
-import { useAuth } from "../../../context/AuthContext";
-import { useSociete } from "../../../context/SocieteContext";
-import { APIURL, RESOURCE_URL } from "../../../configs/api";
-import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
-import DeleteData from "@/components/DeleteData";
-import Input from "@/components/Input";
-import SelectInput from "@/components/SelectInput";
+import React, { useEffect, useState, useCallback } from 'react';
+import Table from '@/components/Table';
+import Link from 'next/link';
+import { Eye, PencilLine, ShieldX, ShieldCheck, Trash2 } from 'lucide-react';
+import Modal from '@/components/Modal';
+import BlockUser from '@/components/Utilisateurs/BlockUser';
+import UnblockUser from '@/components/Utilisateurs/UnblockUser';
+import axios from 'axios';
+import { useAuth } from '../../../context/AuthContext';
+import { useSociete } from '../../../context/SocieteContext';
+import { APIURL, RESOURCE_URL } from '../../../configs/api';
+import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
+import DeleteData from '@/components/DeleteData';
+import Input from '@/components/Input';
+import SelectInput from '@/components/SelectInput';
 import {
   EDUCATION_LEVELS,
   encryptUserType,
   GENDERS,
   USER_STATUS,
   USER_TYPES,
-} from "@/components/user-utils";
+} from '@/components/user-utils';
+import format from 'date-fns/format';
 
 const Page = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [showBlockModal, setShowBlockModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showUnblockModal, setShowUnblockModal] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [totalRows, setTotalRows] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [filters, setFilters] = useState({
-    nom: "",
-    email: "",
-    telephone: "",
-    societe: "",
-    role: "",
-    gender: "",
-    niveau: "",
-    status: "",
+    nom: '',
+    email: '',
+    telephone: '',
+    societe: '',
+    role: '',
+    gender: '',
+    niveau: '',
+    status: '',
   });
 
   const [tempFilters, setTempFilters] = useState({ ...filters });
@@ -53,12 +54,12 @@ const Page = () => {
   const { selectedSociete } = useSociete();
   const router = useRouter();
 
-  const accesstoken = token || localStorage.getItem("accessToken");
+  const accesstoken = token || localStorage.getItem('accessToken');
 
   // Fetch users from API with pagination and search
   const fetchUsers = useCallback(async () => {
     setLoading(true);
-    setError("");
+    setError('');
 
     try {
       const params = {
@@ -88,10 +89,10 @@ const Page = () => {
         response.data.pagination?.totalItems || filteredUsers.length
       );
     } catch (err) {
-      const msg = err.response?.data?.message || "Erreur lors du chargement";
+      const msg = err.response?.data?.message || 'Erreur lors du chargement';
       setError(msg);
       if (err.response?.status === 401) {
-        router.push("/");
+        router.push('/');
         // Avoid duplicate toast: Auth guards or other layers may already notify on logout
       } else {
         toast.error(msg);
@@ -123,22 +124,20 @@ const Page = () => {
 
   const resetFilters = () => {
     const reset = {
-      nom: "",
-      email: "",
-      telephone: "",
-      societe: "",
-      role: "",
-      gender: "",
-      niveau: "",
-      status: "",
+      nom: '',
+      email: '',
+      telephone: '',
+      societe: '',
+      role: '',
+      gender: '',
+      niveau: '',
+      status: '',
     };
     setCurrentPage(1); // Reset to first page when filters reset
     setFilters(reset);
     setTempFilters(reset);
-    setSearchTerm(""); // Also reset search term
+    setSearchTerm(''); // Also reset search term
   };
-
-
 
   // Fetch users when pagination, filters or search changes
   useEffect(() => {
@@ -149,13 +148,13 @@ const Page = () => {
   const getRoleText = (roleId) => {
     switch (parseInt(roleId)) {
       case 1:
-        return "Super Admin";
+        return 'Super Admin';
       case 2:
-        return "Admin";
+        return 'Admin';
       case 3:
-        return "Commercial";
+        return 'Commercial';
       default:
-        return "Utilisateur";
+        return 'Utilisateur';
     }
   };
 
@@ -171,13 +170,13 @@ const Page = () => {
           }_${us.societe_id ? us.societe_id : user.societe_id}/users/${
             us?.photo
           }`
-        : "/default-avatar.png",
-      nomComplet: `${us.name || ""} ${us.prenom || ""}`.trim(),
+        : '/default-avatar.png',
+      nomComplet: `${us.name || ''} ${us.prenom || ''}`.trim(),
       email: us.email,
-      telephone: us.phone || "Non spécifié",
+      telephone: us.phone || 'Non spécifié',
       role: getRoleText(us.role),
-      date: new Date(us.created_at).toLocaleDateString().replace(/\//g, '-'),
-      status: us.is_actif ? "Actif" : "Inactif",
+      date: format(new Date(us.created_at), 'dd/MM/yyyy'),
+      status: us.is_actif ? 'Actif' : 'Inactif',
     }));
   };
 
@@ -187,10 +186,10 @@ const Page = () => {
       prenom: us.prenom,
       prenom: us.prenom,
       email: us.email,
-      telephone: us.phone || "",
+      telephone: us.phone || '',
       role: getRoleText(us.role),
-      date: new Date(us.created_at).toLocaleDateString(),
-      status: us.is_actif ? "Actif" : "Inactif",
+      date: format(new Date(us.created_at), 'dd/MM/yyyy'),
+      status: us.is_actif ? 'Actif' : 'Inactif',
       societe: us.societe?.raison_sociale,
       adresse: us.adresse,
       gender: us.gender,
@@ -220,8 +219,8 @@ const Page = () => {
   // Table columns configuration
   const columns = [
     {
-      key: "nomComplet",
-      label: "Nom Complet",
+      key: 'nomComplet',
+      label: 'Nom Complet',
       render: (row) => (
         <div className="flex items-center gap-3">
           <img
@@ -230,31 +229,31 @@ const Page = () => {
             className="w-7 h-7 rounded-full border border-gray-300"
             onError={(e) => {
               e.target.src =
-                "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
+                'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png';
             }}
           />
           <span>{row.nomComplet}</span>
         </div>
       ),
     },
-    { key: "email", label: "Email" },
-    { key: "date", label: "Date" },
-    { key: "telephone", label: "Téléphone" },
+    { key: 'email', label: 'Email' },
+    { key: 'date', label: 'Date' },
+    { key: 'telephone', label: 'Téléphone' },
     {
-      key: "role",
-      label: "Rôle",
+      key: 'role',
+      label: 'Rôle',
       render: (row) => {
         const roleColors = {
-          "Super Admin": "bg-blue-100 text-[#009FFF]",
-          Admin: "bg-purple-100 text-purple-600",
-          Commercial: "bg-yellow-100 !text-yellow-600",
-          Utilisateur: "bg-gray-100 !text-gray-600",
+          'Super Admin': 'bg-blue-100 text-[#009FFF]',
+          Admin: 'bg-purple-100 text-purple-600',
+          Commercial: 'bg-yellow-100 !text-yellow-600',
+          Utilisateur: 'bg-gray-100 !text-gray-600',
         };
 
         return (
           <span
             className={`px-2 py-1 rounded text-sm font-semibold ${
-              roleColors[row.role] || "bg-gray-100 !text-gray-600"
+              roleColors[row.role] || 'bg-gray-100 !text-gray-600'
             }`}
           >
             {row.role}
@@ -263,14 +262,14 @@ const Page = () => {
       },
     },
     {
-      key: "status",
-      label: "Statut",
+      key: 'status',
+      label: 'Statut',
       render: (row) => (
         <span
           className={`px-2 py-1 rounded text-sm font-semibold ${
-            row.status === "Actif"
-              ? "bg-green-100 !text-green-600"
-              : "bg-red-100 text-[#E53935]"
+            row.status === 'Actif'
+              ? 'bg-green-100 !text-green-600'
+              : 'bg-red-100 text-[#E53935]'
           }`}
         >
           {row.status}
@@ -278,8 +277,8 @@ const Page = () => {
       ),
     },
     {
-      key: "actions",
-      label: "Actions",
+      key: 'actions',
+      label: 'Actions',
       render: (row) => (
         <div className="flex gap-4 items-center text-sm">
           <Link
@@ -298,7 +297,7 @@ const Page = () => {
             <PencilLine className="w-4 h-4" />
           </Link>
 
-          {row.status === "Actif" ? (
+          {row.status === 'Actif' ? (
             <button
               onClick={() => {
                 setSelectedUserId(row.id);
@@ -341,68 +340,69 @@ const Page = () => {
     <>
       <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
         <Table
-          title={"Utilisateurs"}
+          showSearch={false}
+          title={'Utilisateurs'}
           data_to_export={data_to_export()}
           columns_export={columns_export}
-          name_file_export={"utilisateur_export"}
+          name_file_export={'utilisateur_export'}
           columns={columns}
           filterComponent={
             <div className="space-y-4 ">
               <div
                 className="grid gap-3 "
                 style={{
-                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
                 }}
               >
                 {/* Champs de recherche */}
                 <Input
-                  label={"Nom & prénom"}
+                  label={'Nom & prénom'}
                   type="text"
                   placeholder="Nom & prénom..."
                   value={tempFilters.nom}
-                  onChange={(e) => handleFilterChange("nom", e.target.value)}
+                  onChange={(e) => handleFilterChange('nom', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
 
                 <Input
-                  label={"Email"}
+                  label={'Email'}
                   type="text"
                   placeholder="Email..."
                   value={tempFilters.email}
-                  onChange={(e) => handleFilterChange("email", e.target.value)}
+                  onChange={(e) => handleFilterChange('email', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
 
                 <Input
-                  label={"Téléphone"}
+                  label={'Téléphone'}
                   type="text"
                   placeholder="Téléphone..."
                   value={tempFilters.telephone}
                   onChange={(e) =>
-                    handleFilterChange("telephone", e.target.value)
+                    handleFilterChange('telephone', e.target.value)
                   }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
 
                 {!selectedSociete && (
                   <Input
-                    label={"Société"}
+                    label={'Société'}
                     type="text"
                     placeholder="Société..."
                     value={tempFilters.societe}
                     onChange={(e) =>
-                      handleFilterChange("societe", e.target.value)
+                      handleFilterChange('societe', e.target.value)
                     }
                     className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                   />
                 )}
 
                 <SelectInput
-                  label={"Role"}
+                  label={'Role'}
                   value={tempFilters.role}
-                  onChange={(value) => handleFilterChange("role", value)}
+                  onChange={(value) => handleFilterChange('role', value)}
                   options={Object.entries(USER_TYPES)
-                    .filter(([key]) => key !== "SUPERADMIN")
+                    .filter(([key]) => key !== 'SUPERADMIN')
                     .map(([key, label]) => ({
                       value: encryptUserType(label),
                       label,
@@ -410,9 +410,9 @@ const Page = () => {
                   placeholder="Rôle"
                 />
                 <SelectInput
-                  label={"Genre"}
+                  label={'Genre'}
                   value={tempFilters.gender}
-                  onChange={(value) => handleFilterChange("gender", value)}
+                  onChange={(value) => handleFilterChange('gender', value)}
                   options={Object.values(GENDERS).map(({ code, label }) => ({
                     value: code,
                     label,
@@ -422,9 +422,9 @@ const Page = () => {
                 />
 
                 <SelectInput
-                  label={"Niveau"}
+                  label={'Niveau'}
                   value={tempFilters.niveau}
-                  onChange={(value) => handleFilterChange("niveau", value)}
+                  onChange={(value) => handleFilterChange('niveau', value)}
                   options={Object.entries(EDUCATION_LEVELS).map(
                     ([key, label]) => ({
                       value: label,
@@ -436,10 +436,10 @@ const Page = () => {
                 />
 
                 <SelectInput
-                  label={"Status"}
+                  label={'Status'}
                   value={tempFilters.status?.toString()}
                   onChange={(value) =>
-                    handleFilterChange("status", Number(value))
+                    handleFilterChange('status', Number(value))
                   }
                   options={Object.values(USER_STATUS).map(
                     ({ code, label }) => ({
@@ -494,10 +494,10 @@ const Page = () => {
           onSearchChange={setSearchTerm}
           emptyMessage={
             user?.role === 1
-              ? "Aucun utilisateur trouvé."
+              ? 'Aucun utilisateur trouvé.'
               : !selectedSociete?.id
-              ? "Veuillez sélectionner une société pour voir les utilisateurs."
-              : "Aucun utilisateur trouvé."
+              ? 'Veuillez sélectionner une société pour voir les utilisateurs.'
+              : 'Aucun utilisateur trouvé.'
           }
         />
       </div>
@@ -544,7 +544,7 @@ const Page = () => {
             route={APIURL.UTILISATEURS}
             Id={selectedUserId}
             type="Utilisateur"
-            message={"vous êtes sûr de vouloir supprimer cet utilisateur?"}
+            message={'vous êtes sûr de vouloir supprimer cet utilisateur?'}
             userId={selectedUserId}
             accessToken={accesstoken}
             onClose={() => {

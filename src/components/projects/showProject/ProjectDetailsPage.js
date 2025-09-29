@@ -97,7 +97,9 @@ export const ProjectDetailsPage = () => {
   useEffect(() => {
     if (projectData?.projet) {
       try {
-        const ctx = { projet: { id: projectData.projet.id, nom: projectData.projet.nom } };
+        const ctx = {
+          projet: { id: projectData.projet.id, nom: projectData.projet.nom },
+        };
         localStorage.setItem('bienBreadcrumbContext', JSON.stringify(ctx));
       } catch (e) {}
     }
@@ -160,6 +162,7 @@ export const ProjectDetailsPage = () => {
           name: b.etat,
           color: 'bg-gray-500',
         };
+       
 
         return {
           id: b.id,
@@ -174,6 +177,10 @@ export const ProjectDetailsPage = () => {
           tranche_nom: b?.tranche?.nom || '',
           bloc_nom: b?.bloc?.nom || '',
           immeuble_nom: b?.immeuble?.nom || '',
+          orientation: b?.orientation || '',
+          etage: b?.niveau || '',
+          typologie: b?.typologie?.typologie || '',
+          vue: b?.vue?.vue || '',
         };
       }) || [];
 
@@ -318,9 +325,7 @@ export const ProjectDetailsPage = () => {
       <div className="mb-4">
         <BreadCrumb
           onRoot={{ href: '/Projets' }}
-          items={[
-            { label: projectData?.projet?.nom || `Projet #${id}` },
-          ]}
+          items={[{ label: projectData?.projet?.nom || `Projet #${id}` }]}
         />
       </div>
       <div className="flex flex-col lg:flex-row gap-6 h-full">
