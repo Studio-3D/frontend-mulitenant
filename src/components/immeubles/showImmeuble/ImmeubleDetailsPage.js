@@ -40,7 +40,7 @@ const setStoredActiveTab = (immeubleId, tabName) => {
 export const ImmeubleDetailsPage = () => {
   const { id } = useParams();
   const router = useRouter();
-  const { selectProjet, clearSelectedProjet } = useProjet();
+  const { selectProjet, clearSelectedProjet ,selectedProjet} = useProjet();
   const { user } = useAuth();
   const [immeubleData, setImmeubleData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -84,6 +84,14 @@ export const ImmeubleDetailsPage = () => {
       fetchImmeubleDetails();
     }
   }, [id, fetchImmeubleDetails]);
+
+
+    useEffect(() => {
+ // console.log('projet_id==>'+ selectedProjet?.id + 'w projet d tranche'+trancheData?.tranche?.projet_id)
+  if(immeubleData?.immeuble?.projet_id!=undefined && selectedProjet?.id!=immeubleData?.immeuble?.projet_id){
+    router.push('/Projets/'+selectedProjet?.id)
+  }
+}, [selectedProjet?.id, immeubleData?.immeuble?.projet_id]);
 
   // Persist breadcrumb context for fast "Ajouter bien" page
   useEffect(() => {

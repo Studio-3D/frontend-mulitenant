@@ -1,13 +1,14 @@
-"use client";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import axios from "axios";
-import { APIURL, ENDPOINTS } from "@/configs/api";
-import toast from "react-hot-toast";
-import Link from "next/link";
-import LoadingSpin from "@/components/LoadingSpin";
-import BreadCrumb from "@/app/(dashboard)/navigation/BreadCrumb";
-import Button from "../Button";
+'use client';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import axios from 'axios';
+import { APIURL, ENDPOINTS } from '@/configs/api';
+import toast from 'react-hot-toast';
+import Link from 'next/link';
+import LoadingSpin from '@/components/LoadingSpin';
+import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
+import Button from '../Button';
+import { useProjet } from '@/context/ProjetContext';
 
 export default function TrancheForm({ id, projet }) {
   const router = useRouter();
@@ -18,20 +19,21 @@ export default function TrancheForm({ id, projet }) {
   const [validationErrors, setValidationErrors] = useState({});
 
   // Get selected project from localStorage if not provided via props
-  const selectedProjet = projet
+  /* const selectedProjet = projet
     ? {
         id: projet?.id,
         nom: projet?.nom,
         nbre_blocs: projet?.nbre_blocs,
         nbre_immeubles: projet?.nbre_immeubles,
       }
-    : JSON.parse(localStorage.getItem("selectedProjet") || "{}");
+    : JSON.parse(localStorage.getItem('selectedProjet') || '{}');*/
+  const { selectedProjet } = useProjet();
 
   const defaultValues = {
-    nom: "",
-    date_lancement: "",
-    date_livraison: "",
-    niveau_etages: "",
+    nom: '',
+    date_lancement: '',
+    date_livraison: '',
+    niveau_etages: '',
     nbre_blocs: 0,
     nbre_immeubles: 0,
     nbre_biens: 0,
@@ -47,7 +49,7 @@ export default function TrancheForm({ id, projet }) {
       setLoading(true);
       const fetchTrancheData = async () => {
         try {
-          const token = localStorage.getItem("accessToken");
+          const token = localStorage.getItem('accessToken');
           const response = await axios.get(`${APIURL.TRANCHES}/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
@@ -57,10 +59,10 @@ export default function TrancheForm({ id, projet }) {
 
             const tranche = response.data.tranche;
             setFormData({
-              nom: tranche.nom || "",
-              date_lancement: tranche.date_lancement || "",
-              date_livraison: tranche.date_livraison || "",
-              niveau_etages: tranche.niveau_etages || "",
+              nom: tranche.nom || '',
+              date_lancement: tranche.date_lancement || '',
+              date_livraison: tranche.date_livraison || '',
+              niveau_etages: tranche.niveau_etages || '',
               nbre_biens: tranche.nbre_biens || 0,
               nbre_blocs: tranche.nbre_blocs || 0,
               nbre_immeubles: tranche.nbre_immeubles || 0,
@@ -68,8 +70,8 @@ export default function TrancheForm({ id, projet }) {
             });
           }
         } catch (error) {
-          console.error("Failed to fetch tranche:", error);
-          toast.error("Erreur lors du chargement de la tranche");
+          console.error('Failed to fetch tranche:', error);
+          toast.error('Erreur lors du chargement de la tranche');
         }
       };
 
@@ -77,6 +79,20 @@ export default function TrancheForm({ id, projet }) {
     }
   }, [id, isEditing, selectedProjet?.id]);
 
+  // Simple cache et comparaison
+  const [oldProjetId, setOldProjetId] = useState(null);
+
+  useEffect(() => {
+    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+      if (oldProjetId) {
+        // Projet a changé
+
+        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+        router.push('/Projets/' + selectedProjet.id);
+      }
+      setOldProjetId(selectedProjet.id);
+    }
+  }, [selectedProjet?.id, oldProjetId, router]);
   // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -89,7 +105,7 @@ export default function TrancheForm({ id, projet }) {
     if (validationErrors[name]) {
       setValidationErrors((prev) => ({
         ...prev,
-        [name]: "",
+        [name]: '',
       }));
     }
   };
@@ -98,7 +114,7 @@ export default function TrancheForm({ id, projet }) {
   const validateForm = () => {
     const errors = {};
     if (!formData.nom) {
-      errors.nom = "Le nom de tranche est requis";
+      errors.nom = 'Le nom de tranche est requis';
     }
 
     setValidationErrors(errors);
@@ -116,13 +132,13 @@ export default function TrancheForm({ id, projet }) {
     setLoading_btn(true);
     setBackendErrors({});
 
-    const token = localStorage.getItem("accessToken");
+    const token = localStorage.getItem('accessToken');
     let url = APIURL.TRANCHES;
-    let method = "post";
+    let method = 'post';
 
     if (isEditing) {
       url = `${url}/${id}`;
-      method = "put";
+      method = 'put';
     }
 
     try {
@@ -131,27 +147,27 @@ export default function TrancheForm({ id, projet }) {
         url: url,
         data: formData,
         headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
           Authorization: `Bearer ${token}`,
         },
       });
 
-      toast.success(`Tranche ${isEditing ? "modifiée" : "créée"} avec succès`);
+      toast.success(`Tranche ${isEditing ? 'modifiée' : 'créée'} avec succès`);
 
       // Navigate back to the project details page with tranches tab active
       if (selectedProjet?.id) {
         localStorage.setItem(
           `project-${selectedProjet.id}-activeTab`,
 
-          "tranche"
+          'tranche'
         );
         router.push(`/Projets/${selectedProjet.id}`);
       } else {
-        router.push("/Projets");
+        router.push('/Projets');
       }
     } catch (error) {
-      console.error("Failed to save tranche:", error);
+      console.error('Failed to save tranche:', error);
 
       const response = error.response;
       if (response && response.status === 422) {
@@ -179,15 +195,15 @@ export default function TrancheForm({ id, projet }) {
     <div className="p-3">
       <div className="flex items-center justify-start">
         <BreadCrumb
-          onRoot={{ href: "/Projets" }}
+          onRoot={{ href: '/Projets' }}
           items={[
             selectedProjet?.id
               ? {
                   label: selectedProjet?.nom || `Projet #${selectedProjet.id}`,
                   href: `/Projets/${selectedProjet.id}`,
                 }
-              : { label: "Projets", href: "/Projets" },
-            { label: `${id ? "Modifier" : "Ajouter"} une tranche` },
+              : { label: 'Projets', href: '/Projets' },
+            { label: `${id ? 'Modifier' : 'Ajouter'} une tranche` },
           ]}
         />
       </div>
@@ -207,8 +223,8 @@ export default function TrancheForm({ id, projet }) {
                   onChange={handleChange}
                   className={`w-full rounded-md border ${
                     validationErrors.nom || backendErrors.nom
-                      ? "border-red-500"
-                      : "border-gray-300"
+                      ? 'border-red-500'
+                      : 'border-gray-300'
                   } px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
                 />
                 {(validationErrors.nom || backendErrors.nom) && (
@@ -315,7 +331,7 @@ export default function TrancheForm({ id, projet }) {
               Annuler
             </Button>
             <Button type="submit" loading={loading_btn}>
-              {loading_btn ? "Chargement..." : id ? "Modifier" : "Ajouter"}
+              {loading_btn ? 'Chargement...' : id ? 'Modifier' : 'Ajouter'}
             </Button>
           </div>
         </form>

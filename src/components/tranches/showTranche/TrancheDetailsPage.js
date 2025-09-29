@@ -39,7 +39,7 @@ const setStoredActiveTab = (trancheId, tabName) => {
 export const TrancheDetailsPage = () => {
   const { id } = useParams();
   const router = useRouter();
-  const { selectProjet, clearSelectedProjet } = useProjet();
+  const { selectProjet, clearSelectedProjet,selectedProjet } = useProjet();
   const { user } = useAuth();
   const [trancheData, setTrancheData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -84,11 +84,24 @@ export const TrancheDetailsPage = () => {
     }
   }, [id, fetchTrancheDetails]);
   // Persist breadcrumb context for fast "Ajouter bien" page
+
+  useEffect(() => {
+ // console.log('projet_id==>'+ selectedProjet?.id + 'w projet d tranche'+trancheData?.tranche?.projet_id)
+  if(trancheData?.tranche?.projet_id!=undefined && selectedProjet?.id!=trancheData?.tranche?.projet_id){
+    router.push('/Projets/'+selectedProjet?.id)
+  }
+}, [selectedProjet?.id, trancheData?.tranche?.projet_id]);
+
   useEffect(() => {
     if (trancheData?.tranche) {
       try {
         const ctx = {
-          projet: trancheData.tranche.projet ? { id: trancheData.tranche.projet_id, nom: trancheData.tranche.projet.nom } : undefined,
+          projet: trancheData.tranche.projet
+            ? {
+                id: trancheData.tranche.projet_id,
+                nom: trancheData.tranche.projet.nom,
+              }
+            : undefined,
           tranche: { id: trancheData.tranche.id, nom: trancheData.tranche.nom },
         };
         localStorage.setItem('bienBreadcrumbContext', JSON.stringify(ctx));
@@ -327,7 +340,9 @@ export const TrancheDetailsPage = () => {
           items={[
             trancheData?.tranche?.projet_id
               ? {
-                  label: trancheData?.tranche?.projet?.nom || `Projet #${trancheData.tranche.projet_id}`,
+                  label:
+                    trancheData?.tranche?.projet?.nom ||
+                    `Projet #${trancheData.tranche.projet_id}`,
                   href: `/Projets/${trancheData.tranche.projet_id}`,
                 }
               : { label: 'Projet inconnu' },
@@ -358,8 +373,15 @@ export const TrancheDetailsPage = () => {
             nbre_biens={trancheData?.tranche?.projet?.nbre_biens}
             projetId={trancheData?.tranche?.projet_id}
             breadcrumbContext={{
-              projet: trancheData?.tranche?.projet ? { id: trancheData.tranche.projet_id, nom: trancheData.tranche.projet.nom } : undefined,
-              tranche: trancheData?.tranche ? { id: trancheData.tranche.id, nom: trancheData.tranche.nom } : undefined,
+              projet: trancheData?.tranche?.projet
+                ? {
+                    id: trancheData.tranche.projet_id,
+                    nom: trancheData.tranche.projet.nom,
+                  }
+                : undefined,
+              tranche: trancheData?.tranche
+                ? { id: trancheData.tranche.id, nom: trancheData.tranche.nom }
+                : undefined,
             }}
             max_etages={trancheData?.tranche?.projet?.max_etages}
           />
