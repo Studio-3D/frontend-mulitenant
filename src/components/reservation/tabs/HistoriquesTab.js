@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { X, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import Table from '@/components/Table';
 
-const ChangeDetailModal = ({ historyItem, onClose }) => {
+const ChangeDetailModal = memo(({ historyItem, onClose }) => {
   if (!historyItem) return null;
 
   // Try to parse JSON, fallback to plain text if it fails
@@ -37,7 +37,7 @@ const ChangeDetailModal = ({ historyItem, onClose }) => {
     if (!changeData) return null;
 
     // Handle simple message case
-    if (fieldName== 'message') {
+    if (fieldName === 'message') {
       return (
         <div className="mb-4">
           <h4 className="font-semibold text-gray-700">Modification</h4>
@@ -62,7 +62,7 @@ const ChangeDetailModal = ({ historyItem, onClose }) => {
                   <li key={`old-${fieldName}-${index}`}>
                     {item.client_nom && item.client_prenom
                       ? `${item.client_nom} ${item.client_prenom} (${item.pourcentage}%)`
-                      : typeof item== 'object'
+                      : typeof item === 'object'
                       ? JSON.stringify(item)
                       : String(item)}
                   </li>
@@ -84,7 +84,7 @@ const ChangeDetailModal = ({ historyItem, onClose }) => {
                   <li key={`new-${fieldName}-${index}`}>
                     {item.nom && item.prenom
                       ? `${item.nom} ${item.prenom} (${item.pourcentage}%)`
-                      : typeof item== 'object'
+                      : typeof item === 'object'
                       ? JSON.stringify(item)
                       : String(item)}
                   </li>
@@ -161,11 +161,11 @@ const ChangeDetailModal = ({ historyItem, onClose }) => {
               <div>
                 <p className="text-sm font-semibold text-black">Type</p>
                 <p className="text-gray-500">
-                  {historyItem.action == '1'
+                  {historyItem.action === '1'
                     ? 'Changement de Bien'
-                    : historyItem.action == '2'
+                    : historyItem.action === '2'
                     ? 'Création de Réservation'
-                    : historyItem.action == '3'
+                    : historyItem.action === '3'
                     ? 'Modification Réservation'
                     : 'Type inconnu'}
                 </p>
@@ -191,7 +191,7 @@ const ChangeDetailModal = ({ historyItem, onClose }) => {
           </div>
 
           {Object.entries(changes).map(([field, change], index) => {
-            if (field== 'files') {
+            if (field === 'files') {
               return (
                 <div key={`files-${index}`}>{renderFileChanges(change)}</div>
               );
@@ -215,9 +215,12 @@ const ChangeDetailModal = ({ historyItem, onClose }) => {
       </div>
     </div>
   );
-};
+});
 
-export const HistoriquesTab = ({ reservationData }) => {
+ChangeDetailModal.displayName = 'ChangeDetailModal';
+
+// Create the main component first, then wrap with memo
+const HistoriquesTabComponent = ({ reservationData }) => {
   const [selectedHistory, setSelectedHistory] = useState(null);
   const histo = reservationData?.reservation?.historiques || [];
 
@@ -238,11 +241,11 @@ export const HistoriquesTab = ({ reservationData }) => {
         ? new Date(data.created_at).toLocaleDateString('fr-FR').replace(/\//g, '-')
         : 'N/A',
       type:
-        data?.action== '1'
+        data?.action === '1'
           ? 'Changement de Bien'
-          : data?.action== '2'
+          : data?.action === '2'
           ? 'Création de Réservation'
-          : data?.action== '3'
+          : data?.action === '3'
           ? 'Modification Réservation'
           : 'Type inconnu',
       user: data?.user
@@ -264,9 +267,10 @@ export const HistoriquesTab = ({ reservationData }) => {
           <button
             onClick={() => setSelectedHistory(row.rawData)}
             className="text-blue-500 hover:text-blue-700 flex items-center gap-1"
+            title="Voir les détails"
           >
             <Eye className="w-4 h-4" />
-            <span>Voir</span>
+            
           </button>
         );
       },
@@ -279,18 +283,18 @@ export const HistoriquesTab = ({ reservationData }) => {
         ? new Date(data.created_at).toLocaleDateString('fr-FR')
         : 'N/A',
       type:
-        data?.action== 1
+        data?.action === 1
           ? 'Changement de Bien'
-          : data?.action== 2
+          : data?.action === 2
           ? 'Création de Réservation'
-          : data?.action== 3
+          : data?.action === 3
           ? 'Modification Réservation'
           : 'Type inconnu',
       description: data.description,
       user: data?.user
         ? `${data.user.name || ''} ${data.user.prenom || ''}`.trim()
         : 'Utilisateur inconnu',
-      ancien_bien: data?.action== 1 ? NomBienComplet(data?.bien) : '',
+      ancien_bien: data?.action === 1 ? NomBienComplet(data?.bien) : '',
     }));
   };
 
@@ -306,6 +310,7 @@ export const HistoriquesTab = ({ reservationData }) => {
     <div className="">
       <Table
         columns={columns}
+        showSearch={false}
         data={formatData()}
         enableExport
         data_to_export={data_to_export()}
@@ -322,3 +327,6 @@ export const HistoriquesTab = ({ reservationData }) => {
     </div>
   );
 };
+
+// Wrap the main component with memo
+export const HistoriquesTab = memo(HistoriquesTabComponent);

@@ -162,24 +162,25 @@ export default function Biens_Dispo_By_frein_id() {
     setOpen_trait(true);
   };
   return (
-    <div>
-      <div className="flex items-center justify-start">
+    <div className='bg-white p-4 rounded-lg shadow-md '>
+      <div className=" flex items-center justify-start">
         <BreadCrumb
           baseUrl={'/crm/visites/freins'}
           step={`Biens Disponibles du Prospect ${nomPrenom}`}
         />
       </div>
-      <button
-        style={{ float: 'right' }}
-        className="flex gap-1 items-center bg-green-500 text-white font-medium rounded-lg px-3 py-1.5"
-        onClick={showTraitement}
-      >
-        <Check className="w-5 h-5" />
-        <span>Traiter Frein</span>
-      </button>
+      
       <div className="reflative">
         <Table
           showSearch={false}
+           customActions={[
+            {
+              label: "Traiter Frein",
+              icon: <Check className="w-5 h-5" />,
+              className: "bg-green-500",
+              onClick: showTraitement
+            }
+          ]}
           data_to_export={data_to_export()}
           columns_export={columns_export}
           name_file_export={'biens_dispo_freins_export'}

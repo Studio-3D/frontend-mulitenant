@@ -13,6 +13,7 @@ import Input from '@/components/Input';
 import { ChevronDownIcon, HomeIcon } from 'lucide-react';
 import Table from '@/components/Table';
 import BienImport from '@/components/biens/BienImport';
+import { getOrientationLabel } from '@/components/bien-utils'; // Import the new config
 
 const TAB_CONFIG = {
   bien: {
@@ -30,7 +31,44 @@ const TAB_CONFIG = {
             .filter((status) => status) // Remove empty/null values
             .map((status) => ({ label: status, value: status }))
         : [];
+      // Get unique values for the new filters from ACTUAL project data
+      const orientationOptions = tabsData.bien?.items
+        ? [
+            ...new Set(
+              tabsData.bien.items
+                .map((item) => item.orientation)
+                .filter(Boolean)
+            ),
+          ].map((orientation) => {
+            // Use the getOrientationLabel function to get the French label
+            const label = getOrientationLabel(orientation);
+            return { label: label, value: orientation };
+          })
+        : [];
 
+      const typologieOptions = tabsData.bien?.items
+        ? [
+            ...new Set(
+              tabsData.bien.items.map((item) => item.typologie).filter(Boolean)
+            ),
+          ].map((typologie) => ({ label: typologie, value: typologie }))
+        : [];
+
+      const vueOptions = tabsData.bien?.items
+        ? [
+            ...new Set(
+              tabsData.bien.items.map((item) => item.vue).filter(Boolean)
+            ),
+          ].map((vue) => ({ label: vue, value: vue }))
+        : [];
+
+      const niveauOptions = tabsData.bien?.items
+        ? [
+            ...new Set(
+              tabsData.bien.items.map((item) => item.etage).filter(Boolean)
+            ),
+          ].map((niveau) => ({ label: niveau, value: niveau }))
+        : [];
       return [
         {
           key: 'name',
@@ -64,6 +102,43 @@ const TAB_CONFIG = {
           type: 'select',
           placeholder: 'Sélectionner un statut',
           options: statusOptions,
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
+        // New filters for orientation, typologie, vue, and niveau
+        {
+          key: 'orientation',
+          label: 'Orientation',
+          type: 'select',
+          placeholder: 'Sélectionner une orientation',
+          options: orientationOptions, // This will only show orientations that exist in the data
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
+        {
+          key: 'typologie',
+          label: 'Typologie',
+          type: 'select',
+          placeholder: 'Sélectionner une typologie',
+          options: typologieOptions,
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
+        {
+          key: 'vue',
+          label: 'Vue',
+          type: 'select',
+          placeholder: 'Sélectionner une vue',
+          options: vueOptions,
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
+        {
+          key: 'etage',
+          label: 'Niveau',
+          type: 'select',
+          placeholder: 'Sélectionner un niveau',
+          options: niveauOptions,
           className:
             'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
         },
@@ -389,6 +464,26 @@ export const RightCard = ({
             return !isNaN(itemPrice) && itemPrice <= maxValue;
           });
         }
+        // Handle select filters (orientation, typologie, vue, etage, etc.)
+        else if (
+          [
+            'orientation',
+            'typologie',
+            'vue',
+            'etage',
+            'status',
+            'type',
+            'tranche_nom',
+            'bloc_nom',
+          ].includes(key)
+        ) {
+          // For select filters, do exact matching
+          items = items.filter((item) => {
+            const itemValue = item[key]?.toString().toLowerCase();
+            const filterValue = appliedFilters[key]?.toString().toLowerCase();
+            return itemValue === filterValue;
+          });
+        }
         // Handle other text filters
         else if (
           key !== 'surface_min' &&
@@ -444,183 +539,183 @@ export const RightCard = ({
 
   // Filter component for all tabs
 
- // Filter component for all tabs
-const filterComponent = useMemo(() => {
-  if (!TAB_CONFIG[safeActiveTab]?.filters) return null;
+  // Filter component for all tabs
+  const filterComponent = useMemo(() => {
+    if (!TAB_CONFIG[safeActiveTab]?.filters) return null;
 
-  const filterConfig = TAB_CONFIG[safeActiveTab].filters(
+    const filterConfig = TAB_CONFIG[safeActiveTab].filters(
+      tabsData,
+      immeubleId,
+      nbre_tranches,
+      nbre_blocs
+    );
+
+    return (
+      <div className="space-y-4">
+        <div
+          className="grid gap-3"
+          style={{
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          }}
+        >
+          {filterConfig.map((filter) => {
+            // Group surface min and max in the same row
+            if (filter.key === 'surface_min' || filter.key === 'surface_max') {
+              const minFilter = filterConfig.find(
+                (f) => f.key === 'surface_min'
+              );
+              const maxFilter = filterConfig.find(
+                (f) => f.key === 'surface_max'
+              );
+
+              // Only render once (for surface_min)
+              if (filter.key === 'surface_min') {
+                return (
+                  <div key="surface_range" className="flex flex-col">
+                    <label className="text-xs font-medium text-gray-700 mb-1">
+                      Surface
+                    </label>
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <Input
+                          type="number"
+                          name="surface_min"
+                          value={tempFilters.surface_min || ''}
+                          onChange={(e) =>
+                            handleFilterChange('surface_min', e.target.value)
+                          }
+                          placeholder={minFilter?.placeholder || 'Min...'}
+                          className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <Input
+                          type="number"
+                          name="surface_max"
+                          value={tempFilters.surface_max || ''}
+                          onChange={(e) =>
+                            handleFilterChange('surface_max', e.target.value)
+                          }
+                          placeholder={maxFilter?.placeholder || 'Max...'}
+                          className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            }
+
+            // Group price min and max in the same row
+            if (filter.key === 'price_min' || filter.key === 'price_max') {
+              const minFilter = filterConfig.find((f) => f.key === 'price_min');
+              const maxFilter = filterConfig.find((f) => f.key === 'price_max');
+
+              // Only render once (for price_min)
+              if (filter.key === 'price_min') {
+                return (
+                  <div key="price_range" className="flex flex-col">
+                    <label className="text-xs font-medium text-gray-700 mb-1">
+                      Prix
+                    </label>
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <Input
+                          type="number"
+                          name="price_min"
+                          value={tempFilters.price_min || ''}
+                          onChange={(e) =>
+                            handleFilterChange('price_min', e.target.value)
+                          }
+                          placeholder={minFilter?.placeholder || 'Min...'}
+                          className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <Input
+                          type="number"
+                          name="price_max"
+                          value={tempFilters.price_max || ''}
+                          onChange={(e) =>
+                            handleFilterChange('price_max', e.target.value)
+                          }
+                          placeholder={maxFilter?.placeholder || 'Max...'}
+                          className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            }
+
+            // Handle other filter types (select, text, number)
+            if (filter.type === 'select') {
+              return (
+                <div key={filter.key} className="flex flex-col">
+                  <label className="text-xs font-medium text-gray-700 mb-1">
+                    {filter.label}
+                  </label>
+                  <SelectInput
+                    options={filter.options || []}
+                    placeholder={filter.placeholder}
+                    value={tempFilters[filter.key] || ''}
+                    onChange={(selectedValue) =>
+                      handleFilterChange(filter.key, selectedValue)
+                    }
+                    width="w-full"
+                  />
+                </div>
+              );
+            } else {
+              return (
+                <div key={filter.key} className="flex flex-col">
+                  <label className="text-xs font-medium text-gray-700 mb-1">
+                    {filter.label}
+                  </label>
+                  <Input
+                    type={filter.type || 'text'}
+                    name={filter.key}
+                    value={tempFilters[filter.key] || ''}
+                    onChange={(e) =>
+                      handleFilterChange(filter.key, e.target.value)
+                    }
+                    placeholder={filter.placeholder}
+                    className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+                  />
+                </div>
+              );
+            }
+          })}
+        </div>
+        <div className="flex justify-end gap-3 pt-2">
+          <button
+            type="button"
+            onClick={resetFilters}
+            className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
+          >
+            Réinitialiser
+          </button>
+          <button
+            type="button"
+            onClick={applyFilters}
+            className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+          >
+            Appliquer les filtres
+          </button>
+        </div>
+      </div>
+    );
+  }, [
+    safeActiveTab,
     tabsData,
     immeubleId,
+    tempFilters,
     nbre_tranches,
-    nbre_blocs
-  );
-
-  return (
-    <div className="space-y-4">
-      <div
-        className="grid gap-3"
-        style={{
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        }}
-      >
-        {filterConfig.map((filter) => {
-          // Group surface min and max in the same row
-          if (filter.key === 'surface_min' || filter.key === 'surface_max') {
-            const minFilter = filterConfig.find(
-              (f) => f.key === 'surface_min'
-            );
-            const maxFilter = filterConfig.find(
-              (f) => f.key === 'surface_max'
-            );
-
-            // Only render once (for surface_min)
-            if (filter.key === 'surface_min') {
-              return (
-                <div key="surface_range" className="flex flex-col">
-                  <label className="text-xs font-medium text-gray-700 mb-1">
-                    Surface
-                  </label>
-                  <div className="flex gap-2">
-                    <div className="flex-1">
-                      <Input
-                        type="number"
-                        name="surface_min"
-                        value={tempFilters.surface_min || ''}
-                        onChange={(e) =>
-                          handleFilterChange('surface_min', e.target.value)
-                        }
-                        placeholder={minFilter?.placeholder || 'Min...'}
-                        className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <Input
-                        type="number"
-                        name="surface_max"
-                        value={tempFilters.surface_max || ''}
-                        onChange={(e) =>
-                          handleFilterChange('surface_max', e.target.value)
-                        }
-                        placeholder={maxFilter?.placeholder || 'Max...'}
-                        className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
-                      />
-                    </div>
-                  </div>
-                </div>
-              );
-            }
-            return null;
-          }
-
-          // Group price min and max in the same row
-          if (filter.key === 'price_min' || filter.key === 'price_max') {
-            const minFilter = filterConfig.find((f) => f.key === 'price_min');
-            const maxFilter = filterConfig.find((f) => f.key === 'price_max');
-
-            // Only render once (for price_min)
-            if (filter.key === 'price_min') {
-              return (
-                <div key="price_range" className="flex flex-col">
-                  <label className="text-xs font-medium text-gray-700 mb-1">
-                    Prix
-                  </label>
-                  <div className="flex gap-2">
-                    <div className="flex-1">
-                      <Input
-                        type="number"
-                        name="price_min"
-                        value={tempFilters.price_min || ''}
-                        onChange={(e) =>
-                          handleFilterChange('price_min', e.target.value)
-                        }
-                        placeholder={minFilter?.placeholder || 'Min...'}
-                        className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <Input
-                        type="number"
-                        name="price_max"
-                        value={tempFilters.price_max || ''}
-                        onChange={(e) =>
-                          handleFilterChange('price_max', e.target.value)
-                        }
-                        placeholder={maxFilter?.placeholder || 'Max...'}
-                        className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
-                      />
-                    </div>
-                  </div>
-                </div>
-              );
-            }
-            return null;
-          }
-
-          // Handle other filter types (select, text, number)
-          if (filter.type === 'select') {
-            return (
-              <div key={filter.key} className="flex flex-col">
-                <label className="text-xs font-medium text-gray-700 mb-1">
-                  {filter.label}
-                </label>
-                <SelectInput
-                  options={filter.options || []}
-                  placeholder={filter.placeholder}
-                  value={tempFilters[filter.key] || ''}
-                  onChange={(selectedValue) =>
-                    handleFilterChange(filter.key, selectedValue)
-                  }
-                  width="w-full"
-                />
-              </div>
-            );
-          } else {
-            return (
-              <div key={filter.key} className="flex flex-col">
-                <label className="text-xs font-medium text-gray-700 mb-1">
-                  {filter.label}
-                </label>
-                <Input
-                  type={filter.type || 'text'}
-                  name={filter.key}
-                  value={tempFilters[filter.key] || ''}
-                  onChange={(e) =>
-                    handleFilterChange(filter.key, e.target.value)
-                  }
-                  placeholder={filter.placeholder}
-                  className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
-                />
-              </div>
-            );
-          }
-        })}
-      </div>
-      <div className="flex justify-end gap-3 pt-2">
-        <button
-          type="button"
-          onClick={resetFilters}
-          className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
-        >
-          Réinitialiser
-        </button>
-        <button
-          type="button"
-          onClick={applyFilters}
-          className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-        >
-          Appliquer les filtres
-        </button>
-      </div>
-    </div>
-  );
-}, [
-  safeActiveTab,
-  tabsData,
-  immeubleId,
-  tempFilters,
-  nbre_tranches,
-  nbre_blocs,
-]);
+    nbre_blocs,
+  ]);
 
   // Inside the RightCard component, add this code to get the export configuration
   const exportConfig = useMemo(() => {
@@ -752,7 +847,7 @@ const filterComponent = useMemo(() => {
             columns_export={exportConfig?.columns_export || []}
             name_file_export={exportConfig?.name_file_export || 'export'}
             enableExport={filteredItems.length > 0}
-            enableImport={safeActiveTab == 'bien'} // Only enable import for bien tab
+            enableImport={user.role <= 2 && safeActiveTab == 'bien'}
             onImportClick={() => setShowImportModal(true)}
           />
           <BienImport

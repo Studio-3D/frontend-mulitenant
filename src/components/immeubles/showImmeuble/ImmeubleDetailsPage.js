@@ -222,6 +222,10 @@ export const ImmeubleDetailsPage = () => {
           tranche_nom: b?.tranche?.nom || '',
           bloc_nom: b?.bloc?.nom || '',
           immeuble_nom: b?.immeuble?.nom || '',
+            orientation: b?.orientation || '',
+          etage: b?.niveau || '',
+          typologie: b?.typologie?.typologie || '',
+          vue: b?.vue?.vue || '',
         };
       }) || [];
 

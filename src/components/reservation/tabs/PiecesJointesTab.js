@@ -7,20 +7,21 @@ import {
   TrashIcon,
   PlusIcon,
 } from 'lucide-react';
+import { useRouter } from "next/navigation";
 
 export const PiecesJointesTab = ({ reservationData, user,piecesJointesData}) => {
+  const router = useRouter();
   const { reservation } = reservationData;
   const FileUrl = process.env.NEXT_PUBLIC_IMG_URL;
 
   const handleEdit_PJ = () => {
     window.localStorage.setItem('step_res_edit', 0);
-    const editUrl = `${window.location.origin}/ventes/reservations/?id=${reservation.id}&action=edit`;
-    window.open(editUrl, '_blank');
+    router.push(`/ventes/reservations/?id=${reservation.id}&action=edit`);
   };
 
   const handleFileClick = (fileName) => {
     const fileUrl = `${FileUrl}/docs/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/reservations/${reservation.code_reservation}/${fileName}`;
-    window.open(fileUrl, '_blank');
+    router.push(fileUrl); // opens in same tab
   };
 
   // Function to extract file extension and type
@@ -33,12 +34,12 @@ export const PiecesJointesTab = ({ reservationData, user,piecesJointesData}) => 
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-h-[50vh]">
       {/* Header with add button */}
       <div className="flex justify-end">
         {reservation?.etat == 1 && reservation?.contrat_vente == null && (
           <button
-            className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm flex items-center"
+            className="px-3 py-2 bg-blue-600 text-white rounded-md text-sm flex items-center"
             onClick={handleEdit_PJ}
           >
             <PlusIcon className="h-4 w-4 mr-1" />

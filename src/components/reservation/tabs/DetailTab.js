@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { memo } from 'react';
 import LoadingSpin from '@/components/LoadingSpin';
 import Link from 'next/link';
 import { isAdmin, isSuperAdmin, getModeFinanceLabel } from '@/configs/enum';
 import { useAuth } from '@/context/AuthContext';
 import { Edit } from 'lucide-react';
-import Button from '@/components/Button'; // Import the component
+import Button from '@/components/Button';
 
-export const DetailTab = ({ reservationData, sum_avances_valides }) => {
+// Define the component first
+const DetailTabComponent = ({ reservationData, sum_avances_valides }) => {
   const { user } = useAuth();
 
   function NomBienComplet(bien) {
@@ -20,37 +21,35 @@ export const DetailTab = ({ reservationData, sum_avances_valides }) => {
 
     return noms.join(' - ');
   }
+
   // Add null checks and default values
   if (!reservationData) {
     return (
       <div className="bg-white rounded-lg shadow-md p-6">
-        {' '}
         <LoadingSpin />
       </div>
     );
   }
+
   const handleDesiste = (res_id) => {
-    //aucun desistement
-    window.open(`/ventes/desistements/ajouter_desistement/${res_id}`)
+    window.open(`/ventes/desistements/ajouter_desistement/${res_id}`);
   };
+
   const handleEdit = (reservationId) => {
     window.localStorage.setItem('step_res_edit', 0);
     const editUrl = `${window.location.origin}/ventes/reservations/?id=${reservationId}&action=edit`;
-
-    // Ouvrez la nouvelle URL dans un nouvel onglet
     window.open(editUrl, '_blank');
   };
 
   const handleEdit_Prix = (reservationId) => {
     window.localStorage.setItem('step_res_edit', 2);
-
     const editUrl = `${window.location.origin}/ventes/reservations/?id=${reservationId}&action=edit`;
-
-    // Ouvrez la nouvelle URL dans un nouvel onglet
     window.open(editUrl, '_blank');
   };
+
   // Destructure the nested reservation object
   const { reservation } = reservationData;
+  
   return (
     <div className="space-y-6">
       <div className='flex justify-end space-x-4'>
@@ -258,25 +257,28 @@ export const DetailTab = ({ reservationData, sum_avances_valides }) => {
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm text-gray-500">Montant Encaissé %</p>
-                  <div className="flex items-center gap-2">
-                    <div className="w-full bg-gray-200 rounded-full h-2.5 flex-1">
+                  <div className="flex items-center gap-2 w-full">
+                    <div className="relative w-full bg-gray-200 rounded-full h-5 flex-1">
+                      {/* Progress bar */}
                       <div
-                        className="bg-blue-600 h-2.5 rounded-full"
+                        className="bg-blue-300 h-5 rounded-full transition-all duration-300 ease-in-out"
                         style={{
-                          width: `${Math.round(
-                            (sum_avances_valides / reservation?.prix) * 100
+                          width: `${Math.min(
+                            Math.round((sum_avances_valides / reservation?.prix) * 100),
+                            100
                           )}%`,
-                          transition: 'width 0.3s ease-in-out',
                         }}
                       ></div>
+
+                      {/* Percentage text inside */}
+                      <span className="absolute inset-0 flex items-center justify-center text-sm font-medium text-blue-700">
+                        {`${Math.round((sum_avances_valides / reservation?.prix) * 100)}%`}
+                      </span>
                     </div>
-                    <span className="text-sm font-medium text-gray-700">
-                      {`${Math.round(
-                        (sum_avances_valides / reservation?.prix) * 100
-                      )}%`}
-                    </span>
                   </div>
                 </div>
+
+
                 <div>
                   <p className="text-sm text-gray-500">Reste</p>
                   <p className="font-medium text-red-500">
@@ -314,3 +316,6 @@ export const DetailTab = ({ reservationData, sum_avances_valides }) => {
     </div>
   );
 };
+
+// Then wrap it with memo
+export const DetailTab = memo(DetailTabComponent);

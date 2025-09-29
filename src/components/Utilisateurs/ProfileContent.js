@@ -369,7 +369,7 @@ const ProfileContent = ({ userId }) => {
               formik.setFieldTouched('name', true, false);
             }}
             readOnly={!isEditing}
-            required={isEditing}
+            required={false}
             error={
               formik.touched.name || formik.submitCount > 0
                 ? formik.errors.name
@@ -385,7 +385,7 @@ const ProfileContent = ({ userId }) => {
               formik.setFieldTouched('prenom', true, false);
             }}
             readOnly={!isEditing}
-            required={isEditing}
+            required={false}
             error={
               formik.touched.prenom || formik.submitCount > 0
                 ? formik.errors.prenom
@@ -420,7 +420,7 @@ const ProfileContent = ({ userId }) => {
             }}
             type="tel"
             readOnly={!isEditing}
-            required={isEditing}
+            required={false}
             error={
               formik.touched.phone || formik.submitCount > 0
                 ? formik.errors.phone
@@ -499,7 +499,7 @@ const ProfileContent = ({ userId }) => {
               formik.setFieldTouched('cin', true, false);
             }}
             readOnly={!isEditing}
-            required={isEditing}
+            required={false}
             error={
               formik.touched.cin || formik.submitCount > 0
                 ? formik.errors.cin

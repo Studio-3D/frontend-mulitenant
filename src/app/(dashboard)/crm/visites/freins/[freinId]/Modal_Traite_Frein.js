@@ -9,6 +9,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
+import SelectInput from '@/components/SelectInput';
 import {
   VISITE_INTERETS,
   VISITE_TYPE_NOTIF,
@@ -299,7 +300,7 @@ export default function Modal_Traite_Frein({ onClose, id, biens }) {
       .catch(() => {});
   };
 
-  const handlePrixChange = (val) => {
+  const handlePrixChange = (val) => (e) => {
     setTimeout(() => {
       let a, b, minField, maxField;
 
@@ -342,19 +343,16 @@ export default function Modal_Traite_Frein({ onClose, id, biens }) {
     }, 2000);
   };
 
-  const handleChange_freins = (selectedValues) => {
-    try {
-      console.log('Changed:', selectedValues);
-      const descriptions = selectedValues
-        .map((item) => item?.description?.toLowerCase() || '')
-        .join(', ');
-      console.log('Descriptions:', descriptions);
-
-      setValue('frein', descriptions);
-    } catch (error) {
-      console.error('Error in handleChange_freins:', error);
+const handleChange_freins = (selectedValues) => {
+  try {
+    console.log('Freins changed:', selectedValues);
+    if (Array.isArray(selectedValues)) {
+      setValue('frein', selectedValues);
     }
-  };
+  } catch (error) {
+    console.error('Error in handleChange_freins:', error);
+  }
+};
 
   const handleChange_tp_notif = (code) => {
     if (code) {
@@ -362,23 +360,22 @@ export default function Modal_Traite_Frein({ onClose, id, biens }) {
     }
   };
   const handleChange_interet = (v) => {
-    setLoading_biens(false);
-    console.log('v===>' + v);
-    setValue('interet', v);
-    if (v != null) {
-      if (v == 1) {
-        setValue('bien_id', '');
-      }
-
-      //perdu
-      else if (v == 3) {
-        fetchTypeFreins();
-        fetchDataByProjet('tranches', setList_tranches, setLoading);
-        fetchDataByProjet('vues', setList_Vues, setLoading);
-        fetchDataByProjet('typologies', setListTyplogies, setLoading);
-      }
+  setLoading_biens(false);
+  console.log('v===>', v);
+  
+  if (v != null) {
+    if (v === 1) { // Use strict equality
+      setValue('bien_id', '');
     }
-  };
+    //perdu
+    else if (v === 3) { // Use strict equality
+      fetchTypeFreins();
+      fetchDataByProjet('tranches', setList_tranches, setLoading);
+      fetchDataByProjet('vues', setList_Vues, setLoading);
+      fetchDataByProjet('typologies', setListTyplogies, setLoading);
+    }
+  }
+};
 
   const orientationOptions = Object.keys(ORIENTATIONS).map((key) => ({
     code: ORIENTATIONS[key].code,
@@ -476,487 +473,502 @@ export default function Modal_Traite_Frein({ onClose, id, biens }) {
     }
   };
   return (
-    <div className="w-full max-w-[90%] sm:max-w-[500px] md:max-w-[600px] lg:max-w-[800px] h-auto bg-white flex flex-col mx-auto">
-      <div className="w-full h-[60px] bg-blue-600 px-4">
-        <div className="flex items-center justify-center h-full">
-          <h1 className="text-3xl font-bold text-center text-white">
-            Traiter Frein
-          </h1>
-        </div>
-      </div>
-
-      <div className="p-4 w-[600px] ">
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="mt-4 mx-auto w-full max-w-[360px] flex flex-col items-center"
-        >
-          {/* Row for Input and MdPrint */}
-          <div className="flex items-center space-x-2 w-full">
-            <AutocompleteSelectComponent
-              label="Intérêt:"
-              name="interet"
-              required={true}
-              options={{
-                1: VISITE_INTERETS[1],
-                2: VISITE_INTERETS[2],
-                3: VISITE_INTERETS[3],
-              }}
-              onChange={handleChange_interet}
-            />
+    <div className=" bg-gray-50 flex items-center justify-center ">
+      <div className="w-full max-w-[90%] sm:max-w-[500px] md:max-w-[600px] lg:w-[800px] bg-white rounded-lg shadow-lg overflow-hidden">
+        {/* Header */}
+        <div className="w-full h-full bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+          <div className="flex items-center justify-center">
+            <h1 className="text-2xl md:text-3xl font-bold text-white">
+              Traiter Frein
+            </h1>
           </div>
-
-          {Number(watch('interet')) == 1 && (
-            <>
-              <div className="flex items-center space-x-2 w-full">
-                <Controller
-                  name="bien_id"
-                  control={control}
-                  defaultValue={null}
-                  render={({ field }) => (
-                    <BienAutocomplete
-                      biens={biens_dispos}
-                      user={user}
-                      value={field.value}
-                      onChange={(bien) => {
-                        field.onChange(bien); // Updates form state
-                        handleSelectBien(bien); // Your logic
-                      }}
-                      required={true}
-                      errors={errors}
-                      name="bien_id"
-                    />
-                  )}
-                />
-              </div>
-              <div className="flex items-center space-x-2 w-full">
-                <TextField
-                  label="Rendez Vous:"
-                  name="rdv"
-                  type="datetime-local"
-                  control={control}
-                  errors={errors}
-                  backendErrors={backendErrors}
-                  defaultValues={defaultValues}
-                />
-              </div>
-            </>
-          )}
-          {Number(watch('interet')) == 2 && (
-            <>
-              <div className="flex items-center space-x-2 w-full">
-                <AutocompleteSelectComponent
-                  label="Mode Relance:"
-                  name="mode_relance"
-                  required={false}
-                  options={VISITE_TYPE_NOTIF}
-                  onChange={handleChange_tp_notif}
-                />
-              </div>
-              <div className="flex items-center space-x-2 w-full">
-                <TextField
-                  label="Date Relance:"
-                  name="date_relance"
-                  type="date"
-                  control={control}
-                  errors={errors}
-                  backendErrors={backendErrors}
-                  defaultValues={defaultValues}
-                />
-              </div>
-            </>
-          )}
-          {Number(watch('interet')) == 3 && (
-            <>
-              <div className="flex items-center space-x-2 w-full">
-                <AutocompleteMultiple
-                  label="Freins :"
-                  name="frein"
+        </div>
+        {/* Form Container */}
+        <div className="p-6">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="w-full max-w-[600px] mx-auto"
+          >
+            <div className="space-y-6">
+              {/* Interest Selection */}
+              <div className="w-full">
+                <SelectInput
+                  label="Intérêt:"
+                  name="interet"
                   required={true}
-                  options={type_freins}
-                  choiceKey="description"
-                  onChange={handleChange_freins}
-                  placeholder="sélectionnez un ou plusieurs freins"
-                  errors={{
-                    ...errors,
-                    frein:
-                      formSubmitted && watch('frein').length == 0
-                        ? 'Veuillez renseigner le champ frein.'
-                        : null,
+                  placeholder="Sélectionnez un intérêt"
+                  options={[
+                    {
+                      value: 1,
+                      label: VISITE_INTERETS[1].label,
+                    },
+                    {
+                      value: 2,
+                      label: VISITE_INTERETS[2].label,
+                    },
+                    {
+                      value: 3,
+                      label: VISITE_INTERETS[3].label,
+                    },
+                  ]}
+                  onChange={(value) => {
+                    setValue('interet', value)
+                    handleChange_interet(value)
                   }}
-                  loading={loading_tp_frein}
-                  backendErrors={backendErrors}
+                  value={watch('interet')}
+                  error={errors.interet?.message}
+                  submitted={formSubmitted}
                 />
               </div>
-
-              {watch('frein').includes('autre') && (
-                <div className="flex items-center space-x-2 w-full">
-                  <TextField
-                    label="Description Frein Autre:"
-                    name="description_autre"
-                    multi={true}
-                    control={control}
-                    errors={errors}
-                    backendErrors={backendErrors}
-                    defaultValues={defaultValues}
-                    required={watch('frein').includes('autre')}
-                    width="w-full" // Optionally set width, default is 'w-80'
-                    height="h-full"
-                    isTextarea={true}
-                  />
+              {/* Conditional sections based on interest */}
+              {Number(watch('interet')) === 1 && (
+                <div className="space-y-6">
+                  <div className="w-full">
+                    <SelectInput
+                      label="Bien:"
+                      name="bien_id"
+                      required={true}
+                      placeholder="Sélectionnez un bien"
+                      options={biens_dispos.map((bien) => ({
+                        value: bien.id,
+                        label: `${bien.propriete_dite_bien} - ${bien.etat}`,
+                      }))}
+                      onChange={(selectedValue) => {
+                        const selectedBien = biens_dispos.find(
+                          (b) => b.id === selectedValue,
+                        )
+                        setValue('bien_id', selectedValue)
+                        handleSelectBien(selectedBien)
+                      }}
+                      value={watch('bien_id')}
+                      error={errors.bien_id?.message}
+                      submitted={formSubmitted}
+                    />
+                  </div>
+                  <div className="w-full">
+                    <TextField
+                      label="Rendez Vous:"
+                      name="rdv"
+                      type="datetime-local"
+                      control={control}
+                      errors={errors}
+                      backendErrors={backendErrors}
+                    />
+                  </div>
                 </div>
               )}
-
-              {watch('frein')?.includes('tranche') && ( // Safe access using optional chaining
-                <div className="flex items-center space-x-2 w-full">
-                  <AutocompleteMultiple
-                    label="Tranches :"
-                    name="tranche"
-                    required={true}
-                    options={list_tranches}
-                    choiceKey="nom"
-                    onChange={(newValue) => {
-                      try {
-                        console.log('Selected tranches:', newValue);
-
-                        if (Array.isArray(newValue)) {
-                          const selectedIds = newValue.map(
-                            (option) => option?.id
-                          );
-                          console.log('ids tranches', selectedIds);
-                          setValue('tranches', selectedIds); // Set only IDs to the form field
-                        } else {
-                          console.error(
-                            'Expected newValue to be an array of selected options, but received:',
-                            newValue
-                          );
-                        }
-                      } catch (error) {
-                        console.error(
-                          'Error in tranches onChange handler:',
-                          error
-                        );
+              {Number(watch('interet')) === 2 && (
+                <div className="space-y-6">
+                  <div className="w-full">
+                    <SelectInput
+                      label="Mode Relance:"
+                      name="mode_relance"
+                      required={false}
+                      placeholder="Sélectionnez un mode de relance"
+                      options={Object.entries(VISITE_TYPE_NOTIF).map(
+                        ([code, details]) => ({
+                          value: code,
+                          label: details.label || details,
+                        }),
+                      )}
+                      onChange={(selectedCode) => {
+                        setValue('mode_relance', selectedCode)
+                        handleChange_tp_notif(selectedCode)
+                      }}
+                      value={watch('mode_relance')}
+                      error={errors.mode_relance?.message}
+                      submitted={formSubmitted}
+                    />
+                  </div>
+                  <div className="w-full">
+                    <TextField
+                      label="Date Relance:"
+                      name="date_relance"
+                      type="date"
+                      control={control}
+                      errors={errors}
+                      backendErrors={backendErrors}
+                    />
+                  </div>
+                </div>
+              )}
+              {Number(watch('interet')) === 3 && (
+                <div className="space-y-6">
+                  <div className="w-full">
+                    <SelectInput
+                      label="Freins:"
+                      name="frein"
+                      required={true}
+                      isMulti={true}
+                      placeholder="Sélectionnez un ou plusieurs freins"
+                      options={type_freins.map((frein) => ({
+                        value: frein.description.toLowerCase(),
+                        label: frein.description,
+                      }))}
+                      onChange={(selectedValues) => {
+                        handleChange_freins(selectedValues)
+                      }}
+                      value={
+                        Array.isArray(watch('frein')) ? watch('frein') : []
                       }
-                    }}
-                    placeholder="sélectionnez un ou plusieurs Tranches"
-                    errors={{
-                      ...errors,
-                      tranche:
+                      error={
                         formSubmitted &&
-                        watch('frein')?.includes('tranche') &&
-                        watch('tranches').length === 0
-                          ? "Ce champ est obligatoire lorsque 'frein' inclut 'tranche'."
-                          : null,
-                    }}
-                    backendErrors={backendErrors}
-                    loading={loading}
-                  />
-                </div>
-              )}
-
-              {watch('frein')?.includes('etage') && (
-                <div className="flex items-center space-x-2 w-full">
-                  <AutocompleteMultiple
-                    label="Etages :"
-                    name="etages"
-                    required={true}
-                    options={list_etages}
-                    choiceKey="value"
-                    onChange={(newValue) => {
-                      try {
-                        console.log('Selected etages:', newValue);
-                        if (Array.isArray(newValue)) {
-                          const selectedVal = newValue.map(
-                            (option) => option?.value
-                          ); // option.value should be a number like 1 or 2
-                          const etagesArray = selectedVal.join(','); // no need to map again!
-                          console.log('etagesArray:', etagesArray); // Output: "1,2"
-                          setValue('etages', etagesArray); // ✔️ correct usage
-                        } else {
-                          console.error(
-                            'Expected newValue to be an array of selected options, but received:',
-                            newValue
-                          );
-                        }
-                      } catch (error) {
-                        console.error(
-                          'Error in etages onChange handler:',
-                          error
-                        );
+                        (!watch('frein') || watch('frein').length === 0)
+                          ? 'Veuillez renseigner le champ frein.'
+                          : errors.frein?.message
                       }
-                    }}
-                    placeholder="sélectionnez un ou plusieurs etages"
-                    errors={{
-                      ...errors,
-                      etages:
-                        formSubmitted &&
-                        watch('frein')?.includes('etage') &&
-                        watch('etages').length === 0
-                          ? "Ce champ est obligatoire lorsque 'frein' inclut 'etage'."
-                          : null,
-                    }}
-                    loading={loading}
-                    backendErrors={backendErrors}
-                  />
-                </div>
-              )}
-              {watch('frein').includes('orientation') && (
-                <div className="flex items-center space-x-2 w-full">
-                  <AutocompleteMultiple
-                    label="Orientations :"
-                    name="orientations"
-                    required={true}
-                    options={orientationOptions}
-                    choiceKey="label"
-                    onChange={(newValue) => {
-                      try {
-                        console.log('Selected orientationOptions:', newValue);
-
-                        if (Array.isArray(newValue)) {
-                          const selectedCode = newValue.map(
-                            (option) => option?.code
-                          );
-                          console.log('code orientations', selectedCode);
-                          setValue('orientations', selectedCode); // Set only IDs to the form field
-                        } else {
-                          console.error(
-                            'Expected newValue orientations to be an array of selected options, but received:',
-                            newValue
-                          );
-                        }
-                      } catch (error) {
-                        console.error(
-                          'Error in orientations onChange handler:',
-                          error
-                        );
-                      }
-                    }}
-                    placeholder="sélectionnez un ou plusieurs orientations"
-                    errors={{
-                      ...errors,
-                      orientations:
-                        formSubmitted &&
-                        watch('frein')?.includes('orientation') &&
-                        watch('orientations').length === 0
-                          ? "Ce champ est obligatoire lorsque 'frein' inclut 'orientation'."
-                          : null,
-                    }}
-                    loading={loading}
-                    backendErrors={backendErrors}
-                  />
-                </div>
-              )}
-              {watch('frein').includes('avance') && (
-                <div className="flex items-center space-x-2 w-full">
-                  <TextField
-                    label="Avance:"
-                    name="avance"
-                    type="number"
-                    control={control}
-                    errors={errors}
-                    backendErrors={backendErrors}
-                    defaultValues={defaultValues}
-                    required={watch('frein')?.includes('avance')}
-                  />
-                </div>
-              )}
-
-              {watch('frein').includes('prix') && (
-                <>
-                  <div>
-                    <div style={{ display: 'flex', gap: '1rem' }}>
+                      submitted={formSubmitted}
+                    />
+                  </div>
+                  {/* Conditional fields based on selected freins */}
+                  {watch('frein')?.includes('autre') && (
+                    <div className="w-full">
                       <TextField
-                        label="Prix Min:"
-                        name="prix_min"
+                        label="Description Frein Autre:"
+                        name="description_autre"
+                        multi={true}
+                        control={control}
+                        errors={errors}
+                        backendErrors={backendErrors}
+                        required={watch('frein')?.includes('autre')}
+                        isTextarea={true}
+                        height="h-24"
+                      />
+                    </div>
+                  )}
+                  {watch('frein')?.includes('tranche') && (
+                    <div className="w-full">
+                      <SelectInput
+                        label="Tranches:"
+                        name="tranches"
+                        required={true}
+                        isMulti={true}
+                        placeholder="Sélectionnez un ou plusieurs tranches"
+                        options={list_tranches.map((tranche) => ({
+                          value: tranche.id,
+                          label: tranche.nom,
+                        }))}
+                        onChange={(selectedValues) => {
+                          try {
+                            if (Array.isArray(selectedValues)) {
+                              setValue('tranches', selectedValues)
+                            } else {
+                              setValue('tranches', [selectedValues])
+                            }
+                          } catch (error) {
+                            console.error(
+                              'Error in tranches onChange handler:',
+                              error,
+                            )
+                          }
+                        }}
+                        value={
+                          Array.isArray(watch('tranches'))
+                            ? watch('tranches')
+                            : []
+                        }
+                        error={
+                          formSubmitted &&
+                          watch('frein')?.includes('tranche') &&
+                          (!watch('tranches') || watch('tranches').length === 0)
+                            ? "Ce champ est obligatoire lorsque 'frein' inclut 'tranche'."
+                            : errors.tranches?.message
+                        }
+                        submitted={formSubmitted}
+                        loading={loading}
+                      />
+                    </div>
+                  )}
+                  {watch('frein')?.includes('etage') && (
+                    <div className="w-full">
+                      <SelectInput
+                        label="Etages:"
+                        name="etages"
+                        required={true}
+                        isMulti={true}
+                        placeholder="Sélectionnez un ou plusieurs étages"
+                        options={list_etages.map((etage) => ({
+                          value: etage.value,
+                          label: `Étage ${etage.value}`,
+                        }))}
+                        onChange={(selectedValues) => {
+                          try {
+                            if (Array.isArray(selectedValues)) {
+                              setValue('etages', selectedValues)
+                            } else {
+                              setValue('etages', [selectedValues])
+                            }
+                          } catch (error) {
+                            console.error(
+                              'Error in etages onChange handler:',
+                              error,
+                            )
+                          }
+                        }}
+                        value={
+                          Array.isArray(watch('etages')) ? watch('etages') : []
+                        }
+                        error={
+                          formSubmitted &&
+                          watch('frein')?.includes('etage') &&
+                          (!watch('etages') || watch('etages').length === 0)
+                            ? "Ce champ est obligatoire lorsque 'frein' inclut 'etage'."
+                            : errors.etages?.message
+                        }
+                        submitted={formSubmitted}
+                        loading={loading}
+                      />
+                    </div>
+                  )}
+                  {watch('frein')?.includes('orientation') && (
+                    <div className="w-full">
+                      <SelectInput
+                        label="Orientations:"
+                        name="orientations"
+                        required={true}
+                        isMulti={true}
+                        placeholder="Sélectionnez un ou plusieurs orientations"
+                        options={orientationOptions.map((orientation) => ({
+                          value: orientation.code,
+                          label: orientation.label,
+                        }))}
+                        onChange={(selectedValues) => {
+                          try {
+                            if (Array.isArray(selectedValues)) {
+                              setValue('orientations', selectedValues)
+                            } else {
+                              setValue('orientations', [selectedValues])
+                            }
+                          } catch (error) {
+                            console.error(
+                              'Error in orientations onChange handler:',
+                              error,
+                            )
+                          }
+                        }}
+                        value={
+                          Array.isArray(watch('orientations'))
+                            ? watch('orientations')
+                            : []
+                        }
+                        error={
+                          formSubmitted &&
+                          watch('frein')?.includes('orientation') &&
+                          (!watch('orientations') ||
+                            watch('orientations').length === 0)
+                            ? "Ce champ est obligatoire lorsque 'frein' inclut 'orientation'."
+                            : errors.orientations?.message
+                        }
+                        submitted={formSubmitted}
+                        loading={loading}
+                      />
+                    </div>
+                  )}
+                  {watch('frein')?.includes('avance') && (
+                    <div className="w-full">
+                      <TextField
+                        label="Avance:"
+                        name="avance"
                         type="number"
                         control={control}
                         errors={errors}
                         backendErrors={backendErrors}
-                        defaultValues={defaultValues}
-                        onChange={handlePrixChange(1)}
-                        required={watch('frein')?.includes('prix')}
+                        required={watch('frein')?.includes('avance')}
                       />
-                      {info_prix != null && (
+                    </div>
+                  )}
+                  {watch('frein')?.includes('prix') && (
+                    <div className="w-full">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <TextField
+                            label="Prix Min:"
+                            name="prix_min"
+                            type="number"
+                            control={control}
+                            errors={errors}
+                            backendErrors={backendErrors}
+                            onChange={handlePrixChange(1)}
+                            required={watch('frein')?.includes('prix')}
+                          />
+                        </div>
+                        <div>
+                          <TextField
+                            label="Prix Max:"
+                            name="prix_max"
+                            type="number"
+                            control={control}
+                            errors={errors}
+                            backendErrors={backendErrors}
+                            onChange={handlePrixChange(1)}
+                            required={watch('frein')?.includes('prix')}
+                          />
+                        </div>
+                      </div>
+                      {info_prix && (
                         <div className="text-red-500 text-sm mt-1">
                           {info_prix}
                         </div>
                       )}
-                      <TextField
-                        label="Prix Max:"
-                        name="prix_max"
-                        type="number"
-                        control={control}
-                        errors={errors}
-                        backendErrors={backendErrors}
-                        defaultValues={defaultValues}
-                        onChange={handlePrixChange(1)}
-                        required={watch('frein')?.includes('prix')}
-                      />
                     </div>
-                  </div>
-                </>
-              )}
-              {watch('frein').includes('superficie') && (
-                <>
-                  <div>
-                    <div style={{ display: 'flex', gap: '1rem' }}>
-                      <TextField
-                        label="Sup Min:"
-                        name="sup_min"
-                        type="number"
-                        control={control}
-                        errors={errors}
-                        backendErrors={backendErrors}
-                        defaultValues={defaultValues}
-                        onChange={handlePrixChange(2)}
-                        required={watch('frein')?.includes('superficie')}
-                      />
-                      {info_sup != null && (
+                  )}
+                  {watch('frein')?.includes('superficie') && (
+                    <div className="w-full">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <TextField
+                            label="Superficie Min:"
+                            name="sup_min"
+                            type="number"
+                            control={control}
+                            errors={errors}
+                            backendErrors={backendErrors}
+                            onChange={handlePrixChange(2)}
+                            required={watch('frein')?.includes('superficie')}
+                          />
+                        </div>
+                        <div>
+                          <TextField
+                            label="Superficie Max:"
+                            name="sup_max"
+                            type="number"
+                            control={control}
+                            errors={errors}
+                            backendErrors={backendErrors}
+                            onChange={handlePrixChange(2)}
+                            required={watch('frein')?.includes('superficie')}
+                          />
+                        </div>
+                      </div>
+                      {info_sup && (
                         <div className="text-red-500 text-sm mt-1">
                           {info_sup}
                         </div>
                       )}
-                      <TextField
-                        label="Sup Max:"
-                        name="sup_max"
-                        type="number"
-                        control={control}
-                        errors={errors}
-                        backendErrors={backendErrors}
-                        defaultValues={defaultValues}
-                        onChange={handlePrixChange(2)}
-                        required={watch('frein')?.includes('superficie')}
+                    </div>
+                  )}
+                  {watch('frein')?.includes('typologie') && (
+                    <div className="w-full">
+                      <SelectInput
+                        label="Typologies:"
+                        name="typologies"
+                        required={true}
+                        isMulti={true}
+                        placeholder="Sélectionnez un ou plusieurs typologies"
+                        options={list_typologies.map((typologie) => ({
+                          value: typologie.id,
+                          label: typologie.typologie,
+                        }))}
+                        onChange={(selectedValues) => {
+                          try {
+                            if (Array.isArray(selectedValues)) {
+                              setValue('typologies', selectedValues)
+                            } else {
+                              setValue('typologies', [selectedValues])
+                            }
+                          } catch (error) {
+                            console.error(
+                              'Error in typologies onChange handler:',
+                              error,
+                            )
+                          }
+                        }}
+                        value={
+                          Array.isArray(watch('typologies'))
+                            ? watch('typologies')
+                            : []
+                        }
+                        error={
+                          formSubmitted &&
+                          watch('frein')?.includes('typologie') &&
+                          (!watch('typologies') ||
+                            watch('typologies').length === 0)
+                            ? "Ce champ est obligatoire lorsque 'frein' inclut 'typologie'."
+                            : errors.typologies?.message
+                        }
+                        submitted={formSubmitted}
+                        loading={loading}
                       />
                     </div>
-                  </div>
-                </>
-              )}
-              {watch('frein').includes('typologie') && (
-                <div className="flex items-center space-x-2 w-full">
-                  <AutocompleteMultiple
-                    label="Typologies :"
-                    name="typologies"
-                    required={true}
-                    options={list_typologies}
-                    choiceKey="typologie"
-                    onChange={(newValue) => {
-                      try {
-                        console.log('Selected typologies:', newValue);
-
-                        if (Array.isArray(newValue)) {
-                          const selectedIds = newValue.map(
-                            (option) => option?.id
-                          );
-                          console.log('ids tranches', selectedIds);
-                          setValue('typologies', selectedIds); // Set only IDs to the form field
-                        } else {
-                          console.error(
-                            'Expected newValue to be an array of selected options, but received:',
-                            newValue
-                          );
+                  )}
+                  {watch('frein')?.includes('vue') && (
+                    <div className="w-full">
+                      <SelectInput
+                        label="Vues:"
+                        name="vues"
+                        required={true}
+                        isMulti={true}
+                        placeholder="Sélectionnez un ou plusieurs vues"
+                        options={list_vues.map((vue) => ({
+                          value: vue.id,
+                          label: vue.vue,
+                        }))}
+                        onChange={(selectedValues) => {
+                          try {
+                            if (Array.isArray(selectedValues)) {
+                              setValue('vues', selectedValues)
+                            } else {
+                              setValue('vues', [selectedValues])
+                            }
+                          } catch (error) {
+                            console.error(
+                              'Error in vues onChange handler:',
+                              error,
+                            )
+                          }
+                        }}
+                        value={
+                          Array.isArray(watch('vues')) ? watch('vues') : []
                         }
-                      } catch (error) {
-                        console.error(
-                          'Error in typologies onChange handler:',
-                          error
-                        );
-                      }
-                    }}
-                    placeholder="sélectionnez un ou plusieurs Typologies"
-                    errors={{
-                      ...errors,
-                      typologies:
-                        formSubmitted &&
-                        watch('frein')?.includes('typologie') &&
-                        watch('typologies').length === 0
-                          ? "Ce champ est obligatoire lorsque 'frein' inclut 'typologie'."
-                          : null,
-                    }}
-                    loading={loading}
-                    backendErrors={backendErrors}
-                  />
+                        error={
+                          formSubmitted &&
+                          watch('frein')?.includes('vue') &&
+                          (!watch('vues') || watch('vues').length === 0)
+                            ? "Ce champ est obligatoire lorsque 'frein' inclut 'vue'."
+                            : errors.vues?.message
+                        }
+                        submitted={formSubmitted}
+                        loading={loading}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
-              {watch('frein').includes('vue') && (
-                <div className="flex items-center space-x-2 w-full">
-                  <AutocompleteMultiple
-                    label="vue :"
-                    name="vues"
-                    required={true}
-                    options={list_vues}
-                    choiceKey="vue"
-                    onChange={(newValue) => {
-                      try {
-                        console.log('Selected vues:', newValue);
-
-                        if (Array.isArray(newValue)) {
-                          const selectedIds = newValue.map(
-                            (option) => option?.id
-                          );
-                          console.log('ids vues', selectedIds);
-                          setValue('vues', selectedIds); // Set only IDs to the form field
-                        } else {
-                          console.error(
-                            'Expected newValue to be an array of selected options, but received:',
-                            newValue
-                          );
-                        }
-                      } catch (error) {
-                        console.error('Error in vues onChange handler:', error);
-                      }
-                    }}
-                    placeholder="sélectionnez un ou plusieurs Vues"
-                    errors={{
-                      ...errors,
-                      vues:
-                        formSubmitted &&
-                        watch('frein')?.includes('vue') &&
-                        watch('vues').length === 0
-                          ? "Ce champ est obligatoire lorsque 'frein' inclut 'vue'."
-                          : null,
-                    }}
-                    loading={loading}
-                    backendErrors={backendErrors}
-                  />
-                </div>
-              )}
-            </>
-          )}
-          <div className="flex items-center space-x-2 w-full">
-            {
-              <>
+              {/* Comment Field - Always visible */}
+              <div className="w-full">
                 <TextField
-                  label="Commentaire :"
+                  label="Commentaire:"
                   name="commentaire"
                   required={true}
                   control={control}
                   errors={errors}
-                  isTextarea={true} // Specify it's a textarea
+                  isTextarea={true}
                   height="h-24"
-                  width="w-full" // Optional: Change height for textarea
                 />
-              </>
-            }
-          </div>
-
-          <div className="w-full">
-            {backendErrors != null && (
-              <p className="!text-red-600 text-sm mb-2">{backendErrors}</p>
-            )}
-          </div>
-          <div className="flex justify-end gap-2 mt-[10%]">
-            <Button type="button" onClick={onClose}>
-              Annuler
-            </Button>
-            <Button
-              type="submit"
-              disabled={loading.form}
-              loading={loading.form}
-            >
-              Enregistrer
-            </Button>
-          </div>
-        </form>
+              </div>
+              {/* Backend Errors */}
+              {backendErrors && (
+                <div className="w-full">
+                  <p className="text-red-600 text-sm">{backendErrors}</p>
+                </div>
+              )}
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-3 pt-4">
+                <Button type="button" variant="outline" onClick={onClose}>
+                  Annuler
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={loading.form}
+                  loading={loading.form}
+                >
+                  Enregistrer
+                </Button>
+              </div>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
-  );
+  )
 }

@@ -77,8 +77,6 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
         }
       }
     } catch (error) {
-      console.error('Failed to fetch immeuble:', error);
-
       toast.error("Erreur lors du chargement de l'immeuble");
     } finally {
       setIsLoading(false);
@@ -123,28 +121,7 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
     };
     loadNamesIfNeeded();
   }, [trancheId, blocId, selectedTranche?.nom, selectedBloc?.nom]);
-  useEffect(() => {
-    const loadNamesIfNeeded = async () => {
-      try {
-        const token = localStorage.getItem('accessToken');
-        if (trancheId && !selectedTranche?.nom) {
-          const tres = await axios.get(`${APIURL.TRANCHES}/${trancheId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (tres.data?.tranche) setSelectedTranche(tres.data.tranche);
-        }
-        if (blocId && !selectedBloc?.nom) {
-          const bres = await axios.get(`${APIURL.BLOCS}/${blocId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (bres.data?.bloc) setSelectedBloc(bres.data.bloc);
-        }
-      } catch (e) {
-        console.error('Failed to fetch names', e);
-      }
-    };
-    loadNamesIfNeeded();
-  }, [trancheId, blocId, selectedTranche?.nom, selectedBloc?.nom]);
+
 
   // Fetch immeuble data if editing
   useEffect(() => {
@@ -360,20 +337,20 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
                   href: `/Projets/${selectedProjet?.id}`,
                 }
               : { label: 'Projets', href: '/Projets' },
-            selectedProjet?.tranche_id
+            selectedTranche?.nom
               ? {
                   label:
-                    selectedProjet?.tranche_nom ||
-                    `Tranche #${selectedProjet?.tranche_id}`,
-                  href: `/Tranches/${selectedProjet?.tranche_id}`,
+                    selectedTranche?.nom ||
+                    `Tranche #${selectedTranche?.nom}`,
+                  href: `/Tranches/${trancheId || selectedTranche?.id}`,
                 }
               : null,
-            selectedProjet?.bloc_id
+            selectedBloc?.nom
               ? {
                   label:
-                    selectedProjet?.bloc_nom ||
-                    `Bloc #${selectedProjet?.bloc_id}`,
-                  href: `/Blocs/${selectedProjet?.bloc_id}`,
+                    selectedBloc?.nom ||
+                    `Bloc #${selectedBloc?.id}`,
+                  href: `/Blocs/${blocId || selectedBloc?.id}`,
                 }
               : null,
             { label: `${id ? 'Modifier' : 'Ajouter'} un immeuble` },
