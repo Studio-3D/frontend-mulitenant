@@ -73,8 +73,20 @@ export default function BienForm() {
   const [bienCreeId, setBienCreeId] = useState(null); // Pour stocker l'id du bien créé
   const [dataReloadTrigger, setDataReloadTrigger] = useState(0);
 
-  // Refs for preventing multiple submissions and redirects
   // Read breadcrumb context for names without fetching
+  // Simple cache et comparaison
+  const [oldProjetId, setOldProjetId] = useState(null);
+
+  useEffect(() => {
+    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+      if (oldProjetId) {
+        // Projet a changé
+        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+        router.push('/Projets/' + selectedProjet.id);
+      }
+      setOldProjetId(selectedProjet.id);
+    }
+  }, [selectedProjet?.id, oldProjetId, router]);
   useEffect(() => {
     try {
       const raw = localStorage.getItem('bienBreadcrumbContext');
@@ -393,6 +405,8 @@ export default function BienForm() {
     formData.bloc_id,
     formData.tranche_id,
     formData.immeuble_id,
+    selectedProjet,
+    projetId,
   ]);
 
   // If blocId is provided, fetch its details and set tranche_id accordingly

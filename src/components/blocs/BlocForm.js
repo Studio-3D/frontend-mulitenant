@@ -11,6 +11,7 @@ import InputSelect from '../inputSelect';
 import Input from '../Input';
 import { fetchDataByProjet_params } from '@/configs/api-utils';
 import { useSearchParams } from 'next/navigation';
+import { useProjet } from '@/context/ProjetContext';
 
 export default function BlocForm({ id, projetId, trancheId }) {
   const router = useRouter();
@@ -25,12 +26,13 @@ export default function BlocForm({ id, projetId, trancheId }) {
   const isSubmittingRef = useRef(false);
   const searchParams = useSearchParams();
   trancheId = trancheId || searchParams.get('tranche');
+  const { selectedProjet  } = useProjet();
 
   // Get selected project from localStorage
-  const selectedProjet = JSON.parse(
+ /* const selectedProjet = JSON.parse(
     localStorage.getItem('selectedProjet') || '{}'
   );
-
+*/
   const defaultValues = {
     nom: '',
     tranche_id: trancheId || '',
@@ -117,6 +119,22 @@ export default function BlocForm({ id, projetId, trancheId }) {
     }
   }, [selectedProjet?.id, trancheId]);
 
+
+   // Simple cache et comparaison
+    const [oldProjetId, setOldProjetId] = useState(null);
+  
+    useEffect(() => {
+      if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+  
+        if (oldProjetId) {
+          // Projet a changé
+  
+          console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+          router.push('/Projets/' + selectedProjet.id);
+        }
+        setOldProjetId(selectedProjet.id);
+      }
+    }, [selectedProjet?.id, oldProjetId, router]);
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
