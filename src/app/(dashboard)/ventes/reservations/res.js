@@ -62,18 +62,20 @@ export default function ReservationForm({ id }) {
     storedValue && !isNaN(Number(storedValue)) ? Number(storedValue) : '';
   const [formSubmitted_client, setFormSubmitted_client] = useState(false);
   const current = new Date();
-  const [old_bien_id, setOld_bien_id] = useState('');
 
   const [loading, setLoading] = useState({ form: false, reservations: false });
   const [clientToEdit, setClientToEdit] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   var new_date = current.setDate(current.getDate());
   const [backendErrors, setBackendErrors] = useState({});
+  const [old_bien_id, setOld_bien_id] = useState('');
+
   const [info_reservation, setInfo_reservation] = useState(null);
   const [biensByProjet, setBiensByProjet] = useState([]);
   const [bien_id, setBien_id] = useState(null);
   const [selectedFiles_rsv, setSelectedFiles_rsv] = useState([]);
   const [selectedFiles_avc, setSelectedFiles_avc] = useState([]);
+  const [fetchedProjetId, setFetchedProjetId] = useState(null);
 
   const { user, token } = useAuth();
   const router = useRouter();
@@ -389,6 +391,7 @@ export default function ReservationForm({ id }) {
           });
 
           //set_Bien_id_vendu(reservation.bien_id)
+          //set_Bien_prop_vendu(response.data.propriete_dite_bien.original)
           fetch_bien_ByProjet(
             reservation.bien_id,
             /*  response.data.propriete_dite_bien.original,
@@ -630,7 +633,7 @@ export default function ReservationForm({ id }) {
 
     let route = null;
     //on reservation edit
-    if (isEditing && bien_id) {
+    if (bien_id) {
       route = 'getBiensByProjet_Concat_for_reservation_visite/' + bien_id;
     } else {
       route = 'getBiensByProjet_Concat';
@@ -696,7 +699,13 @@ export default function ReservationForm({ id }) {
 
     channel.bind('App\\Events\\PropositionUpdated', (data) => {
       if (isEditing) fetch_bien_ByProjet(old_bien_id, 'edit');
-      else fetch_bien_ByProjet(null, null);
+      else
+        fetchDataByProjet_2(
+          'getBiensByProjet_Concat',
+          'biens',
+          setBiensByProjet,
+          setLoading_bien
+        );
     });
 
     return () => {
@@ -773,8 +782,12 @@ export default function ReservationForm({ id }) {
 
   useEffect(() => {
     if (!isEditing) {
-      fetch_bien_ByProjet(null, null);
-
+      fetchDataByProjet_2(
+        'getBiensByProjet_Concat',
+        'biens',
+        setBiensByProjet,
+        setLoading_bien
+      );
       if (banques.length == 0) {
         fetchData_Select('banques', setBanques, setLoading_1);
       }
@@ -3489,75 +3502,46 @@ export default function ReservationForm({ id }) {
                 />
               )}
             </div>
-
             {!isEditing && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <SelectInput
+                <AutocompleteSelectComponent
                   label="Mode Financement :"
-                  placeholder="Sélectionner un mode de financement"
                   name="mode_financement"
                   value={watch('mode_financement')}
                   required={true}
-                  options={Object.values(MODE_FINANCE || {}).map((item) => ({
-                    value: item.code || item.value,
-                    label: item.label || item.name,
-                  }))}
-                  onChange={(value) => {
-                    setValue('mode_financement', value);
+                  options={MODE_FINANCE}
+                  onChange={(e) => {
+                    setValue('mode_financement', e);
                   }}
-                  error={
-                    errors.mode_financement?.message ||
-                    backendErrors?.mode_financement
-                  }
                 />
 
                 <>
-                  <SelectInput
+                  <AutocompleteSelectComponent
                     label="Mode Paiement :"
-                    placeholder="Sélectionner un mode de paiement"
                     name="mode_paiement"
-                    value={watch('mode_paiement')}
                     required={true}
-                    options={Object.values(MODE_PAIEMENT || {}).map((item) => ({
-                      value: item.code || item.value,
-                      label: item.label || item.name,
-                    }))}
-                    onChange={(value) => {
-                      setValue('mode_paiement', value);
+                    options={MODE_PAIEMENT}
+                    onChange={(e) => {
+                      setValue('mode_paiement', e);
                     }}
-                    error={
-                      errors.mode_paiement?.message ||
-                      backendErrors?.mode_paiement
-                    }
                   />
                   {watch('mode_paiement') != 1 &&
                     watch('mode_paiement') != '' && (
                       <>
-                        <SelectInput
+                        <Autocomplete
                           label="Banque:"
-                          placeholder="Sélectionner une banque"
                           name="banque_id"
-                          value={watch('banque_id')}
                           required={true}
-                          options={
-                            Array.isArray(banques)
-                              ? banques.map((banque) => ({
-                                  value: banque.id,
-                                  label:
-                                    banque.nom ||
-                                    banque.name ||
-                                    `Banque ${banque.id}`,
-                                }))
-                              : []
-                          }
+                          options={banques}
+                          value={watch('banque_id')}
                           loading={loading_1}
-                          onChange={(value) => {
-                            setValue('banque_id', value);
+                          control={control}
+                          errors={errors}
+                          backendErrors={backendErrors}
+                          onChange={(e) => {
+                            setValue('banque_id', e.id);
                           }}
-                          error={
-                            errors.banque_id?.message ||
-                            backendErrors?.banque_id
-                          }
+                          choix="nom"
                         />
 
                         <TextField
