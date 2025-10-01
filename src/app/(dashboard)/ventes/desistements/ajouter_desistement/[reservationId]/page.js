@@ -1479,18 +1479,30 @@ export default function Page() {
                     {' '}
                     {/* Ensures alignment */}
                     {/* Mode Pénalité Dropdown */}
-                    <div className="flex-1 min-w-[200px] mt-1">
-                      {' '}
-                      {/* Added mt-1 */}
-                      <AutocompleteSelectComponent
-                        label="Mode Pénalité"
+                    <div className="w-[600px] mt-1">
+                      <SelectInput
+                        label="Mode Pénalité :"
                         name="mode_penalite"
-                        control={control}
-                        options={modes_penalites}
-                        errors={errors}
-                        onChange={(value) => handlechange_mode_penalite(value)}
+                        value={watch('mode_penalite')}
+                        required={true}
+                        options={
+                          // Handle both array and object formats
+                          !modes_penalites ? [] :
+                          Array.isArray(modes_penalites) ? modes_penalites :
+                          typeof modes_penalites === 'object' ? Object.entries(modes_penalites).map(([key, value]) => ({
+                            value: key,
+                            label: typeof value === 'object' ? value.label || value.name || String(value) : String(value)
+                          })) :
+                          []
+                        }
+                        onChange={(value) => {
+                          setValue('mode_penalite', value);
+                          handlechange_mode_penalite(value);
+                        }}
+                        error={errors.mode_penalite?.message}
+                        placeholder="Sélectionnez un mode de pénalité"
                       />
-                    </div>
+                  </div>
                     {/* Conditional Fields (aligned at the same height) */}
                     {watch('mode_penalite') && (
                       <>
@@ -1597,17 +1609,28 @@ export default function Page() {
                             </div>
 
                             <div>
-                              <AutocompleteSelectComponent
-                                label="Mode de Paiement"
-                                required
-                                name="mode_paiement_pen"
-                                control={control}
-                                options={MODE_PAIEMENT}
-                                errors={errors}
-                                onChange={(value) =>
-                                  setValue('mode_paiement_pen', value)
-                                }
-                              />
+                              <SelectInput
+                                  label="Mode de Paiement"
+                                  name="mode_paiement_pen"
+                                  value={watch('mode_paiement_pen')}
+                                  required={true}
+                                  options={
+                                    // Handle both array and object formats for MODE_PAIEMENT
+                                    !MODE_PAIEMENT ? [] :
+                                    Array.isArray(MODE_PAIEMENT) ? MODE_PAIEMENT :
+                                    typeof MODE_PAIEMENT === 'object' ? Object.entries(MODE_PAIEMENT).map(([key, value]) => ({
+                                      value: key,
+                                      label: typeof value === 'object' ? value.label || value.name || String(value) : String(value)
+                                    })) :
+                                    []
+                                  }
+                                  onChange={(value) => {
+                                    console.log('Selected payment mode:', value);
+                                    setValue('mode_paiement_pen', value);
+                                  }}
+                                  error={errors.mode_paiement_pen?.message}
+                                  placeholder="Sélectionnez un mode de paiement"
+                                />
                             </div>
                           </div>
 
@@ -1615,19 +1638,24 @@ export default function Page() {
                             watch('mode_paiement_pen') != 1 && (
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                 <div>
-                                  <Autocomplete
+                                  <SelectInput
                                     label="Banque:"
                                     name="banque_pen"
-                                    required={watch('mode_paiement_pen') != '1'}
-                                    options={banques}
                                     value={watch('banque_pen')}
-                                    control={control}
-                                    errors={{}}
-                                    backendErrors={{}}
-                                    onChange={(e) => {
-                                      setValue('banque_pen', e.id);
+                                    required={watch('mode_paiement_pen') != '1'}
+                                    options={
+                                      Array.isArray(banques) 
+                                        ? banques.map(banque => ({
+                                            value: banque.id || banque.value || banque.code,
+                                            label: banque.nom || banque.label || banque.name || 'Banque sans nom'
+                                          }))
+                                        : []
+                                    }
+                                    onChange={(value) => {
+                                      setValue('banque_pen', value);
                                     }}
-                                    choix="nom"
+                                    error={errors.banque_pen?.message}
+                                    placeholder="Sélectionnez une banque"
                                   />
                                 </div>
 
