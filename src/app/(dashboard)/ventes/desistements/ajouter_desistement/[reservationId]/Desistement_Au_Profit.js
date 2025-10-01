@@ -6,6 +6,7 @@ import { lien_parentes, type_dst_dp } from '@/configs/enum';
 import TextField from '@/components/Textfield'; // Import the component
 import { Info } from 'lucide-react';
 import AutocompleteMultipleDes from './AutocompleteMultipleDes';
+import SelectInput from '@/components/SelectInput';
 import Inputs_des_Profit from './Inputs_des_Profit';
 export function Desistement_Au_Profit({
   isEditing,
@@ -668,14 +669,20 @@ export function Desistement_Au_Profit({
         </div>
       )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <AutocompleteSelectComponent
+        <SelectInput
           label="Type Désistement Au Profit :"
           name="type_dp"
-          value={isEditing && watch('type_dp')}
-          control={control}
-          options={type_dst_dp}
-          errors={{}}
-          required
+          value={isEditing ? watch('type_dp') : watch('type_dp')}
+          required={true}
+          options={
+            // Handle both array and object formats for type_dst_dp
+            !type_dst_dp ? [] :
+            Array.isArray(type_dst_dp) ? type_dst_dp :
+            typeof type_dst_dp === 'object' ? Object.entries(type_dst_dp).map(([key, value]) => ({
+              value: key,
+              label: typeof value === 'object' ? value.label || value.name || String(value) : String(value)
+            })) :[]
+          }
           onChange={(value) => {
             // Reset states before changing type
             set_nb_aqu(0);
@@ -688,9 +695,10 @@ export function Desistement_Au_Profit({
             setValue('nb_aquereurs_dp_proche', '');
             setValue('somme_percent', '');
           }}
+          error={errors.type_dp?.message}
+          placeholder="Sélectionnez un type de désistement"
         />
       </div>
-      <p>{JSON.stringify(watch('desisteur_dp_proche_co'))}</p>
       {(type_dp == 1 || type_dp == 2) && (
         <div className="border-t border-gray-200 py-4">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6">
@@ -700,17 +708,17 @@ export function Desistement_Au_Profit({
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Désisteurs: <span className="text-red-500">*</span>
                 </label>
-
                 <Controller
                   name=""
                   control={control}
                   rules={{ required: 'Ce champ est requis' }}
                   render={({ field }) => (
-                    <AutocompleteMultipleDes
-                      key={`desisteur-${autocompleteKey}`} // This forces complete remount
+                    <SelectInput
+                      key={`desisteur-${autocompleteKey}`}
                       name="desisteur_dp_proche_co"
-                      required
-                      // This should be your array of selected items
+                      placeholder="Choisissez un/plusieurs Désisteurs"
+                      required={true}
+                      isMulti={true}
                       options={desisteurs.filter(
                         (desisteur) =>
                           !profit_dp_co_reser.some(
@@ -718,40 +726,41 @@ export function Desistement_Au_Profit({
                               profit.id ==
                               (isEditing ? desisteur.id : desisteur.client.id)
                           )
-                      )}
-                      value={desisteur_dp_proche}
-                      choiceKey="id" // Used for unique identification
-                      onChange={(newValue) => {
+                      ).map(desisteur => ({
+                        value: isEditing ? desisteur.id : desisteur.client.id,
+                        label: `${isEditing ? desisteur.nom : desisteur.client.nom} ${isEditing ? desisteur.prenom : desisteur.client.prenom} (${desisteur.pourcentage}%)`,
+                        originalData: desisteur
+                      }))}
+                      value={desisteur_dp_proche.map(item => item.id)}
+                      onChange={(selectedValues) => {
                         let totalPercent = 0;
                         const selectedDesisteurs = [];
 
-                        set_desisteur_dp_proche([]);
-                        newValue.forEach((item) => {
-                          totalPercent += item.pourcentage;
-                          selectedDesisteurs.push({
-                            id: item.id,
-                            cl_id: isEditing ? item.cl_id : item.client.id,
-                            nom: isEditing ? item.nom : item.client.nom,
-                            prenom: isEditing
-                              ? item.prenom
-                              : item.client.prenom,
-                            pourcentage: item.pourcentage,
-                          });
+                        // Convert selected IDs back to full objects
+                        selectedValues.forEach(value => {
+                          const desisteur = desisteurs.find(d => 
+                            (isEditing ? d.id : d.client.id) === value
+                          );
+                          if (desisteur) {
+                            totalPercent += desisteur.pourcentage;
+                            selectedDesisteurs.push({
+                              id: desisteur.id,
+                              cl_id: isEditing ? desisteur.cl_id : desisteur.client.id,
+                              nom: isEditing ? desisteur.nom : desisteur.client.nom,
+                              prenom: isEditing ? desisteur.prenom : desisteur.client.prenom,
+                              pourcentage: desisteur.pourcentage,
+                            });
+                          }
                         });
 
                         set_desisteur_dp_proche(selectedDesisteurs);
-
                         setValue('desisteur_dp_proche_co', selectedDesisteurs);
                         setValue('somme_percent', totalPercent);
                         set_clients_profit_de(
                           getDifference(desisteurs_testt, selectedDesisteurs)
                         );
-                        field.onChange(newValue);
                       }}
-                      placeholder="Choisissez un/plusieurs Désisteurs"
-                      errors={{}}
-                      backendErrors={{}}
-                      valueKey="id" // Ensures proper value matching
+                      error={errors.desisteur_dp_proche_co?.message}
                     />
                   )}
                 />
@@ -759,7 +768,7 @@ export function Desistement_Au_Profit({
             </div>
             {/* Somme % Ajoutés */}
 
-            <div className="md:col-span-3 md:ml-4 mt-2">
+            <div className="md:col-span-3 md:ml-4">
               <TextField
                 label="Somme % Ajoutés:"
                 disabled
@@ -777,7 +786,7 @@ export function Desistement_Au_Profit({
                 {type_dp == 1 && (
                   <>
                     {/* Nb Des Nouveaux Acquéreurs */}
-                    <div className="md:col-span-3 mt-2">
+                    <div className="md:col-span-3">
                       <TextField
                         label={'Nombre Des Nouveaux Acquéreurs:'}
                         name="nb_aquereurs_dp_proche"
@@ -831,7 +840,7 @@ export function Desistement_Au_Profit({
                         {inputList.map((item, index) => (
                           <div
                             key={index}
-                            className="repeater-wrapper border border-gray-200 rounded-lg p-4 mb-4"
+                            className="repeater-wrapper mb-4"
                           >
                             <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
                               {/* CIN */}
@@ -1014,7 +1023,6 @@ export function Desistement_Au_Profit({
                     )}
                   </>
                 )}
-                <p>{JSON.stringify(watch('profit_dp_co_reser'))}</p>
 
                 {type_dp == 2 && (
                   <>
@@ -1630,15 +1638,27 @@ export function Desistement_Au_Profit({
 
       {(type_dp == 1 || type_dp == 3) && (
         <div className="grid grid-cols-1 md:grid-cols-1 gap-6 mb-6">
-          <AutocompleteSelectComponent
+          <SelectInput
             label="Lien de Parenté :"
             name="lien_parente"
-            value={isEditing && formData.lien_parente}
-            control={control}
-            options={lien_parentes}
-            errors={{}}
-            required
-            onChange={(value) => setValue('lien_parente', value)}
+            value={isEditing ? formData.lien_parente : watch('lien_parente')}
+            required={true}
+            options={
+              // Handle both array and object formats for lien_parentes
+              !lien_parentes ? [] :
+              Array.isArray(lien_parentes) ? lien_parentes :
+              typeof lien_parentes === 'object' ? Object.entries(lien_parentes).map(([key, value]) => ({
+                value: key,
+                label: typeof value === 'object' ? value.label || value.name || String(value) : String(value)
+              })) :
+              []
+            }
+            onChange={(value) => {
+              console.log('Selected lien parenté:', value);
+              setValue('lien_parente', value);
+            }}
+            error={errors.lien_parente?.message}
+            placeholder="Sélectionnez un lien de parenté"
           />
         </div>
       )}
