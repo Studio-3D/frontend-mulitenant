@@ -11,20 +11,11 @@ import {
   FormControl,
   TextField as TextField1,
   Autocomplete as Autocomplete1,
-  MenuItem,
-  InputLabel,
-  FormHelperText,
   Alert
 } from "@mui/material";
 import { CIVILITES, getSCodeCivilite } from "@/components/client-utils";
-import { fetchDataByProjet } from "@/configs/api-utils";
 import { useProjet } from "@/context/ProjetContext";
-import TextField from "@/components/Textfield";
-import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
-import Autocomplete from '@/components/Autocomplete';
 import SelectInput from "@/components/SelectInput";
-import { encryptUserType, USER_TYPES } from "@/components/user-utils";
-import InputSelect from "@/components/inputSelect";
 import Input from '@/components/Input';
 
 const PrestataireForm = ({ id = null }) => {
@@ -319,25 +310,33 @@ const handleChange_event = (name) => (event) => {
           onChange={(val) => field.onChange(val)}
           error={errors?.civilite?.message || backendErrors?.civilite?.[0]}
         />
-
-
           )}
     />
 
-<InputSelect
-  label="Service"
-  name="service_id"
-  value={watch('service_id')}
-  onChange={(val) => {
-    setValue('service_id', val?.value || null);
-    const newValue = services.find(s => s.id === val?.value);
-  }}
-  options={services.map(s => ({ value: s.id, label: s.nom }))}
-  placeholder="Choisir un service..."
-  isLoading={loading}
-  error={errors?.service_id}
-  required
-/>
+    {/* REPLACED InputSelect with SelectInput */}
+    <Controller
+      name="service_id"
+      control={control}
+      rules={{ required: "Le service est requis" }}
+      render={({ field }) => (
+        <SelectInput
+          label="Service :"
+          placeholder="Choisir un service..."
+          options={Array.isArray(services) ? services.map((s) => ({
+            value: s.id,
+            label: s.nom
+          })) : []}
+          value={field.value}
+          onChange={(value) => {
+            field.onChange(value);
+            const newValue = services.find(s => s.id === value);
+          }}
+          loading={loading}
+          error={errors?.service_id?.message || backendErrors?.service_id?.[0]}
+          required={true}
+        />
+      )}
+    />
 
               
   
@@ -360,7 +359,7 @@ const handleChange_event = (name) => (event) => {
 
       </div>
 
-      <div className="flex justify-center gap-4 items-center mt-6 mb-6">
+      <div className="flex justify-center gap-4 items-center mt-20 mb-6">
         <Button
           type="button"
           onClick={() => router.back()}
