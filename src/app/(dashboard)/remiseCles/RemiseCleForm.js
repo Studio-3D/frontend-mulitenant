@@ -296,10 +296,10 @@ const RemiseCleForm = ({ id = null }) => {
           />
         </div>
       </div>
-      <div className="p-6 mt-4 bg-white shadow-md rounded-md">
+      <div className="p-6 mt-4 bg-white shadow-md rounded-lg">
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="p-6 bg-white rounded-xl space-y-6"
+          className=""
           encType="multipart/form-data"
         >
           {/* Ligne 1 : Date, Bien, Responsable (conditionnel) */}
@@ -310,33 +310,24 @@ const RemiseCleForm = ({ id = null }) => {
                 : 'grid-cols-1 sm:grid-cols-2'
             }`}
           >
-            <Input
-              label="Date Remise :"
-              name="date_remise"
-              type="date"
-              value={watch('date_remise')}
-              onChange={(e) => setValue('date_remise', e.target.value)}
-              required
-              error={
-                errors?.date_remise?.message || backendErrors?.date_remise?.[0]
-              }
-            />
             {!isEditing ? (
-              <InputSelect
+              <SelectInput
                 label="Bien"
                 name="bien_id"
                 value={watch('bien_id')}
-                onChange={(val) => {
-                  setValue('bien_id', val?.value || null);
-                }}
-                options={biens.map((s) => ({
+                required={true}
+                options={Array.isArray(biens) ? biens.map((s) => ({
                   value: s.id,
                   label: NomBienComplet(s),
-                }))}
-                placeholder="Choisir un bien..."
-                isLoading={loading_b}
-                error={errors?.bien_id}
-                required
+                })) : []}
+                loading={loading_b}
+                onChange={(value) => {
+                  // Handle both direct value and object with value property
+                  const selectedValue = value?.value || value;
+                  setValue('bien_id', selectedValue || null);
+                }}
+                error={errors?.bien_id?.message}
+                placeholder="Choisir un bien"
               />
             ) : (
               <Input
@@ -350,30 +341,40 @@ const RemiseCleForm = ({ id = null }) => {
 
             {/* Only show Responsable field for users with role <= 2 */}
             {user?.role <= 2 && (
-              <InputSelect
+              <SelectInput
                 label="Responsable"
                 name="user_id_remise"
-                value={watch('user_id_remise') || null}
-                onChange={(val) => {
-                  setValue('user_id_remise', val?.value || null);
-                }}
-                options={cc?.map((c) => ({
+                value={watch('user_id_remise')}
+                required={true}
+                options={Array.isArray(cc) ? cc.map((c) => ({
                   value: c.user.id,
                   label: `${c.user.prenom} ${c.user.name}`,
-                }))}
-                placeholder="Choisir un commercial..."
-                isLoading={loading}
-                error={errors?.user_id_remise}
-                required
+                })) : []}
+                loading={loading}
+                onChange={(value) => {
+                  // Handle both string/number values and potential object values
+                  const selectedValue = value?.value !== undefined ? value.value : value;
+                  setValue('user_id_remise', selectedValue || null);
+                }}
+                error={errors?.user_id_remise?.message}
+                placeholder="Choisir un commercial"
               />
             )}
+            <Input
+              label="Date Remise :"
+              name="date_remise"
+              type="date"
+              value={watch('date_remise')}
+              onChange={(e) => setValue('date_remise', e.target.value)}
+              required
+              error={
+                errors?.date_remise?.message || backendErrors?.date_remise?.[0]
+              }
+            />
           </div>
 
-          {/* Séparateur */}
-          <hr className="border-gray-300 my-4" />
-
           {/* Ligne 2 : Fichier + Aperçu */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-start">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-start mt-4" >
             {!isEditing && (
               <div>
                 {/* Use Controller for file input with custom rendering */}
@@ -395,7 +396,7 @@ const RemiseCleForm = ({ id = null }) => {
                             handleFileChange(e);
                             field.onChange(e.target.files[0]?.name || '');
                           }}
-                          className={`h-[38px] text-[15px] px-4 py-2 outline-none border rounded-md w-full
+                          className={`h-[38px] text-[15px] px-4 py-1 outline-none border rounded-md w-full
                             ${
                               fieldState.error || backendErrors?.fichier?.[0]
                                 ? 'border-red-500 focus:border-red-500 hover:border-red-500'
