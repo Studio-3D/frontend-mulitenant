@@ -11,7 +11,6 @@ import { useRouter } from 'next/navigation';
 // Importez vos composants Input, InputSelect, SelectInput ici
 import Input from '@/components/Input';
 import SelectInput from '@/components/SelectInput';
-import InputSelect from '@/components/inputSelect';
 import { useAuth } from '@/context/AuthContext';
 import { useProjet } from '@/context/ProjetContext';
 import { APIURL, ENDPOINTS, RESOURCE_URL } from '@/configs/api';
