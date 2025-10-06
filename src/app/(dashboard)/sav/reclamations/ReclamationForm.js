@@ -2,9 +2,9 @@ import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
-import AutocompleteMultiple from '@/components/AutocompleteMultiple';
+import SelectInput from '@/components/SelectInput';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Controller, useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import * as yup from 'yup';
 import { APIURL, ENDPOINTS } from '../../../../configs/api';
@@ -17,7 +17,6 @@ import LoadingSpin from '@/components/LoadingSpin';
 import ConfirmDialog from '@/components/dialog-File';
 import { useProjet } from '@/context/ProjetContext';
 import { Box, CircularProgress, Grid, IconButton, TextField as TextField1, Typography, Autocomplete as Autocomplete1 } from '@mui/material';
-import InputSelect from '@/components/inputSelect';
 import Input from '@/components/Input';
 
 export default function ReclamationForm({ id }) {
@@ -42,9 +41,6 @@ export default function ReclamationForm({ id }) {
     value: s.description,
     label: s.description,
   }));
-
-  
-  
 
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [formData, setFormData] = useState(null);
@@ -450,209 +446,220 @@ export default function ReclamationForm({ id }) {
       </div>
       <div className="p-6 mt-4 bg-white shadow-md rounded-md">
         <form onSubmit={handleSubmit(onSubmit)}>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             
-     
-      <InputSelect
-        label="Bien"
-        name="bien_id"
-        value={watch('bien_id')}
-        onChange={(val) => {
-          setValue('bien_id', val?.value || null);
+            {/* Bien SelectInput */}
+            <Controller
+              name="bien_id"
+              control={control}
+              rules={{ required: "Le bien est obligatoire" }}
+              render={({ field }) => (
+                <SelectInput
+                  label="Bien"
+                  placeholder="Choisir un bien..."
+                  options={Array.isArray(BIENS) ? BIENS.map(s => ({
+                    value: s.id,
+                    label: NomBienComplet(s)
+                  })) : []}
+                  value={field.value}
+                  onChange={(value) => {
+                    field.onChange(value);
+                    const newValue = BIENS.find(s => s.id === value);
+                    
+                    // Réinitialiser les clients si aucun bien n'est sélectionné
+                    if (newValue?.clients?.length) {
+                      setClients(
+                        newValue.clients.map(aq => ({
+                          id: aq.client.id,
+                          nom: aq.client.nom,
+                          prenom: aq.client.prenom
+                        }))
+                      );
+                    } else {
+                      setClients([]);
+                    }
 
-          const newValue = BIENS.find(s => s.id === val?.value);
-          
-          // Réinitialiser les clients si aucun bien n'est sélectionné
-          if (newValue?.clients?.length) {
-            setClients(
-              newValue.clients.map(aq => ({
-                id: aq.client.id,
-                nom: aq.client.nom,
-                prenom: aq.client.prenom
-              }))
-            );
-          } else {
-            setClients([]);
-          }
+                    // Éventuellement, réinitialiser le champ client sélectionné
+                    setValue('client_id', null);
+                  }}
+                  loading={loading}
+                  error={errors?.bien_id?.message || backendErrors?.bien_id?.[0]}
+                  required={true}
+                />
+              )}
+            />
 
-          // Éventuellement, réinitialiser le champ client sélectionné
-          setValue('client_id', null);
-        }}
-        options={BIENS.map(s => ({
-          value: s.id,
-          label: NomBienComplet(s)
-        }))}
-        placeholder="Choisir un bien..."
-        isLoading={loading}
-        error={errors?.bien_id}
-        required
-      />
+            {/* Client SelectInput */}
+            <Controller
+              name="client_id"
+              control={control}
+              rules={{ required: "Le client est obligatoire" }}
+              render={({ field }) => (
+                <SelectInput
+                  label="Client"
+                  placeholder="Choisir un client..."
+                  options={Array.isArray(clients) ? clients.map(c => ({
+                    value: c.id,
+                    label: `${c.prenom} ${c.nom}`
+                  })) : []}
+                  value={field.value}
+                  onChange={(value) => {
+                    field.onChange(value);
+                  }}
+                  loading={loading}
+                  error={errors?.client_id?.message || backendErrors?.client_id?.[0]}
+                  required={true}
+                />
+              )}
+            />
 
+            {/* Service SelectInput */}
+            <Controller
+              name="service_id"
+              control={control}
+              render={({ field }) => (
+                <SelectInput
+                  label="Service"
+                  placeholder="Choisir un service..."
+                  options={Array.isArray(services) ? services.map(s => ({ 
+                    value: s.id, 
+                    label: s.nom 
+                  })) : []}
+                  value={field.value}
+                  onChange={(value) => {
+                    field.onChange(value);
+                    const newValue = services.find(s => s.id === value);
+                  }}
+                  loading={loading}
+                  error={errors?.service_id?.message || backendErrors?.service_id?.[0]}
+                  required={true}
+                />
+              )}
+            />
 
-      <InputSelect
-        label="Client"
-        name="client_id"
-        value={watch('client_id')}
-        onChange={(val) => {
-          setValue('client_id', val?.value || null);
-        }}
-        options={clients.map(c => ({
-          value: c.id,
-          label: `${c.prenom} ${c.nom}` // plus lisible
-        }))}
-        placeholder="Choisir un client..."
-        isLoading={loading}
-        error={errors?.client_id}
-        required
-      />
-  
+            <Input
+              label="Date réclamation :"
+              type="datetime-local"
+              name="date_reclamation"
+              value={watch('date_reclamation')}
+              onChange={(e) => setValue('date_reclamation', e.target.value)}
+              placeholder=""
+              error={errors?.date_reclamation?.message || backendErrors?.date_reclamation}
+              required
+            />
+            {/* Emplacement Autocomplete */}
+            <div className="w-full sm:col-span-2 md:col-span-2"> 
+              <Controller
+                name="emplacements"
+                control={control}
+                rules={{ required: "L'emplacement est obligatoire" }}
+                render={({ field }) => (
+                  <SelectInput
+                    label="Emplacement :"
+                    placeholder="Sélectionnez un ou plusieurs emplacements"
+                    options={emplacementOptions}
+                    value={field.value}
+                    onChange={(value) => {
+                      field.onChange(value);
+                    }}
+                    error={errors?.emplacements?.message || backendErrors?.emplacements?.[0]}
+                    required={true}
+                    loading={loading}
+                    isMulti={true}
+                  />
+                )}
+              />
+            </div>
+            <div className="w-full sm:col-span-2 md:col-span-2"> 
+              <Input
+                label="Problème(s) :"
+                name="problemes"
+                value={watch('problemes') || ''}
+                onChange={(e) => setValue('problemes', e.target.value)}
+                required
+                multiline
+                error={errors?.problemes?.message || backendErrors?.problemes?.[0]}
+              />
+            </div>
 
-             
+            
+          </div>
+          <div className="mt-6">
+            <Grid container spacing={2} alignItems="flex-start">
+              {/* Input Fichier */}
+              <Grid item xs={12} sm={4}>
+                {loading_list ? (
+                  <CircularProgress />
+                ) : (
+                  <Input
+                    label="Pièce jointe"
+                    type="file"
+                    name="piece_jointe"
+                    onChange={handleFileChange}
+                    error={errors?.piece_jointe}
+                    accept="image/*,application/pdf"
+                  />
+                )}
+              </Grid>
 
-      <InputSelect
-        label="Service"
-        name="service_id"
-        value={watch('service_id')}
-        onChange={(val) => {
-          setValue('service_id', val?.value || null);
-          const newValue = services.find(s => s.id === val?.value);
-        }}
-        options={services.map(s => ({ value: s.id, label: s.nom }))}
-        placeholder="Choisir un service..."
-        isLoading={loading}
-        error={errors?.service_id}
-        required
-      />
-
-
-      <Input
-        label="Date réclamation :"
-        type="datetime-local"
-        name="date_reclamation"
-        value={watch('date_reclamation')}
-        onChange={(e) => setValue('date_reclamation', e.target.value)}
-        placeholder=""
-        error={errors?.date_reclamation?.message || backendErrors?.date_reclamation}
-        required
-      />
-
-              
-              
-
-      <div className="w-full sm:col-span-2 md:col-span-2"> 
-        <Input
-          label="Problème(s) :"
-          name="problemes"
-          value={watch('problemes') || ''}
-          onChange={(e) => setValue('problemes', e.target.value)}
-          required
-          multiline
-          error={errors?.problemes?.message || backendErrors?.problemes?.[0]}
-        />
-      </div>
-      <div className="w-full sm:col-span-2 md:col-span-2"> 
-      <InputSelect
-        label="Emplacement :"
-        name="emplacements"
-        value={watch('emplacements') || []}
-        onChange={(selectedOptions) => {
-          const selectedDescriptions = selectedOptions.map(opt => opt.value);
-          setValue('emplacements', selectedDescriptions);
-        }}
-        options={emplacementOptions}
-        placeholder="Sélectionnez un ou plusieurs emplacements"
-        error={errors?.emplacements?.message}
-        required={true}
-        isLoading={loading}
-        isMulti={true}
-      />
-      </div>
-
-
-             
-             </div>
-             <div className="w-full sm:col-span-2 md:col-span-4 mt-4 mb-2 border-t border-gray-300" />
-
-             <div className="mt-6">
-  <Grid container spacing={2} alignItems="flex-start">
-    {/* Input Fichier */}
-    <Grid item xs={12} sm={4}>
-      {loading_list ? (
-        <CircularProgress />
-      ) : (
-        <Input
-          label="Pièce jointe"
-          type="file"
-          name="piece_jointe"
-          onChange={handleFileChange}
-          error={errors?.piece_jointe}
-          accept="image/*,application/pdf"
-        />
-
-      )}
-    </Grid>
-
-          {/* Fichiers sélectionnés */}
-          {selectedFiles_rsv?.length > 0 && (
-            <Grid item xs={12} sm={8}>
-              <Typography variant="subtitle2" color="primary" sx={{ mb: 1 }}>
-                Piéces jointes sélectionnées :
-              </Typography>
-              <Grid
-                container
-                spacing={1}
-                sx={{
-                  p: 1,
-                  border: theme => `0.5px solid ${theme.palette.divider}`,
-                  borderRadius: 1,
-                  width: '100%',
-                  flexWrap: 'wrap',
-                }}
-              >
-                {selectedFiles_rsv.map((data, index) => (
-                  <Box
-                    key={index}
+              {/* Fichiers sélectionnés */}
+              {selectedFiles_rsv?.length > 0 && (
+                <Grid item xs={12} sm={8}>
+                  <Typography variant="subtitle2" color="primary" sx={{ mb: 1 }}>
+                    Piéces jointes sélectionnées :
+                  </Typography>
+                  <Grid
+                    container
+                    spacing={1}
                     sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      backgroundColor: '#e0e0e0',
+                      p: 1,
+                      border: theme => `0.5px solid ${theme.palette.divider}`,
                       borderRadius: 1,
-                      
+                      width: '100%',
+                      flexWrap: 'wrap',
                     }}
                   >
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        fontSize: 12,
-                        mr: 1,
-                        cursor: 'pointer',
-                        '&:hover': { color: 'blue' },
-                      }}
-                      onClick={() =>
-                        data.fichier
-                          ? handleFileClick(data.fichier)
-                          : handleDownload(data)
-                      }
-                    >
-                      {data.fichier || data.name}
-                    </Typography>
-                    <IconButton
-                      color="error"
-                      size="small"
-                      onClick={() => handleDeleteFile(index)}
-                    >
-                      <Typography sx={{ fontSize: 14 }}>×</Typography>
-                    </IconButton>
-                  </Box>
-                ))}
-              </Grid>
+                    {selectedFiles_rsv.map((data, index) => (
+                      <Box
+                        key={index}
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          backgroundColor: '#e0e0e0',
+                          borderRadius: 1,
+                        }}
+                      >
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            fontSize: 12,
+                            mr: 1,
+                            cursor: 'pointer',
+                            '&:hover': { color: 'blue' },
+                          }}
+                          onClick={() =>
+                            data.fichier
+                              ? handleFileClick(data.fichier)
+                              : handleDownload(data)
+                          }
+                        >
+                          {data.fichier || data.name}
+                        </Typography>
+                        <IconButton
+                          color="error"
+                          size="small"
+                          onClick={() => handleDeleteFile(index)}
+                        >
+                          <Typography sx={{ fontSize: 14 }}>×</Typography>
+                        </IconButton>
+                      </Box>
+                    ))}
+                  </Grid>
+                </Grid>
+              )}
             </Grid>
-          )}
-        </Grid>
-      </div>
+          </div>
 
-            
-          
           <div className="flex justify-center gap-4 items-center mt-6 mb-6">
             <Button type="button" onClick={() => router.back()}>
               Annuler
