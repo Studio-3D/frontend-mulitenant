@@ -4,6 +4,7 @@ import TextField from "@/components/Textfield";
 import AutocompleteBien from "./AutocompleteBien";
 import AutocompleteSelectComponent from "@/components/AutocompleteSelectComponent";
 import Autocomplete from "@/components/Autocomplete";
+import SelectInput from "@/components/SelectInput";
 
 import { APIURL } from "../../../../../../configs/api";
 import Pusher from "pusher-js";
@@ -366,16 +367,40 @@ export function Changement_De_Bien({
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <AutocompleteBien
-            name="bien_id"
-            user={user}
-            control={control}
-            biensByProjet={uniqueBiens}
-            value={watch("bien_id")}
-            onChange={handlechangeBien_id}
-            loading={loading_bien}
-            error={errors.bien_id}
+          <SelectInput
             label="Nouveau Bien"
+            name="bien_id"
+            value={watch("bien_id")}
+            required={true}
+            options={
+              Array.isArray(uniqueBiens) 
+                ? uniqueBiens.map(bien => ({
+                    value: JSON.stringify({ // Store full object as JSON string
+                      id: bien.id,
+                      // Include other properties that might be needed
+                      ...bien
+                    }),
+                    label: bien.propriete_dite_bien || bien.nom || `Bien ${bien.id}`
+                  }))
+                : []
+            }
+            onChange={(selectedValue) => {
+              if (selectedValue) {
+                try {
+                  const bienObject = JSON.parse(selectedValue);
+                  // Call your existing handler with the full object
+                  handlechangeBien_id(null, bienObject);
+                } catch (error) {
+                  console.error('Error parsing bien object:', error);
+                }
+              } else {
+                // Handle null/empty selection
+                handlechangeBien_id(null, null);
+              }
+            }}
+            error={errors.bien_id?.message}
+            placeholder="Sélectionnez un nouveau bien"
+            loading={loading_bien}
           />
           {/* Show additional fields when a new bien is selected */}
           {new_bien_id != 0 && (
@@ -490,103 +515,6 @@ export function Changement_De_Bien({
                 </>
               )}
             </div>
-
-            {/* <div>
-              <div className="space-y-4">
-                {/* File Input 
-                <div className="relative">
-                  <TextField
-                    label="Fichiers Paiement:"
-                    control={control}
-                    errors={{}}
-                    backendErrors={{}}
-                    defaultValues={{}}
-                    name="files_avance_"
-                    type="file"
-                    onChange={(e) => handleFileChange(e, 2)}
-                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" // Specify accepted file types
-                  />
-                  <p className="mt-1 text-xs text-gray-500">
-                    Formats acceptés: PDF, JPG, PNG, DOC (Taille max: 10MB)
-                  </p>
-                </div>
-
-                {/* Selected Files Preview 
-                {selectedFiles_avc.length > 0 && (
-                  <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                      <svg
-                        className="w-4 h-4 mr-2 text-primary-500"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                        />
-                      </svg>
-                      Fichiers sélectionnés ({selectedFiles_avc.length})
-                    </h3>
-
-                    <div className="space-y-2">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                        {selectedFiles_avc.map((data, index) => (
-                          <div
-                            key={data.id || data.name || index}
-                            className="flex flex-col p-3 bg-white rounded-md border border-gray-200 hover:border-blue-200 transition-colors h-full"
-                          >
-                            <div className="flex items-center mb-2">
-                              {/* File icon based on type 
-                              {getFileIcon(data.name || data.fichier)}
-
-                              <button
-                                onClick={() =>
-                                  data.fichier
-                                    ? handleFileClick(data.fichier)
-                                    : handleDownloadFile(data)
-                                }
-                                className="ml-2 text-sm font-medium text-gray-700 hover:text-blue-600 truncate flex-1 text-left"
-                                title={data.fichier || data.name}
-                              >
-                                {data.fichier || data.name}
-                              </button>
-                            </div>
-
-                            <div className="flex items-center justify-between mt-auto">
-                              <span className="text-xs text-gray-500">
-                                {formatFileSize(data.size)}
-                              </span>
-                              <button
-                                onClick={() => handleDeleteFile(index)}
-                                className="p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 transition-colors"
-                                title="Supprimer"
-                              >
-                                <svg
-                                  className="w-4 h-4"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                  />
-                                </svg>
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>*/}
           </>
         )}
       </div>

@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { motif_desistements } from '@/configs/enum';
 import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
+import SelectInput from '@/components/SelectInput';
 import { Controller, useFormContext } from 'react-hook-form';
-import TextField from '@/components/Textfield'; // Import the component
+import TextField from '@/components/Textfield';
 import Autocomplete from '@/components/Autocomplete';
 import { data_by_projet_and_params } from '../../../../../../../src/configs/api-utils';
 import { APIURL } from '../../../../../../configs/api';
 import axios from 'axios';
 import { User, Home, Box, DollarSign, HandCoins, Wallet } from 'lucide-react';
+
 export function Desistement_Definitif({
   isEditing,
   formData,
@@ -16,33 +18,116 @@ export function Desistement_Definitif({
   inputListRemb_get,
   sum_avances_valides,
   reservationId,
-  onDossierInfosChange, // Add this prop
+  onDossierInfosChange,
   type_remb_get,
-  /*dossierInfos, // Add this
-  setDossierInfos, // Add this*/
 }) {
   const {
     control,
     watch,
     setValue,
-    formState: { errors }, // Destructure errors from formState
+    formState: { errors },
   } = useFormContext();
   const [loading_dos, setLoading_dos] = useState();
   const [dossiers, setDossiers] = useState([]);
-  const [loadingInfos, setLoadingInfos] = useState({}); // Track loading state per client
-  const [type_remb, set_type_remb] = useState(null); // Track loading state per client
-  const [inputListRemb, set_inputList_remb] = useState([]); // Track loading state per client
-  const [dossierInfos, setDossierInfos] = useState({}); // Changed to object to store per-client dossier info
+  const [loadingInfos, setLoadingInfos] = useState({});
+  const [type_remb, set_type_remb] = useState(null);
+  const [inputListRemb, set_inputList_remb] = useState([]);
+  const [dossierInfos, setDossierInfos] = useState({});
+
+  // Debug motif_desistements
+  useEffect(() => {
+    console.log('=== motif_desistements DEBUG ===');
+    console.log('motif_desistements:', motif_desistements);
+    console.log('motif_desistements type:', typeof motif_desistements);
+    console.log('Is array?', Array.isArray(motif_desistements));
+    console.log('Is object?', typeof motif_desistements === 'object' && motif_desistements !== null);
+    
+    if (typeof motif_desistements === 'object' && motif_desistements !== null) {
+      console.log('Object keys:', Object.keys(motif_desistements));
+      console.log('Object values:', Object.values(motif_desistements));
+      console.log('Object entries:', Object.entries(motif_desistements));
+      
+      const entries = Object.entries(motif_desistements);
+      if (entries.length > 0) {
+        console.log('First entry:', entries[0]);
+        console.log('First entry key:', entries[0][0]);
+        console.log('First entry value:', entries[0][1]);
+        console.log('First entry value type:', typeof entries[0][1]);
+        
+        // Check if value is an object with code/label
+        if (typeof entries[0][1] === 'object' && entries[0][1] !== null) {
+          console.log('First entry value properties:', Object.keys(entries[0][1]));
+        }
+      }
+    }
+  }, []);
+
+  // Helper function to safely format options
+  const getMotifOptions = () => {
+    console.log('=== getMotifOptions called ===');
+    
+    if (!motif_desistements) {
+      console.log('motif_desistements is null or undefined');
+      return [];
+    }
+
+    if (Array.isArray(motif_desistements)) {
+      console.log('motif_desistements is an array, mapping directly');
+      const options = motif_desistements.map(item => ({
+        value: item.code || item.value || item.id,
+        label: item.label || item.name || item.description
+      }));
+      console.log('Array options:', options);
+      return options;
+    }
+
+    if (typeof motif_desistements === 'object') {
+      console.log('motif_desistements is an object, converting with Object.entries');
+      const entries = Object.entries(motif_desistements);
+      console.log('Number of entries:', entries.length);
+      
+      const options = entries.map(([key, value]) => {
+        console.log(`Processing entry - key: ${key}, value:`, value);
+        
+        // If value is an object with code/label properties
+        if (typeof value === 'object' && value !== null) {
+          const option = {
+            value: value.code || value.value || key,
+            label: value.label || value.name || value.description || String(value)
+          };
+          console.log('Created object option:', option);
+          return option;
+        }
+        // If value is a simple string/number
+        const option = {
+          value: key,
+          label: String(value)
+        };
+        console.log('Created simple option:', option);
+        return option;
+      });
+      console.log('Final object options:', options);
+      return options;
+    }
+
+    console.log('motif_desistements is neither array nor object, returning empty array');
+    return [];
+  };
+
+  // Test with hardcoded options to verify SelectInput works
+  const testOptions = [
+    { value: 'test1', label: 'Test Option 1' },
+    { value: 'test2', label: 'Test Option 2' },
+    { value: 'test3', label: 'Test Option 3' }
+  ];
 
   useEffect(() => {
     if (isEditing && formData) {
-      // Initialize type_remb from props
       set_type_remb(type_remb_get);
       setValue('motif', formData.motif);
       setValue('type_remb', type_remb_get);
       setValue('commentaire_rejete', formData.commentaire_rejete);
 
-      // Initialize inputListRemb from formData
       const list =
         formData?.remboursement?.length > 0
           ? formData.remboursement.map((item) => ({
@@ -52,7 +137,7 @@ export function Desistement_Definitif({
               pourcentage: item.aquereur?.pourcentage,
               prenom: item?.aquereur?.client.prenom,
               date_rembourse: item.date_rembourse,
-              mode_rembourse: item.mode_rembourse_client, // Make sure this matches your data
+              mode_rembourse: item.mode_rembourse_client,
               type_remb:
                 item.mode_rembourse ==
                 ('transfert_rem_direct' || 'transfert_rem_apres_vente')
@@ -61,9 +146,9 @@ export function Desistement_Definitif({
               montant_transferer: item.montant_transfert,
               reste_a_rembourse: item.montant_a_rembourser,
               num_paiement: item.num_paiement,
-              cheque_recu: item.cheque, // This should be the filename if editing
+              cheque_recu: item.cheque,
               pour_le_compte: item.pour_le_compte,
-              fichier_autorisation: item.fichier_autorisation, // This should be the filename if editing
+              fichier_autorisation: item.fichier_autorisation,
               montant_a_rembourser: item.montant_a_rembourser,
               dossier_id: item.dossier_id_transfert,
               type_remb_transfere:
@@ -71,15 +156,13 @@ export function Desistement_Definitif({
                   ? 'immediat'
                   : item.mode_rembourse === 'transfert_rem_apres_vente'
                   ? 'apres_vente'
-                  : '', // default value if neither condition matches
+                  : '',
             }))
           : [];
 
-      //getinfo dossier by dossie_id row
       set_inputList_remb(list);
       setValue('inputList_remb', list);
 
-      // If there are existing files in edit mode, set them as values
       list.forEach((item, index) => {
         if (item.cheque_recu) {
           setValue(`inputList_remb.${index}.cheque_recu`, item.cheque_recu);
@@ -95,34 +178,30 @@ export function Desistement_Definitif({
           item.montant_a_rembourser
         );
         if (item.dossier_id) {
-          // Load dossier info for this item
           get_info_dossier_id(item.dossier_id, index);
         }
       });
     } else {
-      // Initialize for non-edit mode
       set_inputList_remb(inputListRemb_get || []);
       setValue('inputList_remb', inputListRemb_get || []);
     }
   }, [isEditing, formData, setValue]);
-  // This will update the form data when inputs change
+
   const handleInputChange = (index, fieldName, value) => {
     setValue(`inputList_remb.${index}.${fieldName}`, value);
   };
 
-  // Modified handleFileChange to handle edit mode
   const handleFileChange = (index, fieldName, event) => {
     if (event.target.files && event.target.files[0]) {
       setValue(`inputList_remb.${index}.${fieldName}`, event.target.files[0]);
     } else if (isEditing) {
-      // Keep existing file in edit mode if no new file is selected
       const existingFile = inputListRemb[index]?.[fieldName];
       if (existingFile) {
         setValue(`inputList_remb.${index}.${fieldName}`, existingFile);
       }
     }
   };
-  // Fetch dossier data (only for model 1)
+
   const fetchDossierData = async () => {
     try {
       setLoading_dos(true);
@@ -141,7 +220,6 @@ export function Desistement_Definitif({
     }
   };
 
-  // Fetch all initial data
   useEffect(() => {
     fetchDossierData();
   }, []);
@@ -174,7 +252,6 @@ export function Desistement_Definitif({
           [index]: newDossierInfo,
         }));
 
-        // Notify parent about the change
         if (onDossierInfosChange) {
           onDossierInfosChange(index, newDossierInfo);
         }
@@ -194,20 +271,17 @@ export function Desistement_Definitif({
           type_remb: item.type_remb || 'direct',
           mode_rembourse: item.mode_rembourse || '',
           reste_a_rembourse: item.reste_a_rembourse || 'fadwa',
-          // Ensure all other fields are preserved
         });
       });
     }
   }, [type_remb, inputListRemb, setValue]);
+
   const handleModeChange = (index, newMode) => {
-    // Get current values while preserving all fields
     const currentValues = watch(`inputList_remb.${index}`) || {};
 
-    // Update only the necessary fields
     setValue(`inputList_remb.${index}`, {
-      ...currentValues, // Keep all existing properties
+      ...currentValues,
       type_remb: newMode,
-      // Reset these fields but keep other values
       dossier_id: '',
       montant_transferer: '',
       reste_a_rembourse: '',
@@ -226,13 +300,13 @@ export function Desistement_Definitif({
           : currentValues.type_remb_transfere || 'immediat',
     });
 
-    // Clear dossier info for this client
     setDossierInfos((prev) => {
       const newInfos = { ...prev };
       delete newInfos[index];
       return newInfos;
     });
   };
+
   return (
     <div className="p-6">
       {isEditing && (
@@ -242,28 +316,31 @@ export function Desistement_Definitif({
           </p>
         </div>
       )}
+      <div className="flex items-center gap-6 mb-6">
+        <div className="w-1/2">
+          <SelectInput
+            label="Motif :"
+            name="motif"
+            value={isEditing ? formData.motif : watch('motif')}
+            required={true}
+            options={getMotifOptions()}
+            onChange={(value) => {
+              console.log('Selected motif value:', value);
+              setValue('motif', value);
+            }}
+            error={errors.motif?.message}
+            placeholder="Sélectionnez un motif"
+          />
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <AutocompleteSelectComponent
-          label="Motif :"
-          name="motif"
-          value={isEditing && formData.motif}
-          control={control}
-          options={motif_desistements}
-          errors={{}}
-          required
-          onChange={(value) => setValue('motif', value)}
-        />
-      </div>
-      {sum_avances_valides > 0 && (
-        <div className="border-t border-gray-200 py-4">
-          <div className="flex flex-row space-x-4">
+        {sum_avances_valides > 0 && (
+          <div className="flex flex-col">
             <Controller
               name="type_remb"
               control={control}
               render={({ field }) => (
                 <div>
-                  <div className="flex flex-row space-x-4">
+                  <div className="flex flex-row items-center space-x-6">
                     <label className="inline-flex items-center">
                       <input
                         type="radio"
@@ -294,15 +371,16 @@ export function Desistement_Definitif({
                     </label>
                   </div>
                   {errors.type_remb && (
-                    <p style={{ color: 'red' }}>{errors.type_remb.message}</p>
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.type_remb.message}
+                    </p>
                   )}
                 </div>
               )}
             />
           </div>
-        </div>
-      )}
-
+        )}
+      </div>
       {type_remb == 'direct' && (
         <>
           <div className="border-t border-gray-300 my-4"></div>
@@ -332,9 +410,9 @@ export function Desistement_Definitif({
               return (
                 <div
                   key={`${itemKey}`}
-                  className="mb-6 p-4 border border-gray-200 rounded-lg"
+                  className=""
                 >
-                  <p className="text-indigo-600 font-semibold mb-4">
+                  <p className="text-indigo-600 font-bold mb-4">
                     Montant à rembourser au client: {item.nom} {item.prenom}
                     {currentMode !== 'transfert' && (
                       <span className="text-red-500 ml-2">
@@ -342,15 +420,15 @@ export function Desistement_Definitif({
                       </span>
                     )}
                   </p>
-                  <div className="mb-3">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Mode Remboursement:
+                  <div className="mb-4">
+                    <label className="block font-medium text-gray-700">
+                      Mode Remboursement :
                       <span className="text-red-500">*</span>
                     </label>
                     <Controller
                       name={`inputList_remb.${index}.type_remb`}
                       control={control}
-                      defaultValue={item.type_remb || 'direct'} // Use existing value or default
+                      defaultValue={item.type_remb || 'direct'}
                       rules={{
                         required: {
                           value: true,
@@ -358,7 +436,6 @@ export function Desistement_Definitif({
                         },
                       }}
                       render={({ field, fieldState: { error } }) => {
-                        // Normalize the type_remb values from your data
                         const normalizedValue =
                           field.value == 'transfert_rem_direct' ||
                           field.value == 'transfert_rem_apres_vente'
@@ -419,26 +496,21 @@ export function Desistement_Definitif({
                     />
                   </div>
                   {showTransferSection && (
-                    <div className="border-t border-gray-200 my-4 p-4 bg-gray-50 rounded-lg">
-                      <h3 className="text-lg font-medium mb-4">
-                        Détails du Transfert
-                      </h3>
-
+                    <div className="">
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                         <div>
-                          <Autocomplete
+                          <SelectInput
                             label="Dossiers:"
-                            required
                             name={`inputList_remb.${index}.dossier_id`}
-                            options={dossiers}
-                            loading={loading_dos}
-                            choix="code_reservation"
-                            control={control}
-                            errors={{}}
-                            backendErrors={{}}
                             value={watch(`inputList_remb.${index}.dossier_id`)}
-                            onChange={(newValue) => {
-                              const dossierId = newValue?.id || '';
+                            required={true}
+                            options={dossiers.map(dossier => ({
+                              value: dossier.id,
+                              label: dossier.code_reservation || `Dossier ${dossier.id}`
+                            }))}
+                            loading={loading_dos}
+                            onChange={(selectedValue) => {
+                              const dossierId = selectedValue;
                               setValue(
                                 `inputList_remb.${index}.dossier_id`,
                                 dossierId
@@ -446,7 +518,6 @@ export function Desistement_Definitif({
                               if (dossierId) {
                                 get_info_dossier_id(dossierId, index);
                               } else {
-                                // Clear dossier info if no dossier selected
                                 setDossierInfos((prev) => {
                                   const newInfos = { ...prev };
                                   delete newInfos[index];
@@ -454,6 +525,8 @@ export function Desistement_Definitif({
                                 });
                               }
                             }}
+                            error={errors.inputList_remb?.[index]?.dossier_id?.message}
+                            placeholder="Sélectionnez un dossier"
                           />
                         </div>
 
@@ -470,7 +543,6 @@ export function Desistement_Definitif({
                               <div className="overflow-x-auto">
                                 <table className="min-w-full divide-y divide-gray-200">
                                   <tbody className="bg-white divide-y divide-gray-200">
-                                    {/* Render dossier info for this client */}
                                     <tr>
                                       <td className="px-4 py-2 whitespace-nowrap">
                                         <div className="flex items-center text-sm text-gray-900">
@@ -599,19 +671,16 @@ export function Desistement_Definitif({
                                             sum_avances_valides;
                                           let errorMessage = '';
 
-                                          // Vérifie si le montant est <= 0
                                           if (value <= 0) {
                                             errorMessage =
                                               'Le montant transféré ne doit pas être négatif ou égal à 0';
                                           }
-                                          // Si le montant est valide (>0), on vérifie les autres conditions
                                           else {
                                             if (
                                               value >
                                                 sum_avance_by_aq_percent &&
                                               value > dossierInfos[index].reste
                                             ) {
-                                              // Les deux limites sont dépassées
                                               errorMessage = `Le montant transféré ne doit pas dépasser le reste de dossier (${dossierInfos[
                                                 index
                                               ].reste
@@ -622,21 +691,18 @@ export function Desistement_Definitif({
                                             } else if (
                                               value > sum_avance_by_aq_percent
                                             ) {
-                                              // Seul le reste à rembourser est dépassé
                                               errorMessage = `Le montant transféré ne doit pas dépasser le reste à rembourser (${sum_avance_by_aq_percent
                                                 .toFixed(2)
                                                 .toLocaleString()} DH)`;
                                             } else if (
                                               value > dossierInfos[index].reste
                                             ) {
-                                              // Seul le reste de dossier est dépassé
                                               errorMessage = `Le montant transféré ne doit pas dépasser le reste de dossier (${dossierInfos[
                                                 index
                                               ].reste
                                                 .toFixed(2)
                                                 .toLocaleString()} DH)`;
                                             }
-                                            // Sinon, pas d'erreur (errorMessage reste vide)
                                           }
 
                                           setValue(
@@ -725,47 +791,38 @@ export function Desistement_Definitif({
 
                   {showDirectFields && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Date Remboursement */}
-                      <>
-                        {/* Mode Remboursement 2 */}
-
-                        <div className="w-full">
-                          {' '}
-                          {/* This wrapper ensures proper layout */}
-                          <TextField
-                            label="Date Remboursement"
-                            name={`inputList_remb.${index}.date_rembourse`}
-                            required
-                            type="date"
-                            control={control}
-                            errors={{}}
-                            backendErrors={{}}
-                            onChange={(e) =>
-                              handleInputChange(
-                                index,
-                                'date_rembourse',
-                                e.target.value
-                              )
+                      <div className="w-full">
+                        <TextField
+                          label="Date Remboursement"
+                          name={`inputList_remb.${index}.date_rembourse`}
+                          required
+                          type="date"
+                          control={control}
+                          errors={{}}
+                          backendErrors={{}}
+                          onChange={(e) =>
+                            handleInputChange(
+                              index,
+                              'date_rembourse',
+                              e.target.value
+                            )
+                          }
+                          width="w-full"
+                          height="h-[38px]"
+                        />
+                        {errors.inputList_remb?.[index]?.date_rembourse && (
+                          <p
+                            style={{ color: 'red' }}
+                            className="mt-1 text-xs"
+                          >
+                            {
+                              errors.inputList_remb[index].date_rembourse
+                                .message
                             }
-                            width="w-full"
-                            height="h-[38px]"
-                          />
-                          {errors.inputList_remb?.[index]?.date_rembourse && (
-                            <p
-                              style={{ color: 'red' }}
-                              className="mt-1 text-xs"
-                            >
-                              {' '}
-                              {/* Added margin and text styling */}
-                              {
-                                errors.inputList_remb[index].date_rembourse
-                                  .message
-                              }
-                            </p>
-                          )}
-                        </div>
-                      </>
-                      {/* Mode Remboursement */}
+                          </p>
+                        )}
+                      </div>
+
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Remboursé par: <span className="text-red-500">*</span>
@@ -813,13 +870,9 @@ export function Desistement_Definitif({
                         />
                       </div>
 
-                      {/* Conditional fields - only show if mode_rembourse is set */}
                       {watch(`inputList_remb.${index}.mode_rembourse`) && (
                         <>
-                          {/* Numéro Paiement */}
                           <div className="w-full">
-                            {' '}
-                            {/* This wrapper ensures proper layout */}
                             <TextField
                               label="N° Paiement"
                               name={`inputList_remb.${index}.num_paiement`}
@@ -843,8 +896,6 @@ export function Desistement_Definitif({
                                 style={{ color: 'red' }}
                                 className="mt-1 text-xs"
                               >
-                                {' '}
-                                {/* Added margin and text styling */}
                                 {
                                   errors.inputList_remb[index].num_paiement
                                     .message
@@ -853,10 +904,7 @@ export function Desistement_Definitif({
                             )}
                           </div>
 
-                          {/* Chèque/Reçu */}
                           <div className="w-full">
-                            {' '}
-                            {/* This wrapper ensures proper layout */}
                             <TextField
                               label="Chéque/Reçu"
                               name={`inputList_remb.${index}.cheque_recu`}
@@ -885,8 +933,6 @@ export function Desistement_Definitif({
                                 style={{ color: 'red' }}
                                 className="mt-1 text-xs"
                               >
-                                {' '}
-                                {/* Added margin and text styling */}
                                 {
                                   errors.inputList_remb[index].cheque_recu
                                     .message
@@ -895,7 +941,6 @@ export function Desistement_Definitif({
                             )}
                           </div>
 
-                          {/* Pour le Compte */}
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                               Pour le Compte:{' '}
@@ -910,14 +955,14 @@ export function Desistement_Definitif({
                                   message: 'Vous devez choisir une option',
                                 },
                               }}
-                              defaultValue={undefined} // ESSENTIEL: ne pas mettre de valeur par défaut
+                              defaultValue={undefined}
                               render={({ field, fieldState: { error } }) => (
                                 <div>
                                   <div className="flex gap-4">
                                     <label className="inline-flex items-center">
                                       <input
                                         type="radio"
-                                        {...field} // Utilise les props de field directement
+                                        {...field}
                                         value="lui_meme"
                                         checked={field.value == 'lui_meme'}
                                         onChange={(e) => {
@@ -961,7 +1006,6 @@ export function Desistement_Definitif({
                             />
                           </div>
 
-                          {/* Fichier Autorisation (conditional) */}
                           {watch(`inputList_remb.${index}.pour_le_compte`) ==
                             'autre' && (
                             <div>
@@ -993,8 +1037,6 @@ export function Desistement_Definitif({
                                   style={{ color: 'red' }}
                                   className="mt-1 text-xs"
                                 >
-                                  {' '}
-                                  {/* Added margin and text styling */}
                                   {
                                     errors.inputList_remb[index]
                                       .fichier_autorisation.message

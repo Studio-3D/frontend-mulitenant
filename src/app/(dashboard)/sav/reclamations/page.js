@@ -39,7 +39,7 @@ export default function Page() {
         child
       ) : (
         <>
-          <div>
+          <div className='p-4 bg-white rounded-lg shadow-md'>
             <ReclamationTable />
           </div>
         </>

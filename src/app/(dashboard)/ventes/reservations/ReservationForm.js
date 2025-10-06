@@ -1622,16 +1622,30 @@ export default function ReservationForm({ id }) {
                 <div key={index} className="flex items-start space-x-4">
                   <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <AutocompleteClient
-                        options={clientsExist}
+                      <SelectInput
+                        label="Client"
+                        name={`client_${index}`}
                         value={entry.id}
-                        onChange={handleinputchange1}
+                        required={true}
+                        options={Array.isArray(clientsExist) ? clientsExist.map(client => ({
+                          value: client.id,
+                          label: `${client.nom} ${client.prenom}`,
+                          disabled: client.disabled || false
+                        })) : []}
                         loading={loading_clients}
-                        index={index}
-                        selectedClient={selectedClient}
+                        onChange={(value) => {
+                          // Create a synthetic event to match the handleinputchange1 signature
+                          const syntheticEvent = {
+                            target: {
+                              name: 'id',
+                              value: value
+                            }
+                          };
+                          handleinputchange1(syntheticEvent, index, 'select_client');
+                        }}
+                        error={errors.inputList1?.[index]?.id?.message || backendErrors?.inputList1?.[index]?.id}
                         disabled={loading_clients || entry.disabled}
-                        errors={errors}
-                        backendErrors={backendErrors}
+                        placeholder="Sélectionnez un client"
                       />
                     </div>
                     <div>
@@ -1652,8 +1666,8 @@ export default function ReservationForm({ id }) {
                         onChange={(e) =>
                           handleinputchange1(e, index, 'percent')
                         }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="0"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[0.5px] focus:ring-gray-800"
+                        placeholder='Entrez un pourcentage (0-100)'
                         min="0"
                         max="100"
                       />

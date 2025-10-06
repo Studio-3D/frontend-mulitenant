@@ -323,278 +323,7 @@ export default function VisiteFormEdit({ id }) {
       }
     }
   };
-
-  useEffect(() => {
-    fetchData_Select('sources', setSources, setLoading);
-    if (partenaires.length === 0) {
-      fetchDataByProjet('partenaires', setPartenaires, setLoading);
-    }
-
-    fetchData_Select('banques', setBanques, setLoading);
-    if (isEditing) {
-      axios
-        .get(`${APIURL.ROOTV1}/edit_visite/${id}`, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        })
-        .then((res) => {
-          console.log('Full API response:', res.data); // Debug the entire response
-          console.log('Visite object:', res.data.visite); // Debug the visite object
-          if (res.status !== 200) router.back();
-          const visite = res.data.visite;
-          console.log('Frein data structure:', visite.frein);
-          console.log('Does frein exist?', visite.hasOwnProperty('frein'));
-          setFormData({
-            nom: visite?.prospect?.nom || '',
-            prenom: visite?.prospect?.prenom || '',
-            telephone: visite?.prospect?.telephone || '',
-            telephone_num2: visite?.prospect?.telephone_num2 || '',
-            email: visite?.prospect?.email || '',
-            notifie: visite?.prospect?.notifie || 0,
-            cin: visite?.prospect?.cin || '',
-            interet: visite?.interet || '',
-            ville: visite?.prospect?.ville || '',
-            source_id: visite?.prospect?.source?.id || '',
-            source_txt: visite?.prospect?.source?.source || '',
-            mode_relance: visite?.relance_relation?.mode_relance
-              ? visite?.relance_relation?.mode_relance
-              : visite?.mode_relance
-              ? visite?.mode_relance
-              : '',
-            date_relance: visite?.relance_relation?.date_relance
-              ? visite?.relance_relation?.date_relance
-              : visite?.date_relance
-              ? visite?.date_relance
-              : '',
-            commentaire: visite?.commentaire || '',
-            partenaire_id: visite?.prospect?.partenaire_id || '',
-            bien_id: visite?.bien_id ? visite?.bien_id : '',
-            bien_pre_reserve: visite?.bien_id ? visite?.bien_id : '',
-            rdv: visite?.rdv_relation?.rdv ? visite?.rdv_relation?.rdv : '',
-            statut: visite?.interet === '1' ? visite?.statut : '',
-            bien_val: visite?.bien?.propriete_dite_bien || '',
-            prix_val: visite?.bien?.prix || '',
-            prix: visite?.bien?.prix || '',
-            superficie_balcon_calculer:
-              visite?.bien != null
-                ? visite?.bien?.superficie_balcon_calculer
-                : 0,
-            superficie_jardin_calculer:
-              visite?.bien != null
-                ? visite?.bien?.superficie_balcon_calculer
-                : 0,
-            superficie_terrasse_calculer:
-              visite?.bien != null
-                ? visite?.bien?.superficie_terrasse_calculer
-                : 0,
-            superficie_habitable:
-              visite?.bien != null ? visite?.bien?.superficie_habitable : 0,
-            prix_box: visite?.bien != null ? visite?.bien?.prix_box : 0,
-            prix_parking: visite?.bien != null ? visite?.bien?.prix_parking : 0,
-            prix_unitaire:
-              visite?.bien != null ? visite?.bien?.prix_unitaire : 0,
-            avance_minimale:
-              visite?.bien != null ? visite?.bien?.avance_minimale : 0,
-            date_reservation: visite?.reservation
-              ? visite?.reservation?.date_reservation
-              : '',
-            code_reservation: visite?.reservation
-              ? visite?.reservation?.code_reservation
-              : '',
-          });
-          setValue('interet', visite.interet);
-          if (visite.interet === '1') {
-            fetch_bien_ByProjet(
-              visite.bien_id,
-              NomBienComplet(visite?.bien),
-              'without_proposition'
-            );
-
-            setBien_propriete_o(NomBienComplet(visite?.bien));
-          }
-          setPartenaire_txt(
-            !visite.prospect.partenaire_id
-              ? ''
-              : visite.prospect.partenaire.description
-          );
-          setValue(
-            'partenaire_txt',
-            !visite.prospect.partenaire_id
-              ? ''
-              : visite.prospect.partenaire.description
-          );
-          if (visite.statut === '3') {
-            const newStatut = { code: 3, label: 'Pré_Réservation_Perdu' };
-
-            list_statut[3] = newStatut;
-          }
-          if (visite.statut === '4') {
-            const newStatut = { code: 4, label: 'Réservation_Perdu' };
-
-            list_statut[4] = newStatut;
-          }
-
-          if (visite.interet == '3') {
-            fetchTypeFreins();
-            fetchDataByProjet('tranches', setTranches, setLoading);
-            fetchDataByProjet('vues', setList_Vues, setLoading);
-            fetchDataByProjet('typologies', setListTyplogies, setLoading);
-
-            console.log('Processing freins data for interet 3:', visite.freins);
-
-            let freinValue = [];
-
-            // Check if freins data exists
-            if (visite.freins) {
-              // Handle etage from frein_etage array
-              if (
-                visite.freins &&
-                visite.freins.frein_etage &&
-                visite.freins.frein_etage.length > 0
-              ) {
-                const etages = visite.freins.frein_etage.map((item) =>
-                  item.etage.toString()
-                ); // Convert to string
-                setValue('etages', etages);
-                freinValue.push('ETAGE');
-                console.log('Found etage freins:', etages);
-              }
-
-              // Handle vue from frein_vue array
-              if (
-                visite.freins.frein_vue &&
-                visite.freins.frein_vue.length > 0
-              ) {
-                const vues = visite.freins.frein_vue.map((item) => item.vue);
-                setValue('vues', vues);
-                freinValue.push('VUE');
-                console.log('Found vue freins:', vues);
-              }
-
-              // Handle typologie from frein_typologie array
-              if (
-                visite.freins.frein_typologie &&
-                visite.freins.frein_typologie.length > 0
-              ) {
-                const typologies = visite.freins.frein_typologie.map(
-                  (item) => item.typologie
-                );
-                setValue('typologies', typologies);
-                freinValue.push('TYPOLOGIE');
-                console.log('Found typologie freins:', typologies);
-              }
-
-              // Handle tranche from frein_tranche array
-              if (
-                visite.freins.frein_tranche &&
-                visite.freins.frein_tranche.length > 0
-              ) {
-                const tranches = visite.freins.frein_tranche.map(
-                  (item) => item.tranche
-                );
-                setValue('tranches', tranches);
-                freinValue.push('TRANCHE');
-                console.log('Found tranche freins:', tranches);
-              }
-
-              // Handle orientation from frein_orientation array
-              if (
-                visite.freins &&
-                visite.freins.frein_orientation &&
-                visite.freins.frein_orientation.length > 0
-              ) {
-                const orientationMap = {
-                  N: '1',
-                  S: '2',
-                  E: '3',
-                  O: '4',
-                  'N-E': '5',
-                  'N-O': '6',
-                  'S-E': '7',
-                  'S-O': '8',
-                };
-
-                const orientations = visite.freins.frein_orientation
-                  .map((item) => {
-                    const orientationLetter = item.orientation
-                      ?.trim()
-                      .toUpperCase();
-                    return orientationMap[orientationLetter] || '';
-                  })
-                  .filter(Boolean);
-
-                setValue('orientations', orientations);
-                freinValue.push('ORIENTATION');
-                console.log('Found orientation freins:', orientations);
-              }
-
-              // Handle direct properties on freins object
-              if (visite.freins.description_autre != null) {
-                setValue(
-                  'description_autre',
-                  visite.freins.description_autre || ''
-                );
-                freinValue.push('AUTRE');
-                console.log(
-                  'Found autre frein:',
-                  visite.freins.description_autre
-                );
-              }
-
-              if (
-                visite.freins.prix_min != null ||
-                visite.freins.prix_max != null
-              ) {
-                setValue('prix_min', visite.freins.prix_min || '');
-                setValue('prix_max', visite.freins.prix_max || '');
-                freinValue.push('PRIX');
-                console.log(
-                  'Found prix frein:',
-                  visite.freins.prix_min,
-                  visite.freins.prix_max
-                );
-              }
-
-              if (
-                visite.freins.superficie_min != null ||
-                visite.freins.superficie_max != null
-              ) {
-                setValue('sup_min', visite.freins.superficie_min || '');
-                setValue('sup_max', visite.freins.superficie_max || '');
-                freinValue.push('SUPERFICIE');
-                console.log(
-                  'Found superficie frein:',
-                  visite.freins.superficie_min,
-                  visite.freins.superficie_max
-                );
-              }
-
-              if (visite.freins.avance != null) {
-                setValue('avance', visite.freins.avance);
-                freinValue.push('AVANCE');
-                console.log('Found avance frein:', visite.freins.avance);
-              }
-            }
-
-            // Finally set the 'frein' array:
-            setValue('frein', freinValue);
-            console.log('Final freinValue array:', freinValue);
-          }
-        })
-        .catch((error) => console.log(error.message));
-    }
-
-    // Fetch data using visiteId and update projetDetails state
-  }, [id, isEditing]);
-
-  useEffect(() => {
-    if (formData) {
-      Object.entries(formData).forEach(([key, value]) => setValue(key, value));
-    }
-  }, [formData]);
-
-  const {
+ const {
     control,
     watch,
     handleSubmit,
@@ -607,6 +336,284 @@ export default function VisiteFormEdit({ id }) {
     resolver: yupResolver(validationSchemaRef.current),
     defaultValues,
   });
+
+  useEffect(() => {
+    let isMounted = true;
+    const controller = new AbortController();
+
+    const fetchData = async () => {
+      if (!isMounted) return;
+      
+      setLoading(prev => ({ ...prev, form: true }));
+      
+      try {
+        // Fetch initial data
+        await fetchData_Select("sources", setSources, setLoading);
+        await fetchData_Select("banques", setBanques, setLoading);
+
+        // Fetch partenaires only if needed
+        if (partenaires.length === 0) {
+          await fetchDataByProjet("partenaires", setPartenaires, setLoading);
+        }
+
+        // Only fetch edit data if editing
+        if (isEditing && id) {
+          await fetchEditData();
+        }
+      } catch (error) {
+        if (isMounted && error.name !== 'AbortError') {
+          console.error("Error fetching data:", error.message);
+          toast.error("Erreur lors du chargement des données");
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(prev => ({ ...prev, form: false }));
+        }
+      }
+    };
+
+    const fetchEditData = async () => {
+      try {
+        const response = await axios.get(`${APIURL.ROOTV1}/edit_visite/${id}`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          signal: controller.signal,
+          timeout: 15000
+        });
+
+        if (response.status !== 200) {
+          router.back();
+          return;
+        }
+
+        const visite = response.data.visite;
+        
+        if (isMounted) {
+          await processVisiteData(visite);
+        }
+      } catch (error) {
+        if (isMounted && error.name !== 'CanceledError') {
+          console.error("Error fetching edit data:", error.message);
+          toast.error("Erreur lors du chargement de la visite");
+        }
+      }
+    };
+
+    const processVisiteData = async (visite) => {
+      if (!visite || !isMounted) return;
+
+      try {
+        // Create form data object
+        const newFormData = {
+          nom: visite?.prospect?.nom || "",
+          prenom: visite?.prospect?.prenom || "",
+          telephone: visite?.prospect?.telephone || "",
+          telephone_num2: visite?.prospect?.telephone_num2 || "",
+          email: visite?.prospect?.email || "",
+          notifie: visite?.prospect?.notifie || 0,
+          cin: visite?.prospect?.cin || "",
+          interet: visite?.interet || "",
+          ville: visite?.prospect?.ville || "",
+          source_id: visite?.prospect?.source?.id || "",
+          source_txt: visite?.prospect?.source?.source || "",
+          mode_relance: visite?.relance_relation?.mode_relance || visite?.mode_relance || "",
+          date_relance: visite?.relance_relation?.date_relance || visite?.date_relance || "",
+          commentaire: visite?.commentaire || "",
+          partenaire_id: visite?.prospect?.partenaire_id || "",
+          bien_id: visite?.bien_id || "",
+          bien_pre_reserve: visite?.bien_id || "",
+          rdv: visite?.rdv_relation?.rdv || "",
+          statut: visite?.interet === "1" ? visite?.statut : "",
+          bien_val: visite?.bien?.propriete_dite_bien || "",
+          prix_val: visite?.bien?.prix || "",
+          prix: visite?.bien?.prix || "",
+          superficie_balcon_calculer: visite?.bien?.superficie_balcon_calculer || 0,
+          superficie_jardin_calculer: visite?.bien?.superficie_jardin_calculer || 0,
+          superficie_terrasse_calculer: visite?.bien?.superficie_terrasse_calculer || 0,
+          superficie_habitable: visite?.bien?.superficie_habitable || 0,
+          prix_box: visite?.bien?.prix_box || 0,
+          prix_parking: visite?.bien?.prix_parking || 0,
+          prix_unitaire: visite?.bien?.prix_unitaire || 0,
+          avance_minimale: visite?.bien?.avance_minimale || 0,
+          date_reservation: visite?.reservation?.date_reservation || "",
+          code_reservation: visite?.reservation?.code_reservation || "",
+        };
+
+        // ✅ Batch set all form values at once
+        Object.entries(newFormData).forEach(([key, value]) => {
+          setValue(key, value);
+        });
+
+        setValue("interet", visite.interet);
+
+        // Handle interet-specific logic
+        if (visite.interet === "1") {
+          fetch_bien_ByProjet(
+            visite.bien_id,
+            NomBienComplet(visite?.bien),
+            "without_proposition"
+          );
+          setBien_propriete_o(NomBienComplet(visite?.bien));
+        }
+
+        // Set partenaire text
+        const partenaireTxt = !visite.prospect.partenaire_id 
+          ? "" 
+          : visite.prospect.partenaire.description;
+        
+        setPartenaire_txt(partenaireTxt);
+        setValue("partenaire_txt", partenaireTxt);
+
+        // Handle statut modifications
+        handleStatutModifications(visite.statut);
+
+        // Handle freins data
+        if (visite.interet === "3") {
+          await handleFreinsData(visite);
+        }
+
+        // ✅ Set formData state LAST for conditional rendering
+        setFormData(newFormData);
+
+      } catch (error) {
+        console.error("Error processing visite data:", error);
+      }
+    };
+
+    const handleStatutModifications = (statut) => {
+      if (statut === "3") {
+        const newStatut = { code: 3, label: "Pré_Réservation_Perdu" };
+        list_statut[3] = newStatut;
+      }
+      if (statut === "4") {
+        const newStatut = { code: 4, label: "Réservation_Perdu" };
+        list_statut[4] = newStatut;
+      }
+    };
+
+    const handleFreinsData = async (visite) => {
+      if (!isMounted) return;
+      
+      try {
+        // Fetch frein-related data in parallel
+        await Promise.allSettled([
+          fetchTypeFreins(),
+          fetchDataByProjet("tranches", setTranches, setLoading),
+          fetchDataByProjet("vues", setList_Vues, setLoading),
+          fetchDataByProjet("typologies", setListTyplogies, setLoading)
+        ]);
+
+        if (isMounted && visite.freins) {
+          processFreinsValues(visite.freins);
+        }
+      } catch (error) {
+        console.error("Error handling freins data:", error);
+      }
+    };
+
+    const processFreinsValues = (freins) => {
+      if (!freins || !isMounted) return;
+
+      const freinValue = [];
+
+      // Process each frein type (your existing code remains the same)
+      processEtageFreins(freins, freinValue);
+      processVueFreins(freins, freinValue);
+      processTypologieFreins(freins, freinValue);
+      processTrancheFreins(freins, freinValue);
+      processOrientationFreins(freins, freinValue);
+      processOtherFreins(freins, freinValue);
+
+      setValue("frein", freinValue);
+    };
+
+    // Your existing process functions remain the same...
+    const processEtageFreins = (freins, freinValue) => {
+      if (freins.frein_etage?.length > 0 && isMounted) {
+        const etages = freins.frein_etage.map(item => item.etage.toString());
+        setValue("etages", etages);
+        freinValue.push("ETAGE");
+      }
+    };
+
+    const processVueFreins = (freins, freinValue) => {
+      if (freins.frein_vue?.length > 0 && isMounted) {
+        const vues = freins.frein_vue.map(item => item.vue);
+        setValue("vues", vues);
+        freinValue.push("VUE");
+      }
+    };
+
+    const processTypologieFreins = (freins, freinValue) => {
+      if (freins.frein_typologie?.length > 0 && isMounted) {
+        const typologies = freins.frein_typologie.map(item => item.typologie);
+        setValue("typologies", typologies);
+        freinValue.push("TYPOLOGIE");
+      }
+    };
+
+    const processTrancheFreins = (freins, freinValue) => {
+      if (freins.frein_tranche?.length > 0 && isMounted) {
+        const tranches = freins.frein_tranche.map(item => item.tranche);
+        setValue("tranches", tranches);
+        freinValue.push("TRANCHE");
+      }
+    };
+
+    const processOrientationFreins = (freins, freinValue) => {
+      if (freins.frein_orientation?.length > 0 && isMounted) {
+        const orientationMap = {
+          'N': '1', 'S': '2', 'E': '3', 'O': '4', 
+          'N-E': '5', 'N-O': '6', 'S-E': '7', 'S-O': '8'
+        };
+
+        const orientations = freins.frein_orientation
+          .map(item => {
+            const orientationLetter = item.orientation?.trim().toUpperCase();
+            return orientationMap[orientationLetter] || '';
+          })
+          .filter(Boolean);
+
+        setValue("orientations", orientations);
+        freinValue.push("ORIENTATION");
+      }
+    };
+
+    const processOtherFreins = (freins, freinValue) => {
+      if (!isMounted) return;
+      
+      // Handle direct properties
+      if (freins.description_autre != null) {
+        setValue("description_autre", freins.description_autre || "");
+        freinValue.push("AUTRE");
+      }
+
+      if (freins.prix_min != null || freins.prix_max != null) {
+        setValue("prix_min", freins.prix_min || "");
+        setValue("prix_max", freins.prix_max || "");
+        freinValue.push("PRIX");
+      }
+
+      if (freins.superficie_min != null || freins.superficie_max != null) {
+        setValue("sup_min", freins.superficie_min || "");
+        setValue("sup_max", freins.superficie_max || "");
+        freinValue.push("SUPERFICIE");
+      }
+
+      if (freins.avance != null) {
+        setValue("avance", freins.avance);
+        freinValue.push("AVANCE");
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
+  }, [id, isEditing, partenaires.length, accessToken, router, setValue]); 
+
+
   useEffect(() => {
     if (watch('avance_res') !== '') {
       if (watch('avance_res') == 0 && user?.role > 2) {
