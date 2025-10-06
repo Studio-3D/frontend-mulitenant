@@ -46,7 +46,6 @@ import {
   fetchDataByProjet_2,
   fetchList_fichier_exist_by_Code,
 } from '../../../../../src/configs/api-utils';
-import { usePathname } from 'next/navigation';
 
 //import Modal from '@/components/Modal';
 //import Modal_File from './Modal_file';
@@ -63,6 +62,7 @@ export default function ReservationForm({ id }) {
     storedValue && !isNaN(Number(storedValue)) ? Number(storedValue) : '';
   const [formSubmitted_client, setFormSubmitted_client] = useState(false);
   const current = new Date();
+  const [old_bien_id, setOld_bien_id] = useState('');
 
   const [loading, setLoading] = useState({ form: false, reservations: false });
   const [clientToEdit, setClientToEdit] = useState(null);
@@ -74,7 +74,6 @@ export default function ReservationForm({ id }) {
   const [bien_id, setBien_id] = useState(null);
   const [selectedFiles_rsv, setSelectedFiles_rsv] = useState([]);
   const [selectedFiles_avc, setSelectedFiles_avc] = useState([]);
-  const [fetchedProjetId, setFetchedProjetId] = useState(null); 
 
   const { user, token } = useAuth();
   const router = useRouter();
@@ -350,6 +349,7 @@ export default function ReservationForm({ id }) {
           const reservation = response.data.reservation;
           console.log('Reservation data:', reservation);
           console.log('le mode finance==>' + reservation?.mode_financement);
+          setOld_bien_id(reservation?.bien_id);
           setFormData({
             code_reservation: reservation.code_reservation,
             date_reservation: reservation?.date_reservation || '',
@@ -389,12 +389,11 @@ export default function ReservationForm({ id }) {
           });
 
           //set_Bien_id_vendu(reservation.bien_id)
-          //set_Bien_prop_vendu(response.data.propriete_dite_bien.original)
           fetch_bien_ByProjet(
             reservation.bien_id,
-            response.data.propriete_dite_bien.original,
+            /*  response.data.propriete_dite_bien.original,
             reservation.prix,
-            'without_proposition',
+            'without_proposition',*/
             'edit_mode'
           );
 
@@ -625,55 +624,65 @@ export default function ReservationForm({ id }) {
     }
   };
 
+  const fetch_bien_ByProjet = async (bien_id, from) => {
+    setLoading_bien(true);
+    console.log('fetch_bien_ByProjet called with:', { bien_id, from });
 
- const fetch_bien_ByProjet = async (bien_id, from) => {
-  setLoading_bien(true);
-  console.log('fetch_bien_ByProjet called with:', { bien_id, from });
-  
-  try {
-    // Fetch all biens for the project from the single endpoint
-    const response = await axios.get(
-      `${APIURL.ROOTV1}/getBiensByProjet_Concat/${selectedProjet.id}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
-
-    let biens = response.data.biens;
-    console.log('API response biens:', biens);
-
-    // If we're in edit mode and have a bien_id, check if it exists in the response
-    if (bien_id && from === 'edit_mode' && !biens.some(b => b.id === bien_id)) {
-      // If the bien is not in the API response, we need to handle this case
-      console.warn(`Bien ID ${bien_id} not found in API response`);
-      
-      // Since we can't call the other API, we'll create a minimal representation
-      // OR you might want to show an error/toast to the user
-      toast.error(`Le bien sélectionné (ID: ${bien_id}) n'est plus disponible`);
-      
-      // Optional: Add a placeholder if you still want to show it
-      const placeholderBien = {
-        id: bien_id,
-        propriete_dite_bien: `Bien #${bien_id} (Non disponible)`,
-        prix: 0,
-        etat: 'NON_DISPONIBLE',
-      };
-      biens = [placeholderBien, ...biens];
+    let route = null;
+    //on reservation edit
+    if (isEditing && bien_id) {
+      route = 'getBiensByProjet_Concat_for_reservation_visite/' + bien_id;
+    } else {
+      route = 'getBiensByProjet_Concat';
     }
+    try {
+      // Fetch all biens for the project from the single endpoint
+      const response = await axios.get(
+        `${APIURL.ROOTV1}/${route}/${selectedProjet.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
 
-    setBiensByProjet(biens);
-    console.log('Final biens array:', biens);
-    
-  } catch (error) {
-    console.error("Error fetching biens:", error);
-    toast.error("Erreur lors du chargement des biens");
-  } finally {
-    setLoading_bien(false);
-  }
-};
+      let biens = response.data.biens;
+      console.log('API response biens:', biens);
 
+      // If we're in edit mode and have a bien_id, check if it exists in the response
+      if (
+        bien_id &&
+        from === 'edit_mode' &&
+        !biens.some((b) => b.id === bien_id)
+      ) {
+        // If the bien is not in the API response, we need to handle this case
+        console.warn(`Bien ID ${bien_id} not found in API response`);
+
+        // Since we can't call the other API, we'll create a minimal representation
+        // OR you might want to show an error/toast to the user
+        toast.error(
+          `Le bien sélectionné (ID: ${bien_id}) n'est plus disponible`
+        );
+
+        // Optional: Add a placeholder if you still want to show it
+        const placeholderBien = {
+          id: bien_id,
+          propriete_dite_bien: `Bien #${bien_id} (Non disponible)`,
+          prix: 0,
+          etat: 'NON_DISPONIBLE',
+        };
+        biens = [placeholderBien, ...biens];
+      }
+
+      setBiensByProjet(biens);
+      console.log('Final biens array:', biens);
+    } catch (error) {
+      console.error('Error fetching biens:', error);
+      toast.error('Erreur lors du chargement des biens');
+    } finally {
+      setLoading_bien(false);
+    }
+  };
 
   const pusher_function = async () => {
     Pusher.logToConsole = true;
@@ -686,14 +695,8 @@ export default function ReservationForm({ id }) {
     const channel = pusher.subscribe('proposition-updates');
 
     channel.bind('App\\Events\\PropositionUpdated', (data) => {
-      if (isEditing) fetch_bien_ByProjet();
-      else
-        fetchDataByProjet_2(
-          'getBiensByProjet_Concat',
-          'biens',
-          setBiensByProjet,
-          setLoading_bien
-        );
+      if (isEditing) fetch_bien_ByProjet(old_bien_id, 'edit');
+      else fetch_bien_ByProjet(null, null);
     });
 
     return () => {
@@ -770,12 +773,8 @@ export default function ReservationForm({ id }) {
 
   useEffect(() => {
     if (!isEditing) {
-      fetchDataByProjet_2(
-        'getBiensByProjet_Concat',
-        'biens',
-        setBiensByProjet,
-        setLoading_bien
-      );
+      fetch_bien_ByProjet(null, null);
+
       if (banques.length == 0) {
         fetchData_Select('banques', setBanques, setLoading_1);
       }
@@ -1469,16 +1468,20 @@ export default function ReservationForm({ id }) {
                   options={biensByProjet.map((bien) => ({
                     value: bien.id,
                     label: bien.propriete_dite_bien || `Bien #${bien.id}`,
-                    original: bien
+                    original: bien,
                   }))}
                   value={watch('bien_id')}
                   onChange={(value) => {
-                    const selectedOption = biensByProjet.find(b => b.id === value);
+                    const selectedOption = biensByProjet.find(
+                      (b) => b.id === value
+                    );
                     if (selectedOption) {
                       handleSelectBien(null, selectedOption);
                     }
                   }}
-                  error={errors['bien_id']?.message || backendErrors['bien_id']?.[0]}
+                  error={
+                    errors['bien_id']?.message || backendErrors['bien_id']?.[0]
+                  }
                   disabled={isEditing && user.role <= 2}
                   placeholder="Sélectionnez un bien"
                 />
@@ -3486,60 +3489,75 @@ export default function ReservationForm({ id }) {
                 />
               )}
             </div>
-            
 
             {!isEditing && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                 <SelectInput
+                <SelectInput
                   label="Mode Financement :"
-                  placeholder='Sélectionner un mode de financement'
+                  placeholder="Sélectionner un mode de financement"
                   name="mode_financement"
                   value={watch('mode_financement')}
                   required={true}
-                  options={Object.values(MODE_FINANCE || {}).map(item => ({
+                  options={Object.values(MODE_FINANCE || {}).map((item) => ({
                     value: item.code || item.value,
-                    label: item.label || item.name
+                    label: item.label || item.name,
                   }))}
                   onChange={(value) => {
                     setValue('mode_financement', value);
                   }}
-                  error={errors.mode_financement?.message || backendErrors?.mode_financement}
+                  error={
+                    errors.mode_financement?.message ||
+                    backendErrors?.mode_financement
+                  }
                 />
 
                 <>
-                    <SelectInput
-                      label="Mode Paiement :"
-                      placeholder='Sélectionner un mode de paiement'
-                      name="mode_paiement"
-                      value={watch('mode_paiement')}
-                      required={true}
-                      options={Object.values(MODE_PAIEMENT || {}).map(item => ({
-                        value: item.code || item.value,
-                        label: item.label || item.name
-                      }))}
-                      onChange={(value) => {
-                        setValue('mode_paiement', value);
-                      }}
-                      error={errors.mode_paiement?.message || backendErrors?.mode_paiement}
-                    />
+                  <SelectInput
+                    label="Mode Paiement :"
+                    placeholder="Sélectionner un mode de paiement"
+                    name="mode_paiement"
+                    value={watch('mode_paiement')}
+                    required={true}
+                    options={Object.values(MODE_PAIEMENT || {}).map((item) => ({
+                      value: item.code || item.value,
+                      label: item.label || item.name,
+                    }))}
+                    onChange={(value) => {
+                      setValue('mode_paiement', value);
+                    }}
+                    error={
+                      errors.mode_paiement?.message ||
+                      backendErrors?.mode_paiement
+                    }
+                  />
                   {watch('mode_paiement') != 1 &&
                     watch('mode_paiement') != '' && (
                       <>
                         <SelectInput
                           label="Banque:"
-                          placeholder='Sélectionner une banque'
+                          placeholder="Sélectionner une banque"
                           name="banque_id"
                           value={watch('banque_id')}
                           required={true}
-                          options={Array.isArray(banques) ? banques.map(banque => ({
-                            value: banque.id,
-                            label: banque.nom || banque.name || `Banque ${banque.id}`
-                          })) : []}
+                          options={
+                            Array.isArray(banques)
+                              ? banques.map((banque) => ({
+                                  value: banque.id,
+                                  label:
+                                    banque.nom ||
+                                    banque.name ||
+                                    `Banque ${banque.id}`,
+                                }))
+                              : []
+                          }
                           loading={loading_1}
                           onChange={(value) => {
                             setValue('banque_id', value);
                           }}
-                          error={errors.banque_id?.message || backendErrors?.banque_id}
+                          error={
+                            errors.banque_id?.message ||
+                            backendErrors?.banque_id
+                          }
                         />
 
                         <TextField
