@@ -9,21 +9,18 @@ import toast from 'react-hot-toast';
 import Button from '@/components/Button';
 import { APIURL, ENDPOINTS } from '@/configs/api';
 import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
-
+import { useProjet } from '@/context/ProjetContext';
 export default function CommissionConfigForm({ onClose, onSuccess }) {
   const router = useRouter();
   const accessToken = localStorage.getItem('accessToken');
-  const selectedProjet_id = JSON.parse(
-    localStorage.getItem('selectedProjet')
-  )?.id;
+  const { selectedProjet } = useProjet();
   const [msg_alert, setMsg_alert] = useState(null);
   const [inputs, setInputs] = useState([{ de: '', a: '', pourcentage: '' }]);
   const [loading, setLoading] = useState({ form: false });
-  const [loading_config, setLoadingConfig] = useState(true);
   const [backendErrors, setBackendErrors] = useState({});
 
   const defaultValues = {
-    projet_id: selectedProjet_id,
+    projet_id: selectedProjet?.id,
     commission_montant: '',
     configuration: [],
   };
@@ -39,7 +36,7 @@ export default function CommissionConfigForm({ onClose, onSuccess }) {
     setLoading(true);
     try {
       const response = await axios.get(
-        `${APIURL.ROOTV1}/commission_montant/` + selectedProjet_id,
+        `${APIURL.ROOTV1}/commission_montant/` + selectedProjet?.id,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -59,7 +56,7 @@ export default function CommissionConfigForm({ onClose, onSuccess }) {
   const fetchData_Configuration = async () => {
     try {
       const res = await axios.get(
-        `${APIURL.ROOTV1}/configurations_commissions/${selectedProjet_id}`,
+        `${APIURL.ROOTV1}/configurations_commissions/${selectedProjet?.id}`,
         {
           headers: { Authorization: `Bearer ${accessToken}` },
         }
@@ -77,6 +74,20 @@ export default function CommissionConfigForm({ onClose, onSuccess }) {
     fetchData_commission_montant();
   }, []);
 
+    // Simple cache et comparaison for return back en cas de changer projet
+  const [oldProjetId, setOldProjetId] = useState(null);
+
+  useEffect(() => {
+    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+      if (oldProjetId) {
+        // Projet a changé
+
+        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+        router.push('/administration/commissions/configuration');
+      }
+      setOldProjetId(selectedProjet.id);
+    }
+  }, [selectedProjet?.id, oldProjetId, router]);
   const handleAddInput = () => {
     setInputs([...inputs, { de: '', a: '', pourcentage: '' }]);
   };
@@ -186,10 +197,7 @@ export default function CommissionConfigForm({ onClose, onSuccess }) {
     <>
       <div className="p-3">
         <div className="flex items-center justify-start">
-          <BreadCrumb
-            baseUrl={'/'}
-            step={`Configurer les Commissions`}
-          />
+          <BreadCrumb baseUrl={'/'} step={`Configurer les Commissions`} />
         </div>
         <div className="p-6 mt-4 bg-white shadow-md rounded-md">
           {msg_alert && (

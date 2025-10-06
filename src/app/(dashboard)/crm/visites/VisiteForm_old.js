@@ -1,4 +1,3 @@
-
 'use client';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
@@ -42,7 +41,6 @@ import {
 import Pusher from 'pusher-js';
 import Modal_OldVisites_Perdu from './Modal_OldVisites_Perdu';
 import FreinsComponent from './FreinsComponent';
-import SelectInput from '@/components/SelectInput';
 
 const VisiteForm = ({ prospect_id, origin }) => {
   const router = useRouter();
@@ -129,6 +127,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
       ? selectedPerson.partenaire.description
       : null
   );
+  
 
   const defaultValues = {
     interet: '',
@@ -277,24 +276,21 @@ const VisiteForm = ({ prospect_id, origin }) => {
 
   const fetchTypeFreins = async () => {
     setLoading_tp_frein(true);
-    try {
-      const res = await axios.get(`${APIURL.ROOTV1}/typefreins`, {
+    await axios
+      .get(`${APIURL.ROOTV1}/typefreins`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
-      });
-      console.log('frein', res.data.typefreins);
-
-      // The API returns objects with 'description' field, not 'frein.description'
-      setType_freins([
-        { id: 'tout', description: 'Autre' },
-        ...(res.data.typefreins || []),
-      ]);
-    } catch (e) {
-      // Optionally handle error here
-    } finally {
-      setLoading_tp_frein(false);
-    }
+      })
+      .then((res) => {
+        setType_freins(res.data.typefreins);
+        setType_freins((current) => [
+          { id: 'tout', description: 'Autre' },
+          ...current,
+        ]);
+        setLoading_tp_frein(false);
+      })
+      .catch(() => {});
   };
 
   const handleChange_interet = (code) => {
@@ -443,10 +439,9 @@ const VisiteForm = ({ prospect_id, origin }) => {
         })
         .then((response) => {
           //setFirst_visite(response.data.visite)
-          if (response.data.visites[0].prospect.cin == null) {
+          if (response.data.visite.prospect.cin == null) {
             setdisplay_cin(true);
           }
-          setValue('prospect_id', response.data.visites[0]?.prospect?.id);
           setOld_visites_perdu([]);
           for (var i = 0; i <= Number(response.data.visites.length) - 1; i++) {
             if (response.data.visites[i].interet == '3') {
@@ -616,20 +611,16 @@ const VisiteForm = ({ prospect_id, origin }) => {
       }
     }
     // If interet == 3, then all those frein checks
-    // In validateFields function, update the frein checks:
     if (Number(watch('interet')) == 3) {
-      const frein = watch('frein') || []; // Already an array
-
+      const frein = watch('frein') || [];
       const checks = [
         frein.length > 0,
-        !frein.some((f) => f === 'vue') || (watch('vues') || []).length > 0,
-        !frein.some((f) => f === 'typologie') ||
-          (watch('typologies') || []).length > 0,
-        !frein.some((f) => f === 'orientation') ||
+        !frein.includes('vue') || (watch('vues') || []).length > 0,
+        !frein.includes('typologie') || (watch('typologies') || []).length > 0,
+        !frein.includes('orientation') ||
           (watch('orientations') || []).length > 0,
-        !frein.some((f) => f === 'etage') || (watch('etages') || []).length > 0,
-        !frein.some((f) => f === 'tranche') ||
-          (watch('tranches') || []).length > 0,
+        !frein.includes('etage') || (watch('etages') || []).length > 0,
+        !frein.includes('tranche') || (watch('tranches') || []).length > 0,
       ];
 
       const checkNames = [
@@ -884,7 +875,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
           setDisabled_source(true);
         } else {
           setValue('partenaire_id', '');
-          setPartenaire_txt(partenaire.description || '');
+          setPartenaire_txt(null);
           setValue('partenaire_txt', '');
         }
 
@@ -1049,8 +1040,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
         // Pas de client ni de prospect trouvé, garder les champs inchangés
         setValue('loading_b_pre', false);
         setOpen_Dialog(false);
-        //si on store_n_visite tjr garder meme prospect_id  else ''
-        setValue('prospect_id', isOrigin ? watch('prospect_id') : '');
+        setValue('prospect_id', '');
       }
     } catch (error) {
       console.error('Erreur lors de la récupération de la visite:', error);
@@ -1699,40 +1689,27 @@ const VisiteForm = ({ prospect_id, origin }) => {
       });
   };
 
-  // Update handleSourceChange to work with SelectInput
-  const handleSourceChange = (optionValue) => {
-    const selectedOption = sources.find(
-      (source) => source.id.toString() === optionValue
-    );
+  // First select: Source
+  const handleSourceChange = (newValue) => {
     setValue('partenaire_id', ''); // Reset partenaire ID when source changes
-    setValue('source_txt', selectedOption ? selectedOption.source : ''); // Set source text
-    setValue('source_id', optionValue || ''); // Set source ID
-
-    // Only clear partenaire_txt if the new source is not "Partenaire"
-    if (selectedOption && selectedOption.source !== 'Partenaire') {
-      setPartenaire_txt(null);
-    }
+    setValue('source_txt', newValue ? newValue.source : ''); // Set source ID
+    setValue('source_id', newValue ? newValue.id : ''); // Set source ID
+    setPartenaire_txt(null);
   };
-
-  // Update handlePartenaireChange to work with SelectInput
-  const handlePartenaireChange = (optionValue) => {
-    const selectedOption = partenaires.find(
-      (partenaire) => partenaire.id.toString() === optionValue
-    );
-    setValue('partenaire_id', optionValue || ''); // Set partenaire ID
-
-    // Set the partenaire text for display
-    setPartenaire_txt(selectedOption ? selectedOption.description : '');
-    setValue(
-      'partenaire_txt',
-      selectedOption ? selectedOption.description : ''
-    );
+  // Second select: Partenaire
+  const handlePartenaireChange = (newValue) => {
+    // setPartenaire_txt(newValue ? newValue : ''); // Set partenaire value
+    setValue('partenaire_id', newValue ? newValue.id : ''); // Set partenaire ID
   };
-
-  // In VisiteForm component
   const handleChange_freins = (selectedValues) => {
     try {
-      setValue('frein', selectedValues); // This should be an array of strings
+      console.log('Changed:', selectedValues);
+      const descriptions = selectedValues
+        .map((item) => item?.description?.toLowerCase() || '')
+        .join(', ');
+      console.log('Descriptions:', descriptions);
+
+      setValue('frein', descriptions);
     } catch (error) {
       console.error('Error in handleChange_freins:', error);
     }
@@ -1843,7 +1820,6 @@ const VisiteForm = ({ prospect_id, origin }) => {
                         Informations du prospect
                       </h2>
                     </div>
-
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
                       <TextField
                         label="Cin:"
@@ -1871,25 +1847,24 @@ const VisiteForm = ({ prospect_id, origin }) => {
                       {watch('loading_b_pre') == false && (
                         <>
                           <div className="">
-                            <SelectInput
-                              placeholder="selectionner un intérêt"
+                            <AutocompleteSelectComponent
                               label="Intérêt :"
                               name="interet"
-                              value={watch('interet')}
                               required={true}
+                              //  options={VISITE_INTERETS}
                               options={
                                 input_biens_vendu.length > 0
-                                  ? [{ value: '1', label: 'Intéressé' }] // Only interested option
-                                  : Object.values(VISITE_INTERETS)
-                                      .filter((interet) => interet.code !== 4) // Exclude "Injoignable"
-                                      .map((interet) => ({
-                                        value: interet.code.toString(),
-                                        label: interet.label,
-                                      }))
+                                  ? {
+                                      1: VISITE_INTERETS[1],
+                                      // 3: VISITE_INTERETS[3],
+                                    }
+                                  : {
+                                      1: VISITE_INTERETS[1],
+                                      2: VISITE_INTERETS[2],
+                                      3: VISITE_INTERETS[3],
+                                    }
                               }
-                              disabled={
-                                isOrigin ? false : watch('telephone') === ''
-                              }
+disabled={isOrigin ? false : watch('telephone') === ''}
                               onChange={handleChange_interet}
                             />
                           </div>
@@ -1947,18 +1922,11 @@ const VisiteForm = ({ prospect_id, origin }) => {
                   {Number(watch('interet')) == 2 && (
                     <>
                       <div className="">
-                        <SelectInput
-                          placeholder="selectionner un mode de relance"
+                        <AutocompleteSelectComponent
                           label="Mode Relance:"
                           name="mode_relance"
                           required={false}
-                          options={Object.values(VISITE_TYPE_NOTIF).map(
-                            (notif) => ({
-                              value: notif.code.toString(),
-                              label: notif.label,
-                            })
-                          )}
-                          value={watch('mode_relance')?.toString()}
+                          options={VISITE_TYPE_NOTIF}
                           onChange={handleChange_tp_notif}
                         />
                       </div>
@@ -2485,9 +2453,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                       3: VISITE_INTERETS[3],
                                     }
                               }
-                              disabled={
-                                isOrigin ? false : watch('telephone') === ''
-                              }
+disabled={isOrigin ? false : watch('telephone') === ''}
                               onChange={handleChange_interet}
                             />
                           </div>
@@ -2580,57 +2546,32 @@ const VisiteForm = ({ prospect_id, origin }) => {
                             <>
                               <div className="p-4 space-y-4">
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-x-5 gap-y-4">
+                                  {/* Bien Autocomplete */}
                                   <div>
-                                    <SelectInput
-                                      label="Bien:"
-                                      name="bien_id"
-                                      options={biensByProjet 
-                                        ? biensByProjet.filter(bien => bien && bien.id && bien.propriete_dite_bien)
-                                            .map(bien => ({
-                                              value: bien.id.toString(),
-                                              label: bien.propriete_dite_bien,
-                                              disabled: bien.disabled || false
-                                            }))
-                                        : []} // Provide empty array as fallback
-                                      value={x.bien_id}
-                                      onChange={(selectedValue) => {
-                                        const syntheticEvent = {
-                                          target: {
-                                            name: 'bien_id',
-                                            value: selectedValue,
-                                          },
-                                        };
-                                        handleinputchange(syntheticEvent, i);
-                                      }}
-                                      placeholder="Sélectionner un bien"
+                                    {/* Replace with your own Autocomplete or HeadlessUI */}
+                                    <AutocompleteBien
+                                      x={x}
+                                      i={i}
+                                      user={user}
+                                      biensByProjet={biensByProjet}
+                                      handleinputchange={handleinputchange}
                                       loading={loading_bien}
-                                      required={x.statut == 2}
                                     />
-                                  </div> 
+                                  </div>
 
-                                  {/* Statut Selection */}
+                                  {/* Statut */}
                                   <div>
-                                    <SelectInput
-                                      label="Statut:"
-                                      name="statut"
+                                    <AutocompleteStatut_ModeRelance_Biens
+                                      name={'statut'}
+                                      label={'statut'}
+                                      placeholder={'Sélectionner un statut'}
                                       options={Object.values(
                                         VISITE_STATUT_FORM
-                                      ).map((statut) => ({
-                                        value: statut.code.toString(),
-                                        label: statut.label,
-                                      }))}
-                                      value={x.statut?.toString()}
-                                      onChange={(selectedValue) => {
-                                        // Create a synthetic event to match handleinputchange's expected format
-                                        const syntheticEvent = {
-                                          target: {
-                                            name: 'statut',
-                                            value: selectedValue,
-                                          },
-                                        };
-                                        handleinputchange(syntheticEvent, i);
-                                      }}
-                                      placeholder="Sélectionner un statut"
+                                      )}
+                                      value={x.statut}
+                                      code="code"
+                                      labelKey="label"
+                                      onChange={(e) => handleinputchange(e, i)}
                                       required
                                     />
                                   </div>
@@ -2650,29 +2591,21 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                         />
                                       </div>
                                       <div>
-                                        <SelectInput
-                                          label="Mode de Relance:"
-                                          name="mode_relance"
+                                        <AutocompleteStatut_ModeRelance_Biens
+                                          name={'mode_relance'}
+                                          label={'Mode de Relance'}
+                                          placeholder={
+                                            'Sélectionner un Mode de Relance'
+                                          }
                                           options={Object.values(
                                             VISITE_TYPE_NOTIF
-                                          ).map((notif) => ({
-                                            value: notif.code.toString(),
-                                            label: notif.label,
-                                          }))}
-                                          value={x.mode_relance?.toString()}
-                                          onChange={(selectedValue) => {
-                                            const syntheticEvent = {
-                                              target: {
-                                                name: 'mode_relance',
-                                                value: selectedValue,
-                                              },
-                                            };
-                                            handleinputchange(
-                                              syntheticEvent,
-                                              i
-                                            );
-                                          }}
-                                          placeholder="Sélectionner un Mode de Relance"
+                                          )}
+                                          code="code"
+                                          labelKey="label"
+                                          value={x.mode_relance}
+                                          onChange={(e) =>
+                                            handleinputchange(e, i)
+                                          }
                                         />
                                       </div>
                                       <div>
@@ -2904,93 +2837,54 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                         value={x.reste}
                                         disabled
                                       />
-                                      {/* Mode Financement Selection */}
-                                      <div>
-                                        <SelectInput
-                                          label="Mode Financement:"
-                                          name="mode_financement"
-                                          options={Object.values(
-                                            MODE_FINANCE
-                                          ).map((finance) => ({
-                                            value: finance.code.toString(),
-                                            label: finance.label,
-                                          }))}
-                                          value={x.mode_financement?.toString()}
-                                          onChange={(selectedValue) => {
-                                            // Create a synthetic event to match handleinputchange's expected format
-                                            const syntheticEvent = {
-                                              target: {
-                                                name: 'mode_financement',
-                                                value: selectedValue,
-                                              },
-                                            };
-                                            handleinputchange(
-                                              syntheticEvent,
-                                              i
-                                            );
-                                          }}
-                                          placeholder="Sélectionner un Mode de Financement"
-                                          required
-                                        />
-                                      </div>
-
-                                      {/* Mode Paiement Selection */}
-                                      <div>
-                                        <SelectInput
-                                          label="Mode Paiement:"
-                                          name="mode_paiement"
-                                          options={Object.values(
-                                            MODE_PAIEMENT
-                                          ).map((paiement) => ({
-                                            value: paiement.code.toString(),
-                                            label: paiement.label,
-                                          }))}
-                                          value={x.mode_paiement?.toString()}
-                                          onChange={(selectedValue) => {
-                                            // Create a synthetic event to match handleinputchange's expected format
-                                            const syntheticEvent = {
-                                              target: {
-                                                name: 'mode_paiement',
-                                                value: selectedValue,
-                                              },
-                                            };
-                                            handleinputchange(
-                                              syntheticEvent,
-                                              i
-                                            );
-                                          }}
-                                          placeholder="Sélectionner un Mode de Paiement"
-                                          required
-                                        />
-                                      </div>
+                                      <AutocompleteStatut_ModeRelance_Biens
+                                        name={'mode_financement'}
+                                        label={'Mode Financement:'}
+                                        placeholder={
+                                          'Sélectionner un Mode de Financement'
+                                        }
+                                        code="code"
+                                        labelKey="label"
+                                        options={Object.values(MODE_FINANCE)}
+                                        value={x.mode_financement}
+                                        onChange={(e) =>
+                                          handleinputchange(e, i)
+                                        }
+                                        required
+                                      />{' '}
+                                      <AutocompleteStatut_ModeRelance_Biens
+                                        name={'mode_paiement'}
+                                        label={'Mode Paiement:'}
+                                        placeholder={
+                                          'Sélectionner un Mode de Paiement'
+                                        }
+                                        options={Object.values(MODE_PAIEMENT)}
+                                        value={x.mode_paiement}
+                                        code="code"
+                                        labelKey="label"
+                                        onChange={(e) =>
+                                          handleinputchange(e, i)
+                                        }
+                                        required
+                                      />
                                       {/* Conditional Fields */}
                                       {x.mode_paiement !== 1 &&
                                         x.mode_paiement !== '' && (
                                           <>
-                                            <SelectInput
-                                              label="Banque:"
-                                              name="banque_id"
-                                              options={banques.map(
-                                                (banque) => ({
-                                                  value: banque.id.toString(),
-                                                  label: banque.nom,
-                                                })
-                                              )}
-                                              value={x.banque_id?.toString()}
-                                              onChange={(selectedValue) => {
-                                                const syntheticEvent = {
-                                                  target: {
-                                                    name: 'banque_id',
-                                                    value: selectedValue,
-                                                  },
-                                                };
-                                                handleinputchange(
-                                                  syntheticEvent,
-                                                  i
-                                                );
-                                              }}
-                                              placeholder="Sélectionner une Banque"
+                                            <AutocompleteStatut_ModeRelance_Biens
+                                              name={'banque_id'}
+                                              label={'Banque:'}
+                                              placeholder={
+                                                'Sélectionner un Mode de Paiement'
+                                              }
+                                              options={banques}
+                                              value={x.banque_id}
                                               required={x.mode_paiement !== 1}
+                                              code="id"
+                                              labelKey="nom"
+                                              onChange={(e) =>
+                                                handleinputchange(e, i)
+                                              }
                                             />
                                             <InputField_Biens
                                               label="N° Paiment:"
@@ -3132,7 +3026,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                   Annuler
                 </Button>
                 <Button type="submit" /*disabled={isDisabled || isSubmitting}*/>
-                  {isSubmitting || isDisabled ? (
+                  {(isSubmitting||isDisabled) ? (
                     <div className="flex items-center gap-2">
                       <svg
                         className="animate-spin h-5 w-5 text-white"

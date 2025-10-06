@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
-import { APIURL, ENDPOINTS } from "@/configs/api";
-import axios from "axios";
-import toast from "react-hot-toast";
-import BreadCrumb from "../../navigation/BreadCrumb";
-import Button from "@/components/Button";
-import { useRouter } from "next/navigation";
-
+import { useState, useEffect } from 'react';
+import { APIURL, ENDPOINTS } from '@/configs/api';
+import axios from 'axios';
+import toast from 'react-hot-toast';
+import BreadCrumb from '../../navigation/BreadCrumb';
+import Button from '@/components/Button';
+import { useRouter } from 'next/navigation';
+import { useProjet } from '@/context/ProjetContext';
 const BanqueForm = ({ id = null, onComplete }) => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -13,11 +13,26 @@ const BanqueForm = ({ id = null, onComplete }) => {
 
   // Form state
   const [formData, setFormData] = useState({
-    nom: "",
+    nom: '',
   });
 
   // Validation errors
   const [errors, setErrors] = useState({});
+  const { selectedProjet } = useProjet();
+  // Simple cache et comparaison for return back en cas de changer projet
+  const [oldProjetId, setOldProjetId] = useState(null);
+
+  useEffect(() => {
+    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+      if (oldProjetId) {
+        // Projet a changé
+
+        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+        router.push('/administration/banques');
+      }
+      setOldProjetId(selectedProjet.id);
+    }
+  }, [selectedProjet?.id, oldProjetId, router]);
 
   useEffect(() => {
     // Load banque data if editing
@@ -29,7 +44,7 @@ const BanqueForm = ({ id = null, onComplete }) => {
   const fetchBanqueData = async (banqueId) => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem('accessToken');
       const response = await axios.get(`${APIURL.BANQUES}/${banqueId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -37,12 +52,12 @@ const BanqueForm = ({ id = null, onComplete }) => {
       if (response.data?.banque) {
         const banqueData = response.data.banque;
         setFormData({
-          nom: banqueData.nom || "",
+          nom: banqueData.nom || '',
         });
       }
     } catch (error) {
-      console.error("Error fetching banque data:", error);
-      toast.error("Erreur lors du chargement des données");
+      console.error('Error fetching banque data:', error);
+      toast.error('Erreur lors du chargement des données');
     } finally {
       setLoading(false);
     }
@@ -57,7 +72,7 @@ const BanqueForm = ({ id = null, onComplete }) => {
     const newErrors = {};
 
     if (!formData.nom.trim()) {
-      newErrors.nom = "Le nom de la banque est requis";
+      newErrors.nom = 'Le nom de la banque est requis';
     }
 
     setErrors(newErrors);
@@ -72,13 +87,13 @@ const BanqueForm = ({ id = null, onComplete }) => {
     setSubmitting(true);
 
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem('accessToken');
       let url = APIURL.BANQUES;
-      let method = "post";
+      let method = 'post';
 
       if (id) {
         url = `${url}/${id}`;
-        method = "put";
+        method = 'put';
       }
 
       const response = await axios({
@@ -86,18 +101,18 @@ const BanqueForm = ({ id = null, onComplete }) => {
         url,
         data: formData,
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
       });
 
       toast.success(
-        id ? "Banque modifiée avec succès" : "Banque ajoutée avec succès"
+        id ? 'Banque modifiée avec succès' : 'Banque ajoutée avec succès'
       );
 
-     router.push(ENDPOINTS.BANQUES);
+      router.push(ENDPOINTS.BANQUES);
     } catch (error) {
-      console.error("Error submitting form:", error);
+      console.error('Error submitting form:', error);
 
       if (error.response?.status === 422) {
         const backendErrors = error.response.data.errors || {};
@@ -127,7 +142,7 @@ const BanqueForm = ({ id = null, onComplete }) => {
       <div className="flex items-center justify-start">
         <BreadCrumb
           baseUrl={ENDPOINTS.BANQUES}
-          step={`${id ? "Modifier" : "Ajouter"} une  banque`}
+          step={`${id ? 'Modifier' : 'Ajouter'} une  banque`}
         />
       </div>
       <div className="p-6 mt-4 bg-white shadow-md rounded-md">
@@ -142,13 +157,13 @@ const BanqueForm = ({ id = null, onComplete }) => {
               value={formData.nom}
               onChange={handleChange}
               className={`shadow appearance-none border ${
-                errors.nom ? "border-red-500" : "border-gray-300"
+                errors.nom ? 'border-red-500' : 'border-gray-300'
               } rounded w-full py-2 px-3 !text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
               placeholder="Saisir le nom de la banque"
             />
             {errors.nom && (
               <p className="text-red-500 text-xs italic">
-                {typeof errors.nom === "string" ? errors.nom : errors.nom[0]}
+                {typeof errors.nom === 'string' ? errors.nom : errors.nom[0]}
               </p>
             )}
           </div>
@@ -157,7 +172,7 @@ const BanqueForm = ({ id = null, onComplete }) => {
               Annuler
             </Button>
             <Button type="submit" disabled={submitting} loading={loading.form}>
-              {submitting ? "Chargement..." : id ? "Modifier" : "Ajouter"}
+              {submitting ? 'Chargement...' : id ? 'Modifier' : 'Ajouter'}
             </Button>
           </div>
         </form>
