@@ -3,7 +3,10 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useState, useEffect, useRef } from 'react';
-import { fetchData_Select, fetchDataByProjet, } from '../../../../../src/configs/api-utils';
+import {
+  fetchData_Select,
+  fetchDataByProjet,
+} from '../../../../../src/configs/api-utils';
 
 import BreadCrumb from '../../navigation/BreadCrumb';
 import { Controller, useForm } from 'react-hook-form';
@@ -17,13 +20,14 @@ import TextField from '@/components/Textfield'; // Import the component
 import Button from '@/components/Button'; // adjust the path as needed
 import LoadingSpin from '@/components/LoadingSpin';
 import SelectInput from '@/components/SelectInput';
+import { useProjet } from '@/context/ProjetContext';
 export default function ProspectForm({ id, onClose, onSuccess }) {
   const { token } = useAuth();
   const router = useRouter();
 
   const accessToken = token || localStorage.getItem('accessToken');
-  const selectedProjet =
-    JSON.parse(localStorage.getItem('selectedProjet')) || null;
+  const { selectedProjet } = useProjet();
+
   /*const searchParams = useSearchParams();
   const id = searchParams.get('id');*/
 
@@ -52,7 +56,7 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
     partenaire_id: '',
     message: '',
     notifie: 0,
-    projet_id: selectedProjet?.id || 1, //''
+    projet_id: selectedProjet?.id, //''
   };
 
   const validationSchemaRef = useRef(
@@ -86,6 +90,20 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
   });
   const isEditing = !!id;
 
+  // Simple cache et comparaison for return back en cas de changer projet
+  const [oldProjetId, setOldProjetId] = useState(null);
+
+  useEffect(() => {
+    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+      if (oldProjetId) {
+        // Projet a changé
+
+        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+        router.push('/crm/prospects');
+      }
+      setOldProjetId(selectedProjet.id);
+    }
+  }, [selectedProjet?.id, oldProjetId, router]);
   useEffect(() => {
     fetchData_Select('sources', setSources, setLoading_auto);
 
@@ -330,31 +348,35 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
       .catch(() => {});
   };
 
-// Update your handleSourceChange function
-const handleSourceChange = (optionValue) => {
-  const selectedOption = sourceOptions.find(opt => opt.value === optionValue);
-  setValue('partenaire_id', '');
-  setSource_txt(selectedOption ? selectedOption.label : '');
-  setValue('source', optionValue || '');
-};
+  // Update your handleSourceChange function
+  const handleSourceChange = (optionValue) => {
+    const selectedOption = sourceOptions.find(
+      (opt) => opt.value === optionValue
+    );
+    setValue('partenaire_id', '');
+    setSource_txt(selectedOption ? selectedOption.label : '');
+    setValue('source', optionValue || '');
+  };
 
-// Update your handlePartenaireChange function
-const handlePartenaireChange = (optionValue) => {
-  const selectedOption = partenaireOptions.find(opt => opt.value === optionValue);
-  setPartenaire(optionValue || '');
-  setValue('partenaire_id', optionValue || '');
-};
+  // Update your handlePartenaireChange function
+  const handlePartenaireChange = (optionValue) => {
+    const selectedOption = partenaireOptions.find(
+      (opt) => opt.value === optionValue
+    );
+    setPartenaire(optionValue || '');
+    setValue('partenaire_id', optionValue || '');
+  };
 
-// Transform your data
-const sourceOptions = sources.map(source => ({
-  value: source.id.toString(),
-  label: source.source
-}));
+  // Transform your data
+  const sourceOptions = sources.map((source) => ({
+    value: source.id.toString(),
+    label: source.source,
+  }));
 
-const partenaireOptions = partenaires.map(partenaire => ({
-  value: partenaire.id.toString(),
-  label: partenaire.description
-}));
+  const partenaireOptions = partenaires.map((partenaire) => ({
+    value: partenaire.id.toString(),
+    label: partenaire.description,
+  }));
 
   if (isEditing && !formData) {
     return (
@@ -468,19 +490,19 @@ const partenaireOptions = partenaires.map(partenaire => ({
                   />
                 </div>
                 {/* Source Select */}
-                  <div className="">
-                    <SelectInput
-                      placeholder='Sélectionner une source'
-                      name="source"
-                      label="Source:"
-                      options={sourceOptions}
-                      value={watch('source')?.toString()}
-                      loading={loading_auto} // Pass loading state to component
-                      errors={errors}
-                      backendErrors={backendErrors}
-                      onChange={handleSourceChange}
-                    />
-                  </div>
+                <div className="">
+                  <SelectInput
+                    placeholder="Sélectionner une source"
+                    name="source"
+                    label="Source:"
+                    options={sourceOptions}
+                    value={watch('source')?.toString()}
+                    loading={loading_auto} // Pass loading state to component
+                    errors={errors}
+                    backendErrors={backendErrors}
+                    onChange={handleSourceChange}
+                  />
+                </div>
 
                 {/* Third set of fields (Responsive grid) */}
                 {/* Accepte d'être contacté */}
@@ -505,7 +527,7 @@ const partenaireOptions = partenaires.map(partenaire => ({
                             field.value === 1 ? 'text-[#009FFF]' : ''
                           }`}
                         >
-                          Accepte {"d'"}être contacté 
+                          Accepte {"d'"}être contacté
                         </span>
                       </label>
                     )}
@@ -516,7 +538,7 @@ const partenaireOptions = partenaires.map(partenaire => ({
                 <div className="">
                   {source_txt === 'Partenaire' && (
                     <SelectInput
-                      placeholder='Sélectionner un partenaire'
+                      placeholder="Sélectionner un partenaire"
                       name="partenaire_id"
                       label="Partenaire:"
                       options={partenaireOptions}

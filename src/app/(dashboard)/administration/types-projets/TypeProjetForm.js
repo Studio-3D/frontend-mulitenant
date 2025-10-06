@@ -5,11 +5,13 @@ import toast from "react-hot-toast";
 import BreadCrumb from "../../navigation/BreadCrumb";
 import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
+import { useProjet } from '@/context/ProjetContext';
 
 const TypeProjetForm = ({ id = null, onComplete }) => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
+  const { selectedProjet  } = useProjet();
 
   // Form state
   const [formData, setFormData] = useState({
@@ -19,6 +21,21 @@ const TypeProjetForm = ({ id = null, onComplete }) => {
   // Validation errors
   const [errors, setErrors] = useState({});
 
+  // Simple cache et comparaison
+    const [oldProjetId, setOldProjetId] = useState(null);
+  
+    useEffect(() => {
+      if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+  
+        if (oldProjetId) {
+          // Projet a changé
+  
+          console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+          router.push('/administration/types-projets');
+        }
+        setOldProjetId(selectedProjet.id);
+      }
+    }, [selectedProjet?.id, oldProjetId, router]);
   // Load type projet data if editing
   useEffect(() => {
     if (id) {

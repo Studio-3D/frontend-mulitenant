@@ -19,11 +19,12 @@ import { fetchData_table_by_projet } from '../../../../../src/configs/api-utils'
 import Link from 'next/link';
 import Input from '@/components/Input';
 import { format } from 'date-fns'; // Add this import
-
+import { useProjet } from '@/context/ProjetContext';
 import { VISITE_INTERETS } from '../../../../../src/configs/enum';
 const AppelsTable = ({ dataClient }) => {
   const { user, token } = useAuth();
   const accesstoken = token || localStorage.getItem('accessToken');
+  const { selectedProjet } = useProjet();
 
   const router = useRouter();
   const [appels, setAppels] = useState([]);
@@ -67,7 +68,7 @@ const AppelsTable = ({ dataClient }) => {
       setAppels,
       setTotalRows
     );
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters]);
+  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters,selectedProjet]);
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
