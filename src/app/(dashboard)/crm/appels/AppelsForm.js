@@ -18,7 +18,7 @@ import TextField from '@/components/Textfield';
 import Button from '@/components/Button';
 import LoadingSpin from '@/components/LoadingSpin';
 import Modal_Propsepct_Exist from '../visites/Modal_Propsepct_Exist';
-
+import { useProjet } from '@/context/ProjetContext';
 import {
   VISITE_INTERETS,
   VISITE_TYPE_NOTIF,
@@ -36,6 +36,7 @@ export default function AppelsForm({ id }) {
   const router = useRouter();
   useClearProspect();
   useClearProspectAppel();
+  const { selectedProjet } = useProjet();
 
   const [info_cin, setInfo_cin] = useState(null);
   const [loading_tp_frein, setLoading_tp_frein] = useState(false);
@@ -84,21 +85,35 @@ export default function AppelsForm({ id }) {
     key: key,
   }));
 
- // Safely get and parse the prospect data
-const getProspectFromStorage = () => {
-  try {
-    const storedData = localStorage.getItem('selectedProspect_appel');
-    if (!storedData) return null;
-    
-    const parsedData = JSON.parse(storedData);
-    return parsedData?.prospect || null;
-  } catch (error) {
-    console.error("Error parsing prospect data:", error);
-    return null;
-  }
-};
+  // Safely get and parse the prospect data
+  const getProspectFromStorage = () => {
+    try {
+      const storedData = localStorage.getItem('selectedProspect_appel');
+      if (!storedData) return null;
 
-const prospect_appel = getProspectFromStorage();
+      const parsedData = JSON.parse(storedData);
+      return parsedData?.prospect || null;
+    } catch (error) {
+      console.error('Error parsing prospect data:', error);
+      return null;
+    }
+  };
+  // Simple cache et comparaison for return back en cas de changer projet
+  const [oldProjetId, setOldProjetId] = useState(null);
+
+  useEffect(() => {
+    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+      if (oldProjetId) {
+        // Projet a changé
+
+        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+        router.push('/crm/appels');
+      }
+      setOldProjetId(selectedProjet.id);
+    }
+  }, [selectedProjet?.id, oldProjetId, router]);
+
+  const prospect_appel = getProspectFromStorage();
 
   const defaultValues = {
     id_t_appel: '',
@@ -139,10 +154,7 @@ const prospect_appel = getProspectFromStorage();
     interet: '',
     type_appel: '',
     type_biens: '',
-    projet_id:
-      selectedPerson?.projet_id ||
-      prospect_appel?.projet_id ||
-      '',
+    projet_id: selectedPerson?.projet_id || prospect_appel?.projet_id || '',
     date_relance: '',
     mode_relance: '',
     tranche_id: '',
@@ -966,7 +978,7 @@ const prospect_appel = getProspectFromStorage();
               <TextField
                 label="Cin:"
                 name="cin"
-               // required={Number(watch('interet')) == 1}
+                // required={Number(watch('interet')) == 1}
                 control={control}
                 errors={errors}
                 /*errors={{
@@ -1012,13 +1024,13 @@ const prospect_appel = getProspectFromStorage();
                 defaultValues={defaultValues}
               />
               <SelectInput
-                placeholder='selectionner un projet'
+                placeholder="selectionner un projet"
                 label="Projet:"
                 required
                 name="projet_id"
-                options={PROJETS.map(projet => ({ 
-                  value: projet.id, 
-                  label: projet.nom 
+                options={PROJETS.map((projet) => ({
+                  value: projet.id,
+                  label: projet.nom,
                 }))}
                 value={watch('projet_id')}
                 onChange={(value) => {
@@ -1037,14 +1049,14 @@ const prospect_appel = getProspectFromStorage();
                 submitted={formSubmitted}
               />
               <SelectInput
-              placeholder='selectionner un type dappel'
+                placeholder="selectionner un type dappel"
                 label="Type Appel :"
                 name="type_appel"
                 value={watch('type_appel')}
                 required={true}
-                options={Object.values(TYPES_APPELS).map(type => ({ 
-                  value: type.code, 
-                  label: type.label 
+                options={Object.values(TYPES_APPELS).map((type) => ({
+                  value: type.code,
+                  label: type.label,
                 }))}
                 onChange={(value) => {
                   setValue('type_appel', value);
@@ -1053,25 +1065,30 @@ const prospect_appel = getProspectFromStorage();
                 submitted={formSubmitted}
               />
               <SelectInput
-              placeholder='selectionner une source'
+                placeholder="selectionner une source"
                 label="Source:"
                 required
                 name="source"
-                options={SOURCES.map(source => ({ 
-                  value: source.id, 
-                  label: source.source 
+                options={SOURCES.map((source) => ({
+                  value: source.id,
+                  label: source.source,
                 }))}
                 value={watch('source')}
                 onChange={(value) => {
-                  setSource(SOURCES.find(s => s.id === value)?.source || '');
+                  setSource(SOURCES.find((s) => s.id === value)?.source || '');
                   setValue('source', value);
 
-                  if (SOURCES.find(s => s.id === value)?.source === 'Partenaire') {
+                  if (
+                    SOURCES.find((s) => s.id === value)?.source === 'Partenaire'
+                  ) {
                     setValue('source_txt', 'Partenaire');
                   } else {
                     setValue('source_txt', '');
                   }
-                  if (!watch('projet_id') && watch('source_txt') === 'Partenaire') {
+                  if (
+                    !watch('projet_id') &&
+                    watch('source_txt') === 'Partenaire'
+                  ) {
                     toast.error('Veuillez Choisir un Projet');
                   }
                 }}
@@ -1080,13 +1097,13 @@ const prospect_appel = getProspectFromStorage();
               />
               {source?.toLowerCase() == 'partenaire' && (
                 <SelectInput
-                placeholder='selectionner un partenaire'
+                  placeholder="selectionner un partenaire"
                   label="Partenaire:"
                   name="partenaire_id"
                   required={watch('source_txt') == 'Partenaire'}
-                  options={list_partenaires.map(partenaire => ({ 
-                    value: partenaire.id, 
-                    label: partenaire.description 
+                  options={list_partenaires.map((partenaire) => ({
+                    value: partenaire.id,
+                    label: partenaire.description,
                   }))}
                   value={watch('partenaire_id')}
                   onChange={(value) => {
@@ -1105,14 +1122,14 @@ const prospect_appel = getProspectFromStorage();
               {/* Intérêt (toujours visible) */}
               <div className="sm:col-span-1">
                 <SelectInput
-                  placeholder='selectionner un intérêt'
+                  placeholder="selectionner un intérêt"
                   label="Intérêt:"
                   name="interet"
                   value={watch('interet')}
                   required={true}
-                  options={Object.values(VISITE_INTERETS).map(interet => ({ 
-                    value: interet.code, 
-                    label: interet.label 
+                  options={Object.values(VISITE_INTERETS).map((interet) => ({
+                    value: interet.code,
+                    label: interet.label,
                   }))}
                   disabled={watch('telephone') == ''}
                   onChange={handleChange_interet}
@@ -1137,29 +1154,31 @@ const prospect_appel = getProspectFromStorage();
               {Number(watch('interet')) == 1 && (
                 <>
                   <SelectInput
-                    placeholder='selectionner une tranche'
+                    placeholder="selectionner une tranche"
                     label="Tranche:"
                     name="tranche_id"
-                    options={tranches.map(tranche => ({ 
-                      value: tranche.id, 
-                      label: tranche.nom 
+                    options={tranches.map((tranche) => ({
+                      value: tranche.id,
+                      label: tranche.nom,
                     }))}
                     value={watch('tranche_id')}
                     onChange={(value) => {
                       setValue('tranche_id', value);
                     }}
-                    error={errors.tranche_id?.message || backendErrors.tranche_id}
+                    error={
+                      errors.tranche_id?.message || backendErrors.tranche_id
+                    }
                     submitted={formSubmitted}
                   />
                   <div className="mt-1">
                     <SelectInput
-                      placeholder='selectionner un bloc'
+                      placeholder="selectionner un bloc"
                       label="Bloc:"
                       name="bloc_id"
                       value={watch('bloc_id')}
-                      options={blocs.map(bloc => ({ 
-                        value: bloc.id, 
-                        label: bloc.nom 
+                      options={blocs.map((bloc) => ({
+                        value: bloc.id,
+                        label: bloc.nom,
                       }))}
                       onChange={(value) => {
                         setValue('bloc_id', value);
@@ -1170,31 +1189,33 @@ const prospect_appel = getProspectFromStorage();
                   </div>
                   <div className="mt-1">
                     <SelectInput
-                      placeholder='selectionner un immeuble'
+                      placeholder="selectionner un immeuble"
                       label="Immeuble:"
                       name="immeuble_id"
-                      options={immeubles.map(immeuble => ({ 
-                        value: immeuble.id, 
-                        label: immeuble.nom 
+                      options={immeubles.map((immeuble) => ({
+                        value: immeuble.id,
+                        label: immeuble.nom,
                       }))}
                       value={watch('immeuble_id')}
                       onChange={(value) => {
                         setValue('immeuble_id', value);
                       }}
-                      error={errors.immeuble_id?.message || backendErrors.immeuble_id}
+                      error={
+                        errors.immeuble_id?.message || backendErrors.immeuble_id
+                      }
                       submitted={formSubmitted}
                     />
                   </div>
 
                   <div className="mt-1">
                     <SelectInput
-                      placeholder='selectionner un type de bien'
+                      placeholder="selectionner un type de bien"
                       label="Types Biens :"
                       name="type_biens"
                       required={true}
-                      options={list_type_biens.map(type => ({ 
-                        value: type.id, 
-                        label: type.type 
+                      options={list_type_biens.map((type) => ({
+                        value: type.id,
+                        label: type.type,
                       }))}
                       value={watch('type_biens')}
                       isMulti={true}
@@ -1211,7 +1232,7 @@ const prospect_appel = getProspectFromStorage();
                   </div>
                   <div className="mt-1">
                     <SelectInput
-                      placeholder='selectionner une orientation'
+                      placeholder="selectionner une orientation"
                       label="Orientation :"
                       name="orientation"
                       value={watch('orientation')}
@@ -1230,12 +1251,12 @@ const prospect_appel = getProspectFromStorage();
 
                   <div className="mt-1">
                     <SelectInput
-                      placeholder='selectionner un etage'
+                      placeholder="selectionner un etage"
                       label="Etage:"
                       name="etage"
-                      options={list_etages.map(etage => ({ 
-                        value: etage.value, 
-                        label: etage.value 
+                      options={list_etages.map((etage) => ({
+                        value: etage.value,
+                        label: etage.value,
                       }))}
                       value={watch('etage')}
                       onChange={(value) => {
@@ -1260,16 +1281,21 @@ const prospect_appel = getProspectFromStorage();
                   </div>
                   <div className="mt-1">
                     <SelectInput
-                      placeholder='selectionner un mode de relance'
+                      placeholder="selectionner un mode de relance"
                       label="Mode Relance:"
                       name="mode_relance"
                       value={watch('mode_relance')}
-                      options={Object.values(VISITE_TYPE_NOTIF).map(notif => ({ 
-                        value: notif.code, 
-                        label: notif.label 
-                      }))}
+                      options={Object.values(VISITE_TYPE_NOTIF).map(
+                        (notif) => ({
+                          value: notif.code,
+                          label: notif.label,
+                        })
+                      )}
                       onChange={(value) => setValue('mode_relance', value)}
-                      error={errors.mode_relance?.message || backendErrors.mode_relance}
+                      error={
+                        errors.mode_relance?.message ||
+                        backendErrors.mode_relance
+                      }
                       submitted={formSubmitted}
                     />
                   </div>
@@ -1292,16 +1318,18 @@ const prospect_appel = getProspectFromStorage();
               {Number(watch('interet')) == 2 && (
                 <>
                   <SelectInput
-                    placeholder='selectionner un mode de relance'
+                    placeholder="selectionner un mode de relance"
                     label="Mode Relance:"
                     name="mode_relance"
                     value={watch('mode_relance')}
-                    options={Object.values(VISITE_TYPE_NOTIF).map(notif => ({ 
-                      value: notif.code, 
-                      label: notif.label 
+                    options={Object.values(VISITE_TYPE_NOTIF).map((notif) => ({
+                      value: notif.code,
+                      label: notif.label,
                     }))}
                     onChange={(value) => setValue('mode_relance', value)}
-                    error={errors.mode_relance?.message || backendErrors.mode_relance}
+                    error={
+                      errors.mode_relance?.message || backendErrors.mode_relance
+                    }
                     submitted={formSubmitted}
                   />
                   <TextField
@@ -1321,21 +1349,22 @@ const prospect_appel = getProspectFromStorage();
               {Number(watch('interet')) == 3 && (
                 <>
                   <SelectInput
-                    placeholder='selectionner des freins'
+                    placeholder="selectionner des freins"
                     label="Freins :"
                     name="freins"
                     value={watch('freins')}
                     required={true}
-                    options={type_freins.map(frein => ({ 
-                      value: frein.description.toLowerCase(), 
-                      label: frein.description 
+                    options={type_freins.map((frein) => ({
+                      value: frein.description.toLowerCase(),
+                      label: frein.description,
                     }))}
                     isMulti={true}
                     onChange={(value) => {
                       setValue('freins', value);
                     }}
                     error={
-                      (formSubmitted && (!watch('freins') || watch('freins').length == 0)
+                      (formSubmitted &&
+                      (!watch('freins') || watch('freins').length == 0)
                         ? 'Veuillez renseigner le champ frein.'
                         : null) || backendErrors.freins
                     }
@@ -1344,14 +1373,14 @@ const prospect_appel = getProspectFromStorage();
 
                   {watch('freins')?.includes('tranche') && ( // Safe access using optional chaining
                     <SelectInput
-                      placeholder='selectionner des tranches'
+                      placeholder="selectionner des tranches"
                       label="Tranches :"
                       name="tranches_id"
                       value={watch('tranches_id')}
                       isMulti={true}
-                      options={tranches.map(tranche => ({ 
-                        value: tranche.id, 
-                        label: tranche.nom 
+                      options={tranches.map((tranche) => ({
+                        value: tranche.id,
+                        label: tranche.nom,
                       }))}
                       onChange={(value) => {
                         setValue('tranches_id', value);
@@ -1359,7 +1388,8 @@ const prospect_appel = getProspectFromStorage();
                       error={
                         (formSubmitted &&
                         watch('freins')?.includes('tranche') &&
-                        (!watch('tranches_id') || watch('tranches_id').length == 0)
+                        (!watch('tranches_id') ||
+                          watch('tranches_id').length == 0)
                           ? "Ce champ est obligatoire lorsque 'frein' inclut 'tranche'."
                           : null) || backendErrors.tranches_id
                       }
@@ -1369,13 +1399,13 @@ const prospect_appel = getProspectFromStorage();
 
                   {watch('freins')?.includes('etage') && (
                     <SelectInput
-                      placeholder='selectionner des etages'
+                      placeholder="selectionner des etages"
                       label="Etages :"
                       name="etages"
                       required={true}
-                      options={list_etages.map(etage => ({ 
-                        value: etage.value, 
-                        label: etage.value 
+                      options={list_etages.map((etage) => ({
+                        value: etage.value,
+                        label: etage.value,
                       }))}
                       value={watch('etages')}
                       isMulti={true}
@@ -1395,13 +1425,13 @@ const prospect_appel = getProspectFromStorage();
                   {watch('freins')?.includes('orientation') && (
                     <div>
                       <SelectInput
-                        placeholder='selectionner des orientations'
+                        placeholder="selectionner des orientations"
                         label="Orientation :"
                         name="orientation"
                         value={watch('orientation')}
-                        options={orientationOptions.map(opt => ({ 
-                          value: opt.value, 
-                          label: opt.label 
+                        options={orientationOptions.map((opt) => ({
+                          value: opt.value,
+                          label: opt.label,
                         }))}
                         onChange={(value) => {
                           setValue('orientation', value);
@@ -1512,14 +1542,14 @@ const prospect_appel = getProspectFromStorage();
                   {watch('freins')?.includes('typologie') && (
                     <div>
                       <SelectInput
-                        placeholder='selectionner des typologies'
+                        placeholder="selectionner des typologies"
                         label="Typologies :"
                         name="typologies"
                         required={true}
                         value={watch('typologies')}
-                        options={list_typologies.map(typologie => ({ 
-                          value: typologie.id, 
-                          label: typologie.typologie 
+                        options={list_typologies.map((typologie) => ({
+                          value: typologie.id,
+                          label: typologie.typologie,
                         }))}
                         isMulti={true}
                         onChange={(value) => {
@@ -1528,7 +1558,8 @@ const prospect_appel = getProspectFromStorage();
                         error={
                           (formSubmitted &&
                           watch('freins')?.includes('typologie') &&
-                          (!watch('typologies') || watch('typologies').length == 0)
+                          (!watch('typologies') ||
+                            watch('typologies').length == 0)
                             ? "Ce champ est obligatoire lorsque 'frein' inclut 'typologie'."
                             : null) || backendErrors.typologies
                         }
@@ -1539,13 +1570,13 @@ const prospect_appel = getProspectFromStorage();
                   {watch('freins')?.includes('vue') && (
                     <div>
                       <SelectInput
-                        placeholder='selectionner des vues'
+                        placeholder="selectionner des vues"
                         label="vue :"
                         name="vues"
                         required={true}
-                        options={list_vues.map(vue => ({ 
-                          value: vue.id, 
-                          label: vue.vue 
+                        options={list_vues.map((vue) => ({
+                          value: vue.id,
+                          label: vue.vue,
                         }))}
                         value={watch('vues')}
                         isMulti={true}

@@ -1,4 +1,3 @@
-
 'use client';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
@@ -23,7 +22,7 @@ import TextField from '@/components/Textfield'; // Import the component
 import Button from '@/components/Button'; // adjust the path as needed
 import LoadingSpin from '@/components/LoadingSpin';
 import Modal_Propsepct_Exist from './Modal_Propsepct_Exist';
-//import { useProjet } from '@/context/ProjetContext';
+import { useProjet } from '@/context/ProjetContext';
 import AutocompleteBien from './AutocompleteBien'; // adjust path if needed
 import AutocompleteStatut_ModeRelance_Biens from './AutocompleteStatut_ModeRelance_Biens';
 import InputField_Biens from './InputField_Biens'; // adjust path if needed
@@ -66,8 +65,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
 
   const [loading_form, setLoading_form] = useState(false);
 
-  //  const { selectedProjet } = useProjet();
-  const selectedProjet = JSON.parse(localStorage.getItem('selectedProjet'));
+  const { selectedProjet } = useProjet();
   const [backendErrors, setBackendErrors] = useState({});
   const [sources, setSources] = useState([]);
   const [partenaires, setPartenaires] = useState([]);
@@ -247,6 +245,20 @@ const VisiteForm = ({ prospect_id, origin }) => {
       pusher.unsubscribe('proposition-updates');
     };
   };
+  // Simple cache et comparaison for return back en cas de changer projet
+  const [oldProjetId, setOldProjetId] = useState(null);
+
+  useEffect(() => {
+    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+      if (oldProjetId) {
+        // Projet a changé
+
+        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+        router.push('/crm/visites');
+      }
+      setOldProjetId(selectedProjet.id);
+    }
+  }, [selectedProjet?.id, oldProjetId, router]);
 
   const handleChange = (panel) => {
     setExpanded(
@@ -2584,14 +2596,23 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                     <SelectInput
                                       label="Bien:"
                                       name="bien_id"
-                                      options={biensByProjet 
-                                        ? biensByProjet.filter(bien => bien && bien.id && bien.propriete_dite_bien)
-                                            .map(bien => ({
-                                              value: bien.id.toString(),
-                                              label: bien.propriete_dite_bien,
-                                              disabled: bien.disabled || false
-                                            }))
-                                        : []} // Provide empty array as fallback
+                                      options={
+                                        biensByProjet
+                                          ? biensByProjet
+                                              .filter(
+                                                (bien) =>
+                                                  bien &&
+                                                  bien.id &&
+                                                  bien.propriete_dite_bien
+                                              )
+                                              .map((bien) => ({
+                                                value: bien.id.toString(),
+                                                label: bien.propriete_dite_bien,
+                                                disabled:
+                                                  bien.disabled || false,
+                                              }))
+                                          : []
+                                      } // Provide empty array as fallback
                                       value={x.bien_id}
                                       onChange={(selectedValue) => {
                                         const syntheticEvent = {
@@ -2606,7 +2627,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                       loading={loading_bien}
                                       required={x.statut == 2}
                                     />
-                                  </div> 
+                                  </div>
 
                                   {/* Statut Selection */}
                                   <div>

@@ -14,6 +14,7 @@ import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
 import Input from '@/components/Input';
 
 const SourceTable = () => {
+   const { selectedProjet  } = useProjet();
   const [sources, setSources] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -52,22 +53,9 @@ const SourceTable = () => {
       setSources,
       setTotalRows
     );
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters]);
+  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters,selectedProjet]);
 
-  useEffect(() => {
-    fetchData_table_by_projet(
-      entity,
-      filters,
-      searchTerm,
-      currentPage,
-      rowsPerPage,
-      accesstoken,
-      setLoading,
-      setError,
-      setSources,
-      setTotalRows
-    );
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters]);
+
 
   function handleEdit(SourceId) {
     router.push(`${ENDPOINTS.SOURCES}?id=${SourceId}&action=edit`);

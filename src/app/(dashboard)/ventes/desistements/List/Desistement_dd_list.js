@@ -13,12 +13,14 @@ import Table from '@/components/Table';
 import { formatDate } from '../../../../../utils/dateUtils';
 import { motif_desistements } from '@/configs/enum';
 
+import { useProjet } from '@/context/ProjetContext';
 export default function Desistement_dd_list() {
   const etat_desistement = JSON.parse(localStorage.getItem('etat_dst'));
   const { user, token } = useAuth();
   const accesstoken = token || localStorage.getItem('accessToken');
   const user_role = user.role;
 
+  const { selectedProjet  } = useProjet();
   const router = useRouter();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -90,7 +92,7 @@ export default function Desistement_dd_list() {
       setData,
       setTotalRows
     );
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters]);
+  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters,selectedProjet]);
 
   const handleView = (desId) => {
     router.push(`/ventes/desistements/show/${desId}`);

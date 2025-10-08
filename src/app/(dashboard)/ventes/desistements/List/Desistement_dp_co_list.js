@@ -11,7 +11,11 @@ import { lien_parentes } from '@/configs/enum';
 import Input from '@/components/Input';
 import SelectInput from '@/components/SelectInput';
 import DateRangePicker from '@/components/DateRangePicker';
+import { useProjet } from '@/context/ProjetContext';
+
 export default function Desistement_dp_co_list() {
+  const { selectedProjet } = useProjet();
+
   const etat_desistement = JSON.parse(localStorage.getItem('etat_dst'));
   const { user, token } = useAuth();
   const accesstoken = token || localStorage.getItem('accessToken');
@@ -89,7 +93,14 @@ export default function Desistement_dp_co_list() {
       setData,
       setTotalRows
     );
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters]);
+  }, [
+    accesstoken,
+    currentPage,
+    rowsPerPage,
+    searchTerm,
+    filters,
+    selectedProjet,
+  ]);
 
   const handleView = (desId) => {
     router.push(`/ventes/desistements/show/${desId}`);

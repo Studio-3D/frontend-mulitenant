@@ -3,19 +3,36 @@ import React, { useEffect, useState } from 'react';
 import { ClientDetails } from '@/components/visites/ClientDetails';
 import { VisitDetails } from '@/components/visites/VisitDeatils';
 import axios from 'axios';
-import { APIURL} from '../../configs/api';
+import { APIURL } from '../../configs/api';
 import { useAuth } from '../../context/AuthContext';
 import LoadingSpin from '@/components/LoadingSpin';
+import { useProjet } from '@/context/ProjetContext';
+import { useRouter } from 'next/navigation';
 
 export function ClientDetailsPage(visiteId) {
   const [loading, setLoading] = useState(true);
   const [visites_all, setvisites_all] = useState([]);
   const [visites_all_show, setvisites_all_show] = useState([]);
   const [last_related_id, setLast_Related_id] = useState(0);
-
+  const { selectedProjet } = useProjet();
   const { token } = useAuth();
   const accessToken = token || localStorage.getItem('accessToken');
+  const router = useRouter();
 
+  // Simple cache et comparaison for return back en cas de changer projet
+  const [oldProjetId, setOldProjetId] = useState(null);
+
+  useEffect(() => {
+    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+      if (oldProjetId) {
+        // Projet a changé
+
+        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+        router.push('/crm/visites');
+      }
+      setOldProjetId(selectedProjet.id);
+    }
+  }, [selectedProjet?.id, oldProjetId, router]);
   const fetch_visite = async () => {
     if (Number(visiteId.visiteId)) {
       setLoading(true);
@@ -29,12 +46,12 @@ export function ClientDetailsPage(visiteId) {
         .then((response) => {
           setvisites_all(response.data.visites);
           setvisites_all_show(response.data.visites_show);
-          
+
           // Set the last_related_id from the first item in visites_all_show
           if (response.data.visites_show.length > 0) {
             setLast_Related_id(response.data.visites_show[0].related_show_id);
           }
-          
+
           setLoading(false);
         })
         .catch((error) => {

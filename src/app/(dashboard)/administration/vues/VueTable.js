@@ -40,27 +40,6 @@ const VueTable = () => {
     searchFields: ['vue'],
   };
 
-  useEffect(() => {
-    fetchData_table_by_projet(
-      entity,
-      filters,
-      searchTerm,
-      currentPage,
-      rowsPerPage,
-      accesstoken,
-      setLoading,
-      setError,
-      setVues,
-      setTotalRows
-    );
-  }, [
-    accesstoken,
-    currentPage,
-    rowsPerPage,
-    searchTerm,
-    filters,
-    selectedProjet,
-  ]);
 
   useEffect(() => {
     fetchData_table_by_projet(

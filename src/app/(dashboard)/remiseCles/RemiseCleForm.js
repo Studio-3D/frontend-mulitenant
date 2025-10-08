@@ -102,15 +102,20 @@ const RemiseCleForm = ({ id = null }) => {
     }
   };
 
-  const handleDeleteFile = () => {
-    setExistingFileUrl(null);
-    setFileName('');
-    setFile(null);
-    setValue('fichier', ''); // Clear the file value
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+  // Simple cache et comparaison for return back en cas de changer projet
+  const [oldProjetId, setOldProjetId] = useState(null);
+
+  useEffect(() => {
+    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+      if (oldProjetId) {
+        // Projet a changé
+
+        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+        router.push('/remiseCles');
+      }
+      setOldProjetId(selectedProjet.id);
     }
-  };
+  }, [selectedProjet?.id, oldProjetId, router]);
 
   // Fonction utilitaire pour afficher le nom complet du bien
   function NomBienComplet(bien) {
@@ -237,7 +242,7 @@ const RemiseCleForm = ({ id = null }) => {
       // Only append user_id_remise if user role is <= 2
       if (user?.role <= 2) {
         formData.append('user_id_remise', data.user_id_remise);
-      } 
+      }
 
       formData.append('bien_id', data.bien_id);
       formData.append('projet_id', data.projet_id);
@@ -315,10 +320,14 @@ const RemiseCleForm = ({ id = null }) => {
                 name="bien_id"
                 value={watch('bien_id')}
                 required={true}
-                options={Array.isArray(biens) ? biens.map((s) => ({
-                  value: s.id,
-                  label: NomBienComplet(s),
-                })) : []}
+                options={
+                  Array.isArray(biens)
+                    ? biens.map((s) => ({
+                        value: s.id,
+                        label: NomBienComplet(s),
+                      }))
+                    : []
+                }
                 loading={loading_b}
                 onChange={(value) => {
                   // Handle both direct value and object with value property
@@ -345,14 +354,19 @@ const RemiseCleForm = ({ id = null }) => {
                 name="user_id_remise"
                 value={watch('user_id_remise')}
                 required={true}
-                options={Array.isArray(cc) ? cc.map((c) => ({
-                  value: c.user.id,
-                  label: `${c.user.prenom} ${c.user.name}`,
-                })) : []}
+                options={
+                  Array.isArray(cc)
+                    ? cc.map((c) => ({
+                        value: c.user.id,
+                        label: `${c.user.prenom} ${c.user.name}`,
+                      }))
+                    : []
+                }
                 loading={loading}
                 onChange={(value) => {
                   // Handle both string/number values and potential object values
-                  const selectedValue = value?.value !== undefined ? value.value : value;
+                  const selectedValue =
+                    value?.value !== undefined ? value.value : value;
                   setValue('user_id_remise', selectedValue || null);
                 }}
                 error={errors?.user_id_remise?.message}
@@ -373,7 +387,7 @@ const RemiseCleForm = ({ id = null }) => {
           </div>
 
           {/* Ligne 2 : Fichier + Aperçu */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-start mt-4" >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-start mt-4">
             {!isEditing && (
               <div>
                 {/* Use Controller for file input with custom rendering */}

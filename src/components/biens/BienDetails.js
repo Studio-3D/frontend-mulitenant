@@ -29,6 +29,7 @@ import BienDescriptionGenerator from './BienDescriptionGenerator';
 import BienDossiers from './BienDossiers';
 import BienTvaCollecte from './BienTvaCollecte';
 import BienMedia from './BienMedia';
+import { useProjet } from '@/context/ProjetContext';
 
 import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
 import EncaissementTable from '@/app/(dashboard)/encaissements/EncaissementTable';
@@ -40,10 +41,24 @@ export default function BienDetails({ id }) {
   const [bienDescription, setBienDescription] = useState('');
   const router = useRouter();
   const { user } = useAuth();
-
+  const { selectedProjet } = useProjet();
   // Only admins and super admins can edit properties
   const canEditBien = user?.role === 1 || user?.role === 2;
 
+  // Read breadcrumb context for names without fetching
+  // Simple cache et comparaison
+  const [oldProjetId, setOldProjetId] = useState(null);
+
+  useEffect(() => {
+    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+      if (oldProjetId) {
+        // Projet a changé
+        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+        router.push('/Projets/' + selectedProjet.id);
+      }
+      setOldProjetId(selectedProjet.id);
+    }
+  }, [selectedProjet?.id, oldProjetId, router]);
   useEffect(() => {
     const fetchBienDetails = async () => {
       try {
@@ -199,7 +214,7 @@ export default function BienDetails({ id }) {
     </div>
   );
 
-   const handleView_Reservation = (reservationId) => {
+  const handleView_Reservation = (reservationId) => {
     window.open(`/ventes/reservations/${reservationId}`, '_blank');
   };
 
@@ -207,18 +222,32 @@ export default function BienDetails({ id }) {
     <div className=" ">
       <div className="space-y-6 ">
         {/* Header with actions - Redesigned with professional white background */}
-              <div className="mb-1">
-                <BreadCrumb
-                  onRoot={{ href: '/Projets' }}
-                  items={[
-                    bien.projet ? { label: bien.projet.nom, href: `/Projets/${bien.projet_id}` } : null,
-                    bien.tranche ? { label: bien.tranche.nom, href: `/Tranches/${bien.tranche_id}` } : null,
-                    bien.bloc ? { label: bien.bloc.nom, href: `/Blocs/${bien.bloc_id}` } : null,
-                    bien.immeuble ? { label: bien.immeuble.nom, href: `/Immeubles/${bien.immeuble_id}` } : null,
-                    { label: bien.propriete_dite_bien },
-                  ].filter(Boolean)}
-                />
-              </div>
+        <div className="mb-1">
+          <BreadCrumb
+            onRoot={{ href: '/Projets' }}
+            items={[
+              bien.projet
+                ? { label: bien.projet.nom, href: `/Projets/${bien.projet_id}` }
+                : null,
+              bien.tranche
+                ? {
+                    label: bien.tranche.nom,
+                    href: `/Tranches/${bien.tranche_id}`,
+                  }
+                : null,
+              bien.bloc
+                ? { label: bien.bloc.nom, href: `/Blocs/${bien.bloc_id}` }
+                : null,
+              bien.immeuble
+                ? {
+                    label: bien.immeuble.nom,
+                    href: `/Immeubles/${bien.immeuble_id}`,
+                  }
+                : null,
+              { label: bien.propriete_dite_bien },
+            ].filter(Boolean)}
+          />
+        </div>
         <div className="bg-white rounded-lg p-6 shadow border border-gray-200">
           <div className="flex justify-between items-center">
             <div className="flex flex-col gap-2">
@@ -234,9 +263,7 @@ export default function BienDetails({ id }) {
               {bien.etat == 'RESERVATION' && (
                 <button
                   title="Détail du Réservation"
-                  onClick={() =>
-                    handleView_Reservation(bien?.reservation?.id)
-                  }
+                  onClick={() => handleView_Reservation(bien?.reservation?.id)}
                   className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
                 >
                   <EyeIcon className="h-5 w-5 text-gray-700" />

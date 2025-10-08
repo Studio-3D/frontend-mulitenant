@@ -16,7 +16,15 @@ import LoadingSpin from '@/components/LoadingSpin';
 
 import ConfirmDialog from '@/components/dialog-File';
 import { useProjet } from '@/context/ProjetContext';
-import { Box, CircularProgress, Grid, IconButton, TextField as TextField1, Typography, Autocomplete as Autocomplete1 } from '@mui/material';
+import {
+  Box,
+  CircularProgress,
+  Grid,
+  IconButton,
+  TextField as TextField1,
+  Typography,
+  Autocomplete as Autocomplete1,
+} from '@mui/material';
 import Input from '@/components/Input';
 
 export default function ReclamationForm({ id }) {
@@ -34,10 +42,10 @@ export default function ReclamationForm({ id }) {
     { id: '5', description: 'Couloir' },
     { id: '6', description: 'Fuite' },
     { id: '7', description: 'Buanderie' },
-    { id: '8', description: 'Placard' }
-  ])
+    { id: '8', description: 'Placard' },
+  ]);
 
-  const emplacementOptions = emplacements.map(s => ({
+  const emplacementOptions = emplacements.map((s) => ({
     value: s.description,
     label: s.description,
   }));
@@ -50,16 +58,29 @@ export default function ReclamationForm({ id }) {
   const [backendErrors, setBackendErrors] = useState({});
 
   const [clients, setClients] = useState([]);
-  const [loading_list, setLoading_list] = useState(false)
-  const [filesList, setfilesList] = useState(null)
-  const [selectedFiles_rsv, setSelectedFiles_rsv] = useState([])
-  const [validerfile, setValiderfile] = useState(false)
-  const [myfile, setMyfile] = useState(false)
-  const [myfile_1, setMyfile_1] = useState(false)
+  const [loading_list, setLoading_list] = useState(false);
+  const [filesList, setfilesList] = useState(null);
+  const [selectedFiles_rsv, setSelectedFiles_rsv] = useState([]);
+  const [validerfile, setValiderfile] = useState(false);
+  const [myfile, setMyfile] = useState(false);
+  const [myfile_1, setMyfile_1] = useState(false);
   const { selectedProjet } = useProjet();
 
-  //edit
 
+  // Simple cache et comparaison for return back en cas de changer projet
+  const [oldProjetId, setOldProjetId] = useState(null);
+
+  useEffect(() => {
+    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+      if (oldProjetId) {
+        // Projet a changé
+
+        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+        router.back();
+      }
+      setOldProjetId(selectedProjet.id);
+    }
+  }, [selectedProjet?.id, oldProjetId, router]);
   const fetchServices = async () => {
     try {
       setLoading(true);
@@ -82,8 +103,8 @@ export default function ReclamationForm({ id }) {
   };
 
   useEffect(() => {
-    fetchbiens()
-    fetchServices()
+    fetchbiens();
+    fetchServices();
   }, []);
 
   const defaultValues = {
@@ -94,26 +115,28 @@ export default function ReclamationForm({ id }) {
     emplacements: '',
     projet_id: selectedProjet?.id,
     commentaires: '',
-    problemes: ''
-  }
+    problemes: '',
+  };
 
   const validationSchemaRef = useRef(
     yup.object().shape({
-      date_reclamation: yup.string().required('la date reclamation est Obligatoire'),
+      date_reclamation: yup
+        .string()
+        .required('la date reclamation est Obligatoire'),
       bien_id: yup.string().required('le Bien est Obligatoire'),
       client_id: yup.string().required('le Client est Obligatoire'),
     })
-  )
+  );
 
   function NomBienComplet(bien) {
     const noms = [];
-  
+
     if (bien.tranche?.nom) noms.push(bien.tranche.nom);
     if (bien.bloc?.nom) noms.push(bien.bloc.nom);
     if (bien.immeuble?.nom) noms.push(bien.immeuble.nom);
-  
+
     noms.push(bien.propriete_dite_bien);
-  
+
     return noms.join(' - ');
   }
 
@@ -146,16 +169,18 @@ export default function ReclamationForm({ id }) {
               nom: aq.client.nom,
               prenom: aq.client.prenom,
             }))
-          )
-          setValue('bien_id', rec.bien_id || '')
-          setValue('client_id', rec.client_id || '')
-          setValue('service_id', rec.service_id || '')
-          setValue('date_reclamation', rec.date_reclamation || '')
-          setValue('problemes', rec.problemes || '')
-          const emplacementsArray = rec.emplacements.split(',').map((emplacement) => emplacement.trim());
+          );
+          setValue('bien_id', rec.bien_id || '');
+          setValue('client_id', rec.client_id || '');
+          setValue('service_id', rec.service_id || '');
+          setValue('date_reclamation', rec.date_reclamation || '');
+          setValue('problemes', rec.problemes || '');
+          const emplacementsArray = rec.emplacements
+            .split(',')
+            .map((emplacement) => emplacement.trim());
           setValue('emplacements', emplacementsArray);
 
-          setSelectedFiles_rsv(rec.piece_jointe)
+          setSelectedFiles_rsv(rec.piece_jointe);
 
           setFormData({});
         })
@@ -186,13 +211,13 @@ export default function ReclamationForm({ id }) {
             Authorization: `Bearer ${accessToken}`,
           },
         }
-      )
+      );
       //const { data } = response
-      setbiens(response.data.biens||[])
-      console.log(response.data.biens)
-      setLoading(false)
+      setbiens(response.data.biens || []);
+      console.log(response.data.biens);
+      setLoading(false);
     } catch (error) {
-      setLoading(false)
+      setLoading(false);
       console.error('Error fetching data:', error);
     }
   };
@@ -447,32 +472,35 @@ export default function ReclamationForm({ id }) {
       <div className="p-6 mt-4 bg-white shadow-md rounded-md">
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-            
             {/* Bien SelectInput */}
             <Controller
               name="bien_id"
               control={control}
-              rules={{ required: "Le bien est obligatoire" }}
+              rules={{ required: 'Le bien est obligatoire' }}
               render={({ field }) => (
                 <SelectInput
                   label="Bien"
                   placeholder="Choisir un bien..."
-                  options={Array.isArray(BIENS) ? BIENS.map(s => ({
-                    value: s.id,
-                    label: NomBienComplet(s)
-                  })) : []}
+                  options={
+                    Array.isArray(BIENS)
+                      ? BIENS.map((s) => ({
+                          value: s.id,
+                          label: NomBienComplet(s),
+                        }))
+                      : []
+                  }
                   value={field.value}
                   onChange={(value) => {
                     field.onChange(value);
-                    const newValue = BIENS.find(s => s.id === value);
-                    
+                    const newValue = BIENS.find((s) => s.id === value);
+
                     // Réinitialiser les clients si aucun bien n'est sélectionné
                     if (newValue?.clients?.length) {
                       setClients(
-                        newValue.clients.map(aq => ({
+                        newValue.clients.map((aq) => ({
                           id: aq.client.id,
                           nom: aq.client.nom,
-                          prenom: aq.client.prenom
+                          prenom: aq.client.prenom,
                         }))
                       );
                     } else {
@@ -483,7 +511,9 @@ export default function ReclamationForm({ id }) {
                     setValue('client_id', null);
                   }}
                   loading={loading}
-                  error={errors?.bien_id?.message || backendErrors?.bien_id?.[0]}
+                  error={
+                    errors?.bien_id?.message || backendErrors?.bien_id?.[0]
+                  }
                   required={true}
                 />
               )}
@@ -493,21 +523,27 @@ export default function ReclamationForm({ id }) {
             <Controller
               name="client_id"
               control={control}
-              rules={{ required: "Le client est obligatoire" }}
+              rules={{ required: 'Le client est obligatoire' }}
               render={({ field }) => (
                 <SelectInput
                   label="Client"
                   placeholder="Choisir un client..."
-                  options={Array.isArray(clients) ? clients.map(c => ({
-                    value: c.id,
-                    label: `${c.prenom} ${c.nom}`
-                  })) : []}
+                  options={
+                    Array.isArray(clients)
+                      ? clients.map((c) => ({
+                          value: c.id,
+                          label: `${c.prenom} ${c.nom}`,
+                        }))
+                      : []
+                  }
                   value={field.value}
                   onChange={(value) => {
                     field.onChange(value);
                   }}
                   loading={loading}
-                  error={errors?.client_id?.message || backendErrors?.client_id?.[0]}
+                  error={
+                    errors?.client_id?.message || backendErrors?.client_id?.[0]
+                  }
                   required={true}
                 />
               )}
@@ -521,17 +557,24 @@ export default function ReclamationForm({ id }) {
                 <SelectInput
                   label="Service"
                   placeholder="Choisir un service..."
-                  options={Array.isArray(services) ? services.map(s => ({ 
-                    value: s.id, 
-                    label: s.nom 
-                  })) : []}
+                  options={
+                    Array.isArray(services)
+                      ? services.map((s) => ({
+                          value: s.id,
+                          label: s.nom,
+                        }))
+                      : []
+                  }
                   value={field.value}
                   onChange={(value) => {
                     field.onChange(value);
-                    const newValue = services.find(s => s.id === value);
+                    const newValue = services.find((s) => s.id === value);
                   }}
                   loading={loading}
-                  error={errors?.service_id?.message || backendErrors?.service_id?.[0]}
+                  error={
+                    errors?.service_id?.message ||
+                    backendErrors?.service_id?.[0]
+                  }
                   required={true}
                 />
               )}
@@ -544,11 +587,14 @@ export default function ReclamationForm({ id }) {
               value={watch('date_reclamation')}
               onChange={(e) => setValue('date_reclamation', e.target.value)}
               placeholder=""
-              error={errors?.date_reclamation?.message || backendErrors?.date_reclamation}
+              error={
+                errors?.date_reclamation?.message ||
+                backendErrors?.date_reclamation
+              }
               required
             />
             {/* Emplacement Autocomplete */}
-            <div className="w-full sm:col-span-2 md:col-span-2"> 
+            <div className="w-full sm:col-span-2 md:col-span-2">
               <Controller
                 name="emplacements"
                 control={control}
@@ -562,7 +608,10 @@ export default function ReclamationForm({ id }) {
                     onChange={(value) => {
                       field.onChange(value);
                     }}
-                    error={errors?.emplacements?.message || backendErrors?.emplacements?.[0]}
+                    error={
+                      errors?.emplacements?.message ||
+                      backendErrors?.emplacements?.[0]
+                    }
                     required={true}
                     loading={loading}
                     isMulti={true}
@@ -570,7 +619,7 @@ export default function ReclamationForm({ id }) {
                 )}
               />
             </div>
-            <div className="w-full sm:col-span-2 md:col-span-2"> 
+            <div className="w-full sm:col-span-2 md:col-span-2">
               <Input
                 label="Problème(s) :"
                 name="problemes"
@@ -578,11 +627,11 @@ export default function ReclamationForm({ id }) {
                 onChange={(e) => setValue('problemes', e.target.value)}
                 required
                 multiline
-                error={errors?.problemes?.message || backendErrors?.problemes?.[0]}
+                error={
+                  errors?.problemes?.message || backendErrors?.problemes?.[0]
+                }
               />
             </div>
-
-            
           </div>
           <div className="mt-6">
             <Grid container spacing={2} alignItems="flex-start">
@@ -605,7 +654,11 @@ export default function ReclamationForm({ id }) {
               {/* Fichiers sélectionnés */}
               {selectedFiles_rsv?.length > 0 && (
                 <Grid item xs={12} sm={8}>
-                  <Typography variant="subtitle2" color="primary" sx={{ mb: 1 }}>
+                  <Typography
+                    variant="subtitle2"
+                    color="primary"
+                    sx={{ mb: 1 }}
+                  >
                     Piéces jointes sélectionnées :
                   </Typography>
                   <Grid
@@ -613,7 +666,7 @@ export default function ReclamationForm({ id }) {
                     spacing={1}
                     sx={{
                       p: 1,
-                      border: theme => `0.5px solid ${theme.palette.divider}`,
+                      border: (theme) => `0.5px solid ${theme.palette.divider}`,
                       borderRadius: 1,
                       width: '100%',
                       flexWrap: 'wrap',
@@ -665,9 +718,7 @@ export default function ReclamationForm({ id }) {
               Annuler
             </Button>
 
-            <Button type="submit" >
-              Enregistrer
-            </Button>
+            <Button type="submit">Enregistrer</Button>
           </div>
         </form>
         <ConfirmDialog

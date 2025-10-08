@@ -1,8 +1,7 @@
-"use client";
+'use client';
 import { useState, useEffect } from 'react';
 import { useProjet } from '@/context/ProjetContext';
 import { Search } from 'lucide-react';
-
 export default function ProjetSelector({ onSelect }) {
   const { projets, fetchProjets, selectProjet, loading } = useProjet();
   const [searchTerm, setSearchTerm] = useState('');
@@ -20,35 +19,37 @@ export default function ProjetSelector({ onSelect }) {
   useEffect(() => {
     const storedProject = localStorage.getItem('selectedProjet');
     if (storedProject) {
-      console.log("Stored project found:", JSON.parse(storedProject));
+      console.log('Stored project found:', JSON.parse(storedProject));
     } else {
-      console.log("No stored project found in localStorage");
+      console.log('No stored project found in localStorage');
     }
   }, []);
 
   // Filter projects based on search term
-  const filteredProjects = projets?.filter(projet => 
-    projet.nom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    projet.code?.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  const filteredProjects =
+    projets?.filter(
+      (projet) =>
+        projet.nom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        projet.code?.toLowerCase().includes(searchTerm.toLowerCase())
+    ) || [];
 
   const handleSelect = (project) => {
     if (!project || !project.id) {
-      console.error("Invalid project selected:", project);
-      setError("Projet invalide sélectionné");
+      console.error('Invalid project selected:', project);
+      setError('Projet invalide sélectionné');
       return;
     }
 
     setError(null);
-    console.log("Selected project:", project);
+    console.log('Selected project:', project);
     setSelectedProject(project);
-    
+
     // Ensure projet_id is stored properly in context
     selectProjet(project);
-    
+
     // Also store in localStorage as a backup
     localStorage.setItem('selectedProjet', JSON.stringify(project));
-    
+
     if (onSelect) onSelect(project);
   };
 
@@ -86,16 +87,16 @@ export default function ProjetSelector({ onSelect }) {
         </div>
       ) : filteredProjects.length === 0 ? (
         <div className="text-center py-8 !text-gray-500">
-          Aucun projet trouvé pour "{searchTerm}"
+          Aucun projet trouvé pour {searchTerm}
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 max-h-96 overflow-y-auto p-2">
-          {filteredProjects.map(project => (
-            <div 
+          {filteredProjects.map((project) => (
+            <div
               key={project.id}
               className={`p-4 rounded-lg cursor-pointer transition-colors ${
-                selectedProject?.id === project.id 
-                  ? 'bg-blue-50 border border-blue-300' 
+                selectedProject?.id === project.id
+                  ? 'bg-blue-50 border border-blue-300'
                   : 'border border-gray-200 hover:bg-gray-50'
               }`}
               onClick={() => handleSelect(project)}

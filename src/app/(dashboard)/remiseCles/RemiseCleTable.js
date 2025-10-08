@@ -15,8 +15,8 @@ import { Pencil, Trash2, Eye } from 'lucide-react';
 import { useProjet } from '@/context/ProjetContext';
 import format from 'date-fns/format';
 import Input from '@/components/Input';
-
 const RemiseCleTable = ({}) => {
+  const { selectedProjet  } = useProjet();
   const [remisecles, setRemiseCles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -71,7 +71,7 @@ const RemiseCleTable = ({}) => {
       setRemiseCles,
       setTotalRows
     );
-  }, [searchTerm, currentPage, rowsPerPage, accesstoken, filters]);
+  }, [searchTerm, currentPage, rowsPerPage, accesstoken, filters,selectedProjet]);
 
   const handleFilterChange = (field, value) => {
     setTempFilters((prev) => ({ ...prev, [field]: value }));
@@ -241,6 +241,7 @@ const RemiseCleTable = ({}) => {
   return (
     <>
       <Table
+      title={'Remise des Clés'}
         showSearch={false}
         data_to_export={data_to_export()}
         columns_export={columns_export}

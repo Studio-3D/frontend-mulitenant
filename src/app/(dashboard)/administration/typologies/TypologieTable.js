@@ -62,28 +62,6 @@ const TypologieTable = () => {
     selectedProjet,
   ]);
 
-  useEffect(() => {
-    fetchData_table_by_projet(
-      entity,
-      filters,
-      searchTerm,
-      currentPage,
-      rowsPerPage,
-      accesstoken,
-      setLoading,
-      setError,
-      setTypologies,
-      setTotalRows
-    );
-  }, [
-    accesstoken,
-    currentPage,
-    rowsPerPage,
-    searchTerm,
-    filters,
-    selectedProjet,
-  ]);
-
   function handleEdit(TypologieId) {
     router.push(`${ENDPOINTS.TYPOLOGIES}?id=${TypologieId}&action=edit`);
   }

@@ -42,7 +42,7 @@ export default function BienForm() {
   const [typeBiens, setTypeBiens] = useState([]);
   const [vues, setVues] = useState([]);
   const [typologies, setTypologies] = useState([]);
-  const projet = JSON.parse(localStorage.getItem('selectedProjet') || '{}');
+  const projet =selectedProjet;
   const token = localStorage.getItem('accessToken');
   const [compositionModalMessage, setCompositionModalMessage] = useState(
     'Voulez-vous ajouter une composition pour ce bien?'

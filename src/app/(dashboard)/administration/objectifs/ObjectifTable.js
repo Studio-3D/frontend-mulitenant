@@ -66,27 +66,7 @@ const ObjectifTable = () => {
     selectedProjet,
   ]);
 
-  useEffect(() => {
-    fetchData_table_by_projet(
-      entity,
-      filters,
-      searchTerm,
-      currentPage,
-      rowsPerPage,
-      accesstoken,
-      setLoading,
-      setError,
-      setObjectifs,
-      setTotalRows
-    );
-  }, [
-    accesstoken,
-    currentPage,
-    rowsPerPage,
-    searchTerm,
-    filters,
-    selectedProjet,
-  ]);
+ 
 
   function handleEdit(ObjectifId) {
     console.log('jjj')

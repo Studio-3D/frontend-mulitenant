@@ -105,7 +105,7 @@ const getStatutBadge = (statutValue) => {
         sethistoImportations,
         setTotalRows
       );
-    }, [searchTerm, currentPage, rowsPerPage, accesstoken,filters]);
+    }, [searchTerm, currentPage, rowsPerPage, accesstoken,filters,selectedProjet]);
 
     
     const handleFilterChange = (field, value) => {

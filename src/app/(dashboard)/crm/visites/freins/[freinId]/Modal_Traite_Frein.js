@@ -17,6 +17,7 @@ import {
 } from '@/configs/enum';
 import { useRouter } from 'next/navigation';
 
+import { useProjet } from '@/context/ProjetContext';
 import { fetchDataByProjet } from '../../../../../../../src/configs/api-utils';
 import AutocompleteMultiple from '@/components/AutocompleteMultiple';
 import Pusher from 'pusher-js';
@@ -24,6 +25,7 @@ import BienAutocomplete from './BienAutocomplete';
 export default function Modal_Traite_Frein({ onClose, id, biens }) {
   const router = useRouter();
 
+  const { selectedProjet  } = useProjet();
   const { token, user } = useAuth();
   const accessToken = token || localStorage.getItem('accessToken');
   const [loading, setLoading] = useState({ form: false });
@@ -105,11 +107,11 @@ export default function Modal_Traite_Frein({ onClose, id, biens }) {
   });
   if (
     list_etages.length === 0 &&
-    JSON.parse(localStorage.getItem('selectedProjet'))?.max_etages > 0
+    selectedProjet?.max_etages > 0
   ) {
     for (
       var i = 0;
-      i <= JSON.parse(localStorage.getItem('selectedProjet'))?.max_etages;
+      i <= selectedProjet?.max_etages;
       i++
     ) {
       list_etages.push({ value: i });
