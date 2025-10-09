@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import ServiceForm from './ReclamationClientForm'
-import ServiceTable from './ReclamationClientTable'
+import ReclamationClientForm from './ReclamationClientForm'
+import ReclamationClient from './ReclamationClientTable'
 
 export default function Page() {
   const ACTION = { EDIT: 'edit', ADD: 'add' }
@@ -23,9 +23,9 @@ export default function Page() {
   // Fonction pour déterminer le composant enfant en fonction de l'action et de l'id
   const determineChildComponent = (action, id) => {
     if (action === ACTION.ADD) {
-      return <ServiceForm />
+      return <ReclamationClientForm />
     } else if (!isNaN(parseInt(id)) && action === ACTION.EDIT) {
-      return <ServiceForm id={id} />
+      return <ReclamationClientForm id={id} />
     } else {
       console.warn('Invalid action or missing id:', action, id) // Debugging
 
@@ -40,7 +40,7 @@ export default function Page() {
       ) : (
         <>
           <div>
-            <ServiceTable />
+            <ReclamationClient />
           </div>
         </>
       )}

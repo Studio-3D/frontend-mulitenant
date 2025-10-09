@@ -17,6 +17,7 @@ const FreinsComponent = ({
   list_vues,
   loading_tp_frein,
   loading,
+  loading_tr,
   handleChange_freins,
   handlePrixChange,
   setValue,
@@ -137,7 +138,7 @@ const FreinsComponent = ({
                   : null,
             }}
             backendErrors={backendErrors}
-            loading={loading}
+            loading={loading_tr}
           />
         </div>
       )}

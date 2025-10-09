@@ -19,6 +19,8 @@ import toast from 'react-hot-toast';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import Document from './recu';
 import Input from '@/components/Input';
+
+import { useProjet } from '@/context/ProjetContext';
 export default function PenalitesTable() {
   // Authentication and state management
   const { user, token } = useAuth();
@@ -76,11 +78,11 @@ export default function PenalitesTable() {
     open: false,
     selectedId: 0,
   });
-
+  const { selectedProjet } = useProjet();
   // API configuration
   const entity = {
     id:
-      JSON.parse(localStorage.getItem('selectedProjet'))?.id +
+      selectedProjet?.id +
       '/' +
       etat_penalite,
     API_URL: 'penalites',
@@ -102,7 +104,14 @@ export default function PenalitesTable() {
       setData,
       setTotalRows
     );
-  }, [accessToken, currentPage, rowsPerPage, searchTerm, filters]);
+  }, [
+    accessToken,
+    currentPage,
+    rowsPerPage,
+    searchTerm,
+    filters,
+    selectedProjet,
+  ]);
 
   // Helper functions
   const updateDialogState = (updates) => {

@@ -21,7 +21,7 @@ import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponen
 import TextField from '@/components/Textfield'; // Import the component
 import Button from '@/components/Button'; // adjust the path as needed
 import LoadingSpin from '@/components/LoadingSpin';
-//import { useProjet } from '@/context/ProjetContext';
+import { useProjet } from '@/context/ProjetContext';
 import AutocompleteBienEdit from './AutocompleteBien_Edit'; // adjust path if needed
 import AutocompleteStatut_ModeRelance_Biens from './AutocompleteStatut_ModeRelance_Biens';
 import { useAuth } from '../../../../context/AuthContext';
@@ -49,7 +49,9 @@ export default function VisiteFormEdit({ id }) {
   const accessToken = localStorage.getItem('accessToken');
   const pusher_key_proposition = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_PROP;
   const [loading, setLoading] = useState({ form: false, visites: false });
-  const selectedProjet = JSON.parse(localStorage.getItem('selectedProjet'));
+  const [loading_tr, setLoading_tr] = useState(false);
+
+  const { selectedProjet } = useProjet();
   const [backendErrors, setBackendErrors] = useState({});
   const [sources, setSources] = useState([]);
   const [partenaires, setPartenaires] = useState([]);
@@ -166,6 +168,20 @@ export default function VisiteFormEdit({ id }) {
     }
   }
 
+  // Simple cache et comparaison for return back en cas de changer projet
+  const [oldProjetId, setOldProjetId] = useState(null);
+
+  useEffect(() => {
+    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+      if (oldProjetId) {
+        // Projet a changé
+
+        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+        router.push('/crm/visites');
+      }
+      setOldProjetId(selectedProjet.id);
+    }
+  }, [selectedProjet?.id, oldProjetId, router]);
   //fin multiple bien
 
   const pusher_function = async () => {
@@ -317,13 +333,13 @@ export default function VisiteFormEdit({ id }) {
         //setItemm(3)
         fetchTypeFreins();
 
-        fetchDataByProjet('tranches', setTranches, setLoading);
+        fetchDataByProjet('tranches', setTranches, setLoading_tr);
         fetchDataByProjet('vues', setList_Vues, setLoading);
         fetchDataByProjet('typologies', setListTyplogies, setLoading);
       }
     }
   };
- const {
+  const {
     control,
     watch,
     handleSubmit,
@@ -343,17 +359,17 @@ export default function VisiteFormEdit({ id }) {
 
     const fetchData = async () => {
       if (!isMounted) return;
-      
-      setLoading(prev => ({ ...prev, form: true }));
-      
+
+      setLoading((prev) => ({ ...prev, form: true }));
+
       try {
         // Fetch initial data
-        await fetchData_Select("sources", setSources, setLoading);
-        await fetchData_Select("banques", setBanques, setLoading);
+        await fetchData_Select('sources', setSources, setLoading);
+        await fetchData_Select('banques', setBanques, setLoading);
 
         // Fetch partenaires only if needed
         if (partenaires.length === 0) {
-          await fetchDataByProjet("partenaires", setPartenaires, setLoading);
+          await fetchDataByProjet('partenaires', setPartenaires, setLoading);
         }
 
         // Only fetch edit data if editing
@@ -362,12 +378,12 @@ export default function VisiteFormEdit({ id }) {
         }
       } catch (error) {
         if (isMounted && error.name !== 'AbortError') {
-          console.error("Error fetching data:", error.message);
-          toast.error("Erreur lors du chargement des données");
+          console.error('Error fetching data:', error.message);
+          toast.error('Erreur lors du chargement des données');
         }
       } finally {
         if (isMounted) {
-          setLoading(prev => ({ ...prev, form: false }));
+          setLoading((prev) => ({ ...prev, form: false }));
         }
       }
     };
@@ -377,7 +393,7 @@ export default function VisiteFormEdit({ id }) {
         const response = await axios.get(`${APIURL.ROOTV1}/edit_visite/${id}`, {
           headers: { Authorization: `Bearer ${accessToken}` },
           signal: controller.signal,
-          timeout: 15000
+          timeout: 15000,
         });
 
         if (response.status !== 200) {
@@ -386,14 +402,14 @@ export default function VisiteFormEdit({ id }) {
         }
 
         const visite = response.data.visite;
-        
+
         if (isMounted) {
           await processVisiteData(visite);
         }
       } catch (error) {
         if (isMounted && error.name !== 'CanceledError') {
-          console.error("Error fetching edit data:", error.message);
-          toast.error("Erreur lors du chargement de la visite");
+          console.error('Error fetching edit data:', error.message);
+          toast.error('Erreur lors du chargement de la visite');
         }
       }
     };
@@ -404,38 +420,47 @@ export default function VisiteFormEdit({ id }) {
       try {
         // Create form data object
         const newFormData = {
-          nom: visite?.prospect?.nom || "",
-          prenom: visite?.prospect?.prenom || "",
-          telephone: visite?.prospect?.telephone || "",
-          telephone_num2: visite?.prospect?.telephone_num2 || "",
-          email: visite?.prospect?.email || "",
+          nom: visite?.prospect?.nom || '',
+          prenom: visite?.prospect?.prenom || '',
+          telephone: visite?.prospect?.telephone || '',
+          telephone_num2: visite?.prospect?.telephone_num2 || '',
+          email: visite?.prospect?.email || '',
           notifie: visite?.prospect?.notifie || 0,
-          cin: visite?.prospect?.cin || "",
-          interet: visite?.interet || "",
-          ville: visite?.prospect?.ville || "",
-          source_id: visite?.prospect?.source?.id || "",
-          source_txt: visite?.prospect?.source?.source || "",
-          mode_relance: visite?.relance_relation?.mode_relance || visite?.mode_relance || "",
-          date_relance: visite?.relance_relation?.date_relance || visite?.date_relance || "",
-          commentaire: visite?.commentaire || "",
-          partenaire_id: visite?.prospect?.partenaire_id || "",
-          bien_id: visite?.bien_id || "",
-          bien_pre_reserve: visite?.bien_id || "",
-          rdv: visite?.rdv_relation?.rdv || "",
-          statut: visite?.interet === "1" ? visite?.statut : "",
-          bien_val: visite?.bien?.propriete_dite_bien || "",
-          prix_val: visite?.bien?.prix || "",
-          prix: visite?.bien?.prix || "",
-          superficie_balcon_calculer: visite?.bien?.superficie_balcon_calculer || 0,
-          superficie_jardin_calculer: visite?.bien?.superficie_jardin_calculer || 0,
-          superficie_terrasse_calculer: visite?.bien?.superficie_terrasse_calculer || 0,
+          cin: visite?.prospect?.cin || '',
+          interet: visite?.interet || '',
+          ville: visite?.prospect?.ville || '',
+          source_id: visite?.prospect?.source?.id || '',
+          source_txt: visite?.prospect?.source?.source || '',
+          mode_relance:
+            visite?.relance_relation?.mode_relance ||
+            visite?.mode_relance ||
+            '',
+          date_relance:
+            visite?.relance_relation?.date_relance ||
+            visite?.date_relance ||
+            '',
+          commentaire: visite?.commentaire || '',
+          partenaire_id: visite?.prospect?.partenaire_id || '',
+          bien_id: visite?.bien_id || '',
+          bien_pre_reserve: visite?.bien_id || '',
+          rdv: visite?.rdv_relation?.rdv || '',
+          statut: visite?.interet === '1' ? visite?.statut : '',
+          bien_val: visite?.bien?.propriete_dite_bien || '',
+          prix_val: visite?.bien?.prix || '',
+          prix: visite?.bien?.prix || '',
+          superficie_balcon_calculer:
+            visite?.bien?.superficie_balcon_calculer || 0,
+          superficie_jardin_calculer:
+            visite?.bien?.superficie_jardin_calculer || 0,
+          superficie_terrasse_calculer:
+            visite?.bien?.superficie_terrasse_calculer || 0,
           superficie_habitable: visite?.bien?.superficie_habitable || 0,
           prix_box: visite?.bien?.prix_box || 0,
           prix_parking: visite?.bien?.prix_parking || 0,
           prix_unitaire: visite?.bien?.prix_unitaire || 0,
           avance_minimale: visite?.bien?.avance_minimale || 0,
-          date_reservation: visite?.reservation?.date_reservation || "",
-          code_reservation: visite?.reservation?.code_reservation || "",
+          date_reservation: visite?.reservation?.date_reservation || '',
+          code_reservation: visite?.reservation?.code_reservation || '',
         };
 
         // ✅ Batch set all form values at once
@@ -443,70 +468,69 @@ export default function VisiteFormEdit({ id }) {
           setValue(key, value);
         });
 
-        setValue("interet", visite.interet);
+        setValue('interet', visite.interet);
 
         // Handle interet-specific logic
-        if (visite.interet === "1") {
+        if (visite.interet === '1') {
           fetch_bien_ByProjet(
             visite.bien_id,
             NomBienComplet(visite?.bien),
-            "without_proposition"
+            'without_proposition'
           );
           setBien_propriete_o(NomBienComplet(visite?.bien));
         }
 
         // Set partenaire text
-        const partenaireTxt = !visite.prospect.partenaire_id 
-          ? "" 
+        const partenaireTxt = !visite.prospect.partenaire_id
+          ? ''
           : visite.prospect.partenaire.description;
-        
+
         setPartenaire_txt(partenaireTxt);
-        setValue("partenaire_txt", partenaireTxt);
+        setValue('partenaire_txt', partenaireTxt);
 
         // Handle statut modifications
         handleStatutModifications(visite.statut);
 
         // Handle freins data
-        if (visite.interet === "3") {
+        if (visite.interet === '3') {
           await handleFreinsData(visite);
         }
 
         // ✅ Set formData state LAST for conditional rendering
         setFormData(newFormData);
-
       } catch (error) {
-        console.error("Error processing visite data:", error);
+        console.error('Error processing visite data:', error);
       }
     };
 
     const handleStatutModifications = (statut) => {
-      if (statut === "3") {
-        const newStatut = { code: 3, label: "Pré_Réservation_Perdu" };
+      if (statut === '3') {
+        const newStatut = { code: 3, label: 'Pré_Réservation_Perdu' };
         list_statut[3] = newStatut;
       }
-      if (statut === "4") {
-        const newStatut = { code: 4, label: "Réservation_Perdu" };
+      if (statut === '4') {
+        const newStatut = { code: 4, label: 'Réservation_Perdu' };
         list_statut[4] = newStatut;
       }
     };
 
     const handleFreinsData = async (visite) => {
       if (!isMounted) return;
-      
+
       try {
         // Fetch frein-related data in parallel
         await Promise.allSettled([
           fetchTypeFreins(),
-          fetchDataByProjet("tranches", setTranches, setLoading),
-          fetchDataByProjet("vues", setList_Vues, setLoading),
-          fetchDataByProjet("typologies", setListTyplogies, setLoading)
+          fetchDataByProjet('tranches', setTranches, setLoading),
+          fetchDataByProjet('vues', setList_Vues, setLoading),
+          fetchDataByProjet('typologies', setListTyplogies, setLoading),
         ]);
 
         if (isMounted && visite.freins) {
           processFreinsValues(visite.freins);
         }
       } catch (error) {
-        console.error("Error handling freins data:", error);
+        console.error('Error handling freins data:', error);
       }
     };
 
@@ -523,85 +547,91 @@ export default function VisiteFormEdit({ id }) {
       processOrientationFreins(freins, freinValue);
       processOtherFreins(freins, freinValue);
 
-      setValue("frein", freinValue);
+      setValue('frein', freinValue);
     };
 
     // Your existing process functions remain the same...
     const processEtageFreins = (freins, freinValue) => {
       if (freins.frein_etage?.length > 0 && isMounted) {
-        const etages = freins.frein_etage.map(item => item.etage.toString());
-        setValue("etages", etages);
-        freinValue.push("ETAGE");
+        const etages = freins.frein_etage.map((item) => item.etage.toString());
+        setValue('etages', etages);
+        freinValue.push('ETAGE');
       }
     };
 
     const processVueFreins = (freins, freinValue) => {
       if (freins.frein_vue?.length > 0 && isMounted) {
-        const vues = freins.frein_vue.map(item => item.vue);
-        setValue("vues", vues);
-        freinValue.push("VUE");
+        const vues = freins.frein_vue.map((item) => item.vue);
+        setValue('vues', vues);
+        freinValue.push('VUE');
       }
     };
 
     const processTypologieFreins = (freins, freinValue) => {
       if (freins.frein_typologie?.length > 0 && isMounted) {
-        const typologies = freins.frein_typologie.map(item => item.typologie);
-        setValue("typologies", typologies);
-        freinValue.push("TYPOLOGIE");
+        const typologies = freins.frein_typologie.map((item) => item.typologie);
+        setValue('typologies', typologies);
+        freinValue.push('TYPOLOGIE');
       }
     };
 
     const processTrancheFreins = (freins, freinValue) => {
       if (freins.frein_tranche?.length > 0 && isMounted) {
-        const tranches = freins.frein_tranche.map(item => item.tranche);
-        setValue("tranches", tranches);
-        freinValue.push("TRANCHE");
+        const tranches = freins.frein_tranche.map((item) => item.tranche);
+        setValue('tranches', tranches);
+        freinValue.push('TRANCHE');
       }
     };
 
     const processOrientationFreins = (freins, freinValue) => {
       if (freins.frein_orientation?.length > 0 && isMounted) {
         const orientationMap = {
-          'N': '1', 'S': '2', 'E': '3', 'O': '4', 
-          'N-E': '5', 'N-O': '6', 'S-E': '7', 'S-O': '8'
+          N: '1',
+          S: '2',
+          E: '3',
+          O: '4',
+          'N-E': '5',
+          'N-O': '6',
+          'S-E': '7',
+          'S-O': '8',
         };
 
         const orientations = freins.frein_orientation
-          .map(item => {
+          .map((item) => {
             const orientationLetter = item.orientation?.trim().toUpperCase();
             return orientationMap[orientationLetter] || '';
           })
           .filter(Boolean);
 
-        setValue("orientations", orientations);
-        freinValue.push("ORIENTATION");
+        setValue('orientations', orientations);
+        freinValue.push('ORIENTATION');
       }
     };
 
     const processOtherFreins = (freins, freinValue) => {
       if (!isMounted) return;
-      
+
       // Handle direct properties
       if (freins.description_autre != null) {
-        setValue("description_autre", freins.description_autre || "");
-        freinValue.push("AUTRE");
+        setValue('description_autre', freins.description_autre || '');
+        freinValue.push('AUTRE');
       }
 
       if (freins.prix_min != null || freins.prix_max != null) {
-        setValue("prix_min", freins.prix_min || "");
-        setValue("prix_max", freins.prix_max || "");
-        freinValue.push("PRIX");
+        setValue('prix_min', freins.prix_min || '');
+        setValue('prix_max', freins.prix_max || '');
+        freinValue.push('PRIX');
       }
 
       if (freins.superficie_min != null || freins.superficie_max != null) {
-        setValue("sup_min", freins.superficie_min || "");
-        setValue("sup_max", freins.superficie_max || "");
-        freinValue.push("SUPERFICIE");
+        setValue('sup_min', freins.superficie_min || '');
+        setValue('sup_max', freins.superficie_max || '');
+        freinValue.push('SUPERFICIE');
       }
 
       if (freins.avance != null) {
-        setValue("avance", freins.avance);
-        freinValue.push("AVANCE");
+        setValue('avance', freins.avance);
+        freinValue.push('AVANCE');
       }
     };
 
@@ -611,8 +641,7 @@ export default function VisiteFormEdit({ id }) {
       isMounted = false;
       controller.abort();
     };
-  }, [id, isEditing, partenaires.length, accessToken, router, setValue]); 
-
+  }, [id, isEditing, partenaires.length, accessToken, router, setValue]);
 
   useEffect(() => {
     if (watch('avance_res') !== '') {
@@ -1425,6 +1454,7 @@ export default function VisiteFormEdit({ id }) {
                   list_vues={list_vues}
                   loading_tp_frein={loading_tp_frein}
                   loading={loading}
+                  loading_tr={loading_tr}
                   handleChange_freins={handleChange_freins}
                   handlePrixChange={handlePrixChange}
                   setValue={setValue}

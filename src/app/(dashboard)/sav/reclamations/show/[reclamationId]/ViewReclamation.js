@@ -1,15 +1,8 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import {
-  Box,
-  Typography,
-  Chip,
-  Stack,
-  Paper,
-  Divider,
-} from "@mui/material";
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { Box, Typography, Chip, Stack, Paper, Divider } from '@mui/material';
 import {
   Home,
   Wrench,
@@ -17,17 +10,17 @@ import {
   CheckCircle,
   AlertCircle,
   Paperclip,
-} from "lucide-react";
-import { APIURL, ENDPOINTS, RESOURCE_URL } from "@/configs/api";
-import { useAuth } from "@/context/AuthContext";
+} from 'lucide-react';
+import { APIURL, ENDPOINTS, RESOURCE_URL } from '@/configs/api';
+import { useAuth } from '@/context/AuthContext';
 import LoadingSpin from '@/components/LoadingSpin';
 import { useRouter } from 'next/navigation';
 import Button from '@/components/Button'; // adjust the path as needed
 import { IconButton, Tooltip } from '@mui/material';
-import PieceJointeViewer from "@/components/PieceJointeViewer";
+import PieceJointeViewer from '@/components/PieceJointeViewer';
 
 function formatDate(dateStr) {
-  if (!dateStr) return "-";
+  if (!dateStr) return '-';
   const d = new Date(dateStr);
   return d.toLocaleDateString();
 }
@@ -39,7 +32,7 @@ function getStatutLabel(statut) {
         <Chip
           label="En Attente"
           color="primary"
-          sx={{ fontWeight: "bold", fontSize: 14 }}
+          sx={{ fontWeight: 'bold', fontSize: 14 }}
         />
       );
     case 2:
@@ -47,7 +40,7 @@ function getStatutLabel(statut) {
         <Chip
           label="En Cours"
           color="warning"
-          sx={{ fontWeight: "bold", fontSize: 14 }}
+          sx={{ fontWeight: 'bold', fontSize: 14 }}
         />
       );
     case 3:
@@ -56,46 +49,62 @@ function getStatutLabel(statut) {
           label="Résolue"
           color="success"
           icon={<CheckCircle size={16} />}
-          sx={{ fontWeight: "bold", fontSize: 14 }}
+          sx={{ fontWeight: 'bold', fontSize: 14 }}
         />
       );
     case 4:
-    return (
-      <Chip
-        label="Non Résolue"
-        icon={<AlertCircle size={16} />}
-        color="error"
-        sx={{ fontWeight: "bold", fontSize: 14 }}
-      />
-    );
+      return (
+        <Chip
+          label="Non Résolue"
+          icon={<AlertCircle size={16} />}
+          color="error"
+          sx={{ fontWeight: 'bold', fontSize: 14 }}
+        />
+      );
     default:
       return (
         <Chip
           label="Inconnu"
           color="default"
           icon={<AlertCircle size={16} />}
-          sx={{ fontWeight: "bold", fontSize: 14 }}
+          sx={{ fontWeight: 'bold', fontSize: 14 }}
         />
       );
   }
 }
-
+import { useProjet } from '@/context/ProjetContext';
 export default function ViewReclamationFullPage({ reclamationId }) {
   const [Details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const router = useRouter();
-  
+  const { selectedProjet } = useProjet();
   const getFileUrl = (fichier) => {
-      return `${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/reclamations/${fichier}`;
+    return `${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/reclamations/${fichier}`;
   };
 
+  // Simple cache et comparaison for return back en cas de changer projet
+  const [oldProjetId, setOldProjetId] = useState(null);
+
+  useEffect(() => {
+    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+      if (oldProjetId) {
+        // Projet a changé
+
+        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+        router.back('');
+      }
+      setOldProjetId(selectedProjet.id);
+    }
+  }, [selectedProjet?.id, oldProjetId, router]);
   useEffect(() => {
     if (!reclamationId) return;
     setLoading(true);
     axios
       .get(`${APIURL.ReclamationsSav}/${reclamationId}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        },
       })
       .then((res) => setDetails(res.data.reclamation))
       .catch(() => setDetails(null))
@@ -103,22 +112,22 @@ export default function ViewReclamationFullPage({ reclamationId }) {
   }, [reclamationId]);
 
   if (loading) {
-      return (
-        <div className="flex items-center justify-center min-h-screen">
-          <LoadingSpin /> 
-        </div>
-      );
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpin />
+      </div>
+    );
   }
 
   if (!Details) {
     return (
       <Box
         sx={{
-          height: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          bgcolor: "linear-gradient(135deg, #E3F0FF 0%, #FAFCFF 100%)",
+          height: '100vh',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          bgcolor: 'linear-gradient(135deg, #E3F0FF 0%, #FAFCFF 100%)',
         }}
       >
         <Typography variant="h5" color="error">
@@ -133,21 +142,21 @@ export default function ViewReclamationFullPage({ reclamationId }) {
   return (
     <Box
       sx={{
-        minHeight: "100vh",
-        bgcolor: "linear-gradient(135deg, #E3F0FF 0%, #FAFCFF 100%)",
+        minHeight: '100vh',
+        bgcolor: 'linear-gradient(135deg, #E3F0FF 0%, #FAFCFF 100%)',
         p: 4,
-        display: "flex",
-        flexDirection: "column",
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
       {/* Titre */}
       <Typography
         variant="h4"
         sx={{
-          fontWeight: "bold",
-          color: "#009FFF",
+          fontWeight: 'bold',
+          color: '#009FFF',
           mb: 4,
-          textAlign: { xs: "center", md: "left" },
+          textAlign: { xs: 'center', md: 'left' },
         }}
       >
         Détails de la Réclamation
@@ -157,10 +166,10 @@ export default function ViewReclamationFullPage({ reclamationId }) {
       <Box
         sx={{
           flex: 1,
-          display: "flex",
-          flexDirection: { xs: "column", md: "row" },
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
           gap: 4,
-          height: "100%",
+          height: '100%',
         }}
       >
         {/* Colonne gauche - Infos principales */}
@@ -170,39 +179,45 @@ export default function ViewReclamationFullPage({ reclamationId }) {
             flex: 1,
             p: 4,
             borderRadius: 3,
-            background: "#fff",
-            boxShadow: "0 8px 24px rgba(0,159,255,0.15)",
-            display: "flex",
-            flexDirection: "column",
+            background: '#fff',
+            boxShadow: '0 8px 24px rgba(0,159,255,0.15)',
+            display: 'flex',
+            flexDirection: 'column',
             gap: 3,
           }}
         >
           {/* Client */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Box
               sx={{
                 width: 64,
                 height: 64,
-                borderRadius: "50%",
-                background: "linear-gradient(135deg, #009FFF 0%, #ec2F4B 100%)",
-                color: "#fff",
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #009FFF 0%, #ec2F4B 100%)',
+                color: '#fff',
                 fontWeight: 700,
                 fontSize: 28,
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                textTransform: "uppercase",
-                boxShadow: "0 4px 12px #009FFF66",
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                textTransform: 'uppercase',
+                boxShadow: '0 4px 12px #009FFF66',
               }}
             >
-              {client?.nom?.[0] || "?"}
+              {client?.nom?.[0] || '?'}
             </Box>
             <Box>
-              <Typography variant="h5" sx={{ color: "#009FFF", fontWeight: "bold" }}>
+              <Typography
+                variant="h5"
+                sx={{ color: '#009FFF', fontWeight: 'bold' }}
+              >
                 {client?.nom} {client?.prenom}
               </Typography>
-              <Typography variant="body1" sx={{ color: "#ec2F4B", fontWeight: 600 }}>
-                {client?.email || client?.telephone_num1 || "-"}
+              <Typography
+                variant="body1"
+                sx={{ color: '#ec2F4B', fontWeight: 600 }}
+              >
+                {client?.email || client?.telephone_num1 || '-'}
               </Typography>
               <Box sx={{ mt: 1 }}>{getStatutLabel(Details.statut)}</Box>
             </Box>
@@ -211,47 +226,48 @@ export default function ViewReclamationFullPage({ reclamationId }) {
           <Divider />
 
           {/* Bien */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Home color="#009FFF" size={26} />
             <Typography variant="body1" sx={{ fontWeight: 600 }}>
-              <b>Bien :</b> {bien?.propriete_dite_bien || "-"} (N° {bien?.numero || "-"}) - Bloc {bien?.bloc?.nom || "-"}
+              <b>Bien :</b> {bien?.propriete_dite_bien || '-'} (N°{' '}
+              {bien?.numero || '-'}) - Bloc {bien?.bloc?.nom || '-'}
             </Typography>
           </Box>
 
           {/* Prestataire */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Wrench color="#009FFF" size={26} />
             <Typography variant="body1" sx={{ fontWeight: 600 }}>
-              <b>Prestataire :</b> {prestataire?.civilite || "-"} {prestataire?.nom || "-"} {prestataire?.prenom || "-"} ({prestataire?.telephone || "-"})
+              <b>Prestataire :</b> {prestataire?.civilite || '-'}{' '}
+              {prestataire?.nom || '-'} {prestataire?.prenom || '-'} (
+              {prestataire?.telephone || '-'})
             </Typography>
           </Box>
 
           {/* Service */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Wrench color="#ec2F4B" size={26} />
             <Typography variant="body1" sx={{ fontWeight: 600 }}>
-              <b>Service :</b> {service?.nom || "-"}
+              <b>Service :</b> {service?.nom || '-'}
             </Typography>
           </Box>
 
           {/* Problèmes */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <AlertCircle color="#ec2F4B" size={26} />
             <Typography variant="body1" sx={{ fontWeight: 600 }}>
-              <b>Emplacement(s) :</b> {Details.emplacements || "-"}
+              <b>Emplacement(s) :</b> {Details.emplacements || '-'}
             </Typography>
           </Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <AlertCircle color="#ec2F4B" size={26} />
             <Typography variant="body1" sx={{ fontWeight: 600 }}>
-              <b>Problème(s) :</b> {Details.problemes || "-"}
+              <b>Problème(s) :</b> {Details.problemes || '-'}
             </Typography>
           </Box>
 
           {/* Pièces jointes */}
-         <PieceJointeViewer Details={Details} getFileUrl={getFileUrl} />
-
-
+          <PieceJointeViewer Details={Details} getFileUrl={getFileUrl} />
         </Paper>
 
         {/* Colonne droite - Dates et commentaires */}
@@ -261,36 +277,41 @@ export default function ViewReclamationFullPage({ reclamationId }) {
             flex: 1,
             p: 4,
             borderRadius: 3,
-            background: "#fff",
-            boxShadow: "0 8px 24px rgba(0,159,255,0.15)",
-            display: "flex",
-            flexDirection: "column",
+            background: '#fff',
+            boxShadow: '0 8px 24px rgba(0,159,255,0.15)',
+            display: 'flex',
+            flexDirection: 'column',
             gap: 3,
           }}
         >
-          <Typography variant="h6" sx={{ color: "#009FFF", fontWeight: "bold", mb: 2 }}>
+          <Typography
+            variant="h6"
+            sx={{ color: '#009FFF', fontWeight: 'bold', mb: 2 }}
+          >
             Dates & Commentaires
           </Typography>
 
           <Stack spacing={2}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Calendar color="#009FFF" size={24} />
               <Typography variant="body1" sx={{ fontWeight: 600 }}>
                 <b>Date réclamation :</b> {formatDate(Details.date_reclamation)}
               </Typography>
             </Box>
 
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Calendar color="#009FFF" size={24} />
               <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                <b>Date intervention :</b> {formatDate(Details.date_intervention)}
+                <b>Date intervention :</b>{' '}
+                {formatDate(Details.date_intervention)}
               </Typography>
             </Box>
 
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Calendar color="#009FFF" size={24} />
               <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                <b>Date fin intervention :</b> {formatDate(Details.date_fin_intervention)}
+                <b>Date fin intervention :</b>{' '}
+                {formatDate(Details.date_fin_intervention)}
               </Typography>
             </Box>
 
@@ -300,8 +321,11 @@ export default function ViewReclamationFullPage({ reclamationId }) {
               <Typography variant="body1" sx={{ fontWeight: 600, mb: 1 }}>
                 <b>Commentaire traitement :</b>
               </Typography>
-              <Typography variant="body2" sx={{ whiteSpace: "pre-line", color: "#444" }}>
-                {Details.commentaires  || "-"}
+              <Typography
+                variant="body2"
+                sx={{ whiteSpace: 'pre-line', color: '#444' }}
+              >
+                {Details.commentaires || '-'}
               </Typography>
             </Box>
 
@@ -309,8 +333,11 @@ export default function ViewReclamationFullPage({ reclamationId }) {
               <Typography variant="body1" sx={{ fontWeight: 600, mb: 1 }}>
                 <b>Commentaire Resolution :</b>
               </Typography>
-              <Typography variant="body2" sx={{ whiteSpace: "pre-line", color: "#444" }}>
-                {Details.commentaire_trait || "-"}
+              <Typography
+                variant="body2"
+                sx={{ whiteSpace: 'pre-line', color: '#444' }}
+              >
+                {Details.commentaire_trait || '-'}
               </Typography>
             </Box>
           </Stack>
@@ -319,8 +346,8 @@ export default function ViewReclamationFullPage({ reclamationId }) {
       <Box
         sx={{
           mt: 4,
-          display: "flex",
-          justifyContent: "center",
+          display: 'flex',
+          justifyContent: 'center',
           gap: 2,
         }}
       >
@@ -331,7 +358,9 @@ export default function ViewReclamationFullPage({ reclamationId }) {
         <Button
           type="submit"
           onClick={() => {
-            router.push(`${ENDPOINTS.ReclamationsSav}?id=${reclamationId}&action=edit`);
+            router.push(
+              `${ENDPOINTS.ReclamationsSav}?id=${reclamationId}&action=edit`
+            );
           }}
         >
           Modifier

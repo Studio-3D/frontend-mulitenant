@@ -192,7 +192,7 @@ const CommissionTable = () => {
       const formData = new FormData();
       formData.append(
         'projet_id',
-        JSON.parse(localStorage.getItem('selectedProjet'))?.id || ''
+       selectedProjet?.id || ''
       );
       formData.append('checkedItemsCumul', JSON.stringify(checkedItemsCumul));
       formData.append(

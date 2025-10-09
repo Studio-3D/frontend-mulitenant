@@ -322,6 +322,7 @@ const VenteNavbar = () => {
       name: 'Echéances',
       path: '/ventes/echeances',
       icon: <Euro className="w-5 h-5" />,
+      badge: nb_echeances,
       onClick: handle_relances_echeances_Click,
     },
   ];

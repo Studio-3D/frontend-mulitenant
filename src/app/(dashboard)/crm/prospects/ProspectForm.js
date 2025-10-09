@@ -111,7 +111,7 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
       // Fetch partenaires when source_txt is 'Partenaire'
       fetchDataByProjet('partenaires', setPartenaires, setLoading_auto);
     }
-  }, [source_txt]);
+  }, [source_txt,selectedProjet]);
 
   useEffect(() => {
     setLoading({ ...loading, form: true }); // Set loading to true when starting to fetch data

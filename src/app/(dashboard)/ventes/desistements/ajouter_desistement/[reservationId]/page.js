@@ -24,7 +24,7 @@ import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponen
 import { modes_penalites } from '@/configs/enum';
 import { MODE_PAIEMENT } from '@/configs/enum';
 import Autocomplete from '@/components/Autocomplete';
-
+import { useProjet } from '@/context/ProjetContext';
 export default function Page() {
   const [dossierInfos, setDossierInfos] = useState({});
   const [formSubmitted, setFormSubmitted] = useState(false);
@@ -34,7 +34,9 @@ export default function Page() {
   const { user, token } = useAuth();
   const reservationId = params.reservationId;
   const accessToken = token || localStorage.getItem('accessToken');
-  const selectedProjet_id = 1;
+  const { selectedProjet } = useProjet();
+  const selectedProjet_id = selectedProjet?.id;
+
   //JSON.parse(localStorage.getItem('selectedProjet'))?.id ;
   const [selectedFiles_dst, setSelectedFiles_dst] = useState([]);
   const [selectedFiles_plt, setSelectedFiles_plt] = useState([]);
@@ -89,6 +91,20 @@ export default function Page() {
     inputListRemb: [],
   });
 
+  // Simple cache et comparaison for return back en cas de changer projet
+  const [oldProjetId, setOldProjetId] = useState(null);
+
+  useEffect(() => {
+    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+      if (oldProjetId) {
+        // Projet a changé
+
+        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+        router.push('/ventes/reservations');
+      }
+      setOldProjetId(selectedProjet.id);
+    }
+  }, [selectedProjet?.id, oldProjetId, router]);
   // Form methods
   const methods = useForm({
     defaultValues: {
@@ -1487,13 +1503,23 @@ export default function Page() {
                         required={true}
                         options={
                           // Handle both array and object formats
-                          !modes_penalites ? [] :
-                          Array.isArray(modes_penalites) ? modes_penalites :
-                          typeof modes_penalites === 'object' ? Object.entries(modes_penalites).map(([key, value]) => ({
-                            value: key,
-                            label: typeof value === 'object' ? value.label || value.name || String(value) : String(value)
-                          })) :
-                          []
+                          !modes_penalites
+                            ? []
+                            : Array.isArray(modes_penalites)
+                            ? modes_penalites
+                            : typeof modes_penalites === 'object'
+                            ? Object.entries(modes_penalites).map(
+                                ([key, value]) => ({
+                                  value: key,
+                                  label:
+                                    typeof value === 'object'
+                                      ? value.label ||
+                                        value.name ||
+                                        String(value)
+                                      : String(value),
+                                })
+                              )
+                            : []
                         }
                         onChange={(value) => {
                           setValue('mode_penalite', value);
@@ -1502,7 +1528,7 @@ export default function Page() {
                         error={errors.mode_penalite?.message}
                         placeholder="Sélectionnez un mode de pénalité"
                       />
-                  </div>
+                    </div>
                     {/* Conditional Fields (aligned at the same height) */}
                     {watch('mode_penalite') && (
                       <>
@@ -1610,27 +1636,37 @@ export default function Page() {
 
                             <div>
                               <SelectInput
-                                  label="Mode de Paiement"
-                                  name="mode_paiement_pen"
-                                  value={watch('mode_paiement_pen')}
-                                  required={true}
-                                  options={
-                                    // Handle both array and object formats for MODE_PAIEMENT
-                                    !MODE_PAIEMENT ? [] :
-                                    Array.isArray(MODE_PAIEMENT) ? MODE_PAIEMENT :
-                                    typeof MODE_PAIEMENT === 'object' ? Object.entries(MODE_PAIEMENT).map(([key, value]) => ({
-                                      value: key,
-                                      label: typeof value === 'object' ? value.label || value.name || String(value) : String(value)
-                                    })) :
-                                    []
-                                  }
-                                  onChange={(value) => {
-                                    console.log('Selected payment mode:', value);
-                                    setValue('mode_paiement_pen', value);
-                                  }}
-                                  error={errors.mode_paiement_pen?.message}
-                                  placeholder="Sélectionnez un mode de paiement"
-                                />
+                                label="Mode de Paiement"
+                                name="mode_paiement_pen"
+                                value={watch('mode_paiement_pen')}
+                                required={true}
+                                options={
+                                  // Handle both array and object formats for MODE_PAIEMENT
+                                  !MODE_PAIEMENT
+                                    ? []
+                                    : Array.isArray(MODE_PAIEMENT)
+                                    ? MODE_PAIEMENT
+                                    : typeof MODE_PAIEMENT === 'object'
+                                    ? Object.entries(MODE_PAIEMENT).map(
+                                        ([key, value]) => ({
+                                          value: key,
+                                          label:
+                                            typeof value === 'object'
+                                              ? value.label ||
+                                                value.name ||
+                                                String(value)
+                                              : String(value),
+                                        })
+                                      )
+                                    : []
+                                }
+                                onChange={(value) => {
+                                  console.log('Selected payment mode:', value);
+                                  setValue('mode_paiement_pen', value);
+                                }}
+                                error={errors.mode_paiement_pen?.message}
+                                placeholder="Sélectionnez un mode de paiement"
+                              />
                             </div>
                           </div>
 
@@ -1644,10 +1680,17 @@ export default function Page() {
                                     value={watch('banque_pen')}
                                     required={watch('mode_paiement_pen') != '1'}
                                     options={
-                                      Array.isArray(banques) 
-                                        ? banques.map(banque => ({
-                                            value: banque.id || banque.value || banque.code,
-                                            label: banque.nom || banque.label || banque.name || 'Banque sans nom'
+                                      Array.isArray(banques)
+                                        ? banques.map((banque) => ({
+                                            value:
+                                              banque.id ||
+                                              banque.value ||
+                                              banque.code,
+                                            label:
+                                              banque.nom ||
+                                              banque.label ||
+                                              banque.name ||
+                                              'Banque sans nom',
                                           }))
                                         : []
                                     }

@@ -40,27 +40,7 @@ const TypeBienTable = () => {
     searchFields: ['type'],
   };
 
-  useEffect(() => {
-    fetchData_table_by_projet(
-      entity,
-      filters,
-      searchTerm,
-      currentPage,
-      rowsPerPage,
-      accesstoken,
-      setLoading,
-      setError,
-      setTypeBiens,
-      setTotalRows
-    );
-  }, [
-    accesstoken,
-    currentPage,
-    rowsPerPage,
-    searchTerm,
-    filters,
-    selectedProjet,
-  ]);
+ 
 
   useEffect(() => {
     fetchData_table_by_projet(

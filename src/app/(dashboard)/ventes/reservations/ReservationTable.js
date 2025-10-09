@@ -31,11 +31,12 @@ import Modal_Rejeter_Reservation from "./Modal_Rejeter_Reservation";
 import Modal_show_info from "./Modal_show_info";
 import DateRangePicker from "@/components/DateRangePicker";
 
+import { useProjet } from '@/context/ProjetContext';
 const ReservationTable = ({ dataClient, user_id }) => {
   const { user, token } = useAuth();
   const userRole = user.role;
   const accesstoken = token || localStorage.getItem("accessToken");
-
+const { selectedProjet  } = useProjet();
   const router = useRouter();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -113,7 +114,7 @@ const ReservationTable = ({ dataClient, user_id }) => {
       setData,
       setTotalRows
     );
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters]);
+  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters,selectedProjet]);
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
@@ -158,7 +159,7 @@ const ReservationTable = ({ dataClient, user_id }) => {
 
     //Clearing the interval
     return () => clearInterval(interval);
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm]);
+  }, [accesstoken, currentPage, rowsPerPage, searchTerm,selectedProjet]);
 
   function handleEdit(resId) {
     router.push(`${ENDPOINTS.RESERVATIONS}?id=${resId}&action=edit`);

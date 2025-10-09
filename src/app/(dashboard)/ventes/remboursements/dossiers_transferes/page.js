@@ -99,9 +99,7 @@ const RemboDosTable = () => {
     selectedProjet,
   ]);
 
-  const handleView = (desistementId) => {
-    router.push(`/ventes/desistements/show/${desistementId}`);
-  };
+  
 
   const handleFilterChange = (field, value) => {
     setTempFilters((prev) => ({ ...prev, [field]: value }));

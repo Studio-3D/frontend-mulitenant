@@ -56,6 +56,7 @@ import {
   MODE_PAIEMENT,
 } from '@/configs/enum';
 import { CIVILITES } from '@/components/client-utils';
+import { useProjet } from '@/context/ProjetContext';
 export default function ReservationForm({ id }) {
   const storedValue = localStorage.getItem('selectedClient_show_client');
   const selectedClient =
@@ -78,8 +79,7 @@ export default function ReservationForm({ id }) {
   const { user, token } = useAuth();
   const router = useRouter();
   const accessToken = token || localStorage.getItem('accessToken');
-  const selectedProjet =
-    JSON.parse(localStorage.getItem('selectedProjet')) || null;
+  const { selectedProjet } = useProjet();
   const pusher_key_proposition = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_PROP;
   const [formData, setFormData] = useState(null);
   const isEditing = !!id;
@@ -158,6 +158,20 @@ export default function ReservationForm({ id }) {
     },
   ];
 
+  // Simple cache et comparaison for return back en cas de changer projet
+  const [oldProjetId, setOldProjetId] = useState(null);
+
+  useEffect(() => {
+    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+      if (oldProjetId) {
+        // Projet a changé
+
+        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+        router.push('/ventes/reservations');
+      }
+      setOldProjetId(selectedProjet.id);
+    }
+  }, [selectedProjet?.id, oldProjetId, router]);
   const goToNextStep = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
@@ -1627,23 +1641,34 @@ export default function ReservationForm({ id }) {
                         name={`client_${index}`}
                         value={entry.id}
                         required={true}
-                        options={Array.isArray(clientsExist) ? clientsExist.map(client => ({
-                          value: client.id,
-                          label: `${client.nom} ${client.prenom}`,
-                          disabled: client.disabled || false
-                        })) : []}
+                        options={
+                          Array.isArray(clientsExist)
+                            ? clientsExist.map((client) => ({
+                                value: client.id,
+                                label: `${client.nom} ${client.prenom}`,
+                                disabled: client.disabled || false,
+                              }))
+                            : []
+                        }
                         loading={loading_clients}
                         onChange={(value) => {
                           // Create a synthetic event to match the handleinputchange1 signature
                           const syntheticEvent = {
                             target: {
                               name: 'id',
-                              value: value
-                            }
+                              value: value,
+                            },
                           };
-                          handleinputchange1(syntheticEvent, index, 'select_client');
+                          handleinputchange1(
+                            syntheticEvent,
+                            index,
+                            'select_client'
+                          );
                         }}
-                        error={errors.inputList1?.[index]?.id?.message || backendErrors?.inputList1?.[index]?.id}
+                        error={
+                          errors.inputList1?.[index]?.id?.message ||
+                          backendErrors?.inputList1?.[index]?.id
+                        }
                         disabled={loading_clients || entry.disabled}
                         placeholder="Sélectionnez un client"
                       />
@@ -1667,7 +1692,7 @@ export default function ReservationForm({ id }) {
                           handleinputchange1(e, index, 'percent')
                         }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[0.5px] focus:ring-gray-800"
-                        placeholder='Entrez un pourcentage (0-100)'
+                        placeholder="Entrez un pourcentage (0-100)"
                         min="0"
                         max="100"
                       />

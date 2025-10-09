@@ -40,6 +40,7 @@ import {
   getEventCategory,
   SIDEBAR_ITEMS,
 } from './calendar-constants';
+import LoadingSpin from '@/components/LoadingSpin';
 
 const toTitleCase = (str) =>
   str.replace(
@@ -48,7 +49,7 @@ const toTitleCase = (str) =>
   );
 
 import { useAuth } from '../../context/AuthContext';
-
+import { useProjet } from '@/context/ProjetContext';
 export const Calendar = () => {
   const { user } = useAuth();
   const [users, setUsers] = useState([]);
@@ -82,8 +83,8 @@ export const Calendar = () => {
   });
 
   const accessToken = localStorage.getItem('accessToken');
-  const selectedProjet_id =
-    JSON.parse(localStorage.getItem('selectedProjet'))?.id || 0;
+  const { selectedProjet  } = useProjet();
+  const selectedProjet_id =selectedProjet?.id
 
   const hasExecuted = useRef(false);
 
@@ -371,8 +372,8 @@ export const Calendar = () => {
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden p-4">
       {loading && (
-        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="text-white">Chargement...</div>
+        <div className="flex items-center justify-center min-h-screen">
+          <LoadingSpin />
         </div>
       )}
 

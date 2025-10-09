@@ -40,28 +40,7 @@ const FreinTable = () => {
     searchFields: ['description'],
   };
 
-  useEffect(() => {
-    fetchData_table_by_projet(
-      entity,
-      filters,
-      searchTerm,
-      currentPage,
-      rowsPerPage,
-      accesstoken,
-      setLoading,
-      setError,
-      setFreins,
-      setTotalRows
-    );
-  }, [
-    accesstoken,
-    currentPage,
-    rowsPerPage,
-    searchTerm,
-    filters,
-    selectedProjet,
-  ]);
-
+ 
   useEffect(() => {
     fetchData_table_by_projet(
       entity,
