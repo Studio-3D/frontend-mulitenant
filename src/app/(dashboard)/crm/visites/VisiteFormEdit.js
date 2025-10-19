@@ -49,8 +49,11 @@ export default function VisiteFormEdit({ id }) {
   const accessToken = localStorage.getItem('accessToken');
   const pusher_key_proposition = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_PROP;
   const [loading, setLoading] = useState({ form: false, visites: false });
-  const [loading_tr, setLoading_tr] = useState(false);
+  const [loading_tranches, setLoading_tranches] = useState(false);
 
+  const [loading_vues, setLoading_vues] = useState(false);
+
+  const [loading_typologies, setLoading_typologies] = useState(false);
   const { selectedProjet } = useProjet();
   const [backendErrors, setBackendErrors] = useState({});
   const [sources, setSources] = useState([]);
@@ -333,9 +336,13 @@ export default function VisiteFormEdit({ id }) {
         //setItemm(3)
         fetchTypeFreins();
 
-        fetchDataByProjet('tranches', setTranches, setLoading_tr);
-        fetchDataByProjet('vues', setList_Vues, setLoading);
-        fetchDataByProjet('typologies', setListTyplogies, setLoading);
+        fetchDataByProjet('tranches', setTranches, setLoading_tranches);
+        fetchDataByProjet('vues', setList_Vues, setLoading_vues);
+        fetchDataByProjet(
+          'typologies',
+          setListTyplogies,
+          setLoading_typologies
+        );
       }
     }
   };
@@ -1399,10 +1406,12 @@ export default function VisiteFormEdit({ id }) {
                 name="interet"
                 value={watch('interet')}
                 required={true}
-                options={Object.values(VISITE_INTERETS).map((item) => ({
-                  value: item.code,
-                  label: item.label,
-                }))}
+                options={Object.values(VISITE_INTERETS)
+                  .filter((item) => item.code !== 4)
+                  .map((item) => ({
+                    value: item.code,
+                    label: item.label,
+                  }))}
                 onChange={(value) => handleChange_interet(value)}
                 error={errors.interet?.message || backendErrors.interet}
                 submitted={formSubmitted}
@@ -1454,7 +1463,9 @@ export default function VisiteFormEdit({ id }) {
                   list_vues={list_vues}
                   loading_tp_frein={loading_tp_frein}
                   loading={loading}
-                  loading_tr={loading_tr}
+                  loading_tranches={loading_tranches}
+                  loading_vues={loading_vues}
+                  loading_typologies={loading_typologies}
                   handleChange_freins={handleChange_freins}
                   handlePrixChange={handlePrixChange}
                   setValue={setValue}
@@ -1471,10 +1482,30 @@ export default function VisiteFormEdit({ id }) {
                     placeholder="Sélectionner le bien"
                     name="bien_id"
                     value={watch('bien_id')}
-                    options={biensByProjet.map((bien) => ({
-                      value: bien.id,
-                      label: bien.propriete_dite_bien,
-                    }))}
+                    options={biensByProjet.map((bien) => {
+                      // Add the same disabled logic from your autocomplete
+                      const isDisabled =
+                        bien.etat === 'ENCOURS_DE_PROPOSITION' &&
+                        bien.is_proposed !== null &&
+                        user?.id !== bien.is_proposed.user_id;
+
+                      // Add the same label text logic from your autocomplete
+                      const labelText =
+                        bien.propriete_dite_bien +
+                        (bien.etat === 'ENCOURS_DE_PROPOSITION'
+                          ? bien.is_proposed
+                            ? user?.id !== bien.is_proposed.user_id
+                              ? ` Proposé par ${bien.is_proposed.user?.name} ${bien.is_proposed.user?.prenom}`
+                              : ' Proposé par Moi Même'
+                            : ''
+                          : '');
+
+                      return {
+                        value: bien.id,
+                        label: labelText,
+                        disabled: isDisabled, // Add disabled property
+                      };
+                    })}
                     onChange={(value) => {
                       const selectedBien = biensByProjet.find(
                         (b) => b.id === value
