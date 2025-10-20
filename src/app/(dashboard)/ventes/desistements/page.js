@@ -17,7 +17,6 @@ import Desistement_dp_partiel_list from "../desistements/List/Desistement_dp_par
 import { APIURL } from "../../../../configs/api";
 import { useAuth } from "../../../../context/AuthContext";
 import { useProjet } from '@/context/ProjetContext';
-
 const ViewDes = () => {
   const [activeTab, setActiveTab] = useState(
     localStorage.getItem('tab_dst_active') != null
