@@ -15,7 +15,6 @@ import Desistement_dp_proche_list from "../desistements/List/Desistement_dp_proc
 import Desistement_dp_co_list from "../desistements/List/Desistement_dp_co_list";
 import Desistement_dp_partiel_list from "../desistements/List/Desistement_dp_partiel_list";
 import { APIURL } from "../../../../configs/api";
-import VenteNavbar from "@/components/VenteNavbar";
 import { useAuth } from "../../../../context/AuthContext";
 
 const ViewDes = () => {
@@ -138,9 +137,8 @@ const ViewDes = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <VenteNavbar />
       <div className="">
-        <div className="bg-white rounded-xl shadow-md overflow-hidden">
+        <div className="bg-white mt-1 overflow-hidden">
           {/* Tabs Navigation */}
           <div className="border-b border-gray-200">
             <nav className="flex overflow-x-auto">

@@ -281,7 +281,7 @@ const ClientTable = () => {
 
   return (
     <>
-      <div className="reflative bg-white rounded-lg shadow-md p-4">
+      <div className="reflative p-4">
         <Table
           showSearch={false}
           data_to_export={data_to_export()}

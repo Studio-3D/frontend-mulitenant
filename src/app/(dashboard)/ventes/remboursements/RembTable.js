@@ -654,11 +654,8 @@ export default function RembTable({ etat }) {
 
   return (
     <>
-      <VenteNavbar />
-
-      <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
+      <div className="relative p-4">
         <p className="text-lg font-semibold mb-4">{statusTitle}</p>
-
         <Table
           data_to_export={data_to_export()}
           columns_export={columns_export}

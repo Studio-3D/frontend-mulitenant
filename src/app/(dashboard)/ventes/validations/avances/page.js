@@ -417,12 +417,10 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
   if (etat_av === null) {
     return <LoadingSpin />;
   }
-  if (loading) return <LoadingSpin />;
 
   return (
     <>
-      <VenteNavbar />
-      <div className="relative bg-white shadow-md rounded-lg p-4">
+      <div className="relative p-4">
         {/* Filter Section */}
         <p className="text-lg font-semibold mb-4">
           {etat_av == 3
@@ -444,7 +442,7 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
           columns={columns}
           data={formatData()}
           totalRows={totalRows}
-          loading={loading.table}
+          loading={loading}
           error={error}
           currentPage={currentPage}
           rowsPerPage={rowsPerPage}
