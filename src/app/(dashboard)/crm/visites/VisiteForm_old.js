@@ -42,7 +42,7 @@ import Pusher from 'pusher-js';
 import Modal_OldVisites_Perdu from './Modal_OldVisites_Perdu';
 import FreinsComponent from './FreinsComponent';
 
-const VisiteForm = ({ prospect_id, origin }) => {
+const VisiteForm_Old = ({ prospect_id, origin }) => {
   const router = useRouter();
   useClearProspect();
   const { user } = useAuth();
@@ -3195,4 +3195,4 @@ disabled={isOrigin ? false : watch('telephone') === ''}
   );
 };
 
-export default VisiteForm;
+export default VisiteForm_Old;

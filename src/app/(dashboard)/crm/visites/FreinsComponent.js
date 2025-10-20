@@ -17,6 +17,9 @@ const FreinsComponent = ({
   list_vues,
   loading_tp_frein,
   loading,
+  loading_tranches,
+  loading_typologies,
+  loading_vues,
   handleChange_freins,
   handlePrixChange,
   setValue,
@@ -26,46 +29,50 @@ const FreinsComponent = ({
 }) => {
   // Transform data for SelectInput with safety checks
   const freinOptions = type_freins
-    .filter(frein => frein && frein.description)
-    .map(frein => ({
+    .filter((frein) => frein && frein.description)
+    .map((frein) => ({
       value: frein.description?.toLowerCase() || '',
-      label: frein.description || ''
+      label: frein.description || '',
     }))
-    .filter(option => option.value && option.label);
+    .filter((option) => option.value && option.label);
 
   const trancheOptions = list_tranches
-    .filter(tranche => tranche && tranche.id && tranche.nom)
-    .map(tranche => ({
+    .filter((tranche) => tranche && tranche.id && tranche.nom)
+    .map((tranche) => ({
       value: tranche.id.toString(),
-      label: tranche.nom
+      label: tranche.nom,
     }));
 
   const etageOptions = list_etages
-    .filter(etage => etage && etage.value !== undefined && etage.value !== null)
-    .map(etage => ({
+    .filter(
+      (etage) => etage && etage.value !== undefined && etage.value !== null
+    )
+    .map((etage) => ({
       value: etage.value.toString(),
-      label: etage.value.toString()
+      label: etage.value.toString(),
     }));
 
   const orientationSelectOptions = orientationOptions
-    .filter(orientation => orientation && orientation.code && orientation.label)
-    .map(orientation => ({
+    .filter(
+      (orientation) => orientation && orientation.code && orientation.label
+    )
+    .map((orientation) => ({
       value: orientation.code.toString(),
-      label: orientation.label
+      label: orientation.label,
     }));
 
   const typologieOptions = list_typologies
-    .filter(typologie => typologie && typologie.id && typologie.typologie)
-    .map(typologie => ({
+    .filter((typologie) => typologie && typologie.id && typologie.typologie)
+    .map((typologie) => ({
       value: typologie.id.toString(),
-      label: typologie.typologie
+      label: typologie.typologie,
     }));
 
   const vueOptions = list_vues
-    .filter(vue => vue && vue.id && vue.vue)
-    .map(vue => ({
+    .filter((vue) => vue && vue.id && vue.vue)
+    .map((vue) => ({
       value: vue.id.toString(),
-      label: vue.vue
+      label: vue.vue,
     }));
 
   // Helper function to handle SelectInput changes
@@ -108,7 +115,9 @@ const FreinsComponent = ({
             isMulti={true}
             options={trancheOptions}
             value={watch('tranches') || []}
-            onChange={(selectedValues) => handleSelectChange('tranches', selectedValues)}
+            onChange={(selectedValues) =>
+              handleSelectChange('tranches', selectedValues)
+            }
             placeholder="sélectionnez un ou plusieurs Tranches"
             errors={{
               ...errors,
@@ -120,7 +129,7 @@ const FreinsComponent = ({
                   : null,
             }}
             backendErrors={backendErrors}
-            loading={loading}
+            loading={loading_tranches}
           />
         </div>
       )}
@@ -135,7 +144,9 @@ const FreinsComponent = ({
             isMulti={true}
             options={etageOptions}
             value={watch('etages') || []}
-            onChange={(selectedValues) => handleSelectChange('etages', selectedValues)}
+            onChange={(selectedValues) =>
+              handleSelectChange('etages', selectedValues)
+            }
             placeholder="sélectionnez un ou plusieurs étages"
             errors={{
               ...errors,
@@ -147,7 +158,7 @@ const FreinsComponent = ({
                   : null,
             }}
             backendErrors={backendErrors}
-            loading={loading}
+         //   loading={loading}
           />
         </div>
       )}
@@ -162,7 +173,9 @@ const FreinsComponent = ({
             isMulti={true}
             options={orientationSelectOptions}
             value={watch('orientations') || []}
-            onChange={(selectedValues) => handleSelectChange('orientations', selectedValues)}
+            onChange={(selectedValues) =>
+              handleSelectChange('orientations', selectedValues)
+            }
             placeholder="sélectionnez un ou plusieurs orientations"
             errors={{
               ...errors,
@@ -174,7 +187,7 @@ const FreinsComponent = ({
                   : null,
             }}
             backendErrors={backendErrors}
-            loading={loading}
+            //loading={loading}
           />
         </div>
       )}
@@ -212,9 +225,7 @@ const FreinsComponent = ({
                 required={watch('frein')?.includes('prix')}
               />
               {info_prix != null && (
-                <div className="text-red-500 text-sm mt-1">
-                  {info_prix}
-                </div>
+                <div className="text-red-500 text-sm mt-1">{info_prix}</div>
               )}
             </div>
             <div className="w-1/2">
@@ -251,9 +262,7 @@ const FreinsComponent = ({
                 required={watch('frein')?.includes('superficie')}
               />
               {info_sup != null && (
-                <div className="text-red-500 text-sm mt-1">
-                  {info_sup}
-                </div>
+                <div className="text-red-500 text-sm mt-1">{info_sup}</div>
               )}
             </div>
             <div className="w-1/2">
@@ -283,7 +292,9 @@ const FreinsComponent = ({
             isMulti={true}
             options={typologieOptions}
             value={watch('typologies') || []}
-            onChange={(selectedValues) => handleSelectChange('typologies', selectedValues)}
+            onChange={(selectedValues) =>
+              handleSelectChange('typologies', selectedValues)
+            }
             placeholder="sélectionnez un ou plusieurs Typologies"
             errors={{
               ...errors,
@@ -294,7 +305,7 @@ const FreinsComponent = ({
                   ? "Ce champ est obligatoire lorsque 'frein' inclut 'typologie'."
                   : null,
             }}
-            loading={loading}
+            loading={loading_typologies}
             backendErrors={backendErrors}
           />
         </div>
@@ -310,7 +321,9 @@ const FreinsComponent = ({
             isMulti={true}
             options={vueOptions}
             value={watch('vues') || []}
-            onChange={(selectedValues) => handleSelectChange('vues', selectedValues)}
+            onChange={(selectedValues) =>
+              handleSelectChange('vues', selectedValues)
+            }
             placeholder="sélectionnez un ou plusieurs Vues"
             errors={{
               ...errors,
@@ -321,7 +334,7 @@ const FreinsComponent = ({
                   ? "Ce champ est obligatoire lorsque 'frein' inclut 'vue'."
                   : null,
             }}
-            loading={loading}
+            loading={loading_vues}
             backendErrors={backendErrors}
           />
         </div>

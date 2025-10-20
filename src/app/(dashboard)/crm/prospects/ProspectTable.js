@@ -501,7 +501,9 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
   const handle_convert_to_visite = (row) => {
     localStorage.setItem(
       'selectedProspect',
-      JSON.stringify({ dataProspect: row })
+      JSON.stringify({
+        info: { dataProspect: row },
+      })
     );
     router.push(`${ENDPOINTS.VISITES}?action=add`);
   };

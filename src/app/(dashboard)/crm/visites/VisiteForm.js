@@ -53,6 +53,8 @@ const VisiteForm = ({ prospect_id, origin }) => {
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [open_dialog, setOpen_Dialog] = useState(false);
   const [info_client_1, setInfo_client_1] = useState(null);
+  const [info_param, setInfo_param] = useState(null);
+
   const [client_prospect, setClient_prospect] = useState(null);
   const [id_appel, setId_appel] = useState(null);
   const [id_visite, setId_visite] = useState(null);
@@ -77,6 +79,12 @@ const VisiteForm = ({ prospect_id, origin }) => {
   const [input_biens, setinput_biens] = useState([]);
   const [check_save, setCheck_save] = useState(true);
   const [list_tranches, setList_tranches] = useState([]);
+  const [loading_tranches, setLoading_tranches] = useState(false);
+
+  const [loading_vues, setLoading_vues] = useState(false);
+
+  const [loading_typologies, setLoading_typologies] = useState(false);
+
   // const user = JSON.parse(localStorage.getItem('authUser'));
   const current = new Date();
   var new_date = current.setDate(current.getDate());
@@ -97,7 +105,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
   const [info_sup, setInfo_sup] = useState(null);
   const [reset1, setReset1] = useState(0);
   const [input_biens_vendu, setinput_biens_vendu] = useState([]);
-  const [check_save_1, setCheck_save_1] = useState(false);
+  const [check_save_1, setCheck_save_1] = useState(true);
   const [info_reservation, setInfo_reservation] = useState(null);
   const list_etages = [];
   const [disabled_var_source, setDisabled_source] = useState(false);
@@ -120,6 +128,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
       setLoading_form(false);
     }
   };
+
   const [check_save_perdu, setCheck_save_perdu] = useState(false);
   const isOrigin = !!origin;
   const [partenaire_txt, setPartenaire_txt] = useState(
@@ -352,9 +361,13 @@ const VisiteForm = ({ prospect_id, origin }) => {
         setValue('nb_bien_added', '');
         setCheck_save(true);
         fetchTypeFreins();
-        fetchDataByProjet('tranches', setList_tranches, setLoading);
-        fetchDataByProjet('vues', setList_Vues, setLoading);
-        fetchDataByProjet('typologies', setListTyplogies, setLoading);
+        fetchDataByProjet('tranches', setList_tranches, setLoading_tranches);
+        fetchDataByProjet('vues', setList_Vues, setLoading_vues);
+        fetchDataByProjet(
+          'typologies',
+          setListTyplogies,
+          setLoading_typologies
+        );
         input_biens.forEach((input) => {
           //check if one of inputs bien_id !=null
           if (input.bien_id != '') {
@@ -785,6 +798,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
 
   const handleChange_event = (text) => (event) => {
     const value = event.target.value;
+    setInfo_param(text);
     if (text == 'cin') {
       if (value.length >= 3) {
         const timeout = setTimeout(() => {
@@ -896,7 +910,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
           setDisabled_source(true);
         } else {
           setValue('partenaire_id', '');
-          setPartenaire_txt(partenaire.description || '');
+          setPartenaire_txt(null);
           setValue('partenaire_txt', '');
         }
 
@@ -982,62 +996,73 @@ const VisiteForm = ({ prospect_id, origin }) => {
 
         // Gérer les données de dialogue
         if (prospect?.appels) setId_appel(prospect.appels.id);
-        if (prospect?.visites?.length) {
-          setValue('last_origin_id_of_prospect', prospect.visites[0].id);
-          setId_visite(prospect.visites[0].id);
+        if (prospect?.visites_perdu?.length) {
+          setValue('last_origin_id_of_prospect', prospect?.visite_first?.id);
+          setId_visite(prospect?.visite_first?.id);
 
           setOld_visites_perdu([]);
-          for (var i = 0; i <= Number(prospect.visites.length) - 1; i++) {
-            if (prospect.visites[i].interet == '3') {
+          for (var i = 0; i <= Number(prospect.visites_perdu.length) - 1; i++) {
+            if (
+              prospect.visites_perdu[i].interet == '3' &&
+              prospect.visites_perdu[i].etat == 1
+            ) {
               if (
-                prospect.visites[i]?.freins?.etat == 1 ||
-                prospect.visites[i]?.freins?.etat == 2 ||
-                prospect.visites[i]?.freins?.etat == 6
+                prospect.visites_perdu[i]?.freins?.etat == 1 ||
+                prospect.visites_perdu[i]?.freins?.etat == 2 ||
+                prospect.visites_perdu[i]?.freins?.etat == 6
               ) {
                 let date = format(
-                  new Date(prospect.visites[i].created_at),
+                  new Date(prospect.visites_perdu[i].created_at),
                   'dd/MM/yyyy '
                 );
-                let fr_id = prospect.visites[i]?.freins.id;
-                let v_cadre_id = prospect.visites[i].related_show_id;
-                let origin_id = prospect.visites[i].origin_id;
+                let fr_id = prospect.visites_perdu[i]?.freins.id;
+                let v_cadre_id = prospect.visites_perdu[i].related_show_id;
+                let origin_id = prospect.visites_perdu[i].origin_id;
                 let frein_exp = '';
-                if (prospect.visites[i]?.freins.frein_tranche.length > 0) {
+                if (
+                  prospect.visites_perdu[i]?.freins.frein_tranche.length > 0
+                ) {
                   frein_exp += 'Tranche ,';
                 }
-                if (prospect.visites[i]?.freins.frein_etage.length > 0) {
+                if (prospect.visites_perdu[i]?.freins.frein_etage.length > 0) {
                   frein_exp += 'Etage ,';
                 }
 
-                if (prospect.visites[i]?.freins.frein_orientation.length > 0) {
+                if (
+                  prospect.visites_perdu[i]?.freins.frein_orientation.length > 0
+                ) {
                   frein_exp += 'Orientation ,';
                 }
-                if (prospect.visites[i]?.freins.frein_typologie.length > 0) {
+                if (
+                  prospect.visites_perdu[i]?.freins.frein_typologie.length > 0
+                ) {
                   frein_exp += 'Typologie ,';
                 }
-                if (prospect.visites[i]?.freins.frein_vue.length > 0) {
+                if (prospect.visites_perdu[i]?.freins.frein_vue.length > 0) {
                   frein_exp += 'Vue ,';
                 }
                 if (
-                  (prospect.visites[i]?.freins.prix_min != null &&
-                    prospect.visites[i]?.freins.prix_min != 0) ||
-                  (prospect.visites[i]?.freins.prix_max != null &&
-                    prospect.visites[i]?.freins.prix_max != 0)
+                  (prospect.visites_perdu[i]?.freins.prix_min != null &&
+                    prospect.visites_perdu[i]?.freins.prix_min != 0) ||
+                  (prospect.visites_perdu[i]?.freins.prix_max != null &&
+                    prospect.visites_perdu[i]?.freins.prix_max != 0)
                 ) {
                   frein_exp += 'Prix ,';
                 }
                 if (
-                  (prospect.visites[i]?.freins.superficie_min != null &&
-                    prospect.visites[i]?.freins.superficie_min != 0) ||
-                  (prospect.visites[i]?.freins.superficie_max != null &&
-                    prospect.visites[i]?.freins.superficie_max != 0)
+                  (prospect.visites_perdu[i]?.freins.superficie_min != null &&
+                    prospect.visites_perdu[i]?.freins.superficie_min != 0) ||
+                  (prospect.visites_perdu[i]?.freins.superficie_max != null &&
+                    prospect.visites_perdu[i]?.freins.superficie_max != 0)
                 ) {
                   frein_exp += 'Superficie ,';
                 }
-                if (prospect.visites[i]?.freins.avance != null) {
+                if (prospect.visites_perdu[i]?.freins.avance != null) {
                   frein_exp += 'Avance ,';
                 }
-                if (prospect.visites[i]?.freins.description_autre != null) {
+                if (
+                  prospect.visites_perdu[i]?.freins.description_autre != null
+                ) {
                   frein_exp += 'Frein Autre,';
                 }
                 setOld_visites_perdu((v) => [
@@ -1411,7 +1436,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
   const show_visite = (origin_id, v_id) => {
     localStorage.setItem('v_id_cadre', v_id);
     localStorage.setItem('v_id_org', origin_id);
-    window.open(`/visites/show/${origin_id}`, '_blank');
+    window.open(`/crm/visites/${origin_id}`, '_blank');
   };
 
   const handle_action_change_perdu = (e, index, param) => {
@@ -1754,7 +1779,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
     info_prix != null ||
     info_sup != null ||
     check_save == false ||
-    (OldBiens_pre.length > 0 && !isOrigin) ||
+    (OldBiens_pre.length > 0 && !isOrigin && paper_exist === 0) ||
     info_reservation != null ||
     open_D_P ||
     (watch('list_bien_transfere_vendu').length == 0 &&
@@ -1776,6 +1801,16 @@ const VisiteForm = ({ prospect_id, origin }) => {
           (x.avance_res > 0 && x.avance_res < x.avance_minimale))
     );
 
+  // Replace the complex conditions with clearer logic
+  const showMainForm =
+    !isOrigin ||
+    (isOrigin && OldBiens_pre.length == 0) ||
+    (isOrigin && OldBiens_pre.length > 0 && paper_exist === 1);
+
+  const showPreReservedSection =
+    OldBiens_pre.length > 0 &&
+    (isOrigin || !isOrigin) &&
+    !watch('loading_b_pre');
   return (
     <div>
       <Modal isVisible={open_D_P} onClose={() => handleCloseD_P()}>
@@ -1794,6 +1829,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
       {open_dialog == true && (
         <>
           <Modal_Propsepct_Exist
+            info_param={info_param}
             info_client_1={info_client_1}
             id_appel={id_appel}
             id_visite={id_visite}
@@ -1808,11 +1844,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
         </div>
       </div>
       <div>
-        {(!isOrigin ||
-          (isOrigin && OldBiens_pre.length > 0 && paper_exist == 1) ||
-          (isOrigin &&
-            OldBiens_pre.length == 0 &&
-            !watch('loading_b_pre'))) && (
+        {showMainForm && (
           <div className="p-6 mt-4 min-h-[89vh] bg-white shadow-md rounded-md">
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="space-y-4">
@@ -2003,6 +2035,9 @@ const VisiteForm = ({ prospect_id, origin }) => {
                       list_vues={list_vues}
                       loading_tp_frein={loading_tp_frein}
                       loading={loading}
+                      loading_tranches={loading_tranches}
+                      loading_vues={loading_vues}
+                      loading_typologies={loading_typologies}
                       handleChange_freins={handleChange_freins}
                       handlePrixChange={handlePrixChange}
                       setValue={setValue}
@@ -2605,14 +2640,37 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                                   bien.id &&
                                                   bien.propriete_dite_bien
                                               )
-                                              .map((bien) => ({
-                                                value: bien.id.toString(),
-                                                label: bien.propriete_dite_bien,
-                                                disabled:
-                                                  bien.disabled || false,
-                                              }))
+                                              .map((bien) => {
+                                                // Add the same disabled logic from your old autocomplete
+                                                const isDisabled =
+                                                  bien.etat ==
+                                                    'ENCOURS_DE_PROPOSITION' &&
+                                                  bien.is_proposed != null &&
+                                                  user.id !=
+                                                    bien.is_proposed.user_id;
+
+                                                // Add the same label text logic
+                                                const labelText =
+                                                  bien.propriete_dite_bien +
+                                                  (bien.etat ===
+                                                  'ENCOURS_DE_PROPOSITION'
+                                                    ? bien?.is_proposed !== null
+                                                      ? user.id !==
+                                                        bien?.is_proposed
+                                                          ?.user_id
+                                                        ? ` Proposé par ${bien?.is_proposed?.user?.name} ${bien?.is_proposed?.user?.prenom}`
+                                                        : ' Proposé par Moi Même'
+                                                      : ''
+                                                    : '');
+
+                                                return {
+                                                  value: bien.id.toString(),
+                                                  label: labelText, // Remove debug text here
+                                                  disabled: isDisabled,
+                                                };
+                                              })
                                           : []
-                                      } // Provide empty array as fallback
+                                      }
                                       value={x.bien_id}
                                       onChange={(selectedValue) => {
                                         const syntheticEvent = {
@@ -3152,8 +3210,8 @@ const VisiteForm = ({ prospect_id, origin }) => {
                 <Button type="button" onClick={() => router.back()}>
                   Annuler
                 </Button>
-                <Button type="submit" /*disabled={isDisabled || isSubmitting}*/>
-                  {isSubmitting || isDisabled ? (
+                <Button type="submit" disabled={isDisabled}>
+                  {isSubmitting ? (
                     <div className="flex items-center gap-2">
                       <svg
                         className="animate-spin h-5 w-5 text-white"
@@ -3186,11 +3244,13 @@ const VisiteForm = ({ prospect_id, origin }) => {
           </div>
         )}
       </div>
+      {/*
+        ((watch('loading_b_pre') === true && !isOrigin) ||
+          (isOrigin && OldBiens_pre.length > 0))*/}
       {watch('loading_b_pre') && isOrigin ? (
         <LoadingSpin />
       ) : (
-        ((watch('loading_b_pre') === true && !isOrigin) ||
-          (isOrigin && OldBiens_pre.length > 0)) && (
+        showPreReservedSection && (
           <div className="p-3">
             <div className="p-6 mt-4 bg-white shadow-md rounded-md">
               <div className="text-white rounded-t-lg p-4 bg-[#5483b3]">

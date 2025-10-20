@@ -111,7 +111,7 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
       // Fetch partenaires when source_txt is 'Partenaire'
       fetchDataByProjet('partenaires', setPartenaires, setLoading_auto);
     }
-  }, [source_txt,selectedProjet]);
+  }, [source_txt, selectedProjet]);
 
   useEffect(() => {
     setLoading({ ...loading, form: true }); // Set loading to true when starting to fetch data
@@ -278,6 +278,15 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
     }
   };
 
+  // Ajoutez un state pour sauvegarder les anciennes valeurs
+  const [previousValues, setPreviousValues] = useState({
+    nom: '',
+    prenom: '',
+    email: '',
+    telephone: '',
+    telephone_num2: '',
+  });
+
   const fetch_cin_tel_email = async (v, text) => {
     var route = ' ';
     if (text == 'cin') {
@@ -287,6 +296,16 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
     } else {
       route = 'search_client_by_email';
     }
+    // Sauvegarder les valeurs actuelles avant de faire l'appel API
+    const currentValues = {
+      nom: watch('nom'),
+      prenom: watch('prenom'),
+      email: watch('email'),
+      telephone: watch('telephone'),
+      telephone_num2: watch('telephone_num2'),
+    };
+
+    setPreviousValues(currentValues);
 
     //seeach by cin
     await axios
@@ -339,13 +358,19 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
           setValue('email', res.data.prospect.email);
           setValue('telephone', res.data.prospect.telephone);
           setValue('telephone_num2', res.data.prospect.telephone_num2);
-
-          set_check_p(true);
         } else {
+          setInfo_prospect('');
           set_check_p(false);
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        // En cas d'erreur, restaurer aussi les anciennes valeurs
+        setValue('nom', previousValues.nom);
+        setValue('prenom', previousValues.prenom);
+        setValue('email', previousValues.email);
+        setValue('telephone', previousValues.telephone);
+        setValue('telephone_num2', previousValues.telephone_num2);
+      });
   };
 
   // Update your handleSourceChange function

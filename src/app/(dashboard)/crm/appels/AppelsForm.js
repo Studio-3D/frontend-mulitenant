@@ -32,10 +32,18 @@ import useClearProspect from '../hook/useClearProspect';
 import useClearProspectAppel from '../hook/useClearProspectAppel';
 
 export default function AppelsForm({ id }) {
+    useClearProspect();
+  useClearProspectAppel();
+  // Add individual loading states
+
+  const [loadingStates, setLoadingStates] = useState({
+    prospectData: false,
+    initialData: false,
+    editData: false,
+  });
   const { token } = useAuth();
   const router = useRouter();
-  useClearProspect();
-  useClearProspectAppel();
+
   const { selectedProjet } = useProjet();
 
   const [info_cin, setInfo_cin] = useState(null);
@@ -115,6 +123,39 @@ export default function AppelsForm({ id }) {
 
   const prospect_appel = getProspectFromStorage();
 
+  useEffect(() => {
+    const loadProspectData = async () => {
+      if (prospect_appel?.projet_id) {
+        setLoadingStates((prev) => ({ ...prev, prospectData: true }));
+
+        const projetId = prospect_appel.projet_id;
+
+        console.log(
+          'Fetching data for projet_id from prospect_appel:',
+          projetId
+        );
+
+        try {
+          // Fetch all related data
+          await Promise.all([
+            fetchPartenaires(projetId),
+            fetch_data_by_projetId(projetId),
+            fetch_type_biens(projetId),
+          ]);
+
+          // Also set the projet_id in the form
+          setValue('projet_id', projetId);
+          setSource(prospect_appel?.source?.source);
+        } catch (error) {
+          console.error('Error loading prospect data:', error);
+        } finally {
+          setLoadingStates((prev) => ({ ...prev, prospectData: false }));
+        }
+      }
+    };
+
+    loadProspectData();
+  }, [prospect_appel?.projet_id]);
   const defaultValues = {
     id_t_appel: '',
     prospect_id:
@@ -175,6 +216,7 @@ export default function AppelsForm({ id }) {
     prix_min: '',
     sup_min: '',
     sup_max: '',
+    description_autre: '',
   };
   const validationSchemaRef = useRef(
     yup.object().shape({
@@ -217,6 +259,7 @@ export default function AppelsForm({ id }) {
   const isEditing = !!id;
   useEffect(() => {
     if (isEditing) {
+      setLoadingStates((prev) => ({ ...prev, editData: true }));
       axios
         .get(`${APIURL.ROOTV1}/show_t_appel/` + id, {
           headers: {
@@ -229,137 +272,190 @@ export default function AppelsForm({ id }) {
           const frein_n = res.data.frein;
           let intere_label = getInteret_label(tr_appel.interet);
 
-          if (Array.isArray(tr_appel.type_biens)) {
-            const selectedIds = tr_appel.type_biens.map(
-              (option) => option?.type_bien_id
-            );
-            setValue('type_biens', selectedIds); // Set only IDs to the form field
-          }
-          setFormData((prevFormData) => ({
-            ...prevFormData,
-            nom: tr_appel.appel.prospect.nom || '',
-            cin: tr_appel.appel.prospect.cin || '',
-            prenom: tr_appel.appel.prospect.prenom || '',
-            prospect_id: tr_appel?.appel?.prospect?.id || '',
-            telephone: tr_appel?.appel?.prospect?.telephone || '',
-            telephone_num2: tr_appel?.appel?.prospect?.telephone_num2 || '',
-            ville: tr_appel.appel.prospect.ville || '',
-            interet: tr_appel.interet || '',
-            type_appel: tr_appel.type_appel || '',
-            projet_id: tr_appel.appel.projet_id || '',
-            source: tr_appel.appel.prospect.source?.id || '',
-            source_txt:
-              tr_appel.appel.prospect?.source?.source === 'Partenaire'
-                ? 'Partenaire'
-                : null,
-            partenaire_id: tr_appel.appel.prospect?.partenaire_id || '',
-            date_relance: tr_appel.relance?.date_relance || '',
-            mode_relance: tr_appel.relance?.mode_relance || '',
-            tranche_id: tr_appel.tranche_id || '',
-            bloc_id: tr_appel.bloc_id || '',
-            immeuble_id: tr_appel.immeuble_id || '',
-            etage: tr_appel.etage || '',
-            orientation: tr_appel.orientation || '',
-            rdv: tr_appel.rdv?.rdv || '',
-            avance: frein_n?.avance || '',
-            commentaire: tr_appel.commentaire || '',
-            prix_max: frein_n?.prix_max || '',
-            prix_min: frein_n?.prix_min || '',
-            sup_min: frein_n?.superficie_min || '',
-            sup_max: frein_n?.superficie_max || '',
-          }));
-
-          fetchPartenaires(tr_appel.appel.projet.id);
-          fetch_data_by_projetId(tr_appel.appel.projet.id);
-          fetch_type_biens(tr_appel.appel.projet.id);
-          setSource(tr_appel.appel.prospect.source?.source);
-          setPartenaire(tr_appel.appel.prospect?.partenaire?.id);
-          let freinValue = [];
-          if (intere_label == 'Perdu') {
-            fetch_type_Freins();
-            fetch_vues(tr_appel.appel.projet.id);
-            fetch_typologies(tr_appel.appel.projet.id);
-
-            if (frein_n != null) {
-              if (frein_n.frein_etage.length > 0) {
-                const etages = frein_n.frein_etage.map((item) => item.etage);
-                setValue('etages', etages);
-                freinValue.push('etage');
-              }
-
-              if (frein_n.frein_vue.length > 0) {
-                const vues = frein_n.frein_vue.map((item) => item.vue);
-                setValue('vues', vues);
-                freinValue.push('vue');
-              }
-
-              if (frein_n.frein_typologie.length > 0) {
-                const typologies = frein_n.frein_typologie.map(
-                  (item) => item.typologie
-                );
-                setValue('typologies', typologies);
-                freinValue.push('typologie');
-              }
-
-              if (frein_n.frein_tranche.length > 0) {
-                const tranches = frein_n.frein_tranche.map(
-                  (item) => item.tranche
-                );
-                setValue('tranches_id', tranches);
-                freinValue.push('tranche');
-              }
-
-              if (frein_n.frein_orientation.length > 0) {
-                const firstLetterToCode = {
-                  N: ORIENTATIONS[1].code, // Nord
-                  S: ORIENTATIONS[2].code, // Sud
-                  E: ORIENTATIONS[3].code, // Est
-                  O: ORIENTATIONS[4].code, // Ouest
-                  N_E: ORIENTATIONS[5].code, // Ouest
-                  N_o: ORIENTATIONS[6].code, // Ouest
-                  S_E: ORIENTATIONS[7].code, // Ouest
-                  S_O: ORIENTATIONS[8].code, // Ouest
-                };
-
-                const orientations = frein_n.frein_orientation.map((item) => {
-                  const letter = item.orientation
-                    ?.trim()
-                    .charAt(0)
-                    .toUpperCase();
-                  return firstLetterToCode[letter];
-                });
-
-                setValue('orientations', orientations);
-                freinValue.push('orientation');
-              }
-              if (frein_n.prix_min != null || frein_n.prix_max != null) {
-                setValue('prix_min', frein_n?.prix_min || '');
-                setValue('prix_max', frein_n?.prix_max || '');
-                freinValue.push('prix');
-              }
-
-              if (
-                frein_n?.superficie_min != null ||
-                frein_n?.superficie_max != null
-              ) {
-                setValue('sup_min', frein_n?.superficie_min || '');
-                setValue('sup_max', frein_n?.superficie_max || '');
-                freinValue.push('superficie');
-              }
-
-              if (frein_n?.avance != null) {
-                setValue('avance', frein_n?.avance);
-                freinValue.push('avance');
-              }
-
-              // Finally set the 'frein' array:
-              setValue('freins', freinValue);
-              console.log('list==>' + freinValue);
+          // First, fetch all the necessary data
+          Promise.all([
+            fetchPartenaires(tr_appel.appel.projet.id),
+            fetch_data_by_projetId(tr_appel.appel.projet.id),
+            fetch_type_biens(tr_appel.appel.projet.id),
+          ]).then(() => {
+            // After data is loaded, set the form values
+            if (Array.isArray(tr_appel.type_biens)) {
+              const selectedIds = tr_appel.type_biens.map(
+                (option) => option?.type_bien_id
+              );
+              setValue('type_biens', selectedIds);
             }
-          }
-        })
 
-        .catch((error) => console.log(error.message));
+            setFormData((prevFormData) => ({
+              ...prevFormData,
+              nom: tr_appel.appel.prospect.nom || '',
+              cin: tr_appel.appel.prospect.cin || '',
+              prenom: tr_appel.appel.prospect.prenom || '',
+              prospect_id: tr_appel?.appel?.prospect?.id || '',
+              telephone: tr_appel?.appel?.prospect?.telephone || '',
+              telephone_num2: tr_appel?.appel?.prospect?.telephone_num2 || '',
+              ville: tr_appel.appel.prospect.ville || '',
+              interet: tr_appel.interet || '',
+              type_appel: tr_appel.type_appel || '',
+              projet_id: tr_appel.appel.projet_id || '',
+              source: tr_appel.appel.prospect.source?.id || '',
+              source_txt:
+                tr_appel.appel.prospect?.source?.source === 'Partenaire'
+                  ? 'Partenaire'
+                  : null,
+              partenaire_id: tr_appel.appel.prospect?.partenaire_id || '',
+              date_relance: tr_appel.relance?.date_relance || '',
+              mode_relance: tr_appel.relance?.mode_relance || '',
+              tranche_id: tr_appel.tranche_id || '',
+              bloc_id: tr_appel.bloc_id || '',
+              immeuble_id: tr_appel.immeuble_id || '',
+              etage: tr_appel.etage || '',
+              orientation: tr_appel.orientation || '',
+              rdv: tr_appel.rdv?.rdv || '',
+              avance: frein_n?.avance || '',
+              commentaire: tr_appel.commentaire || '',
+              prix_max: frein_n?.prix_max || '',
+              prix_min: frein_n?.prix_min || '',
+              sup_min: frein_n?.superficie_min || '',
+              sup_max: frein_n?.superficie_max || '',
+            }));
+
+            setSource(tr_appel.appel.prospect.source?.source);
+            setPartenaire(tr_appel.appel.prospect?.partenaire?.id);
+
+            let freinValue = [];
+            if (intere_label == 'Perdu') {
+              // Fetch additional data for Perdu case
+              Promise.all([
+                fetch_type_Freins(),
+                fetch_vues(tr_appel.appel.projet.id),
+                fetch_typologies(tr_appel.appel.projet.id),
+              ]).then(() => {
+                if (frein_n != null) {
+                  // Handle direct properties
+                  // Handle "Autre" frein first
+                  if (
+                    frein_n.description_autre != null &&
+                    frein_n.description_autre !== ''
+                  ) {
+                    setValue(
+                      'description_autre',
+                      frein_n.description_autre || ''
+                    );
+                    freinValue.push('autre');
+                  }
+                  if (frein_n.frein_etage.length > 0) {
+                    const etages = frein_n.frein_etage.map((item) =>
+                      item.etage.toString()
+                    );
+
+                    console.log('Setting etages:', etages);
+                    setValue('etages', etages);
+                    freinValue.push('etage');
+                  }
+
+                  if (frein_n.frein_vue.length > 0) {
+                    const vues = frein_n.frein_vue.map((item) => item.vue.id);
+                    console.log('Setting vues:', vues);
+
+                    // Filter out any null/undefined values and convert to strings for SelectInput
+                    const vuesFiltered = vues
+                      .filter((id) => id != null)
+                      .map((id) => id);
+                    setValue('vues', vuesFiltered);
+                    freinValue.push('vue');
+                  }
+
+                  if (frein_n.frein_typologie.length > 0) {
+                    const typologies = frein_n.frein_typologie.map(
+                      (item) => item.typologie.id
+                    );
+                    // Filter out any null/undefined values and convert to strings for SelectInput
+                    const typologiesFiltered = typologies
+                      .filter((id) => id != null)
+                      .map((id) => id);
+                    console.log('typologiess=+>' + typologiesFiltered);
+                    setValue('typologies', typologiesFiltered);
+                    freinValue.push('typologie');
+                  }
+
+                  if (frein_n.frein_tranche.length > 0) {
+                    // Extract just the tranche IDs
+                    const trancheIds = frein_n.frein_tranche.map(
+                      (item) => item.tranche?.id
+                    );
+
+                    // Filter out any null/undefined values and convert to strings for SelectInput
+                    const trancheIdsFiltered = trancheIds
+                      .filter((id) => id != null)
+                      .map((id) => id);
+
+                    setValue('tranches_id', trancheIdsFiltered);
+                    freinValue.push('tranche');
+                  }
+
+                  if (frein_n.frein_orientation.length > 0) {
+                    const firstLetterToCode = {
+                      N: ORIENTATIONS[1].code,
+                      S: ORIENTATIONS[2].code,
+                      E: ORIENTATIONS[3].code,
+                      O: ORIENTATIONS[4].code,
+                      N_E: ORIENTATIONS[5].code,
+                      N_o: ORIENTATIONS[6].code,
+                      S_E: ORIENTATIONS[7].code,
+                      S_O: ORIENTATIONS[8].code,
+                    };
+
+                    const orientations = frein_n.frein_orientation.map(
+                      (item) => {
+                        const letter = item.orientation
+                          ?.trim()
+                          .charAt(0)
+                          .toUpperCase();
+                        return firstLetterToCode[letter];
+                      }
+                    );
+
+                    console.log('Setting orientations:', orientations);
+                    setValue('orientations', orientations);
+                    freinValue.push('orientation');
+                  }
+
+                  if (frein_n.prix_min != null || frein_n.prix_max != null) {
+                    setValue('prix_min', frein_n?.prix_min || '');
+                    setValue('prix_max', frein_n?.prix_max || '');
+                    freinValue.push('prix');
+                  }
+
+                  if (
+                    frein_n?.superficie_min != null ||
+                    frein_n?.superficie_max != null
+                  ) {
+                    setValue('sup_min', frein_n?.superficie_min || '');
+                    setValue('sup_max', frein_n?.superficie_max || '');
+                    freinValue.push('superficie');
+                  }
+
+                  if (frein_n?.avance != null) {
+                    setValue('avance', frein_n?.avance);
+                    freinValue.push('avance');
+                  }
+
+                  // Finally set the 'frein' array:
+                  console.log('Setting freins:', freinValue);
+                  setValue('freins', freinValue);
+                }
+              });
+            }
+          });
+        })
+        .catch((error) => {
+          console.log(error.message);
+          setLoadingStates((prev) => ({ ...prev, editData: false }));
+        })
+        .finally(() => {
+          setLoadingStates((prev) => ({ ...prev, editData: false }));
+        });
     } else {
       validationSchemaRef.current = validationSchemaRef.current.shape({
         ...validationSchemaRef.current.fields,
@@ -452,7 +548,11 @@ export default function AppelsForm({ id }) {
         },
       })
       .then((res) => {
-        setType_freins(res.data.typeFreins);
+        // FIX: Properly add "Autre" option
+        setType_freins([
+          ...(res.data.typeFreins || []), // Keep the original freins
+          { id: 'autre', description: 'Autre' }, // Add "Autre" option
+        ]);
         setLoading_tp_frein(false);
       })
       .catch(() => {});
@@ -482,39 +582,48 @@ export default function AppelsForm({ id }) {
         console.error('Orientation Obligatoire');
       }
     }
+
     // If interet == 3, then all those frein checks
     if (Number(watch('interet')) == 3) {
-      const frein = watch('freins') || [];
-      const checks = [
-        frein.length > 0,
-        !frein.includes('vue') || (watch('vues') || []).length > 0,
-        !frein.includes('typologie') || (watch('typologies') || []).length > 0,
-        !frein.includes('orientation') ||
-          (watch('orientations') || []).length > 0,
-        !frein.includes('etage') || (watch('etages') || []).length > 0,
-        !frein.includes('tranche') || (watch('tranches_id') || []).length > 0,
-      ];
+  const frein = watch('freins') || [];
+  const checks = [
+    frein.length > 0,
+    !frein.includes('vue') || (watch('vues') || []).length > 0,
+    !frein.includes('typologie') || (watch('typologies') || []).length > 0,
+    !frein.includes('orientation') || (watch('orientations') || []).length > 0,
+    !frein.includes('etage') || (watch('etages') || []).length > 0,
+    !frein.includes('tranche') || (watch('tranches_id') || []).length > 0,
+    // FIXED: If 'autre' is included, description_autre must be filled
+    !frein.includes('autre') || 
+      (watch('description_autre') != null && 
+       watch('description_autre') !== '' && 
+       watch('description_autre').trim() !== ''),
+  ];
 
-      const checkNames = [
-        'frein.length > 0',
-        "'vue' => vues.length > 0",
-        "'typologie' => typologies.length > 0",
-        "'orientation' => orientations.length > 0",
-        "'etage' => etages.length > 0",
-        "'tranche' => tranches_id.length > 0",
-      ];
+  const checkNames = [
+    'frein.length > 0',
+    "'vue' => vues.length > 0",
+    "'typologie' => typologies.length > 0",
+    "'orientation' => orientations.length > 0",
+    "'etage' => etages.length > 0",
+    "'tranche' => tranches_id.length > 0",
+    "'autre' => description_autre is filled", // Updated description
+  ];
 
-      if (!checks.every(Boolean)) {
-        valid = false;
-        console.error('Certains freins ne sont pas remplis correctement.');
-        checks.forEach((check, index) => {
-          if (!check) {
-            console.warn(`Échec du test: ${checkNames[index]}`);
-          }
-        });
+  if (!checks.every(Boolean)) {
+    valid = false;
+    console.error('Certains freins ne sont pas remplis correctement.');
+    checks.forEach((check, index) => {
+      if (!check) {
+        console.warn(`Échec du test: ${checkNames[index]}`);
+        // Add specific error messages for each failed check
+        if (checkNames[index] === "'autre' => description_autre is filled") {
+          console.warn('Description autre est obligatoire lorsque "autre" est sélectionné');
+        }
       }
-    }
-
+    });
+  }
+}
     return valid;
   };
 
@@ -568,6 +677,7 @@ export default function AppelsForm({ id }) {
       typologies: handleField(data.typologies),
       vues: handleField(data.vues),
       type_biens: handleField(data.type_biens),
+      description_autre: data.description_autre || '', // Make sure this is included
     };
 
     // For editing mode transformations
@@ -586,7 +696,13 @@ export default function AppelsForm({ id }) {
 
         preparedData.orientations = codes.length ? codes.join(',') : '';
       }
-
+      // Also handle single orientation field if needed
+      if (preparedData.orientation && ORIENTATIONS[preparedData.orientation]) {
+        preparedData.orientation =
+          ORIENTATION_ABBREVIATIONS[
+            ORIENTATIONS[preparedData.orientation].label
+          ] || '';
+      }
       // Normalize freins format
       if (preparedData.freins) {
         preparedData.freins = preparedData.freins
@@ -738,13 +854,17 @@ export default function AppelsForm({ id }) {
           } else {
             setValue('source_txt', null);
           }
+          setValue('projet_id', res.data.prospect?.projet_id);
+          fetchPartenaires(res.data.prospect?.projet_id);
+          fetch_data_by_projetId(res.data.prospect?.projet_id);
+          fetch_type_biens(res.data.prospect?.projet_id);
           setValue('partenaire_id', partenaire_id);
 
           if (res.data.prospect.appels != null) {
             setId_appel(res.data.prospect.appels?.id);
           }
-          if (res.data.prospect.visites.length > 0) {
-            setId_visite(res.data.prospect.visites[0].id);
+          if (res.data.prospect.visite_first != null) {
+            setId_visite(res.data.prospect.visite_first?.id);
           }
         } else {
           defaultValues['prospect_id'] = null;
@@ -879,6 +999,12 @@ export default function AppelsForm({ id }) {
           }
         }
         setList_etages(array_etages);
+        return {
+          tranches: res.data.projet.tranche,
+          blocs: res.data.projet.bloc,
+          immeubles: res.data.projet.immeuble,
+          etages: array_etages,
+        };
       })
       .catch(() => {});
   };
@@ -900,22 +1026,32 @@ export default function AppelsForm({ id }) {
     }
   };
 
-  const handleChange_freins = (selectedValues) => {
-    try {
-      const descriptions = selectedValues
-        .map((item) => item?.description?.toLowerCase() || '')
-        .join(', ');
+  // Combined loading check
+  // Enhanced loading check
+  const isLoading =
+    loadingStates.prospectData ||
+    loadingStates.initialData ||
+    loadingStates.editData ||
+    (isEditing && !formData)
+    // Check if essential data is loaded for the current interet
+  /* (Number(watch('interet')) === 3 && loading_tp_frein) ||
+    // Check if project data is loaded when project is selected
+    (watch('projet_id') &&
+      (tranches.length === 0 ||
+        list_type_biens.length === 0 ||
+        list_etages.length === 0));*/
 
-      setValue('freins', descriptions);
-    } catch (error) {
-      console.error('Error in handleChange_freins:', error);
-    }
-  };
-
-  if (isEditing && !formData) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <LoadingSpin /> {/* Use your loading spinner here */}
+        <LoadingSpin />
+        {/*<span className="ml-2 text-gray-600">
+        {loadingStates.editData ? "Chargement des données d'édition..." :
+         loadingStates.prospectData ? 'Chargement des données du prospect...' :
+         loadingStates.initialData ? 'Chargement des données initiales...' :
+         loading_tp_frein ? 'Chargement des types de freins...' :
+         'Chargement des données...'}
+      </span>*/}
       </div>
     );
   }
@@ -925,6 +1061,7 @@ export default function AppelsForm({ id }) {
       {open_dialog == true && (
         <>
           <Modal_Propsepct_Exist
+            info_param={'téléphone'}
             info_client_1={info_client}
             id_appel={id_appel}
             id_visite={id_visite}
@@ -1369,6 +1506,7 @@ export default function AppelsForm({ id }) {
                         : null) || backendErrors.freins
                     }
                     submitted={formSubmitted}
+                    loading={loading_tp_frein}
                   />
 
                   {watch('freins')?.includes('tranche') && ( // Safe access using optional chaining
@@ -1382,6 +1520,7 @@ export default function AppelsForm({ id }) {
                         value: tranche.id,
                         label: tranche.nom,
                       }))}
+                      required={true}
                       onChange={(value) => {
                         setValue('tranches_id', value);
                       }}
@@ -1396,7 +1535,6 @@ export default function AppelsForm({ id }) {
                       submitted={formSubmitted}
                     />
                   )}
-
                   {watch('freins')?.includes('etage') && (
                     <SelectInput
                       placeholder="selectionner des etages"
@@ -1404,10 +1542,14 @@ export default function AppelsForm({ id }) {
                       name="etages"
                       required={true}
                       options={list_etages.map((etage) => ({
-                        value: etage.value,
-                        label: etage.value,
+                        value: etage.value.toString(), // Ensure string values
+                        label: etage.value.toString(), // Ensure string labels
                       }))}
-                      value={watch('etages')}
+                      value={
+                        Array.isArray(watch('etages'))
+                          ? watch('etages').map((item) => item.toString())
+                          : []
+                      }
                       isMulti={true}
                       onChange={(value) => {
                         setValue('etages', value);
@@ -1426,20 +1568,25 @@ export default function AppelsForm({ id }) {
                     <div>
                       <SelectInput
                         placeholder="selectionner des orientations"
-                        label="Orientation :"
-                        name="orientation"
-                        value={watch('orientation')}
+                        label="Orientations :"
+                        name="orientations" // This should be 'orientations' (plural)
+                        value={watch('orientations')}
                         options={orientationOptions.map((opt) => ({
                           value: opt.value,
                           label: opt.label,
                         }))}
+                        required={true}
+                        isMulti={true} // This should be multi-select for freins
                         onChange={(value) => {
-                          setValue('orientation', value);
+                          setValue('orientations', value);
                         }}
                         error={
-                          (formSubmitted && Number(watch('interet')) == 1
-                            ? "Ce champ est obligatoire lorsque 'interet' est 'interessé'."
-                            : null) || backendErrors.orientation
+                          (formSubmitted &&
+                          watch('freins')?.includes('orientation') &&
+                          (!watch('orientations') ||
+                            watch('orientations').length == 0)
+                            ? "Ce champ est obligatoire lorsque 'frein' inclut 'orientation'."
+                            : null) || backendErrors.orientations
                         }
                         submitted={formSubmitted}
                       />
@@ -1448,6 +1595,7 @@ export default function AppelsForm({ id }) {
                   {watch('freins')?.includes('avance') && (
                     <div>
                       <TextField
+                      
                         label="Avance:"
                         name="avance"
                         type="number"
@@ -1455,7 +1603,7 @@ export default function AppelsForm({ id }) {
                         errors={errors}
                         backendErrors={backendErrors}
                         defaultValues={defaultValues}
-                        required={watch('frein')?.includes('avance')}
+                        required={watch('freins')?.includes('avance')}
                       />
                     </div>
                   )}
@@ -1591,6 +1739,23 @@ export default function AppelsForm({ id }) {
                             : null) || backendErrors.vues
                         }
                         submitted={formSubmitted}
+                      />
+                    </div>
+                  )}
+                  {/* Description Autre Field */}
+                  {watch('freins')?.includes('autre') && (
+                    <div>
+                      <TextField
+                        label="Description Frein Autre:"
+                        name="description_autre"
+                        multi={true}
+                        control={control}
+                        errors={errors}
+                        backendErrors={backendErrors}
+                        defaultValues={defaultValues}
+                        required={watch('freins')?.includes('autre')}
+                        width="w-full"
+                        height="h-full"
                       />
                     </div>
                   )}

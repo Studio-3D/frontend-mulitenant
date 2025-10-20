@@ -3,22 +3,23 @@
 import React, { useEffect, useState } from 'react';
 import VisiteTable from './VisiteTable';
 import VisiteForm from './VisiteForm';
-
 import VisiteFormEdit from './VisiteFormEdit';
-
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { isAdmin, isSuperAdmin, isCommercial } from '../../../../configs/enum';
 import { useAuth } from '../../../../context/AuthContext';
 import CRMNavbar from '@/components/CRMNavbar';
 
-export default function Page(dataProspect,dataClient) {
+// Fix: Properly destructure the props
+export default function Page({ dataProspect, dataClient }) {
+  // Add proper destructuring
   const ACTION = { EDIT: 'edit', ADD: 'add' };
   const [child, setChild] = useState(null);
 
   const { user } = useAuth();
   const userRole = user?.role;
   const router = useRouter();
+
   useEffect(() => {
     if (
       !isAdmin(userRole) &&
@@ -27,9 +28,10 @@ export default function Page(dataProspect,dataClient) {
     ) {
       router.push('/');
     }
-  }, [router]);
+  }, [router, userRole]); // Added userRole to dependencies
 
   const searchParams = useSearchParams();
+
   useEffect(() => {
     if (!searchParams) return;
 
@@ -40,20 +42,24 @@ export default function Page(dataProspect,dataClient) {
     setChild(newChild);
   }, [searchParams]);
 
-  // Fonction pour déterminer le composant enfant en fonction de l'action et de l'id
   const determineChildComponent = (action, id) => {
     if (action === ACTION.ADD) {
       return <VisiteForm />;
     } else if (!isNaN(parseInt(id)) && action === ACTION.EDIT) {
       return <VisiteFormEdit id={id} />;
     } else {
-      console.warn('Invalid action or missing id:', action, id); // Debugging
-
+      console.warn('Invalid action or missing id:', action, id);
       return null;
     }
   };
-  const clientId = dataClient?.dataClient?.id;
-  const prospectId = dataProspect?.dataProspect?.id;
+
+  // Debug: Check what you're actually receiving
+  console.log('dataProspect in page:', dataProspect);
+  console.log('dataClient in page:', dataClient);
+
+  const clientId = dataClient?.id; // Fixed: removed extra nesting
+  const prospectId = dataProspect?.id; // Fixed: removed extra nesting
+
   return (
     <div>
       {child ? (
@@ -66,6 +72,7 @@ export default function Page(dataProspect,dataClient) {
                 <CRMNavbar />
               </>
             )}
+            {/* Pass the props correctly */}
             <VisiteTable dataClient={dataClient} dataProspect={dataProspect} />
           </div>
         </>
