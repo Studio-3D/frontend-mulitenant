@@ -1,5 +1,4 @@
 "use client";
-import { useRouter } from 'next/navigation';
 import { VentePage } from '../../../components/Vente/ventePage'
 
 export default function page() {
