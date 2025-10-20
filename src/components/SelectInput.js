@@ -17,7 +17,7 @@ export default function SelectInput({
   onBlur,
   submitted = false,
   isMulti = false,
-  loading = false, // Added loading prop
+  loading = false,
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isTouched, setIsTouched] = useState(false);
@@ -28,7 +28,9 @@ export default function SelectInput({
     if (!isTouched) setIsTouched(true);
   };
 
-  const handleSelect = (optionValue) => {
+  const handleSelect = (optionValue, isDisabled) => {
+    if (isDisabled) return; // Prevent selection if disabled
+    
     if (isMulti) {
       const currentValues = Array.isArray(value) ? value : [];
       const newValues = currentValues.includes(optionValue)
@@ -142,7 +144,7 @@ export default function SelectInput({
 
         {isOpen && (
           <ul className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
-            {loading ? ( // Added loading state
+            {loading ? (
               <li className="px-4 py-2 text-gray-500">Chargement...</li>
             ) : options.length > 0 ? (
               options.map((option) => (
@@ -154,16 +156,21 @@ export default function SelectInput({
                       "bg-blue-50": isMulti
                         ? value?.includes(option.value)
                         : String(option.value) === String(value),
+                      "bg-gray-100 opacity-50 cursor-not-allowed": option.disabled,
+                      "hover:bg-gray-100": option.disabled,
                     }
                   )}
-                  onClick={() => handleSelect(option.value)}
+                  onClick={() => handleSelect(option.value, option.disabled)}
                 >
                   {isMulti && (
                     <input
                       type="checkbox"
                       checked={value?.includes(option.value)}
                       readOnly
-                      className="mr-2"
+                      className={classNames("mr-2", {
+                        "cursor-not-allowed": option.disabled,
+                      })}
+                      disabled={option.disabled}
                     />
                   )}
                   {option.label}

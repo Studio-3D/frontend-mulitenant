@@ -19,11 +19,12 @@ import { fetchData_table_by_projet } from '../../../../../src/configs/api-utils'
 import Link from 'next/link';
 import Input from '@/components/Input';
 import { format } from 'date-fns'; // Add this import
-
+import { useProjet } from '@/context/ProjetContext';
 import { VISITE_INTERETS } from '../../../../../src/configs/enum';
 const AppelsTable = ({ dataClient }) => {
   const { user, token } = useAuth();
   const accesstoken = token || localStorage.getItem('accessToken');
+  const { selectedProjet } = useProjet();
 
   const router = useRouter();
   const [appels, setAppels] = useState([]);
@@ -67,7 +68,14 @@ const AppelsTable = ({ dataClient }) => {
       setAppels,
       setTotalRows
     );
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters]);
+  }, [
+    accesstoken,
+    currentPage,
+    rowsPerPage,
+    searchTerm,
+    filters,
+    selectedProjet,
+  ]);
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
@@ -78,10 +86,6 @@ const AppelsTable = ({ dataClient }) => {
 
     return () => clearTimeout(timer); // Clean up the timeout on each render
   }, [searchTerm]);
-
-  const handleShow = (appelId) => {
-    router.push(`/crm/appels/${appelId}`);
-  };
 
   function handleEdit(appelId) {
     // Navigate to /utilisateurs?id={id}&action=edit
@@ -99,7 +103,7 @@ const AppelsTable = ({ dataClient }) => {
           onClick: () => {
             localStorage.setItem(
               'selectedClient',
-              JSON.stringify({ dataClient: dataClient })
+              JSON.stringify({ info: { dataClient: dataClient } })
             );
           },
         };
@@ -109,14 +113,15 @@ const AppelsTable = ({ dataClient }) => {
     return undefined;
   }
 
-  function handle_convert_to_visite(prospect) {
-    localStorage.setItem(
-      'selectedProspect',
-      JSON.stringify({ dataProspect: prospect })
-    );
-    router.push(`${ENDPOINTS.VISITES}?action=add`);
-  }
-
+   const handle_convert_to_visite = (prospect) => {
+      localStorage.setItem(
+        'selectedProspect',
+        JSON.stringify({
+          info: { dataProspect: prospect },
+        })
+      );
+      router.push(`${ENDPOINTS.VISITES}?action=add`);
+    };
   const voir_visite = (vId) => {
     window.open(`/crm/visites/${vId}`, '_blank');
   };
@@ -196,20 +201,21 @@ const AppelsTable = ({ dataClient }) => {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <div title="Voir détails">
-            <Eye
-              className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
-              onClick={() => handleShow(row.id)}
-            />
-          </div>
+          <Link
+            href={`/crm/appels/${row.id}`}
+            className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+            title="Voir les détails"
+          >
+            <Eye className="w-4 h-4" />
+          </Link>
 
-          <div title="Modifier">
-            <PencilLine
-              className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
-              title="Modifier"
-              onClick={() => handleEdit(row.last_traitement_id)}
-            />
-          </div>
+          <Link
+            href={`${ENDPOINTS.APPELS}?id=${row.last_traitement_id}&action=edit`}
+            className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
+            title="Modifier"
+          >
+            <PencilLine className="w-4 h-4" />
+          </Link>
 
           <div title="Supprimer Appel">
             <Trash2
@@ -222,20 +228,26 @@ const AppelsTable = ({ dataClient }) => {
           </div>
 
           {row.last_traitement_visite_id == null ? (
-            <div title="Convertir en visite">
-              <RefreshCw
-                className="w-4 h-4 !text-green-500  cursor-pointer"
-                title="Convertir en visite"
-                onClick={() => handle_convert_to_visite(row.prospect)}
-              />
-            </div>
+            <Link
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                handle_convert_to_visite(row.prospect);
+              }}
+              className="flex items-center gap-1 text-green-500 hover:text-green-700"
+              title="Convertir en visite"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </Link>
           ) : (
-            <div title="Voir visite">
-              <CreditCard
-                className="w-4 h-4 !text-blue-500 cursor-pointer"
-                onClick={() => voir_visite(row.last_traitement_visite_id)}
-              />
-            </div>
+             <Link
+            href={`/crm/visite/${row.last_traitement_visite_id}`}
+            className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+            title="Voir Visite"
+          >
+            <CreditCard className="w-4 h-4" />
+          </Link>
+           
           )}
         </div>
       ),

@@ -19,8 +19,11 @@ import Input from '@/components/Input';
 import { fetchData_Select, fetchData_table_by_id } from '@/configs/api-utils';
 import { isAdmin, isSuperAdmin } from '@/configs/enum';
 
+import { useProjet } from '@/context/ProjetContext';
 export default function RembTable({ etat }) {
   // Authentication and state management
+  const { selectedProjet } = useProjet();
+
   const { user, token } = useAuth();
   const userRole = user.role;
   const accessToken = token || localStorage.getItem('accessToken');
@@ -78,7 +81,7 @@ export default function RembTable({ etat }) {
 
   // API configuration
   const entity = {
-    id: JSON.parse(localStorage.getItem('selectedProjet'))?.id + '/' + etat,
+    id: selectedProjet?.id + '/' + etat,
     API_URL: 'get_remboursements',
     dataKey: 'data',
     searchFields: [''],
@@ -101,7 +104,7 @@ export default function RembTable({ etat }) {
 
     // Fetch banques
     fetchData_Select('banques', setBanques, setLoadingBanques);
-  }, [accessToken, currentPage, rowsPerPage, searchTerm, filters]);
+  }, [accessToken, currentPage, rowsPerPage, searchTerm, filters,selectedProjet]);
 
   // Helper functions
   const handleFilterChange = (field, value) => {
@@ -416,7 +419,7 @@ export default function RembTable({ etat }) {
     ...additionalColumns,
     ...accuseColumns,
     ...decaissementColumns,
-  ...((etat != 4 && etat != 2) ? [actionColumn] : []), // Only include actionColumn if etat is not 4
+    ...(etat != 4 && etat != 2 ? [actionColumn] : []), // Only include actionColumn if etat is not 4
   ];
 
   // Export data configuration
@@ -730,7 +733,7 @@ export default function RembTable({ etat }) {
                       label="Remboursement"
                       className="h-10 text-sm w-full"
                     />
-                     <Input
+                    <Input
                       type="date"
                       label="Date Remboursement"
                       value={tempFilters.date_remb}
@@ -739,7 +742,6 @@ export default function RembTable({ etat }) {
                       }
                       className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                     />
-                    
 
                     <Input
                       type="number"
@@ -764,8 +766,7 @@ export default function RembTable({ etat }) {
 
                 {(etat == 2 || etat == 4) && (
                   <>
-                    
-                      <Input
+                    <Input
                       type="date"
                       label="Date Décaissement"
                       value={tempFilters.date_decaissement}
@@ -775,7 +776,7 @@ export default function RembTable({ etat }) {
                       className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                     />
 
-                      <Input
+                    <Input
                       type="date"
                       label="Date Accusé"
                       value={tempFilters.date_accuse}
@@ -784,7 +785,6 @@ export default function RembTable({ etat }) {
                       }
                       className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                     />
-                   
 
                     <SelectInput
                       value={tempFilters.banque}

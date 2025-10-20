@@ -44,10 +44,10 @@ export default function Modal_Show({
   frein_avance,
   commentaire,
   commentaire_rel,
-  commentaire_rdv
+  commentaire_rdv,description_autre
 }) {
   const freins = [
-    frein_tranches.length > 0 && 'TRANCHE',
+    frein_tranches.length > 0 && 'TRANCHE', description_autre!='' && 'Autre',
     frein_etages.length > 0 && 'ETAGE',
     frein_orientations.length > 0 && 'ORIENTATION',
     frein_typologies.length > 0 && 'TYPOLOGIE',
@@ -327,6 +327,13 @@ export default function Modal_Show({
                     <span className="text-gray-500">Superficie Max:</span>
                     <span className="ml-2 font-medium">
                       {frein_superficie_max} DH
+                    </span>
+                  </div>
+                )} {description_autre != '' && (
+                  <div>
+                    <span className="text-gray-500">Description:</span>
+                    <span className="ml-2 font-medium">
+                      {description_autre} 
                     </span>
                   </div>
                 )}

@@ -8,7 +8,6 @@ import { useProjet } from "@/context/ProjetContext";
 import Button from "@/components/Button";
 import BreadCrumb from "../../navigation/BreadCrumb";
 import LoadingSpin from "@/components/LoadingSpin";
-
 export default function ObjectifForm({ id = null }) {
   const router = useRouter();
   const { selectedProjet } = useProjet();
@@ -56,6 +55,20 @@ export default function ObjectifForm({ id = null }) {
     fetchUsers();
   }, [selectedProjet]);
 
+  // Simple cache et comparaison for return back en cas de changer projet
+  const [oldProjetId, setOldProjetId] = useState(null);
+
+  useEffect(() => {
+    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+      if (oldProjetId) {
+        // Projet a changé
+
+        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+        router.push('/administration/objectifs');
+      }
+      setOldProjetId(selectedProjet.id);
+    }
+  }, [selectedProjet?.id, oldProjetId, router]);
   // Fetch objectif data if editing
   useEffect(() => {
     if (!id || !selectedProjet) return;
@@ -94,6 +107,7 @@ export default function ObjectifForm({ id = null }) {
     fetchObjectif();
   }, [id, selectedProjet, router]);
 
+   
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });

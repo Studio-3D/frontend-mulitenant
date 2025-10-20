@@ -10,6 +10,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
 import SelectInput from '@/components/SelectInput';
+import TextField from '@/components/Textfield';
 import {
   VISITE_INTERETS,
   VISITE_TYPE_NOTIF,
@@ -17,6 +18,7 @@ import {
 } from '@/configs/enum';
 import { useRouter } from 'next/navigation';
 
+import { useProjet } from '@/context/ProjetContext';
 import { fetchDataByProjet } from '../../../../../../../src/configs/api-utils';
 import AutocompleteMultiple from '@/components/AutocompleteMultiple';
 import Pusher from 'pusher-js';
@@ -24,6 +26,7 @@ import BienAutocomplete from './BienAutocomplete';
 export default function Modal_Traite_Frein({ onClose, id, biens }) {
   const router = useRouter();
 
+  const { selectedProjet } = useProjet();
   const { token, user } = useAuth();
   const accessToken = token || localStorage.getItem('accessToken');
   const [loading, setLoading] = useState({ form: false });
@@ -41,15 +44,8 @@ export default function Modal_Traite_Frein({ onClose, id, biens }) {
   const [list_tranches, setList_tranches] = useState([]);
   const [info_prix, setInfo_prix] = useState(null);
   const [info_sup, setInfo_sup] = useState(null);
-  const [biens_dispos, setBiensDispo] = useState(() =>
-    biens.map((b) => ({
-      id: b.bien.id,
-      propriete_dite_bien: b.bien.propriete_dite_bien,
-      etat: b.bien.etat,
-      is_proposed: b.is_proposed ?? false,
-      disabled: false,
-    }))
-  );
+  const [biens_dispos, setBiensDispo] = useState([]);
+
   const [bien_id, setBien_id] = useState(null);
   const [loading_tp_frein, setLoading_tp_frein] = useState(false);
   const pusher_key_proposition = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_PROP;
@@ -103,15 +99,8 @@ export default function Modal_Traite_Frein({ onClose, id, biens }) {
     resolver: yupResolver(validationSchemaRef.current),
     defaultValues,
   });
-  if (
-    list_etages.length === 0 &&
-    JSON.parse(localStorage.getItem('selectedProjet'))?.max_etages > 0
-  ) {
-    for (
-      var i = 0;
-      i <= JSON.parse(localStorage.getItem('selectedProjet'))?.max_etages;
-      i++
-    ) {
+  if (list_etages.length === 0 && selectedProjet?.max_etages > 0) {
+    for (var i = 0; i <= selectedProjet?.max_etages; i++) {
       list_etages.push({ value: i });
     }
   }
@@ -215,70 +204,94 @@ export default function Modal_Traite_Frein({ onClose, id, biens }) {
       });
   };
 
-  const TextField = ({
-    label,
-    name,
-    type = 'text',
-    required = false,
-    control,
-    errors,
-    width = 'w-full',
-    height = 'h-10',
-    disabled = false,
-    isTextarea = false, // New prop for handling textareas
-  }) => {
-    return (
-      <div className="mb-4">
-        <label
-          htmlFor={name}
-          className="block text-sm font-medium !text-gray-700"
-        >
-          {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
-        </label>
-        <Controller
-          name={name}
-          control={control}
-          render={({ field }) =>
-            // Conditionally render input or textarea
-            isTextarea ? (
-              <textarea
-                style={{ marginLeft: '-10px!important', width: '360px' }}
-                {...field}
-                id={name}
-                name={name}
-                className={`block ${width} ${height} px-3 py-2 border border-gray-300 rounded-md focus:outline-none hover:border-gray-500 focus:border-gray-500 ${
-                  disabled ? 'bg-gray-100 cursor-not-allowed' : ''
-                } ${errors?.[name] ? 'border-red-500' : ''}`}
-                disabled={disabled}
-                required={required}
-                value={field.value || ''}
-                onChange={(e) => field.onChange(e.target.value)} // Ensure React Hook Form handles the change
-              />
-            ) : (
-              <input
-                {...field}
-                id={name}
-                name={name}
-                type={type}
-                className={`block ${width} ${height} px-3 py-2 border border-gray-300 rounded-md focus:outline-none hover:border-gray-500 focus:border-gray-500 ${
-                  disabled ? 'bg-gray-100 cursor-not-allowed' : ''
-                } ${errors?.[name] ? 'border-red-500' : ''}`}
-                required={required}
-                disabled={disabled}
-                value={field.value || ''}
-                onChange={(e) => field.onChange(e.target.value)} // Ensure React Hook Form handles the change
-              />
-            )
+  const isFormValid = () => {
+    const interet = Number(watch('interet'));
+    const commentaire = watch('commentaire');
+
+    // Basic required fields that are always needed
+    if (!interet || !commentaire) {
+      return false;
+    }
+
+    // Check fields based on interest type
+    switch (interet) {
+      case 1: // Intérêt = 1
+        if (!watch('bien_id')) {
+          return false;
+        }
+        break;
+
+      case 3: // Intérêt = 3 (Freins)
+        const frein = watch('frein') || [];
+
+        // Check if at least one frein is selected
+        if (frein.length === 0) {
+          return false;
+        }
+
+        // Check conditional required fields based on selected freins
+        if (
+          frein.includes('tranche') &&
+          (!watch('tranches') || watch('tranches').length === 0)
+        ) {
+          return false;
+        }
+        if (
+          frein.includes('etage') &&
+          (!watch('etages') || watch('etages').length === 0)
+        ) {
+          return false;
+        }
+        if (
+          frein.includes('orientation') &&
+          (!watch('orientations') || watch('orientations').length === 0)
+        ) {
+          return false;
+        }
+        if (
+          frein.includes('typologie') &&
+          (!watch('typologies') || watch('typologies').length === 0)
+        ) {
+          return false;
+        }
+        if (
+          frein.includes('vue') &&
+          (!watch('vues') || watch('vues').length === 0)
+        ) {
+          return false;
+        }
+        if (frein.includes('avance') && !watch('avance')) {
+          return false;
+        }
+        if (frein.includes('prix')) {
+          if (!watch('prix_min') || !watch('prix_max')) {
+            return false;
           }
-        />
-        {errors[name] && (
-          <div className="mt-1 text-xs !text-red-600">
-            <p>{errors[name]?.message}</p>
-          </div>
-        )}
-      </div>
-    );
+          // Additional check for price validation
+          if (Number(watch('prix_min')) > Number(watch('prix_max'))) {
+            return false;
+          }
+        }
+        if (frein.includes('superficie')) {
+          if (!watch('sup_min') || !watch('sup_max')) {
+            return false;
+          }
+          // Additional check for superficie validation
+          if (Number(watch('sup_min')) > Number(watch('sup_max'))) {
+            return false;
+          }
+        }
+        if (frein.includes('autre') && !watch('description_autre')) {
+          return false;
+        }
+        break;
+
+      // For interest = 2, no additional required fields beyond the basic ones
+      default:
+        break;
+    }
+
+    return true;
   };
 
   const fetchTypeFreins = async () => {
@@ -304,7 +317,7 @@ export default function Modal_Traite_Frein({ onClose, id, biens }) {
     setTimeout(() => {
       let a, b, minField, maxField;
 
-      if (val === 1) {
+      if (val == 1) {
         a = Number(watch('prix_min')); // Convertir en nombre
         b = Number(watch('prix_max')); // Convertir en nombre
         minField = 'prix_min';
@@ -320,7 +333,7 @@ export default function Modal_Traite_Frein({ onClose, id, biens }) {
         } else {
           setInfo_prix(null);
         }
-      } else if (val === 2) {
+      } else if (val == 2) {
         a = Number(watch('sup_min')); // Convertir en nombre
         b = Number(watch('sup_max')); // Convertir en nombre
         minField = 'superficie min';
@@ -343,16 +356,16 @@ export default function Modal_Traite_Frein({ onClose, id, biens }) {
     }, 2000);
   };
 
-const handleChange_freins = (selectedValues) => {
-  try {
-    console.log('Freins changed:', selectedValues);
-    if (Array.isArray(selectedValues)) {
-      setValue('frein', selectedValues);
+  const handleChange_freins = (selectedValues) => {
+    try {
+      console.log('Freins changed:', selectedValues);
+      if (Array.isArray(selectedValues)) {
+        setValue('frein', selectedValues);
+      }
+    } catch (error) {
+      console.error('Error in handleChange_freins:', error);
     }
-  } catch (error) {
-    console.error('Error in handleChange_freins:', error);
-  }
-};
+  };
 
   const handleChange_tp_notif = (code) => {
     if (code) {
@@ -360,22 +373,24 @@ const handleChange_freins = (selectedValues) => {
     }
   };
   const handleChange_interet = (v) => {
-  setLoading_biens(false);
-  console.log('v===>', v);
-  
-  if (v != null) {
-    if (v === 1) { // Use strict equality
-      setValue('bien_id', '');
+    setLoading_biens(false);
+    console.log('v===>', v);
+
+    if (v != null) {
+      if (v === 1) {
+        // Use strict equality
+        setValue('bien_id', '');
+      }
+      //perdu
+      else if (v === 3) {
+        // Use strict equality
+        fetchTypeFreins();
+        fetchDataByProjet('tranches', setList_tranches, setLoading);
+        fetchDataByProjet('vues', setList_Vues, setLoading);
+        fetchDataByProjet('typologies', setListTyplogies, setLoading);
+      }
     }
-    //perdu
-    else if (v === 3) { // Use strict equality
-      fetchTypeFreins();
-      fetchDataByProjet('tranches', setList_tranches, setLoading);
-      fetchDataByProjet('vues', setList_Vues, setLoading);
-      fetchDataByProjet('typologies', setListTyplogies, setLoading);
-    }
-  }
-};
+  };
 
   const orientationOptions = Object.keys(ORIENTATIONS).map((key) => ({
     code: ORIENTATIONS[key].code,
@@ -405,8 +420,11 @@ const handleChange_freins = (selectedValues) => {
         console.log('error');
       });
   };
-  const pusher_function = async () => {
-    console.log('je suis en pusher');
+
+  // Pusher function
+  // Fix the pusher_function - remove async
+  const pusher_function = () => {
+    console.log('Initializing Pusher...');
     Pusher.logToConsole = true;
 
     const pusher = new Pusher(`${pusher_key_proposition}`, {
@@ -417,16 +435,62 @@ const handleChange_freins = (selectedValues) => {
     const channel = pusher.subscribe('proposition-updates');
 
     channel.bind('App\\Events\\PropositionUpdated', (data) => {
+      console.log('bbbbbbbbbbbbbbbbbbbbb - Pusher event received!');
       console.log('Proposal status changed:', data);
+      // Refresh the biens data when Pusher event is received
+      fetchDataa();
     });
-    fetchDataa();
 
+    console.log('Pusher initialized and listening for updates');
+
+    // Return cleanup function
     return () => {
+      console.log('Cleaning up Pusher...');
       channel.unbind('App\\Events\\PropositionUpdated');
       pusher.unsubscribe('proposition-updates');
     };
   };
-  const fetchDataa = async (pageNumber = 0, size = 80) => {
+
+  // Fix the useEffect - remove async/await
+  useEffect(() => {
+    console.log('Component mounted - initializing Pusher...');
+    const cleanup = pusher_function();
+
+    // Cleanup on component unmount
+    return () => {
+      console.log('Component unmounting - cleaning up Pusher...');
+      if (cleanup && typeof cleanup === 'function') {
+        cleanup();
+      }
+    };
+  }, []); // Empty dependency array - runs once on mount
+  const handleSelectBien = (bien) => {
+    if (bien) {
+      console.log('Selected Bien in Traiter Frein:', bien);
+
+      const isDisabled =
+        bien.etat === 'ENCOURS_DE_PROPOSITION' &&
+        bien.is_proposed != null &&
+        user.id !== bien.is_proposed.user_id;
+
+      if (isDisabled) {
+        toast.error(
+          `Ce bien est déjà proposé par ${bien.is_proposed.user?.name} ${bien.is_proposed.user?.prenom}`
+        );
+        setValue('bien_id', '');
+        return;
+      }
+
+      list_biens_clickable.push({ value: bien.id });
+      setBien_id(bien.id);
+      setValue('bien_id', bien.id);
+      storebien_en_proposition(bien.id);
+
+      // Pusher is already initialized via useEffect, no need to call it here
+    }
+  };
+
+  const fetchDataa = async () => {
     setLoading_biens(true);
     axios
       .get(`${APIURL.ROOTV1}/biens_by_frein/` + Number(id), {
@@ -434,13 +498,14 @@ const handleChange_freins = (selectedValues) => {
           Authorization: `Bearer ${accessToken}`,
         },
         params: {
-          page: pageNumber + 1,
-          size,
+          page: 1,
+          size: 10,
         }, // Increment page number by 1 for API
       })
       .then((response) => {
         setLoading_biens(false);
         setBiensDispo([]);
+        console.log(' arra now');
         setBiensDispo(
           response.data.all_biens.map((b) => ({
             id: b.bien.id,
@@ -457,21 +522,11 @@ const handleChange_freins = (selectedValues) => {
         setLoading(false);
       });
   };
+  // Fetch initial data
   useEffect(() => {
-    fetchDataa(0, 80);
+    fetchDataa();
   }, []);
 
-  const handleSelectBien = (bien) => {
-    console.log('heeeeeeeeeeere==>' + bien);
-
-    if (bien) {
-      list_biens_clickable.push({ value: bien.id });
-      setBien_id(bien.id);
-      setValue('bien_id', bien.id); // or bien.id depending on use
-      storebien_en_proposition(bien.id);
-      pusher_function();
-    }
-  };
   return (
     <div className=" bg-gray-50 flex items-center justify-center ">
       <div className="w-full max-w-[90%] sm:max-w-[500px] md:max-w-[600px] lg:w-[800px] bg-white rounded-lg shadow-lg overflow-hidden">
@@ -512,8 +567,8 @@ const handleChange_freins = (selectedValues) => {
                     },
                   ]}
                   onChange={(value) => {
-                    setValue('interet', value)
-                    handleChange_interet(value)
+                    setValue('interet', value);
+                    handleChange_interet(value);
                   }}
                   value={watch('interet')}
                   error={errors.interet?.message}
@@ -528,21 +583,78 @@ const handleChange_freins = (selectedValues) => {
                       label="Bien:"
                       name="bien_id"
                       required={true}
-                      placeholder="Sélectionnez un bien"
-                      options={biens_dispos.map((bien) => ({
-                        value: bien.id,
-                        label: `${bien.propriete_dite_bien} - ${bien.etat}`,
-                      }))}
+                      placeholder={
+                        loading_biens
+                          ? 'Chargement des biens...'
+                          : 'Sélectionnez un bien'
+                      }
+                      options={biens_dispos.map((bien) => {
+                        // Enhanced disabled logic with null checks
+                        const isDisabled =
+                          bien &&
+                          bien.etat === 'ENCOURS_DE_PROPOSITION' &&
+                          bien.is_proposed != null &&
+                          bien.is_proposed.user_id != null &&
+                          user.id !== bien.is_proposed.user_id;
+
+                        // Enhanced label text logic
+                        let labelText =
+                          bien.propriete_dite_bien || 'Bien sans nom';
+
+                        if (
+                          bien.etat === 'ENCOURS_DE_PROPOSITION' &&
+                          bien.is_proposed
+                        ) {
+                          if (bien.is_proposed.user_id === user.id) {
+                            labelText += ' - Proposé par Moi Même';
+                          } else if (bien.is_proposed.user) {
+                            labelText += ` - Proposé par ${bien.is_proposed.user.name} ${bien.is_proposed.user.prenom}`;
+                          } else {
+                            labelText += ' - Déjà proposé';
+                          }
+                        }
+
+                        return {
+                          value: bien.id,
+                          label: labelText,
+                          disabled: isDisabled,
+                        };
+                      })}
                       onChange={(selectedValue) => {
+                        if (!selectedValue) return;
+
                         const selectedBien = biens_dispos.find(
-                          (b) => b.id === selectedValue,
-                        )
-                        setValue('bien_id', selectedValue)
-                        handleSelectBien(selectedBien)
+                          (b) => b.id === selectedValue
+                        );
+
+                        if (!selectedBien) {
+                          console.error(
+                            'Selected bien not found in biens_dispos'
+                          );
+                          return;
+                        }
+
+                        // Check if disabled
+                        const isDisabled =
+                          selectedBien.etat === 'ENCOURS_DE_PROPOSITION' &&
+                          selectedBien.is_proposed != null &&
+                          selectedBien.is_proposed.user_id != null &&
+                          user.id !== selectedBien.is_proposed.user_id;
+
+                        if (isDisabled) {
+                          setValue('bien_id', '');
+                          toast.error(
+                            `Ce bien est déjà proposé par ${selectedBien.is_proposed.user?.name} ${selectedBien.is_proposed.user?.prenom}`
+                          );
+                        } else {
+                          setValue('bien_id', selectedValue);
+                          handleSelectBien(selectedBien);
+                        }
                       }}
                       value={watch('bien_id')}
                       error={errors.bien_id?.message}
                       submitted={formSubmitted}
+                      loading={loading_biens}
                     />
                   </div>
                   <div className="w-full">
@@ -569,11 +681,11 @@ const handleChange_freins = (selectedValues) => {
                         ([code, details]) => ({
                           value: code,
                           label: details.label || details,
-                        }),
+                        })
                       )}
                       onChange={(selectedCode) => {
-                        setValue('mode_relance', selectedCode)
-                        handleChange_tp_notif(selectedCode)
+                        setValue('mode_relance', selectedCode);
+                        handleChange_tp_notif(selectedCode);
                       }}
                       value={watch('mode_relance')}
                       error={errors.mode_relance?.message}
@@ -606,7 +718,7 @@ const handleChange_freins = (selectedValues) => {
                         label: frein.description,
                       }))}
                       onChange={(selectedValues) => {
-                        handleChange_freins(selectedValues)
+                        handleChange_freins(selectedValues);
                       }}
                       value={
                         Array.isArray(watch('frein')) ? watch('frein') : []
@@ -626,13 +738,13 @@ const handleChange_freins = (selectedValues) => {
                       <TextField
                         label="Description Frein Autre:"
                         name="description_autre"
-                        multi={true}
                         control={control}
                         errors={errors}
                         backendErrors={backendErrors}
                         required={watch('frein')?.includes('autre')}
-                        isTextarea={true}
-                        height="h-24"
+                        multi
+                        width="w-full" // Optionally set width, default is 'w-80'
+                        height="h-full" // Optionally set height, default is 'h-10'
                       />
                     </div>
                   )}
@@ -651,15 +763,15 @@ const handleChange_freins = (selectedValues) => {
                         onChange={(selectedValues) => {
                           try {
                             if (Array.isArray(selectedValues)) {
-                              setValue('tranches', selectedValues)
+                              setValue('tranches', selectedValues);
                             } else {
-                              setValue('tranches', [selectedValues])
+                              setValue('tranches', [selectedValues]);
                             }
                           } catch (error) {
                             console.error(
                               'Error in tranches onChange handler:',
-                              error,
-                            )
+                              error
+                            );
                           }
                         }}
                         value={
@@ -694,15 +806,15 @@ const handleChange_freins = (selectedValues) => {
                         onChange={(selectedValues) => {
                           try {
                             if (Array.isArray(selectedValues)) {
-                              setValue('etages', selectedValues)
+                              setValue('etages', selectedValues);
                             } else {
-                              setValue('etages', [selectedValues])
+                              setValue('etages', [selectedValues]);
                             }
                           } catch (error) {
                             console.error(
                               'Error in etages onChange handler:',
-                              error,
-                            )
+                              error
+                            );
                           }
                         }}
                         value={
@@ -735,15 +847,15 @@ const handleChange_freins = (selectedValues) => {
                         onChange={(selectedValues) => {
                           try {
                             if (Array.isArray(selectedValues)) {
-                              setValue('orientations', selectedValues)
+                              setValue('orientations', selectedValues);
                             } else {
-                              setValue('orientations', [selectedValues])
+                              setValue('orientations', [selectedValues]);
                             }
                           } catch (error) {
                             console.error(
                               'Error in orientations onChange handler:',
-                              error,
-                            )
+                              error
+                            );
                           }
                         }}
                         value={
@@ -862,15 +974,15 @@ const handleChange_freins = (selectedValues) => {
                         onChange={(selectedValues) => {
                           try {
                             if (Array.isArray(selectedValues)) {
-                              setValue('typologies', selectedValues)
+                              setValue('typologies', selectedValues);
                             } else {
-                              setValue('typologies', [selectedValues])
+                              setValue('typologies', [selectedValues]);
                             }
                           } catch (error) {
                             console.error(
                               'Error in typologies onChange handler:',
-                              error,
-                            )
+                              error
+                            );
                           }
                         }}
                         value={
@@ -906,15 +1018,15 @@ const handleChange_freins = (selectedValues) => {
                         onChange={(selectedValues) => {
                           try {
                             if (Array.isArray(selectedValues)) {
-                              setValue('vues', selectedValues)
+                              setValue('vues', selectedValues);
                             } else {
-                              setValue('vues', [selectedValues])
+                              setValue('vues', [selectedValues]);
                             }
                           } catch (error) {
                             console.error(
                               'Error in vues onChange handler:',
-                              error,
-                            )
+                              error
+                            );
                           }
                         }}
                         value={
@@ -942,8 +1054,9 @@ const handleChange_freins = (selectedValues) => {
                   required={true}
                   control={control}
                   errors={errors}
-                  isTextarea={true}
-                  height="h-24"
+                  multi
+                  width="w-full" // Optionally set width, default is 'w-80'
+                  height="h-full" // Optionally set height, default is 'h-10'
                 />
               </div>
               {/* Backend Errors */}
@@ -954,21 +1067,24 @@ const handleChange_freins = (selectedValues) => {
               )}
               {/* Action Buttons */}
               <div className="flex justify-end gap-3 pt-4">
-                <Button type="button" variant="outline" onClick={onClose}>
-                  Annuler
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={loading.form}
-                  loading={loading.form}
-                >
-                  Enregistrer
-                </Button>
+                {/* Action Buttons */}
+                <div className="flex justify-end gap-3 pt-4">
+                  <Button type="button" variant="outline" onClick={onClose}>
+                    Annuler
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={!isFormValid() || loading.form}
+                    loading={loading.form}
+                  >
+                    Enregistrer
+                  </Button>
+                </div>
               </div>
             </div>
           </form>
         </div>
       </div>
     </div>
-  )
+  );
 }

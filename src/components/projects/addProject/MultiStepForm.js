@@ -9,12 +9,15 @@ import toast from 'react-hot-toast';
 import { APIURL } from '@/configs/api';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
+import { useProjet } from '@/context/ProjetContext';
 
 export const MultiStepForm = ({
   editMode = false,
   initialData = null,
   projetId = null,
 }) => {
+  const { selectedProjet } = useProjet();
+
   const { token } = useAuth();
   const router = useRouter();
 
@@ -65,6 +68,19 @@ export const MultiStepForm = ({
   // Track if we've initialized from API in edit mode
   const initializedFromApi = useRef(false);
 
+  // Simple cache et comparaison
+  const [oldProjetId, setOldProjetId] = useState(null);
+
+  useEffect(() => {
+    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+      if (oldProjetId) {
+        // Projet a changé
+        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+        router.push('/Projets/' + selectedProjet.id);
+      }
+      setOldProjetId(selectedProjet.id);
+    }
+  }, [selectedProjet?.id, oldProjetId, router]);
   // Load initial data when in edit mode
   useEffect(() => {
     if (editMode && initialData && !initializedFromApi.current) {
@@ -201,7 +217,7 @@ export const MultiStepForm = ({
           prixAcquisition: 'Prix acquisition est requis',
         };
       }
-      //si tranche /bloc / immeuble then vaidate etage > 0 
+      //si tranche /bloc / immeuble then vaidate etage > 0
       if (
         formData.composition.tranche.enabled ||
         formData.composition.blocs.enabled ||

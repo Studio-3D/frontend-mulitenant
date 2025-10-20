@@ -11,6 +11,7 @@ import InputSelect from '../inputSelect';
 import Input from '../Input';
 import { fetchDataByProjet_params } from '@/configs/api-utils';
 import { useSearchParams } from 'next/navigation';
+import { useProjet } from '@/context/ProjetContext';
 
 export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
   const router = useRouter();
@@ -30,12 +31,13 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
   const hasFetchedInitialData = useRef(false);
   const isSubmittingRef = useRef(false);
   const [trancheHasNoBlocs, setTrancheHasNoBlocs] = useState(false);
+  const { selectedProjet  } = useProjet();
 
-  // Get selected project from localStorage
+ /* // Get selected project from localStorage
   const selectedProjet = JSON.parse(
     localStorage.getItem('selectedProjet') || '{}'
   );
-
+*/
   const defaultValues = {
     nom: '',
     bloc_id: blocId || '',
@@ -75,15 +77,28 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
         }
       }
     } catch (error) {
-      console.error('Failed to fetch immeuble:', error);
-      // Ensure tranche and bloc names when IDs provided
-
       toast.error("Erreur lors du chargement de l'immeuble");
     } finally {
       setIsLoading(false);
     }
   }, [id, selectedProjet?.id]);
 
+  // Simple cache et comparaison
+  const [oldProjetId, setOldProjetId] = useState(null);
+            console.log(`Old Projet: ${oldProjetId} -> ${selectedProjet.id}`);
+
+  useEffect(() => {
+
+    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+      if (oldProjetId) {
+        // Projet a changé
+        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet?.id}`);
+        router.push('/Projets/' + selectedProjet.id);
+      }
+      setOldProjetId(selectedProjet.id);
+    }
+  }, [selectedProjet?.id, oldProjetId, router]);
+  // Ensure tranche and bloc names when IDs provided
   useEffect(() => {
     const loadNamesIfNeeded = async () => {
       try {
@@ -106,6 +121,7 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
     };
     loadNamesIfNeeded();
   }, [trancheId, blocId, selectedTranche?.nom, selectedBloc?.nom]);
+
 
   // Fetch immeuble data if editing
   useEffect(() => {

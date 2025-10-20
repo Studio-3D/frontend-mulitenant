@@ -24,6 +24,7 @@ import SelectInput from '@/components/SelectInput';
 import Modal_Import from '@/components/Modal_Import';
 import Button from '@/components/Button';
 import { format } from 'date-fns';
+import Link from 'next/link';
 
 // Custom Checkbox Component
 const CustomCheckbox = ({
@@ -427,44 +428,61 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <div title="Voir détails">
-            <Eye
-              className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
-              onClick={() => handleShow(row.id)}
-            />
-          </div>
-          <div title="Modifier">
-            <Pencil
-              className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
-              onClick={() => handleEdit(row.id)}
-            />
-          </div>
-          <div title="Traiter">
-            <Check
-              className="w-4 h-4  hover:text-['rgb(87,80,129)']-700 text-['rgb(87,80,129)'] cursor-pointer"
-              onClick={() =>
-                handleraiter(row.id, row.telephone, row.nomComplet)
-              }
-            />
-          </div>
-          <div title="Convertir en visite">
-            <RefreshCw
-              className="w-4 h-4 !text-green-500  cursor-pointer"
-              onClick={() => handle_convert_to_visite(row.prospect)}
-            />
-          </div>
+          <Link
+            href={`/crm/prospects/${row.id}`}
+            className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+            title="Voir les détails"
+          >
+            <Eye className="w-4 h-4" />
+          </Link>
+
+          <Link
+            href={`${ENDPOINTS.PROSPECTS}?id=${row.id}&action=edit`}
+            className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
+            title="Modifier"
+          >
+            <Pencil className="w-4 h-4" />
+          </Link>
+
+          <Link
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              handleraiter(row.id, row.telephone, row.nomComplet);
+            }}
+            className="flex items-center gap-1 text-[rgb(87,80,129)] hover:text-[rgb(67,60,109)]"
+            title="Traiter"
+          >
+            <Check className="w-4 h-4" />
+          </Link>
+
+          <Link
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              handle_convert_to_visite(row.prospect);
+            }}
+            className="flex items-center gap-1 text-green-500 hover:text-green-700"
+            title="Convertir en visite"
+          >
+            <RefreshCw className="w-4 h-4" />
+          </Link>
+
           {row.client == null &&
             row.visites.length == 0 &&
             row.appels == null && (
-              <div title="Supprimer utilisateur">
-                <Trash2
-                  className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
-                  onClick={() => {
-                    setSelectedId(row.id);
-                    setShowDeleteModal(true);
-                  }}
-                />
-              </div>
+              <Link
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setSelectedId(row.id);
+                  setShowDeleteModal(true);
+                }}
+                className="flex items-center gap-1 text-red-500 hover:text-red-700"
+                title="Supprimer utilisateur"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Link>
             )}
         </div>
       ),
@@ -473,10 +491,7 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
 
   // --- Handlers ---
   const handleImportClick = () => setShowImportModal(true);
-  const handleShow = (prospectId) =>
-    router.push(`/crm/prospects/${prospectId}`);
-  const handleEdit = (ProspectId) =>
-    router.push(`${ENDPOINTS.PROSPECTS}?id=${ProspectId}&action=edit`);
+
   const handleraiter = (Id, num_tel, nom_prenom) => {
     setOpen_traite(!open_traite);
     setId_traite(Id);
@@ -486,7 +501,9 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
   const handle_convert_to_visite = (row) => {
     localStorage.setItem(
       'selectedProspect',
-      JSON.stringify({ dataProspect: row })
+      JSON.stringify({
+        info: { dataProspect: row },
+      })
     );
     router.push(`${ENDPOINTS.VISITES}?action=add`);
   };

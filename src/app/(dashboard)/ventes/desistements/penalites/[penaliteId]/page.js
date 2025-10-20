@@ -24,6 +24,7 @@ import Modal from '@/components/Modal'; // Import your custom modal component
 import { useForm, Controller } from 'react-hook-form';
 import CorrectionForm from './CorrectionForm';
 
+import { useProjet } from '@/context/ProjetContext';
 const STATUS_BADGES = {
   0: { text: 'Attente Validation', color: 'bg-yellow-100 text-yellow-800' },
   1: { text: 'Validé', color: 'bg-green-100 text-green-800' },
@@ -31,6 +32,7 @@ const STATUS_BADGES = {
 };
 
 const ShowPenalite = () => {
+  const { selectedProjet } = useProjet();
   const { user, token } = useAuth();
   const params = useParams();
   const penaliteId = params.penaliteId;
@@ -56,6 +58,20 @@ const ShowPenalite = () => {
     encaissementDate: '',
   });
 
+  // Simple cache et comparaison for return back en cas de changer projet
+  const [oldProjetId, setOldProjetId] = useState(null);
+
+  useEffect(() => {
+    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+      if (oldProjetId) {
+        // Projet a changé
+
+        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+        router.back();
+      }
+      setOldProjetId(selectedProjet.id);
+    }
+  }, [selectedProjet?.id, oldProjetId, router]);
   // Fetch data
   const fetchData = useCallback(async () => {
     try {

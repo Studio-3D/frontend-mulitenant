@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
-import { useProjet } from "@/context/ProjetContext";
-import { APIURL, ENDPOINTS } from "@/configs/api";
-import axios from "axios";
-import toast from "react-hot-toast";
-import BreadCrumb from "../../navigation/BreadCrumb";
-import Button from "@/components/Button";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from 'react';
+import { useProjet } from '@/context/ProjetContext';
+import { APIURL, ENDPOINTS } from '@/configs/api';
+import axios from 'axios';
+import toast from 'react-hot-toast';
+import BreadCrumb from '../../navigation/BreadCrumb';
+import Button from '@/components/Button';
+import { useRouter } from 'next/navigation';
 
 const TypeBienForm = ({ id = null, onComplete }) => {
   const [loading, setLoading] = useState(false);
@@ -15,8 +15,8 @@ const TypeBienForm = ({ id = null, onComplete }) => {
 
   // Form state
   const [formData, setFormData] = useState({
-    type: "",
-    projet_id: selectedProjet?.id || "",
+    type: '',
+    projet_id: selectedProjet?.id || '',
   });
 
   // Validation errors
@@ -34,10 +34,24 @@ const TypeBienForm = ({ id = null, onComplete }) => {
     }
   }, [id, selectedProjet]);
 
+  // Simple cache et comparaison for return back en cas de changer projet
+  const [oldProjetId, setOldProjetId] = useState(null);
+
+  useEffect(() => {
+    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+      if (oldProjetId) {
+        // Projet a changé
+
+        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+        router.push('/administration/types-biens');
+      }
+      setOldProjetId(selectedProjet.id);
+    }
+  }, [selectedProjet?.id, oldProjetId, router]);
   const fetchTypeBienData = async (typeBienId) => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem('accessToken');
       const response = await axios.get(`${APIURL.TYPEBIENS}/${typeBienId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -45,13 +59,13 @@ const TypeBienForm = ({ id = null, onComplete }) => {
       if (response.data?.typeBien) {
         const typeBienData = response.data.typeBien;
         setFormData({
-          type: typeBienData.type || "",
-          projet_id: typeBienData.projet_id || selectedProjet?.id || "",
+          type: typeBienData.type || '',
+          projet_id: typeBienData.projet_id || selectedProjet?.id || '',
         });
       }
     } catch (error) {
-      console.error("Error fetching type bien data:", error);
-      toast.error("Erreur lors du chargement des données");
+      console.error('Error fetching type bien data:', error);
+      toast.error('Erreur lors du chargement des données');
     } finally {
       setLoading(false);
     }
@@ -66,7 +80,7 @@ const TypeBienForm = ({ id = null, onComplete }) => {
     const newErrors = {};
 
     if (!formData.type.trim()) {
-      newErrors.type = "Le type est requis";
+      newErrors.type = 'Le type est requis';
     }
 
     setErrors(newErrors);
@@ -87,13 +101,13 @@ const TypeBienForm = ({ id = null, onComplete }) => {
     setSubmitting(true);
 
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem('accessToken');
       let url = APIURL.TYPEBIENS;
-      let method = "post";
+      let method = 'post';
 
       if (id) {
         url = `${url}/${id}`;
-        method = "put";
+        method = 'put';
       }
 
       const response = await axios({
@@ -101,21 +115,21 @@ const TypeBienForm = ({ id = null, onComplete }) => {
         url,
         data: formData,
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
       });
 
       toast.success(
         id
-          ? "Type de bien modifié avec succès"
-          : "Type de bien ajouté avec succès"
+          ? 'Type de bien modifié avec succès'
+          : 'Type de bien ajouté avec succès'
       );
 
       // Ensure we wait for the toast before navigating
       router.push(ENDPOINTS.TYPEBIENS);
     } catch (error) {
-      console.error("Error submitting form:", error);
+      console.error('Error submitting form:', error);
 
       if (error.response?.status === 422) {
         const backendErrors = error.response.data.errors || {};
@@ -145,7 +159,7 @@ const TypeBienForm = ({ id = null, onComplete }) => {
       <div className="flex items-center justify-start">
         <BreadCrumb
           baseUrl={ENDPOINTS.TYPEBIENS}
-          step={`${id ? "Modifier" : "Ajouter"} une  type de bien`}
+          step={`${id ? 'Modifier' : 'Ajouter'} une  type de bien`}
         />
       </div>
       <div className="p-6 mt-4 bg-white shadow-md rounded-md">
@@ -160,13 +174,13 @@ const TypeBienForm = ({ id = null, onComplete }) => {
               value={formData.type}
               onChange={handleChange}
               className={`shadow appearance-none border ${
-                errors.type ? "border-red-500" : "border-gray-300"
+                errors.type ? 'border-red-500' : 'border-gray-300'
               } rounded w-full py-2 px-3 !text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
               placeholder="Saisir le type de bien"
             />
             {errors.type && (
               <p className="text-red-500 text-xs italic">
-                {typeof errors.type === "string" ? errors.type : errors.type[0]}
+                {typeof errors.type === 'string' ? errors.type : errors.type[0]}
               </p>
             )}
           </div>
@@ -178,7 +192,7 @@ const TypeBienForm = ({ id = null, onComplete }) => {
               Annuler
             </Button>
             <Button type="submit" disabled={submitting} loading={loading.form}>
-              {submitting ? "Chargement..." : id ? "Modifier" : "Ajouter"}
+              {submitting ? 'Chargement...' : id ? 'Modifier' : 'Ajouter'}
             </Button>
           </div>
         </form>

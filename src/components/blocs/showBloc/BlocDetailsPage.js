@@ -40,7 +40,7 @@ const setStoredActiveTab = (blocId, tabName) => {
 export const BlocDetailsPage = () => {
   const { id } = useParams();
   const router = useRouter();
-  const { selectProjet, clearSelectedProjet } = useProjet();
+  const { selectProjet, clearSelectedProjet,selectedProjet } = useProjet();
   const { user } = useAuth();
   const [blocData, setBlocData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -84,6 +84,13 @@ export const BlocDetailsPage = () => {
       fetchBlocDetails();
     }
   }, [id, fetchBlocDetails]);
+
+   useEffect(() => {
+ // console.log('projet_id==>'+ selectedProjet?.id + 'w projet d tranche'+trancheData?.tranche?.projet_id)
+  if(blocData?.bloc?.projet_id!=undefined && selectedProjet?.id!=blocData?.bloc?.projet_id){
+    router.push('/Projets/'+selectedProjet?.id)
+  }
+}, [selectedProjet?.id, blocData?.bloc?.projet_id]);
 
   // Persist breadcrumb context for fast "Ajouter bien" page
   useEffect(() => {

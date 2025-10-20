@@ -7,9 +7,10 @@ import toast from 'react-hot-toast';
 import { APIURL, RESOURCE_URL } from '../configs/api';
 import { useAuth } from '../context/AuthContext';
 import { useSociete } from '../context/SocieteContext';
-
+import { useProjet } from '@/context/ProjetContext';
 export default function Modal_Import({ onClose, title, route }) {
-  const projet_id = JSON.parse(localStorage.getItem('selectedProjet'))?.id || 1;
+  const { selectedProjet } = useProjet();
+  const projet_id = selectedProjet?.id;
   const { token, user } = useAuth();
   const { selectedSociete } = useSociete();
 

@@ -1,24 +1,40 @@
-import { useState, useEffect } from "react";
-import { APIURL, ENDPOINTS } from "@/configs/api";
-import axios from "axios";
-import toast from "react-hot-toast";
-import Button from "@/components/Button";
-import { useRouter } from "next/navigation";
-import BreadCrumb from "../navigation/BreadCrumb";
+import { useState, useEffect } from 'react';
+import { APIURL, ENDPOINTS } from '@/configs/api';
+import axios from 'axios';
+import toast from 'react-hot-toast';
+import Button from '@/components/Button';
+import { useRouter } from 'next/navigation';
+import BreadCrumb from '../navigation/BreadCrumb';
 
-const ServiceForm = ({ id = null }) => {
+import { useProjet } from '@/context/ProjetContext';
+const ReclamationClientForm = ({ id = null }) => {
+  const { selectedProjet } = useProjet();
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
 
   // Form state
   const [formData, setFormData] = useState({
-    nom: "",
+    nom: '',
   });
 
   // Validation errors
   const [errors, setErrors] = useState({});
 
+  // Simple cache et comparaison for return back en cas de changer projet
+  const [oldProjetId, setOldProjetId] = useState(null);
+
+  useEffect(() => {
+    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+      if (oldProjetId) {
+        // Projet a changé
+
+        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+        router.back();
+      }
+      setOldProjetId(selectedProjet.id);
+    }
+  }, [selectedProjet?.id, oldProjetId, router]);
   // Load nom projet data if editing
   useEffect(() => {
     if (id) {
@@ -29,7 +45,7 @@ const ServiceForm = ({ id = null }) => {
   const fetchServiceData = async (serviceId) => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem('accessToken');
       const response = await axios.get(
         `${APIURL.ServicesPrestataires}/${serviceId}`,
         {
@@ -40,12 +56,12 @@ const ServiceForm = ({ id = null }) => {
       if (response.data?.ser) {
         const serviceData = response.data.ser;
         setFormData({
-          nom: serviceData.nom || "",
+          nom: serviceData.nom || '',
         });
       }
     } catch (error) {
-      console.error("Error fetching nom projet data:", error);
-      toast.error("Erreur lors du chargement des données");
+      console.error('Error fetching nom projet data:', error);
+      toast.error('Erreur lors du chargement des données');
     } finally {
       setLoading(false);
     }
@@ -60,7 +76,7 @@ const ServiceForm = ({ id = null }) => {
     const newErrors = {};
 
     if (!formData.nom.trim()) {
-      newErrors.nom = "Le nom est requis";
+      newErrors.nom = 'Le nom est requis';
     }
 
     setErrors(newErrors);
@@ -75,13 +91,13 @@ const ServiceForm = ({ id = null }) => {
     setSubmitting(true);
 
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem('accessToken');
       let url = APIURL.ServicesPrestataires;
-      let method = "post";
+      let method = 'post';
 
       if (id) {
         url = `${url}/${id}`;
-        method = "put";
+        method = 'put';
       }
 
       const response = await axios({
@@ -89,13 +105,13 @@ const ServiceForm = ({ id = null }) => {
         url,
         data: formData,
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
       });
 
       toast.success(
-        id ? "service modifié avec succès" : "service ajouté avec succès"
+        id ? 'service modifié avec succès' : 'service ajouté avec succès'
       );
 
       // Ensure we wait for the toast before navigating
@@ -103,7 +119,7 @@ const ServiceForm = ({ id = null }) => {
         router.back();
       }, 300);
     } catch (error) {
-      console.error("Error submitting form:", error);
+      console.error('Error submitting form:', error);
 
       if (error.response?.status === 422) {
         const backendErrors = error.response.data.errors || {};
@@ -127,7 +143,7 @@ const ServiceForm = ({ id = null }) => {
     } else {
       // Clear form if adding new
       setFormData({
-        nom: "",
+        nom: '',
       });
     }
     setErrors({});
@@ -146,46 +162,45 @@ const ServiceForm = ({ id = null }) => {
       <div className="flex items-center justify-start">
         <BreadCrumb
           baseUrl={ENDPOINTS.ServicesPrestataires}
-          step={`${id ? "Modifier" : "Ajouter"} un service`}
+          step={`${id ? 'Modifier' : 'Ajouter'} un service`}
         />
       </div>
       <div className="p-6 mt-4 bg-white shadow-md rounded-md">
-  <form onSubmit={handleSubmit}>
-    <div className="mb-3">
-      <label className="block !text-gray-700 text-sm font-bold mb-2">
-        Service <span className="text-red-500">*</span>
-      </label>
-      <input
-        type="text"
-        name="nom"
-        required
-        value={formData.nom}
-        onChange={handleChange}
-        className={`shadow appearance-none border ${
-          errors.nom ? "border-red-500" : "border-gray-300"
-        } rounded w-[500px] py-2 px-3 !text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
-        placeholder="Saisir le nom de service"
-      />
-      {errors.nom && (
-        <p className="text-red-500 text-xs italic mt-1">
-          {typeof errors.nom === "string" ? errors.nom : errors.nom[0]}
-        </p>
-      )}
-    </div>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-3">
+            <label className="block !text-gray-700 text-sm font-bold mb-2">
+              Service <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="nom"
+              required
+              value={formData.nom}
+              onChange={handleChange}
+              className={`shadow appearance-none border ${
+                errors.nom ? 'border-red-500' : 'border-gray-300'
+              } rounded w-[500px] py-2 px-3 !text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
+              placeholder="Saisir le nom de service"
+            />
+            {errors.nom && (
+              <p className="text-red-500 text-xs italic mt-1">
+                {typeof errors.nom === 'string' ? errors.nom : errors.nom[0]}
+              </p>
+            )}
+          </div>
 
-    <div className="flex justify-center gap-4 items-center mt-6 mb-6">
-      <Button type="button" onClick={() => router.back()}>
-        Annuler
-      </Button>
-      <Button type="submit" disabled={submitting} loading={loading}>
-        {submitting ? "Chargement..." : id ? "Modifier" : "Ajouter"}
-      </Button>
-    </div>
-  </form>
-</div>
-
+          <div className="flex justify-center gap-4 items-center mt-6 mb-6">
+            <Button type="button" onClick={() => router.back()}>
+              Annuler
+            </Button>
+            <Button type="submit" disabled={submitting} loading={loading}>
+              {submitting ? 'Chargement...' : id ? 'Modifier' : 'Ajouter'}
+            </Button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };
 
-export default ServiceForm;
+export default ReclamationClientForm;

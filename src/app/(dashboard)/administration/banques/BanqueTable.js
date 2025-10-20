@@ -14,6 +14,7 @@ import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
 import Input from '@/components/Input';
 
 const BanqueTable = () => {
+  const { selectedProjet } = useProjet();
   const [banques, setBanques] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -52,22 +53,14 @@ const BanqueTable = () => {
       setBanques,
       setTotalRows
     );
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters]);
-
-  useEffect(() => {
-    fetchData_table_by_projet(
-      entity,
-      filters,
-      searchTerm,
-      currentPage,
-      rowsPerPage,
-      accesstoken,
-      setLoading,
-      setError,
-      setBanques,
-      setTotalRows
-    );
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters]);
+  }, [
+    accesstoken,
+    currentPage,
+    rowsPerPage,
+    searchTerm,
+    filters,
+    selectedProjet,
+  ]);
 
   function handleEdit(BanqueId) {
     router.push(`${ENDPOINTS.BANQUES}?id=${BanqueId}&action=edit`);

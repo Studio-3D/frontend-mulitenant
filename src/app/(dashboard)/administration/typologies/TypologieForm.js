@@ -1,23 +1,38 @@
-import { useState, useEffect } from "react";
-import { useProjet } from "@/context/ProjetContext";
-import { APIURL, ENDPOINTS } from "@/configs/api";
-import axios from "axios";
-import toast from "react-hot-toast";
-import BreadCrumb from "../../navigation/BreadCrumb";
-import Button from "@/components/Button";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from 'react';
+import { useProjet } from '@/context/ProjetContext';
+import { APIURL, ENDPOINTS } from '@/configs/api';
+import axios from 'axios';
+import toast from 'react-hot-toast';
+import BreadCrumb from '../../navigation/BreadCrumb';
+import Button from '@/components/Button';
+import { useRouter } from 'next/navigation';
 
 const TypologieForm = ({ id = null, onComplete }) => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const { selectedProjet } = useProjet();
   const router = useRouter();
-const [originalFormData, setOriginalFormData] = useState({});
+  const [originalFormData, setOriginalFormData] = useState({});
   // Form state
   const [formData, setFormData] = useState({
-    typologie: "",
-    projet_id: selectedProjet?.id || "",
+    typologie: '',
+    projet_id: selectedProjet?.id || '',
   });
+
+   // Simple cache et comparaison for return back en cas de changer projet
+  const [oldProjetId, setOldProjetId] = useState(null);
+
+  useEffect(() => {
+    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+      if (oldProjetId) {
+        // Projet a changé
+
+        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+        router.push('/administration/typologies');
+      }
+      setOldProjetId(selectedProjet.id);
+    }
+  }, [selectedProjet?.id, oldProjetId, router]);
 
   // Validation errors
   const [errors, setErrors] = useState({});
@@ -37,7 +52,7 @@ const [originalFormData, setOriginalFormData] = useState({});
   const fetchTypologieData = async (typologieId) => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem('accessToken');
       const response = await axios.get(`${APIURL.TYPOLOGIES}/${typologieId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -45,17 +60,17 @@ const [originalFormData, setOriginalFormData] = useState({});
       if (response.data?.typologie) {
         const typologieData = response.data.typologie;
         setFormData({
-          typologie: typologieData.typologie || "",
-          projet_id: typologieData.projet_id || selectedProjet?.id || "",
+          typologie: typologieData.typologie || '',
+          projet_id: typologieData.projet_id || selectedProjet?.id || '',
         });
         setOriginalFormData({
-      typologie: typologieData.typologie || "",
-      projet_id: typologieData.projet_id || selectedProjet?.id || "",
-    });
+          typologie: typologieData.typologie || '',
+          projet_id: typologieData.projet_id || selectedProjet?.id || '',
+        });
       }
     } catch (error) {
-      console.error("Error fetching typologie data:", error);
-      toast.error("Erreur lors du chargement des données");
+      console.error('Error fetching typologie data:', error);
+      toast.error('Erreur lors du chargement des données');
     } finally {
       setLoading(false);
     }
@@ -67,27 +82,26 @@ const [originalFormData, setOriginalFormData] = useState({});
   };
 
   const hasChanges = () => {
-  const normalizedForm = {
-    ...formData,
-    typologie: (formData.typologie ?? '').trim().toLowerCase(),
+    const normalizedForm = {
+      ...formData,
+      typologie: (formData.typologie ?? '').trim().toLowerCase(),
+    };
+
+    const normalizedOriginal = {
+      ...originalFormData,
+      typologie: (originalFormData.typologie ?? '').trim().toLowerCase(),
+    };
+
+    return (
+      JSON.stringify(normalizedForm) !== JSON.stringify(normalizedOriginal)
+    );
   };
-
-  const normalizedOriginal = {
-    ...originalFormData,
-    typologie: (originalFormData.typologie ?? '').trim().toLowerCase(),
-  };
-
-  return JSON.stringify(normalizedForm) !== JSON.stringify(normalizedOriginal);
-};
-
-
-
 
   const validateForm = () => {
     const newErrors = {};
 
     if (!formData.typologie.trim()) {
-      newErrors.typologie = "La typologie est requise";
+      newErrors.typologie = 'La typologie est requise';
     }
 
     setErrors(newErrors);
@@ -108,13 +122,13 @@ const [originalFormData, setOriginalFormData] = useState({});
     setSubmitting(true);
 
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem('accessToken');
       let url = APIURL.TYPOLOGIES;
-      let method = "post";
+      let method = 'post';
 
       if (id) {
         url = `${url}/${id}`;
-        method = "put";
+        method = 'put';
       }
 
       const response = await axios({
@@ -122,18 +136,18 @@ const [originalFormData, setOriginalFormData] = useState({});
         url,
         data: formData,
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
       });
 
       toast.success(
-        id ? "Typologie modifiée avec succès" : "Typologie ajoutée avec succès"
+        id ? 'Typologie modifiée avec succès' : 'Typologie ajoutée avec succès'
       );
 
       router.push(ENDPOINTS.TYPOLOGIES);
     } catch (error) {
-      console.error("Error submitting form:", error);
+      console.error('Error submitting form:', error);
 
       if (error.response?.status === 422) {
         const backendErrors = error.response.data.errors || {};
@@ -157,8 +171,8 @@ const [originalFormData, setOriginalFormData] = useState({});
     } else {
       // Clear form if adding new
       setFormData({
-        typologie: "",
-        projet_id: selectedProjet?.id || "",
+        typologie: '',
+        projet_id: selectedProjet?.id || '',
       });
     }
     setErrors({});
@@ -177,7 +191,7 @@ const [originalFormData, setOriginalFormData] = useState({});
       <div className="flex items-center justify-start">
         <BreadCrumb
           baseUrl={ENDPOINTS.TYPOLOGIES}
-          step={`${id ? "Modifier" : "Ajouter"} une typologie`}
+          step={`${id ? 'Modifier' : 'Ajouter'} une typologie`}
         />
       </div>
       <div className="p-6 mt-4 bg-white shadow-md rounded-md">
@@ -192,13 +206,15 @@ const [originalFormData, setOriginalFormData] = useState({});
               value={formData.typologie}
               onChange={handleChange}
               className={`shadow appearance-none border ${
-                errors.typologie ? "border-red-500" : "border-gray-300"
+                errors.typologie ? 'border-red-500' : 'border-gray-300'
               } rounded w-full py-2 px-3 !text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
               placeholder="Saisir la typologie"
             />
             {errors.typologie && (
               <p className="text-red-500 text-xs italic">
-                {typeof errors.typologie === "string" ? errors.typologie : errors.typologie[0]}
+                {typeof errors.typologie === 'string'
+                  ? errors.typologie
+                  : errors.typologie[0]}
               </p>
             )}
           </div>
@@ -206,8 +222,12 @@ const [originalFormData, setOriginalFormData] = useState({});
             <Button type="button" onClick={() => router.back()}>
               Annuler
             </Button>
-            <Button type="submit" disabled={submitting ||!hasChanges()} loading={submitting}>
-              {submitting ? "Chargement..." : id ? "Modifier" : "Ajouter"}
+            <Button
+              type="submit"
+              disabled={submitting || !hasChanges()}
+              loading={submitting}
+            >
+              {submitting ? 'Chargement...' : id ? 'Modifier' : 'Ajouter'}
             </Button>
           </div>
         </form>

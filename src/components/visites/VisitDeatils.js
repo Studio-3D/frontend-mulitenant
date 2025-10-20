@@ -389,7 +389,7 @@ export function VisitDetails({
             let fr_autre = '';
 
             if (interet == '3') {
-              const frein = response?.data?.historiques[k]?.frein;
+              const frein = response?.data?.historiques[k]?.freins;
               fr_autre =
                 response?.data?.historiques[k]?.frein?.description_autre;
               const concatNames = (array, keyPath) =>
@@ -402,14 +402,14 @@ export function VisitDetails({
                       .join(',')
                   : '';
 
-              fr_tr = concatNames(frein?.frein_tranches, 'tranche.nom');
-              fr_o = concatNames(frein?.frein_orientations, 'orientation');
+              fr_tr = concatNames(frein?.frein_tranche, 'tranche.nom');
+              fr_o = concatNames(frein?.frein_orientation, 'orientation');
               fr_tp = concatNames(
-                frein?.frein_typologies,
+                frein?.frein_typologie,
                 'typologie.typologie'
               );
-              fr_v = concatNames(frein?.frein_vues, 'vue.vue');
-              fr_et = concatNames(frein?.frein_etages, 'etage');
+              fr_v = concatNames(frein?.frein_vue, 'vue.vue');
+              fr_et = concatNames(frein?.frein_etage, 'etage');
 
               const formatValue = (value, suffix = '') =>
                 value != null && value !== 0 ? `${value}${suffix}` : '';
@@ -689,107 +689,107 @@ export function VisitDetails({
                           <>
                             <td className="text-center px-3 py-2 border-b border-gray-200">
                               {[
-                                row.frein?.frein_tranche?.length > 0 &&
+                                row.freins?.frein_tranche?.length > 0 &&
                                   'Tranche',
-                                row.frein?.frein_etage?.length > 0 && 'Etage',
-                                row.frein?.frein_orientation?.length > 0 &&
+                                row.freins?.frein_etage?.length > 0 && 'Etage',
+                                row.freins?.frein_orientation?.length > 0 &&
                                   'Orientation',
-                                row.frein?.frein_typologie?.length > 0 &&
+                                row.freins?.frein_typologie?.length > 0 &&
                                   'Typologie',
-                                row.frein?.frein_vue?.length > 0 && 'Vue',
-                                (row.frein?.prix_min || row.frein?.prix_max) &&
+                                row.freins?.frein_vue?.length > 0 && 'Vue',
+                                (row.freins?.prix_min || row.freins?.prix_max) &&
                                   'Prix',
-                                (row.frein?.superficie_min ||
-                                  row.frein?.superficie_max) &&
+                                (row.freins?.superficie_min ||
+                                  row.freins?.superficie_max) &&
                                   'Superficie',
-                                row.frein?.avance && 'Avance',
-                                row.frein?.description_autre && 'Autre',
+                                row.freins?.avance && 'Avance',
+                                row.freins?.description_autre && 'Autre',
                               ]
                                 .filter(Boolean)
                                 .join(', ')}
                             </td>
                             <td className="px-3 py-2 border-b border-gray-200">
                               <div className="grid grid-cols-2 gap-2">
-                                {row.frein?.frein_tranche?.length > 0 && (
+                                {row.freins?.frein_tranche?.length > 0 && (
                                   <div>
                                     <span className="font-medium">
                                       Tranches:{' '}
                                     </span>
-                                    {row.frein.frein_tranche
+                                    {row.freins.frein_tranche
                                       .map((t) => t.tranche.nom)
                                       .join(', ')}
                                   </div>
                                 )}
-                                {row.frein?.frein_etage?.length > 0 && (
+                                {row.freins?.frein_etage?.length > 0 && (
                                   <div>
                                     <span className="font-medium">
                                       Etages:{' '}
                                     </span>
-                                    {row.frein.frein_etage
+                                    {row.freins.frein_etage
                                       .map((e) => e.etage)
                                       .join(', ')}
                                   </div>
                                 )}
-                                {row.frein?.frein_orientation?.length > 0 && (
+                                {row.freins?.frein_orientation?.length > 0 && (
                                   <div>
                                     <span className="font-medium">
                                       Orientations:{' '}
                                     </span>
-                                    {row.frein.frein_orientation
+                                    {row.freins.frein_orientation
                                       .map((o) => o.orientation)
                                       .join(', ')}
                                   </div>
                                 )}
-                                {row.frein?.frein_typologie?.length > 0 && (
+                                {row.freins?.frein_typologie?.length > 0 && (
                                   <div>
                                     <span className="font-medium">
                                       Typologies:{' '}
                                     </span>
-                                    {row.frein.frein_typologie
+                                    {row.freins.frein_typologie
                                       .map((t) => t.typologie.typologie)
                                       .join(', ')}
                                   </div>
                                 )}
-                                {row.frein?.frein_vue?.length > 0 && (
+                                {row.freins?.frein_vue?.length > 0 && (
                                   <div>
                                     <span className="font-medium">Vues: </span>
-                                    {row.frein.frein_vue
+                                    {row.freins.frein_vue
                                       .map((v) => v.vue.vue)
                                       .join(', ')}
                                   </div>
                                 )}
-                                {(row.frein?.prix_min ||
-                                  row.frein?.prix_max) && (
+                                {(row.freins?.prix_min ||
+                                  row.freins?.prix_max) && (
                                   <div>
                                     <span className="font-medium">Prix: </span>
-                                    {`[${row.frein.prix_min || ''}, ${
-                                      row.frein.prix_max || ''
+                                    {`[${row.freins.prix_min || ''}, ${
+                                      row.freins.prix_max || ''
                                     }]`}
                                   </div>
                                 )}
-                                {(row.frein?.superficie_min ||
-                                  row.frein?.superficie_max) && (
+                                {(row.freins?.superficie_min ||
+                                  row.freins?.superficie_max) && (
                                   <div>
                                     <span className="font-medium">
                                       Superficie:{' '}
                                     </span>
-                                    {`[${row.frein.superficie_min || ''}, ${
-                                      row.frein.superficie_max || ''
+                                    {`[${row.freins.superficie_min || ''}, ${
+                                      row.freins.superficie_max || ''
                                     }]`}
                                   </div>
                                 )}
-                                {row.frein?.avance && (
+                                {row.freins?.avance && (
                                   <div>
                                     <span className="font-medium">
                                       Avance:{' '}
                                     </span>
-                                    {row.frein.avance}
+                                    {row.freins.avance}
                                   </div>
                                 )}
-                                {row.frein?.description_autre && (
+                                {row.freins?.description_autre && (
                                   <div>
                                     <span className="font-medium">Autre: </span>
-                                    {row.frein.description_autre}
+                                    {row.freins.description_autre}
                                   </div>
                                 )}
                               </div>
@@ -866,7 +866,7 @@ export function VisitDetails({
                               </div>
                               <div>
                                 <h3 className="text-xl font-bold !text-gray-900">
-                                  VISITE {currentVisitOrder}
+                                  VISITE {currentVisitOrder} 
                                 </h3>
                                 <p className="text-gray-500">
                                   {format(
@@ -1065,17 +1065,17 @@ export function VisitDetails({
                               )}
                               {visite.interet == 3 && (
                                 <>
-                                  {visite?.frein?.etat == 4 && (
+                                  {visite?.freins?.etat == 4 && (
                                     <b style={{ color: '#934b6a' }}>
                                       Frein Supprimé
                                     </b>
                                   )}
-                                  {visite?.frein?.etat == 3 && (
+                                  {visite?.freins?.etat == 3 && (
                                     <b style={{ color: 'green' }}>
                                       Frein Traité
                                     </b>
                                   )}
-                                  {visite?.frein?.etat == 5 && (
+                                  {visite?.freins?.etat == 5 && (
                                     <b style={{ color: 'orange' }}>
                                       Frein Désactivé par Appel
                                     </b>
@@ -1244,40 +1244,41 @@ export function VisitDetails({
                         )}
                         {visite.interet == 3 && (
                           <>
+                         
                             <InfoCard
                               icon={<AlertCircleIcon className="h-5 w-5" />}
                               title="Freins"
                               value={[
-                                visite.frein?.frein_tranches && 'TRANCHE',
-                                visite.frein?.frein_etages && 'ETAGE',
-                                visite.frein?.frein_orientations &&
+                                visite.freins?.frein_tranche.length>0 && 'TRANCHE',
+                                visite.freins?.frein_etage.length>0 && 'ETAGE',
+                                visite.freins?.frein_orientation.length>0 &&
                                   'ORIENTATION',
-                                visite.frein?.frein_typologies && 'TYPOLOGIE',
-                                visite.frein?.frein_vues && 'VUE',
-                                ((visite.frein?.prix_min &&
-                                  visite.frein?.prix_min != 0) ||
-                                  (visite.frein?.prix_max &&
-                                    visite.frein?.prix_max != 0)) &&
+                                visite.freins?.frein_typologie.length>0 && 'TYPOLOGIE',
+                                visite.freins?.frein_vue.length>0 && 'VUE',
+                                ((visite.freins?.prix_min &&
+                                  visite.freins?.prix_min != 0) ||
+                                  (visite.freins?.prix_max &&
+                                    visite.freins?.prix_max != 0)) &&
                                   'PRIX',
-                                ((visite.frein?.superficie_min &&
-                                  visite.frein?.superficie_min != 0) ||
-                                  (visite.frein?.superficie_max &&
-                                    visite.frein?.superficie_max != 0)) &&
+                                ((visite.freins?.superficie_min &&
+                                  visite.freins?.superficie_min != 0) ||
+                                  (visite.freins?.superficie_max &&
+                                    visite.freins?.superficie_max != 0)) &&
                                   'SUPERFICIE',
-                                visite.frein?.avance &&
-                                  visite.frein?.avance !== 0 &&
+                                visite.freins?.avance &&
+                                  visite.freins?.avance !== 0 &&
                                   'AVANCE',
-                                visite.frein?.description_autre && 'AUTRE',
+                                visite.freins?.description_autre && 'AUTRE',
                               ]
                                 .filter(Boolean)
                                 .join(', ')}
                             />
 
-                            {visite.frein?.frein_tranches && (
+                            {visite.freins?.frein_tranche.length>0 && (
                               <InfoCard
                                 icon={<LayersIcon className="h-5 w-5" />}
                                 title="Tranche"
-                                value={visite.frein?.frein_tranches?.map(
+                                value={visite.freins?.frein_tranche?.map(
                                   (fr_tranche, i) => (
                                     <span
                                       key={fr_tranche.id}
@@ -1294,13 +1295,13 @@ export function VisitDetails({
                                 )}
                               />
                             )}
-                            {visite.frein?.frein_etages && (
+                            {visite.freins?.frein_etage.length>0 && (
                               <InfoCard
                                 icon={
                                   <AlignVerticalSpaceAroundIcon className="h-5 w-5" />
                                 }
                                 title="Etages"
-                                value={visite.frein?.frein_etages?.map(
+                                value={visite.freins?.frein_etage?.map(
                                   (fr_etage, i) => (
                                     <span
                                       key={fr_etage.id}
@@ -1317,11 +1318,11 @@ export function VisitDetails({
                                 )}
                               />
                             )}
-                            {visite.frein?.frein_orientations && (
+                            {visite.freins?.frein_orientation.length>0 && (
                               <InfoCard
                                 icon={<CompassIcon className="h-5 w-5" />}
                                 title="Orientations"
-                                value={visite.frein?.frein_orientations?.map(
+                                value={visite.freins?.frein_orientation?.map(
                                   (fr_orientation, i) => (
                                     <span
                                       key={fr_orientation.id}
@@ -1339,11 +1340,11 @@ export function VisitDetails({
                               />
                             )}
 
-                            {visite.frein?.frein_typologies && (
+                            {visite.freins?.frein_typologie.length>0 && (
                               <InfoCard
                                 icon={<CompassIcon className="h-5 w-5" />}
                                 title="Typologies"
-                                value={visite.frein?.frein_typologies?.map(
+                                value={visite.freins?.frein_typologie?.map(
                                   (fr_typologie, i) => (
                                     <span
                                       key={fr_typologie.typologie.id}
@@ -1360,11 +1361,11 @@ export function VisitDetails({
                                 )}
                               />
                             )}
-                            {visite.frein?.frein_vues && (
+                            {visite.freins?.frein_vue.length>0 && (
                               <InfoCard
                                 icon={<ImageIcon className="h-5 w-5" />}
                                 title="Vues"
-                                value={visite.frein?.frein_vues?.map(
+                                value={visite.freins?.frein_vue?.map(
                                   (fr_vue, i) => (
                                     <span
                                       key={fr_vue.vue.id}
@@ -1381,66 +1382,66 @@ export function VisitDetails({
                                 )}
                               />
                             )}
-                            {visite.frein?.avance != null &&
-                              visite.frein.avance != 0 && (
+                            {visite.freins?.avance != null &&
+                              visite.freins.avance != 0 && (
                                 <InfoCard
                                   icon={<WalletIcon className="h-5 w-5" />}
                                   title="Avance"
                                   value={
-                                    visite.frein?.avance?.toLocaleString() +
+                                    visite.freins?.avance?.toLocaleString() +
                                     ' DH'
                                   }
                                 />
                               )}
-                            {(visite.frein?.prix_min != null ||
-                              visite.frein?.prix_max != null) && (
+                            {(visite.freins?.prix_min != null ||
+                              visite.freins?.prix_max != null) && (
                               <InfoCard
                                 icon={
                                   <BadgeDollarSignIcon className="h-5 w-5" />
                                 }
                                 title="Prix"
                                 value={
-                                  visite.frein?.prix_min &&
-                                  visite.frein?.prix_max
-                                    ? `Prix entre ${visite.frein?.prix_min?.toLocaleString(
+                                  visite.freins?.prix_min &&
+                                  visite.freins?.prix_max
+                                    ? `Prix entre ${visite.freins?.prix_min?.toLocaleString(
                                         +' DH'
-                                      )} et ${visite.frein?.prix_max?.toLocaleString(
-                                        +' DH'
-                                      )}`
-                                    : visite.frein?.prix_min
-                                    ? `Prix à partir de ${visite.frein?.prix_min?.toLocaleString(
+                                      )} et ${visite.freins?.prix_max?.toLocaleString(
                                         +' DH'
                                       )}`
-                                    : visite.frein?.prix_max
-                                    ? `Prix jusqu'à ${visite.frein?.prix_max?.toLocaleString(
+                                    : visite.freins?.prix_min
+                                    ? `Prix à partir de ${visite.freins?.prix_min?.toLocaleString(
+                                        +' DH'
+                                      )}`
+                                    : visite.freins?.prix_max
+                                    ? `Prix jusqu'à ${visite.freins?.prix_max?.toLocaleString(
                                         +' DH'
                                       )}`
                                     : null
                                 }
                               />
                             )}
-                            {(visite.frein?.superficie_min != null ||
-                              visite.frein?.superficie_max != null) && (
+                            {(visite.freins?.superficie_min != null ||
+                              visite.freins?.superficie_max != null) && (
                               <InfoCard
                                 icon={<AreaChartIcon className="h-5 w-5" />} // You can replace this with any icon you'd like
                                 title="Superficie"
                                 value={
-                                  visite.frein?.superficie_min &&
-                                  visite.frein?.superficie_max
-                                    ? `Superficie entre ${visite.frein?.superficie_min.toLocaleString()} m² et ${visite.frein?.superficie_max.toLocaleString()} m²`
-                                    : visite.frein?.superficie_min
-                                    ? `Superficie à partir de ${visite.frein?.superficie_min.toLocaleString()} m²`
-                                    : visite.frein?.superficie_max
-                                    ? `Superficie jusqu'à ${visite.frein?.superficie_max.toLocaleString()} m²`
+                                  visite.freins?.superficie_min &&
+                                  visite.freins?.superficie_max
+                                    ? `Superficie entre ${visite.freins?.superficie_min.toLocaleString()} m² et ${visite.freins?.superficie_max.toLocaleString()} m²`
+                                    : visite.freins?.superficie_min
+                                    ? `Superficie à partir de ${visite.freins?.superficie_min.toLocaleString()} m²`
+                                    : visite.freins?.superficie_max
+                                    ? `Superficie jusqu'à ${visite.freins?.superficie_max.toLocaleString()} m²`
                                     : null
                                 }
                               />
                             )}
-                            {visite.frein?.description_autre != null && (
+                            {visite.freins?.description_autre != null && (
                               <InfoCard
                                 icon={<FileTextIcon className="h-5 w-5" />}
                                 title="Autre"
-                                value={visite.frein.description_autre}
+                                value={visite.freins.description_autre}
                               />
                             )}
                           </>
