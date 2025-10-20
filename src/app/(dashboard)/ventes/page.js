@@ -1,6 +1,5 @@
 "use client";
 import { useRouter } from 'next/navigation';
-import LoadingSpin from '@/components/LoadingSpin';
 import { VentePage } from '../../../components/Vente/ventePage'
 
 export default function page() {
