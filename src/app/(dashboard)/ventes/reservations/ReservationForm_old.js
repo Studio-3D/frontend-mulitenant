@@ -39,13 +39,13 @@ import AutocompleteBien from './AutocompleteBien';
 import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
 import Autocomplete from '@/components/Autocomplete';
 import LoadingSpin from '@/components/LoadingSpin';
-import SelectInput from '@/components/SelectInput';
 
 import {
   fetchData_Select,
   fetchDataByProjet_2,
   fetchList_fichier_exist_by_Code,
 } from '../../../../../src/configs/api-utils';
+import { usePathname } from 'next/navigation';
 
 //import Modal from '@/components/Modal';
 //import Modal_File from './Modal_file';
@@ -56,14 +56,12 @@ import {
   MODE_PAIEMENT,
 } from '@/configs/enum';
 import { CIVILITES } from '@/components/client-utils';
-import { useProjet } from '@/context/ProjetContext';
 export default function ReservationForm({ id }) {
   const storedValue = localStorage.getItem('selectedClient_show_client');
   const selectedClient =
     storedValue && !isNaN(Number(storedValue)) ? Number(storedValue) : '';
   const [formSubmitted_client, setFormSubmitted_client] = useState(false);
   const current = new Date();
-  const [old_bien_id, setOld_bien_id] = useState('');
 
   const [loading, setLoading] = useState({ form: false, reservations: false });
   const [clientToEdit, setClientToEdit] = useState(null);
@@ -79,7 +77,8 @@ export default function ReservationForm({ id }) {
   const { user, token } = useAuth();
   const router = useRouter();
   const accessToken = token || localStorage.getItem('accessToken');
-  const { selectedProjet } = useProjet();
+  const selectedProjet =
+    JSON.parse(localStorage.getItem('selectedProjet')) || null;
   const pusher_key_proposition = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_PROP;
   const [formData, setFormData] = useState(null);
   const isEditing = !!id;
@@ -158,20 +157,6 @@ export default function ReservationForm({ id }) {
     },
   ];
 
-  // Simple cache et comparaison for return back en cas de changer projet
-  const [oldProjetId, setOldProjetId] = useState(null);
-
-  useEffect(() => {
-    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
-      if (oldProjetId) {
-        // Projet a changé
-
-        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-        router.push('/ventes/reservations');
-      }
-      setOldProjetId(selectedProjet.id);
-    }
-  }, [selectedProjet?.id, oldProjetId, router]);
   const goToNextStep = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
@@ -361,9 +346,7 @@ export default function ReservationForm({ id }) {
         .then((response) => {
           if (response.status !== 200) router.back();
           const reservation = response.data.reservation;
-          console.log('Reservation data:', reservation);
           console.log('le mode finance==>' + reservation?.mode_financement);
-          setOld_bien_id(reservation?.bien_id);
           setFormData({
             code_reservation: reservation.code_reservation,
             date_reservation: reservation?.date_reservation || '',
@@ -403,12 +386,12 @@ export default function ReservationForm({ id }) {
           });
 
           //set_Bien_id_vendu(reservation.bien_id)
+          //set_Bien_prop_vendu(response.data.propriete_dite_bien.original)
           fetch_bien_ByProjet(
             reservation.bien_id,
-            /*  response.data.propriete_dite_bien.original,
+            response.data.propriete_dite_bien.original,
             reservation.prix,
-            'without_proposition',*/
-            'edit_mode'
+            'without_proposition'
           );
 
           // Initialize inputList1 with existing aquereurs
@@ -637,67 +620,40 @@ export default function ReservationForm({ id }) {
       pusher_function();
     }
   };
-
-  const fetch_bien_ByProjet = async (bien_id, from) => {
+  const fetch_bien_ByProjet = async (bien_id, bien_propriete, prix, text) => {
     setLoading_bien(true);
-    console.log('fetch_bien_ByProjet called with:', { bien_id, from });
-
-    let route = null;
-    //on reservation edit
-    if (isEditing && bien_id) {
-      route = 'getBiensByProjet_Concat_for_reservation_visite/' + bien_id;
-    } else {
-      route = 'getBiensByProjet_Concat';
-    }
-    try {
-      // Fetch all biens for the project from the single endpoint
-      const response = await axios.get(
-        `${APIURL.ROOTV1}/${route}/${selectedProjet.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
+    await axios
+      .get(`${APIURL.ROOTV1}/getBiensByProjet_Concat/` + selectedProjet.id, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      })
+      .then((res) => {
+        //add bien pre reserve ou vendu to res data biens(disponible)
+        if (bien_propriete != undefined) {
+          res.data.biens.push({
+            propriete_dite_bien: bien_propriete,
+            id: bien_id,
+            prix: prix,
+          });
         }
-      );
+        setBiensByProjet(res.data.biens);
+        if (text == 'without_proposition') {
+          if (bien_id != null) {
+            for (var i = 0; i <= Number(res.data.biens.length) - 1; i++) {
+              if (bien_id == res.data.biens[i].id) {
+                //setBienKey(i)
+              }
+            }
+          }
+        }
+        setLoading_bien(false);
+      })
 
-      let biens = response.data.biens;
-      console.log('API response biens:', biens);
-
-      // If we're in edit mode and have a bien_id, check if it exists in the response
-      if (
-        bien_id &&
-        from === 'edit_mode' &&
-        !biens.some((b) => b.id === bien_id)
-      ) {
-        // If the bien is not in the API response, we need to handle this case
-        console.warn(`Bien ID ${bien_id} not found in API response`);
-
-        // Since we can't call the other API, we'll create a minimal representation
-        // OR you might want to show an error/toast to the user
-        toast.error(
-          `Le bien sélectionné (ID: ${bien_id}) n'est plus disponible`
-        );
-
-        // Optional: Add a placeholder if you still want to show it
-        const placeholderBien = {
-          id: bien_id,
-          propriete_dite_bien: `Bien #${bien_id} (Non disponible)`,
-          prix: 0,
-          etat: 'NON_DISPONIBLE',
-        };
-        biens = [placeholderBien, ...biens];
-      }
-
-      setBiensByProjet(biens);
-      console.log('Final biens array:', biens);
-    } catch (error) {
-      console.error('Error fetching biens:', error);
-      toast.error('Erreur lors du chargement des biens');
-    } finally {
-      setLoading_bien(false);
-    }
+      .catch(() => {
+        setLoading_bien(false);
+      });
   };
-
   const pusher_function = async () => {
     Pusher.logToConsole = true;
 
@@ -709,8 +665,14 @@ export default function ReservationForm({ id }) {
     const channel = pusher.subscribe('proposition-updates');
 
     channel.bind('App\\Events\\PropositionUpdated', (data) => {
-      if (isEditing) fetch_bien_ByProjet(old_bien_id, 'edit');
-      else fetch_bien_ByProjet(null, null);
+      if (isEditing) fetch_bien_ByProjet();
+      else
+        fetchDataByProjet_2(
+          'getBiensByProjet_Concat',
+          'biens',
+          setBiensByProjet,
+          setLoading_bien
+        );
     });
 
     return () => {
@@ -787,8 +749,12 @@ export default function ReservationForm({ id }) {
 
   useEffect(() => {
     if (!isEditing) {
-      fetch_bien_ByProjet(null, null);
-
+      fetchDataByProjet_2(
+        'getBiensByProjet_Concat',
+        'biens',
+        setBiensByProjet,
+        setLoading_bien
+      );
       if (banques.length == 0) {
         fetchData_Select('banques', setBanques, setLoading_1);
       }
@@ -1474,31 +1440,17 @@ export default function ReservationForm({ id }) {
               </div>
 
               <div>
-                <SelectInput
-                  label="Bien:"
-                  name="bien_id"
-                  required={true}
-                  loading={loading_bien}
-                  options={biensByProjet.map((bien) => ({
-                    value: bien.id,
-                    label: bien.propriete_dite_bien || `Bien #${bien.id}`,
-                    original: bien,
-                  }))}
-                  value={watch('bien_id')}
-                  onChange={(value) => {
-                    const selectedOption = biensByProjet.find(
-                      (b) => b.id === value
-                    );
-                    if (selectedOption) {
-                      handleSelectBien(null, selectedOption);
-                    }
-                  }}
-                  error={
-                    errors['bien_id']?.message || backendErrors['bien_id']?.[0]
-                  }
-                  disabled={isEditing && user.role <= 2}
-                  placeholder="Sélectionnez un bien"
-                />
+                <>
+                  <AutocompleteBien
+                    user={user}
+                    biensByProjet={biensByProjet}
+                    value={watch('bien_id')}
+                    onChange={handleSelectBien}
+                    disabled={isEditing && user.role <= 2 ? true : false}
+                    loading={loading_bien}
+                    error={errors['bien_id'] || backendErrors['bien_id']}
+                  />
+                </>
               </div>
               <div>
                 <TextField
@@ -1636,41 +1588,16 @@ export default function ReservationForm({ id }) {
                 <div key={index} className="flex items-start space-x-4">
                   <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <SelectInput
-                        label="Client"
-                        name={`client_${index}`}
+                      <AutocompleteClient
+                        options={clientsExist}
                         value={entry.id}
-                        required={true}
-                        options={
-                          Array.isArray(clientsExist)
-                            ? clientsExist.map((client) => ({
-                                value: client.id,
-                                label: `${client.nom} ${client.prenom}`,
-                                disabled: client.disabled || false,
-                              }))
-                            : []
-                        }
+                        onChange={handleinputchange1}
                         loading={loading_clients}
-                        onChange={(value) => {
-                          // Create a synthetic event to match the handleinputchange1 signature
-                          const syntheticEvent = {
-                            target: {
-                              name: 'id',
-                              value: value,
-                            },
-                          };
-                          handleinputchange1(
-                            syntheticEvent,
-                            index,
-                            'select_client'
-                          );
-                        }}
-                        error={
-                          errors.inputList1?.[index]?.id?.message ||
-                          backendErrors?.inputList1?.[index]?.id
-                        }
+                        index={index}
+                        selectedClient={selectedClient}
                         disabled={loading_clients || entry.disabled}
-                        placeholder="Sélectionnez un client"
+                        errors={errors}
+                        backendErrors={backendErrors}
                       />
                     </div>
                     <div>
@@ -1691,8 +1618,8 @@ export default function ReservationForm({ id }) {
                         onChange={(e) =>
                           handleinputchange1(e, index, 'percent')
                         }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[0.5px] focus:ring-gray-800"
-                        placeholder="Entrez un pourcentage (0-100)"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="0"
                         min="0"
                         max="100"
                       />
@@ -3528,75 +3455,46 @@ export default function ReservationForm({ id }) {
                 />
               )}
             </div>
-
             {!isEditing && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <SelectInput
+                <AutocompleteSelectComponent
                   label="Mode Financement :"
-                  placeholder="Sélectionner un mode de financement"
                   name="mode_financement"
                   value={watch('mode_financement')}
                   required={true}
-                  options={Object.values(MODE_FINANCE || {}).map((item) => ({
-                    value: item.code || item.value,
-                    label: item.label || item.name,
-                  }))}
-                  onChange={(value) => {
-                    setValue('mode_financement', value);
+                  options={MODE_FINANCE}
+                  onChange={(e) => {
+                    setValue('mode_financement', e);
                   }}
-                  error={
-                    errors.mode_financement?.message ||
-                    backendErrors?.mode_financement
-                  }
                 />
 
                 <>
-                  <SelectInput
+                  <AutocompleteSelectComponent
                     label="Mode Paiement :"
-                    placeholder="Sélectionner un mode de paiement"
                     name="mode_paiement"
-                    value={watch('mode_paiement')}
                     required={true}
-                    options={Object.values(MODE_PAIEMENT || {}).map((item) => ({
-                      value: item.code || item.value,
-                      label: item.label || item.name,
-                    }))}
-                    onChange={(value) => {
-                      setValue('mode_paiement', value);
+                    options={MODE_PAIEMENT}
+                    onChange={(e) => {
+                      setValue('mode_paiement', e);
                     }}
-                    error={
-                      errors.mode_paiement?.message ||
-                      backendErrors?.mode_paiement
-                    }
                   />
                   {watch('mode_paiement') != 1 &&
                     watch('mode_paiement') != '' && (
                       <>
-                        <SelectInput
+                        <Autocomplete
                           label="Banque:"
-                          placeholder="Sélectionner une banque"
                           name="banque_id"
-                          value={watch('banque_id')}
                           required={true}
-                          options={
-                            Array.isArray(banques)
-                              ? banques.map((banque) => ({
-                                  value: banque.id,
-                                  label:
-                                    banque.nom ||
-                                    banque.name ||
-                                    `Banque ${banque.id}`,
-                                }))
-                              : []
-                          }
+                          options={banques}
+                          value={watch('banque_id')}
                           loading={loading_1}
-                          onChange={(value) => {
-                            setValue('banque_id', value);
+                          control={control}
+                          errors={errors}
+                          backendErrors={backendErrors}
+                          onChange={(e) => {
+                            setValue('banque_id', e.id);
                           }}
-                          error={
-                            errors.banque_id?.message ||
-                            backendErrors?.banque_id
-                          }
+                          choix="nom"
                         />
 
                         <TextField

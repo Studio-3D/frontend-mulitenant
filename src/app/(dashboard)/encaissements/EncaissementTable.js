@@ -13,9 +13,14 @@ import Link from 'next/link';
 
 import DateRangePicker from '@/components/DateRangePicker';
 import SelectInput from '@/components/SelectInput';
+import { useProjet } from '@/context/ProjetContext';
+import { useRouter } from 'next/navigation';
 
 const EncaissementTable = ({ dataClient_id, bien_id }) => {
   const [encaissements, setEncaissements] = useState([]);
+  const router = useRouter();
+
+  const { selectedProjet } = useProjet();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -28,7 +33,7 @@ const EncaissementTable = ({ dataClient_id, bien_id }) => {
 
   // Store filter info separately for display
   const [filterInfo, setFilterInfo] = useState(null);
-  
+
   // Initialize filters from localStorage if available
   const storedFilters = localStorage.getItem('encaissement_filters');
   const initialFilters = storedFilters ? JSON.parse(storedFilters) : null;
@@ -42,7 +47,8 @@ const EncaissementTable = ({ dataClient_id, bien_id }) => {
     type_encaissement: initialFilters?.type_encaissement || '',
     de: initialFilters?.start || '',
     a: initialFilters?.end || '',
-    user_id: initialFilters?.commercial !== 'tous' ? initialFilters?.commercial : '',
+    user_id:
+      initialFilters?.commercial !== 'tous' ? initialFilters?.commercial : '',
   });
 
   const [tempFilters, setTempFilters] = useState({ ...filters });
@@ -54,9 +60,9 @@ const EncaissementTable = ({ dataClient_id, bien_id }) => {
         commercial_name: initialFilters.commercial_name,
         type_encaissement: initialFilters.type_encaissement,
         start: initialFilters.start,
-        end: initialFilters.end
+        end: initialFilters.end,
       });
-      
+
       // Clear the stored filters after use (but keep for display)
       localStorage.removeItem('encaissement_filters');
     }
@@ -74,7 +80,7 @@ const EncaissementTable = ({ dataClient_id, bien_id }) => {
       setTempFilters((prev) => ({ ...prev, [field]: value }));
     }
   };
-  
+
   const applyFilters = () => {
     setFilters(tempFilters);
     // Clear filter info when applying new filters
@@ -98,7 +104,7 @@ const EncaissementTable = ({ dataClient_id, bien_id }) => {
     // Clear filter info when resetting filters
     setFilterInfo(null);
   };
-  
+
   const entity = {
     API_URL: 'encaissements',
     dataKey: 'data',
@@ -149,7 +155,7 @@ const EncaissementTable = ({ dataClient_id, bien_id }) => {
       setEncaissements,
       setTotalRows
     );
-  }, [searchTerm, currentPage, rowsPerPage, accesstoken, filters]);
+  }, [searchTerm, currentPage, rowsPerPage, accesstoken, filters,selectedProjet]);
 
   const typeEncaissementMap = {
     1: { label: 'Avances', color: 'bg-green-100 !text-green-800' },
@@ -448,13 +454,16 @@ const EncaissementTable = ({ dataClient_id, bien_id }) => {
             )}
 
             <p className="text-sm">
-              Type Encaissement: {'Avances'
-              /*filterInfo.type_encaissement === '1' ? 'Avances' : 
+              Type Encaissement:{' '}
+              {
+                'Avances'
+                /*filterInfo.type_encaissement === '1' ? 'Avances' : 
                 filterInfo.type_encaissement === '2' ? 'Restitution' :
                 filterInfo.type_encaissement === '3' ? 'Remboursements' :
                 filterInfo.type_encaissement === '4' ? 'Décharge Reliquat' :
                 filterInfo.type_encaissement === '5' ? 'Déblocage Crédit' :
-                filterInfo.type_encaissement === '6' ? 'Pénalités' : ''*/}
+                filterInfo.type_encaissement === '6' ? 'Pénalités' : ''*/
+              }
             </p>
 
             {filterInfo.start && filterInfo.end && (

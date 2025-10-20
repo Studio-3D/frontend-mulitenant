@@ -59,6 +59,22 @@ export default function PartenaireForm({ id = null, onComplete }) {
     }
   }, [selectedProjet]);
 
+
+  
+  // Simple cache et comparaison for return back en cas de changer projet
+  const [oldProjetId, setOldProjetId] = useState(null);
+
+  useEffect(() => {
+    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+      if (oldProjetId) {
+        // Projet a changé
+
+        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+        router.push('/administration/partenaires');
+      }
+      setOldProjetId(selectedProjet.id);
+    }
+  }, [selectedProjet?.id, oldProjetId, router]);
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));

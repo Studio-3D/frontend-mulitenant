@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
-import { APIURL, ENDPOINTS } from "@/configs/api";
-import axios from "axios";
-import toast from "react-hot-toast";
-import BreadCrumb from "../../navigation/BreadCrumb";
-import Button from "@/components/Button";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from 'react';
+import { APIURL, ENDPOINTS } from '@/configs/api';
+import axios from 'axios';
+import toast from 'react-hot-toast';
+import BreadCrumb from '../../navigation/BreadCrumb';
+import Button from '@/components/Button';
+import { useRouter } from 'next/navigation';
+import { useProjet } from '@/context/ProjetContext';
 
 const SourceForm = ({ id = null, onComplete }) => {
   const [loading, setLoading] = useState(false);
@@ -13,12 +14,26 @@ const SourceForm = ({ id = null, onComplete }) => {
 
   // Form state
   const [formData, setFormData] = useState({
-    source: "",
+    source: '',
   });
-
+  const { selectedProjet } = useProjet();
   // Validation errors
   const [errors, setErrors] = useState({});
 
+  // Simple cache et comparaison for return back en cas de changer projet
+  const [oldProjetId, setOldProjetId] = useState(null);
+
+  useEffect(() => {
+    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+      if (oldProjetId) {
+        // Projet a changé
+
+        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+        router.push('/administration/sources');
+      }
+      setOldProjetId(selectedProjet.id);
+    }
+  }, [selectedProjet?.id, oldProjetId, router]);
   useEffect(() => {
     // Load source data if editing
     if (id) {
@@ -29,7 +44,7 @@ const SourceForm = ({ id = null, onComplete }) => {
   const fetchSourceData = async (sourceId) => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem('accessToken');
       const response = await axios.get(`${APIURL.SOURCES}/${sourceId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -37,12 +52,12 @@ const SourceForm = ({ id = null, onComplete }) => {
       if (response.data?.source) {
         const sourceData = response.data.source;
         setFormData({
-          source: sourceData.source || "",
+          source: sourceData.source || '',
         });
       }
     } catch (error) {
-      console.error("Error fetching source data:", error);
-      toast.error("Erreur lors du chargement des données");
+      console.error('Error fetching source data:', error);
+      toast.error('Erreur lors du chargement des données');
     } finally {
       setLoading(false);
     }
@@ -57,7 +72,7 @@ const SourceForm = ({ id = null, onComplete }) => {
     const newErrors = {};
 
     if (!formData.source.trim()) {
-      newErrors.source = "La source est requise";
+      newErrors.source = 'La source est requise';
     }
 
     setErrors(newErrors);
@@ -72,13 +87,13 @@ const SourceForm = ({ id = null, onComplete }) => {
     setSubmitting(true);
 
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem('accessToken');
       let url = APIURL.SOURCES;
-      let method = "post";
+      let method = 'post';
 
       if (id) {
         url = `${url}/${id}`;
-        method = "put";
+        method = 'put';
       }
 
       const response = await axios({
@@ -86,18 +101,18 @@ const SourceForm = ({ id = null, onComplete }) => {
         url,
         data: formData,
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
       });
 
       toast.success(
-        id ? "Source modifiée avec succès" : "Source ajoutée avec succès"
+        id ? 'Source modifiée avec succès' : 'Source ajoutée avec succès'
       );
 
       router.push(ENDPOINTS.SOURCES);
     } catch (error) {
-      console.error("Error submitting form:", error);
+      console.error('Error submitting form:', error);
 
       if (error.response?.status === 422) {
         const backendErrors = error.response.data.errors || {};
@@ -121,7 +136,7 @@ const SourceForm = ({ id = null, onComplete }) => {
     } else {
       // Clear form if adding new
       setFormData({
-        source: "",
+        source: '',
       });
     }
     setErrors({});
@@ -140,7 +155,7 @@ const SourceForm = ({ id = null, onComplete }) => {
       <div className="flex items-center justify-start">
         <BreadCrumb
           baseUrl={ENDPOINTS.SOURCES}
-          step={`${id ? "Modifier" : "Ajouter"} une source`}
+          step={`${id ? 'Modifier' : 'Ajouter'} une source`}
         />
       </div>
       <div className="p-6 mt-4 bg-white shadow-md rounded-md">
@@ -155,13 +170,13 @@ const SourceForm = ({ id = null, onComplete }) => {
               value={formData.source}
               onChange={handleChange}
               className={`shadow appearance-none border ${
-                errors.source ? "border-red-500" : "border-gray-300"
+                errors.source ? 'border-red-500' : 'border-gray-300'
               } rounded w-full py-2 px-3 !text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
               placeholder="Saisir la source"
             />
             {errors.source && (
               <p className="text-red-500 text-xs italic">
-                {typeof errors.source === "string"
+                {typeof errors.source === 'string'
                   ? errors.source
                   : errors.source[0]}
               </p>
@@ -173,7 +188,7 @@ const SourceForm = ({ id = null, onComplete }) => {
               Annuler
             </Button>
             <Button type="submit" disabled={submitting} loading={loading.form}>
-              {submitting ? "Chargement..." : id ? "Modifier" : "Ajouter"}
+              {submitting ? 'Chargement...' : id ? 'Modifier' : 'Ajouter'}
             </Button>
           </div>
         </form>

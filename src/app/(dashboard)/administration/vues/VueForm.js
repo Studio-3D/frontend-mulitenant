@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
-import { useProjet } from "@/context/ProjetContext";
-import { APIURL, ENDPOINTS } from "@/configs/api";
-import axios from "axios";
-import toast from "react-hot-toast";
-import BreadCrumb from "../../navigation/BreadCrumb";
-import Button from "@/components/Button";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from 'react';
+import { useProjet } from '@/context/ProjetContext';
+import { APIURL, ENDPOINTS } from '@/configs/api';
+import axios from 'axios';
+import toast from 'react-hot-toast';
+import BreadCrumb from '../../navigation/BreadCrumb';
+import Button from '@/components/Button';
+import { useRouter } from 'next/navigation';
 
 const VueForm = ({ id = null, onComplete }) => {
   const [loading, setLoading] = useState(false);
@@ -15,13 +15,27 @@ const VueForm = ({ id = null, onComplete }) => {
 
   // Form state
   const [formData, setFormData] = useState({
-    vue: "",
-    projet_id: selectedProjet?.id || "",
+    vue: '',
+    projet_id: selectedProjet?.id || '',
   });
 
   // Validation errors
   const [errors, setErrors] = useState({});
 
+  // Simple cache et comparaison for return back en cas de changer projet
+  const [oldProjetId, setOldProjetId] = useState(null);
+
+  useEffect(() => {
+    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+      if (oldProjetId) {
+        // Projet a changé
+
+        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+        router.push('/administration/vues');
+      }
+      setOldProjetId(selectedProjet.id);
+    }
+  }, [selectedProjet?.id, oldProjetId, router]);
   useEffect(() => {
     // Set project ID when project is selected
     if (selectedProjet) {
@@ -37,7 +51,7 @@ const VueForm = ({ id = null, onComplete }) => {
   const fetchVueData = async (vueId) => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem('accessToken');
       const response = await axios.get(`${APIURL.VUES}/${vueId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -45,13 +59,13 @@ const VueForm = ({ id = null, onComplete }) => {
       if (response.data?.vue) {
         const vueData = response.data.vue;
         setFormData({
-          vue: vueData.vue || "",
-          projet_id: vueData.projet_id || selectedProjet?.id || "",
+          vue: vueData.vue || '',
+          projet_id: vueData.projet_id || selectedProjet?.id || '',
         });
       }
     } catch (error) {
-      console.error("Error fetching vue data:", error);
-      toast.error("Erreur lors du chargement des données");
+      console.error('Error fetching vue data:', error);
+      toast.error('Erreur lors du chargement des données');
     } finally {
       setLoading(false);
     }
@@ -66,7 +80,7 @@ const VueForm = ({ id = null, onComplete }) => {
     const newErrors = {};
 
     if (!formData.vue.trim()) {
-      newErrors.vue = "La vue est requise";
+      newErrors.vue = 'La vue est requise';
     }
 
     setErrors(newErrors);
@@ -87,13 +101,13 @@ const VueForm = ({ id = null, onComplete }) => {
     setSubmitting(true);
 
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem('accessToken');
       let url = APIURL.VUES;
-      let method = "post";
+      let method = 'post';
 
       if (id) {
         url = `${url}/${id}`;
-        method = "put";
+        method = 'put';
       }
 
       const response = await axios({
@@ -101,18 +115,18 @@ const VueForm = ({ id = null, onComplete }) => {
         url,
         data: formData,
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
       });
 
       toast.success(
-        id ? "Vue modifiée avec succès" : "Vue ajoutée avec succès"
+        id ? 'Vue modifiée avec succès' : 'Vue ajoutée avec succès'
       );
 
-    router.push(ENDPOINTS.VUES);      
+      router.push(ENDPOINTS.VUES);
     } catch (error) {
-      console.error("Error submitting form:", error);
+      console.error('Error submitting form:', error);
 
       if (error.response?.status === 422) {
         const backendErrors = error.response.data.errors || {};
@@ -136,8 +150,8 @@ const VueForm = ({ id = null, onComplete }) => {
     } else {
       // Clear form if adding new
       setFormData({
-        vue: "",
-        projet_id: selectedProjet?.id || "",
+        vue: '',
+        projet_id: selectedProjet?.id || '',
       });
     }
     setErrors({});
@@ -156,7 +170,7 @@ const VueForm = ({ id = null, onComplete }) => {
       <div className="flex items-center justify-start">
         <BreadCrumb
           baseUrl={ENDPOINTS.VUES}
-          step={`${id ? "Modifier" : "Ajouter"} un vue`}
+          step={`${id ? 'Modifier' : 'Ajouter'} un vue`}
         />
       </div>
       <div className="p-6 mt-4 bg-white shadow-md rounded-md">
@@ -171,13 +185,13 @@ const VueForm = ({ id = null, onComplete }) => {
               value={formData.vue}
               onChange={handleChange}
               className={`shadow appearance-none border ${
-                errors.vue ? "border-red-500" : "border-gray-300"
+                errors.vue ? 'border-red-500' : 'border-gray-300'
               } rounded w-full py-2 px-3 !text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
               placeholder="Saisir la vue"
             />
             {errors.vue && (
               <p className="text-red-500 text-xs italic">
-                {typeof errors.vue === "string" ? errors.vue : errors.vue[0]}
+                {typeof errors.vue === 'string' ? errors.vue : errors.vue[0]}
               </p>
             )}
           </div>
@@ -189,7 +203,7 @@ const VueForm = ({ id = null, onComplete }) => {
               Annuler
             </Button>
             <Button type="submit" disabled={submitting} loading={loading.form}>
-              {submitting ? "Chargement..." : id ? "Modifier" : "Ajouter"}
+              {submitting ? 'Chargement...' : id ? 'Modifier' : 'Ajouter'}
             </Button>
           </div>
         </form>

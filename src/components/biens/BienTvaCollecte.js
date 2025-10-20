@@ -8,7 +8,7 @@ import { ExternalLink, Receipt, Info } from 'lucide-react';
 import Table from '@/components/Table';
 import { fetchData_table_by_projet } from '@/configs/api-utils';
 import Link from 'next/link';
-
+import { useProjet } from '@/context/ProjetContext';
 export default function BienTvaCollecte({ bienId, bien }) {
   const [tvaCollectes, setTvaCollectes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,6 +18,7 @@ export default function BienTvaCollecte({ bienId, bien }) {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalRows, setTotalRows] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
+  const { selectedProjet } = useProjet();
 
   const token = localStorage.getItem('accessToken');
   const [filters, setFilters] = useState({
@@ -78,7 +79,7 @@ export default function BienTvaCollecte({ bienId, bien }) {
     if (bienId) {
       fetchBienForProject();
     }
-  }, [bienId]);
+  }, [bienId,selectedProjet]);
   const entity = {
     API_URL: 'get_tva_collecte_par_bien',
     dataKey: 'data',
@@ -119,7 +120,7 @@ export default function BienTvaCollecte({ bienId, bien }) {
       setTvaCollectes,
       setTotalRows
     );
-  }, [searchTerm, currentPage, rowsPerPage, token, filters, bienId, ancien]);
+  }, [searchTerm, currentPage, rowsPerPage, token, filters, bienId, ancien,selectedProjet]);
 
   const typeEncaissementMap = {
     1: { label: 'Avances', color: 'bg-green-100 !text-green-800' },
@@ -188,33 +189,33 @@ export default function BienTvaCollecte({ bienId, bien }) {
         </Link>
       ),
     },
-   {
-  key: 'client_id',
-  label: 'Client',
-  render: (row) => (
-    <>
-      {row.reservation?.aquereurs
-        ? Object.keys(row.reservation.aquereurs).map((key) => {
-            const aquereur = row.reservation.aquereurs[key];
-            return (
-              <Link
-                key={aquereur.client.id} // Add unique key here
-                target="_blank"
-                href={'/ventes/clients/' + aquereur.client.id}
-                style={{
-                  textDecoration: 'none',
-                }}
-              >
-                <strong>
-                  {aquereur.client.nom} {aquereur.client.prenom}
-                </strong>
-              </Link>
-            );
-          })
-        : ''}
-    </>
-  ),
-},
+    {
+      key: 'client_id',
+      label: 'Client',
+      render: (row) => (
+        <>
+          {row.reservation?.aquereurs
+            ? Object.keys(row.reservation.aquereurs).map((key) => {
+                const aquereur = row.reservation.aquereurs[key];
+                return (
+                  <Link
+                    key={aquereur.client.id} // Add unique key here
+                    target="_blank"
+                    href={'/ventes/clients/' + aquereur.client.id}
+                    style={{
+                      textDecoration: 'none',
+                    }}
+                  >
+                    <strong>
+                      {aquereur.client.nom} {aquereur.client.prenom}
+                    </strong>
+                  </Link>
+                );
+              })
+            : ''}
+        </>
+      ),
+    },
     {
       key: 'encaissement',
       label: 'Encaissement',

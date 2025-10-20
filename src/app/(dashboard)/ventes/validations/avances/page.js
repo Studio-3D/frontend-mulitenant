@@ -1,35 +1,36 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect, Fragment } from "react";
-import { Euro, ThumbsUp, Eye } from "lucide-react";
-import Table from "@/components/Table";
-import Modal from "@/components/Modal";
-import { useAuth } from "../../../../../context/AuthContext";
-import { APIURL, ENDPOINTS } from "../../../../../configs/api";
-import { useRouter } from "next/navigation";
-import { formatDate } from "../../../../../utils/dateUtils";
+import React, { useState, useEffect, Fragment } from 'react';
+import { Euro, ThumbsUp, Eye } from 'lucide-react';
+import Table from '@/components/Table';
+import Modal from '@/components/Modal';
+import { useAuth } from '../../../../../context/AuthContext';
+import { APIURL, ENDPOINTS } from '../../../../../configs/api';
+import { useRouter } from 'next/navigation';
+import { formatDate } from '../../../../../utils/dateUtils';
 import {
   isAdmin,
   isCommercial,
   isSuperAdmin,
-} from "../../../../../configs/enum";
-import { fetchData_table_by_id } from "../../../../../configs/api-utils";
-import Link from "next/link";
-import { MODE_PAIEMENT, Avance_Statut } from "../../../../../configs/enum";
-import { toast } from "react-hot-toast";
-import axios from "axios";
-import LoadingSpin from "@/components/LoadingSpin";
-import VenteNavbar from "@/components/VenteNavbar";
-import Input from "@/components/Input";
-import DateRangePicker from "@/components/DateRangePicker";
-import SelectInput from "@/components/SelectInput";
-import Button from "@/components/Button";
+} from '../../../../../configs/enum';
+import { fetchData_table_by_id } from '../../../../../configs/api-utils';
+import Link from 'next/link';
+import { MODE_PAIEMENT, Avance_Statut } from '../../../../../configs/enum';
+import { toast } from 'react-hot-toast';
+import axios from 'axios';
+import LoadingSpin from '@/components/LoadingSpin';
+import VenteNavbar from '@/components/VenteNavbar';
+import Input from '@/components/Input';
+import DateRangePicker from '@/components/DateRangePicker';
+import SelectInput from '@/components/SelectInput';
+import Button from '@/components/Button';
 
+import { useProjet } from '@/context/ProjetContext';
 const PageTraitement_Validation_rejets_av_or_echeance = () => {
   const [etat_av, setEtatAv] = useState(null);
 
   useEffect(() => {
-    const storedEtatAv = localStorage.getItem("etat_av");
+    const storedEtatAv = localStorage.getItem('etat_av');
     if (storedEtatAv !== null) {
       setEtatAv(storedEtatAv);
     }
@@ -38,8 +39,8 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
   const userRole = user?.role;
   const accessToken =
     token ||
-    (typeof window !== "undefined"
-      ? localStorage.getItem("accessToken")
+    (typeof window !== 'undefined'
+      ? localStorage.getItem('accessToken')
       : null);
 
   const [loading, setLoading] = useState({
@@ -47,15 +48,12 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
     form: false,
   });
 
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [totalRows, setTotalRows] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [data, setData] = useState([]);
-  const selectedProjet =
-    typeof window != "undefined"
-      ? JSON.parse(localStorage.getItem("selectedProjet"))
-      : null;
+  const { selectedProjet } = useProjet();
 
   // Validation/Rejection dialog states
   const [open_v_r, setOpen_v_r] = useState(false);
@@ -63,24 +61,24 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
   const [num_recu, set_num_recu] = useState(0);
   const [Commentaire_r, setCommentaire_r] = useState(null);
   const [type_action, set_type_action] = useState(null);
-  const [action, setAction] = useState("");
-  const [date_encaissement_v, set_date_encaissement_v] = useState("");
+  const [action, setAction] = useState('');
+  const [date_encaissement_v, set_date_encaissement_v] = useState('');
   const [num_remise_v, set_num_remise_v] = useState(null);
   const [txt_rejete, set_txt_rejete] = useState(null);
   const [open, setOpen] = useState(false);
 
   const [filters, setFilters] = useState({
-    cc: "",
-    numero_paiement: "",
-    date_start: "",
-    date_end: "",
-    montant: "",
-    mode_paiement: "",
+    cc: '',
+    numero_paiement: '',
+    date_start: '',
+    date_end: '',
+    montant: '',
+    mode_paiement: '',
   });
   const [tempFilters, setTempFilters] = useState({ ...filters });
   const resetFilters = () => {
     const reset = Object.fromEntries(
-      Object.keys(filters).map((key) => [key, ""])
+      Object.keys(filters).map((key) => [key, ''])
     );
     setFilters(reset);
     setTempFilters(reset);
@@ -96,13 +94,13 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
     etat_av == 99
       ? `${selectedProjet?.id}`
       : `${selectedProjet?.id}/${etat_av}`;
-  const API_URLL = etat_av == 99 ? "get_echeances" : "avances_by_etat";
+  const API_URLL = etat_av == 99 ? 'get_echeances' : 'avances_by_etat';
 
   const entity = {
     id: idd,
     API_URL: API_URLL,
-    dataKey: "data",
-    searchFields: [""],
+    dataKey: 'data',
+    searchFields: [''],
   };
 
   useEffect(() => {
@@ -135,7 +133,7 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
     set_num_recu(n_recu);
     set_type_action(text);
     if (number == 1) {
-      setAction("1");
+      setAction('1');
     }
   };
 
@@ -158,7 +156,7 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
         }
       );
 
-      toast.success("Avance traitée avec succès");
+      toast.success('Avance traitée avec succès');
       setCommentaire_r(null);
       set_date_encaissement_v(null);
       set_num_remise_v(null);
@@ -177,14 +175,14 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
       setOpen_v_r(false);
       setLoading({ form: false });
     } catch (error) {
-      console.error("Error processing avance:", error);
-      toast.error("Erreur lors du traitement");
+      console.error('Error processing avance:', error);
+      toast.error('Erreur lors du traitement');
     }
   };
 
   const handle_show_comment_rejete = (msg_rejete, num_recu) => {
     set_txt_rejete(
-      "Avance :" + num_recu + " est rejeté en raison de " + msg_rejete
+      'Avance :' + num_recu + ' est rejeté en raison de ' + msg_rejete
     );
     setOpen(true);
   };
@@ -192,10 +190,10 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
   const formatData = () => {
     return data.map((av) => ({
       id: av.id,
-      sr: av.sr == 0 ? av.num_recu : "SR",
-      date_reglement: av.date_reglement ? formatDate(av.date_reglement) : "N/A",
-      respo: `${av.user.name} ${av.user.prenom || ""}`.trim(),
-      montant: av.montant.toLocaleString() + " DH",
+      sr: av.sr == 0 ? av.num_recu : 'SR',
+      date_reglement: av.date_reglement ? formatDate(av.date_reglement) : 'N/A',
+      respo: `${av.user.name} ${av.user.prenom || ''}`.trim(),
+      montant: av.montant.toLocaleString() + ' DH',
       mode_pai: av.mode_paiement,
       banque: av.banque?.nom || null,
       numero_paiement: av.numero_paiement,
@@ -220,11 +218,11 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
   };
 
   const columns = [
-    { key: "sr", label: "N° Reçu" },
-    { key: "date_reglement", label: "Date" },
+    { key: 'sr', label: 'N° Reçu' },
+    { key: 'date_reglement', label: 'Date' },
     {
-      key: "code_reservation",
-      label: "Code Réservation",
+      key: 'code_reservation',
+      label: 'Code Réservation',
       render: (row) => (
         <Link
           href={`/ventes/reservations/${row.reservation_id}`}
@@ -235,40 +233,40 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
         </Link>
       ),
     },
-    { key: "montant", label: "Montant" },
+    { key: 'montant', label: 'Montant' },
     {
-      key: "mode_pai",
-      label: "Mode Paiement",
+      key: 'mode_pai',
+      label: 'Mode Paiement',
       render: (row) => {
         if (!row.mode_pai) return null;
         return (
           <span
             className={`px-2 py-1 rounded text-sm font-semibold ${
               {
-                1: "bg-purple-100 text-purple-500",
-                2: "bg-blue-100 text-blue-500",
-                3: "bg-indigo-100 text-indigo-500",
-                4: "bg-teal-100 text-teal-500",
-                5: "bg-green-100 text-green-500",
-                6: "bg-amber-100 text-amber-500",
-                7: "bg-gray-100 text-gray-500",
-              }[row.mode_pai] || "bg-gray-100 text-gray-500"
+                1: 'bg-purple-100 text-purple-500',
+                2: 'bg-blue-100 text-blue-500',
+                3: 'bg-indigo-100 text-indigo-500',
+                4: 'bg-teal-100 text-teal-500',
+                5: 'bg-green-100 text-green-500',
+                6: 'bg-amber-100 text-amber-500',
+                7: 'bg-gray-100 text-gray-500',
+              }[row.mode_pai] || 'bg-gray-100 text-gray-500'
             }`}
           >
-            {MODE_PAIEMENT[row.mode_pai]?.label || "Unknown"}
+            {MODE_PAIEMENT[row.mode_pai]?.label || 'Unknown'}
           </span>
         );
       },
     },
-    { key: "banque", label: "Banque" },
-    { key: "numero_paiement", label: "Num paiement" },
-    { key: "echeance", label: "Echéance" },
+    { key: 'banque', label: 'Banque' },
+    { key: 'numero_paiement', label: 'Num paiement' },
+    { key: 'echeance', label: 'Echéance' },
 
     ...(etat_av != 99
       ? [
           {
-            key: "actions",
-            label: "Actions",
+            key: 'actions',
+            label: 'Actions',
             render: (row) => {
               const isAdminOrSuperAdmin =
                 (isAdmin(userRole) || isSuperAdmin(userRole)) &&
@@ -287,7 +285,7 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
                               row.id,
                               row.sr,
                               0,
-                              "validation"
+                              'validation'
                             )
                           }
                           title="Valider le paiement"
@@ -308,7 +306,7 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
                                 row.id,
                                 row.sr,
                                 1,
-                                "encaissement"
+                                'encaissement'
                               )
                             }
                             title="Ajouter encaissement"
@@ -347,32 +345,32 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
       // Extraire les noms des acquéreurs et les séparer par "/"
       const acquereursNames = item?.reservation.aquereurs
         ? item.reservation.aquereurs
-            .map((acq) => acq.client?.nom + " " + acq.client?.prenom || "")
-            .join(" / ") // Sépare les noms par "/"
-        : "";
+            .map((acq) => acq.client?.nom + ' ' + acq.client?.prenom || '')
+            .join(' / ') // Sépare les noms par "/"
+        : '';
 
       const acquereursCin = item?.reservation.aquereurs
         ? item.reservation.aquereurs
-            .map((acq) => acq.client?.cin || "")
-            .join(" / ") // Sépare les noms par "/"
-        : "";
+            .map((acq) => acq.client?.cin || '')
+            .join(' / ') // Sépare les noms par "/"
+        : '';
 
       const acquereursTele = item?.reservation.aquereurs
         ? item.reservation.aquereurs
-            .map((acq) => acq.client?.telephone_num1 || "")
-            .join(" / ") // Sépare les noms par "/"
-        : "";
+            .map((acq) => acq.client?.telephone_num1 || '')
+            .join(' / ') // Sépare les noms par "/"
+        : '';
 
       return {
-        num_recu: item?.sr == 0 ? item?.num_recu : "SR",
+        num_recu: item?.sr == 0 ? item?.num_recu : 'SR',
         date_reg: formatDate(item.date_reglement),
-        cc: item.user.name + " " + item.user.prenom || "",
-        bien: item.reservation.bien.propriete_dite_bien || "",
-        prix: item.reservation.prix || "",
-        avance: item.montant.toLocaleString() + " DH",
+        cc: item.user.name + ' ' + item.user.prenom || '',
+        bien: item.reservation.bien.propriete_dite_bien || '',
+        prix: item.reservation.prix || '',
+        avance: item.montant.toLocaleString() + ' DH',
         mode_paiement: MODE_PAIEMENT[item.mode_paiement]?.label,
-        banque: item?.banque?.nom || "",
-        num_pai: item.numero_paiement || "",
+        banque: item?.banque?.nom || '',
+        num_pai: item.numero_paiement || '',
         echeance: item.echeance != null ? formatDate(item.echeance) : null,
         date_enc: item?.last_statut?.date_encaissement
           ? formatDate(item.last_statut.date_encaissement)
@@ -384,35 +382,35 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
             ? "Validé En Attente d'Encaissement"
             : Avance_Statut[item.statut]?.label,
         num_rem: item?.last_statut?.num_remise,
-        code_res: item.reservation.code_reservation || "",
+        code_res: item.reservation.code_reservation || '',
         date_res: item.reservation.date_reservation
           ? formatDate(item.reservation.date_reservation)
-          : "",
-        aq_names: acquereursNames || "",
-        aq_cin: acquereursCin || "",
-        aq_tele: acquereursTele || "",
+          : '',
+        aq_names: acquereursNames || '',
+        aq_cin: acquereursCin || '',
+        aq_tele: acquereursTele || '',
       };
     });
   };
 
   const columns_export = [
-    { key: "num_recu", label: "N° recu" },
-    { key: "date_reg", label: "Date réglement" },
-    { key: "cc", label: "Responsable" },
-    { key: "bien", label: "Bien" },
-    { key: "prix", label: "Prix de vente" },
-    { key: "avance", label: "Avance" },
-    { key: "mode_paiement", label: "Mode paiement" },
-    { key: "banque", label: "Banque" },
-    { key: "num_pai", label: "Num paiement" },
-    { key: "echeance", label: "Echéance" },
-    { key: "statut", label: "Etat" },
-    { key: "num_rem", label: "N° Remise" },
-    { key: "date_enc", label: "Date Encaiss" },
-    { key: "code_res", label: "Code reservation" },
-    { key: "aq_names", label: "Nom client" },
-    { key: "aq_cin", label: "Cin client" },
-    { key: "aq_tele", label: "Tele client" },
+    { key: 'num_recu', label: 'N° recu' },
+    { key: 'date_reg', label: 'Date réglement' },
+    { key: 'cc', label: 'Responsable' },
+    { key: 'bien', label: 'Bien' },
+    { key: 'prix', label: 'Prix de vente' },
+    { key: 'avance', label: 'Avance' },
+    { key: 'mode_paiement', label: 'Mode paiement' },
+    { key: 'banque', label: 'Banque' },
+    { key: 'num_pai', label: 'Num paiement' },
+    { key: 'echeance', label: 'Echéance' },
+    { key: 'statut', label: 'Etat' },
+    { key: 'num_rem', label: 'N° Remise' },
+    { key: 'date_enc', label: 'Date Encaiss' },
+    { key: 'code_res', label: 'Code reservation' },
+    { key: 'aq_names', label: 'Nom client' },
+    { key: 'aq_cin', label: 'Cin client' },
+    { key: 'aq_tele', label: 'Tele client' },
   ];
   if (etat_av === null) {
     return <LoadingSpin />;
@@ -424,13 +422,13 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
         {/* Filter Section */}
         <p className="text-lg font-semibold mb-4">
           {etat_av == 3
-            ? "Avances En attentes "
+            ? 'Avances En attentes '
             : etat_av == 1
-            ? "Avances Validés"
+            ? 'Avances Validés'
             : etat_av == 2
-            ? "Avances Rejetés"
+            ? 'Avances Rejetés'
             : etat_av == 99
-            ? "Echéances"
+            ? 'Echéances'
             : null}
         </p>
 
@@ -438,7 +436,7 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
         <Table
           data_to_export={data_to_export()}
           columns_export={columns_export}
-          name_file_export={"paiments_export"}
+          name_file_export={'paiments_export'}
           columns={columns}
           data={formatData()}
           totalRows={totalRows}
@@ -455,7 +453,7 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
               <div
                 className="grid gap-5"
                 style={{
-                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
                 }}
               >
                 <Input
@@ -463,7 +461,7 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
                   label="N° Paiement"
                   value={tempFilters.numero_paiement}
                   onChange={(e) =>
-                    handleFilterChange("numero_paiement", e.target.value)
+                    handleFilterChange('numero_paiement', e.target.value)
                   }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
@@ -473,7 +471,7 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
                   label="Montant"
                   value={tempFilters.montant}
                   onChange={(e) =>
-                    handleFilterChange("montant", e.target.value)
+                    handleFilterChange('montant', e.target.value)
                   }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
@@ -481,13 +479,13 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
                   type="text"
                   label="Responsable"
                   value={tempFilters.cc}
-                  onChange={(e) => handleFilterChange("cc", e.target.value)}
+                  onChange={(e) => handleFilterChange('cc', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
                 <SelectInput
                   value={tempFilters.mode_paiement}
                   onChange={(value) =>
-                    handleFilterChange("mode_paiement", value)
+                    handleFilterChange('mode_paiement', value)
                   }
                   options={Object.values(MODE_PAIEMENT).map((data) => ({
                     value: data.code,
@@ -541,9 +539,9 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
                   className=" text-white p-4 rounded-t-lg mb-3"
                 >
                   <h3 className="text-lg font-bold">
-                    {type_action == "validation"
-                      ? "Traiter un Avance"
-                      : "Encaissement"}
+                    {type_action == 'validation'
+                      ? 'Traiter un Avance'
+                      : 'Encaissement'}
                   </h3>
                 </div>
 
@@ -561,7 +559,7 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
                       />
                     </div>
 
-                    {type_action == "validation" && (
+                    {type_action == 'validation' && (
                       <div>
                         <label className="block text-sm font-medium mb-1">
                           Statut: <span className="text-red-500">*</span>
@@ -579,7 +577,7 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
                       </div>
                     )}
 
-                    {action == "1" && (
+                    {action == '1' && (
                       <>
                         <div>
                           <label className="block text-sm font-medium mb-1">
@@ -588,20 +586,20 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
                           <input
                             type="number"
                             className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                            value={num_remise_v || ""}
+                            value={num_remise_v || ''}
                             onChange={(e) => set_num_remise_v(e.target.value)}
                             required
                           />
                         </div>
                         <div>
                           <label className="block text-sm font-medium mb-1">
-                            Date encaissement:{" "}
+                            Date encaissement:{' '}
                             <span className="text-red-500">*</span>
                           </label>
                           <input
                             type="date"
                             className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                            value={date_encaissement_v || ""}
+                            value={date_encaissement_v || ''}
                             onChange={(e) =>
                               set_date_encaissement_v(e.target.value)
                             }
@@ -611,7 +609,7 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
                       </>
                     )}
 
-                    {action == "2" && (
+                    {action == '2' && (
                       <div>
                         <label className="block text-sm font-medium mb-1">
                           Commentaire: <span className="text-red-500">*</span>

@@ -12,15 +12,16 @@ import { useParams } from 'next/navigation';
 import { Eye, Check } from 'lucide-react';
 import Modal from '@/components/Modal';
 import Modal_Traite_Frein from './Modal_Traite_Frein';
+import { useProjet } from '@/context/ProjetContext';
 
 import useClearNomPrenomFrein from '../../../hook/useClearNomPrenomFrein';
 export default function Biens_Dispo_By_frein_id() {
   useClearNomPrenomFrein();
   const router = useRouter();
   const { freinId } = useParams();
-  const [nomPrenom] = useState(localStorage.getItem('nom_prenom_frein')||'');
+  const [nomPrenom] = useState(localStorage.getItem('nom_prenom_frein') || '');
   const [open_trait, setOpen_trait] = useState(false);
-
+  const { selectedProjet } = useProjet();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -57,6 +58,20 @@ export default function Biens_Dispo_By_frein_id() {
     );
   }, [accesstoken, currentPage, rowsPerPage, searchTerm]);
 
+  // Simple cache et comparaison for return back en cas de changer projet
+  const [oldProjetId, setOldProjetId] = useState(null);
+
+  useEffect(() => {
+    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+      if (oldProjetId) {
+        // Projet a changé
+
+        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+        router.push('/crm/visites/freins');
+      }
+      setOldProjetId(selectedProjet.id);
+    }
+  }, [selectedProjet?.id, oldProjetId, router]);
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
   useEffect(() => {
@@ -162,24 +177,24 @@ export default function Biens_Dispo_By_frein_id() {
     setOpen_trait(true);
   };
   return (
-    <div className='bg-white p-4 rounded-lg shadow-md '>
+    <div className="bg-white p-4 rounded-lg shadow-md ">
       <div className=" flex items-center justify-start">
         <BreadCrumb
           baseUrl={'/crm/visites/freins'}
           step={`Biens Disponibles du Prospect ${nomPrenom}`}
         />
       </div>
-      
+
       <div className="reflative">
         <Table
           showSearch={false}
-           customActions={[
+          customActions={[
             {
-              label: "Traiter Frein",
+              label: 'Traiter Frein',
               icon: <Check className="w-5 h-5" />,
-              className: "bg-green-500",
-              onClick: showTraitement
-            }
+              className: 'bg-green-500',
+              onClick: showTraitement,
+            },
           ]}
           data_to_export={data_to_export()}
           columns_export={columns_export}

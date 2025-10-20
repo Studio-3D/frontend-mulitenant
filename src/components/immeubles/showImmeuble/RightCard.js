@@ -20,9 +20,9 @@ const TAB_CONFIG = {
     icon: <HomeIcon size={18} />,
     name: 'Biens',
     apiEndpoint: APIURL.BIENS,
-    addLink: (user, immeubleId) =>
+    addLink: (user, immeubleId,projetId) =>
       isSuperAdmin(user?.role) || isAdmin(user?.role)
-        ? `/Biens/ajouter?immeuble=${immeubleId}`
+        ? `/Biens/ajouter?projet=${projetId}&immeuble=${immeubleId}`
         : undefined,
     filters: (tabsData, immeubleId, nbre_tranches, nbre_blocs) => {
       // Get unique status values from the biens data
@@ -824,7 +824,7 @@ export const RightCard = ({
             columns={currentColumns}
             data={hasItems ? filteredItems : []}
             addLink={{
-              pathname: TAB_CONFIG[safeActiveTab]?.addLink?.(user, immeubleId),
+              pathname: TAB_CONFIG[safeActiveTab]?.addLink?.(user, immeubleId,projetId),
               onClick: persistAddBienContext,
             }}
             showSearch={false}

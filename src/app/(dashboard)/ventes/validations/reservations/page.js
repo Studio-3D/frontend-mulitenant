@@ -19,8 +19,10 @@ import Modal_show_info from "../../../ventes/reservations/Modal_show_info";
 import LoadingSpin from "@/components/LoadingSpin";
 import VenteNavbar from "@/components/VenteNavbar";
 import DateRangePicker from "@/components/DateRangePicker";
+import { useProjet } from '@/context/ProjetContext';
 
 const PageTraitement_Validation_rejets = () => {
+  const { selectedProjet  } = useProjet();
   const etat_res =
     typeof window !== "undefined"
       ? JSON.parse(localStorage.getItem("etat_res"))
@@ -73,7 +75,7 @@ const PageTraitement_Validation_rejets = () => {
 
   // API configuration
   const entity = {
-    id: JSON.parse(localStorage.getItem("selectedProjet"))?.id + "/" + etat_res,
+    id: selectedProjet.id + "/" + etat_res,
     API_URL: "reservations_by_etat",
     dataKey: "data",
     searchFields: [""],
@@ -93,7 +95,7 @@ const PageTraitement_Validation_rejets = () => {
       setData,
       setTotalRows
     );
-  }, [accessToken, currentPage, rowsPerPage, searchTerm, filters]);
+  }, [accessToken, currentPage, rowsPerPage, searchTerm, filters,selectedProjet]);
 
   const handleFilterChange = (field, value) => {
     setTempFilters((prev) => ({ ...prev, [field]: value }));

@@ -1,31 +1,31 @@
-"use client";
-import React, { useState, useEffect, useRef } from "react";
-import { SideBar } from "../../../desistements/ajouter_desistement/[reservationId]/SideBar";
-import { Desistement_Definitif } from "../../../desistements/ajouter_desistement/[reservationId]/Desistement_Definitif";
-import { Desistement_Au_Profit } from "../../../desistements/ajouter_desistement/[reservationId]/Desistement_Au_Profit";
-import { Changement_De_Bien } from "../../../desistements/ajouter_desistement/[reservationId]/Changement_De_Bien";
-import { useRouter, useParams } from "next/navigation";
-import { APIURL } from "../../../../../../configs/api";
-import axios from "axios";
-import { type_dst } from "@/configs/enum";
-import { useAuth } from "../../../../../../context/AuthContext";
+'use client';
+import React, { useState, useEffect, useRef } from 'react';
+import { SideBar } from '../../../desistements/ajouter_desistement/[reservationId]/SideBar';
+import { Desistement_Definitif } from '../../../desistements/ajouter_desistement/[reservationId]/Desistement_Definitif';
+import { Desistement_Au_Profit } from '../../../desistements/ajouter_desistement/[reservationId]/Desistement_Au_Profit';
+import { Changement_De_Bien } from '../../../desistements/ajouter_desistement/[reservationId]/Changement_De_Bien';
+import { useRouter, useParams } from 'next/navigation';
+import { APIURL } from '../../../../../../configs/api';
+import axios from 'axios';
+import { type_dst } from '@/configs/enum';
+import { useAuth } from '../../../../../../context/AuthContext';
 import {
   fetchData_Select,
   fetchList_fichier_exist_by_Code,
-} from "../../../../../../../src/configs/api-utils";
-import { type_dst_dp } from "@/configs/enum";
+} from '../../../../../../../src/configs/api-utils';
+import { type_dst_dp } from '@/configs/enum';
 
-import LoadingSpin from "@/components/LoadingSpin";
-import { useForm, FormProvider } from "react-hook-form";
-import TextField from "@/components/Textfield";
-import AutocompleteSelectComponent from "@/components/AutocompleteSelectComponent";
+import LoadingSpin from '@/components/LoadingSpin';
+import { useForm, FormProvider } from 'react-hook-form';
+import TextField from '@/components/Textfield';
+import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
 import {
   MODE_PAIEMENT,
   getModePenaliteCode,
   modes_penalites,
-} from "@/configs/enum";
-import Autocomplete from "@/components/Autocomplete";
-
+} from '@/configs/enum';
+import Autocomplete from '@/components/Autocomplete';
+import { useProjet } from '@/context/ProjetContext';
 export default function Page() {
   const hasFetchedFiles = useRef(false);
   const codeResRef = useRef();
@@ -35,8 +35,9 @@ export default function Page() {
   const params = useParams();
   const { user, token } = useAuth();
   const desistementId = params.desistementId;
-  const accessToken = token || localStorage.getItem("accessToken");
-  const selectedProjet_id = 1;
+  const accessToken = token || localStorage.getItem('accessToken');
+  const { selectedProjet } = useProjet();
+  const selectedProjet_id = selectedProjet?.id;
   //JSON.parse(localStorage.getItem('selectedProjet'))?.id ;
   // Refs and state
   const initialLoadComplete = useRef(false);
@@ -82,11 +83,11 @@ export default function Page() {
   // Form methods
   const methods = useForm({
     defaultValues: {
-      mode_penalite: "",
+      mode_penalite: '',
       penalite_montant: 0,
-      penalite_par: "avance",
+      penalite_par: 'avance',
       sr_pen: false,
-      commentaire: "",
+      commentaire: '',
     },
   });
 
@@ -101,6 +102,20 @@ export default function Page() {
 
   const [isFormInitialized, setIsFormInitialized] = useState(false);
 
+  // Simple cache et comparaison for return back en cas de changer projet
+  const [oldProjetId, setOldProjetId] = useState(null);
+
+  useEffect(() => {
+    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+      if (oldProjetId) {
+        // Projet a changé
+
+        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+        router.back();
+      }
+      setOldProjetId(selectedProjet.id);
+    }
+  }, [selectedProjet?.id, oldProjetId, router]);
   // Fetch desistement data
   const fetchDesistementData = async () => {
     try {
@@ -123,25 +138,25 @@ export default function Page() {
       setIsFormInitialized(true); // Mark form as initialized
 
       // Set penalty flag if penalty exists
-      setValue("commentaire", desistement.commentaire);
+      setValue('commentaire', desistement.commentaire);
       if (response.data.penalite != null) {
         setAvecPenalite(true);
-        setValue("mode_penalite", response.data.penalite?.mode_penalite);
+        setValue('mode_penalite', response.data.penalite?.mode_penalite);
         setValue(
-          "mode_penalite_value",
+          'mode_penalite_value',
           getModePenaliteCode(response.data.penalite?.mode_penalite)
         );
-        setValue("penalite_montant", response.data.penalite?.montant);
-        setValue("penalite_par", response.data.penalite?.penalite_par);
-        setValue("sr_pen", response.data.penalite?.sr == 0 ? false : true);
-        setValue("mode_paiement_pen", response.data.penalite?.mode_paiement);
+        setValue('penalite_montant', response.data.penalite?.montant);
+        setValue('penalite_par', response.data.penalite?.penalite_par);
+        setValue('sr_pen', response.data.penalite?.sr == 0 ? false : true);
+        setValue('mode_paiement_pen', response.data.penalite?.mode_paiement);
 
-        setValue("banque_pen", response.data.penalite?.banque_id);
+        setValue('banque_pen', response.data.penalite?.banque_id);
         setValue(
-          "numero_paiement_pen",
+          'numero_paiement_pen',
           response.data.penalite?.numero_paiement
         );
-        setValue("echeance_pen", response.data.penalite?.echeance);
+        setValue('echeance_pen', response.data.penalite?.echeance);
 
         setSelectedFiles_plt(
           response.data.penalite?.piece_jointes
@@ -149,7 +164,7 @@ export default function Page() {
             : []
         );
         setValue(
-          "files_penalite",
+          'files_penalite',
           response.data.penalite?.piece_jointes
             ? response.data.penalite?.piece_jointes
             : []
@@ -160,12 +175,12 @@ export default function Page() {
       if (desistement.piece_jointes && desistement.piece_jointes.length > 0) {
         setAvecPiecesJointes(true);
         setSelectedFiles_dst(desistement.piece_jointes || []);
-        setValue("files_desistement", desistement.piece_jointes || []);
+        setValue('files_desistement', desistement.piece_jointes || []);
         // You might want to pre-load existing files here
       }
       // Add similar blocks for other types (2 and 3) if needed
     } catch (error) {
-      console.error("Error fetching desistement:", error);
+      console.error('Error fetching desistement:', error);
     } finally {
       setLoading((prev) => ({ ...prev, form: false, general: false }));
     }
@@ -173,7 +188,7 @@ export default function Page() {
 
   useEffect(() => {
     if (isFormInitialized) {
-      console.log("Form values after initialization:", methods.getValues());
+      console.log('Form values after initialization:', methods.getValues());
     }
   }, [isFormInitialized, methods]);
 
@@ -198,7 +213,7 @@ export default function Page() {
       } = reservation;
       codeResRef.current = code_reservation; // Update the ref
 
-      const transformAquereur = (aq, suffix = "") => ({
+      const transformAquereur = (aq, suffix = '') => ({
         id: aq.id,
         cl_id: aq.client.id,
         cin: aq.client.cin,
@@ -209,7 +224,7 @@ export default function Page() {
 
       const processedAquereurs = aquereurs.map((aq) => transformAquereur(aq));
       const processedAquereurs_part = aquereurs.map((aq) =>
-        transformAquereur(aq, "_")
+        transformAquereur(aq, '_')
       );
       const rembourseList = aquereurs.map((aq) => ({
         aq_id: aq.id,
@@ -217,15 +232,15 @@ export default function Page() {
         nom: aq.client.nom,
         prenom: aq.client.prenom,
         pourcentage: aq.pourcentage,
-        date_rembourse: "",
-        mode_rembourse: "",
-        mode_rembourse_2: "direct",
-        dossier_id: "",
-        montant_transferer: "",
-        reste_a_rembourse: "",
-        num_paiement: "",
+        date_rembourse: '',
+        mode_rembourse: '',
+        mode_rembourse_2: 'direct',
+        dossier_id: '',
+        montant_transferer: '',
+        reste_a_rembourse: '',
+        num_paiement: '',
         cheque_recu: null,
-        pour_le_compte: "",
+        pour_le_compte: '',
         fichier_autorisation: null,
       }));
       setReservationData({
@@ -243,7 +258,7 @@ export default function Page() {
         inputListRemb: rembourseList,
       });
     } catch (error) {
-      console.error("Error fetching reservation:", error);
+      console.error('Error fetching reservation:', error);
     }
   };
   // Fetch files
@@ -257,21 +272,21 @@ export default function Page() {
         !files.avc &&
           fetchList_fichier_exist_by_Code(
             setFilesList_avc,
-            "avc",
+            'avc',
             codeResRef.current,
             setLoading_list
           ),
         !files.dst &&
           fetchList_fichier_exist_by_Code(
             setFilesList_dst,
-            "dst",
+            'dst',
             codeResRef.current,
             setLoading_list
           ),
         !files.plt &&
           fetchList_fichier_exist_by_Code(
             setFilesList_plt,
-            "plt",
+            'plt',
             codeResRef.current,
             setLoading_list
           ),
@@ -279,7 +294,7 @@ export default function Page() {
 
       await Promise.all(filesPromises);
     } catch (error) {
-      console.error("Error fetching files:", error);
+      console.error('Error fetching files:', error);
     } finally {
       setLoading((prev) => ({ ...prev, files: false }));
     }
@@ -293,10 +308,10 @@ export default function Page() {
     const fetchAllData = async () => {
       try {
         await fetchDesistementData();
-        await fetchData_Select("banques", setBanques, setLoading_bnq);
+        await fetchData_Select('banques', setBanques, setLoading_bnq);
         await fetchFiles();
       } catch (error) {
-        console.error("Error loading initial data:", error);
+        console.error('Error loading initial data:', error);
       }
     };
 
@@ -304,7 +319,7 @@ export default function Page() {
   }, [desistementId]);
 
   useEffect(() => {
-    console.log("Form values updated:", methods.getValues());
+    console.log('Form values updated:', methods.getValues());
   }, [methods.watch()]);
 
   // Handle form submission
@@ -313,27 +328,27 @@ export default function Page() {
       setLoading((prev) => ({ ...prev, submit: true }));
 
       const formData = new FormData();
-      formData.append("desistement_id_rejete", desistementId);
-      formData.append("reservation_id", desistementData.reservation_id);
-      formData.append("projet_id", selectedProjet_id);
-      formData.append("bien_id_ancien", reservationData.bienIdAncien);
+      formData.append('desistement_id_rejete', desistementId);
+      formData.append('reservation_id', desistementData.reservation_id);
+      formData.append('projet_id', selectedProjet_id);
+      formData.append('bien_id_ancien', reservationData.bienIdAncien);
 
       // Add common fields
-      formData.append("avec_pieces_jointes", avecPiecesJointes);
-      formData.append("commentaire", watch("commentaire"));
-      formData.append("sum_avances_valides", reservationData.sumAvances);
+      formData.append('avec_pieces_jointes', avecPiecesJointes);
+      formData.append('commentaire', watch('commentaire'));
+      formData.append('sum_avances_valides', reservationData.sumAvances);
 
       // Add penalty data if exists
-      formData.append("checked_penalite", avecPenalite);
+      formData.append('checked_penalite', avecPenalite);
       if (avecPenalite) {
-        formData.append("mode_penalite", watch("mode_penalite"));
-        formData.append("penalite_montant", watch("penalite_montant"));
-        formData.append("penalite_par", watch("penalite_par"));
-        formData.append("sr_pen", watch("sr_pen"));
-        formData.append("mode_paiement_pen", watch("mode_paiement_pen"));
-        formData.append("banque_id_pen", watch("banque_pen"));
-        formData.append("numero_paiement_pen", watch("numero_paiement_pen"));
-        formData.append("echeance_pen", watch("echeance_pen"));
+        formData.append('mode_penalite', watch('mode_penalite'));
+        formData.append('penalite_montant', watch('penalite_montant'));
+        formData.append('penalite_par', watch('penalite_par'));
+        formData.append('sr_pen', watch('sr_pen'));
+        formData.append('mode_paiement_pen', watch('mode_paiement_pen'));
+        formData.append('banque_id_pen', watch('banque_pen'));
+        formData.append('numero_paiement_pen', watch('numero_paiement_pen'));
+        formData.append('echeance_pen', watch('echeance_pen'));
       }
 
       // Add files
@@ -348,10 +363,10 @@ export default function Page() {
       // Add type-specific data
       if (activeModel == 1) {
         // Désistement Définitif
-        formData.append("type", 1);
-        formData.append("motif", data.motif);
-        formData.append("type_remb", data.type_remb);
-        formData.append("inputlist_remb", JSON.stringify(data.inputList_remb));
+        formData.append('type', 1);
+        formData.append('motif', data.motif);
+        formData.append('type_remb', data.type_remb);
+        formData.append('inputlist_remb', JSON.stringify(data.inputList_remb));
         data.inputList_remb.forEach((item, index) => {
           if (item.fichier_autorisation) {
             formData.append(
@@ -367,57 +382,57 @@ export default function Page() {
         });
       } else if (activeModel == 2) {
         // Add type-specific data based on subtype
-        formData.append("type", 2);
-        formData.append("type_dp", data.type_dp);
+        formData.append('type', 2);
+        formData.append('type_dp', data.type_dp);
         switch (data.type_dp) {
-          case "1": // Proche
+          case '1': // Proche
             formData.append(
-              "desisteur_dp_proche_co",
+              'desisteur_dp_proche_co',
               JSON.stringify(data.desisteur_dp_proche_co)
             );
             formData.append(
-              "new_clients_dp_proche",
+              'new_clients_dp_proche',
               JSON.stringify(data.inputList)
             );
-            formData.append("lien_parente", data.lien_parente);
+            formData.append('lien_parente', data.lien_parente);
             break;
 
-          case "2": // Co-réservataire
+          case '2': // Co-réservataire
             formData.append(
-              "desisteur_dp_proche_co",
+              'desisteur_dp_proche_co',
               JSON.stringify(data.desisteur_dp_proche_co)
             );
             formData.append(
-              "profit_dp_co_reser",
+              'profit_dp_co_reser',
               JSON.stringify(data.profit_dp_co_reser)
             );
-            formData.append("lien_parente", data.lien_parente);
+            formData.append('lien_parente', data.lien_parente);
             break;
 
-          case "3": // Partiel
+          case '3': // Partiel
             formData.append(
-              "desisteutrs_profit_dp_partiel",
+              'desisteutrs_profit_dp_partiel',
               JSON.stringify(data.desisteutrs_profit_dp_partiel)
             );
             formData.append(
-              "new_clients_dp_partiel",
+              'new_clients_dp_partiel',
               JSON.stringify(data.new_clients_dp_partiel)
             );
-            formData.append("lien_parente", data.lien_parente);
+            formData.append('lien_parente', data.lien_parente);
             break;
         }
       } else if (activeModel == 3) {
         // DATA TYPE 3
 
-        formData.append("type", 3);
-        formData.append("bien_id_new", data.new_bien_id);
-        formData.append("montant_a_ajouter", data.montant_a_ajouter);
+        formData.append('type', 3);
+        formData.append('bien_id_new', data.new_bien_id);
+        formData.append('montant_a_ajouter', data.montant_a_ajouter);
         if (data.montant_a_ajouter > 0) {
-          formData.append("sr", data.sr || false);
-          formData.append("mode_paiement", data.mode_paiement);
-          formData.append("banque_id", data.banque_id);
-          formData.append("numero_paiement", data.numero_paiement);
-          formData.append("echeance", data.echeance);
+          formData.append('sr', data.sr || false);
+          formData.append('mode_paiement', data.mode_paiement);
+          formData.append('banque_id', data.banque_id);
+          formData.append('numero_paiement', data.numero_paiement);
+          formData.append('echeance', data.echeance);
           for (let i = 0; i < data?.files_avance?.length; i++) {
             formData.append(`files_avance[${i}]`, data.files_avance[i]);
           }
@@ -427,7 +442,7 @@ export default function Page() {
 
       const response = await axios.post(APIURL.DESISTEMENT, formData, {
         headers: {
-          "Content-Type": "multipart/form-data",
+          'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${accessToken}`,
         },
       });
@@ -441,7 +456,7 @@ export default function Page() {
         router.push('/ventes/desistements/attente_encours');
       }*/
     } catch (error) {
-      console.error("Error submitting form:", error);
+      console.error('Error submitting form:', error);
     } finally {
       setLoading((prev) => ({ ...prev, submit: false }));
     }
@@ -458,21 +473,21 @@ export default function Page() {
     if (activeModel == 1) {
       // Basic form validations
       if (!formValues.motif) {
-        errors.push("Le motif est requis");
+        errors.push('Le motif est requis');
       }
 
       if (reservationData.sumAvances > 0) {
         if (!formValues.type_remb) {
-          errors.push("Le type de remboursement est requis");
+          errors.push('Le type de remboursement est requis');
         }
 
         // Validate based on remboursement type
-        if (formValues.type_remb == "direct") {
+        if (formValues.type_remb == 'direct') {
           if (
             !formValues.inputList_remb ||
             formValues.inputList_remb.length == 0
           ) {
-            errors.push("Au moins un remboursement doit être configuré");
+            errors.push('Au moins un remboursement doit être configuré');
           } else {
             formValues.inputList_remb.forEach((item, index) => {
               const clientPrefix = `Client ${item.nom} ${item.prenom}:`;
@@ -486,8 +501,8 @@ export default function Page() {
 
               // Validate transfer section if mode is transfert or transfert_remb
               if (
-                item.type_remb == "transfert" ||
-                item.type_remb == "transfert_remb"
+                item.type_remb == 'transfert' ||
+                item.type_remb == 'transfert_remb'
               ) {
                 if (!item.dossier_id) {
                   errors.push(
@@ -496,13 +511,13 @@ export default function Page() {
                 }
 
                 // Additional validation for transfert_remb mode
-                if (item.type_remb == "transfert_remb") {
+                if (item.type_remb == 'transfert_remb') {
                   const sum_avance_by_aq_percent =
                     (item.pourcentage / 100) * reservationData.sumAvances;
 
                   // Validate montant_transferer
                   if (
-                    item.montant_transferer == "" ||
+                    item.montant_transferer == '' ||
                     item.montant_transferer == null
                   ) {
                     errors.push(
@@ -556,7 +571,7 @@ export default function Page() {
 
                   // Validate reste_a_rembourse
                   if (
-                    item.reste_a_rembourse == "" ||
+                    item.reste_a_rembourse == '' ||
                     item.reste_a_rembourse == null
                   ) {
                     errors.push(
@@ -583,7 +598,7 @@ export default function Page() {
                   }
 
                   // Validate direct remboursement fields if type_remb_transfere is immediat
-                  if (item.type_remb_transfere == "immediat") {
+                  if (item.type_remb_transfere == 'immediat') {
                     if (!item.date_rembourse) {
                       errors.push(
                         `${clientPrefix} La date de remboursement est requise pour le remboursement immédiat`
@@ -604,13 +619,13 @@ export default function Page() {
                         `${clientPrefix} Le compte bénéficiaire est requis pour le remboursement immédiat`
                       );
                     }
-                    if (item.mode_rembourse == "cheque" && !item.cheque_recu) {
+                    if (item.mode_rembourse == 'cheque' && !item.cheque_recu) {
                       errors.push(
                         `${clientPrefix} Le reçu de chèque est requis pour le remboursement immédiat`
                       );
                     }
                     if (
-                      item.pour_le_compte == "autre" &&
+                      item.pour_le_compte == 'autre' &&
                       !item.fichier_autorisation
                     ) {
                       errors.push(
@@ -622,7 +637,7 @@ export default function Page() {
               }
 
               // Validate direct remboursement fields if mode is direct
-              if (item.type_remb == "direct") {
+              if (item.type_remb == 'direct') {
                 if (!item.date_rembourse) {
                   errors.push(
                     `${clientPrefix} La date de remboursement est requise`
@@ -643,11 +658,11 @@ export default function Page() {
                     `${clientPrefix} Le compte bénéficiaire est requis`
                   );
                 }
-                if (item.mode_rembourse == "cheque" && !item.cheque_recu) {
+                if (item.mode_rembourse == 'cheque' && !item.cheque_recu) {
                   errors.push(`${clientPrefix} Le reçu de chèque est requis`);
                 }
                 if (
-                  item.pour_le_compte == "autre" &&
+                  item.pour_le_compte == 'autre' &&
                   !item.fichier_autorisation
                 ) {
                   errors.push(
@@ -657,7 +672,7 @@ export default function Page() {
               }
 
               // Validate the sum makes sense for transfert_remb
-              if (item.type_remb == "transfert_remb") {
+              if (item.type_remb == 'transfert_remb') {
                 const montantTransferer =
                   parseFloat(item.montant_transferer) || 0;
                 const resteARembourser =
@@ -685,7 +700,7 @@ export default function Page() {
     } else if (activeModel == 2) {
       // Common validation for all types
       if (!formValues.type_dp) {
-        errors.push("Le type de désistement au profit est requis");
+        errors.push('Le type de désistement au profit est requis');
       }
 
       // Validate based on the selected type
@@ -697,11 +712,11 @@ export default function Page() {
           !formValues.desisteur_dp_proche_co ||
           formValues.desisteur_dp_proche_co.length == 0
         ) {
-          errors.push("Au moins un désisteur doit être sélectionné");
+          errors.push('Au moins un désisteur doit être sélectionné');
         }
 
         if (!formValues.inputList || formValues.inputList.length == 0) {
-          errors.push("Au moins un nouveau client doit être ajouté");
+          errors.push('Au moins un nouveau client doit être ajouté');
         } else {
           formValues.inputList.forEach((client, index) => {
             if (!client.cin) {
@@ -756,7 +771,7 @@ export default function Page() {
         }
 
         if (!formValues.lien_parente) {
-          errors.push("Le lien de parenté est requis");
+          errors.push('Le lien de parenté est requis');
         }
       } else if (type_dp == 2) {
         // Désistement au profit d'un co-réservataire
@@ -764,17 +779,17 @@ export default function Page() {
           !formValues.desisteur_dp_proche_co ||
           formValues.desisteur_dp_proche_co.length == 0
         ) {
-          errors.push("Au moins un désisteur doit être sélectionné");
+          errors.push('Au moins un désisteur doit être sélectionné');
         }
 
         if (
           !formValues.profit_dp_co_reser ||
           formValues.profit_dp_co_reser.length == 0
         ) {
-          errors.push("Au moins un bénéficiaire doit être sélectionné");
+          errors.push('Au moins un bénéficiaire doit être sélectionné');
         } else {
           console.log(
-            "dp co r==>" + JSON.stringify(formValues.profit_dp_co_reser)
+            'dp co r==>' + JSON.stringify(formValues.profit_dp_co_reser)
           );
           let totalPercentage = 0;
           formValues.profit_dp_co_reser.forEach((beneficiary, index) => {
@@ -814,7 +829,7 @@ export default function Page() {
           !formValues.desisteutrs_profit_dp_partiel ||
           formValues.desisteutrs_profit_dp_partiel.length == 0
         ) {
-          errors.push("Au moins un désisteur doit être sélectionné");
+          errors.push('Au moins un désisteur doit être sélectionné');
         } else {
           // Validate each desisteur's percentage
           let totalOldPercentage = 0;
@@ -914,7 +929,7 @@ export default function Page() {
         }
 
         if (!formValues.lien_parente) {
-          errors.push("Le lien de parenté est requis");
+          errors.push('Le lien de parenté est requis');
         }
       }
     } else if (activeModel == 3) {
@@ -925,24 +940,24 @@ export default function Page() {
 
       // Validate montant à ajouter if needed
       if (formValues.montant_a_ajouter < 0) {
-        errors.push("Le montant à ajouter ne peut pas être négatif");
+        errors.push('Le montant à ajouter ne peut pas être négatif');
       }
 
       // Validate payment details if montant_a_ajouter > 0
       if (formValues.montant_a_ajouter > 0) {
         if (!formValues.mode_paiement) {
           errors.push(
-            "Le mode de paiement est requis pour le montant à ajouter"
+            'Le mode de paiement est requis pour le montant à ajouter'
           );
         }
 
         // Validate non-cash payment details
         if (formValues.mode_paiement && formValues.mode_paiement != 1) {
           if (!formValues.banque_id) {
-            errors.push("La banque est requise pour ce mode de paiement");
+            errors.push('La banque est requise pour ce mode de paiement');
           }
           if (!formValues.numero_paiement) {
-            errors.push("Le numéro de paiement est requis");
+            errors.push('Le numéro de paiement est requis');
           }
 
           // Validate echeance for certain payment methods
@@ -966,16 +981,16 @@ export default function Page() {
     // Penalty validation (applies to all activeModel cases if avecPenalite is true)
     if (avecPenalite) {
       if (!formValues.mode_penalite) {
-        errors.push("Le mode de pénalité est requis");
+        errors.push('Le mode de pénalité est requis');
       } else {
         if (!formValues.penalite_montant || formValues.penalite_montant <= 0) {
-          errors.push("Le montant de la pénalité doit être supérieur à 0");
+          errors.push('Le montant de la pénalité doit être supérieur à 0');
         }
 
-        if (formValues.mode_penalite !== "Montant") {
+        if (formValues.mode_penalite !== 'Montant') {
           if (!formValues.penalite_par) {
             errors.push(
-              "Le type de calcul de pénalité est requis (Prix/Avance)"
+              'Le type de calcul de pénalité est requis (Prix/Avance)'
             );
           }
         }
@@ -983,17 +998,17 @@ export default function Page() {
         // Payment method validation if penalty amount is set
         if (formValues.penalite_montant > 0) {
           if (!formValues.mode_paiement_pen) {
-            errors.push("Le mode de paiement de la pénalité est requis");
+            errors.push('Le mode de paiement de la pénalité est requis');
           } else {
             if (formValues.mode_paiement_pen != 1) {
               // If not cash
               if (!formValues.banque_pen) {
                 errors.push(
-                  "La banque pour le paiement de la pénalité est requise"
+                  'La banque pour le paiement de la pénalité est requise'
                 );
               }
               if (!formValues.numero_paiement_pen) {
-                errors.push("Le numéro de paiement de la pénalité est requis");
+                errors.push('Le numéro de paiement de la pénalité est requis');
               }
 
               // Validate echeance for certain payment methods
@@ -1028,7 +1043,7 @@ export default function Page() {
     const setSelectedFiles = isDst
       ? setSelectedFiles_dst
       : setSelectedFiles_plt;
-    const formField = isDst ? "files_desistement" : "files_penalite";
+    const formField = isDst ? 'files_desistement' : 'files_penalite';
 
     const updatedFiles = [...selectedFiles];
     const existingFileNames = new Set(Object.values(filesList));
@@ -1038,11 +1053,11 @@ export default function Page() {
 
     for (const file of files) {
       const fileName = file.name;
-      const lastDotIndex = fileName.lastIndexOf(".");
+      const lastDotIndex = fileName.lastIndexOf('.');
       const baseName =
         lastDotIndex == -1 ? fileName : fileName.substring(0, lastDotIndex);
       const extension =
-        lastDotIndex == -1 ? "" : fileName.substring(lastDotIndex + 1);
+        lastDotIndex == -1 ? '' : fileName.substring(lastDotIndex + 1);
 
       let finalFileName = fileName;
 
@@ -1092,7 +1107,7 @@ export default function Page() {
     const setSelectedFiles = isDst
       ? setSelectedFiles_dst
       : setSelectedFiles_plt;
-    const formField = isDst ? "files_desistement" : "files_penalite";
+    const formField = isDst ? 'files_desistement' : 'files_penalite';
 
     const updatedFiles = selectedFiles.filter((_, i) => i !== index);
     setSelectedFiles(updatedFiles);
@@ -1102,11 +1117,11 @@ export default function Page() {
 
   // Helper functions (add these outside your component)
   const getFileIcon = (filename) => {
-    const extension = filename.split(".").pop().toLowerCase();
-    const iconClass = "w-5 h-5 flex-shrink-0 text-gray-400";
+    const extension = filename.split('.').pop().toLowerCase();
+    const iconClass = 'w-5 h-5 flex-shrink-0 text-gray-400';
 
     switch (extension) {
-      case "pdf":
+      case 'pdf':
         return (
           <svg className={iconClass} fill="currentColor" viewBox="0 0 20 20">
             <path
@@ -1116,9 +1131,9 @@ export default function Page() {
             />
           </svg>
         );
-      case "jpg":
-      case "jpeg":
-      case "png":
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
         return (
           <svg className={iconClass} fill="currentColor" viewBox="0 0 20 20">
             <path
@@ -1128,8 +1143,8 @@ export default function Page() {
             />
           </svg>
         );
-      case "doc":
-      case "docx":
+      case 'doc':
+      case 'docx':
         return (
           <svg className={iconClass} fill="currentColor" viewBox="0 0 20 20">
             <path
@@ -1153,7 +1168,7 @@ export default function Page() {
   };
 
   const formatFileSize = (bytes) => {
-    if (!bytes) return "N/A";
+    if (!bytes) return 'N/A';
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / 1048576).toFixed(1)} MB`;
@@ -1161,38 +1176,38 @@ export default function Page() {
 
   const handlechange_penalite = (event) => {
     const selectedType = event.target.value; // "prix" or "avance"
-    setValue("penalite_par", selectedType);
+    setValue('penalite_par', selectedType);
 
     // Recalculate only if a penalty mode is selected and it's not "Montant"
-    const currentMode = watch("mode_penalite");
-    if (currentMode && currentMode != "Montant") {
+    const currentMode = watch('mode_penalite');
+    if (currentMode && currentMode != 'Montant') {
       const percentage = parseFloat(currentMode);
       const amount =
-        selectedType == "prix"
+        selectedType == 'prix'
           ? reservationData.prix
           : reservationData.sumAvances;
 
-      setValue("penalite_montant", (amount * percentage) / 100);
+      setValue('penalite_montant', (amount * percentage) / 100);
     }
   };
 
   const handlechange_mode_penalite = (code) => {
     const selectedMode = modes_penalites[code];
     if (selectedMode) {
-      console.log("Selected Mode:", selectedMode.label);
-      setValue("mode_penalite", selectedMode.label);
+      console.log('Selected Mode:', selectedMode.label);
+      setValue('mode_penalite', selectedMode.label);
 
       // Calculate penalty amount
-      if (selectedMode.label != "Montant") {
+      if (selectedMode.label != 'Montant') {
         const percentage = parseFloat(selectedMode.label);
-        if (watch("penalite_par") == "prix") {
+        if (watch('penalite_par') == 'prix') {
           setValue(
-            "penalite_montant",
+            'penalite_montant',
             (reservationData.prix * percentage) / 100
           );
         } else {
           setValue(
-            "penalite_montant",
+            'penalite_montant',
             (reservationData.sumAvances * percentage) / 100
           );
         }
@@ -1233,13 +1248,13 @@ export default function Page() {
           >
             <span className="font-medium text-blue-700">Type:</span>
             <span className="ml-1 text-gray-800">
-              {type_dst[desistementData.type]?.label || "Inconnu"}
+              {type_dst[desistementData.type]?.label || 'Inconnu'}
             </span>
             {desistementData.type == 2 && desistementData.type_dp && (
               <span className="text-blue-500/90 ml-1.5">
                 (
                 {type_dst_dp[desistementData.type_dp]?.label ||
-                  "Sous-type inconnu"}
+                  'Sous-type inconnu'}
                 )
               </span>
             )}
@@ -1317,8 +1332,8 @@ export default function Page() {
                   checked={avecPenalite}
                   onChange={() => {
                     setAvecPenalite(!avecPenalite);
-                    if (!avecPenalite && watch("penalite_montant") != null) {
-                      setValue("penalite_montant", 0);
+                    if (!avecPenalite && watch('penalite_montant') != null) {
+                      setValue('penalite_montant', 0);
                     }
                   }}
                   className="sr-only peer"
@@ -1331,16 +1346,16 @@ export default function Page() {
           {avecPenalite && (
             <div className="border-t border-gray-200 py-4 px-6 space-y-4">
               <div className="flex flex-col md:flex-row gap-4 items-center">
-                {" "}
+                {' '}
                 {/* Ensures alignment */}
                 {/* Mode Pénalité Dropdown */}
                 <div className="flex-1 min-w-[200px] mt-1">
-                  {" "}
+                  {' '}
                   {/* Added mt-1 */}
                   <AutocompleteSelectComponent
                     label="Mode Pénalité"
                     name="mode_penalite"
-                    value={watch("mode_penalite_value")}
+                    value={watch('mode_penalite_value')}
                     control={control}
                     options={modes_penalites}
                     errors={errors}
@@ -1348,30 +1363,30 @@ export default function Page() {
                   />
                 </div>
                 {/* Conditional Fields (aligned at the same height) */}
-                {watch("mode_penalite") && (
+                {watch('mode_penalite') && (
                   <>
-                    {watch("mode_penalite") == "Montant" ||
-                    watch("mode_penalite") == "13" ? (
+                    {watch('mode_penalite') == 'Montant' ||
+                    watch('mode_penalite') == '13' ? (
                       /* Manual Penalty Amount Input (same height as other fields) */
                       <div className="flex-1 min-w-[180px]">
                         <TextField
                           label="Pénalité Montant"
                           name="penalite_montant"
                           type="number"
-                          value={watch("penalite_montant")}
+                          value={watch('penalite_montant')}
                           control={control}
                           errors={{}}
                           backendErrors={{}}
                           required
                           onChange={(e) =>
-                            setValue("penalite_montant", e.target.value)
+                            setValue('penalite_montant', e.target.value)
                           }
                         />
                       </div>
                     ) : (
                       /* Percentage-based Penalty (keeps same height) */
                       <div className="flex flex-1 flex-col md:flex-row gap-4 items-center">
-                        {" "}
+                        {' '}
                         {/* Ensures inner alignment */}
                         {/* Radio Buttons (Prix/Avance) */}
                         <div className="min-w-[220px]">
@@ -1385,7 +1400,7 @@ export default function Page() {
                                   type="radio"
                                   name="penalite_par"
                                   value="prix"
-                                  checked={watch("penalite_par") == "prix"}
+                                  checked={watch('penalite_par') == 'prix'}
                                   onChange={handlechange_penalite}
                                   className="h-4 w-4 text-blue-600 focus:ring-blue-500"
                                 />
@@ -1396,7 +1411,7 @@ export default function Page() {
                                   type="radio"
                                   name="penalite_par"
                                   value="avance"
-                                  checked={watch("penalite_par") == "avance"}
+                                  checked={watch('penalite_par') == 'avance'}
                                   onChange={handlechange_penalite}
                                   className="h-4 w-4 text-purple-600 focus:ring-purple-500"
                                 />
@@ -1416,7 +1431,7 @@ export default function Page() {
                             backendErrors={{}}
                             required
                             disabled
-                            value={watch("penalite_montant") || ""}
+                            value={watch('penalite_montant') || ''}
                           />
                         </div>
                       </div>
@@ -1426,9 +1441,9 @@ export default function Page() {
               </div>
               <div className="border-t border-gray-200 py-4">
                 {/* Only show penalty payment section if mode_penalite is selected AND penalite_montant has a valid value */}
-                {watch("mode_penalite") &&
-                  watch("penalite_montant") &&
-                  watch("penalite_montant") > 0 && (
+                {watch('mode_penalite') &&
+                  watch('penalite_montant') &&
+                  watch('penalite_montant') > 0 && (
                     <>
                       <div className="mt-4">
                         <h3 className="text-md font-medium text-gray-900">
@@ -1442,9 +1457,9 @@ export default function Page() {
                             <input
                               type="checkbox"
                               name="sr_pen"
-                              checked={watch("sr_pen") || false}
+                              checked={watch('sr_pen') || false}
                               onChange={(e) =>
-                                setValue("sr_pen", e.target.checked ? 1 : 0)
+                                setValue('sr_pen', e.target.checked ? 1 : 0)
                               } // Sets to 1 when checked, 0 when unchecked
                               className="text-blue-600 focus:ring-blue-500"
                             />
@@ -1457,33 +1472,33 @@ export default function Page() {
                           <AutocompleteSelectComponent
                             label="Mode de Paiement"
                             required
-                            value={watch("mode_paiement")}
+                            value={watch('mode_paiement')}
                             name="mode_paiement_pen"
                             control={control}
                             options={MODE_PAIEMENT}
                             errors={errors}
                             onChange={(value) =>
-                              setValue("mode_paiement_pen", value)
+                              setValue('mode_paiement_pen', value)
                             }
                           />
                         </div>
                       </div>
 
-                      {watch("mode_paiement_pen") &&
-                        watch("mode_paiement_pen") != 1 && (
+                      {watch('mode_paiement_pen') &&
+                        watch('mode_paiement_pen') != 1 && (
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                             <div>
                               <Autocomplete
                                 label="Banque:"
                                 name="banque_pen"
-                                required={watch("mode_paiement_pen") != "1"}
+                                required={watch('mode_paiement_pen') != '1'}
                                 options={banques}
-                                value={watch("banque_pen")}
+                                value={watch('banque_pen')}
                                 control={control}
                                 errors={{}}
                                 backendErrors={{}}
                                 onChange={(e) => {
-                                  setValue("banque_pen", e.id);
+                                  setValue('banque_pen', e.id);
                                 }}
                                 choix="nom"
                               />
@@ -1500,7 +1515,7 @@ export default function Page() {
                                 required
                                 onChange={(e) =>
                                   setValue(
-                                    "numero_paiement_pen",
+                                    'numero_paiement_pen',
                                     e.target.value
                                   )
                                 }
@@ -1508,10 +1523,10 @@ export default function Page() {
                             </div>
                           </div>
                         )}
-                      {watch("mode_paiement_pen") &&
-                        watch("mode_paiement_pen") != 1 &&
-                        watch("mode_paiement_pen") != 5 &&
-                        watch("mode_paiement_pen") != 6 && (
+                      {watch('mode_paiement_pen') &&
+                        watch('mode_paiement_pen') != 1 &&
+                        watch('mode_paiement_pen') != 5 &&
+                        watch('mode_paiement_pen') != 6 && (
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                             <div>
                               <TextField
@@ -1523,7 +1538,7 @@ export default function Page() {
                                 backendErrors={{}}
                                 required
                                 onChange={(e) =>
-                                  setValue("echeance_pen", e.target.value)
+                                  setValue('echeance_pen', e.target.value)
                                 }
                                 InputLabelProps={{ shrink: true }}
                               />
@@ -1791,8 +1806,8 @@ export default function Page() {
               disabled={loading.submit || errors_g.length > 0}
               className={`px-4 py-2 rounded-md focus:outline-none focus:ring-2 transition-colors ${
                 loading.submit || errors_g.length > 0
-                  ? "bg-indigo-100 text-indigo-600 cursor-not-allowed"
-                  : "bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500"
+                  ? 'bg-indigo-100 text-indigo-600 cursor-not-allowed'
+                  : 'bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500'
               }`}
             >
               {loading.submit ? (
@@ -1801,7 +1816,7 @@ export default function Page() {
                   Enregistrer
                 </span>
               ) : (
-                "Enregistrer"
+                'Enregistrer'
               )}
             </button>
           </div>

@@ -39,7 +39,7 @@ const setStoredActiveTab = (trancheId, tabName) => {
 export const TrancheDetailsPage = () => {
   const { id } = useParams();
   const router = useRouter();
-  const { selectProjet, clearSelectedProjet } = useProjet();
+  const { selectProjet, clearSelectedProjet,selectedProjet } = useProjet();
   const { user } = useAuth();
   const [trancheData, setTrancheData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -84,6 +84,14 @@ export const TrancheDetailsPage = () => {
     }
   }, [id, fetchTrancheDetails]);
   // Persist breadcrumb context for fast "Ajouter bien" page
+
+  useEffect(() => {
+ // console.log('projet_id==>'+ selectedProjet?.id + 'w projet d tranche'+trancheData?.tranche?.projet_id)
+  if(trancheData?.tranche?.projet_id!=undefined && selectedProjet?.id!=trancheData?.tranche?.projet_id){
+    router.push('/Projets/'+selectedProjet?.id)
+  }
+}, [selectedProjet?.id, trancheData?.tranche?.projet_id]);
+
   useEffect(() => {
     if (trancheData?.tranche) {
       try {

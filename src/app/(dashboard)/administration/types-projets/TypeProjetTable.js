@@ -58,22 +58,9 @@ const TypeProjetTable = () => {
       setTypeProjets,
       setTotalRows
     );
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters]);
+  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters,selectedProjet]);
 
-  useEffect(() => {
-    fetchData_table_by_projet(
-      entity,
-      filters,
-      searchTerm,
-      currentPage,
-      rowsPerPage,
-      accesstoken,
-      setLoading,
-      setError,
-      setTypeProjets,
-      setTotalRows
-    );
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters]);
+
 
   function handleEdit(TypeProjetId) {
     router.push(`${ENDPOINTS.TYPEPROJETS}?id=${TypeProjetId}&action=edit`);

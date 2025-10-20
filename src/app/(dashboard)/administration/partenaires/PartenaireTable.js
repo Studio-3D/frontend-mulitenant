@@ -63,27 +63,7 @@ const PartenaireTable = () => {
     selectedProjet,
   ]);
 
-  useEffect(() => {
-    fetchData_table_by_projet(
-      entity,
-      filters,
-      searchTerm,
-      currentPage,
-      rowsPerPage,
-      accesstoken,
-      setLoading,
-      setError,
-      setPartenaires,
-      setTotalRows
-    );
-  }, [
-    accesstoken,
-    currentPage,
-    rowsPerPage,
-    searchTerm,
-    filters,
-    selectedProjet,
-  ]);
+
 
   function handleEdit(PartenaireId) {
     router.push(`${ENDPOINTS.PARTENAIRES}?id=${PartenaireId}&action=edit`);

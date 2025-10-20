@@ -1,10 +1,10 @@
-"use client";
-import { useState, useEffect } from "react";
-import axios from "axios";
-import { useRouter } from "next/navigation";
-import { APIURL } from "@/configs/api";
-import toast from "react-hot-toast";
-import { useProjet } from "@/context/ProjetContext";
+'use client';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useRouter } from 'next/navigation';
+import { APIURL } from '@/configs/api';
+import toast from 'react-hot-toast';
+import { useProjet } from '@/context/ProjetContext';
 
 export default function CommissionForm({ id = null, onComplete }) {
   const router = useRouter();
@@ -15,9 +15,23 @@ export default function CommissionForm({ id = null, onComplete }) {
   const [msg_alert, setMsg_alert] = useState(null);
 
   // Form state
-  const [commissionMontant, setCommissionMontant] = useState("");
-  const [inputs, setInputs] = useState([{ de: "", a: "", pourcentage: "" }]);
+  const [commissionMontant, setCommissionMontant] = useState('');
+  const [inputs, setInputs] = useState([{ de: '', a: '', pourcentage: '' }]);
 
+  // Simple cache et comparaison for return back en cas de changer projet
+  const [oldProjetId, setOldProjetId] = useState(null);
+
+  useEffect(() => {
+    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+      if (oldProjetId) {
+        // Projet a changé
+
+        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+        router.back('');
+      }
+      setOldProjetId(selectedProjet.id);
+    }
+  }, [selectedProjet?.id, oldProjetId, router]);
   // Fetch existing configuration if any
   useEffect(() => {
     if (!selectedProjet) return;
@@ -25,17 +39,17 @@ export default function CommissionForm({ id = null, onComplete }) {
     const fetchCommissionMontant = async () => {
       setLoading(true);
       try {
-        const token = localStorage.getItem("accessToken");
+        const token = localStorage.getItem('accessToken');
         const response = await axios.get(
           `${APIURL.ROOTV1}/commission_montant/${selectedProjet.id}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
         if (response.data && response.data.commission_montant) {
-          setCommissionMontant(response.data.commission_montant.montant || "");
+          setCommissionMontant(response.data.commission_montant.montant || '');
         }
       } catch (error) {
-        console.error("Error fetching commission montant:", error);
+        console.error('Error fetching commission montant:', error);
       } finally {
         setLoading(false);
       }
@@ -44,7 +58,7 @@ export default function CommissionForm({ id = null, onComplete }) {
     const fetchConfiguration = async () => {
       setLoading(true);
       try {
-        const token = localStorage.getItem("accessToken");
+        const token = localStorage.getItem('accessToken');
         const response = await axios.get(
           `${APIURL.ROOTV1}/configurations_commissions/${selectedProjet.id}`,
           { headers: { Authorization: `Bearer ${token}` } }
@@ -58,7 +72,7 @@ export default function CommissionForm({ id = null, onComplete }) {
           setInputs(response.data.configurations);
         }
       } catch (error) {
-        console.error("Error fetching commission configuration:", error);
+        console.error('Error fetching commission configuration:', error);
       } finally {
         setLoading(false);
       }
@@ -69,7 +83,7 @@ export default function CommissionForm({ id = null, onComplete }) {
   }, [selectedProjet]);
 
   const handleAddInput = () => {
-    setInputs([...inputs, { de: "", a: "", pourcentage: "" }]);
+    setInputs([...inputs, { de: '', a: '', pourcentage: '' }]);
   };
 
   const handleChange = (event, index) => {
@@ -79,8 +93,8 @@ export default function CommissionForm({ id = null, onComplete }) {
     setInputs(onChangeValue);
 
     // Validation logic similar to old frontend
-    if (name === "pourcentage") {
-      if (value === "0" || parseFloat(value) <= 0) {
+    if (name === 'pourcentage') {
+      if (value === '0' || parseFloat(value) <= 0) {
         setMsg_alert(
           `Le pourcentage ne doit pas être égal à zéro ni être négatif à la ligne ${
             index + 1
@@ -95,7 +109,7 @@ export default function CommissionForm({ id = null, onComplete }) {
       }
     }
 
-    if (name === "de") {
+    if (name === 'de') {
       // Not the first interval
       if (index > 0) {
         // Check if "de" value is greater than previous "a" value
@@ -156,7 +170,7 @@ export default function CommissionForm({ id = null, onComplete }) {
     }
 
     if (!commissionMontant) {
-      setMsg_alert("Le montant fixe de la commission est requis");
+      setMsg_alert('Le montant fixe de la commission est requis');
       return false;
     }
 
@@ -171,7 +185,7 @@ export default function CommissionForm({ id = null, onComplete }) {
     setSubmitting(true);
 
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem('accessToken');
 
       const formData = {
         projet_id: selectedProjet.id,
@@ -182,15 +196,15 @@ export default function CommissionForm({ id = null, onComplete }) {
       // Use the correct endpoint that works with your backend
       await axios.post(APIURL.COMMISSIONSCONFIGURATIONS, formData, {
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
       });
 
-      toast.success("Configuration des commissions enregistrée avec succès");
-      router.push("/administration/commissions"); // Changed from '/Administration' to '/Administration/Commissions'
+      toast.success('Configuration des commissions enregistrée avec succès');
+      router.push('/administration/commissions'); // Changed from '/Administration' to '/Administration/Commissions'
     } catch (error) {
-      console.error("Error submitting commission config:", error);
+      console.error('Error submitting commission config:', error);
       toast.error("Une erreur est survenue lors de l'enregistrement");
     } finally {
       setSubmitting(false);
@@ -328,7 +342,7 @@ export default function CommissionForm({ id = null, onComplete }) {
           <button
             type="submit"
             disabled={
-              submitting || msg_alert !== null || commissionMontant === ""
+              submitting || msg_alert !== null || commissionMontant === ''
             }
             className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300"
           >
@@ -357,7 +371,7 @@ export default function CommissionForm({ id = null, onComplete }) {
                 Enregistrement...
               </>
             ) : (
-              "Enregistrer"
+              'Enregistrer'
             )}
           </button>
         </div>

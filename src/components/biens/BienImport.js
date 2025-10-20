@@ -20,7 +20,6 @@ import Button1 from "../Button";
 //import {Button as Button1} from '../Button'
 
 export default function BienImport({ open, onClose, projetId, max_etages }) {
-  console.log("max etages==>" + max_etages);
   const [file, setFile] = useState(null);
   const [backendErrors, setBackendErrors] = useState([]);
   const [disabled_var, setDisabled_var] = useState(true);

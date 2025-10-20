@@ -17,6 +17,9 @@ const FreinsComponent = ({
   list_vues,
   loading_tp_frein,
   loading,
+    loading_tranches,
+  loading_typologies,
+  loading_vues,
   handleChange_freins,
   handlePrixChange,
   setValue,
@@ -137,7 +140,7 @@ const FreinsComponent = ({
                   : null,
             }}
             backendErrors={backendErrors}
-            loading={loading}
+            loading={loading_tranches}
           />
         </div>
       )}
@@ -164,7 +167,7 @@ const FreinsComponent = ({
                   : null,
             }}
             backendErrors={backendErrors}
-            loading={loading}
+           // loading={loading}
           />
         </div>
       )}
@@ -191,7 +194,7 @@ const FreinsComponent = ({
                   : null,
             }}
             backendErrors={backendErrors}
-            loading={loading}
+           // loading={loading}
           />
         </div>
       )}
@@ -311,7 +314,7 @@ const FreinsComponent = ({
                   ? "Ce champ est obligatoire lorsque 'frein' inclut 'typologie'."
                   : null,
             }}
-            loading={loading}
+            loading={loading_typologies}
             backendErrors={backendErrors}
           />
         </div>
@@ -338,7 +341,7 @@ const FreinsComponent = ({
                   ? "Ce champ est obligatoire lorsque 'frein' inclut 'vue'."
                   : null,
             }}
-            loading={loading}
+            loading={loading_vues}
             backendErrors={backendErrors}
           />
         </div>

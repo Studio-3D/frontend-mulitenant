@@ -18,7 +18,7 @@ import TextField from '@/components/Textfield';
 import Button from '@/components/Button';
 import LoadingSpin from '@/components/LoadingSpin';
 import Modal_Propsepct_Exist from '../visites/Modal_Propsepct_Exist';
-
+import { useProjet } from '@/context/ProjetContext';
 import {
   VISITE_INTERETS,
   VISITE_TYPE_NOTIF,
@@ -32,10 +32,19 @@ import useClearProspect from '../hook/useClearProspect';
 import useClearProspectAppel from '../hook/useClearProspectAppel';
 
 export default function AppelsForm({ id }) {
+    useClearProspect();
+  useClearProspectAppel();
+  // Add individual loading states
+
+  const [loadingStates, setLoadingStates] = useState({
+    prospectData: false,
+    initialData: false,
+    editData: false,
+  });
   const { token } = useAuth();
   const router = useRouter();
-  useClearProspect();
-  useClearProspectAppel();
+
+  const { selectedProjet } = useProjet();
 
   const [info_cin, setInfo_cin] = useState(null);
   const [loading_tp_frein, setLoading_tp_frein] = useState(false);
@@ -84,22 +93,69 @@ export default function AppelsForm({ id }) {
     key: key,
   }));
 
- // Safely get and parse the prospect data
-const getProspectFromStorage = () => {
-  try {
-    const storedData = localStorage.getItem('selectedProspect_appel');
-    if (!storedData) return null;
-    
-    const parsedData = JSON.parse(storedData);
-    return parsedData?.prospect || null;
-  } catch (error) {
-    console.error("Error parsing prospect data:", error);
-    return null;
-  }
-};
+  // Safely get and parse the prospect data
+  const getProspectFromStorage = () => {
+    try {
+      const storedData = localStorage.getItem('selectedProspect_appel');
+      if (!storedData) return null;
 
-const prospect_appel = getProspectFromStorage();
+      const parsedData = JSON.parse(storedData);
+      return parsedData?.prospect || null;
+    } catch (error) {
+      console.error('Error parsing prospect data:', error);
+      return null;
+    }
+  };
+  // Simple cache et comparaison for return back en cas de changer projet
+  const [oldProjetId, setOldProjetId] = useState(null);
 
+  useEffect(() => {
+    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+      if (oldProjetId) {
+        // Projet a changé
+
+        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+        router.push('/crm/appels');
+      }
+      setOldProjetId(selectedProjet.id);
+    }
+  }, [selectedProjet?.id, oldProjetId, router]);
+
+  const prospect_appel = getProspectFromStorage();
+
+  useEffect(() => {
+    const loadProspectData = async () => {
+      if (prospect_appel?.projet_id) {
+        setLoadingStates((prev) => ({ ...prev, prospectData: true }));
+
+        const projetId = prospect_appel.projet_id;
+
+        console.log(
+          'Fetching data for projet_id from prospect_appel:',
+          projetId
+        );
+
+        try {
+          // Fetch all related data
+          await Promise.all([
+            fetchPartenaires(projetId),
+            fetch_data_by_projetId(projetId),
+            fetch_type_biens(projetId),
+          ]);
+
+          // Also set the projet_id in the form
+          setValue('projet_id', projetId);
+          setSource(prospect_appel?.source?.source);
+        } catch (error) {
+          console.error('Error loading prospect data:', error);
+        } finally {
+          setLoadingStates((prev) => ({ ...prev, prospectData: false }));
+        }
+      }
+    };
+
+    loadProspectData();
+  }, [prospect_appel?.projet_id]);
   const defaultValues = {
     id_t_appel: '',
     prospect_id:
@@ -139,10 +195,7 @@ const prospect_appel = getProspectFromStorage();
     interet: '',
     type_appel: '',
     type_biens: '',
-    projet_id:
-      selectedPerson?.projet_id ||
-      prospect_appel?.projet_id ||
-      '',
+    projet_id: selectedPerson?.projet_id || prospect_appel?.projet_id || '',
     date_relance: '',
     mode_relance: '',
     tranche_id: '',
@@ -163,6 +216,7 @@ const prospect_appel = getProspectFromStorage();
     prix_min: '',
     sup_min: '',
     sup_max: '',
+    description_autre: '',
   };
   const validationSchemaRef = useRef(
     yup.object().shape({
@@ -205,6 +259,7 @@ const prospect_appel = getProspectFromStorage();
   const isEditing = !!id;
   useEffect(() => {
     if (isEditing) {
+      setLoadingStates((prev) => ({ ...prev, editData: true }));
       axios
         .get(`${APIURL.ROOTV1}/show_t_appel/` + id, {
           headers: {
@@ -217,137 +272,190 @@ const prospect_appel = getProspectFromStorage();
           const frein_n = res.data.frein;
           let intere_label = getInteret_label(tr_appel.interet);
 
-          if (Array.isArray(tr_appel.type_biens)) {
-            const selectedIds = tr_appel.type_biens.map(
-              (option) => option?.type_bien_id
-            );
-            setValue('type_biens', selectedIds); // Set only IDs to the form field
-          }
-          setFormData((prevFormData) => ({
-            ...prevFormData,
-            nom: tr_appel.appel.prospect.nom || '',
-            cin: tr_appel.appel.prospect.cin || '',
-            prenom: tr_appel.appel.prospect.prenom || '',
-            prospect_id: tr_appel?.appel?.prospect?.id || '',
-            telephone: tr_appel?.appel?.prospect?.telephone || '',
-            telephone_num2: tr_appel?.appel?.prospect?.telephone_num2 || '',
-            ville: tr_appel.appel.prospect.ville || '',
-            interet: tr_appel.interet || '',
-            type_appel: tr_appel.type_appel || '',
-            projet_id: tr_appel.appel.projet_id || '',
-            source: tr_appel.appel.prospect.source?.id || '',
-            source_txt:
-              tr_appel.appel.prospect?.source?.source === 'Partenaire'
-                ? 'Partenaire'
-                : null,
-            partenaire_id: tr_appel.appel.prospect?.partenaire_id || '',
-            date_relance: tr_appel.relance?.date_relance || '',
-            mode_relance: tr_appel.relance?.mode_relance || '',
-            tranche_id: tr_appel.tranche_id || '',
-            bloc_id: tr_appel.bloc_id || '',
-            immeuble_id: tr_appel.immeuble_id || '',
-            etage: tr_appel.etage || '',
-            orientation: tr_appel.orientation || '',
-            rdv: tr_appel.rdv?.rdv || '',
-            avance: frein_n?.avance || '',
-            commentaire: tr_appel.commentaire || '',
-            prix_max: frein_n?.prix_max || '',
-            prix_min: frein_n?.prix_min || '',
-            sup_min: frein_n?.superficie_min || '',
-            sup_max: frein_n?.superficie_max || '',
-          }));
-
-          fetchPartenaires(tr_appel.appel.projet.id);
-          fetch_data_by_projetId(tr_appel.appel.projet.id);
-          fetch_type_biens(tr_appel.appel.projet.id);
-          setSource(tr_appel.appel.prospect.source?.source);
-          setPartenaire(tr_appel.appel.prospect?.partenaire?.id);
-          let freinValue = [];
-          if (intere_label == 'Perdu') {
-            fetch_type_Freins();
-            fetch_vues(tr_appel.appel.projet.id);
-            fetch_typologies(tr_appel.appel.projet.id);
-
-            if (frein_n != null) {
-              if (frein_n.frein_etage.length > 0) {
-                const etages = frein_n.frein_etage.map((item) => item.etage);
-                setValue('etages', etages);
-                freinValue.push('etage');
-              }
-
-              if (frein_n.frein_vue.length > 0) {
-                const vues = frein_n.frein_vue.map((item) => item.vue);
-                setValue('vues', vues);
-                freinValue.push('vue');
-              }
-
-              if (frein_n.frein_typologie.length > 0) {
-                const typologies = frein_n.frein_typologie.map(
-                  (item) => item.typologie
-                );
-                setValue('typologies', typologies);
-                freinValue.push('typologie');
-              }
-
-              if (frein_n.frein_tranche.length > 0) {
-                const tranches = frein_n.frein_tranche.map(
-                  (item) => item.tranche
-                );
-                setValue('tranches_id', tranches);
-                freinValue.push('tranche');
-              }
-
-              if (frein_n.frein_orientation.length > 0) {
-                const firstLetterToCode = {
-                  N: ORIENTATIONS[1].code, // Nord
-                  S: ORIENTATIONS[2].code, // Sud
-                  E: ORIENTATIONS[3].code, // Est
-                  O: ORIENTATIONS[4].code, // Ouest
-                  N_E: ORIENTATIONS[5].code, // Ouest
-                  N_o: ORIENTATIONS[6].code, // Ouest
-                  S_E: ORIENTATIONS[7].code, // Ouest
-                  S_O: ORIENTATIONS[8].code, // Ouest
-                };
-
-                const orientations = frein_n.frein_orientation.map((item) => {
-                  const letter = item.orientation
-                    ?.trim()
-                    .charAt(0)
-                    .toUpperCase();
-                  return firstLetterToCode[letter];
-                });
-
-                setValue('orientations', orientations);
-                freinValue.push('orientation');
-              }
-              if (frein_n.prix_min != null || frein_n.prix_max != null) {
-                setValue('prix_min', frein_n?.prix_min || '');
-                setValue('prix_max', frein_n?.prix_max || '');
-                freinValue.push('prix');
-              }
-
-              if (
-                frein_n?.superficie_min != null ||
-                frein_n?.superficie_max != null
-              ) {
-                setValue('sup_min', frein_n?.superficie_min || '');
-                setValue('sup_max', frein_n?.superficie_max || '');
-                freinValue.push('superficie');
-              }
-
-              if (frein_n?.avance != null) {
-                setValue('avance', frein_n?.avance);
-                freinValue.push('avance');
-              }
-
-              // Finally set the 'frein' array:
-              setValue('freins', freinValue);
-              console.log('list==>' + freinValue);
+          // First, fetch all the necessary data
+          Promise.all([
+            fetchPartenaires(tr_appel.appel.projet.id),
+            fetch_data_by_projetId(tr_appel.appel.projet.id),
+            fetch_type_biens(tr_appel.appel.projet.id),
+          ]).then(() => {
+            // After data is loaded, set the form values
+            if (Array.isArray(tr_appel.type_biens)) {
+              const selectedIds = tr_appel.type_biens.map(
+                (option) => option?.type_bien_id
+              );
+              setValue('type_biens', selectedIds);
             }
-          }
-        })
 
-        .catch((error) => console.log(error.message));
+            setFormData((prevFormData) => ({
+              ...prevFormData,
+              nom: tr_appel.appel.prospect.nom || '',
+              cin: tr_appel.appel.prospect.cin || '',
+              prenom: tr_appel.appel.prospect.prenom || '',
+              prospect_id: tr_appel?.appel?.prospect?.id || '',
+              telephone: tr_appel?.appel?.prospect?.telephone || '',
+              telephone_num2: tr_appel?.appel?.prospect?.telephone_num2 || '',
+              ville: tr_appel.appel.prospect.ville || '',
+              interet: tr_appel.interet || '',
+              type_appel: tr_appel.type_appel || '',
+              projet_id: tr_appel.appel.projet_id || '',
+              source: tr_appel.appel.prospect.source?.id || '',
+              source_txt:
+                tr_appel.appel.prospect?.source?.source === 'Partenaire'
+                  ? 'Partenaire'
+                  : null,
+              partenaire_id: tr_appel.appel.prospect?.partenaire_id || '',
+              date_relance: tr_appel.relance?.date_relance || '',
+              mode_relance: tr_appel.relance?.mode_relance || '',
+              tranche_id: tr_appel.tranche_id || '',
+              bloc_id: tr_appel.bloc_id || '',
+              immeuble_id: tr_appel.immeuble_id || '',
+              etage: tr_appel.etage || '',
+              orientation: tr_appel.orientation || '',
+              rdv: tr_appel.rdv?.rdv || '',
+              avance: frein_n?.avance || '',
+              commentaire: tr_appel.commentaire || '',
+              prix_max: frein_n?.prix_max || '',
+              prix_min: frein_n?.prix_min || '',
+              sup_min: frein_n?.superficie_min || '',
+              sup_max: frein_n?.superficie_max || '',
+            }));
+
+            setSource(tr_appel.appel.prospect.source?.source);
+            setPartenaire(tr_appel.appel.prospect?.partenaire?.id);
+
+            let freinValue = [];
+            if (intere_label == 'Perdu') {
+              // Fetch additional data for Perdu case
+              Promise.all([
+                fetch_type_Freins(),
+                fetch_vues(tr_appel.appel.projet.id),
+                fetch_typologies(tr_appel.appel.projet.id),
+              ]).then(() => {
+                if (frein_n != null) {
+                  // Handle direct properties
+                  // Handle "Autre" frein first
+                  if (
+                    frein_n.description_autre != null &&
+                    frein_n.description_autre !== ''
+                  ) {
+                    setValue(
+                      'description_autre',
+                      frein_n.description_autre || ''
+                    );
+                    freinValue.push('autre');
+                  }
+                  if (frein_n.frein_etage.length > 0) {
+                    const etages = frein_n.frein_etage.map((item) =>
+                      item.etage.toString()
+                    );
+
+                    console.log('Setting etages:', etages);
+                    setValue('etages', etages);
+                    freinValue.push('etage');
+                  }
+
+                  if (frein_n.frein_vue.length > 0) {
+                    const vues = frein_n.frein_vue.map((item) => item.vue.id);
+                    console.log('Setting vues:', vues);
+
+                    // Filter out any null/undefined values and convert to strings for SelectInput
+                    const vuesFiltered = vues
+                      .filter((id) => id != null)
+                      .map((id) => id);
+                    setValue('vues', vuesFiltered);
+                    freinValue.push('vue');
+                  }
+
+                  if (frein_n.frein_typologie.length > 0) {
+                    const typologies = frein_n.frein_typologie.map(
+                      (item) => item.typologie.id
+                    );
+                    // Filter out any null/undefined values and convert to strings for SelectInput
+                    const typologiesFiltered = typologies
+                      .filter((id) => id != null)
+                      .map((id) => id);
+                    console.log('typologiess=+>' + typologiesFiltered);
+                    setValue('typologies', typologiesFiltered);
+                    freinValue.push('typologie');
+                  }
+
+                  if (frein_n.frein_tranche.length > 0) {
+                    // Extract just the tranche IDs
+                    const trancheIds = frein_n.frein_tranche.map(
+                      (item) => item.tranche?.id
+                    );
+
+                    // Filter out any null/undefined values and convert to strings for SelectInput
+                    const trancheIdsFiltered = trancheIds
+                      .filter((id) => id != null)
+                      .map((id) => id);
+
+                    setValue('tranches_id', trancheIdsFiltered);
+                    freinValue.push('tranche');
+                  }
+
+                  if (frein_n.frein_orientation.length > 0) {
+                    const firstLetterToCode = {
+                      N: ORIENTATIONS[1].code,
+                      S: ORIENTATIONS[2].code,
+                      E: ORIENTATIONS[3].code,
+                      O: ORIENTATIONS[4].code,
+                      N_E: ORIENTATIONS[5].code,
+                      N_o: ORIENTATIONS[6].code,
+                      S_E: ORIENTATIONS[7].code,
+                      S_O: ORIENTATIONS[8].code,
+                    };
+
+                    const orientations = frein_n.frein_orientation.map(
+                      (item) => {
+                        const letter = item.orientation
+                          ?.trim()
+                          .charAt(0)
+                          .toUpperCase();
+                        return firstLetterToCode[letter];
+                      }
+                    );
+
+                    console.log('Setting orientations:', orientations);
+                    setValue('orientations', orientations);
+                    freinValue.push('orientation');
+                  }
+
+                  if (frein_n.prix_min != null || frein_n.prix_max != null) {
+                    setValue('prix_min', frein_n?.prix_min || '');
+                    setValue('prix_max', frein_n?.prix_max || '');
+                    freinValue.push('prix');
+                  }
+
+                  if (
+                    frein_n?.superficie_min != null ||
+                    frein_n?.superficie_max != null
+                  ) {
+                    setValue('sup_min', frein_n?.superficie_min || '');
+                    setValue('sup_max', frein_n?.superficie_max || '');
+                    freinValue.push('superficie');
+                  }
+
+                  if (frein_n?.avance != null) {
+                    setValue('avance', frein_n?.avance);
+                    freinValue.push('avance');
+                  }
+
+                  // Finally set the 'frein' array:
+                  console.log('Setting freins:', freinValue);
+                  setValue('freins', freinValue);
+                }
+              });
+            }
+          });
+        })
+        .catch((error) => {
+          console.log(error.message);
+          setLoadingStates((prev) => ({ ...prev, editData: false }));
+        })
+        .finally(() => {
+          setLoadingStates((prev) => ({ ...prev, editData: false }));
+        });
     } else {
       validationSchemaRef.current = validationSchemaRef.current.shape({
         ...validationSchemaRef.current.fields,
@@ -440,7 +548,11 @@ const prospect_appel = getProspectFromStorage();
         },
       })
       .then((res) => {
-        setType_freins(res.data.typeFreins);
+        // FIX: Properly add "Autre" option
+        setType_freins([
+          ...(res.data.typeFreins || []), // Keep the original freins
+          { id: 'autre', description: 'Autre' }, // Add "Autre" option
+        ]);
         setLoading_tp_frein(false);
       })
       .catch(() => {});
@@ -470,39 +582,48 @@ const prospect_appel = getProspectFromStorage();
         console.error('Orientation Obligatoire');
       }
     }
+
     // If interet == 3, then all those frein checks
     if (Number(watch('interet')) == 3) {
-      const frein = watch('freins') || [];
-      const checks = [
-        frein.length > 0,
-        !frein.includes('vue') || (watch('vues') || []).length > 0,
-        !frein.includes('typologie') || (watch('typologies') || []).length > 0,
-        !frein.includes('orientation') ||
-          (watch('orientations') || []).length > 0,
-        !frein.includes('etage') || (watch('etages') || []).length > 0,
-        !frein.includes('tranche') || (watch('tranches_id') || []).length > 0,
-      ];
+  const frein = watch('freins') || [];
+  const checks = [
+    frein.length > 0,
+    !frein.includes('vue') || (watch('vues') || []).length > 0,
+    !frein.includes('typologie') || (watch('typologies') || []).length > 0,
+    !frein.includes('orientation') || (watch('orientations') || []).length > 0,
+    !frein.includes('etage') || (watch('etages') || []).length > 0,
+    !frein.includes('tranche') || (watch('tranches_id') || []).length > 0,
+    // FIXED: If 'autre' is included, description_autre must be filled
+    !frein.includes('autre') || 
+      (watch('description_autre') != null && 
+       watch('description_autre') !== '' && 
+       watch('description_autre').trim() !== ''),
+  ];
 
-      const checkNames = [
-        'frein.length > 0',
-        "'vue' => vues.length > 0",
-        "'typologie' => typologies.length > 0",
-        "'orientation' => orientations.length > 0",
-        "'etage' => etages.length > 0",
-        "'tranche' => tranches_id.length > 0",
-      ];
+  const checkNames = [
+    'frein.length > 0',
+    "'vue' => vues.length > 0",
+    "'typologie' => typologies.length > 0",
+    "'orientation' => orientations.length > 0",
+    "'etage' => etages.length > 0",
+    "'tranche' => tranches_id.length > 0",
+    "'autre' => description_autre is filled", // Updated description
+  ];
 
-      if (!checks.every(Boolean)) {
-        valid = false;
-        console.error('Certains freins ne sont pas remplis correctement.');
-        checks.forEach((check, index) => {
-          if (!check) {
-            console.warn(`Échec du test: ${checkNames[index]}`);
-          }
-        });
+  if (!checks.every(Boolean)) {
+    valid = false;
+    console.error('Certains freins ne sont pas remplis correctement.');
+    checks.forEach((check, index) => {
+      if (!check) {
+        console.warn(`Échec du test: ${checkNames[index]}`);
+        // Add specific error messages for each failed check
+        if (checkNames[index] === "'autre' => description_autre is filled") {
+          console.warn('Description autre est obligatoire lorsque "autre" est sélectionné');
+        }
       }
-    }
-
+    });
+  }
+}
     return valid;
   };
 
@@ -556,6 +677,7 @@ const prospect_appel = getProspectFromStorage();
       typologies: handleField(data.typologies),
       vues: handleField(data.vues),
       type_biens: handleField(data.type_biens),
+      description_autre: data.description_autre || '', // Make sure this is included
     };
 
     // For editing mode transformations
@@ -574,7 +696,13 @@ const prospect_appel = getProspectFromStorage();
 
         preparedData.orientations = codes.length ? codes.join(',') : '';
       }
-
+      // Also handle single orientation field if needed
+      if (preparedData.orientation && ORIENTATIONS[preparedData.orientation]) {
+        preparedData.orientation =
+          ORIENTATION_ABBREVIATIONS[
+            ORIENTATIONS[preparedData.orientation].label
+          ] || '';
+      }
       // Normalize freins format
       if (preparedData.freins) {
         preparedData.freins = preparedData.freins
@@ -726,13 +854,17 @@ const prospect_appel = getProspectFromStorage();
           } else {
             setValue('source_txt', null);
           }
+          setValue('projet_id', res.data.prospect?.projet_id);
+          fetchPartenaires(res.data.prospect?.projet_id);
+          fetch_data_by_projetId(res.data.prospect?.projet_id);
+          fetch_type_biens(res.data.prospect?.projet_id);
           setValue('partenaire_id', partenaire_id);
 
           if (res.data.prospect.appels != null) {
             setId_appel(res.data.prospect.appels?.id);
           }
-          if (res.data.prospect.visites.length > 0) {
-            setId_visite(res.data.prospect.visites[0].id);
+          if (res.data.prospect.visite_first != null) {
+            setId_visite(res.data.prospect.visite_first?.id);
           }
         } else {
           defaultValues['prospect_id'] = null;
@@ -867,6 +999,12 @@ const prospect_appel = getProspectFromStorage();
           }
         }
         setList_etages(array_etages);
+        return {
+          tranches: res.data.projet.tranche,
+          blocs: res.data.projet.bloc,
+          immeubles: res.data.projet.immeuble,
+          etages: array_etages,
+        };
       })
       .catch(() => {});
   };
@@ -888,22 +1026,32 @@ const prospect_appel = getProspectFromStorage();
     }
   };
 
-  const handleChange_freins = (selectedValues) => {
-    try {
-      const descriptions = selectedValues
-        .map((item) => item?.description?.toLowerCase() || '')
-        .join(', ');
+  // Combined loading check
+  // Enhanced loading check
+  const isLoading =
+    loadingStates.prospectData ||
+    loadingStates.initialData ||
+    loadingStates.editData ||
+    (isEditing && !formData)
+    // Check if essential data is loaded for the current interet
+  /* (Number(watch('interet')) === 3 && loading_tp_frein) ||
+    // Check if project data is loaded when project is selected
+    (watch('projet_id') &&
+      (tranches.length === 0 ||
+        list_type_biens.length === 0 ||
+        list_etages.length === 0));*/
 
-      setValue('freins', descriptions);
-    } catch (error) {
-      console.error('Error in handleChange_freins:', error);
-    }
-  };
-
-  if (isEditing && !formData) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <LoadingSpin /> {/* Use your loading spinner here */}
+        <LoadingSpin />
+        {/*<span className="ml-2 text-gray-600">
+        {loadingStates.editData ? "Chargement des données d'édition..." :
+         loadingStates.prospectData ? 'Chargement des données du prospect...' :
+         loadingStates.initialData ? 'Chargement des données initiales...' :
+         loading_tp_frein ? 'Chargement des types de freins...' :
+         'Chargement des données...'}
+      </span>*/}
       </div>
     );
   }
@@ -913,6 +1061,7 @@ const prospect_appel = getProspectFromStorage();
       {open_dialog == true && (
         <>
           <Modal_Propsepct_Exist
+            info_param={'téléphone'}
             info_client_1={info_client}
             id_appel={id_appel}
             id_visite={id_visite}
@@ -966,7 +1115,7 @@ const prospect_appel = getProspectFromStorage();
               <TextField
                 label="Cin:"
                 name="cin"
-               // required={Number(watch('interet')) == 1}
+                // required={Number(watch('interet')) == 1}
                 control={control}
                 errors={errors}
                 /*errors={{
@@ -1012,13 +1161,13 @@ const prospect_appel = getProspectFromStorage();
                 defaultValues={defaultValues}
               />
               <SelectInput
-                placeholder='selectionner un projet'
+                placeholder="selectionner un projet"
                 label="Projet:"
                 required
                 name="projet_id"
-                options={PROJETS.map(projet => ({ 
-                  value: projet.id, 
-                  label: projet.nom 
+                options={PROJETS.map((projet) => ({
+                  value: projet.id,
+                  label: projet.nom,
                 }))}
                 value={watch('projet_id')}
                 onChange={(value) => {
@@ -1037,14 +1186,14 @@ const prospect_appel = getProspectFromStorage();
                 submitted={formSubmitted}
               />
               <SelectInput
-              placeholder='selectionner un type dappel'
+                placeholder="selectionner un type dappel"
                 label="Type Appel :"
                 name="type_appel"
                 value={watch('type_appel')}
                 required={true}
-                options={Object.values(TYPES_APPELS).map(type => ({ 
-                  value: type.code, 
-                  label: type.label 
+                options={Object.values(TYPES_APPELS).map((type) => ({
+                  value: type.code,
+                  label: type.label,
                 }))}
                 onChange={(value) => {
                   setValue('type_appel', value);
@@ -1053,25 +1202,30 @@ const prospect_appel = getProspectFromStorage();
                 submitted={formSubmitted}
               />
               <SelectInput
-              placeholder='selectionner une source'
+                placeholder="selectionner une source"
                 label="Source:"
                 required
                 name="source"
-                options={SOURCES.map(source => ({ 
-                  value: source.id, 
-                  label: source.source 
+                options={SOURCES.map((source) => ({
+                  value: source.id,
+                  label: source.source,
                 }))}
                 value={watch('source')}
                 onChange={(value) => {
-                  setSource(SOURCES.find(s => s.id === value)?.source || '');
+                  setSource(SOURCES.find((s) => s.id === value)?.source || '');
                   setValue('source', value);
 
-                  if (SOURCES.find(s => s.id === value)?.source === 'Partenaire') {
+                  if (
+                    SOURCES.find((s) => s.id === value)?.source === 'Partenaire'
+                  ) {
                     setValue('source_txt', 'Partenaire');
                   } else {
                     setValue('source_txt', '');
                   }
-                  if (!watch('projet_id') && watch('source_txt') === 'Partenaire') {
+                  if (
+                    !watch('projet_id') &&
+                    watch('source_txt') === 'Partenaire'
+                  ) {
                     toast.error('Veuillez Choisir un Projet');
                   }
                 }}
@@ -1080,13 +1234,13 @@ const prospect_appel = getProspectFromStorage();
               />
               {source?.toLowerCase() == 'partenaire' && (
                 <SelectInput
-                placeholder='selectionner un partenaire'
+                  placeholder="selectionner un partenaire"
                   label="Partenaire:"
                   name="partenaire_id"
                   required={watch('source_txt') == 'Partenaire'}
-                  options={list_partenaires.map(partenaire => ({ 
-                    value: partenaire.id, 
-                    label: partenaire.description 
+                  options={list_partenaires.map((partenaire) => ({
+                    value: partenaire.id,
+                    label: partenaire.description,
                   }))}
                   value={watch('partenaire_id')}
                   onChange={(value) => {
@@ -1105,14 +1259,14 @@ const prospect_appel = getProspectFromStorage();
               {/* Intérêt (toujours visible) */}
               <div className="sm:col-span-1">
                 <SelectInput
-                  placeholder='selectionner un intérêt'
+                  placeholder="selectionner un intérêt"
                   label="Intérêt:"
                   name="interet"
                   value={watch('interet')}
                   required={true}
-                  options={Object.values(VISITE_INTERETS).map(interet => ({ 
-                    value: interet.code, 
-                    label: interet.label 
+                  options={Object.values(VISITE_INTERETS).map((interet) => ({
+                    value: interet.code,
+                    label: interet.label,
                   }))}
                   disabled={watch('telephone') == ''}
                   onChange={handleChange_interet}
@@ -1137,29 +1291,31 @@ const prospect_appel = getProspectFromStorage();
               {Number(watch('interet')) == 1 && (
                 <>
                   <SelectInput
-                    placeholder='selectionner une tranche'
+                    placeholder="selectionner une tranche"
                     label="Tranche:"
                     name="tranche_id"
-                    options={tranches.map(tranche => ({ 
-                      value: tranche.id, 
-                      label: tranche.nom 
+                    options={tranches.map((tranche) => ({
+                      value: tranche.id,
+                      label: tranche.nom,
                     }))}
                     value={watch('tranche_id')}
                     onChange={(value) => {
                       setValue('tranche_id', value);
                     }}
-                    error={errors.tranche_id?.message || backendErrors.tranche_id}
+                    error={
+                      errors.tranche_id?.message || backendErrors.tranche_id
+                    }
                     submitted={formSubmitted}
                   />
                   <div className="mt-1">
                     <SelectInput
-                      placeholder='selectionner un bloc'
+                      placeholder="selectionner un bloc"
                       label="Bloc:"
                       name="bloc_id"
                       value={watch('bloc_id')}
-                      options={blocs.map(bloc => ({ 
-                        value: bloc.id, 
-                        label: bloc.nom 
+                      options={blocs.map((bloc) => ({
+                        value: bloc.id,
+                        label: bloc.nom,
                       }))}
                       onChange={(value) => {
                         setValue('bloc_id', value);
@@ -1170,31 +1326,33 @@ const prospect_appel = getProspectFromStorage();
                   </div>
                   <div className="mt-1">
                     <SelectInput
-                      placeholder='selectionner un immeuble'
+                      placeholder="selectionner un immeuble"
                       label="Immeuble:"
                       name="immeuble_id"
-                      options={immeubles.map(immeuble => ({ 
-                        value: immeuble.id, 
-                        label: immeuble.nom 
+                      options={immeubles.map((immeuble) => ({
+                        value: immeuble.id,
+                        label: immeuble.nom,
                       }))}
                       value={watch('immeuble_id')}
                       onChange={(value) => {
                         setValue('immeuble_id', value);
                       }}
-                      error={errors.immeuble_id?.message || backendErrors.immeuble_id}
+                      error={
+                        errors.immeuble_id?.message || backendErrors.immeuble_id
+                      }
                       submitted={formSubmitted}
                     />
                   </div>
 
                   <div className="mt-1">
                     <SelectInput
-                      placeholder='selectionner un type de bien'
+                      placeholder="selectionner un type de bien"
                       label="Types Biens :"
                       name="type_biens"
                       required={true}
-                      options={list_type_biens.map(type => ({ 
-                        value: type.id, 
-                        label: type.type 
+                      options={list_type_biens.map((type) => ({
+                        value: type.id,
+                        label: type.type,
                       }))}
                       value={watch('type_biens')}
                       isMulti={true}
@@ -1211,7 +1369,7 @@ const prospect_appel = getProspectFromStorage();
                   </div>
                   <div className="mt-1">
                     <SelectInput
-                      placeholder='selectionner une orientation'
+                      placeholder="selectionner une orientation"
                       label="Orientation :"
                       name="orientation"
                       value={watch('orientation')}
@@ -1230,12 +1388,12 @@ const prospect_appel = getProspectFromStorage();
 
                   <div className="mt-1">
                     <SelectInput
-                      placeholder='selectionner un etage'
+                      placeholder="selectionner un etage"
                       label="Etage:"
                       name="etage"
-                      options={list_etages.map(etage => ({ 
-                        value: etage.value, 
-                        label: etage.value 
+                      options={list_etages.map((etage) => ({
+                        value: etage.value,
+                        label: etage.value,
                       }))}
                       value={watch('etage')}
                       onChange={(value) => {
@@ -1260,16 +1418,21 @@ const prospect_appel = getProspectFromStorage();
                   </div>
                   <div className="mt-1">
                     <SelectInput
-                      placeholder='selectionner un mode de relance'
+                      placeholder="selectionner un mode de relance"
                       label="Mode Relance:"
                       name="mode_relance"
                       value={watch('mode_relance')}
-                      options={Object.values(VISITE_TYPE_NOTIF).map(notif => ({ 
-                        value: notif.code, 
-                        label: notif.label 
-                      }))}
+                      options={Object.values(VISITE_TYPE_NOTIF).map(
+                        (notif) => ({
+                          value: notif.code,
+                          label: notif.label,
+                        })
+                      )}
                       onChange={(value) => setValue('mode_relance', value)}
-                      error={errors.mode_relance?.message || backendErrors.mode_relance}
+                      error={
+                        errors.mode_relance?.message ||
+                        backendErrors.mode_relance
+                      }
                       submitted={formSubmitted}
                     />
                   </div>
@@ -1292,16 +1455,18 @@ const prospect_appel = getProspectFromStorage();
               {Number(watch('interet')) == 2 && (
                 <>
                   <SelectInput
-                    placeholder='selectionner un mode de relance'
+                    placeholder="selectionner un mode de relance"
                     label="Mode Relance:"
                     name="mode_relance"
                     value={watch('mode_relance')}
-                    options={Object.values(VISITE_TYPE_NOTIF).map(notif => ({ 
-                      value: notif.code, 
-                      label: notif.label 
+                    options={Object.values(VISITE_TYPE_NOTIF).map((notif) => ({
+                      value: notif.code,
+                      label: notif.label,
                     }))}
                     onChange={(value) => setValue('mode_relance', value)}
-                    error={errors.mode_relance?.message || backendErrors.mode_relance}
+                    error={
+                      errors.mode_relance?.message || backendErrors.mode_relance
+                    }
                     submitted={formSubmitted}
                   />
                   <TextField
@@ -1321,63 +1486,70 @@ const prospect_appel = getProspectFromStorage();
               {Number(watch('interet')) == 3 && (
                 <>
                   <SelectInput
-                    placeholder='selectionner des freins'
+                    placeholder="selectionner des freins"
                     label="Freins :"
                     name="freins"
                     value={watch('freins')}
                     required={true}
-                    options={type_freins.map(frein => ({ 
-                      value: frein.description.toLowerCase(), 
-                      label: frein.description 
+                    options={type_freins.map((frein) => ({
+                      value: frein.description.toLowerCase(),
+                      label: frein.description,
                     }))}
                     isMulti={true}
                     onChange={(value) => {
                       setValue('freins', value);
                     }}
                     error={
-                      (formSubmitted && (!watch('freins') || watch('freins').length == 0)
+                      (formSubmitted &&
+                      (!watch('freins') || watch('freins').length == 0)
                         ? 'Veuillez renseigner le champ frein.'
                         : null) || backendErrors.freins
                     }
                     submitted={formSubmitted}
+                    loading={loading_tp_frein}
                   />
 
                   {watch('freins')?.includes('tranche') && ( // Safe access using optional chaining
                     <SelectInput
-                      placeholder='selectionner des tranches'
+                      placeholder="selectionner des tranches"
                       label="Tranches :"
                       name="tranches_id"
                       value={watch('tranches_id')}
                       isMulti={true}
-                      options={tranches.map(tranche => ({ 
-                        value: tranche.id, 
-                        label: tranche.nom 
+                      options={tranches.map((tranche) => ({
+                        value: tranche.id,
+                        label: tranche.nom,
                       }))}
+                      required={true}
                       onChange={(value) => {
                         setValue('tranches_id', value);
                       }}
                       error={
                         (formSubmitted &&
                         watch('freins')?.includes('tranche') &&
-                        (!watch('tranches_id') || watch('tranches_id').length == 0)
+                        (!watch('tranches_id') ||
+                          watch('tranches_id').length == 0)
                           ? "Ce champ est obligatoire lorsque 'frein' inclut 'tranche'."
                           : null) || backendErrors.tranches_id
                       }
                       submitted={formSubmitted}
                     />
                   )}
-
                   {watch('freins')?.includes('etage') && (
                     <SelectInput
-                      placeholder='selectionner des etages'
+                      placeholder="selectionner des etages"
                       label="Etages :"
                       name="etages"
                       required={true}
-                      options={list_etages.map(etage => ({ 
-                        value: etage.value, 
-                        label: etage.value 
+                      options={list_etages.map((etage) => ({
+                        value: etage.value.toString(), // Ensure string values
+                        label: etage.value.toString(), // Ensure string labels
                       }))}
-                      value={watch('etages')}
+                      value={
+                        Array.isArray(watch('etages'))
+                          ? watch('etages').map((item) => item.toString())
+                          : []
+                      }
                       isMulti={true}
                       onChange={(value) => {
                         setValue('etages', value);
@@ -1395,21 +1567,26 @@ const prospect_appel = getProspectFromStorage();
                   {watch('freins')?.includes('orientation') && (
                     <div>
                       <SelectInput
-                        placeholder='selectionner des orientations'
-                        label="Orientation :"
-                        name="orientation"
-                        value={watch('orientation')}
-                        options={orientationOptions.map(opt => ({ 
-                          value: opt.value, 
-                          label: opt.label 
+                        placeholder="selectionner des orientations"
+                        label="Orientations :"
+                        name="orientations" // This should be 'orientations' (plural)
+                        value={watch('orientations')}
+                        options={orientationOptions.map((opt) => ({
+                          value: opt.value,
+                          label: opt.label,
                         }))}
+                        required={true}
+                        isMulti={true} // This should be multi-select for freins
                         onChange={(value) => {
-                          setValue('orientation', value);
+                          setValue('orientations', value);
                         }}
                         error={
-                          (formSubmitted && Number(watch('interet')) == 1
-                            ? "Ce champ est obligatoire lorsque 'interet' est 'interessé'."
-                            : null) || backendErrors.orientation
+                          (formSubmitted &&
+                          watch('freins')?.includes('orientation') &&
+                          (!watch('orientations') ||
+                            watch('orientations').length == 0)
+                            ? "Ce champ est obligatoire lorsque 'frein' inclut 'orientation'."
+                            : null) || backendErrors.orientations
                         }
                         submitted={formSubmitted}
                       />
@@ -1418,6 +1595,7 @@ const prospect_appel = getProspectFromStorage();
                   {watch('freins')?.includes('avance') && (
                     <div>
                       <TextField
+                      
                         label="Avance:"
                         name="avance"
                         type="number"
@@ -1425,7 +1603,7 @@ const prospect_appel = getProspectFromStorage();
                         errors={errors}
                         backendErrors={backendErrors}
                         defaultValues={defaultValues}
-                        required={watch('frein')?.includes('avance')}
+                        required={watch('freins')?.includes('avance')}
                       />
                     </div>
                   )}
@@ -1512,14 +1690,14 @@ const prospect_appel = getProspectFromStorage();
                   {watch('freins')?.includes('typologie') && (
                     <div>
                       <SelectInput
-                        placeholder='selectionner des typologies'
+                        placeholder="selectionner des typologies"
                         label="Typologies :"
                         name="typologies"
                         required={true}
                         value={watch('typologies')}
-                        options={list_typologies.map(typologie => ({ 
-                          value: typologie.id, 
-                          label: typologie.typologie 
+                        options={list_typologies.map((typologie) => ({
+                          value: typologie.id,
+                          label: typologie.typologie,
                         }))}
                         isMulti={true}
                         onChange={(value) => {
@@ -1528,7 +1706,8 @@ const prospect_appel = getProspectFromStorage();
                         error={
                           (formSubmitted &&
                           watch('freins')?.includes('typologie') &&
-                          (!watch('typologies') || watch('typologies').length == 0)
+                          (!watch('typologies') ||
+                            watch('typologies').length == 0)
                             ? "Ce champ est obligatoire lorsque 'frein' inclut 'typologie'."
                             : null) || backendErrors.typologies
                         }
@@ -1539,13 +1718,13 @@ const prospect_appel = getProspectFromStorage();
                   {watch('freins')?.includes('vue') && (
                     <div>
                       <SelectInput
-                        placeholder='selectionner des vues'
+                        placeholder="selectionner des vues"
                         label="vue :"
                         name="vues"
                         required={true}
-                        options={list_vues.map(vue => ({ 
-                          value: vue.id, 
-                          label: vue.vue 
+                        options={list_vues.map((vue) => ({
+                          value: vue.id,
+                          label: vue.vue,
                         }))}
                         value={watch('vues')}
                         isMulti={true}
@@ -1560,6 +1739,23 @@ const prospect_appel = getProspectFromStorage();
                             : null) || backendErrors.vues
                         }
                         submitted={formSubmitted}
+                      />
+                    </div>
+                  )}
+                  {/* Description Autre Field */}
+                  {watch('freins')?.includes('autre') && (
+                    <div>
+                      <TextField
+                        label="Description Frein Autre:"
+                        name="description_autre"
+                        multi={true}
+                        control={control}
+                        errors={errors}
+                        backendErrors={backendErrors}
+                        defaultValues={defaultValues}
+                        required={watch('freins')?.includes('autre')}
+                        width="w-full"
+                        height="h-full"
                       />
                     </div>
                   )}

@@ -99,10 +99,7 @@ const VisiteTable = ({ user_id, dataProspect, dataClient }) => {
     return () => clearTimeout(timer); // Clean up the timeout on each render
   }, [searchTerm]);
 
-  const handleShow = (Id) => {
-    router.push(`/crm/visites/${Id}`);
-  };
-
+ 
   // Format users data for table display
   const formatData = () => {
     return visites.map((data) => ({
@@ -199,7 +196,15 @@ const VisiteTable = ({ user_id, dataProspect, dataClient }) => {
           },
         ]
       : []),
-    { key: 'telephone', label: 'Téléphone' },
+    // Only show prenom column if prospect_id exists
+    ...(prospectId == null
+      ? [
+          {
+            key: 'telephone',
+            label: 'Téléphone',
+          },
+        ]
+      : []),
     {
       key: 'interet',
       label: 'Intéret',
@@ -212,11 +217,15 @@ const VisiteTable = ({ user_id, dataProspect, dataClient }) => {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <Eye
-            className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
-            title="Voir détails"
-            onClick={() => handleShow(row.origin_id)}
-          />
+        <Link
+            href={`/crm/visites/${row.origin_id}`}
+            className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+            title="Voir les détails"
+          >
+            <Eye className="w-4 h-4" />
+          </Link>
+
+          
         </div>
       ),
     },
@@ -262,29 +271,29 @@ const VisiteTable = ({ user_id, dataProspect, dataClient }) => {
     if (canAddVisite) {
       if (dataClient) {
         return {
-          pathname: `${ENDPOINTS.VISITES}?action=add`,
           onClick: () => {
             localStorage.setItem(
               'selectedClient',
-              JSON.stringify({ info: { dataClient} })
+              JSON.stringify({ info: { dataClient } })
             );
           },
+          pathname: `${ENDPOINTS.VISITES}?action=add`,
         };
       } else if (dataProspect) {
         return {
-          pathname: `${ENDPOINTS.VISITES}?action=add`,
           onClick: () => {
             localStorage.setItem(
               'selectedProspect',
               JSON.stringify({
-                info: {dataProspect},
+                info: { dataProspect },
               })
             );
           },
+          pathname: `${ENDPOINTS.VISITES}?action=add`,
         };
+      } else {
+        return `${ENDPOINTS.VISITES}?action=add`;
       }
-
-      return `${ENDPOINTS.VISITES}?action=add`;
     }
     return undefined;
   }

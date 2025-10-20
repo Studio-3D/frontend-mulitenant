@@ -1,26 +1,27 @@
-"use client";
+'use client';
 
-import { HomeIcon, InfoIcon, PhoneIcon, XIcon } from "lucide-react";
+import { HomeIcon, InfoIcon, PhoneIcon, XIcon } from 'lucide-react';
 
 export default function Modal_Propsepct_Exist({
   onClose,
+  info_param,
   info_client_1,
   id_appel,
   id_visite,
   client_prospect,
 }) {
   function handleClickAppel(appelId) {
-    window.open(`/crm/appels/${appelId}`, "_blank");
+    window.open(`/crm/appels/${appelId}`, '_blank');
   }
 
   function handleClickVisite(vId) {
-    window.open(`/crm/visites/${vId}`, "_blank");
+    window.open(`/crm/visites/${vId}`, '_blank');
   }
 
   return (
     <div
       className="w-full bg-white border-b border-gray-200"
-      style={{ background: "#957de62b" }}
+      style={{ background: '#957de62b' }}
     >
       <div className="container mx-auto px-4 py-4 relative">
         {onClose && (
@@ -38,7 +39,7 @@ export default function Modal_Propsepct_Exist({
           <div className="flex items-center col-span-1">
             <InfoIcon className="h-5 w-5 text-blue-500 mr-2" />
             <h3 className="text-lg font-medium text-gray-900">
-              Ce téléphone appartient à:{" "}
+              {info_param == "l'email" ? 'cet email' : 'Ce ' + info_param} appartient à:{' '}
             </h3>
           </div>
 

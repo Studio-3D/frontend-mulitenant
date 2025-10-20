@@ -26,6 +26,7 @@ import {
   TYPES_APPELS,
 } from '../../../../../../src/configs/enum';
 import Input from '@/components/Input';
+import Link from 'next/link';
 
 const JournalTable = ({ id, prospect }) => {
   const [filters, setFilters] = useState({
@@ -77,6 +78,8 @@ const JournalTable = ({ id, prospect }) => {
   const [frein_superficie_min, setFreinsSuperficieMin] = useState(null);
   const [frein_superficie_max, setFreinsSuperficieMax] = useState(null);
   const [frein_avance, setFreinsAvance] = useState(null);
+    const [description_autre , setDescription_autre] = useState(null);
+
   const [commentaire, setCommentaire] = useState(null);
   const [commentaire_rel, setCommentaire_rel] = useState(null);
   const [commentaire_rdv, setCommentaire_rdv] = useState(null);
@@ -215,6 +218,7 @@ const JournalTable = ({ id, prospect }) => {
         frein?.avance != null &&
         setFreinsAvance(frein?.avance);
     }
+    {frein?.description_autre!='' && setDescription_autre(frein?.description_autre)}
     setCommentaire(comment);
     setCommentaire_rel(comment_rel);
     setCommentaire_rdv(comment_rdv);
@@ -249,10 +253,7 @@ const JournalTable = ({ id, prospect }) => {
       user: pro.user,
     }));
   };
-  function handleEdit(appelId) {
-    // Navigate to /utilisateurs?id={id}&action=edit
-    router.push(`${ENDPOINTS.APPELS}?id=${appelId}&action=edit`);
-  }
+ 
 
   const getInteretBadge = (interest) => {
     const interetInfo = VISITE_INTERETS[interest];
@@ -312,13 +313,15 @@ const JournalTable = ({ id, prospect }) => {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <div title="Modifier">
-            <PencilLine
-              className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
-              title="Modifier"
-              onClick={() => handleEdit(row.id)}
-            />
-          </div>
+          
+          <Link
+            href={`${ENDPOINTS.APPELS}?id=${row.id}&action=edit`}
+            className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
+            title="Modifier"
+          >
+            <PencilLine className="w-4 h-4" />
+          </Link>
+         
 
           {VISITE_INTERETS[row.interet]?.label != 'Injoignable' && (
             <div title="Voir détails">
@@ -553,6 +556,7 @@ const JournalTable = ({ id, prospect }) => {
               frein_superficie_min={frein_superficie_min}
               frein_superficie_max={frein_superficie_max}
               frein_avance={frein_avance}
+              description_autre={description_autre}
               commentaire={commentaire}
               commentaire_rel={commentaire_rel}
               commentaire_rdv={commentaire_rdv}
