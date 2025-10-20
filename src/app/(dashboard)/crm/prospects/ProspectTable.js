@@ -669,7 +669,7 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
   // --- Render ---
   return (
     <>
-      <div className="reflative bg-white rounded-lg shadow-md p-4">
+      <div className="relative py-4">
         <Table
           data_to_export={data_to_export()}
           columns_export={columns_export}

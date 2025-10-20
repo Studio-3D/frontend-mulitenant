@@ -150,7 +150,6 @@ const VisiteTable = ({ user_id, dataProspect, dataClient }) => {
   };
 
   // Table columns configuration
-  // Table columns configuration
   const columns = [
     {
       key: 'responsable',
@@ -310,7 +309,7 @@ const VisiteTable = ({ user_id, dataProspect, dataClient }) => {
   };
   return (
     <>
-      <div className="relative bg-white rounded-lg px-4 py-4">
+      <div className="relative py-4">
         <Table
           title={user_id ? 'Liste des visites' : ''}
           data_to_export={data_to_export()}

@@ -184,16 +184,43 @@ const VenteTabsNavigation = ({
     }));
   };
 
-  // Define all tabs
+  // Define all tabs - ONLY show counts on specific tabs
   const tabs = [
     { id: 'reservations', label: 'Reservations', icon: 'user' },
     { id: 'clients', label: 'Clients', icon: 'users' },
     { id: 'desistements', label: 'Désistements', icon: 'repeat' },
     { id: 'penalites', label: 'Penalités', icon: 'euro' },
-    { id: 'remboursements', label: displayedLabels.remboursements, icon: 'handshake', dropdown: true, count: notifications.remboursements },
-    { id: 'validation', label: displayedLabels.validation, icon: 'check', dropdown: true, count: notifications.validation },
-    { id: 'rejet', label: displayedLabels.rejet, icon: 'circle-x', dropdown: true, count: notifications.rejet },
-    { id: 'echeances', label: 'Echéances', icon: 'clock', count: notifications.echeances },
+    { 
+      id: 'remboursements', 
+      label: displayedLabels.remboursements, 
+      icon: 'handshake', 
+      dropdown: true, 
+      count: notifications.remboursements, // Show count only here
+      showCount: true // Add this flag
+    },
+    { 
+      id: 'validation', 
+      label: displayedLabels.validation, 
+      icon: 'check', 
+      dropdown: true, 
+      count: notifications.validation, // Show count only here
+      showCount: true // Add this flag
+    },
+    { 
+      id: 'rejet', 
+      label: displayedLabels.rejet, 
+      icon: 'circle-x', 
+      dropdown: true, 
+      count: notifications.rejet, // Show count only here
+      showCount: true // Add this flag
+    },
+    { 
+      id: 'echeances', 
+      label: 'Echéances', 
+      icon: 'clock', 
+      count: notifications.echeances,
+      showCount: false // Don't show count on Echéances tab
+    },
   ];
 
   return (
@@ -208,7 +235,7 @@ const VenteTabsNavigation = ({
                 label={tab.label}
                 icon={tab.icon}
                 active={activeTab === tab.id}
-                count={tab.count}
+                count={tab.showCount ? tab.count : undefined} // Only pass count if showCount is true
                 onClick={() => {
                   handleTabClick(tab.id);
                   if (activeTab !== tab.id) {
@@ -398,7 +425,7 @@ const VenteTabsNavigation = ({
               label={tab.label}
               icon={tab.icon}
               active={activeTab === tab.id}
-              count={tab.count}
+              count={tab.showCount ? tab.count : undefined} // Only pass count if showCount is true
               onClick={() => handleTabClick(tab.id)}
             />
           )
@@ -415,7 +442,7 @@ const TabButton = forwardRef(({
   onClick, 
   dropdown, 
   expanded,
-  count
+  count // Now count will be undefined for tabs that shouldn't show it
 }, ref) => {
   return (
     <button
@@ -430,6 +457,7 @@ const TabButton = forwardRef(({
       <div className="flex items-center justify-center flex-col sm:flex-row gap-1 sm:gap-2">
         {getIcon(icon)}
         <span className="whitespace-nowrap text-xs sm:text-sm">{label}</span>
+        {/* Only show count if it exists and is greater than 0 */}
         {count > 0 && (
           <span className="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-4 h-4 flex items-center justify-center">
             {count}

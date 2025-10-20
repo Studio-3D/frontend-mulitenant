@@ -4,14 +4,12 @@ import React, { useEffect, useState } from 'react';
 import AppelsTable from './AppelsTable';
 import AppelsForm from './AppelsForm';
 import { useSearchParams } from 'next/navigation';
-import CRMNavbar from '@/components/CRMNavbar';
 import { isAdmin, isSuperAdmin, isCommercial } from '../../../../configs/enum';
 import { useAuth } from '../../../../context/AuthContext';
 import { useRouter } from 'next/navigation';
 
 export default function Page() {
   const ACTION = { EDIT: 'edit', ADD: 'add' };
-  const [child, setChild] = useState(null);
   const { user } = useAuth();
   const userRole = user?.role;
   const router = useRouter();
@@ -51,16 +49,7 @@ export default function Page() {
 
   return (
     <div>
-      {child ? (
-        child
-      ) : (
-        <>
-          <div>
-            <CRMNavbar />
-            <AppelsTable />
-          </div>
-        </>
-      )}
+      <AppelsTable />
     </div>
   );
 }

@@ -323,7 +323,7 @@ const RelancesRdvAppelsTable = (type) => {
   ];
   return (
     <div>
-      <div className="p-4">
+      <div className="py-4">
         <Table
           data_to_export={data_to_export()}
           columns_export={columns_export}

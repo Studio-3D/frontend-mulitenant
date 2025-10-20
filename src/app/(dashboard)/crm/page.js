@@ -10,5 +10,9 @@ export default function CRM() {
     return <LoadingSpin />;
   }
 
-  return <CRMPage />;
+  return (
+  <div className="w-full min-h-[89vh] bg-white rounded-lg shadow-md p-4">
+    <CRMPage />;
+  </div>
+  )
 }

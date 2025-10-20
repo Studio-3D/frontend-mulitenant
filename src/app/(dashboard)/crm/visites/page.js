@@ -10,11 +10,9 @@ import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { isAdmin, isSuperAdmin, isCommercial } from '../../../../configs/enum';
 import { useAuth } from '../../../../context/AuthContext';
-import CRMNavbar from '@/components/CRMNavbar';
 
 export default function Page(dataProspect,dataClient) {
   const ACTION = { EDIT: 'edit', ADD: 'add' };
-  const [child, setChild] = useState(null);
 
   const { user } = useAuth();
   const userRole = user?.role;
@@ -52,24 +50,10 @@ export default function Page(dataProspect,dataClient) {
       return null;
     }
   };
-  const clientId = dataClient?.dataClient?.id;
-  const prospectId = dataProspect?.dataProspect?.id;
+
   return (
     <div>
-      {child ? (
-        child
-      ) : (
-        <>
-          <div>
-            {!clientId && !prospectId && (
-              <>
-                <CRMNavbar />
-              </>
-            )}
-            <VisiteTable dataClient={dataClient} dataProspect={dataProspect} />
-          </div>
-        </>
-      )}
+      <VisiteTable dataClient={dataClient} dataProspect={dataProspect} />
     </div>
   );
 }

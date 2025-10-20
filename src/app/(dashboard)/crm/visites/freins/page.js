@@ -2,7 +2,6 @@
 
 import React, { useEffect } from 'react';
 import RelancesFreinsTable from './RelancesFreinsTable';
-import CRMNavbar from '@/components/CRMNavbar';
 import { isAdmin, isSuperAdmin, isCommercial } from '../../../../../configs/enum';
 import { useAuth } from '../../../../../context/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -26,14 +25,7 @@ export default function Page() {
 
   return (
     <div>
-      
-        <>
-          <div>
-            <CRMNavbar />
-            <RelancesFreinsTable />
-          </div>
-        </>
-      
+      <RelancesFreinsTable />
     </div>
   );
 }

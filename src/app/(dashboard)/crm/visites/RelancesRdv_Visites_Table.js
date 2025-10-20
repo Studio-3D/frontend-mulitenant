@@ -337,7 +337,7 @@ const RelancesRdv_Visites_Table = (type) => {
   ];
   return (
     <div>
-      <div className="p-4">
+      <div className="py-4">
         <Table
           showSearch={false}
           data_to_export={data_to_export()}

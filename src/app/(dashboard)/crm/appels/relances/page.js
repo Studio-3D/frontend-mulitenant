@@ -26,14 +26,7 @@ export default function Page() {
 
   return (
     <div>
-      
-        <>
-          <div>
-            <CRMNavbar />
-            <RelancesRdvAppelsTable type={1} />
-          </div>
-        </>
-      
+      <RelancesRdvAppelsTable type={1} />
     </div>
   );
 }
