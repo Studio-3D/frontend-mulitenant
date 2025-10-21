@@ -17,7 +17,7 @@ const getStatusLabel = (rawStatus) => {
 
 import SelectInput from '@/components/SelectInput';
 import Input from '@/components/Input';
-const HistoriquesTable = (id) => {
+const HistoriquesTable = ({ id, refreshTrigger = 0 }) => {
   const [historiques, setHistoriques] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -54,7 +54,7 @@ const HistoriquesTable = (id) => {
   const router = useRouter();
   // Declare the entity object in the component scope
   const entity = {
-    id: JSON.stringify(id.id),
+    id: id,
     API_URL: 'historiques_prospects',
     dataKey: 'historiques',
     name: 'historique',
@@ -74,7 +74,7 @@ const HistoriquesTable = (id) => {
       setHistoriques,
       setTotalRows
     );
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters]);
+  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters,refreshTrigger]);
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 

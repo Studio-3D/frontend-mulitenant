@@ -5,12 +5,23 @@ import Button from '@/components/Button';
 import toast from 'react-hot-toast';
 import { APIURL } from '../../../../configs/api';
 import { useAuth } from '../../../../context/AuthContext';
-import { Statuts_Prospect_Traitement, getProspectStatusLabel } from '../../../../../src/configs/enum';
+import {
+  Statuts_Prospect_Traitement,
+  getProspectStatusLabel,
+} from '../../../../../src/configs/enum';
 import Autocomplete from '@/components/Autocomplete';
 import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-export default function Modal_Traite({ onClose, id, num_tel, nom_prenom }) {
+export default function Modal_Traite({
+  onSuccess, // Ajouter cette prop
+
+  onClose,
+  id,
+  num_tel,
+  nom_prenom,
+  from_prospect_show = false,
+}) {
   const { token } = useAuth();
   const accessToken = token || localStorage.getItem('accessToken');
   const [loading, setLoading] = useState({ form: false });
@@ -68,21 +79,32 @@ export default function Modal_Traite({ onClose, id, num_tel, nom_prenom }) {
 
         if (res.status === 200) {
           toast.success('Le Prospect est Traité avec succès');
-          onClose();
-          localStorage.setItem('load_data_prospect', 1);
+          // Appeler onSuccess uniquement si le traitement est réussi
+          if (onSuccess) {
+            onSuccess();
+          } else {
+            // Fallback pour la compatibilité
+            onClose();
+          }
+          if (from_prospect_show == false) {
+            localStorage.setItem('load_data_prospect', 1);
+          }
         }
       })
       .catch((error) => {
         setLoading({ ...loading, form: false });
 
         const response = error.response;
-        if (response?.status === 422) {
-          setBackendErrors(response.data.message || {});
-          toast.error(response.data.message || 'Erreur de validation.');
-          setTimeout(() => setBackendErrors(null), 5000);
-        } else {
-          toast.error("Une erreur s'est produite.");
-        }
+      if (response?.status === 422) {
+        setBackendErrors(response.data.message || {});
+        toast.error(response.data.message || 'Erreur de validation.');
+        setTimeout(() => setBackendErrors(null), 5000);
+      } else {
+        console.error('Erreur détaillée:', error);
+        toast.error("Une erreur s'est produite: " + (error.message || 'Erreur inconnue'));
+      }
+      // Toujours appeler onClose en cas d'erreur, mais sans onSuccess
+      onClose();
       });
   };
 
@@ -221,7 +243,8 @@ export default function Modal_Traite({ onClose, id, num_tel, nom_prenom }) {
               )}
             />
           </div>
-          {getProspectStatusLabel(watch('statut')) == 'Planification Rendez Vous' && (
+          {getProspectStatusLabel(watch('statut')) ==
+            'Planification Rendez Vous' && (
             <div className="flex items-center space-x-2 w-full">
               {
                 <>
@@ -229,7 +252,11 @@ export default function Modal_Traite({ onClose, id, num_tel, nom_prenom }) {
                     type="datetime-local"
                     label="Rendez vous:"
                     name="rdv"
-                    required={watch('statut') == 'Planification Rendez Vous' ? true : false}
+                    required={
+                      watch('statut') == 'Planification Rendez Vous'
+                        ? true
+                        : false
+                    }
                     control={control}
                     errors={errors}
                   />
