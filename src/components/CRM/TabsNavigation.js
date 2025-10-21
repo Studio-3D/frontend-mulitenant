@@ -9,6 +9,7 @@ import {
   AlertTriangle, 
   ChevronDown
 } from 'lucide-react';
+
 const getIcon = (type) => {
   const iconProps = { size: 16 };
   
@@ -31,6 +32,7 @@ const getIcon = (type) => {
       return null;
   }
 };
+
 const TabsNavigation = ({
   activeTab,
   activeSubTab,
@@ -48,7 +50,23 @@ const TabsNavigation = ({
     rdv: 'RDV',
   });
 
-  // Update displayed labels based on active sub-tabs
+  // Reset to default labels when switching to different tabs
+  useEffect(() => {
+    if (activeTab !== 'relance') {
+      setDisplayedLabels(prev => ({
+        ...prev,
+        relance: 'Relances',
+      }));
+    }
+    if (activeTab !== 'rdv') {
+      setDisplayedLabels(prev => ({
+        ...prev,
+        rdv: 'RDV',
+      }));
+    }
+  }, [activeTab]);
+
+  // Update displayed labels based on active sub-tabs only when the parent tab is active
   useEffect(() => {
     if (activeTab === 'relance') {
       if (activeSubTab.relance === 'appels-relance') {
@@ -151,18 +169,24 @@ const TabsNavigation = ({
     }));
   };
 
-  const resetToDefaultLabel = (tab) => {
-    if (tab === 'relance') {
-      setDisplayedLabels((prev) => ({
-        ...prev,
-        relance: 'Relances',
-      }));
-    } else if (tab === 'rdv') {
-      setDisplayedLabels((prev) => ({
-        ...prev,
-        rdv: 'RDV',
-      }));
+  // Get the appropriate notification count for displayed labels
+  const getDisplayedNotificationCount = (tabId) => {
+    if (tabId === 'relance' && activeTab === 'relance') {
+      if (displayedLabels.relance === 'Appels Relances') {
+        return notifications['appels-relance'];
+      } else if (displayedLabels.relance === 'Visites Relances') {
+        return notifications['visites-relance'];
+      }
+    } else if (tabId === 'rdv' && activeTab === 'rdv') {
+      if (displayedLabels.rdv === 'Appels RDV') {
+        return notifications['appels-rdv'];
+      } else if (displayedLabels.rdv === 'Visites RDV') {
+        return notifications['visites-rdv'];
+      }
     }
+    
+    // Return total count for non-active tabs or default labels
+    return notifications[tabId];
   };
 
   // Define all tabs
@@ -171,8 +195,20 @@ const TabsNavigation = ({
     { id: 'visites', label: 'Visites', icon: 'walk' },
     { id: 'appels', label: 'Appels', icon: 'phone' },
     { id: 'pre-reservation', label: 'Pré-réservations', icon: 'home' },
-    { id: 'relance', label: displayedLabels.relance, icon: 'clock', dropdown: true, count: notifications.relance },
-    { id: 'rdv', label: displayedLabels.rdv, icon: 'calendar', dropdown: true, count: notifications.rdv },
+    { 
+      id: 'relance', 
+      label: displayedLabels.relance, 
+      icon: 'clock', 
+      dropdown: true, 
+      count: getDisplayedNotificationCount('relance') 
+    },
+    { 
+      id: 'rdv', 
+      label: displayedLabels.rdv, 
+      icon: 'calendar', 
+      dropdown: true, 
+      count: getDisplayedNotificationCount('rdv') 
+    },
     { id: 'freins', label: 'Freins', icon: 'alert', count: notifications.freins },
   ];
 
@@ -189,12 +225,7 @@ const TabsNavigation = ({
                 icon={tab.icon}
                 active={activeTab === tab.id}
                 count={tab.count}
-                onClick={() => {
-                  handleTabClick(tab.id);
-                  if (activeTab !== tab.id) {
-                    resetToDefaultLabel(tab.id);
-                  }
-                }}
+                onClick={() => handleTabClick(tab.id)}
                 dropdown={true}
                 expanded={dropdownState[tab.id]}
                 ref={tab.id === 'relance' ? relanceTabRef : rdvTabRef}
@@ -336,7 +367,5 @@ const DropdownItem = ({ label, active, onClick, count }) => {
     </button>
   );
 };
-
-
 
 export { TabsNavigation };
