@@ -176,152 +176,149 @@ const PageTraitement_Validation_rejets = () => {
 
   const columns = [
     {
-      key: "cc",
-      label: "Responsable",
-      render: (row) => {
-        return isSuperAdmin(userRole) || isAdmin(userRole) ? (
-          <>
-            {row.data_res.user && (
-              <>
-                <Link
-                  target="_blank"
-                  href={"/Utilisateurs/afficher-utilisateur/" + row.user_id}
-                >
-                  <strong style={{ fontWeight: 600 }}>{row.cc}</strong>
-                </Link>
-              </>
-            )}
-          </>
-        ) : (
-          row.cc
-        );
-      },
+        key: "cc",
+        label: "Responsable",
+        render: (row) => {
+            return isSuperAdmin(userRole) || isAdmin(userRole) ? (
+                <>
+                    {row.data_res.user && (
+                        <>
+                            <Link
+                                target="_blank"
+                                href={"/Utilisateurs/afficher-utilisateur/" + row.user_id}
+                            >
+                                <strong style={{ fontWeight: 600 }}>{row.cc}</strong>
+                            </Link>
+                        </>
+                    )}
+                </>
+            ) : (
+                row.cc
+            );
+        },
     },
     {
-      key: "date_reservation",
-      label: "Date",
-      render: (row) => (
-        <div className="flex items-center gap-3">
-          <span>
-            {row.date_reservation
-              ? format(new Date(row.date_reservation), "dd/MM/yyyy ", {
-                  timeZone: "UTC",
-                })
-              : ""}
-          </span>
-        </div>
-      ),
+        key: "date_reservation",
+        label: "Date",
+        render: (row) => (
+            <div className="flex items-center gap-3">
+                <span>
+                    {row.date_reservation
+                        ? format(new Date(row.date_reservation), "dd/MM/yyyy ", {
+                              timeZone: "UTC",
+                          })
+                        : ""}
+                </span>
+            </div>
+        ),
     },
     { key: "code_reservation", label: "Code" },
     {
-      key: "propriete_dite_bien",
-      label: "Bien",
-      render: (row) => (
-        <Link target="_blank" href={`/Biens/${row.bien_id}`}>
-          <strong style={{ fontWeight: 600 }}>
-            {NomBienComplet(row.bien)}
-          </strong>
-        </Link>
-      ),
+        key: "propriete_dite_bien",
+        label: "Bien",
+        render: (row) => (
+            <Link target="_blank" href={`/Biens/${row.bien_id}`}>
+                <strong style={{ fontWeight: 600 }}>
+                    {NomBienComplet(row.bien)}
+                </strong>
+            </Link>
+        ),
     },
     {
-      key: "prix",
-      label: "Prix",
-      render: (row) => (
-        <b style={{ color: "blue" }}>
-          {row.prix ? `${row.prix.toLocaleString()} DH` : ""}
-        </b>
-      ),
+        key: "prix",
+        label: "Prix",
+        render: (row) => (
+            <b style={{ color: "blue" }}>
+                {row.prix ? `${row.prix.toLocaleString()} DH` : ""}
+            </b>
+        ),
     },
     {
-      key: "avance",
-      label: "Avance",
-      render: (row) => (
-        <b style={{ color: "green" }}>
-          {row.avances_sum_montant
-            ? `${row.avances_sum_montant.toLocaleString()} DH`
-            : ""}
-        </b>
-      ),
+        key: "avance",
+        label: "Avance",
+        render: (row) => (
+            <b style={{ color: "green" }}>
+                {row.avances_sum_montant
+                    ? `${row.avances_sum_montant.toLocaleString()} DH`
+                    : ""}
+            </b>
+        ),
     },
     {
-      key: "reste",
-      label: "Reste",
-      render: (row) => (
-        <b style={{ color: "red" }}>
-          {row.prix - row.avances_sum_montant
-            ? (row.prix - row.avances_sum_montant).toLocaleString() + " DH"
-            : ""}{" "}
-        </b>
-      ),
+        key: "reste",
+        label: "Reste",
+        render: (row) => (
+            <b style={{ color: "red" }}>
+                {row.prix - row.avances_sum_montant
+                    ? (row.prix - row.avances_sum_montant).toLocaleString() + " DH"
+                    : ""}{" "}
+            </b>
+        ),
     },
-    ...(isSuperAdmin(userRole) ||
-      (isAdmin(userRole)
-        ? [
-            {
-              key: "actions",
-              label: "Actions",
-              render: (row) => {
+    // Fixed the actions column - removed the extra spread and comma
+    ...((isSuperAdmin(userRole) || isAdmin(userRole)) ? [
+        {
+            key: "actions",
+            label: "Actions",
+            render: (row) => {
                 return (
-                  <div className="flex gap-3 items-center">
-                    <Eye
-                      className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
-                      title="Voir détails"
-                      onClick={() => handleShow(row.id)}
-                    />
-
-                    {etat_res == 3 &&
-                    (isSuperAdmin(userRole) || isAdmin(userRole)) ? (
-                      <>
-                        <ThumbsUp
-                          className="w-4 h-4 !text-green-500 hover:text-green-700 cursor-pointer"
-                          title="Valider"
-                          onClick={() =>
-                            handle_valider(
-                              row.id,
-                              row.code_reservation,
-                              row.data_res.first_avance?.num_recu,
-                              row.data_res.first_avance?.id,
-                              row.data_res.first_avance?.statut,
-                              row.data_res.user.name +
-                                " " +
-                                row.data_res.user.prenom,
-                              row.data_res.aquereurs,
-                              row.data_res.date_reservation,
-                              row.data_res.prix,
-                              row.avances_sum_montant
-                            )
-                          }
+                    <div className="flex gap-3 items-center">
+                        <Eye
+                            className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
+                            title="Voir détails"
+                            onClick={() => handleShow(row.id)}
                         />
 
-                        <ThumbsDown
-                          className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
-                          title="Refuser"
-                          onClick={() =>
-                            handle_rejeter(row.id, row.code_reservation)
-                          }
-                        />
-                      </>
-                    ) : etat_res == 2 ? (
-                      <Eye
-                        className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
-                        title="Détail du Rejet"
-                        onClick={() =>
-                          handle_show_comment_rejete(
-                            row.code_reservation,
-                            row.data_res.last_statut?.commentaire
-                          )
-                        }
-                      />
-                    ) : null}
-                  </div>
+                        {etat_res == 3 &&
+                        (isSuperAdmin(userRole) || isAdmin(userRole)) ? (
+                            <>
+                                <ThumbsUp
+                                    className="w-4 h-4 !text-green-500 hover:text-green-700 cursor-pointer"
+                                    title="Valider"
+                                    onClick={() =>
+                                        handle_valider(
+                                            row.id,
+                                            row.code_reservation,
+                                            row.data_res.first_avance?.num_recu,
+                                            row.data_res.first_avance?.id,
+                                            row.data_res.first_avance?.statut,
+                                            row.data_res.user.name +
+                                                " " +
+                                                row.data_res.user.prenom,
+                                            row.data_res.aquereurs,
+                                            row.data_res.date_reservation,
+                                            row.data_res.prix,
+                                            row.avances_sum_montant
+                                        )
+                                    }
+                                />
+
+                                <ThumbsDown
+                                    className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
+                                    title="Refuser"
+                                    onClick={() =>
+                                        handle_rejeter(row.id, row.code_reservation)
+                                    }
+                                />
+                            </>
+                        ) : etat_res == 2 ? (
+                            <Eye
+                                className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
+                                title="Détail du Rejet"
+                                onClick={() =>
+                                    handle_show_comment_rejete(
+                                        row.code_reservation,
+                                        row.data_res.last_statut?.commentaire
+                                    )
+                                }
+                            />
+                        ) : null}
+                    </div>
                 );
-              },
             },
-          ]
-        : [])),
-    ,
-  ];
+        },
+    ] : [])
+];
 
   const data_to_export = () => {
     return data.map((item) => {
@@ -440,12 +437,10 @@ const PageTraitement_Validation_rejets = () => {
     setOpen_info(true);
   };
 
-  if (loading) return <LoadingSpin />;
 
   return (
     <>
-      <VenteNavbar />
-      <div className="relative bg-white shadow-md rounded-lg p-4">
+      <div className="relative p-4">
         <p className="text-lg font-semibold mb-4">
           Réservation{" "}
           {etat_res == 3 ? "En Attente" : etat_res == 2 ? "Rejetée" : null}

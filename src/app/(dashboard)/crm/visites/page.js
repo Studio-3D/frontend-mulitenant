@@ -8,13 +8,11 @@ import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { isAdmin, isSuperAdmin, isCommercial } from '../../../../configs/enum';
 import { useAuth } from '../../../../context/AuthContext';
-import CRMNavbar from '@/components/CRMNavbar';
 
 // Fix: Properly destructure the props
 export default function Page({ dataProspect, dataClient }) {
   // Add proper destructuring
   const ACTION = { EDIT: 'edit', ADD: 'add' };
-  const [child, setChild] = useState(null);
 
   const { user } = useAuth();
   const userRole = user?.role;
@@ -53,6 +51,11 @@ export default function Page({ dataProspect, dataClient }) {
     }
   };
 
+<<<<<<< HEAD
+  return (
+    <div>
+      <VisiteTable dataClient={dataClient} dataProspect={dataProspect} />
+=======
   // Debug: Check what you're actually receiving
   console.log('dataProspect in page:', dataProspect);
   console.log('dataClient in page:', dataClient);
@@ -77,6 +80,7 @@ export default function Page({ dataProspect, dataClient }) {
           </div>
         </>
       )}
+>>>>>>> a55376508bf5b4dbe8ab5c768c3848648bcc83fb
     </div>
   );
 }

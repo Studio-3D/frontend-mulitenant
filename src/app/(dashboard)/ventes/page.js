@@ -1,17 +1,10 @@
 "use client";
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import LoadingSpin from '@/components/LoadingSpin';
+import { VentePage } from '../../../components/Vente/ventePage'
 
-export default function VentePage() {
-  const router = useRouter();
-  
-  // Redirect to prospects page by default
-  useEffect(() => {
-    router.push('/ventes/reservations');
-  }, [router]);
-  
+export default function page() {
   return (
-   <LoadingSpin />
+    <div className="w-full min-h-[89vh] bg-white rounded-lg shadow-md p-4">
+      <VentePage />
+    </div>
   );
 }

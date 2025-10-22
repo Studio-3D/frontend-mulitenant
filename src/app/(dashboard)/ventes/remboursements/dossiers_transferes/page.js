@@ -188,8 +188,7 @@ const RemboDosTable = () => {
 
   return (
     <>
-      <VenteNavbar />
-      <div className="bg-white rounded-lg shadow-md p-4">
+      <div className=" p-4">
         <Table
           data_to_export={data_to_export()}
           columns_export={columns_export}
