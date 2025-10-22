@@ -16,9 +16,13 @@ import { useProjet } from '@/context/ProjetContext';
 import VisiteTable from '../../visites/VisiteTable';
 import { format } from 'date-fns'; // Import format from date-fns
 import JournalTable from '../../appels/[appelId]/JournalTable';
+import Modal_Traite from '../Modal_Traite';
+import { isAdmin } from '@/configs/enum';
 
 const ProspectDetails = () => {
-  const { token } = useAuth();
+  const [refreshHistoriques, setRefreshHistoriques] = useState(0);
+
+  const { user, token } = useAuth();
   const router = useRouter();
   const { prospectId } = useParams(); // Use useParams() to access dynamic params
   const accessToken = token || localStorage.getItem('accessToken');
@@ -28,7 +32,27 @@ const ProspectDetails = () => {
   const [loading, setLoading] = useState(false);
   const [prospectDetails, setProspectDetails] = useState([]);
   const [activeTab, setActiveTab] = useState('historiques'); // Default to 'historiques' if tab is not present
+  const [open_traite, setOpen_traite] = useState(false);
+  const [traite_id, setId_traite] = useState(null);
+  const [num_tel, setTel_num] = useState(null);
+  const [nom_prenom, setNomPrenom] = useState(null);
+  const handleraiter = (Id, num_tel, nom_prenom) => {
+    setOpen_traite(!open_traite);
+    setId_traite(Id);
+    setTel_num(num_tel);
+    setNomPrenom(nom_prenom);
+  };
+    // Fonction appelée quand le modal de traitement est fermé APRÈS un traitement réussi
+  const handleTraiteSuccess = () => {
+    setOpen_traite(false);
+    // Incrémenter le compteur UNIQUEMENT après un traitement réussi
+    setRefreshHistoriques(prev => prev + 1);
+  };
+  // Fonction appelée quand le modal de traitement est fermé
+  const handleTraiteClose = () => {
+    setOpen_traite(false);
 
+  };
   const handleEdit = (id) => {
     router.push(`${ENDPOINTS.PROSPECTS}?id=${id}&action=edit`);
   };
@@ -273,6 +297,24 @@ const ProspectDetails = () => {
                   </div>
 
                   <div className="flex justify-center gap-4 items-center mt-6 mb-6">
+                    {isAdmin(user.role) ||
+                      (prospectDetails?.commercial_affecte?.user_id_origin ==
+                        user.id && (
+                        <Button
+                          type="traite_rdv"
+                          onClick={() =>
+                            handleraiter(
+                              prospectDetails?.id,
+                              prospectDetails?.telephone,
+                              prospectDetails?.nom +
+                                ' ' +
+                                prospectDetails?.prenom
+                            )
+                          }
+                        >
+                          Traiter
+                        </Button>
+                      ))}
                     <Button
                       type="edit"
                       onClick={() => handleEdit(prospectDetails?.id)}
@@ -280,6 +322,8 @@ const ProspectDetails = () => {
                       Modifier
                     </Button>
                   </div>
+
+                  <div className="flex justify-center gap-4 items-center mt-6 mb-6"></div>
                 </div>
               </div>
 
@@ -319,7 +363,10 @@ const ProspectDetails = () => {
                     {activeTab === 'historiques' && (
                       <div className="min-h-[400px]">
                         <div className="min-h-[400px]">
-                          <HistoriquesTable id={prospectDetails.id} />
+                          <HistoriquesTable
+                            id={prospectDetails.id}
+                            refreshTrigger={refreshHistoriques}
+                          />
                         </div>
                       </div>
                     )}
@@ -391,6 +438,18 @@ const ProspectDetails = () => {
             </div>
           </div>
         </>
+      )}
+      {open_traite && (
+        <Modal isVisible={true} onClose={handleTraiteClose}>
+          <Modal_Traite
+            nom_prenom={nom_prenom}
+            num_tel={num_tel}
+            id={traite_id}
+            from_prospect_show={true}
+            onClose={handleTraiteClose}
+            onSuccess={handleTraiteSuccess} 
+          />
+        </Modal>
       )}
     </>
   );
