@@ -1,15 +1,16 @@
 'use client';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { VenteTabsNavigation } from './VenteTabsNavigation';
 import { VenteTabContent } from './VenteTabContent';
 import Pusher from 'pusher-js';
 import FetchNotifMenuVente from '@/configs/fetch_notif_menu_vente';
 import { useAuth } from "../../context/AuthContext";
+import { useProjet } from '@/context/ProjetContext';
 
 export function VentePage() {
   const [activeTab, setActiveTab] = useState('reservations');
   const [activeSubTab, setActiveSubTab] = useState({
-    validation: 'desistements-validation',
+    validation: 'desistements-attente-encours',
     rejet: 'desistements-rejet',
     remboursements: 'apres-ventes'
   });
@@ -18,7 +19,14 @@ export function VentePage() {
     reservations: true,
   });
 
-  // Notification state
+  const { user } = useAuth();
+  const { selectedProjet } = useProjet();
+  const userRole = user?.role;
+  const projetId = selectedProjet?.id;
+  const pusher_key_NotifMenu = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_NOTIF_MENU;
+  const [param, setParam] = useState(0);
+
+  // Notification state - matching the old navbar structure
   const [notifications, setNotifications] = useState({
     // Main tabs
     reservations: 0,
@@ -30,15 +38,19 @@ export function VentePage() {
     rejet: 0,
     echeances: 0,
 
-    // Sub tabs
+    // Sub tabs - Validation
     'desistements-attente-encours': 0,
     'penalites-validation': 0,
     'reservations-validation': 0,
     'avances-validation': 0,
+    
+    // Sub tabs - Rejet
     'desistements-rejet': 0,
     'penalites-rejet': 0,
     'reservations-rejet': 0,
     'avances-rejet': 0,
+    
+    // Sub tabs - Remboursements
     'apres-ventes': 0,
     'att-accuse-cheque': 0,
     'att-decaissement': 0,
@@ -47,91 +59,103 @@ export function VentePage() {
     'accuses-cheque-traite': 0
   });
 
-  const { user } = useAuth();
-  const userRole = user?.role;
-  const pusher_key_NotifMenu = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_NOTIF_MENU;
+  // Fonction optimisée pour récupérer les notifications
+  const fetchDataNotifMenu = useCallback(
+    async (nb = 0) => {
+      if (!projetId || !userRole) return;
 
-  const fetchDataNotiMon = async (nb) => {
-    const projetId = JSON.parse(localStorage.getItem("selectedProjet"))?.id || 1;
-    
-    await FetchNotifMenuVente(
-      nb,
-      projetId,
-      userRole,
-      (nb_demande_pre_remb) => {}, // Not used in notifications
-      (nb_dst_att_valide) => setNotifications(prev => ({ ...prev, 'desistements-attente-encours': nb_dst_att_valide })),
-      (nb_pen_att_valide) => setNotifications(prev => ({ ...prev, 'penalites-validation': nb_pen_att_valide })),
-      (nb_att_valid_reservation) => setNotifications(prev => ({ ...prev, 'reservations-validation': nb_att_valid_reservation })),
-      (nb_att_valid_avances) => setNotifications(prev => ({ ...prev, 'avances-validation': nb_att_valid_avances })),
-      (nb_echeances) => setNotifications(prev => ({ ...prev, echeances: nb_echeances }))
-    );
-  };
+      await FetchNotifMenuVente(
+        nb,
+        projetId,
+        userRole,
+        // nb_demande_pre_remb - not used in new notifications
+        (nb_demande_pre_remb) => {},
+        // nb_dst_att_valide
+        (nb_dst_att_valide) => setNotifications(prev => ({ 
+          ...prev, 
+          'desistements-attente-encours': nb_dst_att_valide 
+        })),
+        // nb_pen_att_valide
+        (nb_pen_att_valide) => setNotifications(prev => ({ 
+          ...prev, 
+          'penalites-validation': nb_pen_att_valide 
+        })),
+        // nb_att_valid_reservation
+        (nb_att_valid_reservation) => setNotifications(prev => ({ 
+          ...prev, 
+          'reservations-validation': nb_att_valid_reservation 
+        })),
+        // nb_att_valid_avances
+        (nb_att_valid_avances) => setNotifications(prev => ({ 
+          ...prev, 
+          'avances-validation': nb_att_valid_avances 
+        })),
+        // nb_echeances
+        (nb_echeances) => setNotifications(prev => ({ 
+          ...prev, 
+          echeances: nb_echeances 
+        }))
+      );
+    },
+    [projetId, userRole]
+  );
 
+  // Appel automatique quand le projet change
   useEffect(() => {
-    // Initial fetch
-    fetchDataNotiMon("D");
-
-    // Pusher setup
-    if (pusher_key_NotifMenu) {
-      const pusher = new Pusher(pusher_key_NotifMenu, {
-        cluster: "eu",
-        encrypted: true,
-      });
-
-      const channel = pusher.subscribe("NotifMenu");
-
-      channel.bind("App\\Events\\NotifMenuEvent", (data) => {
-        fetchDataNotiMon(data.NotifMenuId);
-      });
-
-      return () => {
-        channel.unbind("App\\Events\\NotifMenuEvent");
-        pusher.unsubscribe("NotifMenu");
-      };
+    if (projetId && userRole) {
+      fetchDataNotifMenu(0);
     }
-  }, []);
+  }, [projetId, userRole, fetchDataNotifMenu]);
 
-  // Calculate totals for main tabs
+  // Configuration Pusher
   useEffect(() => {
-    const totalValidation = 
-      notifications['desistements-attente-encours'] + 
-      notifications['penalites-validation'] + 
-      notifications['reservations-validation'] + 
-      notifications['avances-validation'];
+    if (!pusher_key_NotifMenu || !projetId) return;
 
-    const totalRejet = 
-      notifications['desistements-rejet'] + 
-      notifications['penalites-rejet'] + 
-      notifications['reservations-rejet'] + 
-      notifications['avances-rejet'];
+    const pusher = new Pusher(pusher_key_NotifMenu, {
+      cluster: 'eu',
+      encrypted: true,
+    });
 
-    const totalRemboursements = userRole <= 2 
-      ? notifications['apres-ventes'] + notifications['att-accuse-cheque'] + 
-        notifications['att-decaissement'] + notifications['accuses'] + notifications['dossiers-transferes']
-      : notifications['apres-ventes'] + notifications['att-accuse-cheque'] + 
-        notifications['accuses-cheque-traite'] + notifications['dossiers-transferes'];
+    const channel = pusher.subscribe('NotifMenu');
+    channel.bind('App\\Events\\NotifMenuEvent', (data) => {
+      fetchDataNotifMenu(data.NotifMenuId);
+      setParam(data.NotifMenuId);
+    });
+
+    return () => {
+      channel.unbind('App\\Events\\NotifMenuEvent');
+      pusher.unsubscribe('NotifMenu');
+    };
+  }, [pusher_key_NotifMenu, projetId, fetchDataNotifMenu]);
+
+  // Appel initial au chargement
+  useEffect(() => {
+    if (projetId && userRole && param === 0) {
+      fetchDataNotifMenu(0);
+    }
+  }, [param, projetId, userRole, fetchDataNotifMenu]);
+
+  // Calculate totals for main tabs (same as old navbar logic)
+  useEffect(() => {
+    const nb_att_validation_total =
+      Number(notifications['desistements-attente-encours']) +
+      Number(notifications['penalites-validation']) +
+      Number(notifications['reservations-validation']) +
+      Number(notifications['avances-validation']);
+
+    // For rejet, we don't have notification counts in the old system, so we'll keep them at 0
+    // For remboursements, we don't have individual counts in the old system
     
     setNotifications(prev => ({
       ...prev,
-      validation: totalValidation,
-      rejet: totalRejet,
-      remboursements: totalRemboursements
+      validation: nb_att_validation_total,
+      // rejet and remboursements remain 0 as in old system
     }));
   }, [
     notifications['desistements-attente-encours'],
     notifications['penalites-validation'],
     notifications['reservations-validation'],
     notifications['avances-validation'],
-    notifications['desistements-rejet'],
-    notifications['penalites-rejet'],
-    notifications['reservations-rejet'],
-    notifications['avances-rejet'],
-    notifications['apres-ventes'],
-    notifications['att-accuse-cheque'],
-    notifications['att-decaissement'],
-    notifications['accuses'],
-    notifications['dossiers-transferes'],
-    notifications['accuses-cheque-traite']
   ]);
 
   const handleTabChange = (tabId) => {
@@ -189,7 +213,7 @@ export function VentePage() {
     }
   };
 
-  // Handle localStorage state for specific tabs
+  // Handle localStorage state for specific tabs (from old navbar)
   const handleTabClick = (tabId) => {
     switch(tabId) {
       case 'desistements':
@@ -208,6 +232,7 @@ export function VentePage() {
   };
 
   const handleSubTabClick = (parentTab, subTabId) => {
+    // Set localStorage states based on sub-tab selection (from old navbar)
     switch(subTabId) {
       case 'desistements-attente-encours':
         if (userRole <= 2) {
