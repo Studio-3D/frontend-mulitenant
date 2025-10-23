@@ -56,7 +56,29 @@ const VenteTabsNavigation = ({
     remboursements: 'Remboursements',
   });
 
-  // Update displayed labels based on active sub-tabs
+  // Reset to default labels when switching to different tabs
+  useEffect(() => {
+    if (activeTab !== 'validation') {
+      setDisplayedLabels(prev => ({
+        ...prev,
+        validation: userRole <= 2 ? 'Validation' : 'En cours',
+      }));
+    }
+    if (activeTab !== 'rejet') {
+      setDisplayedLabels(prev => ({
+        ...prev,
+        rejet: 'Rejet',
+      }));
+    }
+    if (activeTab !== 'remboursements') {
+      setDisplayedLabels(prev => ({
+        ...prev,
+        remboursements: 'Remboursements',
+      }));
+    }
+  }, [activeTab, userRole]);
+
+  // Update displayed labels based on active sub-tabs only when the parent tab is active
   useEffect(() => {
     if (activeTab === 'validation') {
       const subTab = activeSubTab.validation;
@@ -171,17 +193,43 @@ const VenteTabsNavigation = ({
     }));
   };
 
-  const resetToDefaultLabel = (tab) => {
-    const defaultLabels = {
-      validation: userRole <= 2 ? 'Validation' : 'En cours',
-      rejet: 'Rejet',
-      remboursements: 'Remboursements',
-    };
+  // Get the appropriate notification count for displayed labels
+  const getDisplayedNotificationCount = (tabId) => {
+    if (tabId === 'validation' && activeTab === 'validation') {
+      const subTab = activeSubTab.validation;
+      const countMap = {
+        'desistements-attente-encours': notifications['desistements-attente-encours'],
+        'penalites-validation': notifications['penalites-validation'],
+        'reservations-validation': notifications['reservations-validation'],
+        'avances-validation': notifications['avances-validation'],
+      };
+      return countMap[subTab] || notifications.validation;
+    } 
+    else if (tabId === 'rejet' && activeTab === 'rejet') {
+      const subTab = activeSubTab.rejet;
+      const countMap = {
+        'desistements-rejet': notifications['desistements-rejet'],
+        'penalites-rejet': notifications['penalites-rejet'],
+        'reservations-rejet': notifications['reservations-rejet'],
+        'avances-rejet': notifications['avances-rejet'],
+      };
+      return countMap[subTab] || notifications.rejet;
+    }
+    else if (tabId === 'remboursements' && activeTab === 'remboursements') {
+      const subTab = activeSubTab.remboursements;
+      const countMap = {
+        'apres-ventes': notifications['apres-ventes'],
+        'att-accuse-cheque': notifications['att-accuse-cheque'],
+        'att-decaissement': notifications['att-decaissement'],
+        'accuses': notifications['accuses'],
+        'dossiers-transferes': notifications['dossiers-transferes'],
+        'accuses-cheque-traite': notifications['accuses-cheque-traite'],
+      };
+      return countMap[subTab] || notifications.remboursements;
+    }
     
-    setDisplayedLabels(prev => ({
-      ...prev,
-      [tab]: defaultLabels[tab],
-    }));
+    // Return total count for non-active tabs or default labels
+    return notifications[tabId];
   };
 
   // Define all tabs - ONLY show counts on specific tabs
@@ -195,31 +243,31 @@ const VenteTabsNavigation = ({
       label: displayedLabels.remboursements, 
       icon: 'handshake', 
       dropdown: true, 
-      count: notifications.remboursements, // Show count only here
-      showCount: true // Add this flag
+      count: getDisplayedNotificationCount('remboursements'),
+      showCount: true
     },
     { 
       id: 'validation', 
       label: displayedLabels.validation, 
       icon: 'check', 
       dropdown: true, 
-      count: notifications.validation, // Show count only here
-      showCount: true // Add this flag
+      count: getDisplayedNotificationCount('validation'),
+      showCount: true
     },
     { 
       id: 'rejet', 
       label: displayedLabels.rejet, 
       icon: 'circle-x', 
       dropdown: true, 
-      count: notifications.rejet, // Show count only here
-      showCount: true // Add this flag
+      count: getDisplayedNotificationCount('rejet'),
+      showCount: true
     },
     { 
       id: 'echeances', 
       label: 'Echéances', 
       icon: 'clock', 
       count: notifications.echeances,
-      showCount: false // Don't show count on Echéances tab
+      showCount: false
     },
   ];
 
@@ -235,13 +283,8 @@ const VenteTabsNavigation = ({
                 label={tab.label}
                 icon={tab.icon}
                 active={activeTab === tab.id}
-                count={tab.showCount ? tab.count : undefined} // Only pass count if showCount is true
-                onClick={() => {
-                  handleTabClick(tab.id);
-                  if (activeTab !== tab.id) {
-                    resetToDefaultLabel(tab.id);
-                  }
-                }}
+                count={tab.showCount ? tab.count : undefined}
+                onClick={() => handleTabClick(tab.id)}
                 dropdown={true}
                 expanded={dropdownState[tab.id]}
                 ref={
@@ -425,7 +468,7 @@ const VenteTabsNavigation = ({
               label={tab.label}
               icon={tab.icon}
               active={activeTab === tab.id}
-              count={tab.showCount ? tab.count : undefined} // Only pass count if showCount is true
+              count={tab.showCount ? tab.count : undefined}
               onClick={() => handleTabClick(tab.id)}
             />
           )
@@ -442,7 +485,7 @@ const TabButton = forwardRef(({
   onClick, 
   dropdown, 
   expanded,
-  count // Now count will be undefined for tabs that shouldn't show it
+  count
 }, ref) => {
   return (
     <button
@@ -457,7 +500,6 @@ const TabButton = forwardRef(({
       <div className="flex items-center justify-center flex-col sm:flex-row gap-1 sm:gap-2">
         {getIcon(icon)}
         <span className="whitespace-nowrap text-xs sm:text-sm">{label}</span>
-        {/* Only show count if it exists and is greater than 0 */}
         {count > 0 && (
           <span className="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-4 h-4 flex items-center justify-center">
             {count}
