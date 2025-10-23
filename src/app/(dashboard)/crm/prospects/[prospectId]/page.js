@@ -144,7 +144,7 @@ const ProspectDetails = () => {
             style={{ marginBottom: '8px' }}
           >
             <BreadCrumb
-              baseUrl={ENDPOINTS.PROSPECTS}
+              baseUrl={ENDPOINTS.CRM+'?tab=prospects'}
               step={`Détail prospect`}
             />
           </div>

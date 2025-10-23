@@ -187,7 +187,7 @@ export default function Modal_Traite_Frein({ onClose, id, biens }) {
           toast.success(`Frein Traité avec succès`);
           onClose();
           localStorage.removeItem('nom_prenom_frein');
-          // router.push('/crm/visites/freins')
+          router.push('/crm/visites/freins')
         }
       })
       .catch((error) => {

@@ -11,7 +11,7 @@ const VisiteShow = () => {
   return (
     <div>
       <div className="flex items-center justify-start" style={{marginBottom:'10px'}}>
-        <BreadCrumb baseUrl={ENDPOINTS.VISITES} step={'Détail Visite'} />
+        <BreadCrumb baseUrl={ENDPOINTS.CRM+'?tab=visites'} step={'Détail Visite'} />
       </div>
       <ClientDetailsPage visiteId={visiteId} />
     </div>

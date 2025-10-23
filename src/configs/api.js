@@ -88,7 +88,7 @@ export const APIURL = {
   INSTAGRAM_WEBHOOK_TOGGLE: `${APIBASEURL}/v1/instagram-configurations`,
   FACEBOOK_WEBHOOKS: `${APIBASEURL}/v1/facebook-webhooks`,
   INSTAGRAM_WEBHOOKS: `${APIBASEURL}/v1/instagram-webhooks`,
-}
+};
 
 export const ENDPOINTS = {
   API: process.env.NEXT_PUBLIC_API_URL,
@@ -110,6 +110,7 @@ export const ENDPOINTS = {
   BIENS: '/biens/home',
   COMPOSITIONBIENS: '/ajouter_composition',
   VISITES: '/crm/visites',
+  CRM: '/crm',
   APPELS: '/crm/appels',
   PROSPECTS: '/crm/prospects',
   CLIENTS: '/ventes/clients',
@@ -134,7 +135,6 @@ export const ENDPOINTS = {
   HISTOIMPORTATION: '/histoImportation',
   ETAPESPROJET: '/etapesProjet/home',
   COMMISSSION_MENSUELLE_ATTENTE: '/commissions/commissionMensuelleAtt',
-
 };
 
 // Add axios default configuration
@@ -185,31 +185,35 @@ export const checkSocialMediaConfigurations = async (projectId) => {
     );
     configurations.tiktok = !!tiktokResponse.data.configuration;
   } catch (error) {
-    console.log("No TikTok configuration found");
+    console.log('No TikTok configuration found');
   }
 
   try {
     // Check Facebook configuration
-    const facebookResponse = await axios.get(
-      `${APIURL.FACEBOOK_CONFIG}`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    configurations.facebook = facebookResponse.data.configurations &&
-      facebookResponse.data.configurations.some(config => config.projet_id == projectId);
+    const facebookResponse = await axios.get(`${APIURL.FACEBOOK_CONFIG}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    configurations.facebook =
+      facebookResponse.data.configurations &&
+      facebookResponse.data.configurations.some(
+        (config) => config.projet_id == projectId
+      );
   } catch (error) {
-    console.log("No Facebook configuration found");
+    console.log('No Facebook configuration found');
   }
 
   try {
     // Check Instagram configuration
-    const instagramResponse = await axios.get(
-      `${APIURL.INSTAGRAM_CONFIG}`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    configurations.instagram = instagramResponse.data.configurations &&
-      instagramResponse.data.configurations.some(config => config.projet_id == projectId);
+    const instagramResponse = await axios.get(`${APIURL.INSTAGRAM_CONFIG}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    configurations.instagram =
+      instagramResponse.data.configurations &&
+      instagramResponse.data.configurations.some(
+        (config) => config.projet_id == projectId
+      );
   } catch (error) {
-    console.log("No Instagram configuration found");
+    console.log('No Instagram configuration found');
   }
 
   return configurations;

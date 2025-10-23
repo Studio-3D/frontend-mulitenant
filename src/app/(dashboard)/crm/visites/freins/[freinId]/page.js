@@ -180,7 +180,7 @@ export default function Biens_Dispo_By_frein_id() {
     <div className="bg-white p-4 rounded-lg shadow-md ">
       <div className=" flex items-center justify-start">
         <BreadCrumb
-          baseUrl={'/crm/visites/freins'}
+          baseUrl={'/crm?tab=freins'}
           step={`Biens Disponibles du Prospect ${nomPrenom}`}
         />
       </div>

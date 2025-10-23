@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 
 export default function Page() {
   const ACTION = { EDIT: 'edit', ADD: 'add' };
+  const [child, setChild] = useState(null);
   const { user } = useAuth();
   const userRole = user?.role;
   const router = useRouter();
@@ -49,7 +50,15 @@ export default function Page() {
 
   return (
     <div>
-      <AppelsTable />
+      {child ? (
+        child
+      ) : (
+        <>
+          <div>
+            <AppelsTable />
+          </div>
+        </>
+      )}
     </div>
   );
 }
