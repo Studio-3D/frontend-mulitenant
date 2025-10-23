@@ -735,7 +735,7 @@ export default function AppelsForm({ id }) {
           } avec succès`;
           reset(defaultValues);
           toast.success(message);
-          router.push(ENDPOINTS.APPELS);
+          router.push(ENDPOINTS.CRM+'?tab=appels');
           localStorage.removeItem('selectedProspect_appel');
           localStorage.removeItem('selectedProspect');
           localStorage.removeItem('selectedClient');
@@ -1056,6 +1056,7 @@ export default function AppelsForm({ id }) {
     );
   }
 
+  
   return (
     <>
       {open_dialog == true && (
@@ -1073,7 +1074,7 @@ export default function AppelsForm({ id }) {
       <div className="">
         <div className="flex items-center justify-start">
           <BreadCrumb
-            baseUrl={ENDPOINTS.APPELS}
+            baseUrl={ENDPOINTS.CRM+'?tab=appels'}
             step={`${isEditing ? 'Modifier' : 'Ajouter'} Appel`}
           />
         </div>

@@ -9,10 +9,9 @@ import { useRouter } from 'next/navigation';
 import { isAdmin, isSuperAdmin, isCommercial } from '../../../../configs/enum';
 import { useAuth } from '../../../../context/AuthContext';
 
-// Fix: Properly destructure the props
-export default function Page({ dataProspect, dataClient }) {
-  // Add proper destructuring
+export default function VisitePage({ dataProspect, dataClient }) {
   const ACTION = { EDIT: 'edit', ADD: 'add' };
+  const [child, setChild] = useState(null);
 
   const { user } = useAuth();
   const userRole = user?.role;
@@ -20,13 +19,14 @@ export default function Page({ dataProspect, dataClient }) {
 
   useEffect(() => {
     if (
+      user && 
       !isAdmin(userRole) &&
       !isSuperAdmin(userRole) &&
       !isCommercial(userRole)
     ) {
       router.push('/');
     }
-  }, [router, userRole]); // Added userRole to dependencies
+  }, [user, userRole, router]);
 
   const searchParams = useSearchParams();
 
@@ -36,51 +36,44 @@ export default function Page({ dataProspect, dataClient }) {
     const id = searchParams.get('id');
     const action = searchParams.get('action');
 
+    console.log('VisitePage - URL params:', { id, action }); // Debug log
+
     let newChild = determineChildComponent(action, id);
     setChild(newChild);
   }, [searchParams]);
 
   const determineChildComponent = (action, id) => {
+    // If there's an action, show the appropriate form
     if (action === ACTION.ADD) {
       return <VisiteForm />;
-    } else if (!isNaN(parseInt(id)) && action === ACTION.EDIT) {
+    } else if (id && action === ACTION.EDIT) {
       return <VisiteFormEdit id={id} />;
     } else {
-      console.warn('Invalid action or missing id:', action, id);
+      // IMPORTANT: When no action/id, return null to show the table
+      // This is the case when accessing via tabs
       return null;
     }
   };
 
-<<<<<<< HEAD
-  return (
-    <div>
-      <VisiteTable dataClient={dataClient} dataProspect={dataProspect} />
-=======
-  // Debug: Check what you're actually receiving
-  console.log('dataProspect in page:', dataProspect);
-  console.log('dataClient in page:', dataClient);
+  // Debug logs
+  console.log('VisitePage - dataProspect:', dataProspect);
+  console.log('VisitePage - dataClient:', dataClient);
+  console.log('VisitePage - child state:', child);
 
-  const clientId = dataClient?.id; // Fixed: removed extra nesting
-  const prospectId = dataProspect?.id; // Fixed: removed extra nesting
+  if (!user) {
+    return null;
+  }
 
   return (
     <div>
       {child ? (
         child
       ) : (
-        <>
-          <div>
-            {!clientId && !prospectId && (
-              <>
-                <CRMNavbar />
-              </>
-            )}
-            {/* Pass the props correctly */}
-            <VisiteTable dataClient={dataClient} dataProspect={dataProspect} />
-          </div>
-        </>
+        <div>
+          {/* Show table when no forms are active */}
+          <VisiteTable dataClient={dataClient} dataProspect={dataProspect} />
+        </div>
       )}
->>>>>>> a55376508bf5b4dbe8ab5c768c3848648bcc83fb
     </div>
   );
 }

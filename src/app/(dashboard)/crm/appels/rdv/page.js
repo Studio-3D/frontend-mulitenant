@@ -2,7 +2,6 @@
 
 import React, { useEffect } from 'react';
 import RelancesRdvAppelsTable from '../RelancesRdvAppelsTable';
-import CRMNavbar from '@/components/CRMNavbar';
 import { isAdmin, isSuperAdmin, isCommercial } from '../../../../../configs/enum';
 import { useAuth } from '../../../../../context/AuthContext';
 import { useRouter } from 'next/navigation';

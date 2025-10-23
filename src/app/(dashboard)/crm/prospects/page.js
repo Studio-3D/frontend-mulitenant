@@ -10,6 +10,8 @@ import { useRouter } from 'next/navigation';
 
 export default function Page() {
   const ACTION = { EDIT: 'edit', ADD: 'add' };
+  const [child, setChild] = useState(null);
+
   const { user } = useAuth();
   const userRole = user?.role;
   const router = useRouter();
@@ -25,7 +27,6 @@ export default function Page() {
       router.push('/');
     }
   }, [user, userRole, router]);
-
 
   useEffect(() => {
     if (!searchParams) return;
@@ -59,7 +60,15 @@ export default function Page() {
 
   return (
     <div>
-      <ProspectTable showOnlyAssigned={showOnlyAssigned} />
+      {child ? (
+        child
+      ) : (
+        <>
+          <div>
+            <ProspectTable view={showOnlyAssigned ? 'assigned' : 'all'} />
+          </div>
+        </>
+      )}
     </div>
-  )
+  );
 }

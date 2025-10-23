@@ -74,7 +74,7 @@ const AppelDetails = () => {
   return (
     <>
       <div className="flex items-center justify-start mb-2">
-        <BreadCrumb baseUrl={ENDPOINTS.APPELS} step="Détail Appel" />
+        <BreadCrumb baseUrl={ENDPOINTS.CRM+'?tab=appels'} step="Détail Appel" />
       </div>
       <div className="container mx-auto">
         <div className="flex flex-col lg:flex-row gap-6">

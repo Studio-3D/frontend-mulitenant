@@ -689,107 +689,107 @@ export function VisitDetails({
                           <>
                             <td className="text-center px-3 py-2 border-b border-gray-200">
                               {[
-                                row.freins?.frein_tranche?.length > 0 &&
+                                row.frein?.frein_tranche?.length > 0 &&
                                   'Tranche',
-                                row.freins?.frein_etage?.length > 0 && 'Etage',
-                                row.freins?.frein_orientation?.length > 0 &&
+                                row.frein?.frein_etage?.length > 0 && 'Etage',
+                                row.frein?.frein_orientation?.length > 0 &&
                                   'Orientation',
-                                row.freins?.frein_typologie?.length > 0 &&
+                                row.frein?.frein_typologie?.length > 0 &&
                                   'Typologie',
-                                row.freins?.frein_vue?.length > 0 && 'Vue',
-                                (row.freins?.prix_min || row.freins?.prix_max) &&
+                                row.frein?.frein_vue?.length > 0 && 'Vue',
+                                (row.frein?.prix_min || row.frein?.prix_max) &&
                                   'Prix',
-                                (row.freins?.superficie_min ||
-                                  row.freins?.superficie_max) &&
+                                (row.frein?.superficie_min ||
+                                  row.frein?.superficie_max) &&
                                   'Superficie',
-                                row.freins?.avance && 'Avance',
-                                row.freins?.description_autre && 'Autre',
+                                row.frein?.avance && 'Avance',
+                                row.frein?.description_autre && 'Autre',
                               ]
                                 .filter(Boolean)
                                 .join(', ')}
                             </td>
                             <td className="px-3 py-2 border-b border-gray-200">
                               <div className="grid grid-cols-2 gap-2">
-                                {row.freins?.frein_tranche?.length > 0 && (
+                                {row.frein?.frein_tranche?.length > 0 && (
                                   <div>
                                     <span className="font-medium">
                                       Tranches:{' '}
                                     </span>
-                                    {row.freins.frein_tranche
+                                    {row.frein.frein_tranche
                                       .map((t) => t.tranche.nom)
                                       .join(', ')}
                                   </div>
                                 )}
-                                {row.freins?.frein_etage?.length > 0 && (
+                                {row.frein?.frein_etage?.length > 0 && (
                                   <div>
                                     <span className="font-medium">
                                       Etages:{' '}
                                     </span>
-                                    {row.freins.frein_etage
+                                    {row.frein.frein_etage
                                       .map((e) => e.etage)
                                       .join(', ')}
                                   </div>
                                 )}
-                                {row.freins?.frein_orientation?.length > 0 && (
+                                {row.frein?.frein_orientation?.length > 0 && (
                                   <div>
                                     <span className="font-medium">
                                       Orientations:{' '}
                                     </span>
-                                    {row.freins.frein_orientation
+                                    {row.frein.frein_orientation
                                       .map((o) => o.orientation)
                                       .join(', ')}
                                   </div>
                                 )}
-                                {row.freins?.frein_typologie?.length > 0 && (
+                                {row.frein?.frein_typologie?.length > 0 && (
                                   <div>
                                     <span className="font-medium">
                                       Typologies:{' '}
                                     </span>
-                                    {row.freins.frein_typologie
+                                    {row.frein.frein_typologie
                                       .map((t) => t.typologie.typologie)
                                       .join(', ')}
                                   </div>
                                 )}
-                                {row.freins?.frein_vue?.length > 0 && (
+                                {row.frein?.frein_vue?.length > 0 && (
                                   <div>
                                     <span className="font-medium">Vues: </span>
-                                    {row.freins.frein_vue
+                                    {row.frein.frein_vue
                                       .map((v) => v.vue.vue)
                                       .join(', ')}
                                   </div>
                                 )}
-                                {(row.freins?.prix_min ||
-                                  row.freins?.prix_max) && (
+                                {(row.frein?.prix_min ||
+                                  row.frein?.prix_max) && (
                                   <div>
                                     <span className="font-medium">Prix: </span>
-                                    {`[${row.freins.prix_min || ''}, ${
-                                      row.freins.prix_max || ''
+                                    {`[${row.frein.prix_min || ''}, ${
+                                      row.frein.prix_max || ''
                                     }]`}
                                   </div>
                                 )}
-                                {(row.freins?.superficie_min ||
-                                  row.freins?.superficie_max) && (
+                                {(row.frein?.superficie_min ||
+                                  row.frein?.superficie_max) && (
                                   <div>
                                     <span className="font-medium">
                                       Superficie:{' '}
                                     </span>
-                                    {`[${row.freins.superficie_min || ''}, ${
-                                      row.freins.superficie_max || ''
+                                    {`[${row.frein.superficie_min || ''}, ${
+                                      row.frein.superficie_max || ''
                                     }]`}
                                   </div>
                                 )}
-                                {row.freins?.avance && (
+                                {row.frein?.avance && (
                                   <div>
                                     <span className="font-medium">
                                       Avance:{' '}
                                     </span>
-                                    {row.freins.avance}
+                                    {row.frein.avance}
                                   </div>
                                 )}
-                                {row.freins?.description_autre && (
+                                {row.frein?.description_autre && (
                                   <div>
                                     <span className="font-medium">Autre: </span>
-                                    {row.freins.description_autre}
+                                    {row.frein.description_autre}
                                   </div>
                                 )}
                               </div>

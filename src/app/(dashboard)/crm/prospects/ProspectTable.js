@@ -82,7 +82,9 @@ const CustomCheckbox = ({
   );
 };
 
-const ProspectTable = ({ showOnlyAssigned = false }) => {
+const ProspectTable = ({ view = 'all' }) => {
+  const showOnlyAssigned = view === 'assigned';
+
   // --- State ---
   const [prospects, setProspects] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -297,58 +299,6 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
 
   // --- Table Columns ---
   const columns = [
-    {
-      /*// Only show checkbox column if user is not commercial
-    ...(!isCommercialUser
-      ? [
-          {
-            key: '__checkbox__',
-            label: (() => {
-              const assignableProspects = formatData().filter((row) =>
-                canProspectBeAssigned(row.prospect)
-              );
-              return (
-                <div className="flex items-center justify-center">
-                  <CustomCheckbox
-                    checked={
-                      assignableProspects.length > 0 &&
-                      checkedProspects.length === assignableProspects.length
-                    }
-                    onChange={() =>
-                      handleCheckAll(
-                        !(
-                          assignableProspects.length > 0 &&
-                          checkedProspects.length === assignableProspects.length
-                        )
-                      )
-                    }
-                    ariaLabel="Tout sélectionner"
-                    title="Sélectionner/Désélectionner tous les prospects"
-                    className="ring-2 ring-blue-200"
-                  />
-                </div>
-              );
-            })(),
-            render: (row) => {
-              const canBeAssigned = canProspectBeAssigned(row.prospect);
-              return (
-                <CustomCheckbox
-                  checked={checkedProspects.includes(row.id)}
-                  onChange={() => canBeAssigned && handleCheckProspect(row.id)}
-                  disabled={!canBeAssigned}
-                  ariaLabel={`Sélectionner le prospect ${row.nom} ${row.prenom}`}
-                  title={
-                    !canBeAssigned
-                      ? 'Ce prospect ne peut pas être assigné (statut final)'
-                      : `Sélectionner ${row.nom} ${row.prenom}`
-                  }
-                />
-              );
-            },
-          },
-        ]
-      : []),*/
-    },
     {
       key: '__checkbox__',
       label: (() => {
