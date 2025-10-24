@@ -199,7 +199,7 @@ const CpsManager = ({}) => {
   };
 
   return (
-    <div className="relative bg-white rounded-lg px-4 py-4">
+    <div className="relative bg-white px-4 py-4">
       <Table
         name_file_export="cps"
         data_to_export={transformDataForExport()}

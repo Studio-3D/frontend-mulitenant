@@ -8,7 +8,7 @@ import CoefficientManager from './CoefficientManager';
 import FournisseursManager from './FournisseursManager';
 import DecomptesManager from './DecomptesManager';
 import FacturesManager from './FacturesManager';
-// import CpsTable from '@/app/(dashboard)/comptabilite/cps/CpsTable';
+import CpsManager from './CpsManager';
 // import CreditsTable from '@/app/(dashboard)/comptabilite/credits/CreditsTable';
 
 export function ComptabiliteTabContent({ id }) {
@@ -19,7 +19,7 @@ export function ComptabiliteTabContent({ id }) {
     'fournisseurs': <FournisseursManager />,
     'decomptes': <DecomptesManager />,
     'factures': <FacturesManager />,
-    // 'cps': <CpsTable />,
+    'cps': <CpsManager />,
     // 'credits': <CreditsTable />,
   };
 
