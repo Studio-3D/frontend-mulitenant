@@ -9,7 +9,7 @@ import FournisseursManager from './FournisseursManager';
 import DecomptesManager from './DecomptesManager';
 import FacturesManager from './FacturesManager';
 import CpsManager from './CpsManager';
-// import CreditsTable from '@/app/(dashboard)/comptabilite/credits/CreditsTable';
+import CreditsManager from './CreditsManager';
 
 export function ComptabiliteTabContent({ id }) {
   const tabComponents = {
@@ -20,7 +20,7 @@ export function ComptabiliteTabContent({ id }) {
     'decomptes': <DecomptesManager />,
     'factures': <FacturesManager />,
     'cps': <CpsManager />,
-    // 'credits': <CreditsTable />,
+    'credits': <CreditsManager />,
   };
 
   return tabComponents[id] || <div>Tab "{id}" not found</div>;
