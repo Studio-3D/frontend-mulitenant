@@ -7,7 +7,7 @@ import TvaMensuelleManager from './TvaMensuelleManager';
 import CoefficientManager from './CoefficientManager';
 import FournisseursManager from './FournisseursManager';
 import DecomptesManager from './DecomptesManager';
-// import FacturesTable from '@/app/(dashboard)/comptabilite/factures/FacturesTable';
+import FacturesManager from './FacturesManager';
 // import CpsTable from '@/app/(dashboard)/comptabilite/cps/CpsTable';
 // import CreditsTable from '@/app/(dashboard)/comptabilite/credits/CreditsTable';
 
@@ -18,7 +18,7 @@ export function ComptabiliteTabContent({ id }) {
     'coefficient': <CoefficientManager/>,
     'fournisseurs': <FournisseursManager />,
     'decomptes': <DecomptesManager />,
-    // 'factures': <FacturesTable />,
+    'factures': <FacturesManager />,
     // 'cps': <CpsTable />,
     // 'credits': <CreditsTable />,
   };
