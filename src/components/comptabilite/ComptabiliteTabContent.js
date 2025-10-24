@@ -4,7 +4,7 @@ import React from 'react';
 // Import your actual table/components for each tab
 import TvaTrancheManager from './TvaTrancheManager';
 import TvaMensuelleManager from './TvaMensuelleManager';
-// import CoefficientTable from '@/app/(dashboard)/comptabilite/coefficient/CoefficientTable';
+import CoefficientManager from './CoefficientManager';
 // import FournisseursTable from '@/app/(dashboard)/comptabilite/fournisseurs/FournisseursTable';
 // import DecomptesTable from '@/app/(dashboard)/comptabilite/decomptes/DecomptesTable';
 // import FacturesTable from '@/app/(dashboard)/comptabilite/factures/FacturesTable';
@@ -15,7 +15,7 @@ export function ComptabiliteTabContent({ id }) {
   const tabComponents = {
     'tva-tranche': <TvaTrancheManager />,
     'tva-mensuelle': <TvaMensuelleManager />,
-    // 'coefficient': <CoefficientTable />,
+    'coefficient': <CoefficientManager/>,
     // 'fournisseurs': <FournisseursTable />,
     // 'decomptes': <DecomptesTable />,
     // 'factures': <FacturesTable />,
