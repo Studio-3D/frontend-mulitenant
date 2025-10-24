@@ -214,7 +214,7 @@ const DecomptesManager = () => {
   };
 
   return (
-    <div className="relative bg-white rounded-lg px-4 py-4">
+    <div className="relative bg-white px-4 py-4">
       <Table
         name_file_export="decomptes"
         data_to_export={transformDataForExport()}
