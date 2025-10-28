@@ -653,7 +653,7 @@ export const AvancesTab = ({
         );
       },
     },
-    {},
+
     { key: 'echeance', label: 'Echéance' },
     {
       key: 'statut',
@@ -665,7 +665,7 @@ export const AvancesTab = ({
           Number(row.statut) == 1 &&
           parseFloat(row.montant) > 0 &&
           Number(row.mode_pai) !== 7 &&
-          (row.date_encaissement == null)
+          row.date_encaissement == null
         ) {
           return (
             <span className="px-2 py-1 rounded text-sm font-semibold bg-blue-100 text-blue-500">
@@ -822,7 +822,7 @@ export const AvancesTab = ({
                       {Number(row.mode_pai) != 7 &&
                         parseFloat(row.montant) > 0 &&
                         Number(row.statut) == 1 &&
-                        (row.date_encaissement == null) && (
+                        row.date_encaissement == null && (
                           <button
                             className="p-1 text-blue-500 hover:text-blue-700"
                             onClick={() =>
@@ -1093,7 +1093,7 @@ export const AvancesTab = ({
                       <input
                         type="date"
                         name="date_reglement"
-                        value={formData.date_reglement}
+                        value={formData.date_reglement || ''}
                         onChange={handleInputChange}
                         className={`w-full p-2 border rounded-md ${
                           formErrors.date_reglement
@@ -1118,7 +1118,7 @@ export const AvancesTab = ({
                       <input
                         type="number"
                         name="montant"
-                        value={formData.montant}
+                        value={formData.montant || ''}
                         onChange={handleInputChange}
                         className={`w-full p-2 border rounded-md ${
                           formErrors.montant
@@ -1212,9 +1212,10 @@ export const AvancesTab = ({
                           <span className="text-red-500">*</span>
                         </label>
                         <input
+                          required
                           type="text"
                           name="numero_paiement"
-                          value={formData.numero_paiement}
+                          value={formData.numero_paiement || ''}
                           onChange={handleInputChange}
                           className={`w-full p-2 border rounded-md ${
                             formErrors.numero_paiement
@@ -1235,10 +1236,11 @@ export const AvancesTab = ({
                     [2, 3, 4].includes(parseInt(formData.mode_paiement)) && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Échéance
+                          Échéance <span className="text-red-500">*</span>
                         </label>
                         <div className="relative">
                           <input
+                            required
                             type="date"
                             name="echeance"
                             value={formData.echeance || ''}
@@ -1291,7 +1293,7 @@ export const AvancesTab = ({
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                       {selectedFiles_avc.map((data, index) => (
                         <div
-                          key={data.id || data.name || index}
+                          key={data.id || data.name}
                           className="flex flex-col p-3 bg-white rounded-md border border-gray-200 hover:border-blue-200 transition-colors h-full"
                         >
                           <div className="flex items-center mb-2">
@@ -1371,7 +1373,7 @@ export const AvancesTab = ({
                       <input
                         name="num_remise"
                         type="number"
-                       /* required={
+                        /* required={
                           formData.date_encaissement != '' ? true : false
                         }*/
                         className="w-full p-2 border border-gray-300 rounded-md"
@@ -1476,14 +1478,13 @@ export const AvancesTab = ({
                   <>
                     <div>
                       <label className="block text-sm font-medium mb-1">
-                        N° Remise: 
+                        N° Remise:
                       </label>
                       <input
                         type="number"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
                         value={num_remise_v || ''}
                         onChange={(e) => set_num_remise_v(e.target.value)}
-                        
                       />
                     </div>
                     <div>
@@ -1554,7 +1555,9 @@ export const AvancesTab = ({
 
             <div className="grid grid-cols-4 gap-4 mt-10">
               {pjj?.map((pj) => (
-                <div key={pj.id} className="flex items-center">
+                <div key={`pj-${pj.id}`} className="flex items-center">
+                  {' '}
+                  {/* Add key here */}
                   {pj.fichier?.toLowerCase()?.endsWith('.pdf') ? (
                     <FileText className="w-5 h-5 mr-2 text-red-500" />
                   ) : (

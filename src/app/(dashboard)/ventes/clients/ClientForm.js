@@ -398,7 +398,7 @@ export default function ClientForm({ id, projetId, trancheId }) {
       toast.success(
         `Le client a été ${isEditing ? 'modifié' : 'créé'} avec succès`
       );
-      router.push(ENDPOINTS.CLIENTS);
+      router.push(ENDPOINTS.VENTE+'?tab=clients');
     } catch (error) {
       console.error('Failed to save client:', error);
 
@@ -427,7 +427,7 @@ export default function ClientForm({ id, projetId, trancheId }) {
     <div className="p-3">
       <div className="flex items-center justify-start">
         <BreadCrumb
-          baseUrl={ENDPOINTS.CLIENTS}
+          baseUrl={ENDPOINTS.VENTE+'?tab=clients'}
           step={`${id ? 'Modifier' : 'Ajouter'} un client`}
         />
       </div>

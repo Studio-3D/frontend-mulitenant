@@ -54,5 +54,5 @@ export function VenteTabContent({ id }) {
     'dossiers-transferes': <DossiersTransferes />,
   };
 
-  return tabComponents[id] || <div>Tab "{id}" not found</div>;
+  return tabComponents[id] || <div>Tab {id} not found</div>;
 }

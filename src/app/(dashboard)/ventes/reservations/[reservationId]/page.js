@@ -36,6 +36,11 @@ const Res_Show = () => {
   const userRole = user.role;
   const accessToken = token || localStorage.getItem('accessToken');
 
+  // Function to reload reservation data
+  const reloadReservationData = () => {
+    console.log('🔍 Reloading reservation data...');
+    fetchData();
+  };
   // In Res_Show component where reste==0 dont reload page// and if on submit contrat de vente
   const updateReservationData = (newData) => {
     setReservationData((prev) => ({
@@ -249,6 +254,7 @@ const Res_Show = () => {
           <DetailTab
             reservationData={reservationData}
             sum_avances_valides={sum_av}
+            onReservationUpdate={reloadReservationData} // Add this prop
           />
         );
       case 'historiques':

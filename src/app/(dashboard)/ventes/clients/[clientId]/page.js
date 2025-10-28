@@ -79,7 +79,7 @@ const ClientDetails = () => {
             className="flex items-center justify-start"
             style={{ marginBottom: '8px' }}
           >
-            <BreadCrumb baseUrl={ENDPOINTS.CLIENTS} step={`Détail client`} />
+            <BreadCrumb baseUrl={ENDPOINTS.VENTE+'?tab=clients'} step={`Détail client`} />
           </div>
           <div className="container mx-auto">
             <div className="flex flex-col lg:flex-row gap-6">

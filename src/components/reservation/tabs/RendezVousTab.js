@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useState } from "react";
+import React, { forwardRef, useEffect, useState } from 'react';
 import {
   CalendarIcon,
   PlusIcon,
@@ -8,45 +8,45 @@ import {
   XCircleIcon,
   ClockIcon,
   PrinterIcon,
-} from "lucide-react";
-import axios from "axios";
+} from 'lucide-react';
+import axios from 'axios';
 //import Swal from 'sweetalert2';
-import format from "date-fns/format";
-import { PDFDownloadLink } from "@react-pdf/renderer";
-import ReceiptDocument from "../../../app/(dashboard)/ventes/reservations/rdv/recu_rdv";
-import toast from "react-hot-toast";
-import Modal from "@/components/Modal";
-import DeleteData from "@/components/DeleteData";
-import { RESOURCE_URL } from "@/configs/api";
-import AddRdvModal from "./AddRdvModal";
+import format from 'date-fns/format';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import ReceiptDocument from '../../../app/(dashboard)/ventes/reservations/rdv/recu_rdv';
+import toast from 'react-hot-toast';
+import Modal from '@/components/Modal';
+import DeleteData from '@/components/DeleteData';
+import { RESOURCE_URL } from '@/configs/api';
+import AddRdvModal from './AddRdvModal';
 const StatusBadge = ({ status }) => {
   const statusConfig = {
     Validé: {
       icon: <CheckCircleIcon className="h-4 w-4 mr-1" />,
-      bgColor: "bg-green-100 text-green-800",
+      bgColor: 'bg-green-100 text-green-800',
     },
     Refusé: {
       icon: <XCircleIcon className="h-4 w-4 mr-1" />,
-      bgColor: "bg-red-100 text-red-800",
+      bgColor: 'bg-red-100 text-red-800',
     },
     En_Attente: {
       icon: <ClockIcon className="h-4 w-4 mr-1" />,
-      bgColor: "bg-blue-100 text-blue-800",
+      bgColor: 'bg-blue-100 text-blue-800',
     },
     Raté: {
       icon: <XCircleIcon className="h-4 w-4 mr-1" />,
-      bgColor: "bg-gray-100 text-gray-800",
+      bgColor: 'bg-gray-100 text-gray-800',
     },
   };
 
-  const config = statusConfig[status] || statusConfig["En_Attente"];
+  const config = statusConfig[status] || statusConfig['En_Attente'];
 
   return (
     <span
       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.bgColor}`}
     >
       {config.icon}
-      {status.replace("_", " ")}
+      {status.replace('_', ' ')}
     </span>
   );
 };
@@ -54,7 +54,7 @@ const StatusBadge = ({ status }) => {
 export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
   //onRdvChange   ===> to call res show to modify count avances in tabs avances atab
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  const accessToken = localStorage.getItem("accessToken");
+  const accessToken = localStorage.getItem('accessToken');
   const reservationId = reservationData?.reservation?.id;
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
@@ -62,22 +62,22 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
   // State variables
   const [rdvs, setRdvs] = useState([]);
   // const [historiques, setHistoriques] = useState([]);
-  const [newRdv, setNewRdv] = useState("");
-  const [type, setType] = useState("");
-  const [rdvId, setRdvId] = useState("");
-  const [rdvEdit, setRdvEdit] = useState("");
-  const [typeEdit, setTypeEdit] = useState("");
-  const [commentaire, setCommentaire] = useState("");
+  const [newRdv, setNewRdv] = useState('');
+  const [type, setType] = useState('');
+  const [rdvId, setRdvId] = useState('');
+  const [rdvEdit, setRdvEdit] = useState('');
+  const [typeEdit, setTypeEdit] = useState('');
+  const [commentaire, setCommentaire] = useState('');
   const [clients, setClients] = useState([]);
   const [errors, setErrors] = useState(null);
   const [etatRes, setEtatRes] = useState(1);
   const [contratVente, setContratVente] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [listStatut, setListStatut] = useState([
-    { title: "En_Attente", value: 0 },
-    { title: "Validé", value: 1 },
-    { title: "Refusé", value: 2 },
-    { title: "Raté", value: 3 },
+    { title: 'En_Attente', value: 0 },
+    { title: 'Validé', value: 1 },
+    { title: 'Refusé', value: 2 },
+    { title: 'Raté', value: 3 },
   ]);
 
   // Dialog states
@@ -87,13 +87,13 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
   const [openRejet, setOpenRejet] = useState(false);
   //const [openHisto, setOpenHisto] = useState(false);
   const [openInfo, setOpenInfo] = useState(false);
-  const [txtInfo, setTxtInfo] = useState("");
+  const [txtInfo, setTxtInfo] = useState('');
   const [confirmRejet, setConfirmRejet] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
 
   const types = [
-    { title: "Attestation de vente", value: 1 },
-    { title: "Contrat de vente", value: 2 },
+    { title: 'Attestation de vente', value: 1 },
+    { title: 'Contrat de vente', value: 2 },
   ];
 
   const imageUrl = `${RESOURCE_URL.DOCS}/${user.societe.raison_sociale_concatene}_${user.societe.id}/logos/${user.societe.logo}`;
@@ -131,7 +131,7 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
         setIsLoading(false);
       }
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error('Error fetching data:', error);
       setIsLoading(false);
     }
   };
@@ -143,21 +143,21 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
   const handleRdvAdded = (newRdv) => {
     // Rafraîchir la liste des rendez-vous
     fetchData();
-    toast.success("Rendez-vous ajouté avec succès");
+    toast.success('Rendez-vous ajouté avec succès');
   };
 
   const getStatut = (statutId) => {
     const statut = listStatut.find((item) => item.value == statutId);
-    return statut ? statut.title : "";
+    return statut ? statut.title : '';
   };
 
   // CRUD operations with toast notifications
   const handleAddRdv = (e) => {
     e.preventDefault();
     const formData = new FormData();
-    formData.append("rdv", newRdv);
-    formData.append("type", type);
-    formData.append("statut", user.role == 3 ? 0 : 1);
+    formData.append('rdv', newRdv);
+    formData.append('type', type);
+    formData.append('statut', user.role == 3 ? 0 : 1);
 
     axios
       .post(`${apiUrl}/store_rdv_reservation/${reservationId}`, formData, {
@@ -168,19 +168,19 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
         toast.success(
           <>
             {user.role == 3
-              ? "Rendez-vous enregistré (en attente de validation)"
-              : "Rendez-vous enregistré"}
+              ? 'Rendez-vous enregistré (en attente de validation)'
+              : 'Rendez-vous enregistré'}
           </>
         );
         setOpenAddRdv(false);
-        setNewRdv("");
-        setType("");
+        setNewRdv('');
+        setType('');
       })
       .catch((err) => {
         const response = err.response;
         if (response && response.status == 422) {
           setErrors(response.data.errors);
-          toast.error("Erreur de validation");
+          toast.error('Erreur de validation');
         }
       });
   };
@@ -188,9 +188,9 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
   const handleEditRdv = (e) => {
     e.preventDefault();
     const formData = new FormData();
-    formData.append("rdv", rdvEdit);
-    formData.append("type", typeEdit);
-    formData.append("statut", user.role <= 2 ? 1 : 0);
+    formData.append('rdv', rdvEdit);
+    formData.append('type', typeEdit);
+    formData.append('statut', user.role <= 2 ? 1 : 0);
 
     axios
       .put(`${apiUrl}/update_rdv_reservation/${rdvId}`, formData, {
@@ -201,8 +201,8 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
         toast.success(
           <>
             {user.role == 3
-              ? "Rendez-vous modifié (en attente de validation)"
-              : "Rendez-vous modifié"}
+              ? 'Rendez-vous modifié (en attente de validation)'
+              : 'Rendez-vous modifié'}
           </>
         );
         setOpenEditRdv(false);
@@ -211,7 +211,7 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
         const response = err.response;
         if (response && response.status == 422) {
           setErrors(response.data.errors);
-          toast.error("Erreur de validation");
+          toast.error('Erreur de validation');
         }
       });
   };
@@ -219,60 +219,60 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
   const handleValiderRdv = (e) => {
     e.preventDefault();
     const formData = new FormData();
-    formData.append("statut", 1);
+    formData.append('statut', 1);
 
     axios({
-      method: "put",
+      method: 'put',
       url: `${apiUrl}/traiter_rdv_reservation/${rdvId}`,
       data: formData,
       headers: {
-        "content-type": "application/json",
-        Accept: "application/json",
+        'content-type': 'application/json',
+        Accept: 'application/json',
         Authorization: `Bearer ${accessToken}`,
       },
     })
       .then(() => {
         fetchData();
-        toast.success("Rendez-vous validé");
+        toast.success('Rendez-vous validé');
         setOpenValidation(false);
       })
       .catch((err) => {
-        console.error("Error validating appointment:", err);
-        toast.error(" Erreur lors de la validation");
+        console.error('Error validating appointment:', err);
+        toast.error(' Erreur lors de la validation');
       });
   };
 
   const handleRejeterRdv = (e) => {
     e.preventDefault();
     const formData = new FormData();
-    formData.append("statut", 2);
-    formData.append("commentaire", commentaire);
+    formData.append('statut', 2);
+    formData.append('commentaire', commentaire);
 
     axios({
-      method: "put",
+      method: 'put',
       url: `${apiUrl}/traiter_rdv_reservation/${rdvId}`,
       data: formData,
       headers: {
-        "content-type": "application/json",
-        Accept: "application/json",
+        'content-type': 'application/json',
+        Accept: 'application/json',
         Authorization: `Bearer ${accessToken}`,
       },
     })
       .then(() => {
         fetchData();
-        toast.success("Rendez-vous rejeté");
+        toast.success('Rendez-vous rejeté');
         setOpenRejet(false);
-        setCommentaire("");
+        setCommentaire('');
       })
       .catch((err) => {
-        console.error("Error rejecting appointment:", err);
-        toast.error("Erreur lors du rejet");
+        console.error('Error rejecting appointment:', err);
+        toast.error('Erreur lors du rejet');
       });
   };
 
   const handleDeleteRdv = (id, date) => {
     setSelectedId(id);
-    setSelectedDate(format(new Date(date), "dd/MM/yyyy HH:mm"));
+    setSelectedDate(format(new Date(date), 'dd/MM/yyyy HH:mm'));
     setShowDeleteModal(true);
   };
 
@@ -313,7 +313,7 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
             <div
               key={rdv.id}
               className={`border border-gray-200 rounded-lg p-4 ${
-                isPastAppointment ? "bg-yellow-50" : "bg-white"
+                isPastAppointment ? 'bg-yellow-50' : 'bg-white'
               } hover:shadow-md transition-shadow`} // Keep all original classes
             >
               {/* Appointment header */}
@@ -322,31 +322,31 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
                   <div
                     className={`p-2 rounded-full mr-3 ${
                       rdv.statut == 1
-                        ? "bg-green-50"
+                        ? 'bg-green-50'
                         : rdv.statut == 0
-                        ? "bg-blue-50"
-                        : "bg-gray-50"
+                        ? 'bg-blue-50'
+                        : 'bg-gray-50'
                     }`}
                   >
                     <CalendarIcon
                       className={`h-5 w-5 ${
                         rdv.statut == 1
-                          ? "text-green-600"
+                          ? 'text-green-600'
                           : rdv.statut == 0
-                          ? "text-blue-500"
-                          : "text-gray-500"
+                          ? 'text-blue-500'
+                          : 'text-gray-500'
                       }`}
                     />
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-900">
                       {rdv.type == 1
-                        ? "Attestation de vente"
-                        : "Contrat de vente"}
+                        ? 'Attestation de vente'
+                        : 'Contrat de vente'}
                     </h3>
                     <p className="text-sm text-gray-500">
-                      {format(new Date(rdv.rdv), "dd/MM/yyyy")} à{" "}
-                      {format(new Date(rdv.rdv), "kk:mm")}
+                      {format(new Date(rdv.rdv), 'dd/MM/yyyy')} à{' '}
+                      {format(new Date(rdv.rdv), 'kk:mm')}
                     </p>
                   </div>
                 </div>
@@ -417,13 +417,23 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
                     <PDFDownloadLink
                       document={
                         <ReceiptDocument
-                          data={[
+                          /* data={[
                             rdv.reservation.code_reservation,
                             rdv.reservation.bien.propriete_dite_bien,
                             clients,
                             format(new Date(rdv.rdv), "dd/MM/yyyy kk:mm"),
                             imageUrl,
                             rdv.type,
+                          ]}*/
+                          data={[
+                            rdv.reservation.code_reservation,
+                            rdv.reservation.bien.propriete_dite_bien,
+                            rdv.type == 1
+                              ? 'Attestation de vente'
+                              : 'Contrat de vente',
+                            format(new Date(rdv.rdv), 'dd/MM/yyyy kk:mm'),
+                            rdv.num_recu,
+                            imageUrl,
                           ]}
                         />
                       }
@@ -435,7 +445,7 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
                           disabled={loading}
                         >
                           <PrinterIcon className="h-4 w-4 mr-1" />
-                          {loading ? "Génération..." : "Télecharger"}
+                          {loading ? 'Génération...' : 'Télecharger'}
                         </button>
                       )}
                     </PDFDownloadLink>
@@ -448,7 +458,7 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
                       setTxtInfo(
                         `Le rendez-vous du ${format(
                           new Date(rdv.rdv),
-                          "dd/MM/yyyy kk:mm"
+                          'dd/MM/yyyy kk:mm'
                         )} a été rejeté pour la raison suivante: ${
                           rdv.commentaire
                         }`
@@ -567,9 +577,9 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
                 </button>
               </div>
               <p className="mb-6">
-                Êtes-vous sûr de vouloir valider le rendez-vous du{" "}
+                Êtes-vous sûr de vouloir valider le rendez-vous du{' '}
                 {selectedDate &&
-                  format(new Date(selectedDate), "dd/MM/yyyy kk:mm")}{" "}
+                  format(new Date(selectedDate), 'dd/MM/yyyy kk:mm')}{' '}
                 ?
               </p>
               <div className="flex justify-end space-x-3">
@@ -598,7 +608,7 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold">
-                  {confirmRejet ? "Motif du rejet" : "Rejet du rendez-vous"}
+                  {confirmRejet ? 'Motif du rejet' : 'Rejet du rendez-vous'}
                 </h3>
                 <button
                   onClick={() => setOpenRejet(false)}
@@ -640,9 +650,9 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
               ) : (
                 <>
                   <p className="mb-6">
-                    Êtes-vous sûr de vouloir rejeter le rendez-vous du{" "}
+                    Êtes-vous sûr de vouloir rejeter le rendez-vous du{' '}
                     {selectedDate &&
-                      format(new Date(selectedDate), "dd/MM/yyyy kk:mm")}{" "}
+                      format(new Date(selectedDate), 'dd/MM/yyyy kk:mm')}{' '}
                     ?
                   </p>
                   <div className="flex justify-end space-x-3">

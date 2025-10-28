@@ -81,10 +81,7 @@ export default function PenalitesTable() {
   const { selectedProjet } = useProjet();
   // API configuration
   const entity = {
-    id:
-      selectedProjet?.id +
-      '/' +
-      etat_penalite,
+    id: selectedProjet?.id + '/' + etat_penalite,
     API_URL: 'penalites',
     dataKey: 'data',
     searchFields: [''],
@@ -427,6 +424,15 @@ export default function PenalitesTable() {
     <>
       <div className="relative p-4">
         <Table
+          title={`Pénalités - ${
+            etat_penalite == 1
+              ? 'Validées'
+              : etat_penalite == 5
+              ? 'En cours'
+              : etat_penalite == 2
+              ? 'Rejeté'
+              : 'Autre'
+          } `}
           data_to_export={data_to_export()}
           columns_export={columns_export}
           name_file_export={'penalites_export'}

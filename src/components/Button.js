@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 const Button = ({ type = 'button', onClick, disabled, loading, children, className = '' }) => {
@@ -12,6 +13,15 @@ const Button = ({ type = 'button', onClick, disabled, loading, children, classNa
       buttonStyle = isDisabled
         ? 'bg-green-500'
         : 'bg-[#2D8548] hover:bg-green-600';
+      break;
+    case 'valider': // New type for validation
+      buttonStyle = 'bg-green-500 hover:bg-green-600';
+      break;
+    case 'rejeter': // New type for rejection
+      buttonStyle = 'bg-red-500 hover:bg-red-600';
+      break;
+    case 'desister': // New type for desistement (orange)
+      buttonStyle = 'bg-gray-500 hover:bg-gray-600';
       break;
     case 'edit':
       buttonStyle = 'bg-orange-500 hover:bg-orange-600';

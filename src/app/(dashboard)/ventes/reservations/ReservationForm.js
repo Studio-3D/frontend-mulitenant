@@ -43,7 +43,6 @@ import SelectInput from '@/components/SelectInput';
 
 import {
   fetchData_Select,
-  fetchDataByProjet_2,
   fetchList_fichier_exist_by_Code,
 } from '../../../../../src/configs/api-utils';
 
@@ -195,9 +194,22 @@ export default function ReservationForm({ id }) {
   };
 
   const removeClientEntry = (index, text) => {
+    const clientToRemove = inputList1[index];
+
     const updatedList = inputList1.filter((_, i) => i !== index);
     const finalList =
       updatedList.length > 0 ? updatedList : [{ id: '', pourcentage: '' }];
+
+    // Re-enable the removed client in the dropdown
+    if (clientToRemove.id) {
+      setClientsExist((prevClients) =>
+        prevClients.map((client) =>
+          client.id === clientToRemove.id
+            ? { ...client, disabled: false }
+            : client
+        )
+      );
+    }
 
     // Update state first
     setinputList1(finalList);
@@ -214,18 +226,29 @@ export default function ReservationForm({ id }) {
     const totalPercentage = sum_percent_select + totalPercentage_client_form;
 
     console.log(
-      `Updated totals - InputList: ${sum_percent_select}, AddedClients: ${totalPercentage_client_form}, Total: ${totalPercentage}`
+      `After removal - InputList: ${sum_percent_select}, AddedClients: ${totalPercentage_client_form}, Total: ${totalPercentage}`
     );
 
     // Update form values
     setValue('pourcentages', totalPercentage);
 
-    if (text == 'percent') {
-      const isValid = totalPercentage == 100;
-      setValue('verifierPourcentages', isValid);
-      setenabled(isValid ? 'none' : 'block');
-    }
+    // Always validate percentage total after removal
+    const isValid = totalPercentage == 100;
+    setValue('verifierPourcentages', isValid);
+    setenabled(isValid ? 'none' : 'block');
+
+    // Update oldClients
+    setoldClients(finalList);
+    setValue('oldClients', JSON.stringify(finalList));
   };
+  // Reset all client disabled states when component unmounts or form resets
+  useEffect(() => {
+    return () => {
+      setClientsExist((prevClients) =>
+        prevClients.map((client) => ({ ...client, disabled: false }))
+      );
+    };
+  }, []);
 
   const handleNumberOfFormsChange = (value) => {
     const newValue = Math.max(1, Math.min(10, value)); // Limit between 1 and 10
@@ -456,74 +479,93 @@ export default function ReservationForm({ id }) {
         });
     }
   }, [accessToken]);
-
   const onSubmit = (data) => {
     setLoading({ ...loading, form: true });
+    // Validate files first
+  if (!validateFilesBeforeSubmit()) {
+    toast.error('Certains fichiers sont invalides. Veuillez vérifier les fichiers sélectionnés.');
+    return;
+  }
+
     setBackendErrors({});
     const totalAcquereurs = addedClients.length + oldClients.length;
 
     const dataToSend = new FormData();
     let url = APIURL.RESERVATIONS;
-    /*Object.entries(data).forEach(([key, value]) => {
-      dataToSend.append(key, value);
-    });*/
+
     // Append all form data including the calculated nb_acquereurs
     Object.entries({
       ...data,
       nb_acquereurs: totalAcquereurs, // Override with current count
     }).forEach(([key, value]) => {
       // Handle array/object data properly
-      if (key == 'clients') {
+      if (key === 'clients') {
         dataToSend.append(key, JSON.stringify(value));
       } else {
         dataToSend.append(key, value);
       }
     });
 
-    if (!isEditing && selectedFiles_rsv.length !== 0) {
-      for (let i = 0; i < selectedFiles_rsv.length; i++) {
-        dataToSend.append(`files_reservation[${i}]`, selectedFiles_rsv[i]);
-      }
-    }
-    if (!isEditing && selectedFiles_avc.length !== 0) {
-      selectedFiles_avc.forEach((file, index) => {
-        dataToSend.append(`files_avance[${index}]`, file);
+    // Debug: Log files before sending
+    console.log('Files to send - Reservation:', selectedFiles_rsv);
+    console.log('Files to send - Avance:', selectedFiles_avc);
+
+    // Handle reservation files
+    if (!isEditing && selectedFiles_rsv.length > 0) {
+      selectedFiles_rsv.forEach((file, index) => {
+        // Check if file is a valid File object
+        if (file instanceof File) {
+          dataToSend.append(`files_reservation[${index}]`, file);
+          console.log(`Added reservation file: ${file.name}`);
+        } else if (file && file.fichier) {
+          // Handle existing files from edit mode
+          console.log('Skipping existing file in create mode:', file.fichier);
+        }
       });
     }
 
+    // Handle avance files
+    if (!isEditing && selectedFiles_avc.length > 0) {
+      selectedFiles_avc.forEach((file, index) => {
+        if (file instanceof File) {
+          dataToSend.append(`files_avance[${index}]`, file);
+          console.log(`Added avance file: ${file.name}`);
+        }
+      });
+    }
+
+    // For editing mode, handle file updates differently
     if (isEditing) {
-      const files = selectedFiles_rsv.filter((file) => file instanceof File);
-      const objects = selectedFiles_rsv.filter(
+      const newFiles_rsv = selectedFiles_rsv.filter(
+        (file) => file instanceof File
+      );
+      const existingFiles_rsv = selectedFiles_rsv.filter(
         (file) => !(file instanceof File)
       );
 
-      if (objects.length !== 0) {
-        objects.forEach((file, index) => {
-          // convertir un objet en File avant de l'envoyer
-          const blob = new Blob([file.fichier], {
-            type: 'application/octet-stream',
-          });
-          const newFile = new File([blob], file.fichier);
-          dataToSend.append(`files_reservation[${index}]`, newFile);
-        });
-      }
-      if (files.length !== 0) {
-        for (let i = 0; i < files.length; i++) {
-          dataToSend.append(
-            `files_reservation[${objects.length + i}]`,
-            files[i]
-          );
-        }
-      }
+      // Append new files
+      newFiles_rsv.forEach((file, index) => {
+        dataToSend.append(`files_reservation[${index}]`, file);
+      });
+
+      // You might want to handle existing files deletion/keeping here
+      // based on your backend requirements
 
       dataToSend.append('_method', 'PATCH');
       url = `${url}/${id}`;
+    }
+
+    // Log FormData contents for debugging
+    console.log('FormData entries:');
+    for (let pair of dataToSend.entries()) {
+      console.log(pair[0] + ': ', pair[1]);
     }
 
     // Requête API avec axios
     axios
       .post(url, dataToSend, {
         headers: {
+          'Content-Type': 'multipart/form-data',
           Accept: 'application/json',
           Authorization: `Bearer ${accessToken}`,
         },
@@ -537,7 +579,7 @@ export default function ReservationForm({ id }) {
           toast.success(message);
           localStorage.removeItem('step_res_edit');
           localStorage.removeItem('selectedClient_show_client');
-          router.push(ENDPOINTS.RESERVATIONS);
+          router.push(ENDPOINTS.VENTE + '?tab=reservations');
           reset(defaultValues);
         } else if (res.status == 422) {
           message = res.data.message;
@@ -826,70 +868,91 @@ export default function ReservationForm({ id }) {
 
   const handleFileChange = (event, param) => {
     const selectedFiles = param == 1 ? selectedFiles_rsv : selectedFiles_avc;
+    const setSelectedFiles =
+      param == 1 ? setSelectedFiles_rsv : setSelectedFiles_avc;
     const fileList = param == 1 ? filesList : filesList_avc;
 
     const files = Array.from(event.target.files);
-    event.target.value = null;
 
-    files.forEach((file) => {
-      const fileName = file.name;
-      const fileExistsInList = Object.values(fileList).includes(fileName); // Vérifie si le fichier existe déjà dans la liste filesList
-      const fileExistsInSelected = selectedFiles.some(
-        (selectedFile) =>
-          selectedFile.name == fileName || selectedFile.fichier == fileName
-      ); // Vérifie si le fichier existe déjà dans la sélection
+    // Reset input to allow selecting same file again
+    event.target.value = '';
 
-      if (fileExistsInSelected) {
-        setAddOreditPopup(param == 1 ? 1 : 2);
-        setValiderfile(true);
-        setMyfile(files);
-      } else if (fileExistsInList) {
-        // Si le fichier existe déjà dans filesList, on génère un nouveau nom
-        let newFileName = fileName;
-        let fileNumber = 1;
+    const newFiles = files
+      .filter((file) => {
+        const fileName = file.name;
 
-        // Séparer le nom et l'extension de manière plus robuste
-        const fileParts = fileName.split('.');
-        const extension = fileParts.pop(); // Extraire l'extension
-        const baseName = fileParts.join('.'); // Joindre le reste comme nom de fichier
+        // Check if file exists in selected files
+        const fileExistsInSelected = selectedFiles.some((selectedFile) => {
+          if (selectedFile instanceof File) {
+            return selectedFile.name === fileName;
+          } else {
+            return selectedFile.fichier === fileName;
+          }
+        });
 
-        // Tant que le nom généré existe déjà dans filesList, on continue à ajouter un suffixe
-        while (Object.values(fileList).includes(newFileName)) {
-          newFileName = `${baseName} (${fileNumber}).${extension}`;
-          fileNumber++;
-        }
+        // Check if file exists in existing file list
+        const fileExistsInList = Object.values(fileList).includes(fileName);
 
-        // Créer un nouveau fichier avec le nom modifié
-        const newFile = new File([file], newFileName, { type: file.type });
-
-        // Vérifier si le nouveau fichier existe dans les fichiers sélectionnés
-        if (
-          selectedFiles.some(
-            (selectedFile) =>
-              selectedFile.name == newFileName ||
-              selectedFile.fichier == newFileName
-          )
-        ) {
+        if (fileExistsInSelected) {
           setAddOreditPopup(param == 1 ? 1 : 2);
           setValiderfile(true);
-          setMyfile_1(newFile);
-        } else {
-          // Ajouter le fichier renommé à la liste des fichiers sélectionnés
-          if (param == 1) {
-            setSelectedFiles_rsv([...selectedFiles_rsv, newFile]);
-          } else {
-            setSelectedFiles_avc([...selectedFiles_avc, newFile]);
+          setMyfile(files);
+          return false;
+        } else if (fileExistsInList) {
+          // Generate unique filename
+          let newFileName = fileName;
+          let fileNumber = 1;
+
+          const fileParts = fileName.split('.');
+          const extension = fileParts.pop();
+          const baseName = fileParts.join('.');
+
+          while (
+            Object.values(fileList).includes(newFileName) ||
+            selectedFiles.some(
+              (sf) =>
+                (sf instanceof File && sf.name === newFileName) ||
+                (!(sf instanceof File) && sf.fichier === newFileName)
+            )
+          ) {
+            newFileName = `${baseName} (${fileNumber}).${extension}`;
+            fileNumber++;
           }
-        }
-      } else {
-        // Si le fichier n'existe pas dans filesList ou selectedFiles, on l'ajoute simplement
-        if (param == 1) {
-          setSelectedFiles_rsv([...selectedFiles_rsv, file]);
+
+          // Create new file with modified name
+          const newFile = new File([file], newFileName, { type: file.type });
+          return newFile;
         } else {
-          setSelectedFiles_avc([...selectedFiles_avc, file]);
+          return file;
         }
-      }
-    });
+      })
+      .filter(Boolean); // Remove any false values
+
+    if (newFiles.length > 0) {
+      setSelectedFiles((prev) => [...prev, ...newFiles]);
+    }
+  };
+  const validateFilesBeforeSubmit = () => {
+    // Check if all files are valid File objects
+    const allRsvFilesValid = selectedFiles_rsv.every(
+      (file) => file instanceof File || (file && file.fichier)
+    );
+
+    const allAvcFilesValid = selectedFiles_avc.every(
+      (file) => file instanceof File || (file && file.fichier)
+    );
+
+    if (!allRsvFilesValid) {
+      console.error('Invalid reservation files detected');
+      return false;
+    }
+
+    if (!allAvcFilesValid) {
+      console.error('Invalid avance files detected');
+      return false;
+    }
+
+    return true;
   };
 
   const isButtonDisabled = () => {
@@ -1003,15 +1066,13 @@ export default function ReservationForm({ id }) {
   };
 
   const handleinputchange1 = (e, index, text) => {
-    /* if (selectedClient) {
-      // Assurez-vous que l'ID par défaut du client est assigné au premier élément
-      const updatedList = [...inputList1];
-      updatedList[0].id = selectedClient;
-      setinputList1(updatedList);
-      clientsExist[0].disabled = true;
-    }*/
     const { name, value } = e.target;
     const list = [...inputList1];
+
+    // Store the previous ID before updating
+    const previousId = list[index].id;
+
+    // Update the list with new value
     list[index][name] = value;
     setinputList1(list);
 
@@ -1021,53 +1082,29 @@ export default function ReservationForm({ id }) {
       setDisabled(true);
     }
 
-    inputList1.forEach((nombres) => {
-      //disbled client selected
-      if (text == 'select_client') {
-        for (var j = 0; j <= Number(clientsExist.length) - 1; j++) {
-          if (
-            clientsExist[j].id === nombres.id &&
-            e.target.value != undefined
-          ) {
-            clientsExist[j].disabled = true;
-          }
-        }
-      }
-    });
-
-    //stocker les id selectionne dans un array
-    var id_cl_selectionne = [];
-    for (var j = 0; j <= Number(inputList1.length) - 1; j++) {
-      id_cl_selectionne.push(inputList1[j].id);
-    }
-
-    //set disbled=false li client n'est pas selectionné
-    for (j = 0; j <= Number(clientsExist.length) - 1; j++) {
-      if (id_cl_selectionne.length > 0) {
-        if (id_cl_selectionne.includes(clientsExist[j].id) == false) {
-          clientsExist[j].disabled = false;
-        }
-      }
-    }
-
-    // ONLY RUN THIS FOR CLIENT SELECTION CHANGES
+    // Handle client selection changes
     if (text == 'select_client') {
-      var id_cl_selectionne = [];
-      for (var j = 0; j <= Number(inputList1.length) - 1; j++) {
-        id_cl_selectionne.push(inputList1[j].id);
+      // Enable the previously selected client (if any)
+      if (previousId && previousId !== value) {
+        setClientsExist((prevClients) =>
+          prevClients.map((client) =>
+            client.id === previousId ? { ...client, disabled: false } : client
+          )
+        );
       }
-      console.log('les id cl selectionne ' + JSON.stringify(id_cl_selectionne));
-      for (j = 0; j <= Number(clientsExist.length) - 1; j++) {
-        if (id_cl_selectionne.length > 0) {
-          if (id_cl_selectionne.includes(clientsExist[j].id) == false) {
-            clientsExist[j].disabled = false;
-          }
-        }
+
+      // Disable the newly selected client
+      if (value) {
+        setClientsExist((prevClients) =>
+          prevClients.map((client) =>
+            client.id === value ? { ...client, disabled: true } : client
+          )
+        );
       }
     }
 
     // Calculate percentages - ensure numeric values
-    const sum_percent_select = inputList1.reduce((sum, nombres) => {
+    const sum_percent_select = list.reduce((sum, nombres) => {
       return sum + Number(nombres.pourcentage) || 0;
     }, 0);
 
@@ -1082,8 +1119,8 @@ export default function ReservationForm({ id }) {
         'totalPercentage_client_form==>' +
         totalPercentage_client_form
     );
-    const totalPercentage = sum_percent_select + totalPercentage_client_form;
 
+    const totalPercentage = sum_percent_select + totalPercentage_client_form;
     setValue('pourcentages', totalPercentage);
 
     if (text == 'percent') {
@@ -1093,15 +1130,55 @@ export default function ReservationForm({ id }) {
       setenabled(isValid ? 'none' : 'block');
     }
 
-    var arrayinputList1 = Object.values(inputList1);
+    var arrayinputList1 = Object.values(list);
     var arrayClient1 = [];
     for (let i = 0; i < arrayinputList1.length; i++) {
       const propertyValues = arrayinputList1[i];
       arrayClient1.push(propertyValues);
     }
+
     setoldClients(arrayClient1);
     setValue('oldClients', JSON.stringify(arrayClient1));
-    console.log(' the final list==>' + JSON.stringify(inputList1));
+    console.log(' the final list==>' + JSON.stringify(list));
+  };
+  const validateClientStep = () => {
+    // Check if all selected clients have both id and pourcentage
+    const allSelectedClientsValid = inputList1.every(
+      (client) =>
+        client.id &&
+        client.id !== '' &&
+        client.pourcentage &&
+        client.pourcentage !== '' &&
+        !isNaN(client.pourcentage)
+    );
+
+    // Check if all added clients have required fields
+    const allAddedClientsValid = addedClients.every(
+      (client) =>
+        client.nom &&
+        client.nom.trim() !== '' &&
+        client.pourcentage &&
+        client.pourcentage !== '' &&
+        !isNaN(client.pourcentage)
+    );
+
+    // Calculate current total percentage
+    const sum_percent_select = inputList1.reduce((sum, client) => {
+      return sum + (Number(client.pourcentage) || 0);
+    }, 0);
+
+    const totalPercentage_client_form = addedClients.reduce((sum, client) => {
+      return sum + (Number(client.pourcentage) || 0);
+    }, 0);
+
+    const totalPercentage = sum_percent_select + totalPercentage_client_form;
+    const totalValid = totalPercentage === 100;
+
+    console.log(
+      `Validation - Selected: ${sum_percent_select}, Added: ${totalPercentage_client_form}, Total: ${totalPercentage}, Valid: ${totalValid}`
+    );
+
+    return allSelectedClientsValid && allAddedClientsValid && totalValid;
   };
 
   const handleAnnuler_form = () => {
@@ -1168,6 +1245,26 @@ export default function ReservationForm({ id }) {
       console.error('Form validation failed');
     }
   };
+  // Add this useEffect to recalculate totals when inputList1 or addedClients change
+  useEffect(() => {
+    if (currentStep === 1) {
+      const sum_percent_select = inputList1.reduce((sum, client) => {
+        return sum + (Number(client.pourcentage) || 0);
+      }, 0);
+
+      const totalPercentage_client_form = addedClients.reduce((sum, client) => {
+        return sum + (Number(client.pourcentage) || 0);
+      }, 0);
+
+      const totalPercentage = sum_percent_select + totalPercentage_client_form;
+
+      setValue('pourcentages', totalPercentage);
+
+      const isValid = totalPercentage === 100;
+      setValue('verifierPourcentages', isValid);
+      setenabled(isValid ? 'none' : 'block');
+    }
+  }, [inputList1, addedClients, currentStep, setValue]);
   const isFormValid = () => {
     return newClientForms.every((form) => {
       // Basic field validation
@@ -1402,7 +1499,7 @@ export default function ReservationForm({ id }) {
       <div className="p-3">
         <div className="flex items-center justify-start">
           <BreadCrumb
-            baseUrl={ENDPOINTS.RESERVATIONS}
+            baseUrl={ENDPOINTS.VENTE + '?tab=reservations'}
             step={`${isEditing ? 'Modifier' : 'Ajouter'} Reservation`}
           />
         </div>
@@ -1479,11 +1576,31 @@ export default function ReservationForm({ id }) {
                   name="bien_id"
                   required={true}
                   loading={loading_bien}
-                  options={biensByProjet.map((bien) => ({
-                    value: bien.id,
-                    label: bien.propriete_dite_bien || `Bien #${bien.id}`,
-                    original: bien,
-                  }))}
+                  options={biensByProjet.map((bien) => {
+                    // Add the same disabled logic from your other component
+                    const isDisabled =
+                      bien.etat == 'ENCOURS_DE_PROPOSITION' &&
+                      bien.is_proposed != null &&
+                      user.id != bien.is_proposed.user_id;
+
+                    // Add the same label text logic
+                    const labelText =
+                      bien.propriete_dite_bien +
+                      (bien.etat === 'ENCOURS_DE_PROPOSITION'
+                        ? bien?.is_proposed !== null
+                          ? user.id !== bien?.is_proposed?.user_id
+                            ? ` Proposé par ${bien?.is_proposed?.user?.name} ${bien?.is_proposed?.user?.prenom}`
+                            : ' Proposé par Moi Même'
+                          : ''
+                        : '');
+
+                    return {
+                      value: bien.id,
+                      label: labelText || `Bien #${bien.id}`,
+                      original: bien,
+                      disabled: isDisabled,
+                    };
+                  })}
                   value={watch('bien_id')}
                   onChange={(value) => {
                     const selectedOption = biensByProjet.find(
@@ -1632,87 +1749,114 @@ export default function ReservationForm({ id }) {
               Ajouter les acquéreurs de cette Réservation
             </h2>
             <div className="space-y-4">
-              {inputList1.map((entry, index) => (
-                <div key={index} className="flex items-start space-x-4">
-                  <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <SelectInput
-                        label="Client"
-                        name={`client_${index}`}
-                        value={entry.id}
-                        required={true}
-                        options={
-                          Array.isArray(clientsExist)
-                            ? clientsExist.map((client) => ({
-                                value: client.id,
-                                label: `${client.nom} ${client.prenom}`,
-                                disabled: client.disabled || false,
-                              }))
-                            : []
-                        }
-                        loading={loading_clients}
-                        onChange={(value) => {
-                          // Create a synthetic event to match the handleinputchange1 signature
-                          const syntheticEvent = {
-                            target: {
-                              name: 'id',
-                              value: value,
-                            },
-                          };
-                          handleinputchange1(
-                            syntheticEvent,
-                            index,
-                            'select_client'
-                          );
-                        }}
-                        error={
-                          errors.inputList1?.[index]?.id?.message ||
-                          backendErrors?.inputList1?.[index]?.id
-                        }
-                        disabled={loading_clients || entry.disabled}
-                        placeholder="Sélectionnez un client"
-                      />
+              <div className="space-y-4">
+                {inputList1.map((entry, index) => (
+                  <div key={index} className="flex items-start space-x-4">
+                    <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Client <span className="text-red-500">*</span>
+                        </label>
+                        <SelectInput
+                          name={`client_${index}`}
+                          value={entry.id}
+                          required={true}
+                          options={
+                            Array.isArray(clientsExist)
+                              ? clientsExist.map((client) => ({
+                                  value: client.id,
+                                  label: `${client.nom} ${client.prenom}`,
+                                  disabled: client.disabled || false,
+                                }))
+                              : []
+                          }
+                          loading={loading_clients}
+                          onChange={(value) => {
+                            const syntheticEvent = {
+                              target: {
+                                name: 'id',
+                                value: value,
+                              },
+                            };
+                            handleinputchange1(
+                              syntheticEvent,
+                              index,
+                              'select_client'
+                            );
+                          }}
+                          error={
+                            errors.inputList1?.[index]?.id?.message ||
+                            backendErrors?.inputList1?.[index]?.id
+                          }
+                          disabled={loading_clients || entry.disabled}
+                          placeholder="Sélectionnez un client"
+                        />
+                        {inputList1.length > 1 && (
+                          <>
+                            {!entry.id && currentStep === 1 && (
+                              <p className="text-red-500 text-xs mt-1">
+                                La sélection {"d'"}un client est requise
+                              </p>
+                            )}
+                          </>
+                        )}
+                      </div>
+                      <div>
+                        <label
+                          htmlFor={`percentage-${index}`}
+                          className="block text-sm font-medium text-gray-700 mb-1"
+                        >
+                          Pourcentage: <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          id={`percentage-${index}`}
+                          type="number"
+                          name="pourcentage"
+                          value={entry.pourcentage}
+                          disabled={
+                            selectedClient && index == 0 ? false : disabled_var
+                          }
+                          onChange={(e) =>
+                            handleinputchange1(e, index, 'percent')
+                          }
+                          className={`w-full px-3 py-2 border ${
+                            inputList1.length > 1 &&
+                            !entry.pourcentage &&
+                            currentStep === 1
+                              ? 'border-red-500'
+                              : 'border-gray-300'
+                          } rounded-md focus:outline-none focus:ring-[0.5px] focus:ring-gray-800`}
+                          placeholder="Entrez un pourcentage (0-100)"
+                          min="0"
+                          max="100"
+                        />
+                        {inputList1.length > 1 && (
+                          <>
+                            {!entry.pourcentage && currentStep === 1 && (
+                              <p className="text-red-500 text-xs mt-1">
+                                Le pourcentage est requis
+                              </p>
+                            )}
+                          </>
+                        )}
+                      </div>
+                      <p style={{ display: enabled, color: 'red' }}>
+                        {'la somme des pourcentages doit être 100% !'}
+                      </p>
                     </div>
-                    <div>
-                      <label
-                        htmlFor={`percentage-${index}`}
-                        className="block text-sm font-medium text-gray-700 mb-1"
+                    {inputList1.length > 1 && (
+                      <button
+                        onClick={() =>
+                          removeClientEntry(index, 'without_new_client')
+                        }
+                        className="mt-7 p-2 text-white hover:text-red-700 hover:bg-red rounded-md transition-colors bg-[red]"
                       >
-                        Pourcentage:
-                      </label>
-                      <input
-                        id={`percentage-${index}`}
-                        type="number"
-                        name="pourcentage" // Add this name
-                        value={entry.pourcentage}
-                        disabled={
-                          selectedClient && index == 0 ? false : disabled_var
-                        }
-                        onChange={(e) =>
-                          handleinputchange1(e, index, 'percent')
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[0.5px] focus:ring-gray-800"
-                        placeholder="Entrez un pourcentage (0-100)"
-                        min="0"
-                        max="100"
-                      />
-                    </div>
-                    <p style={{ display: enabled, color: 'red' }}>
-                      {'la somme des pourcentages doit être 100% !'}
-                    </p>
+                        <XIcon className="w-5 h-5" />
+                      </button>
+                    )}
                   </div>
-                  {inputList1.length > 1 && (
-                    <button
-                      onClick={() =>
-                        removeClientEntry(index, 'without_new_client')
-                      }
-                      className="mt-7 p-2 text-white hover:text-red-700 hover:bg-red rounded-md transition-colors bg-[red]"
-                    >
-                      <XIcon className="w-5 h-5" />
-                    </button>
-                  )}
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
             <div className="flex justify-center space-x-4">
               <button
@@ -3156,7 +3300,7 @@ export default function ReservationForm({ id }) {
 
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Accepte{"d'"}être contacté {clientToEdit.notifie}
+                            Accepte{"d'"}être contacté
                             <span className="text-red-500 ml-1">*</span>
                           </label>
 
@@ -3846,7 +3990,7 @@ export default function ReservationForm({ id }) {
                     watch('date_reservation') == '' ||
                     info_reservation != null ||
                     loading_bien == true)) ||
-                (currentStep == 1 && !watch('verifierPourcentages'))
+                (currentStep == 1 && !validateClientStep())
                   ? 'opacity-50 cursor-not-allowed'
                   : ''
               }`}
@@ -3857,7 +4001,7 @@ export default function ReservationForm({ id }) {
                     watch('date_reservation') == '' ||
                     info_reservation != null ||
                     loading_bien == true)) ||
-                (currentStep == 1 && !watch('verifierPourcentages'))
+                (currentStep == 1 && !validateClientStep())
               }
             >
               Suivant

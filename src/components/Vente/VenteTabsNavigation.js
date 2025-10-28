@@ -483,9 +483,10 @@ const TabButton = forwardRef(({
   icon, 
   active, 
   onClick, 
-  dropdown, 
-  expanded,
-  count
+  dropdown = false, 
+  expanded = false,
+  count = 0,
+  id
 }, ref) => {
   return (
     <button
@@ -496,13 +497,16 @@ const TabButton = forwardRef(({
           ? 'border-emerald-500 text-emerald-600' 
           : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
       }`}
+      aria-expanded={dropdown ? expanded : undefined}
+      aria-haspopup={dropdown ? "true" : undefined}
+      aria-controls={dropdown ? `${id}-dropdown` : undefined}
     >
       <div className="flex items-center justify-center flex-col sm:flex-row gap-1 sm:gap-2">
         {getIcon(icon)}
         <span className="whitespace-nowrap text-xs sm:text-sm">{label}</span>
         {count > 0 && (
           <span className="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-4 h-4 flex items-center justify-center">
-            {count}
+            {count > 99 ? '99+' : count}
           </span>
         )}
         {dropdown && (
@@ -511,12 +515,15 @@ const TabButton = forwardRef(({
             className={`transform transition-transform ${
               expanded ? 'rotate-180' : ''
             }`} 
+            aria-hidden="true"
           />
         )}
       </div>
     </button>
   );
 });
+
+TabButton.displayName = 'TabButton';
 
 const DropdownItem = ({ label, active, onClick, count }) => {
   return (
