@@ -19,6 +19,8 @@ import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
 import { RESOURCE_URL } from '@/configs/api';
 import AddRdvModal from './AddRdvModal';
+import Pusher from 'pusher-js';
+
 const StatusBadge = ({ status }) => {
   const statusConfig = {
     Validé: {
@@ -58,6 +60,7 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
   const reservationId = reservationData?.reservation?.id;
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
+  const pusher_key_rdv_list = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_RDV_LIST;
 
   // State variables
   const [rdvs, setRdvs] = useState([]);
@@ -136,9 +139,85 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
     }
   };
 
+ 
+    
   useEffect(() => {
     fetchData();
-  }, [reservationId]);
+  
+    // Initialize Pusher with the correct connection
+    const initializePusher = () => {
+      if (!pusher_key_rdv_list || !reservationId) {
+        console.log('Pusher key or reservation ID missing');
+        return () => {};
+      }
+  
+      Pusher.logToConsole = true;
+      console.log('Initializing Pusher for rdv list, reservation:', reservationId);
+      
+      // Use the correct Pusher configuration that matches your backend
+      const pusher = new Pusher(pusher_key_rdv_list, {
+        cluster: 'eu',
+        encrypted: true,
+        forceTLS: true,
+        wsHost: 'ws-eu.pusher.com', // Add explicit WebSocket host
+        wssPort: 443,
+        enabledTransports: ['ws', 'wss'] // Force WebSocket transport
+      });
+  
+      // Create the EXACT channel name that matches your Laravel event
+      const channelName = `rdv-list-updates-${reservationId}`;
+      console.log('Subscribing to channel:', channelName);
+  
+      try {
+        const channel = pusher.subscribe(channelName);
+        
+        channel.bind('RdvEvent', (data) => {
+      
+          // Always refresh when we receive an event for this channel
+          console.log('Refreshing rdv data via Pusher');
+          fetchData();
+        });
+  
+        // Handle connection events
+        channel.bind('pusher:subscription_succeeded', () => {
+          console.log('✅ Successfully subscribed to channel:', channelName);
+        });
+  
+        channel.bind('pusher:subscription_error', (status) => {
+          console.error('❌ Pusher subscription error:', status);
+        });
+  
+        // Also listen for connection state changes
+        pusher.connection.bind('state_change', (states) => {
+          console.log('Pusher connection state changed:', states.previous, '->', states.current);
+        });
+  
+        pusher.connection.bind('connected', () => {
+          console.log('✅ Pusher connected successfully');
+        });
+  
+        pusher.connection.bind('disconnected', () => {
+          console.log('🔴 Pusher disconnected');
+        });
+  
+      } catch (error) {
+        console.error('Error subscribing to Pusher channel:', error);
+      }
+  
+      // Return cleanup function
+      return () => {
+        console.log('Cleaning up Pusher subscription for:', channelName);
+        if (pusher) {
+          pusher.disconnect();
+        }
+      };
+    };
+  
+    const cleanupPusher = initializePusher();
+ 
+  
+    return cleanupPusher;
+  }, [reservationId, pusher_key_rdv_list]);
 
   const handleRdvAdded = (newRdv) => {
     // Rafraîchir la liste des rendez-vous

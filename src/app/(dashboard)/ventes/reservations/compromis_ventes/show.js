@@ -69,7 +69,6 @@ const Compromis_show = ({
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const accessToken = localStorage.getItem('accessToken');
-  console.log('etage==>' + reservationData.reservation?.bien?.niveau);
   // Prepare the form values for the PDF document
   const formValues = {
     user: user,

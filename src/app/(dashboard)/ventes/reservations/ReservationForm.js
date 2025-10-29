@@ -27,7 +27,6 @@ import TextField from '@/components/Textfield'; // Import the component
 import { useAuth } from '../../../../context/AuthContext';
 import axios from 'axios';
 import Pusher from 'pusher-js';
-import AutocompleteClient from './AutocompleteClient';
 import BreadCrumb from '../../navigation/BreadCrumb';
 import { APIURL, ENDPOINTS } from '../../../../configs/api';
 import { useRouter } from 'next/navigation';
@@ -35,9 +34,6 @@ import * as yup from 'yup';
 import toast from 'react-hot-toast';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import AutocompleteBien from './AutocompleteBien';
-import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
-import Autocomplete from '@/components/Autocomplete';
 import LoadingSpin from '@/components/LoadingSpin';
 import SelectInput from '@/components/SelectInput';
 
@@ -482,10 +478,12 @@ export default function ReservationForm({ id }) {
   const onSubmit = (data) => {
     setLoading({ ...loading, form: true });
     // Validate files first
-  if (!validateFilesBeforeSubmit()) {
-    toast.error('Certains fichiers sont invalides. Veuillez vérifier les fichiers sélectionnés.');
-    return;
-  }
+    if (!validateFilesBeforeSubmit()) {
+      toast.error(
+        'Certains fichiers sont invalides. Veuillez vérifier les fichiers sélectionnés.'
+      );
+      return;
+    }
 
     setBackendErrors({});
     const totalAcquereurs = addedClients.length + oldClients.length;
@@ -3660,15 +3658,23 @@ export default function ReservationForm({ id }) {
                 </>
               )}
               {isEditing && (
-                <AutocompleteSelectComponent
+                <SelectInput
                   label="Mode Financement :"
+                  placeholder="Sélectionner un mode de financement"
                   name="mode_financement"
                   value={watch('mode_financement')}
                   required={true}
-                  options={MODE_FINANCE}
-                  onChange={(e) => {
-                    setValue('mode_financement', e);
+                  options={Object.values(MODE_FINANCE || {}).map((item) => ({
+                    value: item.code || item.value,
+                    label: item.label || item.name,
+                  }))}
+                  onChange={(value) => {
+                    setValue('mode_financement', value);
                   }}
+                  error={
+                    errors.mode_financement?.message ||
+                    backendErrors?.mode_financement
+                  }
                 />
               )}
             </div>

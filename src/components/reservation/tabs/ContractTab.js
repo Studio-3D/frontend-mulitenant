@@ -16,12 +16,16 @@ import {
 } from "lucide-react";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import Document_Contrat from "../../../app/(dashboard)/ventes/reservations/contrat_vente/recu";
+import Pusher from 'pusher-js';
+
 export const ContractTab = ({
   reservationData,
   user,
   accessToken,
   updateReservationData,
 }) => {
+   const pusher_key_contrat_vente =
+    process.env.NEXT_PUBLIC_PUSHER_APP_KEY_CONTRAT_VENTE;
   const FileUrl = process.env.NEXT_PUBLIC_IMG_URL;
   const [data_reservation, setData_reservation] = useState(null);
 
@@ -146,10 +150,91 @@ export const ContractTab = ({
     );
   };
 
-  useEffect(() => {
-    fetchData();
-  }, [reservationId, accessToken, apiUrl]);
 
+    useEffect(() => {
+      fetchData();
+  
+      // Initialize Pusher with the correct connection
+      const initializePusher = () => {
+        if (!pusher_key_contrat_vente || !reservationId) {
+          console.log('Pusher key or reservation ID missing');
+          return () => {};
+        }
+  
+        Pusher.logToConsole = true;
+        console.log(
+          'Initializing Pusher for contrat list, reservation:',
+          reservationId
+        );
+  
+        // Use the correct Pusher configuration that matches your backend
+        const pusher = new Pusher(pusher_key_contrat_vente, {
+          cluster: 'eu',
+          encrypted: true,
+          forceTLS: true,
+          wsHost: 'ws-eu.pusher.com', // Add explicit WebSocket host
+          wssPort: 443,
+          enabledTransports: ['ws', 'wss'], // Force WebSocket transport
+        });
+  
+        // Create the EXACT channel name that matches your Laravel event
+        const channelName = `contrat-vente-updates-${reservationId}`;
+        console.log('Subscribing to channel:', channelName);
+  
+        try {
+          const channel = pusher.subscribe(channelName);
+          console.log('hoop');
+  
+          channel.bind('ContratVenteEvent', (data) => {
+            // Always refresh when we receive an event for this channel
+            console.log('Refreshing contrat vente data via Pusher');
+            fetchData();
+          });
+  
+          // Handle connection events
+          channel.bind('pusher:subscription_succeeded', () => {
+            console.log('✅ Successfully subscribed to channel:', channelName);
+          });
+  
+          channel.bind('pusher:subscription_error', (status) => {
+            console.error('❌ Pusher subscription error:', status);
+          });
+  
+          // Also listen for connection state changes
+          pusher.connection.bind('state_change', (states) => {
+            console.log(
+              'Pusher connection state changed:',
+              states.previous,
+              '->',
+              states.current
+            );
+          });
+  
+          pusher.connection.bind('connected', () => {
+            console.log('✅ Pusher connected successfully');
+          });
+  
+          pusher.connection.bind('disconnected', () => {
+            console.log('🔴 Pusher disconnected');
+          });
+        } catch (error) {
+          console.error('Error subscribing to Pusher channel:', error);
+        }
+  
+        // Return cleanup function
+        return () => {
+          console.log('Cleaning up Pusher subscription for:', channelName);
+          if (pusher) {
+            pusher.disconnect();
+          }
+        };
+      };
+  
+      const cleanupPusher = initializePusher();
+  
+      return cleanupPusher;
+    }, [reservationId, pusher_key_contrat_vente,accessToken,apiUrl]);
+  
   const handleEdit = () => {
     setOpen_edit(!open_edit);
   };

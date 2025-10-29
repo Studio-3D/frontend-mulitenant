@@ -38,7 +38,6 @@ const Res_Show = () => {
 
   // Function to reload reservation data
   const reloadReservationData = () => {
-    console.log('🔍 Reloading reservation data...');
     fetchData();
   };
   // In Res_Show component where reste==0 dont reload page// and if on submit contrat de vente
@@ -56,7 +55,7 @@ const Res_Show = () => {
       if (oldProjetId) {
         // Projet a changé
 
-        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+       
         router.push('/ventes/reservations');
       }
       setOldProjetId(selectedProjet.id);
@@ -84,7 +83,6 @@ const Res_Show = () => {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      console.log('Response data:', response.data); // Debug log
 
       setReservationData(response.data);
       setSum_av(response.data.sum_avances_valides);
@@ -109,10 +107,8 @@ const Res_Show = () => {
   useEffect(() => {
     // Verify reservationId is correct before fetching
     if (reservationId && typeof reservationId === 'string') {
-      console.log('Fetching data for reservation ID:', reservationId);
       fetchData();
     } else {
-      console.error('Invalid reservationId:', reservationId);
       setError('Invalid reservation ID');
     }
   }, [reservationId]);
@@ -146,13 +142,6 @@ const Res_Show = () => {
       },
     }));
   };
-  console.log('Sum Avances:', reservationData?.sum_avances_valides);
-  console.log('Prix:', reservationData?.reservation?.prix);
-  console.log(
-    'Should show Contract Tab?',
-    userRole <= 3 &&
-      reservationData?.sum_avances_valides >= reservationData?.reservation?.prix
-  );
   const handleRdvChange = (count) => {
     setReservationData((prev) => ({
       ...prev,
