@@ -20,9 +20,11 @@ import { APIURL } from '../../../../../configs/api';
 import { useAuth } from '../../../../../context/AuthContext';
 import { useProjet } from '@/context/ProjetContext';
 import { useRouter } from 'next/navigation';
+import Pusher from 'pusher-js';
 
 const Res_Show = () => {
   const router = useRouter();
+  const pusher_key_avances = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_AVANCES;
 
   const { selectedProjet } = useProjet();
   const [activeTab, setActiveTab] = useState('detail');
@@ -47,6 +49,45 @@ const Res_Show = () => {
       ...newData,
     }));
   };
+  // In Res_Show component
+/*useEffect(() => {
+  let lastFetchTime = 0;
+  const FETCH_COOLDOWN = 2000; // 3 seconds cooldown
+
+  fetchData();
+
+  if (activeTab !== 'avances') {
+    const initializePusher = () => {
+      if (!pusher_key_avances || !reservationId || !user?.id) return () => {};
+
+      const pusher = new Pusher(pusher_key_avances, {
+        cluster: 'eu',
+        encrypted: true,
+        forceTLS: true,
+      });
+
+      const userChannelName = `res-show-user-${user.id}`;
+      const userChannel = pusher.subscribe(userChannelName);
+      
+      userChannel.bind('AvancesEvent', (data) => {
+        const now = Date.now();
+        
+        // Only fetch if enough time has passed since last fetch
+        if (now - lastFetchTime > FETCH_COOLDOWN) {
+          console.log('Refreshing data via Pusher');
+          lastFetchTime = now;
+          fetchData();
+        } else {
+          console.log('Skipping fetch - cooldown active');
+        }
+      });
+
+      return () => pusher.disconnect();
+    };
+
+    return initializePusher();
+  }
+}, [reservationId, pusher_key_avances, user?.id, activeTab]);*/ // Add activeTab to dependencies
   // Simple cache et comparaison for return back en cas de changer projet
   const [oldProjetId, setOldProjetId] = useState(null);
 

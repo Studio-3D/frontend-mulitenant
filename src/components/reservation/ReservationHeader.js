@@ -12,14 +12,10 @@ import {
   Home,
 } from 'lucide-react';
 import LoadingSpin from '@/components/LoadingSpin';
-import Button from '@/components/Button'; // adjust the path as needed
-import Modal from '@/components/Modal';
-import Modal_Relance from './Modal_Relance';
-import { ENDPOINTS } from '@/configs/api';
 import { useRouter } from 'next/navigation';
+import ReservationSteps  from './ReservationSteps'
 
 export const ReservationHeader = ({ reservationData, userRole }) => {
-  const [open_dialog, setOpen_dialog] = useState(false);
   const router = useRouter();
   // Add null checks and default values
   if (!reservationData) {
@@ -36,12 +32,11 @@ export const ReservationHeader = ({ reservationData, userRole }) => {
     ? new Date(reservation.updated_at).toLocaleDateString('fr-FR')
     : 'N/A';
 
-  const handle_relance = () => {
-    setOpen_dialog(!open_dialog);
-  };
+
   return (
     <>
       <div className="bg-white rounded-lg shadow-md p-6">
+         
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <Home
@@ -75,13 +70,9 @@ export const ReservationHeader = ({ reservationData, userRole }) => {
             </span>
           </div>
         </div>
-        {reservation.statut == 2 && userRole == 3 && (
-          <div className="flex justify-end">
-            <Button type="delete" onClick={() => handle_relance()}>
-              Relancer
-            </Button>
-          </div>
-        )}
+         <ReservationSteps reservation={reservation} />
+
+      
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
           <div className="bg-green-50 p-3 rounded-md">
@@ -124,16 +115,7 @@ export const ReservationHeader = ({ reservationData, userRole }) => {
           </div>
         </div>
       </div>
-      {open_dialog && (
-        <>
-          <Modal isVisible={true} onClose={() => setOpen_dialog(false)}>
-            <Modal_Relance
-              id={reservation.id}
-              onClose={() => setOpen_dialog(false)}
-            />
-          </Modal>
-        </>
-      )}
+      
     </>
   );
 };

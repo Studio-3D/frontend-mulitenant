@@ -93,93 +93,105 @@ export const AvancesTab = ({
   const [date_encais_show, set_date_encaiss_show] = useState(null);
 
   // In AvancesTab component - fix the Pusher initialization
-useEffect(() => {
-  fetchData();
+  useEffect(() => {
+    fetchData();
 
-  // Initialize Pusher with the correct connection
-  const initializePusher = () => {
-    if (!pusher_key_avances || !reservationId) {
-      console.log('Pusher key or reservation ID missing');
-      return () => {};
-    }
-
-    Pusher.logToConsole = true;
-    console.log('Initializing Pusher for avances, reservation:', reservationId);
-    
-    // Use the correct Pusher configuration that matches your backend
-    const pusher = new Pusher(pusher_key_avances, {
-      cluster: 'eu',
-      encrypted: true,
-      forceTLS: true,
-      wsHost: 'ws-eu.pusher.com', // Add explicit WebSocket host
-      wssPort: 443,
-      enabledTransports: ['ws', 'wss'] // Force WebSocket transport
-    });
-
-    // Create the EXACT channel name that matches your Laravel event
-    const channelName = `avances-updates-${reservationId}`;
-    console.log('Subscribing to channel:', channelName);
-
-    try {
-      const channel = pusher.subscribe(channelName);
-      
-      channel.bind('AvancesEvent', (data) => {
-        console.log('Pusher AvancesEvent received:', data);
-        console.log('Current reservation ID:', reservationId, 'Event reservation ID:', data.reservationId);
-        
-        // Always refresh when we receive an event for this channel
-        console.log('Refreshing avances data via Pusher');
-        fetchData();
-      });
-
-      // Handle connection events
-      channel.bind('pusher:subscription_succeeded', () => {
-        console.log('✅ Successfully subscribed to channel:', channelName);
-      });
-
-      channel.bind('pusher:subscription_error', (status) => {
-        console.error('❌ Pusher subscription error:', status);
-      });
-
-      // Also listen for connection state changes
-      pusher.connection.bind('state_change', (states) => {
-        console.log('Pusher connection state changed:', states.previous, '->', states.current);
-      });
-
-      pusher.connection.bind('connected', () => {
-        console.log('✅ Pusher connected successfully');
-      });
-
-      pusher.connection.bind('disconnected', () => {
-        console.log('🔴 Pusher disconnected');
-      });
-
-    } catch (error) {
-      console.error('Error subscribing to Pusher channel:', error);
-    }
-
-    // Return cleanup function
-    return () => {
-      console.log('Cleaning up Pusher subscription for:', channelName);
-      if (pusher) {
-        pusher.disconnect();
+    // Initialize Pusher with the correct connection
+    const initializePusher = () => {
+      if (!pusher_key_avances || !reservationId) {
+        console.log('Pusher key or reservation ID missing');
+        return () => {};
       }
+
+      Pusher.logToConsole = true;
+      console.log(
+        'Initializing Pusher for avances, reservation:',
+        reservationId
+      );
+
+      // Use the correct Pusher configuration that matches your backend
+      const pusher = new Pusher(pusher_key_avances, {
+        cluster: 'eu',
+        encrypted: true,
+        forceTLS: true,
+        wsHost: 'ws-eu.pusher.com', // Add explicit WebSocket host
+        wssPort: 443,
+        enabledTransports: ['ws', 'wss'], // Force WebSocket transport
+      });
+
+      // Create the EXACT channel name that matches your Laravel event
+      const channelName = `avances-updates-${reservationId}`;
+      console.log('Subscribing to channel:', channelName);
+
+      try {
+        const channel = pusher.subscribe(channelName);
+
+        channel.bind('AvancesEvent', (data) => {
+          console.log('Pusher AvancesEvent received:', data);
+          console.log(
+            'Current reservation ID:',
+            reservationId,
+            'Event reservation ID:',
+            data.reservationId
+          );
+
+          // Always refresh when we receive an event for this channel
+          console.log('Refreshing avances data via Pusher');
+          fetchData();
+        });
+
+        // Handle connection events
+        channel.bind('pusher:subscription_succeeded', () => {
+          console.log('✅ Successfully subscribed to channel:', channelName);
+        });
+
+        channel.bind('pusher:subscription_error', (status) => {
+          console.error('❌ Pusher subscription error:', status);
+        });
+
+        // Also listen for connection state changes
+        pusher.connection.bind('state_change', (states) => {
+          console.log(
+            'Pusher connection state changed:',
+            states.previous,
+            '->',
+            states.current
+          );
+        });
+
+        pusher.connection.bind('connected', () => {
+          console.log('✅ Pusher connected successfully');
+        });
+
+        pusher.connection.bind('disconnected', () => {
+          console.log('🔴 Pusher disconnected');
+        });
+      } catch (error) {
+        console.error('Error subscribing to Pusher channel:', error);
+      }
+
+      // Return cleanup function
+      return () => {
+        console.log('Cleaning up Pusher subscription for:', channelName);
+        if (pusher) {
+          pusher.disconnect();
+        }
+      };
     };
-  };
 
-  const cleanupPusher = initializePusher();
+    const cleanupPusher = initializePusher();
 
-  if (filesList_avc.length === 0) {
-    fetchList_fichier_exist_by_Code(
-      setfilesList_avc,
-      'avc',
-      reservationData?.reservation?.code_reservation,
-      setLoading_list
-    );
-  }
+    if (filesList_avc.length === 0) {
+      fetchList_fichier_exist_by_Code(
+        setfilesList_avc,
+        'avc',
+        reservationData?.reservation?.code_reservation,
+        setLoading_list
+      );
+    }
 
-  return cleanupPusher;
-}, [reservationId, pusher_key_avances]);
+    return cleanupPusher;
+  }, [reservationId, pusher_key_avances]);
   const fetchData = async () => {
     try {
       if (!reservationId) {
@@ -627,7 +639,7 @@ useEffect(() => {
 
   const onSubmit_valider_rejete = async (e) => {
     e.preventDefault();
-    setLoading_traite(true)
+    setLoading_traite(true);
     try {
       const commentaire = Commentaire_r;
       const date_encaiss = date_encaissement_v;
@@ -650,17 +662,17 @@ useEffect(() => {
       );
 
       toast.success('Avance traitée avec succès');
-     
+
       setCommentaire_r(null);
       set_date_encaissement_v(null);
       set_num_remise_v(null);
       fetchData();
       setOpen_v_r(false);
-        setLoading_traite(false)
+      setLoading_traite(false);
     } catch (error) {
       console.error('Error processing avance:', error);
       toast.error('Erreur lors du traitement');
-        setLoading_traite(false)
+      setLoading_traite(false);
     }
   };
 
@@ -1610,13 +1622,13 @@ useEffect(() => {
                 >
                   Annuler
                 </button>
-                
+
                 <button
                   type="submit"
                   className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
                   disabled={loading_traite}
                 >
-                   {loading_traite ? 'Enregistrement...' : 'Enregistrer'}
+                  {loading_traite ? 'Enregistrement...' : 'Enregistrer'}
                 </button>
               </div>
             </form>

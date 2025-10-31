@@ -15,6 +15,7 @@ import Modal_Valider_Reservation from '@/app/(dashboard)/ventes/reservations/Mod
 import Modal_Rejeter_Reservation from '@/app/(dashboard)/ventes/reservations/Modal_Rejeter_Reservation';
 import Modal_show_info from '@/app/(dashboard)/ventes/reservations/Modal_show_info';
 import { useRouter } from 'next/navigation';
+import Modal_Relance from '../Modal_Relance';
 
 // Define the component first
 const DetailTabComponent = ({
@@ -22,6 +23,9 @@ const DetailTabComponent = ({
   sum_avances_valides,
   onReservationUpdate,
 }) => {
+  const [open_dialog_rejete, setOpen_dialog_rejete] = useState(false);
+  const [text_rejete, setText_Rejete] = useState(false);
+
   const router = useRouter();
   const { user } = useAuth();
   const [dst_id, set_dst_id] = useState(null);
@@ -128,18 +132,12 @@ const DetailTabComponent = ({
   };
 
   const handle_show_comment_rejete = (code, msg) => {
-    set_txt_info(
+    setText_Rejete(
       'La Réservation ' + code + ' est rejetée en raison  de ' + msg
     );
-    setOpen_info(true);
+    setOpen_dialog_rejete(true);
   };
 
-  const handle_show_info = (code) => {
-    set_txt_info(
-      'Premier avance du Réservation ' + code + ' en attente de validation !'
-    );
-    setOpen_info(true);
-  };
   // Destructure the nested reservation object
   const { reservation } = reservationData;
 
@@ -148,117 +146,131 @@ const DetailTabComponent = ({
       {' '}
       <div className="space-y-6">
         <div className="flex justify-end space-x-4">
-          {reservation.statut == 3 ? (
+          {reservation.etat == 1 && (
             <>
-              {isSuperAdmin(user.role) || isAdmin(user.role) ? (
+              {reservation.statut == 3 ? (
                 <>
-                  {/* Approve Button */}
-                  <Button
-                    type="valider"
-                    onClick={() =>
-                      handle_valider(
-                        reservation.id,
-                        reservation.code_reservation,
-                        reservation.first_avance?.num_recu,
-                        reservation.first_avance?.id,
-                        reservation.first_avance?.statut,
-                        reservation.user.name + ' ' + reservation.user.prenom,
-                        reservation.aquereurs,
-                        reservation.date_reservation,
-                        reservation.prix,
-                        reservation.first_avance?.montant
-                      )
-                    }
-                    className="px-3 py-1 text-sm"
-                  >
-                    Valider
-                  </Button>
+                  {isSuperAdmin(user.role) || isAdmin(user.role) ? (
+                    <>
+                      {/* Approve Button */}
+                      <Button
+                        type="valider"
+                        onClick={() =>
+                          handle_valider(
+                            reservation.id,
+                            reservation.code_reservation,
+                            reservation.first_avance?.num_recu,
+                            reservation.first_avance?.id,
+                            reservation.first_avance?.statut,
+                            reservation.user.name +
+                              ' ' +
+                              reservation.user.prenom,
+                            reservation.aquereurs,
+                            reservation.date_reservation,
+                            reservation.prix,
+                            reservation.first_avance?.montant
+                          )
+                        }
+                        className="px-3 py-1 text-sm"
+                      >
+                        Valider
+                      </Button>
 
-                  {/* Reject Button */}
-                  <Button
-                    type="rejeter"
-                    onClick={() =>
-                      handle_rejeter(
-                        reservation.id,
-                        reservation.code_reservation
-                      )
-                    }
-                    className="px-3 py-1 text-sm"
-                  >
-                    Rejeter
-                  </Button>
+                      {/* Reject Button */}
+                      <Button
+                        type="rejeter"
+                        onClick={() =>
+                          handle_rejeter(
+                            reservation.id,
+                            reservation.code_reservation
+                          )
+                        }
+                        className="px-3 py-1 text-sm"
+                      >
+                        Rejeter
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      type="edit"
+                      onClick={() =>
+                        handle_show_info_2(reservation.code_reservation)
+                      }
+                      className="px-3 py-1 text-sm"
+                    >
+                      En Attente
+                    </Button>
+                  )}
                 </>
-              ) : (
+              ) : reservation.statut == 2 ? (
                 <Button
-                  type="edit"
+                  type="rejeter"
                   onClick={() =>
-                    handle_show_info_2(reservation.code_reservation)
+                    handle_show_comment_rejete(
+                      reservation.code_reservation,
+                      reservation.last_statut?.commentaire
+                    )
                   }
                   className="px-3 py-1 text-sm"
                 >
-                  En Attente
+                  Voir Rejet
                 </Button>
+              ) : null}
+              {(isSuperAdmin(user.role) ||
+                isAdmin(user.role) ||
+                isCommercial(user.role)) &&
+                reservation.statut == 1 && (
+                  <Button
+                    type="desister"
+                    onClick={() =>
+                      reservation.desistement_att_validation_rejete != null
+                        ? handleDesiste(
+                            reservation.id,
+                            reservation.desistement_att_validation_rejete?.id,
+                            reservation.desistement_att_validation_rejete
+                              ?.statut,
+                            reservation.desistement_att_validation_rejete
+                              ?.commentaire_rejete
+                          )
+                        : handleDesiste(reservation.id, null, null, null)
+                    }
+                    className={`px-3 py-1 text-sm ${
+                      reservation.desistement_att_validation_rejete?.statut == 0
+                        ? 'bg-orange-500 hover:bg-orange-600'
+                        : reservation.desistement_att_validation_rejete
+                            ?.statut == 2
+                        ? 'bg-red-500 hover:bg-red-600'
+                        : 'bg-gray-500 hover:bg-gray-600'
+                    }`}
+                    title={
+                      reservation.desistement_att_validation_rejete?.statut == 0
+                        ? 'désistement en attente'
+                        : reservation.desistement_att_validation_rejete
+                            ?.statut == 2
+                        ? 'Désistement rejeté'
+                        : 'Désister la réservation'
+                    }
+                  >
+                    {reservation.desistement_att_validation_rejete?.statut == 0
+                      ? 'En Attente'
+                      : reservation.desistement_att_validation_rejete?.statut ==
+                        2
+                      ? 'Rejeté'
+                      : 'Désister'}
+                  </Button>
+                )}
+
+              {reservation?.etat == 1 && reservation?.contrat_vente == null && (
+                <div className="flex justify-end">
+                  <Button
+                    type="edit"
+                    onClick={() => handleEdit(reservation.id)}
+                  >
+                    Modifier
+                  </Button>
+                </div>
               )}
             </>
-          ) : reservation.statut == 2 ? (
-            <Button
-              type="rejeter"
-              onClick={() =>
-                handle_show_comment_rejete(
-                  reservation.code_reservation,
-                  reservation.last_statut?.commentaire
-                )
-              }
-              className="px-3 py-1 text-sm"
-            >
-              Voir Rejet
-            </Button>
-          ) : null}
-          {(isSuperAdmin(user.role) ||
-            isAdmin(user.role) ||
-            isCommercial(user.role)) &&
-            reservation.statut == 1 && (
-              <Button
-                type="desister"
-                onClick={() =>
-                  reservation.desistement_att_validation_rejete != null
-                    ? handleDesiste(
-                        reservation.id,
-                        reservation.desistement_att_validation_rejete?.id,
-                        reservation.desistement_att_validation_rejete?.statut,
-                        reservation.desistement_att_validation_rejete
-                          ?.commentaire_rejete
-                      )
-                    : handleDesiste(reservation.id, null, null, null)
-                }
-                className={`px-3 py-1 text-sm ${
-                  reservation.desistement_att_validation_rejete?.statut == 0
-                    ? 'bg-orange-500 hover:bg-orange-600'
-                    : reservation.desistement_att_validation_rejete?.statut == 2
-                    ? 'bg-red-500 hover:bg-red-600'
-                    : 'bg-gray-500 hover:bg-gray-600'
-                }`}
-                title={
-                  reservation.desistement_att_validation_rejete?.statut == 0
-                    ? 'désistement en attente'
-                    : reservation.desistement_att_validation_rejete?.statut == 2
-                    ? 'Désistement rejeté'
-                    : 'Désister la réservation'
-                }
-              >
-                {reservation.desistement_att_validation_rejete?.statut == 0
-                  ? 'En Attente'
-                  : reservation.desistement_att_validation_rejete?.statut == 2
-                  ? 'Rejeté'
-                  : 'Désister'}
-              </Button>
-            )}
-          {reservation?.etat == 1 && reservation?.contrat_vente == null && (
-            <div className="flex justify-end">
-              <Button type="edit" onClick={() => handleEdit(reservation.id)}>
-                Modifier
-              </Button>
-            </div>
           )}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -533,6 +545,18 @@ const DetailTabComponent = ({
               av_id={av_id}
               onClose={() => setOpen_v_reservation(false)}
               closeParentModal={() => setOpen_v_reservation(false)} // Add this prop
+            />
+          </Modal>
+        </>
+      )}
+      {/* pour relance reservation rejete */}
+      {open_dialog_rejete && (
+        <>
+          <Modal isVisible={true} onClose={() => setOpen_dialog_rejete(false)}>
+            <Modal_Relance
+              text={text_rejete}
+              id={reservation.id}
+              onClose={() => setOpen_dialog_rejete(false)}
             />
           </Modal>
         </>
