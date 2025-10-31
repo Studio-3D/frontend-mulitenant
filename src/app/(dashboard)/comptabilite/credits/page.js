@@ -33,9 +33,6 @@ const CreditsPage = () => {
   return (
     <div >
       
-      <ComptabiliteTabsNav />
-      
-      <CreditsManager userRole={user?.role} />
     </div>
   );
 };
