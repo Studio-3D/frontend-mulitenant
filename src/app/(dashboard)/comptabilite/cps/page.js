@@ -32,10 +32,7 @@ const CpsPage = () => {
 
   return (
     <div >
-      
-      <ComptabiliteTabsNav />
-      
-      <CpsManager userRole={user?.role} />
+    
     </div>
   );
 };
