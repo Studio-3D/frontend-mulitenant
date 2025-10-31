@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useProjet } from '@/context/ProjetContext';
 import { APIURL, RESOURCE_URL } from '@/configs/api';
@@ -9,7 +9,7 @@ import Table from '@/components/Table';
 import FacturesFilter from './FacturesFilter';
 import FacturesForm from './FacturesForm';
 import { toast } from 'react-hot-toast';
-import { PencilLine, Trash, Trash2 } from 'lucide-react';
+import { PencilLine, Trash2 } from 'lucide-react';
 import Modal from '@/components/Modal';
 import { format } from 'date-fns';
 import { MODE_PAIEMENT } from '@/configs/enum';
@@ -36,12 +36,7 @@ const FacturesManager = ({ decompteId, montantDecompte, montantPaye }) => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const action = searchParams.get('action');
-  const id = searchParams.get('id');
-  const queryDecompteId = searchParams.get('decompteId');
-  const queryMontantDecompte = searchParams.get('montantDecompte');
-
+  
   const accesstoken = localStorage.getItem('accessToken');
 
   const entity = {
@@ -49,6 +44,7 @@ const FacturesManager = ({ decompteId, montantDecompte, montantPaye }) => {
     dataKey: 'data',
     searchFields: [''],
   };
+  
   useEffect(() => {
     if (selectedProjet && selectedProjet.id) {
       fetchData_table_by_projet(
@@ -75,17 +71,7 @@ const FacturesManager = ({ decompteId, montantDecompte, montantPaye }) => {
   ]);
 
   useEffect(() => {
-    if (action === 'edit' && id) {
-      handleEditFacture(id);
-    } else if (action === 'add') {
-      setShowFormModal(true);
-      setCurrentFacture(null);
-    }
-  }, [action, id]);
-
-  useEffect(() => {
     if (showFormModal) {
-      // Add this debug message when form modal is shown
       console.log('Form modal is open, should fetch fournisseurs data');
     }
   }, [showFormModal]);
@@ -93,6 +79,15 @@ const FacturesManager = ({ decompteId, montantDecompte, montantPaye }) => {
   const handleFilterChange = (values) => {
     setFilterValues(values);
     setCurrentPage(1);
+  };
+
+  const handleAddFacture = (e) => {
+    if (e) {
+      e.preventDefault(); // Prevent default link behavior
+      e.stopPropagation(); // Stop event propagation
+    }
+    setCurrentFacture(null);
+    setShowFormModal(true);
   };
 
   const handleEditFacture = (id) => {
@@ -110,6 +105,7 @@ const FacturesManager = ({ decompteId, montantDecompte, montantPaye }) => {
         console.error('Error fetching facture:', error);
       });
   };
+
   const handleDeleteFacture = (id) => {
     const facture = data.find((f) => f.id === id);
     setFactureToDelete(facture);
@@ -118,8 +114,13 @@ const FacturesManager = ({ decompteId, montantDecompte, montantPaye }) => {
 
   const handleFormSave = () => {
     setShowFormModal(false);
+    setCurrentFacture(null);
     setRefreshData((prev) => !prev);
-    router.push('/comptabilite/factures');
+  };
+
+  const handleFormCancel = () => {
+    setShowFormModal(false);
+    setCurrentFacture(null);
   };
 
   const handleFileClick = (fileType, filename) => {
@@ -169,7 +170,7 @@ const FacturesManager = ({ decompteId, montantDecompte, montantPaye }) => {
       render: (row) =>
         row.piece_jointe ? (
           <span
-            className="text-blue-700  cursor-pointer font-medium"
+            className="text-blue-700 cursor-pointer font-medium"
             onClick={() => handleFileClick('facture', row.piece_jointe)}
           >
             {row.piece_jointe}
@@ -209,7 +210,7 @@ const FacturesManager = ({ decompteId, montantDecompte, montantPaye }) => {
       render: (row) =>
         row.pj_paiement ? (
           <span
-            className="text-blue-700  cursor-pointer font-medium"
+            className="text-blue-700 cursor-pointer font-medium"
             onClick={() => handleFileClick('paiement', row.pj_paiement)}
           >
             {row.pj_paiement}
@@ -226,14 +227,14 @@ const FacturesManager = ({ decompteId, montantDecompte, montantPaye }) => {
           <button
             onClick={() => handleEditFacture(row.id)}
             title="Modifier"
-            className="flex items-center gap-1  text-yellow-500  hover:text-yellow-700"
+            className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
           >
             <PencilLine className="w-4 h-4" />
           </button>
           <button
             onClick={() => handleDeleteFacture(row.id)}
             title="Supprimer"
-            className="flex items-center gap-1  !text-red-500  hover:text-red-700"
+            className="flex items-center gap-1 !text-red-500 hover:text-red-700"
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -282,10 +283,6 @@ const FacturesManager = ({ decompteId, montantDecompte, montantPaye }) => {
     return true;
   };
 
-  const addButtonLink = queryDecompteId
-    ? `/comptabilite/factures?action=add&decompteId=${queryDecompteId}&montantDecompte=${queryMontantDecompte}`
-    : '/comptabilite/factures?action=add';
-
   return (
     <div className="relative bg-white px-4 py-4">
       <Table
@@ -305,33 +302,26 @@ const FacturesManager = ({ decompteId, montantDecompte, montantPaye }) => {
         currentPage={currentPage}
         rowsPerPage={rowsPerPage}
         enableExport={true}
-        addLink={showAddButton() ? addButtonLink : null}
+        addLink={showAddButton() ? {
+          pathname: '#', // Use hash to prevent navigation
+          onClick: handleAddFacture
+        } : null}
         filterComponent={
           <FacturesFilter
             onSubmit={handleFilterChange}
             initialValues={filterValues}
           />
         }
-        // Convert 0-indexed to 1-indexed for display
       />
 
       {showFormModal && (
-        <Modal
-          isVisible={true}
-          onClose={() => {
-            setShowFormModal(false);
-            router.push('/comptabilite/factures');
-          }}
-        >
+        <Modal isVisible={true} onClose={handleFormCancel}>
           <FacturesForm
             facture={currentFacture}
-            decompteId={queryDecompteId || decompteId}
-            montantDecompte={queryMontantDecompte || montantDecompte}
+            decompteId={decompteId}
+            montantDecompte={montantDecompte}
             onSave={handleFormSave}
-            onCancel={() => {
-              setShowFormModal(false);
-              router.push('/comptabilite/factures');
-            }}
+            onCancel={handleFormCancel}
           />
         </Modal>
       )}
@@ -345,7 +335,6 @@ const FacturesManager = ({ decompteId, montantDecompte, montantPaye }) => {
           entityId={factureToDelete.id}
           onDeleted={() => {
             setRefreshData((prev) => !prev);
-            router.push('/comptabilite/factures');
           }}
         />
       )}

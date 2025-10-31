@@ -33,9 +33,7 @@ const FacturesPage = () => {
 
   return (
     <div className="">
-      <ComptabiliteTabsNav />
 
-      <FacturesManager />
     </div>
   );
 };

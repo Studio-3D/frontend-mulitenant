@@ -33,9 +33,7 @@ const DecomptesPage = () => {
 
   return (
     <div>
-      <ComptabiliteTabsNav />
-
-      <DecomptesManager  />
+     
     </div>
   );
 };
