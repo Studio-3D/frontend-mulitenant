@@ -18,6 +18,7 @@ export const CompromisVentesTab = ({
   reservationData,
   user,
   accessToken: propAccessToken,
+  onCompromisCreated, // Ajouter cette prop
 }) => {
   const pusher_key_attestation_vente =
     process.env.NEXT_PUBLIC_PUSHER_APP_KEY_ATTESTATION_VENTE;
@@ -97,6 +98,10 @@ export const CompromisVentesTab = ({
         formData,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
+        // Émettre l'événement vers le parent
+      if (onCompromisCreated) {
+        onCompromisCreated();
+      }
       fetchData();
     } catch (err) {
       if (err.response?.status == 422) handleError(err.response.data.errors);

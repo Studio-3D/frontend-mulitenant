@@ -38,19 +38,48 @@ const Res_Show = () => {
   const userRole = user.role;
   const accessToken = token || localStorage.getItem('accessToken');
 
-  // Function to reload reservation data
-  const reloadReservationData = () => {
+  // AJOUTER: État pour suivre si un compromis a été créé
+  const [hasCompromis, setHasCompromis] = useState(false);
+  const [hasContrat, setHasContrat] = useState(false);
+
+  // AJOUTER: Fonction pour gérer la création de compromis
+  const handleCompromisCreated = () => {
+    setHasCompromis(true);
+    // Optionnel: Mettre à jour les données de réservation
     fetchData();
   };
+
+  const handleContratCreated = () => {
+    setHasContrat(true);
+    fetchData();
+  };
+
   // In Res_Show component where reste==0 dont reload page// and if on submit contrat de vente
+  // Modifier updateReservationData pour inclure compromis et contrat
   const updateReservationData = (newData) => {
     setReservationData((prev) => ({
       ...prev,
       ...newData,
     }));
+
+    // Si les nouvelles données incluent un compromis, mettre à jour l'état
+    if (newData.reservation?.compromis_vente) {
+      setHasCompromis(true);
+    }
+
+    // Si les nouvelles données incluent un contrat, mettre à jour l'état
+    if (newData.reservation?.contrat_vente) {
+      setHasContrat(true);
+    }
   };
+
+  // Function to reload reservation data
+  const reloadReservationData = () => {
+    fetchData();
+  };
+
   // In Res_Show component
-/*useEffect(() => {
+  /*useEffect(() => {
   let lastFetchTime = 0;
   const FETCH_COOLDOWN = 2000; // 3 seconds cooldown
 
@@ -96,7 +125,6 @@ const Res_Show = () => {
       if (oldProjetId) {
         // Projet a changé
 
-       
         router.push('/ventes/reservations');
       }
       setOldProjetId(selectedProjet.id);
@@ -126,6 +154,8 @@ const Res_Show = () => {
       });
 
       setReservationData(response.data);
+      setHasCompromis(!!response.data?.reservation?.compromis_vente);
+      setHasContrat(!!response.data?.reservation?.contrat_vente);
       setSum_av(response.data.sum_avances_valides);
     } catch (error) {
       console.error('Full error details:', error);
@@ -340,6 +370,7 @@ const Res_Show = () => {
             reservationData={reservationData}
             user={user}
             accessToken={accessToken}
+            onCompromisCreated={handleCompromisCreated} // Ajouter cette prop
           />
         );
       case 'contract':
@@ -349,6 +380,7 @@ const Res_Show = () => {
             user={user}
             accessToken={accessToken}
             updateReservationData={updateReservationData} // Add this line
+            onContratCreated={handleContratCreated} // Ajouter cette prop
           />
         );
       case 'transfert':
@@ -383,6 +415,8 @@ const Res_Show = () => {
           <ReservationHeader
             reservationData={reservationData}
             userRole={userRole}
+            hasCompromis={hasCompromis} // Passer la prop
+            hasContrat={hasContrat} // Passer la prop
           />
           <div className="bg-white rounded-lg shadow-md mt-6">
             <TabNavigation

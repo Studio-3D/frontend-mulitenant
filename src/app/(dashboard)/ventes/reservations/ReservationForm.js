@@ -3794,7 +3794,7 @@ export default function ReservationForm({ id }) {
                             className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                           />
                           <label
-                            htmlFor="sr"
+                            htmlFor="check_montant"
                             className="ml-2 block text-sm text-gray-700"
                           >
                             Voulez vous Enregistrer la Réservation sans montant?
@@ -3807,7 +3807,7 @@ export default function ReservationForm({ id }) {
                   <TextField
                     label="Commentaire:"
                     name="commentaireAvance"
-                    required={watch('check_montant') == true ? true : false}
+                    required={watch('avance') == 0 || watch('check_montant') ? true : false}
                     multi={true} // Set this to true if you want a multi-line textarea, else leave it out or false
                     control={control} // Passed from useForm hook
                     errors={errors} // Validation errors from React Hook Form

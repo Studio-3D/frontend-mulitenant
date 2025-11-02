@@ -13,9 +13,14 @@ import {
 } from 'lucide-react';
 import LoadingSpin from '@/components/LoadingSpin';
 import { useRouter } from 'next/navigation';
-import ReservationSteps  from './ReservationSteps'
+import ReservationSteps from './ReservationSteps';
 
-export const ReservationHeader = ({ reservationData, userRole }) => {
+export const ReservationHeader = ({
+  reservationData,
+  userRole,
+  hasCompromis,
+  hasContrat, // AJOUTER CETTE PROP
+}) => {
   const router = useRouter();
   // Add null checks and default values
   if (!reservationData) {
@@ -32,11 +37,9 @@ export const ReservationHeader = ({ reservationData, userRole }) => {
     ? new Date(reservation.updated_at).toLocaleDateString('fr-FR')
     : 'N/A';
 
-
   return (
     <>
       <div className="bg-white rounded-lg shadow-md p-6">
-         
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <Home
@@ -70,9 +73,11 @@ export const ReservationHeader = ({ reservationData, userRole }) => {
             </span>
           </div>
         </div>
-         <ReservationSteps reservation={reservation} />
-
-      
+        <ReservationSteps
+          reservation={reservation}
+          hasCompromis={hasCompromis}
+          hasContrat={hasContrat}
+        />
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
           <div className="bg-green-50 p-3 rounded-md">
@@ -115,7 +120,6 @@ export const ReservationHeader = ({ reservationData, userRole }) => {
           </div>
         </div>
       </div>
-      
     </>
   );
 };
