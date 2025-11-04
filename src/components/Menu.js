@@ -331,7 +331,7 @@ const Menu = () => {
         },
         {
           label: 'Cumul',
-          icon: <BarChart3 size={20} />, // 📊 Cumul
+          icon: <BarChart3 size={20} />,
           href: '/commissions/commissionCumul',
           needsProjet: true,
           needsSociete: user.role === 1,
@@ -342,7 +342,7 @@ const Menu = () => {
     {
       label: 'Reclamations',
       icon: <FileText />,
-      href: '/Reclamations',
+      href: '/reclamations',
       needsSociete: user.role === 1,
       needsProjet: true,
     },
