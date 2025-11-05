@@ -25,7 +25,7 @@ export default function RembTable({ etat }) {
   const { selectedProjet } = useProjet();
 
   const { user, token } = useAuth();
-  const userRole = user.role;
+  const userRole = user?.role;
   const accessToken = token || localStorage.getItem('accessToken');
   const FileUrl = process.env.NEXT_PUBLIC_IMG_URL;
 

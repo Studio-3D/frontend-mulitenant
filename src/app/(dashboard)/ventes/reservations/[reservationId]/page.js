@@ -35,7 +35,7 @@ const Res_Show = () => {
   const [error, setError] = useState(null);
   const { reservationId } = useParams();
   const { user, token } = useAuth();
-  const userRole = user.role;
+  const userRole = user?.role;
   const accessToken = token || localStorage.getItem('accessToken');
 
   // AJOUTER: État pour suivre si un compromis a été créé
@@ -63,12 +63,12 @@ const Res_Show = () => {
     }));
 
     // Si les nouvelles données incluent un compromis, mettre à jour l'état
-    if (newData.reservation?.compromis_vente) {
+    if (newData.reservation?.compromis_vente?.compromis_signee != null) {
       setHasCompromis(true);
     }
 
     // Si les nouvelles données incluent un contrat, mettre à jour l'état
-    if (newData.reservation?.contrat_vente) {
+    if (newData.reservation?.contrat_vente?.piece_jointe != null) {
       setHasContrat(true);
     }
   };
@@ -152,10 +152,10 @@ const Res_Show = () => {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-
+      console.log('token==+>' + accessToken);
       setReservationData(response.data);
-      setHasCompromis(!!response.data?.reservation?.compromis_vente);
-      setHasContrat(!!response.data?.reservation?.contrat_vente);
+      setHasCompromis(!!response.data?.reservation?.compromis_vente?.compromis_signee);
+      setHasContrat(!!response.data?.reservation?.contrat_vente?.piece_jointe);
       setSum_av(response.data.sum_avances_valides);
     } catch (error) {
       console.error('Full error details:', error);
@@ -206,10 +206,10 @@ const Res_Show = () => {
       sum_avances_valides: sum,
       reservation: {
         ...prev.reservation,
-        avances: {
+        /*avances: {
           ...prev.reservation.avances,
           length: count,
-        },
+        },*/
       },
     }));
   };
@@ -218,18 +218,18 @@ const Res_Show = () => {
       ...prev,
       reservation: {
         ...prev.reservation,
-        rdv: {
+        /*rdv: {
           ...prev.reservation.rdv,
           length: count,
-        },
+        },*/
       },
     }));
   };
   // Prepare tab counts and visibility
   const getTabConfig = () => {
     if (!reservationData) return { tabs: [], counts: {} };
-
-    const counts = {
+    const counts = {};
+    /* const counts = {
       acquereurs:
         reservationData?.reservation?.etat == 1
           ? reservationData?.reservation?.aquereurs?.length
@@ -240,7 +240,7 @@ const Res_Show = () => {
           : reservationData?.reservation?.piece_jointe_desiste?.length || 0,
       avances: reservationData?.reservation?.avances?.length || 0,
       rendezVous: reservationData?.reservation?.rdv?.length || 0,
-    };
+    };*/
 
     const baseTabs = [
       { id: 'detail', label: 'Détail réservation', icon: 'file-text' },
@@ -277,6 +277,7 @@ const Res_Show = () => {
         id: 'compromisVentes',
         label: 'Attestation de vente',
         icon: 'file-signature',
+        // Condition corrigée - afficher si user a le droit ET (il y a des avances OU un compromis existe déjà)
         visible: userRole <= 3 && reservationData.sum_avances_valides > 0,
       },
       {
@@ -318,7 +319,11 @@ const Res_Show = () => {
           />
         );
       case 'historiques':
-        return <HistoriquesTab reservationData={reservationData} />;
+        return (
+          <HistoriquesTab
+            reservationData={reservationData?.reservation?.historiques}
+          />
+        );
       case 'acquereurs':
         return (
           <AcquereursTab
@@ -423,7 +428,7 @@ const Res_Show = () => {
               activeTab={activeTab}
               setActiveTab={setActiveTab}
               tabs={tabs}
-              counts={counts}
+              // counts={counts}
             />
             <div className="p-6">{renderTabContent()}</div>
           </div>

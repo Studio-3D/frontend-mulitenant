@@ -46,11 +46,11 @@ export const CompromisVentesTab = ({
     errors: null,
     openPreview: false,
     nb_compromis_annule: 0,
-    reservationDetails: null,
-    bien: '',
-    sum_avances_valides: 0,
-    clients: [],
-    etat_res: 1,
+    reservationDetails: reservationData?.reservation,
+    bien: reservationData.reservation?.bien,
+    sum_avances_valides: reservationData?.sum_avances_valides,
+    clients:reservationData.reservation?.aquereurs || [],
+    etat_res: reservationData.reservation?.etat,
   });
 
   // Form fields
@@ -98,10 +98,10 @@ export const CompromisVentesTab = ({
         formData,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
-        // Émettre l'événement vers le parent
-      if (onCompromisCreated) {
+        // Émettre l'événement vers le parent si on store compromis step appttesation be green
+      /*if (onCompromisCreated) {
         onCompromisCreated();
-      }
+      }*/
       fetchData();
     } catch (err) {
       if (err.response?.status == 422) handleError(err.response.data.errors);
@@ -113,34 +113,31 @@ export const CompromisVentesTab = ({
     color: 'rgb(42 44 62)',
   };
   // Fetch data
-  const fetchData = async () => {
-    setData((prev) => ({ ...prev, loading: true }));
+const fetchData = async () => {
+  setData((prev) => ({ ...prev, loading: true }));
 
-    try {
-      if (!reservationId) return;
+  try {
+    if (!reservationId) return;
 
-      const response = await axios.get(
-        `${apiUrl}/get_compromis_by_reservation/${reservationId}`,
-        { headers: { Authorization: `Bearer ${accessToken}` } }
-      );
+    const response = await axios.get(
+      `${apiUrl}/get_compromis_by_reservation/${reservationId}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
 
-      const resData = response.data;
-      setData((prev) => ({
-        ...prev,
-        compromis: resData.compromis,
-        nb_compromis_annule: resData.compromis_annule_count,
-        reservationDetails: resData.reservation.original.reservation,
-        sum_avances_valides: resData.reservation.original.sum_avances_valides,
-        clients: resData.reservation.original.reservation.aquereurs,
-        etat_res: resData.reservation.original.reservation.etat,
-        bien: resData.reservation.original.propriete_dite_bien.original,
-      }));
-    } catch (error) {
-      console.error('Error:', error);
-    } finally {
-      setData((prev) => ({ ...prev, loading: false }));
-    }
-  };
+    const resData = response.data;
+    
+    // Fix: Access the data directly from resData, not from resData.reservation.original
+    setData((prev) => ({
+      ...prev,
+      compromis: resData.compromis,
+      nb_compromis_annule: resData.compromis_annule_count,
+    }));
+  } catch (error) {
+    console.error('Error:', error);
+  } finally {
+    setData((prev) => ({ ...prev, loading: false }));
+  }
+};
 
   useEffect(() => {
     fetchData();
@@ -259,6 +256,7 @@ export const CompromisVentesTab = ({
         reservationData={reservationData}
         data_c={data.compromis}
         nb_compromis_annule={data.nb_compromis_annule}
+        onCompromisCreated={onCompromisCreated}
       />
     );
   }
@@ -421,7 +419,7 @@ export const CompromisVentesTab = ({
                       >
                         Un Appartement
                         <b> n° {data.reservationDetails?.bien.numero}</b> sous
-                        le nom :<b>{data.bien} </b>. en copropriété sis à FES,
+                        le nom :<b>{data.reservationDetails?.bien.propriete_dite_bien} </b>. en copropriété sis à FES,
                         commune a, Al Amir à distraire des propriétés dénommées
                         : -« » objet du titre foncier mère numéro 82493/47 Cet
                         Appartement sera situé au{' '}
@@ -798,7 +796,7 @@ export const CompromisVentesTab = ({
                 control={false}
                 label="Projet :"
                 name="projet"
-                value={data.reservationDetails?.bien?.projet?.nom || ''}
+                value={data.reservationDetails?.projet?.nom || ''}
                 disabled
                 className="bg-gray-50"
               />
@@ -806,7 +804,7 @@ export const CompromisVentesTab = ({
                 control={false}
                 label="Bien :"
                 name="bien"
-                value={NomBienComplet(data.reservationDetails?.bien)}
+                value={NomBienComplet(data.bien)}
                 disabled
                 className="bg-gray-50"
               />

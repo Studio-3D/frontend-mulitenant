@@ -1,8 +1,9 @@
 'use client';
 import React, { useState } from 'react';
+import BreadCrumb from '../../app/(dashboard)/navigation/BreadCrumb';
+import { ENDPOINTS } from '../../configs/api';
 
 import {
-  FileTextIcon,
   InfoIcon,
   HistoryIcon,
   UsersIcon,
@@ -39,6 +40,14 @@ export const ReservationHeader = ({
 
   return (
     <>
+      <div className="">
+        <div className="flex items-center justify-start mb-2">
+          <BreadCrumb
+            baseUrl={ENDPOINTS.VENTE + '?tab=reservations'}
+            step={`Détail Réservation`}
+          />
+        </div>
+      </div>
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
@@ -66,12 +75,12 @@ export const ReservationHeader = ({
               </p>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
+          {/*<div className="flex items-center space-x-2">
             <InfoIcon className="h-5 w-5 text-blue-500" />
             <span className="text-gray-600">
               Dernière mise à jour: {lastUpdated}
             </span>
-          </div>
+          </div>*/}
         </div>
         <ReservationSteps
           reservation={reservation}
@@ -79,7 +88,7 @@ export const ReservationHeader = ({
           hasContrat={hasContrat}
         />
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+       {/*} <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
           <div className="bg-green-50 p-3 rounded-md">
             <div className="flex items-center gap-2">
               <CalendarIcon className="h-5 w-5 text-green-500" />
@@ -118,7 +127,7 @@ export const ReservationHeader = ({
               {reservation?.avances?.length || 0}
             </p>
           </div>
-        </div>
+        </div>*/}
       </div>
     </>
   );

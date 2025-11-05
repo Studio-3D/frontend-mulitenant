@@ -24,7 +24,7 @@ import { useProjet } from '@/context/ProjetContext';
 export default function PenalitesTable() {
   // Authentication and state management
   const { user, token } = useAuth();
-  const userRole = user.role;
+  const userRole = user?.role;
   const accessToken = token || localStorage.getItem('accessToken');
   const etat_penalite = JSON.parse(localStorage.getItem('etat_penalite')) || 1;
   const router = useRouter();

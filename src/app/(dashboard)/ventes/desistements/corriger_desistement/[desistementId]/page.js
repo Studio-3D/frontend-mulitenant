@@ -447,14 +447,14 @@ export default function Page() {
         },
       });
 
-      /* if (user.role <= 2) {
+       if (user?.role <= 2) {
         localStorage.setItem('etat_dst', '1');
-        router.push('/ventes/desistements');
+        router.push('/ventes?tab=desistements');
       } else {
         //commercial
         localStorage.setItem('etat_dst', '5');
-        router.push('/ventes/desistements/attente_encours');
-      }*/
+         router.push('/ventes?tab=validation&subtab=desistements-attente-encours');
+      }
     } catch (error) {
       console.error('Error submitting form:', error);
     } finally {

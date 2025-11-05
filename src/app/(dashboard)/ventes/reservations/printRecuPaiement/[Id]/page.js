@@ -138,10 +138,34 @@ const PrevisualiserRecu = () => {
             formValues.reservationDetails.aquereurs[index]?.client;
 
           if (originalClient) {
+              // Convert civilite string to number
+          let civiliteValue;
+          switch (clientData.civilite) {
+            case 'MR':
+            case 'Mr':
+            case 'mr':
+            case '1':
+              civiliteValue = 1;
+              break;
+            case 'MME':
+            case 'Mme':
+            case 'mme':
+            case '2':
+              civiliteValue = 2;
+              break;
+            case 'MLLE':
+            case 'Mlle':
+            case 'mlle':
+            case '3':
+              civiliteValue = 3;
+              break;
+            default:
+              civiliteValue = 1; // Default to Mr
+          }
             const updatedClient = {
               nom: clientData.nom,
               prenom: clientData.prenom,
-              civilite: clientData.civilite,
+              civilite: civiliteValue,
               type_client: clientData.type_client,
               telephone_num1: clientData.telephone_num1,
               situation_familliale: clientData.situation_familliale,
@@ -395,9 +419,9 @@ const PrevisualiserRecu = () => {
                     <label className="mr-3 flex items-center">
                       <input
                         type="radio"
-                        checked={clientData.civilite == 'Mr'}
+                        checked={clientData.civilite == '1'}
                         onChange={() =>
-                          handleChangeClientList(index, 'civilite', 'Mr')
+                          handleChangeClientList(index, 'civilite', '1')
                         }
                         className="mr-1"
                       />
@@ -406,9 +430,9 @@ const PrevisualiserRecu = () => {
                     <label className="mr-3 flex items-center">
                       <input
                         type="radio"
-                        checked={clientData.civilite == 'Mme'}
+                        checked={clientData.civilite == '2'}
                         onChange={() =>
-                          handleChangeClientList(index, 'civilite', 'Mme')
+                          handleChangeClientList(index, 'civilite', '2')
                         }
                         className="mr-1"
                       />
@@ -830,9 +854,9 @@ const PrevisualiserRecu = () => {
                 return (
                   <Fragment key={index}>
                     <strong>
-                      {clientData.civilite == 'Mr'
+                      {clientData.civilite == '1'
                         ? 'Mr'
-                        : clientData.civilite == 'Mme'
+                        : clientData.civilite == '2'
                         ? 'Mme'
                         : 'Mlle'}{' '}
                       {clientData.nom} {clientData.prenom}

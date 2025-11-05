@@ -455,7 +455,7 @@ export function Desistement_Definitif({
                                     handleModeChange(index, 'direct');
                                     setValue(
                                       `inputList_remb.${index}.reste_a_rembourse`,
-                                      item.reste_a_rembourse.toFixed(2)
+                                      item?.reste_a_rembourse?.toFixed(2)
                                     );
                                   }}
                                   className="text-blue-600 focus:ring-blue-500"

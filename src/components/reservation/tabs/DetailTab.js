@@ -24,7 +24,6 @@ const DetailTabComponent = ({
   onReservationUpdate,
 }) => {
   const [open_dialog_rejete, setOpen_dialog_rejete] = useState(false);
-  const [text_rejete, setText_Rejete] = useState(false);
 
   const router = useRouter();
   const { user } = useAuth();
@@ -131,10 +130,7 @@ const DetailTabComponent = ({
     setOpen_info(true);
   };
 
-  const handle_show_comment_rejete = (code, msg) => {
-    setText_Rejete(
-      'La Réservation ' + code + ' est rejetée en raison  de ' + msg
-    );
+  const handle_show_comment_rejete = () => {
     setOpen_dialog_rejete(true);
   };
 
@@ -202,18 +198,13 @@ const DetailTabComponent = ({
                     </Button>
                   )}
                 </>
-              ) : reservation.statut == 2 ? (
+              ) : reservation.statut == 2 && isCommercial(user.role) ? (
                 <Button
                   type="rejeter"
-                  onClick={() =>
-                    handle_show_comment_rejete(
-                      reservation.code_reservation,
-                      reservation.last_statut?.commentaire
-                    )
-                  }
+                  onClick={() => handle_show_comment_rejete()}
                   className="px-3 py-1 text-sm"
                 >
-                  Voir Rejet
+                  Relancer le Rejet
                 </Button>
               ) : null}
               {(isSuperAdmin(user.role) ||
@@ -273,8 +264,25 @@ const DetailTabComponent = ({
             </>
           )}
         </div>
+        {reservation.statut == 2 && (
+          <div className="mt-4 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <X className="h-5 w-5 text-red-400" />
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-red-800">
+                  La Réservation est rejetée en raison de :{' '}
+                  {reservation?.last_statut?.commentaire}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Left Column */}
+
           <div className="space-y-4">
             {/* General Information Section */}
             <div>
@@ -554,7 +562,6 @@ const DetailTabComponent = ({
         <>
           <Modal isVisible={true} onClose={() => setOpen_dialog_rejete(false)}>
             <Modal_Relance
-              text={text_rejete}
               id={reservation.id}
               onClose={() => setOpen_dialog_rejete(false)}
             />

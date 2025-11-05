@@ -28,8 +28,8 @@ export const ContractTab = ({
   const pusher_key_contrat_vente =
     process.env.NEXT_PUBLIC_PUSHER_APP_KEY_CONTRAT_VENTE;
   const FileUrl = process.env.NEXT_PUBLIC_IMG_URL;
-  const [data_reservation, setData_reservation] = useState(null);
-
+  const data_reservation = reservationData?.reservation;
+  const etat_res = reservationData?.reservation?.etat;
   const [loading_btn, setLoading_btn] = useState(false);
   const reservationId = reservationData?.reservation?.id;
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -38,15 +38,18 @@ export const ContractTab = ({
   const [date_sign_mo, setDate_sign_mo] = useState(null);
   const [date_enreg, setDate_enreg] = useState(null);
   const [commentaire, setCommentaire] = useState(null);
+  const [commentaire_form, setCommentaire_form] = useState(null);
+  const [date_sign_client_form, setDate_sign_client_form] = useState(null);
+  const [date_sign_mo_form, setDate_sign_mo_form] = useState(null);
+  const [date_enreg_form, setDate_enreg_form] = useState(null);
+
   const [loading, setLoading] = useState(true);
-  const [bien, setBien] = useState('');
-  const [sum_avances_valides, setSum_av_valide] = useState(0);
+  const sum_avances_valides = reservationData?.sum_avances_valides;
   const [contrat_sign, set_contrat_signe] = useState(null);
   const [contrat_id, setContrat_id] = useState(null);
   const [num_recu, set_num_recu] = useState(null);
   const [respo, set_respo] = useState(null);
 
-  const [etat_res, setEtat_res] = useState(1);
   const [errors, setErrors] = useState(null);
   const [open_edit, setOpen_edit] = useState(false);
   const [fichier_scanner, setfichier_scanner] = useState(null);
@@ -74,7 +77,7 @@ export const ContractTab = ({
     formData.append('date_sign_client', date_sign_client);
     formData.append('date_sign_mo', date_sign_mo);
     formData.append('date_enreg', date_enreg);
-    formData.append('commentaire', commentaire);
+   formData.append('commentaire', commentaire || '');
 
     axios
       .post(`${apiUrl}/store_contrat_vente/${reservationId}`, formData, {
@@ -84,11 +87,10 @@ export const ContractTab = ({
         fetchData();
         setLoading_btn(false);
         showToast('Contrat ajouté avec succès');
-        // AJOUTER: Émettre l'événement vers le parent
+        /*// AJOUTER: Émettre l'événement vers le parent si on scanne contrat step contrat green
         if (onContratCreated) {
           onContratCreated();
-        }
-
+        }*/
         if (updateReservationData) {
           updateReservationData({
             reservation: {
@@ -116,7 +118,7 @@ export const ContractTab = ({
             headers: { Authorization: `Bearer ${accessToken}` },
           })
           .then((response) => {
-            setCommentaire(response.data.contrat?.commentaire);
+            setCommentaire(response.data.contrat?.commentaire||'');
             setContrat_id(response.data.contrat?.id);
             set_num_recu(response.data.contrat?.num_recu);
             set_respo(
@@ -127,15 +129,12 @@ export const ContractTab = ({
             setDate_sign_client(response.data.contrat?.date_sign_client);
             setDate_sign_mo(response.data.contrat?.date_sign_mo);
             setDate_enreg(response.data.contrat?.date_enreg);
+
+            setDate_sign_client_form(response.data.contrat?.date_sign_client);
+            setDate_sign_mo_form(response.data.contrat?.date_sign_mo);
+            setDate_enreg_form(response.data.contrat?.date_enreg);
+
             set_contrat_signe(response.data.contrat?.piece_jointe);
-            setData_reservation(response.data.reservation.original.reservation);
-            setEtat_res(response.data.reservation.original.reservation.etat);
-            setBien(
-              response.data.reservation.original.propriete_dite_bien.original
-            );
-            setSum_av_valide(
-              response.data.reservation.original.sum_avances_valides
-            );
             setLoading(false);
           })
           .catch((error) => {
@@ -188,7 +187,6 @@ export const ContractTab = ({
 
       try {
         const channel = pusher.subscribe(channelName);
-        console.log('hoop');
 
         channel.bind('ContratVenteEvent', (data) => {
           // Always refresh when we receive an event for this channel
@@ -249,10 +247,10 @@ export const ContractTab = ({
     e.preventDefault();
 
     const formData = new FormData();
-    formData.append('date_sign_client', date_sign_client);
-    formData.append('date_sign_mo', date_sign_mo);
-    formData.append('date_enreg', date_enreg);
-    formData.append('comment', commentaire);
+    formData.append('date_sign_client', date_sign_client_form);
+    formData.append('date_sign_mo', date_sign_mo_form);
+    formData.append('date_enreg', date_enreg_form);
+    formData.append('comment', commentaire_form);
 
     axios({
       method: 'put',
@@ -268,6 +266,9 @@ export const ContractTab = ({
         setOpen_edit(false);
         fetchData();
         showToast('Modification enregistrée avec succès');
+        /* if (onContratCreated) {
+          onContratCreated();
+        }*/
         setLoading_btn(false);
       })
       .catch((err) => {
@@ -304,6 +305,10 @@ export const ContractTab = ({
         showToast('Fichier scanné avec succès');
         setLoading_scann(false);
         closeScannerPopup();
+        if (onContratCreated) {
+          onContratCreated();
+        }
+
         fetchData();
       })
       .catch((err) => {
@@ -1097,7 +1102,7 @@ export const ContractTab = ({
                     type="date"
                     required
                     defaultValue={date_sign_client}
-                    onChange={(e) => setDate_sign_client(e.target.value)}
+                    onChange={(e) => setDate_sign_client_form(e.target.value)}
                     className="w-full px-4 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:border-[#009FFF]"
                   />
                 </div>
@@ -1110,7 +1115,7 @@ export const ContractTab = ({
                     type="date"
                     required
                     defaultValue={date_sign_mo}
-                    onChange={(e) => setDate_sign_mo(e.target.value)}
+                    onChange={(e) => setDate_sign_mo_form(e.target.value)}
                     className="w-full px-4 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:border-[#009FFF]"
                   />
                 </div>
@@ -1123,7 +1128,7 @@ export const ContractTab = ({
                     type="date"
                     required
                     defaultValue={date_enreg}
-                    onChange={(e) => setDate_enreg(e.target.value)}
+                    onChange={(e) => setDate_enreg_form(e.target.value)}
                     className="w-full px-4 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:border-[#009FFF]"
                   />
                 </div>
@@ -1136,7 +1141,7 @@ export const ContractTab = ({
                 <textarea
                   rows={3}
                   defaultValue={commentaire}
-                  onChange={(e) => setCommentaire(e.target.value)}
+                  onChange={(e) => setCommentaire_form(e.target.value)}
                   className="w-full px-4 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:border-[#009FFF]"
                   placeholder="Ajoutez des notes ou détails importants..."
                 />

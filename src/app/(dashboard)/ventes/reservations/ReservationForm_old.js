@@ -1446,7 +1446,7 @@ export default function ReservationForm({ id }) {
                     biensByProjet={biensByProjet}
                     value={watch('bien_id')}
                     onChange={handleSelectBien}
-                    disabled={isEditing && user.role <= 2 ? true : false}
+                    disabled={isEditing && user?.role <= 2 ? true : false}
                     loading={loading_bien}
                     error={errors['bien_id'] || backendErrors['bien_id']}
                   />
@@ -3662,7 +3662,7 @@ export default function ReservationForm({ id }) {
                             </div>
                           </div>
                         )}
-                        {user.role <= 2 && watch('avance') > 0 && (
+                        {user?.role <= 2 && watch('avance') > 0 && (
                           <>
                             <div className="col-span-3">
                               <h2

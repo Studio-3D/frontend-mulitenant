@@ -239,7 +239,7 @@ export default function Page() {
             : 'Désistement rejeté avec succès';
 
         toast.success(message);
-        router.back(); // Redirect after success
+        router.push('/ventes?tab=validation&subtab=desistements-attente-encours'); // Redirect after success
       });
     } catch (error) {
       console.error('Validation error:', error);
@@ -626,7 +626,7 @@ export default function Page() {
         )}
 
         {/* Form actions - kept for validation/rejection */}
-        {statut_des == 0 && user.role <= 2 && (
+        {statut_des == 0 && user?.role <= 2 && (
           <div className="p-6 border-t border-gray-200">
             {showRejectComment && (
               <div className="py-1 ">

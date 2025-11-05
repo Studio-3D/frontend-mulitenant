@@ -590,7 +590,7 @@ const PenaltyDetails = ({
       )}
     </div>
 
-    {penalite.statut == 0 && user.role <= 2 && (
+    {penalite.statut == 0 && user?.role <= 2 && (
       <div className="flex justify-end pt-4">
         <Button
           type="submit"

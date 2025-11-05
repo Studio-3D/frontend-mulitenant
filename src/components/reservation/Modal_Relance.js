@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { APIURL } from '@/configs/api';
 
-export default function Modal_Relance({ id, onClose, text }) {
+export default function Modal_Relance({ id, onClose }) {
   const { user, token } = useAuth();
   const accessToken = token || localStorage.getItem('accessToken');
 
@@ -51,7 +51,6 @@ export default function Modal_Relance({ id, onClose, text }) {
           </h1>
         </div>
       </div>
-      <p className="text-center text-black mt-2">{text}</p>
       <p className="text-center text-[#878484] mt-2">
         {user.role == 3 && 'Voulez-vous Relancer cette Réservation'}
       </p>

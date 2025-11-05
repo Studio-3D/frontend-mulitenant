@@ -7,10 +7,9 @@ export default function ReservationSteps({
   const { etat, statut, compromis_vente, contrat_vente } = reservation;
   // Utiliser hasCompromis pour forcer la mise à jour si fourni
   const effectiveCompromis =
-    hasCompromis !== undefined ? hasCompromis : compromis_vente;
+    hasCompromis !== undefined ? hasCompromis : (compromis_vente && compromis_vente.compromis_signee !== null);;
   const effectiveContrat =
-    hasContrat !== undefined ? hasContrat : contrat_vente;
-console.log('le compromis==>'+compromis_vente)
+    hasContrat !== undefined ? hasContrat : (contrat_vente && contrat_vente.piece_jointe !== null);
   // Déterminer les couleurs pour chaque étape
   const getStepColor = (step) => {
     // Si l'étape est inférieure à l'étape actuelle, elle doit être verte

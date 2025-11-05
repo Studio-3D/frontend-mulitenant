@@ -1570,7 +1570,7 @@ export default function ReservationForm({ id }) {
 
               <div>
                 <SelectInput
-                  label="Bien:"
+                  label={'Bien :'}
                   name="bien_id"
                   required={true}
                   loading={loading_bien}
@@ -1611,7 +1611,7 @@ export default function ReservationForm({ id }) {
                   error={
                     errors['bien_id']?.message || backendErrors['bien_id']?.[0]
                   }
-                  disabled={isEditing && user.role <= 2}
+                  disabled={(isEditing && user?.role >2 )?true:false}  
                   placeholder="Sélectionnez un bien"
                 />
               </div>
@@ -3914,7 +3914,7 @@ export default function ReservationForm({ id }) {
                             </div>
                           </div>
                         )}
-                        {user.role <= 2 && watch('avance') > 0 && (
+                        {user?.role <= 2 && watch('avance') > 0 && (
                           <>
                             <div className="col-span-3">
                               <h2

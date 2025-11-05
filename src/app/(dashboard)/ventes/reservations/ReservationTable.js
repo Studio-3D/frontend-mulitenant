@@ -594,9 +594,9 @@ const { selectedProjet  } = useProjet();
           enableImport={false}
           showSearch={false}
           addLink={
-            (isSuperAdmin(user.role) ||
-              isAdmin(user.role) ||
-              isCommercial(user.role)) &&
+            (isSuperAdmin(user?.role) ||
+              isAdmin(user?.role) ||
+              isCommercial(user?.role)) &&
             !user_id
               ? getAddLinkForReservation()
               : undefined

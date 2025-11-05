@@ -71,10 +71,10 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
   const [rdvEdit, setRdvEdit] = useState('');
   const [typeEdit, setTypeEdit] = useState('');
   const [commentaire, setCommentaire] = useState('');
-  const [clients, setClients] = useState([]);
+ // const [clients, setClients] = useState([]);
   const [errors, setErrors] = useState(null);
-  const [etatRes, setEtatRes] = useState(1);
-  const [contratVente, setContratVente] = useState(null);
+  const etatRes=reservationData?.reservation?.etat;
+  const contratVente=reservationData?.reservation?.contrat_vente;
   const [isLoading, setIsLoading] = useState(true);
   const [listStatut, setListStatut] = useState([
     { title: 'En_Attente', value: 0 },
@@ -115,22 +115,20 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
         );
 
         const { data } = response;
-        setContratVente(data.contrat_vente);
-        setEtatRes(data.etat_res);
         setRdvs(data.rdv);
         // setHistoriques(data.historiques.data);
         // Notify res show  parent of changes
         if (onRdvChange) {
           onRdvChange(data.rdv.length);
         }
-        const clientsList =
+       /* const clientsList =
           data.last_rdv[0]?.reservation?.aquereurs?.map((aquereur) => ({
             cin: aquereur.client.cin,
             name: aquereur.client.nom,
             prenom: aquereur.client.prenom,
           })) || [];
 
-        setClients(clientsList);
+        setClients(clientsList);*/
         setIsLoading(false);
       }
     } catch (error) {
@@ -367,10 +365,11 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
   return (
     <div className="space-y-6 p-4 min-h-[50vh]">
       {/* Header section */}
+      
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-gray-800 flex items-center">
           <CalendarIcon className="h-5 w-5 mr-2 text-blue-500" />
-          Rendez-vous
+          Rendez-vous 
         </h2>
 
         {etatRes == 1 && contratVente == null && (

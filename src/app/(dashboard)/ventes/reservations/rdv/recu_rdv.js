@@ -117,12 +117,8 @@ const MyDocument = ({ data }) => {
         <View style={styles.section}>
           <Text style={styles.text}>
             La société{' '}
-            <Text style={styles.bold}>{user.societe.raison_sociale}</Text>,
-            représentée par {' '}
-            <Text style={styles.bold}>
-              {data[9]} {data[10]}
-            </Text>
-            , confirme le rendez-vous pour la visite du bien décrit ci-dessous :
+            <Text style={styles.bold}>{user.societe.raison_sociale}</Text>
+            , confirme le rendez-vous  du bien décrit ci-dessous :
           </Text>
 
           <View style={styles.propertyDetails}>
