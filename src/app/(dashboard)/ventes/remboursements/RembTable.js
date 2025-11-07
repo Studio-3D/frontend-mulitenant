@@ -1121,9 +1121,7 @@ export default function RembTable({ etat }) {
               />
             </div>
             <div className="col-span-12">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Banque:
-              </label>
+              
               <SelectInput
                 value={banqueAdd}
                 onChange={(value) => {

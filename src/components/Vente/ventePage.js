@@ -62,12 +62,16 @@ export function VentePage() {
   }, []);
 
   // Add this effect to ensure tab is rendered when active
-  useEffect(() => {
-    if (activeTab && !renderedTabs.current[activeTab]) {
-      console.log('🔍 Initializing tab in renderedTabs:', activeTab);
-      renderedTabs.current = { ...renderedTabs.current, [activeTab]: true };
-    }
-  }, [activeTab]);
+ // Fix: Only initialize the currently active tab
+useEffect(() => {
+  if (activeTab && !renderedTabs.current[activeTab]) {
+    console.log('🔍 Initializing ONLY active tab in renderedTabs:', activeTab);
+    renderedTabs.current = { 
+      ...renderedTabs.current, 
+      [activeTab]: true 
+    };
+  }
+}, [activeTab]);
 
   // Sync URL with tab state - SIMPLIFIED like CRM
   useEffect(() => {

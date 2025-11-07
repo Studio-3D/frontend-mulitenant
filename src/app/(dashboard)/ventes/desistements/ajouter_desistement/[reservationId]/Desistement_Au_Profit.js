@@ -6,7 +6,6 @@ import { lien_parentes, type_dst_dp } from '@/configs/enum';
 import TextField from '@/components/Textfield'; // Import the component
 import { Info } from 'lucide-react';
 import AutocompleteMultipleDes from './AutocompleteMultipleDes';
-import SelectInput from '@/components/SelectInput';
 import Inputs_des_Profit from './Inputs_des_Profit';
 export function Desistement_Au_Profit({
   isEditing,
@@ -46,8 +45,8 @@ export function Desistement_Au_Profit({
   const [inputList, setinputList] = useState([]);
 
   const [errors_dp_proche, setErrors_dp_proche] = useState({
-    telephone: false,
-    percentage: false,
+    telephone: {}, // {0: true, 1: false} - track by index
+    percentage: {}, // {0: true, 1: false} - track by index
     totalPercentage: false,
   });
   const type_dp = watch('type_dp');
@@ -225,16 +224,18 @@ export function Desistement_Au_Profit({
   }, [desisteutrs_profit_dp_partiell, isDataLoaded, setValue]);
 
   const [errors_new_dp_part, setErrors_new_dp_part] = useState({
-    telephone: false,
-    percentage: false,
+    telephone: {}, // {0: true, 1: false} - track by index
+    percentage: {}, // {0: true, 1: false} - track by index
     totalPercentage: false,
   });
+
   const handleinputchange = (e, index) => {
     const { name, value } = e.target;
 
+    // Create new errors structure that tracks by index
     const newErrors = {
-      telephone: false,
-      percentage: false,
+      telephone: { ...errors_dp_proche.telephone },
+      percentage: { ...errors_dp_proche.percentage },
       totalPercentage: false,
     };
 
@@ -252,22 +253,31 @@ export function Desistement_Au_Profit({
         updatedList[fieldIndex][fieldName] = value;
         setinputList(updatedList);
 
-        // Edit mode specific validation
-        if (fieldName == 'telephone_num1') {
-          newErrors.telephone = value.length < 10 || value.length > 14;
-        }
+        // Validate ALL telephone numbers when any field changes
+        updatedList.forEach((item, idx) => {
+          if (item.telephone_num1) {
+            const isValid =
+              item.telephone_num1.length >= 10 &&
+              item.telephone_num1.length <= 14;
+            newErrors.telephone[idx] = !isValid;
+          }
+        });
 
-        if (fieldName == 'pourcentage') {
-          const percentValue = parseInt(value) || 0;
-          newErrors.percentage = percentValue < 0 || percentValue > 100;
+        // Validate ALL percentages when any field changes
+        updatedList.forEach((item, idx) => {
+          if (item.pourcentage !== undefined && item.pourcentage !== null) {
+            const percentValue = parseInt(item.pourcentage) || 0;
+            newErrors.percentage[idx] = percentValue < 0 || percentValue > 100;
+          }
+        });
 
-          const totalPercentage = updatedList.reduce((sum, item) => {
-            return sum + parseInt(item.pourcentage) || 0;
-          }, 0);
+        // Calculate total percentage
+        const totalPercentage = updatedList.reduce((sum, item) => {
+          return sum + parseInt(item.pourcentage) || 0;
+        }, 0);
 
-          const targetPercentage = parseInt(watch('somme_percent')) || 0;
-          newErrors.totalPercentage = totalPercentage !== targetPercentage;
-        }
+        const targetPercentage = parseInt(watch('somme_percent')) || 0;
+        newErrors.totalPercentage = totalPercentage !== targetPercentage;
       }
     } else {
       // For non-edit mode - original behavior
@@ -281,19 +291,31 @@ export function Desistement_Au_Profit({
       setinputList(updatedList);
       setValue('inputList', updatedList);
 
-      if (fieldName == 'telephone_num1') {
-        newErrors.telephone = value.length < 10 || value.length > 14;
-      }
+      // Validate ALL telephone numbers when any field changes
+      updatedList.forEach((item, idx) => {
+        if (item.telephone_num1) {
+          const isValid =
+            item.telephone_num1.length >= 10 &&
+            item.telephone_num1.length <= 14;
+          newErrors.telephone[idx] = !isValid;
+        }
+      });
 
-      if (fieldName == 'pourcentage') {
-        const percentValue = parseInt(value) || 0;
-        newErrors.percentage = percentValue < 0 || percentValue > 100;
-        const totalPercentage = updatedList.reduce((sum, item) => {
-          return sum + parseInt(item.pourcentage) || 0;
-        }, 0);
-        const targetPercentage = parseInt(watch('somme_percent')) || 0;
-        newErrors.totalPercentage = totalPercentage !== targetPercentage;
-      }
+      // Validate ALL percentages when any field changes
+      updatedList.forEach((item, idx) => {
+        if (item.pourcentage !== undefined && item.pourcentage !== null) {
+          const percentValue = parseInt(item.pourcentage) || 0;
+          newErrors.percentage[idx] = percentValue < 0 || percentValue > 100;
+        }
+      });
+
+      // Calculate total percentage
+      const totalPercentage = updatedList.reduce((sum, item) => {
+        return sum + parseInt(item.pourcentage) || 0;
+      }, 0);
+
+      const targetPercentage = parseInt(watch('somme_percent')) || 0;
+      newErrors.totalPercentage = totalPercentage !== targetPercentage;
     }
 
     setErrors_dp_proche(newErrors);
@@ -505,81 +527,36 @@ export function Desistement_Au_Profit({
         updatedList[fieldIndex][fieldName] = value;
         set_new_clients_dp_partiel(updatedList);
 
-        // Calculate errors
+        // Calculate errors - ALWAYS validate ALL fields when any field changes
         const newErrors = {
-          telephone: false,
-          percentage: false,
+          telephone: {},
+          percentage: {},
           totalPercentage: false,
         };
 
-        // Validate telephone
-        if (fieldName == 'telephone_num1') {
-          const isValid = value.length >= 10 && value.length <= 14;
-          newErrors.telephone = !isValid;
-        }
-
-        // Validate percentage
-        if (fieldName == 'pourcentage') {
-          const percentValue = parseFloat(value) || 0;
-          newErrors.percentage = percentValue < 0 || percentValue > 100;
-
-          // Calculate total percentage for new clients
-          let totalNewPercentage = 0;
-          updatedList.forEach((item) => {
-            totalNewPercentage += parseFloat(item.pourcentage) || 0;
-          });
-
-          // Calculate combined percentage (old + new)
-          const totalOldPercentage =
-            parseFloat(watch('somme_percent_dp_patiel_old')) || 0;
-          const combinedPercentage = totalNewPercentage + totalOldPercentage;
-
-          // Update values
-          setValue('somme_percent_dp_patiel_new', totalNewPercentage);
-          setValue('targetPercentage_part_new', 100 - totalOldPercentage);
-          // Validate total percentage
-          if (Math.abs(combinedPercentage - 100) > 0.01) {
-            newErrors.totalPercentage = true;
-          } else {
-            newErrors.totalPercentage = false;
+        // Validate ALL telephone numbers in the list
+        updatedList.forEach((item, idx) => {
+          if (item.telephone_num1) {
+            const isValid =
+              item.telephone_num1.length >= 10 &&
+              item.telephone_num1.length <= 14;
+            if (!isValid) {
+              newErrors.telephone[idx] =
+                'Le numéro de téléphone doit contenir entre 10 et 14 caractères';
+            }
           }
-          if (combinedPercentage == 100) {
-            setErrors_dp_part((prevState) => ({
-              ...prevState,
-              totalPercentage: '',
-            }));
+        });
+
+        // Validate ALL percentages in the list
+        updatedList.forEach((item, idx) => {
+          if (item.pourcentage !== undefined && item.pourcentage !== null) {
+            const percentValue = parseFloat(item.pourcentage) || 0;
+            if (percentValue < 0 || percentValue > 100) {
+              newErrors.percentage[idx] =
+                'Le pourcentage doit être entre 0 et 100';
+            }
           }
-        }
-
-        // Update state
-        setErrors_new_dp_part(newErrors);
-      }
-    } else {
-      // Non-editing mode - original behavior
-      const parts = name.split('_');
-      const fieldName = parts.slice(0, -1).join('_');
-
-      const updatedList = new_clients_dp_partiel.map((item, i) =>
-        i == index ? { ...item, [fieldName]: value } : item
-      );
-
-      // Calculate errors
-      const newErrors = {
-        telephone: false,
-        percentage: false,
-        totalPercentage: false,
-      };
-
-      // Validate telephone
-      if (fieldName == 'telephone_num1') {
-        const isValid = value.length >= 10 && value.length <= 14;
-        newErrors.telephone = !isValid;
-      }
-
-      // Validate percentage
-      if (fieldName == 'pourcentage') {
-        const percentValue = parseFloat(value) || 0;
-        newErrors.percentage = percentValue < 0 || percentValue > 100;
+        });
 
         // Calculate total percentage for new clients
         let totalNewPercentage = 0;
@@ -602,13 +579,84 @@ export function Desistement_Au_Profit({
         } else {
           newErrors.totalPercentage = false;
         }
+
         if (combinedPercentage == 100) {
           setErrors_dp_part((prevState) => ({
             ...prevState,
             totalPercentage: '',
           }));
         }
+
+        // Update state with ALL errors
+        setErrors_new_dp_part(newErrors);
       }
+    } else {
+      // Non-editing mode - similar logic but with different field names
+      const parts = name.split('_');
+      const fieldName = parts.slice(0, -1).join('_');
+
+      const updatedList = new_clients_dp_partiel.map((item, i) =>
+        i == index ? { ...item, [fieldName]: value } : item
+      );
+
+      // Calculate errors - ALWAYS validate ALL fields
+      const newErrors = {
+        telephone: {},
+        percentage: {},
+        totalPercentage: false,
+      };
+
+      // Validate ALL telephone numbers
+      updatedList.forEach((item, idx) => {
+        if (item.telephone_num1) {
+          const isValid =
+            item.telephone_num1.length >= 10 &&
+            item.telephone_num1.length <= 14;
+          if (!isValid) {
+            newErrors.telephone[idx] = true;
+          }
+        }
+      });
+
+      // Validate ALL percentages
+      updatedList.forEach((item, idx) => {
+        if (item.pourcentage !== undefined && item.pourcentage !== null) {
+          const percentValue = parseFloat(item.pourcentage) || 0;
+          if (percentValue < 0 || percentValue > 100) {
+            newErrors.percentage[idx] = true;
+          }
+        }
+      });
+
+      // Calculate total percentage for new clients
+      let totalNewPercentage = 0;
+      updatedList.forEach((item) => {
+        totalNewPercentage += parseFloat(item.pourcentage) || 0;
+      });
+
+      // Calculate combined percentage (old + new)
+      const totalOldPercentage =
+        parseFloat(watch('somme_percent_dp_patiel_old')) || 0;
+      const combinedPercentage = totalNewPercentage + totalOldPercentage;
+
+      // Update values
+      setValue('somme_percent_dp_patiel_new', totalNewPercentage);
+      setValue('targetPercentage_part_new', 100 - totalOldPercentage);
+
+      // Validate total percentage
+      if (Math.abs(combinedPercentage - 100) > 0.01) {
+        newErrors.totalPercentage = true;
+      } else {
+        newErrors.totalPercentage = false;
+      }
+
+      if (combinedPercentage == 100) {
+        setErrors_dp_part((prevState) => ({
+          ...prevState,
+          totalPercentage: '',
+        }));
+      }
+
       // Update state
       set_new_clients_dp_partiel(updatedList);
       setValue('new_clients_dp_partiel', updatedList);
@@ -659,6 +707,93 @@ export function Desistement_Au_Profit({
       setAutocompleteKey((prev) => prev + 1);
     }
   }, [type_dp, setValue]); // Add setValue to dependencies
+  useEffect(() => {
+    // Validate all fields whenever inputList changes (for proche type)
+    if (inputList.length > 0) {
+      const newErrors = {
+        telephone: {},
+        percentage: {},
+        totalPercentage: false,
+      };
+
+      inputList.forEach((item, index) => {
+        // Validate telephone
+        if (item.telephone_num1) {
+          const isValid =
+            item.telephone_num1.length >= 10 &&
+            item.telephone_num1.length <= 14;
+          if (!isValid) {
+            newErrors.telephone[index] = true;
+          }
+        }
+
+        // Validate percentage
+        if (item.pourcentage !== undefined && item.pourcentage !== null) {
+          const percentValue = parseInt(item.pourcentage) || 0;
+          if (percentValue < 0 || percentValue > 100) {
+            newErrors.percentage[index] = true;
+          }
+        }
+      });
+
+      // Calculate total percentage
+      const totalPercentage = inputList.reduce((sum, item) => {
+        return sum + parseInt(item.pourcentage) || 0;
+      }, 0);
+
+      const targetPercentage = parseInt(watch('somme_percent')) || 0;
+      newErrors.totalPercentage = totalPercentage !== targetPercentage;
+
+      setErrors_dp_proche(newErrors);
+    }
+  }, [inputList, watch('somme_percent')]);
+
+  useEffect(() => {
+    // Validate all fields whenever new_clients_dp_partiel changes
+    if (new_clients_dp_partiel.length > 0) {
+      const newErrors = {
+        telephone: {},
+        percentage: {},
+        totalPercentage: false,
+      };
+
+      new_clients_dp_partiel.forEach((item, index) => {
+        // Validate telephone
+        if (item.telephone_num1) {
+          const isValid =
+            item.telephone_num1.length >= 10 &&
+            item.telephone_num1.length <= 14;
+          if (!isValid) {
+            newErrors.telephone[index] = true;
+          }
+        }
+
+        // Validate percentage
+        if (item.pourcentage !== undefined && item.pourcentage !== null) {
+          const percentValue = parseFloat(item.pourcentage) || 0;
+          if (percentValue < 0 || percentValue > 100) {
+            newErrors.percentage[index] = true;
+          }
+        }
+      });
+
+      // Calculate total percentage
+      let totalNewPercentage = 0;
+      new_clients_dp_partiel.forEach((item) => {
+        totalNewPercentage += parseFloat(item.pourcentage) || 0;
+      });
+
+      const totalOldPercentage =
+        parseFloat(watch('somme_percent_dp_patiel_old')) || 0;
+      const combinedPercentage = totalNewPercentage + totalOldPercentage;
+
+      if (Math.abs(combinedPercentage - 100) > 0.01) {
+        newErrors.totalPercentage = true;
+      }
+
+      setErrors_new_dp_part(newErrors);
+    }
+  }, [new_clients_dp_partiel, watch('somme_percent_dp_patiel_old')]);
   return (
     <div className="p-6">
       {isEditing && (
@@ -669,20 +804,14 @@ export function Desistement_Au_Profit({
         </div>
       )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <SelectInput
+        <AutocompleteSelectComponent
           label="Type Désistement Au Profit :"
           name="type_dp"
-          value={isEditing ? watch('type_dp') : watch('type_dp')}
-          required={true}
-          options={
-            // Handle both array and object formats for type_dst_dp
-            !type_dst_dp ? [] :
-            Array.isArray(type_dst_dp) ? type_dst_dp :
-            typeof type_dst_dp === 'object' ? Object.entries(type_dst_dp).map(([key, value]) => ({
-              value: key,
-              label: typeof value === 'object' ? value.label || value.name || String(value) : String(value)
-            })) :[]
-          }
+          value={isEditing && watch('type_dp')}
+          control={control}
+          options={type_dst_dp}
+          errors={{}}
+          required
           onChange={(value) => {
             // Reset states before changing type
             set_nb_aqu(0);
@@ -695,8 +824,6 @@ export function Desistement_Au_Profit({
             setValue('nb_aquereurs_dp_proche', '');
             setValue('somme_percent', '');
           }}
-          error={errors.type_dp?.message}
-          placeholder="Sélectionnez un type de désistement"
         />
       </div>
       {(type_dp == 1 || type_dp == 2) && (
@@ -708,17 +835,17 @@ export function Desistement_Au_Profit({
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Désisteurs: <span className="text-red-500">*</span>
                 </label>
+
                 <Controller
                   name=""
                   control={control}
                   rules={{ required: 'Ce champ est requis' }}
                   render={({ field }) => (
-                    <SelectInput
-                      key={`desisteur-${autocompleteKey}`}
+                    <AutocompleteMultipleDes
+                      key={`desisteur-${autocompleteKey}`} // This forces complete remount
                       name="desisteur_dp_proche_co"
-                      placeholder="Choisissez un/plusieurs Désisteurs"
-                      required={true}
-                      isMulti={true}
+                      required
+                      // This should be your array of selected items
                       options={desisteurs.filter(
                         (desisteur) =>
                           !profit_dp_co_reser.some(
@@ -726,41 +853,40 @@ export function Desistement_Au_Profit({
                               profit.id ==
                               (isEditing ? desisteur.id : desisteur.client.id)
                           )
-                      ).map(desisteur => ({
-                        value: isEditing ? desisteur.id : desisteur.client.id,
-                        label: `${isEditing ? desisteur.nom : desisteur.client.nom} ${isEditing ? desisteur.prenom : desisteur.client.prenom} (${desisteur.pourcentage}%)`,
-                        originalData: desisteur
-                      }))}
-                      value={desisteur_dp_proche.map(item => item.id)}
-                      onChange={(selectedValues) => {
+                      )}
+                      value={desisteur_dp_proche}
+                      choiceKey="id" // Used for unique identification
+                      onChange={(newValue) => {
                         let totalPercent = 0;
                         const selectedDesisteurs = [];
 
-                        // Convert selected IDs back to full objects
-                        selectedValues.forEach(value => {
-                          const desisteur = desisteurs.find(d => 
-                            (isEditing ? d.id : d.client.id) === value
-                          );
-                          if (desisteur) {
-                            totalPercent += desisteur.pourcentage;
-                            selectedDesisteurs.push({
-                              id: desisteur.id,
-                              cl_id: isEditing ? desisteur.cl_id : desisteur.client.id,
-                              nom: isEditing ? desisteur.nom : desisteur.client.nom,
-                              prenom: isEditing ? desisteur.prenom : desisteur.client.prenom,
-                              pourcentage: desisteur.pourcentage,
-                            });
-                          }
+                        set_desisteur_dp_proche([]);
+                        newValue.forEach((item) => {
+                          totalPercent += item.pourcentage;
+                          selectedDesisteurs.push({
+                            id: item.id,
+                            cl_id: isEditing ? item.cl_id : item.client.id,
+                            nom: isEditing ? item.nom : item.client.nom,
+                            prenom: isEditing
+                              ? item.prenom
+                              : item.client.prenom,
+                            pourcentage: item.pourcentage,
+                          });
                         });
 
                         set_desisteur_dp_proche(selectedDesisteurs);
+
                         setValue('desisteur_dp_proche_co', selectedDesisteurs);
                         setValue('somme_percent', totalPercent);
                         set_clients_profit_de(
                           getDifference(desisteurs_testt, selectedDesisteurs)
                         );
+                        field.onChange(newValue);
                       }}
-                      error={errors.desisteur_dp_proche_co?.message}
+                      placeholder="Choisissez un/plusieurs Désisteurs"
+                      errors={{}}
+                      backendErrors={{}}
+                      valueKey="id" // Ensures proper value matching
                     />
                   )}
                 />
@@ -768,7 +894,7 @@ export function Desistement_Au_Profit({
             </div>
             {/* Somme % Ajoutés */}
 
-            <div className="md:col-span-3 md:ml-4">
+            <div className="md:col-span-3 md:ml-4 mt-2">
               <TextField
                 label="Somme % Ajoutés:"
                 disabled
@@ -786,7 +912,7 @@ export function Desistement_Au_Profit({
                 {type_dp == 1 && (
                   <>
                     {/* Nb Des Nouveaux Acquéreurs */}
-                    <div className="md:col-span-3">
+                    <div className="md:col-span-3 mt-2">
                       <TextField
                         label={'Nombre Des Nouveaux Acquéreurs:'}
                         name="nb_aquereurs_dp_proche"
@@ -840,7 +966,7 @@ export function Desistement_Au_Profit({
                         {inputList.map((item, index) => (
                           <div
                             key={index}
-                            className="repeater-wrapper mb-4"
+                            className="repeater-wrapper border border-gray-200 rounded-lg p-4 mb-4"
                           >
                             <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
                               {/* CIN */}
@@ -975,6 +1101,20 @@ export function Desistement_Au_Profit({
                                     }
                                   />
                                 )}
+                                {/* Show telephone error for this specific index */}
+                                {errors_dp_proche.telephone &&
+                                  errors_dp_proche.telephone[index] && (
+                                    <p
+                                      style={{
+                                        color: 'red',
+                                        fontSize: '0.75rem',
+                                        marginTop: '4px',
+                                      }}
+                                    >
+                                      Le numéro de téléphone doit contenir entre
+                                      10 et 14 caractères
+                                    </p>
+                                  )}
                               </div>
 
                               {/* Pourcentage */}
@@ -1010,11 +1150,20 @@ export function Desistement_Au_Profit({
                                     type="number"
                                   />
                                 )}
-                                {errors_dp_proche.percentage && (
-                                  <p className="text-red-500">
-                                    Percentage must be between 0-100
-                                  </p>
-                                )}
+                                {/* Show percentage error for this specific index */}
+                                {errors_dp_proche.percentage &&
+                                  errors_dp_proche.percentage[index] && (
+                                    <p
+                                      className="text-red-500"
+                                      style={{
+                                        fontSize: '0.75rem',
+                                        marginTop: '4px',
+                                      }}
+                                    >
+                                      Le pourcentage doit être compris entre 0
+                                      et 100
+                                    </p>
+                                  )}
                               </div>
                             </div>
                           </div>
@@ -1185,7 +1334,7 @@ export function Desistement_Au_Profit({
           </div>
         </div>
       )}
-      {errors_dp_proche.telephone && (
+      {/*errors_dp_proche.telephone && (
         <p style={{ color: 'red' }}>
           Le numéro de téléphone doit contenir entre 10 et 14 caractères
         </p>
@@ -1194,7 +1343,7 @@ export function Desistement_Au_Profit({
         <p className="text-red-500">
           Le pourcentage doit être compris entre 0 et 100
         </p>
-      )}
+      )*/}
       {errors_dp_proche.totalPercentage && (
         <p className="text-red-500">
           Le pourcentage total doit être égal à {watch('somme_percent')}
@@ -1568,6 +1717,20 @@ export function Desistement_Au_Profit({
                             }
                           />
                         )}
+                        {/* Show telephone error for this specific index */}
+                        {errors_new_dp_part.telephone &&
+                          errors_new_dp_part.telephone[index] && (
+                            <p
+                              style={{
+                                color: 'red',
+                                fontSize: '0.75rem',
+                                marginTop: '4px',
+                              }}
+                            >
+                              Le numéro de téléphone doit contenir entre 10 et
+                              14 caractères
+                            </p>
+                          )}
                       </div>
 
                       {/* Pourcentage */}
@@ -1604,16 +1767,25 @@ export function Desistement_Au_Profit({
                             type="number"
                           />
                         )}
-                        {errors_new_dp_part.percentage && (
-                          <p className="text-red-500">
-                            Percentage must be between 0-100
-                          </p>
-                        )}
+
+                        {/* Show percentage error for this specific index */}
+                        {errors_new_dp_part.percentage &&
+                          errors_new_dp_part.percentage[index] && (
+                            <p
+                              className="text-red-500"
+                              style={{
+                                fontSize: '0.75rem',
+                                marginTop: '4px',
+                              }}
+                            >
+                              Le pourcentage doit être compris entre 0 et 100
+                            </p>
+                          )}
                       </div>
                     </div>
                   </div>
                 ))}
-                {errors_new_dp_part.telephone && (
+                {/*errors_new_dp_part.telephone && (
                   <p style={{ color: 'red' }}>
                     Le numéro de téléphone doit contenir entre 10 et 14
                     caractères
@@ -1623,7 +1795,7 @@ export function Desistement_Au_Profit({
                   <p className="text-red-500">
                     Le pourcentage doit être compris entre 0 et 100
                   </p>
-                )}
+                )*/}
                 {errors_new_dp_part.totalPercentage && (
                   <p className="text-red-500">
                     Le pourcentage total doit être égal à{' '}
@@ -1638,27 +1810,15 @@ export function Desistement_Au_Profit({
 
       {(type_dp == 1 || type_dp == 3) && (
         <div className="grid grid-cols-1 md:grid-cols-1 gap-6 mb-6">
-          <SelectInput
+          <AutocompleteSelectComponent
             label="Lien de Parenté :"
             name="lien_parente"
-            value={isEditing ? formData.lien_parente : watch('lien_parente')}
-            required={true}
-            options={
-              // Handle both array and object formats for lien_parentes
-              !lien_parentes ? [] :
-              Array.isArray(lien_parentes) ? lien_parentes :
-              typeof lien_parentes === 'object' ? Object.entries(lien_parentes).map(([key, value]) => ({
-                value: key,
-                label: typeof value === 'object' ? value.label || value.name || String(value) : String(value)
-              })) :
-              []
-            }
-            onChange={(value) => {
-              console.log('Selected lien parenté:', value);
-              setValue('lien_parente', value);
-            }}
-            error={errors.lien_parente?.message}
-            placeholder="Sélectionnez un lien de parenté"
+            value={isEditing && formData.lien_parente}
+            control={control}
+            options={lien_parentes}
+            errors={{}}
+            required
+            onChange={(value) => setValue('lien_parente', value)}
           />
         </div>
       )}
