@@ -100,7 +100,7 @@ export default function Page() {
         // Projet a changé
 
         console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-        router.push('/ventes/reservations');
+        router.push('/ventes?tab=desistements');
       }
       setOldProjetId(selectedProjet.id);
     }
@@ -442,14 +442,15 @@ export default function Page() {
       });
 
       if (response.status == 201 || response.status == 200) {
-        if (user.role <= 2) {
+      /*  if (user?.role <= 2) {
           localStorage.setItem('etat_dst', '1');
-          router.push('/ventes/desistements');
+          router.push('/ventes?tab=desistements');
         } else {
           //commercial
           localStorage.setItem('etat_dst', '5');
-          router.push('/ventes/desistements/attente_encours');
-        }
+          
+          router.push('/ventes?tab=validation&subtab=desistements-attente-encours');
+        }*/
       }
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -1501,29 +1502,20 @@ export default function Page() {
                         name="mode_penalite"
                         value={watch('mode_penalite')}
                         required={true}
-                        options={
-                          // Handle both array and object formats
-                          !modes_penalites
-                            ? []
-                            : Array.isArray(modes_penalites)
-                            ? modes_penalites
-                            : typeof modes_penalites === 'object'
-                            ? Object.entries(modes_penalites).map(
-                                ([key, value]) => ({
-                                  value: key,
-                                  label:
-                                    typeof value === 'object'
-                                      ? value.label ||
-                                        value.name ||
-                                        String(value)
-                                      : String(value),
-                                })
-                              )
-                            : []
-                        }
+                        options={Object.entries(modes_penalites).map(
+                          ([key, value]) => ({
+                            value: value.label, // Use label as value
+                            label: value.label,
+                          })
+                        )}
                         onChange={(value) => {
-                          setValue('mode_penalite', value);
-                          handlechange_mode_penalite(value);
+                          // Find the code by label
+                          const entry = Object.entries(modes_penalites).find(
+                            ([key, val]) => val.label === value
+                          );
+                          if (entry) {
+                            handlechange_mode_penalite(entry[0]); // Pass the code
+                          }
                         }}
                         error={errors.mode_penalite?.message}
                         placeholder="Sélectionnez un mode de pénalité"

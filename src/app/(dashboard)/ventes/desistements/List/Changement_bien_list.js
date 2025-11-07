@@ -17,7 +17,7 @@ export default function Changement_bien_list() {
   const etat_desistement = JSON.parse(localStorage.getItem('etat_dst'));
   const { user, token } = useAuth();
   const accesstoken = token || localStorage.getItem('accessToken');
-  const user_role = user.role;
+  const user_role = user?.role;
 
   const router = useRouter();
   const [data, setData] = useState([]);

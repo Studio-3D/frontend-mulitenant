@@ -17,7 +17,6 @@ import Modal_Valider_Reservation from "../../../ventes/reservations/Modal_Valide
 import Modal_Rejeter_Reservation from "../../../ventes/reservations/Modal_Rejeter_Reservation";
 import Modal_show_info from "../../../ventes/reservations/Modal_show_info";
 import LoadingSpin from "@/components/LoadingSpin";
-import VenteNavbar from "@/components/VenteNavbar";
 import DateRangePicker from "@/components/DateRangePicker";
 import { useProjet } from '@/context/ProjetContext';
 

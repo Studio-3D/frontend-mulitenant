@@ -7,7 +7,6 @@ import { useSearchParams } from 'next/navigation';
 import { isAdmin, isSuperAdmin, isCommercial } from '../../../../configs/enum';
 import { useAuth } from '../../../../context/AuthContext';
 import { useRouter } from 'next/navigation';
-import VenteNavbar from '@/components/VenteNavbar';
 
 export default function Page() {
   const ACTION = { EDIT: 'edit', ADD: 'add' };
@@ -56,7 +55,6 @@ export default function Page() {
       ) : (
         <>
           <div>
-            <VenteNavbar />
             <ClientTable />
           </div>
         </>

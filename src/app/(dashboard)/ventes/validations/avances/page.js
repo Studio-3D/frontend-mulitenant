@@ -19,7 +19,6 @@ import { MODE_PAIEMENT, Avance_Statut } from '../../../../../configs/enum';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
 import LoadingSpin from '@/components/LoadingSpin';
-import VenteNavbar from '@/components/VenteNavbar';
 import Input from '@/components/Input';
 import DateRangePicker from '@/components/DateRangePicker';
 import SelectInput from '@/components/SelectInput';

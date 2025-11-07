@@ -1,17 +1,29 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
-import format from "date-fns/format";
-import TextField from "@/components/Textfield";
-import SelectInput from "@/components/SelectInput";
-import Compromis_show from "../../../app/(dashboard)/ventes/reservations/compromis_ventes/show";
-import { UserRound, FileText, Signature, Clock, Eye, XCircle } from "lucide-react";
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import format from 'date-fns/format';
+import TextField from '@/components/Textfield';
+import SelectInput from '@/components/SelectInput';
+import Compromis_show from '../../../app/(dashboard)/ventes/reservations/compromis_ventes/show';
+import {
+  UserRound,
+  FileText,
+  Signature,
+  Clock,
+  Eye,
+  XCircle,
+} from 'lucide-react';
+import Pusher from 'pusher-js';
 
 export const CompromisVentesTab = ({
   reservationData,
   user,
   accessToken: propAccessToken,
+  onCompromisCreated, // Ajouter cette prop
 }) => {
-  const accessToken = propAccessToken || localStorage.getItem("accessToken");
+  const pusher_key_attestation_vente =
+    process.env.NEXT_PUBLIC_PUSHER_APP_KEY_ATTESTATION_VENTE;
+
+  const accessToken = propAccessToken || localStorage.getItem('accessToken');
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const reservationId = reservationData?.reservation?.id;
 
@@ -24,7 +36,7 @@ export const CompromisVentesTab = ({
 
     noms.push(bien.propriete_dite_bien);
 
-    return noms.join(" - ");
+    return noms.join(' - ');
   }
   // State management
   const [data, setData] = useState({
@@ -34,11 +46,11 @@ export const CompromisVentesTab = ({
     errors: null,
     openPreview: false,
     nb_compromis_annule: 0,
-    reservationDetails: null,
-    bien: "",
-    sum_avances_valides: 0,
-    clients: [],
-    etat_res: 1,
+    reservationDetails: reservationData?.reservation,
+    bien: reservationData.reservation?.bien,
+    sum_avances_valides: reservationData?.sum_avances_valides,
+    clients:reservationData.reservation?.aquereurs || [],
+    etat_res: reservationData.reservation?.etat,
   });
 
   // Form fields
@@ -50,13 +62,16 @@ export const CompromisVentesTab = ({
     date_enreg: null,
     commentaire: null,
   });
+  // Check if all required dates are filled
+  const isFormValid =
+    form.date_sign_client && form.date_sign_mo && form.date_enreg;
 
   // Duration options
   const durationOptions = [
-    { value: "3", label: "3 Mois" },
-    { value: "6", label: "6 Mois" },
-    { value: "12", label: "12 Mois" },
-    { value: "Autre", label: "Autre" },
+    { value: '3', label: '3 Mois' },
+    { value: '6', label: '6 Mois' },
+    { value: '12', label: '12 Mois' },
+    { value: 'Autre', label: 'Autre' },
   ];
 
   // Handle errors
@@ -68,6 +83,8 @@ export const CompromisVentesTab = ({
   // Form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!isFormValid) return;
+
     setData((prev) => ({ ...prev, loadingBtn: true }));
 
     try {
@@ -81,6 +98,10 @@ export const CompromisVentesTab = ({
         formData,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
+        // Émettre l'événement vers le parent si on store compromis step appttesation be green
+      /*if (onCompromisCreated) {
+        onCompromisCreated();
+      }*/
       fetchData();
     } catch (err) {
       if (err.response?.status == 422) handleError(err.response.data.errors);
@@ -89,41 +110,118 @@ export const CompromisVentesTab = ({
     }
   };
   const style_p = {
-    color: "rgb(42 44 62)",
+    color: 'rgb(42 44 62)',
   };
   // Fetch data
-  const fetchData = async () => {
-    setData((prev) => ({ ...prev, loading: true }));
+const fetchData = async () => {
+  setData((prev) => ({ ...prev, loading: true }));
 
-    try {
-      if (!reservationId) return;
+  try {
+    if (!reservationId) return;
 
-      const response = await axios.get(
-        `${apiUrl}/get_compromis_by_reservation/${reservationId}`,
-        { headers: { Authorization: `Bearer ${accessToken}` } }
-      );
+    const response = await axios.get(
+      `${apiUrl}/get_compromis_by_reservation/${reservationId}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
 
-      const resData = response.data;
-      setData((prev) => ({
-        ...prev,
-        compromis: resData.compromis,
-        nb_compromis_annule: resData.compromis_annule_count,
-        reservationDetails: resData.reservation.original.reservation,
-        sum_avances_valides: resData.reservation.original.sum_avances_valides,
-        clients: resData.reservation.original.reservation.aquereurs,
-        etat_res: resData.reservation.original.reservation.etat,
-        bien: resData.reservation.original.propriete_dite_bien.original,
-      }));
-    } catch (error) {
-      console.error("Error:", error);
-    } finally {
-      setData((prev) => ({ ...prev, loading: false }));
-    }
-  };
+    const resData = response.data;
+    
+    // Fix: Access the data directly from resData, not from resData.reservation.original
+    setData((prev) => ({
+      ...prev,
+      compromis: resData.compromis,
+      nb_compromis_annule: resData.compromis_annule_count,
+    }));
+  } catch (error) {
+    console.error('Error:', error);
+  } finally {
+    setData((prev) => ({ ...prev, loading: false }));
+  }
+};
 
   useEffect(() => {
     fetchData();
-  }, [reservationId]);
+
+    // Initialize Pusher with the correct connection
+    const initializePusher = () => {
+      if (!pusher_key_attestation_vente || !reservationId) {
+        console.log('Pusher key or reservation ID missing');
+        return () => {};
+      }
+
+      Pusher.logToConsole = true;
+      console.log(
+        'Initializing Pusher for rdv list, reservation:',
+        reservationId
+      );
+
+      // Use the correct Pusher configuration that matches your backend
+      const pusher = new Pusher(pusher_key_attestation_vente, {
+        cluster: 'eu',
+        encrypted: true,
+        forceTLS: true,
+        wsHost: 'ws-eu.pusher.com', // Add explicit WebSocket host
+        wssPort: 443,
+        enabledTransports: ['ws', 'wss'], // Force WebSocket transport
+      });
+
+      // Create the EXACT channel name that matches your Laravel event
+      const channelName = `attestation-vente-updates-${reservationId}`;
+      console.log('Subscribing to channel:', channelName);
+
+      try {
+        const channel = pusher.subscribe(channelName);
+        console.log('hoop');
+
+        channel.bind('AttestationVenteEvent', (data) => {
+          // Always refresh when we receive an event for this channel
+          console.log('Refreshing att vente data via Pusher');
+          fetchData();
+        });
+
+        // Handle connection events
+        channel.bind('pusher:subscription_succeeded', () => {
+          console.log('✅ Successfully subscribed to channel:', channelName);
+        });
+
+        channel.bind('pusher:subscription_error', (status) => {
+          console.error('❌ Pusher subscription error:', status);
+        });
+
+        // Also listen for connection state changes
+        pusher.connection.bind('state_change', (states) => {
+          console.log(
+            'Pusher connection state changed:',
+            states.previous,
+            '->',
+            states.current
+          );
+        });
+
+        pusher.connection.bind('connected', () => {
+          console.log('✅ Pusher connected successfully');
+        });
+
+        pusher.connection.bind('disconnected', () => {
+          console.log('🔴 Pusher disconnected');
+        });
+      } catch (error) {
+        console.error('Error subscribing to Pusher channel:', error);
+      }
+
+      // Return cleanup function
+      return () => {
+        console.log('Cleaning up Pusher subscription for:', channelName);
+        if (pusher) {
+          pusher.disconnect();
+        }
+      };
+    };
+
+    const cleanupPusher = initializePusher();
+
+    return cleanupPusher;
+  }, [reservationId, pusher_key_attestation_vente]);
 
   if (data.loading)
     return (
@@ -158,6 +256,7 @@ export const CompromisVentesTab = ({
         reservationData={reservationData}
         data_c={data.compromis}
         nb_compromis_annule={data.nb_compromis_annule}
+        onCompromisCreated={onCompromisCreated}
       />
     );
   }
@@ -183,7 +282,7 @@ export const CompromisVentesTab = ({
               {/* Modal Header */}
               <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-5 text-white">
                 <h3 className="text-xl font-semibold">
-                  Prévisualisation de {'l\''}attestation de Vente
+                  Prévisualisation de {"l'"}attestation de Vente
                 </h3>
               </div>
 
@@ -229,7 +328,7 @@ export const CompromisVentesTab = ({
                           Date:
                         </span>
                         <span className="text-gray-800 font-medium">
-                          {format(new Date(), "dd/MM/yyyy")}
+                          {format(new Date(), 'dd/MM/yyyy')}
                         </span>
                       </div>
                     </div>
@@ -251,10 +350,10 @@ export const CompromisVentesTab = ({
                         LES SOUSSIGNES
                       </h3>
                       <p className="text-gray-700 leading-relaxed">
-                        LA SOCIETE «{" "}
+                        LA SOCIETE «{' '}
                         <span className="font-bold">
                           {user?.societe?.raison_sociale}
-                        </span>{" "}
+                        </span>{' '}
                         », société à responsabilité limitée de droit Marocain,
                         au capital social de 100.000,00 de dirhams, ayant son
                         siège social à Fes, 47, Boulevard Al Amir 5ème étage,
@@ -274,7 +373,7 @@ export const CompromisVentesTab = ({
                           <div key={idx} className="bg-gray-50 p-4 rounded-lg">
                             <p className="text-gray-700">
                               <span className="font-medium">
-                                {client.client.civilite} {client.client.nom}{" "}
+                                {client.client.civilite} {client.client.nom}{' '}
                                 {client.client.prenom}
                               </span>
                               , titulaire de la carte {"d'"}identité nationale
@@ -320,27 +419,27 @@ export const CompromisVentesTab = ({
                       >
                         Un Appartement
                         <b> n° {data.reservationDetails?.bien.numero}</b> sous
-                        le nom :<b>{data.bien} </b>. en copropriété sis à FES,
+                        le nom :<b>{data.reservationDetails?.bien.propriete_dite_bien} </b>. en copropriété sis à FES,
                         commune a, Al Amir à distraire des propriétés dénommées
                         : -« » objet du titre foncier mère numéro 82493/47 Cet
-                        Appartement sera situé au{" "}
+                        Appartement sera situé au{' '}
                         <b>
                           {data.reservationDetails?.bien.etage == 0
-                            ? "RDC"
+                            ? 'RDC'
                             : data.reservationDetails?.bien.etage +
-                              "étage"}{" "}
+                              'étage'}{' '}
                         </b>
-                        , {"D'"}une superficie approximative de{" "}
+                        , {"D'"}une superficie approximative de{' '}
                         <b>
-                          {data.reservationDetails?.bien.superficie_habitable}{" "}
-                          m²{" "}
-                        </b>{" "}
+                          {data.reservationDetails?.bien.superficie_habitable}{' '}
+                          m²{' '}
+                        </b>{' '}
                         dont un balcon et buanderie {"d'"}une superficie
-                        approximative de{" "}
+                        approximative de{' '}
                         <b>
                           {data.reservationDetails?.bien.superficie_balcon} m²
-                        </b>{" "}
-                        Et une terrasse {"d'"}une superficie approximative de{" "}
+                        </b>{' '}
+                        Et une terrasse {"d'"}une superficie approximative de{' '}
                       </p>
                       <p>
                         {/* Terrasse condition */}
@@ -348,14 +447,14 @@ export const CompromisVentesTab = ({
                           0 && (
                           <>
                             Et une terrasse {"d'"}une superficie approximative
-                            de{" "}
+                            de{' '}
                             <b>
                               {
                                 data.reservationDetails?.bien
                                   .superficie_terrasse
-                              }{" "}
+                              }{' '}
                               m²
-                            </b>{" "}
+                            </b>{' '}
                           </>
                         )}
 
@@ -407,7 +506,7 @@ export const CompromisVentesTab = ({
                               if (summedComposition.nbre_halls > 0)
                                 parts.push(
                                   `${summedComposition.nbre_halls} hall${
-                                    summedComposition.nbre_halls > 1 ? "s" : ""
+                                    summedComposition.nbre_halls > 1 ? 's' : ''
                                   }`
                                 );
                               if (summedComposition.nbre_salons > 0)
@@ -418,8 +517,8 @@ export const CompromisVentesTab = ({
                                 parts.push(
                                   `${summedComposition.nbre_chambres} chambre${
                                     summedComposition.nbre_chambres > 1
-                                      ? "s"
-                                      : ""
+                                      ? 's'
+                                      : ''
                                   }`
                                 );
                               if (summedComposition.nbre_cuisines > 0)
@@ -429,15 +528,15 @@ export const CompromisVentesTab = ({
                               if (summedComposition.nbre_sdb > 0)
                                 parts.push(
                                   `${summedComposition.nbre_sdb} salle${
-                                    summedComposition.nbre_sdb > 1 ? "s" : ""
+                                    summedComposition.nbre_sdb > 1 ? 's' : ''
                                   } de bain`
                                 );
                               if (summedComposition.nbre_balcons > 0)
                                 parts.push(
                                   `${summedComposition.nbre_balcons} balcon${
                                     summedComposition.nbre_balcons > 1
-                                      ? "s"
-                                      : ""
+                                      ? 's'
+                                      : ''
                                   }`
                                 );
                               if (summedComposition.nbre_buanderies > 0)
@@ -448,8 +547,8 @@ export const CompromisVentesTab = ({
                                 parts.push(
                                   `${summedComposition.nbre_placards} placard${
                                     summedComposition.nbre_placards > 1
-                                      ? "s"
-                                      : ""
+                                      ? 's'
+                                      : ''
                                   }`
                                 );
                               if (summedComposition.nbre_receptions > 0)
@@ -458,19 +557,19 @@ export const CompromisVentesTab = ({
                                     summedComposition.nbre_receptions
                                   } réception${
                                     summedComposition.nbre_receptions > 1
-                                      ? "s"
-                                      : ""
+                                      ? 's'
+                                      : ''
                                   }`
                                 );
 
                               // Join with commas and replace last comma with "et"
                               if (parts.length > 0) {
-                                let text = parts.join(", ");
-                                const lastCommaIndex = text.lastIndexOf(", ");
+                                let text = parts.join(', ');
+                                const lastCommaIndex = text.lastIndexOf(', ');
                                 if (lastCommaIndex !== -1) {
                                   text =
                                     text.substring(0, lastCommaIndex) +
-                                    " et " +
+                                    ' et ' +
                                     text.substring(lastCommaIndex + 2);
                                 }
                                 return text;
@@ -486,8 +585,8 @@ export const CompromisVentesTab = ({
                             data.reservationDetails.bien.num_parking
                           } place${
                             data.reservationDetails.bien.num_parking > 1
-                              ? "s"
-                              : ""
+                              ? 's'
+                              : ''
                           } de parking au sous-sol`}
                         {data.reservationDetails?.bien.num_box != null &&
                           ` Et ${data.reservationDetails.bien.num_box} Box`}
@@ -505,18 +604,18 @@ export const CompromisVentesTab = ({
                       >
                         Le présent contrat de réservation est consenti et
                         accepté moyennant le prix ci-après détaillé :<br />
-                        *Soit un prix global estimatif de la somme{" "}
-                        <b>{data.reservationDetails?.prix + " DHS"} </b> Sur
+                        *Soit un prix global estimatif de la somme{' '}
+                        <b>{data.reservationDetails?.prix + ' DHS'} </b> Sur
                         lequel prix de vente ,le réservataire a versé à titre
                         {"d'"}acompte à valoir sur le prix de vente {"d'"}une
-                        valeur de <b>{data.sum_avances_valides + " DHS"}</b>
+                        valeur de <b>{data.sum_avances_valides + ' DHS'}</b>
                         <br />
-                        *Le reliquat soit la somme de{" "}
+                        *Le reliquat soit la somme de{' '}
                         <b>
                           {data.reservationDetails?.prix -
-                            data.sum_avances_valides}{" "}
+                            data.sum_avances_valides}{' '}
                           DHS
-                        </b>{" "}
+                        </b>{' '}
                         sera réglée le jour de la réalisation de la vente
                         définitive.
                       </p>
@@ -531,37 +630,37 @@ export const CompromisVentesTab = ({
                         className="text-gray-700 leading-relaxed mt-2"
                         style={style_p}
                       >
-                        Il est énoncé que le client a signé le comprimis en{" "}
+                        Il est énoncé que le client a signé le comprimis en{' '}
                         <b>
                           {form.date_sign_client != null &&
                             format(
                               new Date(form.date_sign_client),
-                              "dd/MM/yyyy"
+                              'dd/MM/yyyy'
                             )}
-                        </b>{" "}
-                        et le Maitre {"d'"}Ouvrage en{" "}
+                        </b>{' '}
+                        et le Maitre {"d'"}Ouvrage en{' '}
                         <b>
                           {form.date_sign_mo != null &&
-                            format(new Date(form.date_sign_mo), "dd/MM/yyyy")}
-                        </b>{" "}
-                        et enregistré en{" "}
+                            format(new Date(form.date_sign_mo), 'dd/MM/yyyy')}
+                        </b>{' '}
+                        et enregistré en{' '}
                         <b>
                           {form.date_enreg != null &&
-                            format(new Date(form.date_enreg), "dd/MM/yyyy")}
-                        </b>{" "}
-                        avec une durée {"d'"}échéance du{" "}
-                        {form.duree_echeance == "3"
-                          ? "3 Mois"
-                          : form.duree_echeance == "6"
-                          ? "6 Mois"
-                          : form.duree_echeance == "12"
-                          ? "12 Mois"
-                          : null}{" "}
-                        correspondant le{" "}
+                            format(new Date(form.date_enreg), 'dd/MM/yyyy')}
+                        </b>{' '}
+                        avec une durée {"d'"}échéance du{' '}
+                        {form.duree_echeance == '3'
+                          ? '3 Mois'
+                          : form.duree_echeance == '6'
+                          ? '6 Mois'
+                          : form.duree_echeance == '12'
+                          ? '12 Mois'
+                          : null}{' '}
+                        correspondant le{' '}
                         <b>
                           {form.date_echeance != null &&
-                            format(new Date(form.date_echeance), "dd/MM/yyyy")}
-                        </b>{" "}
+                            format(new Date(form.date_echeance), 'dd/MM/yyyy')}
+                        </b>{' '}
                         .
                       </p>
                     </div>
@@ -618,248 +717,251 @@ export const CompromisVentesTab = ({
             </div>
             <div className="hidden md:block">
               <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white text-[#009FFF]">
-                {reservationData.reservation?.code_reservation || "Nouveau"}
+                {reservationData.reservation?.code_reservation || 'Nouveau'}
               </span>
             </div>
           </div>
         </div>
 
         <div>
-            {/* Client Information Section */}
-            <div className="px-6 py-4 border-b">
-              <div className="flex items-center space-x-2 text-gray-500">
-                <UserRound className="w-5 h-5 text-blue-500" />
-                <h3 className="text-lg font-semibold flex items-center">
-                  Information du Client
-                </h3>
-              </div>
+          {/* Client Information Section */}
+          <div className="px-6 py-4 border-b">
+            <div className="flex items-center space-x-2 text-gray-500">
+              <UserRound className="w-5 h-5 text-blue-500" />
+              <h3 className="text-lg font-semibold flex items-center">
+                Information du Client
+              </h3>
+            </div>
 
-              <div className="space-y-4 mt-4">
-                {data.clients?.map((client, idx) => (
-                  <div key={idx}>
-                    <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <TextField
-                        control={false}
-                        label="CIN :"
-                        name="cin"
-                        value={client.client.cin || ""}
-                        disabled
-                        errors={{}}
-                        backendErrors={{}}
-                        className="bg-gray-50"
-                      />
+            <div className="space-y-4 mt-4">
+              {data.clients?.map((client, idx) => (
+                <div key={idx}>
+                  <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <TextField
+                      control={false}
+                      label="CIN :"
+                      name="cin"
+                      value={client.client.cin || ''}
+                      disabled
+                      errors={{}}
+                      backendErrors={{}}
+                      className="bg-gray-50"
+                    />
 
-                      <TextField
-                        control={false}
-                        label="Nom :"
-                        name="nom"
-                        value={client.client.nom || ""}
-                        disabled
-                        errors={{}}
-                        backendErrors={{}}
-                        className="bg-gray-50"
-                      />
+                    <TextField
+                      control={false}
+                      label="Nom :"
+                      name="nom"
+                      value={client.client.nom || ''}
+                      disabled
+                      errors={{}}
+                      backendErrors={{}}
+                      className="bg-gray-50"
+                    />
 
-                      <TextField
-                        control={false}
-                        label="Prénom :"
-                        name="prenom"
-                        value={client.client.prenom || ""}
-                        disabled
-                        errors={{}}
-                        backendErrors={{}}
-                        className="bg-gray-50"
-                      />
-                    </div>
+                    <TextField
+                      control={false}
+                      label="Prénom :"
+                      name="prenom"
+                      value={client.client.prenom || ''}
+                      disabled
+                      errors={{}}
+                      backendErrors={{}}
+                      className="bg-gray-50"
+                    />
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
+          </div>
 
-            {/* General Information Section */}
-            <div className="px-6 py-4 border-b">
-              <div className="flex items-center space-x-2 text-gray-500">
-                <FileText className="w-5 h-5 text-blue-500" />
-                <h3 className="text-lg font-semibold flex items-center">
-                  Information Générale
-                </h3>
-              </div>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-4">
-                <TextField
-                  control={false}
-                  label="Code Réservation :"
-                  name="code_reservation"
-                  value={data.reservationDetails?.code_reservation || ""}
-                  disabled
-                  className="bg-gray-50"
-                />
-                <TextField
-                  control={false}
-                  label="Projet :"
-                  name="projet"
-                  value={data.reservationDetails?.bien?.projet?.nom || ""}
-                  disabled
-                  className="bg-gray-50"
-                />
-                <TextField
-                  control={false}
-                  label="Bien :"
-                  name="bien"
-                  value={NomBienComplet(data.reservationDetails?.bien)}
-                  disabled
-                  className="bg-gray-50"
-                />
-                <TextField
-                  control={false}
-                  label="Prix (DH) :"
-                  name="prix"
-                  value={data.reservationDetails?.prix || ""}
-                  disabled
-                  className="bg-gray-50"
-                />
-                <TextField
-                  control={false}
-                  label="Avances (DH) :"
-                  name="avances"
-                  value={data.sum_avances_valides}
-                  disabled
-                  className="bg-gray-50"
-                />
-              </div>
+          {/* General Information Section */}
+          <div className="px-6 py-4 border-b">
+            <div className="flex items-center space-x-2 text-gray-500">
+              <FileText className="w-5 h-5 text-blue-500" />
+              <h3 className="text-lg font-semibold flex items-center">
+                Information Générale
+              </h3>
             </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-4">
+              <TextField
+                control={false}
+                label="Code Réservation :"
+                name="code_reservation"
+                value={data.reservationDetails?.code_reservation || ''}
+                disabled
+                className="bg-gray-50"
+              />
+              <TextField
+                control={false}
+                label="Projet :"
+                name="projet"
+                value={data.reservationDetails?.projet?.nom || ''}
+                disabled
+                className="bg-gray-50"
+              />
+              <TextField
+                control={false}
+                label="Bien :"
+                name="bien"
+                value={NomBienComplet(data.bien)}
+                disabled
+                className="bg-gray-50"
+              />
+              <TextField
+                control={false}
+                label="Prix (DH) :"
+                name="prix"
+                value={data.reservationDetails?.prix || ''}
+                disabled
+                className="bg-gray-50"
+              />
+              <TextField
+                control={false}
+                label="Avances (DH) :"
+                name="avances"
+                value={data.sum_avances_valides}
+                disabled
+                className="bg-gray-50"
+              />
+            </div>
+          </div>
 
-            {/* Compromis Information Section */}
-            <div className="px-6 py-4 border-b">
-              <div className="flex items-center space-x-2 text-gray-500">
-                <Signature className="w-5 h-5 text-blue-500" />
-                <h3 className="text-lg font-semibold flex items-center">
-                  Information Signature
-                </h3>
+          {/* Compromis Information Section */}
+          <div className="px-6 py-4 border-b">
+            <div className="flex items-center space-x-2 text-gray-500">
+              <Signature className="w-5 h-5 text-blue-500" />
+              <h3 className="text-lg font-semibold flex items-center">
+                Information Signature
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-4">
+              <TextField
+                control={false}
+                label="Date Signature Client :"
+                name="date_sign_client"
+                type="date"
+                value={form.date_sign_client}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    date_sign_client: e.target.value,
+                  }))
+                }
+                required={true}
+              />
+              <TextField
+                control={false}
+                label="Date Signature MO :"
+                name="date_sign_mo"
+                type="date"
+                value={form.date_sign_mo}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, date_sign_mo: e.target.value }))
+                }
+                required={true}
+              />
+              <TextField
+                control={false}
+                label="Date Enregistrement :"
+                name="date_enreg"
+                type="date"
+                value={form.date_enreg}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, date_enreg: e.target.value }))
+                }
+                required={true}
+              />
+            </div>
+          </div>
+
+          {/* Échéance Section */}
+          <div className="px-6 py-4">
+            <div className="flex items-center space-x-2 text-gray-500">
+              <Clock className="w-5 h-5 text-blue-500" />
+              <h3 className="text-lg font-semibold flex items-center">
+                Échéance
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 mt-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Durée Echéance :
+                </label>
+                <SelectInput
+                  options={durationOptions}
+                  value={form.duree_echeance}
+                  onChange={(value) => {
+                    setForm((prev) => ({ ...prev, duree_echeance: value }));
+                    if (value !== 'Autre') {
+                      const newDate = new Date();
+                      newDate.setMonth(
+                        newDate.getMonth() + parseInt(value, 10)
+                      );
+                      setForm((prev) => ({
+                        ...prev,
+                        date_echeance: format(newDate, 'yyyy-MM-dd'),
+                      }));
+                    } else {
+                      setForm((prev) => ({ ...prev, date_echeance: null }));
+                    }
+                  }}
+                  placeholder="Sélectionnez une durée"
+                  className="w-full"
+                />
               </div>
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-4">
+              <div>
                 <TextField
                   control={false}
-                  label="Date Signature Client :"
-                  name="date_sign_client"
+                  label="Date Echéance :"
+                  name="date_echeance"
                   type="date"
-                  value={form.date_sign_client}
+                  value={form.date_echeance}
                   onChange={(e) =>
                     setForm((prev) => ({
                       ...prev,
-                      date_sign_client: e.target.value,
+                      date_echeance: e.target.value,
                     }))
                   }
-                  required
-                />
-                <TextField
-                  control={false}
-                  label="Date Signature MO :"
-                  name="date_sign_mo"
-                  type="date"
-                  value={form.date_sign_mo}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, date_sign_mo: e.target.value }))
-                  }
-                  required
-                />
-                <TextField
-                  control={false}
-                  label="Date Enregistrement :"
-                  name="date_enreg"
-                  type="date"
-                  value={form.date_enreg}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, date_enreg: e.target.value }))
-                  }
-                  required
+                  disabled={form.duree_echeance !== 'Autre'}
                 />
               </div>
             </div>
-
-            {/* Échéance Section */}
-            <div className="px-6 py-4">
-              <div className="flex items-center space-x-2 text-gray-500">
-                <Clock className="w-5 h-5 text-blue-500" />
-                <h3 className="text-lg font-semibold flex items-center">Échéance</h3>
-              </div>
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 mt-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Durée Echéance :
-                  </label>
-                  <SelectInput
-                    options={durationOptions}
-                    value={form.duree_echeance}
-                    onChange={(value) => {
-                      setForm((prev) => ({ ...prev, duree_echeance: value }));
-                      if (value !== "Autre") {
-                        const newDate = new Date();
-                        newDate.setMonth(newDate.getMonth() + parseInt(value, 10));
-                        setForm((prev) => ({
-                          ...prev,
-                          date_echeance: format(newDate, "yyyy-MM-dd"),
-                        }));
-                      } else {
-                        setForm((prev) => ({ ...prev, date_echeance: null }));
-                      }
-                    }}
-                    placeholder="Sélectionnez une durée"
-                    className="w-full"
-                  />
-                </div>
-                <div>
-                  <TextField
-                    control={false}
-                    label="Date Echéance :"
-                    name="date_echeance"
-                    type="date"
-                    value={form.date_echeance}
-                    onChange={(e) =>
-                      setForm((prev) => ({
-                        ...prev,
-                        date_echeance: e.target.value,
-                      }))
-                    }
-                    disabled={form.duree_echeance !== "Autre"}
-                  />
-                </div>
-              </div>
-              <div className="mt-6">
-                <TextField
-                  control={false}
-                  label="Commentaire"
-                  name="commentaire"
-                  type="textarea"
-                  isTextarea={true}
-                  height="h-24"
-                  rows={3}
-                  value={form.commentaire}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, commentaire: e.target.value }))
-                  }
-                  placeholder="Ajoutez un commentaire si nécessaire"
-                  className="bg-white"
-                />
-              </div>
+            <div className="mt-6">
+              <TextField
+                control={false}
+                label="Commentaire"
+                name="commentaire"
+                type="textarea"
+                isTextarea={true}
+                height="h-24"
+                rows={3}
+                value={form.commentaire}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, commentaire: e.target.value }))
+                }
+                placeholder="Ajoutez un commentaire si nécessaire"
+                className="bg-white"
+              />
             </div>
-
-            {/* Error Display */}
-            {data.errors && (
-              <div className="px-6 py-4 bg-red-50 border-l-4 border-red-500">
-                <div className="flex">
-                  <XCircle className="h-5 w-5 text-red-400" />
-                  <div className="ml-3">
-                    {Object.keys(data.errors).map((key) => (
-                      <p key={key} className="text-sm text-red-700">
-                        {data.errors[key][0]}
-                      </p>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
 
+          {/* Error Display */}
+          {data.errors && (
+            <div className="px-6 py-4 bg-red-50 border-l-4 border-red-500">
+              <div className="flex">
+                <XCircle className="h-5 w-5 text-red-400" />
+                <div className="ml-3">
+                  {Object.keys(data.errors).map((key) => (
+                    <p key={key} className="text-sm text-red-700">
+                      {data.errors[key][0]}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Form Footer */}
         <div className="py-4 border-t border-gray-200 flex justify-end items-center gap-4">
@@ -874,10 +976,12 @@ export const CompromisVentesTab = ({
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={data.loadingBtn}
-            className="inline-flex items-center justify-center px-6 py-3  rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!isFormValid || data.loadingBtn}
+            className="inline-flex items-center justify-center px-6 py-3 rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {data.loadingBtn ? "Enregistrement..." : "Enregistrer l'attestation"}
+            {data.loadingBtn
+              ? 'Enregistrement...'
+              : "Enregistrer l'attestation"}
           </button>
         </div>
       </div>

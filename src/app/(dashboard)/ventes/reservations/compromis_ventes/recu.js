@@ -213,7 +213,7 @@ const Document_Compromis = ({ data }) => (
 
         {/* Title */}
         <View style={styles.titleSection}>
-          <Text style={styles.title}>COMPROMIS DE VENTE</Text>
+          <Text style={styles.title}>ATTESTATION DE VENTE</Text>
           <View style={styles.titleDivider} />
         </View>
 

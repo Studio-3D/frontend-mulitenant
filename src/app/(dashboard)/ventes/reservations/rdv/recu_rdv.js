@@ -111,49 +111,41 @@ const MyDocument = ({ data }) => {
         <View style={styles.line} />
 
         {/* Titre principal */}
-        <Text style={styles.title}>REÇU DE PRÉ-RÉSERVATION</Text>
-        <Text style={styles.subtitle}>N° {data[0] || 'N/A'}</Text>
+        <Text style={styles.title}>REÇU DE RENDEZ-VOUS</Text>
 
         {/* Contenu principal */}
         <View style={styles.section}>
           <Text style={styles.text}>
-            Je soussigné(e),{' '}
-            <Text style={styles.bold}>
-              {data[9]} {data[10]}
-            </Text>
-            , représentant(e) de la société{' '}
-            <Text style={styles.bold}>{user.societe.raison_sociale}</Text>,
-            confirme la pré-réservation du bien décrit ci-dessous :
+            La société{' '}
+            <Text style={styles.bold}>{user.societe.raison_sociale}</Text>
+            , confirme le rendez-vous  du bien décrit ci-dessous :
           </Text>
 
           <View style={styles.propertyDetails}>
             <Text style={styles.text}>
+              <Text style={styles.bold}>• N° Dossier:</Text>{' '}
+              {data[0] || 'N/A'}
+            </Text>
+            <Text style={styles.text}>
               <Text style={styles.bold}>• Référence du bien:</Text>{' '}
-              {data[4] || 'N/A'}
+              {data[1] || 'N/A'}
             </Text>
             <Text style={styles.text}>
-              <Text style={styles.bold}>• Type/Niveau:</Text> {data[5] || 'N/A'}
+              <Text style={styles.bold}>• Type de Rendez vous :</Text> {data[2] || ''}
             </Text>
+            
             <Text style={styles.text}>
-              <Text style={styles.bold}>• Superficie:</Text> {data[6] || 'N/A'}{' '}
-              m²
+              <Text style={styles.bold}>• Date du rendez-vous:</Text>{' '}
+             {data[3] || ''}
             </Text>
-            <Text style={styles.text}>
-              <Text style={styles.bold}>• Orientation:</Text> {data[7] || 'N/A'}
-            </Text>
-            <Text style={styles.text}>
-              <Text style={styles.bold}>• Prix:</Text>{' '}
-              {data[8] ? data[8].toLocaleString() : 'N/A'} DH
-            </Text>
-            <Text style={styles.text}>
-              <Text style={styles.bold}>• Date de rendez-vous:</Text>{' '}
-              {data[2] ? new Date(data[2]).toLocaleDateString() : 'N/A'}
-            </Text>
+           
+           
+           
           </View>
 
           <Text style={styles.text}>
-            Ce reçu atteste de l'engagement du client à procéder à la
-            réservation définitive du bien selon les modalités convenues.
+            Ce reçu confirme la prise de rendez-vous pour la visite du bien immobilier.
+            Le client {"s'"}engage à se présenter à {"l'"}heure convenue.
           </Text>
 
           <Text style={styles.text}>
@@ -178,14 +170,14 @@ const MyDocument = ({ data }) => {
           {/* Pied de page */}
           <View style={styles.footer}>
             <Text style={styles.bold}>
-              Nord Afrique Immobilier - Es qualité
+              {user.societe.raison_sociale}
             </Text>
-            <Text>Merci pour votre confiance</Text>
+            <Text>Merci de votre confiance</Text>
           </View>
 
           {/* Zone pour cachet */}
           <View style={styles.stampArea}>
-            <Text>Cachet et signature de {'l\''}'agence</Text>
+            <Text>Cachet et signature de {'l\''}agence</Text>
           </View>
         </View>
       </Page>

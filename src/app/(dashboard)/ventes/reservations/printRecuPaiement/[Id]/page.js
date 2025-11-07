@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect, Fragment } from "react";
-import axios from "axios";
-import { PDFDownloadLink } from "@react-pdf/renderer";
-import Document from "./recu";
+import React, { useState, useEffect, Fragment } from 'react';
+import axios from 'axios';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import Document from './recu';
 
 import {
   Building2 as BusinessIcon,
@@ -11,119 +11,122 @@ import {
   Home as HomeIcon,
   Upload,
   //Landmark as AccountBalanceIcon,
-} from "lucide-react";
-import LoadingSpin from "@/components/LoadingSpin";
-import { APIURL, RESOURCE_URL } from "../../../../../../configs/api";
-import { useAuth } from "../../../../../../context/AuthContext";
-import { useParams } from "next/navigation";
-import Image from "next/image";
+} from 'lucide-react';
+import LoadingSpin from '@/components/LoadingSpin';
+import { APIURL, RESOURCE_URL } from '../../../../../../configs/api';
+import { useAuth } from '../../../../../../context/AuthContext';
+import { useParams } from 'next/navigation';
+import Image from 'next/image';
 
-import { MODE_PAIEMENT } from "../../../../../../configs/enum";
+import { MODE_PAIEMENT } from '../../../../../../configs/enum';
 const PrevisualiserRecu = () => {
   const { Id } = useParams();
 
   const { user, token } = useAuth();
 
   const [selectedTab, setSelectedTab] = useState(0);
-  const accessToken = token || localStorage.getItem("accessToken");
+  const accessToken = token || localStorage.getItem('accessToken');
   const [loading, setLoading] = useState(true);
 
-  const selectedProjet = JSON.parse(localStorage.getItem("selectedProjet"));
+  const selectedProjet = JSON.parse(localStorage.getItem('selectedProjet'));
 
   const [formValues, setFormValues] = useState({
-    user: JSON.parse(localStorage.getItem("authUser")),
+    user: JSON.parse(localStorage.getItem('authUser')),
     imageUrl:
       `${RESOURCE_URL.DOCS}${user.societe.raison_sociale_concatene}_${user.societe.id}/logos/${user.societe.logo}` ||
-      "",
-    mode_paiement: "",
+      '',
+    mode_paiement: '',
     banque_id: null,
-    numero_paiement: "",
+    numero_paiement: '',
     montant: 0,
-    echeance: "",
+    echeance: '',
     reservationDetails: null,
     superficie_habitable: 0,
-    titre_foncier: "",
-    tranche: "",
-    bloc: "",
-    immeuble: "",
+    titre_foncier: '',
+    tranche: '',
+    bloc: '',
+
+    immeuble: '',
     type_id: null,
-    projet: "",
-    propriete_dite_bien: "",
-    prix: "",
-    mode_financement: "",
+    projet: '',
+    propriete_dite_bien: '',
+    prix: '',
+    bien_numero: '', // Add this missing field
+    prix: 0, // Change from string to number
+    mode_financement: '',
     clients: [],
-    type: "",
-    banque: "",
+    type: '',
+    banque: '',
     clientsList: [],
-    raison_social: user.societe.raison_sociale_concatene || "",
+    raison_social: user.societe.raison_sociale_concatene || '',
     capital: user.societe.capital || 0,
-    adresse: user.societe.adresse || "",
-    id_fiscal: user.societe.id_fiscal || "",
-    registre_commerce: user.societe.registre_commerce || "",
-    adresse_projet: "",
+    adresse: user.societe.adresse || '',
+    id_fiscal: user.societe.id_fiscal || '',
+    registre_commerce: user.societe.registre_commerce || '',
+    adresse_projet: '',
     etage: 0,
     superficie_parking: 0,
     isParkingAvailable: false,
     prix_parking: 0,
   });
 
-  const fetchData_avance = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get(`${APIURL.PAIEMENTS}/${Id}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+ const fetchData_avance = async () => {
+  setLoading(true);
+  try {
+    const response = await axios.get(`${APIURL.PAIEMENTS}/${Id}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
-      const avance = response.data.avance;
-      setFormValues({
-        ...formValues,
-        user: JSON.parse(localStorage.getItem("authUser")) || "",
-        mode_paiement: avance.mode_paiement || "",
-        banque_id: avance.banque_id || null,
-        banque: avance.banque?.nom || "",
-        numero_paiement: avance.numero_paiement || "",
-        montant: avance.montant || 0,
-        echeance: avance.echeance || "",
-        reservationDetails: avance.reservation || null,
-        superficie_habitable: avance.reservation.bien.superficie_habitable || 0,
-        titre_foncier: avance.reservation.bien.titre_foncier || "",
-        tranche: avance.reservation.bien.tranche?.nom || "",
-        bloc: avance.reservation.bien.bloc?.nom || "",
-        immeuble: avance.reservation.bien.immeuble?.nom || "",
-        type_id: avance.reservation.bien.type_id || null,
-        type: avance.reservation.bien.type_bien?.type || "",
-        projet: avance.reservation.bien.projet?.nom || "",
-        propriete_dite_bien: avance.reservation.bien.propriete_dite_bien || "",
-        bien_numero: avance.reservation.bien.numero || "",
-        prix: avance.reservation.bien.prix || "",
-        mode_financement: avance?.reservation.mode_financement || "",
-        adresse_projet: avance.reservation.bien.projet?.adresse || "",
-        etage: avance.reservation.bien.projet?.niveau || 0,
-        superficie_parking: avance.reservation.bien?.superficie_parking || 0,
-        prix_parking: avance.reservation.bien?.prix_parking || 0,
-        isParkingAvailable: avance.reservation.bien?.superficie_parking
-          ? true
-          : false,
-        clientsList: avance.reservation.aquereurs.map((aquerreur) => ({
-          nom: aquerreur.client.nom,
-          prenom: aquerreur.client.prenom,
-          civilite: aquerreur.client.civilite || "Mr",
-          type_client: aquerreur.client.type_client,
-          telephone_num1: aquerreur.client.telephone_num1,
-          situation_familliale: aquerreur.client.situation_familliale,
-          civilite: aquerreur.client.civilite,
-          cin: aquerreur.client.cin,
-        })),
-      });
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      setLoading(false);
-    }
-  };
-
+    const avance = response.data.avance;
+    const reservation = avance.reservation || {};
+    const bien = reservation.bien || {};
+    const projet = bien.projet || {};
+    
+    setFormValues(prev => ({
+      ...prev,
+      user: JSON.parse(localStorage.getItem("authUser")) || {},
+      mode_paiement: avance.mode_paiement || "",
+      banque_id: avance.banque_id || "",
+      banque: avance.banque?.nom || "",
+      numero_paiement: avance.numero_paiement || "",
+      montant: avance.montant || 0,
+      echeance: avance.echeance || "",
+      reservationDetails: reservation,
+      superficie_habitable: bien.superficie_habitable || 0,
+      titre_foncier: bien.titre_foncier || "",
+      tranche: bien.tranche?.nom || "",
+      bloc: bien.bloc?.nom || "",
+      immeuble: bien.immeuble?.nom || "",
+      type_id: bien.type_id || "",
+      type: bien.type_bien?.type || "",
+      projet: projet.nom || "",
+      propriete_dite_bien: bien.propriete_dite_bien || "",
+      bien_numero: bien.numero || "",
+      prix: bien.prix || 0,
+      mode_financement: reservation.mode_financement || "",
+      adresse_projet: projet.adresse || "",
+      etage: projet.niveau || 0,
+      superficie_parking: bien.superficie_parking || 0,
+      prix_parking: bien.prix_parking || 0,
+      isParkingAvailable: !!bien.superficie_parking,
+      clientsList: (reservation.aquereurs || []).map((aquerreur) => ({
+        nom: aquerreur.client?.nom || "",
+        prenom: aquerreur.client?.prenom || "",
+        civilite: aquerreur.client?.civilite || "Mr",
+        type_client: aquerreur.client?.type_client || "",
+        telephone_num1: aquerreur.client?.telephone_num1 || "",
+        situation_familliale: aquerreur.client?.situation_familliale || "",
+        cin: aquerreur.client?.cin || "",
+      })),
+    }));
+    setLoading(false);
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    setLoading(false);
+  }
+};
   // Add this function to update clients
   const updateClients = async () => {
     try {
@@ -135,10 +138,34 @@ const PrevisualiserRecu = () => {
             formValues.reservationDetails.aquereurs[index]?.client;
 
           if (originalClient) {
+              // Convert civilite string to number
+          let civiliteValue;
+          switch (clientData.civilite) {
+            case 'MR':
+            case 'Mr':
+            case 'mr':
+            case '1':
+              civiliteValue = 1;
+              break;
+            case 'MME':
+            case 'Mme':
+            case 'mme':
+            case '2':
+              civiliteValue = 2;
+              break;
+            case 'MLLE':
+            case 'Mlle':
+            case 'mlle':
+            case '3':
+              civiliteValue = 3;
+              break;
+            default:
+              civiliteValue = 1; // Default to Mr
+          }
             const updatedClient = {
               nom: clientData.nom,
               prenom: clientData.prenom,
-              civilite: clientData.civilite,
+              civilite: civiliteValue,
               type_client: clientData.type_client,
               telephone_num1: clientData.telephone_num1,
               situation_familliale: clientData.situation_familliale,
@@ -161,7 +188,7 @@ const PrevisualiserRecu = () => {
 
       return true;
     } catch (error) {
-      console.error("Error updating clients:", error);
+      console.error('Error updating clients:', error);
       return false;
     }
   };
@@ -174,12 +201,12 @@ const PrevisualiserRecu = () => {
       const success = await updateClients();
       if (success) {
         // Trigger PDF download after successful update
-        const link = document.createElement("a");
+        const link = document.createElement('a');
         link.href = URL.createObjectURL(await pdfDocument.toBlob());
-        link.download = "recu.pdf";
+        link.download = 'recu.pdf';
         link.click();
       } else {
-        alert("Failed to update client data");
+        alert('Failed to update client data');
       }
     }}
   >
@@ -201,7 +228,7 @@ const PrevisualiserRecu = () => {
     setFormValues((prev) => ({
       ...prev,
       isParkingAvailable: checked,
-      superficie_parking: checked ? prev.superficie_parking : "",
+      superficie_parking: checked ? prev.superficie_parking : '',
     }));
   };
 
@@ -241,8 +268,8 @@ const PrevisualiserRecu = () => {
             onClick={() => handleTabChange(0)}
             className={`flex flex-1 items-center justify-center px-2 py-1.5 text-xs ${
               selectedTab == 0
-                ? "border-b-2 border-blue-500 text-blue-500"
-                : "text-gray-500"
+                ? 'border-b-2 border-blue-500 text-blue-500'
+                : 'text-gray-500'
             }`}
           >
             <BusinessIcon className="mr-1 h-4 w-4" />
@@ -252,8 +279,8 @@ const PrevisualiserRecu = () => {
             onClick={() => handleTabChange(1)}
             className={`flex flex-1 items-center justify-center px-2 py-1.5 text-xs ${
               selectedTab == 1
-                ? "border-b-2 border-blue-500 text-blue-500"
-                : "text-gray-500"
+                ? 'border-b-2 border-blue-500 text-blue-500'
+                : 'text-gray-500'
             }`}
           >
             <PersonIcon className="mr-1 h-4 w-4" />
@@ -263,8 +290,8 @@ const PrevisualiserRecu = () => {
             onClick={() => handleTabChange(2)}
             className={`flex flex-1 items-center justify-center px-2 py-1.5 text-xs ${
               selectedTab == 2
-                ? "border-b-2 border-blue-500 text-blue-500"
-                : "text-gray-500"
+                ? 'border-b-2 border-blue-500 text-blue-500'
+                : 'text-gray-500'
             }`}
           >
             <HomeIcon className="mr-1 h-4 w-4" />
@@ -293,7 +320,7 @@ const PrevisualiserRecu = () => {
                 <input
                   type="text"
                   name="raison_social"
-                  value={formValues.raison_social}
+                  value={formValues.raison_social||""}
                   onChange={handleChange}
                   className="w-full rounded border border-gray-300 p-2 text-sm"
                 />
@@ -305,7 +332,7 @@ const PrevisualiserRecu = () => {
                 <input
                   type="text"
                   name="adresse"
-                  value={formValues.adresse}
+                  value={formValues.adresse||""}
                   onChange={handleChange}
                   className="w-full rounded border border-gray-300 p-2 text-sm"
                 />
@@ -318,7 +345,7 @@ const PrevisualiserRecu = () => {
                   <input
                     type="number"
                     name="capital"
-                    value={formValues.capital}
+                    value={formValues.capital||0}
                     onChange={handleChange}
                     className="w-full rounded border border-gray-300 p-2 text-sm"
                   />
@@ -330,7 +357,7 @@ const PrevisualiserRecu = () => {
                   <input
                     type="number"
                     name="registre_commerce"
-                    value={formValues.registre_commerce}
+                    value={formValues.registre_commerce||""}
                     onChange={handleChange}
                     className="w-full rounded border border-gray-300 p-2 text-sm"
                   />
@@ -343,7 +370,7 @@ const PrevisualiserRecu = () => {
                 <input
                   type="number"
                   name="id_fiscal"
-                  value={formValues.id_fiscal}
+                  value={formValues.id_fiscal||""}
                   onChange={handleChange}
                   className="w-full rounded border border-gray-300 p-2 text-sm"
                 />
@@ -362,9 +389,9 @@ const PrevisualiserRecu = () => {
                       </label>
                       <input
                         type="text"
-                        value={clientData.nom || ""}
+                        value={clientData.nom || ''}
                         onChange={(e) =>
-                          handleChangeClientList(index, "nom", e.target.value)
+                          handleChangeClientList(index, 'nom', e.target.value)
                         }
                         className="w-full rounded border border-gray-300 p-2 text-sm"
                       />
@@ -375,11 +402,11 @@ const PrevisualiserRecu = () => {
                       </label>
                       <input
                         type="text"
-                        value={clientData.prenom || ""}
+                        value={clientData.prenom || ''}
                         onChange={(e) =>
                           handleChangeClientList(
                             index,
-                            "prenom",
+                            'prenom',
                             e.target.value
                           )
                         }
@@ -392,9 +419,9 @@ const PrevisualiserRecu = () => {
                     <label className="mr-3 flex items-center">
                       <input
                         type="radio"
-                        checked={clientData.civilite == "Mr"}
+                        checked={clientData.civilite == '1'}
                         onChange={() =>
-                          handleChangeClientList(index, "civilite", "Mr")
+                          handleChangeClientList(index, 'civilite', '1')
                         }
                         className="mr-1"
                       />
@@ -403,9 +430,9 @@ const PrevisualiserRecu = () => {
                     <label className="mr-3 flex items-center">
                       <input
                         type="radio"
-                        checked={clientData.civilite == "Mme"}
+                        checked={clientData.civilite == '2'}
                         onChange={() =>
-                          handleChangeClientList(index, "civilite", "Mme")
+                          handleChangeClientList(index, 'civilite', '2')
                         }
                         className="mr-1"
                       />
@@ -414,9 +441,9 @@ const PrevisualiserRecu = () => {
                     <label className="flex items-center">
                       <input
                         type="radio"
-                        checked={clientData.civilite == "Mlle"}
+                        checked={clientData.civilite == 'Mlle'}
                         onChange={() =>
-                          handleChangeClientList(index, "civilite", "Mlle")
+                          handleChangeClientList(index, 'civilite', 'Mlle')
                         }
                         className="mr-1"
                       />
@@ -441,7 +468,7 @@ const PrevisualiserRecu = () => {
                   <input
                     type="text"
                     name="propriete_dite_bien"
-                    value={formValues.propriete_dite_bien}
+                    value={formValues.propriete_dite_bien||""}
                     onChange={handleChange}
                     className="w-full rounded border border-gray-300 p-2 text-sm"
                   />
@@ -451,7 +478,7 @@ const PrevisualiserRecu = () => {
                   <input
                     type="text"
                     name="type"
-                    value={formValues.type}
+                    value={formValues.type||""}
                     onChange={handleChange}
                     className="w-full rounded border border-gray-300 p-2 text-sm"
                   />
@@ -466,7 +493,7 @@ const PrevisualiserRecu = () => {
                   <input
                     type="text"
                     name="projet"
-                    value={formValues.projet}
+                    value={formValues.projet||""}
                     onChange={handleChange}
                     className="w-full rounded border border-gray-300 p-2 text-sm"
                   />
@@ -479,7 +506,7 @@ const PrevisualiserRecu = () => {
                     <input
                       type="text"
                       name="tranche"
-                      value={formValues.tranche}
+                      value={formValues.tranche||""}
                       onChange={handleChange}
                       className="w-full rounded border border-gray-300 p-2 text-sm"
                     />
@@ -493,7 +520,7 @@ const PrevisualiserRecu = () => {
                   <input
                     type="text"
                     name="bloc"
-                    value={formValues.bloc}
+                    value={formValues.bloc||""}
                     onChange={handleChange}
                     className="w-full rounded border border-gray-300 p-2 text-sm"
                   />
@@ -508,7 +535,7 @@ const PrevisualiserRecu = () => {
                   <input
                     type="text"
                     name="immeuble"
-                    value={formValues.immeuble}
+                    value={formValues.immeuble||""}
                     onChange={handleChange}
                     className="w-full rounded border border-gray-300 p-2 text-sm"
                   />
@@ -523,7 +550,7 @@ const PrevisualiserRecu = () => {
                   <input
                     type="number"
                     name="titre_foncier"
-                    value={formValues.titre_foncier}
+                    value={formValues.titre_foncier||""}
                     onChange={handleChange}
                     className="w-full rounded border border-gray-300 p-2 text-sm"
                   />
@@ -533,7 +560,7 @@ const PrevisualiserRecu = () => {
                   <input
                     type="number"
                     name="prix"
-                    value={formValues.prix}
+                    value={formValues.prix||0}
                     onChange={handleChange}
                     className="w-full rounded border border-gray-300 p-2 text-sm"
                   />
@@ -560,7 +587,7 @@ const PrevisualiserRecu = () => {
                   <input
                     type="number"
                     name="numero"
-                    value={formValues.numero}
+                    value={formValues.numero||""}
                     onChange={handleChange}
                     className="w-full rounded border border-gray-300 p-2 text-sm"
                   />
@@ -574,7 +601,7 @@ const PrevisualiserRecu = () => {
                 <input
                   type="number"
                   name="superficie_habitable"
-                  value={formValues.superficie_habitable}
+                  value={formValues.superficie_habitable||0}
                   onChange={handleChange}
                   className="w-full rounded border border-gray-300 p-2 text-sm"
                 />
@@ -601,7 +628,7 @@ const PrevisualiserRecu = () => {
                     <input
                       type="number"
                       name="superficie_parking"
-                      value={formValues.superficie_parking}
+                      value={formValues.superficie_parking||0}
                       onChange={handleChange}
                       className="w-full rounded border border-gray-300 p-2 text-sm"
                     />
@@ -613,7 +640,7 @@ const PrevisualiserRecu = () => {
                     <input
                       type="number"
                       name="prix_parking"
-                      value={formValues.prix_parking}
+                      value={formValues.prix_parking||0}
                       onChange={handleChange}
                       className="w-full rounded border border-gray-300 p-2 text-sm"
                     />
@@ -747,12 +774,12 @@ const PrevisualiserRecu = () => {
                 <button
                   className={`px-3 py-1 text-sm rounded ${
                     loading
-                      ? "bg-gray-200 text-gray-500 cursor-wait"
-                      : "bg-blue-500 text-white hover:bg-indigo-600"
+                      ? 'bg-gray-200 text-gray-500 cursor-wait'
+                      : 'bg-blue-500 text-white hover:bg-indigo-600'
                   }`}
                   disabled={loading}
                 >
-                  {loading ? "Génération..." : "Télécharger PDF"}
+                  {loading ? 'Génération...' : 'Télécharger PDF'}
                 </button>
               )}
             </PDFDownloadLink>
@@ -774,10 +801,10 @@ const PrevisualiserRecu = () => {
                   fill
                   className="object-contain"
                   sizes="96px"
-                  unoptimized={process.env.NODE_ENV !== "production"} // Disable optimization in development
+                  unoptimized={process.env.NODE_ENV !== 'production'} // Disable optimization in development
                   onError={(e) => {
                     e.target.onerror = null;
-                    e.target.src = "/default-company-logo.png";
+                    e.target.src = '/default-company-logo.png';
                   }}
                 />
               </div>
@@ -804,12 +831,12 @@ const PrevisualiserRecu = () => {
             {/* La Société */}
             <p className="mb-4">
               LA SOCIETE <strong>«{formValues.raison_social}»</strong>, société
-              à responsabilité limitée de droit Marocain, au capital social de{" "}
+              à responsabilité limitée de droit Marocain, au capital social de{' '}
               <strong>{formValues.capital}</strong> de dirhams, ayant son siège
               social à <strong>{formValues.adresse}</strong>, immatriculée au
-              registre du commerce sous n°{" "}
+              registre du commerce sous n°{' '}
               <strong>{formValues.registre_commerce}</strong> et dont le numéro
-              de {"l"}identifiant fiscal est le n°{" "}
+              de {'l'}identifiant fiscal est le n°{' '}
               <strong>{formValues.id_fiscal}</strong>.
             </p>
 
@@ -819,19 +846,19 @@ const PrevisualiserRecu = () => {
               {formValues.clientsList.map((clientData, index) => {
                 const isLast = index == formValues.clientsList.length - 1;
                 const separator = isLast
-                  ? ""
+                  ? ''
                   : index == formValues.clientsList.length - 2
-                  ? " et "
-                  : ", ";
+                  ? ' et '
+                  : ', ';
 
                 return (
                   <Fragment key={index}>
                     <strong>
-                      {clientData.civilite == "Mr"
-                        ? "Mr"
-                        : clientData.civilite == "Mme"
-                        ? "Mme"
-                        : "Mlle"}{" "}
+                      {clientData.civilite == '1'
+                        ? 'Mr'
+                        : clientData.civilite == '2'
+                        ? 'Mme'
+                        : 'Mlle'}{' '}
                       {clientData.nom} {clientData.prenom}
                     </strong>
                     {separator}
@@ -840,7 +867,7 @@ const PrevisualiserRecu = () => {
               })}
               &nbsp; la somme de&nbsp;
               <strong>
-                {formValues.montant.toLocaleString("fr-FR", {
+                {formValues.montant.toLocaleString('fr-FR', {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
                 })}
@@ -848,7 +875,7 @@ const PrevisualiserRecu = () => {
               &nbsp;
               {formValues.mode_paiement != 1 ? (
                 <>
-                  au moyen {"d"}un&nbsp;
+                  au moyen {'d'}un&nbsp;
                   <strong>
                     {MODE_PAIEMENT[formValues.mode_paiement]?.label}
                   </strong>
@@ -869,7 +896,7 @@ const PrevisualiserRecu = () => {
 
             {/* Propriété et prix d'acquisition */}
             <p className="mb-4">
-              Représentant partie du prix {"d'"}acquisition de la propriété sise{" "}
+              Représentant partie du prix {"d'"}acquisition de la propriété sise{' '}
               <strong>
                 {selectedProjet?.nbre_tranches != 0 &&
                   `à la tranche  «${formValues.tranche}», `}
@@ -885,23 +912,23 @@ const PrevisualiserRecu = () => {
               <strong>
                 {formValues.etage != 0
                   ? `à l'étage ${formValues.etage} `
-                  : " au RDC "}
+                  : ' au RDC '}
               </strong>
-              numéro <strong>{formValues.bien_numero}</strong> situé à{" "}
-              <strong>{formValues.adresse_projet}</strong> , consistant à{" "}
+              numéro <strong>{formValues.bien_numero}</strong> situé à{' '}
+              <strong>{formValues.adresse_projet}</strong> , consistant à{' '}
               <strong>{formValues.type}</strong> à usage {"d'"}habitation {"d'"}
-              une superficie approximative de{" "}
+              une superficie approximative de{' '}
               <strong>{formValues.superficie_habitable}</strong> m²
               {formValues.isParkingAvailable && (
                 <>
-                  ,avec un parking de superficie{" "}
+                  ,avec un parking de superficie{' '}
                   <strong>{formValues.superficie_parking} m²</strong> de
                   prix&nbsp;
                   <strong>
-                    {formValues.prix_parking.toLocaleString("fr-FR", {
+                    {formValues.prix_parking.toLocaleString('fr-FR', {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
-                    })}{" "}
+                    })}{' '}
                     DH
                   </strong>
                 </>
@@ -915,10 +942,10 @@ const PrevisualiserRecu = () => {
 
             {/* Montant de la quittance */}
             <h3 className="mb-4 text-lg font-bold underline">
-              DONT QUITTANCE POUR LA SOMME DE{" "}
+              DONT QUITTANCE POUR LA SOMME DE{' '}
               <span className="ml-2.5">
                 <strong>
-                  {formValues.montant.toLocaleString("fr-FR", {
+                  {formValues.montant.toLocaleString('fr-FR', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}
@@ -933,7 +960,7 @@ const PrevisualiserRecu = () => {
               quittance est de
               <span className="ml-2.5">
                 <strong>
-                  {formValues.prix.toLocaleString("fr-FR", {
+                  {formValues.prix.toLocaleString('fr-FR', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}
@@ -945,11 +972,11 @@ const PrevisualiserRecu = () => {
 
             {/* Ajustement de prix en fonction de la superficie */}
             <p className="mb-4 font-semibold">
-              Etant entendu que s'il existerait une différence de métrage entre
-              la superficie définitive telle {"qu'"}établie par le titre foncier
-              et la superficie définie ci-dessus, le prix de vente sera ajusté
-              en conséquence en plus ou en moins sur la base du prix de vente au
-              mètre carré.
+              Etant entendu que {"s'il"} existerait une différence de métrage
+              entre la superficie définitive telle {"qu'"}établie par le titre
+              foncier et la superficie définie ci-dessus, le prix de vente sera
+              ajusté en conséquence en plus ou en moins sur la base du prix de
+              vente au mètre carré.
             </p>
 
             {/* Signature */}

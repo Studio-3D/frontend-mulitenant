@@ -34,7 +34,7 @@ import DateRangePicker from "@/components/DateRangePicker";
 import { useProjet } from '@/context/ProjetContext';
 const ReservationTable = ({ dataClient, user_id }) => {
   const { user, token } = useAuth();
-  const userRole = user.role;
+  const userRole = user?.role;
   const accesstoken = token || localStorage.getItem("accessToken");
 const { selectedProjet  } = useProjet();
   const router = useRouter();
@@ -346,7 +346,7 @@ const { selectedProjet  } = useProjet();
                         row.data_res.aquereurs,
                         row.data_res.date_reservation,
                         row.data_res.prix,
-                        row.avances_sum_montant
+                        row.first_avance?.montant
                       )
                     }
                   />
@@ -594,9 +594,9 @@ const { selectedProjet  } = useProjet();
           enableImport={false}
           showSearch={false}
           addLink={
-            (isSuperAdmin(user.role) ||
-              isAdmin(user.role) ||
-              isCommercial(user.role)) &&
+            (isSuperAdmin(user?.role) ||
+              isAdmin(user?.role) ||
+              isCommercial(user?.role)) &&
             !user_id
               ? getAddLinkForReservation()
               : undefined

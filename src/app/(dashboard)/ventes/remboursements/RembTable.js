@@ -12,7 +12,6 @@ import Button from '@/components/Button';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import Modal from '@/components/Modal';
-import VenteNavbar from '@/components/VenteNavbar';
 import { APIURL } from '@/configs/api';
 import Input from '@/components/Input';
 
@@ -25,7 +24,7 @@ export default function RembTable({ etat }) {
   const { selectedProjet } = useProjet();
 
   const { user, token } = useAuth();
-  const userRole = user.role;
+  const userRole = user?.role;
   const accessToken = token || localStorage.getItem('accessToken');
   const FileUrl = process.env.NEXT_PUBLIC_IMG_URL;
 

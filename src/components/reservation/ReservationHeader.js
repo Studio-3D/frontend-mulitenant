@@ -1,8 +1,9 @@
 'use client';
 import React, { useState } from 'react';
+import BreadCrumb from '../../app/(dashboard)/navigation/BreadCrumb';
+import { ENDPOINTS } from '../../configs/api';
 
 import {
-  FileTextIcon,
   InfoIcon,
   HistoryIcon,
   UsersIcon,
@@ -12,14 +13,15 @@ import {
   Home,
 } from 'lucide-react';
 import LoadingSpin from '@/components/LoadingSpin';
-import Button from '@/components/Button'; // adjust the path as needed
-import Modal from '@/components/Modal';
-import Modal_Relance from './Modal_Relance';
-import { ENDPOINTS } from '@/configs/api';
 import { useRouter } from 'next/navigation';
+import ReservationSteps from './ReservationSteps';
 
-export const ReservationHeader = ({ reservationData, userRole }) => {
-  const [open_dialog, setOpen_dialog] = useState(false);
+export const ReservationHeader = ({
+  reservationData,
+  userRole,
+  hasCompromis,
+  hasContrat, // AJOUTER CETTE PROP
+}) => {
   const router = useRouter();
   // Add null checks and default values
   if (!reservationData) {
@@ -36,11 +38,16 @@ export const ReservationHeader = ({ reservationData, userRole }) => {
     ? new Date(reservation.updated_at).toLocaleDateString('fr-FR')
     : 'N/A';
 
-  const handle_relance = () => {
-    setOpen_dialog(!open_dialog);
-  };
   return (
     <>
+      <div className="">
+        <div className="flex items-center justify-start mb-2">
+          <BreadCrumb
+            baseUrl={ENDPOINTS.VENTE + '?tab=reservations'}
+            step={`Détail Réservation`}
+          />
+        </div>
+      </div>
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
@@ -68,22 +75,20 @@ export const ReservationHeader = ({ reservationData, userRole }) => {
               </p>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
+          {/*<div className="flex items-center space-x-2">
             <InfoIcon className="h-5 w-5 text-blue-500" />
             <span className="text-gray-600">
               Dernière mise à jour: {lastUpdated}
             </span>
-          </div>
+          </div>*/}
         </div>
-        {reservation.statut == 2 && userRole == 3 && (
-          <div className="flex justify-end">
-            <Button type="delete" onClick={() => handle_relance()}>
-              Relancer
-            </Button>
-          </div>
-        )}
+        <ReservationSteps
+          reservation={reservation}
+          hasCompromis={hasCompromis}
+          hasContrat={hasContrat}
+        />
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+       {/*} <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
           <div className="bg-green-50 p-3 rounded-md">
             <div className="flex items-center gap-2">
               <CalendarIcon className="h-5 w-5 text-green-500" />
@@ -122,18 +127,8 @@ export const ReservationHeader = ({ reservationData, userRole }) => {
               {reservation?.avances?.length || 0}
             </p>
           </div>
-        </div>
+        </div>*/}
       </div>
-      {open_dialog && (
-        <>
-          <Modal isVisible={true} onClose={() => setOpen_dialog(false)}>
-            <Modal_Relance
-              id={reservation.id}
-              onClose={() => setOpen_dialog(false)}
-            />
-          </Modal>
-        </>
-      )}
     </>
   );
 };

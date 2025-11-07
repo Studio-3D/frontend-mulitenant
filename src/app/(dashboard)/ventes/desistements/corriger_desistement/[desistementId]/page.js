@@ -14,6 +14,7 @@ import {
   fetchList_fichier_exist_by_Code,
 } from '../../../../../../../src/configs/api-utils';
 import { type_dst_dp } from '@/configs/enum';
+import SelectInput from '@/components/SelectInput';
 
 import LoadingSpin from '@/components/LoadingSpin';
 import { useForm, FormProvider } from 'react-hook-form';
@@ -77,7 +78,10 @@ export default function Page() {
   const [filesList_dst, setFilesList_dst] = useState(null);
   const [filesList_plt, setFilesList_plt] = useState(null);
   const [selectedFiles_dst, setSelectedFiles_dst] = useState([]);
+  const [originalFiles_dst, setOriginalFiles_dst] = useState([]); // Add this
   const [selectedFiles_plt, setSelectedFiles_plt] = useState([]);
+  const [originalFiles_plt, setOriginalFiles_plt] = useState([]);
+
   const [filesList_avc, setFilesList_avc] = useState(null);
 
   // Form methods
@@ -111,7 +115,7 @@ export default function Page() {
         // Projet a changé
 
         console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-        router.back();
+        router.push('/ventes?tab=desistements');
       }
       setOldProjetId(selectedProjet.id);
     }
@@ -158,7 +162,7 @@ export default function Page() {
         );
         setValue('echeance_pen', response.data.penalite?.echeance);
 
-        setSelectedFiles_plt(
+        /*setSelectedFiles_plt(
           response.data.penalite?.piece_jointes
             ? response.data.penalite?.piece_jointes
             : []
@@ -169,14 +173,21 @@ export default function Page() {
             ? response.data.penalite?.piece_jointes
             : []
         );
+      }*/
+        if (response.data.penalite?.piece_jointes) {
+          const penaltyFiles = response.data.penalite.piece_jointes;
+          setOriginalFiles_plt(penaltyFiles);
+          setSelectedFiles_plt(penaltyFiles);
+          setValue('files_penalite', penaltyFiles);
+        }
       }
-
       // Set files flag if files exist
       if (desistement.piece_jointes && desistement.piece_jointes.length > 0) {
         setAvecPiecesJointes(true);
-        setSelectedFiles_dst(desistement.piece_jointes || []);
-        setValue('files_desistement', desistement.piece_jointes || []);
-        // You might want to pre-load existing files here
+        const originalFiles = desistement.piece_jointes || [];
+        setOriginalFiles_dst(originalFiles); // Store original files
+        setSelectedFiles_dst(originalFiles); // Initialize with original files
+        setValue('files_desistement', originalFiles);
       }
       // Add similar blocks for other types (2 and 3) if needed
     } catch (error) {
@@ -351,13 +362,62 @@ export default function Page() {
         formData.append('echeance_pen', watch('echeance_pen'));
       }
 
+      // Handle files - separate original file names and new files
+      const { originalFileNames, newFiles } = selectedFiles_dst.reduce(
+        (acc, file) => {
+          if (file.id && file.fichier) {
+            // This is an original file that wasn't modified
+            acc.originalFileNames.push(file.fichier);
+          } else {
+            // This is a new file or modified file
+            acc.newFiles.push(file);
+          }
+          return acc;
+        },
+        { originalFileNames: [], newFiles: [] }
+      );
+
+      // Add original file names as array
+      originalFileNames.forEach((fileName, index) => {
+        formData.append(`original_files_desistement[${index}]`, fileName);
+      });
+
+      // Add new files
+      newFiles.forEach((file, index) => {
+        formData.append(`new_files_desistement[${index}]`, file);
+      });
       // Add files
-      selectedFiles_dst.forEach((file, index) => {
+      /*  selectedFiles_dst.forEach((file, index) => {
         formData.append(`files_desistement[${index}]`, file);
       });
 
       selectedFiles_plt.forEach((file, index) => {
         formData.append(`files_penalite[${index}]`, file);
+      });*/
+      // Handle penalty files - separate original file names and new files
+      const { originalFileNames: originalFileNamesPlt, newFiles: newFilesPlt } =
+        selectedFiles_plt.reduce(
+          (acc, file) => {
+            if (file.id && file.fichier) {
+              // This is an original file that wasn't modified
+              acc.originalFileNames.push(file.fichier);
+            } else {
+              // This is a new file or modified file
+              acc.newFiles.push(file);
+            }
+            return acc;
+          },
+          { originalFileNames: [], newFiles: [] }
+        );
+
+      // Add original penalty file names as array
+      originalFileNamesPlt.forEach((fileName, index) => {
+        formData.append(`original_files_penalite[${index}]`, fileName);
+      });
+
+      // Add new penalty files
+      newFilesPlt.forEach((file, index) => {
+        formData.append(`new_files_penalite[${index}]`, file);
       });
 
       // Add type-specific data
@@ -447,14 +507,16 @@ export default function Page() {
         },
       });
 
-      /* if (user.role <= 2) {
+      if (user?.role <= 2) {
         localStorage.setItem('etat_dst', '1');
-        router.push('/ventes/desistements');
+        router.push('/ventes?tab=desistements');
       } else {
         //commercial
         localStorage.setItem('etat_dst', '5');
-        router.push('/ventes/desistements/attente_encours');
-      }*/
+        router.push(
+          '/ventes?tab=validation&subtab=desistements-attente-encours'
+        );
+      }
     } catch (error) {
       console.error('Error submitting form:', error);
     } finally {
@@ -1032,21 +1094,43 @@ export default function Page() {
 
   const handleFileChange = (event, fileType) => {
     const files = Array.from(event.target.files);
-    event.target.value = null; // Reset input
+    event.target.value = null;
 
-    if (files.length == 0) return;
+    if (files.length === 0) return;
 
-    // Determine which state variables to use based on fileType
-    const isDst = fileType == 1;
-    const selectedFiles = isDst ? selectedFiles_dst : selectedFiles_plt;
-    const filesList = isDst ? filesList_dst : filesList_plt;
-    const setSelectedFiles = isDst
-      ? setSelectedFiles_dst
-      : setSelectedFiles_plt;
-    const formField = isDst ? 'files_desistement' : 'files_penalite';
+    // Determine file type configuration
+    const fileConfig = {
+      1: {
+        // dst - Desistement files
+        selectedFiles: selectedFiles_dst,
+        setSelectedFiles: setSelectedFiles_dst,
+        originalFiles: originalFiles_dst,
+        filesList: filesList_dst,
+        formField: 'files_desistement',
+      },
+      2: {
+        // plt - Penalty files
+        selectedFiles: selectedFiles_plt,
+        setSelectedFiles: setSelectedFiles_plt,
+        originalFiles: originalFiles_plt,
+        filesList: filesList_plt,
+        formField: 'files_penalite',
+      },
+    };
+
+    const config = fileConfig[fileType];
+    if (!config) return;
+
+    const {
+      selectedFiles,
+      setSelectedFiles,
+      originalFiles,
+      filesList,
+      formField,
+    } = config;
 
     const updatedFiles = [...selectedFiles];
-    const existingFileNames = new Set(Object.values(filesList));
+    const existingFileNames = new Set(Object.values(filesList || {}));
     const existingSelectedNames = new Set(
       selectedFiles.map((f) => f.name || f.fichier)
     );
@@ -1055,15 +1139,23 @@ export default function Page() {
       const fileName = file.name;
       const lastDotIndex = fileName.lastIndexOf('.');
       const baseName =
-        lastDotIndex == -1 ? fileName : fileName.substring(0, lastDotIndex);
+        lastDotIndex === -1 ? fileName : fileName.substring(0, lastDotIndex);
       const extension =
-        lastDotIndex == -1 ? '' : fileName.substring(lastDotIndex + 1);
+        lastDotIndex === -1 ? '' : fileName.substring(lastDotIndex + 1);
 
       let finalFileName = fileName;
 
+      // Check if file already exists in original files or selected files
+      const isOriginalFile = originalFiles.some(
+        (originalFile) =>
+          originalFile.fichier === fileName || originalFile.name === fileName
+      );
+
+      const isSelectedFile = existingSelectedNames.has(fileName);
+
       if (
-        existingFileNames.has(fileName) ||
-        existingSelectedNames.has(fileName)
+        (existingFileNames.has(fileName) && !isOriginalFile) ||
+        (isSelectedFile && !isOriginalFile)
       ) {
         let counter = 1;
         while (true) {
@@ -1073,7 +1165,10 @@ export default function Page() {
 
           if (
             !existingFileNames.has(finalFileName) &&
-            !existingSelectedNames.has(finalFileName)
+            !existingSelectedNames.has(finalFileName) &&
+            !originalFiles.some(
+              (originalFile) => originalFile.fichier === finalFileName
+            )
           ) {
             break;
           }
@@ -1082,15 +1177,29 @@ export default function Page() {
       }
 
       const finalFile =
-        finalFileName == fileName
+        finalFileName === fileName
           ? file
           : new File([file], finalFileName, { type: file.type });
 
-      updatedFiles.push(finalFile);
+      // Replace if it's an original file with same name, otherwise add
+      const existingIndex = updatedFiles.findIndex(
+        (f) => f.fichier === fileName || (f.name === fileName && f.id)
+      );
+
+      if (existingIndex >= 0) {
+        updatedFiles[existingIndex] = finalFile;
+      } else {
+        updatedFiles.push(finalFile);
+      }
+
       existingSelectedNames.add(finalFileName);
     }
 
-    if (updatedFiles.length > selectedFiles.length) {
+    if (
+      updatedFiles.length !== selectedFiles.length ||
+      JSON.stringify(updatedFiles.map((f) => f.name || f.fichier)) !==
+        JSON.stringify(selectedFiles.map((f) => f.name || f.fichier))
+    ) {
       setSelectedFiles(updatedFiles);
       setValue(formField, updatedFiles);
     }
@@ -1102,16 +1211,31 @@ export default function Page() {
   };
 
   const handleDeleteFile = async (index, fileType) => {
-    const isDst = fileType == 1;
-    const selectedFiles = isDst ? selectedFiles_dst : selectedFiles_plt;
-    const setSelectedFiles = isDst
-      ? setSelectedFiles_dst
-      : setSelectedFiles_plt;
-    const formField = isDst ? 'files_desistement' : 'files_penalite';
+    const fileConfig = {
+      1: {
+        // dst
+        selectedFiles: selectedFiles_dst,
+        setSelectedFiles: setSelectedFiles_dst,
+        formField: 'files_desistement',
+      },
+      2: {
+        // plt
+        selectedFiles: selectedFiles_plt,
+        setSelectedFiles: setSelectedFiles_plt,
+        formField: 'files_penalite',
+      },
+    };
+
+    const config = fileConfig[fileType];
+    if (!config) return;
+
+    const { selectedFiles, setSelectedFiles, formField } = config;
+
+    const fileToDelete = selectedFiles[index];
 
     const updatedFiles = selectedFiles.filter((_, i) => i !== index);
     setSelectedFiles(updatedFiles);
-    await Promise.resolve(); // Ensures state is updated
+    await Promise.resolve();
     setValue(formField, updatedFiles);
   };
 
@@ -1214,6 +1338,7 @@ export default function Page() {
       }
     }
   };
+
   return (
     <div className="flex flex-col w-full min-h-screen bg-gray-100 p-4">
       <div className="w-full bg-white shadow-lg rounded-lg mb-4">
@@ -1348,18 +1473,30 @@ export default function Page() {
               <div className="flex flex-col md:flex-row gap-4 items-center">
                 {' '}
                 {/* Ensures alignment */}
-                {/* Mode Pénalité Dropdown */}
-                <div className="flex-1 min-w-[200px] mt-1">
-                  {' '}
-                  {/* Added mt-1 */}
-                  <AutocompleteSelectComponent
-                    label="Mode Pénalité"
+                {/* Mode Pénalité Dropdown */} {/* Added mt-1 */}
+                <div className="w-[600px] mt-1">
+                  <SelectInput
+                    label="Mode Pénalité :"
                     name="mode_penalite"
                     value={watch('mode_penalite_value')}
-                    control={control}
-                    options={modes_penalites}
-                    errors={errors}
-                    onChange={(value) => handlechange_mode_penalite(value)}
+                    required={true}
+                    options={Object.entries(modes_penalites).map(
+                      ([key, value]) => ({
+                        value: value.label, // Use label as value
+                        label: value.label,
+                      })
+                    )}
+                    onChange={(value) => {
+                      // Find the code by label
+                      const entry = Object.entries(modes_penalites).find(
+                        ([key, val]) => val.label === value
+                      );
+                      if (entry) {
+                        handlechange_mode_penalite(entry[0]); // Pass the code
+                      }
+                    }}
+                    error={errors.mode_penalite?.message}
+                    placeholder="Sélectionnez un mode de pénalité"
                   />
                 </div>
                 {/* Conditional Fields (aligned at the same height) */}
@@ -1368,7 +1505,7 @@ export default function Page() {
                     {watch('mode_penalite') == 'Montant' ||
                     watch('mode_penalite') == '13' ? (
                       /* Manual Penalty Amount Input (same height as other fields) */
-                      <div className="flex-1 min-w-[180px]">
+                      <div className="flex-1 min-w-[180px] mt-2">
                         <TextField
                           label="Pénalité Montant"
                           name="penalite_montant"
@@ -1469,17 +1606,37 @@ export default function Page() {
                         </div>
 
                         <div>
-                          <AutocompleteSelectComponent
+                          <SelectInput
                             label="Mode de Paiement"
-                            required
-                            value={watch('mode_paiement')}
                             name="mode_paiement_pen"
-                            control={control}
-                            options={MODE_PAIEMENT}
-                            errors={errors}
-                            onChange={(value) =>
-                              setValue('mode_paiement_pen', value)
+                            value={watch('mode_paiement_pen')}
+                            required={true}
+                            options={
+                              // Handle both array and object formats for MODE_PAIEMENT
+                              !MODE_PAIEMENT
+                                ? []
+                                : Array.isArray(MODE_PAIEMENT)
+                                ? MODE_PAIEMENT
+                                : typeof MODE_PAIEMENT === 'object'
+                                ? Object.entries(MODE_PAIEMENT).map(
+                                    ([key, value]) => ({
+                                      value: key,
+                                      label:
+                                        typeof value === 'object'
+                                          ? value.label ||
+                                            value.name ||
+                                            String(value)
+                                          : String(value),
+                                    })
+                                  )
+                                : []
                             }
+                            onChange={(value) => {
+                              console.log('Selected payment mode:', value);
+                              setValue('mode_paiement_pen', value);
+                            }}
+                            error={errors.mode_paiement_pen?.message}
+                            placeholder="Sélectionnez un mode de paiement"
                           />
                         </div>
                       </div>
@@ -1488,19 +1645,25 @@ export default function Page() {
                         watch('mode_paiement_pen') != 1 && (
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                             <div>
-                              <Autocomplete
+                              <SelectInput
                                 label="Banque:"
                                 name="banque_pen"
-                                required={watch('mode_paiement_pen') != '1'}
-                                options={banques}
                                 value={watch('banque_pen')}
-                                control={control}
-                                errors={{}}
-                                backendErrors={{}}
-                                onChange={(e) => {
-                                  setValue('banque_pen', e.id);
+                                required={watch('mode_paiement_pen') != '1'}
+                                options={
+                                  Array.isArray(banques)
+                                    ? banques.map((banque) => ({
+                                        value: banque.id,
+
+                                        label: banque.nom || 'Banque sans nom',
+                                      }))
+                                    : []
+                                }
+                                onChange={(value) => {
+                                  setValue('banque_pen', value);
                                 }}
-                                choix="nom"
+                                error={errors.banque_pen?.message}
+                                placeholder="Sélectionnez une banque"
                               />
                             </div>
 
@@ -1557,7 +1720,7 @@ export default function Page() {
                               defaultValues={{}}
                               name=""
                               type="file"
-                              onChange={(e) => handleFileChange(e, 3)}
+                              onChange={(e) => handleFileChange(e, 2)}
                               accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                             />
 
