@@ -12,7 +12,6 @@ import Button from '@/components/Button';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import Modal from '@/components/Modal';
-import VenteNavbar from '@/components/VenteNavbar';
 import { APIURL } from '@/configs/api';
 import Input from '@/components/Input';
 

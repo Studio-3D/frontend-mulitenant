@@ -116,6 +116,7 @@ export const MODE_PAIEMENT = {
   4: { code: 4, label: 'Chèque Certifié' },
   5: { code: 5, label: 'Virement' },
   6: { code: 6, label: 'Versement' },
+
 };
 // Penalty modes
 export const modes_penalites = {

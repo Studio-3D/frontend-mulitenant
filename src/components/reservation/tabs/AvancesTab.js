@@ -16,7 +16,7 @@ import {
 import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
 import Table from '@/components/Table';
 import { APIURL, RESOURCE_URL } from '../../../configs/api';
-import { MODE_PAIEMENT, Avance_Statut } from '../../../configs/enum';
+import { MODE_PAIEMENT, Avance_Statut, MODE_PAIEMENT_with_transfert } from '../../../configs/enum';
 import {
   fetchData_Select,
   fetchList_fichier_exist_by_Code,
@@ -742,7 +742,7 @@ export const AvancesTab = ({
               }[row.mode_pai] || 'bg-gray-100 text-gray-500'
             }`}
           >
-            {MODE_PAIEMENT[row.mode_pai]?.label || 'Unknown'}
+            {MODE_PAIEMENT_with_transfert[row.mode_pai]?.label || 'Unknown'}
           </span>
         );
       },

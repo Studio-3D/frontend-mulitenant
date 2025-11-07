@@ -100,7 +100,7 @@ export default function Page() {
         // Projet a changé
 
         console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-        router.push('/ventes/reservations');
+        router.push('/ventes?tab=desistements');
       }
       setOldProjetId(selectedProjet.id);
     }
@@ -442,7 +442,7 @@ export default function Page() {
       });
 
       if (response.status == 201 || response.status == 200) {
-        if (user?.role <= 2) {
+      /*  if (user?.role <= 2) {
           localStorage.setItem('etat_dst', '1');
           router.push('/ventes?tab=desistements');
         } else {
@@ -450,7 +450,7 @@ export default function Page() {
           localStorage.setItem('etat_dst', '5');
           
           router.push('/ventes?tab=validation&subtab=desistements-attente-encours');
-        }
+        }*/
       }
     } catch (error) {
       console.error('Error submitting form:', error);

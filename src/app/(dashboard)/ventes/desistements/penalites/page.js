@@ -8,7 +8,6 @@ import Table from '@/components/Table';
 import { format } from 'date-fns';
 import { MODE_PAIEMENT, type_dst, type_dst_dp } from '@/configs/enum';
 import { isAdmin, isSuperAdmin } from '../../../../../configs/enum';
-import VenteNavbar from '@/components/VenteNavbar';
 import { APIURL } from '@/configs/api';
 import Link from 'next/link';
 import SelectInput from '@/components/SelectInput';
