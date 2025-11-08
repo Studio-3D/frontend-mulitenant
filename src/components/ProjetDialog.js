@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useProjet } from "@/context/ProjetContext";
 import { useRouter } from "next/navigation";
 import { Autocomplete, TextField } from "@mui/material";
+import SelectInput from "./SelectInput";
 import Link from "next/link";
 
 const ProjetDialog = ({

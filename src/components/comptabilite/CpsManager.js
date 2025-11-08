@@ -1,18 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useProjet } from '@/context/ProjetContext';
-import { APIURL, ENDPOINTS, RESOURCE_URL } from '@/configs/api';
+import { APIURL, RESOURCE_URL } from '@/configs/api';
 import Table from '@/components/Table';
 import CpsFilter from './CpsFilter';
 import CpsForm from './CpsForm';
 import { toast } from 'react-hot-toast';
-import { Edit, Eye, PencilLine, Trash, Trash2 } from 'lucide-react';
+import { PencilLine, Trash2 } from 'lucide-react';
 import Modal from '@/components/Modal';
 import format from 'date-fns/format';
-import ProjectSelectorWrapper from './ProjectSelectorWrapper';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import { useAuth } from '@/context/AuthContext';
 import { fetchData_table_by_projet } from '@/configs/api-utils';
@@ -36,9 +35,6 @@ const CpsManager = ({}) => {
   const [cpsToDelete, setCpsToDelete] = useState(null);
 
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const action = searchParams.get('action');
-  const id = searchParams.get('id');
   const accesstoken = localStorage.getItem('accessToken');
 
   const entity = {
@@ -46,6 +42,7 @@ const CpsManager = ({}) => {
     dataKey: 'data',
     searchFields: [''],
   };
+  
   useEffect(() => {
     if (selectedProjet && selectedProjet.id) {
       fetchData_table_by_projet(
@@ -71,18 +68,18 @@ const CpsManager = ({}) => {
     refreshData,
   ]);
 
-  useEffect(() => {
-    if (action === 'edit' && id) {
-      handleEditCps(id);
-    } else if (action === 'add') {
-      setShowFormModal(true);
-      setCurrentCps(null);
-    }
-  }, [action, id]);
-
   const handleFilterChange = (values) => {
     setFilterValues(values);
     setCurrentPage(1);
+  };
+
+  const handleAddCps = (e) => {
+    if (e) {
+      e.preventDefault(); // Prevent default link behavior
+      e.stopPropagation(); // Stop event propagation
+    }
+    setCurrentCps(null);
+    setShowFormModal(true);
   };
 
   const handleEditCps = (id) => {
@@ -109,8 +106,13 @@ const CpsManager = ({}) => {
 
   const handleFormSave = () => {
     setShowFormModal(false);
+    setCurrentCps(null);
     setRefreshData((prev) => !prev);
-    router.push('/comptabilite/cps');
+  };
+
+  const handleFormCancel = () => {
+    setShowFormModal(false);
+    setCurrentCps(null);
   };
 
   const handleFileClick = (file) => {
@@ -166,14 +168,14 @@ const CpsManager = ({}) => {
           <button
             onClick={() => handleEditCps(row.id)}
             title="Modifier"
-            className="flex items-center gap-1  text-yellow-500  hover:text-yellow-700"
+            className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
           >
             <PencilLine className="w-4 h-4" />
           </button>
           <button
             onClick={() => handleDeleteCps(row.id)}
             title="Supprimer"
-            className="flex items-center gap-1 !text-red-500  hover:text-red-700"
+            className="flex items-center gap-1 !text-red-500 hover:text-red-700"
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -199,7 +201,7 @@ const CpsManager = ({}) => {
   };
 
   return (
-    <div className="relative bg-white rounded-lg px-4 py-4">
+    <div className="relative bg-white px-4 py-4">
       <Table
         name_file_export="cps"
         data_to_export={transformDataForExport()}
@@ -217,7 +219,10 @@ const CpsManager = ({}) => {
         currentPage={currentPage}
         rowsPerPage={rowsPerPage}
         enableExport={true}
-        addLink={`${ENDPOINTS.CPS}?action=add`}
+        addLink={{
+          pathname: '#', // Use hash to prevent navigation
+          onClick: handleAddCps
+        }}
         filterComponent={
           <CpsFilter
             onSubmit={handleFilterChange}
@@ -227,20 +232,11 @@ const CpsManager = ({}) => {
       />
 
       {showFormModal && (
-        <Modal
-          isVisible={true}
-          onClose={() => {
-            setShowFormModal(false);
-            router.push('/comptabilite/cps');
-          }}
-        >
+        <Modal isVisible={true} onClose={handleFormCancel}>
           <CpsForm
             cps={currentCps}
             onSave={handleFormSave}
-            onCancel={() => {
-              setShowFormModal(false);
-              router.push('/comptabilite/cps');
-            }}
+            onCancel={handleFormCancel}
           />
         </Modal>
       )}

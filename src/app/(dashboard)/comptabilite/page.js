@@ -5,11 +5,10 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useProjet } from '@/context/ProjetContext';
 import { isAdmin, isSuperAdmin } from '@/configs/enum';
-import TvaTrancheManager from '@/components/comptabilite/TvaTrancheManager';
-import ComptabiliteTabsNav from '@/components/comptabilite/ComptabiliteTabsNav';
+import { ComptabilitePage } from '../../../components/comptabilite/ComptabilitePage';
 import LoadingSpin from '@/components/LoadingSpin';
 
-const ComptabilitePage = () => {
+const Page = () => {
   const { user } = useAuth();
   const router = useRouter();
 
@@ -30,12 +29,9 @@ const ComptabilitePage = () => {
 
   return (
     <div>
-      {/* Tabs navigation */}
-      <ComptabiliteTabsNav />
-
-      <TvaTrancheManager />
+      <ComptabilitePage />
     </div>
   );
 };
 
-export default ComptabilitePage;
+export default Page;

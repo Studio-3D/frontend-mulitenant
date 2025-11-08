@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useProjet } from '@/context/ProjetContext';
 import { APIURL, ENDPOINTS, RESOURCE_URL } from '@/configs/api';
@@ -35,10 +35,7 @@ const FournisseursManager = () => {
   const [fournisseurToDelete, setFournisseurToDelete] = useState(null);
 
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const action = searchParams.get('action');
-  const id = searchParams.get('id');
-
+  
   const accesstoken = localStorage.getItem('accessToken');
 
   const entity = {
@@ -46,6 +43,7 @@ const FournisseursManager = () => {
     dataKey: 'data',
     searchFields: [''],
   };
+  
   useEffect(() => {
     if (selectedProjet && selectedProjet.id) {
       fetchData_table_by_projet(
@@ -71,18 +69,18 @@ const FournisseursManager = () => {
     refreshData,
   ]);
 
-  useEffect(() => {
-    if (action === 'edit' && id) {
-      handleEditFournisseur(id);
-    } else if (action === 'add') {
-      setShowFormModal(true);
-      setCurrentFournisseur(null);
-    }
-  }, [action, id]);
-
   const handleFilterChange = (values) => {
     setFilterValues(values);
-    setCurrentPage(1); // Reset to page 0 (not 1) when filtering
+    setCurrentPage(1);
+  };
+
+  const handleAddFournisseur = (e) => {
+    if (e) {
+      e.preventDefault(); // Prevent default link behavior
+      e.stopPropagation(); // Stop event propagation
+    }
+    setCurrentFournisseur(null);
+    setShowFormModal(true);
   };
 
   const handleViewFactures = (fournisseur) => {
@@ -114,8 +112,13 @@ const FournisseursManager = () => {
 
   const handleFormSave = () => {
     setShowFormModal(false);
+    setCurrentFournisseur(null);
     setRefreshData((prev) => !prev);
-    router.push('/comptabilite/fournisseurs');
+  };
+
+  const handleFormCancel = () => {
+    setShowFormModal(false);
+    setCurrentFournisseur(null);
   };
 
   const handleFileClick = (file) => {
@@ -152,7 +155,7 @@ const FournisseursManager = () => {
       render: (row) =>
         row.fichier_rc ? (
           <span
-            className="text-blue-600  cursor-pointer"
+            className="text-blue-600 cursor-pointer"
             onClick={() => handleFileClick(row.fichier_rc)}
           >
             {row.fichier_rc}
@@ -174,7 +177,7 @@ const FournisseursManager = () => {
           <button
             onClick={() => handleEditFournisseur(row.id)}
             title="Modifier"
-            className="p-1.5 text-yellow-100 !text-yellow-500  hover:text-yellow-700"
+            className="p-1.5 !text-yellow-500 hover:text-yellow-700"
           >
             <PencilLine className="w-4 h-4" />
           </button>
@@ -182,7 +185,7 @@ const FournisseursManager = () => {
             <button
               onClick={() => handleViewFactures(row)}
               title="Voir Factures"
-              className="p-1.5 text-blue-100 !text-blue-500  hover:text-blue-700"
+              className="p-1.5 !text-blue-500 hover:text-blue-700"
             >
               <Eye className="w-4 h-4" />
             </button>
@@ -190,7 +193,7 @@ const FournisseursManager = () => {
             <button
               onClick={() => handleDeleteFournisseur(row.id)}
               title="Supprimer"
-              className="p-1.5 text-red-200 !text-red-500  hover:text-red-700"
+              className="p-1.5 !text-red-500 hover:text-red-700"
             >
               <Trash2 className="w-4 h-4" />
             </button>
@@ -221,7 +224,7 @@ const FournisseursManager = () => {
   };
 
   return (
-    <div className="relative bg-white rounded-lg px-4 py-4">
+    <div className="relative bg-white px-4 py-4">
       <Table
         showSearch={false}
         name_file_export="fournisseurs"
@@ -236,10 +239,13 @@ const FournisseursManager = () => {
         onPageChange={setCurrentPage}
         onRowsPerPageChange={setRowsPerPage}
         onSearchChange={setSearchTerm}
-        currentPage={currentPage} // Convert 0-indexed to 1-indexed for display
+        currentPage={currentPage}
         rowsPerPage={rowsPerPage}
         enableExport={true}
-        addLink={`${ENDPOINTS.FOURNISSEURS}?action=add`}
+        addLink={{
+          pathname: '#', // Use hash to prevent navigation
+          onClick: handleAddFournisseur
+        }}
         filterComponent={
           <FournisseursFilter
             onSubmit={handleFilterChange}
@@ -249,20 +255,11 @@ const FournisseursManager = () => {
       />
 
       {showFormModal && (
-        <Modal
-          isVisible={true}
-          onClose={() => {
-            setShowFormModal(false);
-            router.push('/comptabilite/fournisseurs');
-          }}
-        >
+        <Modal isVisible={true} onClose={handleFormCancel}>
           <FournisseursForm
             fournisseur={currentFournisseur}
             onSave={handleFormSave}
-            onCancel={() => {
-              setShowFormModal(false);
-              router.push('/comptabilite/fournisseurs');
-            }}
+            onCancel={handleFormCancel}
           />
         </Modal>
       )}
@@ -305,7 +302,6 @@ const FournisseursManager = () => {
           entityId={fournisseurToDelete.id}
           onDeleted={() => {
             setRefreshData((prev) => !prev);
-            router.push('/comptabilite/fournisseurs');
           }}
         />
       )}
