@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useProjet } from '@/context/ProjetContext';
 import { APIURL, RESOURCE_URL } from '@/configs/api';
@@ -34,9 +34,6 @@ const CreditsManager = ({}) => {
   const [creditToDelete, setCreditToDelete] = useState(null);
 
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const action = searchParams.get('action');
-  const id = searchParams.get('id');
 
   const fetchData = async () => {
     if (!selectedProjet) return;
@@ -89,18 +86,18 @@ const CreditsManager = ({}) => {
     refreshData,
   ]);
 
-  useEffect(() => {
-    if (action === 'edit' && id) {
-      handleEditCredit(id);
-    } else if (action === 'add') {
-      setShowFormModal(true);
-      setCurrentCredit(null);
-    }
-  }, [action, id]);
-
   const handleFilterChange = (values) => {
     setFilterValues(values);
     setPage(1);
+  };
+
+  const handleAddCredit = (e) => {
+    if (e) {
+      e.preventDefault(); // Prevent default link behavior
+      e.stopPropagation(); // Stop event propagation
+    }
+    setCurrentCredit(null);
+    setShowFormModal(true);
   };
 
   const handleEditCredit = (id) => {
@@ -127,8 +124,13 @@ const CreditsManager = ({}) => {
 
   const handleFormSave = () => {
     setShowFormModal(false);
+    setCurrentCredit(null);
     setRefreshData((prev) => !prev);
-    router.push('/comptabilite/credits');
+  };
+
+  const handleFormCancel = () => {
+    setShowFormModal(false);
+    setCurrentCredit(null);
   };
 
   const handleFileClick = (file) => {
@@ -225,14 +227,14 @@ const CreditsManager = ({}) => {
           <button
             onClick={() => handleEditCredit(row.id)}
             title="Modifier"
-            className="flex items-center gap-1  text-yellow-500  hover:text-yellow-700"
+            className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
           >
             <PencilLine className="w-4 h-4" />
           </button>
           <button
             onClick={() => handleDeleteCredit(row.id)}
             title="Supprimer"
-            className="flex items-center gap-1  !text-red-500  hover:text-red-700"
+            className="flex items-center gap-1 !text-red-500 hover:text-red-700"
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -274,7 +276,7 @@ const CreditsManager = ({}) => {
   };
 
   return (
-    <div className="relative bg-white rounded-lg px-4 py-4">
+    <div className="relative bg-white px-4 py-4">
       <Table
         showSearch={false}
         name_file_export="credits"
@@ -292,7 +294,10 @@ const CreditsManager = ({}) => {
         currentPage={page}
         rowsPerPage={rowsPerPage}
         enableExport={true}
-        addLink="/comptabilite/credits?action=add"
+        addLink={{
+          pathname: '#', // Use hash to prevent navigation
+          onClick: handleAddCredit
+        }}
         filterComponent={
           <CreditsFilter
             onSubmit={handleFilterChange}
@@ -302,20 +307,11 @@ const CreditsManager = ({}) => {
       />
 
       {showFormModal && (
-        <Modal
-          isVisible={true}
-          onClose={() => {
-            setShowFormModal(false);
-            router.push('/comptabilite/credits');
-          }}
-        >
+        <Modal isVisible={true} onClose={handleFormCancel}>
           <CreditsForm
             credit={currentCredit}
             onSave={handleFormSave}
-            onCancel={() => {
-              setShowFormModal(false);
-              router.push('/comptabilite/credits');
-            }}
+            onCancel={handleFormCancel}
           />
         </Modal>
       )}

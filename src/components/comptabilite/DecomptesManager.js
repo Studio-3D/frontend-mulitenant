@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useProjet } from '@/context/ProjetContext';
 import { APIURL, ENDPOINTS } from '@/configs/api';
@@ -32,10 +32,7 @@ const DecomptesManager = () => {
   const [decompteToDelete, setDecompteToDelete] = useState(null);
 
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const action = searchParams.get('action');
-  const id = searchParams.get('id');
-
+  
   const accesstoken = localStorage.getItem('accessToken');
 
   const entity = {
@@ -43,6 +40,7 @@ const DecomptesManager = () => {
     dataKey: 'data',
     searchFields: [''],
   };
+  
   useEffect(() => {
     if (selectedProjet && selectedProjet.id) {
       fetchData_table_by_projet(
@@ -68,18 +66,18 @@ const DecomptesManager = () => {
     refreshData,
   ]);
 
-  useEffect(() => {
-    if (action === 'edit' && id) {
-      handleEditDecompte(id);
-    } else if (action === 'add') {
-      setShowFormModal(true);
-      setCurrentDecompte(null);
-    }
-  }, [action, id]);
-
   const handleFilterChange = (values) => {
     setFilterValues(values);
     setCurrentPage(1);
+  };
+
+  const handleAddDecompte = (e) => {
+    if (e) {
+      e.preventDefault(); // Prevent default link behavior
+      e.stopPropagation(); // Stop event propagation
+    }
+    setCurrentDecompte(null);
+    setShowFormModal(true);
   };
 
   const handleEditDecompte = (id) => {
@@ -106,8 +104,13 @@ const DecomptesManager = () => {
 
   const handleFormSave = () => {
     setShowFormModal(false);
+    setCurrentDecompte(null);
     setRefreshData((prev) => !prev);
-    router.push('/comptabilite/decomptes');
+  };
+
+  const handleFormCancel = () => {
+    setShowFormModal(false);
+    setCurrentDecompte(null);
   };
 
   const columns = [
@@ -214,7 +217,7 @@ const DecomptesManager = () => {
   };
 
   return (
-    <div className="relative bg-white rounded-lg px-4 py-4">
+    <div className="relative bg-white px-4 py-4">
       <Table
         name_file_export="decomptes"
         data_to_export={transformDataForExport()}
@@ -229,7 +232,10 @@ const DecomptesManager = () => {
         onSearchChange={setSearchTerm}
         rowsPerPage={rowsPerPage}
         enableExport={true}
-        addLink={`${ENDPOINTS.DECOMPTES}?action=add`}
+        addLink={{
+          pathname: '#', // Use hash to prevent navigation
+          onClick: handleAddDecompte
+        }}
         filterComponent={
           <DecomptesFilter
             onSubmit={handleFilterChange}
@@ -238,24 +244,15 @@ const DecomptesManager = () => {
         }
         showSearch={false}
         onPageChange={setCurrentPage}
-        currentPage={currentPage} // Convert 0-indexed to 1-indexed for display
+        currentPage={currentPage}
       />
 
       {showFormModal && (
-        <Modal
-          isVisible={true}
-          onClose={() => {
-            setShowFormModal(false);
-            router.push('/comptabilite/decomptes');
-          }}
-        >
+        <Modal isVisible={true} onClose={handleFormCancel}>
           <DecomptesForm
             decompte={currentDecompte}
             onSave={handleFormSave}
-            onCancel={() => {
-              setShowFormModal(false);
-              router.push('/comptabilite/decomptes');
-            }}
+            onCancel={handleFormCancel}
           />
         </Modal>
       )}

@@ -33,9 +33,6 @@ const FournisseursPage = () => {
 
   return (
     <div >
-      <ComptabiliteTabsNav />
-
-      <FournisseursManager />
     </div>
   );
 };

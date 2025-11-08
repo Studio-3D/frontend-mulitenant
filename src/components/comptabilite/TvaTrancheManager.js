@@ -246,7 +246,7 @@ const TvaTrancheManager = ({}) => {
   };
 
   return (
-    <div className="relative bg-white rounded-lg px-4 py-4">
+    <div className="relative bg-white px-4 py-4">
       <div className="bg-[#3a3349] text-white p-4 rounded-lg mb-4 grid grid-cols-2 gap-4">
         <div>
           <h5 className="font-medium" style={{ float: 'left' }}>

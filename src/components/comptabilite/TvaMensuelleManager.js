@@ -305,12 +305,12 @@ const TvaMensuelleManager = ({  }) => {
   return (
     <ProjectSelectorWrapper>
       <div>
-        <div className="flex justify-end mb-4">
+        {/* <div className="flex justify-end mb-4">
           <div className="text-xl font-bold !text-red-600">
             Somme TVA à déclarer : {sumTvaADeclarer.toLocaleString()} DH
           </div>
-        </div>
-        <div className="mt-6 bg-white p-6 rounded-lg shadow-md">
+        </div> */}
+        <div className=" bg-white p-6">
           <Table
             showSearch={false}
             currentPage={currentPage}
