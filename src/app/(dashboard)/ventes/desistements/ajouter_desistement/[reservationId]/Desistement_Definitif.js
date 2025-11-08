@@ -42,10 +42,10 @@ export function Desistement_Definitif({
     console.log('Is array?', Array.isArray(motif_desistements));
     console.log(
       'Is object?',
-      typeof motif_desistements === 'object' && motif_desistements !== null
+      typeof motif_desistements === 'object' && motif_desistements != null
     );
 
-    if (typeof motif_desistements === 'object' && motif_desistements !== null) {
+    if (typeof motif_desistements === 'object' && motif_desistements != null) {
       console.log('Object keys:', Object.keys(motif_desistements));
       console.log('Object values:', Object.values(motif_desistements));
       console.log('Object entries:', Object.entries(motif_desistements));
@@ -58,7 +58,7 @@ export function Desistement_Definitif({
         console.log('First entry value type:', typeof entries[0][1]);
 
         // Check if value is an object with code/label
-        if (typeof entries[0][1] === 'object' && entries[0][1] !== null) {
+        if (typeof entries[0][1] === 'object' && entries[0][1] != null) {
           console.log(
             'First entry value properties:',
             Object.keys(entries[0][1])
@@ -98,7 +98,7 @@ export function Desistement_Definitif({
         console.log(`Processing entry - key: ${key}, value:`, value);
 
         // If value is an object with code/label properties
-        if (typeof value === 'object' && value !== null) {
+        if (typeof value === 'object' && value != null) {
           const option = {
             value: value.code || value.value || key,
             label:
@@ -422,7 +422,7 @@ export function Desistement_Definitif({
                 <div key={`${itemKey}`} className="">
                   <p className="text-indigo-600 font-bold mb-4">
                     Montant à rembourser au client: {item.nom} {item.prenom}
-                    {currentMode !== 'transfert' && (
+                    {currentMode != 'transfert' && (
                       <span className="text-red-500 ml-2">
                         {item.reste_a_rembourse || 0} DH
                       </span>

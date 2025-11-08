@@ -486,6 +486,24 @@ export default function ReservationForm({ id }) {
     }
 
     setBackendErrors({});
+    // FILTER OUT CLIENTS WITH EMPTY OR INVALID PERCENTAGES
+    const validOldClients = oldClients.filter(
+      (client) =>
+        client.id &&
+        client.id !== '' &&
+        client.pourcentage &&
+        client.pourcentage !== '' &&
+        !isNaN(client.pourcentage) &&
+        Number(client.pourcentage) > 0
+    );
+
+    const validAddedClients = addedClients.filter(
+      (client) =>
+        client.pourcentage &&
+        client.pourcentage !== '' &&
+        !isNaN(client.pourcentage) &&
+        Number(client.pourcentage) > 0
+    );
     const totalAcquereurs = addedClients.length + oldClients.length;
 
     const dataToSend = new FormData();
@@ -495,10 +513,12 @@ export default function ReservationForm({ id }) {
     Object.entries({
       ...data,
       nb_acquereurs: totalAcquereurs, // Override with current count
+      oldClients: JSON.stringify(validOldClients), // Use filtered oldClients
+      clients: JSON.stringify(validAddedClients), // Use filtered addedClients
     }).forEach(([key, value]) => {
       // Handle array/object data properly
-      if (key === 'clients') {
-        dataToSend.append(key, JSON.stringify(value));
+      if (key === 'clients' || key === 'oldClients') {
+        dataToSend.append(key, value);
       } else {
         dataToSend.append(key, value);
       }
@@ -1101,15 +1121,29 @@ export default function ReservationForm({ id }) {
       }
     }
 
-    // Calculate percentages - ensure numeric values
-    const sum_percent_select = list.reduce((sum, nombres) => {
-      return sum + Number(nombres.pourcentage) || 0;
+    // Calculate percentages - only count valid percentages
+    const sum_percent_select = list.reduce((sum, client) => {
+      // Only count if percentage is valid and not empty
+      if (
+        client.pourcentage &&
+        client.pourcentage !== '' &&
+        !isNaN(client.pourcentage)
+      ) {
+        return sum + Number(client.pourcentage);
+      }
+      return sum;
     }, 0);
 
-    const totalPercentage_client_form = addedClients.reduce(
-      (sum, client) => sum + Number(client.pourcentage || 0),
-      0
-    );
+    const totalPercentage_client_form = addedClients.reduce((sum, client) => {
+      if (
+        client.pourcentage &&
+        client.pourcentage !== '' &&
+        !isNaN(client.pourcentage)
+      ) {
+        return sum + Number(client.pourcentage);
+      }
+      return sum;
+    }, 0);
 
     console.log(
       'toto percentselect =>' +
@@ -1127,19 +1161,89 @@ export default function ReservationForm({ id }) {
       setValue('verifierPourcentages', isValid);
       setenabled(isValid ? 'none' : 'block');
     }
+    // Only include clients with valid percentages in oldClients
+    const validClients = list.filter(
+      (client) =>
+        client.id &&
+        client.id !== '' &&
+        client.pourcentage &&
+        client.pourcentage !== '' &&
+        !isNaN(client.pourcentage)
+    );
 
-    var arrayinputList1 = Object.values(list);
+    /* var arrayinputList1 = Object.values(list);
     var arrayClient1 = [];
     for (let i = 0; i < arrayinputList1.length; i++) {
       const propertyValues = arrayinputList1[i];
       arrayClient1.push(propertyValues);
-    }
+    }*/
 
-    setoldClients(arrayClient1);
-    setValue('oldClients', JSON.stringify(arrayClient1));
-    console.log(' the final list==>' + JSON.stringify(list));
+    setoldClients(validClients);
+    setValue('oldClients', JSON.stringify(validClients));
+    console.log(' the final list==>' + JSON.stringify(validClients));
   };
   const validateClientStep = () => {
+    // Filter out empty/invalid clients first
+    const validSelectedClients = inputList1.filter(
+      (client) =>
+        client.id &&
+        client.id !== '' &&
+        client.pourcentage &&
+        client.pourcentage !== '' &&
+        !isNaN(client.pourcentage)
+    );
+
+    const validAddedClients = addedClients.filter(
+      (client) =>
+        client.pourcentage &&
+        client.pourcentage !== '' &&
+        !isNaN(client.pourcentage)
+    );
+
+    // If no valid clients at all, return false
+    if (validSelectedClients.length === 0 && validAddedClients.length === 0) {
+      return false;
+    }
+
+    // Calculate current total percentage - only count valid clients
+    const sum_percent_select = validSelectedClients.reduce((sum, client) => {
+      return sum + Number(client.pourcentage);
+    }, 0);
+
+    const totalPercentage_client_form = validAddedClients.reduce(
+      (sum, client) => {
+        return sum + Number(client.pourcentage);
+      },
+      0
+    );
+
+    const totalPercentage = sum_percent_select + totalPercentage_client_form;
+    const totalValid = totalPercentage === 100;
+
+    console.log(
+      `Validation - Selected: ${sum_percent_select}, Added: ${totalPercentage_client_form}, Total: ${totalPercentage}, Valid: ${totalValid}`
+    );
+
+    return totalValid;
+  };
+  // Add this function to clean up empty client entries
+  const cleanupEmptyClients = () => {
+    const cleanedList = inputList1.filter(
+      (client) => !(client.id === '' && client.pourcentage === '')
+    );
+
+    if (cleanedList.length !== inputList1.length) {
+      setinputList1(
+        cleanedList.length > 0 ? cleanedList : [{ id: '', pourcentage: '' }]
+      );
+    }
+  };
+
+  // Call this before important operations or add it to useEffect
+  useEffect(() => {
+    cleanupEmptyClients();
+  }, [currentStep]);
+  /*const validateClientStep = () => {
     // Check if all selected clients have both id and pourcentage
     const allSelectedClientsValid = inputList1.every(
       (client) =>
@@ -1177,7 +1281,7 @@ export default function ReservationForm({ id }) {
     );
 
     return allSelectedClientsValid && allAddedClientsValid && totalValid;
-  };
+  };*/
 
   const handleAnnuler_form = () => {
     // Calculate total percentage of selected clients
@@ -1611,7 +1715,7 @@ export default function ReservationForm({ id }) {
                   error={
                     errors['bien_id']?.message || backendErrors['bien_id']?.[0]
                   }
-                  disabled={(isEditing && user?.role >2 )?true:false}  
+                  disabled={isEditing && user?.role > 2 ? true : false}
                   placeholder="Sélectionnez un bien"
                 />
               </div>
@@ -3807,7 +3911,11 @@ export default function ReservationForm({ id }) {
                   <TextField
                     label="Commentaire:"
                     name="commentaireAvance"
-                    required={watch('avance') == 0 || watch('check_montant') ? true : false}
+                    required={
+                      watch('avance') == 0 || watch('check_montant')
+                        ? true
+                        : false
+                    }
                     multi={true} // Set this to true if you want a multi-line textarea, else leave it out or false
                     control={control} // Passed from useForm hook
                     errors={errors} // Validation errors from React Hook Form

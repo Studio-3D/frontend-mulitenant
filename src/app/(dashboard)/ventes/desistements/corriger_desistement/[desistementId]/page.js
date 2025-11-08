@@ -27,6 +27,8 @@ import {
 } from '@/configs/enum';
 import Autocomplete from '@/components/Autocomplete';
 import { useProjet } from '@/context/ProjetContext';
+import BreadCrumb from '../../../../navigation/BreadCrumb';
+
 export default function Page() {
   const hasFetchedFiles = useRef(false);
   const codeResRef = useRef();
@@ -110,7 +112,7 @@ export default function Page() {
   const [oldProjetId, setOldProjetId] = useState(null);
 
   useEffect(() => {
-    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+    if (selectedProjet?.id && selectedProjet.id != oldProjetId) {
       if (oldProjetId) {
         // Projet a changé
 
@@ -1004,6 +1006,14 @@ export default function Page() {
       if (formValues.montant_a_ajouter < 0) {
         errors.push('Le montant à ajouter ne peut pas être négatif');
       }
+      
+      // Validate montant à ajouter doesn't exceed new bien price
+      const prixNouveauBien = formValues.prix_nouveau_bien || 0;
+      if (formValues.montant_a_ajouter > prixNouveauBien) {
+        errors.push(
+          `Le montant à ajouter (${formValues.montant_a_ajouter} DH) ne peut pas dépasser le prix du nouveau bien (${prixNouveauBien} DH)`
+        );
+      }
 
       // Validate payment details if montant_a_ajouter > 0
       if (formValues.montant_a_ajouter > 0) {
@@ -1049,7 +1059,7 @@ export default function Page() {
           errors.push('Le montant de la pénalité doit être supérieur à 0');
         }
 
-        if (formValues.mode_penalite !== 'Montant') {
+        if (formValues.mode_penalite != 'Montant') {
           if (!formValues.penalite_par) {
             errors.push(
               'Le type de calcul de pénalité est requis (Prix/Avance)'
@@ -1196,8 +1206,8 @@ export default function Page() {
     }
 
     if (
-      updatedFiles.length !== selectedFiles.length ||
-      JSON.stringify(updatedFiles.map((f) => f.name || f.fichier)) !==
+      updatedFiles.length != selectedFiles.length ||
+      JSON.stringify(updatedFiles.map((f) => f.name || f.fichier)) !=
         JSON.stringify(selectedFiles.map((f) => f.name || f.fichier))
     ) {
       setSelectedFiles(updatedFiles);
@@ -1233,7 +1243,7 @@ export default function Page() {
 
     const fileToDelete = selectedFiles[index];
 
-    const updatedFiles = selectedFiles.filter((_, i) => i !== index);
+    const updatedFiles = selectedFiles.filter((_, i) => i != index);
     setSelectedFiles(updatedFiles);
     await Promise.resolve();
     setValue(formField, updatedFiles);
@@ -1340,651 +1350,669 @@ export default function Page() {
   };
 
   return (
-    <div className="flex flex-col w-full min-h-screen bg-gray-100 p-4">
-      <div className="w-full bg-white shadow-lg rounded-lg mb-4">
-        <SideBar
-          code_reservation={reservationData.codeRes}
-          bien={reservationData.bien}
-          prix={reservationData.prix}
-          sum_avances_valides={reservationData.sumAvances}
-          date_reservation={reservationData.dateRes}
-          respo={reservationData.respo}
-          desisteurs={reservationData.desisteurs}
-          reservationId={desistementData.reservation_id}
-          bien_id={reservationData.bienIdAncien}
+    <>
+      <div className="flex items-center justify-start">
+        <BreadCrumb
+          baseUrl={`/ventes/desistements/show/${desistementId}`}
+          step={`Corriger Désistement`}
         />
       </div>
-      <div
-        className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 mb-6 
+
+      <div className="flex flex-col w-full min-h-screen bg-gray-100 p-4">
+        <div className="w-full bg-white shadow-lg rounded-lg mb-4">
+          <SideBar
+            code_reservation={reservationData.codeRes}
+            bien={reservationData.bien}
+            prix={reservationData.prix}
+            sum_avances_valides={reservationData.sumAvances}
+            date_reservation={reservationData.dateRes}
+            respo={reservationData.respo}
+            desisteurs={reservationData.desisteurs}
+            reservationId={desistementData.reservation_id}
+            bien_id={reservationData.bienIdAncien}
+          />
+        </div>
+        <div
+          className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 mb-6 
                 hover:shadow-md transition-all duration-200"
-      >
-        {/* Main Header - Centered with Accent Color */}
-        <div className="text-center mb-3">
-          <h2 className="text-2xl font-semibold">
-            <span className="text-blue-500">Corriger Désistement:</span>
-          </h2>
-        </div>
-
-        {/* Type & Subtype - Centered with Colored Badge */}
-        <div className="flex justify-center">
-          <div
-            className="inline-flex items-center bg-blue-50/60 px-4 py-2 rounded-lg 
-                    border border-blue-100 shadow-inner"
-          >
-            <span className="font-medium text-blue-700">Type:</span>
-            <span className="ml-1 text-gray-800">
-              {type_dst[desistementData.type]?.label || 'Inconnu'}
-            </span>
-            {desistementData.type == 2 && desistementData.type_dp && (
-              <span className="text-blue-500/90 ml-1.5">
-                (
-                {type_dst_dp[desistementData.type_dp]?.label ||
-                  'Sous-type inconnu'}
-                )
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <FormProvider {...methods}>
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="bg-white rounded-lg shadow mt-4"
         >
-          {activeModel == 1 && (
-            <Desistement_Definitif
-              isEditing={true}
-              formData={desistementData}
-              accessToken={accessToken}
-              selectedProjet_id={selectedProjet_id}
-              sum_avances_valides={reservationData.sumAvances}
-              reservationId={desistementData.reservation_id}
-              type_remb_get={desistementData.type_remb}
-              inputListRemb_get={reservationData.inputListRemb}
-              dossierInfos={dossierInfos}
-              setDossierInfos={setDossierInfos}
-            />
-          )}
+          {/* Main Header - Centered with Accent Color */}
+          <div className="text-center mb-3">
+            <h2 className="text-2xl font-semibold">
+              <span className="text-blue-500">Corriger Désistement:</span>
+            </h2>
+          </div>
 
-          {activeModel == 2 && (
-            <Desistement_Au_Profit
-              isEditing={true}
-              formData={desistementData}
-              desisteurs_testt={reservationData.desisteursTest}
-              desisteurs={reservationData.desisteurs.map((aq) => ({
-                id: aq.id,
-                nom: aq.client.nom,
-                prenom: aq.client.prenom,
-                cin: aq.client.cin,
-                pourcentage: aq.pourcentage,
-              }))}
-              desisteutrs_profit_dp_partiell={reservationData.desisteursProfit}
-              desisteur_dp_proche_co={
-                desistementData?.aquereurs_desisteurs?.map((aq) => ({
-                  id: aq.aq_id,
-                  cl_id: aq.aquereur?.client?.id,
-                  nom: aq.aquereur?.client?.nom,
-                  prenom: aq.aquereur?.client?.prenom,
-                  pourcentage: aq.aquereur?.pourcentage,
-                })) || []
-              }
-            />
-          )}
-          {activeModel == 3 && (
-            <Changement_De_Bien
-              formData={desistementData}
-              isEditing={true}
-              selectedProjet_id={selectedProjet_id}
-              bien_ancien={reservationData.bien?.propriete_dite_bien}
-              sum_avances_valides={reservationData.sumAvances}
-              banques={banques}
-              filesList_avc={filesList_avc}
-            />
-          )}
-
-          {/* Add similar sections for other types if needed */}
-
-          {/* Penalty section (same as in your original code) */}
-          <div className="border-t border-gray-200 py-4 px-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="text-md font-medium">Ajouter Pénalité</h3>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={avecPenalite}
-                  onChange={() => {
-                    setAvecPenalite(!avecPenalite);
-                    if (!avecPenalite && watch('penalite_montant') != null) {
-                      setValue('penalite_montant', 0);
-                    }
-                  }}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-              </label>
+          {/* Type & Subtype - Centered with Colored Badge */}
+          <div className="flex justify-center">
+            <div
+              className="inline-flex items-center bg-blue-50/60 px-4 py-2 rounded-lg 
+                    border border-blue-100 shadow-inner"
+            >
+              <span className="font-medium text-blue-700">Type:</span>
+              <span className="ml-1 text-gray-800">
+                {type_dst[desistementData.type]?.label || 'Inconnu'}
+              </span>
+              {desistementData.type == 2 && desistementData.type_dp && (
+                <span className="text-blue-500/90 ml-1.5">
+                  (
+                  {type_dst_dp[desistementData.type_dp]?.label ||
+                    'Sous-type inconnu'}
+                  )
+                </span>
+              )}
             </div>
           </div>
+        </div>
 
-          {avecPenalite && (
-            <div className="border-t border-gray-200 py-4 px-6 space-y-4">
-              <div className="flex flex-col md:flex-row gap-4 items-center">
-                {' '}
-                {/* Ensures alignment */}
-                {/* Mode Pénalité Dropdown */} {/* Added mt-1 */}
-                <div className="w-[600px] mt-1">
-                  <SelectInput
-                    label="Mode Pénalité :"
-                    name="mode_penalite"
-                    value={watch('mode_penalite_value')}
-                    required={true}
-                    options={Object.entries(modes_penalites).map(
-                      ([key, value]) => ({
-                        value: value.label, // Use label as value
-                        label: value.label,
-                      })
-                    )}
-                    onChange={(value) => {
-                      // Find the code by label
-                      const entry = Object.entries(modes_penalites).find(
-                        ([key, val]) => val.label === value
-                      );
-                      if (entry) {
-                        handlechange_mode_penalite(entry[0]); // Pass the code
+        <FormProvider {...methods}>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="bg-white rounded-lg shadow mt-4"
+          >
+            {activeModel == 1 && (
+              <Desistement_Definitif
+                isEditing={true}
+                formData={desistementData}
+                accessToken={accessToken}
+                selectedProjet_id={selectedProjet_id}
+                sum_avances_valides={reservationData.sumAvances}
+                reservationId={desistementData.reservation_id}
+                type_remb_get={desistementData.type_remb}
+                inputListRemb_get={reservationData.inputListRemb}
+                dossierInfos={dossierInfos}
+                setDossierInfos={setDossierInfos}
+              />
+            )}
+
+            {activeModel == 2 && (
+              <Desistement_Au_Profit
+                isEditing={true}
+                formData={desistementData}
+                desisteurs_testt={reservationData.desisteursTest}
+                desisteurs={reservationData.desisteurs.map((aq) => ({
+                  id: aq.id,
+                  nom: aq.client.nom,
+                  prenom: aq.client.prenom,
+                  cin: aq.client.cin,
+                  pourcentage: aq.pourcentage,
+                }))}
+                desisteutrs_profit_dp_partiell={
+                  reservationData.desisteursProfit
+                }
+                desisteur_dp_proche_co={
+                  desistementData?.aquereurs_desisteurs?.map((aq) => ({
+                    id: aq.aq_id,
+                    cl_id: aq.aquereur?.client?.id,
+                    nom: aq.aquereur?.client?.nom,
+                    prenom: aq.aquereur?.client?.prenom,
+                    pourcentage: aq.aquereur?.pourcentage,
+                  })) || []
+                }
+              />
+            )}
+            {activeModel == 3 && (
+              <Changement_De_Bien
+                formData={desistementData}
+                isEditing={true}
+                selectedProjet_id={selectedProjet_id}
+                bien_ancien={reservationData.bien?.propriete_dite_bien}
+                sum_avances_valides={reservationData.sumAvances}
+                banques={banques}
+                filesList_avc={filesList_avc}
+               // prix_reservation={reservationData?.prix}
+
+              />
+            )}
+
+            {/* Add similar sections for other types if needed */}
+
+            {/* Penalty section (same as in your original code) */}
+            <div className="border-t border-gray-200 py-4 px-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-md font-medium">Ajouter Pénalité</h3>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={avecPenalite}
+                    onChange={() => {
+                      setAvecPenalite(!avecPenalite);
+                      if (!avecPenalite && watch('penalite_montant') != null) {
+                        setValue('penalite_montant', 0);
                       }
                     }}
-                    error={errors.mode_penalite?.message}
-                    placeholder="Sélectionnez un mode de pénalité"
+                    className="sr-only peer"
                   />
-                </div>
-                {/* Conditional Fields (aligned at the same height) */}
-                {watch('mode_penalite') && (
-                  <>
-                    {watch('mode_penalite') == 'Montant' ||
-                    watch('mode_penalite') == '13' ? (
-                      /* Manual Penalty Amount Input (same height as other fields) */
-                      <div className="flex-1 min-w-[180px] mt-2">
-                        <TextField
-                          label="Pénalité Montant"
-                          name="penalite_montant"
-                          type="number"
-                          value={watch('penalite_montant')}
-                          control={control}
-                          errors={{}}
-                          backendErrors={{}}
-                          required
-                          onChange={(e) =>
-                            setValue('penalite_montant', e.target.value)
-                          }
-                        />
-                      </div>
-                    ) : (
-                      /* Percentage-based Penalty (keeps same height) */
-                      <div className="flex flex-1 flex-col md:flex-row gap-4 items-center">
-                        {' '}
-                        {/* Ensures inner alignment */}
-                        {/* Radio Buttons (Prix/Avance) */}
-                        <div className="min-w-[220px]">
-                          <div className="flex flex-col">
-                            <label className="text-sm font-medium text-gray-700 mb-1">
-                              Pénalité Par
-                            </label>
-                            <div className="flex space-x-4">
-                              <label className="inline-flex items-center">
-                                <input
-                                  type="radio"
-                                  name="penalite_par"
-                                  value="prix"
-                                  checked={watch('penalite_par') == 'prix'}
-                                  onChange={handlechange_penalite}
-                                  className="h-4 w-4 text-blue-600 focus:ring-blue-500"
-                                />
-                                <span className="ml-2">Prix</span>
-                              </label>
-                              <label className="inline-flex items-center">
-                                <input
-                                  type="radio"
-                                  name="penalite_par"
-                                  value="avance"
-                                  checked={watch('penalite_par') == 'avance'}
-                                  onChange={handlechange_penalite}
-                                  className="h-4 w-4 text-purple-600 focus:ring-purple-500"
-                                />
-                                <span className="ml-2">Avance</span>
-                              </label>
-                            </div>
-                          </div>
-                        </div>
-                        {/* Auto-Calculated Penalty Amount (same height) */}
-                        <div className="min-w-[180px]">
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                </label>
+              </div>
+            </div>
+
+            {avecPenalite && (
+              <div className="border-t border-gray-200 py-4 px-6 space-y-4">
+                <div className="flex flex-col md:flex-row gap-4 items-center">
+                  {' '}
+                  {/* Ensures alignment */}
+                  {/* Mode Pénalité Dropdown */} {/* Added mt-1 */}
+                  <div className="w-[600px] mt-1">
+                    <SelectInput
+                      label="Mode Pénalité :"
+                      name="mode_penalite"
+                      value={watch('mode_penalite_value')}
+                      required={true}
+                      options={Object.entries(modes_penalites).map(
+                        ([key, value]) => ({
+                          value: value.label, // Use label as value
+                          label: value.label,
+                        })
+                      )}
+                      onChange={(value) => {
+                        // Find the code by label
+                        const entry = Object.entries(modes_penalites).find(
+                          ([key, val]) => val.label === value
+                        );
+                        if (entry) {
+                          handlechange_mode_penalite(entry[0]); // Pass the code
+                        }
+                      }}
+                      error={errors.mode_penalite?.message}
+                      placeholder="Sélectionnez un mode de pénalité"
+                    />
+                  </div>
+                  {/* Conditional Fields (aligned at the same height) */}
+                  {watch('mode_penalite') && (
+                    <>
+                      {watch('mode_penalite') == 'Montant' ||
+                      watch('mode_penalite') == '13' ? (
+                        /* Manual Penalty Amount Input (same height as other fields) */
+                        <div className="flex-1 min-w-[180px] mt-2">
                           <TextField
-                            label="Montant"
+                            label="Pénalité Montant"
                             name="penalite_montant"
                             type="number"
+                            value={watch('penalite_montant')}
                             control={control}
-                            errors={errors}
+                            errors={{}}
                             backendErrors={{}}
                             required
-                            disabled
-                            value={watch('penalite_montant') || ''}
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-              <div className="border-t border-gray-200 py-4">
-                {/* Only show penalty payment section if mode_penalite is selected AND penalite_montant has a valid value */}
-                {watch('mode_penalite') &&
-                  watch('penalite_montant') &&
-                  watch('penalite_montant') > 0 && (
-                    <>
-                      <div className="mt-4">
-                        <h3 className="text-md font-medium text-gray-900">
-                          Mode Paiement Pénalité:
-                        </h3>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="inline-flex items-center">
-                            <input
-                              type="checkbox"
-                              name="sr_pen"
-                              checked={watch('sr_pen') || false}
-                              onChange={(e) =>
-                                setValue('sr_pen', e.target.checked ? 1 : 0)
-                              } // Sets to 1 when checked, 0 when unchecked
-                              className="text-blue-600 focus:ring-blue-500"
-                            />
-
-                            <span className="ml-2">SR</span>
-                          </label>
-                        </div>
-
-                        <div>
-                          <SelectInput
-                            label="Mode de Paiement"
-                            name="mode_paiement_pen"
-                            value={watch('mode_paiement_pen')}
-                            required={true}
-                            options={
-                              // Handle both array and object formats for MODE_PAIEMENT
-                              !MODE_PAIEMENT
-                                ? []
-                                : Array.isArray(MODE_PAIEMENT)
-                                ? MODE_PAIEMENT
-                                : typeof MODE_PAIEMENT === 'object'
-                                ? Object.entries(MODE_PAIEMENT).map(
-                                    ([key, value]) => ({
-                                      value: key,
-                                      label:
-                                        typeof value === 'object'
-                                          ? value.label ||
-                                            value.name ||
-                                            String(value)
-                                          : String(value),
-                                    })
-                                  )
-                                : []
+                            onChange={(e) =>
+                              setValue('penalite_montant', e.target.value)
                             }
-                            onChange={(value) => {
-                              console.log('Selected payment mode:', value);
-                              setValue('mode_paiement_pen', value);
-                            }}
-                            error={errors.mode_paiement_pen?.message}
-                            placeholder="Sélectionnez un mode de paiement"
                           />
                         </div>
-                      </div>
-
-                      {watch('mode_paiement_pen') &&
-                        watch('mode_paiement_pen') != 1 && (
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                            <div>
-                              <SelectInput
-                                label="Banque:"
-                                name="banque_pen"
-                                value={watch('banque_pen')}
-                                required={watch('mode_paiement_pen') != '1'}
-                                options={
-                                  Array.isArray(banques)
-                                    ? banques.map((banque) => ({
-                                        value: banque.id,
-
-                                        label: banque.nom || 'Banque sans nom',
-                                      }))
-                                    : []
-                                }
-                                onChange={(value) => {
-                                  setValue('banque_pen', value);
-                                }}
-                                error={errors.banque_pen?.message}
-                                placeholder="Sélectionnez une banque"
-                              />
-                            </div>
-
-                            <div>
-                              <TextField
-                                label="N° Paiement:"
-                                name="numero_paiement_pen"
-                                type="number"
-                                control={control}
-                                errors={errors}
-                                backendErrors={{}}
-                                required
-                                onChange={(e) =>
-                                  setValue(
-                                    'numero_paiement_pen',
-                                    e.target.value
-                                  )
-                                }
-                              />
-                            </div>
-                          </div>
-                        )}
-                      {watch('mode_paiement_pen') &&
-                        watch('mode_paiement_pen') != 1 &&
-                        watch('mode_paiement_pen') != 5 &&
-                        watch('mode_paiement_pen') != 6 && (
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                            <div>
-                              <TextField
-                                label="Echéance:"
-                                name="echeance_pen"
-                                type="date"
-                                control={control}
-                                errors={errors}
-                                backendErrors={{}}
-                                required
-                                onChange={(e) =>
-                                  setValue('echeance_pen', e.target.value)
-                                }
-                                InputLabelProps={{ shrink: true }}
-                              />
-                            </div>
-                          </div>
-                        )}
-
-                      <div className="border-t border-gray-200 py-4 mt-2">
-                        <div className="mt-6">
-                          <div className="space-y-4">
-                            <TextField
-                              label="Fichiers de Pénalités:"
-                              control={control}
-                              errors={{}}
-                              backendErrors={{}}
-                              defaultValues={{}}
-                              name=""
-                              type="file"
-                              onChange={(e) => handleFileChange(e, 2)}
-                              accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                            />
-
-                            {selectedFiles_plt.length > 0 && (
-                              <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                                  <svg
-                                    className="w-4 h-4 mr-2 text-primary-500"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                    />
-                                  </svg>
-                                  Fichiers sélectionnés (
-                                  {selectedFiles_plt.length})
-                                </h3>
-
-                                <div className="space-y-2">
-                                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                                    {selectedFiles_plt.map((data, index) => (
-                                      <div
-                                        key={data.id || data.name || index}
-                                        className="flex flex-col p-3 bg-white rounded-md border border-gray-200 hover:border-blue-200 transition-colors h-full"
-                                      >
-                                        <div className="flex items-center mb-2">
-                                          {getFileIcon(
-                                            data.name || data.fichier
-                                          )}
-                                          <button
-                                            onClick={() =>
-                                              data.fichier
-                                                ? handleFileClick(data.fichier)
-                                                : handleDownloadFile(data)
-                                            }
-                                            className="ml-2 text-sm font-medium text-gray-700 hover:text-blue-600 truncate flex-1 text-left"
-                                            title={data.fichier || data.name}
-                                          >
-                                            {data.fichier || data.name}
-                                          </button>
-                                        </div>
-
-                                        <div className="flex items-center justify-between mt-auto">
-                                          <span className="text-xs text-gray-500">
-                                            {formatFileSize(data.size)}
-                                          </span>
-                                          <button
-                                            onClick={() =>
-                                              handleDeleteFile(index, 3)
-                                            }
-                                            className="p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 transition-colors"
-                                            title="Supprimer"
-                                          >
-                                            <svg
-                                              className="w-4 h-4"
-                                              fill="none"
-                                              stroke="currentColor"
-                                              viewBox="0 0 24 24"
-                                            >
-                                              <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                              />
-                                            </svg>
-                                          </button>
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
+                      ) : (
+                        /* Percentage-based Penalty (keeps same height) */
+                        <div className="flex flex-1 flex-col md:flex-row gap-4 items-center">
+                          {' '}
+                          {/* Ensures inner alignment */}
+                          {/* Radio Buttons (Prix/Avance) */}
+                          <div className="min-w-[220px]">
+                            <div className="flex flex-col">
+                              <label className="text-sm font-medium text-gray-700 mb-1">
+                                Pénalité Par
+                              </label>
+                              <div className="flex space-x-4">
+                                <label className="inline-flex items-center">
+                                  <input
+                                    type="radio"
+                                    name="penalite_par"
+                                    value="prix"
+                                    checked={watch('penalite_par') == 'prix'}
+                                    onChange={handlechange_penalite}
+                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500"
+                                  />
+                                  <span className="ml-2">Prix</span>
+                                </label>
+                                <label className="inline-flex items-center">
+                                  <input
+                                    type="radio"
+                                    name="penalite_par"
+                                    value="avance"
+                                    checked={watch('penalite_par') == 'avance'}
+                                    onChange={handlechange_penalite}
+                                    className="h-4 w-4 text-purple-600 focus:ring-purple-500"
+                                  />
+                                  <span className="ml-2">Avance</span>
+                                </label>
                               </div>
-                            )}
+                            </div>
+                          </div>
+                          {/* Auto-Calculated Penalty Amount (same height) */}
+                          <div className="min-w-[180px]">
+                            <TextField
+                              label="Montant"
+                              name="penalite_montant"
+                              type="number"
+                              control={control}
+                              errors={errors}
+                              backendErrors={{}}
+                              required
+                              disabled
+                              value={watch('penalite_montant') || ''}
+                            />
                           </div>
                         </div>
-                      </div>
+                      )}
                     </>
                   )}
-              </div>
-            </div>
-          )}
+                </div>
+                <div className="border-t border-gray-200 py-4">
+                  {/* Only show penalty payment section if mode_penalite is selected AND penalite_montant has a valid value */}
+                  {watch('mode_penalite') &&
+                    watch('penalite_montant') &&
+                    watch('penalite_montant') > 0 && (
+                      <>
+                        <div className="mt-4">
+                          <h3 className="text-md font-medium text-gray-900">
+                            Mode Paiement Pénalité:
+                          </h3>
+                        </div>
 
-          {/* Attachments section (same as in your original code) */}
-          <div className="border-t border-gray-200 py-4 px-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="text-md font-medium">Ajouter Pièces Jointes</h3>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={avecPiecesJointes}
-                  onChange={() => setAvecPiecesJointes(!avecPiecesJointes)}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-              </label>
-            </div>
-          </div>
-          <div className="border-t border-gray-200 py-4 px-6">
-            {avecPiecesJointes && (
-              <div>
-                <div className="space-y-4">
-                  {/* File Input */}
-                  <div className="relative">
-                    <TextField
-                      label="Fichiers de désistements:"
-                      control={control}
-                      errors={{}}
-                      backendErrors={{}}
-                      defaultValues={{}}
-                      name=""
-                      type="file"
-                      onChange={(e) => handleFileChange(e, 1)}
-                      accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" // Specify accepted file types
-                    />
-                    <p className="mt-1 text-xs text-gray-500">
-                      Formats acceptés: PDF, JPG, PNG, DOC (Taille max: 10MB)
-                    </p>
-                  </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="inline-flex items-center">
+                              <input
+                                type="checkbox"
+                                name="sr_pen"
+                                checked={watch('sr_pen') || false}
+                                onChange={(e) =>
+                                  setValue('sr_pen', e.target.checked ? 1 : 0)
+                                } // Sets to 1 when checked, 0 when unchecked
+                                className="text-blue-600 focus:ring-blue-500"
+                              />
 
-                  {/* Selected Files Preview */}
-                  {selectedFiles_dst.length > 0 && (
-                    <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                      <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                        <svg
-                          className="w-4 h-4 mr-2 text-primary-500"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                          />
-                        </svg>
-                        Fichiers sélectionnés ({selectedFiles_dst.length})
-                      </h3>
+                              <span className="ml-2">SR</span>
+                            </label>
+                          </div>
 
-                      <div className="space-y-2">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                          {selectedFiles_dst.map((data, index) => (
-                            <div
-                              key={data.id || data.name || index}
-                              className="flex flex-col p-3 bg-white rounded-md border border-gray-200 hover:border-blue-200 transition-colors h-full"
-                            >
-                              <div className="flex items-center mb-2">
-                                {/* File icon based on type */}
-                                {getFileIcon(data.name || data.fichier)}
+                          <div>
+                            <SelectInput
+                              label="Mode de Paiement"
+                              name="mode_paiement_pen"
+                              value={watch('mode_paiement_pen')}
+                              required={true}
+                              options={
+                                // Handle both array and object formats for MODE_PAIEMENT
+                                !MODE_PAIEMENT
+                                  ? []
+                                  : Array.isArray(MODE_PAIEMENT)
+                                  ? MODE_PAIEMENT
+                                  : typeof MODE_PAIEMENT === 'object'
+                                  ? Object.entries(MODE_PAIEMENT).map(
+                                      ([key, value]) => ({
+                                        value: key,
+                                        label:
+                                          typeof value === 'object'
+                                            ? value.label ||
+                                              value.name ||
+                                              String(value)
+                                            : String(value),
+                                      })
+                                    )
+                                  : []
+                              }
+                              onChange={(value) => {
+                                console.log('Selected payment mode:', value);
+                                setValue('mode_paiement_pen', value);
+                              }}
+                              error={errors.mode_paiement_pen?.message}
+                              placeholder="Sélectionnez un mode de paiement"
+                            />
+                          </div>
+                        </div>
 
-                                <button
-                                  onClick={() =>
-                                    data.fichier
-                                      ? handleFileClick(data.fichier)
-                                      : handleDownloadFile(data)
+                        {watch('mode_paiement_pen') &&
+                          watch('mode_paiement_pen') != 1 && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                              <div>
+                                <SelectInput
+                                  label="Banque:"
+                                  name="banque_pen"
+                                  value={watch('banque_pen')}
+                                  required={watch('mode_paiement_pen') != '1'}
+                                  options={
+                                    Array.isArray(banques)
+                                      ? banques.map((banque) => ({
+                                          value: banque.id,
+
+                                          label:
+                                            banque.nom || 'Banque sans nom',
+                                        }))
+                                      : []
                                   }
-                                  className="ml-2 text-sm font-medium text-gray-700 hover:text-blue-600 truncate flex-1 text-left"
-                                  title={data.fichier || data.name}
-                                >
-                                  {data.fichier || data.name}
-                                </button>
+                                  onChange={(value) => {
+                                    setValue('banque_pen', value);
+                                  }}
+                                  error={errors.banque_pen?.message}
+                                  placeholder="Sélectionnez une banque"
+                                />
                               </div>
 
-                              <div className="flex items-center justify-between mt-auto">
-                                <span className="text-xs text-gray-500">
-                                  {formatFileSize(data.size)}
-                                </span>
-                                <button
-                                  onClick={() => handleDeleteFile(index, 1)}
-                                  className="p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 transition-colors"
-                                  title="Supprimer"
-                                >
-                                  <svg
-                                    className="w-4 h-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                    />
-                                  </svg>
-                                </button>
+                              <div>
+                                <TextField
+                                  label="N° Paiement:"
+                                  name="numero_paiement_pen"
+                                  type="number"
+                                  control={control}
+                                  errors={errors}
+                                  backendErrors={{}}
+                                  required
+                                  onChange={(e) =>
+                                    setValue(
+                                      'numero_paiement_pen',
+                                      e.target.value
+                                    )
+                                  }
+                                />
                               </div>
                             </div>
-                          ))}
+                          )}
+                        {watch('mode_paiement_pen') &&
+                          watch('mode_paiement_pen') != 1 &&
+                          watch('mode_paiement_pen') != 5 &&
+                          watch('mode_paiement_pen') != 6 && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                              <div>
+                                <TextField
+                                  label="Echéance:"
+                                  name="echeance_pen"
+                                  type="date"
+                                  control={control}
+                                  errors={errors}
+                                  backendErrors={{}}
+                                  required
+                                  onChange={(e) =>
+                                    setValue('echeance_pen', e.target.value)
+                                  }
+                                  InputLabelProps={{ shrink: true }}
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                        <div className="border-t border-gray-200 py-4 mt-2">
+                          <div className="mt-6">
+                            <div className="space-y-4">
+                              <TextField
+                                label="Fichiers de Pénalités:"
+                                control={control}
+                                errors={{}}
+                                backendErrors={{}}
+                                defaultValues={{}}
+                                name=""
+                                type="file"
+                                onChange={(e) => handleFileChange(e, 2)}
+                                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                              />
+
+                              {selectedFiles_plt.length > 0 && (
+                                <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                  <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                                    <svg
+                                      className="w-4 h-4 mr-2 text-primary-500"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                      />
+                                    </svg>
+                                    Fichiers sélectionnés (
+                                    {selectedFiles_plt.length})
+                                  </h3>
+
+                                  <div className="space-y-2">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                                      {selectedFiles_plt.map((data, index) => (
+                                        <div
+                                          key={data.id || data.name || index}
+                                          className="flex flex-col p-3 bg-white rounded-md border border-gray-200 hover:border-blue-200 transition-colors h-full"
+                                        >
+                                          <div className="flex items-center mb-2">
+                                            {getFileIcon(
+                                              data.name || data.fichier
+                                            )}
+                                            <button
+                                              onClick={() =>
+                                                data.fichier
+                                                  ? handleFileClick(
+                                                      data.fichier
+                                                    )
+                                                  : handleDownloadFile(data)
+                                              }
+                                              className="ml-2 text-sm font-medium text-gray-700 hover:text-blue-600 truncate flex-1 text-left"
+                                              title={data.fichier || data.name}
+                                            >
+                                              {data.fichier || data.name}
+                                            </button>
+                                          </div>
+
+                                          <div className="flex items-center justify-between mt-auto">
+                                            <span className="text-xs text-gray-500">
+                                              {formatFileSize(data.size)}
+                                            </span>
+                                            <button
+                                              onClick={() =>
+                                                handleDeleteFile(index, 3)
+                                              }
+                                              className="p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 transition-colors"
+                                              title="Supprimer"
+                                            >
+                                              <svg
+                                                className="w-4 h-4"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                              >
+                                                <path
+                                                  strokeLinecap="round"
+                                                  strokeLinejoin="round"
+                                                  strokeWidth={2}
+                                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                                />
+                                              </svg>
+                                            </button>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  )}
+                      </>
+                    )}
                 </div>
               </div>
             )}
-          </div>
 
-          {/* Comment field */}
-          <div className="border-t border-gray-200 py-4 px-6">
-            <TextField
-              label="Commentaire:"
-              name="commentaire"
-              type="text"
-              multi={true}
-              control={control}
-              errors={errors}
-              backendErrors={{}}
-              defaultValues={{}}
-              width="w-full"
-              height="h-full"
-            />
-          </div>
-
-          {errors_g.length > 0 && (
-            <div className="bg-red-50 border-l-4 border-red-500 text-red-500 p-4 mb-4">
-              <p className="font-semibold">
-                Veuillez corriger les erreurs suivantes :
-              </p>
-              <ul className="list-disc pl-5 mt-2">
-                {errors_g.map((error, index) => (
-                  <li key={index}>{error}</li>
-                ))}
-              </ul>
+            {/* Attachments section (same as in your original code) */}
+            <div className="border-t border-gray-200 py-4 px-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-md font-medium">
+                    Ajouter Pièces Jointes
+                  </h3>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={avecPiecesJointes}
+                    onChange={() => setAvecPiecesJointes(!avecPiecesJointes)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                </label>
+              </div>
             </div>
-          )}
-          {/* Form actions */}
-          <div className="p-6 border-t border-gray-200 flex justify-end">
-            <button
-              type="button"
-              onClick={() => router.back()}
-              className="px-4 py-2 mr-3 border border-gray-300 rounded-md !text-gray-700 hover:bg-gray-50"
-            >
-              Annuler
-            </button>
-            <button
-              type="submit"
-              disabled={loading.submit || errors_g.length > 0}
-              className={`px-4 py-2 rounded-md focus:outline-none focus:ring-2 transition-colors ${
-                loading.submit || errors_g.length > 0
-                  ? 'bg-indigo-100 text-indigo-600 cursor-not-allowed'
-                  : 'bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500'
-              }`}
-            >
-              {loading.submit ? (
-                <span className="flex items-center">
-                  <LoadingSpin />
-                  Enregistrer
-                </span>
-              ) : (
-                'Enregistrer'
+            <div className="border-t border-gray-200 py-4 px-6">
+              {avecPiecesJointes && (
+                <div>
+                  <div className="space-y-4">
+                    {/* File Input */}
+                    <div className="relative">
+                      <TextField
+                        label="Fichiers de désistements:"
+                        control={control}
+                        errors={{}}
+                        backendErrors={{}}
+                        defaultValues={{}}
+                        name=""
+                        type="file"
+                        onChange={(e) => handleFileChange(e, 1)}
+                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" // Specify accepted file types
+                      />
+                      <p className="mt-1 text-xs text-gray-500">
+                        Formats acceptés: PDF, JPG, PNG, DOC (Taille max: 10MB)
+                      </p>
+                    </div>
+
+                    {/* Selected Files Preview */}
+                    {selectedFiles_dst.length > 0 && (
+                      <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                          <svg
+                            className="w-4 h-4 mr-2 text-primary-500"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                            />
+                          </svg>
+                          Fichiers sélectionnés ({selectedFiles_dst.length})
+                        </h3>
+
+                        <div className="space-y-2">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                            {selectedFiles_dst.map((data, index) => (
+                              <div
+                                key={data.id || data.name || index}
+                                className="flex flex-col p-3 bg-white rounded-md border border-gray-200 hover:border-blue-200 transition-colors h-full"
+                              >
+                                <div className="flex items-center mb-2">
+                                  {/* File icon based on type */}
+                                  {getFileIcon(data.name || data.fichier)}
+
+                                  <button
+                                    onClick={() =>
+                                      data.fichier
+                                        ? handleFileClick(data.fichier)
+                                        : handleDownloadFile(data)
+                                    }
+                                    className="ml-2 text-sm font-medium text-gray-700 hover:text-blue-600 truncate flex-1 text-left"
+                                    title={data.fichier || data.name}
+                                  >
+                                    {data.fichier || data.name}
+                                  </button>
+                                </div>
+
+                                <div className="flex items-center justify-between mt-auto">
+                                  <span className="text-xs text-gray-500">
+                                    {formatFileSize(data.size)}
+                                  </span>
+                                  <button
+                                    onClick={() => handleDeleteFile(index, 1)}
+                                    className="p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 transition-colors"
+                                    title="Supprimer"
+                                  >
+                                    <svg
+                                      className="w-4 h-4"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                      />
+                                    </svg>
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
               )}
-            </button>
-          </div>
-        </form>
-      </FormProvider>
-    </div>
+            </div>
+
+            {/* Comment field */}
+            <div className="border-t border-gray-200 py-4 px-6">
+              <TextField
+                label="Commentaire:"
+                name="commentaire"
+                type="text"
+                multi={true}
+                control={control}
+                errors={errors}
+                backendErrors={{}}
+                defaultValues={{}}
+                width="w-full"
+                height="h-full"
+              />
+            </div>
+
+            {errors_g.length > 0 && (
+              <div className="bg-red-50 border-l-4 border-red-500 text-red-500 p-4 mb-4">
+                <p className="font-semibold">
+                  Veuillez corriger les erreurs suivantes :
+                </p>
+                <ul className="list-disc pl-5 mt-2">
+                  {errors_g.map((error, index) => (
+                    <li key={index}>{error}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {/* Form actions */}
+            <div className="p-6 border-t border-gray-200 flex justify-end">
+              <button
+                type="button"
+                onClick={() => router.back()}
+                className="px-4 py-2 mr-3 border border-gray-300 rounded-md !text-gray-700 hover:bg-gray-50"
+              >
+                Annuler
+              </button>
+              <button
+                type="submit"
+                disabled={loading.submit || errors_g.length > 0}
+                className={`px-4 py-2 rounded-md focus:outline-none focus:ring-2 transition-colors ${
+                  loading.submit || errors_g.length > 0
+                    ? 'bg-indigo-100 text-indigo-600 cursor-not-allowed'
+                    : 'bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500'
+                }`}
+              >
+                {loading.submit ? (
+                  <span className="flex items-center">
+                    <LoadingSpin />
+                    Enregistrer
+                  </span>
+                ) : (
+                  'Enregistrer'
+                )}
+              </button>
+            </div>
+          </form>
+        </FormProvider>
+      </div>
+    </>
   );
 }
