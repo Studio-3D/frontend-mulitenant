@@ -1,9 +1,10 @@
 'use client';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { TabsNavigation } from './TabsNavigation';
 import { TabContent } from './TabContent';
 import Pusher from 'pusher-js';
 import FetchNotifMenu from '@/configs/FetchNotifMenu';
+import { useProjet } from '../../context/ProjetContext';
 
 export function CRMPage() {
   const [activeTab, setActiveTab] = useState('prospects');
@@ -11,6 +12,9 @@ export function CRMPage() {
     relance: 'appels-relance',
     rdv: 'appels-rdv',
   });
+  
+  // Use the project from context
+  const { selectedProjet } = useProjet();
   
   const renderedTabs = useRef({
     prospects: true,
@@ -29,43 +33,85 @@ export function CRMPage() {
 
   const pusher_key_NotifMenu = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_NOTIF_MENU;
 
-  const fetchDataNotiMon = async (nb) => {
-    const projetId = JSON.parse(localStorage.getItem("selectedProjet"))?.id || 1;
+  // Wrap fetchDataNotiMon in useCallback with project dependency
+  const fetchDataNotiMon = useCallback(async (nb) => {
+    if (!selectedProjet?.id) return;
+    
+    console.log('Fetching notifications for project:', selectedProjet.id, 'with nb:', nb);
     
     await FetchNotifMenu(
       nb,
-      projetId,
-      (appelsRelance) => setNotifications(prev => ({ ...prev, 'appels-relance': appelsRelance })),
-      (appelsRdv) => setNotifications(prev => ({ ...prev, 'appels-rdv': appelsRdv })),
-      (visitesRelance) => setNotifications(prev => ({ ...prev, 'visites-relance': visitesRelance })),
-      (visitesRdv) => setNotifications(prev => ({ ...prev, 'visites-rdv': visitesRdv })),
-      (freins) => setNotifications(prev => ({ ...prev, freins: freins }))
+      selectedProjet.id,
+      (appelsRelance) => {
+        console.log('Appels Relance:', appelsRelance);
+        setNotifications(prev => ({ ...prev, 'appels-relance': appelsRelance }));
+      },
+      (appelsRdv) => {
+        console.log('Appels RDV:', appelsRdv);
+        setNotifications(prev => ({ ...prev, 'appels-rdv': appelsRdv }));
+      },
+      (visitesRelance) => {
+        console.log('Visites Relance:', visitesRelance);
+        setNotifications(prev => ({ ...prev, 'visites-relance': visitesRelance }));
+      },
+      (visitesRdv) => {
+        console.log('Visites RDV:', visitesRdv);
+        setNotifications(prev => ({ ...prev, 'visites-rdv': visitesRdv }));
+      },
+      (freins) => {
+        console.log('Freins:', freins);
+        setNotifications(prev => ({ ...prev, freins: freins }));
+      }
     );
-  };
+  }, [selectedProjet]); // Add selectedProjet as dependency
 
+  // Reset notifications when project changes
   useEffect(() => {
+    if (selectedProjet) {
+      console.log('Project changed, resetting notifications for:', selectedProjet.id);
+      setNotifications({
+        relance: 0,
+        'appels-relance': 0,
+        'visites-relance': 0,
+        rdv: 0,
+        'appels-rdv': 0,
+        'visites-rdv': 0,
+        freins: 0,
+      });
+      
+      // Fetch new notifications for the new project
+      fetchDataNotiMon("D");
+    }
+  }, [selectedProjet, fetchDataNotiMon]);
+
+  // Pusher setup - re-run when project changes
+  useEffect(() => {
+    if (!pusher_key_NotifMenu || !selectedProjet) return;
+
+    console.log('Setting up Pusher for project:', selectedProjet.id);
+
     // Initial fetch
     fetchDataNotiMon("D");
 
-    // Pusher setup
-    if (pusher_key_NotifMenu) {
-      const pusher = new Pusher(pusher_key_NotifMenu, {
-        cluster: "eu",
-        encrypted: true,
-      });
+    const pusher = new Pusher(pusher_key_NotifMenu, {
+      cluster: "eu",
+      encrypted: true,
+    });
 
-      const channel = pusher.subscribe("NotifMenu");
+    const channel = pusher.subscribe("NotifMenu");
 
-      channel.bind("App\\Events\\NotifMenuEvent", (data) => {
-        fetchDataNotiMon(data.NotifMenuId);
-      });
+    channel.bind("App\\Events\\NotifMenuEvent", (data) => {
+      console.log('Pusher event received:', data);
+      fetchDataNotiMon(data.NotifMenuId);
+    });
 
-      return () => {
-        channel.unbind("App\\Events\\NotifMenuEvent");
-        pusher.unsubscribe("NotifMenu");
-      };
-    }
-  }, []);
+    return () => {
+      console.log('Cleaning up Pusher for project:', selectedProjet.id);
+      channel.unbind("App\\Events\\NotifMenuEvent");
+      pusher.unsubscribe("NotifMenu");
+      pusher.disconnect();
+    };
+  }, [selectedProjet, pusher_key_NotifMenu, fetchDataNotiMon]);
 
   // Calculate totals for main tabs
   useEffect(() => {
@@ -119,6 +165,18 @@ export function CRMPage() {
       renderedTabs.current = { ...renderedTabs.current, [subTabId]: true };
     }
   };
+
+  // Show loading state if no project selected
+  if (!selectedProjet) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="text-gray-500">Aucun projet sélectionné</div>
+          <div className="text-sm text-gray-400 mt-2">Veuillez sélectionner un projet pour afficher le CRM</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="">
