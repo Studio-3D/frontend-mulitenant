@@ -65,7 +65,10 @@ export default function Page() {
       ) : (
         <>
           <div>
-            <ProspectTable view={showOnlyAssigned ? 'assigned' : 'all'} />
+            <ProspectTable
+              view={showOnlyAssigned ? 'assigned' : 'all'}
+              searchParams={searchParams}
+            />
           </div>
         </>
       )}

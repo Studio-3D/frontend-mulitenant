@@ -8,7 +8,11 @@ import { fetchData_table_by_id } from '../../../../../../src/configs/api-utils';
 import format from 'date-fns/format';
 import { Eye } from 'lucide-react';
 
-import { Statuts_Prospect, getProspectStatusLabel, getProspectStatusColor } from '../../../../../../src/configs/enum';
+import {
+  Statuts_Prospect,
+  getProspectStatusLabel,
+  getProspectStatusColor,
+} from '../../../../../../src/configs/enum';
 
 // Function to get status label using the centralized mapping
 const getStatusLabel = (rawStatus) => {
@@ -74,7 +78,14 @@ const HistoriquesTable = ({ id, refreshTrigger = 0 }) => {
       setHistoriques,
       setTotalRows
     );
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters,refreshTrigger]);
+  }, [
+    accesstoken,
+    currentPage,
+    rowsPerPage,
+    searchTerm,
+    filters,
+    refreshTrigger,
+  ]);
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
@@ -106,7 +117,9 @@ const HistoriquesTable = ({ id, refreshTrigger = 0 }) => {
           ? format(new Date(pro.date_rappel), 'dd/MM/yyyy ')
           : '',
         commentaire: pro.commentaire || '',
-        user_traite: pro.user ? `${pro.user.name || ''} ${pro.user.prenom || ''}`.trim() : '',
+        user_traite: pro.user
+          ? `${pro.user.name || ''} ${pro.user.prenom || ''}`.trim()
+          : '',
         visite_id: pro.visite_id,
         appel_id: pro.appel_id,
       };
@@ -133,7 +146,9 @@ const HistoriquesTable = ({ id, refreshTrigger = 0 }) => {
 
         return (
           <span
-            className={`px-2 py-1 rounded text-sm font-semibold ${getProspectStatusColor(row.statut)}`}
+            className={`px-2 py-1 rounded text-sm font-semibold ${getProspectStatusColor(
+              row.statut
+            )}`}
           >
             {row.statut}
           </span>
@@ -185,7 +200,9 @@ const HistoriquesTable = ({ id, refreshTrigger = 0 }) => {
       rappel: pro.date_rappel
         ? format(new Date(pro.date_rappel), 'dd/MM/yyyy')
         : '',
-      user_traite: pro.user ? `${pro.user.name || ''} ${pro.user.prenom || ''}`.trim() : '',
+      user_traite: pro.user
+        ? `${pro.user.name || ''} ${pro.user.prenom || ''}`.trim()
+        : '',
       commentaire: pro.commentaire || '',
     }));
   };

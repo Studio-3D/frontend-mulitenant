@@ -42,23 +42,24 @@ const ProspectDetails = () => {
     setTel_num(num_tel);
     setNomPrenom(nom_prenom);
   };
-    // Fonction appelée quand le modal de traitement est fermé APRÈS un traitement réussi
+  // Fonction appelée quand le modal de traitement est fermé APRÈS un traitement réussi
   const handleTraiteSuccess = () => {
     setOpen_traite(false);
     // Incrémenter le compteur UNIQUEMENT après un traitement réussi
-    setRefreshHistoriques(prev => prev + 1);
+    setRefreshHistoriques((prev) => prev + 1);
   };
   // Fonction appelée quand le modal de traitement est fermé
   const handleTraiteClose = () => {
     setOpen_traite(false);
-
   };
   const handleEdit = (id) => {
     router.push(`${ENDPOINTS.PROSPECTS}?id=${id}&action=edit`);
   };
 
   const tabs = [
-    { id: 'historiques', label: 'Historiques', icon: '' },
+    ...(prospectDetails?.id != null
+      ? [{ id: 'historiques', label: 'Historiques', icon: '' }]
+      : []),
     { id: 'visites', label: 'Visites', icon: '' },
     { id: 'journaux', label: 'Journal des Appels', icon: '' },
   ];
@@ -144,7 +145,7 @@ const ProspectDetails = () => {
             style={{ marginBottom: '8px' }}
           >
             <BreadCrumb
-              baseUrl={ENDPOINTS.CRM+'?tab=prospects'}
+              baseUrl={ENDPOINTS.CRM + '?tab=prospects'}
               step={`Détail prospect`}
             />
           </div>
@@ -360,7 +361,7 @@ const ProspectDetails = () => {
                   </div>
 
                   <div className="p-6">
-                    {activeTab === 'historiques' && (
+                    {activeTab === 'historiques' && prospectDetails?.id && (
                       <div className="min-h-[400px]">
                         <div className="min-h-[400px]">
                           <HistoriquesTable
@@ -447,7 +448,7 @@ const ProspectDetails = () => {
             id={traite_id}
             from_prospect_show={true}
             onClose={handleTraiteClose}
-            onSuccess={handleTraiteSuccess} 
+            onSuccess={handleTraiteSuccess}
           />
         </Modal>
       )}

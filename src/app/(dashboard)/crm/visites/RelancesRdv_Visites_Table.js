@@ -129,9 +129,6 @@ const RelancesRdv_Visites_Table = (type) => {
     //Clearing the interval
     return () => clearInterval(interval);
   }, [accesstoken, currentPage, rowsPerPage, searchTerm, selectedProjet]);
-  const handleShow = (vId) => {
-    router.push(`/crm/visites/${vId}`);
-  };
 
   const handleValider = (Id, text, clt) => {
     setClient(clt);
@@ -261,11 +258,13 @@ const RelancesRdv_Visites_Table = (type) => {
     label: 'Actions',
     render: (row) => (
       <div className="flex gap-3 items-center">
-        <Eye
-          className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
+        <Link
+          href={`/crm/visites/${row.visite_id}`} // Adjust the URL as needed
+          className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
           title="Voir détails"
-          onClick={() => handleShow(row.visite_id)}
-        />
+        >
+          <Eye className="w-4 h-4" />
+        </Link>
         {Number(type.type) === 1 ? (
           <CheckCircle
             className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
