@@ -1,245 +1,207 @@
 'use client';
-import { ChevronDown } from "lucide-react";
-import { Search } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { ChevronDown, Search, Eye } from "lucide-react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useProjet } from "../context/ProjetContext";
 import Link from "next/link";
 import classNames from "classnames";
-import { Eye } from 'lucide-react';
 
 export default function ProjetsDropDown() {
-    const { selectedProjet, projets, selectProjet, loading, fetchProjets, addProjet } = useProjet();
+    const { selectedProjet, projets, selectProjet, loading, fetchProjets, isCacheValid, clearSelectedProjet, isInitialized } = useProjet();
     const [isSelectorOpened, setIsSelectorOpened] = useState(false);
     const [inputValue, setInputValue] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [hasFetchAttempted, setHasFetchAttempted] = useState(false); 
+    
     const dropdownRef = useRef(null);
+    const searchInputRef = useRef(null);
 
-    // Listen for custom event when a new project is created
+    // ==================== EFFECTS ====================
     useEffect(() => {
-        const handleNewProject = (event) => {
-            console.log("New project created, refreshing projects list", event.detail);
-            
-            // If we have the project details, add it to context and select it
-            if (event.detail && event.detail.project) {
-                addProjet(event.detail.project);
-            } else {
-                setHasFetchAttempted(false); // Reset to allow fresh fetch
-                if (isSelectorOpened) {
-                    fetchProjets(); // Refresh if dropdown is open
-                }
-            }
-        };
-
-        // Listen for custom event when a project is deleted
-        const handleProjectDeleted = (event) => {
-            console.log("Project deleted, refreshing projects list", event.detail);
-            setHasFetchAttempted(false); // Reset to allow fresh fetch
-            
-            // If dropdown is open, refresh the projects list
-            if (isSelectorOpened) {
-                fetchProjets();
-            }
-        };
-
-        // Listen for custom events
-        window.addEventListener('projectCreated', handleNewProject);
-        window.addEventListener('projectDeleted', handleProjectDeleted);
-        
-        // Also listen for storage changes (in case another tab creates/deletes a project)
-        const handleStorageChange = (e) => {
-            if (e.key === 'selectedProjet' || e.key === 'newProjectAdded' || e.key === 'projectDeleted') {
-                setHasFetchAttempted(false);
-                if (isSelectorOpened) {
-                    fetchProjets();
-                }
-            }
-        };
-        
-        window.addEventListener('storage', handleStorageChange);
-
-        return () => {
-            window.removeEventListener('projectCreated', handleNewProject);
-            window.removeEventListener('projectDeleted', handleProjectDeleted);
-            window.removeEventListener('storage', handleStorageChange);
-        };
-    }, [isSelectorOpened, fetchProjets, addProjet]);
-
-    // Fetch projets when the dropdown is opened
-    useEffect(() => {
-        if (isSelectorOpened && (!projets.length || !hasFetchAttempted)) {
-            setHasFetchAttempted(true);
+        if (isSelectorOpened && !isCacheValid()) {
             fetchProjets();
         }
-    }, [isSelectorOpened, projets.length, fetchProjets, hasFetchAttempted]);
+    }, [isSelectorOpened, fetchProjets, isCacheValid]);
 
-    // Attempt to restore project from localStorage on component mount
-    useEffect(() => {
-        if (!selectedProjet) {
-            const savedProject = localStorage.getItem('selectedProjet');
-            if (savedProject) {
-                try {
-                    const parsedProject = JSON.parse(savedProject);
-                    if (parsedProject && parsedProject.id) {
-                        console.log("ProjetsDropDown: Restoring project from localStorage", parsedProject.id);
-                        selectProjet(parsedProject);
-                    }
-                } catch (error) {
-                    console.error("Error parsing saved project in dropdown:", error);
-                }
-            }
-        }
-    }, [selectedProjet, selectProjet]);
-
-    // Add useEffect to handle automatic selection when current project is removed
-    useEffect(() => {
-        // If no project is selected but we have projects, select the first one
-        if (!selectedProjet && projets.length > 0) {
-            selectProjet(projets[0]);
-        }
-        
-        // If the selected project is no longer in the list, select another one
-        if (selectedProjet && !projets.some(p => p.id === selectedProjet.id) && projets.length > 0) {
-            selectProjet(projets[0]);
-        }
-    }, [projets, selectedProjet, selectProjet]);
-
-    // Reset fetch tracking when dropdown closes
     useEffect(() => {
         if (!isSelectorOpened) {
-            const timer = setTimeout(() => {
-                setHasFetchAttempted(false);
-                setInputValue(""); // Also reset search input
-            }, 500);
+            const timer = setTimeout(() => setInputValue(""), 300);
             return () => clearTimeout(timer);
         }
     }, [isSelectorOpened]);
 
-    // Close dropdown when clicking outside
     useEffect(() => {
         function handleClickOutside(event) {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
                 setIsSelectorOpened(false);
             }
         }
+        
         document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
+        return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    // Handle projet selection
-    const handleSelectProjet = async (projet) => {
+    useEffect(() => {
+        if (isSelectorOpened && searchInputRef.current) {
+            setTimeout(() => searchInputRef.current?.focus(), 150);
+        }
+    }, [isSelectorOpened]);
+
+    // ==================== EVENT HANDLERS ====================
+    const handleSelectProjet = useCallback(async (projet) => {
         if (isSubmitting) return;
 
-        // Close the dropdown immediately before doing anything else
         setIsSelectorOpened(false);
         setInputValue("");
-        
         setIsSubmitting(true);
         
-        // Update localStorage before context update to ensure API calls use the new project
-        localStorage.setItem("selectedProjet", JSON.stringify(projet));
+        try {
+            await selectProjet(projet);
+        } catch (error) {
+            // Handle selection error silently
+        } finally {
+            setIsSubmitting(false);
+        }
+    }, [isSubmitting, selectProjet]);
+
+    const toggleDropdown = useCallback(() => {
+        if (!isSubmitting) {
+            setIsSelectorOpened(prev => !prev);
+        }
+    }, [isSubmitting]);
+
+    const handleSearchChange = useCallback((e) => {
+        setInputValue(e.target.value);
+    }, []);
+
+    const handleManageProjectsClick = useCallback(() => {
+        setIsSelectorOpened(false);
+    }, []);
+
+    // ==================== MEMOIZED VALUES ====================
+    const filteredProjets = useMemo(() => {
+        if (!inputValue) return projets;
         
-        const success = await selectProjet(projet);
-        setIsSubmitting(false);
-    };
+        const searchTerm = inputValue.toLowerCase();
+        return projets.filter(projet => 
+            (projet.nom || "").toLowerCase().includes(searchTerm)
+        );
+    }, [projets, inputValue]);
 
-    // Filter projets based on search input
-    const filteredProjets = projets.filter(projet => {
-        const searchableText = (projet.nom || "").toLowerCase();
-        return searchableText.includes(inputValue.toLowerCase());
-    });
+    const dropdownContent = useMemo(() => {
+        if (loading) {
+            return (
+                <li className="p-4 text-center text-gray-500">
+                    Chargement des projets...
+                </li>
+            );
+        }
 
+        if (filteredProjets.length === 0) {
+            return (
+                <li className="p-4 text-center text-gray-500">
+                    {inputValue ? "Aucun projet trouvé" : "Aucun projet disponible"}
+                </li>
+            );
+        }
+
+        return (
+            <>
+                {/* Projects List */}
+                {filteredProjets.map((projet) => (
+                    <li 
+                        key={projet.id} 
+                        className={`p-3 mt-1 hover:bg-gray-100 hover:rounded-md cursor-pointer flex items-center transition-colors ${
+                            selectedProjet?.id === projet.id ? 'bg-blue-50 text-[#009FFF] font-medium' : ''
+                        }`}
+                        onClick={() => handleSelectProjet(projet)}
+                    >
+                        <span className="ml-2 truncate flex-1">
+                            {projet.nom}
+                        </span>
+                        {selectedProjet?.id === projet.id && (
+                            <div className="w-2 h-2 bg-[#009FFF] rounded-full ml-2"></div>
+                        )}
+                    </li>
+                ))}
+
+                {/* Manage Projects Link */}
+                <li className="p-2 mt-2 border-t border-gray-100">
+                    <Link 
+                        href="/Projets"
+                        className="flex items-center justify-center gap-2 w-full text-center text-[#009FFF] hover:text-blue-800 p-2 hover:bg-blue-50 rounded-md transition-colors"
+                        onClick={handleManageProjectsClick}
+                    >
+                        <div className="flex items-center gap-2">
+                            <span>Gérer les Projets</span>
+                            <Eye className="w-4 h-4" />
+                        </div>
+                    </Link>
+                </li>
+            </>
+        );
+    }, [loading, filteredProjets, inputValue, selectedProjet, handleSelectProjet, handleManageProjectsClick]);
+
+    // Show loading state until initialization is complete
+    if (!isInitialized) {
+        return (
+            <div className="w-[250px] font-medium relative">
+                <div className="flex gap-2 items-center justify-between border border-gray-300 p-2 rounded-lg bg-gray-100">
+                    <span className="px-2 truncate flex-1 text-gray-500">
+                        Initialisation...
+                    </span>
+                    <ChevronDown size={20} className="text-gray-400 flex-shrink-0" />
+                </div>
+            </div>
+        );
+    }
+
+    // ==================== RENDER ====================
     return (
         <div className="w-[250px] font-medium relative" ref={dropdownRef}>
             {/* Dropdown Header */}
             <div 
-                className={`flex gap-2 items-center justify-between border p-2 rounded-lg cursor-pointer bg-white ${isSubmitting ? 'opacity-70' : ''}`}
-                onClick={() => {
-                    if (!isSubmitting) {
-                        setIsSelectorOpened(!isSelectorOpened);
-                    }
-                }}
+                className={`flex gap-2 items-center justify-between border border-gray-300 p-2 rounded-lg cursor-pointer bg-white transition-all duration-200 ${
+                    isSubmitting ? 'opacity-70 cursor-not-allowed' : 'hover:border-gray-400 hover:shadow-sm'
+                } ${isSelectorOpened ? 'border-blue-300 shadow-sm' : ''}`}
+                onClick={toggleDropdown}
             >
-                <span className={`px-2 ${selectedProjet ? "text-gray-800" : "text-gray-500"}`}>
+                <span className={`px-2 truncate flex-1 ${selectedProjet ? "text-gray-800" : "text-gray-500"}`}>
                     {isSubmitting ? "Chargement..." : selectedProjet?.nom || "Sélectionner un projet"}
                 </span>
                 <ChevronDown 
                     size={20} 
-                    className={classNames({ 'rotate-180': isSelectorOpened })} 
+                    className={classNames('transition-transform duration-200 text-gray-500 flex-shrink-0', { 
+                        'rotate-180': isSelectorOpened 
+                    })} 
                 />
             </div>
 
             {/* Dropdown List */}
             <ul className={classNames(
-                "bg-white overflow-y-auto scrollbar-none transition-all duration-200 absolute w-full rounded-lg shadow-md z-50",
+                "bg-white overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 transition-all duration-200 absolute w-full rounded-lg shadow-lg z-50 border border-gray-200",
                 { 
-                    "max-h-[300px] p-2  opacity-100 visible": isSelectorOpened, 
+                    "max-h-[300px] py-2 opacity-100 visible mt-1": isSelectorOpened, 
                     "max-h-0 opacity-0 invisible": !isSelectorOpened 
                 }
             )}>
                 {/* Search Input */}
                 {isSelectorOpened && (
-                    <div className="sticky top-0 z-50 p-2  bg-white">
-                        <div className="flex items-center gap-2 p-2 bg-white border rounded-lg shadow-sm">
-                            <Search size={18} />
+                    <div className="sticky top-0 z-50 px-2 pb-2 bg-white">
+                        <div className="flex items-center gap-2 p-2 bg-gray-50 border border-gray-200 rounded-lg">
+                            <Search size={18} className="text-gray-400 flex-shrink-0" />
                             <input 
+                                ref={searchInputRef}
                                 type="text" 
                                 value={inputValue} 
-                                onChange={(e) => setInputValue(e.target.value)} 
+                                onChange={handleSearchChange}
                                 placeholder="Rechercher un projet"
-                                className="w-full outline-none border-none"
-                                autoFocus
+                                className="w-full outline-none border-none bg-transparent placeholder-gray-400 text-sm"
                             />
                         </div>
                     </div>
                 )}
 
-                {/* Loading State */}
-                {isSelectorOpened && loading && (
-                    <li className="p-4 text-center !text-gray-500">
-                        Chargement des projets...
-                    </li>
-                )}
-
-                {/* Empty State */}
-                {isSelectorOpened && !loading && filteredProjets.length === 0 && (
-                    <li className="p-4 text-center !text-gray-500">
-                        {inputValue ? "Aucun projet trouvé" : "Aucun projet disponible"}
-                    </li>
-                )}
-
-                {/* Filtered List */}
-                {isSelectorOpened && filteredProjets.map((projet) => (
-                    <li 
-                        key={projet.id} 
-                        className={`p-3 mt-1  hover:bg-gray-100 hover:rounded-md cursor-pointer flex items-center ${
-                            selectedProjet?.id === projet.id ? 'bg-blue-50 text-[#009FFF]' : ''
-                        }`}
-                        onClick={() => handleSelectProjet(projet)}
-                    >
-                        <span className="ml-2 truncate">
-                            {projet.nom}
-                        </span>
-                    </li>
-                ))}
-
-                {/* Manage Projets Link */}
-                {isSelectorOpened && (
-                    <li className="p-2 mt-2 border-t border-gray-100">
-                        <Link 
-                            href="/Projets"
-                            className="flex items-center justify-center gap-2 w-full text-center text-[#009FFF] hover:text-blue-800 p-2 hover:bg-blue-50 rounded-md transition-colors"
-                            onClick={() => setIsSelectorOpened(false)}
-                        >
-                            <div className="flex items-center gap-2">
-                                <span>Gérer les Projets</span>
-                                <Eye className="w-4 h-4" />
-                            </div>
-                        </Link>
-                    </li>
-                )}
+                {/* Content Area */}
+                {isSelectorOpened && dropdownContent}
             </ul>
         </div>
     );
