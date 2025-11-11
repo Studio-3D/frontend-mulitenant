@@ -155,9 +155,9 @@ const MyDocument = ({ data }) => {
               return (
                 <React.Fragment key={index}>
                   <Text style={styles.bold}>
-                    {clientData.civilite == 1
+                    {clientData.civilite == '1'
                       ? "Mr"
-                      : clientData.civilite == 2
+                      : clientData.civilite == '2'
                       ? "Mme"
                       : "Mlle"}{" "}
                     {clientData.nom} {clientData.prenom}

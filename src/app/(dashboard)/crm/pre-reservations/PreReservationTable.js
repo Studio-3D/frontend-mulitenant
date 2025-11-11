@@ -225,13 +225,25 @@ const PreReservationTable = () => {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <div title="Voir détails">
-            <Eye
-              className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
-              title="Voir détails"
-              onClick={() => handleShow(row)}
-            />
-          </div>
+          <Link
+            href={
+              row.appel_id != null
+                ? `/crm/appels/${row.t_appel.appel.id}`
+                : row.visite_id
+                ? `/crm/visites/${row.visite.origin_id}`
+                : '#'
+            }
+            className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+            title="Voir détails"
+            onClick={(e) => {
+              if (row.visite_id) {
+                localStorage.setItem('v_id_cadre', row.visite.related_show_id);
+              }
+            }}
+            target="_blank"
+          >
+            <Eye className="w-4 h-4" />
+          </Link>
 
           <PDFDownloadLink
             document={

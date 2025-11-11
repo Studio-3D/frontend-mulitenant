@@ -33,6 +33,7 @@ const Compromis_show = ({
   reservationData,
   data_c,
   nb_compromis_annule,
+  onCompromisCreated
 }) => {
   // Group by year function
 
@@ -69,7 +70,6 @@ const Compromis_show = ({
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const accessToken = localStorage.getItem('accessToken');
-  console.log('etage==>' + reservationData.reservation?.bien?.niveau);
   // Prepare the form values for the PDF document
   const formValues = {
     user: user,
@@ -113,7 +113,7 @@ const Compromis_show = ({
     setCommentaire(data_c.commentaire);
     set_nb_comp_annule(nb_compromis_annule);
     setCompromis_id(data_c.id);
-    setEtat_res(data_c.reservation.etat);
+    setEtat_res(reservationData?.reservation.etat);
     set_comp_signe(data_c.compromis_signee);
     setLoading(false);
   };
@@ -244,6 +244,10 @@ const Compromis_show = ({
       toast.success('Le fichier a été scanné avec succès');
       closeScannerPopup();
       fetchData_compromis(compromis_id);
+      // Call parent's onCompromisCreated to refresh ReservationSteps
+      if (onCompromisCreated) {
+        onCompromisCreated();
+      }
     } catch (err) {
       console.error('Error scanning file:', err);
     } finally {
@@ -279,7 +283,7 @@ const Compromis_show = ({
                   <FileText className="w-12 h-12 text-white" />
                 </div>
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                  Compromis de Vente
+                  Attestation de Vente
                 </h2>
                 <p className="text-gray-600 mb-6">
                   Responsable: {data.user.name} {data.user.prenom}
@@ -333,7 +337,7 @@ const Compromis_show = ({
                 {comp_sign && (
                   <div className="text-center mb-6">
                     <h3 className="text-lg font-semibold text-blue-700">
-                      Compromis Signé
+                      Attestation Signé
                     </h3>
                     <div className="flex items-center justify-center">
                       {comp_sign.toLowerCase().endsWith('.pdf') ? (
@@ -398,7 +402,7 @@ const Compromis_show = ({
                             className="flex items-center px-4 py-2 bg-teal-700 text-white rounded hover:bg-teal-700"
                           >
                             <Upload className="w-5 h-5 mr-2" />
-                            Ajouter Compromis Signé
+                            Ajouter Attestation Signé
                           </button>
                         </>
                       )}
@@ -410,7 +414,7 @@ const Compromis_show = ({
                       className="flex items-center px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
                     >
                       <X className="w-5 h-5 mr-2" />
-                      Compromis Annulés
+                      Attestation Annulés
                     </button>
                   )}
                 </div>
@@ -530,7 +534,7 @@ const Compromis_show = ({
                           const newValue = e.target.value;
                           set_duree_echeance(newValue);
                           setInfo(
-                            "Toute modification de la durée ou de la date d'échéance entraînera l'annulation du compromis et la création d'un nouveau automatique."
+                            "Toute modification de la durée ou de la date d'échéance entraînera l'annulation d'attestation et la création d'un nouveau automatique."
                           );
                           setdisplay(true);
 
@@ -662,7 +666,7 @@ const Compromis_show = ({
             <div className="p-6">
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Ajouter compromis <span className="text-red-500">*</span>
+                  Ajouter Attestation <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="file"
@@ -717,7 +721,7 @@ const Compromis_show = ({
               <div>
                 <h3 className="text-xl font-bold flex items-center gap-2">
                   <Archive className="w-5 h-5" />
-                  Historique des Compromis Annulés
+                  Historique des Attestation Annulés
                 </h3>
                 <p className="text-red-100 text-sm mt-1">
                   {data_compromis_annule?.length || 0} enregistrements
@@ -872,7 +876,7 @@ const Compromis_show = ({
                 <div className="flex flex-col items-center justify-center h-64 text-gray-400">
                   <Archive className="w-12 h-12 mb-3" />
                   <p className="text-lg font-medium text-gray-500">
-                    Aucun compromis annulé
+                    Aucun Attestation annulé
                   </p>
                   <p className="text-sm">
                     Aucun document trouvé dans les archives

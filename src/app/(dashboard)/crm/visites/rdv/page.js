@@ -2,7 +2,6 @@
 
 import React, { useEffect } from 'react';
 import RelancesRdv_Visites_Table from '../RelancesRdv_Visites_Table';
-import CRMNavbar from '@/components/CRMNavbar';
 import { isAdmin, isSuperAdmin, isCommercial } from '../../../../../configs/enum';
 import { useAuth } from '../../../../../context/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -29,7 +28,7 @@ export default function Page() {
       
         <>
           <div>
-            <CRMNavbar />
+         
             <RelancesRdv_Visites_Table type={2} />
           </div>
         </>

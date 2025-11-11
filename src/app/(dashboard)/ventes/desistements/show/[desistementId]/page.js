@@ -21,6 +21,7 @@ import { MODE_PAIEMENT, getModePenaliteLabel } from '@/configs/enum';
 import { Clipboard, FileSliders, Folder } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useProjet } from '@/context/ProjetContext';
+import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
 export default function Page() {
   const FileUrl = process.env.NEXT_PUBLIC_IMG_URL;
   const router = useRouter();
@@ -116,20 +117,20 @@ export default function Page() {
     }
   };
 
-  // Simple cache et comparaison for return back en cas de changer projet
-  const [oldProjetId, setOldProjetId] = useState(null);
-
-  useEffect(() => {
-    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
-      if (oldProjetId) {
-        // Projet a changé
-
-        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-        router.back();
+   // Simple cache et comparaison for return back en cas de changer projet
+    const [oldProjetId, setOldProjetId] = useState(null);
+  
+    useEffect(() => {
+      if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+        if (oldProjetId) {
+          // Projet a changé
+  
+          console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+          router.push('/ventes?tab=desistements');
+        }
+        setOldProjetId(selectedProjet.id);
       }
-      setOldProjetId(selectedProjet.id);
-    }
-  }, [selectedProjet?.id, oldProjetId, router]);
+    }, [selectedProjet?.id, oldProjetId, router]);
   const getFileIcon = (filename) => {
     const extension = filename.split('.').pop().toLowerCase();
     const iconClass = 'w-5 h-5 flex-shrink-0 text-gray-400';
@@ -239,7 +240,7 @@ export default function Page() {
             : 'Désistement rejeté avec succès';
 
         toast.success(message);
-        router.back(); // Redirect after success
+        router.push('/ventes?tab=reservations'); // Redirect after success
       });
     } catch (error) {
       console.error('Validation error:', error);
@@ -262,6 +263,13 @@ export default function Page() {
   }
 
   return (
+    <>
+     <div className="flex items-center justify-start">
+            <BreadCrumb
+              baseUrl={`#`}
+              step={`Détail Désistement`}
+            />
+          </div>
     <div className="flex flex-col w-full min-h-screen bg-gray-100 p-4">
       <div className="w-full bg-white shadow-lg rounded-lg mb-4">
         <SideBar
@@ -626,7 +634,7 @@ export default function Page() {
         )}
 
         {/* Form actions - kept for validation/rejection */}
-        {statut_des == 0 && user.role <= 2 && (
+        {statut_des == 0 && user?.role <= 2 && (
           <div className="p-6 border-t border-gray-200">
             {showRejectComment && (
               <div className="py-1 ">
@@ -715,5 +723,6 @@ export default function Page() {
         )}
       </div>
     </div>
+    </>
   );
 }

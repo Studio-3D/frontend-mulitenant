@@ -4,27 +4,109 @@ import { VenteTabsNavigation } from './VenteTabsNavigation';
 import { VenteTabContent } from './VenteTabContent';
 import Pusher from 'pusher-js';
 import FetchNotifMenuVente from '@/configs/fetch_notif_menu_vente';
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from '../../context/AuthContext';
 import { useProjet } from '@/context/ProjetContext';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export function VentePage() {
-  const [activeTab, setActiveTab] = useState('reservations');
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Get initial state from URL parameters
+  const urlTab = searchParams.get('tab');
+  const urlSubTab = searchParams.get('subtab');
+
+  console.log('VentePage - URL tab:', urlTab);
+  console.log('VentePage - URL subtab:', urlSubTab);
+
+  // Set initial state from URL parameters
+  const [activeTab, setActiveTab] = useState(urlTab || 'reservations');
   const [activeSubTab, setActiveSubTab] = useState({
-    validation: 'desistements-attente-encours',
+    validation: urlSubTab || 'desistements-attente-encours',
     rejet: 'desistements-rejet',
-    remboursements: 'apres-ventes'
+    remboursements: 'apres-ventes',
   });
-  
+
+  console.log('VentePage - Active tab:', activeTab);
+  console.log('VentePage - Active subTab:', activeSubTab);
+
   const renderedTabs = useRef({
     reservations: true,
+    clients: true, // Ensure clients is initialized
   });
 
   const { user } = useAuth();
   const { selectedProjet } = useProjet();
   const userRole = user?.role;
   const projetId = selectedProjet?.id;
-  const pusher_key_NotifMenu = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_NOTIF_MENU;
+  const pusher_key_NotifMenu =
+    process.env.NEXT_PUBLIC_PUSHER_APP_KEY_NOTIF_MENU;
   const [param, setParam] = useState(0);
+
+  // Update URL when tab changes - SIMPLIFIED like CRM
+  const updateURL = useCallback((tab, subtab = null) => {
+    const params = new URLSearchParams();
+
+    if (tab) {
+      params.set('tab', tab);
+    }
+
+    if (subtab) {
+      params.set('subtab', subtab);
+    }
+
+    // Use replaceState like CRM does
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    window.history.replaceState(null, '', newUrl);
+    console.log('URL updated to:', newUrl);
+  }, []);
+
+  // Add this effect to ensure tab is rendered when active
+ // Fix: Only initialize the currently active tab
+useEffect(() => {
+  if (activeTab && !renderedTabs.current[activeTab]) {
+    console.log('🔍 Initializing ONLY active tab in renderedTabs:', activeTab);
+    renderedTabs.current = { 
+      ...renderedTabs.current, 
+      [activeTab]: true 
+    };
+  }
+}, [activeTab]);
+
+  // Sync URL with tab state - SIMPLIFIED like CRM
+  useEffect(() => {
+    if (urlTab && urlTab !== activeTab) {
+      console.log('URL tab change detected, calling handleTabChange:', urlTab);
+      handleTabChange(urlTab, true);
+    }
+  }, [urlTab]);
+
+  // Handle subtab URL changes - SIMPLIFIED
+  useEffect(() => {
+    if (
+      urlSubTab &&
+      ['validation', 'rejet', 'remboursements'].includes(activeTab)
+    ) {
+      const parentTab = activeTab;
+      console.log(
+        'URL subtab change detected:',
+        urlSubTab,
+        'for parent tab:',
+        parentTab
+      );
+
+      // Directly set the subtab without calling handleSubTabChange to avoid loops
+      setActiveSubTab((prev) => ({
+        ...prev,
+        [parentTab]: urlSubTab,
+      }));
+
+      // Ensure the subtab is marked as rendered
+      if (!renderedTabs.current[urlSubTab]) {
+        renderedTabs.current = { ...renderedTabs.current, [urlSubTab]: true };
+      }
+    }
+  }, [urlSubTab, activeTab]);
 
   // Notification state - matching the old navbar structure
   const [notifications, setNotifications] = useState({
@@ -43,20 +125,20 @@ export function VentePage() {
     'penalites-validation': 0,
     'reservations-validation': 0,
     'avances-validation': 0,
-    
+
     // Sub tabs - Rejet
     'desistements-rejet': 0,
     'penalites-rejet': 0,
     'reservations-rejet': 0,
     'avances-rejet': 0,
-    
+
     // Sub tabs - Remboursements
     'apres-ventes': 0,
     'att-accuse-cheque': 0,
     'att-decaissement': 0,
-    'accuses': 0,
+    accuses: 0,
     'dossiers-transferes': 0,
-    'accuses-cheque-traite': 0
+    'accuses-cheque-traite': 0,
   });
 
   // Fonction optimisée pour récupérer les notifications
@@ -71,30 +153,35 @@ export function VentePage() {
         // nb_demande_pre_remb - not used in new notifications
         (nb_demande_pre_remb) => {},
         // nb_dst_att_valide
-        (nb_dst_att_valide) => setNotifications(prev => ({ 
-          ...prev, 
-          'desistements-attente-encours': nb_dst_att_valide 
-        })),
+        (nb_dst_att_valide) =>
+          setNotifications((prev) => ({
+            ...prev,
+            'desistements-attente-encours': nb_dst_att_valide,
+          })),
         // nb_pen_att_valide
-        (nb_pen_att_valide) => setNotifications(prev => ({ 
-          ...prev, 
-          'penalites-validation': nb_pen_att_valide 
-        })),
+        (nb_pen_att_valide) =>
+          setNotifications((prev) => ({
+            ...prev,
+            'penalites-validation': nb_pen_att_valide,
+          })),
         // nb_att_valid_reservation
-        (nb_att_valid_reservation) => setNotifications(prev => ({ 
-          ...prev, 
-          'reservations-validation': nb_att_valid_reservation 
-        })),
+        (nb_att_valid_reservation) =>
+          setNotifications((prev) => ({
+            ...prev,
+            'reservations-validation': nb_att_valid_reservation,
+          })),
         // nb_att_valid_avances
-        (nb_att_valid_avances) => setNotifications(prev => ({ 
-          ...prev, 
-          'avances-validation': nb_att_valid_avances 
-        })),
+        (nb_att_valid_avances) =>
+          setNotifications((prev) => ({
+            ...prev,
+            'avances-validation': nb_att_valid_avances,
+          })),
         // nb_echeances
-        (nb_echeances) => setNotifications(prev => ({ 
-          ...prev, 
-          echeances: nb_echeances 
-        }))
+        (nb_echeances) =>
+          setNotifications((prev) => ({
+            ...prev,
+            echeances: nb_echeances,
+          }))
       );
     },
     [projetId, userRole]
@@ -143,13 +230,9 @@ export function VentePage() {
       Number(notifications['reservations-validation']) +
       Number(notifications['avances-validation']);
 
-    // For rejet, we don't have notification counts in the old system, so we'll keep them at 0
-    // For remboursements, we don't have individual counts in the old system
-    
-    setNotifications(prev => ({
+    setNotifications((prev) => ({
       ...prev,
       validation: nb_att_validation_total,
-      // rejet and remboursements remain 0 as in old system
     }));
   }, [
     notifications['desistements-attente-encours'],
@@ -158,42 +241,69 @@ export function VentePage() {
     notifications['avances-validation'],
   ]);
 
-  const handleTabChange = (tabId) => {
+  // Update the handleTabChange to be simpler
+  const handleTabChange = (tabId, fromUrl = false) => {
+    console.log('handleTabChange called:', tabId, 'fromUrl:', fromUrl);
     setActiveTab(tabId);
-    
+
+    if (!fromUrl) {
+      updateURL(tabId);
+    }
+
     // Set default sub-tabs when main tab changes
     if (tabId === 'validation') {
+      const defaultSubTab = 'desistements-attente-encours';
       if (!renderedTabs.current[tabId]) {
         renderedTabs.current = { ...renderedTabs.current, [tabId]: true };
       }
-      if (!renderedTabs.current['desistements-attente-encours']) {
-        renderedTabs.current = { ...renderedTabs.current, 'desistements-attente-encours': true };
+      if (!renderedTabs.current[defaultSubTab]) {
+        renderedTabs.current = {
+          ...renderedTabs.current,
+          [defaultSubTab]: true,
+        };
       }
-      
-      if (activeSubTab.validation !== 'desistements-attente-encours') {
-        setActiveSubTab(prev => ({ ...prev, validation: 'desistements-attente-encours' }));
+
+      if (activeSubTab.validation !== defaultSubTab) {
+        setActiveSubTab((prev) => ({ ...prev, validation: defaultSubTab }));
+        if (!fromUrl) {
+          updateURL(tabId, defaultSubTab);
+        }
       }
     } else if (tabId === 'rejet') {
+      const defaultSubTab = 'desistements-rejet';
       if (!renderedTabs.current[tabId]) {
         renderedTabs.current = { ...renderedTabs.current, [tabId]: true };
       }
-      if (!renderedTabs.current['desistements-rejet']) {
-        renderedTabs.current = { ...renderedTabs.current, 'desistements-rejet': true };
+      if (!renderedTabs.current[defaultSubTab]) {
+        renderedTabs.current = {
+          ...renderedTabs.current,
+          [defaultSubTab]: true,
+        };
       }
-      
-      if (activeSubTab.rejet !== 'desistements-rejet') {
-        setActiveSubTab(prev => ({ ...prev, rejet: 'desistements-rejet' }));
+
+      if (activeSubTab.rejet !== defaultSubTab) {
+        setActiveSubTab((prev) => ({ ...prev, rejet: defaultSubTab }));
+        if (!fromUrl) {
+          updateURL(tabId, defaultSubTab);
+        }
       }
     } else if (tabId === 'remboursements') {
+      const defaultSubTab = 'apres-ventes';
       if (!renderedTabs.current[tabId]) {
         renderedTabs.current = { ...renderedTabs.current, [tabId]: true };
       }
-      if (!renderedTabs.current['apres-ventes']) {
-        renderedTabs.current = { ...renderedTabs.current, 'apres-ventes': true };
+      if (!renderedTabs.current[defaultSubTab]) {
+        renderedTabs.current = {
+          ...renderedTabs.current,
+          [defaultSubTab]: true,
+        };
       }
-      
-      if (activeSubTab.remboursements !== 'apres-ventes') {
-        setActiveSubTab(prev => ({ ...prev, remboursements: 'apres-ventes' }));
+
+      if (activeSubTab.remboursements !== defaultSubTab) {
+        setActiveSubTab((prev) => ({ ...prev, remboursements: defaultSubTab }));
+        if (!fromUrl) {
+          updateURL(tabId, defaultSubTab);
+        }
       }
     } else {
       if (!renderedTabs.current[tabId]) {
@@ -201,13 +311,18 @@ export function VentePage() {
       }
     }
   };
-
-  const handleSubTabChange = (parentTab, subTabId) => {
-    setActiveSubTab(prev => ({
+  // Update handleSubTabChange to be simpler
+  const handleSubTabChange = (parentTab, subTabId, updateUrl = true) => {
+    console.log('handleSubTabChange called:', parentTab, subTabId, updateUrl);
+    setActiveSubTab((prev) => ({
       ...prev,
       [parentTab]: subTabId,
     }));
-    
+
+    if (updateUrl) {
+      updateURL(parentTab, subTabId);
+    }
+
     if (!renderedTabs.current[subTabId]) {
       renderedTabs.current = { ...renderedTabs.current, [subTabId]: true };
     }
@@ -215,61 +330,63 @@ export function VentePage() {
 
   // Handle localStorage state for specific tabs (from old navbar)
   const handleTabClick = (tabId) => {
-    switch(tabId) {
+    console.log('handleTabClick called:', tabId);
+    switch (tabId) {
       case 'desistements':
-        localStorage.setItem("etat_dst", "1");
+        localStorage.setItem('etat_dst', '1');
         break;
       case 'penalites':
-        localStorage.setItem("etat_penalite", "1");
+        localStorage.setItem('etat_penalite', '1');
         break;
       case 'echeances':
-        localStorage.setItem("etat_av", "99");
+        localStorage.setItem('etat_av', '99');
         break;
       default:
         break;
     }
-    handleTabChange(tabId);
+    handleTabChange(tabId, false);
   };
 
   const handleSubTabClick = (parentTab, subTabId) => {
+    console.log('handleSubTabClick called:', parentTab, subTabId);
     // Set localStorage states based on sub-tab selection (from old navbar)
-    switch(subTabId) {
+    switch (subTabId) {
       case 'desistements-attente-encours':
         if (userRole <= 2) {
-          localStorage.setItem("etat_dst", "5");
+          localStorage.setItem('etat_dst', '5');
         } else {
-          localStorage.setItem("etat_dst", "0");
+          localStorage.setItem('etat_dst', '0');
         }
         break;
       case 'penalites-validation':
         if (userRole <= 2) {
-          localStorage.setItem("etat_penalite", "5");
+          localStorage.setItem('etat_penalite', '5');
         } else {
-          localStorage.setItem("etat_penalite", "0");
+          localStorage.setItem('etat_penalite', '0');
         }
         break;
       case 'reservations-validation':
-        localStorage.setItem("etat_res", "3");
+        localStorage.setItem('etat_res', '3');
         break;
       case 'avances-validation':
-        localStorage.setItem("etat_av", "3");
+        localStorage.setItem('etat_av', '3');
         break;
       case 'desistements-rejet':
-        localStorage.setItem("etat_dst", "2");
+        localStorage.setItem('etat_dst', '2');
         break;
       case 'penalites-rejet':
-        localStorage.setItem("etat_penalite", "2");
+        localStorage.setItem('etat_penalite', '2');
         break;
       case 'reservations-rejet':
-        localStorage.setItem("etat_res", "2");
+        localStorage.setItem('etat_res', '2');
         break;
       case 'avances-rejet':
-        localStorage.setItem("etat_av", "2");
+        localStorage.setItem('etat_av', '2');
         break;
       default:
         break;
     }
-    handleSubTabChange(parentTab, subTabId);
+    handleSubTabChange(parentTab, subTabId, true);
   };
 
   return (
@@ -284,115 +401,237 @@ export function VentePage() {
       />
       <div className="">
         {/* Simple tabs */}
-        <div style={{ display: activeTab === 'reservations' ? 'block' : 'none' }}>
-          {renderedTabs.current['reservations'] && <VenteTabContent id="reservations" />}
+        <div
+          style={{ display: activeTab === 'reservations' ? 'block' : 'none' }}
+        >
+          {renderedTabs.current['reservations'] && (
+            <VenteTabContent id="reservations" />
+          )}
         </div>
-        
+
         <div style={{ display: activeTab === 'clients' ? 'block' : 'none' }}>
           {renderedTabs.current['clients'] && <VenteTabContent id="clients" />}
         </div>
-        
-        <div style={{ display: activeTab === 'desistements' ? 'block' : 'none' }}>
-          {renderedTabs.current['desistements'] && <VenteTabContent id="desistements" />}
+
+        <div
+          style={{ display: activeTab === 'desistements' ? 'block' : 'none' }}
+        >
+          {renderedTabs.current['desistements'] && (
+            <VenteTabContent id="desistements" />
+          )}
         </div>
-        
+
         <div style={{ display: activeTab === 'penalites' ? 'block' : 'none' }}>
-          {renderedTabs.current['penalites'] && <VenteTabContent id="penalites" />}
+          {renderedTabs.current['penalites'] && (
+            <VenteTabContent id="penalites" />
+          )}
         </div>
-        
+
         <div style={{ display: activeTab === 'echeances' ? 'block' : 'none' }}>
-          {renderedTabs.current['echeances'] && <VenteTabContent id="echeances" />}
+          {renderedTabs.current['echeances'] && (
+            <VenteTabContent id="echeances" />
+          )}
         </div>
 
         {/* Validation subtabs */}
-        <div style={{ 
-          display: activeTab === 'validation' && activeSubTab.validation === 'desistements-attente-encours' ? 'block' : 'none' 
-        }}>
-          {renderedTabs.current['desistements-attente-encours'] && <VenteTabContent id="desistements-attente-encours" />}
+        <div
+          style={{
+            display:
+              activeTab === 'validation' &&
+              activeSubTab.validation === 'desistements-attente-encours'
+                ? 'block'
+                : 'none',
+          }}
+        >
+          {renderedTabs.current['desistements-attente-encours'] && (
+            <VenteTabContent id="desistements-attente-encours" />
+          )}
         </div>
-        
-        <div style={{ 
-          display: activeTab === 'validation' && activeSubTab.validation === 'penalites-validation' ? 'block' : 'none' 
-        }}>
-          {renderedTabs.current['penalites-validation'] && <VenteTabContent id="penalites-validation" />}
+
+        <div
+          style={{
+            display:
+              activeTab === 'validation' &&
+              activeSubTab.validation === 'penalites-validation'
+                ? 'block'
+                : 'none',
+          }}
+        >
+          {renderedTabs.current['penalites-validation'] && (
+            <VenteTabContent id="penalites-validation" />
+          )}
         </div>
-        
-        <div style={{ 
-          display: activeTab === 'validation' && activeSubTab.validation === 'reservations-validation' ? 'block' : 'none' 
-        }}>
-          {renderedTabs.current['reservations-validation'] && <VenteTabContent id="reservations-validation" />}
+
+        <div
+          style={{
+            display:
+              activeTab === 'validation' &&
+              activeSubTab.validation === 'reservations-validation'
+                ? 'block'
+                : 'none',
+          }}
+        >
+          {renderedTabs.current['reservations-validation'] && (
+            <VenteTabContent id="reservations-validation" />
+          )}
         </div>
-        
-        <div style={{ 
-          display: activeTab === 'validation' && activeSubTab.validation === 'avances-validation' ? 'block' : 'none' 
-        }}>
-          {renderedTabs.current['avances-validation'] && <VenteTabContent id="avances-validation" />}
+
+        <div
+          style={{
+            display:
+              activeTab === 'validation' &&
+              activeSubTab.validation === 'avances-validation'
+                ? 'block'
+                : 'none',
+          }}
+        >
+          {renderedTabs.current['avances-validation'] && (
+            <VenteTabContent id="avances-validation" />
+          )}
         </div>
 
         {/* Rejet subtabs */}
-        <div style={{ 
-          display: activeTab === 'rejet' && activeSubTab.rejet === 'desistements-rejet' ? 'block' : 'none' 
-        }}>
-          {renderedTabs.current['desistements-rejet'] && <VenteTabContent id="desistements-rejet" />}
+        <div
+          style={{
+            display:
+              activeTab === 'rejet' &&
+              activeSubTab.rejet === 'desistements-rejet'
+                ? 'block'
+                : 'none',
+          }}
+        >
+          {renderedTabs.current['desistements-rejet'] && (
+            <VenteTabContent id="desistements-rejet" />
+          )}
         </div>
-        
-        <div style={{ 
-          display: activeTab === 'rejet' && activeSubTab.rejet === 'penalites-rejet' ? 'block' : 'none' 
-        }}>
-          {renderedTabs.current['penalites-rejet'] && <VenteTabContent id="penalites-rejet" />}
+
+        <div
+          style={{
+            display:
+              activeTab === 'rejet' && activeSubTab.rejet === 'penalites-rejet'
+                ? 'block'
+                : 'none',
+          }}
+        >
+          {renderedTabs.current['penalites-rejet'] && (
+            <VenteTabContent id="penalites-rejet" />
+          )}
         </div>
-        
-        <div style={{ 
-          display: activeTab === 'rejet' && activeSubTab.rejet === 'reservations-rejet' ? 'block' : 'none' 
-        }}>
-          {renderedTabs.current['reservations-rejet'] && <VenteTabContent id="reservations-rejet" />}
+
+        <div
+          style={{
+            display:
+              activeTab === 'rejet' &&
+              activeSubTab.rejet === 'reservations-rejet'
+                ? 'block'
+                : 'none',
+          }}
+        >
+          {renderedTabs.current['reservations-rejet'] && (
+            <VenteTabContent id="reservations-rejet" />
+          )}
         </div>
-        
-        <div style={{ 
-          display: activeTab === 'rejet' && activeSubTab.rejet === 'avances-rejet' ? 'block' : 'none' 
-        }}>
-          {renderedTabs.current['avances-rejet'] && <VenteTabContent id="avances-rejet" />}
+
+        <div
+          style={{
+            display:
+              activeTab === 'rejet' && activeSubTab.rejet === 'avances-rejet'
+                ? 'block'
+                : 'none',
+          }}
+        >
+          {renderedTabs.current['avances-rejet'] && (
+            <VenteTabContent id="avances-rejet" />
+          )}
         </div>
 
         {/* Remboursements subtabs */}
-        <div style={{ 
-          display: activeTab === 'remboursements' && activeSubTab.remboursements === 'apres-ventes' ? 'block' : 'none' 
-        }}>
-          {renderedTabs.current['apres-ventes'] && <VenteTabContent id="apres-ventes" />}
+        <div
+          style={{
+            display:
+              activeTab === 'remboursements' &&
+              activeSubTab.remboursements === 'apres-ventes'
+                ? 'block'
+                : 'none',
+          }}
+        >
+          {renderedTabs.current['apres-ventes'] && (
+            <VenteTabContent id="apres-ventes" />
+          )}
         </div>
-        
-        <div style={{ 
-          display: activeTab === 'remboursements' && activeSubTab.remboursements === 'att-accuse-cheque' ? 'block' : 'none' 
-        }}>
-          {renderedTabs.current['att-accuse-cheque'] && <VenteTabContent id="att-accuse-cheque" />}
+
+        <div
+          style={{
+            display:
+              activeTab === 'remboursements' &&
+              activeSubTab.remboursements === 'att-accuse-cheque'
+                ? 'block'
+                : 'none',
+          }}
+        >
+          {renderedTabs.current['att-accuse-cheque'] && (
+            <VenteTabContent id="att-accuse-cheque" />
+          )}
         </div>
-        
+
         {userRole <= 2 ? (
           <>
-            <div style={{ 
-              display: activeTab === 'remboursements' && activeSubTab.remboursements === 'att-decaissement' ? 'block' : 'none' 
-            }}>
-              {renderedTabs.current['att-decaissement'] && <VenteTabContent id="att-decaissement" />}
+            <div
+              style={{
+                display:
+                  activeTab === 'remboursements' &&
+                  activeSubTab.remboursements === 'att-decaissement'
+                    ? 'block'
+                    : 'none',
+              }}
+            >
+              {renderedTabs.current['att-decaissement'] && (
+                <VenteTabContent id="att-decaissement" />
+              )}
             </div>
-            
-            <div style={{ 
-              display: activeTab === 'remboursements' && activeSubTab.remboursements === 'accuses' ? 'block' : 'none' 
-            }}>
-              {renderedTabs.current['accuses'] && <VenteTabContent id="accuses" />}
+
+            <div
+              style={{
+                display:
+                  activeTab === 'remboursements' &&
+                  activeSubTab.remboursements === 'accuses'
+                    ? 'block'
+                    : 'none',
+              }}
+            >
+              {renderedTabs.current['accuses'] && (
+                <VenteTabContent id="accuses" />
+              )}
             </div>
           </>
         ) : (
-          <div style={{ 
-            display: activeTab === 'remboursements' && activeSubTab.remboursements === 'accuses-cheque-traite' ? 'block' : 'none' 
-          }}>
-            {renderedTabs.current['accuses-cheque-traite'] && <VenteTabContent id="accuses-cheque-traite" />}
+          <div
+            style={{
+              display:
+                activeTab === 'remboursements' &&
+                activeSubTab.remboursements === 'accuses-cheque-traite'
+                  ? 'block'
+                  : 'none',
+            }}
+          >
+            {renderedTabs.current['accuses-cheque-traite'] && (
+              <VenteTabContent id="accuses-cheque-traite" />
+            )}
           </div>
         )}
-        
-        <div style={{ 
-          display: activeTab === 'remboursements' && activeSubTab.remboursements === 'dossiers-transferes' ? 'block' : 'none' 
-        }}>
-          {renderedTabs.current['dossiers-transferes'] && <VenteTabContent id="dossiers-transferes" />}
+
+        <div
+          style={{
+            display:
+              activeTab === 'remboursements' &&
+              activeSubTab.remboursements === 'dossiers-transferes'
+                ? 'block'
+                : 'none',
+          }}
+        >
+          {renderedTabs.current['dossiers-transferes'] && (
+            <VenteTabContent id="dossiers-transferes" />
+          )}
         </div>
       </div>
     </div>

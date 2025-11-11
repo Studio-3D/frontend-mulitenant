@@ -189,7 +189,7 @@ const ShowPenalite = () => {
       );
 
       // Redirect after successful submission
-      router.push('/ventes/desistements/penalites/attente_encours');
+      router.push('/ventes?tab=validation&subtab=penalites-validation');
 
       // Show success message
       toast.success('Action traitée avec succès');
@@ -270,7 +270,7 @@ const ShowPenalite = () => {
       {/* Header */}
       <div className="flex justify-between items-center mb-1">
         <BreadCrumb
-          baseUrl={'/ventes/desistements/penalites'}
+          baseUrl={'#'}
           step={`Détail pénalité`}
         />
       </div>
@@ -590,7 +590,7 @@ const PenaltyDetails = ({
       )}
     </div>
 
-    {penalite.statut == 0 && user.role <= 2 && (
+    {penalite.statut == 0 && user?.role <= 2 && (
       <div className="flex justify-end pt-4">
         <Button
           type="submit"
@@ -765,7 +765,7 @@ const ValidationModal = ({
                             name="remiseNumber"
                             value={field.value}
                             onChange={field.onChange}
-                            required={true}
+                            required={false}
                             error={errors.remiseNumber?.message}
                           />
                         )}

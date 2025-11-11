@@ -11,7 +11,6 @@ import { isAdmin, isSuperAdmin } from '../../../../../configs/enum';
 import Link from 'next/link';
 import { fetchData_table_by_id } from '../../../../../../src/configs/api-utils';
 import Input from '@/components/Input';
-import VenteNavbar from '@/components/VenteNavbar';
 
 const RemboDosTable = () => {
   const [loading, setLoading] = useState(true);
@@ -190,6 +189,7 @@ const RemboDosTable = () => {
     <>
       <div className=" p-4">
         <Table
+        title={'Dossier Transférés'}
           data_to_export={data_to_export()}
           columns_export={columns_export}
           name_file_export={'remboursements_dossiers_export'}

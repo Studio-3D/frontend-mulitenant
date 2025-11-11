@@ -13,6 +13,8 @@ import AttAccuseCheque from '../../app/(dashboard)/ventes/remboursements/att_acc
 import AttDecaissement from '../../app/(dashboard)/ventes/remboursements/att_decaissement/page'
 import Accuses from '../../app/(dashboard)/ventes/remboursements/accuses/page'
 import DossiersTransferes from '../../app/(dashboard)/ventes/remboursements/dossiers_transferes/page'
+import AccusesChequeTraite from '../../app/(dashboard)/ventes/remboursements/accuses_cheque_traite/page'
+
 // Validation subtabs
 import DesistementsValidation from '../../app/(dashboard)/ventes/desistements/attente_encours/page'
 import PenalitesValidation from '../../app/(dashboard)/ventes/desistements/penalites/attente_encours/page'
@@ -52,7 +54,8 @@ export function VenteTabContent({ id }) {
     'att-decaissement': <AttDecaissement />,
     'accuses': <Accuses />,
     'dossiers-transferes': <DossiersTransferes />,
+    'accuses-cheque-traite':<AccusesChequeTraite/>
   };
 
-  return tabComponents[id] || <div>Tab "{id}" not found</div>;
+  return tabComponents[id] || <div>Tab {id} not found</div>;
 }

@@ -225,7 +225,7 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
 
         if (onSuccess) onSuccess();
         if (onClose) onClose();
-        else router.push(ENDPOINTS.PROSPECTS);
+        else router.push(ENDPOINTS.CRM+'?tab=prospects');
       } else if (res.status === 422) {
         message = res.data.message;
         setBackendErrors(res.data.errors);
@@ -411,12 +411,13 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
     );
   }
 
+ 
   return (
     <>
       <div className="">
         <div className="flex items-center justify-start">
           <BreadCrumb
-            baseUrl={ENDPOINTS.PROSPECTS}
+            baseUrl={ENDPOINTS.CRM+'?tab=prospects'}
             step={`${isEditing ? 'Modifier' : 'Ajouter'} un prospect`}
           />
         </div>

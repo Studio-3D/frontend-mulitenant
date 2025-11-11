@@ -249,11 +249,13 @@ const RelancesRdvAppelsTable = (type) => {
     label: 'Actions',
     render: (row) => (
       <div className="flex gap-3 items-center">
-        <Eye
-          className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
+        <Link
+          href={`/crm/appels/${row.appel_id}`} // Adjust the URL as needed
+          className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
           title="Voir détails"
-          onClick={() => handleShow(row.appel_id)}
-        />
+        >
+          <Eye className="w-4 h-4" />
+        </Link>
         {Number(type.type) == 1 ? (
           <CheckCircle
             className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
@@ -343,7 +345,7 @@ const RelancesRdvAppelsTable = (type) => {
           onPageChange={setCurrentPage}
           onRowsPerPageChange={setRowsPerPage}
           onSearchChange={setSearchTerm}
-           enableExport={formatData().length > 0}
+          enableExport={formatData().length > 0}
           filterComponent={
             <div className="space-y-4 p-4 rounded-lg ">
               <div

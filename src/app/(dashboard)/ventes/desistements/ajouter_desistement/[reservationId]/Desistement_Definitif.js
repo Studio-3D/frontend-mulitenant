@@ -40,23 +40,29 @@ export function Desistement_Definitif({
     console.log('motif_desistements:', motif_desistements);
     console.log('motif_desistements type:', typeof motif_desistements);
     console.log('Is array?', Array.isArray(motif_desistements));
-    console.log('Is object?', typeof motif_desistements === 'object' && motif_desistements !== null);
-    
-    if (typeof motif_desistements === 'object' && motif_desistements !== null) {
+    console.log(
+      'Is object?',
+      typeof motif_desistements === 'object' && motif_desistements != null
+    );
+
+    if (typeof motif_desistements === 'object' && motif_desistements != null) {
       console.log('Object keys:', Object.keys(motif_desistements));
       console.log('Object values:', Object.values(motif_desistements));
       console.log('Object entries:', Object.entries(motif_desistements));
-      
+
       const entries = Object.entries(motif_desistements);
       if (entries.length > 0) {
         console.log('First entry:', entries[0]);
         console.log('First entry key:', entries[0][0]);
         console.log('First entry value:', entries[0][1]);
         console.log('First entry value type:', typeof entries[0][1]);
-        
+
         // Check if value is an object with code/label
-        if (typeof entries[0][1] === 'object' && entries[0][1] !== null) {
-          console.log('First entry value properties:', Object.keys(entries[0][1]));
+        if (typeof entries[0][1] === 'object' && entries[0][1] != null) {
+          console.log(
+            'First entry value properties:',
+            Object.keys(entries[0][1])
+          );
         }
       }
     }
@@ -65,7 +71,7 @@ export function Desistement_Definitif({
   // Helper function to safely format options
   const getMotifOptions = () => {
     console.log('=== getMotifOptions called ===');
-    
+
     if (!motif_desistements) {
       console.log('motif_desistements is null or undefined');
       return [];
@@ -73,27 +79,30 @@ export function Desistement_Definitif({
 
     if (Array.isArray(motif_desistements)) {
       console.log('motif_desistements is an array, mapping directly');
-      const options = motif_desistements.map(item => ({
+      const options = motif_desistements.map((item) => ({
         value: item.code || item.value || item.id,
-        label: item.label || item.name || item.description
+        label: item.label || item.name || item.description,
       }));
       console.log('Array options:', options);
       return options;
     }
 
     if (typeof motif_desistements === 'object') {
-      console.log('motif_desistements is an object, converting with Object.entries');
+      console.log(
+        'motif_desistements is an object, converting with Object.entries'
+      );
       const entries = Object.entries(motif_desistements);
       console.log('Number of entries:', entries.length);
-      
+
       const options = entries.map(([key, value]) => {
         console.log(`Processing entry - key: ${key}, value:`, value);
-        
+
         // If value is an object with code/label properties
-        if (typeof value === 'object' && value !== null) {
+        if (typeof value === 'object' && value != null) {
           const option = {
             value: value.code || value.value || key,
-            label: value.label || value.name || value.description || String(value)
+            label:
+              value.label || value.name || value.description || String(value),
           };
           console.log('Created object option:', option);
           return option;
@@ -101,7 +110,7 @@ export function Desistement_Definitif({
         // If value is a simple string/number
         const option = {
           value: key,
-          label: String(value)
+          label: String(value),
         };
         console.log('Created simple option:', option);
         return option;
@@ -110,7 +119,9 @@ export function Desistement_Definitif({
       return options;
     }
 
-    console.log('motif_desistements is neither array nor object, returning empty array');
+    console.log(
+      'motif_desistements is neither array nor object, returning empty array'
+    );
     return [];
   };
 
@@ -118,7 +129,7 @@ export function Desistement_Definitif({
   const testOptions = [
     { value: 'test1', label: 'Test Option 1' },
     { value: 'test2', label: 'Test Option 2' },
-    { value: 'test3', label: 'Test Option 3' }
+    { value: 'test3', label: 'Test Option 3' },
   ];
 
   useEffect(() => {
@@ -408,13 +419,10 @@ export function Desistement_Definitif({
                     watch(`inputList_remb.${index}.reste_a_rembourse`) || 0
                   ) > 0);
               return (
-                <div
-                  key={`${itemKey}`}
-                  className=""
-                >
+                <div key={`${itemKey}`} className="">
                   <p className="text-indigo-600 font-bold mb-4">
                     Montant à rembourser au client: {item.nom} {item.prenom}
-                    {currentMode !== 'transfert' && (
+                    {currentMode != 'transfert' && (
                       <span className="text-red-500 ml-2">
                         {item.reste_a_rembourse || 0} DH
                       </span>
@@ -455,7 +463,9 @@ export function Desistement_Definitif({
                                     handleModeChange(index, 'direct');
                                     setValue(
                                       `inputList_remb.${index}.reste_a_rembourse`,
-                                      item.reste_a_rembourse.toFixed(2)
+                                      parseFloat(
+                                        item?.reste_a_rembourse || 0
+                                      ).toFixed(2)
                                     );
                                   }}
                                   className="text-blue-600 focus:ring-blue-500"
@@ -466,9 +476,15 @@ export function Desistement_Definitif({
                                 <input
                                   type="radio"
                                   checked={normalizedValue == 'transfert'}
-                                  onChange={() =>
-                                    handleModeChange(index, 'transfert')
-                                  }
+                                  onChange={() => {
+                                    handleModeChange(index, 'transfert');
+                                    setValue(
+                                      `inputList_remb.${index}.reste_a_rembourse`,
+                                      parseFloat(
+                                        item?.reste_a_rembourse || 0
+                                      ).toFixed(2)
+                                    );
+                                  }}
                                   className="text-purple-600 focus:ring-purple-500"
                                 />
                                 <span className="ml-2">Transfert</span>
@@ -504,9 +520,11 @@ export function Desistement_Definitif({
                             name={`inputList_remb.${index}.dossier_id`}
                             value={watch(`inputList_remb.${index}.dossier_id`)}
                             required={true}
-                            options={dossiers.map(dossier => ({
+                            options={dossiers.map((dossier) => ({
                               value: dossier.id,
-                              label: dossier.code_reservation || `Dossier ${dossier.id}`
+                              label:
+                                dossier.code_reservation ||
+                                `Dossier ${dossier.id}`,
                             }))}
                             loading={loading_dos}
                             onChange={(selectedValue) => {
@@ -525,7 +543,10 @@ export function Desistement_Definitif({
                                 });
                               }
                             }}
-                            error={errors.inputList_remb?.[index]?.dossier_id?.message}
+                            error={
+                              errors.inputList_remb?.[index]?.dossier_id
+                                ?.message
+                            }
                             placeholder="Sélectionnez un dossier"
                           />
                         </div>
@@ -674,8 +695,7 @@ export function Desistement_Definitif({
                                           if (value <= 0) {
                                             errorMessage =
                                               'Le montant transféré ne doit pas être négatif ou égal à 0';
-                                          }
-                                          else {
+                                          } else {
                                             if (
                                               value >
                                                 sum_avance_by_aq_percent &&
@@ -811,10 +831,7 @@ export function Desistement_Definitif({
                           height="h-[38px]"
                         />
                         {errors.inputList_remb?.[index]?.date_rembourse && (
-                          <p
-                            style={{ color: 'red' }}
-                            className="mt-1 text-xs"
-                          >
+                          <p style={{ color: 'red' }} className="mt-1 text-xs">
                             {
                               errors.inputList_remb[index].date_rembourse
                                 .message

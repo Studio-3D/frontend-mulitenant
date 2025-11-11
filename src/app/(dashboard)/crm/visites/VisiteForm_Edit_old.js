@@ -754,7 +754,7 @@ export default function VisiteFormEdit({ id }) {
           if (res.status === 200) {
             message = `Visite ${isEditing ? "modifiée" : "créée"} avec succès`;
             toast.success(message);
-            router.push(ENDPOINTS.VISITES);
+            router.push(ENDPOINTS.CRM+'?tab=visites');
             reset(defaultValues);
           } else if (res.status === 422) {
             message = res.data.message;

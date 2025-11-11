@@ -11,6 +11,7 @@ import {
   getModePenaliteLabel,
 } from "@/configs/enum";
 import Button from "@/components/Button";
+import SelectInput from "@/components/SelectInput";
 
 const CorrectionForm = ({
   penalite,
@@ -27,8 +28,7 @@ const CorrectionForm = ({
   // Form methods
   const methods = useForm({
     defaultValues: {
-      mode_penalite_value: getModePenaliteLabel(penalite.mode_penalite),
-      mode_penalite: getModePenaliteCode(penalite.mode_penalite),
+      mode_penalite: getModePenaliteLabel(penalite.mode_penalite),
       penalite_montant: penalite.montant,
       penalite_par: penalite.penalite_par || "avance",
       sr_pen: penalite.sr || false,
@@ -54,12 +54,7 @@ const CorrectionForm = ({
     console.log("Selected Mode:", selectedMode.label);
 
     if (selectedMode) {
-      setValue("mode_penalite", getModePenaliteCode(selectedMode.label));
-      setValue(
-        "mode_penalite_value",
-        modes_penalites[selectedMode.code]?.label
-      );
-
+      setValue("mode_penalite", selectedMode.label);
       // Calculate penalty amount
       if (selectedMode.value != "Montant") {
         const percentage = parseFloat(selectedMode.label);
@@ -163,7 +158,7 @@ const CorrectionForm = ({
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit({
-      mode_penalite: watch("mode_penalite_value"),
+      mode_penalite: watch("mode_penalite"),
       penalite_montant: watch("penalite_montant"),
       penalite_par: watch("penalite_par"),
       sr_pen: watch("sr_pen"),
@@ -181,15 +176,32 @@ const CorrectionForm = ({
         <div className="flex flex-col md:flex-row gap-4 items-center">
           {/* Mode Pénalité Dropdown */}
           <div className="flex-1 min-w-[200px] mt-1">
-            <AutocompleteSelectComponent
-              label="Mode Pénalité"
-              name="mode_penalite"
-              value={watch("mode_penalite")}
-              control={control}
-              options={modes_penalites}
-              errors={errors}
-              onChange={(value) => handlechange_mode_penalite(value)}
-            />
+            
+
+
+             <SelectInput
+                                      label="Mode Pénalité :"
+                                      name="mode_penalite"
+                                      value={watch('mode_penalite')}
+                                      required={true}
+                                      options={Object.entries(modes_penalites).map(
+                                        ([key, value]) => ({
+                                          value: value.label, // Use label as value
+                                          label: value.label,
+                                        })
+                                      )}
+                                      onChange={(value) => {
+                                        // Find the code by label
+                                        const entry = Object.entries(modes_penalites).find(
+                                          ([key, val]) => val.label === value
+                                        );
+                                        if (entry) {
+                                          handlechange_mode_penalite(entry[0]); // Pass the code
+                                        }
+                                      }}
+                                      error={errors.mode_penalite?.message}
+                                      placeholder="Sélectionnez un mode de pénalité"
+                                    />
           </div>
           {/* Conditional Fields */}
           {watch("mode_penalite") && (
@@ -291,36 +303,75 @@ const CorrectionForm = ({
               </div>
 
               <div>
-                <AutocompleteSelectComponent
-                  label="Mode de Paiement"
-                  required
-                  value={watch("mode_paiement_pen")}
-                  name="mode_paiement_pen"
-                  control={control}
-                  options={MODE_PAIEMENT}
-                  errors={errors}
-                  onChange={(value) => setValue("mode_paiement_pen", value)}
-                />
+                 <SelectInput
+                                                  label="Mode de Paiement"
+                                                  name="mode_paiement_pen"
+                                                  value={watch('mode_paiement_pen')}
+                                                  required={true}
+                                                  options={
+                                                    // Handle both array and object formats for MODE_PAIEMENT
+                                                    !MODE_PAIEMENT
+                                                      ? []
+                                                      : Array.isArray(MODE_PAIEMENT)
+                                                      ? MODE_PAIEMENT
+                                                      : typeof MODE_PAIEMENT === 'object'
+                                                      ? Object.entries(MODE_PAIEMENT).map(
+                                                          ([key, value]) => ({
+                                                            value: key,
+                                                            label:
+                                                              typeof value === 'object'
+                                                                ? value.label ||
+                                                                  value.name ||
+                                                                  String(value)
+                                                                : String(value),
+                                                          })
+                                                        )
+                                                      : []
+                                                  }
+                                                  onChange={(value) => {
+                                                    console.log(
+                                                      'Selected payment mode:',
+                                                      value
+                                                    );
+                                                    setValue('mode_paiement_pen', value);
+                                                  }}
+                                                  error={errors.mode_paiement_pen?.message}
+                                                  placeholder="Sélectionnez un mode de paiement"
+                                                />
               </div>
             </div>
 
             {watch("mode_paiement_pen") && watch("mode_paiement_pen") != 1 && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div>
-                  <Autocomplete
-                    label="Banque:"
-                    name="banque_pen"
-                    required={watch("mode_paiement_pen") != "1"}
-                    options={banques}
-                    value={watch("banque_pen")}
-                    control={control}
-                    errors={{}}
-                    backendErrors={{}}
-                    onChange={(e) => {
-                      setValue("banque_pen", e.id);
-                    }}
-                    choix="nom"
-                  />
+                   <SelectInput
+                                                        label="Banque:"
+                                                        name="banque_pen"
+                                                        value={watch('banque_pen')}
+                                                        required={
+                                                          watch('mode_paiement_pen') != '1'
+                                                        }
+                                                        options={
+                                                          Array.isArray(banques)
+                                                            ? banques.map((banque) => ({
+                                                                value:
+                                                                  banque.id ||
+                                                                  banque.value ||
+                                                                  banque.code,
+                                                                label:
+                                                                  banque.nom ||
+                                                                  banque.label ||
+                                                                  banque.name ||
+                                                                  'Banque sans nom',
+                                                              }))
+                                                            : []
+                                                        }
+                                                        onChange={(value) => {
+                                                          setValue('banque_pen', value);
+                                                        }}
+                                                        error={errors.banque_pen?.message}
+                                                        placeholder="Sélectionnez une banque"
+                                                      />
                 </div>
 
                 <div>

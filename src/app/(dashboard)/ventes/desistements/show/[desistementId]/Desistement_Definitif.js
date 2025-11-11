@@ -238,7 +238,7 @@ export function Desistement_Definitif({
   };
 
   return (
-    <div className="p-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+    <div className="p-6 bg-gradient-to-br from-gray-50 to-gray-100 ">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -376,150 +376,124 @@ export function Desistement_Definitif({
                     </div>
                   </div>
                 </div>
-
-                <AnimatePresence>
-                  {expandedSections[index] && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="p-6"
-                    >
-                      {/* Transfer Section */}
-                      {showTransferSection && (
-                        <div className="mb-8">
-                          <div className="flex items-center mb-4">
-                            <div className="bg-purple-100 p-2 rounded-lg mr-3">
-                              <ArrowRightLeft className="w-5 h-5 text-purple-500" />
+                {showDirectFields && (
+                  <AnimatePresence>
+                    {expandedSections[index] && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="p-6"
+                      >
+                        {/* Transfer Section */}
+                        {showTransferSection && (
+                          <div className="mb-8">
+                            <div className="flex items-center mb-4">
+                              <div className="bg-purple-100 p-2 rounded-lg mr-3">
+                                <ArrowRightLeft className="w-5 h-5 text-purple-500" />
+                              </div>
+                              <h4 className="text-lg font-semibold text-gray-800">
+                                Détails du transfert
+                              </h4>
                             </div>
-                            <h4 className="text-lg font-semibold text-gray-800">
-                              Détails du transfert
-                            </h4>
-                          </div>
 
-                          {loadingInfos[index] ? (
-                            <div className="flex justify-center py-8">
-                              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-indigo-500"></div>
-                            </div>
-                          ) : dossierInfos[index] ? (
-                            <>
-                              <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 mb-6">
-                                <h5 className="text-md font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center">
-                                  <Home className="w-5 h-5 mr-2 text-blue-500" />
-                                  Dossier transféré :{' '}
-                                  {dossiers.find(
-                                    (d) => d.id === item.dossier_id
-                                  )?.code_reservation || ''}
-                                </h5>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                  <div>
-                                    <label className="block text-sm text-gray-500 mb-1">
-                                      Clients
-                                    </label>
-                                    <div className="font-medium text-gray-800 space-y-1">
-                                      {dossierInfos[index].clients.map(
-                                        (client, i) => (
-                                          <div
-                                            key={i}
-                                            className="flex items-center"
-                                          >
-                                            <User className="w-4 h-4 mr-2 text-gray-500" />
-                                            {client.client.nom}{' '}
-                                            {client.client.prenom} (
-                                            {client.pourcentage}%)
-                                          </div>
-                                        )
-                                      )}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <label className="block text-sm text-gray-500 mb-1">
-                                      Bien
-                                    </label>
-                                    <p className="font-medium text-gray-800 flex items-center">
-                                      <Home className="w-4 h-4 mr-2 text-gray-500" />
-                                      {dossierInfos[index].bien}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <label className="block text-sm text-gray-500 mb-1">
-                                      Type
-                                    </label>
-                                    <p className="font-medium text-gray-800 flex items-center">
-                                      <Box className="w-4 h-4 mr-2 text-gray-500" />
-                                      {dossierInfos[index].type}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <label className="block text-sm text-gray-500 mb-1">
-                                      Prix
-                                    </label>
-                                    <p className="font-medium text-gray-800 flex items-center">
-                                      <DollarSign className="w-4 h-4 mr-2 text-gray-500" />
-                                      {dossierInfos[
-                                        index
-                                      ].prix?.toLocaleString()}{' '}
-                                      DH
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <label className="block text-sm text-gray-500 mb-1">
-                                      Avances
-                                    </label>
-                                    <p className="font-medium text-gray-800 flex items-center">
-                                      <HandCoins className="w-4 h-4 mr-2 text-gray-500" />
-                                      {dossierInfos[
-                                        index
-                                      ].sum_avances?.toLocaleString()}{' '}
-                                      DH
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <label className="block text-sm text-gray-500 mb-1">
-                                      Reste
-                                    </label>
-                                    <p className="font-medium text-red-00 flex items-center">
-                                      <Wallet className="w-4 h-4 mr-2 text-red-500" />
-                                      {dossierInfos[
-                                        index
-                                      ].reste?.toLocaleString()}{' '}
-                                      DH
-                                    </p>
-                                  </div>
-                                  {currentMode == 'transfert' && (
+                            {loadingInfos[index] ? (
+                              <div className="flex justify-center py-8">
+                                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-indigo-500"></div>
+                              </div>
+                            ) : dossierInfos[index] ? (
+                              <>
+                                <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 mb-6">
+                                  <h5 className="text-md font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center">
+                                    <Home className="w-5 h-5 mr-2 text-blue-500" />
+                                    Dossier transféré :{' '}
+                                    {dossiers.find(
+                                      (d) => d.id === item.dossier_id
+                                    )?.code_reservation || ''}
+                                  </h5>
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                       <label className="block text-sm text-gray-500 mb-1">
-                                        Montant transféré
+                                        Clients
+                                      </label>
+                                      <div className="font-medium text-gray-800 space-y-1">
+                                        {dossierInfos[index].clients.map(
+                                          (client, i) => (
+                                            <div
+                                              key={i}
+                                              className="flex items-center"
+                                            >
+                                              <User className="w-4 h-4 mr-2 text-gray-500" />
+                                              {client.client.nom}{' '}
+                                              {client.client.prenom} (
+                                              {client.pourcentage}%)
+                                            </div>
+                                          )
+                                        )}
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <label className="block text-sm text-gray-500 mb-1">
+                                        Bien
+                                      </label>
+                                      <p className="font-medium text-gray-800 flex items-center">
+                                        <Home className="w-4 h-4 mr-2 text-gray-500" />
+                                        {dossierInfos[index].bien}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <label className="block text-sm text-gray-500 mb-1">
+                                        Type
+                                      </label>
+                                      <p className="font-medium text-gray-800 flex items-center">
+                                        <Box className="w-4 h-4 mr-2 text-gray-500" />
+                                        {dossierInfos[index].type}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <label className="block text-sm text-gray-500 mb-1">
+                                        Prix
+                                      </label>
+                                      <p className="font-medium text-gray-800 flex items-center">
+                                        <DollarSign className="w-4 h-4 mr-2 text-gray-500" />
+                                        {dossierInfos[
+                                          index
+                                        ].prix?.toLocaleString()}{' '}
+                                        DH
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <label className="block text-sm text-gray-500 mb-1">
+                                        Avances
+                                      </label>
+                                      <p className="font-medium text-gray-800 flex items-center">
+                                        <HandCoins className="w-4 h-4 mr-2 text-gray-500" />
+                                        {dossierInfos[
+                                          index
+                                        ].sum_avances?.toLocaleString()}{' '}
+                                        DH
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <label className="block text-sm text-gray-500 mb-1">
+                                        Reste
                                       </label>
                                       <p className="font-medium text-red-00 flex items-center">
                                         <Wallet className="w-4 h-4 mr-2 text-red-500" />
-                                        {item.montant_transferer
-                                          ? `${parseFloat(
-                                              item.montant_transferer
-                                            ).toFixed(2)} DH`
-                                          : ''}
+                                        {dossierInfos[
+                                          index
+                                        ].reste?.toLocaleString()}{' '}
+                                        DH
                                       </p>
                                     </div>
-                                  )}
-                                </div>
-                              </div>
-
-                              {(currentMode == 'transfert_remb' ||
-                                currentMode == 'transfert_rem_direct' ||
-                                currentMode == 'transfert_rem_apres_vente') &&
-                                item.dossier_id && (
-                                  <div className="bg-indigo-50 p-6 rounded-xl border border-indigo-100 mb-6">
-                                    <h5 className="text-md font-semibold text-indigo-800 mb-4 flex items-center">
-                                      <Receipt className="w-5 h-5 mr-2" />
-                                      Détails financiers du transfert
-                                    </h5>
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                      <div className="bg-white p-4 rounded-lg border border-gray-200">
+                                    {currentMode == 'transfert' && (
+                                      <div>
                                         <label className="block text-sm text-gray-500 mb-1">
                                           Montant transféré
                                         </label>
-                                        <p className="text-xl font-bold text-indigo-700">
+                                        <p className="font-medium text-red-00 flex items-center">
+                                          <Wallet className="w-4 h-4 mr-2 text-red-500" />
                                           {item.montant_transferer
                                             ? `${parseFloat(
                                                 item.montant_transferer
@@ -527,169 +501,137 @@ export function Desistement_Definitif({
                                             : ''}
                                         </p>
                                       </div>
-                                      <div className="bg-white p-4 rounded-lg border border-gray-200">
-                                        <label className="block text-sm text-gray-500 mb-1">
-                                          Reste à rembourser
-                                        </label>
-                                        <p className="text-xl font-bold text-red-500">
-                                          {item.reste_a_rembourse
-                                            ? `${parseFloat(
-                                                item.reste_a_rembourse
-                                              ).toFixed(2)} DH`
-                                            : ''}
-                                        </p>
-                                      </div>
-                                      <div className="bg-white p-4 rounded-lg border border-gray-200">
-                                        <label className="block text-sm text-gray-500 mb-1">
-                                          Type remboursement
-                                        </label>
-                                        <p className="text-lg font-semibold text-gray-800">
-                                          {item.type_remb_transfere ===
-                                          'immediat' ? (
-                                            <span className="flex items-center">
-                                              <DollarSign className="w-5 h-5 mr-1 text-green-500" />
-                                              Immédiat
-                                            </span>
-                                          ) : (
-                                            <span className="flex items-center">
-                                              <Calendar className="w-5 h-5 mr-1 text-blue-500" />
-                                              Après Vente
-                                            </span>
-                                          )}
-                                        </p>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {(currentMode == 'transfert_remb' ||
+                                  currentMode == 'transfert_rem_direct' ||
+                                  currentMode == 'transfert_rem_apres_vente') &&
+                                  item.dossier_id && (
+                                    <div className="bg-indigo-50 p-6 rounded-xl border border-indigo-100 mb-6">
+                                      <h5 className="text-md font-semibold text-indigo-800 mb-4 flex items-center">
+                                        <Receipt className="w-5 h-5 mr-2" />
+                                        Détails financiers du transfert
+                                      </h5>
+                                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div className="bg-white p-4 rounded-lg border border-gray-200">
+                                          <label className="block text-sm text-gray-500 mb-1">
+                                            Montant transféré
+                                          </label>
+                                          <p className="text-xl font-bold text-indigo-700">
+                                            {item.montant_transferer
+                                              ? `${parseFloat(
+                                                  item.montant_transferer
+                                                ).toFixed(2)} DH`
+                                              : ''}
+                                          </p>
+                                        </div>
+                                        <div className="bg-white p-4 rounded-lg border border-gray-200">
+                                          <label className="block text-sm text-gray-500 mb-1">
+                                            Reste à rembourser
+                                          </label>
+                                          <p className="text-xl font-bold text-red-500">
+                                            {item.reste_a_rembourse
+                                              ? `${parseFloat(
+                                                  item.reste_a_rembourse
+                                                ).toFixed(2)} DH`
+                                              : ''}
+                                          </p>
+                                        </div>
+                                        <div className="bg-white p-4 rounded-lg border border-gray-200">
+                                          <label className="block text-sm text-gray-500 mb-1">
+                                            Type remboursement
+                                          </label>
+                                          <p className="text-lg font-semibold text-gray-800">
+                                            {item.type_remb_transfere ===
+                                            'immediat' ? (
+                                              <span className="flex items-center">
+                                                <DollarSign className="w-5 h-5 mr-1 text-green-500" />
+                                                Immédiat
+                                              </span>
+                                            ) : (
+                                              <span className="flex items-center">
+                                                <Calendar className="w-5 h-5 mr-1 text-blue-500" />
+                                                Après Vente
+                                              </span>
+                                            )}
+                                          </p>
+                                        </div>
                                       </div>
                                     </div>
-                                  </div>
-                                )}
-                            </>
-                          ) : null}
-                        </div>
-                      )}
-
-                      {/* Remboursement Direct Section */}
-                      {showDirectFields && (
-                        <div className="bg-blue-50 p-6 rounded-xl border border-blue-100">
-                          <div className="flex items-center mb-4">
-                            <div className="bg-blue-100 p-2 rounded-lg mr-3">
-                              <DollarSign className="w-5 h-5 text-blue-500" />
-                            </div>
-                            <h4 className="text-lg font-semibold text-gray-800">
-                              Détails du remboursement
-                            </h4>
+                                  )}
+                              </>
+                            ) : null}
                           </div>
+                        )}
 
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="bg-white p-4 rounded-lg border border-gray-200">
-                              <label className="block text-sm text-gray-500 mb-1 flex items-center">
-                                <Calendar className="w-4 h-4 mr-2 text-blue-500" />
-                                Date remboursement
-                              </label>
-                              <p className="font-medium text-gray-800">
-                                {item.date_rembourse
-                                  ? format(
-                                      new Date(item.date_rembourse),
-                                      'dd/MM/yyyy',
-                                      {
-                                        timeZone: 'UTC',
-                                      }
-                                    )
-                                  : ''}
-                              </p>
+                        {/* Remboursement Direct Section */}
+                        {showDirectFields && (
+                          <div className="bg-blue-50 p-6 rounded-xl border border-blue-100">
+                            <div className="flex items-center mb-4">
+                              <div className="bg-blue-100 p-2 rounded-lg mr-3">
+                                <DollarSign className="w-5 h-5 text-blue-500" />
+                              </div>
+                              <h4 className="text-lg font-semibold text-gray-800">
+                                Détails du remboursement
+                              </h4>
                             </div>
 
-                            <div className="bg-white p-4 rounded-lg border border-gray-200">
-                              <label className="block text-sm text-gray-500 mb-1">
-                                Méthode de paiement
-                              </label>
-                              <p className="font-medium text-gray-800 flex items-center">
-                                <PaymentMethodIcon
-                                  method={item.mode_rembourse}
-                                />
-                                {item.mode_rembourse === 'cheque'
-                                  ? 'Chèque'
-                                  : item.mode_rembourse === 'virement'
-                                  ? 'Virement'
-                                  : ''}
-                              </p>
-                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="bg-white p-4 rounded-lg border border-gray-200">
+                                <label className="block text-sm text-gray-500 mb-1 flex items-center">
+                                  <Calendar className="w-4 h-4 mr-2 text-blue-500" />
+                                  Date remboursement
+                                </label>
+                                <p className="font-medium text-gray-800">
+                                  {item.date_rembourse
+                                    ? format(
+                                        new Date(item.date_rembourse),
+                                        'dd/MM/yyyy',
+                                        {
+                                          timeZone: 'UTC',
+                                        }
+                                      )
+                                    : ''}
+                                </p>
+                              </div>
 
-                            {item.mode_rembourse && (
-                              <>
-                                <div className="bg-white p-4 rounded-lg border border-gray-200">
-                                  <label className="block text-sm text-gray-500 mb-1">
-                                    N° Paiement
-                                  </label>
-                                  <p className="font-medium text-gray-800">
-                                    {item.num_paiement || ''}
-                                  </p>
-                                </div>
+                              <div className="bg-white p-4 rounded-lg border border-gray-200">
+                                <label className="block text-sm text-gray-500 mb-1">
+                                  Méthode de paiement
+                                </label>
+                                <p className="font-medium text-gray-800 flex items-center">
+                                  <PaymentMethodIcon
+                                    method={item.mode_rembourse}
+                                  />
+                                  {item.mode_rembourse === 'cheque'
+                                    ? 'Chèque'
+                                    : item.mode_rembourse === 'virement'
+                                    ? 'Virement'
+                                    : ''}
+                                </p>
+                              </div>
 
-                                <div className="bg-white p-4 rounded-lg border border-gray-200">
-                                  <label className="block text-sm text-gray-500 mb-1">
-                                    Chèque/Reçu
-                                  </label>
-                                  <p className="font-medium text-gray-800">
-                                    {item.cheque_recu ? (
-                                      <a
-                                        href={`${FileUrl}/docs/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/remboursements/cheques_reçus/${code_reservation}/${item.cheque_recu}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-indigo-500 hover:text-indigo-800 flex items-center transition-colors"
-                                      >
-                                        <FileText className="w-4 h-4 mr-2" />
-                                        <span className="border-b border-dashed border-indigo-300 hover:border-indigo-500">
-                                          Voir le document
-                                        </span>
-                                      </a>
-                                    ) : (
-                                      ''
-                                    )}
-                                  </p>
-                                </div>
-
-                                <div className="bg-white p-4 rounded-lg border border-gray-200">
-                                  <label className="block text-sm text-gray-500 mb-1">
-                                    Pour le compte
-                                  </label>
-                                  <p className="font-medium text-gray-800">
-                                    {getPourLeCompteLabel(item.pour_le_compte)}
-                                  </p>
-                                </div>
-
-                                {item.pour_le_compte == 'autre' && (
+                              {item.mode_rembourse && (
+                                <>
                                   <div className="bg-white p-4 rounded-lg border border-gray-200">
                                     <label className="block text-sm text-gray-500 mb-1">
-                                      Autorisation
+                                      N° Paiement
                                     </label>
                                     <p className="font-medium text-gray-800">
-                                      {item.fichier_autorisation ? (
-                                        <a
-                                          href={`${FileUrl}/docs/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/remboursements/fichier_autorisations/${code_reservation}/${item.fichier_autorisation}`}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="text-indigo-500 hover:text-indigo-800 flex items-center transition-colors"
-                                        >
-                                          <FileSignature className="w-4 h-4 mr-2" />
-                                          <span className="border-b border-dashed border-indigo-300 hover:border-indigo-500">
-                                            Voir autorisation
-                                          </span>
-                                        </a>
-                                      ) : (
-                                        ''
-                                      )}
+                                      {item.num_paiement || ''}
                                     </p>
                                   </div>
-                                )}
 
-                                {item.cheque_client_signe != null && (
                                   <div className="bg-white p-4 rounded-lg border border-gray-200">
                                     <label className="block text-sm text-gray-500 mb-1">
-                                      Chèque Client Signé
+                                      Chèque/Reçu
                                     </label>
                                     <p className="font-medium text-gray-800">
-                                      {item.cheque_client_signe ? (
+                                      {item.cheque_recu ? (
                                         <a
-                                          href={`${FileUrl}/docs/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/remboursements/cheques_reçus/${code_reservation}/${item.cheque_client_signe}`}
+                                          href={`${FileUrl}/docs/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/remboursements/cheques_reçus/${code_reservation}/${item.cheque_recu}`}
                                           target="_blank"
                                           rel="noopener noreferrer"
                                           className="text-indigo-500 hover:text-indigo-800 flex items-center transition-colors"
@@ -704,64 +646,125 @@ export function Desistement_Definitif({
                                       )}
                                     </p>
                                   </div>
-                                )}
-                                {item.date_decaissement != null && (
+
                                   <div className="bg-white p-4 rounded-lg border border-gray-200">
-                                    <label className="block text-sm text-gray-500 mb-1 flex items-center">
-                                      <Calendar className="w-4 h-4 mr-2 text-blue-500" />
-                                      Date Décaissement
+                                    <label className="block text-sm text-gray-500 mb-1">
+                                      Pour le compte
                                     </label>
                                     <p className="font-medium text-gray-800">
-                                      {item.date_decaissement
-                                        ? format(
-                                            new Date(item.date_decaissement),
-                                            'dd/MM/yyyy',
-                                            {
-                                              timeZone: 'UTC',
-                                            }
-                                          )
-                                        : ''}
+                                      {getPourLeCompteLabel(
+                                        item.pour_le_compte
+                                      )}
                                     </p>
                                   </div>
-                                )}
-                                {item.banque != null && (
-                                  <div className="bg-white p-4 rounded-lg border border-gray-200">
-                                    <label className="block text-sm text-gray-500 mb-1 flex items-center">
-                                      <Ban className="w-4 h-4 mr-2 text-blue-500" />
-                                      Banque
-                                    </label>
-                                    <p className="font-medium text-gray-800">
-                                      {item.banque}
-                                    </p>
-                                  </div>
-                                )}
-                                {item.date_accuse != null && (
-                                  <div className="bg-white p-4 rounded-lg border border-gray-200">
-                                    <label className="block text-sm text-gray-500 mb-1 flex items-center">
-                                      <Calendar className="w-4 h-4 mr-2 text-blue-500" />
-                                      Date Accusé
-                                    </label>
-                                    <p className="font-medium text-gray-800">
-                                      {item.date_accuse
-                                        ? format(
-                                            new Date(item.date_accuse),
-                                            'dd/MM/yyyy',
-                                            {
-                                              timeZone: 'UTC',
-                                            }
-                                          )
-                                        : ''}
-                                    </p>
-                                  </div>
-                                )}
-                              </>
-                            )}
+
+                                  {item.pour_le_compte == 'autre' && (
+                                    <div className="bg-white p-4 rounded-lg border border-gray-200">
+                                      <label className="block text-sm text-gray-500 mb-1">
+                                        Autorisation
+                                      </label>
+                                      <p className="font-medium text-gray-800">
+                                        {item.fichier_autorisation ? (
+                                          <a
+                                            href={`${FileUrl}/docs/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/remboursements/fichier_autorisations/${code_reservation}/${item.fichier_autorisation}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-indigo-500 hover:text-indigo-800 flex items-center transition-colors"
+                                          >
+                                            <FileSignature className="w-4 h-4 mr-2" />
+                                            <span className="border-b border-dashed border-indigo-300 hover:border-indigo-500">
+                                              Voir autorisation
+                                            </span>
+                                          </a>
+                                        ) : (
+                                          ''
+                                        )}
+                                      </p>
+                                    </div>
+                                  )}
+
+                                  {item.cheque_client_signe != null && (
+                                    <div className="bg-white p-4 rounded-lg border border-gray-200">
+                                      <label className="block text-sm text-gray-500 mb-1">
+                                        Chèque Client Signé
+                                      </label>
+                                      <p className="font-medium text-gray-800">
+                                        {item.cheque_client_signe ? (
+                                          <a
+                                            href={`${FileUrl}/docs/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/remboursements/cheques_reçus/${code_reservation}/${item.cheque_client_signe}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-indigo-500 hover:text-indigo-800 flex items-center transition-colors"
+                                          >
+                                            <FileText className="w-4 h-4 mr-2" />
+                                            <span className="border-b border-dashed border-indigo-300 hover:border-indigo-500">
+                                              Voir le document
+                                            </span>
+                                          </a>
+                                        ) : (
+                                          ''
+                                        )}
+                                      </p>
+                                    </div>
+                                  )}
+                                  {item.date_decaissement != null && (
+                                    <div className="bg-white p-4 rounded-lg border border-gray-200">
+                                      <label className="block text-sm text-gray-500 mb-1 flex items-center">
+                                        <Calendar className="w-4 h-4 mr-2 text-blue-500" />
+                                        Date Décaissement
+                                      </label>
+                                      <p className="font-medium text-gray-800">
+                                        {item.date_decaissement
+                                          ? format(
+                                              new Date(item.date_decaissement),
+                                              'dd/MM/yyyy',
+                                              {
+                                                timeZone: 'UTC',
+                                              }
+                                            )
+                                          : ''}
+                                      </p>
+                                    </div>
+                                  )}
+                                  {item.banque != null && (
+                                    <div className="bg-white p-4 rounded-lg border border-gray-200">
+                                      <label className="block text-sm text-gray-500 mb-1 flex items-center">
+                                        <Ban className="w-4 h-4 mr-2 text-blue-500" />
+                                        Banque
+                                      </label>
+                                      <p className="font-medium text-gray-800">
+                                        {item.banque}
+                                      </p>
+                                    </div>
+                                  )}
+                                  {item.date_accuse != null && (
+                                    <div className="bg-white p-4 rounded-lg border border-gray-200">
+                                      <label className="block text-sm text-gray-500 mb-1 flex items-center">
+                                        <Calendar className="w-4 h-4 mr-2 text-blue-500" />
+                                        Date Accusé
+                                      </label>
+                                      <p className="font-medium text-gray-800">
+                                        {item.date_accuse
+                                          ? format(
+                                              new Date(item.date_accuse),
+                                              'dd/MM/yyyy',
+                                              {
+                                                timeZone: 'UTC',
+                                              }
+                                            )
+                                          : ''}
+                                      </p>
+                                    </div>
+                                  )}
+                                </>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                )}
               </motion.div>
             );
           })}

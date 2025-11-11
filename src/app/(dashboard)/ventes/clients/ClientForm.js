@@ -83,7 +83,7 @@ export default function ClientForm({ id, projetId, trancheId }) {
   }, [selectedProjet?.id, oldProjetId, router]);
   // Fetch client data if editing
   useEffect(() => {
-    if (partenaires.length === 0) {
+    if (partenaires.length == 0) {
       fetchDataByProjet_params('partenaires', setPartenaires, setLoading);
     }
     if (isEditing) {
@@ -155,9 +155,9 @@ export default function ClientForm({ id, projetId, trancheId }) {
       const inputText = event.target.value || '';
 
       if (
-        (type === 'cin' && inputText.length >= 3) ||
-        (type === 'telephone' && inputText.length >= 10) ||
-        (type === 'email' && inputText.length >= 3)
+        (type == 'cin' && inputText.length >= 3) ||
+        (type == 'telephone' && inputText.length >= 10) ||
+        (type == 'email' && inputText.length >= 3)
       ) {
         clearTimeout(timeoutId);
 
@@ -165,124 +165,113 @@ export default function ClientForm({ id, projetId, trancheId }) {
           () => {
             fetch_cin_tel_email(inputText, type);
           },
-          type === 'telephone' ? 1000 : 1000
+          type == 'telephone' ? 1000 : 1000
         );
       }
     };
   };
 
   const fetch_cin_tel_email = async (value, type) => {
-    // Déterminer la route en fonction du type de recherche
-    let route = '';
-    if (type === 'cin') {
-      route = 'search_client_by_cin';
-    } else if (type === 'telephone') {
-      route = 'search_client_by_phone';
-    } else if (type === 'email') {
-      route = 'search_client_by_email';
-    } else {
-      console.error('Type de recherche non valide');
-      return;
+  // Déterminer la route en fonction du type de recherche
+  let route = '';
+  if (type == 'cin') {
+    route = 'search_client_by_cin';
+  } else if (type == 'telephone') {
+    route = 'search_client_by_phone';
+  } else if (type == 'email') {
+    route = 'search_client_by_email';
+  } else {
+    console.error('Type de recherche non valide');
+    return;
+  }
+
+  // Vérifier que la valeur n'est pas vide
+  if (!value || value.trim() == '') {
+    setInfo_client('');
+    setInfo_prospect('');
+    setDisabled_var(false);
+    return;
+  }
+
+  try {
+    // Faire la requête API
+    const res = await axios.get(`${APIURL.ROOT}/v1/${route}/${value}`, {
+      headers: { Authorization: `Bearer ${token}` },
+
+    });
+
+    // Extraire les données de la réponse
+    const { client, prospect } = res.data;
+
+    // Réinitialiser les états avant de traiter la réponse
+    setInfo_client('');
+    setInfo_prospect('');
+    setDisabled_var(false);
+
+    // 1. Vérifier d'abord si c'est un client existant
+    if (client) {
+      setInfo_client(
+        `${type}: ${value} appartient au Client ${client.nom} ${client.prenom}. Veuillez changer ce ${type}!`
+      );
+      setDisabled_var(true);
     }
-
-    // Vérifier que la valeur n'est pas vide
-    if (!value || value.trim() === '') {
-      setInfo_client('');
-      setInfo_prospect('');
-      setDisabled_var(false);
-      return;
+    // 2. Si pas de client, vérifier si c'est un prospect
+    else if (prospect) {
+      setInfo_prospect(
+        `${type}: ${value} appartient au Prospect ${prospect.nom} ${prospect.prenom}`
+      );
+      setProspect_id(prospect.id);
     }
-
-    try {
-      // Faire la requête API
-      const res = await axios.get(`${APIURL.ROOT}/v1/${route}/${value}`, {
-        headers: { Authorization: `Bearer ${token}` },
-        timeout: 5000, // Timeout après 5 secondes
-      });
-
-      // Extraire les données de la réponse
-      const { client, prospect } = res.data;
-
-      // Réinitialiser les états avant de traiter la réponse
-      setInfo_client('');
-      setInfo_prospect('');
-      setDisabled_var(false);
-
-      // 1. Vérifier d'abord si c'est un client existant
-      if (client) {
-        setInfo_client(
-          `${type}: ${value} appartient au Client ${client.nom} ${client.prenom}. Veuillez changer ce ${type}!`
-        );
-        setDisabled_var(true);
-
-        // Optionnel: Pré-remplir certains champs si nécessaire
-        /*setFormData(prev => ({
-        ...prev,
-        nom: client.nom,
-        prenom: client.prenom,
-        email: client.email,
-        telephone_num1: client.telephone_num1,
-        telephone_num2: client.telephone_num2,
-      }));*/
-      }
-      // 2. Si pas de client, vérifier si c'est un prospect
-      else if (prospect) {
-        setInfo_prospect(
-          `${type}: ${value} appartient au Prospect ${prospect.nom} ${prospect.prenom}`
-        );
-        setProspect_id(prospect.id);
-
-        // Pré-remplir les champs avec les infos du prospect
+    // 3. Si ni client ni prospect trouvé - NE PAS RÉINITIALISER LES AUTRES CHAMPS
+    /*else {
+      // Seulement mettre à jour le champ spécifique sans affecter les autres champs
+      if (type == 'cin') {
         setFormData((prev) => ({
           ...prev,
-          cin: prospect?.cin || '',
-          nom: prospect.nom || '',
-          prenom: prospect.prenom || '',
-          email: prospect.email || '',
-          telephone_num1: prospect.telephone || '',
-          telephone_num2: prospect.telephone_num2 || '',
-          partenaire_id: prospect.partenaire_id || null,
-          type_client: prospect.partenaire_id ? 2 : 1,
+          cin: value, // Seulement mettre à jour le CIN
+          // Ne pas réinitialiser nom et prenom
         }));
       }
-      // 3. Si ni client ni prospect trouvé
-      else {
-        // Réinitialiser les champs si on cherche à créer un nouveau client
-        if (type === 'cin') {
-          setFormData((prev) => ({
-            ...prev,
-            cin: value, // Garder la valeur CIN entrée
-            nom: '',
-            prenom: '',
-          }));
-        }
+      // Pour les autres types, ne rien faire ou seulement mettre à jour le champ concerné
+      else if (type == 'telephone') {
+        setFormData((prev) => ({
+          ...prev,
+          telephone_num1: value,
+        }));
       }
-    } catch (error) {
-      console.error('Erreur lors de la vérification du client/prospect', error);
+      else if (type == 'email') {
+        setFormData((prev) => ({
+          ...prev,
+          email: value,
+        }));
+      }
+    }*/
+  } catch (error) {
+    console.error('Erreur lors de la vérification du client/prospect', error);
 
-      // Gestion spécifique des différents types d'erreurs
-      if (error.response) {
-        // Erreur de réponse du serveur (4xx, 5xx)
-        if (error.response.status === 404) {
-          // Aucun client/prospect trouvé - ce n'est pas vraiment une erreur
-          setInfo_client('');
-          setInfo_prospect('');
-        } else {
-          setInfo_client('Erreur lors de la vérification');
-        }
-      } else if (error.request) {
-        // La requête a été faite mais pas de réponse
-        setInfo_client('Problème de connexion au serveur');
+    // Gestion spécifique des différents types d'erreurs
+    if (error.response) {
+      // Erreur de réponse du serveur (4xx, 5xx)
+      if (error.response.status == 404) {
+        // Aucun client/prospect trouvé - ce n'est pas vraiment une erreur
+        setInfo_client('');
+        setInfo_prospect('');
       } else {
-        // Erreur lors de la configuration de la requête
-        setInfo_client('Erreur de configuration');
+        setInfo_client('Erreur lors de la vérification');
       }
-
-      // Réinitialiser les états en cas d'erreur
-      setInfo_prospect('');
-      setDisabled_var(false);
+    } else if (error.request) {
+      // La requête a été faite mais pas de réponse
+      setInfo_client('Problème de connexion au serveur');
+    } else {
+      // Erreur lors de la configuration de la requête
+      setInfo_client('Erreur de configuration');
     }
-  };
+
+    // Réinitialiser les états en cas d'erreur
+    setInfo_prospect('');
+    setDisabled_var(false);
+  }
+};
 
   const calculate_age = (dobString) => {
     const today = new Date();
@@ -290,7 +279,7 @@ export default function ClientForm({ id, projetId, trancheId }) {
     let age_now = today.getFullYear() - birthDate.getFullYear();
     const m = today.getMonth() - birthDate.getMonth();
 
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    if (m < 0 || (m == 0 && today.getDate() < birthDate.getDate())) {
       age_now--;
     }
 
@@ -304,7 +293,7 @@ export default function ClientForm({ id, projetId, trancheId }) {
   const handleChange = (e) => {
     const { name, type, value, checked } = e.target;
 
-    const newValue = type === 'checkbox' ? (checked ? 1 : 0) : value;
+    const newValue = type == 'checkbox' ? (checked ? 1 : 0) : value;
 
     setFormData((prev) => ({
       ...prev,
@@ -360,61 +349,50 @@ export default function ClientForm({ id, projetId, trancheId }) {
     // Only require tranche if there are tranches available
 
     setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
+    return Object.keys(errors).length == 0;
   };
 
   // Form submission handler
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitted(true);
+// Form submission handler
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setIsSubmitted(true);
 
-    if (!validateForm()) {
-      return;
-    }
+  if (!validateForm()) return;
 
-    setLoading(true);
-    setBackendErrors({});
+  setLoading(true);
+  setBackendErrors({});
 
-    let url = APIURL.CLIENTS;
-    let method = 'post';
-
-    if (isEditing) {
-      url = `${url}/${id}`;
-      method = 'put';
-    }
-
-    try {
-      await axios({
-        method: method,
-        url: url,
-        data: formData,
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      toast.success(
-        `Le client a été ${isEditing ? 'modifié' : 'créé'} avec succès`
-      );
-      router.push(ENDPOINTS.CLIENTS);
-    } catch (error) {
-      console.error('Failed to save client:', error);
-
-      const response = error.response;
-      if (response && response.status === 422) {
-        setBackendErrors(response.data.errors || {});
-        setTimeout(() => setBackendErrors({}), 5000);
-      } else {
-        toast.error(
-          "Une erreur s'est produite lors de la soumission du formulaire"
-        );
-      }
-    } finally {
-      setLoading(false);
-    }
+  // Convertir en STRINGS (pas en nombres)
+  const submissionData = {
+    ...formData,
+    situation_familliale: String(formData.situation_familliale),
+    civilite: String(formData.civilite),
+    type_client: String(formData.type_client),
+    notifie: String(formData.notifie),
   };
+
+  try {
+    const url = isEditing ? `${APIURL.CLIENTS}/${id}` : APIURL.CLIENTS;
+    const method = isEditing ? 'put' : 'post';
+
+    await axios({ method, url, data: submissionData, headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    }});
+
+    toast.success(`Client ${isEditing ? 'modifié' : 'créé'}`);
+    router.push(ENDPOINTS.VENTE+'?tab=clients');
+  } catch (error) {
+    if (error.response?.status === 422) {
+      setBackendErrors(error.response.data.errors || {});
+    } else {
+      toast.error("Erreur lors de la soumission");
+    }
+  } finally {
+    setLoading(false);
+  }
+};
   if (isEditing && loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -427,7 +405,7 @@ export default function ClientForm({ id, projetId, trancheId }) {
     <div className="p-3">
       <div className="flex items-center justify-start">
         <BreadCrumb
-          baseUrl={ENDPOINTS.CLIENTS}
+          baseUrl={ENDPOINTS.VENTE+'?tab=clients'}
           step={`${id ? 'Modifier' : 'Ajouter'} un client`}
         />
       </div>
@@ -514,7 +492,7 @@ export default function ClientForm({ id, projetId, trancheId }) {
                 value={formData.partenaire_id}
                 onChange={(option) => {
                   const partenaireSelected = partenaires.find(
-                    (p) => p.id === option?.value
+                    (p) => p.id == option?.value
                   );
                   handleSelectChange('partenaire_id', option?.value || null);
                 }}
@@ -656,7 +634,7 @@ export default function ClientForm({ id, projetId, trancheId }) {
                 type="checkbox"
                 id="notifie"
                 name="notifie"
-                checked={formData.notifie === 1}
+                checked={formData.notifie == 1}
                 onChange={(e) => handleChange(e)}
                 className="h-6 w-6 text-[#009FFF] border-gray-300 rounded focus:ring-blue-500"
               />
@@ -737,7 +715,7 @@ export default function ClientForm({ id, projetId, trancheId }) {
             />
 
             {formData.age !== '' &&
-              (formData.age < 18 || formData.age === 0) && (
+              (formData.age < 18 || formData.age == 0) && (
                 <>
                   <Input
                     label="Nom Responsable"

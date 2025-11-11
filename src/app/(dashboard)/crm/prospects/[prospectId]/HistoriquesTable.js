@@ -8,7 +8,11 @@ import { fetchData_table_by_id } from '../../../../../../src/configs/api-utils';
 import format from 'date-fns/format';
 import { Eye } from 'lucide-react';
 
-import { Statuts_Prospect, getProspectStatusLabel, getProspectStatusColor } from '../../../../../../src/configs/enum';
+import {
+  Statuts_Prospect,
+  getProspectStatusLabel,
+  getProspectStatusColor,
+} from '../../../../../../src/configs/enum';
 
 // Function to get status label using the centralized mapping
 const getStatusLabel = (rawStatus) => {
@@ -17,7 +21,7 @@ const getStatusLabel = (rawStatus) => {
 
 import SelectInput from '@/components/SelectInput';
 import Input from '@/components/Input';
-const HistoriquesTable = (id) => {
+const HistoriquesTable = ({ id, refreshTrigger = 0 }) => {
   const [historiques, setHistoriques] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -54,7 +58,7 @@ const HistoriquesTable = (id) => {
   const router = useRouter();
   // Declare the entity object in the component scope
   const entity = {
-    id: JSON.stringify(id.id),
+    id: id,
     API_URL: 'historiques_prospects',
     dataKey: 'historiques',
     name: 'historique',
@@ -74,7 +78,14 @@ const HistoriquesTable = (id) => {
       setHistoriques,
       setTotalRows
     );
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters]);
+  }, [
+    accesstoken,
+    currentPage,
+    rowsPerPage,
+    searchTerm,
+    filters,
+    refreshTrigger,
+  ]);
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
@@ -106,7 +117,9 @@ const HistoriquesTable = (id) => {
           ? format(new Date(pro.date_rappel), 'dd/MM/yyyy ')
           : '',
         commentaire: pro.commentaire || '',
-        user_traite: pro.user ? `${pro.user.name || ''} ${pro.user.prenom || ''}`.trim() : '',
+        user_traite: pro.user
+          ? `${pro.user.name || ''} ${pro.user.prenom || ''}`.trim()
+          : '',
         visite_id: pro.visite_id,
         appel_id: pro.appel_id,
       };
@@ -133,7 +146,9 @@ const HistoriquesTable = (id) => {
 
         return (
           <span
-            className={`px-2 py-1 rounded text-sm font-semibold ${getProspectStatusColor(row.statut)}`}
+            className={`px-2 py-1 rounded text-sm font-semibold ${getProspectStatusColor(
+              row.statut
+            )}`}
           >
             {row.statut}
           </span>
@@ -185,7 +200,9 @@ const HistoriquesTable = (id) => {
       rappel: pro.date_rappel
         ? format(new Date(pro.date_rappel), 'dd/MM/yyyy')
         : '',
-      user_traite: pro.user ? `${pro.user.name || ''} ${pro.user.prenom || ''}`.trim() : '',
+      user_traite: pro.user
+        ? `${pro.user.name || ''} ${pro.user.prenom || ''}`.trim()
+        : '',
       commentaire: pro.commentaire || '',
     }));
   };

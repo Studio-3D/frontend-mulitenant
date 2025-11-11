@@ -8,7 +8,6 @@ import Table from '@/components/Table';
 import { format } from 'date-fns';
 import { MODE_PAIEMENT, type_dst, type_dst_dp } from '@/configs/enum';
 import { isAdmin, isSuperAdmin } from '../../../../../configs/enum';
-import VenteNavbar from '@/components/VenteNavbar';
 import { APIURL } from '@/configs/api';
 import Link from 'next/link';
 import SelectInput from '@/components/SelectInput';
@@ -24,9 +23,9 @@ import { useProjet } from '@/context/ProjetContext';
 export default function PenalitesTable() {
   // Authentication and state management
   const { user, token } = useAuth();
-  const userRole = user.role;
+  const userRole = user?.role;
   const accessToken = token || localStorage.getItem('accessToken');
-  const etat_penalite = JSON.parse(localStorage.getItem('etat_penalite')) || 1;
+  const etat_penalite = JSON.parse(localStorage.getItem('etat_penalite'));
   const router = useRouter();
 
   const initialFilters = {
@@ -81,10 +80,7 @@ export default function PenalitesTable() {
   const { selectedProjet } = useProjet();
   // API configuration
   const entity = {
-    id:
-      selectedProjet?.id +
-      '/' +
-      etat_penalite,
+    id: selectedProjet?.id + '/' + etat_penalite,
     API_URL: 'penalites',
     dataKey: 'data',
     searchFields: [''],
@@ -360,7 +356,6 @@ export default function PenalitesTable() {
         <Clock className="w-4 h-4" />
       </button>
     );
-
   const columns = [
     ...baseColumns,
     ...adminColumns,
@@ -369,7 +364,7 @@ export default function PenalitesTable() {
     { key: 'penalite', label: 'Pénalités' },
     { key: 'mode_paiement', label: 'Mode Paiement' },
     ...validationColumns,
-    ...(actionColumn ? [actionColumn] : []),
+    ...(actionColumn ? [{ ...actionColumn, key: 'actions' }] : []), // Fixed line
   ];
 
   // Export data configuration
@@ -427,6 +422,15 @@ export default function PenalitesTable() {
     <>
       <div className="relative p-4">
         <Table
+          title={`Pénalités - ${
+            etat_penalite == 1
+              ? 'Validées'
+              : (etat_penalite == 5 ||etat_penalite==0)
+              ? 'En cours'
+              : etat_penalite == 2
+              ? 'Rejeté'
+              : 'Autre'
+          } `}
           data_to_export={data_to_export()}
           columns_export={columns_export}
           name_file_export={'penalites_export'}

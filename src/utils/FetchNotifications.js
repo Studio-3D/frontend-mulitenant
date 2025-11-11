@@ -431,6 +431,22 @@ const fetchNotifications = async ({
           description_type ||
           `Message Instagram entrant de ${+prospect?.nom}`,
       },
+       53: {
+        title: 'un nouveau prospect est affecté a vous ',
+        icon: 'message-circle',
+        color: 'info',
+        subtitle: (
+          prospect,
+          user,
+          avance,
+          reservation,
+          bien,
+          projet,
+          description_type
+        ) =>
+          description_type ||
+          `${+prospect?.nom}`,
+      },
       90: {
         title: 'un message Facebook',
         icon: 'message-circle',

@@ -763,7 +763,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
           if (res.status == 200) {
             message = `Visite créée avec succès`;
             toast.success(message);
-            router.push(ENDPOINTS.VISITES);
+            router.push(ENDPOINTS.CRM+'?tab=visites');
             localStorage.removeItem('selectedProspect');
             localStorage.removeItem('selectedClient');
             reset(defaultValues);
@@ -1840,7 +1840,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
       )}{' '}
       <div className="">
         <div className="flex items-center justify-start">
-          <BreadCrumb baseUrl={ENDPOINTS.VISITES} step={`Ajouter Visite`} />
+          <BreadCrumb baseUrl={ENDPOINTS.CRM+'?tab=visites'} step={`Ajouter Visite`} />
         </div>
       </div>
       <div>

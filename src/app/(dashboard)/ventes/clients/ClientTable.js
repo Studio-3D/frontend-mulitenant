@@ -300,9 +300,9 @@ const ClientTable = () => {
           enableExport={true}
           onFilterToggle={handleFilterToggle}
           addLink={
-            isSuperAdmin(user.role) ||
-            isAdmin(user.role) ||
-            isCommercial(user.role)
+            isSuperAdmin(user?.role) ||
+            isAdmin(user?.role) ||
+            isCommercial(user?.role)
               ? `${ENDPOINTS.CLIENTS}?action=add`
               : undefined
           }

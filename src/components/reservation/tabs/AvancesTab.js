@@ -16,7 +16,7 @@ import {
 import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
 import Table from '@/components/Table';
 import { APIURL, RESOURCE_URL } from '../../../configs/api';
-import { MODE_PAIEMENT, Avance_Statut } from '../../../configs/enum';
+import { MODE_PAIEMENT, Avance_Statut, MODE_PAIEMENT_with_transfert } from '../../../configs/enum';
 import {
   fetchData_Select,
   fetchList_fichier_exist_by_Code,
@@ -27,6 +27,7 @@ import { formatDate } from '../../../utils/dateUtils';
 import Autocomplete from '@/components/Autocomplete';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
+import Pusher from 'pusher-js';
 
 export const AvancesTab = ({
   reservationData,
@@ -35,6 +36,8 @@ export const AvancesTab = ({
   onAvancesChange,
   updateReservationData,
 }) => {
+  const pusher_key_avances = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_AVANCES;
+
   //onAvancesChange  ===> to call res show to modify count avances in tabs avances atab
   const color_header_modal = process.env.NEXT_PUBLIC_COLOR_Header_Modal;
   const [selectedId, setSelectedId] = useState(null);
@@ -65,6 +68,7 @@ export const AvancesTab = ({
   const [fichier_scanner, setfichier_scanner] = useState(null);
   const [avanceId, setAvanceId] = useState(null);
   const [loading_scann, setLoading_scann] = useState(false);
+  const [loading_traite, setLoading_traite] = useState(false);
 
   // New state for validation/rejection dialog
   const [open_v_r, setOpen_v_r] = useState(false);
@@ -88,6 +92,106 @@ export const AvancesTab = ({
   const [num_rem_show, set_num_rem_show] = useState(null);
   const [date_encais_show, set_date_encaiss_show] = useState(null);
 
+  // In AvancesTab component - fix the Pusher initialization
+  useEffect(() => {
+    fetchData();
+
+    // Initialize Pusher with the correct connection
+    const initializePusher = () => {
+      if (!pusher_key_avances || !reservationId) {
+        console.log('Pusher key or reservation ID missing');
+        return () => {};
+      }
+
+      Pusher.logToConsole = true;
+      console.log(
+        'Initializing Pusher for avances, reservation:',
+        reservationId
+      );
+
+      // Use the correct Pusher configuration that matches your backend
+      const pusher = new Pusher(pusher_key_avances, {
+        cluster: 'eu',
+        encrypted: true,
+        forceTLS: true,
+        wsHost: 'ws-eu.pusher.com', // Add explicit WebSocket host
+        wssPort: 443,
+        enabledTransports: ['ws', 'wss'], // Force WebSocket transport
+      });
+
+      // Create the EXACT channel name that matches your Laravel event
+      const channelName = `avances-updates-${reservationId}`;
+      console.log('Subscribing to channel:', channelName);
+
+      try {
+        const channel = pusher.subscribe(channelName);
+
+        channel.bind('AvancesEvent', (data) => {
+          console.log('Pusher AvancesEvent received:', data);
+          console.log(
+            'Current reservation ID:',
+            reservationId,
+            'Event reservation ID:',
+            data.reservationId
+          );
+
+          // Always refresh when we receive an event for this channel
+          console.log('Refreshing avances data via Pusher');
+          fetchData();
+        });
+
+        // Handle connection events
+        channel.bind('pusher:subscription_succeeded', () => {
+          console.log('✅ Successfully subscribed to channel:', channelName);
+        });
+
+        channel.bind('pusher:subscription_error', (status) => {
+          console.error('❌ Pusher subscription error:', status);
+        });
+
+        // Also listen for connection state changes
+        pusher.connection.bind('state_change', (states) => {
+          console.log(
+            'Pusher connection state changed:',
+            states.previous,
+            '->',
+            states.current
+          );
+        });
+
+        pusher.connection.bind('connected', () => {
+          console.log('✅ Pusher connected successfully');
+        });
+
+        pusher.connection.bind('disconnected', () => {
+          console.log('🔴 Pusher disconnected');
+        });
+      } catch (error) {
+        console.error('Error subscribing to Pusher channel:', error);
+      }
+
+      // Return cleanup function
+      return () => {
+        console.log('Cleaning up Pusher subscription for:', channelName);
+        if (pusher) {
+          pusher.disconnect();
+        }
+      };
+    };
+
+    const cleanupPusher = initializePusher();
+
+    if (filesList_avc.length === 0) {
+      fetchList_fichier_exist_by_Code(
+        setfilesList_avc,
+        'avc',
+        reservationData?.reservation?.code_reservation,
+        setLoading_list
+      );
+    }
+
+    return cleanupPusher;
+  }, [reservationId, pusher_key_avances]);
   const fetchData = async () => {
     try {
       if (!reservationId) {
@@ -146,18 +250,6 @@ export const AvancesTab = ({
     }
   };
 
-  useEffect(() => {
-    fetchData();
-    if (filesList_avc.length == 0) {
-      fetchList_fichier_exist_by_Code(
-        setfilesList_avc,
-        'avc',
-        reservationData?.reservation?.code_reservation,
-        setLoading_list
-      );
-    }
-  }, [reservationId]);
-
   const handleShowPj = (n_recu, pjs) => {
     setOpen_dialog(true);
     set_num_recu(n_recu);
@@ -171,12 +263,10 @@ export const AvancesTab = ({
     num_rem,
     date_encais
   ) => {
-    console.log('n_recu==>' + n_recu);
     set_num_recu(n_recu);
     set_banque_show(banque);
     set_num_paiement_show(numero_paiement);
     set_num_rem_show(num_rem);
-    console.log('dd ensaiss==>' + date_encais);
     set_date_encaiss_show(date_encais);
     setOpen_dialog_show(true);
   };
@@ -549,6 +639,7 @@ export const AvancesTab = ({
 
   const onSubmit_valider_rejete = async (e) => {
     e.preventDefault();
+    setLoading_traite(true);
     try {
       const commentaire = Commentaire_r;
       const date_encaiss = date_encaissement_v;
@@ -571,14 +662,17 @@ export const AvancesTab = ({
       );
 
       toast.success('Avance traitée avec succès');
+
       setCommentaire_r(null);
       set_date_encaissement_v(null);
       set_num_remise_v(null);
       fetchData();
       setOpen_v_r(false);
+      setLoading_traite(false);
     } catch (error) {
       console.error('Error processing avance:', error);
       toast.error('Erreur lors du traitement');
+      setLoading_traite(false);
     }
   };
 
@@ -648,12 +742,12 @@ export const AvancesTab = ({
               }[row.mode_pai] || 'bg-gray-100 text-gray-500'
             }`}
           >
-            {MODE_PAIEMENT[row.mode_pai]?.label || 'Unknown'}
+            {MODE_PAIEMENT_with_transfert[row.mode_pai]?.label || 'Unknown'}
           </span>
         );
       },
     },
-    {},
+
     { key: 'echeance', label: 'Echéance' },
     {
       key: 'statut',
@@ -665,7 +759,7 @@ export const AvancesTab = ({
           Number(row.statut) == 1 &&
           parseFloat(row.montant) > 0 &&
           Number(row.mode_pai) !== 7 &&
-          (row.date_encaissement == null)
+          row.date_encaissement == null
         ) {
           return (
             <span className="px-2 py-1 rounded text-sm font-semibold bg-blue-100 text-blue-500">
@@ -822,7 +916,7 @@ export const AvancesTab = ({
                       {Number(row.mode_pai) != 7 &&
                         parseFloat(row.montant) > 0 &&
                         Number(row.statut) == 1 &&
-                        (row.date_encaissement == null) && (
+                        row.date_encaissement == null && (
                           <button
                             className="p-1 text-blue-500 hover:text-blue-700"
                             onClick={() =>
@@ -1093,7 +1187,7 @@ export const AvancesTab = ({
                       <input
                         type="date"
                         name="date_reglement"
-                        value={formData.date_reglement}
+                        value={formData.date_reglement || ''}
                         onChange={handleInputChange}
                         className={`w-full p-2 border rounded-md ${
                           formErrors.date_reglement
@@ -1118,7 +1212,7 @@ export const AvancesTab = ({
                       <input
                         type="number"
                         name="montant"
-                        value={formData.montant}
+                        value={formData.montant || ''}
                         onChange={handleInputChange}
                         className={`w-full p-2 border rounded-md ${
                           formErrors.montant
@@ -1212,9 +1306,10 @@ export const AvancesTab = ({
                           <span className="text-red-500">*</span>
                         </label>
                         <input
+                          required
                           type="text"
                           name="numero_paiement"
-                          value={formData.numero_paiement}
+                          value={formData.numero_paiement || ''}
                           onChange={handleInputChange}
                           className={`w-full p-2 border rounded-md ${
                             formErrors.numero_paiement
@@ -1235,10 +1330,11 @@ export const AvancesTab = ({
                     [2, 3, 4].includes(parseInt(formData.mode_paiement)) && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Échéance
+                          Échéance <span className="text-red-500">*</span>
                         </label>
                         <div className="relative">
                           <input
+                            required
                             type="date"
                             name="echeance"
                             value={formData.echeance || ''}
@@ -1291,7 +1387,7 @@ export const AvancesTab = ({
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                       {selectedFiles_avc.map((data, index) => (
                         <div
-                          key={data.id || data.name || index}
+                          key={data.id || data.name}
                           className="flex flex-col p-3 bg-white rounded-md border border-gray-200 hover:border-blue-200 transition-colors h-full"
                         >
                           <div className="flex items-center mb-2">
@@ -1371,7 +1467,7 @@ export const AvancesTab = ({
                       <input
                         name="num_remise"
                         type="number"
-                       /* required={
+                        /* required={
                           formData.date_encaissement != '' ? true : false
                         }*/
                         className="w-full p-2 border border-gray-300 rounded-md"
@@ -1476,14 +1572,13 @@ export const AvancesTab = ({
                   <>
                     <div>
                       <label className="block text-sm font-medium mb-1">
-                        N° Remise: 
+                        N° Remise:
                       </label>
                       <input
                         type="number"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
                         value={num_remise_v || ''}
                         onChange={(e) => set_num_remise_v(e.target.value)}
-                        
                       />
                     </div>
                     <div>
@@ -1527,11 +1622,13 @@ export const AvancesTab = ({
                 >
                   Annuler
                 </button>
+
                 <button
                   type="submit"
                   className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+                  disabled={loading_traite}
                 >
-                  Enregistrer
+                  {loading_traite ? 'Enregistrement...' : 'Enregistrer'}
                 </button>
               </div>
             </form>
@@ -1554,7 +1651,9 @@ export const AvancesTab = ({
 
             <div className="grid grid-cols-4 gap-4 mt-10">
               {pjj?.map((pj) => (
-                <div key={pj.id} className="flex items-center">
+                <div key={`pj-${pj.id}`} className="flex items-center">
+                  {' '}
+                  {/* Add key here */}
                   {pj.fichier?.toLowerCase()?.endsWith('.pdf') ? (
                     <FileText className="w-5 h-5 mr-2 text-red-500" />
                   ) : (

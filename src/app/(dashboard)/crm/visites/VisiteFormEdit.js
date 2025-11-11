@@ -13,17 +13,11 @@ import * as yup from 'yup';
 import { APIURL, ENDPOINTS } from '../../../../configs/api';
 import toast from 'react-hot-toast';
 import SelectInput from '@/components/SelectInput';
-import AutocompleteMultiple from '@/components/AutocompleteMultiple';
 
-import Autocomplete from '@/components/Autocomplete';
-
-import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
 import TextField from '@/components/Textfield'; // Import the component
 import Button from '@/components/Button'; // adjust the path as needed
 import LoadingSpin from '@/components/LoadingSpin';
 import { useProjet } from '@/context/ProjetContext';
-import AutocompleteBienEdit from './AutocompleteBien_Edit'; // adjust path if needed
-import AutocompleteStatut_ModeRelance_Biens from './AutocompleteStatut_ModeRelance_Biens';
 import { useAuth } from '../../../../context/AuthContext';
 import FreinsComponentEdit from './FreinsComponentEdit';
 
@@ -851,7 +845,7 @@ export default function VisiteFormEdit({ id }) {
           if (res.status === 200) {
             message = `Visite ${isEditing ? 'modifiée' : 'créée'} avec succès`;
             toast.success(message);
-            router.push(ENDPOINTS.VISITES);
+            router.push(ENDPOINTS.CRM+'?tab=visites');
             reset(defaultValues);
           } else if (res.status === 422) {
             message = res.data.message;
@@ -1334,7 +1328,7 @@ export default function VisiteFormEdit({ id }) {
     <div className="p-3">
       <div className="flex items-center justify-start">
         <BreadCrumb
-          baseUrl={ENDPOINTS.VISITES}
+          baseUrl={ENDPOINTS.CRM+'?tab=visites'}
           step={`${isEditing ? 'Modifier' : 'Ajouter'} une Visite`}
         />
       </div>

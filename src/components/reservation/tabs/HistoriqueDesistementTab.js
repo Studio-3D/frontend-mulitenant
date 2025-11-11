@@ -600,7 +600,7 @@ console.log('le tye dp =+>'+desistementTypeDp)
     <div className="bg-white shadow-sm rounded-lg">
       <div className="p-6">
         <Table
-          title=""
+          title="Historique Désistement"
           data={dossiers}
           columns={columns}
           totalRows={totalRows}

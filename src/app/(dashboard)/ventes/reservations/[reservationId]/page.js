@@ -20,9 +20,11 @@ import { APIURL } from '../../../../../configs/api';
 import { useAuth } from '../../../../../context/AuthContext';
 import { useProjet } from '@/context/ProjetContext';
 import { useRouter } from 'next/navigation';
+import Pusher from 'pusher-js';
 
 const Res_Show = () => {
   const router = useRouter();
+  const pusher_key_avances = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_AVANCES;
 
   const { selectedProjet } = useProjet();
   const [activeTab, setActiveTab] = useState('detail');
@@ -33,16 +35,88 @@ const Res_Show = () => {
   const [error, setError] = useState(null);
   const { reservationId } = useParams();
   const { user, token } = useAuth();
-  const userRole = user.role;
+  const userRole = user?.role;
   const accessToken = token || localStorage.getItem('accessToken');
 
+  // AJOUTER: État pour suivre si un compromis a été créé
+  const [hasCompromis, setHasCompromis] = useState(false);
+  const [hasContrat, setHasContrat] = useState(false);
+
+  // AJOUTER: Fonction pour gérer la création de compromis
+  const handleCompromisCreated = () => {
+    setHasCompromis(true);
+    // Optionnel: Mettre à jour les données de réservation
+    fetchData();
+  };
+
+  const handleContratCreated = () => {
+    setHasContrat(true);
+    fetchData();
+  };
+
   // In Res_Show component where reste==0 dont reload page// and if on submit contrat de vente
+  // Modifier updateReservationData pour inclure compromis et contrat
   const updateReservationData = (newData) => {
     setReservationData((prev) => ({
       ...prev,
       ...newData,
     }));
+
+    // Si les nouvelles données incluent un compromis, mettre à jour l'état
+    if (newData.reservation?.compromis_vente?.compromis_signee != null) {
+      setHasCompromis(true);
+    }
+
+    // Si les nouvelles données incluent un contrat, mettre à jour l'état
+    if (newData.reservation?.contrat_vente?.piece_jointe != null) {
+      setHasContrat(true);
+    }
   };
+
+  // Function to reload reservation data
+  const reloadReservationData = () => {
+    fetchData();
+  };
+
+  // In Res_Show component
+  /*useEffect(() => {
+  let lastFetchTime = 0;
+  const FETCH_COOLDOWN = 2000; // 3 seconds cooldown
+
+  fetchData();
+
+  if (activeTab !== 'avances') {
+    const initializePusher = () => {
+      if (!pusher_key_avances || !reservationId || !user?.id) return () => {};
+
+      const pusher = new Pusher(pusher_key_avances, {
+        cluster: 'eu',
+        encrypted: true,
+        forceTLS: true,
+      });
+
+      const userChannelName = `res-show-user-${user.id}`;
+      const userChannel = pusher.subscribe(userChannelName);
+      
+      userChannel.bind('AvancesEvent', (data) => {
+        const now = Date.now();
+        
+        // Only fetch if enough time has passed since last fetch
+        if (now - lastFetchTime > FETCH_COOLDOWN) {
+          console.log('Refreshing data via Pusher');
+          lastFetchTime = now;
+          fetchData();
+        } else {
+          console.log('Skipping fetch - cooldown active');
+        }
+      });
+
+      return () => pusher.disconnect();
+    };
+
+    return initializePusher();
+  }
+}, [reservationId, pusher_key_avances, user?.id, activeTab]);*/ // Add activeTab to dependencies
   // Simple cache et comparaison for return back en cas de changer projet
   const [oldProjetId, setOldProjetId] = useState(null);
 
@@ -51,7 +125,6 @@ const Res_Show = () => {
       if (oldProjetId) {
         // Projet a changé
 
-        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
         router.push('/ventes/reservations');
       }
       setOldProjetId(selectedProjet.id);
@@ -79,9 +152,10 @@ const Res_Show = () => {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      console.log('Response data:', response.data); // Debug log
-
+      console.log('token==+>' + accessToken);
       setReservationData(response.data);
+      setHasCompromis(!!response.data?.reservation?.compromis_vente?.compromis_signee);
+      setHasContrat(!!response.data?.reservation?.contrat_vente?.piece_jointe);
       setSum_av(response.data.sum_avances_valides);
     } catch (error) {
       console.error('Full error details:', error);
@@ -104,10 +178,8 @@ const Res_Show = () => {
   useEffect(() => {
     // Verify reservationId is correct before fetching
     if (reservationId && typeof reservationId === 'string') {
-      console.log('Fetching data for reservation ID:', reservationId);
       fetchData();
     } else {
-      console.error('Invalid reservationId:', reservationId);
       setError('Invalid reservation ID');
     }
   }, [reservationId]);
@@ -134,37 +206,30 @@ const Res_Show = () => {
       sum_avances_valides: sum,
       reservation: {
         ...prev.reservation,
-        avances: {
+        /*avances: {
           ...prev.reservation.avances,
           length: count,
-        },
+        },*/
       },
     }));
   };
-  console.log('Sum Avances:', reservationData?.sum_avances_valides);
-  console.log('Prix:', reservationData?.reservation?.prix);
-  console.log(
-    'Should show Contract Tab?',
-    userRole <= 3 &&
-      reservationData?.sum_avances_valides >= reservationData?.reservation?.prix
-  );
   const handleRdvChange = (count) => {
     setReservationData((prev) => ({
       ...prev,
       reservation: {
         ...prev.reservation,
-        rdv: {
+        /*rdv: {
           ...prev.reservation.rdv,
           length: count,
-        },
+        },*/
       },
     }));
   };
   // Prepare tab counts and visibility
   const getTabConfig = () => {
     if (!reservationData) return { tabs: [], counts: {} };
-
-    const counts = {
+    const counts = {};
+    /* const counts = {
       acquereurs:
         reservationData?.reservation?.etat == 1
           ? reservationData?.reservation?.aquereurs?.length
@@ -175,7 +240,7 @@ const Res_Show = () => {
           : reservationData?.reservation?.piece_jointe_desiste?.length || 0,
       avances: reservationData?.reservation?.avances?.length || 0,
       rendezVous: reservationData?.reservation?.rdv?.length || 0,
-    };
+    };*/
 
     const baseTabs = [
       { id: 'detail', label: 'Détail réservation', icon: 'file-text' },
@@ -212,6 +277,7 @@ const Res_Show = () => {
         id: 'compromisVentes',
         label: 'Attestation de vente',
         icon: 'file-signature',
+        // Condition corrigée - afficher si user a le droit ET (il y a des avances OU un compromis existe déjà)
         visible: userRole <= 3 && reservationData.sum_avances_valides > 0,
       },
       {
@@ -249,10 +315,15 @@ const Res_Show = () => {
           <DetailTab
             reservationData={reservationData}
             sum_avances_valides={sum_av}
+            onReservationUpdate={reloadReservationData} // Add this prop
           />
         );
       case 'historiques':
-        return <HistoriquesTab reservationData={reservationData} />;
+        return (
+          <HistoriquesTab
+            reservationData={reservationData?.reservation?.historiques}
+          />
+        );
       case 'acquereurs':
         return (
           <AcquereursTab
@@ -304,6 +375,7 @@ const Res_Show = () => {
             reservationData={reservationData}
             user={user}
             accessToken={accessToken}
+            onCompromisCreated={handleCompromisCreated} // Ajouter cette prop
           />
         );
       case 'contract':
@@ -313,6 +385,7 @@ const Res_Show = () => {
             user={user}
             accessToken={accessToken}
             updateReservationData={updateReservationData} // Add this line
+            onContratCreated={handleContratCreated} // Ajouter cette prop
           />
         );
       case 'transfert':
@@ -347,13 +420,15 @@ const Res_Show = () => {
           <ReservationHeader
             reservationData={reservationData}
             userRole={userRole}
+            hasCompromis={hasCompromis} // Passer la prop
+            hasContrat={hasContrat} // Passer la prop
           />
           <div className="bg-white rounded-lg shadow-md mt-6">
             <TabNavigation
               activeTab={activeTab}
               setActiveTab={setActiveTab}
               tabs={tabs}
-              counts={counts}
+              // counts={counts}
             />
             <div className="p-6">{renderTabContent()}</div>
           </div>

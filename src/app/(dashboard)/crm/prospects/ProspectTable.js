@@ -82,7 +82,11 @@ const CustomCheckbox = ({
   );
 };
 
-const ProspectTable = ({ showOnlyAssigned = false }) => {
+const ProspectTable = ({ view = 'all', searchParams }) => {
+  const showOnlyAssigned = view === 'assigned';
+
+  const [affect_lance, setAffect_lance] = useState(false);
+
   // --- State ---
   const [prospects, setProspects] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -118,14 +122,19 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
   const { user, token } = useAuth();
   const { selectedProjet } = useProjet();
   const accesstoken = token || localStorage.getItem('accessToken');
-  const router = useRouter();
+    const router = useRouter();
 
   // Check if user is commercial to disable assignment features
   const isCommercialUser = isCommercial(user?.role);
 
-  // --- Data Fetch ---
   useEffect(() => {
-    // Don't add filtering in the API call, we'll filter in frontend
+    // Only fetch data if we're NOT in form mode (no action parameter)
+    const action = searchParams?.get('action');
+    if (action === 'add' || action === 'edit') {
+      console.log('Skipping API call - in form mode');
+      return;
+    }
+
     fetchData_table_by_projet(
       {
         API_URL: 'prospects',
@@ -143,6 +152,7 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
       setTotalRows
     );
   }, [
+    searchParams, // Add searchParams to dependencies
     accesstoken,
     currentPage,
     rowsPerPage,
@@ -158,6 +168,12 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
   }, [searchTerm]);
 
   useEffect(() => {
+    // Only set up interval if we're NOT in form mode
+    const action = searchParams?.get('action');
+    if (action === 'add' || action === 'edit') {
+      return;
+    }
+
     const interval = setInterval(() => {
       if (localStorage.getItem('load_data_prospect') == 1) {
         fetchData_table_by_projet(
@@ -181,6 +197,7 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
     }, 1000);
     return () => clearInterval(interval);
   }, [
+    searchParams, // Add searchParams to dependencies
     accesstoken,
     currentPage,
     rowsPerPage,
@@ -188,6 +205,11 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
     filters,
     selectedProjet,
   ]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {}, 1200);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   // --- Format Data with Frontend Filtering ---
   const formatData = () => {
@@ -218,8 +240,8 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
             : '') || 'Non spécifié',
       cin: pro.cin,
       client: pro.client,
-      visites: pro.visites,
-      appels: pro.appels,
+      visites_count: pro.visites_count,
+      appels_count: pro.appels_count,
       origin: pro.origin,
       date: pro.created_at
         ? format(new Date(pro.created_at), 'dd/MM/yyyy')
@@ -297,56 +319,77 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
 
   // --- Table Columns ---
   const columns = [
-    // Only show checkbox column if user is not commercial
-    ...(!isCommercialUser
-      ? [
-          {
-            key: '__checkbox__',
-            label: (() => {
-              const assignableProspects = formatData().filter((row) =>
-                canProspectBeAssigned(row.prospect)
-              );
-              return (
-                <div className="flex items-center justify-center">
-                  <CustomCheckbox
-                    checked={
-                      assignableProspects.length > 0 &&
-                      checkedProspects.length === assignableProspects.length
-                    }
-                    onChange={() =>
-                      handleCheckAll(
-                        !(
-                          assignableProspects.length > 0 &&
-                          checkedProspects.length === assignableProspects.length
-                        )
-                      )
-                    }
-                    ariaLabel="Tout sélectionner"
-                    title="Sélectionner/Désélectionner tous les prospects"
-                    className="ring-2 ring-blue-200"
-                  />
-                </div>
-              );
-            })(),
-            render: (row) => {
-              const canBeAssigned = canProspectBeAssigned(row.prospect);
-              return (
-                <CustomCheckbox
-                  checked={checkedProspects.includes(row.id)}
-                  onChange={() => canBeAssigned && handleCheckProspect(row.id)}
-                  disabled={!canBeAssigned}
-                  ariaLabel={`Sélectionner le prospect ${row.nom} ${row.prenom}`}
-                  title={
-                    !canBeAssigned
-                      ? 'Ce prospect ne peut pas être assigné (statut final)'
-                      : `Sélectionner ${row.nom} ${row.prenom}`
-                  }
-                />
-              );
-            },
-          },
-        ]
-      : []),
+    {
+      key: '__checkbox__',
+      label: (() => {
+        // For commercial users, only show prospects that can be assigned AND are not already assigned to them
+        const assignableProspects = formatData().filter((row) => {
+          const canBeAssigned = canProspectBeAssigned(row.prospect);
+          if (isCommercialUser && user?.id) {
+            // For commercial users, only show prospects that are not already assigned to them
+            const isAssignedToMe =
+              row.commercial_affecte &&
+              row.commercial_affecte.user_id_origin === user.id;
+            return canBeAssigned && !isAssignedToMe;
+          }
+          return canBeAssigned;
+        });
+
+        return (
+          <div className="flex items-center justify-center">
+            <CustomCheckbox
+              checked={
+                assignableProspects.length > 0 &&
+                checkedProspects.length === assignableProspects.length
+              }
+              onChange={() =>
+                handleCheckAll(
+                  !(
+                    assignableProspects.length > 0 &&
+                    checkedProspects.length === assignableProspects.length
+                  )
+                )
+              }
+              ariaLabel="Tout sélectionner"
+              title="Sélectionner/Désélectionner tous les prospects"
+              className="ring-2 ring-blue-200"
+            />
+          </div>
+        );
+      })(),
+      render: (row) => {
+        const canBeAssigned = canProspectBeAssigned(row.prospect);
+
+        // For commercial users, disable checkbox if prospect is already assigned to them
+        let disabled = !canBeAssigned;
+        let title = !canBeAssigned
+          ? 'Ce prospect ne peut pas être assigné (statut final)'
+          : `Sélectionner ${row.nom} ${row.prenom}`;
+
+        if (isCommercialUser && user?.id) {
+          const isAssignedToMe =
+            row.commercial_affecte &&
+            row.commercial_affecte.user_id_origin === user.id;
+
+          if (isAssignedToMe) {
+            disabled = true;
+            title = 'Ce prospect vous est déjà assigné';
+          } else if (canBeAssigned) {
+            title = `S'affecter le prospect ${row.nom} ${row.prenom}`;
+          }
+        }
+
+        return (
+          <CustomCheckbox
+            checked={checkedProspects.includes(row.id)}
+            onChange={() => !disabled && handleCheckProspect(row.id)}
+            disabled={disabled}
+            ariaLabel={`Sélectionner le prospect ${row.nom} ${row.prenom}`}
+            title={title}
+          />
+        );
+      },
+    },
     {
       key: 'nom',
       label: 'Nom',
@@ -443,18 +486,19 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
           >
             <Pencil className="w-4 h-4" />
           </Link>
-
-          <Link
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              handleraiter(row.id, row.telephone, row.nomComplet);
-            }}
-            className="flex items-center gap-1 text-[rgb(87,80,129)] hover:text-[rgb(67,60,109)]"
-            title="Traiter"
-          >
-            <Check className="w-4 h-4" />
-          </Link>
+          {(!isCommercialUser || (isCommercialUser && showOnlyAssigned)) && (
+            <Link
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                handleraiter(row.id, row.telephone, row.nomComplet);
+              }}
+              className="flex items-center gap-1 text-[rgb(87,80,129)] hover:text-[rgb(67,60,109)]"
+              title="Traiter"
+            >
+              <Check className="w-4 h-4" />
+            </Link>
+          )}
 
           <Link
             href="#"
@@ -469,8 +513,8 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
           </Link>
 
           {row.client == null &&
-            row.visites.length == 0 &&
-            row.appels == null && (
+            row.visites_count == 0 &&
+            row.appels_count == 0 && (
               <Link
                 href="#"
                 onClick={(e) => {
@@ -479,7 +523,7 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
                   setShowDeleteModal(true);
                 }}
                 className="flex items-center gap-1 text-red-500 hover:text-red-700"
-                title="Supprimer utilisateur"
+                title="Supprimer Prospect"
               >
                 <Trash2 className="w-4 h-4" />
               </Link>
@@ -529,9 +573,17 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
   const handleCheckAll = (checked) => {
     if (checked) {
       // Only select prospects that can be assigned
-      const assignableProspects = formatData().filter((row) =>
-        canProspectBeAssigned(row.prospect)
-      );
+      const assignableProspects = formatData().filter((row) => {
+        const canBeAssigned = canProspectBeAssigned(row.prospect);
+        if (isCommercialUser && user?.id) {
+          // For commercial users, exclude prospects already assigned to them
+          const isAssignedToMe =
+            row.commercial_affecte &&
+            row.commercial_affecte.user_id_origin === user.id;
+          return canBeAssigned && !isAssignedToMe;
+        }
+        return canBeAssigned;
+      });
       setCheckedProspects(assignableProspects.map((row) => row.id));
     } else {
       setCheckedProspects([]);
@@ -604,6 +656,7 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
   };
   const handleAffectationAuto = async () => {
     if (!checkedProspects.length) return;
+    setAffect_lance(true);
     try {
       const response = await fetch(`${APIURL.ROOT}/v1/prospects/auto-assign`, {
         method: 'POST',
@@ -623,6 +676,7 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
       }
 
       const result = await response.json();
+      setAffect_lance(false);
 
       setShowAffecterModal(false);
       setSelectedCommercial('');
@@ -683,6 +737,71 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
       .includes(searchCommercial.toLowerCase())
   );
 
+  const handleAutoAssignToSelf = async () => {
+    if (!checkedProspects.length || !user?.id) return;
+
+    try {
+      // Find the full prospect object for each checked prospect
+      const selectedProspects = prospects.filter((pro) =>
+        checkedProspects.includes(pro.id)
+      );
+
+      await Promise.all(
+        selectedProspects.map((pro) => {
+          // Clean up fields: convert "null" string to null or empty string
+          const clean = (val) =>
+            val === 'null' || val === null || val === undefined ? '' : val;
+          return fetch(`${APIURL.PROSPECTS}/${pro.id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+              Authorization: `Bearer ${accesstoken}`,
+            },
+            body: JSON.stringify({
+              nom: clean(pro.nom),
+              prenom: clean(pro.prenom),
+              telephone: clean(pro.telephone),
+              telephone_num2: clean(pro.telephone_num2),
+              email: clean(pro.email),
+              cin: clean(pro.cin),
+              origin: clean(pro.origin),
+              notifie: pro.notifie,
+              source: pro.source?.id || pro.source,
+              partenaire_id: pro.partenaire_id,
+              message: clean(pro.message),
+              ville: clean(pro.ville),
+              commercial_affecte: user.id, // Assign to themselves
+            }),
+          });
+        })
+      );
+
+      setCheckedProspects([]);
+      fetchData_table_by_projet(
+        {
+          API_URL: 'prospects',
+          dataKey: 'prospects',
+          searchFields: ['nom', 'prenom', 'email', 'telephone', 'cin'],
+        },
+        filters,
+        searchTerm,
+        currentPage,
+        rowsPerPage,
+        accesstoken,
+        setLoading,
+        setError,
+        setProspects,
+        setTotalRows
+      );
+
+      // Show success message
+      console.log(`Affecté ${checkedProspects.length} prospect(s) à vous-même`);
+    } catch (e) {
+      console.error("Erreur lors de l'auto-affectation:", e);
+      // Handle error
+    }
+  };
   // --- Render ---
   return (
     <>
@@ -714,17 +833,25 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
               : undefined
           }
           extraActions={
-            // Only show assign button for non-commercial users
-            !isCommercialUser &&
-            checkedProspects.length > 0 && (
+            // Show assign button for non-commercial users OR for commercial users with selected prospects
+            (checkedProspects.length > 0 && !isCommercialUser) ||
+            (checkedProspects.length > 0 && isCommercialUser) ? (
               <button
                 className="flex gap-1 items-center bg-[#009FFF] text-white font-medium rounded-lg px-3 py-1.5"
-                onClick={() => setShowAffecterModal(true)}
+                onClick={() => {
+                  if (isCommercialUser) {
+                    // Auto-assign to themselves
+                    handleAutoAssignToSelf();
+                  } else {
+                    // Show assign modal for admin users
+                    setShowAffecterModal(true);
+                  }
+                }}
                 type="button"
               >
-                Affecter
+                {isCommercialUser ? "S'affecter" : 'Affecter'}
               </button>
-            )
+            ) : null
           }
           filterComponent={
             <div className="space-y-4 ">
@@ -955,6 +1082,7 @@ const ProspectTable = ({ showOnlyAssigned = false }) => {
                   <Button
                     type="button"
                     onClick={handleAffectationAuto}
+                    disabled={affect_lance}
                     className="bg-gray-700 text-white"
                   >
                     Lancer {"l'"}affectation automatique

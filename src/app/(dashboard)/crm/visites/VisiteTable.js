@@ -19,7 +19,7 @@ import {
 import Link from 'next/link';
 import SelectInput from '@/components/SelectInput';
 
-const VisiteTable = ({ user_id, dataProspect, dataClient }) => {
+const VisiteTable = ({ user_id, dataProspect, dataClient ,searchParams}) => {
   const [visites, setVisites] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -56,6 +56,12 @@ const VisiteTable = ({ user_id, dataProspect, dataClient }) => {
   const clientId = dataClient ? JSON.stringify(dataClient?.id) : null;
   const prospectId = dataProspect ? JSON.stringify(dataProspect?.id) : null;
   useEffect(() => {
+     // Only fetch data if we're NOT in form mode (no action parameter)
+    const action = searchParams?.get('action');
+    if (action === 'add' || action === 'edit') {
+      console.log('Skipping API call - in form mode');
+      return;
+    }
     const params_url = clientId
       ? { client_id: clientId }
       : prospectId
@@ -79,6 +85,7 @@ const VisiteTable = ({ user_id, dataProspect, dataClient }) => {
       setTotalRows
     );
   }, [
+    searchParams,
     accesstoken,
     currentPage,
     rowsPerPage,

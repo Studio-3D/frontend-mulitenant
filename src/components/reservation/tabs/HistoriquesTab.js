@@ -222,7 +222,7 @@ ChangeDetailModal.displayName = 'ChangeDetailModal';
 // Create the main component first, then wrap with memo
 const HistoriquesTabComponent = ({ reservationData }) => {
   const [selectedHistory, setSelectedHistory] = useState(null);
-  const histo = reservationData?.reservation?.historiques || [];
+  const histo = reservationData;
 
   function NomBienComplet(bien) {
     if (!bien) return 'N/A';
