@@ -21,7 +21,7 @@ import Input from '@/components/Input';
 import { format } from 'date-fns'; // Add this import
 import { useProjet } from '@/context/ProjetContext';
 import { VISITE_INTERETS } from '../../../../../src/configs/enum';
-const AppelsTable = ({ dataClient }) => {
+const AppelsTable = ({ dataClient, searchParams }) => {
   const { user, token } = useAuth();
   const accesstoken = token || localStorage.getItem('accessToken');
   const { selectedProjet } = useProjet();
@@ -53,6 +53,11 @@ const AppelsTable = ({ dataClient }) => {
   };
 
   useEffect(() => {
+    const action = searchParams?.get('action');
+    if (action === 'add' || action === 'edit') {
+      console.log('Skipping API call - in form mode');
+      return;
+    }
     const params_url = dataClient ? { client_id: dataClient?.id } : {};
     const combinedFilters = { ...filters, ...params_url };
 
@@ -69,6 +74,7 @@ const AppelsTable = ({ dataClient }) => {
       setTotalRows
     );
   }, [
+    searchParams,
     accesstoken,
     currentPage,
     rowsPerPage,
@@ -113,15 +119,15 @@ const AppelsTable = ({ dataClient }) => {
     return undefined;
   }
 
-   const handle_convert_to_visite = (prospect) => {
-      localStorage.setItem(
-        'selectedProspect',
-        JSON.stringify({
-          info: { dataProspect: prospect },
-        })
-      );
-      router.push(`${ENDPOINTS.VISITES}?action=add`);
-    };
+  const handle_convert_to_visite = (prospect) => {
+    localStorage.setItem(
+      'selectedProspect',
+      JSON.stringify({
+        info: { dataProspect: prospect },
+      })
+    );
+    router.push(`${ENDPOINTS.VISITES}?action=add`);
+  };
   const voir_visite = (vId) => {
     window.open(`/crm/visites/${vId}`, '_blank');
   };
@@ -240,14 +246,13 @@ const AppelsTable = ({ dataClient }) => {
               <RefreshCw className="w-4 h-4" />
             </Link>
           ) : (
-             <Link
-            href={`/crm/visite/${row.last_traitement_visite_id}`}
-            className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
-            title="Voir Visite"
-          >
-            <CreditCard className="w-4 h-4" />
-          </Link>
-           
+            <Link
+              href={`/crm/visite/${row.last_traitement_visite_id}`}
+              className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+              title="Voir Visite"
+            >
+              <CreditCard className="w-4 h-4" />
+            </Link>
           )}
         </div>
       ),

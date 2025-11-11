@@ -71,7 +71,7 @@ export default function VisitePage({ dataProspect, dataClient }) {
       ) : (
         <div>
           {/* Show table when no forms are active */}
-          <VisiteTable dataClient={dataClient} dataProspect={dataProspect} />
+          <VisiteTable dataClient={dataClient} dataProspect={dataProspect}  searchParams={searchParams}/>
         </div>
       )}
     </div>

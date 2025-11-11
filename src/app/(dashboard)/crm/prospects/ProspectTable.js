@@ -82,8 +82,10 @@ const CustomCheckbox = ({
   );
 };
 
-const ProspectTable = ({ view = 'all' }) => {
+const ProspectTable = ({ view = 'all', searchParams }) => {
   const showOnlyAssigned = view === 'assigned';
+
+  const [affect_lance, setAffect_lance] = useState(false);
 
   // --- State ---
   const [prospects, setProspects] = useState([]);
@@ -120,14 +122,19 @@ const ProspectTable = ({ view = 'all' }) => {
   const { user, token } = useAuth();
   const { selectedProjet } = useProjet();
   const accesstoken = token || localStorage.getItem('accessToken');
-  const router = useRouter();
+    const router = useRouter();
 
   // Check if user is commercial to disable assignment features
   const isCommercialUser = isCommercial(user?.role);
 
-  // --- Data Fetch ---
   useEffect(() => {
-    // Don't add filtering in the API call, we'll filter in frontend
+    // Only fetch data if we're NOT in form mode (no action parameter)
+    const action = searchParams?.get('action');
+    if (action === 'add' || action === 'edit') {
+      console.log('Skipping API call - in form mode');
+      return;
+    }
+
     fetchData_table_by_projet(
       {
         API_URL: 'prospects',
@@ -145,6 +152,7 @@ const ProspectTable = ({ view = 'all' }) => {
       setTotalRows
     );
   }, [
+    searchParams, // Add searchParams to dependencies
     accesstoken,
     currentPage,
     rowsPerPage,
@@ -160,6 +168,12 @@ const ProspectTable = ({ view = 'all' }) => {
   }, [searchTerm]);
 
   useEffect(() => {
+    // Only set up interval if we're NOT in form mode
+    const action = searchParams?.get('action');
+    if (action === 'add' || action === 'edit') {
+      return;
+    }
+
     const interval = setInterval(() => {
       if (localStorage.getItem('load_data_prospect') == 1) {
         fetchData_table_by_projet(
@@ -183,6 +197,7 @@ const ProspectTable = ({ view = 'all' }) => {
     }, 1000);
     return () => clearInterval(interval);
   }, [
+    searchParams, // Add searchParams to dependencies
     accesstoken,
     currentPage,
     rowsPerPage,
@@ -190,6 +205,11 @@ const ProspectTable = ({ view = 'all' }) => {
     filters,
     selectedProjet,
   ]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {}, 1200);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   // --- Format Data with Frontend Filtering ---
   const formatData = () => {
@@ -220,8 +240,8 @@ const ProspectTable = ({ view = 'all' }) => {
             : '') || 'Non spécifié',
       cin: pro.cin,
       client: pro.client,
-      visites: pro.visites,
-      appels: pro.appels,
+      visites_count: pro.visites_count,
+      appels_count: pro.appels_count,
       origin: pro.origin,
       date: pro.created_at
         ? format(new Date(pro.created_at), 'dd/MM/yyyy')
@@ -493,8 +513,8 @@ const ProspectTable = ({ view = 'all' }) => {
           </Link>
 
           {row.client == null &&
-            row.visites.length == 0 &&
-            row.appels == null && (
+            row.visites_count == 0 &&
+            row.appels_count == 0 && (
               <Link
                 href="#"
                 onClick={(e) => {
@@ -503,7 +523,7 @@ const ProspectTable = ({ view = 'all' }) => {
                   setShowDeleteModal(true);
                 }}
                 className="flex items-center gap-1 text-red-500 hover:text-red-700"
-                title="Supprimer utilisateur"
+                title="Supprimer Prospect"
               >
                 <Trash2 className="w-4 h-4" />
               </Link>
@@ -636,6 +656,7 @@ const ProspectTable = ({ view = 'all' }) => {
   };
   const handleAffectationAuto = async () => {
     if (!checkedProspects.length) return;
+    setAffect_lance(true);
     try {
       const response = await fetch(`${APIURL.ROOT}/v1/prospects/auto-assign`, {
         method: 'POST',
@@ -655,6 +676,7 @@ const ProspectTable = ({ view = 'all' }) => {
       }
 
       const result = await response.json();
+      setAffect_lance(false);
 
       setShowAffecterModal(false);
       setSelectedCommercial('');
@@ -1060,6 +1082,7 @@ const ProspectTable = ({ view = 'all' }) => {
                   <Button
                     type="button"
                     onClick={handleAffectationAuto}
+                    disabled={affect_lance}
                     className="bg-gray-700 text-white"
                   >
                     Lancer {"l'"}affectation automatique

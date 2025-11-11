@@ -55,7 +55,7 @@ export default function Page() {
       ) : (
         <>
           <div>
-            <AppelsTable />
+            <AppelsTable  searchParams={searchParams} />
           </div>
         </>
       )}
