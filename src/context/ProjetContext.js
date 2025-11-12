@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useState, useContext, useEffect, useCallback } from 'react';
+import { createContext, useState, useContext, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { APIURL } from '@/configs/api';
 import { useSociete } from './SocieteContext';
@@ -21,121 +21,91 @@ export function ProjetProvider({ children }) {
   const [selectedProjet, setSelectedProjet] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+  
   const { selectedSociete } = useSociete();
   const { user } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
-  const [initialized, setInitialized] = useState(false);
-  const [projetLoadAttempted, setProjetLoadAttempted] = useState(false);
+  
+  // Cache system
+  const cacheTimestampRef = useRef(0);
+  const currentSocieteIdRef = useRef(null);
+  const fetchInProgressRef = useRef(false);
+  const CACHE_DURATION = 60 * 60 * 1000;
 
+  // Track previous user state to detect actual logout
+  const previousUserRef = useRef(null);
+
+  // ==================== INITIALIZATION ====================
   useEffect(() => {
-    try {
-      console.log("INITIAL MOUNT: Checking localStorage for selected project");
+    const initializeProject = async () => {
+      // Always restore project from localStorage on page reload
       const savedProjetString = localStorage.getItem('selectedProjet');
-      
       if (savedProjetString) {
         try {
           const parsedProjet = JSON.parse(savedProjetString);
-          if (parsedProjet && parsedProjet.id) {
-            console.log("INITIAL MOUNT: Found project in localStorage, ID:", parsedProjet.id);
+          if (parsedProjet?.id) {
             setSelectedProjet(parsedProjet);
           }
         } catch (err) {
-          console.error('Error parsing saved projet during initialization:', err);
+          // Silent fail
         }
-      } else {
-        console.log("INITIAL MOUNT: No project found in localStorage");
       }
-    } catch (err) {
-      console.error("Error during initial project load:", err);
-    } finally {
-      setProjetLoadAttempted(true);
-    }
-  }, []);
+      
+      // Store initial user state
+      previousUserRef.current = user;
+      setIsInitialized(true);
+    };
 
-  const fetchProjets = useCallback(async () => {
-    if (!selectedSociete) {
-      console.log('No société selected, cannot fetch projects');
-      return;
-    }
+    initializeProject();
+  }, []); // No dependencies - run only once on mount
 
-    setLoading(true);
-    setError(null);
+  // ==================== DETECT LOGOUT ====================
+  useEffect(() => {
+    if (!isInitialized) return;
+
+    // Check if this is an actual logout (user went from valid to null)
+    const wasUserLoggedIn = previousUserRef.current !== null;
+    const isUserLoggedOut = user === null;
     
-    try {
-      const token = localStorage.getItem('accessToken');
-      const response = await axios.get(APIURL.PROJETS, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      const fetchedProjets = response.data.projets || [];
-      setProjets(fetchedProjets);
-      
-      if (!selectedProjet) {
-        const savedProjet = localStorage.getItem('selectedProjet');
-        if (savedProjet) {
-          try {
-            const parsedProjet = JSON.parse(savedProjet);
-            if (parsedProjet && parsedProjet.id) {
-              const projectExists = fetchedProjets.some(p => p.id === parsedProjet.id);
-              
-              if (projectExists) {
-                console.log("FETCH: Restoring project from localStorage", parsedProjet.id);
-                setSelectedProjet(parsedProjet);
-              } else {
-                console.log("FETCH: Saved project not found in current projects list");
-              }
-            }
-          } catch (err) {
-            console.error('Error parsing saved projet during fetch:', err);
-          }
-        }
-      }
-    } catch (err) {
-      console.error('Error fetching projets:', err);
-      setError('Failed to load projets');
-    } finally {
-      setLoading(false);
-      setInitialized(true);
+    if (wasUserLoggedIn && isUserLoggedOut) {
+      console.log("Detected logout - clearing project selection");
+      setSelectedProjet(null);
+      localStorage.removeItem('selectedProjet');
+      cacheTimestampRef.current = 0;
+      currentSocieteIdRef.current = null;
     }
-  }, [selectedSociete, selectedProjet]);
 
-  useEffect(() => {
-    if (selectedSociete && projetLoadAttempted) {
-      const previousSocieteId = localStorage.getItem('previousSocieteId');
-      
-      if (previousSocieteId && previousSocieteId !== selectedSociete.id.toString()) {
-        console.log("Société changed from", previousSocieteId, "to", selectedSociete.id, "clearing selected project");
-        clearSelectedProjet();
-      }
-      
-      localStorage.setItem('previousSocieteId', selectedSociete.id.toString());
-      
-      fetchProjets();
-    }
-  }, [selectedSociete, fetchProjets, projetLoadAttempted]);
+    // Update previous user reference
+    previousUserRef.current = user;
+  }, [user, isInitialized]);
 
-  useEffect(() => {
-    if (!user && initialized) {
-      clearSelectedProjet();
-    }
-  }, [user, initialized]);
+  // ==================== CACHE VALIDATION ====================
+  const isCacheValid = useCallback(() => {
+    if (!selectedSociete) return false;
+    
+    const now = Date.now();
+    return (
+      currentSocieteIdRef.current === selectedSociete.id &&
+      now - cacheTimestampRef.current < CACHE_DURATION &&
+      projets.length > 0
+    );
+  }, [selectedSociete, projets.length]);
 
+  // ==================== PROJECT SELECTION ====================
   const selectProjet = useCallback((projet) => {
-    if (!projet || !projet.id) {
-      console.error("Attempting to select invalid project:", projet);
-      return false;
-    }
+    if (!projet?.id) return false;
     
-    console.log("Explicitly selecting project:", projet.id);
+    if (selectedProjet?.id === projet.id) {
+      return true;
+    }
     
     localStorage.setItem('selectedProjet', JSON.stringify(projet));
-    
     setSelectedProjet(projet);
     
-    if (pathname) {
+    if (pathname?.startsWith('/Projets/')) {
       const projectMatch = pathname.match(/^\/Projets\/(\d+)(\/.*)?$/);
-      
       if (projectMatch) {
         const currentProjectId = projectMatch[1];
         const trailingPath = projectMatch[2] || '';
@@ -148,77 +118,141 @@ export function ProjetProvider({ children }) {
     }
     
     return true;
-  }, [pathname, router]);
+  }, [pathname, router, selectedProjet]);
 
   const clearSelectedProjet = useCallback(() => {
-    console.log("Explicitly clearing selected project");
     setSelectedProjet(null);
     localStorage.removeItem('selectedProjet');
   }, []);
 
-  const removeProjet = useCallback((projetId) => {
-    // Remove from projets list
-    setProjets(prev => prev.filter(p => p.id !== projetId));
+  // ==================== PROJECTS FETCHING ====================
+  const fetchProjets = useCallback(async (forceRefresh = false) => {
+    if (!selectedSociete) return;
+
+    if (!forceRefresh && isCacheValid()) return;
+    if (fetchInProgressRef.current) return;
+
+    setLoading(true);
+    setError(null);
+    fetchInProgressRef.current = true;
     
-    // If the deleted project is the currently selected one, clear selection
-    if (selectedProjet && selectedProjet.id === projetId) {
-      clearSelectedProjet();
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await axios.get(APIURL.PROJETS, {
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: 10000
+      });
       
-      // Try to select another project if available
-      if (projets.length > 1) {
-        const otherProjects = projets.filter(p => p.id !== projetId);
-        if (otherProjects.length > 0) {
-          selectProjet(otherProjects[0]);
+      const fetchedProjets = response.data.projets || [];
+      setProjets(fetchedProjets);
+      cacheTimestampRef.current = Date.now();
+      currentSocieteIdRef.current = selectedSociete.id;
+
+      // Restore selected project with fresh data if it exists
+      const savedProjetString = localStorage.getItem('selectedProjet');
+      if (savedProjetString) {
+        try {
+          const savedProjet = JSON.parse(savedProjetString);
+          if (savedProjet?.id) {
+            const projectExists = fetchedProjets.some(p => p.id === savedProjet.id);
+            
+            if (projectExists) {
+              const freshProjet = fetchedProjets.find(p => p.id === savedProjet.id);
+              if (!selectedProjet || selectedProjet.id !== freshProjet.id) {
+                setSelectedProjet(freshProjet);
+                localStorage.setItem('selectedProjet', JSON.stringify(freshProjet));
+              }
+            }
+          }
+        } catch (err) {
+          // Silent fail
         }
       }
-    }
-  }, [selectedProjet, projets, selectProjet, clearSelectedProjet]);
 
-  // NEW: Add a project to the list
+    } catch (err) {
+      setError('Failed to load projets');
+      cacheTimestampRef.current = 0;
+    } finally {
+      setLoading(false);
+      fetchInProgressRef.current = false;
+    }
+  }, [selectedSociete, selectedProjet, isCacheValid]);
+
+  // ==================== SOCIETE CHANGE HANDLER ====================
+  useEffect(() => {
+    if (selectedSociete && isInitialized) {
+      const previousSocieteId = localStorage.getItem('previousSocieteId');
+      
+      if (previousSocieteId && previousSocieteId !== selectedSociete.id.toString()) {
+        cacheTimestampRef.current = 0;
+        currentSocieteIdRef.current = null;
+        clearSelectedProjet();
+      }
+      
+      localStorage.setItem('previousSocieteId', selectedSociete.id.toString());
+      
+      if (!isCacheValid()) {
+        fetchProjets();
+      }
+    }
+  }, [selectedSociete, fetchProjets, isInitialized, isCacheValid, clearSelectedProjet]);
+
+  // ==================== PROJECT MANAGEMENT ====================
+  const removeProjet = useCallback((projetId) => {
+    setProjets(prev => {
+      const updated = prev.filter(p => p.id !== projetId);
+      if (updated.length !== prev.length) {
+        cacheTimestampRef.current = Date.now();
+      }
+      return updated;
+    });
+    
+    if (selectedProjet?.id === projetId) {
+      clearSelectedProjet();
+    }
+  }, [selectedProjet, clearSelectedProjet]);
+
   const addProjet = useCallback((newProjet) => {
     setProjets(prev => {
-      // Check if project already exists to avoid duplicates
       if (!prev.some(p => p.id === newProjet.id)) {
+        cacheTimestampRef.current = Date.now();
         return [...prev, newProjet];
       }
       return prev;
     });
     
-    // Automatically select the new project
     selectProjet(newProjet);
   }, [selectProjet]);
 
-  useEffect(() => {
-    if (initialized && projetLoadAttempted && !selectedProjet) {
-      const savedProjet = localStorage.getItem('selectedProjet');
-      if (savedProjet) {
-        try {
-          const parsedProjet = JSON.parse(savedProjet);
-          if (parsedProjet && parsedProjet.id) {
-            console.log("POST-INIT: Restoring project from localStorage as fallback", parsedProjet.id);
-            setSelectedProjet(parsedProjet);
-          }
-        } catch (err) {
-          console.error('Error parsing saved projet during post-init:', err);
-        }
-      }
-    }
-  }, [initialized, projetLoadAttempted, selectedProjet]);
+  // ==================== CACHE CONTROL ====================
+  const invalidateCache = useCallback(() => {
+    cacheTimestampRef.current = 0;
+    currentSocieteIdRef.current = null;
+  }, []);
+
+  const refreshProjets = useCallback(() => {
+    fetchProjets(true);
+  }, [fetchProjets]);
+
+  // ==================== PROVIDER VALUE ====================
+  const value = {
+    projets,
+    selectedProjet,
+    loading,
+    error,
+    fetchProjets,
+    selectProjet,
+    clearSelectedProjet,
+    removeProjet,
+    addProjet,
+    refreshProjets,
+    invalidateCache,
+    isCacheValid,
+    isInitialized
+  };
 
   return (
-    <ProjetContext.Provider
-      value={{
-        projets,
-        selectedProjet,
-        loading,
-        error,
-        fetchProjets,
-        selectProjet,
-        clearSelectedProjet,
-        removeProjet,
-        addProjet // Add the new function to context
-      }}
-    >
+    <ProjetContext.Provider value={value}>
       {children}
     </ProjetContext.Provider>
   );

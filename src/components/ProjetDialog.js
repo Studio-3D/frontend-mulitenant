@@ -2,9 +2,10 @@
 import { useState } from "react";
 import { useProjet } from "@/context/ProjetContext";
 import { useRouter } from "next/navigation";
-import { Autocomplete, TextField } from "@mui/material";
 import SelectInput from "./SelectInput";
 import Link from "next/link";
+import { isCommercial } from '../configs/enum';
+import { useAuth } from '../context/AuthContext';
 
 const ProjetDialog = ({
   open,
@@ -18,6 +19,7 @@ const ProjetDialog = ({
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { selectProjet } = useProjet();
+  const { user } = useAuth();
 
   const handleConfirm = async () => {
     const selectedProjet = projets.find((p) => p.id == selectedId);
@@ -42,40 +44,41 @@ const ProjetDialog = ({
 
   if (!open) return null;
 
+  // Check if user is commercial using your existing function
+  const userIsCommercial = isCommercial(user?.role);
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white xl:w-[530px] rounded-xl">
+      <div className="bg-white xl:w-[550px] rounded-xl">
         {/* Header */}
         <div className="bg-[#009FFF] text-white p-4 rounded-t-xl">
           <h2 className="xl:text-xl text-center">Veuillez sélectionner un projet</h2>
         </div>
 
         {/* Content */}
-        <div className="flex flex-col items-center justify-center pt-2">
-          <Autocomplete
-            className="xl:w-[450px] p-4 rounded-lg"
-            options={projets}
-            getOptionLabel={(option) => option.nom || "—"}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Projet"
-                variant="outlined"
-                margin="normal"
-              />
-            )}
-            value={projets.find((p) => p.id === selectedId) || null}
-            onChange={(event, newValue) => {
-              setSelectedId(newValue?.id || "");
+        <div className="flex flex-col items-center justify-center pt-6 px-4">
+          <SelectInput
+            label="Projet:"
+            name="projet"
+            value={selectedId}
+            required={true}
+            options={projets.map(projet => ({
+              value: projet.id,
+              label: projet.nom || "—"
+            }))}
+            onChange={(value) => {
+              setSelectedId(value || "");
               setError(null);
             }}
-            isOptionEqualToValue={(option, value) => option.id === value.id}
+            error={error}
+            placeholder="Sélectionnez un projet"
+            width="xl:w-[450px]"
           />
           {error && <p className="text-red-500 mt-2">{error}</p>}
         </div>
 
         {/* Actions */}
-        <div className="flex justify-center gap-2 px-4 pb-4">
+        <div className="flex justify-center gap-2 px-4 pb-4 mt-4">
           <button
             onClick={onClose}
             disabled={loading}
@@ -92,16 +95,18 @@ const ProjetDialog = ({
           </button>
         </div>
 
-        {/* Create project link */}
-        <div className="text-center pb-4">
-          <Link 
-            href="/Projets/addProject" 
-            className="text-[#009FFF] hover:underline text-sm"
-            onClick={onClose} // Close the dialog when clicking the link
-          >
-            Créer un nouveau projet
-          </Link>
-        </div>
+        {/* Show "Créer un projet" link only if user is NOT commercial */}
+        {!userIsCommercial && (
+          <div className="text-center pb-4">
+            <Link 
+              href="/Projets/addProject" 
+              className="text-[#009FFF] hover:underline text-sm"
+              onClick={onClose} 
+            >
+              Créer un nouveau projet
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );
