@@ -17,26 +17,32 @@ export default function SelectInput({
   submitted = false,
   isMulti = false,
   loading = false,
-  disabled = false, // Add this line
+  disabled = false,
+  selected_Data = null, // Add this prop for reservation form cliens
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isTouched, setIsTouched] = useState(false);
   const [internalValue, setInternalValue] = useState(isMulti ? [] : '');
   const dropdownRef = useRef(null);
 
-  // Sync internal value with external value
+  // Sync internal value with external value and handle selected_Data
   useEffect(() => {
-    if (isMulti) {
+    if (selected_Data && value === '' && internalValue === '') {
+      // If selected_Data is provided and no value is set, use selected_Data
+      setInternalValue(selected_Data);
+      onChange(selected_Data);
+    } else if (isMulti) {
       // Ensure value is always an array for multi-select
       const newValue = Array.isArray(value) ? value : [];
       setInternalValue(newValue);
     } else {
       setInternalValue(value || '');
     }
-  }, [value, isMulti]);
+  }, [value, isMulti, selected_Data, internalValue, onChange]);
 
+  // Rest of your SelectInput component remains the same...
   const toggleDropdown = () => {
-    if (disabled) return; // Add this check
+    if (disabled) return;
     setIsOpen(!isOpen);
     if (!isTouched) setIsTouched(true);
   };
@@ -126,9 +132,9 @@ export default function SelectInput({
               'border-red-500': showError,
               'border-gray-300': !showError,
               'bg-white': true,
-              'bg-gray-100': disabled, // Different background when disabled
+              'bg-gray-100': disabled,
               'hover:border-gray-500': !showError && !disabled,
-              'cursor-not-allowed opacity-50': disabled, // Disabled styles
+              'cursor-not-allowed opacity-50': disabled,
             }
           )}
           onClick={toggleDropdown}
@@ -140,10 +146,10 @@ export default function SelectInput({
                   <div
                     key={option.value}
                     className="flex items-center bg-gray-100 rounded px-2 py-1"
-                     onClick={(e) => !disabled && e.stopPropagation()}
+                    onClick={(e) => !disabled && e.stopPropagation()}
                   >
                     <span className="mr-1">{option.label}</span>
-                     {!disabled && ( // Only show remove button when not disabled
+                    {!disabled && (
                       <X 
                         size={14} 
                         className="text-gray-500 hover:text-gray-700 cursor-pointer" 
@@ -166,7 +172,7 @@ export default function SelectInput({
               </span>
             )}
           </div>
-           {!disabled && ( // Only show chevron when not disabled
+          {!disabled && (
             <ChevronDown 
               className={classNames(
                 "transition-transform duration-200",
@@ -178,10 +184,9 @@ export default function SelectInput({
               )}
             />
           )}
-          
         </div>
 
-        {isOpen && !disabled &&(
+        {isOpen && !disabled && (
           <ul className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
             {loading ? (
               <li className="px-4 py-2 text-gray-500">Chargement...</li>

@@ -212,6 +212,17 @@ export function Desistement_Definitif({
       }
     }
   };
+  function NomBienComplet(bien) {
+    const noms = [];
+
+    if (bien.tranche?.nom) noms.push(bien.tranche.nom);
+    if (bien.bloc?.nom) noms.push(bien.bloc.nom);
+    if (bien.immeuble?.nom) noms.push(bien.immeuble.nom);
+
+    noms.push(bien.propriete_dite_bien);
+
+    return noms.join(' - ');
+  }
 
   const fetchDossierData = async () => {
     try {
@@ -242,18 +253,18 @@ export function Desistement_Definitif({
         setLoadingInfos((prev) => ({ ...prev, [index]: true }));
 
         const response = await axios.get(
-          `${APIURL.ROOTV1}/reservations/${dos_id}`,
+          `${APIURL.ROOTV1}/show_dossier_in_dd/${dos_id}`,
           {
             headers: { Authorization: `Bearer ${accessToken}` },
           }
         );
 
         const { reservation, sum_avances_valides } = response.data;
-
+      
         const newDossierInfo = {
           clients: reservation.aquereurs,
-          bien: reservation.bien.propriete_dite_bien,
-          type: reservation.bien.type_bien.type,
+          bien: reservation.bien,
+          type: reservation.bien.type_bien?.type,
           prix: reservation.prix,
           sum_avances: sum_avances_valides,
           reste: reservation.prix - sum_avances_valides,
@@ -382,7 +393,7 @@ export function Desistement_Definitif({
                     </label>
                   </div>
                   {errors.type_remb && (
-                    <p className="text-red-500 text-sm mt-1">
+                    <p className="text-red-600 text-sm mt-1">
                       {errors.type_remb.message}
                     </p>
                   )}
@@ -423,7 +434,7 @@ export function Desistement_Definitif({
                   <p className="text-indigo-600 font-bold mb-4">
                     Montant à rembourser au client: {item.nom} {item.prenom}
                     {currentMode != 'transfert' && (
-                      <span className="text-red-500 ml-2">
+                      <span className="text-red-600 ml-2">
                         {item.reste_a_rembourse || 0} DH
                       </span>
                     )}
@@ -431,7 +442,7 @@ export function Desistement_Definitif({
                   <div className="mb-4">
                     <label className="block font-medium text-gray-700">
                       Mode Remboursement :
-                      <span className="text-red-500">*</span>
+                      <span className="text-red-600">*</span>
                     </label>
                     <Controller
                       name={`inputList_remb.${index}.type_remb`}
@@ -563,7 +574,7 @@ export function Desistement_Definitif({
                               </h2>
                               <div className="overflow-x-auto">
                                 <table className="min-w-full divide-y divide-gray-200">
-                                  <tbody className="bg-white divide-y divide-gray-200">
+                                  <tbody classNv  ame="bg-white divide-y divide-gray-200">
                                     <tr>
                                       <td className="px-4 py-2 whitespace-nowrap">
                                         <div className="flex items-center text-sm text-gray-900">
@@ -588,13 +599,14 @@ export function Desistement_Definitif({
                                     <tr>
                                       <td className="px-4 py-2 whitespace-nowrap">
                                         <div className="flex items-center text-sm text-gray-900">
-                                          <Home className="w-5 h-5 mr-2 text-red-500" />
+                                          <Home className="w-5 h-5 mr-2 text-red-600" />
                                           Bien:
                                         </div>
                                       </td>
                                       <td className="px-4 py-2 whitespace-nowrap">
                                         <div className="text-sm text-gray-900">
-                                          {dossierInfos[index].bien}
+                                         
+                                          {NomBienComplet(dossierInfos[index]?.bien)}
                                         </div>
                                       </td>
                                     </tr>
@@ -649,7 +661,7 @@ export function Desistement_Definitif({
                                     <tr>
                                       <td className="px-4 py-2 whitespace-nowrap">
                                         <div className="flex items-center text-sm text-gray-900">
-                                          <Wallet className="w-5 h-5 mr-2 text-red-500" />
+                                          <Wallet className="w-5 h-5 mr-2 text-red-600" />
                                           Reste :
                                         </div>
                                       </td>
@@ -751,7 +763,7 @@ export function Desistement_Definitif({
                                       />
                                     </div>
                                     {watch(`inputList_remb.${index}.error`) && (
-                                      <p className="text-red-500 text-sm mt-1">
+                                      <p className="text-red-600 text-sm mt-1">
                                         {watch(`inputList_remb.${index}.error`)}
                                       </p>
                                     )}
@@ -842,7 +854,7 @@ export function Desistement_Definitif({
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Remboursé par: <span className="text-red-500">*</span>
+                          Remboursé par: <span className="text-red-600">*</span>
                         </label>
                         <Controller
                           name={`inputList_remb.${index}.mode_rembourse`}
@@ -961,7 +973,7 @@ export function Desistement_Definitif({
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                               Pour le Compte:{' '}
-                              <span className="text-red-500">*</span>
+                              <span className="text-red-600">*</span>
                             </label>
                             <Controller
                               name={`inputList_remb.${index}.pour_le_compte`}
@@ -990,7 +1002,7 @@ export function Desistement_Definitif({
                                             e.target.value
                                           );
                                         }}
-                                        className="text-red-600 focus:ring-red-500"
+                                        className="text-red-600 focus:ring-red-600"
                                       />
                                       <span className="ml-2">lui même</span>
                                     </label>

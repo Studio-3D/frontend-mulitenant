@@ -114,10 +114,7 @@ export default function PenalitesTable() {
     setDialogData((prev) => ({ ...prev, ...updates }));
   };
 
-  const handleView = (id) => {
-    window.open(`/ventes/desistements/penalites/${id}`, '_blank');
-  };
-
+ 
   const handleValiderRejeter = (id, num_recu) => {
     set_num_penalite(num_recu);
     updateDialogState({ open: true, selectedId: id });
@@ -283,13 +280,16 @@ export default function PenalitesTable() {
 
           return (
             <div className="flex gap-2">
-              <button
-                onClick={() => handleView(row.id)}
-                className="text-blue-500 hover:text-blue-700"
-                title="Détail Pénalité"
-              >
-                <Eye className="w-4 h-4" />
-              </button>
+              
+              
+               <Link
+              href={`/ventes/desistements/penalites/${row.id}`}
+              className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+              title="Détail Pénalité"
+            >
+              <Eye className="w-4 h-4" />
+            </Link>
+
               {etat_penalite === 5 && (
                 <button
                   onClick={() => handleValiderRejeter(row.id, row.num_recu)}

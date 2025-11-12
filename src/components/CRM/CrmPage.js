@@ -9,26 +9,36 @@ import { isCommercial } from '@/configs/enum';
 import { useAuth } from '@/context/AuthContext';
 
 export function CRMPage() {
-  
   const { user } = useAuth();
-
   const searchParams = useSearchParams();
   const router = useRouter();
   const urlTab = searchParams.get('tab');
-  const [activeTab, setActiveTab] = useState('prospects');
+  
+  // Set initial state from URL parameters
+  const [activeTab, setActiveTab] = useState(urlTab || 'prospects');
   const [activeSubTab, setActiveSubTab] = useState({
     relance: 'appels-relance',
     rdv: 'appels-rdv',
-    prospects: isCommercial(user?.role) ? 'mes-prospects' : 'tous-prospects', // Add prospects subTab
+    prospects: isCommercial(user?.role) ? 'mes-prospects' : 'tous-prospects',
   });
-  console.log('CRMPage - Active tab:', activeTab);
-  console.log('CRMPage - Active subTab:', activeSubTab);
-  console.log('CRMPage - URL tab:', urlTab);
-  const renderedTabs = useRef({
-    prospects: true,
-    'mes-prospects': true,
-    'tous-prospects': true,
-  });
+
+  // FIX: Initialize with only the active tab rendered
+  const initialTab = isCommercial(user?.role) && activeTab === 'prospects' 
+    ? activeSubTab.prospects 
+    : activeTab;
+  const renderedTabs = useRef({ [initialTab]: true });
+
+  // FIX: Update renderedTabs when tab changes
+  useEffect(() => {
+    const currentTab = isCommercial(user?.role) && activeTab === 'prospects' 
+      ? activeSubTab.prospects 
+      : activeTab;
+    
+    if (currentTab && !renderedTabs.current[currentTab]) {
+      renderedTabs.current[currentTab] = true;
+    }
+  }, [activeTab, activeSubTab, user?.role]);
+
   // Sync URL with tab state
   useEffect(() => {
     if (urlTab && urlTab !== activeTab) {
@@ -36,13 +46,14 @@ export function CRMPage() {
     }
   }, [urlTab]);
 
-  // Update URL when tab changes (but not on initial load from URL)
+  // Update URL when tab changes
   const updateUrl = (tabId) => {
     const params = new URLSearchParams();
     params.set('tab', tabId);
     const newUrl = `?${params.toString()}`;
     window.history.replaceState(null, '', newUrl);
   };
+
   // Notification state
   const [notifications, setNotifications] = useState({
     prospects: 0,
@@ -57,8 +68,7 @@ export function CRMPage() {
     freins: 0,
   });
 
-  const pusher_key_NotifMenu =
-    process.env.NEXT_PUBLIC_PUSHER_APP_KEY_NOTIF_MENU;
+  const pusher_key_NotifMenu = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_NOTIF_MENU;
 
   const fetchDataNotiMon = async (nb) => {
     const projetId = JSON.parse(localStorage.getItem('selectedProjet'))?.id;
@@ -126,42 +136,43 @@ export function CRMPage() {
     notifications['visites-rdv'],
   ]);
 
-const handleTabChange = (tabId, fromUrl = false) => {
-  setActiveTab(tabId);
-  if (!fromUrl) {
-    updateUrl(tabId);
-  }
-
-  if (tabId === 'relance' || tabId === 'rdv') {
-    const subtabId = tabId === 'relance' ? 'appels-relance' : 'appels-rdv';
-
-    if (!renderedTabs.current[tabId]) {
-      renderedTabs.current = { ...renderedTabs.current, [tabId]: true };
-    }
-    if (!renderedTabs.current[subtabId]) {
-      renderedTabs.current = { ...renderedTabs.current, [subtabId]: true };
+  const handleTabChange = (tabId, fromUrl = false) => {
+    setActiveTab(tabId);
+    if (!fromUrl) {
+      updateUrl(tabId);
     }
 
-    if (tabId === 'relance' && activeSubTab.relance !== 'appels-relance') {
-      setActiveSubTab((prev) => ({ ...prev, relance: 'appels-relance' }));
-    } else if (tabId === 'rdv' && activeSubTab.rdv !== 'appels-rdv') {
-      setActiveSubTab((prev) => ({ ...prev, rdv: 'appels-rdv' }));
+    if (tabId === 'relance' || tabId === 'rdv') {
+      const subtabId = tabId === 'relance' ? 'appels-relance' : 'appels-rdv';
+
+      if (!renderedTabs.current[tabId]) {
+        renderedTabs.current = { ...renderedTabs.current, [tabId]: true };
+      }
+      if (!renderedTabs.current[subtabId]) {
+        renderedTabs.current = { ...renderedTabs.current, [subtabId]: true };
+      }
+
+      if (tabId === 'relance' && activeSubTab.relance !== 'appels-relance') {
+        setActiveSubTab((prev) => ({ ...prev, relance: 'appels-relance' }));
+      } else if (tabId === 'rdv' && activeSubTab.rdv !== 'appels-rdv') {
+        setActiveSubTab((prev) => ({ ...prev, rdv: 'appels-rdv' }));
+      }
+    } else if (tabId === 'prospects' && isCommercial(user?.role)) {
+      // For commercial users, set default prospects sub-tab
+      if (!renderedTabs.current[tabId]) {
+        renderedTabs.current = { ...renderedTabs.current, [tabId]: true };
+      }
+      if (activeSubTab.prospects !== 'mes-prospects') {
+        setActiveSubTab((prev) => ({ ...prev, prospects: 'mes-prospects' }));
+      }
+    } else {
+      // This handles visites, appels, pre-reservation, freins tabs
+      if (!renderedTabs.current[tabId]) {
+        renderedTabs.current = { ...renderedTabs.current, [tabId]: true };
+      }
     }
-  } else if (tabId === 'prospects' && isCommercial(user?.role)) {
-    // For commercial users, set default prospects sub-tab
-    if (!renderedTabs.current[tabId]) {
-      renderedTabs.current = { ...renderedTabs.current, [tabId]: true };
-    }
-    if (activeSubTab.prospects !== 'mes-prospects') {
-      setActiveSubTab((prev) => ({ ...prev, prospects: 'mes-prospects' }));
-    }
-  } else {
-    // This handles visites, appels, pre-reservation, freins tabs
-    if (!renderedTabs.current[tabId]) {
-      renderedTabs.current = { ...renderedTabs.current, [tabId]: true };
-    }
-  }
-};
+  };
+
   const handleSubTabChange = (parentTab, subTabId) => {
     setActiveSubTab((prev) => ({
       ...prev,
@@ -243,7 +254,7 @@ const handleTabChange = (tabId, fromUrl = false) => {
           )}
         </div>
 
-        {/* Relance subtabs - keep them always in the DOM once rendered */}
+        {/* Relance subtabs */}
         <div
           style={{
             display:
@@ -272,7 +283,7 @@ const handleTabChange = (tabId, fromUrl = false) => {
           )}
         </div>
 
-        {/* RDV subtabs - keep them always in the DOM once rendered */}
+        {/* RDV subtabs */}
         <div
           style={{
             display:

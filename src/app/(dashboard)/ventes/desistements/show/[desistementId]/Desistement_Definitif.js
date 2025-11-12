@@ -479,7 +479,7 @@ export function Desistement_Definitif({
                                       <label className="block text-sm text-gray-500 mb-1">
                                         Reste
                                       </label>
-                                      <p className="font-medium text-red-00 flex items-center">
+                                      <p className="font-medium text-red-600 flex items-center">
                                         <Wallet className="w-4 h-4 mr-2 text-red-500" />
                                         {dossierInfos[
                                           index
@@ -492,7 +492,7 @@ export function Desistement_Definitif({
                                         <label className="block text-sm text-gray-500 mb-1">
                                           Montant transféré
                                         </label>
-                                        <p className="font-medium text-red-00 flex items-center">
+                                        <p className="font-medium text-red-600 flex items-center">
                                           <Wallet className="w-4 h-4 mr-2 text-red-500" />
                                           {item.montant_transferer
                                             ? `${parseFloat(

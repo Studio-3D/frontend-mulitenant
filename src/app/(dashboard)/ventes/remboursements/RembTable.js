@@ -122,9 +122,7 @@ export default function RembTable({ etat }) {
     setTempFilters(initialFilters);
   };
 
-  const handleView = (id) => {
-    window.open(`/ventes/desistements/show/${id}`, '_blank');
-  };
+ 
 
   const handleTraiterDemande = (id, client, bien) => {
     setSelectedId(id);
@@ -355,11 +353,15 @@ export default function RembTable({ etat }) {
       if ((row.etat == 1 || row.etat == 0) && row.statut == 0) {
         return (
           <div className="flex gap-3 items-center">
-            <Eye
-              onClick={() => handleView(row.desistement_id)}
-              className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
+           <Link
+              href={`/ventes/desistements/show/${row.desistement_id}`}
+              className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
               title="Détail Désistement"
-            />
+            >
+              <Eye className="w-4 h-4" />
+            </Link>
+
+            
 
             <Check
               onClick={() => handleTraiterDemande(row.id, row.client, row.bien)}
@@ -371,13 +373,14 @@ export default function RembTable({ etat }) {
       } else if (etat == 3) {
         return (
           <div className="flex gap-3 items-center">
-            <button
-              onClick={() => handleView(row.desistement_id)}
-              className="w-4 h-4 text-blue-500 hover:text-blue-700"
+           
+            <Link
+              href={`/ventes/desistements/show/${row.desistement_id}`}
+              className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
               title="Détail Désistement"
             >
               <Eye className="w-4 h-4" />
-            </button>
+            </Link>
             <button
               onClick={() => handleTraiterAccuse(row.id, row.client, row.bien)}
               className="w-4 h-4 text-red-500 hover:text-red-700"
@@ -390,13 +393,14 @@ export default function RembTable({ etat }) {
       } else if (etat == 1) {
         return (
           <div className="flex gap-3 items-center">
-            <button
-              onClick={() => handleView(row.desistement_id)}
-              className="text-blue-500 hover:text-blue-700"
+          
+            <Link
+              href={`/ventes/desistements/show/${row.desistement_id}`}
+              className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
               title="Détail Désistement"
             >
               <Eye className="w-4 h-4" />
-            </button>
+            </Link>
             <button
               onClick={() =>
                 handleTraiterDecaissement(row.id, row.client, row.bien)

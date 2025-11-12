@@ -32,7 +32,7 @@ import Modal_show_info from "./Modal_show_info";
 import DateRangePicker from "@/components/DateRangePicker";
 
 import { useProjet } from '@/context/ProjetContext';
-const ReservationTable = ({ dataClient, user_id }) => {
+const ReservationTable = ({ dataClient, user_id,searchParams }) => {
   const { user, token } = useAuth();
   const userRole = user?.role;
   const accesstoken = token || localStorage.getItem("accessToken");
@@ -96,6 +96,13 @@ const { selectedProjet  } = useProjet();
   };
 
   useEffect(() => {
+       // Only fetch data if we're NOT in form mode (no action parameter)
+    const action = searchParams?.get('action');
+    if (action == 'add' || action == 'edit') {
+      console.log('Skipping API call - in form mode');
+      return;
+    }
+
     const params_url = dataClient ? { client_id: dataClient?.id } : {};
     const combinedFilters = {
       ...(user_id ? { user_id } : {}),
@@ -114,7 +121,7 @@ const { selectedProjet  } = useProjet();
       setData,
       setTotalRows
     );
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters,selectedProjet]);
+  }, [searchParams,accesstoken, currentPage, rowsPerPage, searchTerm, filters,selectedProjet]);
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 

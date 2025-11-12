@@ -90,7 +90,7 @@ export default function ClientForm({ id, projetId, trancheId }) {
       setLoading(true);
       const fetchClientData = async () => {
         try {
-          const response = await axios.get(`${APIURL.CLIENTS}/${id}`, {
+          const response = await axios.get(`${APIURL.ROOTV1}/show_client/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
 

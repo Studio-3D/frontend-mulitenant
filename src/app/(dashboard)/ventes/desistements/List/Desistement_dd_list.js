@@ -20,7 +20,7 @@ export default function Desistement_dd_list() {
   const accesstoken = token || localStorage.getItem('accessToken');
   const user_role = user?.role;
 
-  const { selectedProjet  } = useProjet();
+  const { selectedProjet } = useProjet();
   const router = useRouter();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -92,15 +92,16 @@ export default function Desistement_dd_list() {
       setData,
       setTotalRows
     );
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters,selectedProjet]);
+  }, [
+    accesstoken,
+    currentPage,
+    rowsPerPage,
+    searchTerm,
+    filters,
+    selectedProjet,
+  ]);
 
-  const handleView = (desId) => {
-    router.push(`/ventes/desistements/show/${desId}`);
-  };
 
-  const handleView_reservation = (reservationId) => {
-    router.push(`/ventes/reservations/${reservationId}`);
-  };
 
   const handleCorriger = (desId, reservationId) => {
     router.push(`/ventes/desistements/corriger_desistement/${desId}`);
@@ -139,9 +140,7 @@ export default function Desistement_dd_list() {
 
       return {
         id: desistement.id,
-        date: desistement.created_at
-          ? formatDate(desistement.created_at)
-          : '',
+        date: desistement.created_at ? formatDate(desistement.created_at) : '',
         cc: `${desistement?.user?.name || ''} ${
           desistement?.user?.prenom || ''
         }`.trim(),
@@ -226,21 +225,22 @@ export default function Desistement_dd_list() {
       render: (row) => (
         <div className="flex gap-2">
           {etat_desistement != 2 && (
-            <button
-              onClick={() => handleView(row.id)}
-              className="text-blue-500 hover:text-blue-700"
+            <Link
+              href={`/ventes/desistements/show/${row.id}`}
+              className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
               title="Détail Désistement"
             >
               <Eye className="w-4 h-4" />
-            </button>
+            </Link>
           )}
-          <button
-            onClick={() => handleView_reservation(row.reservation_id)}
-            className="text-green-500 hover:text-green-700"
-            title="Détail Réservation"
-          >
-            <Eye className="w-4 h-4" />
-          </button>
+         
+           <Link
+              href={`/ventes/reservations/${row.reservation_id}`}
+              className="flex items-center gap-1 text-green-500 hover:text-green-700"
+              title="Détail Réservation"
+            >
+              <Eye className="w-4 h-4" />
+            </Link>
           {etat_desistement == 2 && (
             <button
               onClick={() => handleCorriger(row.id, row.reservation_id)}
@@ -284,9 +284,7 @@ export default function Desistement_dd_list() {
       }
 
       return {
-        Date: desistement.created_at
-          ? formatDate(desistement.created_at)
-          : '',
+        Date: desistement.created_at ? formatDate(desistement.created_at) : '',
         CC: `${desistement?.user?.name || ''} ${
           desistement?.user?.prenom || ''
         }`.trim(),
