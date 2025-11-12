@@ -36,6 +36,7 @@ const ProspectDetails = () => {
   const [traite_id, setId_traite] = useState(null);
   const [num_tel, setTel_num] = useState(null);
   const [nom_prenom, setNomPrenom] = useState(null);
+  
   const handleraiter = (Id, num_tel, nom_prenom) => {
     setOpen_traite(!open_traite);
     setId_traite(Id);
@@ -48,6 +49,7 @@ const ProspectDetails = () => {
     // Incrémenter le compteur UNIQUEMENT après un traitement réussi
     setRefreshHistoriques((prev) => prev + 1);
   };
+  
   // Fonction appelée quand le modal de traitement est fermé
   const handleTraiteClose = () => {
     setOpen_traite(false);

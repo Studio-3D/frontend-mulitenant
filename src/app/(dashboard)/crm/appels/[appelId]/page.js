@@ -27,7 +27,11 @@ const AppelDetails = () => {
     window.open(`/crm/prospects/${prosId}`, '_blank');
   };
 
-  const tabs = [{ id: 'journaux', label: 'Journal des Appels', icon: '' }];
+  const tabs = [
+     ...(appelDetails?.id != null
+      ? [{ id: 'journaux', label: 'Journal des Appels', icon: '' }]
+      : []),
+    ];
 
   // Simple cache et comparaison for return back en cas de changer projet
   const [oldProjetId, setOldProjetId] = useState(null);
@@ -189,7 +193,7 @@ const AppelDetails = () => {
                 </div>
               </div>
               <div className="p-6">
-                {activeTab === 'journaux' && (
+                {activeTab === 'journaux' && appelDetails?.id && (
                   <div className="min-h-[400px]">
                     <JournalTable
                       id={appelDetails.id}

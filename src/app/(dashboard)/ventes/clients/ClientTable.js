@@ -14,7 +14,7 @@ import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
 import Input from '@/components/Input';
 import { Typography } from '@mui/material';
 
-const ClientTable = () => {
+const ClientTable = (searchParams) => {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -46,6 +46,13 @@ const ClientTable = () => {
   };
 
   useEffect(() => {
+     // Only fetch data if we're NOT in form mode (no action parameter)
+    const action = searchParams?.get('action');
+    if (action == 'add' || action == 'edit') {
+      console.log('Skipping API call - in form mode');
+      return;
+    }
+
     fetchData_table_by_projet(
       entity,
       filters,
@@ -58,7 +65,7 @@ const ClientTable = () => {
       setClients,
       setTotalRows
     );
-  }, [
+  }, [searchParams,
     accesstoken,
     currentPage,
     rowsPerPage,
