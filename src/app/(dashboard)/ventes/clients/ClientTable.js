@@ -14,7 +14,7 @@ import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
 import Input from '@/components/Input';
 import { Typography } from '@mui/material';
 
-const ClientTable = (searchParams) => {
+const ClientTable = ({searchParams}) => {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
