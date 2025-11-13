@@ -13,7 +13,7 @@ import SelectInput from '@/components/SelectInput';
 import DateRangePicker from '@/components/DateRangePicker';
 import { useProjet } from '@/context/ProjetContext';
 export default function Desistement_dp_partiel_list() {
-    const { selectedProjet } = useProjet();
+  const { selectedProjet } = useProjet();
 
   const etat_desistement = JSON.parse(localStorage.getItem('etat_dst'));
   const { user, token } = useAuth();
@@ -91,15 +91,14 @@ export default function Desistement_dp_partiel_list() {
       setData,
       setTotalRows
     );
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters,selectedProjet]);
-
-  const handleView = (desId) => {
-    router.push(`/ventes/desistements/show/${desId}`);
-  };
-
-  const handleView_reservation = (reservationId) => {
-    router.push(`/ventes/reservations/${reservationId}`);
-  };
+  }, [
+    accesstoken,
+    currentPage,
+    rowsPerPage,
+    searchTerm,
+    filters,
+    selectedProjet,
+  ]);
 
   const handleCorriger = (desId, reservationId) => {
     router.push(`/ventes/desistements/corriger_desistement/${desId}`);
@@ -290,27 +289,27 @@ export default function Desistement_dp_partiel_list() {
       render: (row) => (
         <div className="flex gap-2">
           {etat_desistement != 2 && (
-            <button
-              onClick={() => handleView(row.id)}
-              className="text-blue-500 hover:text-blue-700"
+            <Link
+              href={`/ventes/desistements/show/${row.id}`}
+              className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
               title="Détail Désistement"
             >
               <Eye className="w-4 h-4" />
-            </button>
+            </Link>
           )}
-          <button
-            onClick={() =>
-              handleView_reservation(
-                etat_desistement == 1
-                  ? row.reservation_id_new
-                  : row.reservation_id
-              )
-            }
-            className="text-green-500 hover:text-green-700"
+
+          <Link
+            href={`/ventes/reservations/${
+              etat_desistement == 1
+                ? row.reservation_id_new
+                : row.reservation_id
+            }`}
+            className="flex items-center gap-1 text-green-500 hover:text-green-700"
             title="Détail Réservation"
           >
             <Eye className="w-4 h-4" />
-          </button>
+          </Link>
+
           {etat_desistement == 2 && (
             <button
               onClick={() => handleCorriger(row.id, row.reservation_id)}

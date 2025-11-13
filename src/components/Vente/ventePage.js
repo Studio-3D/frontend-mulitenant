@@ -16,8 +16,6 @@ export function VentePage() {
   const urlTab = searchParams.get('tab');
   const urlSubTab = searchParams.get('subtab');
 
-  console.log('VentePage - URL tab:', urlTab);
-  console.log('VentePage - URL subtab:', urlSubTab);
 
   // Set initial state from URL parameters
   const [activeTab, setActiveTab] = useState(urlTab || 'reservations');
@@ -27,13 +25,10 @@ export function VentePage() {
     remboursements: 'apres-ventes',
   });
 
-  console.log('VentePage - Active tab:', activeTab);
-  console.log('VentePage - Active subTab:', activeSubTab);
 
-  const renderedTabs = useRef({
-    reservations: true,
-    clients: true, // Ensure clients is initialized
-  });
+
+   const renderedTabs = useRef({ [activeTab]: true }); // Only current tab initially
+
 
   const { user } = useAuth();
   const { selectedProjet } = useProjet();
@@ -61,17 +56,12 @@ export function VentePage() {
     console.log('URL updated to:', newUrl);
   }, []);
 
-  // Add this effect to ensure tab is rendered when active
- // Fix: Only initialize the currently active tab
-useEffect(() => {
-  if (activeTab && !renderedTabs.current[activeTab]) {
-    console.log('🔍 Initializing ONLY active tab in renderedTabs:', activeTab);
-    renderedTabs.current = { 
-      ...renderedTabs.current, 
-      [activeTab]: true 
-    };
-  }
-}, [activeTab]);
+ 
+  useEffect(() => {
+    if (activeTab && !renderedTabs.current[activeTab]) {
+      renderedTabs.current[activeTab] = true;
+    }
+  }, [activeTab]);
 
   // Sync URL with tab state - SIMPLIFIED like CRM
   useEffect(() => {

@@ -346,6 +346,7 @@ export default function ReservationForm({ id }) {
     })
   );
 
+  
   const hasExecuted = useRef(false);
 
   useEffect(() => {
@@ -485,6 +486,7 @@ export default function ReservationForm({ id }) {
       return;
     }
 
+    
     setBackendErrors({});
     // FILTER OUT CLIENTS WITH EMPTY OR INVALID PERCENTAGES
     const validOldClients = oldClients.filter(
@@ -1243,6 +1245,17 @@ export default function ReservationForm({ id }) {
   useEffect(() => {
     cleanupEmptyClients();
   }, [currentStep]);
+
+  useEffect(() => {
+  return () => {
+    // Clean up selected client from localStorage when component unmounts
+    localStorage.removeItem('selectedClient_show_client');
+    // Reset all client disabled states
+    setClientsExist((prevClients) =>
+      prevClients.map((client) => ({ ...client, disabled: false }))
+    );
+  };
+}, []);
   /*const validateClientStep = () => {
     // Check if all selected clients have both id and pourcentage
     const allSelectedClientsValid = inputList1.every(
@@ -1860,6 +1873,7 @@ export default function ReservationForm({ id }) {
                           Client <span className="text-red-500">*</span>
                         </label>
                         <SelectInput
+                          selected_Data={index == 0 ? selectedClient : null} // Pass selectedClient only for first item
                           name={`client_${index}`}
                           value={entry.id}
                           required={true}

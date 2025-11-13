@@ -274,9 +274,9 @@ export default function AppelsForm({ id }) {
 
           // First, fetch all the necessary data
           Promise.all([
-            fetchPartenaires(tr_appel.appel.projet.id),
-            fetch_data_by_projetId(tr_appel.appel.projet.id),
-            fetch_type_biens(tr_appel.appel.projet.id),
+            fetchPartenaires(tr_appel.appel.projet_id),
+            fetch_data_by_projetId(tr_appel.appel.projet_id),
+            fetch_type_biens(tr_appel.appel.projet_id),
           ]).then(() => {
             // After data is loaded, set the form values
             if (Array.isArray(tr_appel.type_biens)) {
@@ -328,8 +328,8 @@ export default function AppelsForm({ id }) {
               // Fetch additional data for Perdu case
               Promise.all([
                 fetch_type_Freins(),
-                fetch_vues(tr_appel.appel.projet.id),
-                fetch_typologies(tr_appel.appel.projet.id),
+                fetch_vues(tr_appel.appel.projet_id),
+                fetch_typologies(tr_appel.appel.projet_id),
               ]).then(() => {
                 if (frein_n != null) {
                   // Handle direct properties
@@ -973,41 +973,46 @@ export default function AppelsForm({ id }) {
     }, 2000);
   };
 
-  const fetch_data_by_projetId = async (projet_id) => {
-    setTranches([]);
-    setBlocs([]);
-    setImmeubles([]);
-    setList_etages([]);
-    await axios
-      .get(`${APIURL.PROJETS}/` + projet_id, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      })
-      .then((res) => {
-        setTranches(res.data.projet.tranche);
-        setBlocs(res.data.projet.bloc);
-        setImmeubles(res.data.projet.immeuble);
-        const array_etages = [];
-        if (res.data.projet.max_etages > 0) {
-          for (var i = 0; i <= res.data.projet.max_etages; i++) {
-            if (i == 0) {
-              array_etages.push({ id: i + 1, value: '0' });
-            } else {
-              array_etages.push({ id: i + 1, value: i });
-            }
-          }
-        }
-        setList_etages(array_etages);
-        return {
-          tranches: res.data.projet.tranche,
-          blocs: res.data.projet.bloc,
-          immeubles: res.data.projet.immeuble,
-          etages: array_etages,
-        };
-      })
-      .catch(() => {});
-  };
+const fetch_data_by_projetId = async (projet_id) => {
+  // Reset states
+  [setTranches, setBlocs, setImmeubles, setList_etages, setListTyplogies, setList_Vues]
+    .forEach(setter => setter([]));
+
+  try {
+    const { data: { projet } } = await axios.get(
+      `${APIURL.PROJETS}/${projet_id}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+
+    // Mise à jour synchrone des states
+    setTranches(projet.tranche);
+    setBlocs(projet.bloc);
+    setImmeubles(projet.immeuble);
+    setListTyplogies(projet.typologies);
+    setList_Vues(projet.vues);
+    setList_etages(generateEtagesArray(projet.max_etages));
+
+    return {
+      tranches: projet.tranche,
+      blocs: projet.bloc,
+      immeubles: projet.immeuble,
+      etages: generateEtagesArray(projet.max_etages),
+    };
+  } catch (error) {
+    console.error('Error fetching project data:', error);
+    // Gestion d'erreur optionnelle
+    throw error; // Propager l'erreur si nécessaire
+  }
+};
+
+const generateEtagesArray = (maxEtages) => {
+  if (!maxEtages || maxEtages <= 0) return [];
+  
+  return Array.from({ length: maxEtages + 1 }, (_, index) => ({
+    id: index + 1,
+    value: index === 0 ? '0' : index.toString(),
+  }));
+};
 
   const handleChange_interet = (code) => {
     if (code) {

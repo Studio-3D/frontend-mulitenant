@@ -55,7 +55,7 @@ export default function Page() {
       ) : (
         <>
           <div>
-            <ClientTable />
+            <ClientTable searchParams={searchParams} />
           </div>
         </>
       )}

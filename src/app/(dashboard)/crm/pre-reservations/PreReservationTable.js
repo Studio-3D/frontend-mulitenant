@@ -197,7 +197,8 @@ const PreReservationTable = () => {
       label: 'Bien',
       render: (row) => {
         return (
-          <Link target="_blank" href={`/Biens/${row?.bien.id}`}>
+          <Link target="_blank" href={`/Biens/${row?.bien.id}`}            className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+>
             <strong style={{ fontWeight: 600 }}>
               {' '}
               {NomBienComplet(row.bien)}
@@ -212,7 +213,8 @@ const PreReservationTable = () => {
       label: 'Prospect',
       render: (row) => {
         return (
-          <Link target="_blank" href={`/crm/prospects/${row?.prospect_id}`}>
+          <Link target="_blank" href={`/crm/prospects/${row?.prospect_id}`}            className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+>
             <strong style={{ fontWeight: 600 }}>{row.prospect}</strong>
           </Link>
         );

@@ -2,7 +2,15 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import Table from '@/components/Table';
-import { Eye, Pencil, Check, RefreshCw, Trash2, PencilLine } from 'lucide-react';
+import {
+  Eye,
+  Pencil,
+  Check,
+  RefreshCw,
+  Trash2,
+  PencilLine,
+  
+} from 'lucide-react';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
 import { useAuth } from '../../../../context/AuthContext';
@@ -13,8 +21,9 @@ import { fetchData_table_by_projet } from '../../../../../src/configs/api-utils'
 import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
 import Input from '@/components/Input';
 import { Typography } from '@mui/material';
+import Link from 'next/link';
 
-const ClientTable = () => {
+const ClientTable = ({ searchParams }) => {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -46,6 +55,16 @@ const ClientTable = () => {
   };
 
   useEffect(() => {
+    // Only fetch data if we're NOT in form mode (no action parameter) AND tab is 'clients'
+    const action = searchParams?.get('action');
+    const currentTab = searchParams?.get('tab');
+    console.log('the current tab ==>' + currentTab);
+
+    if (action == 'add' || action == 'edit') {
+      console.log('Skipping API call - in form mode or wrong tab');
+      return;
+    }
+
     fetchData_table_by_projet(
       entity,
       filters,
@@ -59,6 +78,7 @@ const ClientTable = () => {
       setTotalRows
     );
   }, [
+    searchParams,
     accesstoken,
     currentPage,
     rowsPerPage,
@@ -108,15 +128,7 @@ const ClientTable = () => {
     selectedProjet,
   ]);
 
-  const handleShow = (clientId) => {
-    router.push(`/ventes/clients/${clientId}`);
-  };
-
-  function handleEdit(ClientId) {
-    console.log(`Editing Client ID: ${ClientId}`); // Debugging
-    router.push(`${ENDPOINTS.CLIENTS}?id=${ClientId}&action=edit`);
-  }
-
+ 
   const handleFilterToggle = (isOpen) => {
     if (!isOpen) resetFilters(); // Si on ferme, on réinitialise
   };
@@ -193,21 +205,23 @@ const ClientTable = () => {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <button
-            className="text-blue-500 hover:text-blue-700"
+         
+
+          <Link
+            href={`/ventes/clients/${row.id}`}
+            className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
             title="Voir détails"
-            onClick={() => handleShow(row.id)}
           >
             <Eye className="w-4 h-4" />
-          </button>
-
-          <button
-            className="text-yellow-500 hover:text-yellow-700"
+          </Link>
+          <Link
+            href={`${ENDPOINTS.CLIENTS}?id=${row.id}&action=edit`}
+            className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
             title="Modifier"
-            onClick={() => handleEdit(row.id)}
           >
-            <PencilLine className="w-4 h-4" />
-          </button>
+            <Pencil className="w-4 h-4" />
+          </Link>
+
           {row?.aquereur?.length === 0 &&
             row?.aquereur_desistement.length === 0 &&
             row.prospect == null &&

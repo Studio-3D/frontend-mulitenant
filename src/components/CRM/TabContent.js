@@ -27,5 +27,5 @@ export function TabContent({ id }) {
     'freins': <FreinsTable />,
   };
 
-  return tabComponents[id] || <div>Tab {id} not found</div>;
+  return tabComponents[id] || <div>Tab {id} not found</div>
 }

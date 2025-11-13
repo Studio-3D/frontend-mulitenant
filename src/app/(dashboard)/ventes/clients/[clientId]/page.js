@@ -28,7 +28,7 @@ const ClientDetails = () => {
   const [reservationDetails, setReservationDetails] = useState([]);
   const [visiteDetails, setVisiteDetails] = useState([]);
 
-  const [activeTab, setActiveTab] = useState('visites'); // Default to 'historiques' if tab is not present
+  const [activeTab, setActiveTab] = useState('reservations'); // Default to 'historiques' if tab is not present
 
   const handleEdit = (id) => {
     router.push(`${ENDPOINTS.CLIENTS}?id=${id}&action=edit`);
