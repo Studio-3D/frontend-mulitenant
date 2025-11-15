@@ -303,12 +303,13 @@ const TabsNavigation = ({
   };
 
   // Define all tabs - conditionally show dropdown for prospects based on role
+  // Ajoutez cette tab dans le tableau `tabs`
   const tabs = [
     {
       id: 'prospects',
       label: displayedLabels.prospects,
       icon: 'user',
-      dropdown: isCommercial(userRole), // Only show dropdown for commercial users
+      dropdown: isCommercial(userRole),
       count: getDisplayedNotificationCount('prospects'),
     },
     { id: 'visites', label: 'Visites', icon: 'walk' },
@@ -334,6 +335,7 @@ const TabsNavigation = ({
       icon: 'alert',
       count: notifications.freins,
     },
+    { id: 'echeancesTranches', label: 'Échéances Tranches', icon: 'calendar' }, // Ajoutez cette ligne
   ];
 
   return (

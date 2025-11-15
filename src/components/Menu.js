@@ -44,7 +44,10 @@ import {
   CheckCircle2,
   Clock,
   Bell,
-  BeakerIcon, // Replacement for FaFileInvoiceDollar
+  BeakerIcon,
+  StepBackIcon,
+  StepBack,
+  Cuboid, // Replacement for FaFileInvoiceDollar
 } from 'lucide-react';
 
 import { User_roles } from '../configs/enum';
@@ -53,6 +56,7 @@ import SocieteDialog from './SocieteDialog';
 import { useProjet } from '@/context/ProjetContext';
 import ProjetDialog from './ProjetDialog';
 import { ro, tr } from 'date-fns/locale';
+import { StepButton } from '@mui/material';
 
 const Menu = () => {
   const [menuItems, setMenuItems] = useState([]);
@@ -178,13 +182,13 @@ const Menu = () => {
           needsSociete: user.role === 1,
         },
 
-        /* {
-          label: "Commissions",
-          icon: <CreditCard size={20} />,
-          href: "/administration/commissions",
+         {
+          label: "Etapes Projet",
+          icon: <Cuboid size={20} />,
+          href: "/etapes-projet",
           needsProjet: true, 
-          needsSociete: user.role === 1,
-        }, */
+          needsSociete: user.role == 1,
+        }, 
         {
           label: 'Freins',
           icon: <AlertCircle size={20} />,
