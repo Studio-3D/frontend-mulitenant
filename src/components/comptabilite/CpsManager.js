@@ -151,7 +151,7 @@ const CpsManager = ({}) => {
       render: (row) =>
         row.piece_jointe ? (
           <span
-            className="text-blue-700 hover:underline cursor-pointer font-medium"
+            className="text-blue-500 hover:underline cursor-pointer font-medium"
             onClick={() => handleFileClick(row.piece_jointe)}
           >
             {row.piece_jointe}

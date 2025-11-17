@@ -17,9 +17,14 @@ import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import { fetchData_table_by_projet } from '@/configs/api-utils';
 import { useAuth } from '@/context/AuthContext';
 
-const FacturesManager = ({ decompteId, montantDecompte, montantPaye }) => {
-    const { user } = useAuth();
-  
+const FacturesManager = ({
+  decompteId,
+  montantDecompte,
+  montantPaye,
+  onFactureChange, // Add this prop
+}) => {
+  const { user } = useAuth();
+
   const { selectedProjet } = useProjet();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -36,7 +41,7 @@ const FacturesManager = ({ decompteId, montantDecompte, montantPaye }) => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const router = useRouter();
-  
+
   const accesstoken = localStorage.getItem('accessToken');
 
   const entity = {
@@ -44,7 +49,7 @@ const FacturesManager = ({ decompteId, montantDecompte, montantPaye }) => {
     dataKey: 'data',
     searchFields: [''],
   };
-  
+
   useEffect(() => {
     if (selectedProjet && selectedProjet.id) {
       fetchData_table_by_projet(
@@ -116,6 +121,10 @@ const FacturesManager = ({ decompteId, montantDecompte, montantPaye }) => {
     setShowFormModal(false);
     setCurrentFacture(null);
     setRefreshData((prev) => !prev);
+    // Call the refresh callback to update decompte details
+    if (onFactureChange) {
+      onFactureChange();
+    }
   };
 
   const handleFormCancel = () => {
@@ -170,7 +179,7 @@ const FacturesManager = ({ decompteId, montantDecompte, montantPaye }) => {
       render: (row) =>
         row.piece_jointe ? (
           <span
-            className="text-blue-700 cursor-pointer font-medium"
+            className="text-blue-500 cursor-pointer font-medium"
             onClick={() => handleFileClick('facture', row.piece_jointe)}
           >
             {row.piece_jointe}
@@ -210,7 +219,7 @@ const FacturesManager = ({ decompteId, montantDecompte, montantPaye }) => {
       render: (row) =>
         row.pj_paiement ? (
           <span
-            className="text-blue-700 cursor-pointer font-medium"
+            className="text-blue-500 cursor-pointer font-medium"
             onClick={() => handleFileClick('paiement', row.pj_paiement)}
           >
             {row.pj_paiement}
@@ -302,10 +311,14 @@ const FacturesManager = ({ decompteId, montantDecompte, montantPaye }) => {
         currentPage={currentPage}
         rowsPerPage={rowsPerPage}
         enableExport={true}
-        addLink={showAddButton() ? {
-          pathname: '#', // Use hash to prevent navigation
-          onClick: handleAddFacture
-        } : null}
+        addLink={
+          showAddButton()
+            ? {
+                pathname: '#', // Use hash to prevent navigation
+                onClick: handleAddFacture,
+              }
+            : null
+        }
         filterComponent={
           <FacturesFilter
             onSubmit={handleFilterChange}
@@ -335,6 +348,10 @@ const FacturesManager = ({ decompteId, montantDecompte, montantPaye }) => {
           entityId={factureToDelete.id}
           onDeleted={() => {
             setRefreshData((prev) => !prev);
+            // Call the refresh callback to update decompte details
+            if (onFactureChange) {
+              onFactureChange();
+            }
           }}
         />
       )}

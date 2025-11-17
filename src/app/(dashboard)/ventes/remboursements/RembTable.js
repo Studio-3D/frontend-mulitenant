@@ -1137,6 +1137,7 @@ export default function RembTable({ etat }) {
                   label: banque.nom,
                   original: banque, // Keep reference to full object if needed
                 }))}
+                required
                 label="Choisissez un Banque"
                 className="h-10 text-sm w-full"
                 loading={loadingBanques}

@@ -7,7 +7,6 @@ import { useProjet } from '@/context/ProjetContext';
 import { isAdmin, isSuperAdmin } from '@/configs/enum';
 import axios from 'axios';
 import { APIURL, ENDPOINTS } from '@/configs/api';
-import ComptabiliteTabsNav from '@/components/comptabilite/ComptabiliteTabsNav';
 import Table from '@/components/Table';
 import { toast } from 'react-hot-toast';
 import { Eye } from 'lucide-react';
@@ -274,7 +273,7 @@ const TvaBiensPage = () => {
           step={`List des tranches`}
         />
       </div>
-      <ComptabiliteTabsNav />
+      
       <div className="relative bg-white rounded-lg px-4 py-4">
         <h1 className="text-2xl font-bold mb-6">
           TVA par Bien - Tranche {trancheDetails.nom}

@@ -201,7 +201,7 @@ export default function ImportDetail() {
               // New format with detailed error information
               <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
                 <h3 className="text-lg font-semibold text-orange-800 mb-4">
-                  Résumé de l'import
+                  Résumé de l{"'"}import
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                   <div className="bg-green-100 p-3 rounded text-center">

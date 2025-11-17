@@ -11,6 +11,7 @@ import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { Edit, Eye, PencilLine, PlusCircle } from 'lucide-react';
 import { fetchData_table_by_projet } from '@/configs/api-utils';
+import Link from 'next/link';
 
 const TvaTrancheManager = ({}) => {
   const { selectedProjet } = useProjet();
@@ -57,15 +58,6 @@ const TvaTrancheManager = ({}) => {
     filterValues,
     selectedProjet,
   ]);
-
-  const handleViewTva = (trancheId) => {
-    // Redirect to the TVA biens list page for this tranche, not the tranche details
-    router.push(`/comptabilite/tva/biens/${trancheId}`);
-  };
-
-  const handleViewTrancheDetails = (trancheId) => {
-    router.push(`/Tranches/${trancheId}`);
-  };
 
   const handleAddTva = (tranche) => {
     setSelectedTranche(tranche);
@@ -141,7 +133,8 @@ const TvaTrancheManager = ({}) => {
     {
       key: 'valeur_terrain_reevalue',
       label: 'Valeur Terrain Réévalué',
-      render: (row) => row.valeur_terrain_reevalue?.toFixed(2).toLocaleString() || '-',
+      render: (row) =>
+        row.valeur_terrain_reevalue?.toFixed(2).toLocaleString() || '-',
     },
     {
       key: 'qp_bati',
@@ -153,13 +146,14 @@ const TvaTrancheManager = ({}) => {
       label: 'QP En %',
       render: (row) =>
         row.qp_terrain_tranche_percent
-          ? `${(row.qp_terrain_tranche_percent * 100)}`
+          ? `${row.qp_terrain_tranche_percent * 100}`
           : '-',
     },
     {
       key: 'qp_valeur',
       label: 'QP En Valeur',
-      render: (row) => row.qp_terrain_tranche_valeur?.toFixed(2).toLocaleString() || '-',
+      render: (row) =>
+        row.qp_terrain_tranche_valeur?.toFixed(2).toLocaleString() || '-',
     },
     {
       key: 'sup',
@@ -178,33 +172,35 @@ const TvaTrancheManager = ({}) => {
               title="Ajouter TVA"
               className="flex items-center gap-1 !text-green-500  hover:text-green-700"
             >
-              <PlusCircle  className="w-4 h-4" />
+              <PlusCircle className="w-4 h-4" />
             </button>
           ) : (
             <>
-              <button
-                onClick={() => handleViewTva(row.id)}
-                title="Liste des TVA par Bien" // Updated title to be clearer
-                className="flex items-center gap-1 !text-blue-500  hover:text-blue-700"
+              <Link
+                href={`/comptabilite/tva/biens/${row.id}`}
+                className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+                title="Voir Détails tva des biens"
               >
                 <Eye className="w-4 h-4" />
-              </button>
+              </Link>
+
               <button
                 onClick={() => handleEditTva(row)}
                 title="Modifier TVA"
                 className="flex items-center gap-1 text-yellow-500  hover:text-yellow-700"
               >
-                <PencilLine className="w-4 h-4"  />
+                <PencilLine className="w-4 h-4" />
               </button>
             </>
           )}
-          <button
-            onClick={() => handleViewTrancheDetails(row.id)}
+
+          <Link
+            href={`/Tranches/${row.id}`}
+            className="flex items-center gap-1 text-purple-500 hover:text-purple-700"
             title="Voir Détails Tranche"
-            className="flex items-center gap-1  !text-purple-500  hover:text-purple-700"
           >
-            <Eye className="w-4 h-4"  />
-          </button>
+            <Eye className="w-4 h-4" />
+          </Link>
         </div>
       ),
     },
