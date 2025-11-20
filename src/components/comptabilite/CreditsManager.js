@@ -163,7 +163,7 @@ const CreditsManager = ({}) => {
       render: (row) =>
         row.piece_jointe ? (
           <span
-            className="text-blue-700 hover:underline cursor-pointer font-medium"
+            className="text-blue-600 cursor-pointer font-medium"
             onClick={() => handleFileClick(row.piece_jointe)}
           >
             {row.piece_jointe}

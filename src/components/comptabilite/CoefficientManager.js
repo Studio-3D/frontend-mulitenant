@@ -10,6 +10,7 @@ import CoefficientFilter from './CoefficientFilter';
 import { toast } from 'react-hot-toast';
 import {  Eye, PencilLine, PlusCircle } from 'lucide-react';
 import { fetchData_table_by_projet } from '@/configs/api-utils';
+import Link from 'next/link';
 
 const CoefficientManager = ({}) => {
 
@@ -115,9 +116,6 @@ const CoefficientManager = ({}) => {
     setFilterValues(values);
     setCurrentPage(1);
   };
-  const handleShow = (trancheId) => {
-    window.open(`/Tranches/${trancheId}`, '_blank');
-  };
 
   const columns = [
     {
@@ -135,13 +133,15 @@ const CoefficientManager = ({}) => {
       label: 'Actions',
       render: (row) => (
         <div className="flex space-x-2">
-          <button
-            onClick={() => handleShow(row.id)}
-            title="Détail Tranche" // Updated title to be clearer
-            className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
-          >
-            <Eye className="w-4 h-4" />
-          </button>
+         
+           <Link
+                href={`/Tranches//${row.id}`}
+                className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+                title="Détail Tranche"
+              >
+                <Eye className="w-4 h-4" />
+              </Link>
+
           {row.coefficient_tranche === null ? (
             <button
               onClick={() => handleAddCoefficient(row)}

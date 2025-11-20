@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useProjet } from '@/context/ProjetContext';
@@ -14,8 +14,9 @@ import Modal from '@/components/Modal';
 import format from 'date-fns/format';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import { fetchData_table_by_projet } from '@/configs/api-utils';
+import Link from 'next/link';
 
-const DecomptesManager = () => {
+const DecomptesManager = ({ urlParams, activeTab, onTabActivated }) => {
   const { selectedProjet } = useProjet();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,7 +33,7 @@ const DecomptesManager = () => {
   const [decompteToDelete, setDecompteToDelete] = useState(null);
 
   const router = useRouter();
-  
+
   const accesstoken = localStorage.getItem('accessToken');
 
   const entity = {
@@ -40,8 +41,12 @@ const DecomptesManager = () => {
     dataKey: 'data',
     searchFields: [''],
   };
-  
-  useEffect(() => {
+
+  // Référence pour suivre si c'est le premier chargement
+  const initialLoadRef = useRef(true);
+
+  // Fonction pour récupérer les données
+  const fetchDecomptesData = useCallback(() => {
     if (selectedProjet && selectedProjet.id) {
       fetchData_table_by_projet(
         entity,
@@ -57,14 +62,35 @@ const DecomptesManager = () => {
       );
     }
   }, [
-    accesstoken,
+    selectedProjet,
+    filterValues,
+    searchTerm,
     currentPage,
     rowsPerPage,
-    searchTerm,
-    filterValues,
-    selectedProjet,
-    refreshData,
+    accesstoken,
   ]);
+
+  // Combined effect for initial load and tab activation
+  useEffect(() => {
+    if (activeTab === 'decomptes') {
+      if (initialLoadRef.current) {
+        initialLoadRef.current = false;
+        fetchDecomptesData();
+      } else {
+        console.log('Rechargement des décomptes - onglet activé');
+        fetchDecomptesData();
+      }
+      onTabActivated?.();
+    }
+  }, [activeTab, fetchDecomptesData]);
+
+  // Effet pour refreshData (après ajout/modification/suppression)
+  useEffect(() => {
+    if (refreshData) {
+      fetchDecomptesData();
+      setRefreshData(false);
+    }
+  }, [refreshData, fetchDecomptesData]);
 
   const handleFilterChange = (values) => {
     setFilterValues(values);
@@ -105,7 +131,7 @@ const DecomptesManager = () => {
   const handleFormSave = () => {
     setShowFormModal(false);
     setCurrentDecompte(null);
-    setRefreshData((prev) => !prev);
+    setRefreshData(true); // Utiliser refreshData au lieu de toggle
   };
 
   const handleFormCancel = () => {
@@ -175,13 +201,13 @@ const DecomptesManager = () => {
           </button>
 
           {row.factures && row.factures.length > 0 ? (
-            <button
-              onClick={() => router.push(`/comptabilite/decomptes/${row.id}`)}
+            <Link
+              href={`/comptabilite/decomptes/${row.id}`}
+              className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
               title="Voir les factures"
-              className="flex items-center gap-1  !text-blue-500  hover:text-blue-700"
             >
               <Eye className="w-4 h-4" />
-            </button>
+            </Link>
           ) : (
             <button
               onClick={() => handleDeleteDecompte(row.id)}
@@ -218,6 +244,7 @@ const DecomptesManager = () => {
 
   return (
     <div className="relative bg-white px-4 py-4">
+      {/* Bouton de rafraîchissement manuel optionnel */}
       <Table
         name_file_export="decomptes"
         data_to_export={transformDataForExport()}
@@ -234,7 +261,7 @@ const DecomptesManager = () => {
         enableExport={true}
         addLink={{
           pathname: '#', // Use hash to prevent navigation
-          onClick: handleAddDecompte
+          onClick: handleAddDecompte,
         }}
         filterComponent={
           <DecomptesFilter
@@ -264,7 +291,7 @@ const DecomptesManager = () => {
           entityName="DECOMPTES"
           itemLabel={'Décompte'}
           entityId={decompteToDelete.id}
-          onDeleted={() => setRefreshData((prev) => !prev)}
+          onDeleted={() => setRefreshData(true)}
         />
       )}
     </div>

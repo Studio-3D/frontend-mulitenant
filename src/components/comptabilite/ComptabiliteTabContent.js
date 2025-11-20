@@ -11,17 +11,24 @@ import FacturesManager from './FacturesManager';
 import CpsManager from './CpsManager';
 import CreditsManager from './CreditsManager';
 
-export function ComptabiliteTabContent({ id }) {
-  const tabComponents = {
-    'tva-tranche': <TvaTrancheManager />,
-    'tva-mensuelle': <TvaMensuelleManager />,
-    'coefficient': <CoefficientManager/>,
-    'fournisseurs': <FournisseursManager />,
-    'decomptes': <DecomptesManager />,
-    'factures': <FacturesManager />,
-    'cps': <CpsManager />,
-    'credits': <CreditsManager />,
+export function ComptabiliteTabContent({ id, activeTab, onTabActivated, urlParams }) {
+  // Common props for all components
+  const commonProps = {
+    urlParams,
+    activeTab,
+    onTabActivated
   };
 
-  return tabComponents[id] || <div>Tab "{id}" not found</div>;
+  const tabComponents = {
+    'tva-tranche': <TvaTrancheManager {...commonProps} />,
+    'tva-mensuelle': <TvaMensuelleManager {...commonProps} />,
+    'coefficient': <CoefficientManager {...commonProps} />,
+    'fournisseurs': <FournisseursManager {...commonProps} />,
+    'decomptes': <DecomptesManager {...commonProps} />,
+    'factures': <FacturesManager {...commonProps} />,
+    'cps': <CpsManager {...commonProps} />,
+    'credits': <CreditsManager {...commonProps} />,
+  };
+
+  return tabComponents[id] || <div>Tab {id} not found</div>;
 }

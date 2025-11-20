@@ -277,7 +277,7 @@ const FournisseursManager = () => {
                 {selectedFournisseur.factures.map((facture) => (
                   <div
                     key={facture.id}
-                    className="border p-4 rounded-md text-gray-50"
+                    className="border p-4 rounded-md text-gray-500"
                   >
                     <p className="font-medium">N°: {facture.num_facture}</p>
                     <p className="text-green-600 font-bold">

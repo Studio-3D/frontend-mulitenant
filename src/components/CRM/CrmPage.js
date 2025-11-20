@@ -14,7 +14,7 @@ export function CRMPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const urlTab = searchParams.get('tab');
-  
+
   // Set initial state from URL parameters
   const [activeTab, setActiveTab] = useState(urlTab || 'prospects');
   const [activeSubTab, setActiveSubTab] = useState({
@@ -22,23 +22,24 @@ export function CRMPage() {
     rdv: 'appels-rdv',
     prospects: isCommercial(user?.role) ? 'mes-prospects' : 'tous-prospects', // Add prospects subTab
   });
-  
+
   // Use the project from context
   const { selectedProjet } = useProjet();
-  
 
   // FIX: Initialize with only the active tab rendered
-  const initialTab = isCommercial(user?.role) && activeTab === 'prospects' 
-    ? activeSubTab.prospects 
-    : activeTab;
+  const initialTab =
+    isCommercial(user?.role) && activeTab === 'prospects'
+      ? activeSubTab.prospects
+      : activeTab;
   const renderedTabs = useRef({ [initialTab]: true });
 
   // FIX: Update renderedTabs when tab changes
   useEffect(() => {
-    const currentTab = isCommercial(user?.role) && activeTab === 'prospects' 
-      ? activeSubTab.prospects 
-      : activeTab;
-    
+    const currentTab =
+      isCommercial(user?.role) && activeTab === 'prospects'
+        ? activeSubTab.prospects
+        : activeTab;
+
     if (currentTab && !renderedTabs.current[currentTab]) {
       renderedTabs.current[currentTab] = true;
     }
@@ -73,44 +74,62 @@ export function CRMPage() {
     freins: 0,
   });
 
-  const pusher_key_NotifMenu = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_NOTIF_MENU;
+  const pusher_key_NotifMenu =
+    process.env.NEXT_PUBLIC_PUSHER_APP_KEY_NOTIF_MENU;
 
   // Wrap fetchDataNotiMon in useCallback with project dependency
-  const fetchDataNotiMon = useCallback(async (nb) => {
-    if (!selectedProjet?.id) return;
-    
-    console.log('Fetching notifications for project:', selectedProjet.id, 'with nb:', nb);
-    
-    await FetchNotifMenu(
-      nb,
-      selectedProjet.id,
-      (appelsRelance) => {
-        console.log('Appels Relance:', appelsRelance);
-        setNotifications(prev => ({ ...prev, 'appels-relance': appelsRelance }));
-      },
-      (appelsRdv) => {
-        console.log('Appels RDV:', appelsRdv);
-        setNotifications(prev => ({ ...prev, 'appels-rdv': appelsRdv }));
-      },
-      (visitesRelance) => {
-        console.log('Visites Relance:', visitesRelance);
-        setNotifications(prev => ({ ...prev, 'visites-relance': visitesRelance }));
-      },
-      (visitesRdv) => {
-        console.log('Visites RDV:', visitesRdv);
-        setNotifications(prev => ({ ...prev, 'visites-rdv': visitesRdv }));
-      },
-      (freins) => {
-        console.log('Freins:', freins);
-        setNotifications(prev => ({ ...prev, freins: freins }));
-      }
-    );
-  }, [selectedProjet]); // Add selectedProjet as dependency
+  const fetchDataNotiMon = useCallback(
+    async (nb) => {
+      if (!selectedProjet?.id) return;
+
+      console.log(
+        'Fetching notifications for project:',
+        selectedProjet.id,
+        'with nb:',
+        nb
+      );
+
+      await FetchNotifMenu(
+        nb,
+        selectedProjet.id,
+        (appelsRelance) => {
+          console.log('Appels Relance:', appelsRelance);
+          setNotifications((prev) => ({
+            ...prev,
+            'appels-relance': appelsRelance,
+          }));
+        },
+        (appelsRdv) => {
+          console.log('Appels RDV:', appelsRdv);
+          setNotifications((prev) => ({ ...prev, 'appels-rdv': appelsRdv }));
+        },
+        (visitesRelance) => {
+          console.log('Visites Relance:', visitesRelance);
+          setNotifications((prev) => ({
+            ...prev,
+            'visites-relance': visitesRelance,
+          }));
+        },
+        (visitesRdv) => {
+          console.log('Visites RDV:', visitesRdv);
+          setNotifications((prev) => ({ ...prev, 'visites-rdv': visitesRdv }));
+        },
+        (freins) => {
+          console.log('Freins:', freins);
+          setNotifications((prev) => ({ ...prev, freins: freins }));
+        }
+      );
+    },
+    [selectedProjet]
+  ); // Add selectedProjet as dependency
 
   // Reset notifications when project changes
   useEffect(() => {
     if (selectedProjet) {
-      console.log('Project changed, resetting notifications for:', selectedProjet.id);
+      console.log(
+        'Project changed, resetting notifications for:',
+        selectedProjet.id
+      );
       setNotifications({
         relance: 0,
         'appels-relance': 0,
@@ -120,9 +139,9 @@ export function CRMPage() {
         'visites-rdv': 0,
         freins: 0,
       });
-      
+
       // Fetch new notifications for the new project
-      fetchDataNotiMon("D");
+      fetchDataNotiMon('D');
     }
   }, [selectedProjet, fetchDataNotiMon]);
 
@@ -136,21 +155,21 @@ export function CRMPage() {
     fetchDataNotiMon('D');
 
     const pusher = new Pusher(pusher_key_NotifMenu, {
-      cluster: "eu",
+      cluster: 'eu',
       encrypted: true,
     });
 
-    const channel = pusher.subscribe("NotifMenu");
+    const channel = pusher.subscribe('NotifMenu');
 
-    channel.bind("App\\Events\\NotifMenuEvent", (data) => {
+    channel.bind('App\\Events\\NotifMenuEvent', (data) => {
       console.log('Pusher event received:', data);
       fetchDataNotiMon(data.NotifMenuId);
     });
 
     return () => {
       console.log('Cleaning up Pusher for project:', selectedProjet.id);
-      channel.unbind("App\\Events\\NotifMenuEvent");
-      pusher.unsubscribe("NotifMenu");
+      channel.unbind('App\\Events\\NotifMenuEvent');
+      pusher.unsubscribe('NotifMenu');
       pusher.disconnect();
     };
   }, [selectedProjet, pusher_key_NotifMenu, fetchDataNotiMon]);
@@ -227,7 +246,9 @@ export function CRMPage() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="text-gray-500">Aucun projet sélectionné</div>
-          <div className="text-sm text-gray-400 mt-2">Veuillez sélectionner un projet pour afficher le CRM</div>
+          <div className="text-sm text-gray-400 mt-2">
+            Veuillez sélectionner un projet pour afficher le CRM
+          </div>
         </div>
       </div>
     );
@@ -291,6 +312,15 @@ export function CRMPage() {
 
         <div style={{ display: activeTab === 'appels' ? 'block' : 'none' }}>
           {renderedTabs.current['appels'] && <TabContent id="appels" />}
+        </div>
+        <div
+          style={{
+            display: activeTab === 'echeancesTranches' ? 'block' : 'none',
+          }}
+        >
+          {renderedTabs.current['echeancesTranches'] && (
+            <TabContent id="echeancesTranches" />
+          )}
         </div>
 
         <div

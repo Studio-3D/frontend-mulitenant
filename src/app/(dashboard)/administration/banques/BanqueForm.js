@@ -6,6 +6,8 @@ import BreadCrumb from '../../navigation/BreadCrumb';
 import Button from '@/components/Button';
 import { useRouter } from 'next/navigation';
 import { useProjet } from '@/context/ProjetContext';
+import LoadingSpin from '@/components/LoadingSpin';
+
 const BanqueForm = ({ id = null, onComplete }) => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -130,11 +132,7 @@ const BanqueForm = ({ id = null, onComplete }) => {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center h-32">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-      </div>
-    );
+    return <LoadingSpin />;
   }
 
   return (
