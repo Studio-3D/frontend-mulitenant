@@ -17,7 +17,6 @@ import {
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import Link from "next/link";
-import BienTable from "@/components/biens/BienTable";
 import BlocTable from "@/components/blocs/BlocTable";
 import ImmeubleTable from "@/components/immeubles/ImmeubleTable";
 import LoadingSpin from "@/components/LoadingSpin";
@@ -371,7 +370,7 @@ export default function TrancheDetailsPage() {
                 </div>
                 
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Niveau d'étages:</span>
+                  <span className="text-gray-600">Niveau étages:</span>
                   <span className="font-medium">{tranche.niveau_etages || 'N/A'}</span>
                 </div>
                 
@@ -381,7 +380,7 @@ export default function TrancheDetailsPage() {
                 </div>
                 
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Nombre d'immeubles:</span>
+                  <span className="text-gray-600">Nombre immeubles:</span>
                   <span className="font-medium">{countsLoading ? "0" : counts.immeubles}</span>
                 </div>
                 
@@ -465,7 +464,7 @@ export default function TrancheDetailsPage() {
                 </div>
               )}
 
-              {activeTab === "biens" && (
+              {/*activeTab === "biens" && (
                 <div className="min-h-[400px]">
                   <h3 className="text-lg font-medium mb-4">Biens</h3>
                   <BienTable 
@@ -474,7 +473,7 @@ export default function TrancheDetailsPage() {
                     key={`biens-${refreshFlag}`} // Force refresh when tab changes
                   />
                 </div>
-              )}
+              )*/}
             </div>
           </div>
         </div>

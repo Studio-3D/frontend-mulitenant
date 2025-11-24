@@ -1,9 +1,7 @@
 // components/TabContent.jsx
 import React from 'react';
 import ProspectTable from '../../app/(dashboard)/crm/prospects/ProspectTable';
-import VisiteTable from '../../app/(dashboard)/crm/visites/VisiteTable';
 import VisiteTableComponent from '../../app/(dashboard)/crm/visites/VisiteTable';
-import EcheanceTrancheTable from '../../app/(dashboard)/crm/echeance-tranches/EcheanceTrancheTable'; // Corrigez le nom
 import AppelTable from '../../app/(dashboard)/crm/appels/AppelsTable';
 import PreReservationTable from '../../app/(dashboard)/crm/pre-reservations/PreReservationTable';
 import RelancesRdvAppelsTable from '../../app/(dashboard)/crm/appels/RelancesRdvAppelsTable';
@@ -19,7 +17,6 @@ export function TabContent({ id }) {
     'tous-prospects': <ProspectTable view="all" />,
     'visites': <VisiteTableComponent />,
     'appels': <AppelTable />,
-    'echeancesTranches': <EcheanceTrancheTable />, // Utilisez le bon nom
     'pre-reservation': <PreReservationTable />,
     'appels-relance': <RelancesRdvAppelsTable type={1} />,
     'visites-relance': <RelancesRdv_Visites_Table type={1} />,

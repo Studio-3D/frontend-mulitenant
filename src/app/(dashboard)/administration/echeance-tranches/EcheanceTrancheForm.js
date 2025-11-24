@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { APIURL, ENDPOINTS } from '@/configs/api';
+import { APIURL } from '@/configs/api';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import BreadCrumb from '../../navigation/BreadCrumb';
@@ -211,7 +211,7 @@ const EcheanceTrancheFormForm = ({ id = null }) => {
           } avec succès`;
           reset(defaultValues);
           toast.success(message);
-          router.push(ENDPOINTS.CRM + '?tab=echeancesTranches');
+          router.push('/administration/echeance-tranches');
         } else if (res.status === 422) {
           message = res.data.message;
           setBackendErrors(res.data.errors);
@@ -266,7 +266,7 @@ const EcheanceTrancheFormForm = ({ id = null }) => {
     <div className="p-3">
       <div className="flex items-center justify-start">
         <BreadCrumb
-          baseUrl={ENDPOINTS.CRM + '?tab=echeancesTranches'}
+          baseUrl={'/administration/echeance-tranches'}
           step={`${id ? 'Modifier' : 'Ajouter'} un Échéance Tranche`}
         />
       </div>

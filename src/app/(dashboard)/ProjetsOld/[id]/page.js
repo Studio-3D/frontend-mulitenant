@@ -17,7 +17,7 @@ import {
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
-import BienTable from '@/components/biens/BienTable';
+//import BienTable from '@/components/biens/BienTable';
 import TrancheTable from '@/components/tranches/TrancheTable';
 import BlocTable from '@/components/blocs/BlocTable';
 import ImmeubleTable from '@/components/immeubles/ImmeubleTable';
@@ -554,7 +554,7 @@ export default function ProjectDetailsPage() {
                 )}
               </div>
 
-              <div className={`${activeTab !== 'biens' ? 'hidden' : ''}`}>
+              {/*<div className={`${activeTab !== 'biens' ? 'hidden' : ''}`}>
                 {loadedTabs.biens && (
                   <BienTable
                     projetId={id}
@@ -563,7 +563,7 @@ export default function ProjectDetailsPage() {
                     fetchWithRetry={fetchWithRetry}
                   />
                 )}
-              </div>
+              </div>*/}
             </div>
           </div>
         </div>

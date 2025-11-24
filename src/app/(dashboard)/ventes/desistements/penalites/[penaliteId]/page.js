@@ -283,7 +283,7 @@ const ShowPenalite = () => {
             className="text-lg font-semibold mb-4  border-b pb-2"
             style={{ color: 'rgb(102, 108, 255)' }}
           >
-            Détail Desistement
+            Détail Désistement
           </h2>
 
           <div className="space-y-4">

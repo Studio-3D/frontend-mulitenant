@@ -7,7 +7,7 @@ import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
 import { useAuth } from '../../../../context/AuthContext';
 import { useProjet } from '../../../../context/ProjetContext';
-import { APIURL, ENDPOINTS } from '../../../../configs/api';
+import { APIURL } from '../../../../configs/api';
 import { useRouter } from 'next/navigation';
 import { fetchData_table_by_projet } from '../../../../configs/api-utils';
 import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
@@ -20,6 +20,9 @@ const EcheanceTrancheTable = ({ searchParams }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showEcheancesModal, setShowEcheancesModal] = useState(false);
+  const [selectedEcheances, setSelectedEcheances] = useState([]);
+  const [selectedTrancheName, setSelectedTrancheName] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedId, setSelectedId] = useState(null);
   const [totalRows, setTotalRows] = useState(0);
@@ -42,7 +45,7 @@ const EcheanceTrancheTable = ({ searchParams }) => {
   };
 
   useEffect(() => {
-     const action = searchParams?.get('action');
+    const action = searchParams?.get('action');
     if (action === 'add' || action === 'edit') {
       console.log('Skipping API call - in form mode');
       return;
@@ -86,11 +89,29 @@ const EcheanceTrancheTable = ({ searchParams }) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('fr-FR'); // Format: dd/mm/yyyy
   };
-  const columns = [
-    { key: 'tranche', label: 'Tranche' },
-    {
+
+  // Function to handle eye icon click and show echeances modal
+  const handleViewEcheances = (tranche) => {
+    setSelectedEcheances(tranche.echeances || []);
+    setSelectedTrancheName(tranche.tranche);
+    setShowEcheancesModal(true);
+  };
+
+  // Format echeances data for the modal table
+  const formatEcheancesData = () => {
+    return selectedEcheances.map((echeance, index) => ({
+      id: echeance.id,
+      numEcheance: index + 1,
+      date: formatDate(echeance.date),
+      montant: echeance.montant,
+    }));
+  };
+
+
+  {
+    /*
       key: 'echeances',
-      label: 'Echéances',
+      label: 'Échéances',
       render: (row) => (
         <div>
           {row.echeances?.map((echeance, index) => (
@@ -102,14 +123,24 @@ const EcheanceTrancheTable = ({ searchParams }) => {
           ))}
         </div>
       ),
-    },
+    */
+  }
+  const columns = [
+    { key: 'tranche', label: 'Tranche' },
     {
       key: 'actions',
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
+          <button
+            className="flex items-center gap-1 text-green-500 hover:text-green-700"
+            title="Voir les échéances"
+            onClick={() => handleViewEcheances(row)}
+          >
+            <Eye className="w-4 h-4" />
+          </button>
           <Link
-            href={`${ENDPOINTS.ECHEANCESTRANCE}?id=${row.id}&action=edit`}
+            href={`/administration/echeance-tranches?id=${row.id}&action=edit`}
             className="text-blue-500 hover:text-blue-700"
             title="Modifier"
           >
@@ -189,7 +220,7 @@ const EcheanceTrancheTable = ({ searchParams }) => {
             isSuperAdmin(user.role) ||
             isAdmin(user.role) ||
             isCommercial(user.role)
-              ? `${ENDPOINTS.ECHEANCESTRANCE}?action=add`
+              ? `/administration/echeance-tranches?action=add`
               : undefined
           }
           filterComponent={
@@ -234,6 +265,7 @@ const EcheanceTrancheTable = ({ searchParams }) => {
         />
       </div>
 
+      {/* Delete Modal */}
       {showDeleteModal && selectedId && (
         <Modal
           isVisible={showDeleteModal}
@@ -263,6 +295,87 @@ const EcheanceTrancheTable = ({ searchParams }) => {
           />
         </Modal>
       )}
+
+      {/* Echeances Modal */}
+      {/* Echeances Modal */}
+      <Modal
+        isVisible={showEcheancesModal}
+        onClose={() => setShowEcheancesModal(false)}
+      >
+        <div className="p-6 w-full max-w-4xl">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-gray-800">
+              Échéances - {selectedTrancheName}
+            </h2>
+            <button
+              onClick={() => setShowEcheancesModal(false)}
+              className="text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+
+          {/* Static Table without Pagination */}
+
+          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-[#009FFF] text-white">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    Num Échéance
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    Date
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    Montant
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {formatEcheancesData().map((echeance) => (
+                  <tr key={echeance.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {echeance.numEcheance}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {echeance.date}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                      {echeance.montant} MAD
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {formatEcheancesData().length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                Aucune échéance trouvée
+              </div>
+            )}
+          </div>
+
+          {/* Export button instead of full pagination controls */}
+          <div className="flex justify-between items-center mt-4">
+            <div className="text-sm text-gray-500">
+              Total: {formatEcheancesData().length} échéance(s)
+            </div>
+          </div>
+        </div>
+      </Modal>
     </>
   );
 };
