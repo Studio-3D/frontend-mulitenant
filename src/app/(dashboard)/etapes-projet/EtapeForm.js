@@ -29,18 +29,18 @@ export default function EtapeForm({ id, onClose, onSuccess }) {
 
   const defaultValues = {
     description: '', // Make sure all fields you need are present
-    date_debut: '',
-    date_fin: '',
-    etat: '',
+    date_debut_prevu: '',
+    date_fin_prevu: '',
+   // etat: '',
     projet_id: selectedProjet?.id, //''
   };
 
   const validationSchemaRef = useRef(
     yup.object().shape({
       description: yup.string().required('la Description est Obligatoire'),
-      date_debut: yup.string().required('La Date de Début est Obligatoire'),
-      date_fin: yup.string().required('La Date Fin est Obligatoire'),
-      etat: yup.string().required('Etat est Obligatoire'),
+      date_debut_prevu: yup.string().required('La Date de début prévu est Obligatoire'),
+      date_fin_prevu: yup.string().required('La Date fin prévu est Obligatoire'),
+     // etat: yup.string().required('Etat est Obligatoire'),
     })
   );
 
@@ -86,9 +86,9 @@ export default function EtapeForm({ id, onClose, onSuccess }) {
           const ech = res.data.ech;
 
           setValue('description', ech.description || '');
-          setValue('date_debut', ech.date_debut || '');
-          setValue('date_fin', ech.date_fin || '');
-          setValue('etat', ech.etat || '');
+          setValue('date_debut_prevu', ech.date_debut_prevu || '');
+          setValue('date_fin_prevu', ech.date_fin_prevu || '');
+         // setValue('etat', ech.etat || '');
 
           setLoading_edit(false);
         })
@@ -163,11 +163,11 @@ export default function EtapeForm({ id, onClose, onSuccess }) {
   if (loading_edit) {
     return <LoadingSpin />;
   }
-  const etatOptions = [
+ /* const etatOptions = [
     { value: '0', label: 'Non Commencé' },
     { value: '1', label: 'En Cours' },
     { value: '2', label: 'Terminé' },
-  ];
+  ];*/
 
   return (
     <>
@@ -183,7 +183,7 @@ export default function EtapeForm({ id, onClose, onSuccess }) {
             <div className="space-y-4">
               {/* First set of fields (Responsive grid) */}
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-4">
                 <div>
                   <TextField
                     label="Description:"
@@ -198,8 +198,8 @@ export default function EtapeForm({ id, onClose, onSuccess }) {
                 </div>
                 <div>
                   <TextField
-                    label="Date debut:"
-                    name="date_debut"
+                    label="Date de début prévue:"
+                    name="date_debut_prevu"
                     type="date"
                     required
                     control={control}
@@ -210,8 +210,8 @@ export default function EtapeForm({ id, onClose, onSuccess }) {
                 </div>
                 <div>
                   <TextField
-                    label="Date fin:"
-                    name="date_fin"
+                    label="Date fin prévu:"
+                    name="date_fin_prevu"
                     type="date"
                     control={control}
                     required
@@ -220,7 +220,7 @@ export default function EtapeForm({ id, onClose, onSuccess }) {
                     defaultValues={defaultValues}
                   />
                 </div>
-                <div className="">
+               {/* <div className="">
                   <Controller
                     name="etat"
                     control={control}
@@ -237,7 +237,7 @@ export default function EtapeForm({ id, onClose, onSuccess }) {
                       />
                     )}
                   />
-                </div>
+                </div>*/}
               </div>
 
               {/* Buttons */}

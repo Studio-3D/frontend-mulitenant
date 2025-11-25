@@ -47,7 +47,8 @@ import {
   BeakerIcon,
   StepBackIcon,
   StepBack,
-  Cuboid, // Replacement for FaFileInvoiceDollar
+  Cuboid,
+  Euro, // Replacement for FaFileInvoiceDollar
 } from 'lucide-react';
 
 import { User_roles } from '../configs/enum';
@@ -182,13 +183,13 @@ const Menu = () => {
           needsSociete: user.role === 1,
         },
 
-         {
-          label: "Etapes Projet",
+        {
+          label: 'Etapes Projet',
           icon: <Cuboid size={20} />,
-          href: "/etapes-projet",
-          needsProjet: true, 
+          href: '/etapes-projet',
+          needsProjet: true,
           needsSociete: user.role == 1,
-        }, 
+        },
         {
           label: 'Freins',
           icon: <AlertCircle size={20} />,
@@ -236,6 +237,13 @@ const Menu = () => {
           href: '/administration/commissions/configuration',
           needsProjet: true,
           needsSociete: user.role === 1,
+        },
+        {
+          label: 'Echéances Tranche',
+          icon: <Euro size={20} />,
+          href: '/administration/echeance-tranches',
+          needsProjet: true,
+          needsSociete: user.role == 1,
         },
         {
           label: 'Réseaux Sociaux',

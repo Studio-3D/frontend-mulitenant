@@ -335,7 +335,6 @@ const TabsNavigation = ({
       icon: 'alert',
       count: notifications.freins,
     },
-    { id: 'echeancesTranches', label: 'Échéances Tranches', icon: 'calendar' }, // Ajoutez cette ligne
   ];
 
   return (

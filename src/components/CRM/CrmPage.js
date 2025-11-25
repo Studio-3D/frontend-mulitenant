@@ -313,15 +313,6 @@ export function CRMPage() {
         <div style={{ display: activeTab === 'appels' ? 'block' : 'none' }}>
           {renderedTabs.current['appels'] && <TabContent id="appels" />}
         </div>
-        <div
-          style={{
-            display: activeTab === 'echeancesTranches' ? 'block' : 'none',
-          }}
-        >
-          {renderedTabs.current['echeancesTranches'] && (
-            <TabContent id="echeancesTranches" />
-          )}
-        </div>
 
         <div
           style={{

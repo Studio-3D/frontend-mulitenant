@@ -10,6 +10,9 @@ import Button from '@/components/Button';
 import { APIURL, ENDPOINTS } from '@/configs/api';
 import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
 import { useProjet } from '@/context/ProjetContext';
+import { isAdmin, isCommercial, isSuperAdmin } from '@/configs/enum';
+import { useAuth } from '@/context/AuthContext';
+
 export default function CommissionConfigForm({ onClose, onSuccess }) {
   const router = useRouter();
   const accessToken = localStorage.getItem('accessToken');
@@ -18,6 +21,7 @@ export default function CommissionConfigForm({ onClose, onSuccess }) {
   const [inputs, setInputs] = useState([{ de: '', a: '', pourcentage: '' }]);
   const [loading, setLoading] = useState({ form: false });
   const [backendErrors, setBackendErrors] = useState({});
+  const [commissionMontant, setCommissionMontant] = useState(''); // Add this state
 
   const defaultValues = {
     projet_id: selectedProjet?.id,
@@ -44,10 +48,14 @@ export default function CommissionConfigForm({ onClose, onSuccess }) {
         }
       );
       const { data } = response;
-      setValue('commission_montant', data.commission_montant?.montant);
-      setLoading(false); // Data is loaded, set loading to false
+      const montant = data.commission_montant?.montant || '';
+      setCommissionMontant(montant); // Set the state instead of form value directly
+      setValue('commission_montant', montant);
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching data:', error);
+      setCommissionMontant(''); // Ensure it's always defined
+      setValue('commission_montant', '');
       setLoading(false);
     }
   };
@@ -62,32 +70,37 @@ export default function CommissionConfigForm({ onClose, onSuccess }) {
         }
       );
       if (res.data.configurations && res.data.configurations.length > 0) {
-        setInputs(res.data.configurations); // Remplit le state inputs avec la config récupérée
+        setInputs(res.data.configurations);
       }
     } catch (error) {
       toast.error('Erreur lors du chargement de la configuration.');
     }
   };
 
+  const { user } = useAuth();
+  const userRole = user?.role;
   useEffect(() => {
-    fetchData_Configuration();
-    fetchData_commission_montant();
-  }, []);
+    if (!isAdmin(userRole) && !isSuperAdmin(userRole)) {
+      router.push('/');
+    } else {
+      fetchData_Configuration();
+      fetchData_commission_montant();
+    }
+  }, [router]);
 
-    // Simple cache et comparaison for return back en cas de changer projet
+  // Simple cache et comparaison for return back en cas de changer projet
   const [oldProjetId, setOldProjetId] = useState(null);
 
   useEffect(() => {
     if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
       if (oldProjetId) {
-        // Projet a changé
-
         console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
         router.push('/administration/commissions/configuration');
       }
       setOldProjetId(selectedProjet.id);
     }
   }, [selectedProjet?.id, oldProjetId, router]);
+
   const handleAddInput = () => {
     setInputs([...inputs, { de: '', a: '', pourcentage: '' }]);
   };
@@ -127,6 +140,13 @@ export default function CommissionConfigForm({ onClose, onSuccess }) {
         setMsg_alert(null);
       }
     }
+  };
+
+  // Add this function to handle commission_montant changes
+  const handleCommissionMontantChange = (e) => {
+    const value = e.target.value;
+    setCommissionMontant(value);
+    setValue('commission_montant', value);
   };
 
   const handleDeleteInput = (index) => {
@@ -169,9 +189,8 @@ export default function CommissionConfigForm({ onClose, onSuccess }) {
           toast.success('Commissions créées avec succès');
           reset(defaultValues);
           if (onSuccess) {
-            onSuccess(); // Appeler la fonction passée en prop
+            onSuccess();
           } else {
-            // Par défaut, rediriger vers tableau de bord
             router.push('/commissions/commissionMensuelleAtt');
           }
         } else if (res.status === 422) {
@@ -222,8 +241,8 @@ export default function CommissionConfigForm({ onClose, onSuccess }) {
                 type="number"
                 required
                 className="w-full max-w-xs border border-gray-300 rounded px-4 py-3 text-center focus:outline-none hover:border-gray-500 focus:border-gray-500 focus:ring-2 focus:ring-indigo-200"
-                value={watch('commission_montant')}
-                onChange={(e) => setValue('commission_montant', e.target.value)}
+                value={commissionMontant} // Use the state instead of watch()
+                onChange={handleCommissionMontantChange} // Use the new handler
               />
             </div>
 
@@ -282,7 +301,6 @@ export default function CommissionConfigForm({ onClose, onSuccess }) {
                         className="w-8 h-8 flex items-center justify-center rounded-full bg-red-600 hover:bg-red-700 text-white disabled:opacity-50"
                         aria-label="Supprimer"
                       >
-                        {/* Icône "X" */}
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           className="h-5 w-5"
@@ -309,7 +327,6 @@ export default function CommissionConfigForm({ onClose, onSuccess }) {
                         className="w-8 h-8 flex items-center justify-center rounded-full bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
                         aria-label="Ajouter"
                       >
-                        {/* Icône "+" */}
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           className="h-5 w-5"
@@ -343,9 +360,9 @@ export default function CommissionConfigForm({ onClose, onSuccess }) {
                 type="button"
                 onClick={() => {
                   if (onClose) {
-                    onClose(); // ferme le popup
+                    onClose();
                   } else {
-                    router.push('/commissions/commissionMensuelleAtt'); // sinon revient en arrière
+                    router.push('/commissions/commissionMensuelleAtt');
                   }
                 }}
               >
@@ -355,7 +372,7 @@ export default function CommissionConfigForm({ onClose, onSuccess }) {
                 type="submit"
                 disabled={
                   loading.form ||
-                  watch('commission_montant') === '' ||
+                  commissionMontant === '' || // Use the state here
                   msg_alert != null
                 }
                 loading={loading.form}

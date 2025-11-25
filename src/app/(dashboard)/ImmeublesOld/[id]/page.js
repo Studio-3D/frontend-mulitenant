@@ -13,7 +13,6 @@ import {
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import Link from "next/link";
-import BienTable from "@/components/biens/BienTable";
 
 export default function ImmeubleDetailsPage() {
   const { id } = useParams();
@@ -312,7 +311,7 @@ export default function ImmeubleDetailsPage() {
               </h2>
             </div>
 
-            <div className="p-6">
+            {/*}div className="p-6">
               <div className="min-h-[400px]">
                 <BienTable 
                   projetId={immeuble.projet_id} 
@@ -320,7 +319,7 @@ export default function ImmeubleDetailsPage() {
                   key={`biens-${refreshFlag}`} // Force refresh when needed
                 />
               </div>
-            </div>
+            </div>*/}
           </div>
         </div>
       </div>

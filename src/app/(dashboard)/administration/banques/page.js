@@ -17,8 +17,7 @@ export default function Page() {
   useEffect(() => {
     if (
       !isAdmin(userRole) &&
-      !isSuperAdmin(userRole) &&
-      !isCommercial(userRole)
+      !isSuperAdmin(userRole)
     ) {
       router.push('/');
     }
