@@ -397,6 +397,7 @@ export const BlocDetailsPage = () => {
                 : undefined,
             }}
             max_etages={blocData?.bloc?.projet?.max_etages}
+            trancheId={blocData?.bloc?.tranche_id}
           />
         </div>
       </div>

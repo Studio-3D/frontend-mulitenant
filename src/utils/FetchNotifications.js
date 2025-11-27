@@ -235,12 +235,12 @@ const fetchNotifications = async ({
           `Avec Le Prospect: N°Téléphone: ${prospect?.telephone}`,
       },
       29: {
-        title: 'Le fichier des biens a été importé avec succès',
+        title: (description_type) => description_type,
         icon: 'ic:twotone-import-export',
-        color: 'primary',
-        subtitle: (prospect, user, avance, reservation, bien, projet) =>
-          `Du Projet: ${projet?.nom}`,
+        color: 'info',
+        subtitle: (description_type) => description_type,
       },
+
       30: {
         title: 'Un Rappel',
         icon: 'eos-icons:loading',
@@ -428,10 +428,9 @@ const fetchNotifications = async ({
           projet,
           description_type
         ) =>
-          description_type ||
-          `Message Instagram entrant de ${+prospect?.nom}`,
+          description_type || `Message Instagram entrant de ${+prospect?.nom}`,
       },
-       53: {
+      53: {
         title: 'un nouveau prospect est affecté a vous ',
         icon: 'message-circle',
         color: 'info',
@@ -443,9 +442,7 @@ const fetchNotifications = async ({
           bien,
           projet,
           description_type
-        ) =>
-          description_type ||
-          `${+prospect?.nom}`,
+        ) => description_type || `${+prospect?.nom}`,
       },
       90: {
         title: 'un message Facebook',
@@ -560,7 +557,7 @@ const fetchNotifications = async ({
           description_type
         ) => description_type || 'Nouveau message Instagram',
       },
-       101: {
+      101: {
         title: 'un nouveau Prospect via facebook',
         icon: 'message-circle',
         color: 'success',
@@ -574,7 +571,7 @@ const fetchNotifications = async ({
           description_type
         ) => description_type || 'Nouveau Prospect via facebook',
       },
-        102: {
+      102: {
         title: 'Nouveau Message sur Facebook',
         icon: 'message-circle',
         color: 'error',
@@ -630,16 +627,22 @@ const fetchNotifications = async ({
           formattedDate = 'Date invalide';
         }
 
+        // Handle title based on whether it's a function or string
+        const notificationTitle =
+          typeof title === 'function'
+            ? title(description_type)
+            : `${
+                [20, 21, 8, 23, 24, 25, 26, 29].indexOf(type) >= 0
+                  ? `${title}`
+                  : `Vous Avez ${title}`
+              }`;
+
         return {
           id,
           deleted_at,
           url: lien,
           date: formattedDate,
-          title: `${
-            [20, 21, 8, 23, 24, 25, 26, 29].indexOf(type) >= 0
-              ? `${title}`
-              : `Vous Avez ${title}`
-          }`,
+          title: notificationTitle,
           icon: icon,
           color: color,
           subtitle: subtitle(
@@ -655,7 +658,6 @@ const fetchNotifications = async ({
         };
       })
       .filter((notification) => notification !== null);
-
     setNotifications((prevNotif) => [...prevNotif, ...formattedNotifications]);
   } catch (error) {
     console.error('Error fetching notifications:', error);

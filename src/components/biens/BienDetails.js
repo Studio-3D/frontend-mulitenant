@@ -352,7 +352,13 @@ export default function BienDetails({ id }) {
                 <div className="min-w-0">
                   <h3 className="text-xs font-medium !text-gray-500">Niveau</h3>
                   <p className="mt-0.5 font-semibold text-sm">
-                    {bien.niveau !== null ? bien.niveau : ''}
+                    {bien.niveau !== null
+                      ? bien.niveau == 0
+                        ? 'RDC'
+                        : bien.niveau == 1
+                        ? '1er étage'
+                        : `${bien.niveau}ème étage`
+                      : ''}
                   </p>
                 </div>
               </div>

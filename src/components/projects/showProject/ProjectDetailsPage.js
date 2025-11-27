@@ -349,6 +349,7 @@ export const ProjectDetailsPage = () => {
             nbre_tranches={projectData?.projet?.nbre_tranches}
             projectId={id}
             max_etages={projectData?.projet?.max_etages}
+            tranches={projectData?.projet?.tranche}
           />
         </div>
       </div>

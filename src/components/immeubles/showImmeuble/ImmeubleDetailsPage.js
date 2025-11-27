@@ -347,6 +347,7 @@ export const ImmeubleDetailsPage = () => {
 
   return (
     <div className="w-full">
+     
       {/* Breadcrumbs */}
       <div className="mb-4">
         <BreadCrumb
@@ -421,7 +422,8 @@ export const ImmeubleDetailsPage = () => {
                 : undefined,
             }}
             projetId={immeubleData?.immeuble?.projet_id}
-            max_etages={immeubleData?.immmeuble?.projet?.max_etages}
+            max_etages={immeubleData?.immeuble?.projet?.max_etages}
+            trancheId={immeubleData?.immeuble?.tranche_id}
           />
         </div>
       </div>

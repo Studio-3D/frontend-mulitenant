@@ -205,7 +205,7 @@ export default function Societes() {
     <div className="relative bg-white shadow-md rounded-lg px-4 py-4">
       {/* Table */}
       <Table 
-        
+        showSearch={false}
         data_to_export={data_to_export()}
         columns_export={columns_export}
         name_file_export={"societe_export"}
