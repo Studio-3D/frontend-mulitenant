@@ -431,6 +431,7 @@ export const RightCard = ({
   nbre_immeubles,
   nbre_tranches,
   max_etages,
+  trancheId,
 }) => {
   const [showImportModal, setShowImportModal] = useState(false);
   const { token, user } = useAuth();
@@ -990,6 +991,7 @@ export const RightCard = ({
             onClose={() => setShowImportModal(false)}
             projetId={projectId}
             max_etages={max_etages}
+            tranche_id_get={trancheId}
           />
           {/* Delete Confirmation Modal */}
           {showDeleteModal && (

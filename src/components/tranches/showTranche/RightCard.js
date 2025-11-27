@@ -521,7 +521,7 @@ export const RightCard = ({
   breadcrumbContext,
   nbre_blocs,
   nbre_immeubles,
-  max_etages,
+  max_etages
 }) => {
   const [showImportModal, setShowImportModal] = useState(false);
 
@@ -1069,6 +1069,7 @@ export const RightCard = ({
             onClose={() => setShowImportModal(false)}
             projetId={projetId}
             max_etages={max_etages}
+            tranche_id_get={trancheId}
           />
           {/* Delete Confirmation Modal    */}
           {showDeleteModal && (

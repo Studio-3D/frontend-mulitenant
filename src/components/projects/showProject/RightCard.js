@@ -703,6 +703,7 @@ export const RightCard = ({
   nbre_tranches,
   nbre_immeubles,
   max_etages,
+  tranches
 }) => {
   const [showImportModal, setShowImportModal] = useState(false);
 
@@ -1332,6 +1333,7 @@ export const RightCard = ({
             onClose={() => setShowImportModal(false)}
             projetId={projectId}
             max_etages={max_etages}
+            tranches={tranches}
           />
           {/* Delete Confirmation Modal */}
           {showDeleteModal && (
