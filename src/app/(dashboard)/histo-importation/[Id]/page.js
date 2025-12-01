@@ -3,8 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { APIURL, RESOURCE_URL } from '@/configs/api';
+import { APIURL, RESOURCE_URL ,ENDPOINTS} from '@/configs/api';
 import { ArrowLeft } from 'lucide-react';
+import LoadingSpin from '@/components/LoadingSpin';
+import BreadCrumb from '../../navigation/BreadCrumb';
 
 export default function ImportDetail() {
   const params = useParams();
@@ -62,10 +64,8 @@ export default function ImportDetail() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
-        <p className="text-lg text-blue-600 font-semibold">
-          Chargement des informations...
-        </p>
+      <div className="flex justify-center items-center h-screen">
+        <LoadingSpin /> {/* Use your loading spinner here */}
       </div>
     );
   }
@@ -102,7 +102,9 @@ export default function ImportDetail() {
   }
 
   // Calculate lines processed based on import status
-  let lignesTraitees, lignesRestantes, lignesEchouees = 0;
+  let lignesTraitees,
+    lignesRestantes,
+    lignesEchouees = 0;
 
   if (importInfo.statut === '2') {
     // Import successful - all lines processed
@@ -116,7 +118,9 @@ export default function ImportDetail() {
       lignesRestantes = 0; // All lines were processed
     } else {
       // Old format - lines processed up to the error
-      const ligneEchouee = importInfo.ligne_echou ? Number(importInfo.ligne_echou) : null;
+      const ligneEchouee = importInfo.ligne_echou
+        ? Number(importInfo.ligne_echou)
+        : null;
       lignesTraitees = ligneEchouee ? ligneEchouee - 1 : 0;
       lignesRestantes = totalLignes - lignesTraitees;
       lignesEchouees = lignesRestantes;
@@ -131,17 +135,12 @@ export default function ImportDetail() {
     <div className="min-h-screen bg-gray-50 p-6 flex justify-center">
       <div className="max-w-4xl w-full bg-white rounded-lg shadow-lg p-8 space-y-8">
         {/* Back button */}
-        <div className="flex items-center gap-4 mb-6">
-          <button
-            onClick={() => router.back()}
-            className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors duration-200"
-            title="Retour"
-          >
-            <ArrowLeft size={20} />
-            <span className="font-medium">Retour</span>
-          </button>
+        <div className="flex items-center justify-start">
+          <BreadCrumb
+            baseUrl={ENDPOINTS.HISTOIMPORTATION}
+            step={`Détail Import`}
+          />
         </div>
-
         <h1 className="text-3xl font-bold text-blue-700">
           Détails de {"l'"}import
         </h1>
@@ -205,16 +204,26 @@ export default function ImportDetail() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                   <div className="bg-green-100 p-3 rounded text-center">
-                    <p className="text-green-800 font-semibold">Lignes réussies</p>
-                    <p className="text-2xl font-bold text-green-900">{errorInfo.lignes_reussies}</p>
+                    <p className="text-green-800 font-semibold">
+                      Lignes réussies
+                    </p>
+                    <p className="text-2xl font-bold text-green-900">
+                      {errorInfo.lignes_reussies}
+                    </p>
                   </div>
                   <div className="bg-red-100 p-3 rounded text-center">
-                    <p className="text-red-800 font-semibold">Lignes échouées</p>
-                    <p className="text-2xl font-bold text-red-900">{errorInfo.lignes_echouees}</p>
+                    <p className="text-red-800 font-semibold">
+                      Lignes échouées
+                    </p>
+                    <p className="text-2xl font-bold text-red-900">
+                      {errorInfo.lignes_echouees}
+                    </p>
                   </div>
                   <div className="bg-blue-100 p-3 rounded text-center">
                     <p className="text-blue-800 font-semibold">Total lignes</p>
-                    <p className="text-2xl font-bold text-blue-900">{errorInfo.total_lignes}</p>
+                    <p className="text-2xl font-bold text-blue-900">
+                      {errorInfo.total_lignes}
+                    </p>
                   </div>
                 </div>
 
@@ -233,9 +242,18 @@ export default function ImportDetail() {
                         </thead>
                         <tbody>
                           {errorInfo.erreurs.map((error, index) => (
-                            <tr key={index} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
-                              <td className="px-4 py-2 font-medium">{error.ligne}</td>
-                              <td className="px-4 py-2 text-red-700">{error.message}</td>
+                            <tr
+                              key={index}
+                              className={
+                                index % 2 === 0 ? 'bg-gray-50' : 'bg-white'
+                              }
+                            >
+                              <td className="px-4 py-2 font-medium">
+                                {error.ligne}
+                              </td>
+                              <td className="px-4 py-2 text-red-700">
+                                {error.message}
+                              </td>
                             </tr>
                           ))}
                         </tbody>
@@ -254,7 +272,8 @@ export default function ImportDetail() {
                   Message {"d'"}erreur :
                 </p>
                 <p className="text-red-800 whitespace-pre-line">
-                  {importInfo.message_echou || "Aucun message d'erreur disponible."}
+                  {importInfo.message_echou ||
+                    "Aucun message d'erreur disponible."}
                 </p>
               </div>
             )}
@@ -280,7 +299,9 @@ export default function ImportDetail() {
             )}
             {lignesRestantes > 0 && (
               <div className="flex-1 bg-yellow-200 p-4 rounded-md text-center">
-                <p className="text-yellow-900 font-semibold">Lignes restantes</p>
+                <p className="text-yellow-900 font-semibold">
+                  Lignes restantes
+                </p>
                 <p className="text-2xl font-bold text-yellow-900">
                   {lignesRestantes}
                 </p>
@@ -288,9 +309,7 @@ export default function ImportDetail() {
             )}
             <div className="flex-1 bg-blue-200 p-4 rounded-md text-center">
               <p className="text-blue-900 font-semibold">Total lignes</p>
-              <p className="text-2xl font-bold text-blue-900">
-                {totalLignes}
-              </p>
+              <p className="text-2xl font-bold text-blue-900">{totalLignes}</p>
             </div>
           </div>
         )}

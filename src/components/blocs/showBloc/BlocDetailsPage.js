@@ -180,7 +180,7 @@ export const BlocDetailsPage = () => {
     );
 
     // Map bien data to match your column requirements
-    const biens =
+   /* const biens =
       biensData.map((b) => {
         const statusConfig = STATUS_CONFIG[b.etat] || {
           name: b.etat,
@@ -205,8 +205,85 @@ export const BlocDetailsPage = () => {
           typologie: b?.typologie?.typologie || '',
           vue: b?.vue?.vue || '',
         };
-      }) || [];
+      }) || [];*/
 
+        const biens =
+      biensData.map((b) => {
+        const statusConfig = STATUS_CONFIG[b.etat] || {
+          name: b.etat,
+          color: 'bg-gray-500',
+        };
+        // Calculer le niveau formaté
+        const getFormattedNiveau = (niveau) => {
+          if (niveau === 0 || niveau === '0') return 'RDC';
+          if (niveau === 1 || niveau === '1') return '1er étage';
+          if (niveau === 2 || niveau === '2') return '2ème étage';
+          if (niveau === 3 || niveau === '3') return '3ème étage';
+          if (niveau === 4 || niveau === '4') return '4ème étage';
+          if (niveau === 5 || niveau === '5') return '5ème étage';
+          return niveau ? `${niveau}ème étage` : '';
+        };
+
+        // Prendre seulement la première composition
+        const firstComposition = b.composition_bien?.[0] || {};
+
+        return {
+          id: b.id,
+          nom_projet: b?.projet?.nom,
+          numero: b.numero,
+          name: b.propriete_dite_bien,
+          type: b.type_bien?.type || 'Inconnu',
+          type_id: b.type_id || 'Inconnu',
+          surface: b.superficie_habitable || b.superficie_architecte,
+          price: b.prix,
+          status: statusConfig.name,
+          statusColor: statusConfig.color,
+          originalStatus: b.etat,
+          tranche_nom: b?.tranche?.nom || '',
+          bloc_nom: b?.bloc?.nom || '',
+          immeuble_nom: b?.immeuble?.nom || '',
+          orientation: b?.orientation || '',
+          etage: getFormattedNiveau(b?.niveau),
+          niveau: b?.niveau,
+          typologie: b?.typologie?.typologie || '',
+          vue: b?.vue?.vue || '',
+          conventionne: b?.conventionne || '', // Modifier ici - valeur par défaut vide au lieu de 0
+          prix_unitaire: b?.prix_unitaire || 0,
+          prix: b?.prix || '',
+          num_parking: b?.num_parking || '',
+          num_box: b?.num_box || 0,
+          prix_box: b?.prix_box || 0,
+          prix_parking: b?.prix_parking || 0,
+          avance_minimale: b?.avance_minimale || 0,
+          superficie_architecte: b?.superficie_architecte || 0,
+          superficie_habitable: b?.habitable || 0,
+          nbre_facades: b?.nbre_facades || 0,
+          superficie_parking: b?.superficie_parking || 0,
+          superficie_box: b?.superficie_box || 0,
+          superficie_terrasse: b?.superficie_terrasse || 0,
+          superficie_terrasse_calculer: b?.superficie_terrasse_calculer || 0,
+          superficie_balcon: b?.superficie_balcon || 0,
+          superficie_balcon_calculer: b?.superficie_balcon_calculer || 0,
+          superficie_jardin: b?.superficie_jardin || 0,
+          superficie_jardin_calculer: b?.superficie_jardin_calculer || 0,
+          titre_foncier: b?.titre_foncier || '',
+          superficie_total: b?.superficie_total || 0,
+          superficie_vendable: b?.superficie_vendable || 0,
+          // Données de la première composition seulement
+          nbre_chambres: firstComposition.nbre_chambres || 0,
+          nbre_salons: firstComposition.nbre_salons || 0,
+          nbre_sdb: firstComposition.nbre_sdb || 0,
+          nbre_cuisines: firstComposition.nbre_cuisines || 0,
+          nbre_halls: firstComposition.nbre_halls || 0,
+          nbre_terasses: firstComposition.nbre_terasses || 0,
+          nbre_balcons: firstComposition.nbre_balcons || 0,
+          nbre_buanderies: firstComposition.nbre_buanderies || 0,
+          nbre_placards: firstComposition.nbre_placards || 0,
+          nbre_receptions: firstComposition.nbre_receptions || 0,
+          // Information sur le nombre total de compositions (pour information)
+          total_compositions: b.composition_bien?.length || 0,
+        };
+      }) || [];
     // Map immeuble data to match your column requirements
     const immeubles =
       immeublesData.map((i) => ({
@@ -215,6 +292,8 @@ export const BlocDetailsPage = () => {
         titre_foncier: i.titre_foncier,
         nbre_biens: i.nbre_biens || 0,
         tranche_nom: i?.tranche?.nom || '',
+        nom_bloc:i?.bloc.nom,
+        nom_projet: i?.projet?.nom,
       })) || [];
 
     // Map tranche data for filtering - FIXED: Use items array structure

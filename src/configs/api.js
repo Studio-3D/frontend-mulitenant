@@ -133,7 +133,7 @@ export const ENDPOINTS = {
   ReclamationsSav: '/sav/reclamations',
   ReclamationsClients: '/reclamationsClients',
   REMISECLES: '/remiseCles',
-  HISTOIMPORTATION: '/histoImportation',
+  HISTOIMPORTATION: '/histo-importation',
   ETAPESPROJET: '/etapes-projet',
   COMMISSSION_MENSUELLE_ATTENTE: '/commissions/commissionMensuelleAtt',
 };
