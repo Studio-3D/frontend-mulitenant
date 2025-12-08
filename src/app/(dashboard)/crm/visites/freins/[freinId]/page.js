@@ -81,11 +81,22 @@ export default function Biens_Dispo_By_frein_id() {
 
     return () => clearTimeout(timer); // Clean up the timeout on each render
   }, [searchTerm]);
+   function NomBienComplet(bien) {
+    const noms = [];
+
+    if (bien.tranche?.nom) noms.push(bien.tranche.nom);
+    if (bien.bloc?.nom) noms.push(bien.bloc.nom);
+    if (bien.immeuble?.nom) noms.push(bien.immeuble.nom);
+
+    noms.push(bien.propriete_dite_bien);
+
+    return noms.join(' - ');
+  }
   const formatData = () => {
     return data.map((pro) => {
       return {
         id: pro.id,
-        bien_propriete_dite_bien: pro.bien.propriete_dite_bien,
+        bien_propriete_dite_bien: NomBienComplet(pro.bien),
         bien_etat:
           pro.bien.etat === 'ENCOURS_DE_PROPOSITION' &&
           (user.id !== pro?.is_proposed?.user_id
@@ -156,7 +167,7 @@ export default function Biens_Dispo_By_frein_id() {
     return data.map((pro) => {
       return {
         id: pro.id,
-        bien_propriete_dite_bien: pro.bien.propriete_dite_bien,
+        bien_propriete_dite_bien: NomBienComplet(pro.bien),
         bien_etat:
           pro.bien.etat === 'ENCOURS_DE_PROPOSITION' &&
           (user.id !== pro?.is_proposed?.user_id

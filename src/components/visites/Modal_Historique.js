@@ -244,7 +244,12 @@ const Modal_Historique = ({ onClose, rows, loading_histo }) => {
                               {
                                 key: 'fr_etages',
                                 label: 'Etages',
-                                value: row.fr_etages,
+                                value: row.fr_etages
+                                  ? row.fr_etages
+                                      .split(',')
+                                      .map((e) => e.trim())
+                                      .join(', ')
+                                  : null,
                               },
                               {
                                 key: 'fr_orientations',
@@ -341,7 +346,7 @@ const Modal_Historique = ({ onClose, rows, loading_histo }) => {
                             {/* First render Frein values */}
                             {[
                               { key: 'fr_tranches', value: row.fr_tranches },
-                              { key: 'fr_etages', value: row.fr_etages },
+                             { key: 'fr_etages', value: row.fr_etages ? row.fr_etages.split(',').map(e => e.trim()).join(', ') : null },
                               {
                                 key: 'fr_orientations',
                                 value: row.fr_orientations
@@ -499,7 +504,7 @@ const Modal_Historique = ({ onClose, rows, loading_histo }) => {
                           <tr>
                             {filteredChanges.map(([key]) => (
                               <th
-                                key={key}
+                                 key={`frein_${key}`}
                                 className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700"
                               >
                                 {key == 'date_relance' && 'Date Relance'}
@@ -693,8 +698,8 @@ const Modal_Historique = ({ onClose, rows, loading_histo }) => {
                       </table>
                     ) : (
                       <>
-                        {(row.interet == '1' ||
-                          row.interet == '2')&& row.statut!=2 && (
+                        {(row.interet == '1' || row.interet == '2') &&
+                          row.statut != 2 && (
                             <table className="w-full text-sm border-collapse">
                               {/* Création */}
                               <thead style={{ background: '#bcf7ff' }}>

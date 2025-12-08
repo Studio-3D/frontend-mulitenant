@@ -392,16 +392,34 @@ export function VisitDetails({
               const frein = response?.data?.historiques[k]?.freins;
               fr_autre =
                 response?.data?.historiques[k]?.frein?.description_autre;
-              const concatNames = (array, keyPath) =>
-                Array.isArray(array)
-                  ? array
-                      .map((item) =>
-                        keyPath.split('.').reduce((o, i) => o?.[i], item)
-                      )
-                      .filter(Boolean)
-                      .join(',')
-                  : '';
+              const concatNames = (array, keyPath) => {
+                if (!Array.isArray(array) || array.length === 0) return '';
 
+                return array
+                  .map((item) => {
+                    try {
+                      // For direct properties like 'etage' or 'orientation'
+                      if (keyPath.includes('.')) {
+                        // For nested properties like 'tranche.nom'
+                        return keyPath
+                          .split('.')
+                          .reduce((o, i) => o?.[i], item);
+                      } else {
+                        // For direct properties
+                        return item[keyPath];
+                      }
+                    } catch (error) {
+                      console.error(
+                        `Error accessing ${keyPath} in item:`,
+                        item,
+                        error
+                      );
+                      return null;
+                    }
+                  })
+                  .filter(Boolean)
+                  .join(',');
+              };
               fr_tr = concatNames(frein?.frein_tranche, 'tranche.nom');
               fr_o = concatNames(frein?.frein_orientation, 'orientation');
               fr_tp = concatNames(
@@ -409,7 +427,11 @@ export function VisitDetails({
                 'typologie.typologie'
               );
               fr_v = concatNames(frein?.frein_vue, 'vue.vue');
-              fr_et = concatNames(frein?.frein_etage, 'etage');
+              //fr_et = concatNames(frein?.frein_etage, 'etage');
+              // Update the frein_etage processing:
+              fr_et = frein?.frein_etage
+                ? frein.frein_etage.map((item) => item.etage).join(',')
+                : '';
 
               const formatValue = (value, suffix = '') =>
                 value != null && value !== 0 ? `${value}${suffix}` : '';
@@ -866,7 +888,7 @@ export function VisitDetails({
                               </div>
                               <div>
                                 <h3 className="text-xl font-bold !text-gray-900">
-                                  VISITE {currentVisitOrder} 
+                                  VISITE {currentVisitOrder}
                                 </h3>
                                 <p className="text-gray-500">
                                   {format(
@@ -1244,17 +1266,19 @@ export function VisitDetails({
                         )}
                         {visite.interet == 3 && (
                           <>
-                         
                             <InfoCard
                               icon={<AlertCircleIcon className="h-5 w-5" />}
                               title="Freins"
                               value={[
-                                visite.freins?.frein_tranche.length>0 && 'TRANCHE',
-                                visite.freins?.frein_etage.length>0 && 'ETAGE',
-                                visite.freins?.frein_orientation.length>0 &&
+                                visite.freins?.frein_tranche.length > 0 &&
+                                  'TRANCHE',
+                                visite.freins?.frein_etage.length > 0 &&
+                                  'ETAGE',
+                                visite.freins?.frein_orientation.length > 0 &&
                                   'ORIENTATION',
-                                visite.freins?.frein_typologie.length>0 && 'TYPOLOGIE',
-                                visite.freins?.frein_vue.length>0 && 'VUE',
+                                visite.freins?.frein_typologie.length > 0 &&
+                                  'TYPOLOGIE',
+                                visite.freins?.frein_vue.length > 0 && 'VUE',
                                 ((visite.freins?.prix_min &&
                                   visite.freins?.prix_min != 0) ||
                                   (visite.freins?.prix_max &&
@@ -1274,7 +1298,7 @@ export function VisitDetails({
                                 .join(', ')}
                             />
 
-                            {visite.freins?.frein_tranche.length>0 && (
+                            {visite.freins?.frein_tranche.length > 0 && (
                               <InfoCard
                                 icon={<LayersIcon className="h-5 w-5" />}
                                 title="Tranche"
@@ -1295,7 +1319,7 @@ export function VisitDetails({
                                 )}
                               />
                             )}
-                            {visite.freins?.frein_etage.length>0 && (
+                            {visite.freins?.frein_etage.length > 0 && (
                               <InfoCard
                                 icon={
                                   <AlignVerticalSpaceAroundIcon className="h-5 w-5" />
@@ -1318,7 +1342,7 @@ export function VisitDetails({
                                 )}
                               />
                             )}
-                            {visite.freins?.frein_orientation.length>0 && (
+                            {visite.freins?.frein_orientation.length > 0 && (
                               <InfoCard
                                 icon={<CompassIcon className="h-5 w-5" />}
                                 title="Orientations"
@@ -1340,7 +1364,7 @@ export function VisitDetails({
                               />
                             )}
 
-                            {visite.freins?.frein_typologie.length>0 && (
+                            {visite.freins?.frein_typologie.length > 0 && (
                               <InfoCard
                                 icon={<CompassIcon className="h-5 w-5" />}
                                 title="Typologies"
@@ -1361,7 +1385,7 @@ export function VisitDetails({
                                 )}
                               />
                             )}
-                            {visite.freins?.frein_vue.length>0 && (
+                            {visite.freins?.frein_vue.length > 0 && (
                               <InfoCard
                                 icon={<ImageIcon className="h-5 w-5" />}
                                 title="Vues"

@@ -435,7 +435,8 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
 
       const sanitizedDescription =
         sanitizeDescriptionForSocialMedia(description);
-      const postContent = `🏡 ${propertyTitle}\n\n${sanitizedDescription}\n\n📍 ${propertyLocation}\n💰 ${propertyPrice}\n\n${hashtags}`;
+      // const postContent = `🏡 ${propertyTitle}\n\n${sanitizedDescription}\n\n📍 ${propertyLocation}\n💰 ${propertyPrice}\n\n${hashtags}`;
+      const postContent = `🏡 ${sanitizedDescription}\n\n${hashtags}`;
 
       const token = localStorage.getItem('accessToken');
 
@@ -714,7 +715,8 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
       const shareResponse = await axios.post(
         `${APIURL.LINKEDIN_SHARE}`,
         {
-           accessToken: 'AQVmH2Cn2AE23OGzFHX0KY2dBeoRnnNK_VK2K4UyoqOVJoImfXYihasfXH7H05oVlOIp0bbTrC0Au-KEYhpx8EvcD0q3_Rj3maHXnp5p7eOWcZjdyVWgf8-i5_yZP_reolyZI06VogaIzST_Zn9j4mFA4Cs1Y1_k22U5zlTRY-Srd8jjwuju610a7HA-z0iYrKSoR-WuexU8jFENy53oGRNVZRV5Gg0rmOgtpSpekfeVSM-Ft1vbPQMpWC-HDc5bempHOlCUkZlMJww7dtUD1RQR_tXB0CH8lZiidFp2v17X2_eXK8NfRpkH78tEu6vVFZIr4k11GJOAas_4MD--N7Ea577O9Q',
+          accessToken:
+            'AQVmH2Cn2AE23OGzFHX0KY2dBeoRnnNK_VK2K4UyoqOVJoImfXYihasfXH7H05oVlOIp0bbTrC0Au-KEYhpx8EvcD0q3_Rj3maHXnp5p7eOWcZjdyVWgf8-i5_yZP_reolyZI06VogaIzST_Zn9j4mFA4Cs1Y1_k22U5zlTRY-Srd8jjwuju610a7HA-z0iYrKSoR-WuexU8jFENy53oGRNVZRV5Gg0rmOgtpSpekfeVSM-Ft1vbPQMpWC-HDc5bempHOlCUkZlMJww7dtUD1RQR_tXB0CH8lZiidFp2v17X2_eXK8NfRpkH78tEu6vVFZIr4k11GJOAas_4MD--N7Ea577O9Q',
           content: sanitizedDescription,
           visibility: 'PUBLIC',
           mediaUrl: uploadedMediaUrl,
@@ -756,6 +758,41 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
     }
   };
 
+  // Fonction pour copier le texte dans le presse-papier
+  const copyToClipboard = async (text) => {
+    try {
+      // Vérifier si l'API Clipboard est disponible
+      if (navigator.clipboard && window.isSecureContext) {
+        // Utiliser l'API Clipboard moderne
+        await navigator.clipboard.writeText(text);
+      } else {
+        // Méthode de secours pour les anciens navigateurs
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+
+        // Rendre invisible
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+
+        textArea.focus();
+        textArea.select();
+
+        // Copier
+        document.execCommand('copy');
+
+        // Nettoyer
+        document.body.removeChild(textArea);
+      }
+
+      // Afficher une notification de succès
+      toast.success('Description copiée dans le presse-papier!');
+    } catch (error) {
+      console.error('Erreur lors de la copie:', error);
+      toast.error('Échec de la copie. Veuillez réessayer.');
+    }
+  };
   return (
     <>
       {!isOpen && (

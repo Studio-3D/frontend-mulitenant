@@ -17,7 +17,8 @@ import {
   Phone,
 } from 'lucide-react';
 import { useNotifications } from '@/context/NotificationContext';
-import { useRouter } from 'next/navigation'; // Import useRouter
+import { useRouter } from 'next/navigation';
+import axios from 'axios';
 
 // Helper function to get color classes based on notification color
 const getColorClass = (color) => {
@@ -48,20 +49,71 @@ const getIconComponent = (iconName) => {
   return iconMap[iconName] || <Bell className="h-6 w-6" />;
 };
 
+// Helper function to get current user ID
+const getCurrentUserId = () => {
+  try {
+    // Try to get from authUser first (from AuthContext)
+    const authUser = JSON.parse(localStorage.getItem('authUser'));
+    if (authUser && authUser.id) {
+      return authUser.id;
+    }
+    console.log('user==>'+authUser.id)
+    // Fallback to user key
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (user && user.id) {
+      return user.id;
+    }
+    
+    console.warn('No user ID found in localStorage');
+    return null;
+  } catch (error) {
+    console.error('Error parsing user from localStorage:', error);
+    return null;
+  }
+};
+
+// Helper function to safely parse seen array
+const getSeenArray = (seenData) => {
+  if (seenData === null || seenData === undefined) return [];
+  if (Array.isArray(seenData)) return seenData;
+  if (typeof seenData === 'string') {
+    try {
+      const parsed = JSON.parse(seenData);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      console.error('Error parsing seen data:', e, 'Data:', seenData);
+      return [];
+    }
+  }
+  return [];
+};
+
 export default function NotificationsPage() {
   const {
     notifications,
     isLoadingNotifications,
+    fetchNotifications,
     markAsSeen,
     markAllAsSeen,
     isNotificationSeen,
   } = useNotifications();
   const [filter, setFilter] = useState('all'); // 'all', 'unseen', 'seen'
-  const router = useRouter(); // Initialize router
+  const router = useRouter();
 
-  // Filter notifications based on seen status
+  // Helper function to check if current user has seen a notification
+  const checkIfSeenByCurrentUser = (notification) => {
+    if (!notification) return false;
+    
+    const currentUserId = getCurrentUserId();
+    if (!currentUserId) return false;
+    
+    const seenArray = getSeenArray(notification.seen);
+    return seenArray.includes(currentUserId);
+  };
+
+  // Filter notifications based on seen status for current user
   const filteredNotifications = notifications.filter((notification) => {
-    const isSeen = isNotificationSeen(notification.id);
+    const isSeen = checkIfSeenByCurrentUser(notification);
     switch (filter) {
       case 'unseen':
         return !isSeen;
@@ -72,21 +124,56 @@ export default function NotificationsPage() {
     }
   });
 
+  // Count unseen notifications for current user
   const unseenCount = notifications.filter(
-    (notif) => !isNotificationSeen(notif.id)
+    (notif) => !checkIfSeenByCurrentUser(notif)
   ).length;
 
   // Handle notification click
-  const handleNotificationClick = (notification) => {
-    // Mark as seen when clicked
-    if (!isNotificationSeen(notification.id)) {
+  const handleNotificationClick = async (notification) => {
+    // Mark as seen for current user when clicked
+    if (!checkIfSeenByCurrentUser(notification)) {
       markAsSeen(notification.id);
+      
+      // Also call the backend to destroy notification (your existing logic)
+      try {
+        const accessToken = localStorage.getItem('accessToken');
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        
+        await axios({
+          method: 'get',
+          url: `${apiUrl}/DestroyNotif/${notification.id}`,
+          headers: {
+            'content-type': 'application/json',
+            Accept: 'application/json',
+            Authorization: `Bearer ${accessToken}`
+          }
+        });
+        
+        console.log('Notification destroyed');
+        fetchNotifications();
+      } catch (error) {
+        console.log('Failed to destroy notification');
+      }
     }
 
     // Navigate to the link if it exists
     if (notification.url) {
       window.open(notification.url, '_blank');
     }
+  };
+
+  // Handle individual mark as seen (with stop propagation)
+  const handleMarkAsSeen = async (e, notificationId) => {
+    e.stopPropagation();
+    markAsSeen(notificationId);
+  };
+
+  // Handle mark all as seen
+  const handleMarkAllAsSeen = async () => {
+    await markAllAsSeen();
+    // Refresh notifications after marking all as seen
+    fetchNotifications();
   };
 
   return (
@@ -104,9 +191,9 @@ export default function NotificationsPage() {
               </p>
             </div>
             <div className="flex items-center space-x-3">
-              {notifications.length > 0 && (
+              {notifications.length > 0 && unseenCount > 0 && (
                 <button
-                  onClick={markAllAsSeen}
+                  onClick={handleMarkAllAsSeen}
                   className="flex items-center space-x-2 px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md"
                 >
                   <CheckCheck className="h-4 w-4" />
@@ -165,7 +252,7 @@ export default function NotificationsPage() {
             </div>
           ) : (
             filteredNotifications.map((notification) => {
-              const isSeen = isNotificationSeen(notification.id);
+              const isSeen = checkIfSeenByCurrentUser(notification);
               return (
                 <div
                   key={notification.id}
@@ -198,7 +285,7 @@ export default function NotificationsPage() {
                           <p className="text-xs text-gray-400 mt-2">
                             {notification.date}
                           </p>
-                          {notification.lien && (
+                          {notification.url && (
                             <p className="text-xs text-blue-500 mt-1">
                               Cliquez pour voir plus →
                             </p>
@@ -209,10 +296,7 @@ export default function NotificationsPage() {
                             <>
                               <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
                               <button
-                                onClick={(e) => {
-                                  e.stopPropagation(); // Prevent triggering the div click
-                                  markAsSeen(notification.id);
-                                }}
+                                onClick={(e) => handleMarkAsSeen(e, notification.id)}
                                 className="p-2 text-gray-400 hover:text-blue-500 rounded-md hover:bg-gray-100"
                                 title="Marquer comme lu"
                               >

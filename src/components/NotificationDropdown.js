@@ -1,5 +1,4 @@
-"use client";
-
+'use client';
 import { useState, useEffect, useRef } from 'react';
 import { Bell, Check, CheckCheck, Eye, RefreshCw, Calendar, Home, AlertTriangle, Clock, CheckCircle, ThumbsUp, MessageCircle, Share } from 'lucide-react';
 import axios from 'axios';
@@ -11,7 +10,6 @@ const NotificationDropdown = ({ isLoadingNotifications: propLoading }) => {
     notifications,
     newNotificationsCount,
     isLoadingNotifications,
-    seenNotifications,
     fetchNotifications,
     markAsSeen,
     markAllAsSeen,
@@ -42,9 +40,10 @@ const NotificationDropdown = ({ isLoadingNotifications: propLoading }) => {
     const accessToken = localStorage.getItem('accessToken');
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     
-    // Mark as seen locally first for immediate UI feedback
+    // Mark as seen for current user
     markAsSeen(notifId);
     
+    // Destroy notification (your existing logic)
     axios({
       method: 'get',
       url: `${apiUrl}/DestroyNotif/${notifId}`,
@@ -55,14 +54,14 @@ const NotificationDropdown = ({ isLoadingNotifications: propLoading }) => {
       }
     })
       .then(() => {
-        console.log('Notification marked as read');
+        console.log('Notification destroyed');
         fetchNotifications();
         if (notification.url) {
           window.open(notification.url, '_blank');
         }
       })
       .catch(() => {
-        console.log('Failed to mark notification as read');
+        console.log('Failed to destroy notification');
       });
   };
 
@@ -100,7 +99,7 @@ const NotificationDropdown = ({ isLoadingNotifications: propLoading }) => {
     return <IconComponent className="h-4 w-4" />;
   };
 
-  // Calculate unseen count
+  // Calculate unseen count for current user
   const unseenCount = notifications.filter(notif => !isNotificationSeen(notif.id)).length;
 
   return (
