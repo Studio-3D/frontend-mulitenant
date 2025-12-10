@@ -8,7 +8,7 @@ export default function Home() {
   const { user, loading } = useAuth();
   const router = useRouter();
 
-  useEffect(() => {
+ /* useEffect(() => {
     if (!loading) {
       // If user is logged in, redirect to dashboard, otherwise to login
       if (user) {
@@ -18,7 +18,7 @@ export default function Home() {
       }
     }
   }, [user, loading, router]);
-
+*/
   return (
     <div className="flex items-center justify-center min-h-screen">
       <LoadingSpin />

@@ -3,12 +3,15 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { APIURL, RESOURCE_URL ,ENDPOINTS} from '@/configs/api';
+import { APIURL, RESOURCE_URL, ENDPOINTS } from '@/configs/api';
 import { ArrowLeft } from 'lucide-react';
 import LoadingSpin from '@/components/LoadingSpin';
 import BreadCrumb from '../../navigation/BreadCrumb';
+import { useProjet } from '@/context/ProjetContext';
 
 export default function ImportDetail() {
+  const { selectedProjet } = useProjet();
+
   const params = useParams();
   const router = useRouter();
   const [importInfo, setImportInfo] = useState(null);
@@ -61,7 +64,19 @@ export default function ImportDetail() {
     const url = `${RESOURCE_URL.DOCS}/${user.societe.raison_sociale_concatene}_${user.societe.id}/Import_fichier/${file}`;
     window.open(url, '_blank');
   };
-
+  // Show loading state if no project selected
+  if (!selectedProjet) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="text-gray-500">Aucun projet sélectionné</div>
+          <div className="text-sm text-gray-400 mt-2">
+            Veuillez sélectionner un projet pour afficher les données
+          </div>
+        </div>
+      </div>
+    );
+  }
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback ,useRef  } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import Link from 'next/link';
@@ -18,6 +18,7 @@ export default function Login() {
   
   const router = useRouter();
   const { login, user } = useAuth();
+  const loginAttempted = useRef(false); // Track if we've attempted login
 
   // Handle input changes
   const handleChange = useCallback((e) => {
@@ -29,11 +30,22 @@ export default function Login() {
   }, []);
 
   // Redirect if already logged in
+  // Remove or modify the auto-redirect for logged-in users
+  // Keep it but add a condition
   useEffect(() => {
-    if (user) {
-      router.push('/tableau-de-bord');
+    // Only redirect if user is already logged in AND we haven't just logged in
+    if (user && !loginAttempted.current) {
+      // Check if there's a saved redirect URL
+      const redirectUrl = localStorage.getItem('redirectAfterLogin');
+      
+      if (redirectUrl) {
+      //  localStorage.removeItem('redirectAfterLogin');
+        router.push(redirectUrl);
+      } else {
+        router.push('/tableau-de-bord');
+      }
     }
-  }, [user, router]);
+  }, [user, router, isSubmitting]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -49,7 +61,19 @@ export default function Login() {
     
     try {
       await login(formData);
-      router.push('/tableau-de-bord');
+      //router.push('/tableau-de-bord');
+      
+    // Immediately redirect after successful login
+      // Don't wait for useEffect
+      const redirectUrl = localStorage.getItem('redirectAfterLogin');
+          console.log('Login successful, redirect URL found:', redirectUrl);
+
+      if (redirectUrl) {
+        router.push(redirectUrl);
+       // localStorage.removeItem('redirectAfterLogin');
+      } else {
+        router.push('/tableau-de-bord');
+      }
     } catch (err) {
       setError("L'e-mail ou le mot de passe n'est pas valide ou l'utilisateur n'est pas Actif");
     } finally {

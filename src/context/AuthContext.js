@@ -84,7 +84,11 @@ export function AuthProvider({ children }) {
     window.localStorage.removeItem('accessToken');
     window.localStorage.removeItem('selectedSociete'); // Assuming these are application-specific
     window.localStorage.removeItem('selectedProjet'); // Assuming these are application-specific
+    localStorage.removeItem('redirectAfterLogin'); // Add this
     // Clear any other sensitive data from localStorage or sessionStorage
+    console.log(
+      'token d reditect=+>' + localStorage.getItem('redirectAfterLogin')
+    );
   }, []);
 
   // Initial authentication check on component mount
@@ -106,7 +110,10 @@ export function AuthProvider({ children }) {
         } catch (error) {
           console.error('Failed to initialize authentication:', error);
           clearAuthData();
+          setUser(null); // Ensure user is null on error
         }
+      } else {
+        setUser(null); // Ensure user is null when no token
       }
       setLoading(false);
     };
@@ -115,9 +122,10 @@ export function AuthProvider({ children }) {
   }, [axiosInstance, memoizedAuthConfig, clearAuthData]);
 
   // Login function
+  // In your AuthContext.js, ensure login function doesn't auto-redirect
   const login = useCallback(
     async (params) => {
-      setLoading(true);
+    //  setLoading(true);
       try {
         const response = await axiosInstance.post(
           memoizedAuthConfig.loginEndpoint,
@@ -132,16 +140,19 @@ export function AuthProvider({ children }) {
           memoizedAuthConfig.dashboardEndpoint
         );
         setUser(userResponse.data.user);
-        router.push('/tableau-de-bord'); // Redirect to dashboard after login
+
+        // DON'T redirect here
+        // router.push('/tableau-de-bord'); // ← Remove this
+
         return true;
       } catch (error) {
         console.error('Login error:', error);
-        throw error; // Re-throw to allow component to handle specific login errors
+        throw error;
       } finally {
-        setLoading(false);
+     //   setLoading(false);
       }
     },
-    [axiosInstance, router, memoizedAuthConfig]
+    [axiosInstance, memoizedAuthConfig]
   );
 
   // Logout function
@@ -158,16 +169,18 @@ export function AuthProvider({ children }) {
 
       // Import toast dynamically to avoid SSR issues
       const { default: toast } = await import('react-hot-toast');
-      toast.success("Déconnexion réussie.");
+      toast.success('Déconnexion réussie.');
 
       // Small delay to allow toast to show before redirect
       setTimeout(() => {
         try {
-          router.push("/login");
+          localStorage.removeItem('redirectAfterLogin');
+
+          router.push('/login');
         } catch (error) {
           // Fallback to window.location if router.push fails
-          console.warn("Router.push failed, using window.location:", error);
-          window.location.href = "/login";
+          console.warn('Router.push failed, using window.location:', error);
+          window.location.href = '/login';
         }
       }, 100);
     }
@@ -175,9 +188,10 @@ export function AuthProvider({ children }) {
 
   // Protected logout for LinkedIn flows (or similar external authentication)
   const protectedLogout = useCallback(async () => {
-    const isLinkedInFlow = localStorage.getItem('linkedin_admin_flow') === 'true' ||
-                           localStorage.getItem('linkedin_state') !== null ||
-                           window.location.pathname.includes('linkedin-callback');
+    const isLinkedInFlow =
+      localStorage.getItem('linkedin_admin_flow') === 'true' ||
+      localStorage.getItem('linkedin_state') !== null ||
+      window.location.pathname.includes('linkedin-callback');
 
     if (isLinkedInFlow) {
       console.log('Preventing logout during LinkedIn auth flow');
@@ -240,14 +254,17 @@ export function AuthProvider({ children }) {
     };
   }, [axiosInstance, memoizedAuthConfig, clearAuthData]);
 
-  const contextValue = useMemo(() => ({
-    user,
-    login,
-    logout: protectedLogout,
-    forceLogout: logout, // Direct logout without LinkedIn protection
-    isAuthenticated: !!user,
-    loading
-  }), [user, login, protectedLogout, logout, loading]);
+  const contextValue = useMemo(
+    () => ({
+      user,
+      login,
+      logout: protectedLogout,
+      forceLogout: logout, // Direct logout without LinkedIn protection
+      isAuthenticated: !!user,
+      loading,
+    }),
+    [user, login, protectedLogout, logout, loading]
+  );
 
   return (
     <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>

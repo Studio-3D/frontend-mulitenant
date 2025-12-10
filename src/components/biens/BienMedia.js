@@ -460,7 +460,7 @@ export default function BienMedia({ bienId }) {
             Aucun média disponible
           </h3>
           <p className="mt-2 !text-gray-500">
-            Aucune image ou vidéo n'a été téléchargée pour ce bien.
+            Aucune image ou vidéo n{"'"}a été téléchargée pour ce bien.
           </p>
         </div>
 

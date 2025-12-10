@@ -252,7 +252,7 @@ const PreReservationTable = () => {
               <MyDocument
                 data={[
                   row.visite_id,
-                  row.code_pre_reserve,
+                  row.code,
                   row.t_appel != null
                     ? row.t_appel.rdv.rdv
                     : row?.visite != null
@@ -274,6 +274,7 @@ const PreReservationTable = () => {
                     : row?.visite != null
                     ? row.visite?.user?.prenom
                     : null,
+                    JSON.parse(localStorage.getItem('authUser'))
                 ]}
               />
             }

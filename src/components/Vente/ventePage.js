@@ -16,7 +16,6 @@ export function VentePage() {
   const urlTab = searchParams.get('tab');
   const urlSubTab = searchParams.get('subtab');
 
-
   // Set initial state from URL parameters
   const [activeTab, setActiveTab] = useState(urlTab || 'reservations');
   const [activeSubTab, setActiveSubTab] = useState({
@@ -25,10 +24,7 @@ export function VentePage() {
     remboursements: 'apres-ventes',
   });
 
-
-
-   const renderedTabs = useRef({ [activeTab]: true }); // Only current tab initially
-
+  const renderedTabs = useRef({ [activeTab]: true }); // Only current tab initially
 
   const { user } = useAuth();
   const { selectedProjet } = useProjet();
@@ -56,7 +52,6 @@ export function VentePage() {
     console.log('URL updated to:', newUrl);
   }, []);
 
- 
   useEffect(() => {
     if (activeTab && !renderedTabs.current[activeTab]) {
       renderedTabs.current[activeTab] = true;
@@ -378,6 +373,19 @@ export function VentePage() {
     }
     handleSubTabChange(parentTab, subTabId, true);
   };
+  // Show loading state if no project selected
+  if (!selectedProjet) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="text-gray-500">Aucun projet sélectionné</div>
+          <div className="text-sm text-gray-400 mt-2">
+            Veuillez sélectionner un projet pour afficher la Vente
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="">

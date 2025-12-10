@@ -39,7 +39,20 @@ const ProjetDialog = ({
     await new Promise((res) => setTimeout(res, 400));
     setLoading(false);
     onClose();
-    if (returnPath) router.push(returnPath);
+     // Check for redirect URL in this priority:
+  // 1. redirectAfterLogin (from login flow)
+  // 2. returnPath (passed as prop)
+  // 3. Default to dashboard
+  
+  const redirectUrl = localStorage.getItem('redirectAfterLogin');
+  if (redirectUrl) {
+    router.push(redirectUrl);
+  } else if (returnPath) {
+    router.push(returnPath);
+  } else {
+    router.push('/tableau-de-bord');
+  }
+   // if (returnPath) router.push(returnPath);
   };
 
   if (!open) return null;
