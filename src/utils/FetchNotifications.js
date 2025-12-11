@@ -34,7 +34,8 @@ const fetchNotifications = async ({
     setNotifications([]);
     setNewNotificationsCount(newNotificationsCount);
     setIsLoadingNotifications(false);
-    {
+    
+   {
       /**91=====>99 notification de webhoook */
     }
     const typeNotiMap = {
@@ -603,6 +604,7 @@ const fetchNotifications = async ({
           projet,
           lien,
           description_type,
+          seen, // Get the seen field from the notification
         } = notification;
         const notificationType = typeNotiMap[type];
 
@@ -654,10 +656,13 @@ const fetchNotifications = async ({
             projet,
             description_type
           ),
-          seen: Boolean(notification.seen),
+          // FIX: Keep the seen array as is, don't convert to boolean
+          seen: seen || [], // If seen is null/undefined, use empty array
         };
       })
       .filter((notification) => notification !== null);
+    
+    console.log('Formatted notifications with seen arrays:', formattedNotifications.map(n => ({id: n.id, seen: n.seen})));
     setNotifications((prevNotif) => [...prevNotif, ...formattedNotifications]);
   } catch (error) {
     console.error('Error fetching notifications:', error);

@@ -1,14 +1,17 @@
-"use client";
+'use client';
 
-import { useMemo } from "react";
-import { APIURL } from "@/configs/api";
-import { useSociete } from "@/context/SocieteContext";
+import { useMemo } from 'react';
+import { APIURL } from '@/configs/api';
+import { useSociete } from '@/context/SocieteContext';
+import { useProjet } from '@/context/ProjetContext';
 
 export default function LandingPageConfigTab() {
   const { selectedSociete } = useSociete();
+  const { selectedProjet } = useProjet();
 
   const endpoint = useMemo(() => `${APIURL.ROOT}/send_landing_page`, []);
-  const societeId = selectedSociete?.id ?? "<votre-societe-id>";
+  const societeId = selectedSociete?.id ?? '<votre-societe-id>';
+  const projet_id = selectedProjet?.id ?? '<votre-projet-id>';
 
   const htmlForm = `
 <form action="${endpoint}" method="POST" accept-charset="UTF-8">
@@ -21,6 +24,7 @@ export default function LandingPageConfigTab() {
 
   <!-- Obligatoire: fourni par Immogestion, identifie votre société -->
   <input type="hidden" name="societe_id" value="${societeId}" />
+  <input type="hidden" name="projet_id" value="${projet_id}" />
 
   <button type="submit">Envoyer</button>
 </form>`;
@@ -30,6 +34,8 @@ export default function LandingPageConfigTab() {
 (function() {
   var API_URL = '${endpoint}';
   var SOCIETE_ID = '${societeId}';
+    var PROJET_ID = '${projet_id}';
+
   var FORM_SELECTOR = 'form#immogestion-landing';
 
   function serialize(form) {
@@ -41,6 +47,7 @@ export default function LandingPageConfigTab() {
       email: fd.get('email') || '',
       comment: fd.get('comment') || null,
       societe_id: SOCIETE_ID
+      projet_id: PROJET_ID
     };
   }
 
@@ -86,24 +93,35 @@ export default function LandingPageConfigTab() {
       <div className="mb-4">
         <h2 className="text-xl font-semibold">Landing Page</h2>
         <p className="text-gray-600 text-sm mt-1">
-          Intégrez votre page externe pour créer automatiquement des prospects dans Immogestion.
+          Intégrez votre page externe pour créer automatiquement des prospects
+          dans Immogestion.
         </p>
       </div>
 
       <div className="border rounded-lg p-4">
         <h3 className="font-medium mb-2">Option A — Formulaire HTML</h3>
-        <pre className="bg-gray-50 p-3 rounded text-xs overflow-auto"><code>{htmlForm}</code></pre>
+        <pre className="bg-gray-50 p-3 rounded text-xs overflow-auto">
+          <code>{htmlForm}</code>
+        </pre>
       </div>
 
       <div className="border rounded-lg p-4">
-        <h3 className="font-medium mb-2">Option B — Script pour un formulaire existant</h3>
-        <p className="text-sm text-gray-600 mb-3">Ajoutez cet extrait et donnez l'ID immogestion-landing à votre formulaire.</p>
-        <pre className="bg-gray-50 p-3 rounded text-xs overflow-auto"><code>{jsEnhancer}</code></pre>
+        <h3 className="font-medium mb-2">
+          Option B — Script pour un formulaire existant
+        </h3>
+        <p className="text-sm text-gray-600 mb-3">
+          Ajoutez cet extrait et donnez l'ID immogestion-landing à votre
+          formulaire.
+        </p>
+        <pre className="bg-gray-50 p-3 rounded text-xs overflow-auto">
+          <code>{jsEnhancer}</code>
+        </pre>
       </div>
 
       <div className="border rounded-lg p-4">
         <h3 className="font-medium mb-2">Test</h3>
-        <pre className="bg-gray-50 p-3 rounded text-xs overflow-auto"><code>{`curl -X POST ${endpoint} \
+        <pre className="bg-gray-50 p-3 rounded text-xs overflow-auto">
+          <code>{`curl -X POST ${endpoint} \
   -H "Content-Type: application/json" \
   -d '{
     "nom": "Doe",
@@ -112,9 +130,10 @@ export default function LandingPageConfigTab() {
     "email": "john@example.com",
     "comment": "Intéressé par T2",
     "societe_id": ${societeId}
-  }'`}</code></pre>
+     "projet_id": ${projet_id}
+  }'`}</code>
+        </pre>
       </div>
     </div>
   );
 }
-

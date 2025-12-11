@@ -127,7 +127,6 @@ const VisiteForm_Old = ({ prospect_id, origin }) => {
       ? selectedPerson.partenaire.description
       : null
   );
-  
 
   const defaultValues = {
     interet: '',
@@ -1569,7 +1568,7 @@ const VisiteForm_Old = ({ prospect_id, origin }) => {
     const list = [...input_biens];
     list[index][name] = value;
 
-    // Handle bien_id changes
+    // Hand_id changes
     if (name == 'bien_id') {
       show_bien(value, index);
       storebien_en_proposition(value, index);
@@ -1864,7 +1863,9 @@ const VisiteForm_Old = ({ prospect_id, origin }) => {
                                       3: VISITE_INTERETS[3],
                                     }
                               }
-disabled={isOrigin ? false : watch('telephone') === ''}
+                              disabled={
+                                isOrigin ? false : watch('telephone') === ''
+                              }
                               onChange={handleChange_interet}
                             />
                           </div>
@@ -2453,7 +2454,9 @@ disabled={isOrigin ? false : watch('telephone') === ''}
                                       3: VISITE_INTERETS[3],
                                     }
                               }
-disabled={isOrigin ? false : watch('telephone') === ''}
+                              disabled={
+                                isOrigin ? false : watch('telephone') === ''
+                              }
                               onChange={handleChange_interet}
                             />
                           </div>
@@ -3026,7 +3029,7 @@ disabled={isOrigin ? false : watch('telephone') === ''}
                   Annuler
                 </Button>
                 <Button type="submit" /*disabled={isDisabled || isSubmitting}*/>
-                  {(isSubmitting||isDisabled) ? (
+                  {isSubmitting || isDisabled ? (
                     <div className="flex items-center gap-2">
                       <svg
                         className="animate-spin h-5 w-5 text-white"

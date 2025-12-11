@@ -759,121 +759,127 @@ export default function AppelsForm({ id }) {
         setIsSubmitting(false);
       });
   };
+ 
+
   const fetch_event_by_param = async (route, value, param) => {
-    await axios
-      .get(`${APIURL.ROOTV1}/` + route + `/` + param + `/` + value, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      })
-      .then((res) => {
-        setInfo_client(null);
-        setClient_prospect(null);
-        setId_appel(null);
-        setId_visite(null);
-        var prospect_id,
-          cin,
-          nom,
-          prenom,
-          ville,
-          tel,
-          tel_2,
-          source_id,
-          source,
-          partenaire_id,
-          partenaire_txt = null;
+  await axios
+    .get(`${APIURL.ROOTV1}/` + route + `/` + param + `/` + value, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+    .then((res) => {
+      setInfo_client(null);
+      setClient_prospect(null);
+      setId_appel(null);
+      setId_visite(null);
+      
+      var prospect_id, cin, nom, prenom, ville, tel, tel_2, source_id, source, partenaire_id, partenaire_txt = null;
+      
+      console.log('Réponse API:', res.data); // Debug
 
-        if (res.data.prospect != null || res.data.client != null) {
-          if (
-            (res.data.client != null && res.data.prospect != null) ||
-            (res.data.client != null && res.data.prospect == null)
-          ) {
-            prospect_id = res.data.client.prospect_id || res.data.prospect_id;
-            cin = res.data.client.cin || res.data.prospect.cin;
-            nom = res.data.client.nom || res.data.prospect.nom;
-            prenom = res.data.client.prenom || res.data.prospect.prenom;
-            ville = res.data.client.ville || res.data.prospect.ville;
-            tel = res.data.client.telephone_num1 || res.data.prospect.telephone;
-            tel_2 =
-              res.data.client.telephone_num2 ||
-              res.data.prospect.telephone_num2;
-            source_id =
-              res.data.client.prospect?.source?.id ||
-              res.data.prospect.source?.id;
-            source =
-              res.data.client.prospect?.source?.source ||
-              res.data.prospect.source?.source;
-            partenaire_id =
-              res.data.client.prospect?.partenaire_id ||
-              res.data.prospect.partenaire_id;
-            partenaire_txt =
-              res.data.client.prospect?.partenaire?.description ||
-              res.data.prospect.partenaire.description;
-            setInfo_client(
-              (res.data.client?.nom || res.data.prospect?.nom || '') +
-                ' ' +
-                (res.data.client?.prenom || res.data.prospect?.prenom || '')
-            );
-            setClient_prospect('Est un client');
-          } else {
-            prospect_id = res.data.prospect.id;
-            cin = res.data.prospect.cin;
-            nom = res.data.prospect.nom;
-            prenom = res.data.prospect.prenom;
-            tel = res.data.prospect.telephone;
-            tel_2 = res.data.prospect.telephone_num2;
-            ville = res.data.prospect.ville;
-            source_id = res.data.prospect.source?.id;
-            source = res.data.prospect.source?.source;
-            partenaire_id = res.data.prospect?.partenaire_id;
-            partenaire_txt = res.data.prospect?.partenaire?.description;
+      // Vérifier si on a soit un client, soit un prospect
+      if (res.data.client != null || res.data.prospect != null) {
+        console.log('psss22 - Données trouvées');
+        
+        // PRIORITÉ: Si on a un CLIENT (même si on a aussi un prospect)
+        if (res.data.client != null) {
+          console.log('Client trouvé - Priorité au client');
+          
+          prospect_id = res.data.client.prospect_id;
+          cin = res.data.client.cin;
+          nom = res.data.client.nom;
+          prenom = res.data.client.prenom;
+          ville = res.data.client.ville;
+          tel = res.data.client.telephone_num1;
+          tel_2 = res.data.client.telephone_num2;
+          source_id = res.data.client.prospect?.source?.id;
+          source = res.data.client.prospect?.source?.source;
+          partenaire_id = res.data.client.prospect?.partenaire_id;
+          partenaire_txt = res.data.client.prospect?.partenaire?.description;
 
-            setInfo_client(
-              res.data.prospect.nom + ' ' + res.data.prospect.prenom
-            );
-            setClient_prospect('Est un prospect');
-          }
+          setInfo_client(res.data.client.nom + ' ' + res.data.client.prenom);
+          setClient_prospect('Est un client');
+          
+          console.log('ooeer - Modal client va s\'ouvrir');
           setOpen_Dialog(true);
-
-          setValue('prospect_id', prospect_id);
-          setValue('nom', nom);
-          setValue('cin', cin);
-          setValue('prenom', prenom);
-          setValue('telephone', tel);
-          if (tel_2 != null) {
-            setValue('telephone_num2', tel_2);
-          } else {
-            setValue('telephone_num2', null);
-          }
-          setValue('ville', ville);
-          setSource(source);
-          setPartenaire(partenaire_txt);
-          setValue('source', source_id);
-          if (source == 'Partenaire') {
-            setValue('source_txt', 'Partenaire');
-          } else {
-            setValue('source_txt', null);
-          }
-          setValue('projet_id', res.data.prospect?.projet_id);
-          fetchPartenaires(res.data.prospect?.projet_id);
-          fetch_data_by_projetId(res.data.prospect?.projet_id);
-          fetch_type_biens(res.data.prospect?.projet_id);
-          setValue('partenaire_id', partenaire_id);
-
-          if (res.data.prospect.appels != null) {
-            setId_appel(res.data.prospect.appels?.id);
-          }
-          if (res.data.prospect.visite_first != null) {
-            setId_visite(res.data.prospect.visite_first?.id);
-          }
-        } else {
-          defaultValues['prospect_id'] = null;
-          setOpen_Dialog(false);
         }
-      })
-      .catch(() => {});
-  };
+        // Sinon, si on a seulement un PROSPECT (sans client)
+        else if (res.data.prospect != null) {
+          console.log('Prospect trouvé (pas de client)');
+          
+          prospect_id = res.data.prospect.id;
+          cin = res.data.prospect.cin;
+          nom = res.data.prospect.nom;
+          prenom = res.data.prospect.prenom;
+          tel = res.data.prospect.telephone;
+          tel_2 = res.data.prospect.telephone_num2;
+          ville = res.data.prospect.ville;
+          source_id = res.data.prospect.source?.id;
+          source = res.data.prospect.source?.source;
+          partenaire_id = res.data.prospect?.partenaire_id;
+          partenaire_txt = res.data.prospect?.partenaire?.description;
 
+          setInfo_client(res.data.prospect.nom + ' ' + res.data.prospect.prenom);
+          setClient_prospect('Est un prospect');
+          setOpen_Dialog(true);
+        }
+
+        // Remplir le formulaire avec les données
+        setValue('prospect_id', prospect_id);
+        setValue('nom', nom);
+        setValue('cin', cin);
+        setValue('prenom', prenom);
+        setValue('telephone', tel);
+        
+        if (tel_2 != null && tel_2 !== '') {
+          setValue('telephone_num2', tel_2);
+        } else {
+          setValue('telephone_num2', null);
+        }
+        
+        setValue('ville', ville);
+        setSource(source);
+        setPartenaire(partenaire_txt);
+        setValue('source', source_id);
+        
+        if (source == 'Partenaire') {
+          setValue('source_txt', 'Partenaire');
+        } else {
+          setValue('source_txt', null);
+        }
+        
+        // Utiliser le projet_id du prospect (client ou prospect)
+        const projetId = res.data.client?.prospect?.projet_id || res.data.prospect?.projet_id;
+        setValue('projet_id', projetId);
+        
+        if (projetId) {
+          fetchPartenaires(projetId);
+          fetch_data_by_projetId(projetId);
+          fetch_type_biens(projetId);
+        }
+        
+        setValue('partenaire_id', partenaire_id);
+
+        // Gérer appels et visites
+        if (res.data.prospect?.appels != null) {
+          setId_appel(res.data.prospect.appels?.id);
+        }
+        if (res.data.prospect?.visite_first != null) {
+          setId_visite(res.data.prospect.visite_first?.id);
+        }
+        
+      } else {
+        console.log('Aucune donnée trouvée');
+          defaultValues['prospect_id'] = null;
+        setOpen_Dialog(false);
+      }
+    })
+    .catch((error) => {
+      console.error('Erreur API:', error.response?.data || error.message);
+      setOpen_Dialog(false);
+    });
+};
   const fetch_cin_unique = async (value) => {
     await axios
       .get(

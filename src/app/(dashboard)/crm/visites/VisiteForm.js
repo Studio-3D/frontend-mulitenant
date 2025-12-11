@@ -136,7 +136,6 @@ const VisiteForm = ({ prospect_id, origin }) => {
       ? selectedPerson.partenaire.description
       : null
   );
-
   const defaultValues = {
     interet: '',
     selectedProjet: selectedProjet?.id,
@@ -319,65 +318,82 @@ const VisiteForm = ({ prospect_id, origin }) => {
   };
 
   const handleChange_interet = (code) => {
-    if (code) {
-      setValue('interet', code);
+  if (code) {
+    setValue('interet', code);
 
-      if (code == 2) {
-        setValue('list_bien_interesse', []);
-        setValue('list_bien_transfere_vendu', []);
-        setValue('nb_bien_added', '');
-        setCheck_save(true);
-        setdisplay_cin_1(false);
-        input_biens.forEach((input) => {
-          //check if one of inputs bien_id !=null
-          if (input.bien_id != '') {
-            set_bien_disponible(input.bien_id);
-          }
-        });
-        pusher_function();
-      }
-
-      //interesse
-      else if (code == 1) {
-        setValue('nb_bien_added', '');
-        setValue('list_bien_transfere_vendu', []);
-        if (watch('cin') == '' && !isOrigin) {
-          setdisplay_cin_1(true);
-          toast.error('Veuillez saisir un cin !');
+    if (code == 2) {
+      // Réceptif - clear both arrays
+      setValue('list_bien_interesse', []);
+      setValue('list_bien_transfere_vendu', []);
+      setValue('nb_bien_added', '');
+      setCheck_save(true);
+      setdisplay_cin_1(false);
+      input_biens.forEach((input) => {
+        //check if one of inputs bien_id !=null
+        if (input.bien_id != '') {
+          set_bien_disponible(input.bien_id);
         }
-        if (watch('cin') == '' && isOrigin && display_cin) {
-          setdisplay_cin_1(true);
-          toast.error('Veuillez saisir un cin !');
-        }
-        fetch_bien_ByProjet();
-        pusher_function();
-      }
-
-      //perdu
-      else if (code == 3) {
-        setValue('list_bien_interesse', []);
-        setValue('list_bien_transfere_vendu', []);
-        setdisplay_cin_1(false);
-        setValue('nb_bien_added', '');
-        setCheck_save(true);
-        fetchTypeFreins();
-        fetchDataByProjet('tranches', setList_tranches, setLoading_tranches);
-        fetchDataByProjet('vues', setList_Vues, setLoading_vues);
-        fetchDataByProjet(
-          'typologies',
-          setListTyplogies,
-          setLoading_typologies
-        );
-        input_biens.forEach((input) => {
-          //check if one of inputs bien_id !=null
-          if (input.bien_id != '') {
-            set_bien_disponible(input.bien_id);
-          }
-        });
-        pusher_function();
-      }
+      });
+      pusher_function();
     }
-  };
+
+    //interesse
+    else if (code == 1) {
+      setValue('nb_bien_added', '');
+      
+      // Check if list_bien_transfere_vendu has data
+      const currentVendu = watch('list_bien_transfere_vendu');
+      console.log('Current vendu data when switching to intéressé:', currentVendu);
+      
+      // If vendu array is empty or doesn't exist, clear it
+      // Otherwise, keep it (because user might have marked some biens as "vente")
+      if (!currentVendu || 
+          currentVendu.length === 0 || 
+          currentVendu === '[]' || 
+          currentVendu === '""' ||
+          (typeof currentVendu === 'string' && currentVendu.trim() === '')) {
+        setValue('list_bien_transfere_vendu', []);
+      }
+      // Else: DO NOT clear it - keep the existing vendu biens
+      
+      if (watch('cin') == '' && !isOrigin) {
+        setdisplay_cin_1(true);
+        toast.error('Veuillez saisir un cin !');
+      }
+      if (watch('cin') == '' && isOrigin && display_cin) {
+        setdisplay_cin_1(true);
+        toast.error('Veuillez saisir un cin !');
+      }
+      fetch_bien_ByProjet();
+      pusher_function();
+    }
+
+    //perdu
+    else if (code == 3) {
+      // Perdu - clear both arrays
+      setValue('list_bien_interesse', []);
+      setValue('list_bien_transfere_vendu', []);
+      setdisplay_cin_1(false);
+      setValue('nb_bien_added', '');
+      setCheck_save(true);
+      fetchTypeFreins();
+      fetchDataByProjet('tranches', setList_tranches, setLoading_tranches);
+      fetchDataByProjet('vues', setList_Vues, setLoading_vues);
+      fetchDataByProjet(
+        'typologies',
+        setListTyplogies,
+        setLoading_typologies
+      );
+      input_biens.forEach((input) => {
+        //check if one of inputs bien_id !=null
+        if (input.bien_id != '') {
+          set_bien_disponible(input.bien_id);
+        }
+      });
+      pusher_function();
+    }
+  }
+};
 
   const handleChange_tp_notif = (code) => {
     if (code) {
@@ -681,12 +697,26 @@ const VisiteForm = ({ prospect_id, origin }) => {
   };
 
   const onSubmit = (data) => {
+   
     setFormSubmitted(true);
     if (!validateFields()) {
       // there were validation errors → bail out
       return;
     }
+     // Prepare data - ensure list_bien_transfere_vendu is stringified if it's an array
+  const finalData = { ...data };
+  
+  // If list_bien_transfere_vendu is an array (not stringified), stringify it
+  if (Array.isArray(finalData.list_bien_transfere_vendu)) {
+    finalData.list_bien_transfere_vendu = JSON.stringify(finalData.list_bien_transfere_vendu);
+  }
+  
+  // Same for list_bien_interesse if needed
+  if (Array.isArray(finalData.list_bien_interesse)) {
+    finalData.list_bien_interesse = JSON.stringify(finalData.list_bien_interesse);
+  }
 
+  console.log('Final data to send:', finalData);
     //si exist visites Perdu il faut repondre au dialog apres enregristrer sera activer
     if (old_visites_perdu.length > 0) {
       setOpen_D_P(true);
@@ -739,6 +769,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
           // Ne pas ajouter ces champs à `dataToSend`
           return;
         }
+     
 
         // Ajouter les autres champs normalement
         dataToSend.append(key, value);
@@ -763,7 +794,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
           if (res.status == 200) {
             message = `Visite créée avec succès`;
             toast.success(message);
-            router.push(ENDPOINTS.CRM+'?tab=visites');
+            router.push(ENDPOINTS.CRM + '?tab=visites');
             localStorage.removeItem('selectedProspect');
             localStorage.removeItem('selectedClient');
             reset(defaultValues);
@@ -1355,8 +1386,8 @@ const VisiteForm = ({ prospect_id, origin }) => {
       list[index]['reste'] = list[index]['prix_final'] - e.target.value;
     }
     setinput_biens_vendu(list);
-    setValue('list_bien_transfere_vendu', JSON.stringify(list));
-    console.log('les biens =>' + JSON.stringify(input_biens_vendu));
+  setValue('list_bien_transfere_vendu', JSON.stringify(list));
+  console.log('Updated list_bien_transfere_vendu:', list);
 
     if (
       list[index]['statut'] == 2 &&
@@ -1493,113 +1524,102 @@ const VisiteForm = ({ prospect_id, origin }) => {
   const requestData_action = {
     list_biens_visite: OldBiens_pre,
   };
+const handleSubmit_action = (ev) => {
+  ev.preventDefault();
+  setLoading_button_save_1(true);
 
-  const handleSubmit_action = (ev) => {
-    ev.preventDefault();
-    setLoading_button_save_1(true);
+  const updatedBiensVendu = [];
 
-    setinput_biens_vendu([]);
-    for (var i = 0; i <= Number(OldBiens_pre.length) - 1; i++) {
-      if (OldBiens_pre[i].action == 3) {
-        let bien_idd = OldBiens_pre[i].bien_id;
-        let bien_proprietee = OldBiens_pre[i].propriete_dite_bien;
-        let prixx = OldBiens_pre[i].prix;
-        let prixx_uni = OldBiens_pre[i].prix_unitaire;
-        let sup_jardin = OldBiens_pre[i].superficie_jardin_calculer;
-        console.log('on submit vendu ==>' + sup_jardin);
-        let sup_habit = OldBiens_pre[i].superficie_habitable;
-        let sup_balcon = OldBiens_pre[i].superficie_balcon_calculer;
-        let sup_terrase = OldBiens_pre[i].superficie_terrasse_calculer;
-        let p_box = OldBiens_pre[i].prix_box;
-        let p_parking = OldBiens_pre[i].prix_parking;
-        let avancee = OldBiens_pre[i].avance_minimale;
-        let visite_idd = OldBiens_pre[i].visite_id;
-        let t_f_id = OldBiens_pre[i].traitement_frein_id;
-        setinput_biens_vendu((input_biens_vendu) => [
-          ...input_biens_vendu,
-          {
-            visite_id: visite_idd,
-            traitement_frein_id: t_f_id,
-            bien_id: bien_idd,
-            old_bien_id: '',
-            propriete_dite_bien: bien_proprietee,
-            statut: 2,
-            rdv: '',
-            date_relance: '',
-            mode_relance: '',
-            commentaire: '',
-            prix: prixx,
-            prix_final: prixx,
-            superficie_balcon_calculer: sup_balcon,
-            superficie_terrasse_calculer: sup_terrase,
-            superficie_jardin_calculer: sup_jardin,
-            superficie_habitable: sup_habit,
-            prix_box: p_box,
-            prix_parking: p_parking,
-            prix_unitaire: prixx_uni,
-            avance_minimale: avancee,
+  for (var i = 0; i <= Number(OldBiens_pre.length) - 1; i++) {
+    if (OldBiens_pre[i].action == '3' || OldBiens_pre[i].action == 3) {
+      console.log('Adding bien to vendu list');
+      const bienData = {
+        traitement_frein_id: OldBiens_pre[i].traitement_frein_id || null,
+        bien_id: OldBiens_pre[i].bien_id,
+        old_bien_id: '',
+        propriete_dite_bien: OldBiens_pre[i].propriete_dite_bien,
+        statut: 2,
+        rdv: '',
+        date_relance: '',
+        mode_relance: '',
+        commentaire: '',
+        prix: OldBiens_pre[i].prix,
+        prix_final: OldBiens_pre[i].prix,
+        superficie_balcon_calculer: OldBiens_pre[i].superficie_balcon_calculer,
+        superficie_terrasse_calculer: OldBiens_pre[i].superficie_terrasse_calculer,
+        superficie_jardin_calculer: OldBiens_pre[i].superficie_jardin_calculer,
+        superficie_habitable: OldBiens_pre[i].superficie_habitable,
+        prix_box: OldBiens_pre[i].prix_box,
+        prix_parking: OldBiens_pre[i].prix_parking,
+        prix_unitaire: OldBiens_pre[i].prix_unitaire,
+        avance_minimale: OldBiens_pre[i].avance_minimale,
 
-            /*Reservation*/
-            code_reservation: '',
-            mode_financement: '',
-            date_reservation: date_reservation[0],
-            commentaire_res: '',
-            avance_res: '',
-            reste: prixx,
-            sr: false,
-            banque_id: '',
-            numero_paiement: '',
-            echeance: '',
-            check_montant: '',
-            selectedFiles_rsv: [],
+        /*Reservation*/
+        code_reservation: '',
+        mode_financement: '',
+        date_reservation: date_reservation[0],
+        commentaire_res: '',
+        avance_res: '',
+        reste: OldBiens_pre[i].prix,
+        sr: false,
+        banque_id: '',
+        numero_paiement: '',
+        echeance: '',
+        check_montant: '',
+        selectedFiles_rsv: [],
 
-            //fichier_avance:fich!=null?fich:0,
-            mode_paiement: '',
-            commentaireAvance: '',
-            date_reglement: date_reglement,
-            prix_remise: 0,
-            prix_forfetaire: 0,
-            docs_resv: '',
-            num_remise: '',
-            date_encaissement: null,
-            check_save: true,
-            selectedFiles_avc: [],
-          },
-        ]);
-        setValue(
-          'list_bien_transfere_vendu',
-          JSON.stringify(input_biens_vendu)
-        );
-      }
-      const initialExpandedPanels = Array.from(
-        { length: Number(OldBiens_pre.length) },
-        (_, i) => `panel_bienn${i + 1}`
-      );
-      setExpanded(initialExpandedPanels);
+        mode_paiement: '',
+        commentaireAvance: '',
+        date_reglement: date_reglement,
+        prix_remise: 0,
+        prix_forfetaire: 0,
+        docs_resv: '',
+        num_remise: '',
+        date_encaissement: null,
+        check_save: true,
+        selectedFiles_avc: [],
+      };
+      updatedBiensVendu.push(bienData);
     }
+  }
 
-    axios({
-      method: 'put',
-      url: `${APIURL.ROOTV1}/update_visite_bien_pre_reserve/0`,
-      data: requestData_action,
-      headers: {
-        'content-type': 'application/json',
-        Accept: 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
+  // Update state and form value
+  setinput_biens_vendu(updatedBiensVendu);
+  // CRITICAL: Stringify the array like list_bien_interesse
+  setValue('list_bien_transfere_vendu', JSON.stringify(updatedBiensVendu));
+
+  console.log('Updated biens vendu:', updatedBiensVendu);
+  console.log('Form value after update:', watch('list_bien_transfere_vendu'));
+
+  // Expand panels for the new biens vendu
+  const initialExpandedPanels = Array.from(
+    { length: updatedBiensVendu.length },
+    (_, i) => `panel_bienn${i + 1}`
+  );
+  setExpanded(initialExpandedPanels);
+
+  axios({
+    method: 'put',
+    url: `${APIURL.ROOTV1}/update_visite_bien_pre_reserve/0`,
+    data: requestData_action,
+    headers: {
+      'content-type': 'application/json',
+      Accept: 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
+  })
+    .then(() => {
+      setLoading_button_save_1(false);
+      toast.success('Données enregistrées avec succès');
+      setOldBiens_pre([]);
+      setValue('loading_b_pre', false);
+      setpaper_exist(1);
     })
-      .then(() => {
-        setLoading_button_save_1(false);
-        toast.success('Données enregistrées avec succès');
-        setOldBiens_pre([]);
-        setValue('loading_b_pre', false);
-        setpaper_exist(1);
-      })
-      .catch(() => {
-        console.log('errror');
-      });
-  };
-
+    .catch((error) => {
+      console.log('Error:', error);
+      setLoading_button_save_1(false);
+    });
+};
   //added
   const set_all_action_null = () => {
     setReset1(0);
@@ -1840,7 +1860,10 @@ const VisiteForm = ({ prospect_id, origin }) => {
       )}{' '}
       <div className="">
         <div className="flex items-center justify-start">
-          <BreadCrumb baseUrl={ENDPOINTS.CRM+'?tab=visites'} step={`Ajouter Visite`} />
+          <BreadCrumb
+            baseUrl={ENDPOINTS.CRM + '?tab=visites'}
+            step={`Ajouter Visite`}
+          />
         </div>
       </div>
       <div>
@@ -2356,7 +2379,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                     />{' '}
                                     <AutocompleteStatut_ModeRelance_Biens
                                       name={'mode_paiement'}
-                                      label={'Mode Paiement:'}
+                                      label={'Mode Paiement kk:'}
                                       placeholder={
                                         'Sélectionner un Mode de Paiement'
                                       }
@@ -2381,7 +2404,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                             }
                                             options={banques}
                                             value={x.banque_id}
-                                            required={x.mode_paiement !== 1}
+                                            required={x.mode_paiement !== '1'}
                                             code="id"
                                             labelKey="nom"
                                             onChange={(e) =>
@@ -2389,7 +2412,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                             }
                                           />
                                           <InputField_Biens
-                                            label="N° Paiment:"
+                                            label="N° Paiement:"
                                             name="numero_paiement"
                                             type="number"
                                             required={x.mode_paiement !== 1}
@@ -2407,7 +2430,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                         <InputField_Biens
                                           label="Date Échéance:"
                                           name="echeance"
-                                          required={x.mode_paiement !== 1}
+                                          required={x.mode_paiement !== '1'}
                                           type="date"
                                           value={x.echeance}
                                           onChange={(e) =>
@@ -2563,7 +2586,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                           )}
                         </>
                       )}
-                      {isOrigin && display_cin && display_cin_1 && (
+                      {/*isOrigin && display_cin && display_cin_1 && (
                         <div>
                           <TextField
                             label="Cin:"
@@ -2576,7 +2599,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                             required={Number(watch('interet')) == 1}
                           />
                         </div>
-                      )}
+                      )*/}
                     </>
                   )}
                 </div>
@@ -3043,7 +3066,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                         />
                                       </div>
                                       {/* Conditional Fields */}
-                                      {x.mode_paiement !== 1 &&
+                                      {x.mode_paiement !== '1' &&
                                         x.mode_paiement !== '' && (
                                           <>
                                             <SelectInput
@@ -3069,13 +3092,13 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                                 );
                                               }}
                                               placeholder="Sélectionner une Banque"
-                                              required={x.mode_paiement !== 1}
+                                              required={x.mode_paiement !== '1'}
                                             />
                                             <InputField_Biens
-                                              label="N° Paiment:"
+                                              label="N° Paiement:"
                                               name="numero_paiement"
                                               type="number"
-                                              required={x.mode_paiement !== 1}
+                                              required={x.mode_paiement !== '1'}
                                               value={x.numero_paiement}
                                               onChange={(e) =>
                                                 handleinputchange(e, i)
@@ -3084,13 +3107,13 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                           </>
                                         )}
                                       {x.mode_paiement !== '' &&
-                                        x.mode_paiement !== 1 &&
-                                        x.mode_paiement !== 5 &&
-                                        x.mode_paiement !== 6 && (
+                                        x.mode_paiement !== '1' &&
+                                        x.mode_paiement !== '5' &&
+                                        x.mode_paiement !== '6' && (
                                           <InputField_Biens
                                             label="Date Échéance:"
                                             name="echeance"
-                                            required={x.mode_paiement !== 1}
+                                            required={x.mode_paiement !== '1'}
                                             type="date"
                                             value={x.echeance}
                                             onChange={(e) =>

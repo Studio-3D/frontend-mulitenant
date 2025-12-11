@@ -1964,7 +1964,7 @@ export default function VisiteFormEdit({ id }) {
                               backendErrors={backendErrors} // Backend error messages if any
                               defaultValues={defaultValues} // Default values for the form
                               width="w-full" // Optionally set width, default is 'w-80'
-                              height="h-full" // Optionally set height, default is 'h-10'
+                              height="h-500" // Optionally set height, default is 'h-10'
                             />
                             {user.role <= 2 && watch('avance_res') > 0 && (
                               <>
