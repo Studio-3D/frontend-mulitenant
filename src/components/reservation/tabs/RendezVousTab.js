@@ -8,6 +8,7 @@ import {
   XCircleIcon,
   ClockIcon,
   PrinterIcon,
+  XCircle,
 } from 'lucide-react';
 import axios from 'axios';
 //import Swal from 'sweetalert2';
@@ -71,10 +72,10 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
   const [rdvEdit, setRdvEdit] = useState('');
   const [typeEdit, setTypeEdit] = useState('');
   const [commentaire, setCommentaire] = useState('');
- // const [clients, setClients] = useState([]);
+  // const [clients, setClients] = useState([]);
   const [errors, setErrors] = useState(null);
-  const etatRes=reservationData?.reservation?.etat;
-  const contratVente=reservationData?.reservation?.contrat_vente;
+  const etatRes = reservationData?.reservation?.etat;
+  const contratVente = reservationData?.reservation?.contrat_vente;
   const [isLoading, setIsLoading] = useState(true);
   const [listStatut, setListStatut] = useState([
     { title: 'En_Attente', value: 0 },
@@ -121,7 +122,7 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
         if (onRdvChange) {
           onRdvChange(data.rdv.length);
         }
-       /* const clientsList =
+        /* const clientsList =
           data.last_rdv[0]?.reservation?.aquereurs?.map((aquereur) => ({
             cin: aquereur.client.cin,
             name: aquereur.client.nom,
@@ -137,21 +138,22 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
     }
   };
 
- 
-    
   useEffect(() => {
     fetchData();
-  
+
     // Initialize Pusher with the correct connection
     const initializePusher = () => {
       if (!pusher_key_rdv_list || !reservationId) {
         console.log('Pusher key or reservation ID missing');
         return () => {};
       }
-  
+
       Pusher.logToConsole = true;
-      console.log('Initializing Pusher for rdv list, reservation:', reservationId);
-      
+      console.log(
+        'Initializing Pusher for rdv list, reservation:',
+        reservationId
+      );
+
       // Use the correct Pusher configuration that matches your backend
       const pusher = new Pusher(pusher_key_rdv_list, {
         cluster: 'eu',
@@ -159,49 +161,52 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
         forceTLS: true,
         wsHost: 'ws-eu.pusher.com', // Add explicit WebSocket host
         wssPort: 443,
-        enabledTransports: ['ws', 'wss'] // Force WebSocket transport
+        enabledTransports: ['ws', 'wss'], // Force WebSocket transport
       });
-  
+
       // Create the EXACT channel name that matches your Laravel event
       const channelName = `rdv-list-updates-${reservationId}`;
       console.log('Subscribing to channel:', channelName);
-  
+
       try {
         const channel = pusher.subscribe(channelName);
-        
+
         channel.bind('RdvEvent', (data) => {
-      
           // Always refresh when we receive an event for this channel
           console.log('Refreshing rdv data via Pusher');
           fetchData();
         });
-  
+
         // Handle connection events
         channel.bind('pusher:subscription_succeeded', () => {
           console.log('✅ Successfully subscribed to channel:', channelName);
         });
-  
+
         channel.bind('pusher:subscription_error', (status) => {
           console.error('❌ Pusher subscription error:', status);
         });
-  
+
         // Also listen for connection state changes
         pusher.connection.bind('state_change', (states) => {
-          console.log('Pusher connection state changed:', states.previous, '->', states.current);
+          console.log(
+            'Pusher connection state changed:',
+            states.previous,
+            '->',
+            states.current
+          );
         });
-  
+
         pusher.connection.bind('connected', () => {
           console.log('✅ Pusher connected successfully');
         });
-  
+
         pusher.connection.bind('disconnected', () => {
           console.log('🔴 Pusher disconnected');
         });
-  
       } catch (error) {
         console.error('Error subscribing to Pusher channel:', error);
       }
-  
+
       // Return cleanup function
       return () => {
         console.log('Cleaning up Pusher subscription for:', channelName);
@@ -210,10 +215,9 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
         }
       };
     };
-  
+
     const cleanupPusher = initializePusher();
- 
-  
+
     return cleanupPusher;
   }, [reservationId, pusher_key_rdv_list]);
 
@@ -365,11 +369,11 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
   return (
     <div className="space-y-6 p-4 min-h-[50vh]">
       {/* Header section */}
-      
+
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-gray-800 flex items-center">
           <CalendarIcon className="h-5 w-5 mr-2 text-blue-500" />
-          Rendez-vous 
+          Rendez-vous
         </h2>
 
         {etatRes == 1 && contratVente == null && (
@@ -382,7 +386,21 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
           </button>
         )}
       </div>
-
+      {etatRes != 1 && (
+        <div className="bg-red-50 border-l-4 border-red-500 p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <XCircle className="h-5 w-5 text-red-400" />
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-red-500">
+                Le dossier est désisté. Vous ne pouvez pas ajouter un Rendez
+                Vous.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Appointments grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {rdvs.map((rdv) => {

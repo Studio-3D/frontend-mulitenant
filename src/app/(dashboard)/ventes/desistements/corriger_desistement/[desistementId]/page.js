@@ -148,10 +148,10 @@ export default function Page() {
       if (response.data.penalite != null) {
         setAvecPenalite(true);
         setValue('mode_penalite', response.data.penalite?.mode_penalite);
-        setValue(
+       /* setValue(
           'mode_penalite_value',
           getModePenaliteCode(response.data.penalite?.mode_penalite)
-        );
+        );*/
         setValue('penalite_montant', response.data.penalite?.montant);
         setValue('penalite_par', response.data.penalite?.penalite_par);
         setValue('sr_pen', response.data.penalite?.sr == 0 ? false : true);
@@ -1493,14 +1493,13 @@ export default function Page() {
             {avecPenalite && (
               <div className="border-t border-gray-200 py-4 px-6 space-y-4">
                 <div className="flex flex-col md:flex-row gap-4 items-center">
-                  {' '}
                   {/* Ensures alignment */}
                   {/* Mode Pénalité Dropdown */} {/* Added mt-1 */}
                   <div className="w-[600px] mt-1">
                     <SelectInput
                       label="Mode Pénalité :"
                       name="mode_penalite"
-                      value={watch('mode_penalite_value')}
+                      value={watch('mode_penalite')}
                       required={true}
                       options={Object.entries(modes_penalites).map(
                         ([key, value]) => ({

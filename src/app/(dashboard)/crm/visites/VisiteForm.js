@@ -71,7 +71,9 @@ const VisiteForm = ({ prospect_id, origin }) => {
   const [backendErrors, setBackendErrors] = useState({});
   const [sources, setSources] = useState([]);
   const [partenaires, setPartenaires] = useState([]);
-
+  const [loading_sources, setLoading_sources] = useState(false);
+  const [loading_partenaires, setLoading_partenaire] = useState(false);
+  const [loading_banques, setLoading_banques] = useState(false);
   const [disabled_var, setDisabled] = useState(false);
 
   const [OldBiens_pre, setOldBiens_pre] = useState([]);
@@ -318,82 +320,87 @@ const VisiteForm = ({ prospect_id, origin }) => {
   };
 
   const handleChange_interet = (code) => {
-  if (code) {
-    setValue('interet', code);
+    if (code) {
+      setValue('interet', code);
 
-    if (code == 2) {
-      // Réceptif - clear both arrays
-      setValue('list_bien_interesse', []);
-      setValue('list_bien_transfere_vendu', []);
-      setValue('nb_bien_added', '');
-      setCheck_save(true);
-      setdisplay_cin_1(false);
-      input_biens.forEach((input) => {
-        //check if one of inputs bien_id !=null
-        if (input.bien_id != '') {
-          set_bien_disponible(input.bien_id);
-        }
-      });
-      pusher_function();
-    }
-
-    //interesse
-    else if (code == 1) {
-      setValue('nb_bien_added', '');
-      
-      // Check if list_bien_transfere_vendu has data
-      const currentVendu = watch('list_bien_transfere_vendu');
-      console.log('Current vendu data when switching to intéressé:', currentVendu);
-      
-      // If vendu array is empty or doesn't exist, clear it
-      // Otherwise, keep it (because user might have marked some biens as "vente")
-      if (!currentVendu || 
-          currentVendu.length === 0 || 
-          currentVendu === '[]' || 
-          currentVendu === '""' ||
-          (typeof currentVendu === 'string' && currentVendu.trim() === '')) {
+      if (code == 2) {
+        // Réceptif - clear both arrays
+        setValue('list_bien_interesse', []);
         setValue('list_bien_transfere_vendu', []);
+        setValue('nb_bien_added', '');
+        setCheck_save(true);
+        setdisplay_cin_1(false);
+        input_biens.forEach((input) => {
+          //check if one of inputs bien_id !=null
+          if (input.bien_id != '') {
+            set_bien_disponible(input.bien_id);
+          }
+        });
+        pusher_function();
       }
-      // Else: DO NOT clear it - keep the existing vendu biens
-      
-      if (watch('cin') == '' && !isOrigin) {
-        setdisplay_cin_1(true);
-        toast.error('Veuillez saisir un cin !');
-      }
-      if (watch('cin') == '' && isOrigin && display_cin) {
-        setdisplay_cin_1(true);
-        toast.error('Veuillez saisir un cin !');
-      }
-      fetch_bien_ByProjet();
-      pusher_function();
-    }
 
-    //perdu
-    else if (code == 3) {
-      // Perdu - clear both arrays
-      setValue('list_bien_interesse', []);
-      setValue('list_bien_transfere_vendu', []);
-      setdisplay_cin_1(false);
-      setValue('nb_bien_added', '');
-      setCheck_save(true);
-      fetchTypeFreins();
-      fetchDataByProjet('tranches', setList_tranches, setLoading_tranches);
-      fetchDataByProjet('vues', setList_Vues, setLoading_vues);
-      fetchDataByProjet(
-        'typologies',
-        setListTyplogies,
-        setLoading_typologies
-      );
-      input_biens.forEach((input) => {
-        //check if one of inputs bien_id !=null
-        if (input.bien_id != '') {
-          set_bien_disponible(input.bien_id);
+      //interesse
+      else if (code == 1) {
+        setValue('nb_bien_added', '');
+
+        // Check if list_bien_transfere_vendu has data
+        const currentVendu = watch('list_bien_transfere_vendu');
+        console.log(
+          'Current vendu data when switching to intéressé:',
+          currentVendu
+        );
+
+        // If vendu array is empty or doesn't exist, clear it
+        // Otherwise, keep it (because user might have marked some biens as "vente")
+        if (
+          !currentVendu ||
+          currentVendu.length === 0 ||
+          currentVendu === '[]' ||
+          currentVendu === '""' ||
+          (typeof currentVendu === 'string' && currentVendu.trim() === '')
+        ) {
+          setValue('list_bien_transfere_vendu', []);
         }
-      });
-      pusher_function();
+        // Else: DO NOT clear it - keep the existing vendu biens
+
+        if (watch('cin') == '' && !isOrigin) {
+          setdisplay_cin_1(true);
+          toast.error('Veuillez saisir un cin !');
+        }
+        if (watch('cin') == '' && isOrigin && display_cin) {
+          setdisplay_cin_1(true);
+          toast.error('Veuillez saisir un cin !');
+        }
+        fetch_bien_ByProjet();
+        pusher_function();
+      }
+
+      //perdu
+      else if (code == 3) {
+        // Perdu - clear both arrays
+        setValue('list_bien_interesse', []);
+        setValue('list_bien_transfere_vendu', []);
+        setdisplay_cin_1(false);
+        setValue('nb_bien_added', '');
+        setCheck_save(true);
+        fetchTypeFreins();
+        fetchDataByProjet('tranches', setList_tranches, setLoading_tranches);
+        fetchDataByProjet('vues', setList_Vues, setLoading_vues);
+        fetchDataByProjet(
+          'typologies',
+          setListTyplogies,
+          setLoading_typologies
+        );
+        input_biens.forEach((input) => {
+          //check if one of inputs bien_id !=null
+          if (input.bien_id != '') {
+            set_bien_disponible(input.bien_id);
+          }
+        });
+        pusher_function();
+      }
     }
-  }
-};
+  };
 
   const handleChange_tp_notif = (code) => {
     if (code) {
@@ -697,26 +704,29 @@ const VisiteForm = ({ prospect_id, origin }) => {
   };
 
   const onSubmit = (data) => {
-   
     setFormSubmitted(true);
     if (!validateFields()) {
       // there were validation errors → bail out
       return;
     }
-     // Prepare data - ensure list_bien_transfere_vendu is stringified if it's an array
-  const finalData = { ...data };
-  
-  // If list_bien_transfere_vendu is an array (not stringified), stringify it
-  if (Array.isArray(finalData.list_bien_transfere_vendu)) {
-    finalData.list_bien_transfere_vendu = JSON.stringify(finalData.list_bien_transfere_vendu);
-  }
-  
-  // Same for list_bien_interesse if needed
-  if (Array.isArray(finalData.list_bien_interesse)) {
-    finalData.list_bien_interesse = JSON.stringify(finalData.list_bien_interesse);
-  }
+    // Prepare data - ensure list_bien_transfere_vendu is stringified if it's an array
+    const finalData = { ...data };
 
-  console.log('Final data to send:', finalData);
+    // If list_bien_transfere_vendu is an array (not stringified), stringify it
+    if (Array.isArray(finalData.list_bien_transfere_vendu)) {
+      finalData.list_bien_transfere_vendu = JSON.stringify(
+        finalData.list_bien_transfere_vendu
+      );
+    }
+
+    // Same for list_bien_interesse if needed
+    if (Array.isArray(finalData.list_bien_interesse)) {
+      finalData.list_bien_interesse = JSON.stringify(
+        finalData.list_bien_interesse
+      );
+    }
+
+    console.log('Final data to send:', finalData);
     //si exist visites Perdu il faut repondre au dialog apres enregristrer sera activer
     if (old_visites_perdu.length > 0) {
       setOpen_D_P(true);
@@ -769,7 +779,6 @@ const VisiteForm = ({ prospect_id, origin }) => {
           // Ne pas ajouter ces champs à `dataToSend`
           return;
         }
-     
 
         // Ajouter les autres champs normalement
         dataToSend.append(key, value);
@@ -792,7 +801,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
         .then((res) => {
           let message = "Une erreur s'est produite";
           if (res.status == 200) {
-            message = `Visite créée avec succès`;
+            message = `Visite crée avec succès`;
             toast.success(message);
             router.push(ENDPOINTS.CRM + '?tab=visites');
             localStorage.removeItem('selectedProspect');
@@ -913,7 +922,8 @@ const VisiteForm = ({ prospect_id, origin }) => {
 
         // Définir les états et valeurs des champs seulement si `contactData` est défini
         setInfo_client_1(`${nom} ${prenom}`);
-        setClient_prospect(isClient ? 'Est un client' : 'Est un Prospect');
+        setClient_prospect(isClient ? 'Client' : 'Prospect');
+        console.log('mm prospect id==>'+prospect_id+ ' watch '+watch('prospect_id'))
         setValue('prospect_id', prospect_id);
         setValue('cin', cin || '');
         setValue('nom', nom || '');
@@ -1386,8 +1396,8 @@ const VisiteForm = ({ prospect_id, origin }) => {
       list[index]['reste'] = list[index]['prix_final'] - e.target.value;
     }
     setinput_biens_vendu(list);
-  setValue('list_bien_transfere_vendu', JSON.stringify(list));
-  console.log('Updated list_bien_transfere_vendu:', list);
+    setValue('list_bien_transfere_vendu', JSON.stringify(list));
+    console.log('Updated list_bien_transfere_vendu:', list);
 
     if (
       list[index]['statut'] == 2 &&
@@ -1524,102 +1534,105 @@ const VisiteForm = ({ prospect_id, origin }) => {
   const requestData_action = {
     list_biens_visite: OldBiens_pre,
   };
-const handleSubmit_action = (ev) => {
-  ev.preventDefault();
-  setLoading_button_save_1(true);
+  const handleSubmit_action = (ev) => {
+    ev.preventDefault();
+    setLoading_button_save_1(true);
 
-  const updatedBiensVendu = [];
+    const updatedBiensVendu = [];
 
-  for (var i = 0; i <= Number(OldBiens_pre.length) - 1; i++) {
-    if (OldBiens_pre[i].action == '3' || OldBiens_pre[i].action == 3) {
-      console.log('Adding bien to vendu list');
-      const bienData = {
-        traitement_frein_id: OldBiens_pre[i].traitement_frein_id || null,
-        bien_id: OldBiens_pre[i].bien_id,
-        old_bien_id: '',
-        propriete_dite_bien: OldBiens_pre[i].propriete_dite_bien,
-        statut: 2,
-        rdv: '',
-        date_relance: '',
-        mode_relance: '',
-        commentaire: '',
-        prix: OldBiens_pre[i].prix,
-        prix_final: OldBiens_pre[i].prix,
-        superficie_balcon_calculer: OldBiens_pre[i].superficie_balcon_calculer,
-        superficie_terrasse_calculer: OldBiens_pre[i].superficie_terrasse_calculer,
-        superficie_jardin_calculer: OldBiens_pre[i].superficie_jardin_calculer,
-        superficie_habitable: OldBiens_pre[i].superficie_habitable,
-        prix_box: OldBiens_pre[i].prix_box,
-        prix_parking: OldBiens_pre[i].prix_parking,
-        prix_unitaire: OldBiens_pre[i].prix_unitaire,
-        avance_minimale: OldBiens_pre[i].avance_minimale,
+    for (var i = 0; i <= Number(OldBiens_pre.length) - 1; i++) {
+      if (OldBiens_pre[i].action == '3' || OldBiens_pre[i].action == 3) {
+        console.log('Adding bien to vendu list');
+        const bienData = {
+          traitement_frein_id: OldBiens_pre[i].traitement_frein_id || null,
+          bien_id: OldBiens_pre[i].bien_id,
+          old_bien_id: '',
+          propriete_dite_bien: OldBiens_pre[i].propriete_dite_bien,
+          statut: 2,
+          rdv: '',
+          date_relance: '',
+          mode_relance: '',
+          commentaire: '',
+          prix: OldBiens_pre[i].prix,
+          prix_final: OldBiens_pre[i].prix,
+          superficie_balcon_calculer:
+            OldBiens_pre[i].superficie_balcon_calculer,
+          superficie_terrasse_calculer:
+            OldBiens_pre[i].superficie_terrasse_calculer,
+          superficie_jardin_calculer:
+            OldBiens_pre[i].superficie_jardin_calculer,
+          superficie_habitable: OldBiens_pre[i].superficie_habitable,
+          prix_box: OldBiens_pre[i].prix_box,
+          prix_parking: OldBiens_pre[i].prix_parking,
+          prix_unitaire: OldBiens_pre[i].prix_unitaire,
+          avance_minimale: OldBiens_pre[i].avance_minimale,
 
-        /*Reservation*/
-        code_reservation: '',
-        mode_financement: '',
-        date_reservation: date_reservation[0],
-        commentaire_res: '',
-        avance_res: '',
-        reste: OldBiens_pre[i].prix,
-        sr: false,
-        banque_id: '',
-        numero_paiement: '',
-        echeance: '',
-        check_montant: '',
-        selectedFiles_rsv: [],
+          /*Reservation*/
+          code_reservation: '',
+          mode_financement: '',
+          date_reservation: date_reservation[0],
+          commentaire_res: '',
+          avance_res: '',
+          reste: OldBiens_pre[i].prix,
+          sr: false,
+          banque_id: '',
+          numero_paiement: '',
+          echeance: '',
+          check_montant: '',
+          selectedFiles_rsv: [],
 
-        mode_paiement: '',
-        commentaireAvance: '',
-        date_reglement: date_reglement,
-        prix_remise: 0,
-        prix_forfetaire: 0,
-        docs_resv: '',
-        num_remise: '',
-        date_encaissement: null,
-        check_save: true,
-        selectedFiles_avc: [],
-      };
-      updatedBiensVendu.push(bienData);
+          mode_paiement: '',
+          commentaireAvance: '',
+          date_reglement: date_reglement,
+          prix_remise: 0,
+          prix_forfetaire: 0,
+          docs_resv: '',
+          num_remise: '',
+          date_encaissement: null,
+          check_save: true,
+          selectedFiles_avc: [],
+        };
+        updatedBiensVendu.push(bienData);
+      }
     }
-  }
 
-  // Update state and form value
-  setinput_biens_vendu(updatedBiensVendu);
-  // CRITICAL: Stringify the array like list_bien_interesse
-  setValue('list_bien_transfere_vendu', JSON.stringify(updatedBiensVendu));
+    // Update state and form value
+    setinput_biens_vendu(updatedBiensVendu);
+    // CRITICAL: Stringify the array like list_bien_interesse
+    setValue('list_bien_transfere_vendu', JSON.stringify(updatedBiensVendu));
 
-  console.log('Updated biens vendu:', updatedBiensVendu);
-  console.log('Form value after update:', watch('list_bien_transfere_vendu'));
+    console.log('Updated biens vendu:', updatedBiensVendu);
+    console.log('Form value after update:', watch('list_bien_transfere_vendu'));
 
-  // Expand panels for the new biens vendu
-  const initialExpandedPanels = Array.from(
-    { length: updatedBiensVendu.length },
-    (_, i) => `panel_bienn${i + 1}`
-  );
-  setExpanded(initialExpandedPanels);
+    // Expand panels for the new biens vendu
+    const initialExpandedPanels = Array.from(
+      { length: updatedBiensVendu.length },
+      (_, i) => `panel_bienn${i + 1}`
+    );
+    setExpanded(initialExpandedPanels);
 
-  axios({
-    method: 'put',
-    url: `${APIURL.ROOTV1}/update_visite_bien_pre_reserve/0`,
-    data: requestData_action,
-    headers: {
-      'content-type': 'application/json',
-      Accept: 'application/json',
-      Authorization: `Bearer ${accessToken}`,
-    },
-  })
-    .then(() => {
-      setLoading_button_save_1(false);
-      toast.success('Données enregistrées avec succès');
-      setOldBiens_pre([]);
-      setValue('loading_b_pre', false);
-      setpaper_exist(1);
+    axios({
+      method: 'put',
+      url: `${APIURL.ROOTV1}/update_visite_bien_pre_reserve/0`,
+      data: requestData_action,
+      headers: {
+        'content-type': 'application/json',
+        Accept: 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
     })
-    .catch((error) => {
-      console.log('Error:', error);
-      setLoading_button_save_1(false);
-    });
-};
+      .then(() => {
+        setLoading_button_save_1(false);
+        toast.success('Données enregistrées avec succès');
+        setOldBiens_pre([]);
+        setValue('loading_b_pre', false);
+        setpaper_exist(1);
+      })
+      .catch((error) => {
+        console.log('Error:', error);
+        setLoading_button_save_1(false);
+      });
+  };
   //added
   const set_all_action_null = () => {
     setReset1(0);
@@ -1866,211 +1879,219 @@ const handleSubmit_action = (ev) => {
           />
         </div>
       </div>
-      <div>
-        {showMainForm && (
-          <div className="p-6 mt-4 min-h-[89vh] bg-white shadow-md rounded-md">
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <div className="space-y-4">
-                {/* Client/Prospect Information */}
-                {!isOrigin && (
-                  <>
-                    <div>
-                      <h2 className="text-xl font-medium border-b pb-2">
-                        Informations du prospect
-                      </h2>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
-                      <ProspectInformations
-                        control={control}
-                        watch={watch}
-                        errors={errors}
-                        backendErrors={backendErrors}
-                        defaultValues={defaultValues}
-                        formSubmitted={formSubmitted}
-                        email_required={email_required}
-                        loading={loading}
-                        sources={sources}
-                        handleSourceChange={handleSourceChange}
-                        partenaires={partenaires}
-                        handlePartenaireChange={handlePartenaireChange}
-                        disabled_var={disabled_var}
-                        source_d={watch('source_id')}
-                        disabled_var_source={disabled_var_source}
-                        partenaire_txt={partenaire_txt}
-                        handleChange_event={handleChange_event}
-                      />
-                    </div>
-                  </>
-                )}
-
-                {isOrigin && display_cin && display_cin_1 && (
-                  <>
-                    <div>
-                      <h2 className="text-xl font-medium border-b pb-2">
-                        Informations du prospect
-                      </h2>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
-                      <TextField
-                        label="Cin:"
-                        name="cin"
-                        control={control}
-                        errors={errors}
-                        backendErrors={backendErrors}
-                        defaultValues={defaultValues}
-                        onChange={handleChange_event('cin')}
-                        required={Number(watch('interet')) == 1}
-                      />
-                    </div>
-                  </>
-                )}
-
-                <div className="col-span-3 mt-4">
-                  <h2 className="text-xl font-medium  border-b pb-2 mb-4">
-                    Informations de la visite
-                  </h2>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
-                  {input_biens_vendu.length == 0 && (
+      {/* Show loading spinner when loading_b_pre is true in store_n_visite mode */}
+      {watch('loading_b_pre') && isOrigin ? (
+        <div className="flex justify-center items-center min-h-[89vh]">
+          <LoadingSpin />
+        </div>
+      ) : (
+        <div>
+          {showMainForm && (
+            <div className="p-6 mt-4 min-h-[89vh] bg-white shadow-md rounded-md">
+              <form onSubmit={handleSubmit(onSubmit)}>
+                <div className="space-y-4">
+                  {/* Client/Prospect Information */}
+                  {!isOrigin && (
                     <>
-                      {watch('loading_b_pre') == false && (
-                        <>
-                          <div className="">
-                            <SelectInput
-                              placeholder="selectionner un intérêt"
-                              label="Intérêt :"
-                              name="interet"
-                              value={watch('interet')}
-                              required={true}
-                              options={
-                                input_biens_vendu.length > 0
-                                  ? [{ value: '1', label: 'Intéressé' }] // Only interested option
-                                  : Object.values(VISITE_INTERETS)
-                                      .filter((interet) => interet.code !== 4) // Exclude "Injoignable"
-                                      .map((interet) => ({
-                                        value: interet.code.toString(),
-                                        label: interet.label,
-                                      }))
-                              }
-                              disabled={
-                                isOrigin ? false : watch('telephone') === ''
-                              }
-                              onChange={handleChange_interet}
-                            />
-                          </div>
-                          {Number(watch('interet')) == 1 && (
-                            <>
-                              <TextField
-                                label="Nombre de Biens à ajouter:"
-                                name="nb_bien_added"
-                                type="number"
-                                control={control}
-                                errors={{
-                                  ...errors,
-                                  nb_bien_added:
-                                    formSubmitted &&
-                                    Number(watch('interet')) == 1 &&
-                                    !watch('nb_bien_added') &&
-                                    watch('nb_bien_added') !== 0
-                                      ? 'Ce champ est obligatoire lorsque interet est Intéressé.'
-                                      : Number(watch('nb_bien_added')) < 0
-                                      ? 'Veuillez entrer un nombre positif.'
-                                      : null,
-                                }}
-                                backendErrors={backendErrors}
-                                defaultValues={{ nb_bien_added: 0 }}
-                                required={Number(watch('interet')) == 1}
-                                inputProps={{
-                                  min: 0,
-                                  inputMode: 'numeric',
-                                }}
-                                onChange={(e) => {
-                                  let value = e.target.value;
-
-                                  // Remove leading 0 when user starts typing
-                                  if (
-                                    value.length > 1 &&
-                                    value.startsWith('0')
-                                  ) {
-                                    value = value.replace(/^0+/, '');
-                                  }
-
-                                  // Only allow digits (optional extra check)
-                                  if (/^\d*$/.test(value)) {
-                                    e.target.value = value;
-                                    handleChange_NbrBien(e);
-                                  }
-                                }}
-                              />
-                            </>
-                          )}
-                        </>
-                      )}
+                      <div>
+                        <h2 className="text-xl font-medium border-b pb-2">
+                          Informations du prospect
+                        </h2>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
+                        <ProspectInformations
+                          control={control}
+                          watch={watch}
+                          errors={errors}
+                          backendErrors={backendErrors}
+                          defaultValues={defaultValues}
+                          formSubmitted={formSubmitted}
+                          email_required={email_required}
+                          loading={loading}
+                          loading_sources={loading_sources}
+                          loading_partenaires={loading_partenaires}
+                          sources={sources}
+                          handleSourceChange={handleSourceChange}
+                          partenaires={partenaires}
+                          handlePartenaireChange={handlePartenaireChange}
+                          disabled_var={disabled_var}
+                          source_d={watch('source_id')}
+                          disabled_var_source={disabled_var_source}
+                          partenaire_txt={partenaire_txt}
+                          handleChange_event={handleChange_event}
+                        />
+                      </div>
                     </>
                   )}
 
-                  {Number(watch('interet')) == 2 && (
+                  {isOrigin && display_cin && display_cin_1 && (
                     <>
-                      <div className="">
-                        <SelectInput
-                          placeholder="selectionner un mode de relance"
-                          label="Mode Relance:"
-                          name="mode_relance"
-                          required={false}
-                          options={Object.values(VISITE_TYPE_NOTIF).map(
-                            (notif) => ({
-                              value: notif.code.toString(),
-                              label: notif.label,
-                            })
-                          )}
-                          value={watch('mode_relance')?.toString()}
-                          onChange={handleChange_tp_notif}
-                        />
-                      </div>
                       <div>
+                        <h2 className="text-xl font-medium border-b pb-2">
+                          Informations du prospect
+                        </h2>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
                         <TextField
-                          label="Date Relance:"
-                          name="date_relance"
-                          type="date"
+                          label="Cin:"
+                          name="cin"
                           control={control}
                           errors={errors}
                           backendErrors={backendErrors}
                           defaultValues={defaultValues}
+                          onChange={handleChange_event('cin')}
+                          required={Number(watch('interet')) == 1}
                         />
                       </div>
                     </>
                   )}
-                  {Number(watch('interet')) == 3 && (
-                    <FreinsComponent
-                      watch={watch}
-                      control={control}
-                      errors={errors}
-                      backendErrors={backendErrors}
-                      defaultValues={defaultValues}
-                      formSubmitted={formSubmitted}
-                      type_freins={type_freins}
-                      list_tranches={list_tranches}
-                      list_etages={list_etages}
-                      orientationOptions={orientationOptions}
-                      list_typologies={list_typologies}
-                      list_vues={list_vues}
-                      loading_tp_frein={loading_tp_frein}
-                      loading={loading}
-                      loading_tranches={loading_tranches}
-                      loading_vues={loading_vues}
-                      loading_typologies={loading_typologies}
-                      handleChange_freins={handleChange_freins}
-                      handlePrixChange={handlePrixChange}
-                      setValue={setValue}
-                      info_prix={info_prix}
-                      info_sup={info_sup}
-                      isEditMode={false} // Specify the mode here
-                    />
-                  )}
-                </div>
-                {/*<PanelInteresse_vendu
+
+                  <div className="col-span-3 mt-4">
+                    <h2 className="text-xl font-medium  border-b pb-2 mb-4">
+                      Informations de la visite
+                    </h2>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
+                    {input_biens_vendu.length == 0 && (
+                      <>
+                        {watch('loading_b_pre') == false && (
+                          <>
+                            <div className="">
+                              <SelectInput
+                                placeholder="selectionner un intérêt"
+                                label="Intérêt :"
+                                name="interet"
+                                value={watch('interet')}
+                                required={true}
+                                options={
+                                  input_biens_vendu.length > 0
+                                    ? [{ value: '1', label: 'Intéressé' }] // Only interested option
+                                    : Object.values(VISITE_INTERETS)
+                                        .filter((interet) => interet.code !== 4) // Exclude "Injoignable"
+                                        .map((interet) => ({
+                                          value: interet.code.toString(),
+                                          label: interet.label,
+                                        }))
+                                }
+                                disabled={
+                                  isOrigin ? false : watch('telephone') === ''
+                                }
+                                onChange={handleChange_interet}
+                              />
+                            </div>
+                            {Number(watch('interet')) == 1 && (
+                              <>
+                                <TextField
+                                  label="Nombre de Biens à ajouter:"
+                                  name="nb_bien_added"
+                                  type="number"
+                                  control={control}
+                                  errors={{
+                                    ...errors,
+                                    nb_bien_added:
+                                      formSubmitted &&
+                                      Number(watch('interet')) == 1 &&
+                                      !watch('nb_bien_added') &&
+                                      watch('nb_bien_added') !== 0
+                                        ? 'Ce champ est obligatoire lorsque interet est Intéressé.'
+                                        : Number(watch('nb_bien_added')) < 0
+                                        ? 'Veuillez entrer un nombre positif.'
+                                        : null,
+                                  }}
+                                  backendErrors={backendErrors}
+                                  defaultValues={{ nb_bien_added: 0 }}
+                                  required={Number(watch('interet')) == 1}
+                                  inputProps={{
+                                    min: 0,
+                                    inputMode: 'numeric',
+                                  }}
+                                  onChange={(e) => {
+                                    let value = e.target.value;
+
+                                    // Remove leading 0 when user starts typing
+                                    if (
+                                      value.length > 1 &&
+                                      value.startsWith('0')
+                                    ) {
+                                      value = value.replace(/^0+/, '');
+                                    }
+
+                                    // Only allow digits (optional extra check)
+                                    if (/^\d*$/.test(value)) {
+                                      e.target.value = value;
+                                      handleChange_NbrBien(e);
+                                    }
+                                  }}
+                                />
+                              </>
+                            )}
+                          </>
+                        )}
+                      </>
+                    )}
+
+                    {Number(watch('interet')) == 2 && (
+                      <>
+                        <div className="">
+                          <SelectInput
+                            placeholder="selectionner un mode de relance"
+                            label="Mode Relance:"
+                            name="mode_relance"
+                            required={false}
+                            options={Object.values(VISITE_TYPE_NOTIF).map(
+                              (notif) => ({
+                                value: notif.code.toString(),
+                                label: notif.label,
+                              })
+                            )}
+                            value={watch('mode_relance')?.toString()}
+                            onChange={handleChange_tp_notif}
+                          />
+                        </div>
+                        <div>
+                          <TextField
+                            label="Date Relance:"
+                            name="date_relance"
+                            type="date"
+                            control={control}
+                            errors={errors}
+                            backendErrors={backendErrors}
+                            defaultValues={defaultValues}
+                          />
+                        </div>
+                      </>
+                    )}
+                    {Number(watch('interet')) == 3 && (
+                      <FreinsComponent
+                        watch={watch}
+                        control={control}
+                        errors={errors}
+                        backendErrors={backendErrors}
+                        defaultValues={defaultValues}
+                        formSubmitted={formSubmitted}
+                        type_freins={type_freins}
+                        list_tranches={list_tranches}
+                        list_etages={list_etages}
+                        orientationOptions={orientationOptions}
+                        list_typologies={list_typologies}
+                        list_vues={list_vues}
+                        loading_tp_frein={loading_tp_frein}
+                        loading={loading}
+                        loading_tranches={loading_tranches}
+                        loading_vues={loading_vues}
+                        loading_typologies={loading_typologies}
+                        handleChange_freins={handleChange_freins}
+                        handlePrixChange={handlePrixChange}
+                        setValue={setValue}
+                        info_prix={info_prix}
+                        info_sup={info_sup}
+                        isEditMode={false} // Specify the mode here
+                      />
+                    )}
+                  </div>
+                  {/*<PanelInteresse_vendu
                   input_biens_vendu={input_biens_vendu}
                   //handleAccordionChange={handleAccordionChangeVendu}
                   //expanded={expandedVendu}
@@ -2083,713 +2104,62 @@ const handleSubmit_action = (ev) => {
                   user={user}
                   banques={banques}
                 />*/}
-                {/*Pannel Interesse Vendu**/}
-                {input_biens_vendu.map((x, j) => {
-                  return (
-                    <div key={`panel_bienn${j + 1}`}>
-                      {/* Top Divider */}
-
-                      {/* Accordion */}
-                      <div className="border mt-4 rounded-md  shadow">
-                        <button
-                          type="button"
-                          className="w-full flex justify-between items-center px-4 py-3  text-white text-base font-medium focus:outline-none"
-                          style={{
-                            background:
-                              'rgb(35 22 81 / var(--tw-text-opacity, 1))',
-                          }}
-                          onClick={handleAccordionChange(`panel_bienn${j + 1}`)}
-                        >
-                          <span>{`Bien  ${j + 1}`}</span>
-                          <span className="text-xl">
-                            {expanded.includes(`panel_bienn${j + 1}`)
-                              ? '−'
-                              : '+'}
-                          </span>
-                        </button>
-
-                        {/* Accordion Content */}
-                        {expanded.includes(`panel_bienn${j + 1}`) && (
-                          <>
-                            <div className="p-4 space-y-4">
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                                {/* Bien Autocomplete */}
-                                <div>
-                                  {/* Replace with your own Autocomplete or HeadlessUI */}
-                                  {x.bien_id != null && (
-                                    <InputField_Biens
-                                      label="Bien"
-                                      name=""
-                                      type="text"
-                                      value={x.propriete_dite_bien}
-                                      disabled
-                                    />
-                                  )}
-                                </div>
-
-                                {/* Statut */}
-                                <div>
-                                  <InputField_Biens
-                                    label="Statut"
-                                    name=""
-                                    type="text"
-                                    value={'Vendu'}
-                                    disabled
-                                  />
-                                </div>
-
-                                {/* Commentaire */}
-                                <div className="md:col-span-3">
-                                  <InputField_Biens
-                                    label="Commentaire"
-                                    name="commentaire"
-                                    multi
-                                    value={x.commentaire}
-                                    onChange={(e) =>
-                                      handleinputchange_bien_vendu(e, j)
-                                    }
-                                  />
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Réservation */}
-                            {x.statut == 2 && x.bien_id != null && (
-                              <div className="border rounded-lg  mt-4 mx-5">
-                                {/* Accordion Header */}
-                                <div
-                                  className="flex items-center justify-between px-4 py-2 cursor-pointer"
-                                  style={{ background: '#2f8a8bab' }}
-                                  onClick={() =>
-                                    handleChange(`panel_ress${j + 1}`)
-                                  }
-                                >
-                                  <h3 className="text-white font-semibold">
-                                    Réservation du Bien {j + 1}
-                                  </h3>
-                                  <span className="text-white">
-                                    {expanded.includes(`panel_ress${j + 1}`)
-                                      ? '⌃'
-                                      : '⌄'}
-                                  </span>
-                                </div>
-
-                                {/* Accordion Content */}
-                                {expanded.includes(`panel_ress${j + 1}`) && (
-                                  <div className="p-4 space-y-4 bg-white">
-                                    {info_reservation && (
-                                      <div
-                                        className="bg-red-100 border-l-4 border-red-500 p-4 text-center rounded"
-                                        style={{ color: 'red!important' }}
-                                      >
-                                        {info_reservation}
-                                      </div>
-                                    )}
-
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                      <InputField_Biens
-                                        label="Code Réservation:"
-                                        name="code_reservation"
-                                        type="text"
-                                        placeholder="Code Réservation"
-                                        value={x.code_reservation}
-                                        onChange={(e) =>
-                                          handleinputchange_bien_vendu(e, j)
-                                        }
-                                        required
-                                      />
-
-                                      <InputField_Biens
-                                        label="Bien:"
-                                        name=""
-                                        type="text"
-                                        value={x.propriete_dite_bien}
-                                        disabled
-                                      />
-
-                                      <InputField_Biens
-                                        label="Prix:"
-                                        name=""
-                                        type="number"
-                                        value={x.prix}
-                                        disabled
-                                      />
-
-                                      <InputField_Biens
-                                        label="Date Réservation:"
-                                        name="date_reservation"
-                                        type="date"
-                                        value={x.date_reservation}
-                                        onChange={(e) =>
-                                          handleinputchange_bien_vendu(e, j)
-                                        }
-                                        required
-                                      />
-                                      <InputField_Biens
-                                        label="Commentaire:"
-                                        name="commentaire_res"
-                                        multi
-                                        value={x.commentaire_res}
-                                        onChange={(e) =>
-                                          handleinputchange_bien_vendu(e, j)
-                                        }
-                                      />
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                            {/* Paiement */}
-                            {x.statut == 2 && x.bien_id != null && (
-                              <div className="border rounded-lg  mt-4 mx-5 mb-5">
-                                {/* Accordion Header */}
-                                <div
-                                  className="flex items-center justify-between px-4 py-2 cursor-pointer"
-                                  style={{ background: '#2f8a8bab' }}
-                                  onClick={() =>
-                                    handleChange(`panel_paii${j + 1}`)
-                                  }
-                                >
-                                  <h3 className="text-white font-semibold">
-                                    Paiement du Bien {j + 1}
-                                  </h3>
-                                  <span className="text-white">
-                                    {expanded.includes(`panel_paii${j + 1}`)
-                                      ? '⌃'
-                                      : '⌄'}
-                                  </span>
-                                </div>
-
-                                {/* Accordion Content */}
-                                {expanded.includes(`panel_paii${j + 1}`) && (
-                                  <div className="p-4 grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white transition-all duration-300">
-                                    <div>
-                                      <label
-                                        className="flex items-center space-x-2"
-                                        style={{ marginTop: '30px' }}
-                                      >
-                                        <span
-                                          className={`text-sm font-medium ${
-                                            x.sr == true
-                                              ? 'text-purple-600'
-                                              : ''
-                                          }`}
-                                        >
-                                          SR:
-                                        </span>
-                                        <input
-                                          type="checkbox"
-                                          name="sr"
-                                          value={x.sr}
-                                          checked={x.sr}
-                                          onChange={(e) =>
-                                            handleinputchange_bien_vendu(e, j)
-                                          }
-                                          className="h-5 w-10 rounded-full bg-gray-300 transition-all duration-300"
-                                        />
-                                      </label>
-                                    </div>
-                                    <InputField_Biens
-                                      label="Prix :"
-                                      name="prix"
-                                      type="number"
-                                      value={x.prix}
-                                      disabled
-                                    />
-                                    <InputField_Biens
-                                      label="Prix Unitaire:"
-                                      name="prix_unitaire"
-                                      type="number"
-                                      value={x.prix_unitaire}
-                                      disabled
-                                    />
-                                    <InputField_Biens
-                                      label="Prix Unitaire Remisé:"
-                                      name="prix_remise"
-                                      type="number"
-                                      value={x.prix_remise}
-                                      onChange={(e) =>
-                                        handleinputchange_bien_vendu(e, j)
-                                      }
-                                    />
-                                    <InputField_Biens
-                                      label="Remise Forfaitaire:"
-                                      name="prix_forfetaire"
-                                      type="number"
-                                      value={x.prix_forfetaire}
-                                      onChange={(e) =>
-                                        handleinputchange_bien_vendu(e, j)
-                                      }
-                                    />
-                                    <InputField_Biens
-                                      label="Prix Final:"
-                                      name="prix_final"
-                                      type="number"
-                                      value={check_total >= 0 && x.prix_final}
-                                      disabled
-                                    />
-                                    <InputField_Biens
-                                      label="Reste Avance:"
-                                      name="avance_minimale"
-                                      type="number"
-                                      value={x.avance_minimale}
-                                      disabled
-                                    />
-                                    <InputField_Biens
-                                      label="Reste:"
-                                      name="reste"
-                                      type="number"
-                                      value={x.reste}
-                                      disabled
-                                    />
-                                    <InputField_Biens
-                                      label="Montant:"
-                                      name="avance_res"
-                                      type="number"
-                                      required
-                                      value={x.avance_res}
-                                      error={
-                                        x.avance_res != '' &&
-                                        x.avance_res == 0 &&
-                                        user?.role > 2
-                                          ? 'Le montant ne peut pas être 0 pour votre rôle'
-                                          : x.avance_res > 0 &&
-                                            x.avance_res < x.avance_minimale
-                                          ? `Le montant doit être au moins ${x.avance_minimale}`
-                                          : null
-                                      }
-                                      onChange={(e) =>
-                                        handleinputchange_bien_vendu(e, j)
-                                      }
-                                    />
-                                    <AutocompleteStatut_ModeRelance_Biens
-                                      name={'mode_financement'}
-                                      label={'Mode Financement:'}
-                                      placeholder={
-                                        'Sélectionner un Mode de Financement'
-                                      }
-                                      code="code"
-                                      labelKey="label"
-                                      options={Object.values(MODE_FINANCE)}
-                                      value={x.mode_financement}
-                                      onChange={(e) =>
-                                        handleinputchange_bien_vendu(e, j)
-                                      }
-                                      required
-                                    />{' '}
-                                    <AutocompleteStatut_ModeRelance_Biens
-                                      name={'mode_paiement'}
-                                      label={'Mode Paiement kk:'}
-                                      placeholder={
-                                        'Sélectionner un Mode de Paiement'
-                                      }
-                                      options={Object.values(MODE_PAIEMENT)}
-                                      value={x.mode_paiement}
-                                      code="code"
-                                      labelKey="label"
-                                      onChange={(e) =>
-                                        handleinputchange_bien_vendu(e, j)
-                                      }
-                                      required
-                                    />
-                                    {/* Conditional Fields */}
-                                    {x.mode_paiement !== 1 &&
-                                      x.mode_paiement !== '' && (
-                                        <>
-                                          <AutocompleteStatut_ModeRelance_Biens
-                                            name={'banque_id'}
-                                            label={'Banque:'}
-                                            placeholder={
-                                              'Sélectionner un Mode de Paiement'
-                                            }
-                                            options={banques}
-                                            value={x.banque_id}
-                                            required={x.mode_paiement !== '1'}
-                                            code="id"
-                                            labelKey="nom"
-                                            onChange={(e) =>
-                                              handleinputchange_bien_vendu(e, j)
-                                            }
-                                          />
-                                          <InputField_Biens
-                                            label="N° Paiement:"
-                                            name="numero_paiement"
-                                            type="number"
-                                            required={x.mode_paiement !== 1}
-                                            value={x.numero_paiement}
-                                            onChange={(e) =>
-                                              handleinputchange_bien_vendu(e, j)
-                                            }
-                                          />
-                                        </>
-                                      )}
-                                    {x.mode_paiement !== '' &&
-                                      x.mode_paiement !== 1 &&
-                                      x.mode_paiement !== 5 &&
-                                      x.mode_paiement !== 6 && (
-                                        <InputField_Biens
-                                          label="Date Échéance:"
-                                          name="echeance"
-                                          required={x.mode_paiement !== '1'}
-                                          type="date"
-                                          value={x.echeance}
-                                          onChange={(e) =>
-                                            handleinputchange_bien_vendu(e, j)
-                                          }
-                                        />
-                                      )}
-                                    {x.avance_res != '' &&
-                                      x.avance_res == 0 && (
-                                        <div>
-                                          <label
-                                            className="flex items-center space-x-2"
-                                            style={{ marginTop: '19px' }}
-                                          >
-                                            <span
-                                              className={`text-sm font-medium ${
-                                                x.check_montant == true
-                                                  ? 'text-purple-600'
-                                                  : ''
-                                              }`}
-                                            >
-                                              {' '}
-                                              Voulez vous Enregistrer la
-                                              Réservation sans montant (Prière
-                                              de saisir un commentaire)
-                                            </span>
-                                            <input
-                                              style={{ color: 'green' }}
-                                              type="checkbox"
-                                              name="check_montant"
-                                              value={x.check_montant}
-                                              checked={x.check_montant}
-                                              required={
-                                                x.avance_res != '' &&
-                                                x.avance_res == 0
-                                              }
-                                              onChange={(e) =>
-                                                handleinputchange_bien_vendu(
-                                                  e,
-                                                  j
-                                                )
-                                              }
-                                              className="h-5 w-10 rounded-full bg-gray-300 transition-all duration-300"
-                                            />
-                                          </label>
-                                        </div>
-                                      )}
-                                    <InputField_Biens
-                                      label="Commentaire:"
-                                      name="commentaireAvance"
-                                      multi
-                                      required={
-                                        x.check_montant == true ? true : false
-                                      }
-                                      value={x.commentaireAvance}
-                                      onChange={(e) =>
-                                        handleinputchange_bien_vendu(e, j)
-                                      }
-                                    />
-                                    {user.role <= 2 && x.avance_res > 0 && (
-                                      <>
-                                        <div className="col-span-3">
-                                          <h2
-                                            className="text-lg font-medium border-b pb-2 mb-4"
-                                            style={{ color: '#231651' }}
-                                          >
-                                            Informations Encaissement
-                                          </h2>
-                                        </div>
-
-                                        <InputField_Biens
-                                          label="N° Remise:"
-                                          name="num_remise"
-                                          type="number"
-                                          value={x.num_remise}
-                                          onChange={(e) =>
-                                            handleinputchange_bien_vendu(e, j)
-                                          }
-                                        />
-                                        <InputField_Biens
-                                          label="Date Encaissement:"
-                                          name="date_encaissement"
-                                          type="date"
-                                          value={x.date_encaissement}
-                                          onChange={(e) =>
-                                            handleinputchange_bien_vendu(e, j)
-                                          }
-                                        />
-                                      </>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                          </>
-                        )}
-                        {/* Bottom Divider */}
-                      </div>
-                    </div>
-                  );
-                })}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {input_biens_vendu.length > 0 && (
-                    <>
-                      {watch('loading_b_pre') == false && (
-                        <>
-                          <div className="">
-                            <AutocompleteSelectComponent
-                              label="Intérêt :"
-                              name="interet"
-                              required={true}
-                              //  options={VISITE_INTERETS}
-                              options={
-                                input_biens_vendu.length > 0
-                                  ? {
-                                      1: VISITE_INTERETS[1],
-                                      // 3: VISITE_INTERETS[3],
-                                    }
-                                  : {
-                                      1: VISITE_INTERETS[1],
-                                      2: VISITE_INTERETS[2],
-                                      3: VISITE_INTERETS[3],
-                                    }
-                              }
-                              disabled={
-                                isOrigin ? false : watch('telephone') === ''
-                              }
-                              onChange={handleChange_interet}
-                            />
-                          </div>
-                          {Number(watch('interet')) == 1 && (
-                            <>
-                              <TextField
-                                label="Nombre de Biens à ajouter:"
-                                name="nb_bien_added"
-                                type="number"
-                                control={control}
-                                errors={{
-                                  ...errors,
-                                  nb_bien_added:
-                                    formSubmitted &&
-                                    Number(watch('interet')) == 1 &&
-                                    !watch('nb_bien_added')
-                                      ? 'Ce champ est obligatoire lorsque interet est Intéressé.'
-                                      : null,
-                                }}
-                                backendErrors={backendErrors}
-                                defaultValues={defaultValues}
-                                onChange={handleChange_NbrBien}
-                                required={Number(watch('interet')) == 1}
-                              />
-                            </>
-                          )}
-                        </>
-                      )}
-                      {/*isOrigin && display_cin && display_cin_1 && (
-                        <div>
-                          <TextField
-                            label="Cin:"
-                            name="cin"
-                            control={control}
-                            errors={errors}
-                            backendErrors={backendErrors}
-                            defaultValues={defaultValues}
-                            onChange={handleChange_event('cin')}
-                            required={Number(watch('interet')) == 1}
-                          />
-                        </div>
-                      )*/}
-                    </>
-                  )}
-                </div>
-                <div>
-                  {/*watch('nb_bien_added') !== '' && (
-                    <PanelInteresse
-                      input_biens={input_biens}
-                      input_biens_vendu={input_biens_vendu}
-                      handleAccordionChange={handleAccordionChange}
-                      expanded={expanded}
-                      handleChange={handleChange}
-                      handleinputchange={handleinputchange}
-                      user={user}
-                      biensByProjet={biensByProjet}
-                      loading_bien={loading_bien}
-                      info_reservation={info_reservation}
-                      banques={banques}
-                      MODE_FINANCE={MODE_FINANCE}
-                      VISITE_STATUT_FORM={VISITE_STATUT_FORM}
-                    />
-                  )*/}
-                  {watch('nb_bien_added') !== '' &&
-                    input_biens.map((x, i) => (
-                      <div key={`panel_bien${i + 1}`}>
+                  {/*Pannel Interesse Vendu**/}
+                  {input_biens_vendu.map((x, j) => {
+                    return (
+                      <div key={`panel_bienn${j + 1}`}>
                         {/* Top Divider */}
 
                         {/* Accordion */}
-                        <div className="border mt-4 rounded-md">
+                        <div className="border mt-4 rounded-md  shadow">
                           <button
                             type="button"
-                            className="bg-[#009FFF] rounded-t-md w-full flex justify-between items-center px-4 py-3  text-white font-medium focus:outline-none"
+                            className="w-full flex justify-between items-center px-4 py-3  text-white text-base font-medium focus:outline-none"
+                            style={{
+                              background:
+                                'rgb(35 22 81 / var(--tw-text-opacity, 1))',
+                            }}
                             onClick={handleAccordionChange(
-                              `panel_bien${i + 1}`
+                              `panel_bienn${j + 1}`
                             )}
                           >
-                            <span>{`Bien ${
-                              input_biens_vendu.length + i + 1
-                            }`}</span>
+                            <span>{`Bien  ${j + 1}`}</span>
                             <span className="text-xl">
-                              {expanded.includes(`panel_bien${i + 1}`)
+                              {expanded.includes(`panel_bienn${j + 1}`)
                                 ? '−'
                                 : '+'}
                             </span>
                           </button>
 
                           {/* Accordion Content */}
-                          {expanded.includes(`panel_bien${i + 1}`) && (
+                          {expanded.includes(`panel_bienn${j + 1}`) && (
                             <>
                               <div className="p-4 space-y-4">
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-x-5 gap-y-4">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                                  {/* Bien Autocomplete */}
                                   <div>
-                                    <SelectInput
-                                      label="Bien:"
-                                      name="bien_id"
-                                      options={
-                                        biensByProjet
-                                          ? biensByProjet
-                                              .filter(
-                                                (bien) =>
-                                                  bien &&
-                                                  bien.id &&
-                                                  bien.propriete_dite_bien
-                                              )
-                                              .map((bien) => {
-                                                // Add the same disabled logic from your old autocomplete
-                                                const isDisabled =
-                                                  bien.etat ==
-                                                    'ENCOURS_DE_PROPOSITION' &&
-                                                  bien.is_proposed != null &&
-                                                  user.id !=
-                                                    bien.is_proposed.user_id;
-
-                                                // Add the same label text logic
-                                                const labelText =
-                                                  bien.propriete_dite_bien +
-                                                  (bien.etat ===
-                                                  'ENCOURS_DE_PROPOSITION'
-                                                    ? bien?.is_proposed !== null
-                                                      ? user.id !==
-                                                        bien?.is_proposed
-                                                          ?.user_id
-                                                        ? ` Proposé par ${bien?.is_proposed?.user?.name} ${bien?.is_proposed?.user?.prenom}`
-                                                        : ' Proposé par Moi Même'
-                                                      : ''
-                                                    : '');
-
-                                                return {
-                                                  value: bien.id.toString(),
-                                                  label: labelText, // Remove debug text here
-                                                  disabled: isDisabled,
-                                                };
-                                              })
-                                          : []
-                                      }
-                                      value={x.bien_id}
-                                      onChange={(selectedValue) => {
-                                        const syntheticEvent = {
-                                          target: {
-                                            name: 'bien_id',
-                                            value: selectedValue,
-                                          },
-                                        };
-                                        handleinputchange(syntheticEvent, i);
-                                      }}
-                                      placeholder="Sélectionner un bien"
-                                      loading={loading_bien}
-                                      required={x.statut == 2}
-                                    />
+                                    {/* Replace with your own Autocomplete or HeadlessUI */}
+                                    {x.bien_id != null && (
+                                      <InputField_Biens
+                                        label="Bien"
+                                        name=""
+                                        type="text"
+                                        value={x.propriete_dite_bien}
+                                        disabled
+                                      />
+                                    )}
                                   </div>
 
-                                  {/* Statut Selection */}
+                                  {/* Statut */}
                                   <div>
-                                    <SelectInput
-                                      label="Statut:"
-                                      name="statut"
-                                      options={Object.values(
-                                        VISITE_STATUT_FORM
-                                      ).map((statut) => ({
-                                        value: statut.code.toString(),
-                                        label: statut.label,
-                                      }))}
-                                      value={x.statut?.toString()}
-                                      onChange={(selectedValue) => {
-                                        // Create a synthetic event to match handleinputchange's expected format
-                                        const syntheticEvent = {
-                                          target: {
-                                            name: 'statut',
-                                            value: selectedValue,
-                                          },
-                                        };
-                                        handleinputchange(syntheticEvent, i);
-                                      }}
-                                      placeholder="Sélectionner un statut"
-                                      required
+                                    <InputField_Biens
+                                      label="Statut"
+                                      name=""
+                                      type="text"
+                                      value={'Vendu'}
+                                      disabled
                                     />
                                   </div>
-
-                                  {/* Conditional RDV / Relance fields */}
-                                  {x.statut == 1 && (
-                                    <>
-                                      <div>
-                                        <InputField_Biens
-                                          label="Rendez Vous"
-                                          name="rdv"
-                                          type="datetime-local"
-                                          value={x.rdv}
-                                          onChange={(e) =>
-                                            handleinputchange(e, i)
-                                          }
-                                        />
-                                      </div>
-                                      <div>
-                                        <SelectInput
-                                          label="Mode de Relance:"
-                                          name="mode_relance"
-                                          options={Object.values(
-                                            VISITE_TYPE_NOTIF
-                                          ).map((notif) => ({
-                                            value: notif.code.toString(),
-                                            label: notif.label,
-                                          }))}
-                                          value={x.mode_relance?.toString()}
-                                          onChange={(selectedValue) => {
-                                            const syntheticEvent = {
-                                              target: {
-                                                name: 'mode_relance',
-                                                value: selectedValue,
-                                              },
-                                            };
-                                            handleinputchange(
-                                              syntheticEvent,
-                                              i
-                                            );
-                                          }}
-                                          placeholder="Sélectionner un Mode de Relance"
-                                        />
-                                      </div>
-                                      <div>
-                                        <InputField_Biens
-                                          label="Date de relance"
-                                          name="date_relance"
-                                          type="date"
-                                          value={x.date_relance}
-                                          onChange={(e) =>
-                                            handleinputchange(e, i)
-                                          }
-                                        />
-                                      </div>
-                                    </>
-                                  )}
 
                                   {/* Commentaire */}
                                   <div className="md:col-span-3">
@@ -2798,13 +2168,14 @@ const handleSubmit_action = (ev) => {
                                       name="commentaire"
                                       multi
                                       value={x.commentaire}
-                                      onChange={(e) => handleinputchange(e, i)}
+                                      onChange={(e) =>
+                                        handleinputchange_bien_vendu(e, j)
+                                      }
                                     />
                                   </div>
                                 </div>
                               </div>
 
-                              {/* Bottom Divider */}
                               {/* Réservation */}
                               {x.statut == 2 && x.bien_id != null && (
                                 <div className="border rounded-lg  mt-4 mx-5">
@@ -2813,25 +2184,27 @@ const handleSubmit_action = (ev) => {
                                     className="flex items-center justify-between px-4 py-2 cursor-pointer"
                                     style={{ background: '#2f8a8bab' }}
                                     onClick={() =>
-                                      handleChange(`panel_res${i + 1}`)
+                                      handleChange(`panel_ress${j + 1}`)
                                     }
                                   >
                                     <h3 className="text-white font-semibold">
-                                      Réservation du Bien{' '}
-                                      {input_biens_vendu.length + (i + 1)}
+                                      Réservation du Bien {j + 1}
                                     </h3>
                                     <span className="text-white">
-                                      {expanded.includes(`panel_res${i + 1}`)
+                                      {expanded.includes(`panel_ress${j + 1}`)
                                         ? '⌃'
                                         : '⌄'}
                                     </span>
                                   </div>
 
                                   {/* Accordion Content */}
-                                  {expanded.includes(`panel_res${i + 1}`) && (
+                                  {expanded.includes(`panel_ress${j + 1}`) && (
                                     <div className="p-4 space-y-4 bg-white">
                                       {info_reservation && (
-                                        <div className="bg-red-100 border-l-4 border-red-500 !text-red-700 p-4 text-center rounded">
+                                        <div
+                                          className="bg-red-100 border-l-4 border-red-500 p-4 text-center rounded"
+                                          style={{ color: 'red!important' }}
+                                        >
                                           {info_reservation}
                                         </div>
                                       )}
@@ -2844,7 +2217,7 @@ const handleSubmit_action = (ev) => {
                                           placeholder="Code Réservation"
                                           value={x.code_reservation}
                                           onChange={(e) =>
-                                            handleinputchange(e, i)
+                                            handleinputchange_bien_vendu(e, j)
                                           }
                                           required
                                         />
@@ -2871,7 +2244,7 @@ const handleSubmit_action = (ev) => {
                                           type="date"
                                           value={x.date_reservation}
                                           onChange={(e) =>
-                                            handleinputchange(e, i)
+                                            handleinputchange_bien_vendu(e, j)
                                           }
                                           required
                                         />
@@ -2881,7 +2254,7 @@ const handleSubmit_action = (ev) => {
                                           multi
                                           value={x.commentaire_res}
                                           onChange={(e) =>
-                                            handleinputchange(e, i)
+                                            handleinputchange_bien_vendu(e, j)
                                           }
                                         />
                                       </div>
@@ -2897,22 +2270,21 @@ const handleSubmit_action = (ev) => {
                                     className="flex items-center justify-between px-4 py-2 cursor-pointer"
                                     style={{ background: '#2f8a8bab' }}
                                     onClick={() =>
-                                      handleChange(`panel_pai${i + 1}`)
+                                      handleChange(`panel_paii${j + 1}`)
                                     }
                                   >
                                     <h3 className="text-white font-semibold">
-                                      Paiement du Bien{' '}
-                                      {input_biens_vendu.length + (i + 1)}
+                                      Paiement du Bien {j + 1}
                                     </h3>
                                     <span className="text-white">
-                                      {expanded.includes(`panel_pai${i + 1}`)
+                                      {expanded.includes(`panel_paii${j + 1}`)
                                         ? '⌃'
                                         : '⌄'}
                                     </span>
                                   </div>
 
                                   {/* Accordion Content */}
-                                  {expanded.includes(`panel_pai${i + 1}`) && (
+                                  {expanded.includes(`panel_paii${j + 1}`) && (
                                     <div className="p-4 grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white transition-all duration-300">
                                       <div>
                                         <label
@@ -2934,7 +2306,7 @@ const handleSubmit_action = (ev) => {
                                             value={x.sr}
                                             checked={x.sr}
                                             onChange={(e) =>
-                                              handleinputchange(e, i)
+                                              handleinputchange_bien_vendu(e, j)
                                             }
                                             className="h-5 w-10 rounded-full bg-gray-300 transition-all duration-300"
                                           />
@@ -2960,7 +2332,7 @@ const handleSubmit_action = (ev) => {
                                         type="number"
                                         value={x.prix_remise}
                                         onChange={(e) =>
-                                          handleinputchange(e, i)
+                                          handleinputchange_bien_vendu(e, j)
                                         }
                                       />
                                       <InputField_Biens
@@ -2969,7 +2341,7 @@ const handleSubmit_action = (ev) => {
                                         type="number"
                                         value={x.prix_forfetaire}
                                         onChange={(e) =>
-                                          handleinputchange(e, i)
+                                          handleinputchange_bien_vendu(e, j)
                                         }
                                       />
                                       <InputField_Biens
@@ -2977,6 +2349,20 @@ const handleSubmit_action = (ev) => {
                                         name="prix_final"
                                         type="number"
                                         value={check_total >= 0 && x.prix_final}
+                                        disabled
+                                      />
+                                      <InputField_Biens
+                                        label="Reste Avance:"
+                                        name="avance_minimale"
+                                        type="number"
+                                        value={x.avance_minimale}
+                                        disabled
+                                      />
+                                      <InputField_Biens
+                                        label="Reste:"
+                                        name="reste"
+                                        type="number"
+                                        value={x.reste}
                                         disabled
                                       />
                                       <InputField_Biens
@@ -2996,120 +2382,80 @@ const handleSubmit_action = (ev) => {
                                             : null
                                         }
                                         onChange={(e) =>
-                                          handleinputchange(e, i)
+                                          handleinputchange_bien_vendu(e, j)
                                         }
                                       />
-                                      <InputField_Biens
-                                        label="Reste:"
-                                        name="reste"
-                                        type="number"
-                                        value={x.reste}
-                                        disabled
+                                      <AutocompleteStatut_ModeRelance_Biens
+                                        name={'mode_financement'}
+                                        label={'Mode Financement:'}
+                                        placeholder={
+                                          'Sélectionner un Mode de Financement'
+                                        }
+                                        code="code"
+                                        labelKey="label"
+                                        options={Object.values(MODE_FINANCE)}
+                                        value={x.mode_financement}
+                                        onChange={(e) =>
+                                          handleinputchange_bien_vendu(e, j)
+                                        }
+                                        required
+                                      />{' '}
+                                      <AutocompleteStatut_ModeRelance_Biens
+                                        name={'mode_paiement'}
+                                        label={'Mode Paiement kk:'}
+                                        placeholder={
+                                          'Sélectionner un Mode de Paiement'
+                                        }
+                                        options={Object.values(MODE_PAIEMENT)}
+                                        value={x.mode_paiement}
+                                        code="code"
+                                        labelKey="label"
+                                        onChange={(e) =>
+                                          handleinputchange_bien_vendu(e, j)
+                                        }
+                                        required
                                       />
-                                      {/* Mode Financement Selection */}
-                                      <div>
-                                        <SelectInput
-                                          label="Mode Financement:"
-                                          name="mode_financement"
-                                          options={Object.values(
-                                            MODE_FINANCE
-                                          ).map((finance) => ({
-                                            value: finance.code.toString(),
-                                            label: finance.label,
-                                          }))}
-                                          value={x.mode_financement?.toString()}
-                                          onChange={(selectedValue) => {
-                                            // Create a synthetic event to match handleinputchange's expected format
-                                            const syntheticEvent = {
-                                              target: {
-                                                name: 'mode_financement',
-                                                value: selectedValue,
-                                              },
-                                            };
-                                            handleinputchange(
-                                              syntheticEvent,
-                                              i
-                                            );
-                                          }}
-                                          placeholder="Sélectionner un Mode de Financement"
-                                          required
-                                        />
-                                      </div>
-
-                                      {/* Mode Paiement Selection */}
-                                      <div>
-                                        <SelectInput
-                                          label="Mode Paiement:"
-                                          name="mode_paiement"
-                                          options={Object.values(
-                                            MODE_PAIEMENT
-                                          ).map((paiement) => ({
-                                            value: paiement.code.toString(),
-                                            label: paiement.label,
-                                          }))}
-                                          value={x.mode_paiement?.toString()}
-                                          onChange={(selectedValue) => {
-                                            // Create a synthetic event to match handleinputchange's expected format
-                                            const syntheticEvent = {
-                                              target: {
-                                                name: 'mode_paiement',
-                                                value: selectedValue,
-                                              },
-                                            };
-                                            handleinputchange(
-                                              syntheticEvent,
-                                              i
-                                            );
-                                          }}
-                                          placeholder="Sélectionner un Mode de Paiement"
-                                          required
-                                        />
-                                      </div>
                                       {/* Conditional Fields */}
-                                      {x.mode_paiement !== '1' &&
+                                      {x.mode_paiement !== 1 &&
                                         x.mode_paiement !== '' && (
                                           <>
-                                            <SelectInput
-                                              label="Banque:"
-                                              name="banque_id"
-                                              options={banques.map(
-                                                (banque) => ({
-                                                  value: banque.id.toString(),
-                                                  label: banque.nom,
-                                                })
-                                              )}
-                                              value={x.banque_id?.toString()}
-                                              onChange={(selectedValue) => {
-                                                const syntheticEvent = {
-                                                  target: {
-                                                    name: 'banque_id',
-                                                    value: selectedValue,
-                                                  },
-                                                };
-                                                handleinputchange(
-                                                  syntheticEvent,
-                                                  i
-                                                );
-                                              }}
-                                              placeholder="Sélectionner une Banque"
+                                            <AutocompleteStatut_ModeRelance_Biens
+                                              name={'banque_id'}
+                                              label={'Banque:'}
+                                              placeholder={
+                                                'Sélectionner un Mode de Paiement'
+                                              }
+                                              options={banques}
+                                              value={x.banque_id}
                                               required={x.mode_paiement !== '1'}
+                                              code="id"
+                                              labelKey="nom"
+                                              onChange={(e) =>
+                                                handleinputchange_bien_vendu(
+                                                  e,
+                                                  j
+                                                )
+                                              }
                                             />
                                             <InputField_Biens
                                               label="N° Paiement:"
                                               name="numero_paiement"
                                               type="number"
-                                              required={x.mode_paiement !== '1'}
+                                              required={x.mode_paiement !== 1}
                                               value={x.numero_paiement}
                                               onChange={(e) =>
-                                                handleinputchange(e, i)
+                                                handleinputchange_bien_vendu(
+                                                  e,
+                                                  j
+                                                )
                                               }
                                             />
                                           </>
                                         )}
                                       {x.mode_paiement !== '' &&
-                                        x.mode_paiement !== '1' &&
-                                        x.mode_paiement !== '5' &&
-                                        x.mode_paiement !== '6' && (
+                                        x.mode_paiement !== 1 &&
+                                        x.mode_paiement !== 5 &&
+                                        x.mode_paiement !== 6 && (
                                           <InputField_Biens
                                             label="Date Échéance:"
                                             name="echeance"
@@ -3117,7 +2463,7 @@ const handleSubmit_action = (ev) => {
                                             type="date"
                                             value={x.echeance}
                                             onChange={(e) =>
-                                              handleinputchange(e, i)
+                                              handleinputchange_bien_vendu(e, j)
                                             }
                                           />
                                         )}
@@ -3151,7 +2497,10 @@ const handleSubmit_action = (ev) => {
                                                   x.avance_res == 0
                                                 }
                                                 onChange={(e) =>
-                                                  handleinputchange(e, i)
+                                                  handleinputchange_bien_vendu(
+                                                    e,
+                                                    j
+                                                  )
                                                 }
                                                 className="h-5 w-10 rounded-full bg-gray-300 transition-all duration-300"
                                               />
@@ -3167,7 +2516,7 @@ const handleSubmit_action = (ev) => {
                                         }
                                         value={x.commentaireAvance}
                                         onChange={(e) =>
-                                          handleinputchange(e, i)
+                                          handleinputchange_bien_vendu(e, j)
                                         }
                                       />
                                       {user.role <= 2 && x.avance_res > 0 && (
@@ -3187,7 +2536,7 @@ const handleSubmit_action = (ev) => {
                                             type="number"
                                             value={x.num_remise}
                                             onChange={(e) =>
-                                              handleinputchange(e, i)
+                                              handleinputchange_bien_vendu(e, j)
                                             }
                                           />
                                           <InputField_Biens
@@ -3196,7 +2545,7 @@ const handleSubmit_action = (ev) => {
                                             type="date"
                                             value={x.date_encaissement}
                                             onChange={(e) =>
-                                              handleinputchange(e, i)
+                                              handleinputchange_bien_vendu(e, j)
                                             }
                                           />
                                         </>
@@ -3207,199 +2556,885 @@ const handleSubmit_action = (ev) => {
                               )}
                             </>
                           )}
+                          {/* Bottom Divider */}
                         </div>
                       </div>
-                    ))}
-                </div>
-                {(Number(watch('interet')) == 2 ||
-                  Number(watch('interet')) == 3) && (
-                  <div className="flex-1 mt-4">
-                    <TextField
-                      label="Commentaire:"
-                      name="commentaire"
-                      required={false}
-                      multi={true} // Set this to true if you want a multi-line textarea, else leave it out or false
-                      control={control} // Passed from useForm hook
-                      errors={errors} // Validation errors from React Hook Form
-                      backendErrors={backendErrors} // Backend error messages if any
-                      defaultValues={defaultValues} // Default values for the form
-                      width="w-full" // Optionally set width, default is 'w-80'
-                      height="h-full" // Optionally set height, default is 'h-10'
-                    />
-                  </div>
-                )}
-              </div>
-              <div className="flex justify-center items-center gap-4 xl:mt-32">
-                <Button type="button" onClick={() => router.back()}>
-                  Annuler
-                </Button>
-                <Button type="submit" disabled={isDisabled}>
-                  {isSubmitting ? (
-                    <div className="flex items-center gap-2">
-                      <svg
-                        className="animate-spin h-5 w-5 text-white"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      Enregistrement...
-                    </div>
-                  ) : (
-                    'Enregistrer'
-                  )}
-                </Button>
-              </div>
-            </form>
-          </div>
-        )}
-      </div>
-      {/*
-        ((watch('loading_b_pre') === true && !isOrigin) ||
-          (isOrigin && OldBiens_pre.length > 0))*/}
-      {watch('loading_b_pre') && isOrigin ? (
-        <LoadingSpin />
-      ) : (
-        showPreReservedSection && (
-          <div className="p-3">
-            <div className="p-6 mt-4 bg-white shadow-md rounded-md">
-              <div className="text-white rounded-t-lg p-4 bg-[#5483b3]">
-                <h3 className="text-xl font-semibold">Information</h3>
-              </div>
-
-              <div className="p-4">
-                <div className="grid grid-cols-1 gap-5">
-                  <div className="col-span-1">
-                    <p className="text-sm font-semibold"></p>
-                  </div>
-
-                  {OldBiens_pre.length > 0 && (
-                    <>
-                      <div className="col-span-1">
-                        <h5 className="text-left mt-5  text-lg font-medium">
-                          Ce Client a déja les pré-réservations suivantes :
-                        </h5>
-                      </div>
-
-                      <form onSubmit={handleSubmit_action}>
-                        {OldBiens_pre.map((x, i) => (
-                          <div
-                            key={i}
-                            className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 ml-5"
-                          >
-                            <div className="sm:col-span-1">
-                              <p className="text-base font-medium">
-                                Bien {i + 1}
-                              </p>
-                              <input
-                                width={'70%'}
-                                type="text"
-                                value={x.propriete_dite_bien}
-                                onChange={(e) =>
-                                  handle_action_change(e, i, null)
+                    );
+                  })}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {input_biens_vendu.length > 0 && (
+                      <>
+                        {watch('loading_b_pre') == false && (
+                          <>
+                            <div className="">
+                              <AutocompleteSelectComponent
+                                label="Intérêt :"
+                                name="interet"
+                                required={true}
+                                //  options={VISITE_INTERETS}
+                                options={
+                                  input_biens_vendu.length > 0
+                                    ? {
+                                        1: VISITE_INTERETS[1],
+                                        // 3: VISITE_INTERETS[3],
+                                      }
+                                    : {
+                                        1: VISITE_INTERETS[1],
+                                        2: VISITE_INTERETS[2],
+                                        3: VISITE_INTERETS[3],
+                                      }
                                 }
-                                name="propriete"
-                                className="block w-[70%] p-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
+                                disabled={
+                                  isOrigin ? false : watch('telephone') === ''
+                                }
+                                onChange={handleChange_interet}
                               />
                             </div>
-
-                            <div className="sm:col-span-1 ml-5">
-                              <p className="text-base font-medium">
-                                Veuillez choisir une action :
-                              </p>
-                              <div className="flex gap-2">
-                                <button
-                                  type="button"
-                                  value="1"
-                                  className={`py-1 px-2 rounded-md ${
-                                    x.action == '1'
-                                      ? 'bg-blue-500 text-white'
-                                      : 'bg-[rgb(231,239,255)]'
-                                  }`}
-                                  onClick={(e) =>
-                                    handle_action_change(e, i, 'action')
-                                  }
-                                >
-                                  Garder
-                                </button>
-                                <button
-                                  type="button"
-                                  value="2"
-                                  className={`py-1 px-2 rounded-md ${
-                                    x.action == '2'
-                                      ? 'bg-red-500 text-white'
-                                      : 'bg-[rgb(231,239,255)]'
-                                  }`}
-                                  onClick={(e) =>
-                                    handle_action_change(e, i, 'action')
-                                  }
-                                >
-                                  Annuler
-                                </button>
-                                <button
-                                  type="button"
-                                  value="3"
-                                  className={`py-1 px-2 rounded-md ${
-                                    x.action == '3'
-                                      ? 'bg-green-500 text-white'
-                                      : 'bg-[rgb(231,239,255)]'
-                                  }`}
-                                  onClick={(e) =>
-                                    handle_action_change(e, i, 'action')
-                                  }
-                                >
-                                  Vente
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-
-                        <hr className="my-4 border-gray-300" />
-
-                        <div className="flex gap-4">
-                          {loading_button_save_1 ? (
-                            <div className="flex items-center justify-center">
-                              <span className="animate-spin border-t-2 border-gray-500 w-6 h-6 rounded-full"></span>
-                            </div>
-                          ) : (
-                            <button
-                              type="submit"
-                              className="px-6 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600 disabled:opacity-50"
-                              disabled={check_save_1}
-                            >
-                              Enregistrer
-                            </button>
-                          )}
-                          <button
-                            type="button"
-                            onClick={set_all_action_null}
-                            className="px-6 py-2 border border-gray-300 rounded-md hover:bg-gray-100"
-                          >
-                            RÉINITIALISER
-                          </button>
+                            {Number(watch('interet')) == 1 && (
+                              <>
+                                <TextField
+                                  label="Nombre de Biens à ajouter:"
+                                  name="nb_bien_added"
+                                  type="number"
+                                  control={control}
+                                  errors={{
+                                    ...errors,
+                                    nb_bien_added:
+                                      formSubmitted &&
+                                      Number(watch('interet')) == 1 &&
+                                      !watch('nb_bien_added')
+                                        ? 'Ce champ est obligatoire lorsque interet est Intéressé.'
+                                        : null,
+                                  }}
+                                  backendErrors={backendErrors}
+                                  defaultValues={defaultValues}
+                                  onChange={handleChange_NbrBien}
+                                  required={Number(watch('interet')) == 1}
+                                />
+                              </>
+                            )}
+                          </>
+                        )}
+                        {/*isOrigin && display_cin && display_cin_1 && (
+                        <div>
+                          <TextField
+                            label="Cin:"
+                            name="cin"
+                            control={control}
+                            errors={errors}
+                            backendErrors={backendErrors}
+                            defaultValues={defaultValues}
+                            onChange={handleChange_event('cin')}
+                            required={Number(watch('interet')) == 1}
+                          />
                         </div>
-                      </form>
-                    </>
+                      )*/}
+                      </>
+                    )}
+                  </div>
+                  <div>
+                    {/*watch('nb_bien_added') !== '' && (
+                    <PanelInteresse
+                      input_biens={input_biens}
+                      input_biens_vendu={input_biens_vendu}
+                      handleAccordionChange={handleAccordionChange}
+                      expanded={expanded}
+                      handleChange={handleChange}
+                      handleinputchange={handleinputchange}
+                      user={user}
+                      biensByProjet={biensByProjet}
+                      loading_bien={loading_bien}
+                      info_reservation={info_reservation}
+                      banques={banques}
+                      MODE_FINANCE={MODE_FINANCE}
+                      VISITE_STATUT_FORM={VISITE_STATUT_FORM}
+                    />
+                  )*/}
+                    {watch('nb_bien_added') !== '' &&
+                      input_biens.map((x, i) => (
+                        <div key={`panel_bien${i + 1}`}>
+                          {/* Top Divider */}
+
+                          {/* Accordion */}
+                          <div className="border mt-4 rounded-md">
+                            <button
+                              type="button"
+                              className="bg-[#009FFF] rounded-t-md w-full flex justify-between items-center px-4 py-3  text-white font-medium focus:outline-none"
+                              onClick={handleAccordionChange(
+                                `panel_bien${i + 1}`
+                              )}
+                            >
+                              <span>{`Bien ${
+                                input_biens_vendu.length + i + 1
+                              }`}</span>
+                              <span className="text-xl">
+                                {expanded.includes(`panel_bien${i + 1}`)
+                                  ? '−'
+                                  : '+'}
+                              </span>
+                            </button>
+
+                            {/* Accordion Content */}
+                            {expanded.includes(`panel_bien${i + 1}`) && (
+                              <>
+                                <div className="p-4 space-y-4">
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-x-5 gap-y-4">
+                                    <div>
+                                      <SelectInput
+                                      required
+                                        label="Bien:"
+                                        name="bien_id"
+                                        options={
+                                          biensByProjet
+                                            ? biensByProjet
+                                                .filter(
+                                                  (bien) =>
+                                                    bien &&
+                                                    bien.id &&
+                                                    bien.propriete_dite_bien
+                                                )
+                                                .map((bien) => {
+                                                  // Add the same disabled logic from your old autocomplete
+                                                  const isDisabled =
+                                                    bien.etat ==
+                                                      'ENCOURS_DE_PROPOSITION' &&
+                                                    bien.is_proposed != null &&
+                                                    user.id !=
+                                                      bien.is_proposed.user_id;
+
+                                                  // Add the same label text logic
+                                                  const labelText =
+                                                    bien.propriete_dite_bien +
+                                                    (bien.etat ===
+                                                    'ENCOURS_DE_PROPOSITION'
+                                                      ? bien?.is_proposed !==
+                                                        null
+                                                        ? user.id !==
+                                                          bien?.is_proposed
+                                                            ?.user_id
+                                                          ? ` Proposé par ${bien?.is_proposed?.user?.name} ${bien?.is_proposed?.user?.prenom}`
+                                                          : ' Proposé par Moi Même'
+                                                        : ''
+                                                      : '');
+
+                                                  return {
+                                                    value: bien.id.toString(),
+                                                    label: labelText, // Remove debug text here
+                                                    disabled: isDisabled,
+                                                  };
+                                                })
+                                            : []
+                                        }
+                                        value={x.bien_id}
+                                        onChange={(selectedValue) => {
+                                          const syntheticEvent = {
+                                            target: {
+                                              name: 'bien_id',
+                                              value: selectedValue,
+                                            },
+                                          };
+                                          handleinputchange(syntheticEvent, i);
+                                        }}
+                                        placeholder="Sélectionner un bien"
+                                        loading={loading_bien}
+                                       // required={x.statut == 2}
+                                      />
+                                    </div>
+
+                                    {/* Statut Selection */}
+                                    <div>
+                                      <SelectInput
+                                        label="Statut:"
+                                        name="statut"
+                                        options={Object.values(
+                                          VISITE_STATUT_FORM
+                                        ).map((statut) => ({
+                                          value: statut.code.toString(),
+                                          label: statut.label,
+                                        }))}
+                                        value={x.statut?.toString()}
+                                        onChange={(selectedValue) => {
+                                          // Create a synthetic event to match handleinputchange's expected format
+                                          const syntheticEvent = {
+                                            target: {
+                                              name: 'statut',
+                                              value: selectedValue,
+                                            },
+                                          };
+                                          handleinputchange(syntheticEvent, i);
+                                        }}
+                                        placeholder="Sélectionner un statut"
+                                        required
+                                      />
+                                    </div>
+
+                                    {/* Conditional RDV / Relance fields */}
+                                    {x.statut == 1 && (
+                                      <>
+                                        <div>
+                                          <InputField_Biens
+                                            label="Rendez Vous"
+                                            name="rdv"
+                                            type="datetime-local"
+                                            value={x.rdv}
+                                            onChange={(e) =>
+                                              handleinputchange(e, i)
+                                            }
+                                          />
+                                        </div>
+                                        <div>
+                                          <SelectInput
+                                            label="Mode de Relance:"
+                                            name="mode_relance"
+                                            options={Object.values(
+                                              VISITE_TYPE_NOTIF
+                                            ).map((notif) => ({
+                                              value: notif.code.toString(),
+                                              label: notif.label,
+                                            }))}
+                                            value={x.mode_relance?.toString()}
+                                            onChange={(selectedValue) => {
+                                              const syntheticEvent = {
+                                                target: {
+                                                  name: 'mode_relance',
+                                                  value: selectedValue,
+                                                },
+                                              };
+                                              handleinputchange(
+                                                syntheticEvent,
+                                                i
+                                              );
+                                            }}
+                                            placeholder="Sélectionner un Mode de Relance"
+                                          />
+                                        </div>
+                                        <div>
+                                          <InputField_Biens
+                                            label="Date de relance"
+                                            name="date_relance"
+                                            type="date"
+                                            value={x.date_relance}
+                                            onChange={(e) =>
+                                              handleinputchange(e, i)
+                                            }
+                                          />
+                                        </div>
+                                      </>
+                                    )}
+
+                                    {/* Commentaire */}
+                                    <div className="md:col-span-3">
+                                      <InputField_Biens
+                                        label="Commentaire"
+                                        name="commentaire"
+                                        multi
+                                        value={x.commentaire}
+                                        onChange={(e) =>
+                                          handleinputchange(e, i)
+                                        }
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Bottom Divider */}
+                                {/* Réservation */}
+                                {x.statut == 2 && x.bien_id != null && (
+                                  <div className="border rounded-lg  mt-4 mx-5">
+                                    {/* Accordion Header */}
+                                    <div
+                                      className="flex items-center justify-between px-4 py-2 cursor-pointer"
+                                      style={{ background: '#2f8a8bab' }}
+                                      onClick={() =>
+                                        handleChange(`panel_res${i + 1}`)
+                                      }
+                                    >
+                                      <h3 className="text-white font-semibold">
+                                        Réservation du Bien{' '}
+                                        {input_biens_vendu.length + (i + 1)}
+                                      </h3>
+                                      <span className="text-white">
+                                        {expanded.includes(`panel_res${i + 1}`)
+                                          ? '⌃'
+                                          : '⌄'}
+                                      </span>
+                                    </div>
+
+                                    {/* Accordion Content */}
+                                    {expanded.includes(`panel_res${i + 1}`) && (
+                                      <div className="p-4 space-y-4 bg-white">
+                                        {info_reservation && (
+                                          <div className="bg-red-100 border-l-4 border-red-500 !text-red-700 p-4 text-center rounded">
+                                            {info_reservation}
+                                          </div>
+                                        )}
+
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                          <InputField_Biens
+                                            label="Code Réservation:"
+                                            name="code_reservation"
+                                            type="text"
+                                            placeholder="Code Réservation"
+                                            value={x.code_reservation}
+                                            onChange={(e) =>
+                                              handleinputchange(e, i)
+                                            }
+                                            required
+                                          />
+
+                                          <InputField_Biens
+                                            label="Bien:"
+                                            name=""
+                                            type="text"
+                                            value={x.propriete_dite_bien}
+                                            disabled
+                                          />
+
+                                          <InputField_Biens
+                                            label="Prix:"
+                                            name=""
+                                            type="number"
+                                            value={x.prix}
+                                            disabled
+                                          />
+
+                                          <InputField_Biens
+                                            label="Date Réservation:"
+                                            name="date_reservation"
+                                            type="date"
+                                            value={x.date_reservation}
+                                            onChange={(e) =>
+                                              handleinputchange(e, i)
+                                            }
+                                            required
+                                          />
+                                          <InputField_Biens
+                                            label="Commentaire:"
+                                            name="commentaire_res"
+                                            multi
+                                            value={x.commentaire_res}
+                                            onChange={(e) =>
+                                              handleinputchange(e, i)
+                                            }
+                                          />
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                                {/* Paiement */}
+                                {x.statut == 2 && x.bien_id != null && (
+                                  <div className="border rounded-lg  mt-4 mx-5 mb-5">
+                                    {/* Accordion Header */}
+                                    <div
+                                      className="flex items-center justify-between px-4 py-2 cursor-pointer"
+                                      style={{ background: '#2f8a8bab' }}
+                                      onClick={() =>
+                                        handleChange(`panel_pai${i + 1}`)
+                                      }
+                                    >
+                                      <h3 className="text-white font-semibold">
+                                        Paiement du Bien{' '}
+                                        {input_biens_vendu.length + (i + 1)}
+                                      </h3>
+                                      <span className="text-white">
+                                        {expanded.includes(`panel_pai${i + 1}`)
+                                          ? '⌃'
+                                          : '⌄'}
+                                      </span>
+                                    </div>
+
+                                    {/* Accordion Content */}
+                                    {expanded.includes(`panel_pai${i + 1}`) && (
+                                      <div className="p-4 grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white transition-all duration-300">
+                                        <div>
+                                          <label
+                                            className="flex items-center space-x-2"
+                                            style={{ marginTop: '30px' }}
+                                          >
+                                            <span
+                                              className={`text-sm font-medium ${
+                                                x.sr == true
+                                                  ? 'text-purple-600'
+                                                  : ''
+                                              }`}
+                                            >
+                                              SR:
+                                            </span>
+                                            <input
+                                              type="checkbox"
+                                              name="sr"
+                                              value={x.sr}
+                                              checked={x.sr}
+                                              onChange={(e) =>
+                                                handleinputchange(e, i)
+                                              }
+                                              className="h-5 w-10 rounded-full bg-gray-300 transition-all duration-300"
+                                            />
+                                          </label>
+                                        </div>
+                                        <InputField_Biens
+                                          label="Prix :"
+                                          name="prix"
+                                          type="number"
+                                          value={x.prix}
+                                          disabled
+                                        />
+                                        <InputField_Biens
+                                          label="Prix Unitaire:"
+                                          name="prix_unitaire"
+                                          type="number"
+                                          value={x.prix_unitaire}
+                                          disabled
+                                        />
+                                        <InputField_Biens
+                                          label="Prix Unitaire Remisé:"
+                                          name="prix_remise"
+                                          type="number"
+                                          value={x.prix_remise}
+                                          onChange={(e) =>
+                                            handleinputchange(e, i)
+                                          }
+                                        />
+                                        <InputField_Biens
+                                          label="Remise Forfaitaire:"
+                                          name="prix_forfetaire"
+                                          type="number"
+                                          value={x.prix_forfetaire}
+                                          onChange={(e) =>
+                                            handleinputchange(e, i)
+                                          }
+                                        />
+                                        <InputField_Biens
+                                          label="Prix Final:"
+                                          name="prix_final"
+                                          type="number"
+                                          value={
+                                            check_total >= 0 && x.prix_final
+                                          }
+                                          disabled
+                                        />
+                                        <InputField_Biens
+                                          label="Montant:"
+                                          name="avance_res"
+                                          type="number"
+                                          required
+                                          value={x.avance_res}
+                                          error={
+                                            x.avance_res != '' &&
+                                            x.avance_res == 0 &&
+                                            user?.role > 2
+                                              ? 'Le montant ne peut pas être 0 pour votre rôle'
+                                              : x.avance_res > 0 &&
+                                                x.avance_res < x.avance_minimale
+                                              ? `Le montant doit être au moins ${x.avance_minimale}`
+                                              : null
+                                          }
+                                          onChange={(e) =>
+                                            handleinputchange(e, i)
+                                          }
+                                        />
+                                        <InputField_Biens
+                                          label="Reste:"
+                                          name="reste"
+                                          type="number"
+                                          value={x.reste}
+                                          disabled
+                                        />
+                                        {/* Mode Financement Selection */}
+                                        <div>
+                                          <SelectInput
+                                            label="Mode Financement:"
+                                            name="mode_financement"
+                                            options={Object.values(
+                                              MODE_FINANCE
+                                            ).map((finance) => ({
+                                              value: finance.code.toString(),
+                                              label: finance.label,
+                                            }))}
+                                            value={x.mode_financement?.toString()}
+                                            onChange={(selectedValue) => {
+                                              // Create a synthetic event to match handleinputchange's expected format
+                                              const syntheticEvent = {
+                                                target: {
+                                                  name: 'mode_financement',
+                                                  value: selectedValue,
+                                                },
+                                              };
+                                              handleinputchange(
+                                                syntheticEvent,
+                                                i
+                                              );
+                                            }}
+                                            placeholder="Sélectionner un Mode de Financement"
+                                            required
+                                          />
+                                        </div>
+
+                                        {/* Mode Paiement Selection */}
+                                        <div>
+                                          <SelectInput
+                                            label="Mode Paiement:"
+                                            name="mode_paiement"
+                                            options={Object.values(
+                                              MODE_PAIEMENT
+                                            ).map((paiement) => ({
+                                              value: paiement.code.toString(),
+                                              label: paiement.label,
+                                            }))}
+                                            value={x.mode_paiement?.toString()}
+                                            onChange={(selectedValue) => {
+                                              // Create a synthetic event to match handleinputchange's expected format
+                                              const syntheticEvent = {
+                                                target: {
+                                                  name: 'mode_paiement',
+                                                  value: selectedValue,
+                                                },
+                                              };
+                                              handleinputchange(
+                                                syntheticEvent,
+                                                i
+                                              );
+                                            }}
+                                            placeholder="Sélectionner un Mode de Paiement"
+                                            required
+                                          />
+                                        </div>
+                                        {/* Conditional Fields */}
+                                        {x.mode_paiement !== '1' &&
+                                          x.mode_paiement !== '' && (
+                                            <>
+                                              <SelectInput
+                                                label="Banque:"
+                                                name="banque_id"
+                                                options={banques.map(
+                                                  (banque) => ({
+                                                    value: banque.id.toString(),
+                                                    label: banque.nom,
+                                                  })
+                                                )}
+                                                value={x.banque_id?.toString()}
+                                                onChange={(selectedValue) => {
+                                                  const syntheticEvent = {
+                                                    target: {
+                                                      name: 'banque_id',
+                                                      value: selectedValue,
+                                                    },
+                                                  };
+                                                  handleinputchange(
+                                                    syntheticEvent,
+                                                    i
+                                                  );
+                                                }}
+                                                placeholder="Sélectionner une Banque"
+                                                required={
+                                                  x.mode_paiement !== '1'
+                                                }
+                                              />
+                                              <InputField_Biens
+                                                label="N° Paiement:"
+                                                name="numero_paiement"
+                                                type="number"
+                                                required={
+                                                  x.mode_paiement !== '1'
+                                                }
+                                                value={x.numero_paiement}
+                                                onChange={(e) =>
+                                                  handleinputchange(e, i)
+                                                }
+                                              />
+                                            </>
+                                          )}
+                                        {x.mode_paiement !== '' &&
+                                          x.mode_paiement !== '1' &&
+                                          x.mode_paiement !== '5' &&
+                                          x.mode_paiement !== '6' && (
+                                            <InputField_Biens
+                                              label="Date Échéance:"
+                                              name="echeance"
+                                              required={x.mode_paiement !== '1'}
+                                              type="date"
+                                              value={x.echeance}
+                                              onChange={(e) =>
+                                                handleinputchange(e, i)
+                                              }
+                                            />
+                                          )}
+                                        {x.avance_res != '' &&
+                                          x.avance_res == 0 && (
+                                            <div>
+                                              <label
+                                                className="flex items-center space-x-2"
+                                                style={{ marginTop: '19px' }}
+                                              >
+                                                <span
+                                                  className={`text-sm font-medium ${
+                                                    x.check_montant == true
+                                                      ? 'text-purple-600'
+                                                      : ''
+                                                  }`}
+                                                >
+                                                  {' '}
+                                                  Voulez vous Enregistrer la
+                                                  Réservation sans montant
+                                                  (Prière de saisir un
+                                                  commentaire)
+                                                </span>
+                                                <input
+                                                  style={{ color: 'green' }}
+                                                  type="checkbox"
+                                                  name="check_montant"
+                                                  value={x.check_montant}
+                                                  checked={x.check_montant}
+                                                  required={
+                                                    x.avance_res != '' &&
+                                                    x.avance_res == 0
+                                                  }
+                                                  onChange={(e) =>
+                                                    handleinputchange(e, i)
+                                                  }
+                                                  className="h-5 w-10 rounded-full bg-gray-300 transition-all duration-300"
+                                                />
+                                              </label>
+                                            </div>
+                                          )}
+                                        <InputField_Biens
+                                          label="Commentaire:"
+                                          name="commentaireAvance"
+                                          multi
+                                          required={
+                                            x.check_montant == true
+                                              ? true
+                                              : false
+                                          }
+                                          value={x.commentaireAvance}
+                                          onChange={(e) =>
+                                            handleinputchange(e, i)
+                                          }
+                                        />
+                                        {user.role <= 2 && x.avance_res > 0 && (
+                                          <>
+                                            <div className="col-span-3">
+                                              <h2
+                                                className="text-lg font-medium border-b pb-2 mb-4"
+                                                style={{ color: '#231651' }}
+                                              >
+                                                Informations Encaissement
+                                              </h2>
+                                            </div>
+
+                                            <InputField_Biens
+                                              label="N° Remise:"
+                                              name="num_remise"
+                                              type="number"
+                                              value={x.num_remise}
+                                              onChange={(e) =>
+                                                handleinputchange(e, i)
+                                              }
+                                            />
+                                            <InputField_Biens
+                                              label="Date Encaissement:"
+                                              name="date_encaissement"
+                                              type="date"
+                                              value={x.date_encaissement}
+                                              onChange={(e) =>
+                                                handleinputchange(e, i)
+                                              }
+                                            />
+                                          </>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                  {(Number(watch('interet')) == 2 ||
+                    Number(watch('interet')) == 3) && (
+                    <div className="flex-1 mt-4">
+                      <TextField
+                        label="Commentaire:"
+                        name="commentaire"
+                        required={false}
+                        multi={true} // Set this to true if you want a multi-line textarea, else leave it out or false
+                        control={control} // Passed from useForm hook
+                        errors={errors} // Validation errors from React Hook Form
+                        backendErrors={backendErrors} // Backend error messages if any
+                        defaultValues={defaultValues} // Default values for the form
+                        width="w-full" // Optionally set width, default is 'w-80'
+                        height="h-full" // Optionally set height, default is 'h-10'
+                      />
+                    </div>
                   )}
                 </div>
+
+                <div className="flex justify-center items-center gap-4 xl:mt-32">
+                  <Button type="button" onClick={() => router.back()}>
+                    Annuler
+                  </Button>
+                  <Button type="submit" disabled={isDisabled}>
+                    {isSubmitting ? (
+                      <div className="flex items-center gap-2">
+                        <svg
+                          className="animate-spin h-5 w-5 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        Enregistrement...
+                      </div>
+                    ) : (
+                      'Enregistrer'
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </div>
+          )}
+        </div>
+      )}
+      {showPreReservedSection && (
+        <div className="p-3">
+          <div className="p-6 mt-4 bg-white shadow-md rounded-md">
+            <div className="text-white rounded-t-lg p-4 bg-[#5483b3]">
+              <h3 className="text-xl font-semibold">Information</h3>
+            </div>
+
+            <div className="p-4">
+              <div className="grid grid-cols-1 gap-5">
+                <div className="col-span-1">
+                  <p className="text-sm font-semibold"></p>
+                </div>
+
+                {OldBiens_pre.length > 0 && (
+                  <>
+                    <div className="col-span-1">
+                      <h5 className="text-left mt-5  text-lg font-medium">
+                        Ce Client a déja les pré-réservations suivantes :
+                      </h5>
+                    </div>
+
+                    <form onSubmit={handleSubmit_action}>
+                      {OldBiens_pre.map((x, i) => (
+                        <div
+                          key={i}
+                          className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 ml-5"
+                        >
+                          <div className="sm:col-span-1">
+                            <p className="text-base font-medium">
+                              Bien {i + 1}
+                            </p>
+                            <input
+                              width={'70%'}
+                              type="text"
+                              value={x.propriete_dite_bien}
+                              onChange={(e) => handle_action_change(e, i, null)}
+                              name="propriete"
+                              className="block w-[70%] p-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
+                            />
+                          </div>
+
+                          <div className="sm:col-span-1 ml-5">
+                            <p className="text-base font-medium">
+                              Veuillez choisir une action :
+                            </p>
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                value="1"
+                                className={`py-1 px-2 rounded-md ${
+                                  x.action == '1'
+                                    ? 'bg-blue-500 text-white'
+                                    : 'bg-[rgb(231,239,255)]'
+                                }`}
+                                onClick={(e) =>
+                                  handle_action_change(e, i, 'action')
+                                }
+                              >
+                                Garder
+                              </button>
+                              <button
+                                type="button"
+                                value="2"
+                                className={`py-1 px-2 rounded-md ${
+                                  x.action == '2'
+                                    ? 'bg-red-500 text-white'
+                                    : 'bg-[rgb(231,239,255)]'
+                                }`}
+                                onClick={(e) =>
+                                  handle_action_change(e, i, 'action')
+                                }
+                              >
+                                Annuler
+                              </button>
+                              <button
+                                type="button"
+                                value="3"
+                                className={`py-1 px-2 rounded-md ${
+                                  x.action == '3'
+                                    ? 'bg-green-500 text-white'
+                                    : 'bg-[rgb(231,239,255)]'
+                                }`}
+                                onClick={(e) =>
+                                  handle_action_change(e, i, 'action')
+                                }
+                              >
+                                Vente
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+
+                      <hr className="my-4 border-gray-300" />
+
+                      <div className="flex gap-4">
+                        {loading_button_save_1 ? (
+                          <div className="flex items-center justify-center">
+                            <span className="animate-spin border-t-2 border-gray-500 w-6 h-6 rounded-full"></span>
+                          </div>
+                        ) : (
+                          <button
+                            type="submit"
+                            className="px-6 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600 disabled:opacity-50"
+                            disabled={check_save_1}
+                          >
+                            Enregistrer
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={set_all_action_null}
+                          className="px-6 py-2 border border-gray-300 rounded-md hover:bg-gray-100"
+                        >
+                          RÉINITIALISER
+                        </button>
+                      </div>
+                    </form>
+                  </>
+                )}
               </div>
             </div>
           </div>
-        )
+        </div>
       )}
     </div>
   );

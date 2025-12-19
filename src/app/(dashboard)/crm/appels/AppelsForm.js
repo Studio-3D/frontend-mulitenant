@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef ,useCallback} from 'react';
 import { fetchData_Select } from '../../../../../src/configs/api-utils';
 
 import BreadCrumb from '../../navigation/BreadCrumb';
@@ -27,14 +27,15 @@ import {
   ORIENTATIONS,
   ORIENTATION_ABBREVIATIONS,
 } from '@/configs/enum';
-import { getStoredPerson } from '@/components/storageHelpers';
-import useClearProspect from '../hook/useClearProspect';
 import useClearProspectAppel from '../hook/useClearProspectAppel';
+import useClearClientAppel from '../hook/useClearClientAppel';
 
 export default function AppelsForm({ id }) {
-    useClearProspect();
   useClearProspectAppel();
+  useClearClientAppel();
+
   // Add individual loading states
+  const [validationErrors, setValidationErrors] = useState([]);
 
   const [loadingStates, setLoadingStates] = useState({
     prospectData: false,
@@ -48,7 +49,6 @@ export default function AppelsForm({ id }) {
 
   const [info_cin, setInfo_cin] = useState(null);
   const [loading_tp_frein, setLoading_tp_frein] = useState(false);
-  const [prospect_id, setProspect_id] = useState(null);
 
   const accessToken = token || localStorage.getItem('accessToken');
 
@@ -85,27 +85,12 @@ export default function AppelsForm({ id }) {
 
   //edit
 
-  const { person: selectedPerson, type: personType } = getStoredPerson();
   const orientationOptions = Object.keys(ORIENTATIONS).map((key) => ({
     value: ORIENTATIONS[key].code,
     label: ORIENTATIONS[key].label,
     description: ORIENTATIONS[key].description,
     key: key,
   }));
-
-  // Safely get and parse the prospect data
-  const getProspectFromStorage = () => {
-    try {
-      const storedData = localStorage.getItem('selectedProspect_appel');
-      if (!storedData) return null;
-
-      const parsedData = JSON.parse(storedData);
-      return parsedData?.prospect || null;
-    } catch (error) {
-      console.error('Error parsing prospect data:', error);
-      return null;
-    }
-  };
   // Simple cache et comparaison for return back en cas de changer projet
   const [oldProjetId, setOldProjetId] = useState(null);
 
@@ -121,81 +106,65 @@ export default function AppelsForm({ id }) {
     }
   }, [selectedProjet?.id, oldProjetId, router]);
 
+  // Safely get and parse the prospect data
+  const getProspectFromStorage = () => {
+    try {
+      const storedData = localStorage.getItem('selectedProspect_appel');
+      if (!storedData) return null;
+
+      const parsedData = JSON.parse(storedData);
+      return parsedData?.prospect || null;
+    } catch (error) {
+      console.error('Error parsing prospect data:', error);
+      return null;
+    }
+  };
+
+  const getClientFromStorage = () => {
+    try {
+      const storedData = localStorage.getItem('selectedClient_appel');
+      if (!storedData) return null;
+
+      const parsedData = JSON.parse(storedData);
+      return parsedData?.client || null;
+    } catch (error) {
+      console.error('Error parsing prospect data:', error);
+      return null;
+    }
+  };
   const prospect_appel = getProspectFromStorage();
-
-  useEffect(() => {
-    const loadProspectData = async () => {
-      if (prospect_appel?.projet_id) {
-        setLoadingStates((prev) => ({ ...prev, prospectData: true }));
-
-        const projetId = prospect_appel.projet_id;
-
-        console.log(
-          'Fetching data for projet_id from prospect_appel:',
-          projetId
-        );
-
-        try {
-          // Fetch all related data
-          await Promise.all([
-            fetchPartenaires(projetId),
-            fetch_data_by_projetId(projetId),
-            fetch_type_biens(projetId),
-          ]);
-
-          // Also set the projet_id in the form
-          setValue('projet_id', projetId);
-          setSource(prospect_appel?.source?.source);
-        } catch (error) {
-          console.error('Error loading prospect data:', error);
-        } finally {
-          setLoadingStates((prev) => ({ ...prev, prospectData: false }));
-        }
-      }
-    };
-
-    loadProspectData();
-  }, [prospect_appel?.projet_id]);
+  const client_appel = getClientFromStorage();
   const defaultValues = {
     id_t_appel: '',
-    prospect_id:
-      personType === 'prospect'
-        ? selectedPerson?.id
-        : personType === 'client'
-        ? selectedPerson?.prospect_id
-        : prospect_appel != ''
-        ? prospect_appel?.id
-        : '',
-    client_id: personType === 'client' ? selectedPerson?.id : '',
-    cin: selectedPerson?.cin || prospect_appel?.cin || '',
-    nom: selectedPerson?.nom || prospect_appel?.nom || '',
-    email: selectedPerson?.email || prospect_appel?.email || '',
-    prenom: selectedPerson?.prenom || prospect_appel?.prenom || '',
-    telephone:
-      personType === 'prospect'
-        ? selectedPerson?.telephone
-        : personType === 'client'
-        ? selectedPerson?.telephone_num1
-        : prospect_appel != ''
-        ? prospect_appel?.telephone
-        : '',
+    prospect_id: prospect_appel != '' ? prospect_appel?.id : '',
+    client_id: client_appel?.id || prospect_appel?.client_id || '',
+    cin: client_appel?.cin || prospect_appel?.cin || '',
+    nom: client_appel?.nom || prospect_appel?.nom || '',
+    email: client_appel?.email || prospect_appel?.email || '',
+    prenom: client_appel?.prenom || prospect_appel?.prenom || '',
+    telephone: client_appel?.telephone_num1 || prospect_appel?.telephone || '',
     telephone_num2:
-      selectedPerson?.telephone_num2 || prospect_appel?.telephone_num2 || null,
-    ville: selectedPerson?.ville || prospect_appel?.ville || '',
-    notifie: selectedPerson?.notifie || prospect_appel?.notifie || '',
-    source: selectedPerson?.source?.id || prospect_appel?.source?.id || '',
+      client_appel?.telephone_num2 || prospect_appel?.telephone_num2 || null,
+    ville: client_appel?.ville || prospect_appel?.ville || '',
+    notifie: client_appel?.notifie || prospect_appel?.notifie || '',
+    source:
+      client_appel?.prospect?.source?.id || prospect_appel?.source?.id || '',
     source_txt:
-      selectedPerson?.source?.source || prospect_appel?.source?.source || '',
+      client_appel?.prospect?.source?.source ||
+      prospect_appel?.source?.source ||
+      '',
     partenaire_id:
-      selectedPerson?.partenaire_id || prospect_appel?.partenaire_id || '',
+      client_appel?.prospect?.partenaire_id ||
+      prospect_appel?.partenaire_id ||
+      '',
     partenaire_txt:
-      selectedPerson?.partenaire?.description ||
+      client_appel?.prospect?.partenaire?.description ||
       prospect_appel?.partenaire?.description ||
       '',
     interet: '',
     type_appel: '',
     type_biens: '',
-    projet_id: selectedPerson?.projet_id || prospect_appel?.projet_id || '',
+    projet_id: client_appel?.projet_id || prospect_appel?.projet_id || '',
     date_relance: '',
     mode_relance: '',
     tranche_id: '',
@@ -218,44 +187,61 @@ export default function AppelsForm({ id }) {
     sup_max: '',
     description_autre: '',
   };
-  const validationSchemaRef = useRef(
+  useEffect(() => {
+    const loadProspectData = async () => {
+      if (prospect_appel?.projet_id || client_appel?.projet_id) {
+        setLoadingStates((prev) => ({ ...prev, prospectData: true }));
+
+        const projetId = prospect_appel?.projet_id || client_appel?.projet_id;
+
+        console.log(
+          'Fetching data for projet_id from prospect_appel:',
+          projetId
+        );
+
+        try {
+          // Fetch all related data
+          await Promise.all([
+            fetchPartenaires(projetId),
+            fetch_data_by_projetId(projetId),
+            fetch_type_biens(projetId),
+          ]);
+
+          // Also set the projet_id in the form
+          setValue('projet_id', projetId);
+          setSource(
+            prospect_appel?.source?.source ||
+              client_appel.prospect?.source?.source
+          );
+        } catch (error) {
+          console.error('Error loading prospect data:', error);
+        } finally {
+          setLoadingStates((prev) => ({ ...prev, prospectData: false }));
+        }
+      }
+    };
+
+    loadProspectData();
+  }, [prospect_appel?.projet_id]);
+
+ const validationSchemaRef = useRef(
     yup.object().shape({
-      telephone: yup
-        .string()
-        .required('Le num de telephone est requis')
-        .matches(/^\d*$/, 'Seulement des chiffres') // allow only digits if filled
-        .min(10, 'Minimum 10 chiffres')
-        .max(14, 'Maximum 14 chiffres'),
-      telephone_num2: yup
-        .string()
-        .transform((value, originalValue) => {
-          // Convert string "null" or empty string to actual null
-          return originalValue == 'null' || originalValue == ''
-            ? null
-            : originalValue;
-        })
-        .nullable()
-        .notRequired()
-        .min(10, 'Minimum 10 chiffres')
-        .max(14, 'Maximum 14 chiffres'),
-      type_appel: yup.string().required("Le Type d'appel est Obligatoire"),
-      interet: yup.string().required("L'interet est Obligatoire"),
-      projet_id: yup.string().required('Le Projet est Obligatoire'),
-      source: yup.string().required('Le Source est Obligatoire'),
+      
     })
   );
 
-  const {
-    control,
-    handleSubmit,
-    reset,
-    setValue,
-    watch,
-    formState: { errors },
-  } = useForm({
-    resolver: yupResolver(validationSchemaRef.current),
-    defaultValues,
-  });
+ const {
+  control,
+  handleSubmit,
+  reset,
+  setValue,
+  watch,
+  formState: { errors },
+} = useForm({
+  // Supprimez yupResolver ou utilisez un schéma vide
+  // resolver: yupResolver(validationSchemaRef.current),
+  defaultValues,
+});
   const isEditing = !!id;
   useEffect(() => {
     if (isEditing) {
@@ -457,9 +443,7 @@ export default function AppelsForm({ id }) {
           setLoadingStates((prev) => ({ ...prev, editData: false }));
         });
     } else {
-      validationSchemaRef.current = validationSchemaRef.current.shape({
-        ...validationSchemaRef.current.fields,
-      });
+   
       reset(defaultValues, {
         errors: true,
         dirtyFields: true,
@@ -562,79 +546,203 @@ export default function AppelsForm({ id }) {
     fetchSources();
   }, []);
 
-  // 1) Extract all your checks into a single function
-  const validateFields = () => {
-    let valid = true;
+  // Ajoutez cet état au début du composant
 
-    // Partenaire required if source_txt is 'Partenaire'
-    if (watch('source_txt') == 'Partenaire' && !watch('partenaire_id')) {
-      valid = false;
-      console.error('Partenaire obligatoire');
+  // Ajoutez cette fonction pour collecter toutes les erreurs
+  const collectAllValidationErrors = (formData, interetValue) => {
+    const errors = [];
+
+    // 1. Erreurs Yup de base (form-level)
+    if (formSubmitted) {
+      // Vérifiez les erreurs du formulaire
+      if (!formData.telephone) errors.push('Le numéro de téléphone est requis');
+      if (!formData.type_appel) errors.push("Le type d'appel est obligatoire");
+      if (!formData.interet) errors.push("L'intérêt est obligatoire");
+      if (!formData.projet_id) errors.push('Le projet est obligatoire');
+      if (!formData.source) errors.push('La source est obligatoire');
+
+      // Validation téléphone
+      if (formData.telephone) {
+        if (formData.telephone.length < 10)
+          errors.push('Le téléphone doit avoir au moins 10 chiffres');
+        if (formData.telephone.length > 14)
+          errors.push('Le téléphone ne doit pas dépasser 14 chiffres');
+        if (!/^\d+$/.test(formData.telephone))
+          errors.push('Le téléphone ne doit contenir que des chiffres');
+      }
+
+      // Validation téléphone 2 si rempli
+      if (formData.telephone_num2 && formData.telephone_num2 !== 'null') {
+        if (formData.telephone_num2.length < 10)
+          errors.push('Le téléphone 2 doit avoir au moins 10 chiffres');
+        if (formData.telephone_num2.length > 14)
+          errors.push('Le téléphone 2 ne doit pas dépasser 14 chiffres');
+      }
     }
 
-    if (Number(watch('interet')) == 1) {
-      if (!watch('type_biens')) {
-        valid = false;
-        console.error('Type Biens Obligatoire');
+    // 2. Erreurs basées sur l'intérêt
+    if (Number(interetValue) === 1) {
+      // Intéressé
+      if (!formData.type_biens || formData.type_biens.length === 0) {
+        errors.push(
+          'Le type de bien est obligatoire pour un prospect intéressé'
+        );
       }
-      if (!watch('orientation')) {
-        valid = false;
-        console.error('Orientation Obligatoire');
+      if (!formData.orientation) {
+        errors.push("L'orientation est obligatoire pour un prospect intéressé");
       }
     }
 
-    // If interet == 3, then all those frein checks
-    if (Number(watch('interet')) == 3) {
-  const frein = watch('freins') || [];
-  const checks = [
-    frein.length > 0,
-    !frein.includes('vue') || (watch('vues') || []).length > 0,
-    !frein.includes('typologie') || (watch('typologies') || []).length > 0,
-    !frein.includes('orientation') || (watch('orientations') || []).length > 0,
-    !frein.includes('etage') || (watch('etages') || []).length > 0,
-    !frein.includes('tranche') || (watch('tranches_id') || []).length > 0,
-    // FIXED: If 'autre' is included, description_autre must be filled
-    !frein.includes('autre') || 
-      (watch('description_autre') != null && 
-       watch('description_autre') !== '' && 
-       watch('description_autre').trim() !== ''),
-  ];
+    if (Number(interetValue) === 3) {
+      // Perdu
+      const freins = formData.freins || [];
 
-  const checkNames = [
-    'frein.length > 0',
-    "'vue' => vues.length > 0",
-    "'typologie' => typologies.length > 0",
-    "'orientation' => orientations.length > 0",
-    "'etage' => etages.length > 0",
-    "'tranche' => tranches_id.length > 0",
-    "'autre' => description_autre is filled", // Updated description
-  ];
+      if (freins.length === 0) {
+        errors.push(
+          'Au moins un frein doit être sélectionné pour un prospect perdu'
+        );
+      }
 
-  if (!checks.every(Boolean)) {
-    valid = false;
-    console.error('Certains freins ne sont pas remplis correctement.');
-    checks.forEach((check, index) => {
-      if (!check) {
-        console.warn(`Échec du test: ${checkNames[index]}`);
-        // Add specific error messages for each failed check
-        if (checkNames[index] === "'autre' => description_autre is filled") {
-          console.warn('Description autre est obligatoire lorsque "autre" est sélectionné');
+      // Vérifications spécifiques par type de frein
+      if (
+        freins.includes('vue') &&
+        (!formData.vues || formData.vues.length === 0)
+      ) {
+        errors.push(
+          "Les vues sont obligatoires lorsque le frein 'vue' est sélectionné"
+        );
+      }
+
+      if (
+        freins.includes('typologie') &&
+        (!formData.typologies || formData.typologies.length === 0)
+      ) {
+        errors.push(
+          "Les typologies sont obligatoires lorsque le frein 'typologie' est sélectionné"
+        );
+      }
+
+      if (
+        freins.includes('orientation') &&
+        (!formData.orientations || formData.orientations.length === 0)
+      ) {
+        errors.push(
+          "Les orientations sont obligatoires lorsque le frein 'orientation' est sélectionné"
+        );
+      }
+
+      if (
+        freins.includes('etage') &&
+        (!formData.etages || formData.etages.length === 0)
+      ) {
+        errors.push(
+          "Les étages sont obligatoires lorsque le frein 'étage' est sélectionné"
+        );
+      }
+
+      if (
+        freins.includes('tranche') &&
+        (!formData.tranches_id || formData.tranches_id.length === 0)
+      ) {
+        errors.push(
+          "Les tranches sont obligatoires lorsque le frein 'tranche' est sélectionné"
+        );
+      }
+
+      if (
+        freins.includes('autre') &&
+        (!formData.description_autre ||
+          formData.description_autre.trim() === '')
+      ) {
+        errors.push(
+          "La description est obligatoire lorsque le frein 'autre' est sélectionné"
+        );
+      }
+
+      if (freins.includes('prix')) {
+        if (!formData.prix_min && !formData.prix_max) {
+          errors.push(
+            "Au moins un prix (min ou max) doit être renseigné lorsque le frein 'prix' est sélectionné"
+          );
         }
       }
-    });
-  }
-}
-    return valid;
+
+      if (freins.includes('superficie')) {
+        if (!formData.sup_min && !formData.sup_max) {
+          errors.push(
+            "Au moins une superficie (min ou max) doit être renseignée lorsque le frein 'superficie' est sélectionné"
+          );
+        }
+      }
+
+      if (freins.includes('avance') && !formData.avance) {
+        errors.push(
+          "L'avance est obligatoire lorsque le frein 'avance' est sélectionné"
+        );
+      }
+    }
+
+    // 3. Validation partenaire
+    if (formData.source_txt === 'Partenaire' && !formData.partenaire_id) {
+      errors.push(
+        "Le partenaire est obligatoire lorsque la source est 'Partenaire'"
+      );
+    }
+
+    // 4. Validation prix/min-max
+    if (
+      formData.prix_min &&
+      formData.prix_max &&
+      Number(formData.prix_min) > Number(formData.prix_max)
+    ) {
+      errors.push('Le prix minimum ne peut pas être supérieur au prix maximum');
+    }
+
+    if (
+      formData.sup_min &&
+      formData.sup_max &&
+      Number(formData.sup_min) > Number(formData.sup_max)
+    ) {
+      errors.push(
+        'La superficie minimum ne peut pas être supérieure à la superficie maximum'
+      );
+    }
+
+    return errors;
   };
+ const validateFields = () => {
+  const interetValue = watch('interet');
+  const formData = watch(); // Récupère toutes les valeurs du formulaire
+  
+  const errors = collectAllValidationErrors(formData, interetValue);
+  
+  if (errors.length > 0) {
+    setValidationErrors(errors);
+    return false;
+  }
+  
+  setValidationErrors([]);
+  return true;
+};
 
   const onSubmit = (data) => {
     setFormSubmitted(true);
     if (!validateFields()) {
       return;
     }
+    // Collecter toutes les erreurs de validation
+    const interetValue = watch('interet');
+    const allErrors = collectAllValidationErrors(data, interetValue);
+
+    if (allErrors.length > 0) {
+      setValidationErrors(allErrors);
+      toast.error('Veuillez corriger les erreurs dans le formulaire');
+      return;
+    }
     setLoading({ ...loading, form: true });
     setIsSubmitting(true);
     setBackendErrors({});
+    setValidationErrors([]); // Nettoyer les erreurs avant soumission
 
     // Enhanced field handler that properly handles untouched multi-select fields
     const handleField = (value) => {
@@ -735,10 +843,9 @@ export default function AppelsForm({ id }) {
           } avec succès`;
           reset(defaultValues);
           toast.success(message);
-          router.push(ENDPOINTS.CRM+'?tab=appels');
+          /*router.push(ENDPOINTS.CRM + '?tab=appels');
           localStorage.removeItem('selectedProspect_appel');
-          localStorage.removeItem('selectedProspect');
-          localStorage.removeItem('selectedClient');
+          localStorage.removeItem('selectedClient_appel');*/
         } else if (res.status === 422) {
           setBackendErrors(res.data.errors);
           setTimeout(() => setBackendErrors({}), 5000);
@@ -759,127 +866,139 @@ export default function AppelsForm({ id }) {
         setIsSubmitting(false);
       });
   };
- 
 
   const fetch_event_by_param = async (route, value, param) => {
-  await axios
-    .get(`${APIURL.ROOTV1}/` + route + `/` + param + `/` + value, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    })
-    .then((res) => {
-      setInfo_client(null);
-      setClient_prospect(null);
-      setId_appel(null);
-      setId_visite(null);
-      
-      var prospect_id, cin, nom, prenom, ville, tel, tel_2, source_id, source, partenaire_id, partenaire_txt = null;
-      
-      console.log('Réponse API:', res.data); // Debug
+    await axios
+      .get(`${APIURL.ROOTV1}/` + route + `/` + param + `/` + value, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      })
+      .then((res) => {
+        setInfo_client(null);
+        setClient_prospect(null);
+        setId_appel(null);
+        setId_visite(null);
 
-      // Vérifier si on a soit un client, soit un prospect
-      if (res.data.client != null || res.data.prospect != null) {
-        console.log('psss22 - Données trouvées');
-        
-        // PRIORITÉ: Si on a un CLIENT (même si on a aussi un prospect)
-        if (res.data.client != null) {
-          console.log('Client trouvé - Priorité au client');
-          
-          prospect_id = res.data.client.prospect_id;
-          cin = res.data.client.cin;
-          nom = res.data.client.nom;
-          prenom = res.data.client.prenom;
-          ville = res.data.client.ville;
-          tel = res.data.client.telephone_num1;
-          tel_2 = res.data.client.telephone_num2;
-          source_id = res.data.client.prospect?.source?.id;
-          source = res.data.client.prospect?.source?.source;
-          partenaire_id = res.data.client.prospect?.partenaire_id;
-          partenaire_txt = res.data.client.prospect?.partenaire?.description;
+        var prospect_id,
+          cin,
+          nom,
+          prenom,
+          ville,
+          tel,
+          tel_2,
+          source_id,
+          source,
+          partenaire_id,
+          partenaire_txt = null;
 
-          setInfo_client(res.data.client.nom + ' ' + res.data.client.prenom);
-          setClient_prospect('Est un client');
-          
-          console.log('ooeer - Modal client va s\'ouvrir');
-          setOpen_Dialog(true);
-        }
-        // Sinon, si on a seulement un PROSPECT (sans client)
-        else if (res.data.prospect != null) {
-          console.log('Prospect trouvé (pas de client)');
-          
-          prospect_id = res.data.prospect.id;
-          cin = res.data.prospect.cin;
-          nom = res.data.prospect.nom;
-          prenom = res.data.prospect.prenom;
-          tel = res.data.prospect.telephone;
-          tel_2 = res.data.prospect.telephone_num2;
-          ville = res.data.prospect.ville;
-          source_id = res.data.prospect.source?.id;
-          source = res.data.prospect.source?.source;
-          partenaire_id = res.data.prospect?.partenaire_id;
-          partenaire_txt = res.data.prospect?.partenaire?.description;
+        console.log('Réponse API:', res.data); // Debug
 
-          setInfo_client(res.data.prospect.nom + ' ' + res.data.prospect.prenom);
-          setClient_prospect('Est un prospect');
-          setOpen_Dialog(true);
-        }
+        // Vérifier si on a soit un client, soit un prospect
+        if (res.data.client != null || res.data.prospect != null) {
+          console.log('psss22 - Données trouvées');
 
-        // Remplir le formulaire avec les données
-        setValue('prospect_id', prospect_id);
-        setValue('nom', nom);
-        setValue('cin', cin);
-        setValue('prenom', prenom);
-        setValue('telephone', tel);
-        
-        if (tel_2 != null && tel_2 !== '') {
-          setValue('telephone_num2', tel_2);
+          // PRIORITÉ: Si on a un CLIENT (même si on a aussi un prospect)
+          if (res.data.client != null) {
+            console.log('Client trouvé - Priorité au client');
+
+            prospect_id = res.data.client.prospect_id;
+            cin = res.data.client.cin;
+            nom = res.data.client.nom;
+            prenom = res.data.client.prenom;
+            ville = res.data.client.ville;
+            tel = res.data.client.telephone_num1;
+            tel_2 = res.data.client.telephone_num2;
+            source_id = res.data.client.prospect?.source?.id;
+            source = res.data.client.prospect?.source?.source;
+            partenaire_id = res.data.client.prospect?.partenaire_id;
+            partenaire_txt = res.data.client.prospect?.partenaire?.description;
+
+            setInfo_client(res.data.client.nom + ' ' + res.data.client.prenom);
+            setClient_prospect('Est un client');
+
+            console.log("ooeer - Modal client va s'ouvrir");
+            setOpen_Dialog(true);
+          }
+          // Sinon, si on a seulement un PROSPECT (sans client)
+          else if (res.data.prospect != null) {
+            console.log('Prospect trouvé (pas de client)');
+
+            prospect_id = res.data.prospect.id;
+            cin = res.data.prospect.cin;
+            nom = res.data.prospect.nom;
+            prenom = res.data.prospect.prenom;
+            tel = res.data.prospect.telephone;
+            tel_2 = res.data.prospect.telephone_num2;
+            ville = res.data.prospect.ville;
+            source_id = res.data.prospect.source?.id;
+            source = res.data.prospect.source?.source;
+            partenaire_id = res.data.prospect?.partenaire_id;
+            partenaire_txt = res.data.prospect?.partenaire?.description;
+
+            setInfo_client(
+              res.data.prospect.nom + ' ' + res.data.prospect.prenom
+            );
+            setClient_prospect('Est un prospect');
+            setOpen_Dialog(true);
+          }
+
+          // Remplir le formulaire avec les données
+          setValue('prospect_id', prospect_id);
+          setValue('nom', nom);
+          setValue('cin', cin);
+          setValue('prenom', prenom);
+          setValue('telephone', tel);
+
+          if (tel_2 != null && tel_2 !== '') {
+            setValue('telephone_num2', tel_2);
+          } else {
+            setValue('telephone_num2', null);
+          }
+
+          setValue('ville', ville);
+          setSource(source);
+          setPartenaire(partenaire_txt);
+          setValue('source', source_id);
+
+          if (source == 'Partenaire') {
+            setValue('source_txt', 'Partenaire');
+          } else {
+            setValue('source_txt', null);
+          }
+
+          // Utiliser le projet_id du prospect (client ou prospect)
+          const projetId =
+            res.data.client?.prospect?.projet_id ||
+            res.data.prospect?.projet_id;
+          setValue('projet_id', projetId);
+
+          if (projetId) {
+            fetchPartenaires(projetId);
+            fetch_data_by_projetId(projetId);
+            fetch_type_biens(projetId);
+          }
+
+          setValue('partenaire_id', partenaire_id);
+
+          // Gérer appels et visites
+          if (res.data.prospect?.appels != null) {
+            setId_appel(res.data.prospect.appels?.id);
+          }
+          if (res.data.prospect?.visite_first != null) {
+            setId_visite(res.data.prospect.visite_first?.id);
+          }
         } else {
-          setValue('telephone_num2', null);
-        }
-        
-        setValue('ville', ville);
-        setSource(source);
-        setPartenaire(partenaire_txt);
-        setValue('source', source_id);
-        
-        if (source == 'Partenaire') {
-          setValue('source_txt', 'Partenaire');
-        } else {
-          setValue('source_txt', null);
-        }
-        
-        // Utiliser le projet_id du prospect (client ou prospect)
-        const projetId = res.data.client?.prospect?.projet_id || res.data.prospect?.projet_id;
-        setValue('projet_id', projetId);
-        
-        if (projetId) {
-          fetchPartenaires(projetId);
-          fetch_data_by_projetId(projetId);
-          fetch_type_biens(projetId);
-        }
-        
-        setValue('partenaire_id', partenaire_id);
-
-        // Gérer appels et visites
-        if (res.data.prospect?.appels != null) {
-          setId_appel(res.data.prospect.appels?.id);
-        }
-        if (res.data.prospect?.visite_first != null) {
-          setId_visite(res.data.prospect.visite_first?.id);
-        }
-        
-      } else {
-        console.log('Aucune donnée trouvée');
+          console.log('Aucune donnée trouvée');
           defaultValues['prospect_id'] = null;
+          setOpen_Dialog(false);
+        }
+      })
+      .catch((error) => {
+        console.error('Erreur API:', error.response?.data || error.message);
         setOpen_Dialog(false);
-      }
-    })
-    .catch((error) => {
-      console.error('Erreur API:', error.response?.data || error.message);
-      setOpen_Dialog(false);
-    });
-};
+      });
+  };
   const fetch_cin_unique = async (value) => {
     await axios
       .get(
@@ -979,63 +1098,75 @@ export default function AppelsForm({ id }) {
     }, 2000);
   };
 
-const fetch_data_by_projetId = async (projet_id) => {
-  // Reset states
-  [setTranches, setBlocs, setImmeubles, setList_etages, setListTyplogies, setList_Vues]
-    .forEach(setter => setter([]));
+  const fetch_data_by_projetId = async (projet_id) => {
+    // Reset states
+    [
+      setTranches,
+      setBlocs,
+      setImmeubles,
+      setList_etages,
+      setListTyplogies,
+      setList_Vues,
+    ].forEach((setter) => setter([]));
 
-  try {
-    const { data: { projet } } = await axios.get(
-      `${APIURL.PROJETS}/${projet_id}`,
-      { headers: { Authorization: `Bearer ${accessToken}` } }
-    );
+    try {
+      const {
+        data: { projet },
+      } = await axios.get(`${APIURL.PROJETS}/${projet_id}`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
 
-    // Mise à jour synchrone des states
-    setTranches(projet.tranche);
-    setBlocs(projet.bloc);
-    setImmeubles(projet.immeuble);
-    setListTyplogies(projet.typologies);
-    setList_Vues(projet.vues);
-    setList_etages(generateEtagesArray(projet.max_etages));
+      // Mise à jour synchrone des states
+      setTranches(projet.tranche);
+      setBlocs(projet.bloc);
+      setImmeubles(projet.immeuble);
+      setListTyplogies(projet.typologies);
+      setList_Vues(projet.vues);
+      setList_etages(generateEtagesArray(projet.max_etages));
 
-    return {
-      tranches: projet.tranche,
-      blocs: projet.bloc,
-      immeubles: projet.immeuble,
-      etages: generateEtagesArray(projet.max_etages),
-    };
-  } catch (error) {
-    console.error('Error fetching project data:', error);
-    // Gestion d'erreur optionnelle
-    throw error; // Propager l'erreur si nécessaire
-  }
-};
-
-const generateEtagesArray = (maxEtages) => {
-  if (!maxEtages || maxEtages <= 0) return [];
-  
-  return Array.from({ length: maxEtages + 1 }, (_, index) => ({
-    id: index + 1,
-    value: index === 0 ? '0' : index.toString(),
-  }));
-};
-
-  const handleChange_interet = (code) => {
-    if (code) {
-      setValue('interet', code);
-      if ((code == 1 || code == 3) && watch('projet_id') == '') {
-        toast.error('Veuillez Choisir un Projet');
-      }
-      setValue('mode_relance', '');
-      setValue('date_relance', '');
-      setValue('rdv', '');
-      if (code == 3) {
-        fetch_type_Freins();
-        fetch_vues(watch('projet_id'));
-        fetch_typologies(watch('projet_id'));
-      }
+      return {
+        tranches: projet.tranche,
+        blocs: projet.bloc,
+        immeubles: projet.immeuble,
+        etages: generateEtagesArray(projet.max_etages),
+      };
+    } catch (error) {
+      console.error('Error fetching project data:', error);
+      // Gestion d'erreur optionnelle
+      throw error; // Propager l'erreur si nécessaire
     }
   };
+
+  const generateEtagesArray = (maxEtages) => {
+    if (!maxEtages || maxEtages <= 0) return [];
+
+    return Array.from({ length: maxEtages + 1 }, (_, index) => ({
+      id: index + 1,
+      value: index === 0 ? '0' : index.toString(),
+    }));
+  };
+
+const handleChange_interet = useCallback((code) => {
+  if (code) {
+    setValue('interet', code, { shouldValidate: false }); // Ajoutez shouldValidate: false
+    
+    if ((code == 1 || code == 3) && watch('projet_id') == '') {
+      toast.error('Veuillez Choisir un Projet');
+    }
+    
+    // Utilisez un batch pour les mises à jour
+    setValue('mode_relance', '', { shouldValidate: false });
+    setValue('date_relance', '', { shouldValidate: false });
+    setValue('rdv', '', { shouldValidate: false });
+    
+    if (code == 3) {
+      fetch_type_Freins();
+      fetch_vues(watch('projet_id'));
+      fetch_typologies(watch('projet_id'));
+    }
+  }
+}, [setValue, watch]); // Ajoutez les dépendances
+
 
   // Combined loading check
   // Enhanced loading check
@@ -1043,8 +1174,8 @@ const generateEtagesArray = (maxEtages) => {
     loadingStates.prospectData ||
     loadingStates.initialData ||
     loadingStates.editData ||
-    (isEditing && !formData)
-    // Check if essential data is loaded for the current interet
+    (isEditing && !formData);
+  // Check if essential data is loaded for the current interet
   /* (Number(watch('interet')) === 3 && loading_tp_frein) ||
     // Check if project data is loaded when project is selected
     (watch('projet_id') &&
@@ -1067,7 +1198,6 @@ const generateEtagesArray = (maxEtages) => {
     );
   }
 
-  
   return (
     <>
       {open_dialog == true && (
@@ -1085,11 +1215,12 @@ const generateEtagesArray = (maxEtages) => {
       <div className="">
         <div className="flex items-center justify-start">
           <BreadCrumb
-            baseUrl={ENDPOINTS.CRM+'?tab=appels'}
+            baseUrl={ENDPOINTS.CRM + '?tab=appels'}
             step={`${isEditing ? 'Modifier' : 'Ajouter'} Appel`}
           />
         </div>
       </div>
+
       <div className="p-6  mt-4 min-h-[89vh] bg-white shadow-md rounded-md">
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="space-y-4">
@@ -1383,6 +1514,7 @@ const generateEtagesArray = (maxEtages) => {
                     <SelectInput
                       placeholder="selectionner une orientation"
                       label="Orientation :"
+                      required={true}
                       name="orientation"
                       value={watch('orientation')}
                       options={orientationOptions}
@@ -1607,7 +1739,6 @@ const generateEtagesArray = (maxEtages) => {
                   {watch('freins')?.includes('avance') && (
                     <div>
                       <TextField
-                      
                         label="Avance:"
                         name="avance"
                         type="number"
@@ -1789,6 +1920,40 @@ const generateEtagesArray = (maxEtages) => {
               height="h-full" // Optionally set height, default is 'h-10'
             />
           </div>
+          {validationErrors.length > 0 && (
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-4">
+              <div className="rounded-md bg-red-50 p-4 border border-red-200">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg
+                      className="h-5 w-5 text-red-400"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-red-800">
+                      {validationErrors.length} erreur
+                      {validationErrors.length > 1 ? 's' : ''} à corriger
+                    </h3>
+                    <div className="mt-2 text-sm text-red-700">
+                      <ul className="list-disc pl-5 space-y-1">
+                        {validationErrors.map((error, index) => (
+                          <li key={index}>{error}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="flex justify-center gap-4 items-center xl:mt-32">
             <Button
               type="button"

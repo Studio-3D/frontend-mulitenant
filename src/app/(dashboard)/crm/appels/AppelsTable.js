@@ -93,32 +93,6 @@ const AppelsTable = ({ dataClient, searchParams }) => {
     return () => clearTimeout(timer); // Clean up the timeout on each render
   }, [searchTerm]);
 
-  function handleEdit(appelId) {
-    // Navigate to /utilisateurs?id={id}&action=edit
-    router.push(`${ENDPOINTS.APPELS}?id=${appelId}&action=edit`);
-  }
-
-  const canAddAppel =
-    isSuperAdmin(user.role) || isAdmin(user.role) || isCommercial(user.role);
-
-  function getAddLinkForAppel(user) {
-    if (canAddAppel) {
-      if (dataClient) {
-        return {
-          pathname: `${ENDPOINTS.APPELS}?action=add`,
-          onClick: () => {
-            localStorage.setItem(
-              'selectedClient',
-              JSON.stringify({ info: { dataClient: dataClient } })
-            );
-          },
-        };
-      }
-      return `${ENDPOINTS.APPELS}?action=add`;
-    }
-    return undefined;
-  }
-
   const handle_convert_to_visite = (prospect) => {
     localStorage.setItem(
       'selectedProspect',
@@ -353,14 +327,13 @@ const AppelsTable = ({ dataClient, searchParams }) => {
           enableExport={formatData().length > 0}
           enableImport={false}
           showSearch={false}
-          addLink={getAddLinkForAppel(user)}
-          /* addLink={
+           addLink={
             isSuperAdmin(user.role) ||
             isAdmin(user.role) ||
             isCommercial(user.role)
               ? `${ENDPOINTS.APPELS}?action=add`
               : undefined
-          } */
+          } 
           filterComponent={
             <div className="space-y-4 p-4 rounded-lg ">
               <div

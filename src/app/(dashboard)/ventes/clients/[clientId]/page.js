@@ -14,12 +14,17 @@ import EncaissementTable from '@/app/(dashboard)/encaissements/EncaissementTable
 import ReservationTable from '../../reservations/ReservationTable';
 import format from 'date-fns/format';
 import { getSituationLabel } from '@/components/client-utils';
-import AppelsTable from '@/app/(dashboard)/crm/appels/AppelsTable';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import ClientPDF from '../ClientImprimer';
+import { useSearchParams } from 'next/navigation';
+import JournalTable from '@/app/(dashboard)/crm/appels/[appelId]/JournalTable';
+import HistoriquesTable from '@/app/(dashboard)/crm/prospects/[prospectId]/HistoriquesTable';
+import { useProjet } from '@/context/ProjetContext';
 
 const ClientDetails = () => {
   const { token, user } = useAuth();
+  const { selectedProjet } = useProjet();
+
   const router = useRouter();
   const { clientId } = useParams(); // Use useParams() to access dynamic params
   const accessToken = token || localStorage.getItem('accessToken');
@@ -27,19 +32,44 @@ const ClientDetails = () => {
   const [clientDetails, setClientDetails] = useState([]);
   const [reservationDetails, setReservationDetails] = useState([]);
   const [visiteDetails, setVisiteDetails] = useState([]);
-
-  const [activeTab, setActiveTab] = useState('reservations'); // Default to 'historiques' if tab is not present
+  const [activeTab, setActiveTab] = useState('encaissements'); // Default to 'historiques' if tab is not present
 
   const handleEdit = (id) => {
     router.push(`${ENDPOINTS.CLIENTS}?id=${id}&action=edit`);
   };
 
-  const tabs = [
-    { id: 'reservations', label: 'Reservations', icon: '' }, // pour les réservations
-    { id: 'visites', label: 'Visites', icon: '' }, // pour les visites
+ const tabs = [
     { id: 'encaissements', label: 'Encaissements', icon: '' },
-    { id: 'appels', label: 'Appels', icon: '' }, // pour les encaissements
+    { id: 'reservations', label: 'Reservations', icon: '' },
+    { id: 'historiques', label: 'Historiques', icon: '' },
+    { id: 'appels', label: 'Appels', icon: '' },
+    { id: 'visites', label: 'Visites', icon: '' },
   ];
+
+  // Filtrer les onglets conditionnels
+  const filteredTabs = tabs.filter(tab => {
+    if (tab.id === 'historiques' && clientDetails?.prospect == null) {
+      return false;
+    }
+    if (tab.id === 'appels' && clientDetails?.prospect?.appels == null) {
+      return false;
+    }
+    return true;
+  });
+  // Simple cache et comparaison for return back en cas de changer projet
+  const [oldProjetId, setOldProjetId] = useState(null);
+
+  useEffect(() => {
+    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
+      if (oldProjetId) {
+        // Projet a changé
+
+        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+        router.push('/ventes/clients');
+      }
+      setOldProjetId(selectedProjet.id);
+    }
+  }, [selectedProjet?.id, oldProjetId, router]);
 
   useEffect(() => {
     if (clientId) {
@@ -79,7 +109,10 @@ const ClientDetails = () => {
             className="flex items-center justify-start"
             style={{ marginBottom: '8px' }}
           >
-            <BreadCrumb baseUrl={ENDPOINTS.VENTE+'?tab=clients'} step={`Détail client`} />
+            <BreadCrumb
+              baseUrl={ENDPOINTS.VENTE + '?tab=clients'}
+              step={`Détail client`}
+            />
           </div>
           <div className="container mx-auto">
             <div className="flex flex-col lg:flex-row gap-6">
@@ -180,7 +213,12 @@ const ClientDetails = () => {
                   {/* Section : Infos Personnelles */}
                   {/* <h3 className="text-indigo-600 font-semibold text-sm mt-6 mb-2">Infos Personnelles</h3> */}
                   {(clientDetails?.lieu_naissance ||
-                    clientDetails?.date_naissance||clientDetails?.age|| clientDetails?.nom_responsable||clientDetails?.relation_familliale||clientDetails?.nom_pere||clientDetails?.nom_mere) && (
+                    clientDetails?.date_naissance ||
+                    clientDetails?.age ||
+                    clientDetails?.nom_responsable ||
+                    clientDetails?.relation_familliale ||
+                    clientDetails?.nom_pere ||
+                    clientDetails?.nom_mere) && (
                     <hr className="border-indigo-400 mb-4" />
                   )}
 
@@ -339,7 +377,13 @@ const ClientDetails = () => {
                           {tab.icon}
                           {tab.label}
                           {/* Optional additional spans for some tabs */}
-
+                          {tab.id === 'encaissements' && (
+                            <span className="ml-1 text-xs"></span>
+                          )}
+                          {tab.id === 'historiques' &&
+                            clientDetails?.prospect != null && (
+                              <span className="ml-1 text-xs"></span>
+                            )}
                           {tab.id === 'visites' && (
                             <span className="ml-1 text-xs"></span>
                           )}
@@ -349,15 +393,27 @@ const ClientDetails = () => {
                           {tab.id === 'reservations' && (
                             <span className="ml-1 text-xs"></span>
                           )}
-                          {tab.id === 'encaissements' && (
-                            <span className="ml-1 text-xs"></span>
-                          )}
                         </button>
                       ))}
                     </div>
                   </div>
 
                   <div className="p-6">
+                    {clientDetails?.prospect != null && (
+                      <>
+                        {activeTab === 'historiques' &&
+                          clientDetails?.prospect?.id && (
+                            <div className="min-h-[400px]">
+                              <div className="min-h-[400px]">
+                                <HistoriquesTable
+                                  id={clientDetails?.prospect?.id}
+                                />
+                              </div>
+                            </div>
+                          )}
+                      </>
+                    )}
+
                     {activeTab === 'visites' && (
                       <div className="min-h-[400px]">
                         <VisiteTable
@@ -376,7 +432,11 @@ const ClientDetails = () => {
                     {activeTab === 'appels' && (
                       <div className="min-h-[400px]">
                         <div className="min-h-[400px]">
-                          <AppelsTable dataClient={clientDetails} />
+                          <JournalTable
+                            id={clientDetails?.prospect?.appels?.id}
+                            prospect={clientDetails?.prospect}
+                            client={clientDetails}
+                          />
                         </div>
                       </div>
                     )}

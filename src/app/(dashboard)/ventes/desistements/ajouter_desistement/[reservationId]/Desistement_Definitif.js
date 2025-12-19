@@ -574,7 +574,7 @@ export function Desistement_Definitif({
                               </h2>
                               <div className="overflow-x-auto">
                                 <table className="min-w-full divide-y divide-gray-200">
-                                  <tbody classNv  ame="bg-white divide-y divide-gray-200">
+                                  <tbody className="bg-white divide-y divide-gray-200">
                                     <tr>
                                       <td className="px-4 py-2 whitespace-nowrap">
                                         <div className="flex items-center text-sm text-gray-900">

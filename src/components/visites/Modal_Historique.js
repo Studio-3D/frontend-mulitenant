@@ -15,6 +15,7 @@ import { APIURL } from '@/configs/api';
 import axios from 'axios';
 const Modal_Historique = ({ onClose, rows, loading_histo }) => {
   const [entityNames, setEntityNames] = useState({});
+  const [loadingEntities, setLoadingEntities] = useState(false); // Add this
   const accessToken = localStorage.getItem('accessToken');
 
   // Extract all unique IDs for sources, partners, and banks from history
@@ -32,19 +33,29 @@ const Modal_Historique = ({ onClose, rows, loading_histo }) => {
         const historique = JSON.parse(row.historique_modification);
 
         // Check prospect changes (source & partenaire)
-        if (historique.prospect) {
-          if (historique.prospect.source?.new) {
-            allSources.add(historique.prospect.source.new);
-          }
-          if (historique.prospect.partenaire_id?.new) {
-            allPartenaires.add(historique.prospect.partenaire_id.new);
-          }
-        }
+       // In the useEffect that collects entities:
+if (historique.prospect) {
+  if (historique.prospect.source?.new) {
+    allSources.add(String(historique.prospect.source.new));
+  }
+  if (historique.prospect.source?.old) {
+    allSources.add(String(historique.prospect.source.old));
+  }
+  if (historique.prospect.partenaire_id?.new) {
+    allPartenaires.add(String(historique.prospect.partenaire_id.new));
+  }
+  if (historique.prospect.partenaire_id?.old) {
+    allPartenaires.add(String(historique.prospect.partenaire_id.old));
+  }
+}
 
-        // Check reservation changes (banque)
-        if (historique.reservation?.banque_id?.new) {
-          allBanques.add(historique.reservation.banque_id.new);
-        }
+// Same for banque:
+if (historique.reservation?.banque_id?.new) {
+  allBanques.add(String(historique.reservation.banque_id.new));
+}
+if (historique.reservation?.banque_id?.old) {
+  allBanques.add(String(historique.reservation.banque_id.old));
+}
       } catch (e) {
         console.error('Failed to parse historique:', e);
       }
@@ -52,6 +63,8 @@ const Modal_Historique = ({ onClose, rows, loading_histo }) => {
 
     // Fetch all unique entities at once
     const fetchAllEntities = async () => {
+      setLoadingEntities(true); // Start loading
+
       const newEntityNames = { ...entityNames };
 
       // Fetch sources
@@ -79,6 +92,8 @@ const Modal_Historique = ({ onClose, rows, loading_histo }) => {
       }
 
       setEntityNames(newEntityNames);
+      setLoadingEntities(false); // End loading
+
     };
 
     fetchAllEntities();
@@ -87,33 +102,35 @@ const Modal_Historique = ({ onClose, rows, loading_histo }) => {
   // Unified fetch function (unchanged)
   const fetchEntityName = async (type, id) => {
     if (!id) return null;
-
-    const cacheKey = `${type}_${id}`;
+  
+    const normalizedId = String(id);
+    const cacheKey = `${type}_${normalizedId}`;
+    
     if (entityNames[cacheKey]) return entityNames[cacheKey];
-
+  
     try {
       let endpoint, dataPath;
       switch (type) {
         case 'source':
-          endpoint = `${APIURL.SOURCES}/${id}`;
-          dataPath = 'source.source';
+          endpoint = `${APIURL.SOURCES}/${normalizedId}`;
+          dataPath = 'source.source';  // This returns the source name
           break;
         case 'banque':
-          endpoint = `${APIURL.BANQUES}/${id}`;
-          dataPath = 'banque.nom';
+          endpoint = `${APIURL.BANQUES}/${normalizedId}`;
+          dataPath = 'banque.nom';  // This returns the banque name
           break;
         case 'partenaire':
-          endpoint = `${APIURL.PARTENAIRES}/${id}`;
-          dataPath = 'partenaire.nom';
+          endpoint = `${APIURL.PARTENAIRES}/${normalizedId}`;
+          dataPath = 'partenaire.description';  // CHANGED: Use 'description' not 'nom'
           break;
         default:
           return null;
       }
-
+  
       const response = await axios.get(endpoint, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
-
+  
       const name = dataPath
         .split('.')
         .reduce((obj, key) => obj?.[key], response.data);
@@ -126,12 +143,22 @@ const Modal_Historique = ({ onClose, rows, loading_histo }) => {
 
   // EntityName component now just reads from cache (no API calls)
   const EntityName = ({ type, id }) => {
-    const cacheKey = `${type}_${id}`;
+    if (!id) return null;
+    const normalizedId = String(id);
+    const cacheKey = `${type}_${normalizedId}`;
     const name = entityNames[cacheKey];
-
-    if (name === undefined)
+  
+    // Show loading spinner if entities are still loading
+    if (loadingEntities && name === undefined) {
       return <span className="text-gray-400">Chargement...</span>;
+    }
+    
+    if (name === undefined) {
+      return <span className="text-gray-400">Non chargé</span>;
+    }
+    
     if (!name) return <span className="text-gray-400">Inconnu</span>;
+    
     return <span>{name}</span>;
   };
   const getInteretBadge = (interest) => {
@@ -168,584 +195,580 @@ const Modal_Historique = ({ onClose, rows, loading_histo }) => {
     return date.toLocaleString('fr-FR');
   };
 
-  const Row = ({ row }) => {
-    const [open, setOpen] = useState(false);
-    const isExpandable = !row.action.includes('SUPPRESSION');
+ const Row = ({ row, allRows, currentIndex }) => {
+  const [open, setOpen] = useState(false);
+  const isExpandable = !row.action.includes('SUPPRESSION');
+  const isPerdu = row.interet == '3';
+  
+  // Parse historique_modification if it exists
+  const historiqueModification = row.historique_modification
+    ? JSON.parse(row.historique_modification)
+    : null;
 
-    // Parse historique_modification if it exists
-    const historiqueModification = row.historique_modification
-      ? JSON.parse(row.historique_modification)
-      : null;
-    // Filter out the fields we don't want to display
-    const filteredChanges = historiqueModification
-      ? Object.entries(historiqueModification).filter(
-          ([key]) => !['interet', 'statut', 'bien_id'].includes(key)
-        )
-      : [];
-
-    const toggleExpand = () => isExpandable && setOpen(!open);
-
-    return (
-      <>
-        <tr className="border-b hover:bg-gray-50 transition-colors duration-150">
-          <td className="px-4 py-3 text-center">
-            {isExpandable && (
-              <button
-                aria-label={open ? 'collapse row' : 'expand row'}
-                className="p-1 rounded-full hover:bg-gray-200 transition-colors duration-200"
-                onClick={toggleExpand}
-              >
-                {open ? (
-                  <ChevronUpIcon size={18} className="text-gray-600" />
-                ) : (
-                  <ChevronDownIcon size={18} className="text-gray-600" />
-                )}
-              </button>
-            )}
-          </td>
-          <td className="px-4 py-3 text-center font-medium">{row.action}</td>
-          <td className="px-4 py-3 text-center">{row.cc}</td>
-          <td className="px-4 py-3 text-center">{row.date}</td>
-          <td className="px-4 py-3 text-center">
-            {getInteretBadge(row?.interet)}
-          </td>
-          <td className="px-4 py-3 text-center">{row.bien}</td>
-          <td className="px-4 py-3 text-center">
-            {row.statut && <>{getStatutBadge(row.statut)}</>}
-          </td>
-        </tr>
-
-        {isExpandable && (
-          <tr className="border-b">
-            <td colSpan={7} className="p-0 bg-gray-50">
-              <div
-                className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                  open ? 'max-h-96' : 'max-h-0'
-                }`}
-              >
-                <div className="p-4">
-                  <h6 className="text-md font-semibold mb-3 !text-gray-700 flex items-center">
-                    <span className="w-1.5 h-5 bg-blue-600 rounded-sm mr-2"></span>
-                    Détails supplémentaires
-                  </h6>
-                  <div className="overflow-hidden">
-                    {/* Creation et modification */}
-                    {row.interet == '3' ? (
-                      <table className="w-full text-sm border-collapse">
-                        <thead style={{ background: '#bcf7ff' }}>
-                          <tr>
-                            {/* First render Frein fields that are not null */}
-                            {[
-                              {
-                                key: 'fr_tranches',
-                                label: 'Tranches',
-                                value: row.fr_tranches,
-                              },
-                              {
-                                key: 'fr_etages',
-                                label: 'Etages',
-                                value: row.fr_etages
-                                  ? row.fr_etages
-                                      .split(',')
-                                      .map((e) => e.trim())
-                                      .join(', ')
-                                  : null,
-                              },
-                              {
-                                key: 'fr_orientations',
-                                label: 'Orientations',
-                                value: row.fr_orientations
-                                  ? row.fr_orientations
-                                      .split(',')
-                                      .map(getFullOrientation)
-                                      .join(', ')
-                                  : null,
-                              },
-                              {
-                                key: 'fr_typologies',
-                                label: 'Typologies',
-                                value: row.fr_typologies,
-                              },
-                              {
-                                key: 'fr_vues',
-                                label: 'Vues',
-                                value: row.fr_vues,
-                              },
-                              {
-                                key: 'prix',
-                                label: 'Prix',
-                                value:
-                                  row.prix_min && row.prix_max
-                                    ? `Prix entre ${row.prix_min.toLocaleString(
-                                        'fr-MA'
-                                      )} DH et ${row.prix_max.toLocaleString(
-                                        'fr-MA'
-                                      )} DH`
-                                    : row.prix_min
-                                    ? `Prix à partir de ${row.prix_min.toLocaleString(
-                                        'fr-MA'
-                                      )} DH`
-                                    : row.prix_max
-                                    ? `Prix jusqu'à ${row.prix_max.toLocaleString(
-                                        'fr-MA'
-                                      )} DH`
-                                    : null,
-                              },
-                              {
-                                key: 'superficie',
-                                label: 'Superficie',
-                                value:
-                                  row.sup_min && row.sup_max
-                                    ? `Superficie entre ${row.sup_min} m² et ${row.sup_max} m²`
-                                    : row.sup_min
-                                    ? `Superficie à partir de ${row.sup_min} m²`
-                                    : row.sup_max
-                                    ? `Superficie jusqu'à ${row.sup_max} m²`
-                                    : null,
-                              },
-                              {
-                                key: 'avance',
-                                label: 'Avance',
-                                value: row.avance,
-                              },
-                              {
-                                key: 'fr_autre',
-                                label: 'Autre',
-                                value: row.fr_autre,
-                              },
-                            ]
-                              .filter(
-                                (item) =>
-                                  item.value !== null &&
-                                  item.value !== undefined &&
-                                  item.value !== ''
-                              )
-                              .map(({ key, label }) => (
-                                <th
-                                  key={key}
-                                  className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700"
-                                >
-                                  {label}
-                                </th>
-                              ))}
-
-                            {/* Then render historique_modification fields (excluding interet, statut, bien_id, notifications, and freins) */}
-                            {historiqueModification &&
-                              filteredChanges.map(([key]) => (
-                                <th
-                                  key={`histo_${key}`}
-                                  className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700"
-                                >
-                                  {key === 'prospect' && 'Prospect'}
-                                </th>
-                              ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr className="bg-white">
-                            {/* First render Frein values */}
-                            {[
-                              { key: 'fr_tranches', value: row.fr_tranches },
-                             { key: 'fr_etages', value: row.fr_etages ? row.fr_etages.split(',').map(e => e.trim()).join(', ') : null },
-                              {
-                                key: 'fr_orientations',
-                                value: row.fr_orientations
-                                  ? row.fr_orientations
-                                      .split(',')
-                                      .map(getFullOrientation)
-                                      .join(', ')
-                                  : null,
-                              },
-                              {
-                                key: 'fr_typologies',
-                                value: row.fr_typologies,
-                              },
-                              { key: 'fr_vues', value: row.fr_vues },
-                              {
-                                key: 'prix',
-                                value:
-                                  row.prix_min && row.prix_max
-                                    ? `Prix entre ${row.prix_min.toLocaleString(
-                                        'fr-MA'
-                                      )} DH et ${row.prix_max.toLocaleString(
-                                        'fr-MA'
-                                      )} DH`
-                                    : row.prix_min
-                                    ? `Prix à partir de ${row.prix_min.toLocaleString(
-                                        'fr-MA'
-                                      )} DH`
-                                    : row.prix_max
-                                    ? `Prix jusqu'à ${row.prix_max.toLocaleString(
-                                        'fr-MA'
-                                      )} DH`
-                                    : null,
-                              },
-                              {
-                                key: 'superficie',
-                                value:
-                                  row.sup_min && row.sup_max
-                                    ? `Superficie entre ${row.sup_min} m² et ${row.sup_max} m²`
-                                    : row.sup_min
-                                    ? `Superficie à partir de ${row.sup_min} m²`
-                                    : row.sup_max
-                                    ? `Superficie jusqu'à ${row.sup_max} m²`
-                                    : null,
-                              },
-                              { key: 'avance', value: row.avance },
-                              { key: 'fr_autre', value: row.fr_autre },
-                            ]
-                              .filter(
-                                (item) =>
-                                  item.value !== null &&
-                                  item.value !== undefined &&
-                                  item.value !== ''
-                              )
-                              .map(({ key, value }) => (
-                                <td
-                                  key={key}
-                                  className="text-center px-3 py-2 border-b border-gray-200"
-                                >
-                                  {value || '-'}
-                                </td>
-                              ))}
-
-                            {/* Then render historique_modification values */}
-                            {historiqueModification &&
-                              filteredChanges.map(([key, value]) => {
-                                const renderProspectField = (
-                                  field,
-                                  changes
-                                ) => {
-                                  if (
-                                    !changes ||
-                                    changes.new === undefined ||
-                                    changes.new === null
-                                  )
-                                    return null;
-
-                                  const FieldName = ({ children }) => (
-                                    <span className="font-bold">
-                                      {children}
-                                    </span>
-                                  );
-
-                                  if (field === 'notifie') {
-                                    return (
-                                      <div className="text-center">
-                                        <FieldName>notifié</FieldName>:{' '}
-                                        {changes.new == 1 ? 'Oui' : 'Non'}
-                                      </div>
-                                    );
-                                  } else if (field === 'source') {
-                                    return (
-                                      <div className="text-center">
-                                        <EntityName
-                                          type="source"
-                                          id={changes.new}
-                                        />{' '}
-                                      </div>
-                                    );
-                                  } else if (field === 'partenaire_id') {
-                                    return (
-                                      <div className="text-center">
-                                        <FieldName>Partenaire</FieldName>:{' '}
-                                        <EntityName
-                                          type="partenaire"
-                                          id={changes.new}
-                                        />
-                                      </div>
-                                    );
-                                  }
-                                  return (
-                                    <div className="text-center">
-                                      <FieldName>{field}</FieldName>:{' '}
-                                      {changes.new}
-                                    </div>
-                                  );
-                                };
-
-                                let displayContent;
-
-                                if (key === 'prospect') {
-                                  displayContent =
-                                    value && typeof value === 'object' ? (
-                                      <div className="flex flex-col items-center justify-center gap-1">
-                                        {Object.entries(value)
-                                          .map(([field, changes]) =>
-                                            renderProspectField(field, changes)
-                                          )
-                                          .filter(Boolean)}
-                                      </div>
-                                    ) : (
-                                      <div className="text-center">
-                                        (no data)
-                                      </div>
-                                    );
-                                }
-
-                                return (
-                                  <td
-                                    key={key}
-                                    className="px-3 py-2 border-b border-gray-200"
-                                  >
-                                    {displayContent || (
-                                      <div className="text-center"></div>
-                                    )}
-                                  </td>
-                                );
-                              })}
-                          </tr>
-                        </tbody>
-                      </table>
-                    ) : historiqueModification ? (
-                      <table className="w-full text-sm border-collapse">
-                        {/* interet 1 ou 2 and has historique modifier en cas de Modifier */}
-                        <thead style={{ background: '#bcf7ff' }}>
-                          <tr>
-                            {filteredChanges.map(([key]) => (
-                              <th
-                                 key={`frein_${key}`}
-                                className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700"
-                              >
-                                {key == 'date_relance' && 'Date Relance'}
-                                {key == 'mode_relance' && 'Mode Relance'}
-                                {key == 'rdv' && 'Rendez-vous'}
-                                {key == 'prospect' && 'Prospect'}
-                                {key == 'reservation' &&
-                                  'Code réservation'}{' '}
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr className="bg-white">
-                            {filteredChanges.map(([key, value]) => {
-                              const renderProspectField = (field, changes) => {
-                                if (
-                                  !changes ||
-                                  changes.new === undefined ||
-                                  changes.new === null
-                                )
-                                  return null;
-
-                                const FieldName = ({ children }) => (
-                                  <span className="font-bold">{children}</span>
-                                );
-
-                                if (field === 'notifie') {
-                                  return (
-                                    <div className="text-center">
-                                      <FieldName>notifié</FieldName>:{' '}
-                                      {changes.new == 1 ? 'Oui' : 'Non'}
-                                    </div>
-                                  );
-                                } else if (field === 'source') {
-                                  return (
-                                    <div className="text-center">
-                                      <FieldName>Source</FieldName>:{' '}
-                                      <EntityName
-                                        type="source"
-                                        id={changes.new}
-                                      />{' '}
-                                    </div>
-                                  );
-                                } else if (field === 'partenaire_id') {
-                                  return (
-                                    <div className="text-center">
-                                      <EntityName
-                                        type="partenaire"
-                                        id={changes.new}
-                                      />{' '}
-                                    </div>
-                                  );
-                                }
-                                return (
-                                  <div className="text-center">
-                                    <FieldName>{field}</FieldName>:{' '}
-                                    {changes.new}
-                                  </div>
-                                );
-                              };
-
-                              const renderReservationField = (
-                                field,
-                                changes
-                              ) => {
-                                if (
-                                  !changes ||
-                                  changes.new === undefined ||
-                                  changes.new === null
-                                )
-                                  return null;
-
-                                const FieldName = ({ children }) => (
-                                  <span className="font-bold">{children}</span>
-                                );
-
-                                if (field === 'banque_id') {
-                                  return (
-                                    <div className="text-center">
-                                      <FieldName>Banque</FieldName>:{' '}
-                                      <EntityName
-                                        type="banque"
-                                        id={changes.new}
-                                      />{' '}
-                                    </div>
-                                  );
-                                } else if (field === 'mode_financement') {
-                                  return (
-                                    <div className="text-center">
-                                      <FieldName>Mode financement</FieldName>:{' '}
-                                      {changes.new == 1
-                                        ? 'Comptant'
-                                        : changes.new == 2
-                                        ? 'Crédit'
-                                        : 'Indécis'}
-                                    </div>
-                                  );
-                                } else if (field === 'mode_paiement') {
-                                  return (
-                                    <div className="text-center">
-                                      <FieldName>Mode paiement</FieldName>:{' '}
-                                      {getModePaiementLabel(changes.new)}
-                                    </div>
-                                  );
-                                } else if (
-                                  field === 'date_reservation' ||
-                                  field === 'date_reglement' ||
-                                  field === 'date_encaissement'
-                                ) {
-                                  return (
-                                    <div className="text-center">
-                                      <FieldName>
-                                        {field.replace('_', ' ')}
-                                      </FieldName>
-                                      : {formatDate(changes.new)}
-                                    </div>
-                                  );
-                                }
-                                return (
-                                  <div className="text-center">
-                                    <FieldName>
-                                      {field.replace('_', ' ')}
-                                    </FieldName>
-                                    : {changes.new}
-                                  </div>
-                                );
-                              };
-
-                              let displayContent;
-
-                              if (key === 'date_relance') {
-                                displayContent = (
-                                  <div className="text-center">
-                                    {formatDate(value.new)}
-                                  </div>
-                                );
-                              } else if (key === 'mode_relance') {
-                                displayContent = (
-                                  <div className="text-center">
-                                    {getRelance_label(value.new)}
-                                  </div>
-                                );
-                              } else if (key === 'rdv') {
-                                displayContent = (
-                                  <div className="text-center">
-                                    {formatDateTime(value.new)}
-                                  </div>
-                                );
-                              } else if (key === 'prospect') {
-                                displayContent =
-                                  value && typeof value === 'object' ? (
-                                    <div className="flex flex-col items-center justify-center gap-1">
-                                      {Object.entries(value)
-                                        .map(([field, changes]) =>
-                                          renderProspectField(field, changes)
-                                        )
-                                        .filter(Boolean)}
-                                    </div>
-                                  ) : (
-                                    <div className="text-center">(no data)</div>
-                                  );
-                              } else if (key === 'reservation') {
-                                displayContent =
-                                  value && typeof value === 'object' ? (
-                                    <div className="flex flex-col items-center justify-center gap-1">
-                                      {Object.entries(value)
-                                        .map(([field, changes]) =>
-                                          renderReservationField(field, changes)
-                                        )
-                                        .filter(Boolean)}
-                                    </div>
-                                  ) : (
-                                    <div className="text-center">(no data)</div>
-                                  );
-                              }
-
-                              return (
-                                <td
-                                  key={key}
-                                  className="px-3 py-2 border-b border-gray-200"
-                                >
-                                  {displayContent || (
-                                    <div className="text-center"></div>
-                                  )}
-                                </td>
-                              );
-                            })}
-                          </tr>
-                        </tbody>
-                      </table>
-                    ) : (
-                      <>
-                        {(row.interet == '1' || row.interet == '2') &&
-                          row.statut != 2 && (
-                            <table className="w-full text-sm border-collapse">
-                              {/* Création */}
-                              <thead style={{ background: '#bcf7ff' }}>
-                                <tr>
-                                  <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
-                                    Mode Relance
-                                  </th>
-                                  <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
-                                    Date de Relance
-                                  </th>
-                                  {row.interet == '1' && (
-                                    <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
-                                      RDV
-                                    </th>
-                                  )}
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr className="bg-white">
-                                  <td className="text-center px-3 py-2 border-b border-gray-200">
-                                    {getRelance_label(row.mode_rel) || null}
-                                  </td>
-                                  <td className="text-center px-3 py-2 border-b border-gray-200">
-                                    {row.date_rel || null}
-                                  </td>
-                                  {row.interet == '1' && (
-                                    <td className="text-center px-3 py-2 border-b border-gray-200">
-                                      {row.rdv || null}
-                                    </td>
-                                  )}
-                                </tr>
-                              </tbody>
-                            </table>
-                          )}
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </td>
-          </tr>
-        )}
-      </>
-    );
+  // Get frein data from current row
+  const getCurrentFreinData = () => {
+    if (!isPerdu) return null;
+    
+    return {
+      fr_tranches: row.fr_tranches,
+      fr_etages: row.fr_etages,
+      fr_orientations: row.fr_orientations,
+      fr_typologies: row.fr_typologies,
+      fr_vues: row.fr_vues,
+      prix_min: row.prix_min,
+      prix_max: row.prix_max,
+      sup_min: row.sup_min,
+      sup_max: row.sup_max,
+      avance: row.avance,
+      fr_autre: row.fr_autre
+    };
   };
 
+  // Find the NEXT Perdu row (chronologically later - looking forward in array)
+  // Because rows are sorted by date DESC (most recent first)
+  const findNextPerduRow = () => {
+    // On cherche le prochain Perdu APRES le row actuel (dans le futur chronologique)
+    // Puisque l'array est trié du plus récent au plus ancien,
+    // on cherche vers la fin de l'array (indices plus grands)
+    for (let i = currentIndex + 1; i < allRows.length; i++) {
+      const nextRow = allRows[i];
+      if (nextRow.interet == '3') {
+        return {
+          fr_tranches: nextRow.fr_tranches,
+          fr_etages: nextRow.fr_etages,
+          fr_orientations: nextRow.fr_orientations,
+          fr_typologies: nextRow.fr_typologies,
+          fr_vues: nextRow.fr_vues,
+          prix_min: nextRow.prix_min,
+          prix_max: nextRow.prix_max,
+          sup_min: nextRow.sup_min,
+          sup_max: nextRow.sup_max,
+          avance: nextRow.avance,
+          fr_autre: nextRow.fr_autre
+        };
+      }
+    }
+    return null;
+  };
+
+  const currentFreinData = getCurrentFreinData();
+  const nextPerduData = findNextPerduRow();
+  
+  // Afficher la comparaison SEULEMENT si:
+  // 1. Le row actuel est Perdu
+  // 2. ET il y a un Perdu CHRONOLOGIQUEMENT APRÈS (plus ancien)
+  const shouldShowComparison = isPerdu && nextPerduData;
+  
+  // Afficher les données actuelles SEULEMENT si:
+  // 1. Le row actuel est Perdu
+  // 2. ET il n'y a PAS de Perdu après (c'est le plus ancien)
+  const shouldShowCurrentFrein = isPerdu && !shouldShowComparison;
+
+  // Condition pour afficher la section détails
+  const shouldShowDetails = isPerdu || 
+                          historiqueModification?.prospect != null ||
+                          historiqueModification?.frein != null;
+
+  const toggleExpand = () => isExpandable && setOpen(!open);
+
+  return (
+    <>
+      <tr className="border-b hover:bg-gray-50 transition-colors duration-150">
+        <td className="px-4 py-3 text-center">
+          {isExpandable && shouldShowDetails && (
+            <button onClick={toggleExpand}>
+              {open ? <ChevronUpIcon size={18} /> : <ChevronDownIcon size={18} />}
+            </button>
+          )}
+        </td>
+        <td className="px-4 py-3 text-center font-medium">{row.action}</td>
+        <td className="px-4 py-3 text-center">{row.cc}</td>
+        <td className="px-4 py-3 text-center">{row.date}</td>
+        <td className="px-4 py-3 text-center">
+          {getInteretBadge(row?.interet)}
+        </td>
+        <td className="px-4 py-3 text-center">{row.bien}</td>
+        <td className="px-4 py-3 text-center">
+          {row.statut && <>{getStatutBadge(row.statut)}</>}
+        </td>
+        <td className="px-4 py-3 text-center">
+          {row.mode_rel && <>{getRelance_label(row.mode_rel) || null}</>}
+        </td>
+        <td className="px-4 py-3 text-center">
+          {row.date_rel && <>{row.date_rel}</>}
+        </td>
+        <td className="px-4 py-3 text-center">
+          {row.rdv && <>{row.rdv}</>}
+        </td>
+      </tr>
+      {isExpandable && shouldShowDetails && open && (
+        <tr className="border-b">
+          <td colSpan={10} className="p-0 bg-gray-50">
+            <div className="p-4">
+              <h6 className="text-md font-semibold mb-3 !text-gray-700 flex items-center">
+                <span className="w-1.5 h-5 bg-blue-600 rounded-sm mr-2"></span>
+                Détails supplémentaires
+              </h6>
+              <div className="overflow-hidden">
+                {/* Show frein comparison table for successive Perdu */}
+                {shouldShowComparison && (
+                  <div className="mb-6">
+                    <h4 className="text-lg font-semibold mb-3 text-blue-700">
+                      Modifications Frein (Comparaison avec visite Perdu suivante)
+                    </h4>
+                    <table className="w-full text-sm border-collapse">
+                      <thead style={{ background: '#e6f7ff' }}>
+                        <tr>
+                          <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
+                            Champ
+                          </th>
+                          <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
+                            Ancienne valeur (Visite Perdu précédente)
+                          </th>
+                          <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
+                            Nouvelle valeur (Visite actuelle)
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {/* Tranches - Compare: tg01 (old from next row) vs tg01,tg02 (new from current row) */}
+                        <tr className="bg-white">
+                          <td className="text-center px-3 py-2 border-b border-gray-200 font-medium">
+                            Tranches
+                          </td>
+                          <td className="text-center px-3 py-2 border-b border-gray-200 text-red-500">
+                            {nextPerduData.fr_tranches || '-'}
+                          </td>
+                          <td className="text-center px-3 py-2 border-b border-gray-200 text-green-600 font-medium">
+                            {currentFreinData.fr_tranches || '-'}
+                          </td>
+                        </tr>
+                        
+                        {/* Etages - Compare: 0 (old from next row) vs 0,2 (new from current row) */}
+                        <tr className="bg-white">
+                          <td className="text-center px-3 py-2 border-b border-gray-200 font-medium">
+                            Etages
+                          </td>
+                          <td className="text-center px-3 py-2 border-b border-gray-200 text-red-500">
+                            {nextPerduData.fr_etages 
+                              ? nextPerduData.fr_etages.split(',').map(e => e.trim()).join(', ')
+                              : '-'}
+                          </td>
+                          <td className="text-center px-3 py-2 border-b border-gray-200 text-green-600 font-medium">
+                            {currentFreinData.fr_etages 
+                              ? currentFreinData.fr_etages.split(',').map(e => e.trim()).join(', ')
+                              : '-'}
+                          </td>
+                        </tr>
+                        
+                        {/* Orientations - Compare: - (old from next row) vs E,S (new from current row) */}
+                        <tr className="bg-white">
+                          <td className="text-center px-3 py-2 border-b border-gray-200 font-medium">
+                            Orientations
+                          </td>
+                          <td className="text-center px-3 py-2 border-b border-gray-200 text-red-500">
+                            {nextPerduData.fr_orientations 
+                              ? nextPerduData.fr_orientations.split(',').map(getFullOrientation).join(', ')
+                              : '-'}
+                          </td>
+                          <td className="text-center px-3 py-2 border-b border-gray-200 text-green-600 font-medium">
+                            {currentFreinData.fr_orientations 
+                              ? currentFreinData.fr_orientations.split(',').map(getFullOrientation).join(', ')
+                              : '-'}
+                          </td>
+                        </tr>
+                        
+                        {/* Typologies */}
+                        {(currentFreinData.fr_typologies || nextPerduData.fr_typologies) && (
+                          <tr className="bg-white">
+                            <td className="text-center px-3 py-2 border-b border-gray-200 font-medium">
+                              Typologies
+                            </td>
+                            <td className="text-center px-3 py-2 border-b border-gray-200 text-red-500">
+                              {nextPerduData.fr_typologies || '-'}
+                            </td>
+                            <td className="text-center px-3 py-2 border-b border-gray-200 text-green-600 font-medium">
+                              {currentFreinData.fr_typologies || '-'}
+                            </td>
+                          </tr>
+                        )}
+                        
+                        {/* Vues */}
+                        {(currentFreinData.fr_vues || nextPerduData.fr_vues) && (
+                          <tr className="bg-white">
+                            <td className="text-center px-3 py-2 border-b border-gray-200 font-medium">
+                              Vues
+                            </td>
+                            <td className="text-center px-3 py-2 border-b border-gray-200 text-red-500">
+                              {nextPerduData.fr_vues || '-'}
+                            </td>
+                            <td className="text-center px-3 py-2 border-b border-gray-200 text-green-600 font-medium">
+                              {currentFreinData.fr_vues || '-'}
+                            </td>
+                          </tr>
+                        )}
+                        
+                        {/* Prix Min */}
+                        {(currentFreinData.prix_min || nextPerduData.prix_min) && (
+                          <tr className="bg-white">
+                            <td className="text-center px-3 py-2 border-b border-gray-200 font-medium">
+                              Prix Min
+                            </td>
+                            <td className="text-center px-3 py-2 border-b border-gray-200 text-red-500">
+                              {nextPerduData.prix_min ? `${nextPerduData.prix_min} DH` : '-'}
+                            </td>
+                            <td className="text-center px-3 py-2 border-b border-gray-200 text-green-600 font-medium">
+                              {currentFreinData.prix_min ? `${currentFreinData.prix_min} DH` : '-'}
+                            </td>
+                          </tr>
+                        )}
+                        
+                        {/* Prix Max */}
+                        {(currentFreinData.prix_max || nextPerduData.prix_max) && (
+                          <tr className="bg-white">
+                            <td className="text-center px-3 py-2 border-b border-gray-200 font-medium">
+                              Prix Max
+                            </td>
+                            <td className="text-center px-3 py-2 border-b border-gray-200 text-red-500">
+                              {nextPerduData.prix_max ? `${nextPerduData.prix_max} DH` : '-'}
+                            </td>
+                            <td className="text-center px-3 py-2 border-b border-gray-200 text-green-600 font-medium">
+                              {currentFreinData.prix_max ? `${currentFreinData.prix_max} DH` : '-'}
+                            </td>
+                          </tr>
+                        )}
+                        
+                        {/* Superficie Min */}
+                        {(currentFreinData.sup_min || nextPerduData.sup_min) && (
+                          <tr className="bg-white">
+                            <td className="text-center px-3 py-2 border-b border-gray-200 font-medium">
+                              Superficie Min
+                            </td>
+                            <td className="text-center px-3 py-2 border-b border-gray-200 text-red-500">
+                              {nextPerduData.sup_min ? `${nextPerduData.sup_min} m²` : '-'}
+                            </td>
+                            <td className="text-center px-3 py-2 border-b border-gray-200 text-green-600 font-medium">
+                              {currentFreinData.sup_min ? `${currentFreinData.sup_min} m²` : '-'}
+                            </td>
+                          </tr>
+                        )}
+                        
+                        {/* Superficie Max */}
+                        {(currentFreinData.sup_max || nextPerduData.sup_max) && (
+                          <tr className="bg-white">
+                            <td className="text-center px-3 py-2 border-b border-gray-200 font-medium">
+                              Superficie Max
+                            </td>
+                            <td className="text-center px-3 py-2 border-b border-gray-200 text-red-500">
+                              {nextPerduData.sup_max ? `${nextPerduData.sup_max} m²` : '-'}
+                            </td>
+                            <td className="text-center px-3 py-2 border-b border-gray-200 text-green-600 font-medium">
+                              {currentFreinData.sup_max ? `${currentFreinData.sup_max} m²` : '-'}
+                            </td>
+                          </tr>
+                        )}
+                        
+                        {/* Avance - Compare: - (old from next row) vs 20000 (new from current row) */}
+                        <tr className="bg-white">
+                          <td className="text-center px-3 py-2 border-b border-gray-200 font-medium">
+                            Avance
+                          </td>
+                          <td className="text-center px-3 py-2 border-b border-gray-200 text-red-500">
+                            {nextPerduData.avance ? `${nextPerduData.avance} DH` : '-'}
+                          </td>
+                          <td className="text-center px-3 py-2 border-b border-gray-200 text-green-600 font-medium">
+                            {currentFreinData.avance ? `${currentFreinData.avance} DH` : '-'}
+                          </td>
+                        </tr>
+                        
+                        {/* Autre */}
+                        {(currentFreinData.fr_autre || nextPerduData.fr_autre) && (
+                          <tr className="bg-white">
+                            <td className="text-center px-3 py-2 border-b border-gray-200 font-medium">
+                              Autre
+                            </td>
+                            <td className="text-center px-3 py-2 border-b border-gray-200 text-red-500">
+                              {nextPerduData.fr_autre || '-'}
+                            </td>
+                            <td className="text-center px-3 py-2 border-b border-gray-200 text-green-600 font-medium">
+                              {currentFreinData.fr_autre || '-'}
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {/* Show current frein data (when no next Perdu to compare with) */}
+                {shouldShowCurrentFrein && (
+                  <div className="mb-6">
+                    <h4 className="text-lg font-semibold mb-3 text-blue-700">
+                      Données Frein (Visite actuelle)
+                    </h4>
+                    <table className="w-full text-sm border-collapse">
+                      <thead style={{ background: '#e6f7ff' }}>
+                        <tr>
+                          <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
+                            Champ
+                          </th>
+                          <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
+                            Valeur
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {/* Tranches */}
+                        {currentFreinData.fr_tranches && (
+                          <tr className="bg-white">
+                            <td className="text-center px-3 py-2 border-b border-gray-200 font-medium">
+                              Tranches
+                            </td>
+                            <td className="text-center px-3 py-2 border-b border-gray-200">
+                              {currentFreinData.fr_tranches}
+                            </td>
+                          </tr>
+                        )}
+                        
+                        {/* Etages */}
+                        {currentFreinData.fr_etages && (
+                          <tr className="bg-white">
+                            <td className="text-center px-3 py-2 border-b border-gray-200 font-medium">
+                              Etages
+                            </td>
+                            <td className="text-center px-3 py-2 border-b border-gray-200">
+                              {currentFreinData.fr_etages.split(',').map(e => e.trim()).join(', ')}
+                            </td>
+                          </tr>
+                        )}
+                        
+                        {/* Orientations */}
+                        {currentFreinData.fr_orientations && (
+                          <tr className="bg-white">
+                            <td className="text-center px-3 py-2 border-b border-gray-200 font-medium">
+                              Orientations
+                            </td>
+                            <td className="text-center px-3 py-2 border-b border-gray-200">
+                              {currentFreinData.fr_orientations.split(',').map(getFullOrientation).join(', ')}
+                            </td>
+                          </tr>
+                        )}
+                        
+                        {/* Typologies */}
+                        {currentFreinData.fr_typologies && (
+                          <tr className="bg-white">
+                            <td className="text-center px-3 py-2 border-b border-gray-200 font-medium">
+                              Typologies
+                            </td>
+                            <td className="text-center px-3 py-2 border-b border-gray-200">
+                              {currentFreinData.fr_typologies}
+                            </td>
+                          </tr>
+                        )}
+                        
+                        {/* Vues */}
+                        {currentFreinData.fr_vues && (
+                          <tr className="bg-white">
+                            <td className="text-center px-3 py-2 border-b border-gray-200 font-medium">
+                              Vues
+                            </td>
+                            <td className="text-center px-3 py-2 border-b border-gray-200">
+                              {currentFreinData.fr_vues}
+                            </td>
+                          </tr>
+                        )}
+                        
+                        {/* Prix Min */}
+                        {currentFreinData.prix_min && (
+                          <tr className="bg-white">
+                            <td className="text-center px-3 py-2 border-b border-gray-200 font-medium">
+                              Prix Min
+                            </td>
+                            <td className="text-center px-3 py-2 border-b border-gray-200">
+                              {currentFreinData.prix_min} DH
+                            </td>
+                          </tr>
+                        )}
+                        
+                        {/* Prix Max */}
+                        {currentFreinData.prix_max && (
+                          <tr className="bg-white">
+                            <td className="text-center px-3 py-2 border-b border-gray-200 font-medium">
+                              Prix Max
+                            </td>
+                            <td className="text-center px-3 py-2 border-b border-gray-200">
+                              {currentFreinData.prix_max} DH
+                            </td>
+                          </tr>
+                        )}
+                        
+                        {/* Superficie Min */}
+                        {currentFreinData.sup_min && (
+                          <tr className="bg-white">
+                            <td className="text-center px-3 py-2 border-b border-gray-200 font-medium">
+                              Superficie Min
+                            </td>
+                            <td className="text-center px-3 py-2 border-b border-gray-200">
+                              {currentFreinData.sup_min} m²
+                            </td>
+                          </tr>
+                        )}
+                        
+                        {/* Superficie Max */}
+                        {currentFreinData.sup_max && (
+                          <tr className="bg-white">
+                            <td className="text-center px-3 py-2 border-b border-gray-200 font-medium">
+                              Superficie Max
+                            </td>
+                            <td className="text-center px-3 py-2 border-b border-gray-200">
+                              {currentFreinData.sup_max} m²
+                            </td>
+                          </tr>
+                        )}
+                        
+                        {/* Avance */}
+                        {currentFreinData.avance && (
+                          <tr className="bg-white">
+                            <td className="text-center px-3 py-2 border-b border-gray-200 font-medium">
+                              Avance
+                            </td>
+                            <td className="text-center px-3 py-2 border-b border-gray-200">
+                              {currentFreinData.avance} DH
+                            </td>
+                          </tr>
+                        )}
+                        
+                        {/* Autre */}
+                        {currentFreinData.fr_autre && (
+                          <tr className="bg-white">
+                            <td className="text-center px-3 py-2 border-b border-gray-200 font-medium">
+                              Autre
+                            </td>
+                            <td className="text-center px-3 py-2 border-b border-gray-200">
+                              {currentFreinData.fr_autre}
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {/* Show prospect changes from historique_modification */}
+                {historiqueModification?.prospect && (
+                  <div className="mb-6">
+                    <h4 className="text-lg font-semibold mb-3 text-blue-700">
+                      Modifications Prospect
+                    </h4>
+                    <table className="w-full text-sm border-collapse">
+                      <thead style={{ background: '#e6f7ff' }}>
+                        <tr>
+                          <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
+                            Champ
+                          </th>
+                          <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
+                            Ancienne valeur
+                          </th>
+                          <th className="text-center px-3 py-2 border-b border-gray-200 font-medium !text-gray-700">
+                            Nouvelle valeur
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Object.entries(historiqueModification.prospect).map(([field, changes]) => {
+                          if (!changes || (changes.new === undefined && changes.old === undefined))
+                            return null;
+
+                          const getFieldLabel = (field) => {
+                            const labels = {
+                              cin: 'CIN',
+                              email: 'Email',
+                              nom: 'Nom',
+                              prenom: 'Prénom',
+                              telephone: 'Téléphone',
+                              telephone_num2: 'Téléphone 2',
+                              ville: 'Ville',
+                              notifie: 'Notifié',
+                              source: 'Source',
+                              partenaire_id: 'Partenaire',
+                            };
+                            return labels[field] || field;
+                          };
+
+                          return (
+                            <tr key={field} className="bg-white">
+                              <td className="text-center px-3 py-2 border-b border-gray-200 font-medium">
+                                {getFieldLabel(field)}
+                              </td>
+                              <td className="text-center px-3 py-2 border-b border-gray-200 text-red-500">
+                                {field === 'notifie' ? (
+                                  changes.old == 1 ? 'Oui' : changes.old == 0 ? 'Non' : ''
+                                ) : field === 'source' ? (
+                                  changes.old ? (
+                                    <EntityName type="source" id={changes.old} />
+                                  ) : ''
+                                ) : field === 'partenaire_id' ? (
+                                  changes.old ? (
+                                    <EntityName type="partenaire" id={changes.old} />
+                                  ) : ''
+                                ) : changes.old !== undefined && changes.old !== null ? (
+                                  changes.old
+                                ) : ''}
+                              </td>
+                              <td className="text-center px-3 py-2 border-b border-gray-200 text-green-600 font-medium">
+                                {field === 'notifie' ? (
+                                  changes.new == 1 ? 'Oui' : 'Non'
+                                ) : field === 'source' ? (
+                                  changes.new ? (
+                                    <EntityName type="source" id={changes.new} />
+                                  ) : ''
+                                ) : field === 'partenaire_id' ? (
+                                  changes.new ? (
+                                    <EntityName type="partenaire" id={changes.new} />
+                                  ) : ''
+                                ) : changes.new !== undefined && changes.new !== null ? (
+                                  changes.new
+                                ) : ''}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {/* Show other changes from historique_modification */}
+{/* Show commentaire changes from historique_modification */}
+{historiqueModification?.commentaire && (
+  <div className="mb-6">
+    <h4 className="text-lg font-semibold mb-3 text-blue-700">
+      Commentaire
+    </h4>
+    <div className="flex items-center space-x-4">
+      <div className="flex-1">
+        <div className="text-sm text-gray-500 mb-1">Ancien:</div>
+        <div className="px-3 py-2 bg-red-50 border border-red-200 rounded text-red-700 min-h-[40px]">
+          {historiqueModification.commentaire.old || ''}
+        </div>
+      </div>
+      <div className="flex-1">
+        <div className="text-sm text-gray-500 mb-1">Nouveau:</div>
+        <div className="px-3 py-2 bg-green-50 border border-green-200 rounded text-green-700 font-medium min-h-[40px]">
+          {historiqueModification.commentaire.new || ''}
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+              </div>
+            </div>
+          </td>
+        </tr>
+      )}
+    </>
+  );
+};
   if (loading_histo) {
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -810,18 +833,36 @@ const Modal_Historique = ({ onClose, rows, loading_histo }) => {
                   >
                     Statut
                   </th>
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider"
+                  >
+                    Mode Relance
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider"
+                  >
+                    Date Relance
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider"
+                  >
+                    Rendez Vous
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {rows.map((row, index) => (
-                  <Row
-                    key={`${row.id || `row-${index}`}-${row.action}-${
-                      row.date
-                    }`}
-                    row={row}
-                  />
-                ))}
-              </tbody>
+  {rows.map((row, index) => (
+    <Row
+      key={`${row.id || `row-${index}`}-${row.action}-${row.date}`}
+      row={row}
+      allRows={rows}
+      currentIndex={index}
+    />
+  ))}
+</tbody>
             </table>
           </div>
         </div>

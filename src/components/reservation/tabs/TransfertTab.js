@@ -83,7 +83,7 @@ export const TransfertTab = ({
         : '',
       nouveau_dossier: transfert.dossier_transfert?.code_reservation,
       montant: transfert.montant_transfert?.toLocaleString() + ' DH',
-      transfert: transfert,
+      dossier_id_transfert: transfert.dossier_id_transfert,
     }));
   };
 
@@ -104,7 +104,7 @@ export const TransfertTab = ({
       label: 'Nouveau Dossier',
       render: (row) => (
         <Link
-          href={`/ventes/reservations/${row.transfert.dossier_id_transfert}`}
+          href={`/ventes/reservations/${row.dossier_id_transfert}`}
           target="_blank"
           className="text-blue-500 hover:text-blue-700 hover:underline"
         >

@@ -106,6 +106,7 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
   const [showAffecterModal, setShowAffecterModal] = useState(false);
   const [commercials, setCommercials] = useState([]);
   const [selectedCommercial, setSelectedCommercial] = useState('');
+  const [selectedCommercial_2, setSelectedCommercial_2] = useState('');
   const [assignMode, setAssignMode] = useState('selective');
   const [showCommercialDropdown, setShowCommercialDropdown] = useState(false);
   const [searchCommercial, setSearchCommercial] = useState('');
@@ -123,7 +124,6 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
   const { selectedProjet } = useProjet();
   const accesstoken = token || localStorage.getItem('accessToken');
     const router = useRouter();
-
   // Check if user is commercial to disable assignment features
   const isCommercialUser = isCommercial(user?.role);
 
@@ -596,6 +596,7 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
   };
   const handleAffecterSubmit = async () => {
     if (!selectedCommercial) return;
+      setAffect_lance(true);
     try {
       // Find the full prospect object for each checked prospect
       const selectedProspects = prospects.filter((pro) =>
@@ -626,11 +627,12 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
               partenaire_id: pro.partenaire_id,
               message: clean(pro.message),
               ville: clean(pro.ville),
-              commercial_affecte: selectedCommercial,
+              commercial_affecte: selectedCommercial_2,
             }),
           });
         })
       );
+        setAffect_lance(false);
       setShowAffecterModal(false);
       setSelectedCommercial('');
       setCheckedProspects([]);
@@ -739,13 +741,11 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
 
   const handleAutoAssignToSelf = async () => {
     if (!checkedProspects.length || !user?.id) return;
-
     try {
       // Find the full prospect object for each checked prospect
       const selectedProspects = prospects.filter((pro) =>
         checkedProspects.includes(pro.id)
       );
-
       await Promise.all(
         selectedProspects.map((pro) => {
           // Clean up fields: convert "null" string to null or empty string
@@ -776,7 +776,6 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
           });
         })
       );
-
       setCheckedProspects([]);
       fetchData_table_by_projet(
         {
@@ -1050,6 +1049,7 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
                                     checked={selectedCommercial == user.id}
                                     onChange={() => {
                                       setSelectedCommercial(user.id);
+                                      setSelectedCommercial_2(user.user_id_origin);
                                       setShowCommercialDropdown(false);
                                     }}
                                     className="h-4 w-4 text-[#009FFF] border-gray-300 rounded focus:ring-blue-500"
@@ -1073,7 +1073,7 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
                   <Button
                     type="button"
                     onClick={handleAffecterSubmit}
-                    disabled={!selectedCommercial}
+                    disabled={!selectedCommercial||affect_lance}
                     className="bg-[#009FFF] text-white"
                   >
                     Affecter
