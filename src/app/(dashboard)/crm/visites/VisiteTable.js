@@ -50,7 +50,7 @@ const VisiteTable = ({ user_id, dataProspect, dataClient ,searchParams}) => {
     API_URL: 'visites',
     dataKey: 'data',
 
-    searchFields: ['responsable', 'date', 'nom', 'prenom', 'telephone'],
+    searchFields: ['cc', 'date', 'nom', 'prenom', 'telephone'],
   };
   // Prepare parameters based on conditions
   const clientId = dataClient ? JSON.stringify(dataClient?.id) : null;
@@ -111,7 +111,7 @@ const VisiteTable = ({ user_id, dataProspect, dataClient ,searchParams}) => {
   const formatData = () => {
     return visites.map((data) => ({
       id: data.id,
-      cc: data.nom_cc,
+      cc: data.nom_cc+' '+data.prenom_cc,
       date: data.date != null ? formatDate(data.date) : null,
       nom: `${data.nom || ''}`.trim(),
       prenom: `${data.prenom || ''}`.trim(),
@@ -156,7 +156,7 @@ const VisiteTable = ({ user_id, dataProspect, dataClient ,searchParams}) => {
   // Table columns configuration
   const columns = [
     {
-      key: 'responsable',
+      key: 'cc',
       label: 'Responsable',
       render: (row) => (
         <div className="flex items-center gap-3">
@@ -246,7 +246,7 @@ const VisiteTable = ({ user_id, dataProspect, dataClient ,searchParams}) => {
 
   const data_to_export = () => {
     return visites.map((data) => ({
-      cc: data.nom_cc,
+      cc: data.nom_cc+' '+data.prenom_cc,
       date: data.date != null ? formatDate(data.date) : null,
       nomComplet: `${data.nom || ''} ${data.prenom || ''}`.trim(),
       prospect_id: data.prospect_id,

@@ -8,7 +8,14 @@ import { fetchData_table_by_id } from '@/configs/api-utils';
 import { formatDate } from '../../../../../utils/dateUtils';
 import DeleteData from '@/components/DeleteData';
 
-import { Eye, Edit, CalendarClock, CheckCircle, Trash2, PencilLine } from 'lucide-react';
+import {
+  Eye,
+  Edit,
+  CalendarClock,
+  CheckCircle,
+  Trash2,
+  PencilLine,
+} from 'lucide-react';
 
 import { APIURL, ENDPOINTS } from '@/configs/api';
 import Modal from '@/components/Modal';
@@ -28,7 +35,7 @@ import {
 import Input from '@/components/Input';
 import Link from 'next/link';
 
-const JournalTable = ({ id, prospect }) => {
+const JournalTable = ({ id, prospect, client = null }) => {
   const [filters, setFilters] = useState({
     responsable: '',
     type_appel: '',
@@ -78,7 +85,7 @@ const JournalTable = ({ id, prospect }) => {
   const [frein_superficie_min, setFreinsSuperficieMin] = useState(null);
   const [frein_superficie_max, setFreinsSuperficieMax] = useState(null);
   const [frein_avance, setFreinsAvance] = useState(null);
-    const [description_autre , setDescription_autre] = useState(null);
+  const [description_autre, setDescription_autre] = useState(null);
 
   const [commentaire, setCommentaire] = useState(null);
   const [commentaire_rel, setCommentaire_rel] = useState(null);
@@ -218,7 +225,10 @@ const JournalTable = ({ id, prospect }) => {
         frein?.avance != null &&
         setFreinsAvance(frein?.avance);
     }
-    {frein?.description_autre!='' && setDescription_autre(frein?.description_autre)}
+    {
+      frein?.description_autre != '' &&
+        setDescription_autre(frein?.description_autre);
+    }
     setCommentaire(comment);
     setCommentaire_rel(comment_rel);
     setCommentaire_rdv(comment_rdv);
@@ -253,7 +263,6 @@ const JournalTable = ({ id, prospect }) => {
       user: pro.user,
     }));
   };
- 
 
   const getInteretBadge = (interest) => {
     const interetInfo = VISITE_INTERETS[interest];
@@ -285,9 +294,7 @@ const JournalTable = ({ id, prospect }) => {
       label: 'Date ',
       render: (row) => (
         <div className="flex items-center gap-3">
-          <span>
-            {row.date ? formatDate(row.date) : ''}
-          </span>
+          <span>{row.date ? formatDate(row.date) : ''}</span>
         </div>
       ),
     },
@@ -313,7 +320,6 @@ const JournalTable = ({ id, prospect }) => {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          
           <Link
             href={`${ENDPOINTS.APPELS}?id=${row.id}&action=edit`}
             className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
@@ -321,7 +327,6 @@ const JournalTable = ({ id, prospect }) => {
           >
             <PencilLine className="w-4 h-4" />
           </Link>
-         
 
           {VISITE_INTERETS[row.interet]?.label != 'Injoignable' && (
             <div title="Voir détails">
@@ -430,16 +435,32 @@ const JournalTable = ({ id, prospect }) => {
     setTempFilters(reset);
   };
   function getAddLinkForAppel() {
-    return {
-      pathname: `${ENDPOINTS.APPELS}?action=add`,
-      onClick: () => {
-        localStorage.setItem(
-          'selectedProspect_appel',
-          JSON.stringify({ prospect })
-        );
-      },
-    };
+    if (prospect) {
+      return {
+        pathname: `${ENDPOINTS.APPELS}?action=add`,
+        onClick: () => {
+          localStorage.setItem(
+            'selectedProspect_appel',
+            JSON.stringify({ prospect })
+          );
+        },
+      };
+    }else if (client) {
+       return {
+        pathname: `${ENDPOINTS.APPELS}?action=add`,
+        onClick: () => {
+          localStorage.setItem(
+            'selectedClient_appel',
+            JSON.stringify({ client })
+          );
+        },
+      };
+    }else {
+        return `${ENDPOINTS.APPELS}?action=add`;
+      }
   }
+
+
   return (
     <>
       <div className="reflative">

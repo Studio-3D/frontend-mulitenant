@@ -28,7 +28,12 @@ export default function ClientWrapper({ children }) {
         
         // Don't save redirect for login page itself
         if (pathname !== '/login' && !pathname.includes('/logout')) {
-          localStorage.setItem('redirectAfterLogin', pathname);
+          if(pathname=='/'){
+          localStorage.setItem('redirectAfterLogin', '/tableau-de-bord');
+          }else{
+                      localStorage.setItem('redirectAfterLogin', pathname);
+
+          }
           console.log('Saved redirectAfterLogin:', pathname);
         }
         // Redirect to login

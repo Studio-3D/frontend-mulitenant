@@ -57,6 +57,9 @@ const ProspectDetails = () => {
   const handleEdit = (id) => {
     router.push(`${ENDPOINTS.PROSPECTS}?id=${id}&action=edit`);
   };
+  const handleShowClient = (id) => {
+    router.push(`/ventes/clients/`+id);
+  };
 
   const tabs = [
     ...(prospectDetails?.id != null
@@ -327,6 +330,15 @@ const ProspectDetails = () => {
                           Traiter
                         </Button>
                       ))}
+                      {prospectDetails?.client_id!=null && (
+                        <Button
+                        type="valider"
+                        onClick={() => handleShowClient(prospectDetails?.client_id)}
+                        >
+                        Voir Détail Client
+                        </Button>
+                      )}
+                     
                     <Button
                       type="edit"
                       onClick={() => handleEdit(prospectDetails?.id)}

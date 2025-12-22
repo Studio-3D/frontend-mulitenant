@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 import TextField from '@/components/Textfield';
-import AutocompleteBien from './AutocompleteBien';
-import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
 import Autocomplete from '@/components/Autocomplete';
 import SelectInput from '@/components/SelectInput';
 
@@ -374,8 +372,8 @@ export function Changement_De_Bien({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <SelectInput
             label="Nouveau Bien"
-            name="bien_id"
-            value={watch('bien_id')} // This should be the actual ID, not the JSON string
+            name="new_bien_id"
+            value={watch('new_bien_id')} // This should be the actual ID, not the JSON string
             required={true}
             options={
               Array.isArray(uniqueBiens)

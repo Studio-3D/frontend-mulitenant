@@ -16,7 +16,7 @@ export const MultiStepForm = ({
   initialData = null,
   projetId = null,
 }) => {
-  const { selectedProjet } = useProjet();
+  const { selectedProjet,refreshProjets } = useProjet();
 
   const { token } = useAuth();
   const router = useRouter();
@@ -370,6 +370,7 @@ export const MultiStepForm = ({
             'Content-Type': 'application/json',
           },
         });
+        refreshProjets();
         toast.success('Projet modifié avec succès');
       } else {
         // POST request for create

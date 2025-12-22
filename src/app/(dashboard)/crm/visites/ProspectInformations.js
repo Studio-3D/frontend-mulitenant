@@ -22,6 +22,8 @@ const ProspectInformations = ({
   sourceValue,
   partenaireValue,
   handleChange_event,
+  loading_sources,
+  loading_partenaires,
 }) => {
   
   // Transform sources data for SelectInput
@@ -197,7 +199,7 @@ const ProspectInformations = ({
       </div>
 
       {/* Source Select */}
-      {source_d !== '' || disabled_var_source ? (
+      {disabled_var_source ? (
         <div>
           <SelectInput
             placeholder='Sélectionner une source'
@@ -206,7 +208,7 @@ const ProspectInformations = ({
             name="source_id"
             value={watch('source_id')?.toString()}
             disabled
-            loading={loading}
+            loading={loading_sources}
             errors={errors}
             backendErrors={backendErrors}
             onChange={handleSourceChange}
@@ -221,7 +223,7 @@ const ProspectInformations = ({
             name="source_id"
             value={watch('source_id')?.toString()}
             options={sourceOptions}
-            loading={loading}
+            loading={loading_sources}
             errors={errors}
             backendErrors={backendErrors}
             onChange={handleSourceChange}
@@ -239,7 +241,7 @@ const ProspectInformations = ({
             required={watch('source_txt') === 'Partenaire'}
             options={partenaireOptions}
             value={watch('partenaire_id')?.toString()}
-            loading={loading}
+            loading={loading_partenaires}
             errors={{
               ...errors,
               partenaire_id:

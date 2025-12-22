@@ -328,7 +328,7 @@ export function VisitDetails({
               response.data.historiques[k].historique_modification;
             let username = response.data.historiques[k].user.name;
             let userprenom = response.data.historiques[k].user.prenom;
-            let date = response.data.historiques[k].created_at;
+            let date = response.data.historiques[k].id;
             let interet = response.data.historiques[k].interet;
             let statut = null;
             if (response.data.historiques[k].interet == 1) {
@@ -462,7 +462,7 @@ export function VisitDetails({
                 createData(
                   toTitleCase(description_new),
                   username + ' ' + userprenom,
-                  format(new Date(date), 'dd/MM/yyyy'),
+                  date,
                   etat_bien,
                   interet,
                   bien,
@@ -490,7 +490,7 @@ export function VisitDetails({
               createData(
                 toTitleCase(description),
                 username + ' ' + userprenom,
-                format(new Date(date), 'dd/MM/yyyy'),
+                date,
                 etat_bien,
                 interet,
                 bien,
@@ -1065,6 +1065,9 @@ export function VisitDetails({
                                         visite.bien.prix,
                                         visite.user.name,
                                         visite.user.prenom,
+                                        JSON.parse(
+                                          localStorage.getItem('authUser')
+                                        ),
                                       ]}
                                     />
                                   }

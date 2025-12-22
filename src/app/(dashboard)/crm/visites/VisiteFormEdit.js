@@ -51,7 +51,12 @@ export default function VisiteFormEdit({ id }) {
   const { selectedProjet } = useProjet();
   const [backendErrors, setBackendErrors] = useState({});
   const [sources, setSources] = useState([]);
+  const [loading_sources, setLoading_sources] = useState(false);
+  const [loading_partenaires, setLoading_partenaire] = useState(false);
+  const [loading_banques, setLoading_banques] = useState(false);
+
   const [partenaires, setPartenaires] = useState([]);
+
   const [disabled_var, setDisabled] = useState(false);
   const [partenaire_txt, setPartenaire_txt] = useState(null);
   const [biensByProjet, setBiensByProjet] = useState([]);
@@ -62,6 +67,7 @@ export default function VisiteFormEdit({ id }) {
   const current = new Date();
   var new_date = current.setDate(current.getDate());
   const [banques, setBanques] = useState([]);
+
   const [expanded, setExpanded] = useState('');
   const [loading_bien, setLoading_bien] = useState(false);
   const [type_freins, setType_freins] = useState([]);
@@ -365,12 +371,12 @@ export default function VisiteFormEdit({ id }) {
 
       try {
         // Fetch initial data
-        await fetchData_Select('sources', setSources, setLoading);
-        await fetchData_Select('banques', setBanques, setLoading);
+        await fetchData_Select('sources', setSources, setLoading_sources);
+        await fetchData_Select('banques', setBanques, setLoading_banques);
 
         // Fetch partenaires only if needed
         if (partenaires.length === 0) {
-          await fetchDataByProjet('partenaires', setPartenaires, setLoading);
+          await fetchDataByProjet('partenaires', setPartenaires, setLoading_partenaire);
         }
 
         // Only fetch edit data if editing
@@ -442,7 +448,7 @@ export default function VisiteFormEdit({ id }) {
             '',
           commentaire: visite?.commentaire || '',
           partenaire_id: visite?.prospect?.partenaire_id || '',
-          bien_id: visite?.bien_id || '',
+          bien_id: visite?.bien_id || 0,
           bien_pre_reserve: visite?.bien_id || '',
           rdv: visite?.rdv_relation?.rdv || '',
           statut: visite?.interet === '1' ? visite?.statut : '',
@@ -1363,6 +1369,8 @@ export default function VisiteFormEdit({ id }) {
                   formSubmitted={formSubmitted}
                   email_required={email_required}
                   loading={loading}
+                  loading_sources={loading_sources}
+                  loading_partenaires={loading_partenaires}
                   sources={sources}
                   handleSourceChange={handleSourceChange}
                   partenaires={partenaires}
