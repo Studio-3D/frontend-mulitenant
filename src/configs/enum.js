@@ -65,10 +65,44 @@ export const VISITE_STATUT_FORM = {
   2: { code: 2, label: 'Vendu' },
 };
 // Visite statuses for form selection
-export const SUIVI_DOSSIER = {
-  1: { code: 1, label: 'Nouvelle Avance' },
+// Ajoutez ceci dans votre fichier enum.js ou configs/enum.js
+export const Statut_SUIVI_DOSSIER  = {
+  1: {
+    code: 1,
+    label: 'Nouvelle avance',
+    description: 'Le client souhaite effectuer un nouveau paiement'
+  },
+  2: {
+    code: 2,
+    label: 'Question sur avance des travaux',
+    description: 'Le client a des questions sur l\'avancement des travaux'
+  },
+  3: {
+    code: 3,
+    label: 'Suivi de paiement',
+    description: 'Suivi des paiements en cours ou retardés'
+  },
+  4: {
+    code: 4,
+    label: 'Question sur documents',
+    description: 'Le client a des questions concernant les documents'
+  },
+  5: {
+    code: 5,
+    label: 'Suivi livraison',
+    description: 'Question sur la date de livraison ou remise des clés'
+  },
+  6: {
+    code: 6,
+    label: 'Signature contrat',
+    description: 'Suivi pour signature de contrat'
+  },
+   7: {
+    code: 7,
+    label: 'Autre question',
+    description: 'Autre type de question non spécifiée'
+  },
 };
-
 // Visite notification types
 export const VISITE_TYPE_NOTIF = {
   1: { code: 1, label: 'Sms' },
