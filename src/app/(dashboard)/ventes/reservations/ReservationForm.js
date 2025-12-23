@@ -53,6 +53,8 @@ import {
 import { CIVILITES } from '@/components/client-utils';
 import { useProjet } from '@/context/ProjetContext';
 export default function ReservationForm({ id }) {
+  const [hasPercentageChanged, setHasPercentageChanged] = useState(false);
+
   const storedValue = localStorage.getItem('selectedClient_show_client');
   const selectedClient =
     storedValue && !isNaN(Number(storedValue)) ? Number(storedValue) : '';
@@ -1101,6 +1103,10 @@ export default function ReservationForm({ id }) {
     } else {
       setDisabled(true);
     }
+    // Activer l'état de modification
+    if (name === 'pourcentage') {
+      setHasPercentageChanged(true);
+    }
 
     // Handle client selection changes
     if (text == 'select_client') {
@@ -1297,6 +1303,7 @@ export default function ReservationForm({ id }) {
   };*/
 
   const handleAnnuler_form = () => {
+    setHasPercentageChanged(true); // Activer l'état
     // Calculate total percentage of selected clients
     const totalPercentage = newClientForms.reduce(
       (sum, client) => sum + Number(client.pourcentage || 0),
@@ -1315,6 +1322,7 @@ export default function ReservationForm({ id }) {
     setenabled(newValue == 100 ? 'none' : 'block');
   };
   const handleAnnuler_client_added = (percent) => {
+    setHasPercentageChanged(true); // Activer l'état
     // Get current value of pourcentages field
     const old_value_pourcentages = getValues('pourcentages');
 
@@ -1327,8 +1335,15 @@ export default function ReservationForm({ id }) {
 
     setenabled(newValue == 100 ? 'none' : 'block');
   };
+  useEffect(() => {
+    if (watch('pourcentages') === 100) {
+      setHasPercentageChanged(false);
+    }
+  }, [watch('pourcentages')]);
 
   const calculateTotalPercentage_new_form = (currentClients) => {
+    setHasPercentageChanged(true); // Activer l'état
+
     // Calculate sum of new clients (using passed currentClients)
     const newClientsSum = currentClients.reduce((sum, client) => {
       return sum + (Number(client.pourcentage) || 0);
@@ -1484,7 +1499,7 @@ export default function ReservationForm({ id }) {
 
     try {
       const response = await axios.get(
-        `${APIURL.ROOTV1}/search_prospect_by_param/${text}/${value}`,
+        `${APIURL.ROOTV1}/search_prospect_by_param/${text}/${value}/${selectedProjet?.id}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -1498,7 +1513,7 @@ export default function ReservationForm({ id }) {
           if (response.data.prospect.telephone) {
             toast.error(
               ` ${prefix} ${value} appartient au Prospect ${
-                response.data.prospect.nom + ' ' + response.data.prospect.prenom
+                response.data.prospect.nom!=null? response.data.prospect.nom:'' + ' ' +  response.data.prospect.prenom!=null? response.data.prospect.prenom:''
               }`,
               {
                 position: 'top-center',
@@ -1509,9 +1524,9 @@ export default function ReservationForm({ id }) {
 
           // Update prospect info if needed
           updateFormField(formIndex, 'prospect_id', response.data.prospect.id);
-          set_check_p(true); // Set prospect check to true
+         // set_check_p(true); // Set prospect check to true
         } else {
-          set_check_p(false); // Set prospect check to false
+         // set_check_p(false); // Set prospect check to false
         }
 
         if (response.data.client) {
@@ -1956,9 +1971,23 @@ export default function ReservationForm({ id }) {
                           </>
                         )}
                       </div>
-                      <p style={{ display: enabled, color: 'red' }}>
-                        {'la somme des pourcentages doit être 100% !'}
-                      </p>
+                      <div className="mt-2">
+                      {watch('pourcentages') > 0 && watch('pourcentages') !== 100 && (
+                        <p className={`text-sm font-medium ${
+                          !hasPercentageChanged 
+                            ? 'text-sky-500'  // bleu ciel au début
+                            : 'text-red-500'  // rouge après modification
+                        }`}>
+                          ⚠️ La somme des pourcentages ({watch('pourcentages')}%) doit être exactement 100% !
+                        </p>
+                      )}
+                      {watch('pourcentages') === 100 && (
+                        <p className="text-green-600 text-sm font-medium flex items-center">
+                          <CheckIcon className="w-4 h-4 mr-1" />
+                          ✓ La somme des pourcentages est correcte (100%)
+                        </p>
+                      )}
+                    </div>
                     </div>
                     {inputList1.length > 1 && (
                       <button
@@ -2357,9 +2386,22 @@ export default function ReservationForm({ id }) {
                                     Doit être entre 0 et 100
                                   </p>
                                 )}
-                              <p style={{ display: enabled, color: 'red' }}>
-                                {'la somme des pourcentages doit être 100% !'}
-                              </p>
+                            <div className="mt-2">
+                              {watch('pourcentages') > 0 && watch('pourcentages') !== 100 && (
+                                <p className={`text-sm font-medium ${
+                                  !hasPercentageChanged 
+                                    ? 'text-sky-500'  // bleu ciel au début
+                                    : 'text-red-500'  // rouge après modification
+                                }`}>
+                                  ⚠️ La somme des pourcentages ({watch('pourcentages')}%) doit être exactement 100% !
+                                </p>
+                              )}
+                              {watch('pourcentages') === 100 && (
+                                <p className="text-green-600 text-sm font-medium flex items-center">
+                                  ✓ La somme des pourcentages est correcte (100%)
+                                </p>
+                              )}
+                            </div>
                             </div>
 
                             {/* Téléphone */}
@@ -2688,9 +2730,10 @@ export default function ReservationForm({ id }) {
                       >
                         Annuler
                       </button>
+                      {/*|| check_p*/}
                       <button
                         type="submit"
-                        disabled={!isFormValid() || check || check_p}
+                        disabled={!isFormValid() || check }
                         onClick={() => {
                           setFormSubmitted_client(true);
                           if (isFormValid()) {
@@ -2729,12 +2772,14 @@ export default function ReservationForm({ id }) {
                             ]);
                           }
                         }}
+                      
                         className={`px-6 py-2 rounded-md ${
-                          !isFormValid() || check || check_p
+                          !isFormValid() || check
                             ? 'bg-gray-400 cursor-not-allowed'
                             : 'bg-blue-600 hover:bg-blue-700 text-white'
                         }`}
                       >
+                          {/* || check_p*/}
                         Ajouter
                       </button>
                     </div>
@@ -3578,7 +3623,10 @@ export default function ReservationForm({ id }) {
 
                               const isValid = totalPercentage === 100;
                               setValue('verifierPourcentages', isValid);
-                              setenabled(isValid ? 'none' : 'block');
+                              //setenabled(isValid ? 'none' : 'block');
+                              if (isValid) {
+                                setHasPercentageChanged(false);
+                              }
                               console.log(
                                 'total==>' +
                                   totalPercentage +

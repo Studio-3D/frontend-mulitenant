@@ -37,6 +37,7 @@ import {
   MODE_FINANCE,
   MODE_PAIEMENT,
   ORIENTATIONS,
+  SUIVI_DOSSIER,
 } from '@/configs/enum';
 import Pusher from 'pusher-js';
 import Modal_OldVisites_Perdu from './Modal_OldVisites_Perdu';
@@ -139,6 +140,8 @@ const VisiteForm = ({ prospect_id, origin }) => {
       : null
   );
   const defaultValues = {
+    statut_suivi:'',
+    dossier_suivi:'',
     interet: '',
     selectedProjet: selectedProjet?.id,
     client_id: personType == 'client' ? selectedPerson?.id : '',
@@ -318,7 +321,17 @@ const VisiteForm = ({ prospect_id, origin }) => {
       setLoading_tp_frein(false);
     }
   };
-
+  const handleChange_statut_suivi = (code) => {
+    if (code) {
+      setValue('statut_suivi', code);
+    }
+  }
+  const handleChange_dossier_suivi = (id) => {
+    if (code) {
+      setValue('dossier_suvi', id);
+    }
+  }
+  
   const handleChange_interet = (code) => {
     if (code) {
       setValue('interet', code);
@@ -874,7 +887,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
 
   const fetch_event_visite = async (v, route, text, param) => {
     try {
-      const res = await axios.get(`${APIURL.ROOT}/v1/${route}/${param}/${v}`, {
+      const res = await axios.get(`${APIURL.ROOT}/v1/${route}/${param}/${v}/${selectedProjet?.id}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -923,7 +936,6 @@ const VisiteForm = ({ prospect_id, origin }) => {
         // Définir les états et valeurs des champs seulement si `contactData` est défini
         setInfo_client_1(`${nom} ${prenom}`);
         setClient_prospect(isClient ? 'Client' : 'Prospect');
-        console.log('mm prospect id==>'+prospect_id+ ' watch '+watch('prospect_id'))
         setValue('prospect_id', prospect_id);
         setValue('cin', cin || '');
         setValue('nom', nom || '');
@@ -2090,6 +2102,37 @@ const VisiteForm = ({ prospect_id, origin }) => {
                         isEditMode={false} // Specify the mode here
                       />
                     )}
+                    {Number(watch('interet')) == 5 && (
+                      <>
+                      <SelectInput
+                                placeholder="selectionner un Dossier"
+                                label="Statut :"
+                                name="dossier_id_suivi"
+                                value={watch('dossier_id_suivi')}
+                                options={ Object.values(Dossiers_Suivis)
+                                        .map((suivi) => ({
+                                          value: suivi.id.toString(),
+                                          label: suivi.code_reservation,
+                                        }))
+                                }
+                                onChange={handleChange_dossier_suivi}
+                              />
+                               <SelectInput
+                                placeholder="selectionner un Statut"
+                                label="Statut :"
+                                name="statut_suivi"
+                                value={watch('statut_suivi')}
+                                options={ Object.values(SUIVI_DOSSIER)
+                                        .map((suivi) => ({
+                                          value: suivi.code.toString(),
+                                          label: suivi.label,
+                                        }))
+                                }
+                                onChange={handleChange_statut_suivi}
+                              /></>
+                      
+                      
+                    )}
                   </div>
                   {/*<PanelInteresse_vendu
                   input_biens_vendu={input_biens_vendu}
@@ -3254,12 +3297,13 @@ const VisiteForm = ({ prospect_id, origin }) => {
                       ))}
                   </div>
                   {(Number(watch('interet')) == 2 ||
-                    Number(watch('interet')) == 3) && (
+                    Number(watch('interet')) == 3||
+                    Number(watch('interet')) == 5 ) && (
                     <div className="flex-1 mt-4">
                       <TextField
                         label="Commentaire:"
                         name="commentaire"
-                        required={false}
+                        required={(Number(watch('interet')) == 5 && watch('statut_suivi')=='')?true:false}
                         multi={true} // Set this to true if you want a multi-line textarea, else leave it out or false
                         control={control} // Passed from useForm hook
                         errors={errors} // Validation errors from React Hook Form

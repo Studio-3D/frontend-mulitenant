@@ -195,7 +195,7 @@ export default function ClientForm({ id, projetId, trancheId }) {
 
   try {
     // Faire la requête API
-    const res = await axios.get(`${APIURL.ROOT}/v1/${route}/${value}`, {
+    const res = await axios.get(`${APIURL.ROOTV1}/${route}/${value}/${selectedProjet?.id}`, {
       headers: { Authorization: `Bearer ${token}` },
 
     });

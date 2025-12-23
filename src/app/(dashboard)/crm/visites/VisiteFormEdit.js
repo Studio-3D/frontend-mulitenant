@@ -911,7 +911,7 @@ export default function VisiteFormEdit({ id }) {
 
   const fetch_event_visite = async (v, route, text, param) => {
     await axios
-      .get(`${APIURL.ROOT}/v1/` + route + `/` + param + `/` + v, {
+      .get(`${APIURL.ROOT}/v1/` + route + `/` + param + `/` + v+'/'+selectedProjet?.id, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },

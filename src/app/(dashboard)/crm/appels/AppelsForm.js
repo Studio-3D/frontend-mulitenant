@@ -869,7 +869,7 @@ export default function AppelsForm({ id }) {
 
   const fetch_event_by_param = async (route, value, param) => {
     await axios
-      .get(`${APIURL.ROOTV1}/` + route + `/` + param + `/` + value, {
+      .get(`${APIURL.ROOTV1}/` + route + `/` + param + `/` + value+'/'+selectedProjet?.id, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
