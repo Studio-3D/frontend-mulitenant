@@ -50,7 +50,7 @@ export const VISITE_INTERETS = {
   2: { code: 2, label: 'Réceptif', color: 'bg-blue-100 !text-blue-800' },
   3: { code: 3, label: 'Perdu', color: 'bg-red-100 !text-red-800' },
   4: { code: 4, label: 'Injoignable', color: 'bg-gray-100 text-white-800' },
-  5: { code: 5, label: 'Suivi Dossier', color: 'bg-red-100 text-red-800' },
+  5: { code: 5, label: 'Suivi Dossier', color: 'bg-orange-100 text-orange-800' },
 
 };
 
