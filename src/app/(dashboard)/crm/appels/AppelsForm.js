@@ -843,9 +843,9 @@ export default function AppelsForm({ id }) {
           } avec succès`;
           reset(defaultValues);
           toast.success(message);
-          /*router.push(ENDPOINTS.CRM + '?tab=appels');
+          router.push(ENDPOINTS.CRM + '?tab=appels');
           localStorage.removeItem('selectedProspect_appel');
-          localStorage.removeItem('selectedClient_appel');*/
+          localStorage.removeItem('selectedClient_appel');
         } else if (res.status === 422) {
           setBackendErrors(res.data.errors);
           setTimeout(() => setBackendErrors({}), 5000);
@@ -869,7 +869,7 @@ export default function AppelsForm({ id }) {
 
   const fetch_event_by_param = async (route, value, param) => {
     await axios
-      .get(`${APIURL.ROOTV1}/` + route + `/` + param + `/` + value, {
+      .get(`${APIURL.ROOTV1}/` + route + `/` + param + `/` + value+'/'+selectedProjet?.id, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },

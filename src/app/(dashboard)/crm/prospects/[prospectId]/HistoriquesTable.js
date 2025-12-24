@@ -120,7 +120,7 @@ const HistoriquesTable = ({ id, refreshTrigger = 0 }) => {
         user_traite: pro.user
           ? `${pro.user.name || ''} ${pro.user.prenom || ''}`.trim()
           : '',
-        visite_id: pro.visite_id,
+        visite_id: pro.visite?.origin_id,
         appel_id: pro.appel_id,
       };
     });
@@ -170,7 +170,7 @@ const HistoriquesTable = ({ id, refreshTrigger = 0 }) => {
               <Eye
                 className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
                 title="Voir Visite"
-                onClick={() => handleShow(row.visite_id)}
+                onClick={() => handleShow(row?.visite_id)}
               />
             </div>
           )}

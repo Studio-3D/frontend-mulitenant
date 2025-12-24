@@ -50,6 +50,8 @@ export const VISITE_INTERETS = {
   2: { code: 2, label: 'Réceptif', color: 'bg-blue-100 !text-blue-800' },
   3: { code: 3, label: 'Perdu', color: 'bg-red-100 !text-red-800' },
   4: { code: 4, label: 'Injoignable', color: 'bg-gray-100 text-white-800' },
+  5: { code: 5, label: 'Suivi Dossier', color: 'bg-orange-100 text-orange-800' },
+
 };
 
 export const getInteret_label = (number) => {
@@ -62,7 +64,45 @@ export const VISITE_STATUT_FORM = {
   1: { code: 1, label: 'Pré-Réservation' },
   2: { code: 2, label: 'Vendu' },
 };
-
+// Visite statuses for form selection
+// Ajoutez ceci dans votre fichier enum.js ou configs/enum.js
+export const Statut_SUIVI_DOSSIER  = {
+  1: {
+    code: 1,
+    label: 'Nouvelle avance',
+    description: 'Le client souhaite effectuer un nouveau paiement'
+  },
+  2: {
+    code: 2,
+    label: 'Question sur avance des travaux',
+    description: 'Le client a des questions sur l\'avancement des travaux'
+  },
+  3: {
+    code: 3,
+    label: 'Suivi de paiement',
+    description: 'Suivi des paiements en cours ou retardés'
+  },
+  4: {
+    code: 4,
+    label: 'Question sur documents',
+    description: 'Le client a des questions concernant les documents'
+  },
+  5: {
+    code: 5,
+    label: 'Suivi livraison',
+    description: 'Question sur la date de livraison ou remise des clés'
+  },
+  6: {
+    code: 6,
+    label: 'Signature contrat',
+    description: 'Suivi pour signature de contrat'
+  },
+   7: {
+    code: 7,
+    label: 'Autre question',
+    description: 'Autre type de question non spécifiée'
+  },
+};
 // Visite notification types
 export const VISITE_TYPE_NOTIF = {
   1: { code: 1, label: 'Sms' },

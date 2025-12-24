@@ -309,7 +309,7 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
 
     //seeach by cin
     await axios
-      .get(`${APIURL.ROOT}/v1/` + route + `/` + v, {
+      .get(`${APIURL.ROOTV1}/` + route + `/` + v+'/'+selectedProjet?.id, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },

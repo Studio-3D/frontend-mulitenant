@@ -252,7 +252,7 @@ export default function RembTable({ etat }) {
           className="text-blue-500 hover:text-blue-700"
           target="_blank"
         >
-          {NomBienComplet(row.bien)}
+        {NomBienComplet(row.bien)}
         </Link>
       ),
     },
