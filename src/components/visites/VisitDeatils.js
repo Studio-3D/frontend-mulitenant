@@ -1518,7 +1518,7 @@ export function VisitDetails({
                                   </Button>
                                 ) : (
                                   <>
-                                    {visite.interet == 3 && (
+                                    {visite.interet == 3 && visite.interet != 5 && (
                                       <Button
                                         type="edit"
                                         onClick={() => handleEdit(visite.id)}
@@ -1542,6 +1542,7 @@ export function VisitDetails({
         - it's the first visite (origin_id) unless it's the only visite
     */}
                                 {!(visite.interet == 1 && visite.statut == 2) &&
+                                  visite.interet != 5 &&
                                   (visite.id != origin_id ||
                                     (visite.id == origin_id &&
                                       visites_all.length == 1)) && (

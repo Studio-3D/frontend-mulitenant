@@ -64,7 +64,7 @@ export default function Nouvel_Visite_Page() {
   return (
     <div className=" space-y-2">
       <ClientDetails Prospect={first_visite?.prospect} />
-      <VisiteForm origin={Id} prospect_id={first_visite?.prospect?.id}/>
+      <VisiteForm origin={Id} prospect_id={first_visite?.prospect?.id} client_reservations={first_visite?.prospect?.client?.reservations} />
     </div>
   );
 }

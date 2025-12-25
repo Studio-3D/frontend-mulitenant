@@ -169,6 +169,7 @@ export default function ReservationForm({ id }) {
       setOldProjetId(selectedProjet.id);
     }
   }, [selectedProjet?.id, oldProjetId, router]);
+
   const goToNextStep = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
@@ -348,7 +349,6 @@ export default function ReservationForm({ id }) {
     })
   );
 
-  
   const hasExecuted = useRef(false);
 
   useEffect(() => {
@@ -370,6 +370,31 @@ export default function ReservationForm({ id }) {
     resolver: yupResolver(validationSchemaRef.current),
     defaultValues,
   });
+  // Ajoutez ce useEffect après les autres useEffect
+  useEffect(() => {
+    const avance = watch('avance');
+
+    if (avance === 0 || avance === '0') {
+      // Définir automatiquement sur Espèces (code 1)
+      setValue('mode_paiement', '1');
+
+      // Réinitialiser les champs liés au paiement
+      setValue('banque_id', '');
+      setValue('numero_paiement', '');
+      setValue('echeance', '');
+
+      // Effacer les erreurs potentielles
+      clearErrors('mode_paiement');
+    } else {
+      setValue('mode_paiement', '');
+
+      // Réinitialiser les champs liés au paiement
+      setValue('banque_id', '');
+      setValue('numero_paiement', '');
+      setValue('echeance', '');
+      clearErrors('mode_paiement');
+    }
+  }, [watch('avance'), setValue, clearErrors]);
 
   useEffect(() => {
     setLoading(true);
@@ -488,7 +513,6 @@ export default function ReservationForm({ id }) {
       return;
     }
 
-    
     setBackendErrors({});
     // FILTER OUT CLIENTS WITH EMPTY OR INVALID PERCENTAGES
     const validOldClients = oldClients.filter(
@@ -1253,15 +1277,15 @@ export default function ReservationForm({ id }) {
   }, [currentStep]);
 
   useEffect(() => {
-  return () => {
-    // Clean up selected client from localStorage when component unmounts
-    localStorage.removeItem('selectedClient_show_client');
-    // Reset all client disabled states
-    setClientsExist((prevClients) =>
-      prevClients.map((client) => ({ ...client, disabled: false }))
-    );
-  };
-}, []);
+    return () => {
+      // Clean up selected client from localStorage when component unmounts
+      localStorage.removeItem('selectedClient_show_client');
+      // Reset all client disabled states
+      setClientsExist((prevClients) =>
+        prevClients.map((client) => ({ ...client, disabled: false }))
+      );
+    };
+  }, []);
   /*const validateClientStep = () => {
     // Check if all selected clients have both id and pourcentage
     const allSelectedClientsValid = inputList1.every(
@@ -1513,7 +1537,11 @@ export default function ReservationForm({ id }) {
           if (response.data.prospect.telephone) {
             toast.error(
               ` ${prefix} ${value} appartient au Prospect ${
-                response.data.prospect.nom!=null? response.data.prospect.nom:'' + ' ' +  response.data.prospect.prenom!=null? response.data.prospect.prenom:''
+                response.data.prospect.nom != null
+                  ? response.data.prospect.nom
+                  : '' + ' ' + response.data.prospect.prenom != null
+                  ? response.data.prospect.prenom
+                  : ''
               }`,
               {
                 position: 'top-center',
@@ -1524,9 +1552,9 @@ export default function ReservationForm({ id }) {
 
           // Update prospect info if needed
           updateFormField(formIndex, 'prospect_id', response.data.prospect.id);
-         // set_check_p(true); // Set prospect check to true
+          // set_check_p(true); // Set prospect check to true
         } else {
-         // set_check_p(false); // Set prospect check to false
+          // set_check_p(false); // Set prospect check to false
         }
 
         if (response.data.client) {
@@ -1972,22 +2000,27 @@ export default function ReservationForm({ id }) {
                         )}
                       </div>
                       <div className="mt-2">
-                      {watch('pourcentages') > 0 && watch('pourcentages') !== 100 && (
-                        <p className={`text-sm font-medium ${
-                          !hasPercentageChanged 
-                            ? 'text-sky-500'  // bleu ciel au début
-                            : 'text-red-500'  // rouge après modification
-                        }`}>
-                          ⚠️ La somme des pourcentages ({watch('pourcentages')}%) doit être exactement 100% !
-                        </p>
-                      )}
-                      {watch('pourcentages') === 100 && (
-                        <p className="text-green-600 text-sm font-medium flex items-center">
-                          <CheckIcon className="w-4 h-4 mr-1" />
-                          ✓ La somme des pourcentages est correcte (100%)
-                        </p>
-                      )}
-                    </div>
+                        {watch('pourcentages') > 0 &&
+                          watch('pourcentages') !== 100 && (
+                            <p
+                              className={`text-sm font-medium ${
+                                !hasPercentageChanged
+                                  ? 'text-sky-500' // bleu ciel au début
+                                  : 'text-red-500' // rouge après modification
+                              }`}
+                            >
+                              ⚠️ La somme des pourcentages (
+                              {watch('pourcentages')}%) doit être exactement
+                              100% !
+                            </p>
+                          )}
+                        {watch('pourcentages') === 100 && (
+                          <p className="text-green-600 text-sm font-medium flex items-center">
+                            <CheckIcon className="w-4 h-4 mr-1" />✓ La somme des
+                            pourcentages est correcte (100%)
+                          </p>
+                        )}
+                      </div>
                     </div>
                     {inputList1.length > 1 && (
                       <button
@@ -2386,22 +2419,28 @@ export default function ReservationForm({ id }) {
                                     Doit être entre 0 et 100
                                   </p>
                                 )}
-                            <div className="mt-2">
-                              {watch('pourcentages') > 0 && watch('pourcentages') !== 100 && (
-                                <p className={`text-sm font-medium ${
-                                  !hasPercentageChanged 
-                                    ? 'text-sky-500'  // bleu ciel au début
-                                    : 'text-red-500'  // rouge après modification
-                                }`}>
-                                  ⚠️ La somme des pourcentages ({watch('pourcentages')}%) doit être exactement 100% !
-                                </p>
-                              )}
-                              {watch('pourcentages') === 100 && (
-                                <p className="text-green-600 text-sm font-medium flex items-center">
-                                  ✓ La somme des pourcentages est correcte (100%)
-                                </p>
-                              )}
-                            </div>
+                              <div className="mt-2">
+                                {watch('pourcentages') > 0 &&
+                                  watch('pourcentages') !== 100 && (
+                                    <p
+                                      className={`text-sm font-medium ${
+                                        !hasPercentageChanged
+                                          ? 'text-sky-500' // bleu ciel au début
+                                          : 'text-red-500' // rouge après modification
+                                      }`}
+                                    >
+                                      ⚠️ La somme des pourcentages (
+                                      {watch('pourcentages')}%) doit être
+                                      exactement 100% !
+                                    </p>
+                                  )}
+                                {watch('pourcentages') === 100 && (
+                                  <p className="text-green-600 text-sm font-medium flex items-center">
+                                    ✓ La somme des pourcentages est correcte
+                                    (100%)
+                                  </p>
+                                )}
+                              </div>
                             </div>
 
                             {/* Téléphone */}
@@ -2733,7 +2772,7 @@ export default function ReservationForm({ id }) {
                       {/*|| check_p*/}
                       <button
                         type="submit"
-                        disabled={!isFormValid() || check }
+                        disabled={!isFormValid() || check}
                         onClick={() => {
                           setFormSubmitted_client(true);
                           if (isFormValid()) {
@@ -2772,14 +2811,13 @@ export default function ReservationForm({ id }) {
                             ]);
                           }
                         }}
-                      
                         className={`px-6 py-2 rounded-md ${
                           !isFormValid() || check
                             ? 'bg-gray-400 cursor-not-allowed'
                             : 'bg-blue-600 hover:bg-blue-700 text-white'
                         }`}
                       >
-                          {/* || check_p*/}
+                        {/* || check_p*/}
                         Ajouter
                       </button>
                     </div>
@@ -3867,24 +3905,31 @@ export default function ReservationForm({ id }) {
                 />
 
                 <>
-                  <SelectInput
-                    label="Mode Paiement :"
-                    placeholder="Sélectionner un mode de paiement"
-                    name="mode_paiement"
-                    value={watch('mode_paiement')}
-                    required={true}
-                    options={Object.values(MODE_PAIEMENT || {}).map((item) => ({
-                      value: item.code || item.value,
-                      label: item.label || item.name,
-                    }))}
-                    onChange={(value) => {
-                      setValue('mode_paiement', value);
-                    }}
-                    error={
-                      errors.mode_paiement?.message ||
-                      backendErrors?.mode_paiement
-                    }
-                  />
+                  {(watch('avance') > 0 ||
+                    watch('avance') === '' ||
+                    isEditing) && (
+                    <SelectInput
+                      label="Mode Paiement :"
+                      placeholder="Sélectionner un mode de paiement"
+                      name="mode_paiement"
+                      value={watch('mode_paiement')}
+                      required={true}
+                      options={Object.values(MODE_PAIEMENT || {}).map(
+                        (item) => ({
+                          value: item.code || item.value,
+                          label: item.label || item.name,
+                        })
+                      )}
+                      onChange={(value) => {
+                        setValue('mode_paiement', value);
+                      }}
+                      error={
+                        errors.mode_paiement?.message ||
+                        backendErrors?.mode_paiement
+                      }
+                    />
+                  )}
+
                   {watch('mode_paiement') != 1 &&
                     watch('mode_paiement') != '' && (
                       <>

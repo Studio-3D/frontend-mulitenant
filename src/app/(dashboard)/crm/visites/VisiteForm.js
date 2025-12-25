@@ -17,14 +17,11 @@ import { APIURL, ENDPOINTS } from '../../../../configs/api';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../../../context/AuthContext';
 
-import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
 import TextField from '@/components/Textfield'; // Import the component
 import Button from '@/components/Button'; // adjust the path as needed
 import LoadingSpin from '@/components/LoadingSpin';
 import Modal_Propsepct_Exist from './Modal_Propsepct_Exist';
 import { useProjet } from '@/context/ProjetContext';
-import AutocompleteBien from './AutocompleteBien'; // adjust path if needed
-import AutocompleteStatut_ModeRelance_Biens from './AutocompleteStatut_ModeRelance_Biens';
 import InputField_Biens from './InputField_Biens'; // adjust path if needed
 import ProspectInformations from './ProspectInformations'; // Adjust path as needed
 import { getStoredPerson } from '@/components/storageHelpers';
@@ -44,13 +41,11 @@ import Modal_OldVisites_Perdu from './Modal_OldVisites_Perdu';
 import FreinsComponent from './FreinsComponent';
 import SelectInput from '@/components/SelectInput';
 
-const VisiteForm = ({ prospect_id, origin }) => {
+const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
   const router = useRouter();
   useClearProspect();
   const { user } = useAuth();
   const [email_required, setEmail_required] = useState(false);
-
-  const [Dossiers_Suivis, setDossiers_Suivis] = useState([]);
 
   //dialog
   const [formSubmitted, setFormSubmitted] = useState(false);
@@ -63,6 +58,33 @@ const VisiteForm = ({ prospect_id, origin }) => {
   const [id_visite, setId_visite] = useState(null);
   const accessToken = localStorage.getItem('accessToken');
   const { person: selectedPerson, type: personType } = getStoredPerson();
+  // Initialize Dossiers_Suivis with client_reservations if provided
+  const [Dossiers_Suivis, setDossiers_Suivis] = useState(() => {
+    if (client_reservations && client_reservations.length > 0) {
+      // Transform reservations to match Dossiers_Suivis format
+      return client_reservations.map((reservation) => ({
+        id: reservation.id,
+        code_reservation: reservation.code_reservation,
+        prix: reservation.prix,
+        avances_sum_montant: reservation.avances_sum_montant || 0,
+      }));
+    } else if (selectedPerson?.client?.reservations.length > 0) {
+      return selectedPerson?.client?.reservations.map((reservation) => ({
+        id: reservation.id,
+        code_reservation: reservation.code_reservation,
+        prix: reservation.prix,
+        avances_sum_montant: reservation.avances_sum_montant || 0,
+      }));
+    } else if (selectedPerson?.reservations.length > 0) {
+      return selectedPerson?.reservations.map((reservation) => ({
+        id: reservation.id,
+        code_reservation: reservation.code_reservation,
+        prix: reservation.prix,
+        avances_sum_montant: reservation.avances_sum_montant || 0,
+      }));
+    }
+    return [];
+  });
   const pusher_key_proposition = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_PROP;
   const [loading, setLoading] = useState(false);
   const [loading_tp_frein, setLoading_tp_frein] = useState(false);
@@ -430,11 +452,9 @@ const VisiteForm = ({ prospect_id, origin }) => {
 
         if (watch('cin') == '' && !isOrigin) {
           setdisplay_cin_1(true);
-          console.error('Veuillez saisir un cin !');
         }
         if (watch('cin') == '' && isOrigin && display_cin) {
           setdisplay_cin_1(true);
-          console.error('Veuillez saisir un cin !');
         }
         fetch_bien_ByProjet();
         pusher_function();
@@ -543,6 +563,52 @@ const VisiteForm = ({ prospect_id, origin }) => {
     }
   };
 
+  // Ajouter ce useEffect après les autres useEffect
+  useEffect(() => {
+    const avanceRes = input_biens.find((bien) => bien.statut == 2)?.avance_res;
+
+    if (avanceRes === 0 || avanceRes === '0') {
+      // Pour tous les biens avec statut 2 (vendu) et montant 0
+      const updatedBiens = input_biens.map((bien) => {
+        if (
+          bien.statut == 2 &&
+          (bien.avance_res === 0 || bien.avance_res === '0')
+        ) {
+          return {
+            ...bien,
+            mode_paiement: '1',
+            banque_id: '',
+            numero_paiement: '',
+            echeance: '',
+          };
+        }
+        return bien;
+      });
+
+      setinput_biens(updatedBiens);
+      setValue('list_bien_interesse', JSON.stringify(updatedBiens));
+
+      // Même logique pour input_biens_vendu
+      const updatedBiensVendu = input_biens_vendu.map((bien) => {
+        if (
+          bien.statut == 2 &&
+          (bien.avance_res === 0 || bien.avance_res === '0')
+        ) {
+          return {
+            ...bien,
+            mode_paiement: '1',
+            banque_id: '',
+            numero_paiement: '',
+            echeance: '',
+          };
+        }
+        return bien;
+      });
+
+      setinput_biens_vendu(updatedBiensVendu);
+      setValue('list_bien_transfere_vendu', JSON.stringify(updatedBiensVendu));
+    }
+  }, [input_biens, input_biens_vendu, setValue]);
   useEffect(() => {
     //set on show visite le cadre est null pour saffiche par premier cadre
     localStorage.setItem('v_id_cadre', null);
@@ -766,115 +832,136 @@ const VisiteForm = ({ prospect_id, origin }) => {
       }
     }
     // Validation pour Suivi Dossier (interet = 5)
-  if (Number(watch('interet')) === 5) {
-    // Dossier obligatoire
-    if (!watch('dossier_id_suivi') || watch('dossier_id_suivi') === '') {
-      valid = false;
-      toast.error('Veuillez sélectionner un dossier');
-      return false; // Return immediately to show the error
-    }
-
-    // Statut obligatoire
-    if (!watch('statut_suivi') || watch('statut_suivi') === '') {
-      valid = false;
-      toast.error('Veuillez sélectionner un statut de suivi');
-      return false;
-    }
-
-    // Validation spécifique pour "Nouvelle avance" (statut = 1)
-    if (Number(watch('statut_suivi')) === 1) {
-      // Montant obligatoire
-      const montant = parseFloat(watch('montant_suivi') || 0);
-      if (!watch('montant_suivi') || watch('montant_suivi') === '' || isNaN(montant)) {
+    if (Number(watch('interet')) === 5) {
+      // Dossier obligatoire
+      if (!watch('dossier_id_suivi') || watch('dossier_id_suivi') === '') {
         valid = false;
-        toast.error("Le montant de l'avance est requis");
-        return false;
-      } else if (montant === 0) {
-        valid = false;
-        toast.error('Le montant ne peut pas être 0');
-        return false;
-      } else if (montant < 0) {
-        valid = false;
-        toast.error('Le montant ne peut pas être négatif');
-        return false;
-      } else if (montant < 100) {
-        valid = false;
-        toast.error('Le montant minimum est 100 MAD');
-        return false;
-      } else {
-        // Vérifier si le montant ne dépasse pas le reste
-        const dossierSelectionne = Dossiers_Suivis.find(
-          dossier => dossier.id === watch('dossier_id_suivi')
-        );
-        
-        if (dossierSelectionne) {
-          const prixTotal = parseFloat(dossierSelectionne.prix) || 0;
-          const avances = parseFloat(dossierSelectionne.avances_sum_montant) || 0;
-          const reste = prixTotal - avances;
-          
-          if (montant > reste) {
-            valid = false;
-            toast.error(`Le montant ne doit pas dépasser le reste (${reste.toLocaleString('fr-FR')} MAD)`);
-            return false;
-          }
-        }
+        toast.error('Veuillez sélectionner un dossier');
+        return false; // Return immediately to show the error
       }
 
-      // Mode de paiement obligatoire
-      if (!watch('mode_paiement_suivi') || watch('mode_paiement_suivi') === '') {
+      // Statut obligatoire
+      if (!watch('statut_suivi') || watch('statut_suivi') === '') {
         valid = false;
-        toast.error('Le mode de paiement est requis');
+        toast.error('Veuillez sélectionner un statut de suivi');
         return false;
       }
 
-      // Date de paiement obligatoire
-      if (!watch('date_paiement_suivi') || watch('date_paiement_suivi') === '') {
-        valid = false;
-        toast.error('La date de paiement est requise');
-        return false;
-      }
-
-      // Validation pour paiement non-espèces
-      if (watch('mode_paiement_suivi') && watch('mode_paiement_suivi') !== '1') {
-        // Banque obligatoire
-        if (!watch('banque_id_suivi') || watch('banque_id_suivi') === '') {
-          valid = false;
-          toast.error('La banque est requise pour ce mode de paiement');
-          return false;
-        }
-
-        // Numéro de paiement obligatoire
-        if (!watch('num_paiement_suivi') || watch('num_paiement_suivi') === '') {
-          valid = false;
-          toast.error('Le numéro de paiement est requis');
-          return false;
-        }
-
-        // Date d'échéance pour certains modes de paiement
+      // Validation spécifique pour "Nouvelle avance" (statut = 1)
+      if (Number(watch('statut_suivi')) === 1) {
+        // Montant obligatoire
+        const montant = parseFloat(watch('montant_suivi') || 0);
         if (
-          watch('mode_paiement_suivi') !== '1' &&
-          watch('mode_paiement_suivi') !== '5' &&
-          watch('mode_paiement_suivi') !== '6'
+          !watch('montant_suivi') ||
+          watch('montant_suivi') === '' ||
+          isNaN(montant)
         ) {
-          if (!watch('echeance_suivi') || watch('echeance_suivi') === '') {
+          valid = false;
+          toast.error("Le montant de l'avance est requis");
+          return false;
+        } else if (montant === 0) {
+          valid = false;
+          toast.error('Le montant ne peut pas être 0');
+          return false;
+        } else if (montant < 0) {
+          valid = false;
+          toast.error('Le montant ne peut pas être négatif');
+          return false;
+        } else if (montant < 100) {
+          valid = false;
+          toast.error('Le montant minimum est 100 MAD');
+          return false;
+        } else {
+          // Vérifier si le montant ne dépasse pas le reste
+          const dossierSelectionne = Dossiers_Suivis.find(
+            (dossier) => dossier.id === watch('dossier_id_suivi')
+          );
+
+          if (dossierSelectionne) {
+            const prixTotal = parseFloat(dossierSelectionne.prix) || 0;
+            const avances =
+              parseFloat(dossierSelectionne.avances_sum_montant) || 0;
+            const reste = prixTotal - avances;
+
+            if (montant > reste) {
+              valid = false;
+              toast.error(
+                `Le montant ne doit pas dépasser le reste (${reste.toLocaleString(
+                  'fr-FR'
+                )} MAD)`
+              );
+              return false;
+            }
+          }
+        }
+
+        // Mode de paiement obligatoire
+        if (
+          !watch('mode_paiement_suivi') ||
+          watch('mode_paiement_suivi') === ''
+        ) {
+          valid = false;
+          toast.error('Le mode de paiement est requis');
+          return false;
+        }
+
+        // Date de paiement obligatoire
+        if (
+          !watch('date_paiement_suivi') ||
+          watch('date_paiement_suivi') === ''
+        ) {
+          valid = false;
+          toast.error('La date de paiement est requise');
+          return false;
+        }
+
+        // Validation pour paiement non-espèces
+        if (
+          watch('mode_paiement_suivi') &&
+          watch('mode_paiement_suivi') !== '1'
+        ) {
+          // Banque obligatoire
+          if (!watch('banque_id_suivi') || watch('banque_id_suivi') === '') {
             valid = false;
-            toast.error("La date d'échéance est requise");
+            toast.error('La banque est requise pour ce mode de paiement');
             return false;
+          }
+
+          // Numéro de paiement obligatoire
+          if (
+            !watch('num_paiement_suivi') ||
+            watch('num_paiement_suivi') === ''
+          ) {
+            valid = false;
+            toast.error('Le numéro de paiement est requis');
+            return false;
+          }
+
+          // Date d'échéance pour certains modes de paiement
+          if (
+            watch('mode_paiement_suivi') !== '1' &&
+            watch('mode_paiement_suivi') !== '5' &&
+            watch('mode_paiement_suivi') !== '6'
+          ) {
+            if (!watch('echeance_suivi') || watch('echeance_suivi') === '') {
+              valid = false;
+              toast.error("La date d'échéance est requise");
+              return false;
+            }
           }
         }
       }
-    }
 
-    // Commentaire général obligatoire pour d'autres statuts
-    if (Number(watch('statut_suivi')) !== 1) {
-      const commentaire = watch('commentaire') || '';
-      if (!commentaire || commentaire.trim() === '') {
-        valid = false;
-        toast.error('Le commentaire est requis pour ce type de suivi');
-        return false;
+      // Commentaire général obligatoire pour d'autres statuts
+      if (Number(watch('statut_suivi')) !== 1) {
+        const commentaire = watch('commentaire') || '';
+        if (!commentaire || commentaire.trim() === '') {
+          valid = false;
+          toast.error('Le commentaire est requis pour ce type de suivi');
+          return false;
+        }
       }
     }
-  }
 
     // Stocker les erreurs
     if (Object.keys(errors).length > 0) {
@@ -1202,7 +1289,18 @@ const VisiteForm = ({ prospect_id, origin }) => {
           avances_sum_montant: reservation.avances_sum_montant || 0,
         }));
 
-        setDossiers_Suivis(dossiers);
+        // Only set if we have new reservations, don't overwrite existing ones
+        setDossiers_Suivis((prev) => {
+          // Create a map of existing reservations by ID
+          const existingMap = new Map(prev.map((d) => [d.id, d]));
+
+          // Merge new reservations, keeping existing ones
+          dossiers.forEach((newDossier) => {
+            existingMap.set(newDossier.id, newDossier);
+          });
+
+          return Array.from(existingMap.values());
+        });
       }
       // Si ni prospect ni client n'est présent, on laisse les champs inchangés
       if (prospect || client) {
@@ -1706,6 +1804,13 @@ const VisiteForm = ({ prospect_id, origin }) => {
     }
     if (name == 'avance_res') {
       list[index]['reste'] = list[index]['prix_final'] - e.target.value;
+      // Si montant = 0, définir automatiquement mode paiement sur "1"
+      if (value === 0 || value === '0') {
+        list[index]['mode_paiement'] = '1';
+        list[index]['banque_id'] = '';
+        list[index]['numero_paiement'] = '';
+        list[index]['echeance'] = '';
+      }
     }
     setinput_biens_vendu(list);
     setValue('list_bien_transfere_vendu', JSON.stringify(list));
@@ -1856,6 +1961,7 @@ const VisiteForm = ({ prospect_id, origin }) => {
       if (OldBiens_pre[i].action == '3' || OldBiens_pre[i].action == 3) {
         console.log('Adding bien to vendu list');
         const bienData = {
+          visite_id: OldBiens_pre[i].visite_id || null, // ← AJOUTER CE CHAMP
           traitement_frein_id: OldBiens_pre[i].traitement_frein_id || null,
           bien_id: OldBiens_pre[i].bien_id,
           old_bien_id: '',
@@ -1971,6 +2077,13 @@ const VisiteForm = ({ prospect_id, origin }) => {
     // Handle avance_res and other fields
     if (name == 'avance_res') {
       list[index]['reste'] = list[index]['prix_final'] - e.target.value;
+      // Si montant = 0, définir automatiquement mode paiement sur "1"
+      if (value === 0 || value === '0') {
+        list[index]['mode_paiement'] = '1';
+        list[index]['banque_id'] = '';
+        list[index]['numero_paiement'] = '';
+        list[index]['echeance'] = '';
+      }
     }
     if (name == 'sr') {
       list[index]['sr'] = e.target.checked;
@@ -3241,63 +3354,104 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                           handleinputchange_bien_vendu(e, j)
                                         }
                                       />
-                                      <AutocompleteStatut_ModeRelance_Biens
-                                        name={'mode_financement'}
-                                        label={'Mode Financement:'}
-                                        placeholder={
-                                          'Sélectionner un Mode de Financement'
-                                        }
-                                        code="code"
-                                        labelKey="label"
-                                        options={Object.values(MODE_FINANCE)}
-                                        value={x.mode_financement}
-                                        onChange={(e) =>
-                                          handleinputchange_bien_vendu(e, j)
-                                        }
-                                        required
-                                      />{' '}
-                                      <AutocompleteStatut_ModeRelance_Biens
-                                        name={'mode_paiement'}
-                                        label={'Mode Paiement:'}
-                                        placeholder={
-                                          'Sélectionner un Mode de Paiement'
-                                        }
-                                        options={Object.values(MODE_PAIEMENT)}
-                                        value={x.mode_paiement}
-                                        code="code"
-                                        labelKey="label"
-                                        onChange={(e) =>
-                                          handleinputchange_bien_vendu(e, j)
-                                        }
-                                        required
-                                      />
+                                       <SelectInput
+                                            label="Mode Financement:"
+                                            name="mode_financement"
+                                            options={Object.values(
+                                              MODE_FINANCE
+                                            ).map((finance) => ({
+                                              value: finance.code.toString(),
+                                              label: finance.label,
+                                            }))}
+                                            value={x.mode_financement?.toString()}
+                                            onChange={(selectedValue) => {
+                                              // Create a synthetic event to match handleinputchange's expected format
+                                              const syntheticEvent = {
+                                                target: {
+                                                  name: 'mode_financement',
+                                                  value: selectedValue,
+                                                },
+                                              };
+                                              handleinputchange_bien_vendu(
+                                                syntheticEvent,
+                                                j
+                                              );
+                                            }}
+                                            placeholder="Sélectionner un Mode de Financement"
+                                            required
+                                          />
+                                     
+                                      {x.avance_res > 0 && (
+                                          <SelectInput
+                                                label="Mode Paiement:"
+                                                name="mode_paiement"
+                                                options={Object.values(
+                                                  MODE_PAIEMENT
+                                                ).map((paiement) => ({
+                                                  value:
+                                                    paiement.code.toString(),
+                                                  label: paiement.label,
+                                                }))}
+                                                value={x.mode_paiement?.toString()}
+                                                onChange={(selectedValue) => {
+                                                  // Create a synthetic event to match handleinputchange's expected format
+                                                  const syntheticEvent = {
+                                                    target: {
+                                                      name: 'mode_paiement',
+                                                      value: selectedValue,
+                                                    },
+                                                  };
+                                                  handleinputchange_bien_vendu(
+                                                    syntheticEvent,
+                                                    j
+                                                  );
+                                                }}
+                                                placeholder="Sélectionner un Mode de Paiement"
+                                                required
+                                              />
+                                         
+                                        )}
                                       {/* Conditional Fields */}
-                                      {x.mode_paiement !== 1 &&
-                                        x.mode_paiement !== '' && (
+                                      {x.mode_paiement !== '1' &&
+                                        x.mode_paiement !== '' &&
+                                        x.avance_res > 0 && (
                                           <>
-                                            <AutocompleteStatut_ModeRelance_Biens
-                                              name={'banque_id'}
-                                              label={'Banque:'}
-                                              placeholder={
-                                                'Sélectionner un Mode de Paiement'
-                                              }
-                                              options={banques}
-                                              value={x.banque_id}
-                                              required={x.mode_paiement !== '1'}
-                                              code="id"
-                                              labelKey="nom"
-                                              onChange={(e) =>
-                                                handleinputchange_bien_vendu(
-                                                  e,
-                                                  j
-                                                )
-                                              }
+                                           <SelectInput
+                                                label="Banque:"
+                                                name="banque_id"
+                                                options={banques.map(
+                                                  (banque) => ({
+                                                    value: banque.id.toString(),
+                                                    label: banque.nom,
+                                                  })
+                                                )}
+                                                value={x.banque_id?.toString()}
+                                                onChange={(selectedValue) => {
+                                                  const syntheticEvent = {
+                                                    target: {
+                                                      name: 'banque_id',
+                                                      value: selectedValue,
+                                                    },
+                                                  };
+                                                  handleinputchange_bien_vendu(
+                                                    syntheticEvent,
+                                                    j
+                                                  );
+                                                }}
+                                                placeholder="Sélectionner une Banque"
+                                                required={
+                                                  x.mode_paiement !== '1' 
+                                                }
+                                           
                                             />
                                             <InputField_Biens
                                               label="N° Paiement:"
                                               name="numero_paiement"
                                               type="number"
-                                              required={x.mode_paiement !== 1}
+                                              required={
+                                                x.mode_paiement !== '1' &&
+                                                x.avance_res > 0
+                                              }
                                               value={x.numero_paiement}
                                               onChange={(e) =>
                                                 handleinputchange_bien_vendu(
@@ -3309,13 +3463,17 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                           </>
                                         )}
                                       {x.mode_paiement !== '' &&
-                                        x.mode_paiement !== 1 &&
-                                        x.mode_paiement !== 5 &&
-                                        x.mode_paiement !== 6 && (
+                                        x.mode_paiement !== '1' &&
+                                        x.mode_paiement !== '5' &&
+                                        x.mode_paiement !== '6' &&
+                                        x.avance_res > 0 && (
                                           <InputField_Biens
                                             label="Date Échéance:"
                                             name="echeance"
-                                            required={x.mode_paiement !== '1'}
+                                            required={
+                                              x.mode_paiement !== '1' &&
+                                              x.avance_res > 0
+                                            }
                                             type="date"
                                             value={x.echeance}
                                             onChange={(e) =>
@@ -3423,28 +3581,21 @@ const VisiteForm = ({ prospect_id, origin }) => {
                         {watch('loading_b_pre') == false && (
                           <>
                             <div className="">
-                              <AutocompleteSelectComponent
+                              <SelectInput
+                                placeholder="selectionner un intérêt"
                                 label="Intérêt :"
                                 name="interet"
+                                value={watch('interet')}
                                 required={true}
-                                //  options={VISITE_INTERETS}
                                 options={
-                                  input_biens_vendu.length > 0
-                                    ? {
-                                        1: VISITE_INTERETS[1],
-                                        // 3: VISITE_INTERETS[3],
-                                      }
-                                    : {
-                                        1: VISITE_INTERETS[1],
-                                        2: VISITE_INTERETS[2],
-                                        3: VISITE_INTERETS[3],
-                                      }
+                                  [{ value: '1', label: 'Intéressé' }]
                                 }
                                 disabled={
                                   isOrigin ? false : watch('telephone') == ''
                                 }
                                 onChange={handleChange_interet}
                               />
+                              
                             </div>
                             {Number(watch('interet')) == 1 && (
                               <>
@@ -3928,37 +4079,42 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                         </div>
 
                                         {/* Mode Paiement Selection */}
+
                                         <div>
-                                          <SelectInput
-                                            label="Mode Paiement:"
-                                            name="mode_paiement"
-                                            options={Object.values(
-                                              MODE_PAIEMENT
-                                            ).map((paiement) => ({
-                                              value: paiement.code.toString(),
-                                              label: paiement.label,
-                                            }))}
-                                            value={x.mode_paiement?.toString()}
-                                            onChange={(selectedValue) => {
-                                              // Create a synthetic event to match handleinputchange's expected format
-                                              const syntheticEvent = {
-                                                target: {
-                                                  name: 'mode_paiement',
-                                                  value: selectedValue,
-                                                },
-                                              };
-                                              handleinputchange(
-                                                syntheticEvent,
-                                                i
-                                              );
-                                            }}
-                                            placeholder="Sélectionner un Mode de Paiement"
-                                            required
-                                          />
+                                          {x.avance_res > 0  && (
+                                              <SelectInput
+                                                label="Mode Paiement:"
+                                                name="mode_paiement"
+                                                options={Object.values(
+                                                  MODE_PAIEMENT
+                                                ).map((paiement) => ({
+                                                  value:
+                                                    paiement.code.toString(),
+                                                  label: paiement.label,
+                                                }))}
+                                                value={x.mode_paiement?.toString()}
+                                                onChange={(selectedValue) => {
+                                                  // Create a synthetic event to match handleinputchange's expected format
+                                                  const syntheticEvent = {
+                                                    target: {
+                                                      name: 'mode_paiement',
+                                                      value: selectedValue,
+                                                    },
+                                                  };
+                                                  handleinputchange(
+                                                    syntheticEvent,
+                                                    i
+                                                  );
+                                                }}
+                                                placeholder="Sélectionner un Mode de Paiement"
+                                                required
+                                              />
+                                            )}
                                         </div>
                                         {/* Conditional Fields */}
                                         {x.mode_paiement !== '1' &&
-                                          x.mode_paiement !== '' && (
+                                          x.mode_paiement !== '' &&
+                                          x.avance_res > 0 && (
                                             <>
                                               <SelectInput
                                                 label="Banque:"
@@ -4004,11 +4160,15 @@ const VisiteForm = ({ prospect_id, origin }) => {
                                         {x.mode_paiement !== '' &&
                                           x.mode_paiement !== '1' &&
                                           x.mode_paiement !== '5' &&
-                                          x.mode_paiement !== '6' && (
+                                          x.mode_paiement !== '6' &&
+                                          x.avance_res > 0 && (
                                             <InputField_Biens
                                               label="Date Échéance:"
                                               name="echeance"
-                                              required={x.mode_paiement !== '1'}
+                                              required={
+                                                x.mode_paiement !== '1' &&
+                                                x.avance_res > 0
+                                              }
                                               type="date"
                                               value={x.echeance}
                                               onChange={(e) =>
