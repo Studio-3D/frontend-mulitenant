@@ -46,6 +46,7 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
   useClearProspect();
   const { user } = useAuth();
   const [email_required, setEmail_required] = useState(false);
+  const [validationErrorList, setValidationErrorList] = useState([]);
 
   //dialog
   const [formSubmitted, setFormSubmitted] = useState(false);
@@ -68,15 +69,15 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
         prix: reservation.prix,
         avances_sum_montant: reservation.avances_sum_montant || 0,
       }));
-    } else if (selectedPerson?.client?.reservations.length > 0) {
-      return selectedPerson?.client?.reservations.map((reservation) => ({
+    } else if (selectedPerson?.client?.reservations?.length > 0) {
+      return selectedPerson?.client?.reservations?.map((reservation) => ({
         id: reservation.id,
         code_reservation: reservation.code_reservation,
         prix: reservation.prix,
         avances_sum_montant: reservation.avances_sum_montant || 0,
       }));
-    } else if (selectedPerson?.reservations.length > 0) {
-      return selectedPerson?.reservations.map((reservation) => ({
+    } else if (selectedPerson?.reservations?.length > 0) {
+      return selectedPerson?.reservations?.map((reservation) => ({
         id: reservation.id,
         code_reservation: reservation.code_reservation,
         prix: reservation.prix,
@@ -769,108 +770,161 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
 
   // 1) Extract all your checks into a single function
   const validateFields = () => {
-    let valid = true;
+    const errors = [];
+    // 19. Check if pre-reserved biens need action
+    if (OldBiens_pre.length > 0 && paper_exist == 0) {
+      const hasUnprocessedBiens = OldBiens_pre.some(
+        (bien) => !bien.action || bien.action == 0 || bien.action == ''
+      );
+
+      if (hasUnprocessedBiens) {
+        errors.push(
+          'Vous devez traiter tous les biens pré-réservés avant de soumettre le formulaire'
+        );
+      }
+    }
+    // 16. Basic required fields for non-origin
+    if (!isOrigin) {
+      if (!watch('prenom') || watch('prenom').trim() === '') {
+        errors.push('Le prénom est requis');
+      }
+
+      if (!watch('telephone') || watch('telephone').trim() === '') {
+        errors.push('Le téléphone est requis');
+      } else if (
+        watch('telephone').length < 10 ||
+        watch('telephone').length > 14
+      ) {
+        errors.push('Le téléphone doit contenir 10 à 14 chiffres');
+      }
+
+      if (!watch('source_id') || watch('source_id') === '') {
+        errors.push('La source est requise');
+      }
+
+      // Telephone 2 validation
+      if (watch('telephone_num2')) {
+        if (
+          watch('telephone_num2').length < 10 ||
+          watch('telephone_num2').length > 14
+        ) {
+          errors.push('Le téléphone 2 doit contenir 10 à 14 chiffres');
+        }
+      }
+    }
+
+    // 17. Interet required
+    if (!watch('interet') || watch('interet') === '') {
+      errors.push("L'intérêt de visite est requis");
+    }
+    // 3. Interet validation for nb_bien_added
+    if (Number(watch('interet')) === 1) {
+      const nbBiensAdded = Number(watch('nb_bien_added'));
+
+      // Check if it's required based on whether there are already vendu biens
+      if (input_biens_vendu.length === 0) {
+        // No existing vendu biens, so we need at least 1 bien
+        if (isNaN(nbBiensAdded) || nbBiensAdded < 1) {
+          errors.push('Nombre de biens obligatoire (minimum 1)');
+        }
+      } else {
+        // Already have vendu biens, so 0 is acceptable
+        if (isNaN(nbBiensAdded) || nbBiensAdded < 0) {
+          errors.push('Veuillez entrer un nombre valide (0 ou plus)');
+        }
+      }
+    }
+
     const email = watch('email') || '';
 
-    // Email required?
+    // 1. Email validation
     if (email_required && !email) {
-      valid = false;
-      console.error('Email obligatoire');
+      errors.push('Email obligatoire');
     }
-    // Email format
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (email && !emailRegex.test(email)) {
-      valid = false;
-      console.error('Email invalide');
-    }
-    // Partenaire required if source_txt is 'Partenaire'
-    if (watch('source_txt') == 'Partenaire' && !watch('partenaire_id')) {
-      valid = false;
-      console.error('Partenaire obligatoire');
+      errors.push('Email invalide');
     }
 
-    if (Number(watch('interet')) == 1) {
-      if (Number(watch('nb_bien_added')) < 0) {
-        valid = false;
-        console.error('Nb Bien obligatoire');
+    // 2. Partenaire validation
+    if (watch('source_txt') === 'Partenaire' && !watch('partenaire_id')) {
+      errors.push('Partenaire obligatoire');
+    }
+
+    // 4. Loading form state
+    if (loading_form) {
+      errors.push('Le formulaire est en cours de chargement');
+    }
+
+    // 5. Price validation
+    if (info_prix != null) {
+      errors.push(info_prix);
+    }
+
+    // 6. Surface validation
+    if (info_sup != null) {
+      errors.push(info_sup);
+    }
+
+    // 7. Check save validation
+    if (check_save == false) {
+      errors.push('Certains champs de biens ne sont pas correctement remplis');
+    }
+
+    // 8. Old biens pre-reserved validation
+    if (OldBiens_pre.length > 0 && !isOrigin && paper_exist == 0) {
+      errors.push('Des biens pré-réservés nécessitent une action');
+    }
+
+    // 9. Reservation validation
+    if (info_reservation != null) {
+      errors.push(info_reservation);
+    }
+
+    // 10. Dialog open validation
+    if (open_D_P) {
+      errors.push('Veuillez traiter les anciennes visites perdues');
+    }
+
+    // 11. Biens transférés validation
+    if (Number(watch('interet')) === 1) {
+      const venduBiensCount = input_biens_vendu.length;
+      const newBiensCount = Number(watch('nb_bien_added')) || 0;
+      const totalBiens = venduBiensCount + newBiensCount;
+
+      if (totalBiens === 0) {
+        errors.push(
+          'Vous devez avoir au moins un bien (transféré ou ajouté) lorsque vous êtes intéressé'
+        );
       }
     }
-    // If interet == 3, then all those frein checks
-    // In validateFields function, update the frein checks:
-    if (Number(watch('interet')) == 3) {
-      const frein = watch('frein') || []; // Already an array
 
-      const checks = [
-        frein.length > 0,
-        !frein.some((f) => f == 'vue') || (watch('vues') || []).length > 0,
-        !frein.some((f) => f == 'typologie') ||
-          (watch('typologies') || []).length > 0,
-        !frein.some((f) => f == 'orientation') ||
-          (watch('orientations') || []).length > 0,
-        !frein.some((f) => f == 'etage') || (watch('etages') || []).length > 0,
-        !frein.some((f) => f == 'tranche') ||
-          (watch('tranches') || []).length > 0,
-      ];
-
-      const checkNames = [
-        'frein.length > 0',
-        "'vue' => vues.length > 0",
-        "'typologie' => typologies.length > 0",
-        "'orientation' => orientations.length > 0",
-        "'etage' => etages.length > 0",
-        "'tranche' => tranches.length > 0",
-      ];
-
-      if (!checks.every(Boolean)) {
-        valid = false;
-        console.error('Certains freins ne sont pas remplis correctement.');
-        checks.forEach((check, index) => {
-          if (!check) {
-            console.warn(`Échec du test: ${checkNames[index]}`);
-          }
-        });
-      }
-    }
-    // Validation pour Suivi Dossier (interet = 5)
+    // 12. Suivi Dossier validation
     if (Number(watch('interet')) === 5) {
-      // Dossier obligatoire
       if (!watch('dossier_id_suivi') || watch('dossier_id_suivi') === '') {
-        valid = false;
-        toast.error('Veuillez sélectionner un dossier');
-        return false; // Return immediately to show the error
+        errors.push('Veuillez sélectionner un dossier');
       }
 
-      // Statut obligatoire
       if (!watch('statut_suivi') || watch('statut_suivi') === '') {
-        valid = false;
-        toast.error('Veuillez sélectionner un statut de suivi');
-        return false;
+        errors.push('Veuillez sélectionner un statut de suivi');
       }
 
-      // Validation spécifique pour "Nouvelle avance" (statut = 1)
       if (Number(watch('statut_suivi')) === 1) {
-        // Montant obligatoire
         const montant = parseFloat(watch('montant_suivi') || 0);
+
         if (
           !watch('montant_suivi') ||
           watch('montant_suivi') === '' ||
           isNaN(montant)
         ) {
-          valid = false;
-          toast.error("Le montant de l'avance est requis");
-          return false;
+          errors.push("Le montant de l'avance est requis");
         } else if (montant === 0) {
-          valid = false;
-          toast.error('Le montant ne peut pas être 0');
-          return false;
+          errors.push('Le montant ne peut pas être 0');
         } else if (montant < 0) {
-          valid = false;
-          toast.error('Le montant ne peut pas être négatif');
-          return false;
+          errors.push('Le montant ne peut pas être négatif');
         } else if (montant < 100) {
-          valid = false;
-          toast.error('Le montant minimum est 100 MAD');
-          return false;
+          errors.push('Le montant minimum est 100 MAD');
         } else {
           // Vérifier si le montant ne dépasse pas le reste
           const dossierSelectionne = Dossiers_Suivis.find(
@@ -884,217 +938,273 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
             const reste = prixTotal - avances;
 
             if (montant > reste) {
-              valid = false;
-              toast.error(
+              errors.push(
                 `Le montant ne doit pas dépasser le reste (${reste.toLocaleString(
                   'fr-FR'
                 )} MAD)`
               );
-              return false;
             }
           }
         }
 
-        // Mode de paiement obligatoire
         if (
           !watch('mode_paiement_suivi') ||
           watch('mode_paiement_suivi') === ''
         ) {
-          valid = false;
-          toast.error('Le mode de paiement est requis');
-          return false;
+          errors.push('Le mode de paiement est requis');
         }
 
-        // Date de paiement obligatoire
         if (
           !watch('date_paiement_suivi') ||
           watch('date_paiement_suivi') === ''
         ) {
-          valid = false;
-          toast.error('La date de paiement est requise');
-          return false;
+          errors.push('La date de paiement est requise');
         }
 
-        // Validation pour paiement non-espèces
         if (
           watch('mode_paiement_suivi') &&
           watch('mode_paiement_suivi') !== '1'
         ) {
-          // Banque obligatoire
           if (!watch('banque_id_suivi') || watch('banque_id_suivi') === '') {
-            valid = false;
-            toast.error('La banque est requise pour ce mode de paiement');
-            return false;
+            errors.push('La banque est requise pour ce mode de paiement');
           }
 
-          // Numéro de paiement obligatoire
           if (
             !watch('num_paiement_suivi') ||
             watch('num_paiement_suivi') === ''
           ) {
-            valid = false;
-            toast.error('Le numéro de paiement est requis');
-            return false;
+            errors.push('Le numéro de paiement est requis');
           }
 
-          // Date d'échéance pour certains modes de paiement
           if (
             watch('mode_paiement_suivi') !== '1' &&
             watch('mode_paiement_suivi') !== '5' &&
             watch('mode_paiement_suivi') !== '6'
           ) {
             if (!watch('echeance_suivi') || watch('echeance_suivi') === '') {
-              valid = false;
-              toast.error("La date d'échéance est requise");
-              return false;
+              errors.push("La date d'échéance est requise");
             }
           }
         }
-      }
-
-      // Commentaire général obligatoire pour d'autres statuts
-      if (Number(watch('statut_suivi')) !== 1) {
+      } else if (Number(watch('statut_suivi')) !== 1) {
         const commentaire = watch('commentaire') || '';
         if (!commentaire || commentaire.trim() === '') {
-          valid = false;
-          toast.error('Le commentaire est requis pour ce type de suivi');
-          return false;
+          errors.push('Le commentaire est requis pour ce type de suivi');
         }
       }
     }
+    if (Number(watch('interet')) === 1) {
+      const newBiensCount = Number(watch('nb_bien_added')) || 0;
 
-    // Stocker les erreurs
-    if (Object.keys(errors).length > 0) {
-      setValidationErrors(errors);
+      if (newBiensCount > 0) {
+        // Check each input_bien only if we're adding new biens
+        input_biens.forEach((x, index) => {
+          if (!x.bien_id) {
+            errors.push(
+              `Bien ${
+                input_biens_vendu.length + index + 1
+              }: La sélection d'un bien est requise`
+            );
+          }
+
+          if (!x.statut) {
+            errors.push(
+              `Bien ${
+                input_biens_vendu.length + index + 1
+              }: Le statut est requis`
+            );
+          }
+        });
+      }
+    }
+    // 13. Avance validation for input_biens
+    input_biens.forEach((x, index) => {
+      if (x.statut == 2 && x.bien_id != null) {
+        // Check required fields for sold biens
+        if (!x.code_reservation || x.code_reservation.trim() === '') {
+          errors.push(`Bien ${index + 1}: Le code de réservation est requis`);
+        }
+
+        if (!x.date_reservation) {
+          errors.push(`Bien ${index + 1}: La date de réservation est requise`);
+        }
+
+        const avance = parseFloat(x.avance_res || 0);
+        if (isNaN(avance) || avance < 0) {
+          errors.push(`Bien ${index + 1}: Montant d'avance invalide`);
+        }
+
+        if (avance == 0 && user?.role > 2) {
+          errors.push(
+            `Bien ${index + 1}: Le montant ne peut pas être 0 pour votre rôle`
+          );
+        }
+
+        if (avance > 0 && avance < parseFloat(x.avance_minimale || 0)) {
+          errors.push(
+            `Bien ${index + 1}: Le montant doit être au moins ${
+              x.avance_minimale
+            } MAD`
+          );
+        }
+
+        if (!x.mode_financement) {
+          errors.push(`Bien ${index + 1}: Le mode de financement est requis`);
+        }
+
+        if (!x.mode_paiement) {
+          errors.push(`Bien ${index + 1}: Le mode de paiement est requis`);
+        }
+
+        if (x.mode_paiement !== '1') {
+          if (!x.banque_id) {
+            errors.push(`Bien ${index + 1}: La banque est requise`);
+          }
+
+          if (!x.numero_paiement) {
+            errors.push(`Bien ${index + 1}: Le numéro de paiement est requis`);
+          }
+        }
+      }
+    });
+
+    // 14. Avance validation for input_biens_vendu
+    input_biens_vendu.forEach((x, index) => {
+      if (x.statut == 2 && x.bien_id != null) {
+        // Check required fields for sold biens
+        if (!x.code_reservation || x.code_reservation.trim() === '') {
+          errors.push(
+            `Bien vendu ${index + 1}: Le code de réservation est requis`
+          );
+        }
+
+        if (!x.date_reservation) {
+          errors.push(
+            `Bien vendu ${index + 1}: La date de réservation est requise`
+          );
+        }
+
+        const avance = parseFloat(x.avance_res || 0);
+        if (isNaN(avance) || avance < 0) {
+          errors.push(`Bien vendu ${index + 1}: Montant d'avance invalide`);
+        }
+
+        if (avance == 0 && user?.role > 2) {
+          errors.push(
+            `Bien vendu ${
+              index + 1
+            }: Le montant ne peut pas être 0 pour votre rôle`
+          );
+        }
+
+        if (avance > 0 && avance < parseFloat(x.avance_minimale || 0)) {
+          errors.push(
+            `Bien vendu ${index + 1}: Le montant doit être au moins ${
+              x.avance_minimale
+            } MAD`
+          );
+        }
+
+        if (!x.mode_financement) {
+          errors.push(
+            `Bien vendu ${index + 1}: Le mode de financement est requis`
+          );
+        }
+
+        if (!x.mode_paiement) {
+          errors.push(
+            `Bien vendu ${index + 1}: Le mode de paiement est requis`
+          );
+        }
+
+        if (x.mode_paiement !== '1') {
+          if (!x.banque_id) {
+            errors.push(`Bien vendu ${index + 1}: La banque est requise`);
+          }
+
+          if (!x.numero_paiement) {
+            errors.push(
+              `Bien vendu ${index + 1}: Le numéro de paiement est requis`
+            );
+          }
+        }
+      }
+    });
+
+    // 15. Freins validation for "Perdu"
+    if (Number(watch('interet')) === 3) {
+      const frein = watch('frein') || [];
+
+      if (frein.length === 0) {
+        errors.push('Veuillez sélectionner au moins un frein');
+      }
+
+      if (frein.includes('vue') && (watch('vues') || []).length === 0) {
+        errors.push(
+          'Vues obligatoires lorsque "vue" est sélectionné comme frein'
+        );
+      }
+
+      if (
+        frein.includes('typologie') &&
+        (watch('typologies') || []).length === 0
+      ) {
+        errors.push(
+          'Typologies obligatoires lorsque "typologie" est sélectionné comme frein'
+        );
+      }
+
+      if (
+        frein.includes('orientation') &&
+        (watch('orientations') || []).length === 0
+      ) {
+        errors.push(
+          'Orientations obligatoires lorsque "orientation" est sélectionné comme frein'
+        );
+      }
+
+      if (frein.includes('etage') && (watch('etages') || []).length === 0) {
+        errors.push(
+          'Étage obligatoire lorsque "étage" est sélectionné comme frein'
+        );
+      }
+
+      if (frein.includes('tranche') && (watch('tranches') || []).length === 0) {
+        errors.push(
+          'Tranche obligatoire lorsque "tranche" est sélectionné comme frein'
+        );
+      }
     }
 
-    // Afficher la première erreur comme toast
-    const firstError = Object.values(errors)[0];
-    if (firstError && formSubmitted) {
-      console.error(firstError);
-    }
-    // Validation des biens transférés vendus
-    if (input_biens_vendu.length > 0) {
-      input_biens_vendu.forEach((bien, index) => {
-        if (bien.statut == 2) {
-          if (!bien.code_reservation || bien.code_reservation.trim() == '') {
-            valid = false;
-            console.error(
-              `Bien vendu ${index + 1}: Le code de réservation est requis`
-            );
-          }
-          if (!bien.date_reservation) {
-            valid = false;
-            console.error(
-              `Bien vendu ${index + 1}: La date de réservation est requise`
-            );
-          }
-
-          const avance = parseFloat(bien.avance_res || 0);
-          if (isNaN(avance) || avance < 0) {
-            valid = false;
-            console.error(`Bien vendu ${index + 1}: Montant d'avance invalide`);
-          }
-
-          if (avance == 0 && user?.role > 2) {
-            valid = false;
-            console.error(
-              `Bien vendu ${
-                index + 1
-              }: Le montant ne peut pas être 0 pour votre rôle`
-            );
-          }
-          if (avance > 0 && avance < parseFloat(bien.avance_minimale || 0)) {
-            valid = false;
-            console.error(
-              `Bien vendu ${index + 1}: Le montant doit être au moins ${
-                bien.avance_minimale
-              } MAD`
-            );
-          }
-
-          if (!bien.mode_financement) {
-            valid = false;
-            console.error(
-              `Bien vendu ${index + 1}: Le mode de financement est requis`
-            );
-          }
-          if (!bien.mode_paiement) {
-            valid = false;
-            console.error(
-              `Bien vendu ${index + 1}: Le mode de paiement est requis`
-            );
-          }
-
-          if (bien.mode_paiement !== '1') {
-            if (!bien.banque_id) {
-              valid = false;
-              console.error(`Bien vendu ${index + 1}: La banque est requise`);
-            }
-            if (!bien.numero_paiement) {
-              valid = false;
-              console.error(
-                `Bien vendu ${index + 1}: Le numéro de paiement est requis`
-              );
-            }
-          }
+    // 18. React Hook Form errors
+    if (Object.keys(errors).length > 0 && formSubmitted) {
+      Object.values(errors).forEach((error) => {
+        if (error && error.message) {
+          errors.push(error.message);
         }
       });
     }
-    // Validation prix min/max
-    if (info_prix) {
-      valid = false;
-      console.error(info_prix);
-    }
 
-    if (info_sup) {
-      valid = false;
-      console.error(info_sup);
-    }
-
-    // Validation code réservation existant
-    if (info_reservation) {
-      valid = false;
-      console.error(info_reservation);
-    }
-
-    // Validation champs obligatoires généraux
-    if (!isOrigin) {
-      if (!watch('prenom') || watch('prenom').trim() == '') {
-        valid = false;
-        console.error('Le prénom est requis');
-      }
-      if (!watch('telephone') || watch('telephone').trim() == '') {
-        valid = false;
-        console.error('Le téléphone est requis');
-      } else if (
-        watch('telephone').length < 10 ||
-        watch('telephone').length > 14
-      ) {
-        valid = false;
-        console.error('Le téléphone doit contenir 10 à 14 chiffres');
-      }
-      if (!watch('source_id') || watch('source_id') == '') {
-        valid = false;
-        console.error('La source est requise');
-      }
-    }
-
-    if (!watch('interet') || watch('interet') == '') {
-      valid = false;
-      console.error("L'intérêt de visite est requis");
-    }
-    return valid;
+    return errors;
   };
 
   const onSubmit = (data) => {
     setFormSubmitted(true);
-    setValidationErrors({}); // Réinitialiser les erreurs
+    const validationErrors = validateFields();
 
-    if (!validateFields()) {
-      // there were validation errors → bail out
+    // If there are validation errors, show them and stop submission
+    if (validationErrors.length > 0) {
+      // Store errors in state to display them
+      setValidationErrorList(validationErrors);
+
+      // Scroll to top to show errors
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
       return;
     }
+
+    // Clear any previous errors
+    setValidationErrorList([]);
     // Prepare data - ensure list_bien_transfere_vendu is stringified if it's an array
     const finalData = { ...data };
 
@@ -1173,8 +1283,8 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
       if (isOrigin) {
         url = `${APIURL.ROOT}/v1/store_n_visite/` + origin;
       }
-
-      axios({
+      console.log('ana ghadya');
+       axios({
         method: method,
         url: url,
         data: dataToSend,
@@ -2142,7 +2252,6 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
         input.bien_id == '' ||
         input.statut == ''
       ) {
-        console.log('faaadwa');
         setCheck_save(false);
       }
 
@@ -2232,45 +2341,6 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
       console.error('Error in handleChange_freins:', error);
     }
   };
-  const isDisabled =
-    loading_form ||
-    info_prix != null ||
-    info_sup != null ||
-    check_save == false ||
-    (OldBiens_pre.length > 0 && !isOrigin && paper_exist == 0) ||
-    info_reservation != null ||
-    open_D_P ||
-    (watch('list_bien_transfere_vendu').length == 0 &&
-      watch('interet') == 1 &&
-      watch('nb_bien_added') == 0) ||
-    // Validation pour suivi de dossier
-    // Validation pour suivi de dossier - inclure les validationErrors
-    (Number(watch('interet')) == 5 &&
-      (Object.keys(validationErrors).length > 0 ||
-        !watch('dossier_id_suivi') ||
-        !watch('statut_suivi') ||
-        (Number(watch('statut_suivi')) == 1 &&
-          (validationErrors.montant_suivi ||
-            validationErrors.mode_paiement_suivi ||
-            validationErrors.date_paiement_suivi ||
-            validationErrors.banque_id_suivi ||
-            validationErrors.num_paiement_suivi ||
-            validationErrors.echeance_suivi)))) ||
-    // Add new conditions for avance_res validation
-    input_biens.some(
-      (x) =>
-        x.statut == 2 &&
-        x.bien_id != null &&
-        ((x.avance_res != '' && x.avance_res == 0 && user?.role > 2) ||
-          (x.avance_res > 0 && x.avance_res < x.avance_minimale))
-    ) ||
-    input_biens_vendu.some(
-      (x) =>
-        x.statut == 2 &&
-        x.bien_id != null &&
-        ((x.avance_res != '' && x.avance_res == 0 && user?.role > 2) ||
-          (x.avance_res > 0 && x.avance_res < x.avance_minimale))
-    );
 
   // Replace the complex conditions with clearer logic
   const showMainForm =
@@ -2326,6 +2396,38 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
         <div>
           {showMainForm && (
             <div className="p-6 mt-4 min-h-[89vh] bg-white shadow-md rounded-md">
+              {/* Warning message for pre-reserved biens */}
+              {OldBiens_pre.length > 0 && paper_exist == 0 && (
+                <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <div className="flex items-start">
+                    <svg
+                      className="w-5 h-5 text-yellow-600 mr-2 mt-0.5"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <div>
+                      <h3 className="text-yellow-800 font-semibold mb-1">
+                        Action requise
+                      </h3>
+                      <p className="text-yellow-700 text-sm">
+                        Vous devez traiter les {OldBiens_pre.length} bien(s)
+                        pré-réservé(s) ci-dessous avant de pouvoir enregistrer
+                        la nouvelle visite.
+                      </p>
+                      <p className="text-yellow-700 text-sm mt-1">
+                        Veuillez choisir une action (Garder/Annuler/Vendre) pour
+                        chaque bien pré-réservé.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}{' '}
               <form onSubmit={handleSubmit(onSubmit)}>
                 <div className="space-y-4">
                   {/* Client/Prospect Information */}
@@ -2430,6 +2532,10 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
                                   isOrigin ? false : watch('telephone') == ''
                                 }
                                 onChange={handleChange_interet}
+                                error={
+                                  errors?.interet?.message ||
+                                  backendErrors?.interet
+                                }
                               />
                             </div>
                             {Number(watch('interet')) == 1 && (
@@ -3354,95 +3460,90 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
                                           handleinputchange_bien_vendu(e, j)
                                         }
                                       />
-                                       <SelectInput
-                                            label="Mode Financement:"
-                                            name="mode_financement"
-                                            options={Object.values(
-                                              MODE_FINANCE
-                                            ).map((finance) => ({
-                                              value: finance.code.toString(),
-                                              label: finance.label,
-                                            }))}
-                                            value={x.mode_financement?.toString()}
-                                            onChange={(selectedValue) => {
-                                              // Create a synthetic event to match handleinputchange's expected format
-                                              const syntheticEvent = {
-                                                target: {
-                                                  name: 'mode_financement',
-                                                  value: selectedValue,
-                                                },
-                                              };
-                                              handleinputchange_bien_vendu(
-                                                syntheticEvent,
-                                                j
-                                              );
-                                            }}
-                                            placeholder="Sélectionner un Mode de Financement"
-                                            required
-                                          />
-                                     
+                                      <SelectInput
+                                        label="Mode Financement:"
+                                        name="mode_financement"
+                                        options={Object.values(
+                                          MODE_FINANCE
+                                        ).map((finance) => ({
+                                          value: finance.code.toString(),
+                                          label: finance.label,
+                                        }))}
+                                        value={x.mode_financement?.toString()}
+                                        onChange={(selectedValue) => {
+                                          // Create a synthetic event to match handleinputchange's expected format
+                                          const syntheticEvent = {
+                                            target: {
+                                              name: 'mode_financement',
+                                              value: selectedValue,
+                                            },
+                                          };
+                                          handleinputchange_bien_vendu(
+                                            syntheticEvent,
+                                            j
+                                          );
+                                        }}
+                                        placeholder="Sélectionner un Mode de Financement"
+                                        required
+                                      />
+
                                       {x.avance_res > 0 && (
-                                          <SelectInput
-                                                label="Mode Paiement:"
-                                                name="mode_paiement"
-                                                options={Object.values(
-                                                  MODE_PAIEMENT
-                                                ).map((paiement) => ({
-                                                  value:
-                                                    paiement.code.toString(),
-                                                  label: paiement.label,
-                                                }))}
-                                                value={x.mode_paiement?.toString()}
-                                                onChange={(selectedValue) => {
-                                                  // Create a synthetic event to match handleinputchange's expected format
-                                                  const syntheticEvent = {
-                                                    target: {
-                                                      name: 'mode_paiement',
-                                                      value: selectedValue,
-                                                    },
-                                                  };
-                                                  handleinputchange_bien_vendu(
-                                                    syntheticEvent,
-                                                    j
-                                                  );
-                                                }}
-                                                placeholder="Sélectionner un Mode de Paiement"
-                                                required
-                                              />
-                                         
-                                        )}
+                                        <SelectInput
+                                          label="Mode Paiement:"
+                                          name="mode_paiement"
+                                          options={Object.values(
+                                            MODE_PAIEMENT
+                                          ).map((paiement) => ({
+                                            value: paiement.code.toString(),
+                                            label: paiement.label,
+                                          }))}
+                                          value={x.mode_paiement?.toString()}
+                                          onChange={(selectedValue) => {
+                                            // Create a synthetic event to match handleinputchange's expected format
+                                            const syntheticEvent = {
+                                              target: {
+                                                name: 'mode_paiement',
+                                                value: selectedValue,
+                                              },
+                                            };
+                                            handleinputchange_bien_vendu(
+                                              syntheticEvent,
+                                              j
+                                            );
+                                          }}
+                                          placeholder="Sélectionner un Mode de Paiement"
+                                          required
+                                        />
+                                      )}
                                       {/* Conditional Fields */}
                                       {x.mode_paiement !== '1' &&
                                         x.mode_paiement !== '' &&
                                         x.avance_res > 0 && (
                                           <>
-                                           <SelectInput
-                                                label="Banque:"
-                                                name="banque_id"
-                                                options={banques.map(
-                                                  (banque) => ({
-                                                    value: banque.id.toString(),
-                                                    label: banque.nom,
-                                                  })
-                                                )}
-                                                value={x.banque_id?.toString()}
-                                                onChange={(selectedValue) => {
-                                                  const syntheticEvent = {
-                                                    target: {
-                                                      name: 'banque_id',
-                                                      value: selectedValue,
-                                                    },
-                                                  };
-                                                  handleinputchange_bien_vendu(
-                                                    syntheticEvent,
-                                                    j
-                                                  );
-                                                }}
-                                                placeholder="Sélectionner une Banque"
-                                                required={
-                                                  x.mode_paiement !== '1' 
-                                                }
-                                           
+                                            <SelectInput
+                                              label="Banque:"
+                                              name="banque_id"
+                                              options={banques.map(
+                                                (banque) => ({
+                                                  value: banque.id.toString(),
+                                                  label: banque.nom,
+                                                })
+                                              )}
+                                              value={x.banque_id?.toString()}
+                                              onChange={(selectedValue) => {
+                                                const syntheticEvent = {
+                                                  target: {
+                                                    name: 'banque_id',
+                                                    value: selectedValue,
+                                                  },
+                                                };
+                                                handleinputchange_bien_vendu(
+                                                  syntheticEvent,
+                                                  j
+                                                );
+                                              }}
+                                              placeholder="Sélectionner une Banque"
+                                              required={x.mode_paiement !== '1'}
                                             />
                                             <InputField_Biens
                                               label="N° Paiement:"
@@ -3587,15 +3688,16 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
                                 name="interet"
                                 value={watch('interet')}
                                 required={true}
-                                options={
-                                  [{ value: '1', label: 'Intéressé' }]
-                                }
+                                options={[{ value: '1', label: 'Intéressé' }]}
                                 disabled={
                                   isOrigin ? false : watch('telephone') == ''
                                 }
+                                error={
+                                  errors?.interet?.message ||
+                                  backendErrors?.interet
+                                }
                                 onChange={handleChange_interet}
                               />
-                              
                             </div>
                             {Number(watch('interet')) == 1 && (
                               <>
@@ -3609,14 +3711,40 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
                                     nb_bien_added:
                                       formSubmitted &&
                                       Number(watch('interet')) == 1 &&
-                                      !watch('nb_bien_added')
-                                        ? 'Ce champ est obligatoire lorsque interet est Intéressé.'
+                                      (watch('nb_bien_added') === '' ||
+                                        watch('nb_bien_added') === null)
+                                        ? 'Ce champ est obligatoire'
+                                        : Number(watch('nb_bien_added')) < 0
+                                        ? 'Veuillez entrer un nombre positif ou zéro'
+                                        : input_biens_vendu.length === 0 &&
+                                          Number(watch('nb_bien_added')) === 0
+                                        ? 'Vous devez ajouter au moins 1 bien'
                                         : null,
                                   }}
                                   backendErrors={backendErrors}
-                                  defaultValues={defaultValues}
-                                  onChange={handleChange_NbrBien}
+                                  defaultValues={{ nb_bien_added: 0 }}
                                   required={Number(watch('interet')) == 1}
+                                  inputProps={{
+                                    min: input_biens_vendu.length > 0 ? 0 : 1,
+                                    inputMode: 'numeric',
+                                  }}
+                                  onChange={(e) => {
+                                    let value = e.target.value;
+
+                                    // Remove leading 0 when user starts typing
+                                    if (
+                                      value.length > 1 &&
+                                      value.startsWith('0')
+                                    ) {
+                                      value = value.replace(/^0+/, '');
+                                    }
+
+                                    // Only allow digits (optional extra check)
+                                    if (/^\d*$/.test(value)) {
+                                      e.target.value = value;
+                                      handleChange_NbrBien(e);
+                                    }
+                                  }}
                                 />
                               </>
                             )}
@@ -4081,35 +4209,34 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
                                         {/* Mode Paiement Selection */}
 
                                         <div>
-                                          {x.avance_res > 0  && (
-                                              <SelectInput
-                                                label="Mode Paiement:"
-                                                name="mode_paiement"
-                                                options={Object.values(
-                                                  MODE_PAIEMENT
-                                                ).map((paiement) => ({
-                                                  value:
-                                                    paiement.code.toString(),
-                                                  label: paiement.label,
-                                                }))}
-                                                value={x.mode_paiement?.toString()}
-                                                onChange={(selectedValue) => {
-                                                  // Create a synthetic event to match handleinputchange's expected format
-                                                  const syntheticEvent = {
-                                                    target: {
-                                                      name: 'mode_paiement',
-                                                      value: selectedValue,
-                                                    },
-                                                  };
-                                                  handleinputchange(
-                                                    syntheticEvent,
-                                                    i
-                                                  );
-                                                }}
-                                                placeholder="Sélectionner un Mode de Paiement"
-                                                required
-                                              />
-                                            )}
+                                          {x.avance_res > 0 && (
+                                            <SelectInput
+                                              label="Mode Paiement:"
+                                              name="mode_paiement"
+                                              options={Object.values(
+                                                MODE_PAIEMENT
+                                              ).map((paiement) => ({
+                                                value: paiement.code.toString(),
+                                                label: paiement.label,
+                                              }))}
+                                              value={x.mode_paiement?.toString()}
+                                              onChange={(selectedValue) => {
+                                                // Create a synthetic event to match handleinputchange's expected format
+                                                const syntheticEvent = {
+                                                  target: {
+                                                    name: 'mode_paiement',
+                                                    value: selectedValue,
+                                                  },
+                                                };
+                                                handleinputchange(
+                                                  syntheticEvent,
+                                                  i
+                                                );
+                                              }}
+                                              placeholder="Sélectionner un Mode de Paiement"
+                                              required
+                                            />
+                                          )}
                                         </div>
                                         {/* Conditional Fields */}
                                         {x.mode_paiement !== '1' &&
@@ -4293,12 +4420,33 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
                     </div>
                   )}
                 </div>
-
+                {validationErrorList.length > 0 && (
+                  <div className="col-span-full mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
+                    <h3 className="text-red-700 font-semibold mb-2">
+                      Veuillez corriger les erreurs suivantes :
+                    </h3>
+                    <ul className="list-disc pl-5 text-red-600">
+                      {validationErrorList.map((error, index) => (
+                        <li key={index} className="mb-1">
+                          {error}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
                 <div className="flex justify-center items-center gap-4 xl:mt-32">
                   <Button type="button" onClick={() => router.back()}>
                     Annuler
                   </Button>
-                  <Button type="submit" disabled={isDisabled}>
+                  <Button
+                    type="submit"
+                    disabled={OldBiens_pre.length > 0 && paper_exist == 0}
+                    className={
+                      OldBiens_pre.length > 0 && paper_exist == 0
+                        ? 'opacity-50 cursor-not-allowed'
+                        : ''
+                    }
+                  >
                     {isSubmitting ? (
                       <div className="flex items-center gap-2">
                         <svg
@@ -4323,6 +4471,21 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
                         </svg>
                         Enregistrement...
                       </div>
+                    ) : OldBiens_pre.length > 0 && paper_exist == 0 ? (
+                      <>
+                        <svg
+                          className="w-4 h-4 mr-2"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        Enregistrer (désactivé)
+                      </>
                     ) : (
                       'Enregistrer'
                     )}
@@ -4335,6 +4498,30 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
       )}
       {showPreReservedSection && (
         <div className="p-3">
+          <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center">
+              <svg
+                className="w-5 h-5 text-blue-600 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <div>
+                <h3 className="text-blue-800 font-semibold">
+                  Biens pré-réservés en attente
+                </h3>
+                <p className="text-blue-700 text-sm">
+                  Le formulaire principal est désactivé jusqu{"'"}à ce que vous
+                  ayez traité ces biens.
+                </p>
+              </div>
+            </div>
+          </div>
           <div className="p-6 mt-4 bg-white shadow-md rounded-md">
             <div className="text-white rounded-t-lg p-4 bg-[#5483b3]">
               <h3 className="text-xl font-semibold">Information</h3>

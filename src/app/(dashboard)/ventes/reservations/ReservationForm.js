@@ -54,6 +54,7 @@ import { CIVILITES } from '@/components/client-utils';
 import { useProjet } from '@/context/ProjetContext';
 export default function ReservationForm({ id }) {
   const [hasPercentageChanged, setHasPercentageChanged] = useState(false);
+  const [validationErrors, setValidationErrors] = useState([]);
 
   const storedValue = localStorage.getItem('selectedClient_show_client');
   const selectedClient =
@@ -93,9 +94,6 @@ export default function ReservationForm({ id }) {
   const [enabled, setenabled] = useState('none');
   const [disabled_var, setDisabled] = useState(!isEditing ? true : false);
   const [oldClients, setoldClients] = useState([]);
-
-  const [check, set_check] = useState(false);
-  const [check_p, set_check_p] = useState(false);
   const [addOreditPopup, setAddOreditPopup] = useState(0);
   const [filesList, setfilesList] = useState([]);
   const [filesList_avc, setfilesList_avc] = useState([]);
@@ -137,6 +135,10 @@ export default function ReservationForm({ id }) {
       lieu_mariage: null,
       notifie: '0',
       civilite: '',
+      check: false, // Ajoutez cette ligne
+      check_p: false, // Ajoutez cette ligne
+        check_field: null, // <-- Ajoutez ceci
+
     },
   ]);
 
@@ -275,6 +277,8 @@ export default function ReservationForm({ id }) {
           lieu_mariage: newClientForms[index]?.lieu_mariage || '',
           notifie: newClientForms[index]?.notifie || '',
           civilite: newClientForms[index]?.civilite || '',
+          check: newClientForms[index]?.check || false, // Ajoutez cette ligne
+          check_p: newClientForms[index]?.check_p || false, // Ajoutez cette ligne
         }))
     );
   };
@@ -504,6 +508,19 @@ export default function ReservationForm({ id }) {
     }
   }, [accessToken]);
   const onSubmit = (data) => {
+    // Validate all fields before submission
+    const errors = validateFields();
+
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      // Scroll to show errors
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    // Clear any previous errors
+    setValidationErrors([]);
+
     setLoading({ ...loading, form: true });
     // Validate files first
     if (!validateFilesBeforeSubmit()) {
@@ -1001,8 +1018,11 @@ export default function ReservationForm({ id }) {
     return true;
   };
 
-  const isButtonDisabled = () => {
-    // Cache all watched values at start
+  const validateFields = () => {
+    const errors = [];
+    const watchedValues = watch();
+
+    // Cache all watched values
     const {
       avance,
       avance_minimale,
@@ -1011,46 +1031,158 @@ export default function ReservationForm({ id }) {
       check_montant,
       commentaireAvance,
       banque_id,
-      num_paiement,
-      date_echeance,
-    } = watch();
+      numero_paiement,
+      echeance,
+      bien_id,
+      code_reservation,
+      date_reservation,
+      verifierPourcentages,
+    } = watchedValues;
 
-    // Always disabled conditions
-    if (info_reservation || loading.form || !mode_financement) {
-      return true;
-    }
-
-    // Non-editing validations
-    if (!isEditing) {
-      // Basic amount validations
-      if (avance < 0 || avance === '') return true;
-
-      // Payment method validation
-      if (!mode_paiement) return true;
-
-      // Check payment method specific rules
-      const isCheckPayment = [2, 3, 4].includes(mode_paiement?.code); // Chèque types
-      const isTransferPayment = [5, 6].includes(mode_paiement?.code); // Virement/Versement
-
-      if (isCheckPayment) {
-        if (!banque_id || !num_paiement || !date_echeance) return true;
+    // Step 0: Reservation validations
+    if (currentStep === 0) {
+      if (!bien_id || bien_id === '') {
+        errors.push("La sélection d'un bien est requise");
       }
 
-      if (isTransferPayment) {
-        if (!banque_id || !num_paiement) return true;
+      if (!code_reservation || code_reservation.trim() === '') {
+        errors.push('Le code de réservation est requis');
       }
 
-      // Comment validation when check_montant is true
-      if (check_montant && !commentaireAvance) return true;
+      if (!date_reservation || date_reservation === '') {
+        errors.push('La date de réservation est requise');
+      }
 
-      // Special role validation for zero amount
-      if (user?.role > 2 && avance === 0 && !check_montant) return true;
+      if (info_reservation != null) {
+        errors.push('Le code de réservation existe déjà');
+      }
     }
 
-    // Minimum amount validation
-    if (avance > 0 && avance < avance_minimale) return true;
+    // Step 1: Client validations
+    if (currentStep === 1) {
+      if (!verifierPourcentages) {
+        errors.push('La somme des pourcentages doit être exactement 100%');
+      }
 
-    return false;
+      // Validate inputList1 clients
+      inputList1.forEach((client, index) => {
+        if (!client.id || client.id === '') {
+          errors.push(
+            `Client ${index + 1}: La sélection d'un client est requise`
+          );
+        }
+        if (
+          !client.pourcentage ||
+          client.pourcentage === '' ||
+          isNaN(client.pourcentage)
+        ) {
+          errors.push(
+            `Client ${
+              index + 1
+            }: Le pourcentage est requis et doit être un nombre`
+          );
+        }
+      });
+
+      // Validate addedClients
+      addedClients.forEach((client, index) => {
+        if (
+          !client.pourcentage ||
+          client.pourcentage === '' ||
+          isNaN(client.pourcentage)
+        ) {
+          errors.push(`Nouveau client ${index + 1}: Le pourcentage est requis`);
+        }
+      });
+    }
+
+    // Step 2: Payment validations
+    if (currentStep === 2) {
+      // Mode financement validation
+      if (!mode_financement) {
+        errors.push('Le mode de financement est requis');
+      }
+
+      // Non-editing validations
+      if (!isEditing) {
+        // Basic amount validations
+        if (avance === '' || isNaN(avance)) {
+          errors.push("Le montant de l'avance est requis");
+        } else if (avance < 0) {
+          errors.push("Le montant de l'avance ne peut pas être négatif");
+        }
+
+        // Special validation for zero amount
+        if (avance == 0) {
+          // Users with role > 2 CANNOT create reservation with amount 0 AT ALL
+          if (user?.role > 2) {
+            errors.push(
+              'Le montant ne peut pas être 0 pour votre rôle. Veuillez saisir un montant positif.'
+            );
+          }
+          // For users with role ≤ 2, they need to check the checkbox
+          else if (!check_montant) {
+            errors.push(
+              "Vous devez cocher 'Enregistrer la Réservation sans montant' lorsque le montant est 0"
+            );
+          }
+          // For users with role ≤ 2 who checked the checkbox, comment is required
+          else if (
+            check_montant &&
+            (!commentaireAvance || commentaireAvance.trim() === '')
+          ) {
+            errors.push(
+              'Un commentaire est requis lorsque vous enregistrez sans montant'
+            );
+          }
+        }
+
+        // Payment method validation (only required when amount > 0)
+        if (avance > 0 && !mode_paiement) {
+          errors.push('Le mode de paiement est requis');
+        }
+
+        // Check payment method specific rules (only when amount > 0)
+        if (avance > 0) {
+          const modePaiementCode = Number(mode_paiement);
+          const isCheckPayment = [2, 3, 4].includes(modePaiementCode);
+          const isTransferPayment = [5, 6].includes(modePaiementCode);
+
+          if (isCheckPayment) {
+            if (!banque_id) {
+              errors.push('La banque est requise pour ce mode de paiement');
+            }
+            if (!numero_paiement || numero_paiement.trim() === '') {
+              errors.push('Le numéro de paiement est requis');
+            }
+            if (!echeance) {
+              errors.push("La date d'échéance est requise");
+            }
+          }
+
+          if (isTransferPayment) {
+            if (!banque_id) {
+              errors.push('La banque est requise pour ce mode de paiement');
+            }
+            if (!numero_paiement || numero_paiement.trim() === '') {
+              errors.push('Le numéro de paiement est requis');
+            }
+          }
+        }
+
+        // Minimum amount validation (only when amount > 0)
+        if (avance > 0 && avance_minimale && avance < avance_minimale) {
+          errors.push(`Le montant doit être au moins ${avance_minimale}`);
+        }
+      }
+    }
+
+    // General validations
+    if (loading.form) {
+      errors.push('Le formulaire est en cours de chargement');
+    }
+
+    return errors;
   };
   // Helper functions (add these outside your component)
   const getFileIcon = (filename) => {
@@ -1286,48 +1418,20 @@ export default function ReservationForm({ id }) {
       );
     };
   }, []);
-  /*const validateClientStep = () => {
-    // Check if all selected clients have both id and pourcentage
-    const allSelectedClientsValid = inputList1.every(
-      (client) =>
-        client.id &&
-        client.id !== '' &&
-        client.pourcentage &&
-        client.pourcentage !== '' &&
-        !isNaN(client.pourcentage)
-    );
-
-    // Check if all added clients have required fields
-    const allAddedClientsValid = addedClients.every(
-      (client) =>
-        client.nom &&
-        client.nom.trim() !== '' &&
-        client.pourcentage &&
-        client.pourcentage !== '' &&
-        !isNaN(client.pourcentage)
-    );
-
-    // Calculate current total percentage
-    const sum_percent_select = inputList1.reduce((sum, client) => {
-      return sum + (Number(client.pourcentage) || 0);
-    }, 0);
-
-    const totalPercentage_client_form = addedClients.reduce((sum, client) => {
-      return sum + (Number(client.pourcentage) || 0);
-    }, 0);
-
-    const totalPercentage = sum_percent_select + totalPercentage_client_form;
-    const totalValid = totalPercentage === 100;
-
-    console.log(
-      `Validation - Selected: ${sum_percent_select}, Added: ${totalPercentage_client_form}, Total: ${totalPercentage}, Valid: ${totalValid}`
-    );
-
-    return allSelectedClientsValid && allAddedClientsValid && totalValid;
-  };*/
 
   const handleAnnuler_form = () => {
-    setHasPercentageChanged(true); // Activer l'état
+    // Réinitialiser check et check_p pour tous les formulaires
+    setNewClientForms((prevForms) =>
+      prevForms.map((form) => ({
+        ...form,
+        check: false,
+        check_p: false,
+          check_field: null, // <-- Ajoutez ceci
+
+      }))
+    );
+
+    setHasPercentageChanged(true);
     // Calculate total percentage of selected clients
     const totalPercentage = newClientForms.reduce(
       (sum, client) => sum + Number(client.pourcentage || 0),
@@ -1391,12 +1495,174 @@ export default function ReservationForm({ id }) {
     setValue('verifierPourcentages', isValid);
     setenabled(isValid ? 'none' : 'block');
   };
+  const validateNewClientForm = () => {
+    const errors = [];
+    // Vérifier si check (client existant) est vrai
+
+    // Validate each form
+    newClientForms.forEach((form, formIndex) => {
+      const clientNumber = formIndex + 1;
+      // Vérifier si check (client existant) est vrai pour CE formulaire
+      if (form.check) {
+        errors.push(
+          `Client ${clientNumber}: Ce client existe déjà dans la base de données. Veuillez le sélectionner dans la liste des clients existants.`
+        );
+      }
+      // Type Client validation
+      if (!form.type_client) {
+        errors.push(`Client ${clientNumber}: Type client est obligatoire`);
+      }
+
+      // Partenaire validation (if type is Société)
+      if (form.type_client === '2' && !form.partenaire_id) {
+        errors.push(
+          `Client ${clientNumber}: Partenaire est obligatoire pour Société`
+        );
+      }
+
+      // CIN validation
+      if (!form.cin || form.cin.trim() === '') {
+        errors.push(`Client ${clientNumber}: CIN est obligatoire`);
+      }
+
+      // Nom validation
+      if (!form.nom || form.nom.trim() === '') {
+        errors.push(`Client ${clientNumber}: Nom est obligatoire`);
+      }
+
+      // Prénom validation
+      if (!form.prenom || form.prenom.trim() === '') {
+        errors.push(`Client ${clientNumber}: Prénom est obligatoire`);
+      }
+
+      // Civilité validation
+      if (!form.civilite) {
+        errors.push(`Client ${clientNumber}: Civilité est obligatoire`);
+      }
+
+      // Pourcentage validation
+      if (!form.pourcentage || form.pourcentage === '') {
+        errors.push(`Client ${clientNumber}: Pourcentage est obligatoire`);
+      } else if (isNaN(Number(form.pourcentage))) {
+        errors.push(`Client ${clientNumber}: Pourcentage doit être un nombre`);
+      } else if (
+        Number(form.pourcentage) < 0 ||
+        Number(form.pourcentage) > 100
+      ) {
+        errors.push(
+          `Client ${clientNumber}: Pourcentage doit être entre 0 et 100`
+        );
+      }
+
+      // Téléphone validation
+      if (!form.telephone_num1) {
+        errors.push(`Client ${clientNumber}: Téléphone est obligatoire`);
+      } else if (String(form.telephone_num1).length < 8) {
+        errors.push(
+          `Client ${clientNumber}: Téléphone doit avoir au moins 8 chiffres`
+        );
+      } else if (isNaN(form.telephone_num1)) {
+        errors.push(
+          `Client ${clientNumber}: Téléphone doit contenir uniquement des chiffres`
+        );
+      }
+
+      // Situation Familiale validation
+      if (!form.situation_familliale) {
+        errors.push(
+          `Client ${clientNumber}: Situation familiale est obligatoire`
+        );
+      }
+
+      // Notifié validation
+      if (form.notifie === '' || form.notifie === undefined) {
+        errors.push(
+          `Client ${clientNumber}: "Accepte d'être contacté" est obligatoire`
+        );
+      }
+
+      // Marriage validations (only if situation is Marié)
+      if (form.situation_familliale === '2') {
+        if (!form.nom_mari || form.nom_mari.trim() === '') {
+          errors.push(
+            `Client ${clientNumber}: Nom du conjoint est obligatoire`
+          );
+        }
+        if (!form.date_mariage) {
+          errors.push(
+            `Client ${clientNumber}: Date de mariage est obligatoire`
+          );
+        }
+        if (!form.lieu_mariage || form.lieu_mariage.trim() === '') {
+          errors.push(
+            `Client ${clientNumber}: Lieu de mariage est obligatoire`
+          );
+        }
+      }
+    });
+
+    return errors;
+  };
   const handleFakeSubmit = (e) => {
     e.preventDefault(); // Prevent actual form submission
-    if (isFormValid()) {
-      // Proceed with submission
+
+    // Set form as submitted to show validation errors
+    setFormSubmitted_client(true);
+
+    // Validate the form
+    const validationErrors = validateNewClientForm();
+
+    if (validationErrors.length === 0) {
+      // Tous les formulaires sont valides
+      const clientsToAdd = newClientForms.map((form) => {
+        // Retirer les champs check et check_p avant d'ajouter
+        const { check, check_p, ...clientData } = form;
+        return clientData;
+      });
+      // All validation passed, proceed with submission
+      const updatedClients = [...addedClients, ...clientsToAdd];
+      calculateTotalPercentage_new_form(updatedClients);
+      setAddedClients(updatedClients);
+      setValue('clients', updatedClients);
+
+      // Reset form
+      setShowNewClientForm(false);
+      setNumberOfForms(1);
+      setNewClientForms([
+        {
+          cin: '',
+          nom: '',
+          prenom: '',
+          telephone_num1: '',
+          pourcentage: '',
+          address: '',
+          type_client: '',
+          partenaire_id: '',
+          prospect_id: null,
+          info_client: '',
+          info_prospect: '',
+          projet_id: selectedProjet ? selectedProjet.id : '',
+          situation_familliale: null,
+          nom_mari: null,
+          date_mariage: null,
+          lieu_mariage: null,
+          notifie: '',
+          civilite: '',
+        },
+      ]);
+      setFormSubmitted_client(false);
     } else {
-      console.error('Form validation failed');
+      // Show validation errors
+
+      // You can also display these errors to the user
+      // For example, show them in a toast or an error display area
+      toast.error(
+        `Veuillez corriger ${validationErrors.length} erreur(s) dans le formulaire`,
+        {
+          position: 'top-center',
+          duration: 5000,
+        }
+      );
     }
   };
   // Add this useEffect to recalculate totals when inputList1 or addedClients change
@@ -1463,12 +1729,174 @@ export default function ReservationForm({ id }) {
     });
   };
 
+  const validateEditClientForm = () => {
+    const errors = [];
+    if (!clientToEdit) return errors;
+
+    // Vérifier si client existe (check est true)
+    if (clientToEdit.check) {
+      errors.push(
+        'Ce client existe déjà dans la base de données. Veuillez utiliser le client existant.'
+      );
+      return errors; // Arrêter ici si client existe
+    }
+
+    // Type Client validation
+    if (!clientToEdit.type_client) {
+      errors.push('Type client est obligatoire');
+    }
+
+    // Partenaire validation (if type is Société)
+    if (clientToEdit.type_client === '2' && !clientToEdit.partenaire_id) {
+      errors.push('Partenaire est obligatoire pour Société');
+    }
+
+    // CIN validation
+    if (!clientToEdit.cin || clientToEdit.cin.trim() === '') {
+      errors.push('CIN est obligatoire');
+    }
+
+    // Nom validation
+    if (!clientToEdit.nom || clientToEdit.nom.trim() === '') {
+      errors.push('Nom est obligatoire');
+    }
+
+    // Prénom validation
+    if (!clientToEdit.prenom || clientToEdit.prenom.trim() === '') {
+      errors.push('Prénom est obligatoire');
+    }
+
+    // Civilité validation
+    if (!clientToEdit.civilite) {
+      errors.push('Civilité est obligatoire');
+    }
+
+    // Pourcentage validation
+    if (!clientToEdit.pourcentage || clientToEdit.pourcentage === '') {
+      errors.push('Pourcentage est obligatoire');
+    } else if (isNaN(Number(clientToEdit.pourcentage))) {
+      errors.push('Pourcentage doit être un nombre');
+    } else if (
+      Number(clientToEdit.pourcentage) < 0 ||
+      Number(clientToEdit.pourcentage) > 100
+    ) {
+      errors.push('Pourcentage doit être entre 0 et 100');
+    }
+
+    // Téléphone validation
+    if (!clientToEdit.telephone_num1) {
+      errors.push('Téléphone est obligatoire');
+    } else if (String(clientToEdit.telephone_num1).length < 8) {
+      errors.push('Téléphone doit avoir au moins 8 chiffres');
+    } else if (isNaN(clientToEdit.telephone_num1)) {
+      errors.push('Téléphone doit contenir uniquement des chiffres');
+    }
+
+    // Situation Familiale validation
+    if (!clientToEdit.situation_familliale) {
+      errors.push('Situation familiale est obligatoire');
+    }
+
+    // Notifié validation
+    if (clientToEdit.notifie === '' || clientToEdit.notifie === undefined) {
+      errors.push('"Accepte d\'être contacté" est obligatoire');
+    }
+
+    // Marriage validations (only if situation is Marié)
+    if (clientToEdit.situation_familliale === '2') {
+      if (!clientToEdit.nom_mari || clientToEdit.nom_mari.trim() === '') {
+        errors.push('Nom du conjoint est obligatoire');
+      }
+      if (!clientToEdit.date_mariage) {
+        errors.push('Date de mariage est obligatoire');
+      }
+      if (
+        !clientToEdit.lieu_mariage ||
+        clientToEdit.lieu_mariage.trim() === ''
+      ) {
+        errors.push('Lieu de mariage est obligatoire');
+      }
+    }
+
+    return errors;
+  };
   const handleFakeSubmit_Edit = (e) => {
     e.preventDefault(); // Prevent actual form submission
-    if (isFormValid_Edit()) {
-      // Proceed with submission
+    // Vérifier si client existe
+    if (clientToEdit.check) {
+      toast.error(
+        'Ce client existe déjà dans la base de données. Veuillez utiliser le client existant.',
+        {
+          position: 'top-center',
+          duration: 5000,
+        }
+      );
+      return;
+    }
+    // Validate the edit form
+    const validationErrors = validateEditClientForm();
+
+    if (validationErrors.length === 0) {
+      // All validation passed, proceed with submission
+      const updatedClients = [...addedClients];
+      updatedClients[clientToEdit.originalIndex] = {
+        cin: clientToEdit.cin,
+        nom: clientToEdit.nom,
+        prenom: clientToEdit.prenom,
+        telephone_num1: clientToEdit.telephone_num1,
+        pourcentage: clientToEdit.pourcentage,
+        address: clientToEdit.address,
+        type_client: clientToEdit.type_client,
+        partenaire_id:
+          clientToEdit.type_client === '2' ? clientToEdit.partenaire_id : null,
+        situation_familliale: clientToEdit.situation_familliale,
+        nom_mari:
+          clientToEdit.situation_familliale == '2'
+            ? clientToEdit.nom_mari
+            : null,
+        date_mariage:
+          clientToEdit.situation_familliale == '2'
+            ? clientToEdit.date_mariage
+            : null,
+        lieu_mariage:
+          clientToEdit.situation_familliale == '2'
+            ? clientToEdit.lieu_mariage
+            : null,
+        civilite: clientToEdit.civilite,
+        notifie: clientToEdit.notifie,
+      };
+
+      setAddedClients(updatedClients);
+      setValue('clients', updatedClients);
+
+      // Recalculate percentages
+      const sum_percent_select = inputList1.reduce(
+        (sum, nombres) => sum + Number(nombres.pourcentage) || 0,
+        0
+      );
+
+      const totalPercentage_client_form = updatedClients.reduce(
+        (sum, client) => sum + Number(client.pourcentage || 0),
+        0
+      );
+
+      const totalPercentage = sum_percent_select + totalPercentage_client_form;
+      setValue('pourcentages', totalPercentage);
+
+      const isValid = totalPercentage === 100;
+      setValue('verifierPourcentages', isValid);
+
+      if (isValid) {
+        setHasPercentageChanged(false);
+      }
+
+      setShowEditModal(false);
     } else {
-      console.error('Form validation failed');
+      // Show validation errors
+      toast.error(`Veuillez corriger ${validationErrors.length} erreur(s)`, {
+        position: 'top-center',
+        duration: 5000,
+      });
     }
   };
 
@@ -1517,7 +1945,9 @@ export default function ReservationForm({ id }) {
     value,
     formIndex,
     accessToken,
-    updateFormField
+    updateFormField,
+    isEditMode = false, // Nouveau paramètre pour indiquer si c'est en mode édition
+    setClientToEdit = null // Pour le mode édition
   ) => {
     const prefix = text == 'tel' ? 'Le numéro de téléphone ' : 'La Cin ';
 
@@ -1533,28 +1963,37 @@ export default function ReservationForm({ id }) {
 
       if (response.data) {
         if (response.data.prospect) {
-          // Show alert if phone exists
-          if (response.data.prospect.telephone) {
-            toast.error(
-              ` ${prefix} ${value} appartient au Prospect ${
-                response.data.prospect.nom != null
-                  ? response.data.prospect.nom
-                  : '' + ' ' + response.data.prospect.prenom != null
-                  ? response.data.prospect.prenom
-                  : ''
-              }`,
-              {
-                position: 'top-center',
-                duration: 5000,
-              }
-            );
-          }
+          toast.error(
+            ` ${prefix} ${value} appartient au Prospect ${
+              (response.data.prospect.nom || '') +
+              ' ' +
+              (response.data.prospect.prenom || '')
+            }`,
+            {
+              position: 'top-center',
+              duration: 5000,
+            }
+          );
 
-          // Update prospect info if needed
-          updateFormField(formIndex, 'prospect_id', response.data.prospect.id);
-          // set_check_p(true); // Set prospect check to true
-        } else {
-          // set_check_p(false); // Set prospect check to false
+          if (isEditMode && setClientToEdit) {
+            // Mode édition
+            setClientToEdit((prev) => ({
+              ...prev,
+              prospect_id: response.data.prospect.id,
+              check_p: true,
+              check_field: text, // <-- Ajoutez ce champ
+            }));
+          } else {
+            // Mode ajout
+            updateFormField(
+              formIndex,
+              'prospect_id',
+              response.data.prospect.id
+            );
+            updateFormField(formIndex, 'check_field', text); // <-- Ajoutez ce champ
+
+            updateFormField(formIndex, 'check_p', true);
+          }
         }
 
         if (response.data.client) {
@@ -1567,18 +2006,49 @@ export default function ReservationForm({ id }) {
               duration: 5000,
             }
           );
-          set_check(true); // Set client check to true
+
+          if (isEditMode && setClientToEdit) {
+            // Mode édition
+            setClientToEdit((prev) => ({
+              ...prev,
+              check: true,
+              check_field: text, // <-- Ajoutez ce champ
+            }));
+          } else {
+            // Mode ajout
+            updateFormField(formIndex, 'check', true);
+            updateFormField(formIndex, 'check_field', text); // <-- Ajoutez ce champ
+          }
         } else {
-          set_check(false); // Set client check to false
+          // Aucun client trouvé
+          if (isEditMode && setClientToEdit) {
+            setClientToEdit((prev) => ({ ...prev, check: false }));
+          } else {
+            updateFormField(formIndex, 'check', false);
+          }
         }
       }
     } catch (error) {
       console.error('Error checking phone number:', error);
-      // You might want to add error handling toast here
-      toast.error('Erreur lors de la vérification du numéro de téléphone', {
+      toast.error('Erreur lors de la vérification', {
         position: 'top-center',
         duration: 5000,
       });
+
+      if (isEditMode && setClientToEdit) {
+        setClientToEdit((prev) => ({
+          ...prev,
+          check: false,
+                      check_field: null, // <-- Réinitialiser
+
+          check_p: false,
+        }));
+      } else {
+        updateFormField(formIndex, 'check', false);
+        updateFormField(formIndex, 'check_p', false);
+                  updateFormField(formIndex, 'check_field', null); // <-- Réinitialiser
+
+      }
     }
   };
   // Helper function to safely parse float values
@@ -2243,6 +2713,7 @@ export default function ReservationForm({ id }) {
                             )}
 
                             {/* CIN */}
+                            {/* CIN dans le formulaire d'ajout */}
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">
                                 CIN <span className="text-red-500">*</span>
@@ -2253,23 +2724,56 @@ export default function ReservationForm({ id }) {
                                 onChange={async (e) => {
                                   const value = e.target.value;
                                   updateFormField(formIndex, 'cin', value);
+
+                                  // Réinitialiser check si le champ est vidé
+                                  if (value.length < 3) {
+                                    updateFormField(formIndex, 'check', false);
+                                    updateFormField(
+                                      formIndex,
+                                      'check_p',
+                                      false
+                                    );
+                                  } else if (value.length >= 3) {
+                                    await fetch_cin_tel(
+                                      'cin',
+                                      value,
+                                      formIndex,
+                                      accessToken,
+                                      updateFormField,
+                                      false, // isEditMode = false
+                                      null // setClientToEdit = null
+                                    );
+                                  }
+                                }}
+                                onBlur={async (e) => {
+                                  const value = e.target.value;
                                   if (value.length >= 3) {
                                     await fetch_cin_tel(
                                       'cin',
                                       value,
                                       formIndex,
                                       accessToken,
-                                      updateFormField
+                                      updateFormField,
+                                      false,
+                                      null
                                     );
                                   }
                                 }}
                                 className={`w-full h-[38px] px-3 py-2 text-sm border ${
-                                  formSubmitted_client &&
-                                  form.cin?.trim() === ''
+                                  (formSubmitted_client &&
+                                    form.cin?.trim() === '') ||
+                                  form.check && form.check_field === 'cin'
                                     ? 'border-red-500'
                                     : 'border-gray-300'
                                 } rounded-md focus:outline-none focus:border-gray-500`}
+                                //disabled={form.check} // Désactiver si client existe
                               />
+                              {form.check && form.check_field === 'cin' && (
+                                <p className="text-red-500 text-xs mt-1">
+                                  Ce CIN existe déjà. Veuillez sélectionner le
+                                  client dans la liste déroulante.
+                                </p>
+                              )}
                               {formSubmitted_client &&
                                 form.cin?.trim() === '' && (
                                   <p className="text-red-500 text-xs mt-1">
@@ -2436,7 +2940,7 @@ export default function ReservationForm({ id }) {
                                   )}
                                 {watch('pourcentages') === 100 && (
                                   <p className="text-green-600 text-sm font-medium flex items-center">
-                                    ✓ La somme des pourcentages est correcte
+                                    La somme des pourcentages est correcte
                                     (100%)
                                   </p>
                                 )}
@@ -2444,6 +2948,7 @@ export default function ReservationForm({ id }) {
                             </div>
 
                             {/* Téléphone */}
+                            {/* Téléphone dans le formulaire d'ajout */}
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Téléphone{' '}
@@ -2460,13 +2965,38 @@ export default function ReservationForm({ id }) {
                                     'telephone_num1',
                                     value
                                   );
+
+                                  // Réinitialiser check si le champ est vidé
+                                  if (value.length < 8) {
+                                    updateFormField(formIndex, 'check', false);
+                                    updateFormField(
+                                      formIndex,
+                                      'check_p',
+                                      false
+                                    );
+                                  } else if (value.length >= 8) {
+                                    await fetch_cin_tel(
+                                      'tel',
+                                      value,
+                                      formIndex,
+                                      accessToken,
+                                      updateFormField,
+                                      false,
+                                      null
+                                    );
+                                  }
+                                }}
+                                onBlur={async (e) => {
+                                  const value = e.target.value;
                                   if (value.length >= 8) {
                                     await fetch_cin_tel(
                                       'tel',
                                       value,
                                       formIndex,
                                       accessToken,
-                                      updateFormField
+                                      updateFormField,
+                                      false,
+                                      null
                                     );
                                   }
                                 }}
@@ -2474,11 +3004,19 @@ export default function ReservationForm({ id }) {
                                   (formSubmitted_client &&
                                     String(form.telephone_num1 || '').length <
                                       8) ||
-                                  isNaN(form.telephone_num1)
+                                  isNaN(form.telephone_num1) ||
+                                  form.check && form.check_field === 'tel'
                                     ? 'border-red-500'
                                     : 'border-gray-300'
                                 } rounded-md focus:outline-none focus:border-gray-500`}
+                               // disabled={form.check} // Désactiver si client existe
                               />
+{form.check && form.check_field === 'tel' && (
+                                <p className="text-red-500 text-xs mt-1">
+                                  Ce numéro existe déjà. Veuillez sélectionner
+                                  le client dans la liste déroulante.
+                                </p>
+                              )}
                               {formSubmitted_client &&
                                 String(form.telephone_num1 || '').length <
                                   8 && (
@@ -2730,7 +3268,40 @@ export default function ReservationForm({ id }) {
                         </div>
                       ))}
                     </div>
-
+                    {/* Validation Errors Display */}
+                    {formSubmitted_client &&
+                      validateNewClientForm().length > 0 && (
+                        <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                          <div className="flex items-start">
+                            <svg
+                              className="w-5 h-5 text-red-600 mr-2 mt-0.5 flex-shrink-0"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                            <div className="flex-1">
+                              <h3 className="text-red-800 font-semibold mb-2">
+                                Veuillez corriger les erreurs suivantes :
+                              </h3>
+                              <ul className="list-disc pl-5 space-y-1">
+                                {validateNewClientForm().map((error, index) => (
+                                  <li
+                                    key={index}
+                                    className="text-red-700 text-sm"
+                                  >
+                                    {error}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     {/* Form Actions */}
                     <div className="mt-6 flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3">
                       <button
@@ -2769,55 +3340,17 @@ export default function ReservationForm({ id }) {
                       >
                         Annuler
                       </button>
-                      {/*|| check_p*/}
+                      {/*|| || form.check_p* disables*/}
                       <button
                         type="submit"
-                        disabled={!isFormValid() || check}
-                        onClick={() => {
-                          setFormSubmitted_client(true);
-                          if (isFormValid()) {
-                            const updatedClients = [
-                              ...addedClients,
-                              ...newClientForms,
-                            ];
-                            calculateTotalPercentage_new_form(updatedClients);
-                            setAddedClients(updatedClients);
-                            setValue('clients', updatedClients);
-                            setShowNewClientForm(false);
-                            setNumberOfForms(1);
-                            setNewClientForms([
-                              {
-                                cin: '',
-                                nom: '',
-                                prenom: '',
-                                telephone_num1: '',
-                                pourcentage: '',
-                                address: '',
-                                type_client: '',
-                                partenaire_id: '',
-                                prospect_id: null,
-                                info_client: '',
-                                info_prospect: '',
-                                projet_id: selectedProjet
-                                  ? selectedProjet.id
-                                  : '',
-                                situation_familliale: null,
-                                nom_mari: null,
-                                date_mariage: null,
-                                lieu_mariage: null,
-                                notifie: '',
-                                civilite: '',
-                              },
-                            ]);
-                          }
-                        }}
+                        onClick={handleFakeSubmit}
+                        disabled={newClientForms.some((form) => form.check)} // Vérifier tous les formulaires
                         className={`px-6 py-2 rounded-md ${
-                          !isFormValid() || check
+                          newClientForms.some((form) => form.check)
                             ? 'bg-gray-400 cursor-not-allowed'
-                            : 'bg-blue-600 hover:bg-blue-700 text-white'
-                        }`}
+                            : 'bg-blue-600 hover:bg-blue-700'
+                        } text-white`}
                       >
-                        {/* || check_p*/}
                         Ajouter
                       </button>
                     </div>
@@ -2977,6 +3510,10 @@ export default function ReservationForm({ id }) {
                                   setClientToEdit({
                                     ...client,
                                     originalIndex: index,
+                                    check: false, // Initialiser à false
+                                      check_field: null, // <-- Ajoutez ceci
+
+                                    check_p: false, // Initialiser à false
                                   });
                                   setShowEditModal(true);
                                 }}
@@ -3023,7 +3560,11 @@ export default function ReservationForm({ id }) {
                         Modifier Client
                       </h3>
                       <button
-                        onClick={() => setShowEditModal(false)}
+                        onClick={() => {
+                          setShowEditModal(false);
+                          // Réinitialiser clientToEdit
+                          setClientToEdit(null);
+                        }}
                         className="text-gray-400 hover:text-gray-500"
                       >
                         <XIcon className="w-6 h-6" />
@@ -3113,6 +3654,7 @@ export default function ReservationForm({ id }) {
                               )}
                           </div>
                         )}
+                        {/* CIN dans le formulaire d'édition */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             Cin<span className="text-red-500 ml-1">*</span>
@@ -3124,46 +3666,60 @@ export default function ReservationForm({ id }) {
                               const value = e.target.value;
                               setClientToEdit({
                                 ...clientToEdit,
-                                cin: e.target.value,
+                                cin: value,
+                                check: false, // Réinitialiser check
+                                check_p: false,
+                                  check_field: null, // <-- Ajoutez ceci
+
                               });
 
                               // Only make API call if CIN has sufficient length
-                              if (value.length >= 8) {
+                              if (value.length >= 3) {
                                 await fetch_cin_tel(
                                   'cin',
                                   value,
-                                  0, // Default formIndex or pass the correct index
+                                  0, // formIndex non utilisé en mode édition
                                   accessToken,
-                                  updateFormField
+                                  null, // updateFormField non utilisé en mode édition
+                                  true, // isEditMode = true
+                                  setClientToEdit // passer setClientToEdit
                                 );
                               }
                             }}
                             onBlur={async (e) => {
                               const value = e.target.value;
-                              // Optional: Validate again when leaving the field
-                              if (value.length >= 8) {
+                              if (value.length >= 3) {
                                 await fetch_cin_tel(
                                   'cin',
                                   value,
-                                  0, // Default formIndex or pass the correct index
+                                  0,
                                   accessToken,
-                                  updateFormField
+                                  null,
+                                  true,
+                                  setClientToEdit
                                 );
                               }
                             }}
                             className={`w-full h-[38px] px-3 py-2 text-sm border ${
-                              clientToEdit.cin?.trim() === ''
+                              clientToEdit.cin?.trim() === '' ||
+                              clientToEdit.check && form.check_field === 'cin'
                                 ? 'border-red-500'
                                 : 'border-gray-300'
                             } rounded-md focus:outline-none focus:border-gray-500`}
+                           // disabled={clientToEdit.check} // Désactiver si client existe
                           />
+                          {clientToEdit.check && form.check_field === 'cin' && (
+                            <p className="text-red-500 text-xs mt-1">
+                              Ce CIN existe déjà. Veuillez utiliser le client
+                              existant.
+                            </p>
+                          )}
                           {clientToEdit.cin?.trim() === '' && (
                             <p className="text-red-500 text-xs mt-1">
                               CIN est obligatoire
                             </p>
                           )}
                         </div>
-
                         {/* NOM */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -3297,6 +3853,7 @@ export default function ReservationForm({ id }) {
                         </div>
 
                         {/* TÉLÉPHONE */}
+                        {/* Téléphone dans le formulaire d'édition */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             Téléphone{' '}
@@ -3307,43 +3864,59 @@ export default function ReservationForm({ id }) {
                             pattern="[0-9]{8,}"
                             value={clientToEdit.telephone_num1}
                             onChange={async (e) => {
-                              const value = e.target.value.replace(/\D/g, ''); // Remove non-digit characters
+                              const value = e.target.value.replace(/\D/g, '');
                               setClientToEdit({
                                 ...clientToEdit,
                                 telephone_num1: value,
+                                check: false, // Réinitialiser check
+                                check_p: false,
+                                  check_field: null, // <-- Ajoutez ceci
+
                               });
 
                               // Only make API call if phone number has sufficient length
                               if (value.length >= 8) {
                                 await fetch_cin_tel(
-                                  'tel', // Changed from 'cin' to 'tel' since this is a telephone field
+                                  'tel',
                                   value,
                                   0,
                                   accessToken,
-                                  updateFormField
+                                  null,
+                                  true, // isEditMode = true
+                                  setClientToEdit
                                 );
                               }
                             }}
                             onBlur={async (e) => {
                               const value = e.target.value.replace(/\D/g, '');
-                              // Validate again when leaving the field
                               if (value.length >= 8) {
                                 await fetch_cin_tel(
                                   'tel',
                                   value,
-                                  0, // Default formIndex or pass the correct index
+                                  0,
                                   accessToken,
-                                  updateFormField
+                                  null,
+                                  true,
+                                  setClientToEdit
                                 );
                               }
                             }}
                             className={`w-full h-[38px] px-3 py-2 text-sm border ${
                               String(clientToEdit.telephone_num1 || '').length <
-                                8 || isNaN(clientToEdit.telephone_num1)
+                                8 ||
+                              isNaN(clientToEdit.telephone_num1) ||
+                              clientToEdit.check && form.check_field === 'tel'
                                 ? 'border-red-500'
                                 : 'border-gray-300'
                             } rounded-md focus:outline-none focus:border-gray-500`}
+                           // disabled={clientToEdit.check} // Désactiver si client existe
                           />
+                          {clientToEdit.check && form.check_field === 'tel' && (
+                            <p className="text-red-500 text-xs mt-1">
+                              Ce numéro existe déjà. Veuillez utiliser le client
+                              existant.
+                            </p>
+                          )}
                           {String(clientToEdit.telephone_num1 || '').length <
                             8 && (
                             <p className="text-red-500 text-xs mt-1">
@@ -3498,77 +4071,67 @@ export default function ReservationForm({ id }) {
                         )}
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Accepte{"d'"}être contacté
-                            <span className="text-red-500 ml-1">*</span>
-                          </label>
+  <label className="block text-sm font-medium text-gray-700 mb-1">
+    Accepte{"d'"}être contacté
+    <span className="text-red-500 ml-1">*</span>
+  </label>
 
-                          <div
-                            className={`w-full h-[38px] px-3 py-2 text-sm border ${
-                              clientToEdit.notifie === undefined ||
-                              clientToEdit.notifie === null
-                                ? 'border-red-500'
-                                : 'border-gray-300'
-                            } rounded-md focus:outline-none focus:border-gray-500 flex items-center`}
-                          >
-                            <div className="flex space-x-4">
-                              {/* Yes Radio Button */}
-                              <label className="inline-flex items-center">
-                                <input
-                                  type="radio"
-                                  name="notifie"
-                                  value="1"
-                                  checked={clientToEdit.notifie == '1'}
-                                  onChange={(e) => {
-                                    console.log(
-                                      'Selected value:',
-                                      e.target.value
-                                    );
-                                    setClientToEdit({
-                                      ...clientToEdit,
-                                      notifie: e.target.value,
-                                    });
-                                  }}
-                                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                                />
-                                <span className="ml-2 text-sm text-gray-700">
-                                  Oui
-                                </span>
-                              </label>
+  <div
+    className={`w-full h-[38px] px-3 py-2 text-sm border ${
+      clientToEdit.notifie === undefined ||
+      clientToEdit.notifie === null
+        ? 'border-red-500'
+        : 'border-gray-300'
+    } rounded-md focus:outline-none focus:border-gray-500 flex items-center`}
+  >
+    <div className="flex space-x-4">
+      {/* Yes Radio Button */}
+      <label className="inline-flex items-center">
+        <input
+          type="radio"
+          name="notifie"
+          value="1"
+          checked={clientToEdit.notifie === '1' || clientToEdit.notifie === 1}
+          onChange={(e) => {
+            console.log('Selected value:', e.target.value);
+            setClientToEdit({
+              ...clientToEdit,
+              notifie: e.target.value,
+            });
+          }}
+          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+        />
+        <span className="ml-2 text-sm text-gray-700">Oui</span>
+      </label>
 
-                              {/* No Radio Button */}
-                              <label className="inline-flex items-center">
-                                <input
-                                  type="radio"
-                                  name="notifie"
-                                  value="0"
-                                  checked={clientToEdit.notifie == ''}
-                                  onChange={(e) => {
-                                    console.log(
-                                      'Selected value:',
-                                      e.target.value
-                                    );
-                                    setClientToEdit({
-                                      ...clientToEdit,
-                                      notifie: e.target.value,
-                                    });
-                                  }}
-                                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                                />
-                                <span className="ml-2 text-sm text-gray-700">
-                                  Non
-                                </span>
-                              </label>
-                            </div>
-                          </div>
+      {/* No Radio Button - CORRECTION ICI */}
+      <label className="inline-flex items-center">
+        <input
+          type="radio"
+          name="notifie"
+          value="0"
+          checked={clientToEdit.notifie === '0' || clientToEdit.notifie === 0 || clientToEdit.notifie === ''}
+          onChange={(e) => {
+            console.log('Selected value:', e.target.value);
+            setClientToEdit({
+              ...clientToEdit,
+              notifie: e.target.value,
+            });
+          }}
+          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+        />
+        <span className="ml-2 text-sm text-gray-700">Non</span>
+      </label>
+    </div>
+  </div>
 
-                          {(clientToEdit.notifie === undefined ||
-                            clientToEdit.notifie === null) && (
-                            <p className="text-red-500 text-xs mt-1">
-                              Cette sélection est obligatoire
-                            </p>
-                          )}
-                        </div>
+  {(clientToEdit.notifie === undefined ||
+    clientToEdit.notifie === null) && (
+    <p className="text-red-500 text-xs mt-1">
+      Cette sélection est obligatoire
+    </p>
+  )}
+</div>
                         {/* ADDRESS (Optional) */}
                         <div className="md:col-span-2">
                           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -3587,7 +4150,68 @@ export default function ReservationForm({ id }) {
                           ></textarea>
                         </div>
                       </div>
-
+                      {/* Validation Errors Display for Edit Modal */}
+                      {validateEditClientForm().length > 0 && (
+                        <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                          <div className="flex items-start">
+                            <svg
+                              className="w-5 h-5 text-red-600 mr-2 mt-0.5 flex-shrink-0"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                            <div className="flex-1">
+                              <h3 className="text-red-800 font-semibold mb-2">
+                                Veuillez corriger les erreurs suivantes :
+                              </h3>
+                              <ul className="list-disc pl-5 space-y-1">
+                                {validateEditClientForm().map(
+                                  (error, index) => (
+                                    <li
+                                      key={index}
+                                      className="text-red-700 text-sm"
+                                    >
+                                      {error}
+                                    </li>
+                                  )
+                                )}
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      {clientToEdit?.check && (
+                        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                          <div className="flex items-start">
+                            <svg
+                              className="w-5 h-5 text-yellow-600 mr-2 mt-0.5"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                            <div>
+                              <h4 className="text-sm font-medium text-yellow-800">
+                                Client existant détecté
+                              </h4>
+                              <p className="text-xs text-yellow-700 mt-1">
+                                Ces informations (téléphone ou CIN) existent
+                                déjà dans la base de données. Veuillez corriger
+                                les informations ou utiliser le client existant.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                       <div className="mt-6 flex justify-end space-x-3">
                         <button
                           onClick={() => setShowEditModal(false)}
@@ -3595,17 +4219,33 @@ export default function ReservationForm({ id }) {
                         >
                           Annuler
                         </button>
+                        {/*|| clientToEdit?.check_p*/}
                         <button
                           type="submit"
-                          disabled={!isFormValid_Edit()}
                           className={`px-6 py-2 rounded-md ${
-                            !isFormValid_Edit()
-                              ? 'bg-gray-400 cursor-not-allowed' // Disabled style
-                              : 'bg-blue-600 hover:bg-blue-700' // Enabled style
+                            clientToEdit?.check
+                              ? 'bg-gray-400 cursor-not-allowed'
+                              : 'bg-blue-600 hover:bg-blue-700'
                           } text-white`}
-                          onClick={() => {
-                            if (isFormValid_Edit()) {
-                              // Update the client in the addedClients array
+                          onClick={(e) => {
+                            e.preventDefault();
+
+                            // Désactiver si client existe || clientToEdit?.check_p
+                            if (clientToEdit?.check) {
+                              toast.error(
+                                'Impossible de modifier ce client car il existe déjà dans la base de données.',
+                                {
+                                  position: 'top-center',
+                                  duration: 5000,
+                                }
+                              );
+                              return;
+                            }
+
+                            const validationErrors = validateEditClientForm();
+
+                            if (validationErrors.length === 0) {
+                              // Procéder à la modification
                               const updatedClients = [...addedClients];
                               updatedClients[clientToEdit.originalIndex] = {
                                 cin: clientToEdit.cin,
@@ -3621,7 +4261,6 @@ export default function ReservationForm({ id }) {
                                     : null,
                                 situation_familliale:
                                   clientToEdit.situation_familliale,
-                                // Clear marriage fields if not married
                                 nom_mari:
                                   clientToEdit.situation_familliale == '2'
                                     ? clientToEdit.nom_mari
@@ -3637,20 +4276,21 @@ export default function ReservationForm({ id }) {
                                 civilite: clientToEdit.civilite,
                                 notifie: clientToEdit.notifie,
                               };
+
                               setAddedClients(updatedClients);
                               setValue('clients', updatedClients);
 
-                              // Then calculate with the NEW updatedClients array
+                              // Recalculate percentages
                               const sum_percent_select = inputList1.reduce(
                                 (sum, nombres) =>
-                                  sum + Number(nombres.pourcentage) || 0,
+                                  sum + (Number(nombres.pourcentage) || 0),
                                 0
                               );
 
                               const totalPercentage_client_form =
                                 updatedClients.reduce(
                                   (sum, client) =>
-                                    sum + Number(client.pourcentage || 0),
+                                    sum + (Number(client.pourcentage) || 0),
                                   0
                                 );
 
@@ -3661,20 +4301,30 @@ export default function ReservationForm({ id }) {
 
                               const isValid = totalPercentage === 100;
                               setValue('verifierPourcentages', isValid);
-                              //setenabled(isValid ? 'none' : 'block');
+
                               if (isValid) {
                                 setHasPercentageChanged(false);
                               }
-                              console.log(
-                                'total==>' +
-                                  totalPercentage +
-                                  'w valid==>' +
-                                  getValues('verifierPourcentages')
-                              );
 
                               setShowEditModal(false);
+
+                              toast.success('Client modifié avec succès', {
+                                position: 'top-center',
+                                duration: 3000,
+                              });
+                            } else {
+                              toast.error(
+                                `Veuillez corriger ${validationErrors.length} erreur(s)`,
+                                {
+                                  position: 'top-center',
+                                  duration: 5000,
+                                }
+                              );
                             }
                           }}
+                          disabled={
+                            clientToEdit?.check || clientToEdit?.check_p
+                          } // Désactiver si client existe
                         >
                           Enregistrer
                         </button>
@@ -3839,7 +4489,9 @@ export default function ReservationForm({ id }) {
                       watch('avance') == 0 &&
                       user?.role > 2 && (
                         <p style={{ color: 'red' }}>
-                          Le montant ne peut pas être 0 pour votre rôle
+                          Votre rôle ne vous permet pas de créer une réservation
+                          avec un montant de 0. Veuillez saisir un montant
+                          positif.{' '}
                         </p>
                       )}
                     {watch('avance') > 0 &&
@@ -3987,34 +4639,40 @@ export default function ReservationForm({ id }) {
                         defaultValues={defaultValues}
                       />
                     )}
-                  {watch('avance') != '' && watch('avance') == 0 && (
-                    <Controller
-                      name="check_montant"
-                      control={control}
-                      defaultValue={defaultValues?.check_montant || ''}
-                      render={({ field }) => (
-                        <div className="flex items-center">
-                          <input
-                            {...field}
-                            id="check_montant"
-                            type="checkbox"
-                            checked={field.value == true} // Or whatever string value you use
-                            onChange={(e) =>
-                              field.onChange(e.target.checked ? true : false)
-                            }
-                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                          />
-                          <label
-                            htmlFor="check_montant"
-                            className="ml-2 block text-sm text-gray-700"
-                          >
-                            Voulez vous Enregistrer la Réservation sans montant?
-                            (Prière de saisir un commentaire)
-                          </label>
-                        </div>
-                      )}
-                    />
-                  )}
+                  {/* Only show the checkbox for users with role ≤ 2 when amount is 0 */}
+
+                  {/* Only show the checkbox for users with role ≤ 2 when amount is 0 */}
+                  {watch('avance') != '' &&
+                    watch('avance') == 0 &&
+                    user?.role <= 2 && (
+                      <Controller
+                        name="check_montant"
+                        control={control}
+                        defaultValue={defaultValues?.check_montant || ''}
+                        render={({ field }) => (
+                          <div className="flex items-center">
+                            <input
+                              {...field}
+                              id="check_montant"
+                              type="checkbox"
+                              checked={field.value == true}
+                              onChange={(e) =>
+                                field.onChange(e.target.checked ? true : false)
+                              }
+                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            />
+                            <label
+                              htmlFor="check_montant"
+                              className="ml-2 block text-sm text-gray-700"
+                            >
+                              Voulez vous Enregistrer la Réservation sans
+                              montant? (Prière de saisir un commentaire)
+                            </label>
+                          </div>
+                        )}
+                      />
+                    )}
+
                   <TextField
                     label="Commentaire:"
                     name="commentaireAvance"
@@ -4176,6 +4834,36 @@ export default function ReservationForm({ id }) {
           </div>
         )}
 
+        {/* Validation Errors Display */}
+        {validationErrors.length > 0 && (
+          <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-start">
+              <svg
+                className="w-5 h-5 text-red-600 mr-2 mt-0.5 flex-shrink-0"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <div className="flex-1">
+                <h3 className="text-red-800 font-semibold mb-2">
+                  Veuillez corriger les erreurs suivantes :
+                </h3>
+                <ul className="list-disc pl-5 space-y-1">
+                  {validationErrors.map((error, index) => (
+                    <li key={index} className="text-red-700 text-sm">
+                      {error}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
         <div className="flex justify-between mt-8">
           <button
             type="button" // Prevent accidental form submission
@@ -4194,9 +4882,7 @@ export default function ReservationForm({ id }) {
             <Button
               type="submit"
               onClick={handleSubmit(onSubmit)}
-              disabled={isButtonDisabled()}
               loading={loading.form}
-              className={isButtonDisabled() ? '!bg-[rgb(45_133_72_/_28%)]' : ''}
             >
               Enregistrer
             </Button>

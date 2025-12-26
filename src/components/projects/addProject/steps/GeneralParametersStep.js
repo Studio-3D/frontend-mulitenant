@@ -45,6 +45,70 @@ export const GeneralParametersStep = ({
     }
   }, [formData.parameters.utilisateursAcces, users, isInitialized]);
 
+  // Prepare user options with "Tous les utilisateurs" option
+  const userOptions = React.useMemo(() => {
+    const options = users.map((user) => ({
+      value: user.id.toString(),
+      label: `${user.prenom} ${user.name}`,
+    }));
+    
+    // Add "Tous les utilisateurs" option at the beginning
+    if (users.length > 0) {
+      return [
+        {
+          value: 'tous',
+          label: 'Tous les utilisateurs',
+          isSpecial: true
+        },
+        ...options
+      ];
+    }
+    return options;
+  }, [users]);
+
+  // Handle user selection from dropdown
+  const handleUserSelection = (selectedValues) => {
+    // Check if "Tous" was selected or deselected
+    const hasTous = selectedValues.includes('tous');
+    const previouslyHadTous = selectedUserIds.includes('tous');
+    
+    if (hasTous && !previouslyHadTous) {
+      // "Tous" was selected - select all actual user IDs
+      const allUserIds = users.map(user => user.id.toString());
+      setSelectedUserIds(['tous', ...allUserIds]);
+      updateFormData(`parameters.utilisateursAcces`, allUserIds);
+    } else if (!hasTous && previouslyHadTous) {
+      // "Tous" was deselected - clear all selections
+      setSelectedUserIds([]);
+      updateFormData(`parameters.utilisateursAcces`, []);
+    } else if (hasTous && selectedValues.length === 1) {
+      // Only "Tous" is selected
+      setSelectedUserIds(['tous']);
+      updateFormData(`parameters.utilisateursAcces`, []);
+    } else if (hasTous && selectedValues.length > 1) {
+      // "Tous" plus other users selected - remove "Tous" from the list
+      const filteredValues = selectedValues.filter(value => value !== 'tous');
+      setSelectedUserIds(filteredValues);
+      updateFormData(`parameters.utilisateursAcces`, filteredValues);
+    } else {
+      // Normal user selection
+      setSelectedUserIds(selectedValues || []);
+      updateFormData(`parameters.utilisateursAcces`, selectedValues || []);
+    }
+    
+    if (display_errors_users) {
+      setDisplay_Errors_users(false);
+    }
+  };
+
+  // Get the full user objects for display
+  const getSelectedUsers = () => {
+    return selectedUserIds
+      .filter(id => id !== 'tous')
+      .map((id) => users.find((user) => user.id.toString() === id.toString()))
+      .filter(Boolean);
+  };
+
   // Add new item to a parameter field
   const handleAddItem = (field) => {
     if (inputValues[field].trim()) {
@@ -78,28 +142,6 @@ export const GeneralParametersStep = ({
     );
     updateFormData(`parameters.${field}`, newItems);
   };
-
-  // Handle user selection from dropdown
-  const handleUserSelection = (selectedValues) => {
-    setSelectedUserIds(selectedValues || []);
-    updateFormData(`parameters.utilisateursAcces`, selectedValues || []);
-    if (display_errors_users) {
-      setDisplay_Errors_users(false);
-    }
-  };
-
-  // Get the full user objects for display
-  const getSelectedUsers = () => {
-    return selectedUserIds
-      .map((id) => users.find((user) => user.id.toString() === id.toString()))
-      .filter(Boolean);
-  };
-
-  // Prepare user options for SelectInput
-  const userOptions = users.map((user) => ({
-    value: user.id.toString(),
-    label: `${user.prenom} ${user.name}`,
-  }));
 
   // Get display value for an item
   const getItemDisplayValue = (item, field) => {
@@ -186,7 +228,10 @@ export const GeneralParametersStep = ({
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (selectedUserIds.length === 0) {
+    // Check if any users are selected (excluding the "tous" option)
+    const actualSelectedUserIds = selectedUserIds.filter(id => id !== 'tous');
+    
+    if (actualSelectedUserIds.length === 0 && selectedUserIds.length === 0) {
       setDisplay_Errors_users(true);
       updateFormData('touched', {
         ...formData.touched,
@@ -210,6 +255,9 @@ export const GeneralParametersStep = ({
     onSubmit();
   };
 
+  // Check if "Tous" is selected
+  const isTousSelected = selectedUserIds.includes('tous');
+  
   // Get selected users for display
   const selectedUsers = getSelectedUsers();
 
@@ -220,62 +268,123 @@ export const GeneralParametersStep = ({
           Paramètres généraux
         </h3>
         {editMode ? (
-          <div className="space-y-3 mb-6">
-            <label className="block text-sm font-medium text-gray-700">
-              Utilisateurs avec accès au projet{' '}
-              <span className="text-red-500">*</span>
-            </label>
-            <SelectInput
-              isMulti
-              label=""
-              placeholder="Sélectionnez des utilisateurs"
-              options={userOptions}
-              value={selectedUserIds}
-              onChange={handleUserSelection}
-              error={errors.parameters?.utilisateursAcces}
-              submitted={touched.parameters?.utilisateursAcces}
-              required
-            />
+          // Edit mode layout - full width for users section
+          <div className="space-y-6">
+            {/* Users Access Section for Edit Mode */}
+            <div className="space-y-3 mb-6">
+              <label className="block text-sm font-medium text-gray-700">
+                Utilisateurs avec accès au projet{' '}
+                <span className="text-red-500">*</span>
+              </label>
 
-            {/* Display selected users */}
-            {selectedUsers.length > 0 && (
-              <div className="mt-3">
-                <h4 className="text-sm font-medium text-gray-700 mb-2">
-                  {editMode ? 'Utilisateurs existants' : 'Utilisateurs ajoutés'}{' '}
-                  ({selectedUsers.length})
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                  {selectedUsers.map((user) => (
-                    <div
-                      key={user.id}
-                      className="flex items-center bg-blue-50 rounded-full px-3 py-1 border border-blue-100"
-                    >
-                      <span className="text-sm text-blue-800">{`${user.prenom} ${user.name}`}</span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const updatedIds = selectedUserIds.filter(
-                            (id) => id !== user.id.toString()
-                          );
-                          handleUserSelection(updatedIds);
-                        }}
-                        className="ml-2 text-blue-500 hover:text-blue-700"
-                        aria-label={`Retirer ${user.prenom} ${user.name}`}
-                      >
-                        <XIcon size={14} />
-                      </button>
+              <SelectInput
+                isMulti
+                label=""
+                placeholder="Sélectionnez des utilisateurs"
+                options={userOptions}
+                value={selectedUserIds}
+                onChange={handleUserSelection}
+                error={errors.parameters?.utilisateursAcces}
+                submitted={touched.parameters?.utilisateursAcces}
+                required
+              />
+
+              {/* Display selected users */}
+              {(selectedUsers.length > 0 || isTousSelected) && (
+                <div className="mt-3">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">
+                    {isTousSelected ? (
+                      <span className="text-green-600">✓ Tous les utilisateurs sélectionnés</span>
+                    ) : (
+                      `Utilisateurs existants (${selectedUsers.length})`
+                    )}
+                  </h4>
+                  {!isTousSelected && selectedUsers.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {selectedUsers.map((user) => (
+                        <div
+                          key={user.id}
+                          className="flex items-center bg-blue-50 rounded-full px-3 py-1 border border-blue-100"
+                        >
+                          <span className="text-sm text-blue-800">{`${user.prenom} ${user.name}`}</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updatedIds = selectedUserIds.filter(
+                                (id) => id !== user.id.toString()
+                              );
+                              handleUserSelection(updatedIds);
+                            }}
+                            className="ml-2 text-blue-500 hover:text-blue-700"
+                            aria-label={`Retirer ${user.prenom} ${user.name}`}
+                          >
+                            <XIcon size={14} />
+                          </button>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  )}
                 </div>
-              </div>
-            )}
-            {display_errors_users && (
-              <div className="text-red-500 text-sm mt-1">
-                {'Veuillez sélectionner au moins un utilisateur'}
+              )}
+              {display_errors_users && (
+                <div className="text-red-500 text-sm mt-1">
+                  {'Veuillez sélectionner au moins un utilisateur'}
+                </div>
+              )}
+            </div>
+
+            {/* Other parameters in edit mode (only if they exist) */}
+            {(formData.parameters.typesDeBien?.length > 0 ||
+              formData.parameters.vues?.length > 0 ||
+              formData.parameters.typologies?.length > 0 ||
+              formData.parameters.partenaires?.length > 0) && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Left Column */}
+                <div>
+                  {formData.parameters.typesDeBien?.length > 0 &&
+                    renderParameterField('typesDeBien', 'Types de bien')}
+                  {formData.parameters.vues?.length > 0 &&
+                    renderParameterField('vues', 'Vues')}
+                  {formData.parameters.typologies?.length > 0 &&
+                    renderParameterField('typologies', 'Typologies')}
+                </div>
+
+                {/* Right Column */}
+                <div>
+                  {formData.parameters.partenaires?.length > 0 && (
+                    <div className="space-y-3 mb-6">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Partenaires existants
+                      </label>
+                      <div className="flex flex-col gap-2">
+                        {formData.parameters.partenaires.map(
+                          (partenaire, index) => (
+                            <div
+                              key={index}
+                              className="flex items-center justify-between bg-gray-100 rounded-md px-3 py-2"
+                            >
+                              <div>
+                                <span className="font-medium">
+                                  {getItemDisplayValue(partenaire, 'partenaires')}
+                                </span>
+                                {partenaire.remise && (
+                                  <span className="ml-2 text-sm text-gray-500">
+                                    Remise: {partenaire.remise}%
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
         ) : (
+          // Non-edit mode layout - two columns
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Left Column */}
             <div>
@@ -337,10 +446,7 @@ export const GeneralParametersStep = ({
                 {(formData.parameters.partenaires || []).length > 0 && (
                   <div className="mt-2">
                     <h4 className="text-sm font-medium text-gray-700 mb-2">
-                      {editMode
-                        ? 'Partenaires existants'
-                        : 'Partenaires ajoutés'}{' '}
-                      ({formData.parameters.partenaires.length})
+                      Partenaires ajoutés ({formData.parameters.partenaires.length})
                     </h4>
                     <div className="flex flex-col gap-2">
                       {formData.parameters.partenaires.map(
@@ -400,37 +506,40 @@ export const GeneralParametersStep = ({
                 />
 
                 {/* Display selected users */}
-                {selectedUsers.length > 0 && (
+                {(selectedUsers.length > 0 || isTousSelected) && (
                   <div className="mt-3">
                     <h4 className="text-sm font-medium text-gray-700 mb-2">
-                      {editMode
-                        ? 'Utilisateurs existants'
-                        : 'Utilisateurs ajoutés'}{' '}
-                      ({selectedUsers.length})
+                      {isTousSelected ? (
+                        <span className="text-green-600">✓ Tous les utilisateurs sélectionnés</span>
+                      ) : (
+                        `Utilisateurs ajoutés (${selectedUsers.length})`
+                      )}
                     </h4>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedUsers.map((user) => (
-                        <div
-                          key={user.id}
-                          className="flex items-center bg-blue-50 rounded-full px-3 py-1 border border-blue-100"
-                        >
-                          <span className="text-sm text-blue-800">{`${user.prenom} ${user.name}`}</span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const updatedIds = selectedUserIds.filter(
-                                (id) => id !== user.id.toString()
-                              );
-                              handleUserSelection(updatedIds);
-                            }}
-                            className="ml-2 text-blue-500 hover:text-blue-700"
-                            aria-label={`Retirer ${user.prenom} ${user.name}`}
+                    {!isTousSelected && selectedUsers.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {selectedUsers.map((user) => (
+                          <div
+                            key={user.id}
+                            className="flex items-center bg-blue-50 rounded-full px-3 py-1 border border-blue-100"
                           >
-                            <XIcon size={14} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
+                            <span className="text-sm text-blue-800">{`${user.prenom} ${user.name}`}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updatedIds = selectedUserIds.filter(
+                                  (id) => id !== user.id.toString()
+                                );
+                                handleUserSelection(updatedIds);
+                              }}
+                              className="ml-2 text-blue-500 hover:text-blue-700"
+                              aria-label={`Retirer ${user.prenom} ${user.name}`}
+                            >
+                              <XIcon size={14} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
                 {display_errors_users && (

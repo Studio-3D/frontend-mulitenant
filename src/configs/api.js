@@ -103,7 +103,7 @@ export const ENDPOINTS = {
   TYPEFREINS: '/administration/freins',
   SOURCES: '/administration/sources',
   PARTENAIRES: '/administration/partenaires',
-  PROJETS: '/projets/home',
+  PROJETS: '/Projets',
   TRANCHES: '/tranches/home',
   BLOCS: '/blocs/home',
   IMMEUBLES: '/immeubles/home',
