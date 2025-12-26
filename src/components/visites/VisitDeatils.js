@@ -31,11 +31,14 @@ import {
   DownloadIcon,
   ChevronUpIcon,
   ChevronDownIcon,
+  Euro,
 } from 'lucide-react';
 import format from 'date-fns/format';
 import {
+  Statut_SUIVI_DOSSIER,
   VISITE_INTERETS,
   VISITE_STATUT,
+  getModePaiementLabel,
   getRelance_label,
 } from '../../../src/configs/enum';
 import { PDFDownloadLink } from '@react-pdf/renderer';
@@ -117,6 +120,38 @@ export function VisitDetails({
       </span>
     );
   };
+ const getStatut_suivi_dos = (val) => {
+  const statutInfo = Statut_SUIVI_DOSSIER[val];
+  
+  // Define colors for different statuses
+  const getColorClass = (code) => {
+    switch(code) {
+      case '1': return 'bg-blue-100 !text-blue-800'; // Nouvelle avance
+      case '2': return 'bg-yellow-100 !text-yellow-800'; // Question travaux
+      case '3': return 'bg-purple-100 !text-purple-800'; // Suivi paiement
+      case '4': return 'bg-indigo-100 !text-indigo-800'; // Question documents
+      case '5': return 'bg-green-100 !text-green-800'; // Suivi livraison
+      case '7': return 'bg-pink-100 !text-pink-800'; // Signature contrat
+      case '8': return 'bg-gray-100 !text-gray-800'; // Autre question
+      default: return 'bg-gray-100 !text-gray-800';
+    }
+  };
+
+  return (
+    <div className="flex flex-col">
+      <span
+        className={`px-2 py-1 rounded-full text-xs font-medium inline-block w-fit mb-1 ${getColorClass(val)}`}
+      >
+        {statutInfo?.label || val || 'Non spécifié'}
+      </span>
+      {statutInfo?.description && (
+        <span className="text-xs text-gray-500 mt-1">
+          {statutInfo.description}
+        </span>
+      )}
+    </div>
+  );
+};
   const getStatutBadge = (statut) => {
     const statut_info = VISITE_STATUT[statut];
     return (
@@ -1044,6 +1079,21 @@ export function VisitDetails({
                                   <EyeIcon className="h-5 w-5 text-gray-700" />
                                 </button>
                               )}
+                              {visite.interet == 5 &&
+                                visite?.statut_client?.reservation_id !=
+                                  null && (
+                                  <button
+                                    title="Détail du Réservation"
+                                    onClick={() =>
+                                      handleView_Reservation(
+                                        visite?.statut_client?.reservation_id
+                                      )
+                                    }
+                                    className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+                                  >
+                                    <EyeIcon className="h-5 w-5 text-gray-700" />
+                                  </button>
+                                )}
                               {/* Download PDF button */}
                               {(visite.statut == 1 ||
                                 visite.statut == 3 ||
@@ -1110,6 +1160,154 @@ export function VisitDetails({
                             </div>
                           }
                         />
+                        {visite.interet == 5 && (
+                          <InfoCard
+                            icon={<Euro className="h-5 w-5" />}
+                            title="Statut"
+                            value={getStatut_suivi_dos(
+                              visite?.statut_client?.statut
+                            )}
+                          />
+                        )}
+                        {visite.interet == 5 &&
+                          visite?.statut_client?.statut == '1' &&
+                          visite?.statut_client?.avance_id != null && (
+                            <>
+                              {/* Payment Details Card */}
+                              <div className="col-span-2">
+                                <div className="group bg-white/60 backdrop-blur-sm rounded-2xl p-6 border transition-all duration-300">
+                                  <div className="flex items-center space-x-3 mb-4">
+                                    <div className="text-[#2563eb] group-hover:scale-110 transition-transform">
+                                      <WalletIcon className="h-5 w-5" />
+                                    </div>
+                                    <h4 className="font-medium !text-gray-600">
+                                      Détails de l{"'"}Avance
+                                    </h4>
+                                  </div>
+
+                                  <div className="grid grid-cols-2 gap-4">
+                                    {/* Left Column */}
+                                    <div className="space-y-3">
+                                      <div className="flex justify-between items-center">
+                                        <span className="text-gray-600">
+                                          Montant:
+                                        </span>
+                                        <span className="font-bold text-green-600">
+                                          {visite?.statut_client?.avance?.montant?.toLocaleString()}{' '}
+                                          DH
+                                        </span>
+                                      </div>
+
+                                      <div className="flex justify-between items-center">
+                                        <span className="text-gray-600">
+                                          Mode Paiement:
+                                        </span>
+                                        <span className="font-medium">
+                                          {getModePaiementLabel(
+                                            visite?.statut_client?.avance
+                                              ?.mode_paiement
+                                          )}
+                                        </span>
+                                      </div>
+
+                                      {visite?.statut_client?.avance
+                                        ?.banque && (
+                                        <div className="flex justify-between items-center">
+                                          <span className="text-gray-600">
+                                            Banque:
+                                          </span>
+                                          <span className="font-medium">
+                                            {
+                                              visite?.statut_client?.avance
+                                                ?.banque?.nom
+                                            }
+                                          </span>
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    {/* Right Column */}
+                                    <div className="space-y-3">
+                                      {visite?.statut_client?.avance
+                                        ?.numero_paiement && (
+                                        <div className="flex justify-between items-center">
+                                          <span className="text-gray-600">
+                                            N° Paiement:
+                                          </span>
+                                          <span className="font-mono bg-gray-100 px-2 py-1 rounded text-sm">
+                                            {
+                                              visite?.statut_client?.avance
+                                                ?.numero_paiement
+                                            }
+                                          </span>
+                                        </div>
+                                      )}
+
+                                      <div className="flex justify-between items-center">
+                                        <span className="text-gray-600">
+                                          Date:
+                                        </span>
+                                        <span className="font-medium">
+                                          {visite?.statut_client
+                                            ?.date_traitement &&
+                                            format(
+                                              new Date(
+                                                visite?.statut_client?.date_traitement
+                                              ),
+                                              'dd/MM/yyyy'
+                                            )}
+                                        </span>
+                                      </div>
+
+                                      {visite?.statut_client?.avance
+                                        ?.echeance && (
+                                        <div className="flex justify-between items-center">
+                                          <span className="text-gray-600">
+                                            Échéance:
+                                          </span>
+                                          <span
+                                            className={`font-medium ${
+                                              new Date(
+                                                visite?.statut_client?.avance?.echeance
+                                              ) < new Date()
+                                                ? 'text-red-600'
+                                                : 'text-green-600'
+                                            }`}
+                                          >
+                                            {format(
+                                              new Date(
+                                                visite?.statut_client?.avance?.echeance
+                                              ),
+                                              'dd/MM/yyyy'
+                                            )}
+                                          </span>
+                                        </div>
+                                      )}
+                                    </div>
+                                    {visite?.statut_client?.avance
+                                      ?.commentaireAvance && (
+                                      <div className="flex justify-between items-center">
+                                        <span className="text-gray-600">
+                                          Commentaire sur Avance:
+                                        </span>
+                                        <span
+                                          className={`font-medium 
+                                                
+                                               
+                                            `}
+                                        >
+                                          {
+                                            visite?.statut_client?.avance
+                                              ?.commentaireAvance
+                                          }
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </>
+                          )}
                         {visite.interet == 2 && (
                           <>
                             {visite.relance_relation != null && (
@@ -1518,21 +1716,22 @@ export function VisitDetails({
                                   </Button>
                                 ) : (
                                   <>
-                                    {visite.interet == 3 && visite.interet != 5 && (
-                                      <Button
-                                        type="edit"
-                                        onClick={() => handleEdit(visite.id)}
-                                        disabled={
-                                          visite?.frein?.etat == 3 ||
-                                          visite?.frein?.etat == 4 ||
-                                          visite?.frein?.etat == 5
-                                            ? 'disabled'
-                                            : ''
-                                        }
-                                      >
-                                        Modifier
-                                      </Button>
-                                    )}
+                                    {visite.interet == 3 &&
+                                      visite.interet != 5 && (
+                                        <Button
+                                          type="edit"
+                                          onClick={() => handleEdit(visite.id)}
+                                          disabled={
+                                            visite?.frein?.etat == 3 ||
+                                            visite?.frein?.etat == 4 ||
+                                            visite?.frein?.etat == 5
+                                              ? 'disabled'
+                                              : ''
+                                          }
+                                        >
+                                          Modifier
+                                        </Button>
+                                      )}
                                   </>
                                 )}
 
