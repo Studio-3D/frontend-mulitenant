@@ -1,7 +1,5 @@
 'use client';
 
-import DeleteData from '@/components/DeleteData';
-import Modal from '@/components/Modal';
 import Table from '@/components/Table';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -126,7 +124,7 @@ const ReclamationTable = ({}) => {
       !formValues.statut ||
       !formValues.commentaire ||
       (formValues.statut == 1 && !formValues.date_traitement) ||
-      (formValues.statut != 1 && !formValues.date_fin_traitement)
+      (formValues.statut == 2 && !formValues.date_fin_traitement)
     ) {
       toast.error('Veuillez remplir tous les champs obligatoires.');
       return;
@@ -156,8 +154,7 @@ const ReclamationTable = ({}) => {
         }
       )
       .then(() => {
-        toast.success('Réclamation traitée !');
-
+        toast.success("L'action a été enregistrée avec succès !");
         setOpenDialog(false);
         setDisabled(false);
 
@@ -182,15 +179,7 @@ const ReclamationTable = ({}) => {
       });
   };
 
-  const statut = {
-    1: { code: 1, label: 'En Attente', color: 'bg-blue-100 !text-blue-800' },
-    2: { code: 2, label: 'En Cours', color: 'bg-blue-100 !text-blue-800' },
-    3: { code: 3, label: 'Resolu', color: 'bg-green-100 !text-green-800' },
-    4: { code: 4, label: 'Non Resolu', color: 'bg-red-100 !text-red-800' },
-  };
-
   function handleShow(row) {
-    sessionStorage.setItem('reclamationData', JSON.stringify(row)); // stocker la ligne
     router.push(`/Reclamations/show/${row.id}`);
   }
 
@@ -206,15 +195,7 @@ const ReclamationTable = ({}) => {
       label: 'Client',
       sortable: true,
       render: (row) => (
-        <Link
-          target="_blank"
-          href={'/clients/show/' + row.client_id}
-          style={{
-            textDecoration: 'none',
-            color: 'rgb(102 104 128)',
-          }}
-          className="text-[#666880] inline-block min-w-[200px]" // min-w élargit la colonne
-        >
+        <Link target="_blank" href={'/clients/' + row.client_id}>
           <strong>{row.client_nom + ' ' + row.client_prenom}</strong>
         </Link>
       ),
@@ -224,14 +205,7 @@ const ReclamationTable = ({}) => {
       label: 'Code reservation',
       sortable: true,
       render: (row) => (
-        <Link
-          target="_blank"
-          href={'/reservations/show/' + row.dossier_id}
-          style={{
-            textDecoration: 'none',
-            color: 'rgb(102 104 128)',
-          }}
-        >
+        <Link target="_blank" href={'/reservations/' + row.dossier_id}>
           <strong>{row.code_reservation}</strong>
         </Link>
       ),

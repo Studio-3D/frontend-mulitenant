@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import ReclamationClientForm from './ReclamationClientForm'
 import ReclamationClient from './ReclamationClientTable'
 
 export default function Page() {
@@ -13,26 +12,10 @@ export default function Page() {
   useEffect(() => {
     if (!searchParams) return
 
-    const id = searchParams.get('id')
-    const action = searchParams.get('action')
-
-    let newChild = determineChildComponent(action, id)
-    setChild(newChild)
   }, [searchParams])
 
   // Fonction pour déterminer le composant enfant en fonction de l'action et de l'id
-  const determineChildComponent = (action, id) => {
-    if (action === ACTION.ADD) {
-      return <ReclamationClientForm />
-    } else if (!isNaN(parseInt(id)) && action === ACTION.EDIT) {
-      return <ReclamationClientForm id={id} />
-    } else {
-      console.warn('Invalid action or missing id:', action, id) // Debugging
-
-      return null
-    }
-  }
-
+ 
   return (
     <div>
       {child ? (

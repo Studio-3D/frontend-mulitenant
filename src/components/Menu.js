@@ -56,8 +56,7 @@ import { useSociete } from '@/context/SocieteContext';
 import SocieteDialog from './SocieteDialog';
 import { useProjet } from '@/context/ProjetContext';
 import ProjetDialog from './ProjetDialog';
-import { ro, tr } from 'date-fns/locale';
-import { StepButton } from '@mui/material';
+
 
 const Menu = () => {
   const [menuItems, setMenuItems] = useState([]);
@@ -354,7 +353,7 @@ const Menu = () => {
     {
       label: 'Reclamations',
       icon: <FileText />,
-      href: '/reclamations',
+      href: '/Reclamations',
       needsSociete: user.role === 1,
       needsProjet: true,
     },

@@ -26,20 +26,22 @@ export default function SelectInput({
   const dropdownRef = useRef(null);
 
   // Sync internal value with external value and handle selected_Data
-  useEffect(() => {
-    if (selected_Data && value === '' && internalValue === '') {
-      // If selected_Data is provided and no value is set, use selected_Data
-      setInternalValue(selected_Data);
+ // In SelectInput component
+useEffect(() => {
+  if (selected_Data && value === '' && internalValue === '') {
+    // Add a check to prevent infinite updates
+    setInternalValue(selected_Data);
+    // Only call onChange if value is actually different
+    if (selected_Data !== value) {
       onChange(selected_Data);
-    } else if (isMulti) {
-      // Ensure value is always an array for multi-select
-      const newValue = Array.isArray(value) ? value : [];
-      setInternalValue(newValue);
-    } else {
-      setInternalValue(value || '');
     }
-  }, [value, isMulti, selected_Data, internalValue, onChange]);
-
+  } else if (isMulti) {
+    const newValue = Array.isArray(value) ? value : [];
+    setInternalValue(newValue);
+  } else {
+    setInternalValue(value || '');
+  }
+}, [value, isMulti, selected_Data]); // Remove internalValue and onChange from dependencies
   // Rest of your SelectInput component remains the same...
   const toggleDropdown = () => {
     if (disabled) return;

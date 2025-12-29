@@ -1,6 +1,5 @@
 "use client";
 
-import { Card, CardContent, Divider, Typography, Box, Grid } from '@mui/material';
 import { useEffect, useState } from 'react';
 import ReclamationTable from '../../../reclamations/ReclamationTable';
 import LoadingSpin from '@/components/LoadingSpin';
@@ -36,13 +35,7 @@ if (loading) {
         </div>
       );
   }
-  // Ligne info stylée
-  const InfoLine = ({ label, value }) => (
-    <Box display="flex" mb={1.2}>
-      <Typography sx={{ color: '#009FFF', fontWeight: 600, minWidth: 110 }}>{label} :</Typography>
-      <Typography sx={{ fontWeight: 500, color: '#222' }}>{value || '-'}</Typography>
-    </Box>
-  );
+
 
   return (
 <div className=" space-y-2">

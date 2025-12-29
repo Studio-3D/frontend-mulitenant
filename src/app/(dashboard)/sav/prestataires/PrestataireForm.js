@@ -8,13 +8,6 @@ import { useRouter } from 'next/navigation';
 import BreadCrumb from '../../navigation/BreadCrumb';
 import LoadingSpin from '@/components/LoadingSpin';
 
-import {
-  Grid,
-  FormControl,
-  TextField as TextField1,
-  Autocomplete as Autocomplete1,
-  Alert,
-} from '@mui/material';
 import { CIVILITES, getSCodeCivilite } from '@/components/client-utils';
 import { useProjet } from '@/context/ProjetContext';
 import SelectInput from '@/components/SelectInput';
@@ -269,9 +262,12 @@ const PrestataireForm = ({ id = null }) => {
 
       <div className="p-6 mt-4 bg-white shadow-md rounded-md">
         {info_client != null && (
-          <Grid style={{ marginTop: '10px', marginBottom: '10px' }}>
-            <Alert severity="warning">{info_client}</Alert>
-          </Grid>
+          <div
+            className="bg-[rgba(253,181,40,0.12)] border-l-4 border-yellow-500 text-[rgb(227,162,36)] p-4 text-center rounded"
+            style={{ marginTop: '10px', marginBottom: '10px' }}
+          >
+            <p>{info_client}</p>
+          </div>
         )}
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
@@ -338,6 +334,7 @@ const PrestataireForm = ({ id = null }) => {
                   error={
                     errors?.civilite?.message || backendErrors?.civilite?.[0]
                   }
+                   required={true}
                 />
               )}
             />

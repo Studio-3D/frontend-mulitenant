@@ -14,7 +14,6 @@ import SelectInput from '@/components/SelectInput';
 import { CIVILITES, SITUATION_FAMILIALLE } from '@/components/client-utils';
 import InputSelect from '@/components/inputSelect';
 import { TYPE_CLIENT } from '@/configs/enum';
-import { Alert, Grid } from '@mui/material';
 import { useProjet } from '@/context/ProjetContext';
 export default function ClientForm({ id, projetId, trancheId }) {
   const router = useRouter();
@@ -411,34 +410,31 @@ const handleSubmit = async (e) => {
       </div>
       <div className="p-6 mt-4 bg-white shadow-md rounded-md">
         {info_client != '' && (
-          <Grid style={{ marginTop: '10px', marginBottom: '10px' }}>
-            <Alert severity="warning">{info_client}</Alert>
-          </Grid>
+                            <div className="bg-[rgba(253,181,40,0.12)] border-l-4 border-yellow-500 text-[rgb(227,162,36)] p-4 text-center rounded">
+
+            <p >{info_client}</p>
+          </div>
         )}
-        {info_prospect != '' && (
-          <Grid style={{ marginTop: '10px', marginBottom: '10px' }}>
-            <Alert
-              severity="warning"
-              action={
-                <Button
-                  size="small"
-                  color="inherit"
-                  onClick={() => {
-                    setFormData((prev) => ({
-                      ...prev,
-                      prospect_id: prospect_id,
-                    }));
-                    setInfo_prospect('');
-                  }}
-                >
-                  Convertir en client
-                </Button>
-              }
-            >
-              {info_prospect}
-            </Alert>
-          </Grid>
-        )}
+ {info_prospect != '' && (
+  <div className="bg-blue-100 !text-blue-700 border-l-4 border-blue-500 p-4 text-center rounded">
+    <div className="flex justify-between items-center">
+      <span>{info_prospect}</span>
+      <Button
+        size="small"
+        color="inherit"
+        onClick={() => {
+          setFormData((prev) => ({
+            ...prev,
+            prospect_id: prospect_id,
+          }));
+          setInfo_prospect('');
+        }}
+      >
+        Convertir en client
+      </Button>
+    </div>
+  </div>
+)}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <h4 className="text-xl font-bold text-blue-700 mb-4 border-b-2 border-blue-300 pb-2 flex items-center gap-2 bg-white px-2 rounded-sm shadow-sm">
