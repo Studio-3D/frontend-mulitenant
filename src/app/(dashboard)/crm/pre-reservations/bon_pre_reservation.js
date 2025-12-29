@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   Document,
@@ -108,7 +107,7 @@ const MyDocument = ({ data }) => {
     prix,
     userName,
     userPrenom,
-    userData // Last element contains user data
+    userData, // Last element contains user data
   ] = data;
 
   // Use passed user data
@@ -122,24 +121,28 @@ const MyDocument = ({ data }) => {
         {/* En-tête avec logo */}
         <View style={styles.header}>
           <View style={styles.logoContainer}>
-           
             {imageUrl ? (
-              <Image 
-
-                src={'https://images.unsplash.com/photo-1560179707-f14e90ef3623?q=80&w=200&auto=format&fit=crop'}
+              <Image
+                src={
+                  'https://images.unsplash.com/photo-1560179707-f14e90ef3623?q=80&w=200&auto=format&fit=crop'
+                }
                 style={styles.logo}
               />
             ) : (
-              <View style={{ 
-                width: 80, 
-                height: 80, 
-                backgroundColor: '#f0f0f0',
-                justifyContent: 'center',
-                alignItems: 'center',
-                border: '1px solid #ccc'
-              }}>
+              <View
+                style={{
+                  width: 80,
+                  height: 80,
+                  backgroundColor: '#f0f0f0',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  border: '1px solid #ccc',
+                }}
+              >
                 <Text style={{ fontSize: 8, color: '#666' }}>LOGO</Text>
-                <Text style={{ fontSize: 6, color: '#999' }}>Non disponible</Text>
+                <Text style={{ fontSize: 6, color: '#999' }}>
+                  Non disponible
+                </Text>
               </View>
             )}
           </View>
@@ -155,7 +158,7 @@ const MyDocument = ({ data }) => {
             {societe?.ice && <Text>ICE: {societe.ice}</Text>}
           </View>
         </View>
-        
+
         <View style={styles.line} />
 
         {/* Titre principal */}
@@ -166,27 +169,31 @@ const MyDocument = ({ data }) => {
         <View style={styles.section}>
           <Text style={styles.text}>
             La société{' '}
-            <Text style={styles.bold}>{societe?.raison_sociale || 'Société'}</Text>,
-            confirme la pré-réservation du bien immobilier suivant :
+            <Text style={styles.bold}>
+              {societe?.raison_sociale || 'Société'}
+            </Text>
+            , confirme la pré-réservation du bien immobilier suivant :
           </Text>
 
           <View style={styles.propertyDetails}>
             <Text style={styles.text}>
               Le bien identifié sous la référence{' '}
-              <Text style={styles.bold}>{bien_propriete || ''}</Text> est situé au{' '}
-              {niveau == 0 ? 'Rez-de-chaussée' : niveau + 'ème étage'}, {"d'"}une superficie
-              de {superficie || ''} mètres carrés. Ce bien présente une orientation{' '}
-              <Text style={styles.bold}>{orientation || ''}</Text> et est proposé au
-              prix de{' '}
+              <Text style={styles.bold}>{bien_propriete || ''}</Text> est situé
+              au {niveau == 0 ? 'Rez-de-chaussée' : niveau + 'ème étage'},{' '}
+              {"d'"}une superficie de {superficie || ''} m². Ce bien est proposé
+              au prix de{' '}
               <Text style={styles.bold}>
                 {prix ? prix.toLocaleString('fr-FR') : ''} DH
               </Text>
               .
               {rdv_date && (
                 <>
-                  {' '}Un rendez-vous a été fixé pour le{' '}
+                  {' '}
+                  Un rendez-vous a été fixé pour le{' '}
                   <Text style={styles.bold}>
-                    {rdv_date ? new Date(rdv_date).toLocaleDateString('fr-FR') : ''}
+                    {rdv_date
+                      ? new Date(rdv_date).toLocaleDateString('fr-FR')
+                      : ''}
                   </Text>{' '}
                   afin de finaliser cette réservation.
                 </>
@@ -201,10 +208,12 @@ const MyDocument = ({ data }) => {
           </Text>
 
           <Text style={styles.text}>
-            La pré-réservation a été effectuée le{' '}
             <Text style={styles.bold}>
-              {date_pre_reserve ? new Date(date_pre_reserve).toLocaleDateString('fr-FR') : ''}
-            </Text>.
+              {date_pre_reserve
+                ? new Date(date_pre_reserve).toLocaleDateString('fr-FR')
+                : ''}
+            </Text>
+            .
           </Text>
 
           <Text style={styles.text}>
@@ -215,7 +224,13 @@ const MyDocument = ({ data }) => {
           {/* Zone de signatures */}
           <View style={styles.signature}>
             <View style={{ width: '40%' }}>
-              <View style={{ borderTop: '1px solid #000', marginTop: 40, paddingTop: 5 }}>
+              <View
+                style={{
+                  borderTop: '1px solid #000',
+                  marginTop: 40,
+                  paddingTop: 5,
+                }}
+              >
                 <Text style={[styles.underline, { fontSize: 9 }]}>
                   Signature du Client
                 </Text>
@@ -223,9 +238,15 @@ const MyDocument = ({ data }) => {
                 <Text style={{ fontSize: 8 }}>CIN / Passeport</Text>
               </View>
             </View>
-            
+
             <View style={{ width: '40%', textAlign: 'right' }}>
-              <View style={{ borderTop: '1px solid #000', marginTop: 40, paddingTop: 5 }}>
+              <View
+                style={{
+                  borderTop: '1px solid #000',
+                  marginTop: 40,
+                  paddingTop: 5,
+                }}
+              >
                 <Text style={[styles.underline, { fontSize: 9 }]}>
                   Signature de la Société
                 </Text>
@@ -242,15 +263,17 @@ const MyDocument = ({ data }) => {
             <Text style={{ marginBottom: 10 }}>
               Cachet et signature de la société
             </Text>
-            <View style={{ 
-              width: 150, 
-              height: 80, 
-              border: '1px dashed #999',
-              margin: '0 auto',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center'
-            }}>
+            <View
+              style={{
+                width: 150,
+                height: 80,
+                border: '1px dashed #999',
+                margin: '0 auto',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
               <Text style={{ fontSize: 8, color: '#999' }}>Cachet ici</Text>
             </View>
           </View>

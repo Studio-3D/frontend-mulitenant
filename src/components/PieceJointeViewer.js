@@ -30,9 +30,7 @@ const PieceJointeViewer = ({ Details, getFileUrl, url }) => {
   return (
     <>
       <Divider sx={{ my: 2 }} />
-      <Typography variant="h6" sx={{ color: "#009FFF", fontWeight: "bold", mb: 1 }}>
-        Pièce(s) jointe(s) :
-      </Typography>
+     
       <Stack direction="row" spacing={2} flexWrap="wrap">
         {files.map((fileUrl, i) => (
           <Tooltip title={`Pièce ${i + 1}`} key={i}>

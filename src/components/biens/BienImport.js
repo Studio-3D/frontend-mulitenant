@@ -287,6 +287,8 @@ export default function BienImport({
       fileName = 'exemplaire_blocs.xlsx';
     } else if (hasImmeubles) {
       fileName = 'exemplaire_immeubles.xlsx';
+    }else if (hasTranches && !hasBlocs && !hasImmeubles) {
+      fileName = 'exemplaire_biens.xlsx';
     } else if (!hasTranches && !hasBlocs && !hasImmeubles) {
       fileName = 'exemplaire_biens.xlsx';
     } else {

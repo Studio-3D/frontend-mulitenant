@@ -98,6 +98,7 @@ const ProspectInformations = ({
               return true;
             },
           }}
+          error={errors?.cin?.message || backendErrors?.cin}
           defaultValue={defaultValues?.cin}
         />
       </div>
@@ -209,8 +210,7 @@ const ProspectInformations = ({
             value={watch('source_id')?.toString()}
             disabled
             loading={loading_sources}
-            errors={errors}
-            backendErrors={backendErrors}
+            error={errors?.source_id?.message || backendErrors?.source_id}
             onChange={handleSourceChange}
           />
         </div>
@@ -224,8 +224,7 @@ const ProspectInformations = ({
             value={watch('source_id')?.toString()}
             options={sourceOptions}
             loading={loading_sources}
-            errors={errors}
-            backendErrors={backendErrors}
+            error={errors?.source_id?.message || backendErrors?.source_id}
             onChange={handleSourceChange}
           />
         </div>
@@ -238,20 +237,17 @@ const ProspectInformations = ({
             placeholder='Sélectionner un partenaire'
             label="Partenaire:"
             name="partenaire_id"
-            required={watch('source_txt') === 'Partenaire'}
+            required={watch('source_txt') == 'Partenaire'}
             options={partenaireOptions}
             value={watch('partenaire_id')?.toString()}
             loading={loading_partenaires}
-            errors={{
-              ...errors,
-              partenaire_id:
-                formSubmitted &&
-                watch('source_txt') === 'Partenaire' &&
-                !watch('partenaire_id')
-                  ? 'Partenaire est obligatoire'
-                  : null,
-            }}
-            backendErrors={backendErrors}
+            error={
+              errors?.partenaire_id?.message || 
+              backendErrors?.partenaire_id ||
+              (formSubmitted && watch('source_txt') === 'Partenaire' && !watch('partenaire_id') 
+                ? 'Partenaire est obligatoire' 
+                : null)
+            }
             onChange={handlePartenaireChange}
           />
         </div>

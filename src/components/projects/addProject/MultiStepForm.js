@@ -6,17 +6,18 @@ import { GeneralInfoStep } from './steps/GeneralInfoStep';
 import { GeneralParametersStep } from './steps/GeneralParametersStep';
 import { StepIndicator } from './StepIndicator';
 import toast from 'react-hot-toast';
-import { APIURL } from '@/configs/api';
+import { APIURL, ENDPOINTS } from '@/configs/api';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useProjet } from '@/context/ProjetContext';
+import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
 
 export const MultiStepForm = ({
   editMode = false,
   initialData = null,
   projetId = null,
 }) => {
-  const { selectedProjet,refreshProjets } = useProjet();
+  const { selectedProjet, refreshProjets } = useProjet();
 
   const { token } = useAuth();
   const router = useRouter();
@@ -326,6 +327,21 @@ export const MultiStepForm = ({
     }
 
     try {
+      // Prepare user IDs - if "tous" was selected, get all user IDs
+      let selectedUserIds = formData.parameters.utilisateursAcces || [];
+
+      // If "tous" option was selected (value 'tous' in the array),
+      // replace it with all actual user IDs
+      if (selectedUserIds.includes('tous')) {
+        // Filter out the 'tous' string
+        selectedUserIds = selectedUserIds.filter((id) => id !== 'tous');
+
+        // If no other users were selected besides 'tous',
+        // we need to get all user IDs from the users list
+        if (selectedUserIds.length === 0 && users.length > 0) {
+          selectedUserIds = users.map((user) => user.id.toString());
+        }
+      }
       const payload = {
         nom: formData.projectInfo.nomProjet,
         code: formData.projectInfo.codeProjet,
@@ -358,7 +374,7 @@ export const MultiStepForm = ({
         donneesVue: JSON.stringify(formData.parameters.vues),
         donneesTypologie: JSON.stringify(formData.parameters.typologies),
         partenaires: JSON.stringify(formData.parameters.partenaires),
-        selectedUsers: JSON.stringify(formData.parameters.utilisateursAcces),
+        selectedUsers: JSON.stringify(selectedUserIds), // Send actual user IDs
       };
 
       let response;
@@ -442,62 +458,71 @@ export const MultiStepForm = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 min-h-[89vh]">
-      <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">
-        {editMode ? 'Modifier le projet' : 'Ajouter un projet'}
-      </h1>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleSubmit();
-        }}
-      >
-        <div>
-          <StepIndicator steps={steps} currentStep={currentStep} />
-
-          <div className="mt-8">
-            {currentStep === 1 && (
-              <ProjectTypeStep
-                formData={formData}
-                updateFormData={updateFormData}
-                onNext={next}
-                errors={errors}
-                touched={touched}
-                typeOptions={typeOptions}
-                loading={loading}
-                onAddNewType={handleAddNewType}
-              />
-            )}
-
-            {currentStep === 2 && (
-              <GeneralInfoStep
-                formData={formData}
-                updateFormData={updateFormData}
-                onNext={next}
-                onPrevious={prev}
-                errors={errors}
-                touched={touched}
-                handleBlur={handleBlur}
-              />
-            )}
-
-            {currentStep === 3 && (
-              <GeneralParametersStep
-                formData={formData}
-                updateFormData={updateFormData}
-                onPrevious={prev}
-                onSubmit={handleSubmit}
-                isSubmitting={isSubmitting}
-                errors={errors}
-                touched={touched}
-                users={users}
-                fetchingUsers={fetchingUsers}
-                editMode={editMode}
-              />
-            )}
-          </div>
+    <>
+      {!editMode && (
+        <div className="flex items-center justify-start mb-2">
+          <BreadCrumb baseUrl={ENDPOINTS.PROJETS} step={'Ajouter un projet'} />
         </div>
-      </form>
-    </div>
+      )}
+
+      <div className="bg-white rounded-lg shadow-md p-6 min-h-[89vh]">
+        <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">
+          {editMode ? 'Modifier le projet' : 'Ajouter un projet'}
+        </h1>
+
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmit();
+          }}
+        >
+          <div>
+            <StepIndicator steps={steps} currentStep={currentStep} />
+
+            <div className="mt-8">
+              {currentStep === 1 && (
+                <ProjectTypeStep
+                  formData={formData}
+                  updateFormData={updateFormData}
+                  onNext={next}
+                  errors={errors}
+                  touched={touched}
+                  typeOptions={typeOptions}
+                  loading={loading}
+                  onAddNewType={handleAddNewType}
+                />
+              )}
+
+              {currentStep === 2 && (
+                <GeneralInfoStep
+                  formData={formData}
+                  updateFormData={updateFormData}
+                  onNext={next}
+                  onPrevious={prev}
+                  errors={errors}
+                  touched={touched}
+                  handleBlur={handleBlur}
+                />
+              )}
+
+              {currentStep === 3 && (
+                <GeneralParametersStep
+                  formData={formData}
+                  updateFormData={updateFormData}
+                  onPrevious={prev}
+                  onSubmit={handleSubmit}
+                  isSubmitting={isSubmitting}
+                  errors={errors}
+                  touched={touched}
+                  users={users}
+                  fetchingUsers={fetchingUsers}
+                  editMode={editMode}
+                />
+              )}
+            </div>
+          </div>
+        </form>
+      </div>
+    </>
   );
 };

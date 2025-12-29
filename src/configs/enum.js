@@ -92,17 +92,18 @@ export const Statut_SUIVI_DOSSIER  = {
     label: 'Suivi livraison',
     description: 'Question sur la date de livraison ou remise des clés'
   },
-  6: {
-    code: 6,
+  7: {
+    code: 7,
     label: 'Signature contrat',
     description: 'Suivi pour signature de contrat'
   },
-   7: {
-    code: 7,
+   8: {
+    code: 8,
     label: 'Autre question',
     description: 'Autre type de question non spécifiée'
   },
 };
+
 // Visite notification types
 export const VISITE_TYPE_NOTIF = {
   1: { code: 1, label: 'Sms' },

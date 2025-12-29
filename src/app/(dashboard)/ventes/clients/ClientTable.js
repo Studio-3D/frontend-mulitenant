@@ -20,7 +20,6 @@ import { useRouter } from 'next/navigation';
 import { fetchData_table_by_projet } from '../../../../../src/configs/api-utils';
 import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
 import Input from '@/components/Input';
-import { Typography } from '@mui/material';
 import Link from 'next/link';
 
 const ClientTable = ({ searchParams }) => {
@@ -186,7 +185,7 @@ const ClientTable = ({ searchParams }) => {
       key: 'type_client',
       label: 'Type client',
       render: (row) => (
-        <Typography
+        <p
           variant="body2"
           style={{ color: row.type_client == null ? 'green' : 'red' }}
           title={
@@ -196,7 +195,7 @@ const ClientTable = ({ searchParams }) => {
           }
         >
           {row.type_client === null ? 'Particulier' : 'Professionnel'}
-        </Typography>
+        </p>
       ),
     },
 
