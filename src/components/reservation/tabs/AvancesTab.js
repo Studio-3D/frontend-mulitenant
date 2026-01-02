@@ -16,7 +16,11 @@ import {
 import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
 import Table from '@/components/Table';
 import { APIURL, RESOURCE_URL } from '../../../configs/api';
-import { MODE_PAIEMENT, Avance_Statut, MODE_PAIEMENT_with_transfert } from '../../../configs/enum';
+import {
+  MODE_PAIEMENT,
+  Avance_Statut,
+  MODE_PAIEMENT_with_transfert,
+} from '../../../configs/enum';
 import {
   fetchData_Select,
   fetchList_fichier_exist_by_Code,
@@ -28,6 +32,7 @@ import Autocomplete from '@/components/Autocomplete';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
 import Pusher from 'pusher-js';
+import SelectInput from '@/components/SelectInput';
 
 export const AvancesTab = ({
   reservationData,
@@ -1245,17 +1250,25 @@ export const AvancesTab = ({
                   <div className="flex items-center"></div>
                   {/* Mode de paiement */}
                   <div>
-                    <AutocompleteSelectComponent
+                    <SelectInput
                       label="Mode Paiement :"
+                      placeholder="Sélectionner un mode de paiement"
                       name="mode_paiement"
-                      required={true}
                       value={formData.mode_paiement || ''}
-                      options={MODE_PAIEMENT}
+                      required={true}
+                      options={Object.values(MODE_PAIEMENT || {}).map(
+                        (item) => ({
+                          value: item.code || item.value,
+                          label: item.label || item.name,
+                        })
+                      )}
                       onChange={(value) => {
                         handleInputChange({
                           target: { name: 'mode_paiement', value },
                         });
                       }}
+                       error={formErrors.mode_paiement} // Change this line
+
                     />
 
                     {formErrors.mode_paiement && (
@@ -1507,14 +1520,16 @@ export const AvancesTab = ({
                 </button>
                 <button
                   type="submit"
-                  disabled={loading.form}
+                  disabled={loading.form || reste < 0}
                   className={`px-4 py-2 rounded-md flex items-center ${
                     loading.form
-                      ? 'bg-indigo-200 text-indigo-400 cursor-not-allowed' // disabled state
-                      : 'bg-[rgb(26,21,120)] text-white hover:bg-indigo-700' // normal state
+                      ? 'bg-indigo-200 text-indigo-400 cursor-not-allowed'
+                      : reste < 0
+                      ? 'bg-red-500 text-white cursor-not-allowed'
+                      : 'bg-[rgb(26,21,120)] text-white hover:bg-indigo-700'
                   }`}
                 >
-                  {currentPaiement ? 'Modifier' : 'Ajouter'}
+                  {currentPaiement ? 'Modifier' : `Ajouter`}
                 </button>
               </div>
             </form>

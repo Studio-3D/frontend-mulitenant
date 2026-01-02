@@ -70,40 +70,43 @@ export const Statut_SUIVI_DOSSIER  = {
   1: {
     code: 1,
     label: 'Nouvelle avance',
-    description: 'Le client souhaite effectuer un nouveau paiement'
   },
   2: {
     code: 2,
-    label: 'Question sur avance des travaux',
-    description: 'Le client a des questions sur l\'avancement des travaux'
+    label: 'Suivi Avanacement des travaux',
   },
+
   3: {
     code: 3,
-    label: 'Suivi de paiement',
-    description: 'Suivi des paiements en cours ou retardés'
+    label: 'Demande des documents',
   },
   4: {
-    code: 4,
-    label: 'Question sur documents',
-    description: 'Le client a des questions concernant les documents'
-  },
-  5: {
-    code: 5,
-    label: 'Suivi livraison',
-    description: 'Question sur la date de livraison ou remise des clés'
-  },
-  7: {
-    code: 7,
-    label: 'Signature contrat',
-    description: 'Suivi pour signature de contrat'
-  },
-   8: {
     code: 8,
-    label: 'Autre question',
-    description: 'Autre type de question non spécifiée'
+    label: 'Autre ',
   },
 };
 
+export const Statuts_Client = {
+  1: { id: '1', label: 'Nouvelle Avance' },
+  2: { id: '2', label: 'Suivi Avancement travaux' },
+  3: { id: '3', label: 'Demande des documents' },
+  4: { id: '4', label: 'Autre' },
+  5: { id: '5', label: 'Creation Reservation' },
+  6: { id: '6', label: 'Ajouter Rdv' },
+  7: { id: '7', label: 'Signer Attestation Vente' },
+  8: { id: '8', label: 'Signer Contrat Vente' },
+  9: { id: '9', label: 'Remise Cle' },
+  10: { id: '10', label: 'Desistement dd' },
+  11: { id: '11', label: 'Desistement dp profit' },
+  12: { id: '12', label: 'Desistement dp co' },
+  13: { id: '13', label: 'Desistement dp partiel' },
+  14: { id: '14', label: 'Desistement change bien' },
+  15: { id: '15', label: 'Penalite valide' },
+  16: { id: '16', label: 'Remise du Remboursement' },
+  17: { id: '17', label: 'Decaissement effectue' },
+  18: { id: '17', label: 'Penalite rejete' },
+
+};
 // Visite notification types
 export const VISITE_TYPE_NOTIF = {
   1: { code: 1, label: 'Sms' },
@@ -461,3 +464,113 @@ export const getProspectStatusColor = (status) => {
 export const FINAL_PROSPECT_STATUSES = [];
 export const isProspectStatusFinal = () => false;
 export const canProspectBeAssigned = () => true;
+
+
+///*show prospect historiqus**/
+
+// Fonction pour obtenir le label du statut en fonction du type
+export const getStatusLabelByType = (statutValue, typeSource = 'prospect') => {
+  if (!statutValue && statutValue !== 0) return '';
+  
+  // Convertir en string pour la comparaison
+  const statutStr = String(statutValue);
+  
+  if (typeSource === 'prospect') {
+    return getProspectStatusLabel(statutStr);
+  } else if (typeSource === 'client') {
+    return getClientStatusLabel(statutStr);
+  }
+  
+  return '';
+};
+
+// Fonction pour obtenir la couleur du statut en fonction du type
+export const getStatusColorByType = (statutValue, typeSource = 'prospect') => {
+  if (!statutValue && statutValue !== 0) return 'bg-gray-100 text-gray-600';
+  
+  const statutStr = String(statutValue);
+  
+  if (typeSource === 'prospect') {
+    return getProspectStatusColor(statutStr);
+  } else if (typeSource === 'client') {
+    // Vous pouvez ajouter des couleurs spécifiques pour les statuts client si nécessaire
+    // Pour l'instant, on utilise une logique simple
+    return getClientStatusColor(statutStr);
+  }
+  
+  return 'bg-gray-100 text-gray-600';
+};
+
+// Fonction pour obtenir le label du statut client
+export const getClientStatusLabel = (statutValue) => {
+  if (!statutValue && statutValue !== 0) return '';
+  
+  const statutStr = String(statutValue);
+  
+  // Recherche dans Statuts_Client
+  if (Statuts_Client.hasOwnProperty(statutStr)) {
+    return Statuts_Client[statutStr].label;
+  }
+  
+  // Recherche dans Statut_SUIVI_DOSSIER (si c'est le même ensemble)
+  if (Statut_SUIVI_DOSSIER.hasOwnProperty(statutStr)) {
+    return Statut_SUIVI_DOSSIER[statutStr].label;
+  }
+  
+  // Fallback : retourner la valeur telle quelle
+  return statutStr;
+};
+
+// Fonction pour obtenir la couleur du statut client
+export const getClientStatusColor = (statutValue) => {
+  const label = getClientStatusLabel(statutValue);
+  
+  // Logique de couleur pour les statuts client
+  // Vous pouvez personnaliser cela selon vos besoins
+  const clientStatusColors = {
+    // Statuts d'avancement
+    'Nouvelle Avance': 'bg-blue-100 text-blue-600',
+    'Suivi Avancement travaux': 'bg-cyan-100 text-cyan-600',
+    'Demande des documents': 'bg-purple-100 text-purple-600',
+    'Autre': 'bg-gray-100 text-gray-600',
+    
+    // Statuts de réservation
+    'Creation Reservation': 'bg-green-100 text-green-600',
+    'Ajouter Rdv': 'bg-indigo-100 text-indigo-600',
+    
+    // Statuts de signature
+    'Signer Attestation Vente': 'bg-yellow-100 text-yellow-600',
+    'Signer Contrat Vente': 'bg-orange-100 text-orange-600',
+    
+    // Finalisation
+    'Remise Cle': 'bg-green-100 text-emerald-600',
+    
+    // Désistements
+    'Desistement dd': 'bg-red-100 text-red-600',
+    'Desistement dp profit': 'bg-red-200 text-red-700',
+    'Desistement dp co': 'bg-red-200 text-red-700',
+    'Desistement dp partiel': 'bg-red-200 text-red-700',
+    'Desistement change bien': 'bg-red-200 text-red-700',
+    
+    // Pénalités et remboursements
+    'Penalite valide': 'bg-amber-100 text-amber-600',
+    'decaissement_effectue': 'bg-indigo-200 text-indigo-700',
+    'Remise du Remboursement': 'bg-green-200 text-green-700',
+    'Penalite rejete': 'bg-red-200 text-red-700',
+
+  };
+  
+  return clientStatusColors[label] || 'bg-gray-100 text-gray-600';
+};
+
+// Fonction utilitaire pour afficher un badge de statut dans le frontend
+export const StatusBadge = ({ statutValue, typeSource = 'prospect', className = '' }) => {
+  const label = getStatusLabelByType(statutValue, typeSource);
+  const colorClasses = getStatusColorByType(statutValue, typeSource);
+  
+  return (
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClasses} ${className}`}>
+      {label}
+    </span>
+  );
+};

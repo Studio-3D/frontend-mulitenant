@@ -23,47 +23,63 @@ export function Desistement_Au_Profit({
     formState: { errors },
   } = useFormContext();
 
+  // Enhanced helper function to convert data structure to SelectInput format
  // Enhanced helper function to convert data structure to SelectInput format
 const convertToSelectOptions = (dataArray) => {
   if (!dataArray || !Array.isArray(dataArray)) {
     return [];
   }
-  
-  const options = dataArray.map(item => {
-    if (!item) {
-      return null;
-    }
 
-    // Extract name and percentage based on data structure
-    let nom, prenom, pourcentage;
-    
-    if (isEditing) {
-      // Editing mode: data comes directly from props
-      nom = item.nom;
-      prenom = item.prenom;
-      pourcentage = item.pourcentage;
-    } else {
-      // Non-editing mode: data might be nested under client
-      nom = item.client?.nom || item.nom;
-      prenom = item.client?.prenom || item.prenom;
-      pourcentage = item.pourcentage || item.client?.pourcentage;
-    }
+  const options = dataArray
+    .map((item) => {
+      if (!item) {
+        return null;
+      }
 
-    // Create the display label with percentage
-    const baseLabel = `${prenom || ''} ${nom || ''}`.trim();
-    const label = pourcentage ? 
-      `${baseLabel} (${pourcentage}%)` : 
-      baseLabel;
-    
-    // Get the ID value
-    const value = isEditing ? 
-      (item.id ? item.id.toString() : '') : 
-      (item.client?.id ? item.client.id.toString() : (item.id ? item.id.toString() : ''));
-    return {
-      label: label || 'Nom non disponible',
-      value: value,
-    };
-  }).filter(Boolean); // Remove null items
+      // Extract name and percentage based on data structure
+      let nom, prenom, pourcentage;
+
+      if (isEditing) {
+        // Editing mode: data comes directly from props
+        nom = item.nom;
+        prenom = item.prenom;
+        pourcentage = item.pourcentage || item.new_pourcentage;
+      } else {
+        // Non-editing mode: data might be nested under client
+        nom = item.client?.nom || item.nom;
+        prenom = item.client?.prenom || item.prenom;
+        pourcentage = item.pourcentage || item.client?.pourcentage || item.new_pourcentage;
+      }
+
+      // Create the display label with percentage
+      const baseLabel = `${prenom || ''} ${nom || ''}`.trim();
+      const label = pourcentage
+        ? `${baseLabel} (${pourcentage}%)`
+        : baseLabel;
+
+      // Get the ID value - ensure it's a string
+      const value = isEditing
+        ? item.id
+          ? item.id.toString()
+          : ''
+        : item.client?.id
+        ? item.client.id.toString()
+        : item.id
+        ? item.id.toString()
+        : '';
+
+      // Make sure we return a valid object
+      if (!value || !label) {
+        return null;
+      }
+
+      return {
+        label: label || 'Nom non disponible',
+        value: value,
+      };
+    })
+    .filter(Boolean); // Remove null items
+
   return options;
 };
 
@@ -97,7 +113,7 @@ const convertToSelectOptions = (dataArray) => {
     percentage: {},
     totalPercentage: false,
   });
-  
+
   const type_dp = watch('type_dp');
   const [errors_dp_co, setErrors_dp_co] = useState({
     new_pourcentage: {},
@@ -133,6 +149,7 @@ const convertToSelectOptions = (dataArray) => {
       }
 
       setValue('type_dp', formData.type_dp);
+     
       switch (formData.type_dp) {
         case '1': // Désistement au profit d'un proche
           setValue('desisteur_dp_proche_co', desisteur_dp_proche_co);
@@ -160,15 +177,21 @@ const convertToSelectOptions = (dataArray) => {
           setValue('somme_percent', sommePercent);
 
           // Set SelectInput value for desisteurs
-          if (desisteur_dp_proche_co && desisteur_dp_proche_co.length > 0) {
-            const selectValues = desisteur_dp_proche_co.map(item => 
-              isEditing ? item.id : (item.client?.id || item.id)
-            );
+         if (desisteur_dp_proche_co && desisteur_dp_proche_co.length > 0) {
+            // IMPORTANT: Convert IDs to strings for SelectInput
+            const selectValues = desisteur_dp_proche_co
+              .map((item) => {
+                // Use the ID from desisteur_dp_proche_co directly
+                return item.id ? item.id.toString() : null;
+              })
+              .filter((id) => id !== null);
+
             setSelectDesisteurValue(selectValues);
-          }
+            }
           break;
 
         case '2': // Désistement au profit d'un co-réservataire
+ 
           setValue('desisteur_dp_proche_co', desisteur_dp_proche_co);
           const sommePercent_des = desisteur_dp_proche_co.reduce(
             (sum, item) => {
@@ -189,17 +212,29 @@ const convertToSelectOptions = (dataArray) => {
           set_profit_dp_co_reser(profit_dp_co_res || []);
           set_clients_profit_de(profit_dp_co_res || []);
 
-          // Set SelectInput values
+          // Set SelectInput values - ensure they are strings
+          // Set SelectInput values for desisteurs
           if (desisteur_dp_proche_co && desisteur_dp_proche_co.length > 0) {
-            const selectValues = desisteur_dp_proche_co.map(item => 
-              isEditing ? item.id : (item.client?.id || item.id)
-            );
+            // IMPORTANT: Convert IDs to strings for SelectInput
+            const selectValues = desisteur_dp_proche_co
+              .map((item) => {
+                // Use the ID from desisteur_dp_proche_co directly
+                return item.id ? item.id.toString() : null;
+              })
+              .filter((id) => id !== null);
+
             setSelectDesisteurValue(selectValues);
-          }
-          if (profit_dp_co_res && profit_dp_co_res.length > 0) {
-            const selectProfitValues = profit_dp_co_res.map(item => item.id);
-            setSelectProfitValue(selectProfitValues);
-          }
+            }
+            // Also set the profit selection if applicable
+            // Set SelectInput values for profit (beneficiaries)
+            if (profit_dp_co_res && profit_dp_co_res.length > 0) {
+              const selectProfitValues = profit_dp_co_res
+                .map((item) => (item.id ? item.id.toString() : null))
+                .filter((id) => id !== null);
+
+              setSelectProfitValue(selectProfitValues);
+            }
+          
           break;
 
         case '3': // Désistement partiel
@@ -281,104 +316,131 @@ const convertToSelectOptions = (dataArray) => {
   }, [desisteutrs_profit_dp_partiell, isDataLoaded, setValue]);
 
   // Enhanced desisteur selection handler
-const handleDesisteurChange = (selectedValues) => {
-  console.log('Selected values:', selectedValues);
-  setSelectDesisteurValue(selectedValues);
-  
-  let totalPercent = 0;
-  const selectedDesisteurs = [];
+  // Enhanced desisteur selection handler
+  const handleDesisteurChange = (selectedValues) => {
 
-  // Get the full objects from the selected values
-  selectedValues.forEach(value => {
-    const foundDesisteur = desisteurs.find(desisteur => {
-      // Try different ID locations based on data structure
-      const desisteurId = isEditing ? 
-        (desisteur.id ? desisteur.id.toString() : '') : 
-        (desisteur.client?.id ? desisteur.client.id.toString() : (desisteur.id ? desisteur.id.toString() : ''));
-      
-      return desisteurId === value;
-    });
-    
-    if (foundDesisteur) {
-      const pourcentage = foundDesisteur.pourcentage || 0;
-      totalPercent += pourcentage;
-      
-      selectedDesisteurs.push({
-        id: foundDesisteur.id,
-        cl_id: isEditing ? foundDesisteur.cl_id : foundDesisteur.client?.id,
-        nom: isEditing ? foundDesisteur.nom : foundDesisteur.client?.nom,
-        prenom: isEditing ? foundDesisteur.prenom : foundDesisteur.client?.prenom,
-        pourcentage: pourcentage,
+    // Ensure selectedValues is an array of strings
+    const stringValues = Array.isArray(selectedValues)
+      ? selectedValues.map((v) => v.toString())
+      : [];
+
+    setSelectDesisteurValue(stringValues);
+
+    let totalPercent = 0;
+    const selectedDesisteurs = [];
+
+    // Get the full objects from the selected values
+    stringValues.forEach((value) => {
+      const foundDesisteur = desisteurs.find((desisteur) => {
+        // Try different ID locations based on data structure
+        const desisteurId = isEditing
+          ? desisteur.id
+            ? desisteur.id.toString()
+            : ''
+          : desisteur.client?.id
+          ? desisteur.client.id.toString()
+          : desisteur.id
+          ? desisteur.id.toString()
+          : '';
+
+        return desisteurId === value; // Both are strings now
       });
-    } else {
-      console.warn('Could not find desisteur for value:', value);
+
+      if (foundDesisteur) {
+        const pourcentage = foundDesisteur.pourcentage || 0;
+        totalPercent += pourcentage;
+
+        selectedDesisteurs.push({
+          id: foundDesisteur.id,
+          cl_id: isEditing ? foundDesisteur.cl_id : foundDesisteur.client?.id,
+          nom: isEditing ? foundDesisteur.nom : foundDesisteur.client?.nom,
+          prenom: isEditing
+            ? foundDesisteur.prenom
+            : foundDesisteur.client?.prenom,
+          pourcentage: pourcentage,
+        });
+      } else {
+        console.warn('Could not find desisteur for value:', value);
+      }
+    });
+
+
+    set_desisteur_dp_proche(selectedDesisteurs);
+    setValue('desisteur_dp_proche_co', selectedDesisteurs);
+    setValue('somme_percent', totalPercent);
+
+    // Update clients available for profit selection
+    if (desisteurs_testt) {
+      const difference = getDifference(desisteurs_testt, selectedDesisteurs);
+      set_clients_profit_de(difference);
     }
-  });
-
-  console.log('Selected desisteurs objects:', selectedDesisteurs);
-  
-  set_desisteur_dp_proche(selectedDesisteurs);
-  setValue('desisteur_dp_proche_co', selectedDesisteurs);
-  setValue('somme_percent', totalPercent);
-  
-  // Update clients available for profit selection
-  if (desisteurs_testt) {
-    const difference = getDifference(desisteurs_testt, selectedDesisteurs);
-    console.log('Clients profit difference:', difference);
-    set_clients_profit_de(difference);
-  }
-};
-
-  // Handle profit selection change
-  const handleProfitChange = (selectedValues) => {
-    setSelectProfitValue(selectedValues);
-    
-    const selectedProfit = selectedValues.map(value => {
-      const foundClient = clients_profit_de.find(client => client.id === value);
-      return foundClient ? {
-        id: foundClient.id,
-        cl_id: foundClient.cl_id,
-        nom: foundClient.nom,
-        prenom: foundClient.prenom,
-        new_pourcentage: 0,
-      } : null;
-    }).filter(Boolean);
-
-    set_profit_dp_co_reser(selectedProfit);
-    setValue('profit_dp_co_reser', selectedProfit);
   };
 
-  // Enhanced filter function
-const getFilteredDesisteurOptions = () => {
-  if (!desisteurs || !Array.isArray(desisteurs)) {
-    console.log('getFilteredDesisteurOptions: No desisteurs array');
-    return [];
-  }
+  // Handle profit selection change
+ // Handle profit selection change
+const handleProfitChange = (selectedValues) => {
   
-  console.log('All desisteurs:', desisteurs);
-  console.log('Profit dp co reser:', profit_dp_co_reser);
-
-  const filtered = desisteurs.filter(desisteur => {
-    if (!profit_dp_co_reser || profit_dp_co_reser.length === 0) {
-      return true;
-    }
-    
-    const desisteurId = isEditing ? 
-      (desisteur.id ? desisteur.id.toString() : '') : 
-      (desisteur.client?.id ? desisteur.client.id.toString() : (desisteur.id ? desisteur.id.toString() : ''));
-    
-    const isExcluded = profit_dp_co_reser.some(profit => {
-      const profitId = profit.id ? profit.id.toString() : '';
-      return profitId === desisteurId;
+  // Ensure selectedValues is an array of strings
+  const stringValues = Array.isArray(selectedValues) 
+    ? selectedValues.map(v => v.toString())
+    : [];
+  
+  setSelectProfitValue(stringValues);
+  
+  const selectedProfit = stringValues.map(value => {
+    const foundClient = clients_profit_de.find(client => {
+      // Make sure we compare string values
+      const clientId = client.id ? client.id.toString() : '';
+      return clientId === value;
     });
-    
-    return !isExcluded;
-  });
+    return foundClient ? {
+      id: foundClient.id,
+      cl_id: foundClient.cl_id,
+      nom: foundClient.nom,
+      prenom: foundClient.prenom,
+      new_pourcentage: foundClient.new_pourcentage || 0,
+    } : null;
+  }).filter(Boolean);
 
-  console.log('Filtered desisteurs:', filtered);
-  const options = convertToSelectOptions(filtered);
-  return options;
+  
+  set_profit_dp_co_reser(selectedProfit);
+  setValue('profit_dp_co_reser', selectedProfit);
 };
+
+  // Enhanced filter function
+  const getFilteredDesisteurOptions = () => {
+    if (!desisteurs || !Array.isArray(desisteurs)) {
+      return [];
+    }
+
+ 
+    const filtered = desisteurs.filter((desisteur) => {
+      if (!profit_dp_co_reser || profit_dp_co_reser.length === 0) {
+        return true;
+      }
+
+      const desisteurId = isEditing
+        ? desisteur.id
+          ? desisteur.id.toString()
+          : ''
+        : desisteur.client?.id
+        ? desisteur.client.id.toString()
+        : desisteur.id
+        ? desisteur.id.toString()
+        : '';
+
+      const isExcluded = profit_dp_co_reser.some((profit) => {
+        const profitId = profit.id ? profit.id.toString() : '';
+        return profitId === desisteurId;
+      });
+
+      return !isExcluded;
+    });
+
+    console.log('Filtered desisteurs:', filtered);
+    const options = convertToSelectOptions(filtered);
+    return options;
+  };
 
   const handleinputchange = (e, index) => {
     const { name, value } = e.target;
@@ -965,12 +1027,19 @@ const getFilteredDesisteurOptions = () => {
           required={true}
           options={
             // Handle both array and object formats for type_dst_dp
-            !type_dst_dp ? [] :
-            Array.isArray(type_dst_dp) ? type_dst_dp :
-            typeof type_dst_dp === 'object' ? Object.entries(type_dst_dp).map(([key, value]) => ({
-              value: key,
-              label: typeof value === 'object' ? value.label || value.name || String(value) : String(value)
-            })) :[]
+            !type_dst_dp
+              ? []
+              : Array.isArray(type_dst_dp)
+              ? type_dst_dp
+              : typeof type_dst_dp === 'object'
+              ? Object.entries(type_dst_dp).map(([key, value]) => ({
+                  value: key,
+                  label:
+                    typeof value === 'object'
+                      ? value.label || value.name || String(value)
+                      : String(value),
+                }))
+              : []
           }
           onChange={(value) => {
             // Reset states before changing type
@@ -993,32 +1062,40 @@ const getFilteredDesisteurOptions = () => {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6">
             {/* Désisteurs */}
             <div className="md:col-span-5">
-  <div className="md:col-span-5">
-    <label className="block text-sm font-medium text-gray-700 mb-1">
-      Désisteurs: <span className="text-red-500">*</span>
-    </label>
+              <div className="md:col-span-5">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Désisteurs: <span className="text-red-500">*</span>
+                </label>
 
-    <Controller
-      name="desisteur_dp_proche_co"
-      control={control}
-      rules={{ required: 'Ce champ est requis' }}
-      render={({ field }) => (
-        <SelectInput
-          key={`desisteur-${autocompleteKey}`}
-          label=""
-          placeholder="Choisissez un/plusieurs Désisteurs"
-          options={getFilteredDesisteurOptions()}
-          value={selectDesisteurValue}
-          onChange={handleDesisteurChange}
-          isMulti={true}
-          required={true}
-          error={errors.desisteur_dp_proche_co}
-          name="desisteur_dp_proche_co"
-        />
-      )}
-    />
-  </div>
-</div>
+                <Controller
+                  name="desisteur_dp_proche_co"
+                  control={control}
+                  rules={{
+                    required: 'Ce champ est requis',
+                    validate: (value) => {
+                      if (!value || value.length === 0) {
+                        return 'Au moins un désisteur doit être sélectionné';
+                      }
+                      return true;
+                    },
+                  }}
+                  render={({ field }) => (
+                    <SelectInput
+                      key={`desisteur-${autocompleteKey}`}
+                      label=""
+                      placeholder="Choisissez un/plusieurs Désisteurs"
+                      options={getFilteredDesisteurOptions()}
+                      value={selectDesisteurValue}
+                      onChange={handleDesisteurChange}
+                      isMulti={true}
+                      required={true}
+                      error={errors.desisteur_dp_proche_co?.message}
+                      name="desisteur_dp_proche_co"
+                    />
+                  )}
+                />
+              </div>
+            </div>
 
             {/* Somme % Ajoutés */}
             <div className="md:col-span-3 md:ml-4 mt-2">
@@ -1307,19 +1384,32 @@ const getFilteredDesisteurOptions = () => {
                         <Controller
                           name="profit_dp_co_reser"
                           control={control}
-                          rules={{ required: 'Ce champ est requis' }}
+                          rules={{
+                            required: 'Ce champ est requis',
+                            validate: (value) => {
+                              if (!value || value.length === 0) {
+                                return 'Au moins un bénéficiaire doit être sélectionné';
+                              }
+                              return true;
+                            },
+                          }}
                           defaultValue={profit_dp_co_reser || []}
                           render={({ field }) => (
                             <SelectInput
                               key={`pro-${autocompleteKey}`}
                               label=""
                               placeholder="Choisissez un/plusieurs Désisteurs"
-                              options={convertToSelectOptions(clients_profit_de)}
+                              options={convertToSelectOptions(
+                                clients_profit_de
+                              )}
                               value={selectProfitValue}
-                              onChange={handleProfitChange}
+                              onChange={(selectedValues) => {
+                                handleProfitChange(selectedValues);
+                                field.onChange(selectedValues); // Important: Update the form field
+                              }}
                               isMulti={true}
                               required={true}
-                              error={errors.profit_dp_co_reser}
+                              error={errors.profit_dp_co_reser?.message} // Now this will work
                               name="profit_dp_co_reser"
                             />
                           )}
@@ -1907,16 +1997,21 @@ const getFilteredDesisteurOptions = () => {
             required={true}
             options={
               // Handle both array and object formats for lien_parentes
-              !lien_parentes ? [] :
-              Array.isArray(lien_parentes) ? lien_parentes :
-              typeof lien_parentes === 'object' ? Object.entries(lien_parentes).map(([key, value]) => ({
-                value: key,
-                label: typeof value === 'object' ? value.label || value.name || String(value) : String(value)
-              })) :
-              []
+              !lien_parentes
+                ? []
+                : Array.isArray(lien_parentes)
+                ? lien_parentes
+                : typeof lien_parentes === 'object'
+                ? Object.entries(lien_parentes).map(([key, value]) => ({
+                    value: key,
+                    label:
+                      typeof value === 'object'
+                        ? value.label || value.name || String(value)
+                        : String(value),
+                  }))
+                : []
             }
             onChange={(value) => {
-              console.log('Selected lien parenté:', value);
               setValue('lien_parente', value);
             }}
             error={errors.lien_parente?.message}

@@ -390,6 +390,7 @@ const ProspectDetails = () => {
                           <HistoriquesTable
                             id={prospectDetails.id}
                             refreshTrigger={refreshHistoriques}
+                            type={'prospect'}
                           />
                         </div>
                       </div>

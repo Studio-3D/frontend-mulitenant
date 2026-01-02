@@ -168,6 +168,7 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
     //suvi dossier
     statut_suivi: '',
     dossier_id_suivi: '',
+    code_suivi:'',
     montant_suivi: '',
     num_paiement_suivi: '',
     banque_id_suivi: '',
@@ -2686,6 +2687,13 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
                           }
                           onChange={(value) => {
                             handleChange_dossier_suivi(value);
+                            // If you want to directly set code_suivi here too:
+                            if (value) {
+                              const selectedDossier = Dossiers_Suivis.find(dossier => dossier.id == value);
+                              if (selectedDossier) {
+                                setValue('code_suivi', selectedDossier.code_reservation);
+                              }
+                            }
                             if (validationErrors.dossier_id_suivi) {
                               setValidationErrors((prev) => {
                                 const newErrors = { ...prev };

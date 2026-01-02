@@ -15,7 +15,7 @@ import { Pencil, Trash2, Eye } from 'lucide-react';
 import { useProjet } from '@/context/ProjetContext';
 import format from 'date-fns/format';
 import Input from '@/components/Input';
-const RemiseCleTable = ({}) => {
+const RemiseCleTable = ({searchParams}) => {
   const { selectedProjet  } = useProjet();
   const [remisecles, setRemiseCles] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -59,6 +59,11 @@ const RemiseCleTable = ({}) => {
   };
 
   useEffect(() => {
+     const action = searchParams?.get('action');
+    if (action === 'add' || action === 'edit') {
+      console.log('Skipping API call - in form mode');
+      return;
+    }
     fetchData_table_by_projet(
       entity,
       filters,

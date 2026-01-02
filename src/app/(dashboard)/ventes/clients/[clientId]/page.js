@@ -38,7 +38,7 @@ const ClientDetails = () => {
     router.push(`${ENDPOINTS.CLIENTS}?id=${id}&action=edit`);
   };
 
- const tabs = [
+  const tabs = [
     { id: 'encaissements', label: 'Encaissements', icon: '' },
     { id: 'reservations', label: 'Reservations', icon: '' },
     { id: 'historiques', label: 'Historiques', icon: '' },
@@ -47,7 +47,7 @@ const ClientDetails = () => {
   ];
 
   // Filtrer les onglets conditionnels
-  const filteredTabs = tabs.filter(tab => {
+  const filteredTabs = tabs.filter((tab) => {
     if (tab.id === 'historiques' && clientDetails?.prospect == null) {
       return false;
     }
@@ -399,19 +399,21 @@ const ClientDetails = () => {
                   </div>
 
                   <div className="p-6">
-                    {clientDetails?.prospect != null && (
-                      <>
-                        {activeTab === 'historiques' &&
-                          clientDetails?.prospect?.id && (
-                            <div className="min-h-[400px]">
-                              <div className="min-h-[400px]">
-                                <HistoriquesTable
-                                  id={clientDetails?.prospect?.id}
-                                />
-                              </div>
-                            </div>
-                          )}
-                      </>
+                    {activeTab === 'historiques' && (
+                      <div className="min-h-[400px]">
+                        <div className="min-h-[400px]">
+                          <HistoriquesTable
+                            id={
+                              clientDetails?.prospect
+                                ? clientDetails?.prospect?.id
+                                : clientDetails?.id
+                            }
+                            type={
+                              clientDetails?.prospect ? 'prospect' : 'client'
+                            }
+                          />
+                        </div>
+                      </div>
                     )}
 
                     {activeTab === 'visites' && (

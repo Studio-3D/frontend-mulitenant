@@ -121,7 +121,7 @@ export default function Biens_Dispo_By_frein_id() {
           <Link
             target="_blank"
             href={`/Biens/${row?.bien_id}`}
-            className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+            className="flex items-center gap-1 text-black-500 hover:text-black-700"
           >
             <strong style={{ fontWeight: 600 }}>
               {row.bien_propriete_dite_bien}

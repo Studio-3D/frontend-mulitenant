@@ -175,7 +175,17 @@ const RelancesRdv_Visites_Table = (type) => {
       </span>
     );
   };
+  function NomBienComplet(bien) {
+    const noms = [];
 
+    if (bien.tranche?.nom) noms.push(bien.tranche.nom);
+    if (bien.bloc?.nom) noms.push(bien.bloc.nom);
+    if (bien.immeuble?.nom) noms.push(bien.immeuble.nom);
+
+    noms.push(bien.propriete_dite_bien);
+
+    return noms.join(' - ');
+  }
   // Dynamically build columns based on type
   const columns = [
     { key: 'cc', label: 'Commercial' },
@@ -185,7 +195,7 @@ const RelancesRdv_Visites_Table = (type) => {
       label: 'Nom Complet',
       render: (row) => {
         return (
-          <Link target="_blank" href={`/crm/prospects/${row?.prospect_id}`}             className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+          <Link target="_blank" href={`/crm/prospects/${row?.prospect_id}`}             className="flex items-center gap-1 text-black-500 hover:text-black-700"
 >
             <strong style={{ fontWeight: 600 }}>{row.nomComplet}</strong>
           </Link>
@@ -205,10 +215,10 @@ const RelancesRdv_Visites_Table = (type) => {
       label: 'Bien',
       render: (row) => {
         return (
-          <Link target="_blank" href={`/Biens/${row?.bien?.id}`}             className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+          <Link target="_blank" href={`/Biens/${row?.bien?.id}`}             className="flex items-center gap-1 text-black-500 hover:text-bl-700"
 >
             <strong style={{ fontWeight: 600 }}>
-              {row.bien?.propriete_dite_bien}
+              {NomBienComplet(row.bien)}
             </strong>
           </Link>
         );

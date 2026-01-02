@@ -40,7 +40,7 @@ export default function Page() {
       ) : (
         <>
           <div className='p-4 bg-white rounded-lg shadow-md'>
-            <RemiseCleTable  />
+            <RemiseCleTable  searchParams={searchParams} />
           </div>
         </>
       )}

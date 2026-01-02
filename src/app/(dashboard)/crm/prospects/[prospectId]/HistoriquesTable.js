@@ -8,20 +8,25 @@ import { fetchData_table_by_id } from '../../../../../../src/configs/api-utils';
 import format from 'date-fns/format';
 import { Eye } from 'lucide-react';
 
+// Importez les nouvelles fonctions
 import {
+  getStatusLabelByType,
+  getStatusColorByType,
   Statuts_Prospect,
-  getProspectStatusLabel,
-  getProspectStatusColor,
+  Statuts_Client,
 } from '../../../../../../src/configs/enum';
 
-// Function to get status label using the centralized mapping
-const getStatusLabel = (rawStatus) => {
-  return getProspectStatusLabel(rawStatus);
+// Vous pouvez garder cette fonction pour la rétrocompatibilité
+// ou l'adapter pour utiliser le type_source
+const getStatusLabel = (rawStatus, typeSource = 'prospect') => {
+  return getStatusLabelByType(rawStatus, typeSource);
 };
 
 import SelectInput from '@/components/SelectInput';
 import Input from '@/components/Input';
-const HistoriquesTable = ({ id, refreshTrigger = 0 }) => {
+import Link from 'next/link';
+
+const HistoriquesTable = ({ id, refreshTrigger = 0, type }) => {
   const [historiques, setHistoriques] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -56,10 +61,10 @@ const HistoriquesTable = ({ id, refreshTrigger = 0 }) => {
   };
 
   const router = useRouter();
-  // Declare the entity object in the component scope
   const entity = {
     id: id,
-    API_URL: 'historiques_prospects',
+    API_URL:
+      type === 'client' ? 'historiques_clients' : 'historiques_prospects',
     dataKey: 'historiques',
     name: 'historique',
     searchFields: ['date_traitement', 'statut', 'rappel'],
@@ -92,26 +97,24 @@ const HistoriquesTable = ({ id, refreshTrigger = 0 }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
-    }, 1200); // Wait for 1.2s after user stops typing before updating the debounced value
-
-    return () => clearTimeout(timer); // Clean up the timeout on each render
+    }, 1200);
+    return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  const handleShow = (vId) => {
-    router.push(`/crm/visites/${vId}`);
-  };
-  const handleShowAppel = (Id) => {
-    router.push(`/crm/appels/${Id}`);
-  };
-  // Format users data for table display
+ 
+  
+  // Format users data for table display - MIS À JOUR
   const formatData = () => {
     return historiques.map((pro) => {
-      const mappedStatus = getStatusLabel(pro.statut);
+      // Utilisez le type_source pour obtenir le bon label
+      const statusLabel = getStatusLabelByType(pro.statut, pro.type_source);
 
       return {
         id: pro.id,
+        type_source: pro.type_source, // Ajoutez cette colonne si vous voulez l'afficher
         date_traitement: pro.date_traitement,
-        statut: mappedStatus,
+        statut: statusLabel,
+        statut_raw: pro.statut, // Gardez la valeur brute pour le filtrage
         rdv: pro.rdv ? format(new Date(pro.rdv), 'dd/MM/yyyy H:m') : '',
         rappel: pro.date_rappel
           ? format(new Date(pro.date_rappel), 'dd/MM/yyyy ')
@@ -120,13 +123,53 @@ const HistoriquesTable = ({ id, refreshTrigger = 0 }) => {
         user_traite: pro.user
           ? `${pro.user.name || ''} ${pro.user.prenom || ''}`.trim()
           : '',
-        visite_id: pro.visite?.origin_id,
+        // Note: pour les statuts client, le champ peut être différent
+        visite_id: pro.visite?.origin_id || pro.visite_id,
         appel_id: pro.appel_id,
+        desistement_id: pro?.desistement_id,
+        // Ajoutez les autres champs spécifiques aux clients si nécessaire
+        reservation: pro?.reservation,
+        avance: pro?.avance,
       };
     });
   };
 
-  // Table columns configuration
+  // Fonction pour obtenir la couleur en fonction du type
+  const getStatusColor = (statut, typeSource) => {
+    return getStatusColorByType(statut, typeSource);
+  };
+
+  {
+    /*
+      key: 'client_info',
+      label: 'Info Client',
+      render: (row) => {
+        // Ne pas afficher pour les prospects avec statut 1 ou 5
+        if (
+          row.type_source == 'client' &&
+          (row.statut_raw == '1' || row.statut_raw == '5')
+        ) {
+          return '';
+        }
+
+        // Afficher uniquement pour les clients
+        if (row.type_source == 'prospect') return '';
+
+        return (
+          <div className="text-xs space-y-1">
+            {row?.reservation?.code_reservation && (
+              <div className="font-medium">
+                Réservations: {row.reservation.code_reservation}
+                {row.type_source}
+              </div>
+            )}
+            {row?.avance?.montant && <div>Avance: {row.avance.montant} DH</div>}
+          </div>
+        );
+      },
+    */
+  }
+  // Table columns configuration - MIS À JOUR
   const columns = [
     {
       key: 'date_traitement',
@@ -134,20 +177,25 @@ const HistoriquesTable = ({ id, refreshTrigger = 0 }) => {
       render: (row) => (
         <div className="flex items-center gap-3">
           <span>{row.date_traitement}</span>
+          {/*row.type_source && (
+          <span className="text-xs px-2 py-1 bg-gray-100 rounded">
+            {row.type_source === 'prospect' ? 'Prospect' : 'Client'}
+          </span>
+        )*/}
         </div>
       ),
     },
-
     {
       key: 'statut',
       label: 'Statut',
       render: (row) => {
-        if (!row.statut) return '';
+        if (!row.statut_raw) return '';
 
         return (
           <span
-            className={`px-2 py-1 rounded text-sm font-semibold ${getProspectStatusColor(
-              row.statut
+            className={`px-2 py-1 rounded text-sm font-semibold ${getStatusColor(
+              row.statut_raw,
+              row.type_source
             )}`}
           >
             {row.statut}
@@ -159,61 +207,138 @@ const HistoriquesTable = ({ id, refreshTrigger = 0 }) => {
     { key: 'rappel', label: 'Date Rappel' },
     { key: 'user_traite', label: 'Traité par' },
     { key: 'commentaire', label: 'Commentaire' },
+    // Colonne info client (conditionnelle)
 
-    {
-      key: 'actions',
-      label: 'Actions',
-      render: (row) => (
-        <div className="flex gap-3 items-center">
+   {
+  key: 'actions',
+  label: 'Actions',
+  render: (row) => (
+    <div className="flex gap-3 items-center">
+      {row.type_source === 'prospect' ? (
+        <>
           {row.visite_id != null && (
-            <div title="Voir Visite">
-              <Eye
-                className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
-                title="Voir Visite"
-                onClick={() => handleShow(row?.visite_id)}
-              />
-            </div>
+            <Link
+              href={`/crm/visites/${row.visite_id}`}
+              title="Voir Visite"
+              className="p-1 hover:bg-gray-100 rounded"
+            >
+              <Eye className="w-4 h-4 text-blue-500 hover:text-blue-700" />
+            </Link>
           )}
           {row.appel_id != null && (
-            <div title="Voir Appel">
-              <Eye
-                className="w-4 h-4 !text-green-500 hover:text-green-700 cursor-pointer"
-                onClick={() => handleShowAppel(row.appel_id)}
-              />
-            </div>
+            <Link
+              href={`/crm/appels/${row.appel_id}`}
+              title="Voir Appel"
+              className="p-1 hover:bg-gray-100 rounded"
+            >
+              <Eye className="w-4 h-4 text-green-500 hover:text-green-700" />
+            </Link>
           )}
-        </div>
-      ),
-    },
+        </>
+      ) : (
+        <>
+          {row.desistement_id != null ? (
+            <Link
+              href={`/ventes/desistements/show/${row.desistement_id}`}
+              title="Voir Désistement"
+              className="p-1 hover:bg-gray-100 rounded"
+            >
+              <Eye className="w-4 h-4 text-green-500 hover:text-green-700" />
+            </Link>
+          ) : (
+            row?.reservation?.id && (
+              <Link
+                href={`/ventes/reservations/${row.reservation.id}`}
+                title="Détail Réservation"
+                className="p-1 hover:bg-gray-100 rounded"
+              >
+                <Eye className="w-4 h-4 text-green-500 hover:text-green-700" />
+              </Link>
+            )
+          )}
+        </>
+      )}
+    </div>
+  ),
+}
   ];
 
-  {
-    /* Dynamic Modals Import */
-  }
-
-  //EXPORT
-  const data_to_export = () => {
-    return historiques.map((pro) => ({
-      date_traitement: pro.date_traitement,
-      statut: getStatusLabel(pro.statut),
-      rdv: pro.rdv ? format(new Date(pro.rdv), 'dd/MM/yyyy H:m') : '',
-      rappel: pro.date_rappel
-        ? format(new Date(pro.date_rappel), 'dd/MM/yyyy')
-        : '',
-      user_traite: pro.user
-        ? `${pro.user.name || ''} ${pro.user.prenom || ''}`.trim()
-        : '',
-      commentaire: pro.commentaire || '',
+  // Fonction pour combiner les options de statut
+  const getCombinedStatusOptions = () => {
+    // Options pour les prospects - préfixer avec 'P_'
+    const prospectOptions = Object.values(Statuts_Prospect).map((data) => ({
+      value: `P_${data.id}`, // Préfixe pour prospect
+      label: `${data.label}`,
+      group: 'Prospect',
+      rawValue: data.id, // Garder la valeur originale pour l'envoi au backend
+      type: 'prospect',
     }));
+
+    // Options pour les clients - préfixer avec 'C_'
+    const clientOptions = Object.values(Statuts_Client).map((data) => ({
+      value: `C_${data.id}`, // Préfixe pour client
+      label: `${data.label}`,
+      group: 'Client',
+      rawValue: data.id, // Garder la valeur originale pour l'envoi au backend
+      type: 'client',
+    }));
+
+    return [...prospectOptions, ...clientOptions];
   };
 
+  // EXPORT - MIS À JOUR pour correspondre exactement au tableau
+  const data_to_export = () => {
+    return historiques.map((pro) => {
+      // Récupérer le label du statut comme dans formatData()
+      const statusLabel = getStatusLabelByType(pro.statut, pro.type_source);
+
+      // Formater les dates comme dans formatData()
+      const rdvFormatted = pro.rdv
+        ? format(new Date(pro.rdv), 'dd/MM/yyyy H:m')
+        : '';
+      const rappelFormatted = pro.date_rappel
+        ? format(new Date(pro.date_rappel), 'dd/MM/yyyy')
+        : '';
+
+      // Formater l'utilisateur comme dans formatData()
+      const userTraite = pro.user
+        ? `${pro.user.name || ''} ${pro.user.prenom || ''}`.trim()
+        : '';
+
+      // Créer l'objet d'export avec les mêmes données que le tableau
+      const exportData = {
+        'Date Traitement': pro.date_traitement,
+        Type: pro.type_source === 'prospect' ? 'Prospect' : 'Client',
+        Statut: statusLabel,
+        'Rendez-vous': rdvFormatted,
+        'Date Rappel': rappelFormatted,
+        'Traité par': userTraite,
+        Commentaire: pro.commentaire || '',
+      };
+
+      // Ajouter les informations spécifiques aux clients seulement si c'est un client
+      // Note: Votre condition dans formatData() pour la colonne info client
+      exportData['Code Réservation'] = pro.reservation?.code_reservation || '';
+      exportData['Avance'] = pro.avance?.montant
+        ? `${pro.avance.montant} DH`
+        : '';
+
+      return exportData;
+    });
+  };
+
+  // Colonnes d'export correspondantes
   const columns_export = [
-    { key: 'date_traitement', label: 'Date Traitement' },
-    { key: 'statut', label: 'Statut' },
-    { key: 'rdv', label: 'Rendez-vous' },
-    { key: 'rappel', label: 'Date Rappel' },
-    { key: 'user_traite', label: 'Traité par' },
-    { key: 'commentaire', label: 'Commentaire' },
+    { key: 'Date Traitement', label: 'Date Traitement' },
+    { key: 'Type', label: 'Type' },
+    { key: 'Statut', label: 'Statut' },
+    { key: 'Rendez-vous', label: 'Rendez-vous' },
+    { key: 'Date Rappel', label: 'Date Rappel' },
+    { key: 'Traité par', label: 'Traité par' },
+    { key: 'Commentaire', label: 'Commentaire' },
+
+    { key: 'Code Réservation', label: 'Code Réservation' },
+    { key: 'Avance', label: 'Avance' },
   ];
   return (
     <>
@@ -272,12 +397,10 @@ const HistoriquesTable = ({ id, refreshTrigger = 0 }) => {
                 />
 
                 <SelectInput
+                  label={'Statut'}
                   value={tempFilters.statut}
                   onChange={(value) => handleFilterChange('statut', value)}
-                  options={Object.values(Statuts_Prospect).map((data) => ({
-                    value: data.id,
-                    label: data.label,
-                  }))}
+                  options={getCombinedStatusOptions()} // Utilisez les options combinées
                   placeholder="Choisir un Statut"
                   className="h-10 text-sm w-full"
                 />
