@@ -180,7 +180,7 @@ const MyDocument = ({ data }) => {
               Le bien identifié sous la référence{' '}
               <Text style={styles.bold}>{bien_propriete || ''}</Text> est situé
               au {niveau == 0 ? 'Rez-de-chaussée' : niveau + 'ème étage'},{' '}
-              {"d'"}une superficie de {superficie || ''} m². Ce bien est proposé
+              {"d'"}une superficie de {superficie==null?0:superficie} m². Ce bien est proposé
               au prix de{' '}
               <Text style={styles.bold}>
                 {prix ? prix.toLocaleString('fr-FR') : ''} DH

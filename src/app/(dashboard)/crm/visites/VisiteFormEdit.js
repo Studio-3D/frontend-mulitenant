@@ -29,6 +29,7 @@ import {
   MODE_PAIEMENT,
   ORIENTATIONS,
   ORIENTATION_ABBREVIATIONS,
+  Statut_SUIVI_DOSSIER,
 } from '@/configs/enum';
 import Pusher from 'pusher-js';
 import ProspectInformations from './ProspectInformations'; // Adjust path as needed
@@ -37,6 +38,10 @@ export default function VisiteFormEdit({ id }) {
   const [loading_tp_frein, setLoading_tp_frein] = useState(false);
   const { user } = useAuth();
   const [info_reservation, setInfo_reservation] = useState(null);
+  const [Dossiers_Suivis, setDossiers_Suivis] = useState([]);
+  const [validationErrors, setValidationErrors] = useState({});
+  const [validationErrorList, setValidationErrorList] = useState([]);
+  const [showNouvelleAvance, setShowNouvelleAvance] = useState(false);
 
   const [loading_form, setLoading_form] = useState(false);
   const router = useRouter();
@@ -85,7 +90,21 @@ export default function VisiteFormEdit({ id }) {
   const [currentSourceText, setSourceText] = useState('');
 
   const defaultValues = {
-    // selectedProjet.id || ''
+    //suvi dossier
+    statut_client_id: '',
+    statut_suivi: '',
+    dossier_id_suivi: '',
+    code_suivi:'',
+    montant_suivi: '',
+    num_paiement_suivi: '',
+    banque_id_suivi: '',
+    mode_paiement_suivi: '',
+    date_paiement_suivi: new Date().toISOString().split('T')[0],
+    commentaire_av_suivi: '',
+    sr_suivi: false,
+    num_remise_suivi: '',
+    date_encaissement_suivi: '',
+
     selectedProjet: selectedProjet?.id || 1,
     prospect_id: '',
     cin: '',
@@ -310,6 +329,30 @@ export default function VisiteFormEdit({ id }) {
       .catch(() => {});
   };
 
+  // Dans handleChange_statut_suivi
+  const handleChange_statut_suivi = (code) => {
+    if (code) {
+      setValue('statut_suivi', code);
+
+      // Afficher/masquer la section nouvelle avance
+      if (code == '1') {
+        setShowNouvelleAvance(true);
+      } else {
+        setShowNouvelleAvance(false);
+        // Réinitialiser les champs d'avance si on change de statut
+        setValue('montant_suivi', '');
+        setValue('num_paiement_suivi', '');
+        setValue('banque_id_suivi', '');
+        setValue('mode_paiement_suivi', '');
+        setValue('date_paiement_suivi', new Date().toISOString().split('T')[0]);
+      }
+    }
+  };
+  const handleChange_dossier_suivi = (id) => {
+    if (id) {
+      setValue('dossier_id_suivi', id);
+    }
+  };
   const handleChange_interet = (code) => {
     setValue('interet', code);
     if (code != null) {
@@ -376,7 +419,11 @@ export default function VisiteFormEdit({ id }) {
 
         // Fetch partenaires only if needed
         if (partenaires.length === 0) {
-          await fetchDataByProjet('partenaires', setPartenaires, setLoading_partenaire);
+          await fetchDataByProjet(
+            'partenaires',
+            setPartenaires,
+            setLoading_partenaire
+          );
         }
 
         // Only fetch edit data if editing
@@ -427,6 +474,10 @@ export default function VisiteFormEdit({ id }) {
       try {
         // Create form data object
         const newFormData = {
+          statut_client_id: visite?.statut_client?.id || '',
+          dossier_id_suivi: visite?.statut_client?.reservation_id || '',
+          statut_suivi: visite?.statut_client?.statut || '',
+          commentaire: visite?.statut_client?.commentaire || '',
           nom: visite?.prospect?.nom || '',
           prenom: visite?.prospect?.prenom || '',
           telephone: visite?.prospect?.telephone || '',
@@ -469,6 +520,7 @@ export default function VisiteFormEdit({ id }) {
           date_reservation: visite?.reservation?.date_reservation || '',
           code_reservation: visite?.reservation?.code_reservation || '',
         };
+        setDossiers_Suivis(visite?.prospect?.client?.reservations);
 
         // ✅ Batch set all form values at once
         Object.entries(newFormData).forEach(([key, value]) => {
@@ -714,170 +766,430 @@ export default function VisiteFormEdit({ id }) {
     }, 2000);
   };
 
-  const onSubmit = (data) => {
-    setFormSubmitted(true);
-    // Initial validation state
-    let errors_validation = true;
+  // 1) Extract all your checks into a single function
+  const validateFields = () => {
+    const errors = [];
+
+    // 17. Interet required
+    if (!watch('interet') || watch('interet') === '') {
+      errors.push("L'intérêt de visite est requis");
+    }
 
     const email = watch('email') || '';
-    // 1) Required if `email_required` is true
+
+    // 1. Email validation
     if (email_required && !email) {
-      errors_validation = false;
-      console.error('Email obligatoire');
+      errors.push('Email obligatoire');
     }
-    // 2) If there’s something in the field, check format
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (email && !emailRegex.test(email)) {
-      errors_validation = false;
-      console.error('Email invalide');
+      errors.push('Email invalide');
     }
-    // Perform checks only if 'interet' equals 3
-    if (Number(watch('interet')) === 3) {
-      const isValid =
-        watch('frein')?.length !== 0 &&
-        (!watch('frein')?.includes('vue') || watch('vues').length !== 0) &&
-        (!watch('frein')?.includes('typologie') ||
-          watch('typologies').length !== 0) &&
-        (!watch('frein')?.includes('orientation') ||
-          watch('orientations').length !== 0) &&
-        (!watch('frein')?.includes('etage') || watch('etages').length !== 0) &&
-        (!watch('frein')?.includes('tranche') ||
-          watch('tranches').length !== 0);
 
-      if (isValid) {
-        errors_validation = true;
+    // 2. Partenaire validation
+    if (watch('source_txt') === 'Partenaire' && !watch('partenaire_id')) {
+      errors.push('Partenaire obligatoire');
+    }
 
-        console.log('All validations are correct!');
-      } else {
-        errors_validation = false;
-
-        console.error('Some validations failed.');
+    // 3. Validation for interet == 1 (Intéressé)
+    if (Number(watch('interet')) === 1) {
+      if (!watch('bien_id') || watch('bien_id') === '') {
+        errors.push('Le Bien est requis pour un prospect intéressé');
       }
-    }
+      // Check if statut is selected
+      if (!watch('statut') || watch('statut') === '') {
+        errors.push('Le statut est requis pour un prospect intéressé');
+      }
 
-    // Log fallback message if there are validation errors
-    if (errors_validation) {
-      setLoading_form(true);
-      setBackendErrors({});
+      // If statut is "Vendu" (2), validate reservation fields
+      if (Number(watch('statut')) === 2) {
+        // Check if bien is selected
 
-      let url = APIURL.VISITES;
-      let method = 'post';
-
-      // Map object values to string IDs (or join them), depending on the field
-      const transformMultiSelectField = (value, key) => {
-        if (!value) return '';
-
-        if (Array.isArray(value)) {
-          if (value.length === 0) return '';
-
-          // If array of objects with ID
-          if (typeof value[0] === 'object') {
-            return value.map((v) => v.id).join(',');
-          }
-
-          // If array of strings or numbers
-          return value.join(',');
+        // Check required fields for sold biens
+        if (
+          !watch('code_reservation') ||
+          watch('code_reservation').trim() === ''
+        ) {
+          errors.push('Le code de réservation est requis');
         }
 
-        // If value is already a string or number
-        return value;
-      };
+        if (!watch('date_reservation')) {
+          errors.push('La date de réservation est requise');
+        }
 
-      // Create a list of all fields that need transformation
-      const multiSelectFields = [
-        'tranches',
-        'typologies',
-        'vues',
-        'etages',
-        'orientations',
-      ];
+        const avance = parseFloat(watch('avance_res') || 0);
+        if (isNaN(avance) || avance < 0) {
+          errors.push("Montant d'avance invalide");
+        }
 
-      // Clone your original data
-      const preparedData = { ...data };
+        if (avance == 0 && user?.role > 2) {
+          errors.push('Le montant ne peut pas être 0 pour votre rôle');
+        }
 
-      // Apply transformations only to the relevant fields
-      multiSelectFields.forEach((field) => {
-        preparedData[field] = transformMultiSelectField(data[field], field);
-      });
-      //frein MAJUSCULE
-      if (preparedData.frein) {
-        const freinStr = Array.isArray(preparedData.frein)
-          ? preparedData.frein.join(',')
-          : String(preparedData.frein);
+        const avanceMinimale = parseFloat(watch('avance_minimale') || 0);
+        if (avance > 0 && avance < avanceMinimale) {
+          errors.push(`Le montant doit être au moins ${avanceMinimale} MAD`);
+        }
 
-        preparedData.frein = freinStr
-          .split(',')
-          .map((item) => item.toUpperCase())
-          .join(',');
-      }
-      //ORIENTATION  1,2===>N,S
-      if (preparedData.orientations) {
-        const idsArray = String(preparedData.orientations)
-          .split(',')
-          .map((id) => parseInt(id.trim()))
-          .filter((id) => ORIENTATIONS[id]);
+        if (!watch('mode_financement')) {
+          errors.push('Le mode de financement est requis');
+        }
 
-        const mappedCodes = idsArray.map((id) => {
-          const label = ORIENTATIONS[id]?.label;
-          return ORIENTATION_ABBREVIATIONS[label] || '';
-        });
+        if (!watch('mode_paiement')) {
+          errors.push('Le mode de paiement est requis');
+        }
 
-        preparedData.orientations = mappedCodes.join(',');
-      }
-
-      const dataToSend = new FormData();
-      Object.entries(preparedData).forEach(([key, value]) => {
-        dataToSend.append(key, value);
-      });
-
-      if (isEditing) {
-        url = `${url}/${id}`;
-        method = 'put';
-      }
-
-      axios({
-        method: method,
-        url: url,
-        data: dataToSend,
-        headers: {
-          'content-type': 'application/json',
-          Accept: 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-      })
-        .then((res) => {
-          let message =
-            "Une erreur s'est produite lors de la soumission du formulaire.";
-          if (res.status === 200) {
-            message = `Visite ${isEditing ? 'modifiée' : 'créée'} avec succès`;
-            toast.success(message);
-            router.push(ENDPOINTS.CRM+'?tab=visites');
-            reset(defaultValues);
-          } else if (res.status === 422) {
-            message = res.data.message;
-            setBackendErrors(res.data.errors);
-
-            // Effacer les erreurs après 5 secondes
-            setTimeout(() => setBackendErrors({}), 5000);
+        if (watch('mode_paiement') && watch('mode_paiement') !== '1') {
+          if (!watch('banque_id')) {
+            errors.push('La banque est requise pour ce mode de paiement');
           }
-        })
-        .catch((error) => {
-          const response = error.response;
-          if (response && response.status === 422) {
-            setBackendErrors(response.data.errors);
 
-            // Effacer les erreurs après 5 secondes
-            setTimeout(() => setBackendErrors({}), 5000);
-          } else if (response.status === 333) {
-            toast.error(response.data.error_33);
-          } else {
-            toast.error(
-              "Une erreur s'est produite lors de la soumission du formulaire."
-            );
+          if (!watch('numero_paiement')) {
+            errors.push('Le numéro de paiement est requis');
           }
-        })
-        .finally(() => setLoading_form(false));
+          if (
+            watch('mode_paiement') !== '1' &&
+            watch('mode_paiement') !== '5' &&
+            watch('mode_paiement_suivi') !== '6'
+          ) {
+            if (!watch('echeance') || watch('echeance') === '') {
+              errors.push("La date d'échéance est requise");
+            }
+          }
+        }
+
+        // Check if user checked "reservation sans montant" but didn't provide comment
+        if (
+          watch('check_montant') === true &&
+          (!watch('commentaireAvance') ||
+            watch('commentaireAvance').trim() === '')
+        ) {
+          errors.push(
+            'Le commentaire est requis pour une réservation sans montant'
+          );
+        }
+      }
     }
+
+    // 15. Freins validation for "Perdu"
+    // 15. Freins validation for "Perdu"
+    if (Number(watch('interet')) === 3) {
+      const frein = watch('frein') || [];
+
+      // Convert to uppercase for consistent checking
+      const freinUpper = frein.map((f) => f.toUpperCase());
+
+      if (freinUpper.length === 0) {
+        errors.push('Veuillez sélectionner au moins un frein');
+      }
+
+      // Check all possible uppercase variations
+      if (freinUpper.includes('VUE') && (watch('vues') || []).length === 0) {
+        errors.push(
+          'Vues obligatoires lorsque "vue" est sélectionné comme frein'
+        );
+      }
+
+      if (
+        freinUpper.includes('TYPOLOGIE') &&
+        (watch('typologies') || []).length === 0
+      ) {
+        errors.push(
+          'Typologies obligatoires lorsque "typologie" est sélectionné comme frein'
+        );
+      }
+
+      if (
+        freinUpper.includes('ORIENTATION') &&
+        (watch('orientations') || []).length === 0
+      ) {
+        errors.push(
+          'Orientations obligatoires lorsque "orientation" est sélectionné comme frein'
+        );
+      }
+
+      if (
+        freinUpper.includes('ETAGE') &&
+        (watch('etages') || []).length === 0
+      ) {
+        errors.push(
+          'Étage obligatoire lorsque "étage" est sélectionné comme frein'
+        );
+      }
+
+      if (
+        freinUpper.includes('TRANCHE') &&
+        (watch('tranches') || []).length === 0
+      ) {
+        errors.push(
+          'Tranche obligatoire lorsque "tranche" est sélectionné comme frein'
+        );
+      }
+    }
+    // 12. Suivi Dossier validation
+    if (Number(watch('interet')) === 5) {
+      if (!watch('dossier_id_suivi') || watch('dossier_id_suivi') === '') {
+        errors.push('Veuillez sélectionner un dossier');
+      }
+
+      if (!watch('statut_suivi') || watch('statut_suivi') === '') {
+        errors.push('Veuillez sélectionner un statut de suivi');
+      }
+
+      if (Number(watch('statut_suivi')) === 1) {
+        const montant = parseFloat(watch('montant_suivi') || 0);
+
+        if (
+          !watch('montant_suivi') ||
+          watch('montant_suivi') === '' ||
+          isNaN(montant)
+        ) {
+          errors.push("Le montant de l'avance est requis");
+        } else if (montant === 0) {
+          errors.push('Le montant ne peut pas être 0');
+        } else if (montant < 0) {
+          errors.push('Le montant ne peut pas être négatif');
+        } else if (montant < 100) {
+          errors.push('Le montant minimum est 100 MAD');
+        } else {
+          // Vérifier si le montant ne dépasse pas le reste
+          const dossierSelectionne = Dossiers_Suivis.find(
+            (dossier) => dossier.id === watch('dossier_id_suivi')
+          );
+
+          if (dossierSelectionne) {
+            const prixTotal = parseFloat(dossierSelectionne.prix) || 0;
+            const avances =
+              parseFloat(dossierSelectionne.avances_sum_montant) || 0;
+            const reste = prixTotal - avances;
+
+            if (montant > reste) {
+              errors.push(
+                `Le montant ne doit pas dépasser le reste (${reste.toLocaleString(
+                  'fr-FR'
+                )} MAD)`
+              );
+            }
+          }
+        }
+
+        if (
+          !watch('mode_paiement_suivi') ||
+          watch('mode_paiement_suivi') === ''
+        ) {
+          errors.push('Le mode de paiement est requis');
+        }
+
+        if (
+          !watch('date_paiement_suivi') ||
+          watch('date_paiement_suivi') === ''
+        ) {
+          errors.push('La date de paiement est requise');
+        }
+
+        if (
+          watch('mode_paiement_suivi') &&
+          watch('mode_paiement_suivi') !== '1'
+        ) {
+          if (!watch('banque_id_suivi') || watch('banque_id_suivi') === '') {
+            errors.push('La banque est requise pour ce mode de paiement');
+          }
+
+          if (
+            !watch('num_paiement_suivi') ||
+            watch('num_paiement_suivi') === ''
+          ) {
+            errors.push('Le numéro de paiement est requis');
+          }
+
+          if (
+            watch('mode_paiement_suivi') !== '1' &&
+            watch('mode_paiement_suivi') !== '5' &&
+            watch('mode_paiement_suivi') !== '6'
+          ) {
+            if (!watch('echeance_suivi') || watch('echeance_suivi') === '') {
+              errors.push("La date d'échéance est requise");
+            }
+          }
+        }
+      } else if (Number(watch('statut_suivi')) !== 1) {
+        const commentaire = watch('commentaire') || '';
+        if (!commentaire || commentaire.trim() === '') {
+          errors.push('Le commentaire est requis pour ce type de suivi');
+        }
+      }
+    }
+
+    // 4. Loading form state
+    if (loading_form) {
+      errors.push('Le formulaire est en cours de chargement');
+    }
+
+    // 5. Price validation
+    if (info_prix != null) {
+      errors.push(info_prix);
+    }
+
+    // 6. Surface validation
+    if (info_sup != null) {
+      errors.push(info_sup);
+    }
+
+    // 9. Reservation validation
+    if (info_reservation != null) {
+      errors.push(info_reservation);
+    }
+
+    // 18. React Hook Form errors
+    if (Object.keys(errors).length > 0 && formSubmitted) {
+      Object.values(errors).forEach((error) => {
+        if (error && error.message) {
+          errors.push(error.message);
+        }
+      });
+    }
+
+    return errors;
+  };
+  const onSubmit = (data) => {
+    const validationErrors = validateFields();
+
+    // If there are validation errors, show them and stop submission
+    if (validationErrors.length > 0) {
+      // Store errors in state to display them
+      setValidationErrorList(validationErrors);
+
+      // Scroll to top to show errors
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      return;
+    }
+
+    // Clear any previous errors
+    setValidationErrorList([]);
+    setFormSubmitted(true);
+
+    setLoading_form(true);
+    setBackendErrors({});
+
+    let url = APIURL.VISITES;
+    let method = 'post';
+
+    // Map object values to string IDs (or join them), depending on the field
+    const transformMultiSelectField = (value, key) => {
+      if (!value) return '';
+
+      if (Array.isArray(value)) {
+        if (value.length === 0) return '';
+
+        // If array of objects with ID
+        if (typeof value[0] === 'object') {
+          return value.map((v) => v.id).join(',');
+        }
+
+        // If array of strings or numbers
+        return value.join(',');
+      }
+
+      // If value is already a string or number
+      return value;
+    };
+
+    // Create a list of all fields that need transformation
+    const multiSelectFields = [
+      'tranches',
+      'typologies',
+      'vues',
+      'etages',
+      'orientations',
+    ];
+
+    // Clone your original data
+    const preparedData = { ...data };
+
+    // Apply transformations only to the relevant fields
+    multiSelectFields.forEach((field) => {
+      preparedData[field] = transformMultiSelectField(data[field], field);
+    });
+    //frein MAJUSCULE
+    if (preparedData.frein) {
+      const freinStr = Array.isArray(preparedData.frein)
+        ? preparedData.frein.join(',')
+        : String(preparedData.frein);
+
+      preparedData.frein = freinStr
+        .split(',')
+        .map((item) => item.toUpperCase())
+        .join(',');
+    }
+    //ORIENTATION  1,2===>N,S
+    if (preparedData.orientations) {
+      const idsArray = String(preparedData.orientations)
+        .split(',')
+        .map((id) => parseInt(id.trim()))
+        .filter((id) => ORIENTATIONS[id]);
+
+      const mappedCodes = idsArray.map((id) => {
+        const label = ORIENTATIONS[id]?.label;
+        return ORIENTATION_ABBREVIATIONS[label] || '';
+      });
+
+      preparedData.orientations = mappedCodes.join(',');
+    }
+
+    const dataToSend = new FormData();
+    Object.entries(preparedData).forEach(([key, value]) => {
+      dataToSend.append(key, value);
+    });
+
+    if (isEditing) {
+      url = `${url}/${id}`;
+      method = 'put';
+    }
+
+    axios({
+      method: method,
+      url: url,
+      data: dataToSend,
+      headers: {
+        'content-type': 'application/json',
+        Accept: 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+      .then((res) => {
+        let message =
+          "Une erreur s'est produite lors de la soumission du formulaire.";
+        if (res.status === 200) {
+          message = `Visite ${isEditing ? 'modifiée' : 'créée'} avec succès`;
+          toast.success(message);
+          router.push(ENDPOINTS.CRM + '?tab=visites');
+          reset(defaultValues);
+        } else if (res.status === 422) {
+          message = res.data.message;
+          setBackendErrors(res.data.errors);
+
+          // Effacer les erreurs après 5 secondes
+          setTimeout(() => setBackendErrors({}), 5000);
+        }
+      })
+      .catch((error) => {
+        const response = error.response;
+        if (response && response.status === 422) {
+          setBackendErrors(response.data.errors);
+
+          // Effacer les erreurs après 5 secondes
+          setTimeout(() => setBackendErrors({}), 5000);
+        } else if (response.status === 333) {
+          toast.error(response.data.error_33);
+        } else {
+          toast.error(
+            "Une erreur s'est produite lors de la soumission du formulaire."
+          );
+        }
+      })
+      .finally(() => setLoading_form(false));
   };
 
   const handleChange_event = (text) => (event) => {
@@ -911,11 +1223,21 @@ export default function VisiteFormEdit({ id }) {
 
   const fetch_event_visite = async (v, route, text, param) => {
     await axios
-      .get(`${APIURL.ROOT}/v1/` + route + `/` + param + `/` + v+'/'+selectedProjet?.id, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      })
+      .get(
+        `${APIURL.ROOT}/v1/` +
+          route +
+          `/` +
+          param +
+          `/` +
+          v +
+          '/' +
+          selectedProjet?.id,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      )
       .then((res) => {
         if (res.data.prospect.length != 0) {
           setDisabled(true);
@@ -1334,7 +1656,7 @@ export default function VisiteFormEdit({ id }) {
     <div className="p-3">
       <div className="flex items-center justify-start">
         <BreadCrumb
-          baseUrl={ENDPOINTS.CRM+'?tab=visites'}
+          baseUrl={ENDPOINTS.CRM + '?tab=visites'}
           step={`${isEditing ? 'Modifier' : 'Ajouter'} une Visite`}
         />
       </div>
@@ -1408,12 +1730,25 @@ export default function VisiteFormEdit({ id }) {
                 name="interet"
                 value={watch('interet')}
                 required={true}
-                options={Object.values(VISITE_INTERETS)
-                  .filter((item) => item.code !== 4)
-                  .map((item) => ({
-                    value: item.code,
-                    label: item.label,
-                  }))}
+                options={
+                  Dossiers_Suivis?.length > 0
+                    ? // Si des dossiers existent, inclure toutes les options y compris "Suivi Dossier"
+                      Object.values(VISITE_INTERETS)
+                        .filter((interet) => interet.code !== 4) // Exclure "Injoignable"
+                        .map((interet) => ({
+                          value: interet.code.toString(),
+                          label: interet.label,
+                        }))
+                    : // Si aucun dossier, exclure "Suivi Dossier"
+                      Object.values(VISITE_INTERETS)
+                        .filter(
+                          (interet) => interet.code !== 4 && interet.code !== 5
+                        ) // Exclure "Injoignable" ET "Suivi Dossier"
+                        .map((interet) => ({
+                          value: interet.code.toString(),
+                          label: interet.label,
+                        }))
+                }
                 onChange={(value) => handleChange_interet(value)}
                 error={errors.interet?.message || backendErrors.interet}
                 submitted={formSubmitted}
@@ -1481,6 +1816,7 @@ export default function VisiteFormEdit({ id }) {
                 <>
                   <SelectInput
                     label="Bien:"
+                    required={true}
                     placeholder="Sélectionner le bien"
                     name="bien_id"
                     value={watch('bien_id')}
@@ -1593,6 +1929,509 @@ export default function VisiteFormEdit({ id }) {
                         height="h-full" // Optionally set height, default is 'h-10'
                       />
                     </>
+                  )}
+                </>
+              )}
+              {Number(watch('interet')) == 5 && (
+                <>
+                  <SelectInput
+                    placeholder="Sélectionner un dossier"
+                    required
+                    label="Dossier :"
+                    name="dossier_id_suivi"
+                    value={watch('dossier_id_suivi')}
+                    options={
+                      Dossiers_Suivis?.length > 0
+                        ? Dossiers_Suivis.map((dossier) => {
+                            const prixTotal = parseFloat(dossier.prix) || 0;
+                            const avances =
+                              parseFloat(dossier.avances_sum_montant) || 0;
+                            const reste = prixTotal - avances;
+
+                            return {
+                              value: dossier.id,
+                              // Formater le label avec les informations
+                              label: `${
+                                dossier.code_reservation
+                              } - ${prixTotal.toLocaleString(
+                                'fr-FR'
+                              )} MAD (Reste: ${reste.toLocaleString(
+                                'fr-FR'
+                              )} MAD)`,
+                            };
+                          })
+                        : [
+                            {
+                              value: '',
+                              label: 'Aucun dossier disponible',
+                            },
+                          ]
+                    }
+                    onChange={(value) => {
+                      handleChange_dossier_suivi(value);
+                       // If you want to directly set code_suivi here too:
+                            if (value) {
+                              const selectedDossier = Dossiers_Suivis.find(dossier => dossier.id == value);
+                              if (selectedDossier) {
+                                setValue('code_suivi', selectedDossier.code_reservation);
+                              }
+                            }
+                      if (validationErrors.dossier_id_suivi) {
+                        setValidationErrors((prev) => {
+                          const newErrors = { ...prev };
+                          delete newErrors.dossier_id_suivi;
+                          return newErrors;
+                        });
+                      }
+                    }}
+                    error={validationErrors.dossier_id_suivi}
+                  />
+
+                  <SelectInput
+                    placeholder="Sélectionner un statut"
+                    label="Statut :"
+                    required
+                    name="statut_suivi"
+                    value={watch('statut_suivi')}
+                    options={Object.values(Statut_SUIVI_DOSSIER).map(
+                      (suivi) => ({
+                        value: suivi.code.toString(),
+                        label: suivi.label,
+                      })
+                    )}
+                    onChange={(value) => {
+                      handleChange_statut_suivi(value);
+                      // Nettoyer l'erreur quand l'utilisateur corrige
+                      if (validationErrors.statut_suivi) {
+                        setValidationErrors((prev) => {
+                          const newErrors = { ...prev };
+                          delete newErrors.statut_suivi;
+                          return newErrors;
+                        });
+                      }
+                    }}
+                    error={validationErrors.statut_suivi}
+                  />
+
+                  {/* Section Nouvelle Avance - Conditionnelle */}
+                  {showNouvelleAvance && (
+                    <div className="col-span-3 border rounded-lg p-4 mt-4 bg-gray-50">
+                      <h3
+                        className="text-lg font-medium border-b pb-2 mb-4"
+                        style={{ color: '#231651' }}
+                      >
+                        Informations de la Nouvelle Avance
+                      </h3>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        {/* SR Checkbox */}
+                        <div className="flex items-center space-x-3 mt-2">
+                          <Controller
+                            name="sr_suivi"
+                            control={control}
+                            render={({ field }) => (
+                              <>
+                                <input
+                                  type="checkbox"
+                                  id="sr_suivi"
+                                  checked={field.value || false}
+                                  onChange={(e) =>
+                                    field.onChange(e.target.checked)
+                                  }
+                                  className="h-5 w-10 rounded-full bg-gray-300 transition-all duration-300"
+                                />
+                                <label
+                                  htmlFor="sr_suivi"
+                                  className="text-sm font-medium"
+                                >
+                                  SR
+                                </label>
+                              </>
+                            )}
+                          />
+                        </div>
+                        {/* Montant */}
+                        <div>
+                          <TextField
+                            label="Montant :"
+                            name="montant_suivi"
+                            type="number"
+                            control={control}
+                            errors={{
+                              ...errors,
+                              montant_suivi:
+                                validationErrors.montant_suivi || null,
+                            }}
+                            backendErrors={backendErrors}
+                            defaultValues={defaultValues}
+                            required={showNouvelleAvance}
+                            inputProps={{
+                              min: 0,
+                              step: 100,
+                            }}
+                            onChange={(e) => {
+                              // Nettoyer l'erreur quand l'utilisateur corrige
+                              if (validationErrors.montant_suivi) {
+                                setValidationErrors((prev) => {
+                                  const newErrors = { ...prev };
+                                  delete newErrors.montant_suivi;
+                                  return newErrors;
+                                });
+                              }
+
+                              // Validation du montant
+                              const montant = parseFloat(e.target.value);
+                              if (montant == 0) {
+                                setValidationErrors((prev) => ({
+                                  ...prev,
+                                  montant_suivi:
+                                    'Le montant ne doit pas être 0',
+                                }));
+                                return;
+                              }
+                              if (montant < 0) {
+                                setValidationErrors((prev) => ({
+                                  ...prev,
+                                  montant_suivi: 'Le montant doit être positif',
+                                }));
+                                return;
+                              }
+                              // Vérifier si le montant est inférieur à 100
+                              if (montant < 100) {
+                                setValidationErrors((prev) => ({
+                                  ...prev,
+                                  montant_suivi:
+                                    'Le montant minimum est 100 MAD',
+                                }));
+                                return;
+                              }
+                              // Vérification en temps réel si un dossier est sélectionné
+                              if (montant > 0 && watch('dossier_id_suivi')) {
+                                const dossierSelectionne = Dossiers_Suivis.find(
+                                  (dossier) =>
+                                    dossier.id == watch('dossier_id_suivi')
+                                );
+
+                                if (dossierSelectionne) {
+                                  const prixTotal =
+                                    parseFloat(dossierSelectionne.prix) || 0;
+                                  const avances =
+                                    parseFloat(
+                                      dossierSelectionne.avances_sum_montant
+                                    ) || 0;
+                                  const reste = prixTotal - avances;
+
+                                  if (montant > reste) {
+                                    setValidationErrors((prev) => ({
+                                      ...prev,
+                                      montant_suivi: `Le montant ne doit pas dépasser le reste (${reste.toLocaleString(
+                                        'fr-FR'
+                                      )} MAD)`,
+                                    }));
+                                  } else if (montant == 0) {
+                                  }
+                                }
+                              }
+                            }}
+                          />
+                          {validationErrors.montant_suivi &&
+                            !errors?.montant_suivi && (
+                              <p className="text-red-500 text-xs mt-1">
+                                {validationErrors.montant_suivi}
+                              </p>
+                            )}
+                        </div>
+
+                        {/* Mode de Paiement */}
+                        <div>
+                          <SelectInput
+                            label="Mode de Paiement :"
+                            name="mode_paiement_suivi"
+                            value={watch('mode_paiement_suivi')}
+                            options={Object.values(MODE_PAIEMENT).map(
+                              (paiement) => ({
+                                value: paiement.code.toString(),
+                                label: paiement.label,
+                              })
+                            )}
+                            onChange={(value) => {
+                              setValue('mode_paiement_suivi', value);
+                              // Nettoyer l'erreur quand l'utilisateur corrige
+                              if (validationErrors.mode_paiement_suivi) {
+                                setValidationErrors((prev) => {
+                                  const newErrors = { ...prev };
+                                  delete newErrors.mode_paiement_suivi;
+                                  return newErrors;
+                                });
+                              }
+                              // Réinitialiser les champs conditionnels si on change de mode
+                              if (value == '1') {
+                                setValue('banque_id_suivi', '');
+                                setValue('num_paiement_suivi', '');
+                                setValue('echeance_suivi', '');
+                              }
+                            }}
+                            placeholder="Sélectionner un mode de paiement"
+                            required={showNouvelleAvance}
+                            error={validationErrors.mode_paiement_suivi}
+                          />
+                        </div>
+
+                        {/* Date de Paiement */}
+                        <div>
+                          <TextField
+                            label="Date de Paiement :"
+                            name="date_paiement_suivi"
+                            type="date"
+                            control={control}
+                            errors={{
+                              ...errors,
+                              date_paiement_suivi:
+                                validationErrors.date_paiement_suivi || null,
+                            }}
+                            backendErrors={backendErrors}
+                            defaultValues={defaultValues}
+                            required={showNouvelleAvance}
+                            onChange={(e) => {
+                              // Nettoyer l'erreur quand l'utilisateur corrige
+                              if (validationErrors.date_paiement_suivi) {
+                                setValidationErrors((prev) => {
+                                  const newErrors = { ...prev };
+                                  delete newErrors.date_paiement_suivi;
+                                  return newErrors;
+                                });
+                              }
+                            }}
+                          />
+                          {validationErrors.date_paiement_suivi &&
+                            !errors?.date_paiement_suivi && (
+                              <p className="text-red-500 text-xs mt-1">
+                                {validationErrors.date_paiement_suivi}
+                              </p>
+                            )}
+                        </div>
+
+                        {/* Champs conditionnels pour paiement non-espèces */}
+                        {watch('mode_paiement_suivi') &&
+                          watch('mode_paiement_suivi') !== '1' && (
+                            <>
+                              {/* Banque */}
+                              <div>
+                                <SelectInput
+                                  label="Banque :"
+                                  name="banque_id_suivi"
+                                  value={watch('banque_id_suivi')}
+                                  options={banques.map((banque) => ({
+                                    value: banque.id.toString(),
+                                    label: banque.nom,
+                                  }))}
+                                  onChange={(value) => {
+                                    setValue('banque_id_suivi', value);
+                                    // Nettoyer l'erreur quand l'utilisateur corrige
+                                    if (validationErrors.banque_id_suivi) {
+                                      setValidationErrors((prev) => {
+                                        const newErrors = { ...prev };
+                                        delete newErrors.banque_id_suivi;
+                                        return newErrors;
+                                      });
+                                    }
+                                  }}
+                                  placeholder="Sélectionner une banque"
+                                  required={
+                                    watch('mode_paiement_suivi') !== '1'
+                                  }
+                                  error={validationErrors.banque_id_suivi}
+                                />
+                              </div>
+
+                              {/* Numéro de Paiement */}
+                              <div>
+                                <TextField
+                                  label="N° Paiement :"
+                                  name="num_paiement_suivi"
+                                  type="text"
+                                  control={control}
+                                  errors={{
+                                    ...errors,
+                                    num_paiement_suivi:
+                                      validationErrors.num_paiement_suivi ||
+                                      null,
+                                  }}
+                                  backendErrors={backendErrors}
+                                  defaultValues={defaultValues}
+                                  required={
+                                    watch('mode_paiement_suivi') !== '1'
+                                  }
+                                  inputProps={{
+                                    placeholder: 'Numéro de chèque/virement',
+                                  }}
+                                  onChange={(e) => {
+                                    // Nettoyer l'erreur quand l'utilisateur corrige
+                                    if (validationErrors.num_paiement_suivi) {
+                                      setValidationErrors((prev) => {
+                                        const newErrors = { ...prev };
+                                        delete newErrors.num_paiement_suivi;
+                                        return newErrors;
+                                      });
+                                    }
+                                  }}
+                                />
+                                {validationErrors.num_paiement_suivi &&
+                                  !errors?.num_paiement_suivi && (
+                                    <p className="text-red-500 text-xs mt-1">
+                                      {validationErrors.num_paiement_suivi}
+                                    </p>
+                                  )}
+                              </div>
+
+                              {/* Date d'Échéance pour chèque */}
+                              {watch('mode_paiement_suivi') !== '1' &&
+                                watch('mode_paiement_suivi') !== '5' &&
+                                watch('mode_paiement_suivi') !== '6' && (
+                                  <div>
+                                    <TextField
+                                      label="Date d'Échéance :"
+                                      name="echeance_suivi"
+                                      type="date"
+                                      control={control}
+                                      errors={{
+                                        ...errors,
+                                        echeance_suivi:
+                                          validationErrors.echeance_suivi ||
+                                          null,
+                                      }}
+                                      backendErrors={backendErrors}
+                                      defaultValues={defaultValues}
+                                      required={
+                                        watch('mode_paiement_suivi') !== '1'
+                                      }
+                                      onChange={(e) => {
+                                        // Nettoyer l'erreur quand l'utilisateur corrige
+                                        if (validationErrors.echeance_suivi) {
+                                          setValidationErrors((prev) => {
+                                            const newErrors = { ...prev };
+                                            delete newErrors.echeance_suivi;
+                                            return newErrors;
+                                          });
+                                        }
+                                      }}
+                                    />
+                                    {validationErrors.echeance_suivi &&
+                                      !errors?.echeance_suivi && (
+                                        <p className="text-red-500 text-xs mt-1">
+                                          {validationErrors.echeance_suivi}
+                                        </p>
+                                      )}
+                                  </div>
+                                )}
+                            </>
+                          )}
+                        {user.role <= 2 && watch('montant_suivi') > 0 && (
+                          <>
+                            <div className="col-span-3">
+                              <h2
+                                className="text-lg font-medium border-b pb-2 mb-4"
+                                style={{ color: '#231651' }}
+                              >
+                                Informations Encaissement
+                              </h2>
+                            </div>
+                            {/* N° Remise */}
+                            <div>
+                              <TextField
+                                label="N° Remise :"
+                                name="num_remise_suivi"
+                                type="number"
+                                control={control}
+                                errors={errors}
+                                backendErrors={backendErrors}
+                                defaultValues={defaultValues}
+                                inputProps={{
+                                  placeholder: 'Numéro de remise',
+                                }}
+                              />
+                            </div>
+
+                            {/* Date d'Encaissement */}
+                            <div>
+                              <TextField
+                                label="Date d'Encaissement :"
+                                name="date_encaissement_suivi"
+                                type="date"
+                                control={control}
+                                errors={errors}
+                                backendErrors={backendErrors}
+                                defaultValues={defaultValues}
+                                onChange={(e) => {
+                                  // Optionally add validation here
+                                }}
+                              />
+                            </div>
+                          </>
+                        )}
+                        {/* Commentaire spécifique pour l'avance */}
+                        <div className="col-span-3">
+                          <TextField
+                            label="Commentaire sur l'avance :"
+                            name="commentaire_av_suivi"
+                            multi={true}
+                            control={control}
+                            errors={errors}
+                            backendErrors={backendErrors}
+                            defaultValues={defaultValues}
+                            width="w-full"
+                            height="h-20"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Bouton pour réinitialiser les champs d'avance */}
+                      <div className="flex justify-end mt-4">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setValue('montant_suivi', '');
+                            setValue('num_paiement_suivi', '');
+                            setValue('banque_id_suivi', '');
+                            setValue('mode_paiement_suivi', '');
+                            setValue(
+                              'date_paiement_suivi',
+                              new Date().toISOString().split('T')[0]
+                            );
+                            setValue('echeance_suivi', '');
+                            setValue('commentaire_av_suivi', '');
+                            setValue('sr_suivi', false);
+                            setValue('num_remise_suivi', '');
+                            setValue('date_encaissement_suivi', '');
+                            // Nettoyer toutes les erreurs de cette section
+                            const cleanedErrors = { ...validationErrors };
+                            delete cleanedErrors.montant_suivi;
+                            delete cleanedErrors.mode_paiement_suivi;
+                            delete cleanedErrors.date_paiement_suivi;
+                            delete cleanedErrors.banque_id_suivi;
+                            delete cleanedErrors.num_paiement_suivi;
+                            delete cleanedErrors.echeance_suivi;
+                            setValidationErrors(cleanedErrors);
+                          }}
+                          className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
+                        >
+                          <svg
+                            className="w-4 h-4 mr-1"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                            />
+                          </svg>
+                          Réinitialiser les informations d{"'"}avance
+                        </button>
+                      </div>
+                    </div>
                   )}
                 </>
               )}
@@ -2012,12 +2851,18 @@ export default function VisiteFormEdit({ id }) {
                 </div>
               )}
             {(Number(watch('interet')) === 2 ||
-              Number(watch('interet')) === 3) && (
+              Number(watch('interet')) === 3 ||
+              Number(watch('interet')) == 5) && (
               <div className="flex-1 mt-4">
                 <TextField
                   label="Commentaire:"
                   name="commentaire"
-                  required={false}
+                  required={
+                    Number(watch('interet')) == 5 &&
+                    watch('statut_suivi') != '1'
+                      ? true
+                      : false
+                  }
                   multi={true} // Set this to true if you want a multi-line textarea, else leave it out or false
                   control={control} // Passed from useForm hook
                   errors={errors} // Validation errors from React Hook Form
@@ -2029,11 +2874,25 @@ export default function VisiteFormEdit({ id }) {
               </div>
             )}
           </div>
+          {validationErrorList.length > 0 && (
+            <div className="col-span-full mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
+              <h3 className="text-red-700 font-semibold mb-2">
+                Veuillez corriger les erreurs suivantes :
+              </h3>
+              <ul className="list-disc pl-5 text-red-600">
+                {validationErrorList.map((error, index) => (
+                  <li key={index} className="mb-1">
+                    {error}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           <div className="flex justify-center gap-4 items-center mt-6 mb-6">
             <Button type="button" onClick={() => router.back()}>
               Annuler
             </Button>
-            <Button type="submit" disabled={isDisabled} loading={loading_form}>
+            <Button type="submit" loading={loading_form}>
               Enregistrer
             </Button>
           </div>

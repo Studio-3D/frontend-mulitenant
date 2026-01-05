@@ -148,7 +148,7 @@ export default function Page() {
       if (response.data.penalite != null) {
         setAvecPenalite(true);
         setValue('mode_penalite', response.data.penalite?.mode_penalite);
-       /* setValue(
+        /* setValue(
           'mode_penalite_value',
           getModePenaliteCode(response.data.penalite?.mode_penalite)
         );*/
@@ -508,17 +508,18 @@ export default function Page() {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-
-      if (user?.role <= 2) {
-        localStorage.setItem('etat_dst', '1');
-        router.push('/ventes?tab=desistements');
-      } else {
-        //commercial
-        localStorage.setItem('etat_dst', '5');
-        router.push(
-          '/ventes?tab=validation&subtab=desistements-attente-encours'
-        );
-      }
+      if (response.status == 201 || response.status == 200) {
+        if (user?.role <= 2) {
+          localStorage.setItem('etat_dst', '1');
+          router.push('/ventes?tab=desistements');
+        } else {
+          //commercial
+          localStorage.setItem('etat_dst', '5');
+          router.push(
+            '/ventes?tab=validation&subtab=desistements-attente-encours'
+          );
+        }
+}
     } catch (error) {
       console.error('Error submitting form:', error);
     } finally {
@@ -852,9 +853,7 @@ export default function Page() {
         ) {
           errors.push('Au moins un bénéficiaire doit être sélectionné');
         } else {
-          console.log(
-            'dp co r==>' + JSON.stringify(formValues.profit_dp_co_reser)
-          );
+         
           let totalPercentage = 0;
           formValues.profit_dp_co_reser.forEach((beneficiary, index) => {
             const percent = parseFloat(beneficiary.new_pourcentage);
@@ -1006,7 +1005,7 @@ export default function Page() {
       if (formValues.montant_a_ajouter < 0) {
         errors.push('Le montant à ajouter ne peut pas être négatif');
       }
-      
+
       // Validate montant à ajouter doesn't exceed new bien price
       const prixNouveauBien = formValues.prix_nouveau_bien || 0;
       if (formValues.montant_a_ajouter > prixNouveauBien) {
@@ -1460,8 +1459,7 @@ export default function Page() {
                 sum_avances_valides={reservationData.sumAvances}
                 banques={banques}
                 filesList_avc={filesList_avc}
-               // prix_reservation={reservationData?.prix}
-
+                // prix_reservation={reservationData?.prix}
               />
             )}
 

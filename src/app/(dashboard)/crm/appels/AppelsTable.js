@@ -153,7 +153,7 @@ const AppelsTable = ({ dataClient, searchParams }) => {
           <Link
             href={'/crm/prospects/' + row.prospect.id}
             target="_blank"
-            className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+            className="flex items-center gap-1 text-black-500 hover:text-black-700"
           >
             <strong style={{ fontWeight: 600 }}>{row.nom}</strong>
           </Link>
@@ -165,7 +165,7 @@ const AppelsTable = ({ dataClient, searchParams }) => {
       label: 'Prénom',
       render: (row) => {
         return (
-          <Link href={'/crm/prospects/' + row.prospect.id} target="_blank"             className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+          <Link href={'/crm/prospects/' + row.prospect.id} target="_blank"             className="flex items-center gap-1 text-black-500 hover:text-black-700"
 >
             <strong style={{ fontWeight: 600 }}>{row.prenom}</strong>
           </Link>

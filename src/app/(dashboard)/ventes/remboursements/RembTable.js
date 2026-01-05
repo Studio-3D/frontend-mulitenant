@@ -1039,7 +1039,7 @@ export default function RembTable({ etat }) {
             </div>
             <div className="col-span-12">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Chèque client Signé:
+                Chèque client Signé <span className="text-red-500 ml-1">*</span>:
               </label>
               <input
                 type="file"

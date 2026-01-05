@@ -181,12 +181,7 @@ const ChangeDetailModal = memo(({ historyItem, onClose }) => {
                     : 'Utilisateur inconnu'}
                 </p>
               </div>
-              <div>
-                <p className="text-sm font-semibold text-black">Bien concerné</p>
-                <p className="text-gray-500">
-                  {historyItem.bien?.propriete_dite_bien || 'N/A'}
-                </p>
-              </div>
+              
             </div>
           </div>
 

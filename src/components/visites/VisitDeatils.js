@@ -1693,13 +1693,9 @@ export function VisitDetails({
                           <>
                             {visite.reservation == null && (
                               <>
-                                {/* Show Modifier button if:
-        - interet == 1 AND statut == 1
-        OR
-        - interet == 2
-    */}
+           
                                 {(visite.interet == 1 && visite.statut == 1) ||
-                                visite.interet == 2 ? (
+                                visite.interet == 2 ||(visite.interet==5 &&  visite?.statut_client?.avance_id==null) ? (
                                   <Button
                                     type="edit"
                                     onClick={() => handleEdit(visite.id)}
@@ -1716,8 +1712,7 @@ export function VisitDetails({
                                   </Button>
                                 ) : (
                                   <>
-                                    {visite.interet == 3 &&
-                                      visite.interet != 5 && (
+                                    {visite.interet == 3 && (
                                         <Button
                                           type="edit"
                                           onClick={() => handleEdit(visite.id)}

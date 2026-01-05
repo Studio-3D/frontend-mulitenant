@@ -148,7 +148,18 @@ export default function PenalitesTable() {
         disabled: false,
       });
       toast.success('Action Traité avec Succés');
-      fetchData();
+     fetchData_table_by_id(
+      entity,
+      filters,
+      searchTerm,
+      currentPage,
+      rowsPerPage,
+      accessToken,
+      setLoading,
+      setError,
+      setData,
+      setTotalRows
+    );
     } catch (err) {
       const response = err.response;
       if (response?.status === 422) {

@@ -426,14 +426,14 @@ const DetailTabComponent = ({
                     <p className="text-sm text-gray-500">Prix Unitaire</p>
                     <p className="font-medium">
                       {' '}
-                      {reservation?.bien.prix_unitaire.toLocaleString() + ' DH'}
+                      {reservation?.bien.prix_unitaire?.toLocaleString() + ' DH'}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Prix Remisé</p>
                     <p className="font-medium">
                       {' '}
-                      {reservation?.prix_remise.toLocaleString() + ' DH'}
+                      {reservation?.prix_remise?.toLocaleString() + ' DH'}
                     </p>
                   </div>
                   <div>
@@ -443,7 +443,7 @@ const DetailTabComponent = ({
                     </p>
                     <p className="font-medium">
                       {' '}
-                      {reservation?.prix_forfetaire.toLocaleString() + ' DH'}
+                      {reservation?.prix_forfetaire?.toLocaleString() + ' DH'}
                     </p>
                   </div>
                   <div>
@@ -468,7 +468,7 @@ const DetailTabComponent = ({
                     <p className="text-sm text-gray-500">Montant Encaissé</p>
                     <p className="font-medium text-green-500">
                       {' '}
-                      {sum_avances_valides.toLocaleString() + ' DH'}
+                      {sum_avances_valides?.toLocaleString() + ' DH'}
                     </p>
                   </div>
                   <div className="space-y-1">
@@ -504,7 +504,7 @@ const DetailTabComponent = ({
                       {' '}
                       {(
                         reservation?.prix - sum_avances_valides
-                      ).toLocaleString() + ' DH'}
+                      )?.toLocaleString() + ' DH'}
                     </p>
                   </div>
                   <div>
