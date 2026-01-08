@@ -141,6 +141,8 @@ export default function ReservationForm({ id }) {
 
     },
   ]);
+  const [showClientErrors, setShowClientErrors] = useState(false);
+  const [showStepErrors, setShowStepErrors] = useState(false);
 
   const steps = [
     {
@@ -182,6 +184,29 @@ export default function ReservationForm({ id }) {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
+  };
+
+  const handleNextClick = () => {
+    if (currentStep === 0) {
+      setShowStepErrors(true);
+      const errors = validateFields();
+      if (errors.length > 0) {
+        setValidationErrors(errors);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      setValidationErrors([]);
+      setShowStepErrors(false);
+      goToNextStep();
+      return;
+    }
+
+    if (currentStep === 1) {
+      setShowClientErrors(true);
+      if (!validateClientStep()) return;
+    }
+
+    goToNextStep();
   };
 
   const addClientEntry = () => {
@@ -1409,6 +1434,11 @@ export default function ReservationForm({ id }) {
   }, [currentStep]);
 
   useEffect(() => {
+    if (currentStep !== 1) setShowClientErrors(false);
+    if (currentStep !== 0) setShowStepErrors(false);
+  }, [currentStep]);
+
+  useEffect(() => {
     return () => {
       // Clean up selected client from localStorage when component unmounts
       localStorage.removeItem('selectedClient_show_client');
@@ -2193,9 +2223,14 @@ export default function ReservationForm({ id }) {
                     fetch_code_reservation(e);
                   }}
                 />
-                {info_reservation != null && (
-                  <p style={{ color: 'red' }}>{info_reservation}</p>
-                )}
+                  {info_reservation != null && (
+                    <p style={{ color: 'red' }}>{info_reservation}</p>
+                  )}
+                  {showStepErrors && !watch('code_reservation') && (
+                    <p className="text-red-500 text-xs mt-1">
+                      Le code de réservation est requis
+                    </p>
+                  )}
               </div>
 
               <div>
@@ -2244,6 +2279,9 @@ export default function ReservationForm({ id }) {
                   disabled={isEditing && user?.role > 2 ? true : false}
                   placeholder="Sélectionnez un bien"
                 />
+                {showStepErrors && !watch('bien_id') && (
+                  <p className="text-red-500 text-xs mt-1">La sélection d'un bien est requise</p>
+                )}
               </div>
               <div>
                 <TextField
@@ -2256,6 +2294,9 @@ export default function ReservationForm({ id }) {
                   backendErrors={backendErrors}
                   defaultValues={defaultValues}
                 />
+                {showStepErrors && !watch('date_reservation') && (
+                  <p className="text-red-500 text-xs mt-1">La date de réservation est requise</p>
+                )}
               </div>
             </div>
             <div>
@@ -2420,15 +2461,13 @@ export default function ReservationForm({ id }) {
                           disabled={loading_clients || entry.disabled}
                           placeholder="Sélectionnez un client"
                         />
-                        {inputList1.length > 1 && (
-                          <>
-                            {!entry.id && currentStep === 1 && (
-                              <p className="text-red-500 text-xs mt-1">
-                                La sélection {"d'"}un client est requise
-                              </p>
-                            )}
-                          </>
-                        )}
+                        <>
+                          {!entry.id && currentStep === 1 && showClientErrors && (
+                            <p className="text-red-500 text-xs mt-1">
+                              La sélection {"d'"}un client est requise
+                            </p>
+                          )}
+                        </>
                       </div>
                       <div>
                         <label
@@ -2449,9 +2488,7 @@ export default function ReservationForm({ id }) {
                             handleinputchange1(e, index, 'percent')
                           }
                           className={`w-full px-3 py-2 border ${
-                            inputList1.length > 1 &&
-                            !entry.pourcentage &&
-                            currentStep === 1
+                            !entry.pourcentage && currentStep === 1 && showClientErrors
                               ? 'border-red-500'
                               : 'border-gray-300'
                           } rounded-md focus:outline-none focus:ring-[0.5px] focus:ring-gray-800`}
@@ -2459,24 +2496,22 @@ export default function ReservationForm({ id }) {
                           min="0"
                           max="100"
                         />
-                        {inputList1.length > 1 && (
-                          <>
-                            {!entry.pourcentage && currentStep === 1 && (
-                              <p className="text-red-500 text-xs mt-1">
-                                Le pourcentage est requis
-                              </p>
-                            )}
-                          </>
-                        )}
+                        <>
+                          {!entry.pourcentage && currentStep === 1 && showClientErrors && (
+                            <p className="text-red-500 text-xs mt-1">
+                              Le pourcentage est requis
+                            </p>
+                          )}
+                        </>
                       </div>
                       <div className="mt-2">
-                        {watch('pourcentages') > 0 &&
+                        {showClientErrors && watch('pourcentages') > 0 &&
                           watch('pourcentages') !== 100 && (
                             <p
                               className={`text-sm font-medium ${
                                 !hasPercentageChanged
-                                  ? 'text-sky-500' // bleu ciel au début
-                                  : 'text-red-500' // rouge après modification
+                                  ? 'text-sky-500'
+                                  : 'text-red-500'
                               }`}
                             >
                               ⚠️ La somme des pourcentages (
@@ -2484,7 +2519,7 @@ export default function ReservationForm({ id }) {
                               100% !
                             </p>
                           )}
-                        {watch('pourcentages') === 100 && (
+                        {showClientErrors && watch('pourcentages') === 100 && (
                           <p className="text-green-600 text-sm font-medium flex items-center">
                             <CheckIcon className="w-4 h-4 mr-1" />✓ La somme des
                             pourcentages est correcte (100%)
@@ -2492,28 +2527,31 @@ export default function ReservationForm({ id }) {
                         )}
                       </div>
                     </div>
-                    {inputList1.length > 1 && (
-                      <button
-                        onClick={() =>
-                          removeClientEntry(index, 'without_new_client')
-                        }
-                        className="mt-7 p-2 text-white hover:text-red-700 hover:bg-red rounded-md transition-colors bg-[red]"
-                      >
-                        <XIcon className="w-5 h-5" />
-                      </button>
-                    )}
+                    <div className="mt-7">
+                      {index === inputList1.length - 1 ? (
+                        <button
+                          onClick={addClientEntry}
+                          className="flex items-center justify-center gap-2 px-3 py-2 text-white rounded-full  bg-[#2563eb]"
+                          title="Ajouter un acquéreur"
+                        >
+                          <PlusIcon className="w-5 h-5" />
+                          
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => removeClientEntry(index)}
+                          className="p-2 text-white hover:text-red-700 hover:bg-red rounded-md transition-colors bg-[red]"
+                          title="Supprimer cet acquéreur"
+                        >
+                          <XIcon className="w-5 h-5" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
             <div className="flex justify-center space-x-4">
-              <button
-                onClick={addClientEntry}
-                className="flex items-center justify-center gap-2 px-4 py-2  text-white rounded-full hover:bg-blue-100 bg-[#2563eb]"
-              >
-                <PlusIcon className="w-5 h-5" />
-                <UsersIcon className="w-5 h-5" />
-              </button>
               <button
                 onClick={() => {
                   setFormSubmitted_client(false);
@@ -4834,36 +4872,7 @@ export default function ReservationForm({ id }) {
           </div>
         )}
 
-        {/* Validation Errors Display */}
-        {validationErrors.length > 0 && (
-          <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <div className="flex items-start">
-              <svg
-                className="w-5 h-5 text-red-600 mr-2 mt-0.5 flex-shrink-0"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <div className="flex-1">
-                <h3 className="text-red-800 font-semibold mb-2">
-                  Veuillez corriger les erreurs suivantes :
-                </h3>
-                <ul className="list-disc pl-5 space-y-1">
-                  {validationErrors.map((error, index) => (
-                    <li key={index} className="text-red-700 text-sm">
-                      {error}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Global validation alert removed; inline errors shown below inputs */}
         <div className="flex justify-between mt-8">
           <button
             type="button" // Prevent accidental form submission
@@ -4889,27 +4898,8 @@ export default function ReservationForm({ id }) {
           ) : (
             <button
               type="button"
-              onClick={goToNextStep}
-              className={`px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 ${
-                (currentStep == 0 &&
-                  (watch('bien_id') == '' ||
-                    watch('code_reservation') == '' ||
-                    watch('date_reservation') == '' ||
-                    info_reservation != null ||
-                    loading_bien == true)) ||
-                (currentStep == 1 && !validateClientStep())
-                  ? 'opacity-50 cursor-not-allowed'
-                  : ''
-              }`}
-              disabled={
-                (currentStep == 0 &&
-                  (watch('bien_id') == '' ||
-                    watch('code_reservation') == '' ||
-                    watch('date_reservation') == '' ||
-                    info_reservation != null ||
-                    loading_bien == true)) ||
-                (currentStep == 1 && !validateClientStep())
-              }
+              onClick={handleNextClick}
+              className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             >
               Suivant
             </button>
