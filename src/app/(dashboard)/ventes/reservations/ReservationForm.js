@@ -3397,6 +3397,96 @@ export default function ReservationForm({ id }) {
               </div>
             )}
             <>
+              {/* Selected clients section: shows selected input clients (with their percentages) and added clients together */}
+              {(inputList1.some((c) => c.id) || addedClients.length > 0) && (
+                <div className="mt-8 border-t pt-6">
+                  <h3 className="text-lg font-medium text-gray-700 mb-4">
+                    Client sélectionné
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {/* Render selected clients from inputList1 */}
+                    {inputList1.map((entry, idx) => {
+                      if (!entry.id) return null;
+                      const full = clientsExist.find((c) => c.id == entry.id) || {};
+                      return (
+                        <div key={`sel-${entry.id}-${idx}`} className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
+                          <div className="p-5">
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <div className="flex items-center mb-2">
+                                  <Mail className="w-4 h-4 text-gray-500 mr-2" />
+                                  <h4 className="font-medium text-gray-900 truncate">{full.cin || ''}</h4>
+                                </div>
+                                <div className="flex items-center mb-2">
+                                  <User className="w-4 h-4 text-gray-500 mr-2" />
+                                  <h4 className="font-medium text-gray-900 truncate">{full.nom || full.name || ''} {full.prenom || ''}</h4>
+                                </div>
+                                <div className="space-y-1.5">
+                                  <div className="flex items-center text-sm text-gray-600">
+                                    <Percent className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
+                                    <span className="truncate text-green-600 font-bold">{entry.pourcentage || 0}</span>
+                                  </div>
+                                  {full.telephone_num1 && (
+                                    <div className="flex items-center text-sm text-gray-600">
+                                      <Phone className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
+                                      <span>{full.telephone_num1}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex space-x-2">
+                                <button onClick={() => removeClientEntry(idx)} className="p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 transition-colors duration-200" aria-label="Supprimer le client sélectionné">
+                                  <XIcon className="w-5 h-5" />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {/* Render added clients as well (duplicate of Clients ajoutés content) */}
+                    {addedClients.map((client, index) => (
+                      <div key={`added-${index}`} className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
+                        <div className="p-5">
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <div className="flex items-center mb-2">
+                                <Mail className="w-4 h-4 text-gray-500 mr-2" />
+                                <h4 className="font-medium text-gray-900 truncate">{client.cin}</h4>
+                              </div>
+                              <div className="flex items-center mb-2">
+                                <User className="w-4 h-4 text-gray-500 mr-2" />
+                                <h4 className="font-medium text-gray-900 truncate">{client.nom} {client.prenom}</h4>
+                              </div>
+                              <div className="space-y-1.5">
+                                <div className="flex items-center text-sm text-gray-600">
+                                  <Percent className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
+                                  <span className="truncate text-green-600 font-bold">{client.pourcentage != undefined && client.pourcentage}</span>
+                                </div>
+                                {client.telephone_num1 && (
+                                  <div className="flex items-center text-sm text-gray-600">
+                                    <Phone className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
+                                    <span>{client.telephone_num1}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex space-x-2">
+                              <button onClick={() => { setClientToEdit({ ...client, originalIndex: index, check: false, check_field: null, check_p: false }); setShowEditModal(true); }} className="p-1 text-gray-400 hover:text-blue-500 rounded-full hover:bg-blue-50 transition-colors duration-200" aria-label="Modifier le client">
+                                <PencilLine className="w-5 h-5" />
+                              </button>
+                              <button onClick={() => { handleAnnuler_client_added(client.pourcentage); const updatedClients = addedClients.filter((_, i) => i !== index); setAddedClients(updatedClients); setValue('clients', updatedClients); }} className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-red-50 transition-colors duration-200" aria-label="Supprimer le client">
+                                <XIcon className="w-5 h-5" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               {addedClients.length > 0 && (
                 <div className="mt-8 border-t pt-6">
                   <h3 className="text-lg font-medium text-gray-700 mb-4">
