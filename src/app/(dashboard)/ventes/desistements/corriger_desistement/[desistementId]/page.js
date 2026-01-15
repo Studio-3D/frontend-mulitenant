@@ -19,17 +19,14 @@ import SelectInput from '@/components/SelectInput';
 import LoadingSpin from '@/components/LoadingSpin';
 import { useForm, FormProvider } from 'react-hook-form';
 import TextField from '@/components/Textfield';
-import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
-import {
-  MODE_PAIEMENT,
-  getModePenaliteCode,
-  modes_penalites,
-} from '@/configs/enum';
-import Autocomplete from '@/components/Autocomplete';
+import { MODE_PAIEMENT, modes_penalites } from '@/configs/enum';
 import { useProjet } from '@/context/ProjetContext';
 import BreadCrumb from '../../../../navigation/BreadCrumb';
 
 export default function Page() {
+  // Ajoutez ces states au début de votre composant
+  const [isPenaliteToggling, setIsPenaliteToggling] = useState(false);
+  const [formSubmitted, setFormSubmitted] = useState(false);
   const hasFetchedFiles = useRef(false);
   const codeResRef = useRef();
   const [dossierInfos, setDossierInfos] = useState({});
@@ -108,6 +105,33 @@ export default function Page() {
 
   const [isFormInitialized, setIsFormInitialized] = useState(false);
 
+  // Ajoutez cet useEffect pour gérer le toggle de pénalité
+  useEffect(() => {
+    if (isPenaliteToggling) {
+      const timer = setTimeout(() => {
+        setIsPenaliteToggling(false);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isPenaliteToggling]);
+  // Modifiez l'effet pour calculer automatiquement la pénalité
+  useEffect(() => {
+    if (
+      avecPenalite &&
+      watch('mode_penalite') &&
+      watch('mode_penalite') !== 'Montant'
+    ) {
+      const percentage = parseFloat(watch('mode_penalite').replace('%', ''));
+      const penalitePar = watch('penalite_par') || 'avance';
+      const amount =
+        penalitePar === 'prix'
+          ? reservationData.prix || 0
+          : reservationData.sumAvances || 0;
+
+      const calculatedAmount = (amount * percentage) / 100;
+      setValue('penalite_montant', calculatedAmount.toFixed(2));
+    }
+  }, [watch('mode_penalite'), watch('penalite_par'), avecPenalite, setValue]);
   // Simple cache et comparaison for return back en cas de changer projet
   const [oldProjetId, setOldProjetId] = useState(null);
 
@@ -250,8 +274,8 @@ export default function Page() {
         mode_rembourse_2: 'direct',
         dossier_id: '',
         montant_transferer: '',
-        reste_a_rembourse: '',
         num_paiement: '',
+        reste_a_rembourse: '',
         cheque_recu: null,
         pour_le_compte: '',
         fichier_autorisation: null,
@@ -337,6 +361,12 @@ export default function Page() {
 
   // Handle form submission
   const onSubmit = async (data) => {
+    setFormSubmitted(true); // Set form as submitted
+    const errors = getErrors(); // Utilisez getErrors() au lieu de errors_g
+
+    if (errors.length > 0) {
+      return; // Don't proceed with submission if there are errors
+    }
     try {
       setLoading((prev) => ({ ...prev, submit: true }));
 
@@ -389,13 +419,6 @@ export default function Page() {
         formData.append(`new_files_desistement[${index}]`, file);
       });
       // Add files
-      /*  selectedFiles_dst.forEach((file, index) => {
-        formData.append(`files_desistement[${index}]`, file);
-      });
-
-      selectedFiles_plt.forEach((file, index) => {
-        formData.append(`files_penalite[${index}]`, file);
-      });*/
       // Handle penalty files - separate original file names and new files
       const { originalFileNames: originalFileNamesPlt, newFiles: newFilesPlt } =
         selectedFiles_plt.reduce(
@@ -485,7 +508,23 @@ export default function Page() {
         }
       } else if (activeModel == 3) {
         // DATA TYPE 3
+        //REMboursement
+            data.inputList_remb.forEach((item, index) => {
+          if (item.fichier_autorisation) {
+            formData.append(
+              `fichier_autorisation_${index}`,
+              item.fichier_autorisation
+            );
+          }
+        });
+        data.inputList_remb.forEach((item, index) => {
+          if (item.cheque_recu) {
+            formData.append(`cheque_recu_${index}`, item.cheque_recu);
+          }
+        });
 
+        formData.append('inputlist_remb', JSON.stringify(data.inputList_remb));
+        //////
         formData.append('type', 3);
         formData.append('bien_id_new', data.new_bien_id);
         formData.append('montant_a_ajouter', data.montant_a_ajouter);
@@ -510,8 +549,9 @@ export default function Page() {
       });
       if (response.status == 201 || response.status == 200) {
         if (user?.role <= 2) {
-          localStorage.setItem('etat_dst', '1');
-          router.push('/ventes?tab=desistements');
+          router.push('/ventes/desistements/show' + desistementId);
+          /* localStorage.setItem('etat_dst', '1');
+          router.push('/ventes?tab=desistements');*/
         } else {
           //commercial
           localStorage.setItem('etat_dst', '5');
@@ -519,7 +559,7 @@ export default function Page() {
             '/ventes?tab=validation&subtab=desistements-attente-encours'
           );
         }
-}
+      }
     } catch (error) {
       console.error('Error submitting form:', error);
     } finally {
@@ -532,6 +572,10 @@ export default function Page() {
   }
 
   const getErrors = () => {
+    // Skip validation if we're just toggling penalty
+    if (isPenaliteToggling) {
+      return [];
+    }
     const formValues = methods.getValues();
     const errors = [];
 
@@ -663,7 +707,7 @@ export default function Page() {
                   }
 
                   // Validate direct remboursement fields if type_remb_transfere is immediat
-                  if (item.type_remb_transfere == 'immediat') {
+                  if (item.type_remb_transfere == 'immediat' && parseFloat(item.reste_a_rembourse) > 0) {
                     if (!item.date_rembourse) {
                       errors.push(
                         `${clientPrefix} La date de remboursement est requise pour le remboursement immédiat`
@@ -674,10 +718,20 @@ export default function Page() {
                         `${clientPrefix} Le mode de remboursement est requis pour le remboursement immédiat`
                       );
                     }
-                    if (item.mode_rembourse && !item.num_paiement) {
+                   if (item.mode_rembourse && !item.num_paiement) {
                       errors.push(
-                        `${clientPrefix} Le numéro de paiement est requis pour le remboursement immédiat`
+                        `${clientPrefix} Le numéro de paiement est requis`
                       );
+                    } else if (item.mode_rembourse && item.num_paiement) {
+                      if (item.num_paiement.length !== 16) {
+                        errors.push(
+                          `${clientPrefix} Le numéro de paiement doit contenir 16 chiffres`
+                        );
+                      } else if (!/^\d{16}$/.test(item.num_paiement)) {
+                        errors.push(
+                          `${clientPrefix} Le numéro de paiement doit contenir uniquement des chiffres`
+                        );
+                      }
                     }
                     if (!item.pour_le_compte) {
                       errors.push(
@@ -714,10 +768,20 @@ export default function Page() {
                   );
                 }
                 if (item.mode_rembourse && !item.num_paiement) {
-                  errors.push(
-                    `${clientPrefix} Le numéro de paiement est requis`
-                  );
-                }
+                      errors.push(
+                        `${clientPrefix} Le numéro de paiement est requis`
+                      );
+                    } else if (item.mode_rembourse && item.num_paiement) {
+                      if (item.num_paiement.length !== 16) {
+                        errors.push(
+                          `${clientPrefix} Le numéro de paiement doit contenir 16 chiffres`
+                        );
+                      } else if (!/^\d{16}$/.test(item.num_paiement)) {
+                        errors.push(
+                          `${clientPrefix} Le numéro de paiement doit contenir uniquement des chiffres`
+                        );
+                      }
+                    }
                 if (!item.pour_le_compte) {
                   errors.push(
                     `${clientPrefix} Le compte bénéficiaire est requis`
@@ -772,6 +836,15 @@ export default function Page() {
       const type_dp = formValues.type_dp;
 
       if (type_dp == 1) {
+        // ADD THIS VALIDATION:
+        if (
+          !formValues.nb_aquereurs_dp_proche ||
+          formValues.nb_aquereurs_dp_proche <= 0
+        ) {
+          errors.push(
+            'Le nombre des nouveaux acquéreurs doit être supérieur à 0'
+          );
+        }
         // Désistement au profit d'un proche
         if (
           !formValues.desisteur_dp_proche_co ||
@@ -853,7 +926,6 @@ export default function Page() {
         ) {
           errors.push('Au moins un bénéficiaire doit être sélectionné');
         } else {
-         
           let totalPercentage = 0;
           formValues.profit_dp_co_reser.forEach((beneficiary, index) => {
             const percent = parseFloat(beneficiary.new_pourcentage);
@@ -888,6 +960,12 @@ export default function Page() {
         }
       } else if (type_dp == 3) {
         // Désistement partiel
+        // ADD THIS VALIDATION:
+        if (!formValues.nb_aquereurs_dp || formValues.nb_aquereurs_dp <= 0) {
+          errors.push(
+            'Le nombre des nouveaux acquéreurs doit être supérieur à 0'
+          );
+        }
         if (
           !formValues.desisteutrs_profit_dp_partiel ||
           formValues.desisteutrs_profit_dp_partiel.length == 0
@@ -1027,13 +1105,17 @@ export default function Page() {
           if (!formValues.banque_id) {
             errors.push('La banque est requise pour ce mode de paiement');
           }
-          if (!formValues.numero_paiement) {
+         if (!formValues.numero_paiement) {
             errors.push('Le numéro de paiement est requis');
+          } else if (formValues.numero_paiement.length !== 16) {
+            errors.push('Le numéro de paiement doit contenir 16 chiffres');
+          } else if (!/^\d{16}$/.test(formValues.numero_paiement)) {
+            errors.push('Le numéro de paiement doit contenir uniquement des chiffres');
           }
 
           // Validate echeance for certain payment methods
           if (
-            ![1, 5, 6].includes(formValues.mode_paiement) &&
+            !['1', '5', '6'].includes(formValues.mode_paiement) &&
             !formValues.echeance
           ) {
             errors.push("L'échéance est requise pour ce mode de paiement");
@@ -1080,6 +1162,10 @@ export default function Page() {
               }
               if (!formValues.numero_paiement_pen) {
                 errors.push('Le numéro de paiement de la pénalité est requis');
+              } else if (formValues.numero_paiement_pen.length !== 16) {
+                errors.push('Le numéro de paiement de la pénalité doit contenir 16 chiffres');
+              } else if (!/^\d{16}$/.test(formValues.numero_paiement_pen)) {
+                errors.push('Le numéro de paiement de la pénalité doit contenir uniquement des chiffres');
               }
 
               // Validate echeance for certain payment methods
@@ -1219,16 +1305,20 @@ export default function Page() {
     window.open(fileURL);
   };
 
-  const handleDeleteFile = async (index, fileType) => {
+  const handleDeleteFile = (index, fileType, event) => {
+    // Empêcher la propagation d'événement
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
     const fileConfig = {
       1: {
-        // dst
         selectedFiles: selectedFiles_dst,
         setSelectedFiles: setSelectedFiles_dst,
         formField: 'files_desistement',
       },
       2: {
-        // plt
         selectedFiles: selectedFiles_plt,
         setSelectedFiles: setSelectedFiles_plt,
         formField: 'files_penalite',
@@ -1239,13 +1329,15 @@ export default function Page() {
     if (!config) return;
 
     const { selectedFiles, setSelectedFiles, formField } = config;
+    const updatedFiles = selectedFiles.filter((_, i) => i !== index);
 
-    const fileToDelete = selectedFiles[index];
-
-    const updatedFiles = selectedFiles.filter((_, i) => i != index);
+    // Mettre à jour l'état
     setSelectedFiles(updatedFiles);
-    await Promise.resolve();
-    setValue(formField, updatedFiles);
+
+    // Utiliser setTimeout pour éviter les conflits avec le cycle de rendu
+    setTimeout(() => {
+      setValue(formField, updatedFiles);
+    }, 10);
   };
 
   // Helper functions (add these outside your component)
@@ -1324,25 +1416,28 @@ export default function Page() {
     }
   };
 
+  // Modifiez la fonction handlechange_mode_penalite
   const handlechange_mode_penalite = (code) => {
     const selectedMode = modes_penalites[code];
     if (selectedMode) {
-      console.log('Selected Mode:', selectedMode.label);
       setValue('mode_penalite', selectedMode.label);
 
       // Calculate penalty amount
-      if (selectedMode.label != 'Montant') {
-        const percentage = parseFloat(selectedMode.label);
-        if (watch('penalite_par') == 'prix') {
-          setValue(
-            'penalite_montant',
-            (reservationData.prix * percentage) / 100
-          );
-        } else {
-          setValue(
-            'penalite_montant',
-            (reservationData.sumAvances * percentage) / 100
-          );
+      if (selectedMode.label !== 'Montant') {
+        const percentage = parseFloat(selectedMode.label.replace('%', ''));
+        const penalitePar = watch('penalite_par') || 'avance';
+
+        const amount =
+          penalitePar === 'prix'
+            ? reservationData.prix || 0
+            : reservationData.sumAvances || 0;
+
+        const calculatedAmount = (amount * percentage) / 100;
+        setValue('penalite_montant', calculatedAmount.toFixed(2));
+      } else {
+        // Reset to 0 for Montant mode if not already set
+        if (!watch('penalite_montant')) {
+          setValue('penalite_montant', 0);
         }
       }
     }
@@ -1466,6 +1561,7 @@ export default function Page() {
             {/* Add similar sections for other types if needed */}
 
             {/* Penalty section (same as in your original code) */}
+
             <div className="border-t border-gray-200 py-4 px-6">
               <div className="flex justify-between items-center">
                 <div>
@@ -1475,10 +1571,19 @@ export default function Page() {
                   <input
                     type="checkbox"
                     checked={avecPenalite}
-                    onChange={() => {
+                    onChange={(e) => {
+                      setIsPenaliteToggling(true);
                       setAvecPenalite(!avecPenalite);
-                      if (!avecPenalite && watch('penalite_montant') != null) {
+                      if (!e.target.checked) {
+                        // Reset penalty values when turning off
                         setValue('penalite_montant', 0);
+                        setValue('mode_penalite', '');
+                        setValue('penalite_par', 'avance');
+                        setValue('sr_pen', false);
+                        setValue('mode_paiement_pen', '');
+                        setValue('banque_pen', '');
+                        setValue('numero_paiement_pen', '');
+                        setValue('echeance_pen', '');
                       }
                     }}
                     className="sr-only peer"
@@ -1491,8 +1596,7 @@ export default function Page() {
             {avecPenalite && (
               <div className="border-t border-gray-200 py-4 px-6 space-y-4">
                 <div className="flex flex-col md:flex-row gap-4 items-center">
-                  {/* Ensures alignment */}
-                  {/* Mode Pénalité Dropdown */} {/* Added mt-1 */}
+                  {/* Mode Pénalité Dropdown */}
                   <div className="w-[600px] mt-1">
                     <SelectInput
                       label="Mode Pénalité :"
@@ -1501,100 +1605,110 @@ export default function Page() {
                       required={true}
                       options={Object.entries(modes_penalites).map(
                         ([key, value]) => ({
-                          value: value.label, // Use label as value
+                          value: value.label,
                           label: value.label,
                         })
                       )}
                       onChange={(value) => {
-                        // Find the code by label
                         const entry = Object.entries(modes_penalites).find(
                           ([key, val]) => val.label === value
                         );
                         if (entry) {
-                          handlechange_mode_penalite(entry[0]); // Pass the code
+                          handlechange_mode_penalite(entry[0]);
                         }
                       }}
                       error={errors.mode_penalite?.message}
                       placeholder="Sélectionnez un mode de pénalité"
                     />
                   </div>
-                  {/* Conditional Fields (aligned at the same height) */}
-                  {watch('mode_penalite') && (
-                    <>
-                      {watch('mode_penalite') == 'Montant' ||
-                      watch('mode_penalite') == '13' ? (
-                        /* Manual Penalty Amount Input (same height as other fields) */
-                        <div className="flex-1 min-w-[180px] mt-2">
-                          <TextField
-                            label="Pénalité Montant"
-                            name="penalite_montant"
-                            type="number"
-                            value={watch('penalite_montant')}
-                            control={control}
-                            errors={{}}
-                            backendErrors={{}}
-                            required
-                            onChange={(e) =>
-                              setValue('penalite_montant', e.target.value)
-                            }
-                          />
-                        </div>
-                      ) : (
-                        /* Percentage-based Penalty (keeps same height) */
-                        <div className="flex flex-1 flex-col md:flex-row gap-4 items-center">
-                          {' '}
-                          {/* Ensures inner alignment */}
-                          {/* Radio Buttons (Prix/Avance) */}
-                          <div className="min-w-[220px]">
-                            <div className="flex flex-col">
-                              <label className="text-sm font-medium text-gray-700 mb-1">
-                                Pénalité Par
-                              </label>
-                              <div className="flex space-x-4">
-                                <label className="inline-flex items-center">
-                                  <input
-                                    type="radio"
-                                    name="penalite_par"
-                                    value="prix"
-                                    checked={watch('penalite_par') == 'prix'}
-                                    onChange={handlechange_penalite}
-                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500"
-                                  />
-                                  <span className="ml-2">Prix</span>
-                                </label>
-                                <label className="inline-flex items-center">
-                                  <input
-                                    type="radio"
-                                    name="penalite_par"
-                                    value="avance"
-                                    checked={watch('penalite_par') == 'avance'}
-                                    onChange={handlechange_penalite}
-                                    className="h-4 w-4 text-purple-600 focus:ring-purple-500"
-                                  />
-                                  <span className="ml-2">Avance</span>
-                                </label>
-                              </div>
-                            </div>
-                          </div>
-                          {/* Auto-Calculated Penalty Amount (same height) */}
-                          <div className="min-w-[180px]">
-                            <TextField
-                              label="Montant"
-                              name="penalite_montant"
-                              type="number"
-                              control={control}
-                              errors={errors}
-                              backendErrors={{}}
-                              required
-                              disabled
-                              value={watch('penalite_montant') || ''}
-                            />
+                  {watch('mode_penalite') &&
+                  watch('mode_penalite') !== 'Montant' ? (
+                    <div className="flex flex-1 flex-col md:flex-row gap-4 items-center">
+                      {/* Radio Buttons (Prix/Avance) */}
+                      <div className="min-w-[220px]">
+                        <div className="flex flex-col">
+                          <label className="text-sm font-medium text-gray-700 mb-1">
+                            Pénalité Sur <span className="text-red-500">*</span>
+                          </label>
+                          <div className="flex space-x-4">
+                            <label className="inline-flex items-center">
+                              <input
+                                type="radio"
+                                name="penalite_par"
+                                value="prix"
+                                checked={watch('penalite_par') === 'prix'}
+                                onChange={handlechange_penalite}
+                                className="h-4 w-4 text-blue-600 focus:ring-blue-500"
+                                disabled={!avecPenalite}
+                              />
+                              <span className="ml-2">
+                                Prix ({reservationData.prix?.toFixed(2) || 0}{' '}
+                                DH)
+                              </span>
+                            </label>
+                            <label className="inline-flex items-center">
+                              <input
+                                type="radio"
+                                name="penalite_par"
+                                value="avance"
+                                checked={watch('penalite_par') === 'avance'}
+                                onChange={handlechange_penalite}
+                                className="h-4 w-4 text-purple-600 focus:ring-purple-500"
+                                disabled={!avecPenalite}
+                              />
+                              <span className="ml-2">
+                                Avance (
+                                {reservationData.sumAvances?.toFixed(2) || 0}{' '}
+                                DH)
+                              </span>
+                            </label>
                           </div>
                         </div>
-                      )}
-                    </>
+                      </div>
+                      {/* Auto-Calculated Penalty Amount */}
+                      <div className="min-w-[180px]">
+                        <TextField
+                          label="Montant Calculé"
+                          name="penalite_montant"
+                          type="number"
+                          control={control}
+                          errors={errors}
+                          backendErrors={{}}
+                          required
+                          disabled
+                          value={watch('penalite_montant') || ''}
+                          placeholder="Calculé automatiquement"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    /* Manual Penalty Amount Input */
+                    <div className="flex-1 min-w-[180px] mt-2">
+                      <TextField
+                        label="Pénalité Montant"
+                        name="penalite_montant"
+                        type="number"
+                        control={control}
+                        errors={errors}
+                        backendErrors={{}}
+                        required
+                        disabled={
+                          !avecPenalite ||
+                          (watch('mode_penalite') &&
+                            watch('mode_penalite') !== 'Montant')
+                        }
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value) || 0;
+                          setValue('penalite_montant', value);
+                        }}
+                        value={watch('penalite_montant') || ''}
+                        min="0"
+                        step="0.01"
+                      />
+                    </div>
                   )}
                 </div>
+
                 <div className="border-t border-gray-200 py-4">
                   {/* Only show penalty payment section if mode_penalite is selected AND penalite_montant has a valid value */}
                   {watch('mode_penalite') &&
@@ -1830,7 +1944,6 @@ export default function Page() {
                 </div>
               </div>
             )}
-
             {/* Attachments section (same as in your original code) */}
             <div className="border-t border-gray-200 py-4 px-6">
               <div className="flex justify-between items-center">
@@ -1921,7 +2034,10 @@ export default function Page() {
                                     {formatFileSize(data.size)}
                                   </span>
                                   <button
-                                    onClick={() => handleDeleteFile(index, 1)}
+                                    onClick={(e) =>
+                                      handleDeleteFile(index, 1, e)
+                                    }
+                                    type="button" // Important: spécifier type="button"
                                     className="p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 transition-colors"
                                     title="Supprimer"
                                   >
@@ -1967,7 +2083,7 @@ export default function Page() {
               />
             </div>
 
-            {errors_g.length > 0 && (
+            {formSubmitted && errors_g.length > 0 && (
               <div className="bg-red-50 border-l-4 border-red-500 text-red-500 p-4 mb-4">
                 <p className="font-semibold">
                   Veuillez corriger les erreurs suivantes :
@@ -1990,9 +2106,11 @@ export default function Page() {
               </button>
               <button
                 type="submit"
-                disabled={loading.submit || errors_g.length > 0}
+                disabled={
+                  loading.submit || (formSubmitted && errors_g.length > 0)
+                }
                 className={`px-4 py-2 rounded-md focus:outline-none focus:ring-2 transition-colors ${
-                  loading.submit || errors_g.length > 0
+                  loading.submit || (formSubmitted && errors_g.length > 0)
                     ? 'bg-indigo-100 text-indigo-600 cursor-not-allowed'
                     : 'bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500'
                 }`}

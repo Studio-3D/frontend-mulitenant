@@ -19,8 +19,8 @@ import ReservationSteps from './ReservationSteps';
 export const ReservationHeader = ({
   reservationData,
   userRole,
-  hasCompromis,
-  hasContrat, // AJOUTER CETTE PROP
+ // hasCompromis,
+ // hasContrat, // AJOUTER CETTE PROP
 }) => {
   const router = useRouter();
   // Add null checks and default values
@@ -84,8 +84,8 @@ export const ReservationHeader = ({
         </div>
         <ReservationSteps
           reservation={reservation}
-          hasCompromis={hasCompromis}
-          hasContrat={hasContrat}
+         // hasCompromis={hasCompromis}
+         // hasContrat={hasContrat}
         />
 
        {/*} <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">

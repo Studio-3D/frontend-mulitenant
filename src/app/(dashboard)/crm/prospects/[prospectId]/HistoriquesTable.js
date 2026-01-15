@@ -169,46 +169,59 @@ const HistoriquesTable = ({ id, refreshTrigger = 0, type }) => {
       },
     */
   }
-  // Table columns configuration - MIS À JOUR
-  const columns = [
-    {
-      key: 'date_traitement',
-      label: 'Date Traitement',
-      render: (row) => (
-        <div className="flex items-center gap-3">
-          <span>{row.date_traitement}</span>
-          {/*row.type_source && (
-          <span className="text-xs px-2 py-1 bg-gray-100 rounded">
-            {row.type_source === 'prospect' ? 'Prospect' : 'Client'}
-          </span>
-        )*/}
-        </div>
-      ),
+  // In HistoriquesTable, update the columns array:
+const columns = [
+  {
+    key: 'date_traitement',
+    label: 'Date Traitement',
+    render: (row) => (
+      <div className="flex items-center gap-3">
+        <span>{row.date_traitement}</span>
+      </div>
+    ),
+  },
+  {
+    key: 'statut',
+    label: 'Statut',
+    render: (row) => {
+      if (!row.statut_raw) return '';
+      
+      return (
+        <span
+          className={`px-2 py-1 rounded text-sm font-semibold whitespace-nowrap ${getStatusColor(
+            row.statut_raw,
+            row.type_source
+          )}`}
+          style={{ 
+            display: 'inline-block',
+            maxWidth: '250px',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
+          }}
+          title={row.statut} // Add tooltip for full text on hover
+        >
+          {row.statut}
+        </span>
+      );
     },
-    {
-      key: 'statut',
-      label: 'Statut',
-      render: (row) => {
-        if (!row.statut_raw) return '';
-
-        return (
-          <span
-            className={`px-2 py-1 rounded text-sm font-semibold ${getStatusColor(
-              row.statut_raw,
-              row.type_source
-            )}`}
-          >
-            {row.statut}
-          </span>
-        );
-      },
-    },
-    { key: 'rdv', label: 'Rendez Vous' },
-    { key: 'rappel', label: 'Date Rappel' },
-    { key: 'user_traite', label: 'Traité par' },
-    { key: 'commentaire', label: 'Commentaire' },
-    // Colonne info client (conditionnelle)
-
+  },
+  { 
+    key: 'rdv', 
+    label: 'Rendez Vous',
+    className: 'whitespace-nowrap' // Add this to prevent wrapping in other columns too
+  },
+  { 
+    key: 'rappel', 
+    label: 'Date Rappel',
+    className: 'whitespace-nowrap'
+  },
+  { key: 'user_traite', label: 'Traité par' },
+  { 
+    key: 'commentaire', 
+    label: 'Commentaire',
+    className: 'min-w-[300px]' // Give more width to comment column
+  },
+ 
    {
   key: 'actions',
   label: 'Actions',

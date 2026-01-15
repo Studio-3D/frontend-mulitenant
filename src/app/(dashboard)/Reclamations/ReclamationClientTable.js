@@ -134,13 +134,21 @@ const ReclamationTable = ({}) => {
     const formData = new FormData();
 
     formData.append('statut', formValues.statut);
+  // Ajouter les dates uniquement si elles existent
+  if (formValues.date_traitement ) {
+    formData.append('date_traitement', formValues.date_traitement);
+  }
+  
+  if (formValues.date_fin_traitement) {
+    formData.append('date_fin_traitement', formValues.date_fin_traitement);
+  }
 
-    formData.append(
+    /*formData.append(
       formValues.date_traitement ? 'date_traitement' : 'date_fin_traitement',
       formValues.date_traitement
         ? formValues.date_traitement
         : formValues.date_fin_traitement
-    );
+    );*/
     formData.append('commentaire', formValues.commentaire || ''); // Ensure empty string instead of null
 
     axios
@@ -179,10 +187,6 @@ const ReclamationTable = ({}) => {
       });
   };
 
-  function handleShow(row) {
-    router.push(`/Reclamations/show/${row.id}`);
-  }
-
   const columns = [
     {
       key: 'date_reclamation',
@@ -195,8 +199,10 @@ const ReclamationTable = ({}) => {
       label: 'Client',
       sortable: true,
       render: (row) => (
-        <Link target="_blank" href={'/clients/' + row.client_id}>
-          <strong>{row.client_nom + ' ' + row.client_prenom}</strong>
+        <Link target="_blank" href={'/ventes/clients/' + row.client_id}>
+          <strong style={{ fontWeight: 600 }}>
+            {row.client_nom + ' ' + row.client_prenom}
+          </strong>
         </Link>
       ),
     },
@@ -205,8 +211,8 @@ const ReclamationTable = ({}) => {
       label: 'Code reservation',
       sortable: true,
       render: (row) => (
-        <Link target="_blank" href={'/reservations/' + row.dossier_id}>
-          <strong>{row.code_reservation}</strong>
+        <Link target="_blank" href={'/ventes/reservations/' + row.dossier_id}>
+          <strong style={{ fontWeight: 600 }}>{row.code_reservation}</strong>
         </Link>
       ),
     },
@@ -254,14 +260,15 @@ const ReclamationTable = ({}) => {
       render: (row) => (
         <>
           <div className="text-[#666880] inline-block min-w-[80px] flex gap-2 items-center">
-            <button
-              className="text-blue-500 hover:text-yellow-700"
-              title="Voir détails"
-              onClick={() => handleShow(row)}
+       
+
+            <Link
+              href={`/Reclamations/show/${row.id}`}
+              className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+              title="Voir les détails"
             >
               <Eye className="w-4 h-4" />
-            </button>
-
+            </Link>
             {row.etat === 0 && (
               <button
                 className="text-red-500 hover:text-red-700"
@@ -461,6 +468,7 @@ const ReclamationTable = ({}) => {
           onClose={() => setOpenDialog(false)}
           type={dialogType}
           values={formValues}
+          from_dashboard_client={true}
           setValues={setFormValues}
           onSubmit={handleSubmitReclamation}
           disabled={disabled}

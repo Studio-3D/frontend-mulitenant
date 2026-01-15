@@ -9,23 +9,25 @@ const ChangeDetailModal = memo(({ historyItem, onClose }) => {
   // Try to parse JSON, fallback to plain text if it fails
   const parseDescription = (description) => {
     if (!description) return { message: { new: 'No description available' } };
-    
+
     try {
       return JSON.parse(description);
     } catch (e) {
       return {
         message: {
           old: '',
-          new: description
-        }
+          new: description,
+        },
       };
     }
   };
 
   const changes = parseDescription(historyItem.description);
+  const hasChanges =
+    historyItem.description && historyItem.description.length > 0;
 
   const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return '';
     try {
       return format(new Date(dateString), 'dd/MM/yyyy');
     } catch {
@@ -37,7 +39,7 @@ const ChangeDetailModal = memo(({ historyItem, onClose }) => {
     if (!changeData) return null;
 
     // Handle simple message case
-    if (fieldName === 'message') {
+    if (fieldName == 'message') {
       return (
         <div className="mb-4">
           <h4 className="font-semibold text-gray-700">Modification</h4>
@@ -54,7 +56,10 @@ const ChangeDetailModal = memo(({ historyItem, onClose }) => {
           {fieldName.replace(/_/g, ' ')}
         </h4>
         <div className="grid grid-cols-2 gap-4 mt-2">
-          <div style={{ background: 'rgb(228,234,240)' }} className="p-3 rounded">
+          <div
+            style={{ background: 'rgb(228,234,240)' }}
+            className="p-3 rounded"
+          >
             <p className="text-sm text-gray-500">Ancienne valeur</p>
             {Array.isArray(changeData.old) ? (
               <ul className="list-disc pl-5">
@@ -62,7 +67,7 @@ const ChangeDetailModal = memo(({ historyItem, onClose }) => {
                   <li key={`old-${fieldName}-${index}`}>
                     {item.client_nom && item.client_prenom
                       ? `${item.client_nom} ${item.client_prenom} (${item.pourcentage}%)`
-                      : typeof item === 'object'
+                      : typeof item == 'object'
                       ? JSON.stringify(item)
                       : String(item)}
                   </li>
@@ -72,7 +77,7 @@ const ChangeDetailModal = memo(({ historyItem, onClose }) => {
               <p>
                 {fieldName.includes('date')
                   ? formatDate(changeData.old)
-                  : String(changeData.old || 'N/A')}
+                  : String(changeData.old || '')}
               </p>
             )}
           </div>
@@ -84,7 +89,7 @@ const ChangeDetailModal = memo(({ historyItem, onClose }) => {
                   <li key={`new-${fieldName}-${index}`}>
                     {item.nom && item.prenom
                       ? `${item.nom} ${item.prenom} (${item.pourcentage}%)`
-                      : typeof item === 'object'
+                      : typeof item == 'object'
                       ? JSON.stringify(item)
                       : String(item)}
                   </li>
@@ -94,7 +99,7 @@ const ChangeDetailModal = memo(({ historyItem, onClose }) => {
               <p>
                 {fieldName.includes('date')
                   ? formatDate(changeData.new)
-                  : String(changeData.new || 'N/A')}
+                  : String(changeData.new || '')}
               </p>
             )}
           </div>
@@ -110,7 +115,10 @@ const ChangeDetailModal = memo(({ historyItem, onClose }) => {
       <div className="mb-4">
         <h4 className="font-semibold text-gray-700">Fichiers</h4>
         <div className="grid grid-cols-2 gap-4 mt-2">
-          <div style={{ background: 'rgb(228,234,240)' }} className="p-3 rounded">
+          <div
+            style={{ background: 'rgb(228,234,240)' }}
+            className="p-3 rounded"
+          >
             <p className="text-sm text-gray-500">Anciens fichiers</p>
             {files.old && files.old.length > 0 ? (
               <ul className="list-disc pl-5">
@@ -143,7 +151,7 @@ const ChangeDetailModal = memo(({ historyItem, onClose }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg max-w-4xl w-full mx-4">
         <div className="bg-blue-500 text-white p-4 rounded-t-lg flex justify-between items-center">
-          <h3 className="text-lg font-bold">Détails des modifications</h3>
+          <h3 className="text-lg font-bold">Détails</h3>
           <button onClick={onClose} className="text-white hover:text-gray-200">
             <X className="w-5 h-5" />
           </button>
@@ -161,12 +169,32 @@ const ChangeDetailModal = memo(({ historyItem, onClose }) => {
               <div>
                 <p className="text-sm font-semibold text-black">Type</p>
                 <p className="text-gray-500">
-                  {historyItem.action === '1'
-                    ? 'Changement de Bien'
-                    : historyItem.action === '2'
-                    ? 'Création de Réservation'
-                    : historyItem.action === '3'
+                  {historyItem.action == '1'
+                    ? 'En Attente'
+                    : historyItem.action == '2'
+                    ? 'Validation'
+                    : historyItem.action == '3'
                     ? 'Modification Réservation'
+                    : historyItem.action == '4'
+                    ? 'Rejet'
+                    : historyItem.action == '5'
+                    ? 'REJET-RELANCE EN COURS'
+                    : historyItem.action == '6'
+                    ? 'Desistement Defintif'
+                    : historyItem.action == '7'
+                    ? "Desistement au profit d'un proche"
+                    : historyItem.action == '8'
+                    ? "Desistement au profit d'un co reservataire"
+                    : historyItem.action == '9'
+                    ? 'Desistement au profit partiel'
+                    : historyItem.action == '10'
+                    ? 'Desistement Changement de bien'
+                    : historyItem.action == '11'
+                    ? 'Attestation de vente'
+                    : historyItem.action == '12'
+                    ? 'Contrat de vente'
+                     : historyItem.action == '13'
+                    ? 'Reconstitution Dossier'
                     : 'Type inconnu'}
                 </p>
               </div>
@@ -177,26 +205,41 @@ const ChangeDetailModal = memo(({ historyItem, onClose }) => {
                 <p className="text-sm font-semibold text-black">Responsable</p>
                 <p className="text-gray-500">
                   {historyItem.user
-                    ? `${historyItem.user.name || ''} ${historyItem.user.prenom || ''}`.trim()
+                    ? `${historyItem.user.name || ''} ${
+                        historyItem.user.prenom || ''
+                      }`.trim()
                     : 'Utilisateur inconnu'}
                 </p>
               </div>
-              
             </div>
           </div>
 
-          {Object.entries(changes).map(([field, change], index) => {
-            if (field === 'files') {
-              return (
-                <div key={`files-${index}`}>{renderFileChanges(change)}</div>
-              );
-            }
-            return (
-              <div key={`${field}-${index}`}>
-                {renderFieldChange(field, change)}
-              </div>
-            );
-          })}
+          {/* Only show changes if description exists and has content */}
+          {hasChanges ? (
+            <>
+              {Object.entries(changes).map(([field, change], index) => {
+                if (field == 'files') {
+                  return (
+                    <div key={`files-${index}`}>
+                      {renderFileChanges(change)}
+                    </div>
+                  );
+                }
+                return (
+                  <div key={`${field}-${index}`}>
+                    {renderFieldChange(field, change)}
+                  </div>
+                );
+              })}
+            </>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-500 italic">
+                Aucun détail de modification n{"'"}est disponible pour cet
+                historique.
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="flex justify-end p-4 border-t">
@@ -215,33 +258,65 @@ const ChangeDetailModal = memo(({ historyItem, onClose }) => {
 ChangeDetailModal.displayName = 'ChangeDetailModal';
 
 // Create the main component first, then wrap with memo
+// Create the main component first, then wrap with memo
 const HistoriquesTabComponent = ({ reservationData }) => {
   const [selectedHistory, setSelectedHistory] = useState(null);
   const histo = reservationData;
 
+  // Sort the historiques data in ascending order by ID
+  const sortedHisto = [...histo].sort((a, b) => a.id - b.id);
+
   function NomBienComplet(bien) {
-    if (!bien) return 'N/A';
+    if (!bien) return '';
     const noms = [];
     if (bien.tranche?.nom) noms.push(bien.tranche.nom);
     if (bien.bloc?.nom) noms.push(bien.bloc.nom);
     if (bien.immeuble?.nom) noms.push(bien.immeuble.nom);
-    noms.push(bien.propriete_dite_bien || 'N/A');
+    noms.push(bien.propriete_dite_bien || '');
     return noms.join(' - ');
   }
 
   const formatData = () => {
-    return histo.map((data) => ({
+    // Use sortedHisto instead of histo
+    return sortedHisto.map((data) => ({
       id: data?.id || '',
       date: data?.created_at
-        ? new Date(data.created_at).toLocaleDateString('fr-FR').replace(/\//g, '-')
-        : 'N/A',
+        ? new Date(data.created_at).toLocaleDateString('fr-FR', {
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          })
+        : '',
+      action: data?.action,
       type:
-        data?.action === '1'
-          ? 'Changement de Bien'
-          : data?.action === '2'
-          ? 'Création de Réservation'
-          : data?.action === '3'
+        data?.action == '1'
+          ? 'En Attente'
+          : data?.action == '2'
+          ? 'Validation'
+          : data?.action == '3'
           ? 'Modification Réservation'
+          : data?.action == '4'
+          ? 'Rejet'
+          : data?.action == '5'
+          ? 'REJET-RELANCE EN COURS'
+          : data?.action == '6'
+          ? 'Desistement Definitif'
+          : data?.action == '7'
+          ? "Desistement au profit d'un proche"
+          : data?.action == '8'
+          ? "Desistement au profit d'un co reservataire"
+          : data?.action == '9'
+          ? 'Desistement partiel'
+          : data?.action == '10'
+          ? 'Desistement Changement de bien'
+          : data?.action == '11'
+          ? 'Attestation de vente'
+          : data?.action == '12'
+          ? 'Contrat de vente'
+          : data?.action == '13'
+          ? 'Reconstitution Dossier'
           : 'Type inconnu',
       user: data?.user
         ? `${data.user.name || ''} ${data.user.prenom || ''}`.trim()
@@ -252,44 +327,82 @@ const HistoriquesTabComponent = ({ reservationData }) => {
 
   const columns = [
     { key: 'date', label: 'Date' },
-    { key: 'type', label: 'Type' },
+    {
+      key: "type",
+      label: "Type",
+      render: (row) => (
+        <strong>
+          {row.type}
+        </strong>
+      ),
+    },
     { key: 'user', label: 'Responsable' },
     {
       key: 'actions',
       label: 'Actions',
       render: (row) => {
         return (
-          <button
-            onClick={() => setSelectedHistory(row.rawData)}
-            className="text-blue-500 hover:text-blue-700 flex items-center gap-1"
-            title="Voir les détails"
-          >
-            <Eye className="w-4 h-4" />
-            
-          </button>
+          <>
+            {row.action == '3' && (
+              <button
+                onClick={() => setSelectedHistory(row.rawData)}
+                className="text-blue-500 hover:text-blue-700 flex items-center gap-1"
+                title="Voir les détails"
+              >
+                <Eye className="w-4 h-4" />
+              </button>
+            )}
+          </>
         );
       },
     },
   ];
 
   const data_to_export = () => {
-    return histo.map((data) => ({
+    // Use sortedHisto for export as well
+    return sortedHisto.map((data) => ({
       date: data?.created_at
-        ? new Date(data.created_at).toLocaleDateString('fr-FR')
-        : 'N/A',
+        ? new Date(data.created_at).toLocaleDateString('fr-FR', {
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          })
+        : '',
       type:
-        data?.action === 1
-          ? 'Changement de Bien'
-          : data?.action === 2
-          ? 'Création de Réservation'
-          : data?.action === 3
+        data?.action == '1'
+          ? 'En Attente'
+          : data?.action == '2'
+          ? 'Validation'
+          : data?.action == '3'
           ? 'Modification Réservation'
+          : data?.action == '4'
+          ? 'Rejet'
+          : data?.action == '5'
+          ? 'REJET-RELANCE EN COURS'
+          : data?.action == '6'
+          ? 'Desistement Definitif'
+          : data?.action == '7'
+          ? "Desistement au profit d'un proche"
+          : data?.action == '8'
+          ? "Desistement au profit d'un co reservataire"
+          : data?.action == '9'
+          ? 'Desistement partiel'
+          : data?.action == '10'
+          ? 'Desistement Changement de bien'
+          : data?.action == '11'
+          ? 'Attestation de vente'
+          : data?.action == '12'
+          ? 'Contrat de vente'
+          : data?.action == '13'
+          ? 'Reconstitution Dossier'
           : 'Type inconnu',
       description: data.description,
       user: data?.user
         ? `${data.user.name || ''} ${data.user.prenom || ''}`.trim()
         : 'Utilisateur inconnu',
-      ancien_bien: data?.action === 1 ? NomBienComplet(data?.bien) : '',
+      ancien_bien: data?.action == 1 ? NomBienComplet(data?.bien) : '',
     }));
   };
 
@@ -322,6 +435,5 @@ const HistoriquesTabComponent = ({ reservationData }) => {
     </div>
   );
 };
-
 // Wrap the main component with memo
 export const HistoriquesTab = memo(HistoriquesTabComponent);

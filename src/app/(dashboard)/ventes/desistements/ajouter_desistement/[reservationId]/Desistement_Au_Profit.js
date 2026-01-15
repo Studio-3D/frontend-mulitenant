@@ -1,12 +1,11 @@
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
-import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
-import { lien_parentes, type_dst_dp } from '@/configs/enum';
 import TextField from '@/components/Textfield';
 import { Info } from 'lucide-react';
 import SelectInput from '@/components/SelectInput';
 import Inputs_des_Profit from './Inputs_des_Profit';
+import { lien_parentes, type_dst_dp } from '@/configs/enum';
 
 export function Desistement_Au_Profit({
   isEditing,
@@ -122,6 +121,8 @@ const convertToSelectOptions = (dataArray) => {
   const [errors_dp_part, setErrors_dp_part] = useState({
     pourcentage_: {},
     totalPercentage: '',
+      nb_aquereurs_dp: '', // Add this
+
   });
 
   //dp_co
@@ -1119,6 +1120,8 @@ const handleProfitChange = (selectedValues) => {
                     {/* Nb Des Nouveaux Acquéreurs */}
                     <div className="md:col-span-3 mt-2">
                       <TextField
+                        control={control}
+
                         label={'Nombre Des Nouveaux Acquéreurs:'}
                         name="nb_aquereurs_dp_proche"
                         size="small"
@@ -1544,6 +1547,9 @@ const handleProfitChange = (selectedValues) => {
         <>
           {desisteutrs_profit_dp_partiel.length > 0 && (
             <>
+            <h3 className="text-[rgb(55,65,81)] font-semibold">
+                  Les Clients Actuels :
+                </h3>
               {desisteutrs_profit_dp_partiel?.map((item, index) => (
                 <div
                   key={index}
@@ -1553,7 +1559,7 @@ const handleProfitChange = (selectedValues) => {
                     {/* Cin */}
                     <div className="md:col-span-3">
                       <Inputs_des_Profit
-                        label={'Cin  Ancien Client:'}
+                        label={'Cin  :'}
                         name={`cin_${index}`}
                         value={item?.cin || ''}
                         onChange={(e) => handleinputchange_dp_part(e, index)}
@@ -1567,7 +1573,7 @@ const handleProfitChange = (selectedValues) => {
                     {/* Nom */}
                     <div className="md:col-span-3">
                       <Inputs_des_Profit
-                        label={'Nom Ancien Client:'}
+                        label={'Nom :'}
                         name={`nom_${index}`}
                         value={item?.nom || ''}
                         onChange={(e) => handleinputchange_dp_part(e, index)}
@@ -1582,7 +1588,7 @@ const handleProfitChange = (selectedValues) => {
                     {/* Prénom */}
                     <div className="md:col-span-3">
                       <Inputs_des_Profit
-                        label={'Prénom Ancien Client :'}
+                        label={'Prénom  :'}
                         name={`prenom_${index}`}
                         value={item?.prenom || ''}
                         onChange={(e) => handleinputchange_dp_part(e, index)}
@@ -1597,7 +1603,7 @@ const handleProfitChange = (selectedValues) => {
                     <div className="md:col-span-3">
                       {isEditing ? (
                         <Inputs_des_Profit
-                          label={'Pourcentage Ancien  Client:'}
+                          label={'Pourcentage :'}
                           name={`dp_part[${index}].pourcentage_`}
                           value={item?.pourcentage_ || 0}
                           onChange={(e) => handleinputchange_dp_part(e, index)}
@@ -1653,13 +1659,14 @@ const handleProfitChange = (selectedValues) => {
                   type="number"
                   fullWidth
                   required
-                  errors={{}}
+                  control={control}
+                  errors={errors}
                   backendErrors={{}}
                   onChange={(e) => {
                     const newCount = parseInt(e.target.value) || 0;
                     const currentCount = nb_aqu_part;
                     set_nb_aqu_part(newCount);
-
+                  setValue('nb_aquereurs_dp', newCount, { shouldValidate: true });  
                     if (isEditing) {
                       // Editing mode handling
                       if (newCount > currentCount) {
@@ -1726,6 +1733,7 @@ const handleProfitChange = (selectedValues) => {
                       );
                     } else {
                       // Non-editing mode (original behavior)
+                      if(newCount>0){
                       const newList = Array(newCount)
                         .fill()
                         .map(() => ({
@@ -1751,6 +1759,7 @@ const handleProfitChange = (selectedValues) => {
                         setValue(`pourcentage_p${index}`, item.pourcentage);
                       });
                     }
+                    }
 
                     setErrors_new_dp_part({
                       telephone: false,
@@ -1759,6 +1768,7 @@ const handleProfitChange = (selectedValues) => {
                     });
                   }}
                 />
+                
               </div>
             </div>
             {nb_aqu_part > 0 && (

@@ -188,7 +188,7 @@ const DetailTabComponent = ({
                     </>
                   ) : (
                     <Button
-                      type="edit"
+                      type="annuler"
                       onClick={() =>
                         handle_show_info_2(reservation.code_reservation)
                       }
@@ -227,7 +227,7 @@ const DetailTabComponent = ({
                     }
                     className={`px-3 py-1 text-sm ${
                       reservation.desistement_att_validation_rejete?.statut == 0
-                        ? 'bg-orange-500 hover:bg-orange-600'
+                        ? 'bg-gray-500 hover:bg-gray-600'
                         : reservation.desistement_att_validation_rejete
                             ?.statut == 2
                         ? 'bg-red-500 hover:bg-red-600'

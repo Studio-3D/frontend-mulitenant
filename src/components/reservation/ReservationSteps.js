@@ -1,144 +1,249 @@
-// Composant ReservationSteps à ajouter dans ReservationHeader
+import { useState, useEffect, useRef } from 'react';
+
 export default function ReservationSteps({
   reservation,
-  hasCompromis,
-  hasContrat,
+
 }) {
-  const { etat, statut, compromis_vente, contrat_vente } = reservation;
-  // Utiliser hasCompromis pour forcer la mise à jour si fourni
-  const effectiveCompromis =
-    hasCompromis !== undefined ? hasCompromis : (compromis_vente && compromis_vente.compromis_signee !== null);;
-  const effectiveContrat =
-    hasContrat !== undefined ? hasContrat : (contrat_vente && contrat_vente.piece_jointe !== null);
-  // Déterminer les couleurs pour chaque étape
-  const getStepColor = (step) => {
-    // Si l'étape est inférieure à l'étape actuelle, elle doit être verte
-    const currentStep = getCurrentStep();
+  // State for hover tooltip
+  const [hoveredItem, setHoveredItem] = useState(null);
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const [shouldScroll, setShouldScroll] = useState(false);
+  const [filteredHistorique, setFilteredHistorique] = useState([]);
+  const containerRef = useRef(null);
 
-    if (step < currentStep) {
-      return 'bg-green-500'; // Étape précédente - Vert
-    }
-
-    if (step == currentStep) {
-      // Pour l'étape actuelle, on détermine la couleur selon le statut
-
-      if (step == 2) {
-        if (statut == 2) return 'bg-red-500'; // Rejeté - Rouge
-        if (etat > 1) return 'bg-purple-500'; // Désisté - Violet
-        return 'bg-green-500'; // Réservé - Vert
-      }
-      if (step == 3 || step == 4) {
-        return 'bg-green-500'; // Étape 3 et 4 vertes si actives
-      }
-    }
-
-    return 'bg-gray-300'; // Étape future - Gris
+  // Function to get action label
+  const getActionLabel = (action) => {
+    const cleanAction = action?.toString().trim();
+    
+    const actionLabels = {
+      '1': 'En attente',
+      '2': 'Validation',
+      '4': 'Rejet',
+      '5': 'Rejet-Relance',
+      '6': 'Désistement défintif',
+      '7': 'Désistement proche',
+      '8': 'Désistement co Réservataire',
+      '9': 'Désistement partiel',
+      '10': 'Changement bien',
+      '11': 'Attestation de Vente',
+      '12': 'Contrat de Vente',
+      '13':'Reconstitution Dossier'
+    };
+    
+    return actionLabels[cleanAction] || `Action ${cleanAction}`;
   };
 
-  // Déterminer l'étape actuelle
-  const getCurrentStep = () => {
-    // Étape 4: Contrat de vente signé
-    if (etat == 1 && statut == 1 && effectiveCompromis && effectiveContrat) {
-      return 4;
+  // Function to get action color
+  const getActionColor = (action) => {
+    const cleanAction = action?.toString().trim();
+    
+    if (cleanAction === '4' || cleanAction === '5') {
+      return 'bg-orange-500'; // Red for reject
     }
-
-    // Étape 3: Attestation de vente signée
-    if (etat == 1 && statut == 1 && effectiveCompromis && !effectiveContrat) {
-      return 3;
+    
+    if (['6', '7', '8', '9'].includes(cleanAction)) {
+      return 'bg-red-500'; // Blue for desistement
     }
-
-    // Étape 2: Réservé/Rejeté/Désisté
-    if ((etat == 1 && (statut == 1 || statut == 2)) || etat > 1) {
-      return 2;
-    }
-
-    // Étape 1: En attente
-    if (etat == 1 && statut == 3 && !effectiveCompromis && !effectiveContrat) {
-      return 1;
-    }
-
-    return 1; // Par défaut, étape 1
+    
+    return 'bg-green-500'; // Green for other actions
   };
 
-  // Déterminer la couleur des lignes de connexion
-  const getLineColor = (step) => {
-    const currentStep = getCurrentStep();
-    // La ligne entre l'étape N et N+1 est verte si l'étape N+1 est atteinte ou dépassée
-
-    return step <= currentStep ? 'bg-green-500' : 'bg-gray-300';
+  // Function to get short date
+  const formatShortDate = (dateString) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('fr-FR', {
+        day: '2-digit',
+        month: '2-digit'
+      });
+    } catch (e) {
+      return 'N/A';
+    }
   };
 
-  // Masquer les étapes 3 et 4 si désisté ou rejeté
-  const shouldShowSteps3And4 = etat == 1 && statut == 1;
+  // Function to get time
+  const formatTime = (dateString) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleTimeString('fr-FR', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (e) {
+      return 'N/A';
+    }
+  };
+
+  // Handle mouse enter for tooltip
+  const handleMouseEnter = (item, event) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    setHoveredItem(item);
+    setTooltipPosition({
+      x: rect.left + rect.width / 2,
+      y: rect.top
+    });
+  };
+
+  // Handle mouse leave
+  const handleMouseLeave = () => {
+    setHoveredItem(null);
+  };
+
+  // Process historique data in useEffect
+  useEffect(() => {
+    if (!reservation?.historiques || reservation.historiques.length === 0) {
+      setFilteredHistorique([]);
+      setShouldScroll(false);
+      return;
+    }
+
+    // Filter out action '3' and sort by ID (oldest first for left-to-right display)
+    const filtered = [...reservation.historiques]
+      .filter(item => {
+        const cleanAction = item.action?.toString().trim();
+        return cleanAction !== '3';
+      })
+      .sort((a, b) => a.id - b.id);
+
+    setFilteredHistorique(filtered);
+    setShouldScroll(filtered.length > 8);
+  }, [reservation]);
+
+  // Check if historique data exists
+  if (!reservation?.historiques || reservation.historiques.length === 0) {
+    return (
+      <div className="mt-6 text-center text-gray-500 text-sm">
+        Aucun historique disponible
+      </div>
+    );
+  }
+
+  if (filteredHistorique.length === 0) {
+    return (
+      <div className="mt-6 text-center text-gray-500 text-sm">
+        Aucun historique disponible (après filtrage)
+      </div>
+    );
+  }
+
+  // Calculate width based on number of items
+  const minItemWidth = 120; // Minimum width for each item in pixels
+  const totalMinWidth = filteredHistorique.length * minItemWidth;
 
   return (
     <div className="mt-6">
-      <div className="flex items-center justify-between">
-        {/* Étape 1 */}
-        <div className="flex flex-col items-center">
-          <div
-            className={`w-8 h-8 rounded-full ${getStepColor(
-              1
-            )} flex items-center justify-center text-white text-sm`}
-          >
-            1
-          </div>
-          <span className="text-xs mt-1 text-center">En attente</span>
-        </div>
-
-        {/* Ligne de connexion 1-2 */}
-        <div className={`flex-1 h-1 ${getLineColor(2)} mx-2`}></div>
-
-        {/* Étape 2 */}
-        <div className="flex flex-col items-center">
-          <div
-            className={`w-8 h-8 rounded-full ${getStepColor(
-              2
-            )} flex items-center justify-center text-white text-sm`}
-          >
-            2
-          </div>
-          <span className="text-xs mt-1 text-center">
-            {etat > 1 ? 'Désisté' : statut == 2 ? 'Rejeté' : 'Réservé'}
-          </span>
-        </div>
-
-        {/* Ligne de connexion conditionnelle 2-3 */}
-        {shouldShowSteps3And4 && (
-          <>
-            <div className={`flex-1 h-1 ${getLineColor(3)} mx-2`}></div>
-
-            {/* Étape 3 */}
-            <div className="flex flex-col items-center">
-              <div
-                className={`w-8 h-8 rounded-full ${getStepColor(
-                  3
-                )} flex items-center justify-center text-white text-sm`}
+      {/* Horizontal Timeline Container with scrolling */}
+      <div 
+        ref={containerRef}
+        className={`relative ${shouldScroll ? 'overflow-x-auto pb-4' : ''}`}
+      >
+        {/* Main horizontal line - FULL WIDTH, will extend with scroll */}
+        <div 
+          className="absolute h-0.5 bg-gray-300 top-4 z-0"
+          style={{
+            left: 0,
+            right: 0,
+            width: shouldScroll ? totalMinWidth : '100%',
+            minWidth: '100%'
+          }}
+        ></div>
+        
+        {/* Timeline items container */}
+        <div 
+          className="relative"
+          style={{ 
+            width: shouldScroll ? totalMinWidth : '100%',
+            minWidth: '100%'
+          }}
+        >
+          <div className="flex items-start">
+            {filteredHistorique.map((item, index) => (
+              <div 
+                key={item.id} 
+                className="flex flex-col items-center px-2"
+                style={{ 
+                  minWidth: `${minItemWidth}px`,
+                  width: shouldScroll ? `${minItemWidth}px` : 'auto',
+                  flex: shouldScroll ? '0 0 auto' : '1',
+                  position: 'relative'
+                }}
+                onMouseEnter={(e) => handleMouseEnter(item, e)}
+                onMouseLeave={handleMouseLeave}
               >
-                3
+                {/* Action dot with cursor pointer */}
+                <div
+                  className={`w-8 h-8 rounded-full ${getActionColor(item.action)} flex items-center justify-center text-white text-sm font-bold z-10 border-2 border-white cursor-pointer hover:scale-110 transition-transform duration-200`}
+                >
+                  {index + 1}
+                </div>
+                
+                {/* Date and Time */}
+                <div className="mt-2 text-center">
+                  <div className="text-xs font-medium text-gray-700 whitespace-nowrap">
+                    {formatShortDate(item.created_at)}
+                  </div>
+                  <div className="text-xs text-gray-500 whitespace-nowrap">
+                    {formatTime(item.created_at)}
+                  </div>
+                </div>
+                
+                {/* Action label */}
+                <div className="mt-1 text-xs font-semibold text-gray-800 text-center truncate w-full">
+                  {getActionLabel(item.action)}
+                </div>
               </div>
-              <span className="text-xs mt-1 text-center">
-                Attestation de vente
-              </span>
-            </div>
-
-            {/* Ligne de connexion conditionnelle 3-4 */}
-            <div className={`flex-1 h-1 ${getLineColor(4)} mx-2`}></div>
-
-            {/* Étape 4 */}
-            <div className="flex flex-col items-center">
-              <div
-                className={`w-8 h-8 rounded-full ${getStepColor(
-                  4
-                )} flex items-center justify-center text-white text-sm`}
-              >
-                4
-              </div>
-              <span className="text-xs mt-1 text-center">Contrat de vente</span>
-            </div>
-          </>
-        )}
+            ))}
+          </div>
+        </div>
       </div>
+
+      {/* Hover Tooltip */}
+      {hoveredItem && (
+        <div 
+          className="fixed z-50 bg-white border border-gray-300 rounded-md shadow-lg p-3 max-w-xs pointer-events-none"
+          style={{
+            left: `${tooltipPosition.x}px`,
+            top: `${tooltipPosition.y - 10}px`,
+            transform: 'translateX(-50%) translateY(-100%)'
+          }}
+        >
+          {/* Tooltip arrow */}
+          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-white border-r border-b border-gray-300"></div>
+          
+          <div className="mb-2">
+            <div className="flex items-center gap-2 mb-1">
+              <div className={`w-3 h-3 rounded-full ${getActionColor(hoveredItem.action)}`}></div>
+              <h4 className="font-bold text-gray-800 text-sm">
+                {getActionLabel(hoveredItem.action)}
+              </h4>
+            </div>
+            <div className="text-xs text-gray-500">
+              {formatShortDate(hoveredItem.created_at)} à {formatTime(hoveredItem.created_at)}
+            </div>
+          </div>
+          
+          {/* Description */}
+          {hoveredItem.description && (
+            <div className="mt-2 pt-2 border-t border-gray-200">
+              <div className="text-xs font-medium text-gray-700 mb-1">Description:</div>
+              <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
+                {typeof hoveredItem.description === 'string' 
+                  ? hoveredItem.description
+                  : JSON.stringify(hoveredItem.description, null, 2)}
+              </div>
+            </div>
+          )}
+          
+          {/* User info */}
+          <div className="mt-2 pt-2 border-t border-gray-200">
+            <div className="text-xs text-gray-500">
+              Par: {hoveredItem?.user?.name || 'N/A'}
+            </div>
+          </div>
+        </div>
+      )}
+
+     
     </div>
   );
 }

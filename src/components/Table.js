@@ -188,7 +188,7 @@ const Table = ({
           ))}
           {enableConfig && (
             <button
-              className="flex gap-1 items-center bg-orange-300 text-white font-medium rounded-lg px-3 py-1.5 hover:bg-orange-100 transition"
+              className="flex gap-1 items-center bg-blue-700 text-white font-medium rounded-lg px-3 py-1.5 hover:bg-blue-100 transition"
               onClick={onConfigClick}
             >
               <Settings className="w-5 h-5" />

@@ -270,7 +270,7 @@ const ShowPenalite = () => {
       {/* Header */}
       <div className="flex justify-between items-center mb-1">
         <BreadCrumb
-          baseUrl={'#'}
+          baseUrl={'/ventes?tab=penalites'}
           step={`Détail pénalité`}
         />
       </div>

@@ -172,9 +172,7 @@ const { selectedProjet  } = useProjet();
     router.push(`${ENDPOINTS.RESERVATIONS}?id=${resId}&action=edit`);
   }
 
-  const handleShow = (resId) => {
-    router.push(`/ventes/reservations/${resId}`);
-  };
+
 
   const handleDesiste = (res_id, desistement_id, statut_dstt, msg_rejete) => {
     if (desistement_id == null) {
@@ -322,11 +320,14 @@ const { selectedProjet  } = useProjet();
       render: (row) => (
         <div className="flex gap-3 items-center">
           
-          <Eye
-            className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
-            title="Voir détails"
-            onClick={() => handleShow(row.id)}
-          />
+           <Link
+                      href={`/ventes/reservations/${row.id}`}
+                      className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+                      title="Voir les détails"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </Link>
+          
           {row.data_res.contrat_vente == null && (
             <PencilLine
               className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
@@ -403,7 +404,7 @@ const { selectedProjet  } = useProjet();
           {(isSuperAdmin(userRole) ||
             isAdmin(userRole) ||
             isCommercial(userRole)) &&
-            row.statut == 1 && (
+            row.statut == 1 && row.avances_sum_montant>0 && (
               <X
                 className={`w-4 h-4 cursor-pointer ${
                   row.data_res.desistement_att_validation_rejete?.statut == 0

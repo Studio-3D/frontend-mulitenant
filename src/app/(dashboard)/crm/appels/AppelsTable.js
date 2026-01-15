@@ -102,9 +102,7 @@ const AppelsTable = ({ dataClient, searchParams }) => {
     );
     router.push(`${ENDPOINTS.VISITES}?action=add`);
   };
-  const voir_visite = (vId) => {
-    window.open(`/crm/visites/${vId}`, '_blank');
-  };
+
 
   // Format users data for table display
   const formatData = () => {

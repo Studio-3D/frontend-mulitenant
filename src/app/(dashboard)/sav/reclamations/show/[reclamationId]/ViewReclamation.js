@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Box, Typography, Chip, Stack, Paper, Divider } from '@mui/material';
 import {
   Home,
   Wrench,
@@ -10,93 +9,86 @@ import {
   CheckCircle,
   AlertCircle,
   Paperclip,
+  User,
+  ArrowLeft,
+  Edit,
 } from 'lucide-react';
 import { APIURL, ENDPOINTS, RESOURCE_URL } from '@/configs/api';
 import { useAuth } from '@/context/AuthContext';
 import LoadingSpin from '@/components/LoadingSpin';
 import { useRouter } from 'next/navigation';
-import Button from '@/components/Button'; // adjust the path as needed
-import { IconButton, Tooltip } from '@mui/material';
+import Button from '@/components/Button';
 import PieceJointeViewer from '@/components/PieceJointeViewer';
+import { useProjet } from '@/context/ProjetContext';
+import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
 
 function formatDate(dateStr) {
   if (!dateStr) return '-';
   const d = new Date(dateStr);
-  return d.toLocaleDateString();
+  return d.toLocaleDateString('fr-FR');
 }
 
-function getStatutLabel(statut) {
+function getStatutBadge(statut) {
   switch (statut) {
     case 1:
       return (
-        <Chip
-          label="En Attente"
-          color="primary"
-          sx={{ fontWeight: 'bold', fontSize: 14 }}
-        />
+        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200">
+          En Attente
+        </span>
       );
     case 2:
       return (
-        <Chip
-          label="En Cours"
-          color="warning"
-          sx={{ fontWeight: 'bold', fontSize: 14 }}
-        />
-      );
-    case 3:
-      return (
-        <Chip
-          label="Résolue"
-          color="success"
-          icon={<CheckCircle size={16} />}
-          sx={{ fontWeight: 'bold', fontSize: 14 }}
-        />
+        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 border border-yellow-200">
+          En Cours
+        </span>
       );
     case 4:
       return (
-        <Chip
-          label="Non Résolue"
-          icon={<AlertCircle size={16} />}
-          color="error"
-          sx={{ fontWeight: 'bold', fontSize: 14 }}
-        />
+        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200">
+          <CheckCircle className="w-3 h-3 mr-1" />
+          Résolue
+        </span>
+      );
+    case 3:
+      return (
+        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-200">
+          <AlertCircle className="w-3 h-3 mr-1" />
+          Non Résolue
+        </span>
       );
     default:
       return (
-        <Chip
-          label="Inconnu"
-          color="default"
-          icon={<AlertCircle size={16} />}
-          sx={{ fontWeight: 'bold', fontSize: 14 }}
-        />
+        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800 border border-gray-200">
+          <AlertCircle className="w-3 h-3 mr-1" />
+          Inconnu
+        </span>
       );
   }
 }
-import { useProjet } from '@/context/ProjetContext';
+
 export default function ViewReclamationFullPage({ reclamationId }) {
   const [Details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const router = useRouter();
   const { selectedProjet } = useProjet();
+
   const getFileUrl = (fichier) => {
     return `${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/reclamations/${fichier}`;
   };
 
-  // Simple cache et comparaison for return back en cas de changer projet
   const [oldProjetId, setOldProjetId] = useState(null);
 
   useEffect(() => {
     if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
       if (oldProjetId) {
-        // Projet a changé
-
         console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
         router.back('');
       }
       setOldProjetId(selectedProjet.id);
     }
   }, [selectedProjet?.id, oldProjetId, router]);
+
   useEffect(() => {
     if (!reclamationId) return;
     setLoading(true);
@@ -113,7 +105,7 @@ export default function ViewReclamationFullPage({ reclamationId }) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-white">
         <LoadingSpin />
       </div>
     );
@@ -121,251 +113,222 @@ export default function ViewReclamationFullPage({ reclamationId }) {
 
   if (!Details) {
     return (
-      <Box
-        sx={{
-          height: '100vh',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          bgcolor: 'linear-gradient(135deg, #E3F0FF 0%, #FAFCFF 100%)',
-        }}
-      >
-        <Typography variant="h5" color="error">
-          Réclamation introuvable ou erreur de chargement.
-        </Typography>
-      </Box>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-white">
+        <div className="text-center">
+          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-800">
+            Réclamation introuvable ou erreur de chargement.
+          </h2>
+        </div>
+      </div>
     );
   }
 
-  const { bien, client, prestataire, service, piece_jointe } = Details;
+  const { bien, client, prestataire, service } = Details;
+  function NomBienComplet(bien) {
+    const noms = [];
 
+    if (bien.tranche?.nom) noms.push(bien.tranche.nom);
+    if (bien.bloc?.nom) noms.push(bien.bloc.nom);
+    if (bien.immeuble?.nom) noms.push(bien.immeuble.nom);
+
+    noms.push(bien.propriete_dite_bien);
+
+    return noms.join(' - ');
+  }
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        bgcolor: 'linear-gradient(135deg, #E3F0FF 0%, #FAFCFF 100%)',
-        p: 4,
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      {/* Titre */}
-      <Typography
-        variant="h4"
-        sx={{
-          fontWeight: 'bold',
-          color: '#009FFF',
-          mb: 4,
-          textAlign: { xs: 'center', md: 'left' },
-        }}
-      >
-        Détails de la Réclamation
-      </Typography>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white p-4 md:p-6">
+      {/* Header with title and back button */}
+      <div className="mb-8">
+        <div className="flex items-center justify-start">
+          <BreadCrumb
+            baseUrl={ENDPOINTS.ReclamationsSav}
+            step={`Détail Réclamation`}
+          />
+        </div>
+      </div>
 
-      {/* Conteneur principal en deux colonnes */}
-      <Box
-        sx={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: { xs: 'column', md: 'row' },
-          gap: 4,
-          height: '100%',
-        }}
-      >
-        {/* Colonne gauche - Infos principales */}
-        <Paper
-          elevation={3}
-          sx={{
-            flex: 1,
-            p: 4,
-            borderRadius: 3,
-            background: '#fff',
-            boxShadow: '0 8px 24px rgba(0,159,255,0.15)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 3,
-          }}
-        >
-          {/* Client */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Box
-              sx={{
-                width: 64,
-                height: 64,
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #009FFF 0%, #ec2F4B 100%)',
-                color: '#fff',
-                fontWeight: 700,
-                fontSize: 28,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                textTransform: 'uppercase',
-                boxShadow: '0 4px 12px #009FFF66',
-              }}
-            >
-              {client?.nom?.[0] || '?'}
-            </Box>
-            <Box>
-              <Typography
-                variant="h5"
-                sx={{ color: '#009FFF', fontWeight: 'bold' }}
-              >
+      {/* Main content grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left column - Main info */}
+        <div className="bg-white rounded-xl shadow-lg p-6 border border-blue-100">
+          {/* Client info */}
+          <div className="flex items-start mb-6">
+            <div className="flex-shrink-0 w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-blue-500 flex items-center justify-center text-white font-bold text-2xl shadow-lg">
+              {client?.nom?.[0]?.toUpperCase() || '?'}
+            </div>
+            <div className="ml-4">
+              <h2 className="text-xl font-bold text-gray-800">
                 {client?.nom} {client?.prenom}
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{ color: '#ec2F4B', fontWeight: 600 }}
-              >
+              </h2>
+              <p className="text-pink-600 font-semibold">
                 {client?.email || client?.telephone_num1 || '-'}
-              </Typography>
-              <Box sx={{ mt: 1 }}>{getStatutLabel(Details.statut)}</Box>
-            </Box>
-          </Box>
+              </p>
+              <div className="mt-2">{getStatutBadge(Details.statut)}</div>
+            </div>
+          </div>
 
-          <Divider />
+          <div className="border-t border-gray-200 my-4"></div>
 
-          {/* Bien */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Home color="#009FFF" size={26} />
-            <Typography variant="body1" sx={{ fontWeight: 600 }}>
-              <b>Bien :</b> {bien?.propriete_dite_bien || '-'} (N°{' '}
-              {bien?.numero || '-'}) - Bloc {bien?.bloc?.nom || '-'}
-            </Typography>
-          </Box>
+          {/* Property info */}
+          <div className="space-y-4">
+            <div className="flex items-start">
+              <Home className="w-5 h-5 text-blue-500 mt-1 flex-shrink-0" />
+              <div className="ml-3">
+                <p className="text-sm text-gray-500">Bien</p>
+                <p className="font-semibold text-gray-800">
+                  {NomBienComplet(bien)}
+                 
+                </p>
+              </div>
+            </div>
 
-          {/* Prestataire */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Wrench color="#009FFF" size={26} />
-            <Typography variant="body1" sx={{ fontWeight: 600 }}>
-              <b>Prestataire :</b> {prestataire?.civilite || '-'}{' '}
-              {prestataire?.nom || '-'} {prestataire?.prenom || '-'} (
-              {prestataire?.telephone || '-'})
-            </Typography>
-          </Box>
+            {/* Prestataire */}
+            <div className="flex items-start">
+              <Wrench className="w-5 h-5 text-blue-500 mt-1 flex-shrink-0" />
+              <div className="ml-3">
+                <p className="text-sm text-gray-500">Prestataire</p>
+                <p className="font-semibold text-gray-800">
+                  {prestataire?.civilite || '-'} {prestataire?.nom || '-'}{' '}
+                  {prestataire?.prenom || '-'}
+                </p>
+                {prestataire?.telephone && (
+                  <p className="text-sm text-gray-600">
+                    {prestataire.telephone}
+                  </p>
+                )}
+              </div>
+            </div>
 
-          {/* Service */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Wrench color="#ec2F4B" size={26} />
-            <Typography variant="body1" sx={{ fontWeight: 600 }}>
-              <b>Service :</b> {service?.nom || '-'}
-            </Typography>
-          </Box>
+            {/* Service */}
+            <div className="flex items-start">
+              <Wrench className="w-5 h-5 text-pink-500 mt-1 flex-shrink-0" />
+              <div className="ml-3">
+                <p className="text-sm text-gray-500">Service</p>
+                <p className="font-semibold text-gray-800">
+                  {service?.nom || '-'}
+                </p>
+              </div>
+            </div>
 
-          {/* Problèmes */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <AlertCircle color="#ec2F4B" size={26} />
-            <Typography variant="body1" sx={{ fontWeight: 600 }}>
-              <b>Emplacement(s) :</b> {Details.emplacements || '-'}
-            </Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <AlertCircle color="#ec2F4B" size={26} />
-            <Typography variant="body1" sx={{ fontWeight: 600 }}>
-              <b>Problème(s) :</b> {Details.problemes || '-'}
-            </Typography>
-          </Box>
+            {/* Emplacements */}
+            <div className="flex items-start">
+              <AlertCircle className="w-5 h-5 text-pink-500 mt-1 flex-shrink-0" />
+              <div className="ml-3">
+                <p className="text-sm text-gray-500">Emplacement(s)</p>
+                <p className="font-semibold text-gray-800">
+                  {Details.emplacements || '-'}
+                </p>
+              </div>
+            </div>
+
+            {/* Problèmes */}
+            <div className="flex items-start">
+              <AlertCircle className="w-5 h-5 text-pink-500 mt-1 flex-shrink-0" />
+              <div className="ml-3">
+                <p className="text-sm text-gray-500">Problème(s)</p>
+                <p className="font-semibold text-gray-800">
+                  {Details.problemes || '-'}
+                </p>
+              </div>
+            </div>
+          </div>
 
           {/* Pièces jointes */}
-          <PieceJointeViewer Details={Details} getFileUrl={getFileUrl} />
-        </Paper>
+          <div className="mt-8">
+            <PieceJointeViewer Details={Details} getFileUrl={getFileUrl} />
+          </div>
+        </div>
 
-        {/* Colonne droite - Dates et commentaires */}
-        <Paper
-          elevation={3}
-          sx={{
-            flex: 1,
-            p: 4,
-            borderRadius: 3,
-            background: '#fff',
-            boxShadow: '0 8px 24px rgba(0,159,255,0.15)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 3,
-          }}
-        >
-          <Typography
-            variant="h6"
-            sx={{ color: '#009FFF', fontWeight: 'bold', mb: 2 }}
-          >
+        {/* Right column - Dates & Comments */}
+        <div className="bg-white rounded-xl shadow-lg p-6 border border-blue-100">
+          <h3 className="text-xl font-bold text-blue-600 mb-6">
             Dates & Commentaires
-          </Typography>
+          </h3>
 
-          <Stack spacing={2}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Calendar color="#009FFF" size={24} />
-              <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                <b>Date réclamation :</b> {formatDate(Details.date_reclamation)}
-              </Typography>
-            </Box>
+          <div className="space-y-6">
+            {/* Dates */}
+            <div className="space-y-4">
+              <div className="flex items-start">
+                <Calendar className="w-5 h-5 text-blue-500 mt-1 flex-shrink-0" />
+                <div className="ml-3">
+                  <p className="text-sm text-gray-500">Date réclamation</p>
+                  <p className="font-semibold text-gray-800">
+                    {formatDate(Details.date_reclamation)}
+                  </p>
+                </div>
+              </div>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Calendar color="#009FFF" size={24} />
-              <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                <b>Date intervention :</b>{' '}
-                {formatDate(Details.date_intervention)}
-              </Typography>
-            </Box>
+              <div className="flex items-start">
+                <Calendar className="w-5 h-5 text-blue-500 mt-1 flex-shrink-0" />
+                <div className="ml-3">
+                  <p className="text-sm text-gray-500">Date intervention</p>
+                  <p className="font-semibold text-gray-800">
+                    {formatDate(Details.date_intervention)}
+                  </p>
+                </div>
+              </div>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Calendar color="#009FFF" size={24} />
-              <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                <b>Date fin intervention :</b>{' '}
-                {formatDate(Details.date_fin_intervention)}
-              </Typography>
-            </Box>
+              <div className="flex items-start">
+                <Calendar className="w-5 h-5 text-blue-500 mt-1 flex-shrink-0" />
+                <div className="ml-3">
+                  <p className="text-sm text-gray-500">Date fin intervention</p>
+                  <p className="font-semibold text-gray-800">
+                    {formatDate(Details.date_fin_intervention)}
+                  </p>
+                </div>
+              </div>
+            </div>
 
-            <Divider />
+            <div className="border-t border-gray-200"></div>
 
-            <Box>
-              <Typography variant="body1" sx={{ fontWeight: 600, mb: 1 }}>
-                <b>Commentaire traitement :</b>
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{ whiteSpace: 'pre-line', color: '#444' }}
-              >
-                {Details.commentaires || '-'}
-              </Typography>
-            </Box>
+            {/* Commentaires */}
+            <div>
+              <h4 className="font-semibold text-gray-700 mb-2">
+                Commentaire traitement
+              </h4>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <p className="text-gray-700 whitespace-pre-line">
+                  {Details.commentaires || '-'}
+                </p>
+              </div>
+            </div>
 
-            <Box>
-              <Typography variant="body1" sx={{ fontWeight: 600, mb: 1 }}>
-                <b>Commentaire Resolution :</b>
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{ whiteSpace: 'pre-line', color: '#444' }}
-              >
-                {Details.commentaire_trait || '-'}
-              </Typography>
-            </Box>
-          </Stack>
-        </Paper>
-      </Box>
-      <Box
-        sx={{
-          mt: 4,
-          display: 'flex',
-          justifyContent: 'center',
-          gap: 2,
-        }}
-      >
-        <Button type="button" onClick={() => router.back()}>
-          Retour
-        </Button>
+            <div>
+              <h4 className="font-semibold text-gray-700 mb-2">
+                Commentaire Résolution
+              </h4>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <p className="text-gray-700 whitespace-pre-line">
+                  {Details.commentaire_trait || '-'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-        <Button
-          type="submit"
-          onClick={() => {
-            router.push(
-              `${ENDPOINTS.ReclamationsSav}?id=${reclamationId}&action=edit`
-            );
-          }}
-        >
-          Modifier
-        </Button>
-      </Box>
-    </Box>
+      {/* Action buttons */}
+      {Details.statut == 1 && (
+        <div className="mt-8 flex justify-center space-x-4">
+          <Button type="button" onClick={() => router.back()}>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Retour
+          </Button>
+
+          <Button
+            type="submit"
+            onClick={() => {
+              router.push(
+                `${ENDPOINTS.ReclamationsSav}?id=${reclamationId}&action=edit`
+              );
+            }}
+          >
+            <Edit className="w-4 h-4 mr-2" />
+            Modifier
+          </Button>
+        </div>
+      )}
+    </div>
   );
 }

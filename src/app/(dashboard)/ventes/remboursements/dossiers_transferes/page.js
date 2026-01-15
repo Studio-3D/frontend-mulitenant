@@ -98,8 +98,6 @@ const RemboDosTable = () => {
     selectedProjet,
   ]);
 
-  
-
   const handleFilterChange = (field, value) => {
     setTempFilters((prev) => ({ ...prev, [field]: value }));
   };
@@ -139,10 +137,13 @@ const RemboDosTable = () => {
               <Link
                 target="_blank"
                 href={`/Utilisateurs/afficher-utilisateur/${row.desistement_not_trashed?.user?.id}`}
-                className="text-blue-500 hover:text-blue-800"
+                // className="text-blue-500 hover:text-blue-800"
               >
-                {row.desistement_not_trashed?.user?.name}{' '}
-                {row.desistement_not_trashed?.user?.prenom}
+                <strong style={{ fontWeight: 600 }}>
+                  {' '}
+                  {row.desistement_not_trashed?.user?.name}{' '}
+                  {row.desistement_not_trashed?.user?.prenom}
+                </strong>
               </Link>
             ),
           },
@@ -155,9 +156,9 @@ const RemboDosTable = () => {
         <Link
           target="_blank"
           href={`/ventes/reservations/${row.reservation?.id}`}
-          className="text-blue-500 hover:text-blue-800"
+         // className="text-blue-500 hover:text-blue-800"
         >
-          {row.reservation?.code_reservation || '-'}
+         <strong style={{ fontWeight: 600 }}>{row.reservation?.code_reservation || ' '}</strong>  
         </Link>
       ),
     },
@@ -168,9 +169,9 @@ const RemboDosTable = () => {
         <Link
           target="_blank"
           href={`ventes/reservations/${row.dossier_id_transfert}`}
-          className="text-blue-500 hover:text-blue-800"
+          //className="text-blue-500 hover:text-blue-800"
         >
-          {row.dossier_transfert?.code_reservation || '-'}
+           <strong style={{ fontWeight: 600 }}>{row.dossier_transfert?.code_reservation || ' '}</strong>
         </Link>
       ),
     },
@@ -189,7 +190,7 @@ const RemboDosTable = () => {
     <>
       <div className=" p-4">
         <Table
-        title={'Dossier Transférés'}
+          title={'Dossier Transférés'}
           data_to_export={data_to_export()}
           columns_export={columns_export}
           name_file_export={'remboursements_dossiers_export'}

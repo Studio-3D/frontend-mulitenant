@@ -65,9 +65,9 @@ export default function Modal_valider_avance({
     const errors = {};
 
     if (data.action == '1') {
-      if (!data.n_remise) {
+      /*if (!data.n_remise) {
         errors.n_remise = 'Le numéro de remise est requis';
-      }
+      }*/
       if (!data.date_encaiss) {
         errors.date_encaiss = "La date d'encaissement est requise";
       }
@@ -311,7 +311,7 @@ export default function Modal_valider_avance({
                     <>
                       <TextField
                         type="number"
-                        required
+                        
                         label="N° Encaissement:"
                         name="n_remise"
                         control={control}

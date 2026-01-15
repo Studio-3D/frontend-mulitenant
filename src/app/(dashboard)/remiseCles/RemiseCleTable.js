@@ -141,7 +141,7 @@ const RemiseCleTable = ({searchParams}) => {
                 href={`/Utilisateurs/afficher-utilisateur/${row.user_id_remis}`}
                 style={{ textDecoration: 'none' }}
               >
-                <strong>
+                <strong style={{fontWeight:600}}>
                   {row.user_remis?.name} {row.user_remis?.prenom}
                 </strong>
               </Link>
@@ -160,7 +160,7 @@ const RemiseCleTable = ({searchParams}) => {
           href={'/ventes/reservations/' + row.id_res}
           style={{ textDecoration: 'none' }}
         >
-          <strong>{row.code_reservation}</strong>
+          <strong style={{fontWeight:600}}>{row.code_reservation}</strong>
         </Link>
       ),
     },
@@ -173,7 +173,7 @@ const RemiseCleTable = ({searchParams}) => {
           href={`/Biens/${row.bien_id}`}
           style={{ textDecoration: 'none' }}
         >
-          <strong>{NomBienComplet(row.bien)}</strong>
+           <strong style={{fontWeight:600}}>{NomBienComplet(row.bien)}</strong>
         </Link>
       ),
     },
@@ -211,7 +211,7 @@ const RemiseCleTable = ({searchParams}) => {
           </div>
           <div title="Supprimer">
             <Trash2
-              className="w-4 h-4 !text-red-1000 hover:text-red-700 cursor-pointer"
+              className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
               onClick={() => {
                 setSelectedId(row.id);
                 setShowDeleteModal(true);
