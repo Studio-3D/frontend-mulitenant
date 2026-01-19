@@ -28,7 +28,7 @@ import { useProjet } from '@/context/ProjetContext';
 const STATUS_BADGES = {
   0: { text: 'Attente Validation', color: 'bg-yellow-100 text-yellow-800' },
   1: { text: 'Validé', color: 'bg-green-100 text-green-800' },
-  2: { text: 'Rejeter', color: 'bg-red-100 text-red-800' },
+  2: { text: 'Rejeté', color: 'bg-red-100 text-red-800' },
 };
 
 const ShowPenalite = () => {
@@ -494,7 +494,7 @@ const PenaltyDetails = ({
 
     <div className="border-t pt-4">
       <h3 className="text-md font-medium mb-4 bg-purple-100 text-purple-800 px-4 py-2 rounded">
-        Mode Paiement Pénalitélll
+        Mode Paiement Pénalité
       </h3>
 
       <div className="flex items-center mb-4">
