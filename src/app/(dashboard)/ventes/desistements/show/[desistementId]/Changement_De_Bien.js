@@ -42,6 +42,7 @@ export function Changement_De_Bien({
   reservationId,
 }) {
   /******************remboursement**************************/
+
   const [loading_dos, setLoading_dos] = useState();
   const [dossiers, setDossiers] = useState([]);
   const [dossierInfos, setDossierInfos] = useState({});
@@ -142,7 +143,7 @@ export function Changement_De_Bien({
 
         const newDossierInfo = {
           clients: reservation.aquereurs,
-          bien: reservation.bien.propriete_dite_bien,
+          bien: reservation.bien,
           type: reservation.bien.type_bien.type,
           prix: reservation.prix,
           sum_avances: sum_avances_valides,
@@ -312,7 +313,7 @@ export function Changement_De_Bien({
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
             <p className="text-sm font-semibold text-indigo-500 mb-1">Bien</p>
-            <p className="text-gray-800 font-medium text-lg">{bien_ancien}</p>
+            <p className="text-gray-800 font-medium text-lg">{NomBienComplet(bien_ancien)}</p>
           </div>
           <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
             <p className="text-sm font-semibold text-indigo-500 mb-1">
@@ -358,26 +359,27 @@ export function Changement_De_Bien({
 
           {/* Type Remboursement */}
           {type_remb != null ? (
-            <div className="bg-white rounded-xl shadow-sm p-6 mb-1 border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="bg-blue-100 p-3 rounded-lg mr-4">
-                    <HandCoins className="w-6 h-6 text-blue-500" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-700">
-                      Type de remboursement
-                    </h3>
-                    <p className="text-gray-800">
-                      {type_remb === 'direct'
-                        ? 'Remboursement immédiat'
-                        : 'Remboursement après vente'}
-                    </p>
-                  </div>
-                </div>
-                <ModeBadge mode={type_remb} />
-              </div>
-            </div>
+  <div className="bg-white rounded-xl shadow-sm p-6 mb-1 border border-gray-100 hover:shadow-md transition-shadow">
+    <div className="flex items-center justify-between">
+      <div className="flex items-center">
+        <div className="bg-blue-100 p-3 rounded-lg mr-4">
+          <HandCoins className="w-6 h-6 text-blue-500" />
+        </div>
+        <div>
+          <h3 className="text-lg font-semibold text-gray-700">
+            Type de remboursement
+          </h3>
+          <p className="text-gray-800">
+            {type_remb === 'direct' 
+              ? 'Remboursement immédiat' 
+              : 'Remboursement après vente'}
+          </p>
+        </div>
+      </div>
+      <ModeBadge mode={type_remb} />
+    </div>
+  </div>
+
           ) : (
             <>
               {new_bien_id != 0 && (
@@ -551,7 +553,7 @@ export function Changement_De_Bien({
                                       </label>
                                       <p className="font-medium text-gray-800 flex items-center">
                                         <Home className="w-4 h-4 mr-2 text-gray-500" />
-                                        {dossierInfos[index].bien}
+                                        { NomBienComplet(dossierInfos[index].bien)}
                                       </p>
                                     </div>
                                     <div>

@@ -133,7 +133,8 @@ const ShowPenalite = () => {
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
 
-      await fetchData(); // Refresh data
+     // await fetchData(); // Refresh data
+      router.push('/ventes?tab=validation&subtab=penalites-validation')
       toast.success('Action Traité avec Succés');
 
       setOpenValidationDialog(false);
@@ -192,7 +193,7 @@ const ShowPenalite = () => {
       router.push('/ventes?tab=validation&subtab=penalites-validation');
 
       // Show success message
-      toast.success('Action traitée avec succès');
+      toast.success('Action corrigé avec succès');
       setLoadingSave(false);
     } catch (error) {
       setLoadingSave(false);
@@ -339,7 +340,7 @@ const ShowPenalite = () => {
                 onClick={fetchHistory}
                 className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition"
               >
-                View History
+                Historiques
               </button>
             )}
           </div>
@@ -493,13 +494,13 @@ const PenaltyDetails = ({
 
     <div className="border-t pt-4">
       <h3 className="text-md font-medium mb-4 bg-purple-100 text-purple-800 px-4 py-2 rounded">
-        Mode Paiement Pénalité
+        Mode Paiement Pénalitélll
       </h3>
 
       <div className="flex items-center mb-4">
         <span className="text-sm font-medium text-gray-500 mr-2">SR:</span>
         <span className="font-medium text-black-500">
-          {penalite.sr ? 'Oui' : 'Non'}
+          {penalite.sr==0 ? 'Non' : 'Oui'}
         </span>
       </div>
 
@@ -623,7 +624,7 @@ const HistoryModal = ({
   <Modal_l
     open={open}
     onClose={onClose}
-    title="Historique du Pénalité"
+    title="Historique des Pénalités"
     size="max-w-6xl"
   >
     <div className="overflow-x-auto">
@@ -631,14 +632,14 @@ const HistoryModal = ({
         <thead className="bg-black text-white-500">
           <tr className="text-white">
             <TableHeader>Date</TableHeader>
-            <TableHeader>Receipt No</TableHeader>
-            <TableHeader>Responsible</TableHeader>
-            <TableHeader>Amount</TableHeader>
-            <TableHeader>Payment Method</TableHeader>
-            <TableHeader>Bank</TableHeader>
-            <TableHeader>Payment No</TableHeader>
-            <TableHeader>Due Date</TableHeader>
-            <TableHeader>Status</TableHeader>
+            <TableHeader>N° Reçu</TableHeader>
+            <TableHeader>Responsable</TableHeader>
+            <TableHeader>Montant</TableHeader>
+            <TableHeader>Mode de Paiement</TableHeader>
+            <TableHeader>Banque</TableHeader>
+            <TableHeader>N° Paiement</TableHeader>
+            <TableHeader>date Echéance</TableHeader>
+            <TableHeader>Statut</TableHeader>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-black-200">

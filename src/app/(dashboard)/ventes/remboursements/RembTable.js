@@ -367,7 +367,7 @@ export default function RembTable({ etat }) {
             <Check
               onClick={() => handleTraiterDemande(row.id, row.client, row.bien)}
               className="w-4 h-4 text-green-500 hover:text-green-700"
-              title="Traiter un demande"
+              title="Traiter une demande"
             />
           </div>
         );
@@ -828,7 +828,7 @@ export default function RembTable({ etat }) {
         <div className="w-full h-[60px] bg-green-600 px-4 mb-3">
           <div className="flex items-center justify-center h-full">
             <h1 className="text-2xl font-bold text-center text-white">
-              Traiter un demande
+              Traiter une demande
             </h1>
           </div>
         </div>

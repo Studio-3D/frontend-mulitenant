@@ -358,7 +358,7 @@ export default function Page() {
             <Changement_De_Bien
               formData={desistementData}
               selectedProjet_id={selectedProjet_id}
-              bien_ancien={reservationData.bien?.propriete_dite_bien}
+              bien_ancien={reservationData?.bien}
               sum_avances_valides={reservationData.sumAvances}
               banques={banques}
               user={user}

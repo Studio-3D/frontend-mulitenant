@@ -2122,7 +2122,6 @@ export default function Page() {
                     <div className="border-t border-gray-200 py-4">
                       {/* Only show penalty payment section if mode_penalite is selected AND penalite_montant has a valid value */}
                       {watch('mode_penalite') &&
-                        watch('penalite_montant') &&
                         watch('penalite_montant') > 0 && (
                           <>
                             <div className="mt-4">

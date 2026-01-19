@@ -52,7 +52,17 @@ export function Desistement_Definitif({
       [index]: !prev[index],
     }));
   };
+function NomBienComplet(bien) {
+    const noms = [];
 
+    if (bien.tranche?.nom) noms.push(bien.tranche.nom);
+    if (bien.bloc?.nom) noms.push(bien.bloc.nom);
+    if (bien.immeuble?.nom) noms.push(bien.immeuble.nom);
+
+    noms.push(bien.propriete_dite_bien);
+
+    return noms.join(' - ');
+  }
   useEffect(() => {
     if (formData) {
       set_type_remb(type_remb_get);
@@ -443,7 +453,7 @@ export function Desistement_Definitif({
                                     </label>
                                     <p className="font-medium text-gray-800 flex items-center">
                                       <Home className="w-4 h-4 mr-2 text-gray-500" />
-                                      {dossierInfos[index].bien}
+                                      {NomBienComplet(dossierInfos[index].bien)}
                                     </p>
                                   </div>
                                   <div>

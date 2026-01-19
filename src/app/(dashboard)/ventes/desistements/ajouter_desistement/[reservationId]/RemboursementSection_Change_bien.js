@@ -132,8 +132,7 @@ export function RemboursementSection_Change_bien({
             </div>
             {showTransferSection && (
               <div className="">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                  <div>
+<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">                  <div>
                     <SelectInput
                       label="Dossiers:"
                       name={`inputList_remb.${index}.dossier_id`}
@@ -287,8 +286,8 @@ export function RemboursementSection_Change_bien({
                         currentMode == 'transfert_rem_apres_vente') &&
                         watch(`inputList_remb.${index}.dossier_id`) && (
                           <>
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                              <div className="flex items-center">
+                           <div className="col-span-1 lg:col-span-2">
+      <div className="flex items-center space-x-4">
                                 <TextField
                                   label="Montant à Transférer"
                                   name={`inputList_remb.${index}.montant_transferer`}
@@ -352,9 +351,7 @@ export function RemboursementSection_Change_bien({
                                     );
                                   }}
                                 />
-                              </div>
-
-                              <div className="flex items-center">
+                              
                                 <TextField
                                   label="Reste à Rembourser"
                                   name={`inputList_remb.${index}.reste_a_rembourse`}
@@ -371,8 +368,12 @@ export function RemboursementSection_Change_bien({
                                 </p>
                               )}
                             </div>
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                              <Controller
+                            {watch(`inputList_remb.${index}.reste_a_rembourse`)>0 && (
+                              <>
+                              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <p className="text-green-600 font-bold">
+                      Remboursement de: {watch(`inputList_remb.${index}.reste_a_rembourse`)} DH
+                    </p>                              <Controller
                                 name={`inputList_remb.${index}.type_remb_transfere`}
                                 control={control}
                                 render={({ field }) => (
@@ -408,6 +409,7 @@ export function RemboursementSection_Change_bien({
                                 )}
                               />
                             </div>
+                            </>)}
                           </>
                         )}
                     </>

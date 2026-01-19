@@ -23,6 +23,8 @@ export function Changement_De_Bien({
   //remboursement
   inputListRemb_get,
   reservationId,
+  onDossierInfosChange,
+  type_remb_get,
 
   // prix_reservation
 }) {
@@ -55,14 +57,7 @@ export function Changement_De_Bien({
   const [montant_a_ajouter, set_montant_a_ajouter] = useState(0);
   const [new_bien_id, set_new_bien_id] = useState(0);
   const [old_bien_id, set_old_bien_id] = useState(0);
-  //Remboursement
-  // Initialize inputListRemb from props
-  useEffect(() => {
-    if (inputListRemb_get) {
-      set_inputList_remb(inputListRemb_get);
-      setValue('inputList_remb', inputListRemb_get);
-    }
-  }, [inputListRemb_get, setValue]);
+
   // Add this useEffect to pre-fill form data when in editing mode
   useEffect(() => {
     if (isEditing && formData) {
@@ -76,24 +71,89 @@ export function Changement_De_Bien({
       setValue('prix_nouveau_bien', formData?.bien_nouveau?.prix);
       //  show_bien(formData.bien_id_new);
       setValue('new_avance', formData?.bien_nouveau?.avance_minimale);
-      set_montant_a_ajouter(formData.montant_a_ajouter);
-      setValue('montant_a_ajouter', formData.montant_a_ajouter);
-      setValue('sr', formData.sr);
-      setValue('mode_paiement', formData.mode_paiement);
-      setValue('numero_paiement', formData.numero_paiement);
-      setValue('banque_id', formData.banque_id);
-      setValue('echeance', formData.echeance);
-      setSelectedFiles_avc(
-        formData?.piece_jointes_des_montant_a_ajouter
-          ? formData.piece_jointes_des_montant_a_ajouter
-          : []
-      );
-      setValue(
-        'files_avance',
-        formData?.piece_jointes_des_montant_a_ajouter
-          ? formData.piece_jointes_des_montant_a_ajouter
-          : []
-      );
+      if (formData?.type_remb == null) {
+        set_montant_a_ajouter(formData.montant_a_ajouter);
+        setValue('montant_a_ajouter', formData.montant_a_ajouter);
+        setValue('sr', formData.sr);
+        setValue('mode_paiement', formData.mode_paiement);
+        setValue('numero_paiement', formData.numero_paiement);
+        setValue('banque_id', formData.banque_id);
+        setValue('echeance', formData.echeance);
+        setSelectedFiles_avc(
+          formData?.piece_jointes_des_montant_a_ajouter
+            ? formData.piece_jointes_des_montant_a_ajouter
+            : []
+        );
+        setValue(
+          'files_avance',
+          formData?.piece_jointes_des_montant_a_ajouter
+            ? formData.piece_jointes_des_montant_a_ajouter
+            : []
+        );
+      } else {
+        //remboursement
+        set_type_remb(type_remb_get);
+          setValue('type_remb', type_remb_get);
+       const diff = sum_avances_valides - formData?.bien_nouveau?.prix;
+        set_sum_avances_moins_prix_new_bien(diff);
+        const list =
+          formData?.remboursement?.length > 0
+            ? formData.remboursement.map((item) => ({
+                cl_id: item?.aquereur?.client_id,
+                aq_id: item?.aquereur_id,
+                nom: item?.aquereur?.client.nom,
+                pourcentage: item.aquereur?.pourcentage,
+                prenom: item?.aquereur?.client.prenom,
+                date_rembourse: item.date_rembourse,
+                mode_rembourse: item.mode_rembourse_client,
+                type_remb:
+                  item.mode_rembourse ==
+                  ('transfert_rem_direct' || 'transfert_rem_apres_vente')
+                    ? 'transfert_remb'
+                    : item.mode_rembourse,
+                montant_transferer: item.montant_transfert,
+                reste_a_rembourse: item.montant_a_rembourser,
+                num_paiement: item.num_paiement,
+                cheque_recu: item.cheque,
+                pour_le_compte: item.pour_le_compte,
+                fichier_autorisation: item.fichier_autorisation,
+                montant_a_rembourser: item.montant_a_rembourser,
+                dossier_id: item.dossier_id_transfert,
+                type_remb_transfere:
+                  item.mode_rembourse === 'transfert_rem_direct'
+                    ? 'immediat'
+                    : item.mode_rembourse === 'transfert_rem_apres_vente'
+                    ? 'apres_vente'
+                    : '',
+              }))
+            : [];
+
+        set_inputList_remb(list);
+        setValue('inputList_remb', list);
+
+        list.forEach((item, index) => {
+          if (item.cheque_recu) {
+            setValue(`inputList_remb.${index}.cheque_recu`, item.cheque_recu);
+          }
+          if (item.fichier_autorisation) {
+            setValue(
+              `inputList_remb.${index}.fichier_autorisation`,
+              item.fichier_autorisation
+            );
+          }
+          setValue(
+            `inputList_remb.${index}.reste_a_rembourse`,
+            item.montant_a_rembourser
+          );
+          if (item.dossier_id) {
+            get_info_dossier_id(item.dossier_id, index);
+          }
+        });
+      }
+    } else {
+      //remboursement
+      set_inputList_remb(inputListRemb_get || []);
+      setValue('inputList_remb', inputListRemb_get || []);
     }
   }, [isEditing, formData, setValue]);
 
@@ -148,6 +208,9 @@ export function Changement_De_Bien({
           ...prev,
           [index]: newDossierInfo,
         }));
+        if (onDossierInfosChange) {
+          onDossierInfosChange(index, newDossierInfo);
+        }
       }
     } catch (error) {
       console.error('Error fetching reservation details:', error);
@@ -156,31 +219,34 @@ export function Changement_De_Bien({
     }
   };
   const handleTypeRembChange = (newType) => {
-  set_type_remb(newType);
-  setValue('type_remb', newType);
-  
-  // Update reste_a_rembourse for all clients
-  inputListRemb?.forEach((item, index) => {
-    const pourcentage = item.pourcentage || 0;
-    const reste_a_rembourse = (sum_avances_moins_prix_new_bien * (pourcentage / 100)).toFixed(2);
-    
-    setValue(`inputList_remb.${index}.type_remb`, newType); // Always set to direct
-    setValue(`inputList_remb.${index}.reste_a_rembourse`, reste_a_rembourse);
-    
-    // Clear transfer-related fields
-    setValue(`inputList_remb.${index}.dossier_id`, '');
-    setValue(`inputList_remb.${index}.montant_transferer`, '');
-    setValue(`inputList_remb.${index}.error`, '');
-    setValue(`inputList_remb.${index}.type_remb_transfere`, '');
-    
-    // Clear dossier info
-    setDossierInfos((prev) => {
-      const newInfos = { ...prev };
-      delete newInfos[index];
-      return newInfos;
+    set_type_remb(newType);
+    setValue('type_remb', newType);
+
+    // Update reste_a_rembourse for all clients
+    inputListRemb?.forEach((item, index) => {
+      const pourcentage = item.pourcentage || 0;
+      const reste_a_rembourse = (
+        sum_avances_moins_prix_new_bien *
+        (pourcentage / 100)
+      ).toFixed(2);
+
+      setValue(`inputList_remb.${index}.type_remb`, newType); // Always set to direct
+      setValue(`inputList_remb.${index}.reste_a_rembourse`, reste_a_rembourse);
+
+      // Clear transfer-related fields
+      setValue(`inputList_remb.${index}.dossier_id`, '');
+      setValue(`inputList_remb.${index}.montant_transferer`, '');
+      setValue(`inputList_remb.${index}.error`, '');
+      setValue(`inputList_remb.${index}.type_remb_transfere`, '');
+
+      // Clear dossier info
+      setDossierInfos((prev) => {
+        const newInfos = { ...prev };
+        delete newInfos[index];
+        return newInfos;
+      });
     });
-  });
-};
+  };
   const handleModeChange = (index, newMode) => {
     const currentValues = watch(`inputList_remb.${index}`) || {};
 
@@ -307,7 +373,6 @@ export function Changement_De_Bien({
       setValue('banque_id', '');
       setValue('echeance', '');
       show_bien(newId);
-
       // Store in proposition - first time old_id is 0, subsequent times it's the previous new_bien_id
       storebien_en_proposition(newId, old_bien_id);
       set_old_bien_id(newId); // Update old_id for next change
@@ -326,21 +391,33 @@ export function Changement_De_Bien({
       const avance_minimale = bien.avance_minimale;
       const prix_bien = bien.prix; // Get the price of the new bien
       console.log('Prix du nouveau bien:', prix_bien); // Debug log
-
+      //remboursement
+      set_type_remb(null);
+      setValue('type_remb', null);
       setValue('new_avance', avance_minimale);
       setValue('prix_nouveau_bien', prix_bien); // Store the new bien's priceF
+
+      const diff = watch('sum_avances_valides') - prix_bien;
+      set_sum_avances_moins_prix_new_bien(diff);
+
+      // If there's a difference, update all clients
+     if (diff > 0) {
+      inputListRemb?.forEach((item, index) => {
+        const pourcentage = item.pourcentage || 0;
+        const reste_a_rembourse = (diff * (pourcentage / 100)).toFixed(2);
+        setValue(
+          `inputList_remb.${index}.reste_a_rembourse`,
+          reste_a_rembourse
+        );
+      });
       
-       const diff =  watch('sum_avances_valides') - prix_bien;
-        set_sum_avances_moins_prix_new_bien(diff);
-        
-        // If there's a difference, update all clients
-        if (diff > 0) {
-          inputListRemb?.forEach((item, index) => {
-            const pourcentage = item.pourcentage || 0;
-            const reste_a_rembourse = (diff * (pourcentage / 100)).toFixed(2);
-            setValue(`inputList_remb.${index}.reste_a_rembourse`, reste_a_rembourse);
-          });
-        }
+     /* if (isEditing) {
+        // Reset all inputs to their initial state for each client
+        inputListRemb?.forEach((item, index) => {
+          handleModeChange(index, 'direct');
+        });
+      }*/
+    }
       // Calculate amount to add
       const amountToAdd =
         sum_avances_valides > avance_minimale
@@ -525,7 +602,7 @@ export function Changement_De_Bien({
 
                     // Add the same label text logic
                     const labelText =
-                      bien.propriete_dite_bien +
+                      bien.id +
                       (bien.etat === 'ENCOURS_DE_PROPOSITION'
                         ? bien?.is_proposed != null
                           ? user.id != bien?.is_proposed?.user_id
@@ -565,6 +642,7 @@ export function Changement_De_Bien({
           />
           {/* Show additional fields when a new bien is selected           <p>s_aan{ watch('sum_avances_valides')} prix{ watch('prix_nouveau_bien')}  w id {new_bien_id}</p>
            */}
+           
           {loading_bien_id ? (
             <div className="flex items-center justify-center h-full">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
@@ -610,74 +688,105 @@ export function Changement_De_Bien({
                     </div>
                   ) : (
                     <>
-  {sum_avances_moins_prix_new_bien > 0 && (
-  <div className="flex flex-col mt-3">
-    {/* Price display card */}
-    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-100 mb-4">
-      <div className="flex items-center">
-        <div className="bg-blue-100 p-2 rounded-full mr-3">
-          <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        </div>
-        <div>
-          <p className="text-sm text-gray-600">Prix du nouveau bien</p>
-          <p className="text-xl font-bold text-gray-800">
-            {watch('prix_nouveau_bien')?.toLocaleString('fr-FR')} DH
-          </p>
-        </div>
-      </div>
-    </div>
+                      {sum_avances_moins_prix_new_bien > 0 && (
+                        <div className="flex flex-col mt-3">
+                          {/* Price display card */}
+                          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-100 mb-4">
+                            <div className="flex items-center">
+                              <div className="bg-blue-100 p-2 rounded-full mr-3">
+                                <svg
+                                  className="w-5 h-5 text-blue-600"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                  />
+                                </svg>
+                              </div>
+                              <div>
+                                <p className="text-sm text-gray-600">
+                                  Prix du nouveau bien
+                                </p>
+                                <p className="text-xl font-bold text-gray-800">
+                                  {watch('prix_nouveau_bien')?.toLocaleString(
+                                    'fr-FR'
+                                  )}{' '}
+                                  DH
+                                </p>
+                              </div>
+                            </div>
+                          </div>
 
-    {/* Remboursement type selection */}
-    <div className="p-4 bg-gray-50 rounded-lg">
-      <p className="text-gray-700 font-medium mb-3">Choisissez le type de remboursement:</p>
-      <Controller
-        name="type_remb"
-        control={control}
-        render={({ field }) => (
-          <div className="space-y-3">
-            <label className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors">
-              <input
-                type="radio"
-                {...field}
-                value="direct"
-                checked={field.value == 'direct'}
-                className="h-4 w-4 text-blue-600"
-                onChange={() => handleTypeRembChange('direct')}
-              />
-              <div className="ml-3">
-                <span className="text-gray-800 font-medium">Remboursement immédiat</span>
-                <p className="text-sm text-gray-600 mt-1">Le remboursement sera effectué directement</p>
-              </div>
-            </label>
-            
-            <label className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-purple-50 cursor-pointer transition-colors">
-              <input
-                type="radio"
-                {...field}
-                value="apres_vente"
-                checked={field.value == 'apres_vente'}
-                className="h-4 w-4 text-purple-600"
-                onChange={() => handleTypeRembChange('apres_vente')}
-              />
-              <div className="ml-3">
-                <span className="text-gray-800 font-medium">Remboursement après vente</span>
-                <p className="text-sm text-gray-600 mt-1">Le remboursement sera effectué après la vente</p>
-              </div>
-            </label>
-            
-            {errors.type_remb && (
-              <p className="text-red-600 text-sm mt-2">
-                {errors.type_remb.message}
-              </p>
-            )}
-          </div>
-        )}
-      />
-    </div>
-  </div>
-)}
+                          {/* Remboursement type selection */}
+                          <div className="p-4 bg-gray-50 rounded-lg">
+                            <p className="text-gray-700 font-medium mb-3">
+                              Choisissez le type de remboursement:
+                            </p>
+                            <Controller
+                              name="type_remb"
+                              control={control}
+                              render={({ field }) => (
+                                <div className="space-y-3">
+                                  <label className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors">
+                                    <input
+                                      type="radio"
+                                      {...field}
+                                      value="direct"
+                                      checked={field.value == 'direct'}
+                                      className="h-4 w-4 text-blue-600"
+                                      onChange={() =>
+                                        handleTypeRembChange('direct')
+                                      }
+                                    />
+                                    <div className="ml-3">
+                                      <span className="text-gray-800 font-medium">
+                                        Remboursement immédiat
+                                      </span>
+                                      <p className="text-sm text-gray-600 mt-1">
+                                        Le remboursement sera effectué
+                                        directement
+                                      </p>
+                                    </div>
+                                  </label>
+
+                                  <label className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-purple-50 cursor-pointer transition-colors">
+                                    <input
+                                      type="radio"
+                                      {...field}
+                                      value="apres_vente"
+                                      checked={field.value == 'apres_vente'}
+                                      className="h-4 w-4 text-purple-600"
+                                      onChange={() =>
+                                        handleTypeRembChange('apres_vente')
+                                      }
+                                    />
+                                    <div className="ml-3">
+                                      <span className="text-gray-800 font-medium">
+                                        Remboursement après vente
+                                      </span>
+                                      <p className="text-sm text-gray-600 mt-1">
+                                        Le remboursement sera effectué après la
+                                        vente
+                                      </p>
+                                    </div>
+                                  </label>
+
+                                  {errors.type_remb && (
+                                    <p className="text-red-600 text-sm mt-2">
+                                      {errors.type_remb.message}
+                                    </p>
+                                  )}
+                                </div>
+                              )}
+                            />
+                          </div>
+                        </div>
+                      )}
                     </>
                   )}
                 </>
