@@ -39,18 +39,18 @@ const Res_Show = () => {
   const accessToken = token || localStorage.getItem('accessToken');
 
   // AJOUTER: État pour suivre si un compromis a été créé
-  //const [hasCompromis, setHasCompromis] = useState(false);
-  //const [hasContrat, setHasContrat] = useState(false);
+  const [hasCompromis, setHasCompromis] = useState(false);
+  const [hasContrat, setHasContrat] = useState(false);
 
   // AJOUTER: Fonction pour gérer la création de compromis
   const handleCompromisCreated = () => {
-   // setHasCompromis(true);
+    setHasCompromis(true);
     // Optionnel: Mettre à jour les données de réservation
     fetchData();
   };
 
   const handleContratCreated = () => {
-   // setHasContrat(true);
+    setHasContrat(true);
     fetchData();
   };
 
@@ -62,7 +62,7 @@ const Res_Show = () => {
       ...newData,
     }));
 
-    /* Si les nouvelles données incluent un compromis, mettre à jour l'état
+    // Si les nouvelles données incluent un compromis, mettre à jour l'état
     if (newData.reservation?.compromis_vente?.compromis_signee != null) {
       setHasCompromis(true);
     }
@@ -70,7 +70,7 @@ const Res_Show = () => {
     // Si les nouvelles données incluent un contrat, mettre à jour l'état
     if (newData.reservation?.contrat_vente?.piece_jointe != null) {
       setHasContrat(true);
-    }*/
+    }
   };
 
   // Function to reload reservation data
@@ -152,9 +152,10 @@ const Res_Show = () => {
           Authorization: `Bearer ${accessToken}`,
         },
       });
+      console.log('token==+>' + accessToken);
       setReservationData(response.data);
-     // setHasCompromis(!!response.data?.reservation?.compromis_vente?.compromis_signee);
-    //  setHasContrat(!!response.data?.reservation?.contrat_vente?.piece_jointe);
+      setHasCompromis(!!response.data?.reservation?.compromis_vente?.compromis_signee);
+      setHasContrat(!!response.data?.reservation?.contrat_vente?.piece_jointe);
       setSum_av(response.data.sum_avances_valides);
     } catch (error) {
       console.error('Full error details:', error);
@@ -419,8 +420,8 @@ const Res_Show = () => {
           <ReservationHeader
             reservationData={reservationData}
             userRole={userRole}
-            //hasCompromis={hasCompromis} // Passer la prop
-           // hasContrat={hasContrat} // Passer la prop
+            hasCompromis={hasCompromis} // Passer la prop
+            hasContrat={hasContrat} // Passer la prop
           />
           <div className="bg-white rounded-lg shadow-md mt-6">
             <TabNavigation

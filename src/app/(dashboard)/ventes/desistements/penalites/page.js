@@ -228,9 +228,10 @@ export default function PenalitesTable() {
               <Link
                 href={`/Utilisateurs/afficher-utilisateur/${row.cc_id}`}
                 target="_blank"
-                className="text-blue-500 hover:text-blue-700"
+              
               >
-                {row.cc}
+                 <strong style={{ fontWeight: 600 }}>{row.cc}</strong>
+                
               </Link>
             ),
           },
@@ -254,9 +255,9 @@ export default function PenalitesTable() {
       <Link
         href={`/ventes/reservations/${row.reservation_id}`}
         target="_blank"
-        className="text-blue-500 hover:text-blue-700 font-semibold"
+        className=""
       >
-        {row.code_reservation}
+         <strong style={{ fontWeight: 600 }}>{row.code_reservation}</strong>
       </Link>
     ),
   };
@@ -604,7 +605,7 @@ export default function PenalitesTable() {
                         onChange={(e) =>
                           updateDialogState({ num_remise: e.target.value })
                         }
-                        required={true}
+                        required={false}
                       />
                     </div>
                     <div className="mb-4">

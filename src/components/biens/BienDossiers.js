@@ -224,24 +224,50 @@ export default function BienDossiers({ bienId }) {
         return '';
       },
     },
-    {
-      key: 'actions',
-      label: 'Actions',
-      render: (row) => {
-        if (!row.histo?.reservation_id) return null;
+   
+    // Dans la section columns, modifiez la colonne actions :
+{
+  key: 'actions',
+  label: 'Actions',
+  render: (row) => {
+    // Afficher l'icône Eye pour les réservations ET les désistements
+    if (row.histo?.reservation_id || row.histo?.desistement_id) {
+      // Si c'est une réservation
+      if (row.histo?.reservation_id) {
         return (
           <a
             href={`/ventes/reservations/${row.histo.reservation_id}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center w-8 h-8 rounded-full !text-blue-600 hover:bg-blue-100 transition-colors duration-200"
+            className="inline-flex items-center justify-center w-8 h-8 rounded-full !text-blue-500 hover:bg-blue-100 transition-colors duration-200"
             onClick={(e) => e.stopPropagation()}
+            title="Voir la réservation"
           >
             <Eye size={16} />
           </a>
         );
-      },
-    },
+      }
+      
+      // Si c'est un désistement
+      if (row.histo?.desistement_id) {
+        return (
+          <a
+            href={`/ventes/desistements/show/${row.histo.desistement_id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center w-8 h-8 rounded-full !text-green-500 hover:bg-green-100 transition-colors duration-200"
+            onClick={(e) => e.stopPropagation()}
+            title="Voir le désistement"
+          >
+            <Eye size={16} />
+          </a>
+        );
+      }
+    }
+    
+    return null;
+  },
+},
   ];
 
   // Define all possible desistement columns

@@ -330,7 +330,7 @@ export default function ActualitesPage() {
             avances={avances}
             sumAvances={sumAvances}
             remboursements={remboursements}
-            sumRemb={sumRemb}
+            sumRemb={parseFloat(sumRemb.toFixed(2))}
           />
         </div>
 

@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { X, Download, Maximize2 } from "lucide-react";
 

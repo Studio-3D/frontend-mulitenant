@@ -192,11 +192,15 @@ export default function HistoriqueDesistementTab({ code_desistement }) {
         return '';
       },
     },
-    {
-      key: 'actions',
-      label: 'Actions',
-      render: (row) => {
-        if (!row.histo?.reservation_id) return null;
+    // Dans la section columns, modifiez la colonne actions :
+{
+  key: 'actions',
+  label: 'Actions',
+  render: (row) => {
+    // Afficher l'icône Eye pour les réservations ET les désistements
+    if (row.histo?.reservation_id || row.histo?.desistement_id) {
+      // Si c'est une réservation
+      if (row.histo?.reservation_id) {
         return (
           <a
             href={`/ventes/reservations/${row.histo.reservation_id}`}
@@ -204,12 +208,33 @@ export default function HistoriqueDesistementTab({ code_desistement }) {
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center w-8 h-8 rounded-full !text-blue-500 hover:bg-blue-100 transition-colors duration-200"
             onClick={(e) => e.stopPropagation()}
+            title="Voir la réservation"
           >
             <Eye size={16} />
           </a>
         );
-      },
-    },
+      }
+      
+      // Si c'est un désistement
+      if (row.histo?.desistement_id) {
+        return (
+          <a
+            href={`/ventes/desistements/show/${row.histo.desistement_id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center w-8 h-8 rounded-full !text-green-500 hover:bg-green-100 transition-colors duration-200"
+            onClick={(e) => e.stopPropagation()}
+            title="Voir le désistement"
+          >
+            <Eye size={16} />
+          </a>
+        );
+      }
+    }
+    
+    return null;
+  },
+},
   ];
 
   // Define all possible desistement columns
@@ -421,7 +446,7 @@ export default function HistoriqueDesistementTab({ code_desistement }) {
   const getDesistementColumns = (row) => {
     const desistementType = row.histo?.desistement?.type;
     const desistementTypeDp = row.histo?.desistement?.type_dp;
-console.log('le tye dp =+>'+desistementTypeDp)
+    console.log('le tye dp =+>' + desistementTypeDp);
     // Always show type column first
     let columns = [allDesistementColumns.type_desistement];
 
@@ -446,7 +471,7 @@ console.log('le tye dp =+>'+desistementTypeDp)
         );
       } else if (typeDpNum == 3) {
         // Désistement Partiel => lien de parenté / anciens acquéreurs / nouveaux acquéreurs / pénalité
-        console.log('ana hnaa')
+        console.log('ana hnaa');
         columns.push(
           allDesistementColumns.lien_parente,
           allDesistementColumns.ancien_acquereurs,
@@ -475,53 +500,221 @@ console.log('le tye dp =+>'+desistementTypeDp)
     return columns;
   };
 
-  // Export columns configuration - now includes both main and desistement columns
+  // Simple export with all data in one row
+  // Direct data access export with matching column keys
+  const exportData = () => {
+    return dossiers.map((dossier, index) => {
+      const row = {};
+
+      // Column 1: N°
+      row['N°'] = index + 1;
+
+      // Column 2: Date
+      row['Date'] = dossier.histo?.date
+        ? format(new Date(dossier.histo.date), 'dd/MM/yyyy HH:mm')
+        : '';
+
+      // Column 3: Responsable
+      if (dossier.histo?.reservation_id) {
+        row['Responsable'] = `${dossier.histo?.reservation?.user?.name || ''} ${
+          dossier.histo?.reservation?.user?.prenom || ''
+        }`.trim();
+      } else {
+        row['Responsable'] = `${dossier.histo?.desistement?.user?.name || ''} ${
+          dossier.histo?.desistement?.user?.prenom || ''
+        }`.trim();
+      }
+
+      // Column 4: Code
+      row['Code'] = dossier.histo?.reservation?.code_reservation || '';
+
+      // Column 5: Acquéreurs (FIXED - use the same logic as in the table)
+      let acquereursText = '';
+      if (dossier.histo?.reservation) {
+        const acquereurs =
+          dossier.histo.reservation.aquereurs_ancien?.length > 0
+            ? dossier.histo.reservation.aquereurs_ancien
+            : dossier.histo.reservation.aquereurs || [];
+
+        acquereursText = acquereurs
+          .map(
+            (acq) =>
+              `${acq.client?.nom || ''} ${acq.client?.prenom || ''} (${
+                acq.pourcentage
+              }%)`
+          )
+          .filter((text) => text.trim() !== '()')
+          .join(', ');
+      } else if (
+        dossier.histo?.desistement?.reservation_ancien?.aquereurs_ancien
+      ) {
+        acquereursText = Object.values(
+          dossier.histo.desistement.reservation_ancien.aquereurs_ancien
+        )
+          .map(
+            (acq) =>
+              `${acq.client?.nom || ''} ${acq.client?.prenom || ''} (${
+                acq.pourcentage
+              }%)`
+          )
+          .filter((text) => text.trim() !== '()')
+          .join(', ');
+      }
+      row['Acquéreurs'] = acquereursText;
+
+      // Column 6: Bien
+      if (dossier.histo?.reservation_id) {
+        row['Bien'] = dossier.histo.reservation.bien?.propriete_dite_bien || '';
+      } else {
+        row['Bien'] =
+          dossier.histo?.desistement?.bien_ancien?.propriete_dite_bien || '';
+      }
+
+      // Column 7: Montant Encaissé
+      if (dossier.histo?.reservation) {
+        const montant =
+          dossier.sum_avances || dossier.histo.reservation?.avances_sum_montant;
+        row['Montant Encaissé'] = montant
+          ? `${montant.toLocaleString()} DH`
+          : '';
+      } else {
+        row['Montant Encaissé'] = '';
+      }
+
+      // Column 8: Type Désistement
+      if (dossier.histo?.desistement?.type) {
+        let typeInfo;
+        if (dossier.histo.desistement.type != 2) {
+          typeInfo = type_dst[dossier.histo.desistement.type];
+        } else {
+          typeInfo = type_dst_dp[dossier.histo.desistement.type_dp];
+        }
+        row['Type Désistement'] = typeInfo?.label || '';
+      } else {
+        row['Type Désistement'] = '';
+      }
+
+      // Column 9: Motif
+      if (dossier.histo?.desistement?.motif) {
+        row['Motif'] =
+          motif_desistements[dossier.histo.desistement.motif]?.label || '';
+      } else {
+        row['Motif'] = '';
+      }
+
+      // Column 10: Lien de Parenté
+      if (dossier.histo?.desistement?.lien_parente) {
+        row['Lien de Parenté'] =
+          lien_parentes[dossier.histo.desistement.lien_parente]?.label || '';
+      } else {
+        row['Lien de Parenté'] = '';
+      }
+
+      // Column 11: Désisteurs
+      if (dossier.desisteurs && Object.keys(dossier.desisteurs).length > 0) {
+        row['Désisteurs'] = Object.values(dossier.desisteurs)
+          .map(
+            (desisteur) =>
+              `${desisteur.client_nom || ''} ${
+                desisteur.client_prenom || ''
+              } (${desisteur.client_percent}%)`
+          )
+          .filter((text) => text.trim() !== '()')
+          .join(', ');
+      } else {
+        row['Désisteurs'] = '';
+      }
+
+      // Column 12: Au Profit
+      if (dossier.au_profits && Object.keys(dossier.au_profits).length > 0) {
+        row['Au Profit'] = Object.values(dossier.au_profits)
+          .map(
+            (profit) =>
+              `${profit.client_nom || ''} ${profit.client_prenom || ''} (${
+                profit.client_percent
+              }%)`
+          )
+          .filter((text) => text.trim() !== '()')
+          .join(', ');
+      } else {
+        row['Au Profit'] = '';
+      }
+
+      // Column 13: Nouveau Acquéreurs
+      if (
+        dossier.new_aquereur_desistement &&
+        Object.keys(dossier.new_aquereur_desistement).length > 0
+      ) {
+        row['Nouveau Acquéreurs'] = Object.values(
+          dossier.new_aquereur_desistement
+        )
+          .map(
+            (acq) =>
+              `${acq.nv_client_nom || ''} ${acq.nv_client_prenom || ''} (${
+                acq.nv_client_percent
+              }%)`
+          )
+          .filter((text) => text.trim() !== '()')
+          .join(', ');
+      } else {
+        row['Nouveau Acquéreurs'] = '';
+      }
+
+      // Column 14: Ancien Bien
+      if (dossier.histo?.reservation_id) {
+        row['Ancien Bien'] =
+          dossier.histo.reservation.bien?.propriete_dite_bien || '';
+      } else {
+        row['Ancien Bien'] =
+          dossier.histo?.desistement?.bien_ancien?.propriete_dite_bien || '';
+      }
+
+      // Column 15: Nouveau Bien
+      row['Nouveau Bien'] = dossier.bien_new_propriete || '';
+
+      // Column 16: Montant à ajouter
+      if (dossier.histo?.desistement?.montant_a_ajouter) {
+        row[
+          'Montant à ajouter'
+        ] = `${dossier.histo.desistement.montant_a_ajouter.toLocaleString()} DH`;
+      } else {
+        row['Montant à ajouter'] = '';
+      }
+
+      // Column 17: Pénalité
+      if (dossier.penalite_montant) {
+        row['Pénalité'] = `${dossier.penalite_montant.toLocaleString()} DH`;
+      } else {
+        row['Pénalité'] = '';
+      }
+
+      // Debug log to check the data
+      console.log('Export row data:', row);
+
+      return row;
+    });
+  };
+
+  // Updated export columns - ensure exact match with row keys
   const columnsExport = [
-    { key: 'date', label: 'Date' },
-    { key: 'cc', label: 'CC' },
-    { key: 'code', label: 'Code' },
-    { key: 'acquereurs_ancien', label: 'Acquéreurs' },
-    { key: 'ancien_bien', label: 'Bien' },
-    { key: 'montant_encaisse', label: 'Montant Encaissé' },
-    { key: 'type_desistement', label: 'Type Désistement' },
-    { key: 'motif', label: 'Motif' },
-    { key: 'lien_parente', label: 'Lien de Parenté' },
-    { key: 'desisteurs', label: 'Désisteurs' },
-    { key: 'au_profit', label: 'Au Profit' },
-    { key: 'nouveau_acquereurs', label: 'Nouveau Acquéreurs' },
-    { key: 'nouveau_bien', label: 'Nouveau Bien' },
-    { key: 'montant_ajouter', label: 'Montant à ajouter' },
-    { key: 'penalite', label: 'Pénalité' },
+    { key: 'N°', label: 'N°' },
+    { key: 'Date', label: 'Date' },
+    { key: 'Responsable', label: 'Responsable' },
+    { key: 'Code', label: 'Code' },
+    { key: 'Acquéreurs', label: 'Acquéreurs' },
+    { key: 'Bien', label: 'Bien' },
+    { key: 'Montant Encaissé', label: 'Montant Encaissé' },
+    { key: 'Type Désistement', label: 'Type Désistement' },
+    { key: 'Motif', label: 'Motif' },
+    { key: 'Lien de Parenté', label: 'Lien de Parenté' },
+    { key: 'Désisteurs', label: 'Désisteurs' },
+    { key: 'Au Profit', label: 'Au Profit' },
+    { key: 'Nouveau Acquéreurs', label: 'Nouveau Acquéreurs' },
+    { key: 'Ancien Bien', label: 'Ancien Bien' },
+    { key: 'Nouveau Bien', label: 'Nouveau Bien' },
+    { key: 'Montant à ajouter', label: 'Montant à ajouter' },
+    { key: 'Pénalité', label: 'Pénalité' },
   ];
-
-  // Create exportable data - combine main and desistement columns
-  const exportData = dossiers.map((dossier) => {
-    let row = {};
-
-    // Add main columns data
-    columns.forEach((col) => {
-      if (col.key !== 'actions' && col.key !== 'expandToggle' && col.render) {
-        const rendered = col.render(dossier);
-        row[col.key] =
-          typeof rendered == 'string'
-            ? rendered
-            : rendered?.props?.children || '';
-      }
-    });
-
-    // Add desistement columns data
-    Object.values(allDesistementColumns).forEach((col) => {
-      if (col.render) {
-        const rendered = col.render(dossier);
-        row[col.key] =
-          typeof rendered == 'string'
-            ? rendered
-            : rendered?.props?.children || '';
-      }
-    });
-
-    return row;
-  });
 
   // Render the expanded row with dynamic columns based on desistement type
   const renderExpandedRow = (row, idx) => {
@@ -598,36 +791,38 @@ console.log('le tye dp =+>'+desistementTypeDp)
 
   return (
     <div className="bg-white shadow-sm rounded-lg">
-      <div className="p-6">
-        <Table
-          title="Historique Désistement"
-          data={dossiers}
-          columns={columns}
-          totalRows={totalRows}
-          loading={loading}
-          emptyMessage="Aucun dossier trouvé pour ce bien."
-          onPageChange={setCurrentPage}
-          onRowsPerPageChange={setRowsPerPage}
-          onSearchChange={setSearchTerm}
-          currentPage={currentPage}
-          rowsPerPage={rowsPerPage}
-          enableExport={dossiers.length > 0}
-          name_file_export="historiques_desistement"
-          data_to_export={exportData}
-          columns_export={columnsExport}
-          renderExpandedRow={renderExpandedRow}
-          onRowClick={(row, idx) => {
-            if (hasDesistementDetails(row)) {
-              toggleRowExpanded(row.id || idx);
+      <div className="bg-white shadow-sm rounded-lg">
+        <div className="p-6">
+          <Table
+            title="Historique Désistement"
+            data={dossiers}
+            columns={columns}
+            totalRows={totalRows}
+            loading={loading}
+            emptyMessage="Aucun dossier trouvé pour ce bien."
+            onPageChange={setCurrentPage}
+            onRowsPerPageChange={setRowsPerPage}
+            onSearchChange={setSearchTerm}
+            currentPage={currentPage}
+            rowsPerPage={rowsPerPage}
+            enableExport={dossiers.length > 0}
+            name_file_export="historiques_desistement"
+            data_to_export={exportData()}
+            columns_export={columnsExport}
+            renderExpandedRow={renderExpandedRow}
+            onRowClick={(row, idx) => {
+              if (hasDesistementDetails(row)) {
+                toggleRowExpanded(row.id || idx);
+              }
+            }}
+            showSearch={false}
+            rowClassName={(row) =>
+              hasDesistementDetails(row) ? 'cursor-pointer' : ''
             }
-          }}
-          showSearch={false}
-          rowClassName={(row) =>
-            hasDesistementDetails(row) ? 'cursor-pointer' : ''
-          }
-          expandedRows={expandedRows}
-          customTableStyle={true}
-        />
+            expandedRows={expandedRows}
+            customTableStyle={true}
+          />
+        </div>
       </div>
     </div>
   );

@@ -103,7 +103,14 @@ export default function RembTable({ etat }) {
 
     // Fetch banques
     fetchData_Select('banques', setBanques, setLoadingBanques);
-  }, [accessToken, currentPage, rowsPerPage, searchTerm, filters,selectedProjet]);
+  }, [
+    accessToken,
+    currentPage,
+    rowsPerPage,
+    searchTerm,
+    filters,
+    selectedProjet,
+  ]);
 
   // Helper functions
   const handleFilterChange = (field, value) => {
@@ -121,8 +128,6 @@ export default function RembTable({ etat }) {
     setFilters(initialFilters);
     setTempFilters(initialFilters);
   };
-
- 
 
   const handleTraiterDemande = (id, client, bien) => {
     setSelectedId(id);
@@ -247,12 +252,10 @@ export default function RembTable({ etat }) {
       key: 'bien',
       label: 'Bien',
       render: (row) => (
-        <Link
-          href={`/Biens/${row.bien_id}`}
-          className="text-blue-500 hover:text-blue-700"
-          target="_blank"
-        >
-        {NomBienComplet(row.bien)}
+        <Link href={`/Biens/${row.bien_id}`} target="_blank">
+          <strong style={{ fontWeight: 600 }}>
+            {NomBienComplet(row.bien)}
+          </strong>
         </Link>
       ),
     },
@@ -279,10 +282,10 @@ export default function RembTable({ etat }) {
             render: (row) => (
               <Link
                 href={`/Utilisateurs/afficher-utilisateur/${row.responsable_id}`}
-                className="text-blue-500 hover:text-blue-700"
+                // className="text-blue-500 hover:text-blue-700"
                 target="_blank"
               >
-                {row.responsable}
+                <strong style={{ fontWeight: 600 }}>{row.responsable}</strong>
               </Link>
             ),
           },
@@ -353,7 +356,7 @@ export default function RembTable({ etat }) {
       if ((row.etat == 1 || row.etat == 0) && row.statut == 0) {
         return (
           <div className="flex gap-3 items-center">
-           <Link
+            <Link
               href={`/ventes/desistements/show/${row.desistement_id}`}
               className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
               title="Détail Désistement"
@@ -361,19 +364,16 @@ export default function RembTable({ etat }) {
               <Eye className="w-4 h-4" />
             </Link>
 
-            
-
             <Check
               onClick={() => handleTraiterDemande(row.id, row.client, row.bien)}
               className="w-4 h-4 text-green-500 hover:text-green-700"
-              title="Traiter un demande"
+              title="Traiter une demande"
             />
           </div>
         );
       } else if (etat == 3) {
         return (
           <div className="flex gap-3 items-center">
-           
             <Link
               href={`/ventes/desistements/show/${row.desistement_id}`}
               className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
@@ -393,7 +393,6 @@ export default function RembTable({ etat }) {
       } else if (etat == 1) {
         return (
           <div className="flex gap-3 items-center">
-          
             <Link
               href={`/ventes/desistements/show/${row.desistement_id}`}
               className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
@@ -829,7 +828,7 @@ export default function RembTable({ etat }) {
         <div className="w-full h-[60px] bg-green-600 px-4 mb-3">
           <div className="flex items-center justify-center h-full">
             <h1 className="text-2xl font-bold text-center text-white">
-              Traiter un demande
+              Traiter une demande
             </h1>
           </div>
         </div>
@@ -1039,7 +1038,8 @@ export default function RembTable({ etat }) {
             </div>
             <div className="col-span-12">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Chèque client Signé <span className="text-red-500 ml-1">*</span>:
+                Chèque client Signé <span className="text-red-500 ml-1">*</span>
+                :
               </label>
               <input
                 type="file"
@@ -1125,7 +1125,6 @@ export default function RembTable({ etat }) {
               />
             </div>
             <div className="col-span-12">
-              
               <SelectInput
                 value={banqueAdd}
                 onChange={(value) => {

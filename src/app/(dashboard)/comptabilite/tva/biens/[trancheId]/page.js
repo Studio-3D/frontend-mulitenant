@@ -140,7 +140,9 @@ const TvaBiensPage = () => {
       key: 'propriete_dite_bien',
       label: 'Bien',
       render: (row) => (
-        <span className="font-medium">{row.propriete_dite_bien}</span>
+        <Link target="_blank" href={'/Biens/' + row.id}>
+          <strong style={{ fontWeight: 600 }}>{row.propriete_dite_bien}</strong>
+        </Link>
       ),
     },
     {
@@ -258,11 +260,11 @@ const TvaBiensPage = () => {
   const taux_tva = selectedProjet?.taux_tva * 100 || '20';
 
   if (!user || !selectedProjet || !trancheDetails) {
-   return (
-         <div className="flex items-center justify-center min-h-screen">
-           <LoadingSpin /> {/* Use your loading spinner here */}
-         </div>
-       );
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpin /> {/* Use your loading spinner here */}
+      </div>
+    );
   }
 
   return (
@@ -273,7 +275,7 @@ const TvaBiensPage = () => {
           step={`List des tranches`}
         />
       </div>
-      
+
       <div className="relative bg-white rounded-lg px-4 py-4">
         <h1 className="text-2xl font-bold mb-6">
           TVA par Bien - Tranche {trancheDetails.nom}

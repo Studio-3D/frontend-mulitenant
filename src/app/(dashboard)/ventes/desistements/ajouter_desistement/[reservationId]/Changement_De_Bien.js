@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useFormContext } from 'react-hook-form';
+import { Controller, useFormContext } from 'react-hook-form';
 import TextField from '@/components/Textfield';
 import Autocomplete from '@/components/Autocomplete';
 import SelectInput from '@/components/SelectInput';
@@ -9,6 +9,8 @@ import Pusher from 'pusher-js';
 import axios from 'axios';
 import { useAuth } from '../../../../../../context/AuthContext';
 import { MODE_PAIEMENT } from '@/configs/enum';
+import { data_by_projet_and_params } from '../../../../../../../src/configs/api-utils';
+import { RemboursementSection_Change_bien } from './RemboursementSection_Change_bien'; // Import the component
 
 export function Changement_De_Bien({
   formData,
@@ -18,6 +20,12 @@ export function Changement_De_Bien({
   sum_avances_valides,
   banques,
   filesList_avc,
+  //remboursement
+  inputListRemb_get,
+  reservationId,
+  onDossierInfosChange,
+  type_remb_get,
+
   // prix_reservation
 }) {
   const pusher_key_proposition = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_PROP;
@@ -27,11 +35,23 @@ export function Changement_De_Bien({
     setValue,
     formState: { errors },
   } = useFormContext();
+
+  //remboursement
+  const [sum_avances_moins_prix_new_bien, set_sum_avances_moins_prix_new_bien] =
+    useState(0);
+  const [loading_dos, setLoading_dos] = useState();
+  const [dossiers, setDossiers] = useState([]);
+  const [loadingInfos, setLoadingInfos] = useState({});
+  const [type_remb, set_type_remb] = useState(null);
+  const [inputListRemb, set_inputList_remb] = useState([]);
+  const [dossierInfos, setDossierInfos] = useState({});
+  // Check if remboursement is needed
+
   const { user, token } = useAuth();
   const accessToken = token || localStorage.getItem('accessToken');
   const [selectedFiles_avc, setSelectedFiles_avc] = useState([]);
 
-  const [loading_bien_id, setLoading_bien_id] = useState(true);
+  const [loading_bien_id, setLoading_bien_id] = useState(false);
   const [loading_bien, setLoading_bien] = useState(false);
   const [biensByProjet, setBiensByProjet] = useState([]);
   const [montant_a_ajouter, set_montant_a_ajouter] = useState(0);
@@ -41,35 +61,261 @@ export function Changement_De_Bien({
   // Add this useEffect to pre-fill form data when in editing mode
   useEffect(() => {
     if (isEditing && formData) {
+      console.log('prix d nv bien==>' + formData?.bien_nouveau?.prix);
       setValue('commentaire_rejete', formData.commentaire_rejete);
 
       fetch_bien_ByProjet(formData?.bien_nouveau);
       set_new_bien_id(formData.bien_id_new);
       setValue('bien_id', formData.bien_id_new);
       setValue('new_bien_id', formData.bien_id_new);
+      setValue('prix_nouveau_bien', formData?.bien_nouveau?.prix);
       //  show_bien(formData.bien_id_new);
       setValue('new_avance', formData?.bien_nouveau?.avance_minimale);
-      set_montant_a_ajouter(formData.montant_a_ajouter);
-      setValue('montant_a_ajouter', formData.montant_a_ajouter);
-      setValue('sr', formData.sr);
-      setValue('mode_paiement', formData.mode_paiement);
-      setValue('numero_paiement', formData.numero_paiement);
-      setValue('banque_id', formData.banque_id);
-      setValue('echeance', formData.echeance);
-      setSelectedFiles_avc(
-        formData?.piece_jointes_des_montant_a_ajouter
-          ? formData.piece_jointes_des_montant_a_ajouter
-          : []
-      );
-      setValue(
-        'files_avance',
-        formData?.piece_jointes_des_montant_a_ajouter
-          ? formData.piece_jointes_des_montant_a_ajouter
-          : []
-      );
+      if (formData?.type_remb == null) {
+        set_montant_a_ajouter(formData.montant_a_ajouter);
+        setValue('montant_a_ajouter', formData.montant_a_ajouter);
+        setValue('sr', formData.sr);
+        setValue('mode_paiement', formData.mode_paiement);
+        setValue('numero_paiement', formData.numero_paiement);
+        setValue('banque_id', formData.banque_id);
+        setValue('echeance', formData.echeance);
+        setSelectedFiles_avc(
+          formData?.piece_jointes_des_montant_a_ajouter
+            ? formData.piece_jointes_des_montant_a_ajouter
+            : []
+        );
+        setValue(
+          'files_avance',
+          formData?.piece_jointes_des_montant_a_ajouter
+            ? formData.piece_jointes_des_montant_a_ajouter
+            : []
+        );
+      } else {
+        //remboursement
+        set_type_remb(type_remb_get);
+          setValue('type_remb', type_remb_get);
+       const diff = sum_avances_valides - formData?.bien_nouveau?.prix;
+        set_sum_avances_moins_prix_new_bien(diff);
+        const list =
+          formData?.remboursement?.length > 0
+            ? formData.remboursement.map((item) => ({
+                cl_id: item?.aquereur?.client_id,
+                aq_id: item?.aquereur_id,
+                nom: item?.aquereur?.client.nom,
+                pourcentage: item.aquereur?.pourcentage,
+                prenom: item?.aquereur?.client.prenom,
+                date_rembourse: item.date_rembourse,
+                mode_rembourse: item.mode_rembourse_client,
+                type_remb:
+                  item.mode_rembourse ==
+                  ('transfert_rem_direct' || 'transfert_rem_apres_vente')
+                    ? 'transfert_remb'
+                    : item.mode_rembourse,
+                montant_transferer: item.montant_transfert,
+                reste_a_rembourse: item.montant_a_rembourser,
+                num_paiement: item.num_paiement,
+                cheque_recu: item.cheque,
+                pour_le_compte: item.pour_le_compte,
+                fichier_autorisation: item.fichier_autorisation,
+                montant_a_rembourser: item.montant_a_rembourser,
+                dossier_id: item.dossier_id_transfert,
+                type_remb_transfere:
+                  item.mode_rembourse === 'transfert_rem_direct'
+                    ? 'immediat'
+                    : item.mode_rembourse === 'transfert_rem_apres_vente'
+                    ? 'apres_vente'
+                    : '',
+              }))
+            : [];
+
+        set_inputList_remb(list);
+        setValue('inputList_remb', list);
+
+        list.forEach((item, index) => {
+          if (item.cheque_recu) {
+            setValue(`inputList_remb.${index}.cheque_recu`, item.cheque_recu);
+          }
+          if (item.fichier_autorisation) {
+            setValue(
+              `inputList_remb.${index}.fichier_autorisation`,
+              item.fichier_autorisation
+            );
+          }
+          setValue(
+            `inputList_remb.${index}.reste_a_rembourse`,
+            item.montant_a_rembourser
+          );
+          if (item.dossier_id) {
+            get_info_dossier_id(item.dossier_id, index);
+          }
+        });
+      }
+    } else {
+      //remboursement
+      set_inputList_remb(inputListRemb_get || []);
+      setValue('inputList_remb', inputListRemb_get || []);
     }
   }, [isEditing, formData, setValue]);
 
+  /****************************************Remboursemnt**********************************************************/
+
+  const fetchDossierData = async () => {
+    try {
+      setLoading_dos(true);
+      // You might need to adjust this call based on your API
+      await data_by_projet_and_params(
+        'getDossiers',
+        setDossiers,
+        setLoading_dos,
+        'reservations',
+        selectedProjet_id,
+        reservationId // You'll need to get this from somewhere
+      );
+    } catch (error) {
+      console.error('Error fetching dossiers:', error);
+    } finally {
+      setLoading_dos(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDossierData();
+  }, []);
+
+  const get_info_dossier_id = async (dos_id, index) => {
+    try {
+      if (dos_id) {
+        setLoadingInfos((prev) => ({ ...prev, [index]: true }));
+
+        const response = await axios.get(
+          `${APIURL.ROOTV1}/show_dossier_in_dd/${dos_id}`,
+          {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          }
+        );
+
+        const { reservation, sum_avances_valides } = response.data;
+
+        const newDossierInfo = {
+          clients: reservation.aquereurs,
+          bien: reservation.bien,
+          type: reservation.bien.type_bien?.type,
+          prix: reservation.prix,
+          sum_avances: sum_avances_valides,
+          reste: reservation.prix - sum_avances_valides,
+        };
+        setDossierInfos((prev) => ({
+          ...prev,
+          [index]: newDossierInfo,
+        }));
+        if (onDossierInfosChange) {
+          onDossierInfosChange(index, newDossierInfo);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching reservation details:', error);
+    } finally {
+      setLoadingInfos((prev) => ({ ...prev, [index]: false }));
+    }
+  };
+  const handleTypeRembChange = (newType) => {
+    set_type_remb(newType);
+    setValue('type_remb', newType);
+
+    // Update reste_a_rembourse for all clients
+    inputListRemb?.forEach((item, index) => {
+      const pourcentage = item.pourcentage || 0;
+      const reste_a_rembourse = (
+        sum_avances_moins_prix_new_bien *
+        (pourcentage / 100)
+      ).toFixed(2);
+
+      setValue(`inputList_remb.${index}.type_remb`, newType); // Always set to direct
+      setValue(`inputList_remb.${index}.reste_a_rembourse`, reste_a_rembourse);
+
+      // Clear transfer-related fields
+      setValue(`inputList_remb.${index}.dossier_id`, '');
+      setValue(`inputList_remb.${index}.montant_transferer`, '');
+      setValue(`inputList_remb.${index}.error`, '');
+      setValue(`inputList_remb.${index}.type_remb_transfere`, '');
+
+      // Clear dossier info
+      setDossierInfos((prev) => {
+        const newInfos = { ...prev };
+        delete newInfos[index];
+        return newInfos;
+      });
+    });
+  };
+  const handleModeChange = (index, newMode) => {
+    const currentValues = watch(`inputList_remb.${index}`) || {};
+
+    // Get the current item from inputListRemb to get the correct pourcentage
+    const currentItem = inputListRemb[index] || currentValues;
+
+    // Calculate the proper reste_a_rembourse based on pourcentage
+    const sum = sum_avances_moins_prix_new_bien
+      ? ((currentItem.pourcentage || 0) / 100) * sum_avances_moins_prix_new_bien
+      : 0;
+
+    // Create updated values
+    const updatedValues = {
+      ...currentValues,
+      type_remb: newMode,
+      dossier_id: '',
+      montant_transferer: '',
+      reste_a_rembourse: sum.toFixed(2),
+      date_rembourse: '',
+      mode_rembourse: '',
+      num_paiement: '',
+      pour_le_compte: '',
+      error: '',
+      type_remb_transfere:
+        newMode == 'transfert_rem_direct'
+          ? 'immediat'
+          : newMode == 'transfert_rem_apres_vente'
+          ? 'apres_vente'
+          : currentValues.type_remb_transfere || 'immediat',
+    };
+
+    // Only clear cheque_recu and fichier_autorisation when switching from transfer to direct
+    // or when switching to a mode that doesn't need these files
+    if (
+      newMode !== 'transfert_remb' &&
+      newMode !== 'transfert_rem_direct' &&
+      newMode !== 'transfert_rem_apres_vente'
+    ) {
+      updatedValues.cheque_recu = null;
+      updatedValues.fichier_autorisation = null;
+    } else if (newMode === 'direct') {
+      // When switching to direct mode, clear both files
+      updatedValues.cheque_recu = null;
+      updatedValues.fichier_autorisation = null;
+    } else {
+      // For other modes, keep existing files if they exist
+      updatedValues.cheque_recu = currentValues.cheque_recu || null;
+      updatedValues.fichier_autorisation =
+        currentValues.fichier_autorisation || null;
+    }
+
+    setValue(`inputList_remb.${index}`, updatedValues);
+
+    setDossierInfos((prev) => {
+      const newInfos = { ...prev };
+      delete newInfos[index];
+      return newInfos;
+    });
+  };
+  const handleInputChange = (index, fieldName, value) => {
+    setValue(`inputList_remb.${index}.${fieldName}`, value);
+  };
+
+  const handleFileChange_dd = (index, fieldName, event) => {
+    if (event.target.files && event.target.files[0]) {
+      setValue(`inputList_remb.${index}.${fieldName}`, event.target.files[0]);
+    }
+  };
+  /***********************Fin Remboursement********************************************* */
   function NomBienComplet(bien) {
     const noms = [];
 
@@ -81,64 +327,6 @@ export function Changement_De_Bien({
 
     return noms.join(' - ');
   }
-  // Helper functions (add these outside your component)
-  const getFileIcon = (filename) => {
-    const extension = filename.split('.').pop().toLowerCase();
-    const iconClass = 'w-5 h-5 flex-shrink-0 text-gray-400';
-
-    switch (extension) {
-      case 'pdf':
-        return (
-          <svg className={iconClass} fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fillRule="evenodd"
-              d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
-              clipRule="evenodd"
-            />
-          </svg>
-        );
-      case 'jpg':
-      case 'jpeg':
-      case 'png':
-        return (
-          <svg className={iconClass} fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fillRule="evenodd"
-              d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
-              clipRule="evenodd"
-            />
-          </svg>
-        );
-      case 'doc':
-      case 'docx':
-        return (
-          <svg className={iconClass} fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fillRule="evenodd"
-              d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
-              clipRule="evenodd"
-            />
-          </svg>
-        );
-      default:
-        return (
-          <svg className={iconClass} fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fillRule="evenodd"
-              d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
-              clipRule="evenodd"
-            />
-          </svg>
-        );
-    }
-  };
-
-  const formatFileSize = (bytes) => {
-    if (!bytes) return 'N/A';
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / 1048576).toFixed(1)} MB`;
-  };
 
   // Fetch biens by projet
   const fetch_bien_ByProjet = async (bien_new) => {
@@ -179,8 +367,12 @@ export function Changement_De_Bien({
       const newId = v.id;
       set_new_bien_id(newId);
       setValue('new_bien_id', newId);
+      setValue('sr', '');
+      setValue('mode_paiement', '');
+      setValue('numero_paiement', '');
+      setValue('banque_id', '');
+      setValue('echeance', '');
       show_bien(newId);
-
       // Store in proposition - first time old_id is 0, subsequent times it's the previous new_bien_id
       storebien_en_proposition(newId, old_bien_id);
       set_old_bien_id(newId); // Update old_id for next change
@@ -199,9 +391,33 @@ export function Changement_De_Bien({
       const avance_minimale = bien.avance_minimale;
       const prix_bien = bien.prix; // Get the price of the new bien
       console.log('Prix du nouveau bien:', prix_bien); // Debug log
-
+      //remboursement
+      set_type_remb(null);
+      setValue('type_remb', null);
       setValue('new_avance', avance_minimale);
       setValue('prix_nouveau_bien', prix_bien); // Store the new bien's priceF
+
+      const diff = watch('sum_avances_valides') - prix_bien;
+      set_sum_avances_moins_prix_new_bien(diff);
+
+      // If there's a difference, update all clients
+     if (diff > 0) {
+      inputListRemb?.forEach((item, index) => {
+        const pourcentage = item.pourcentage || 0;
+        const reste_a_rembourse = (diff * (pourcentage / 100)).toFixed(2);
+        setValue(
+          `inputList_remb.${index}.reste_a_rembourse`,
+          reste_a_rembourse
+        );
+      });
+      
+     /* if (isEditing) {
+        // Reset all inputs to their initial state for each client
+        inputListRemb?.forEach((item, index) => {
+          handleModeChange(index, 'direct');
+        });
+      }*/
+    }
       // Calculate amount to add
       const amountToAdd =
         sum_avances_valides > avance_minimale
@@ -366,7 +582,7 @@ export function Changement_De_Bien({
 
       <div className="border-t border-gray-200 py-4 mt-4">
         <h3 className="text-md font-medium text-indigo-600 mb-4">
-          Biens disponible
+          Biens disponibles
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -386,7 +602,7 @@ export function Changement_De_Bien({
 
                     // Add the same label text logic
                     const labelText =
-                      bien.propriete_dite_bien +
+                      bien.id +
                       (bien.etat === 'ENCOURS_DE_PROPOSITION'
                         ? bien?.is_proposed != null
                           ? user.id != bien?.is_proposed?.user_id
@@ -424,145 +640,282 @@ export function Changement_De_Bien({
             placeholder="Sélectionnez un nouveau bien"
             loading={loading_bien}
           />
-          {/* Show additional fields when a new bien is selected */}
-          {new_bien_id != 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <TextField
-                label="Nouvelle Avance:"
-                name="new_avance"
-                control={control}
-                errors={errors}
-                backendErrors={{}}
-                disabled
-              />
-
-              <TextField
-                label="Montant à Ajouter:"
-                name="montant_a_ajouter"
-                control={control}
-                errors={errors}
-                backendErrors={{}}
-                type="number"
-                value={montant_a_ajouter}
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value) || 0;
-                  set_montant_a_ajouter(value);
-                  setValue('montant_a_ajouter', value);
-                }}
-                required
-              />
-
-              {/* Add validation error message */}
-              {montant_a_ajouter > (watch('prix_nouveau_bien') || 0) && (
-                <p className="text-red-500 text-sm mt-1">
-                  Le montant à ajouter ne peut pas dépasser le prix du nouveau
-                  bien ({watch('prix_nouveau_bien')} DH)
-                </p>
-              )}
+          {/* Show additional fields when a new bien is selected           <p>s_aan{ watch('sum_avances_valides')} prix{ watch('prix_nouveau_bien')}  w id {new_bien_id}</p>
+           */}
+           
+          {loading_bien_id ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
             </div>
-          )}
-        </div>
-
-        {/* Payment section when amount to add > 0 */}
-        {montant_a_ajouter > 0 && (
-          <>
-            <div className="border-t border-gray-300 my-6"></div>
-
-            <h4 className="text-md font-medium text-gray-800 mb-4">
-              Modalité de Paiement
-            </h4>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="sr-checkbox"
-                  checked={watch('sr') == 1} // This checks if sr equals 1
-                  className="h-4 w-4 text-indigo-600 rounded"
-                  onChange={(e) => setValue('sr', e.target.checked ? 1 : 0)} // Sets to 1 when checked, 0 when unchecked
-                />
-                <label
-                  htmlFor="sr-checkbox"
-                  className="ml-2 text-sm text-gray-700"
-                >
-                  SR
-                </label>
-              </div>
-              <SelectInput
-                label="Mode de Paiement"
-                name="mode_paiement"
-                value={watch('mode_paiement')}
-                required={true}
-                options={
-                  // Handle both array and object formats for MODE_PAIEMENT
-                  !MODE_PAIEMENT
-                    ? []
-                    : Array.isArray(MODE_PAIEMENT)
-                    ? MODE_PAIEMENT
-                    : typeof MODE_PAIEMENT === 'object'
-                    ? Object.entries(MODE_PAIEMENT).map(([key, value]) => ({
-                        value: key,
-                        label:
-                          typeof value === 'object'
-                            ? value.label || value.name || String(value)
-                            : String(value),
-                      }))
-                    : []
-                }
-                onChange={(value) => {
-                  setValue('mode_paiement', value);
-                }}
-                error={errors.mode_paiement_pen?.message}
-                placeholder="Sélectionnez un mode de paiement"
-              />
-            
-              {watch('mode_paiement') && watch('mode_paiement') !=1 && (
+          ) : (
+            <>
+              {new_bien_id != 0 && (
                 <>
-                  <TextField
-                    label="N° Paiement"
-                    name="numero_paiement"
-                    value={watch('numero_paiement')}
-                    required={watch('mode_paiement') != '1'}
-                    control={control}
-                    errors={errors}
-                    backendErrors={{}}
-                  />
-
-                  <Autocomplete
-                    label="Banque:"
-                    name="banque_id"
-                    required={watch('mode_paiement') != '1'}
-                    options={banques}
-                    value={watch('banque_id')}
-                    control={control}
-                    errors={{}}
-                    backendErrors={{}}
-                    onChange={(e) => {
-                      setValue('banque_id', e.id);
-                    }}
-                    choix="nom"
-                  />
-
-                  {watch('mode_paiement') &&
-                    ![1, 5, 6].includes(watch('mode_paiement')) && (
+                  {watch('sum_avances_valides') < watch('prix_nouveau_bien') ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                       <TextField
-                        label="Échéance"
-                        name="echeance"
-                        value={watch('echeance')}
+                        label="Avance Minimale:"
+                        name="new_avance"
                         control={control}
-                        required={
-                          watch('mode_paiement') != 1 &&
-                          watch('mode_paiement') != 6 &&
-                          watch('mode_paiement') != 5
-                        }
                         errors={errors}
                         backendErrors={{}}
-                        type="date"
+                        disabled
                       />
-                    )}
+                      <TextField
+                        label="Montant à Ajouter:"
+                        name="montant_a_ajouter"
+                        control={control}
+                        errors={errors}
+                        backendErrors={{}}
+                        type="number"
+                        value={montant_a_ajouter}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value) || 0;
+                          set_montant_a_ajouter(value);
+                          setValue('montant_a_ajouter', value);
+                        }}
+                        //required
+                      />
+
+                      {/* Add validation error message */}
+                      {montant_a_ajouter >
+                        (watch('prix_nouveau_bien') || 0) && (
+                        <p className="text-red-500 text-sm mt-1">
+                          Le montant à ajouter ne peut pas dépasser le prix du
+                          nouveau bien ({watch('prix_nouveau_bien')} DH)
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <>
+                      {sum_avances_moins_prix_new_bien > 0 && (
+                        <div className="flex flex-col mt-3">
+                          {/* Price display card */}
+                          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-100 mb-4">
+                            <div className="flex items-center">
+                              <div className="bg-blue-100 p-2 rounded-full mr-3">
+                                <svg
+                                  className="w-5 h-5 text-blue-600"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                  />
+                                </svg>
+                              </div>
+                              <div>
+                                <p className="text-sm text-gray-600">
+                                  Prix du nouveau bien
+                                </p>
+                                <p className="text-xl font-bold text-gray-800">
+                                  {watch('prix_nouveau_bien')?.toLocaleString(
+                                    'fr-FR'
+                                  )}{' '}
+                                  DH
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Remboursement type selection */}
+                          <div className="p-4 bg-gray-50 rounded-lg">
+                            <p className="text-gray-700 font-medium mb-3">
+                              Choisissez le type de remboursement:
+                            </p>
+                            <Controller
+                              name="type_remb"
+                              control={control}
+                              render={({ field }) => (
+                                <div className="space-y-3">
+                                  <label className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors">
+                                    <input
+                                      type="radio"
+                                      {...field}
+                                      value="direct"
+                                      checked={field.value == 'direct'}
+                                      className="h-4 w-4 text-blue-600"
+                                      onChange={() =>
+                                        handleTypeRembChange('direct')
+                                      }
+                                    />
+                                    <div className="ml-3">
+                                      <span className="text-gray-800 font-medium">
+                                        Remboursement immédiat
+                                      </span>
+                                      <p className="text-sm text-gray-600 mt-1">
+                                        Le remboursement sera effectué
+                                        directement
+                                      </p>
+                                    </div>
+                                  </label>
+
+                                  <label className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-purple-50 cursor-pointer transition-colors">
+                                    <input
+                                      type="radio"
+                                      {...field}
+                                      value="apres_vente"
+                                      checked={field.value == 'apres_vente'}
+                                      className="h-4 w-4 text-purple-600"
+                                      onChange={() =>
+                                        handleTypeRembChange('apres_vente')
+                                      }
+                                    />
+                                    <div className="ml-3">
+                                      <span className="text-gray-800 font-medium">
+                                        Remboursement après vente
+                                      </span>
+                                      <p className="text-sm text-gray-600 mt-1">
+                                        Le remboursement sera effectué après la
+                                        vente
+                                      </p>
+                                    </div>
+                                  </label>
+
+                                  {errors.type_remb && (
+                                    <p className="text-red-600 text-sm mt-2">
+                                      {errors.type_remb.message}
+                                    </p>
+                                  )}
+                                </div>
+                              )}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </>
               )}
-            </div>
+            </>
+          )}
+        </div>
+        {!loading_bien_id && (
+          <>
+            {type_remb == 'direct' && inputListRemb?.length > 0 && (
+              <RemboursementSection_Change_bien
+                inputListRemb={inputListRemb}
+                dossiers={dossiers}
+                loading_dos={loading_dos}
+                dossierInfos={dossierInfos}
+                loadingInfos={loadingInfos}
+                get_info_dossier_id={get_info_dossier_id}
+                NomBienComplet={NomBienComplet}
+                handleModeChange={handleModeChange}
+                handleInputChange={handleInputChange}
+                handleFileChange_dd={handleFileChange_dd}
+                sum_avances_moins_prix_new_bien={
+                  sum_avances_moins_prix_new_bien
+                }
+              />
+            )}
+
+            {/* Payment section when amount to add > 0 */}
+            {montant_a_ajouter > 0 && (
+              <>
+                <div className="border-t border-gray-300 my-6"></div>
+
+                <h4 className="text-md font-medium text-gray-800 mb-4">
+                  Modalité de Paiement
+                </h4>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="sr-checkbox"
+                      checked={watch('sr') == 1} // This checks if sr equals 1
+                      className="h-4 w-4 text-indigo-600 rounded"
+                      onChange={(e) => setValue('sr', e.target.checked ? 1 : 0)} // Sets to 1 when checked, 0 when unchecked
+                    />
+                    <label
+                      htmlFor="sr-checkbox"
+                      className="ml-2 text-sm text-gray-700"
+                    >
+                      SR
+                    </label>
+                  </div>
+                  <SelectInput
+                    label="Mode de Paiement"
+                    name="mode_paiement"
+                    value={watch('mode_paiement')}
+                    required={true}
+                    options={
+                      // Handle both array and object formats for MODE_PAIEMENT
+                      !MODE_PAIEMENT
+                        ? []
+                        : Array.isArray(MODE_PAIEMENT)
+                        ? MODE_PAIEMENT
+                        : typeof MODE_PAIEMENT === 'object'
+                        ? Object.entries(MODE_PAIEMENT).map(([key, value]) => ({
+                            value: key,
+                            label:
+                              typeof value === 'object'
+                                ? value.label || value.name || String(value)
+                                : String(value),
+                          }))
+                        : []
+                    }
+                    onChange={(value) => {
+                      setValue('mode_paiement', value);
+                    }}
+                    error={errors.mode_paiement_pen?.message}
+                    placeholder="Sélectionnez un mode de paiement"
+                  />
+
+                  {watch('mode_paiement') && watch('mode_paiement') != 1 && (
+                    <>
+                      <TextField
+                        label="N° Paiement"
+                        name="numero_paiement"
+                        value={watch('numero_paiement')}
+                        required={watch('mode_paiement') != '1'}
+                        control={control}
+                        errors={errors}
+                        backendErrors={{}}
+                      />
+
+                      <Autocomplete
+                        label="Banque:"
+                        name="banque_id"
+                        required={watch('mode_paiement') != '1'}
+                        options={banques}
+                        value={watch('banque_id')}
+                        control={control}
+                        errors={{}}
+                        backendErrors={{}}
+                        onChange={(e) => {
+                          setValue('banque_id', e.id);
+                        }}
+                        choix="nom"
+                      />
+
+                      {watch('mode_paiement') &&
+                        !['1', '5', '6'].includes(watch('mode_paiement')) && (
+                          <TextField
+                            label="Échéance"
+                            name="echeance"
+                            value={watch('echeance')}
+                            control={control}
+                            required={
+                              watch('mode_paiement') != 1 &&
+                              watch('mode_paiement') != 6 &&
+                              watch('mode_paiement') != 5
+                            }
+                            errors={errors}
+                            backendErrors={{}}
+                            type="date"
+                          />
+                        )}
+                    </>
+                  )}
+                </div>
+              </>
+            )}
           </>
         )}
       </div>

@@ -7,7 +7,7 @@ export default function Modal_show_info({ onClose, text, statut_dst, dst_id }) {
 
   // Delete user handler
   const handle_dossier_desiste_rejete = () => {
-    router.push(`/desistements/corriger_desistement/${dst_id}`);
+    router.push(`/ventes/desistements/corriger_desistement/${dst_id}`);
   };
 
   return (

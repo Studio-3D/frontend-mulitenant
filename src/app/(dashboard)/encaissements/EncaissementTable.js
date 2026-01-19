@@ -185,7 +185,7 @@ const EncaissementTable = ({ dataClient_id, bien_id }) => {
       label: 'Code Réservation',
       render: (row) => (
         <Link target="_blank" href={'/reservations/show/' + row.reservation_id}>
-          <strong>{row.reservations.code_reservation}</strong>
+          <strong style={{ fontWeight: 600 }}>{row.reservations.code_reservation}</strong>
         </Link>
       ),
     },
@@ -224,7 +224,7 @@ const EncaissementTable = ({ dataClient_id, bien_id }) => {
                           row.reservations.aquereurs[key].client.id
                         }
                       >
-                        <strong>
+                        <strong style={{ fontWeight: 600 }}>
                           {row.reservations.aquereurs[key].client.nom}{' '}
                           {row.reservations.aquereurs[key].client.prenom}
                         </strong>
@@ -242,7 +242,7 @@ const EncaissementTable = ({ dataClient_id, bien_id }) => {
                             row.reservations.aquereurs_ancien[key].client.id
                           }
                         >
-                          <strong>
+                          <strong style={{ fontWeight: 600 }}>
                             {row.reservations.aquereurs_ancien[key].client.nom}{' '}
                             {
                               row.reservations.aquereurs_ancien[key].client

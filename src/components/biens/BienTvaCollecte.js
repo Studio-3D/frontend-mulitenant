@@ -206,7 +206,7 @@ export default function BienTvaCollecte({ bienId, bien }) {
                       textDecoration: 'none',
                     }}
                   >
-                    <strong>
+                   <strong style={{ fontWeight: 600 }}>
                       {aquereur.client.nom} {aquereur.client.prenom}
                     </strong>
                   </Link>

@@ -13,7 +13,6 @@ import {
   Plus,
   Eye,
 } from 'lucide-react';
-import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
 import Table from '@/components/Table';
 import { APIURL, RESOURCE_URL } from '../../../configs/api';
 import {
@@ -839,7 +838,7 @@ export const AvancesTab = ({
                 <Eye className="w-5 h-5" />
               </button>
             )}
-            {row.sr !== 'SR' && (
+            {row.sr !== 'SR' && reservationData.reservation?.etat == 1 && (
               <button
                 className="p-1 text-blue-500 hover:text-blue-700"
                 onClick={() => PrintRecu(row.id)}
@@ -1099,24 +1098,35 @@ export const AvancesTab = ({
     <div className="space-y-6">
       {/* Summary Cards */}
       <div className="bg-cyan-50 rounded-lg p-4 mb-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <p className="text-sm text-gray-500">Total versé</p>
-            <p className="text-2xl font-bold">
-              {sum_avances.toLocaleString() + ' DH'}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Reste à payer</p>
-            <p className="text-2xl font-bold">
-              {reste_first.toLocaleString()} DH
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Pourcentage versé</p>
-            <p className="text-2xl font-bold">
-              {data.length > 0 && Math.round((sum_avances / prix) * 100) + '%'}
-            </p>
+        {/* Single Row Summary */}
+        <div className="bg-cyan-50 rounded-lg p-4 mb-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-sm text-gray-500">Total versé</p>
+              <p className="text-2xl font-bold">
+                {sum_avances === 0?'-':sum_avances.toLocaleString()} DH
+              </p>
+            </div>
+
+            <div>
+              <p className="text-sm text-gray-500">Reste à payer</p>
+              <p className="text-2xl font-bold">
+                {loading.table ? '-' : reste_first.toLocaleString()} DH
+              </p>
+            </div>
+
+            <div>
+              <p className="text-sm text-gray-500">Pourcentage versé</p>
+              <p className="text-2xl font-bold">
+                {loading.table ||
+                data.length == 0 ||
+                !prix ||
+                prix <= 0 ||
+                sum_avances == 0
+                  ? '-'
+                  : `${Math.round((sum_avances / prix) * 100)}%`}
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -1267,8 +1277,7 @@ export const AvancesTab = ({
                           target: { name: 'mode_paiement', value },
                         });
                       }}
-                       error={formErrors.mode_paiement} // Change this line
-
+                      error={formErrors.mode_paiement} // Change this line
                     />
 
                     {formErrors.mode_paiement && (
