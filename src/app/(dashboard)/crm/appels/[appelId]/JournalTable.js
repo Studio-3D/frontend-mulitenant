@@ -320,76 +320,83 @@ const JournalTable = ({ id, prospect, client = null }) => {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <Link
+          {(isSuperAdmin(user.role) ||
+              isAdmin(user.role) ||
+              isCommercial(user.role)) && (
+                <>
+                <Link
             href={`${ENDPOINTS.APPELS}?id=${row.id}&action=edit`}
             className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
             title="Modifier"
           >
             <PencilLine className="w-4 h-4" />
-          </Link>
+               </Link>
 
-          {VISITE_INTERETS[row.interet]?.label != 'Injoignable' && (
-            <div title="Voir détails">
-              <Eye
-                className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
-                title="Voir détails"
-                onClick={() =>
-                  handleShow(
-                    row.date,
-                    row.interet,
-                    row.type_appel,
-                    row.nomcc,
-                    row.tranche_nom,
-                    row.bloc_nom,
-                    row.immeuble_nom,
-                    row.type_biens,
-                    row.orientation,
-                    row.etage,
-                    row.rdv?.rdv,
-                    row.relance?.date_relance,
-                    row.relance?.mode_relance,
-                    row.frein,
-                    row.commentaire,
-                    row.commentaire_rel,
-                    row.commentaire_rdv
-                  )
-                }
-              />
-            </div>
-          )}
-          {row.relance != null &&
-            row.relance.type_traitement == 0 &&
-            row.relance.deleted_at == null &&
-            row.user?.user_id_origin == user.id && (
-              <div title="Traiter Relance">
-                <CheckCircle
-                  className="w-4 h-4 !text-green-500 hover:text-green-700 cursor-pointer"
-                  title="Traiter Relance"
-                  onClick={() => handleValider(row.relance?.id, 'Relance')}
-                />
-              </div>
-            )}
-          {row.rdv != null &&
-            row.rdv.type_traitement == 0 &&
-            row.rdv.deleted_at == null &&
-            row.user?.user_id_origin == user.id && (
-              <div title="Traiter Rendez Vous">
-                <CalendarClock
-                  className="w-4 h-4 text-orange-500 hover:text-orange-700 cursor-pointer"
-                  onClick={() => handleValider(row.rdv?.id, 'RDV')}
-                />
-              </div>
-            )}
+                {VISITE_INTERETS[row.interet]?.label != 'Injoignable' && (
+                  <div title="Voir détails">
+                    <Eye
+                      className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
+                      title="Voir détails"
+                      onClick={() =>
+                        handleShow(
+                          row.date,
+                          row.interet,
+                          row.type_appel,
+                          row.nomcc,
+                          row.tranche_nom,
+                          row.bloc_nom,
+                          row.immeuble_nom,
+                          row.type_biens,
+                          row.orientation,
+                          row.etage,
+                          row.rdv?.rdv,
+                          row.relance?.date_relance,
+                          row.relance?.mode_relance,
+                          row.frein,
+                          row.commentaire,
+                          row.commentaire_rel,
+                          row.commentaire_rdv
+                        )
+                      }
+                    />
+                  </div>
+                )}
+                {row.relance != null &&
+                  row.relance.type_traitement == 0 &&
+                  row.relance.deleted_at == null &&
+                  row.user?.user_id_origin == user.id && (
+                    <div title="Traiter Relance">
+                      <CheckCircle
+                        className="w-4 h-4 !text-green-500 hover:text-green-700 cursor-pointer"
+                        title="Traiter Relance"
+                        onClick={() => handleValider(row.relance?.id, 'Relance')}
+                      />
+                    </div>
+                  )}
+                {row.rdv != null &&
+                  row.rdv.type_traitement == 0 &&
+                  row.rdv.deleted_at == null &&
+                  row.user?.user_id_origin == user.id && (
+                    <div title="Traiter Rendez Vous">
+                      <CalendarClock
+                        className="w-4 h-4 text-orange-500 hover:text-orange-700 cursor-pointer"
+                        onClick={() => handleValider(row.rdv?.id, 'RDV')}
+                      />
+                    </div>
+                  )}
 
-          <div title="Supprimer appel">
-            <Trash2
-              className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
-              onClick={() => {
-                setSelectedId(row.id);
-                setShowDeleteModal(true);
-              }}
-            />
-          </div>
+                <div title="Supprimer appel">
+                  <Trash2
+                    className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
+                    onClick={() => {
+                      setSelectedId(row.id);
+                      setShowDeleteModal(true);
+                    }}
+                  />
+                </div>
+                </>
+              )}
+          
         </div>
       ),
     },

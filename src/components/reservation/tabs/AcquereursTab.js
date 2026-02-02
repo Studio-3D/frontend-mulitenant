@@ -4,8 +4,10 @@ import { useRouter } from 'next/navigation';
 import Table from '@/components/Table';
 import { Eye, Pencil, Edit, PencilLine } from 'lucide-react';
 import Link from 'next/link';
+import { isAdmin, isCommercial, isSuperAdmin } from '@/configs/enum';
 
 const AcquereursTabComponent = ({
+  statut,
   etat,
   contrat_vente,
   aquereurs,
@@ -104,19 +106,33 @@ const AcquereursTabComponent = ({
     [etat, user_role]
   );
 
+  
   const customActions = useMemo(() => {
-    const actions = [];
-    if (etat == 1 && contrat_vente == null) {
-      actions.push({
-        label: 'Modifier aquéreurs',
-        icon: <Edit className="w-5 h-5" />,
-        className: 'bg-green-600 hover:bg-green-700',
-        onClick: handleEdit_pourcentage,
-      });
-    }
-    return actions;
-  }, [etat, contrat_vente, handleEdit_pourcentage]);
+  const actions = [];
+  
+  // Check if user can see the "Modifier aquéreurs" action
+  const canEditAcquereurs = 
+    // For Admin/SuperAdmin: etat == 1 && contrat_vente == null
+    ((isSuperAdmin(user_role) || isAdmin(user_role)) &&
+      etat == 1 &&
+      contrat_vente == null) ||
+    // For Commercial: statut == 0 AND etat == 1 && contrat_vente == null
+    (isCommercial(user_role) &&
+      statut == 0 &&
+      etat == 1 &&
+      contrat_vente == null);
 
+  if (canEditAcquereurs) {
+    actions.push({
+      label: 'Modifier aquéreurs',
+      icon: <Edit className="w-5 h-5" />,
+      className: 'bg-green-600 hover:bg-green-700',
+      onClick: handleEdit_pourcentage,
+    });
+  }
+  
+  return actions;
+}, [etat, contrat_vente, handleEdit_pourcentage, user_role,statut]);
   return (
     <div className="space-y-6">
       <Table

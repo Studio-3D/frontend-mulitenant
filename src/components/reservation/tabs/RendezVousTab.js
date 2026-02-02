@@ -9,36 +9,41 @@ import {
   ClockIcon,
   PrinterIcon,
   XCircle,
+  BellRingIcon, // For relance icon
+  CheckIcon, // For "oui" icon
+  XIcon,
+  PencilIcon,
+  AlertTriangle,
+  ArrowLeft,
+  X,
+  AlertCircle,
+  HistoryIcon, // For "non" icon
 } from 'lucide-react';
 import axios from 'axios';
-//import Swal from 'sweetalert2';
 import format from 'date-fns/format';
+import isToday from 'date-fns/isToday';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import ReceiptDocument from '../../../app/(dashboard)/ventes/reservations/rdv/recu_rdv';
 import toast from 'react-hot-toast';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
-import { RESOURCE_URL } from '@/configs/api';
+import { APIURL, RESOURCE_URL } from '@/configs/api';
 import AddRdvModal from './AddRdvModal';
 import Pusher from 'pusher-js';
 
 const StatusBadge = ({ status }) => {
   const statusConfig = {
-    Validé: {
+    Traite: {
       icon: <CheckCircleIcon className="h-4 w-4 mr-1" />,
       bgColor: 'bg-green-100 text-green-800',
-    },
-    Refusé: {
-      icon: <XCircleIcon className="h-4 w-4 mr-1" />,
-      bgColor: 'bg-red-100 text-red-800',
     },
     En_Attente: {
       icon: <ClockIcon className="h-4 w-4 mr-1" />,
       bgColor: 'bg-blue-100 text-blue-800',
     },
-    Raté: {
+    'Non_traite': {
       icon: <XCircleIcon className="h-4 w-4 mr-1" />,
-      bgColor: 'bg-gray-100 text-gray-800',
+      bgColor: 'bg-orange-100 text-orange-800',
     },
   };
 
@@ -55,7 +60,7 @@ const StatusBadge = ({ status }) => {
 };
 
 export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
-  //onRdvChange   ===> to call res show to modify count avances in tabs avances atab
+const [isAddingRelance, setIsAddingRelance] = useState(false);
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const accessToken = localStorage.getItem('accessToken');
   const reservationId = reservationData?.reservation?.id;
@@ -65,23 +70,20 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
 
   // State variables
   const [rdvs, setRdvs] = useState([]);
-  // const [historiques, setHistoriques] = useState([]);
   const [newRdv, setNewRdv] = useState('');
   const [type, setType] = useState('');
   const [rdvId, setRdvId] = useState('');
   const [rdvEdit, setRdvEdit] = useState('');
   const [typeEdit, setTypeEdit] = useState('');
   const [commentaire, setCommentaire] = useState('');
-  // const [clients, setClients] = useState([]);
   const [errors, setErrors] = useState(null);
   const etatRes = reservationData?.reservation?.etat;
   const contratVente = reservationData?.reservation?.contrat_vente;
   const [isLoading, setIsLoading] = useState(true);
   const [listStatut, setListStatut] = useState([
-    { title: 'En_Attente', value: 0 },
-    { title: 'Validé', value: 1 },
-    { title: 'Refusé', value: 2 },
-    { title: 'Raté', value: 3 },
+    { title: 'En_Attente', value: 1 },
+    { title: 'Traite', value: 2 },
+    { title: 'Non_traite', value: 3 }, // Changed from 'Raté' to 'Non_traite'
   ]);
 
   // Dialog states
@@ -89,11 +91,13 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
   const [openEditRdv, setOpenEditRdv] = useState(false);
   const [openValidation, setOpenValidation] = useState(false);
   const [openRejet, setOpenRejet] = useState(false);
-  //const [openHisto, setOpenHisto] = useState(false);
   const [openInfo, setOpenInfo] = useState(false);
+  const [openTraiterRdv, setOpenTraiterRdv] = useState(false);
   const [txtInfo, setTxtInfo] = useState('');
   const [confirmRejet, setConfirmRejet] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
+  const [traiterAction, setTraiterAction] = useState(null); // 'oui' or 'non'
+  const [relanceComment, setRelanceComment] = useState('');
 
   const types = [
     { title: 'Attestation de vente', value: 1 },
@@ -117,19 +121,9 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
 
         const { data } = response;
         setRdvs(data.rdv);
-        // setHistoriques(data.historiques.data);
-        // Notify res show  parent of changes
         if (onRdvChange) {
           onRdvChange(data.rdv.length);
         }
-        /* const clientsList =
-          data.last_rdv[0]?.reservation?.aquereurs?.map((aquereur) => ({
-            cin: aquereur.client.cin,
-            name: aquereur.client.nom,
-            prenom: aquereur.client.prenom,
-          })) || [];
-
-        setClients(clientsList);*/
         setIsLoading(false);
       }
     } catch (error) {
@@ -141,7 +135,7 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
   useEffect(() => {
     fetchData();
 
-    // Initialize Pusher with the correct connection
+    // Initialize Pusher
     const initializePusher = () => {
       if (!pusher_key_rdv_list || !reservationId) {
         console.log('Pusher key or reservation ID missing');
@@ -154,17 +148,15 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
         reservationId
       );
 
-      // Use the correct Pusher configuration that matches your backend
       const pusher = new Pusher(pusher_key_rdv_list, {
         cluster: 'eu',
         encrypted: true,
         forceTLS: true,
-        wsHost: 'ws-eu.pusher.com', // Add explicit WebSocket host
+        wsHost: 'ws-eu.pusher.com',
         wssPort: 443,
-        enabledTransports: ['ws', 'wss'], // Force WebSocket transport
+        enabledTransports: ['ws', 'wss'],
       });
 
-      // Create the EXACT channel name that matches your Laravel event
       const channelName = `rdv-list-updates-${reservationId}`;
       console.log('Subscribing to channel:', channelName);
 
@@ -172,28 +164,16 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
         const channel = pusher.subscribe(channelName);
 
         channel.bind('RdvEvent', (data) => {
-          // Always refresh when we receive an event for this channel
           console.log('Refreshing rdv data via Pusher');
           fetchData();
         });
 
-        // Handle connection events
         channel.bind('pusher:subscription_succeeded', () => {
           console.log('✅ Successfully subscribed to channel:', channelName);
         });
 
         channel.bind('pusher:subscription_error', (status) => {
           console.error('❌ Pusher subscription error:', status);
-        });
-
-        // Also listen for connection state changes
-        pusher.connection.bind('state_change', (states) => {
-          console.log(
-            'Pusher connection state changed:',
-            states.previous,
-            '->',
-            states.current
-          );
         });
 
         pusher.connection.bind('connected', () => {
@@ -207,7 +187,6 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
         console.error('Error subscribing to Pusher channel:', error);
       }
 
-      // Return cleanup function
       return () => {
         console.log('Cleaning up Pusher subscription for:', channelName);
         if (pusher) {
@@ -222,7 +201,6 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
   }, [reservationId, pusher_key_rdv_list]);
 
   const handleRdvAdded = (newRdv) => {
-    // Rafraîchir la liste des rendez-vous
     fetchData();
     toast.success('Rendez-vous ajouté avec succès');
   };
@@ -232,46 +210,74 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
     return statut ? statut.title : '';
   };
 
-  // CRUD operations with toast notifications
-  const handleAddRdv = (e) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append('rdv', newRdv);
-    formData.append('type', type);
-    formData.append('statut', user.role == 3 ? 0 : 1);
 
-    axios
-      .post(`${apiUrl}/store_rdv_reservation/${reservationId}`, formData, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      })
-      .then(() => {
-        fetchData();
-        toast.success(
-          <>
-            {user.role == 3
-              ? 'Rendez-vous enregistré (en attente de validation)'
-              : 'Rendez-vous enregistré'}
-          </>
-        );
-        setOpenAddRdv(false);
-        setNewRdv('');
-        setType('');
-      })
-      .catch((err) => {
-        const response = err.response;
-        if (response && response.status == 422) {
-          setErrors(response.data.errors);
-          toast.error('Erreur de validation');
-        }
-      });
-  };
+// Ajouter cet état avec les autres états
+const [openRelance, setOpenRelance] = useState(false);
+const [prochaineRelanceDate, setProchaineRelanceDate] = useState('');
+const [relanceError, setRelanceError] = useState('');
+
+// Fonction pour gérer l'ajout de la prochaine relance
+const handleAddProchaineRelance = async () => {
+  if (!prochaineRelanceDate) {
+    setRelanceError('Veuillez sélectionner une date');
+    return;
+  }
+
+  const selectedDate = new Date(prochaineRelanceDate);
+  const now = new Date();
+
+  if (selectedDate <= now) {
+    setRelanceError('La date de relance doit être supérieure à maintenant');
+    return;
+  }
+
+  try {
+    setIsAddingRelance(true); // Activer le chargement
+    // OPTION 2: Utiliser application/json
+    const data = {
+      prochaine_relance: prochaineRelanceDate
+    };
+
+    console.log('Sending data:', data);
+
+    const response = await axios.put(
+      `${APIURL.ROOTV1}/add_prochaine_relance/${rdvId}`,
+      data,
+      {
+        headers: { 
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+      }
+    );
+
+    if (response.status === 200) {
+      console.log('Response data:', response.data);
+      toast.success('Prochaine relance programmée avec succès');
+      setOpenRelance(false);
+      setProchaineRelanceDate('');
+      setRelanceError('');
+      fetchData();
+    }
+  }  catch (error) {
+    console.error('Error adding prochaine relance:', error);
+    if (error.response) {
+      console.error('Server response:', error.response.data);
+      toast.error(`Erreur: ${error.response.data.error || 'Erreur inconnue'}`);
+    } else {
+      toast.error('Erreur lors de la programmation de la relance');
+    }
+  } finally {
+    setIsAddingRelance(false); // Désactiver le chargement dans tous les cas
+  }
+};
 
   const handleEditRdv = (e) => {
     e.preventDefault();
     const formData = new FormData();
     formData.append('rdv', rdvEdit);
     formData.append('type', typeEdit);
-    formData.append('statut', user.role <= 2 ? 1 : 0);
+    formData.append('statut', 1);
 
     axios
       .put(`${apiUrl}/update_rdv_reservation/${rdvId}`, formData, {
@@ -297,7 +303,7 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
       });
   };
 
-  const handleValiderRdv = (e) => {
+  /* const handleValiderRdv = (e) => {
     e.preventDefault();
     const formData = new FormData();
     formData.append('statut', 1);
@@ -349,6 +355,37 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
         console.error('Error rejecting appointment:', err);
         toast.error('Erreur lors du rejet');
       });
+  }; */
+
+  const handleTraiterRdv = (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append('statut', traiterAction === 'oui' ? 2 : 3); // 2 for Validé, 3 for Non_traite
+    if (traiterAction === 'non' && relanceComment) {
+      formData.append('commentaire', relanceComment);
+    }
+
+    axios({
+      method: 'put',
+      url: `${apiUrl}/traiter_rdv_reservation/${rdvId}`,
+      data: formData,
+      headers: {
+        'content-type': 'application/json',
+        Accept: 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+      .then(() => {
+        fetchData();
+        toast.success(`Rendez-vous ${traiterAction === 'oui' ? 'validé' : 'marqué comme non traité'}`);
+        setOpenTraiterRdv(false);
+        setTraiterAction(null);
+        setRelanceComment('');
+      })
+      .catch((err) => {
+        console.error('Error treating appointment:', err);
+        toast.error('Erreur lors du traitement');
+      });
   };
 
   const handleDeleteRdv = (id, date) => {
@@ -356,6 +393,35 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
     setSelectedDate(format(new Date(date), 'dd/MM/yyyy HH:mm'));
     setShowDeleteModal(true);
   };
+  // Ajouter cet état avec les autres états
+const [openHistoryModal, setOpenHistoryModal] = useState(false);
+const [relancesHistory, setRelancesHistory] = useState([]);
+const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+
+// Fonction pour charger l'historique
+const loadRelancesHistory = async (rdvId) => {
+  try {
+    setIsLoadingHistory(true);
+    const response = await axios.get(
+      `${APIURL.ROOTV1}/get_relances_history/${rdvId}`,
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }
+    );
+    
+    if (response.status === 200) {
+      setRelancesHistory(response.data.relances_history || []);
+      setOpenHistoryModal(true);
+    }
+  } catch (error) {
+    console.error('Error loading relances history:', error);
+    toast.error('Erreur lors du chargement de l\'historique');
+  } finally {
+    setIsLoadingHistory(false);
+  }
+};
+
+
 
   // Render
   if (isLoading) {
@@ -369,7 +435,6 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
   return (
     <div className="space-y-6 p-4 min-h-[50vh]">
       {/* Header section */}
-
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-gray-800 flex items-center">
           <CalendarIcon className="h-5 w-5 mr-2 text-blue-500" />
@@ -386,6 +451,7 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
           </button>
         )}
       </div>
+      
       {etatRes != 1 && (
         <div className="bg-red-50 border-l-4 border-red-500 p-4">
           <div className="flex">
@@ -394,42 +460,60 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
             </div>
             <div className="ml-3">
               <p className="text-sm text-red-500">
-                Le dossier est désisté. Vous ne pouvez pas ajouter un Rendez
-                Vous.
+                Le dossier est désisté. Vous ne pouvez pas ajouter un Rendez Vous.
               </p>
             </div>
           </div>
         </div>
       )}
+      
       {/* Appointments grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {rdvs.map((rdv) => {
+          const isTodayAppointment = isToday(new Date(rdv.rdv));
           const isPastAppointment = new Date(rdv.rdv) <= new Date();
+          
           return (
             <div
               key={rdv.id}
-              className={`border border-gray-200 rounded-lg p-4 ${
-                isPastAppointment ? 'bg-yellow-50' : 'bg-white'
-              } hover:shadow-md transition-shadow`} // Keep all original classes
+              className={`border rounded-lg p-4 ${
+                isTodayAppointment
+                  ? 'bg-blue-50 border-blue-300'
+                  : isPastAppointment
+                  ? 'bg-yellow-50 border-yellow-300'
+                  : 'bg-white border-gray-200'
+              } hover:shadow-md transition-shadow relative`}
             >
+              {/* Today badge */}
+              {isTodayAppointment && (
+                <div className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center">
+                  <ClockIcon className="h-3 w-3 mr-1" />
+                  Aujourd{"'"}hui
+                </div>
+              )}
+              
               {/* Appointment header */}
               <div className="flex justify-between items-start">
                 <div className="flex items-center">
                   <div
                     className={`p-2 rounded-full mr-3 ${
-                      rdv.statut == 1
+                      rdv.statut == 2
                         ? 'bg-green-50'
-                        : rdv.statut == 0
+                        : rdv.statut == 1
                         ? 'bg-blue-50'
+                        : rdv.statut == 3
+                        ? 'bg-red-50'
                         : 'bg-gray-50'
                     }`}
                   >
                     <CalendarIcon
                       className={`h-5 w-5 ${
-                        rdv.statut == 1
+                        rdv.statut == 2
                           ? 'text-green-600'
-                          : rdv.statut == 0
+                          : rdv.statut == 1
                           ? 'text-blue-500'
+                          : rdv.statut == 2
+                          ? 'text-red-500'
                           : 'text-gray-500'
                       }`}
                     />
@@ -446,50 +530,63 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
                     </p>
                   </div>
                 </div>
-                {/*<button
-                        className="p-2 text-gray-500 hover:text-blue-500 transition-colors"
-                        onClick={() => {
-                          setRdvId(rdv.id);
-                          setRdvEdit(rdv.rdv);
-                          setTypeEdit(rdv.type);
-                          setOpenEditRdv(true);
-                        }}
-                      >
-                        <EditIcon className="h-4 w-4" />
-                      </button>*/}
                 <div className="flex space-x-1">
                   {etatRes == 1 && contratVente == null && (
                     <>
-                      {user.role <= 2 && rdv.statut == 0 && (
+                      {/* Traiter RDV button - show only for today's appointments with statut 0 */}
+                      {isTodayAppointment && rdv.statut == 1  && user.role ==5 && (
+                        <button
+                          className="p-2 text-gray-500 hover:text-blue-500 transition-colors"
+                          onClick={() => {
+                            setRdvId(rdv.id);
+                            setSelectedDate(rdv.rdv);
+                            setOpenTraiterRdv(true);
+                          }}
+                          title="Traiter ce rendez-vous"
+                        >
+                          <CheckCircleIcon className="h-4 w-4" />
+                        </button>
+                      )}
+                      
+                      {/* Validation and rejection buttons for admins 
+                      {(user.role <= 3 || user.role ==5  || user.role ==6)&& rdv.statut == 1 && (
                         <>
                           <button
                             className="p-2 text-gray-500 hover:text-green-500 transition-colors"
                             onClick={() => {
                               setRdvId(rdv.id);
                               setSelectedDate(rdv.rdv);
-                              setOpenValidation(true);
+                              setOpenEditRdv(true);
                             }}
                           >
-                            <CheckCircleIcon className="h-4 w-4" />
+                            <PencilIcon className="h-4 w-4" />
                           </button>
-                          <button
-                            className="p-2 text-gray-500 hover:text-red-500 transition-colors"
-                            onClick={() => {
-                              setRdvId(rdv.id);
-                              setSelectedDate(rdv.rdv);
-                              setOpenRejet(true);
-                            }}
-                          >
-                            <XCircleIcon className="h-4 w-4" />
-                          </button>
+                         
                         </>
-                      )}
+                      )}*/}
+                      { (user.role <= 2 || user.role ==5 || user.role ==6 )  &&rdv.statut==1 && (
                       <button
                         className="p-2 text-gray-500 hover:text-red-500 transition-colors"
                         onClick={() => handleDeleteRdv(rdv.id, rdv.rdv)}
                       >
                         <TrashIcon className="h-4 w-4" />
                       </button>
+                      )}
+                      
+                      {/* Relance button - show for past appointments or non-traite */}
+                      {(rdv.statut ==  1 && user.role ==5 ) && (
+                        <button
+                          className="p-2 text-gray-500 hover:text-orange-500 transition-colors"
+                          onClick={() => {
+                            setRdvId(rdv.id);
+                            setSelectedDate(rdv.rdv);
+                            setOpenRelance(true);
+                          }}
+                          title="Faire une relance"
+                        >
+                          <BellRingIcon className="h-4 w-4" />
+                        </button>
+                      )}
                     </>
                   )}
                 </div>
@@ -513,14 +610,6 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
                     <PDFDownloadLink
                       document={
                         <ReceiptDocument
-                          /* data={[
-                            rdv.reservation.code_reservation,
-                            rdv.reservation.bien.propriete_dite_bien,
-                            clients,
-                            format(new Date(rdv.rdv), "dd/MM/yyyy kk:mm"),
-                            imageUrl,
-                            rdv.type,
-                          ]}*/
                           data={[
                             rdv.reservation.code_reservation,
                             rdv.reservation.bien.propriete_dite_bien,
@@ -547,23 +636,45 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
                     </PDFDownloadLink>
                   </p>
                 )}
-                {rdv.statut == 2 && (
+               
+                {rdv.statut == 3 && (
                   <button
-                    className="inline-flex items-center text-sm text-red-500 hover:text-red-800"
+                    className="inline-flex items-center text-sm text-orange-500 hover:text-orange-800"
                     onClick={() => {
                       setTxtInfo(
                         `Le rendez-vous du ${format(
                           new Date(rdv.rdv),
                           'dd/MM/yyyy kk:mm'
-                        )} a été rejeté pour la raison suivante: ${
-                          rdv.commentaire
-                        }`
+                        )} a été marqué comme non traité${rdv.commentaire ? ` avec le commentaire: ${rdv.commentaire}` : ''}`
                       );
                       setOpenInfo(true);
                     }}
                   >
-                    Voir le motif
+                    Voir les détails
                   </button>
+                )}
+               
+                {rdv.prochaine_relance != null && (
+                <div className="flex items-center">
+                    <span className="font-medium w-24">Prochaine Relance:</span>
+                    <span className="text-orange-600 font-medium">
+                    {format(new Date(rdv.prochaine_relance), 'dd/MM/yyyy • HH:mm')}
+                    </span>
+                    {rdv.relances_history!=null && (
+                        <button
+                        onClick={() => {
+                            setRdvId(rdv.id);
+                            setSelectedDate(rdv.rdv);
+                            loadRelancesHistory(rdv.id);
+                        }}
+                        className="ml-2 text-xs text-blue-500 hover:text-blue-700"
+                        title="Voir l'historique des relances"
+                        >
+                        <HistoryIcon className="h-3 w-3" />
+                        </button>
+                    )}
+                  
+                </div>
                 )}
               </div>
             </div>
@@ -571,233 +682,489 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
         })}
       </div>
 
-      <AddRdvModal
+ {/* Modal pour afficher l'historique */}
+    {openHistoryModal && (
+    <Modal
+        isVisible={openHistoryModal}
+        onClose={() => {
+        setOpenHistoryModal(false);
+        setRelancesHistory([]);
+        }}
+    >
+        <div className="bg-white rounded-lg shadow-lg max-w-2xl mx-auto">
+        {/* Header */}
+        <div className="p-5 border-b bg-blue-50">
+            <div className="flex items-center">
+            <ClockIcon className="h-5 w-5 text-blue-500 mr-2" />
+            <h3 className="font-medium text-gray-900">
+                Historique des relances
+            </h3>
+            </div>
+            <p className="text-sm text-gray-500 mt-1">
+            Rendez-vous du {selectedDate && format(new Date(selectedDate), 'dd/MM/yyyy • HH:mm')}
+            </p>
+        </div>
+
+        <div className="p-5 max-h-[60vh] overflow-y-auto">
+            {isLoadingHistory ? (
+            <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+            ) : relancesHistory.length > 0 ? (
+            <div className="space-y-4">
+                {/* Relance actuelle */}
+                {relancesHistory.find(r => r.statut === 'actuelle') && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="flex items-center mb-2">
+                    <div className="h-3 w-3 rounded-full bg-green-500 mr-2"></div>
+                    <h4 className="font-medium text-green-800">Relance actuelle</h4>
+                    </div>
+                    <div className="ml-5">
+                    <p className="text-sm text-green-700">
+                        Programmée pour le: {relancesHistory.find(r => r.statut === 'actuelle').formatted_date_programmee}
+                    </p>
+                    <p className="text-xs text-green-600 mt-1">
+                        Programmée le: {relancesHistory.find(r => r.statut === 'actuelle').formatted_date_creation}
+                    </p>
+                    </div>
+                </div>
+                )}
+                
+                {/* Anciennes relances */}
+                <div>
+                <h4 className="font-medium text-gray-700 mb-3 text-sm">Anciennes relances ({relancesHistory.filter(r => r.statut !== 'actuelle').length})</h4>
+                <div className="space-y-3">
+                    {relancesHistory
+                    .filter(r => r.statut !== 'actuelle')
+                    .map((relance, index) => (
+                        <div key={index} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                        <div className="flex justify-between items-start">
+                            <div>
+                            <p className="text-sm font-medium text-gray-900">
+                                {relance.formatted_date_programmee}
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">
+                                Programmé le: {relance.formatted_date_creation}
+                            </p>
+                            {relance.user_name && (
+                                <p className="text-xs text-gray-500">
+                                Par: {relance.user_name}
+                                </p>
+                            )}
+                            {relance.raison && (
+                                <div className="mt-2">
+                                <p className="text-xs font-medium text-gray-600">Raison:</p>
+                                <p className="text-xs text-gray-700 bg-gray-100 p-2 rounded mt-1">
+                                    {relance.raison}
+                                </p>
+                                </div>
+                            )}
+                            </div>
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
+                            relance.statut === 'reprogrammee' 
+                                ? 'bg-orange-100 text-orange-800' 
+                                : relance.statut === 'terminee'
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-gray-100 text-gray-800'
+                            }`}>
+                            {relance.statut === 'reprogrammee' ? 'Reprogrammée' : 
+                            relance.statut === 'terminee' ? 'Terminée' : relance.statut}
+                            </span>
+                        </div>
+                        </div>
+                    ))}
+                </div>
+                </div>
+            </div>
+            ) : (
+            <div className="text-center py-8">
+                <HistoryIcon className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-500">Aucun historique de relance disponible</p>
+            </div>
+            )}
+        </div>
+
+        {/* Footer */}
+        <div className="p-5 border-t">
+            <button
+            onClick={() => {
+                setOpenHistoryModal(false);
+                setRelancesHistory([]);
+            }}
+            className="w-full py-2.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+            Fermer
+            </button>
+        </div>
+        </div>
+    </Modal>
+    )}
+     <AddRdvModal
         open={openAddRdv}
         reservation_id={reservationId}
-        onClose={() => setOpenAddRdv(false)}
+        onClose={() => {
+            setOpenAddRdv(false);
+        }}
         onRdvAdded={handleRdvAdded}
-      />
+        />
 
       {/* Edit RDV Dialog */}
-      {openEditRdv && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">
-                  Modifier le rendez-vous
-                </h3>
-                <button
-                  onClick={() => setOpenEditRdv(false)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  &times;
-                </button>
-              </div>
-              <form onSubmit={handleEditRdv}>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Date et heure
-                    </label>
-                    <input
-                      type="datetime-local"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                      value={rdvEdit}
-                      onChange={(e) => setRdvEdit(e.target.value)}
-                      min={format(new Date(), "yyyy-MM-dd'T'HH:mm")}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Type
-                    </label>
-                    <select
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                      value={typeEdit}
-                      onChange={(e) => setTypeEdit(parseInt(e.target.value))}
-                      required
-                    >
-                      <option value="">Sélectionnez un type</option>
-                      {types.map((type) => (
-                        <option key={type.value} value={type.value}>
-                          {type.title}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  {errors && (
-                    <div className="p-3 bg-red-50 text-red-700 rounded-md">
-                      {Object.values(errors).map((error, index) => (
-                        <p key={index}>{error[0]}</p>
-                      ))}
-                    </div>
-                  )}
+      
+
+      {/* Validation Dialog 
+      {openValidation && (
+        <Modal
+          isVisible={openValidation}
+          onClose={() => setOpenValidation(false)}
+        >
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">
+                Validation du rendez-vous
+              </h3>
+              <button
+                onClick={() => setOpenValidation(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                &times;
+              </button>
+            </div>
+            <p className="mb-6">
+              Êtes-vous sûr de vouloir valider le rendez-vous du{' '}
+              {selectedDate &&
+                format(new Date(selectedDate), 'dd/MM/yyyy kk:mm')}{' '}
+              ?
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setOpenValidation(false)}
+                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleValiderRdv}
+                className="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700"
+              >
+                Confirmer
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}*/}
+
+      {/* Rejet Dialog
+      {openRejet && (
+        <Modal
+          isVisible={openRejet}
+          onClose={() => setOpenRejet(false)}
+        >
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">
+                {confirmRejet ? 'Motif du rejet' : 'Rejet du rendez-vous'}
+              </h3>
+              <button
+                onClick={() => setOpenRejet(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                &times;
+              </button>
+            </div>
+            {confirmRejet ? (
+              <form onSubmit={handleRejeterRdv}>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Commentaire <span className="text-red-500 ml-1">*</span>
+                  </label>
+                  <textarea
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    value={commentaire}
+                    onChange={(e) => setCommentaire(e.target.value)}
+                    required
+                    rows={3}
+                  />
                 </div>
-                <div className="mt-6 flex justify-end space-x-3">
+                <div className="flex justify-end space-x-3">
                   <button
                     type="button"
-                    onClick={() => setOpenEditRdv(false)}
+                    onClick={() => setOpenRejet(false)}
                     className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
                   >
                     Annuler
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
+                    className="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700"
                   >
-                    Enregistrer
+                    Confirmer
                   </button>
                 </div>
               </form>
+            ) : (
+              <>
+                <p className="mb-6">
+                  Êtes-vous sûr de vouloir rejeter le rendez-vous du{' '}
+                  {selectedDate &&
+                    format(new Date(selectedDate), 'dd/MM/yyyy kk:mm')}{' '}
+                  ?
+                </p>
+                <div className="flex justify-end space-x-3">
+                  <button
+                    onClick={() => setOpenRejet(false)}
+                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={() => setConfirmRejet(true)}
+                    className="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700"
+                  >
+                    Confirmer
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </Modal>
+      )} */}
+
+{openRelance && (
+  <Modal
+    isVisible={openRelance}
+    onClose={() => {
+      setOpenRelance(false);
+      setProchaineRelanceDate('');
+      setRelanceError('');
+    }}
+  >
+    <div className="bg-white rounded-lg shadow-lg max-w-md mx-auto">
+      {/* Header */}
+      <div className="p-5 border-b bg-orange-50">
+        <div className="flex items-center">
+          <BellRingIcon className="h-5 w-5 text-orange-500 mr-2" />
+          <h3 className="font-medium text-gray-900">
+            Programmer une relance
+          </h3>
+        </div>
+        <p className="text-sm text-gray-500 mt-1">
+          Rendez-vous du {selectedDate && format(new Date(selectedDate), 'dd/MM/yyyy • HH:mm')}
+        </p>
+      </div>
+
+      <div className="p-5">
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Date et heure de la prochaine relance <span className="text-red-500">*</span>
+          </label>
+          
+          <div className="relative">
+            <input
+              type="datetime-local"
+              value={prochaineRelanceDate}
+              onChange={(e) => {
+                setProchaineRelanceDate(e.target.value);
+                if (relanceError) setRelanceError('');
+              }}
+              min={new Date().toISOString().slice(0, 16)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+            />
+          </div>
+          
+          {relanceError && (
+            <p className="mt-2 text-sm text-red-600 flex items-center">
+              <AlertCircle className="h-4 w-4 mr-1" />
+              {relanceError}
+            </p>
+          )}
+          
+          <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
+            <div className="flex items-start">
+              <AlertTriangle className="h-4 w-4 text-blue-500 mr-2 mt-0.5 flex-shrink-0" />
+              <div className="text-xs text-blue-700">
+                <p className="font-medium mb-1">Information importante :</p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>La date doit être supérieure à la date actuelle</li>
+                  <li>Une notification sera envoyée à la date sélectionnée</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
-      )}
 
-      {/* Validation Dialog */}
-      {openValidation && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">
-                  Validation du rendez-vous
-                </h3>
-                <button
-                  onClick={() => setOpenValidation(false)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  &times;
-                </button>
-              </div>
-              <p className="mb-6">
-                Êtes-vous sûr de vouloir valider le rendez-vous du{' '}
-                {selectedDate &&
-                  format(new Date(selectedDate), 'dd/MM/yyyy kk:mm')}{' '}
-                ?
-              </p>
-              <div className="flex justify-end space-x-3">
-                <button
-                  onClick={() => setOpenValidation(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-                >
-                  Annuler
-                </button>
-                <button
-                  onClick={handleValiderRdv}
-                  className="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700"
-                >
-                  Confirmer
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Rejet Dialog */}
-      {openRejet && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">
-                  {confirmRejet ? 'Motif du rejet' : 'Rejet du rendez-vous'}
-                </h3>
-                <button
-                  onClick={() => setOpenRejet(false)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  &times;
-                </button>
-              </div>
-              {confirmRejet ? (
-                <form onSubmit={handleRejeterRdv}>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Commentaire <span className="text-red-500 ml-1">*</span>
-                    </label>
-                    <textarea
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                      value={commentaire}
-                      onChange={(e) => setCommentaire(e.target.value)}
-                      required
-                      rows={3}
-                    />
-                  </div>
-                  <div className="flex justify-end space-x-3">
-                    <button
-                      type="button"
-                      onClick={() => setOpenRejet(false)}
-                      className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-                    >
-                      Annuler
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700"
-                    >
-                      Confirmer
-                    </button>
-                  </div>
-                </form>
-              ) : (
+        {/* Boutons d'action */}
+        <div className="flex space-x-3">
+          <button
+            onClick={() => {
+              setOpenRelance(false);
+              setProchaineRelanceDate('');
+              setRelanceError('');
+            }}
+            className="flex-1 py-2.5 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            Annuler
+          </button>
+          
+         <button
+            onClick={handleAddProchaineRelance}
+            disabled={!prochaineRelanceDate || isAddingRelance}
+            className={`flex-1 py-2.5 text-sm bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors ${
+                (!prochaineRelanceDate || isAddingRelance) ? 'opacity-50 cursor-not-allowed' : ''
+            } flex items-center justify-center`}
+            >
+            {isAddingRelance ? (
                 <>
-                  <p className="mb-6">
-                    Êtes-vous sûr de vouloir rejeter le rendez-vous du{' '}
-                    {selectedDate &&
-                      format(new Date(selectedDate), 'dd/MM/yyyy kk:mm')}{' '}
-                    ?
-                  </p>
-                  <div className="flex justify-end space-x-3">
-                    <button
-                      onClick={() => setOpenRejet(false)}
-                      className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-                    >
-                      Annuler
-                    </button>
-                    <button
-                      onClick={() => setConfirmRejet(true)}
-                      className="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700"
-                    >
-                      Confirmer
-                    </button>
-                  </div>
+                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
+                En cours...
                 </>
-              )}
-            </div>
-          </div>
+            ) : (
+                <>
+                <CheckIcon className="h-4 w-4 mr-2" />
+                Programmer la relance
+                </>
+            )}
+            </button>
         </div>
-      )}
+      </div>
+    </div>
+  </Modal>
+)}
+      {/* Traiter RDV Dialog */}
+{openTraiterRdv && (
+  <Modal
+    isVisible={openTraiterRdv}
+    onClose={() => {
+      setOpenTraiterRdv(false);
+      setTraiterAction(null);
+      setRelanceComment('');
+    }}
+  >
+    <div className="bg-white rounded-lg shadow-lg ">
+      {/* Header */}
+      <div className="p-5 border-b bg-lime-200">
+        <h3 className="font-medium text-gray-900">
+          Traiter le rendez-vous
+        </h3>
+        <p className="text-sm text-gray-500 mt-1">
+          {selectedDate && format(new Date(selectedDate), 'dd/MM/yyyy • HH:mm')}
+        </p>
+      </div>
 
+      <div className="p-5">
+        <div className="mb-4">
+          <p className="text-sm text-gray-700 mb-3">
+            Le rendez-vous a-t-il eu lieu ?
+          </p>
+          
+          {/* Options en ligne */}
+          <div className="flex space-x-2 mb-4">
+            <button
+              onClick={() => setTraiterAction('oui')}
+              className={`flex-1 py-3 rounded-lg border ${
+                traiterAction === 'oui'
+                  ? 'border-green-500 bg-green-50 text-green-700'
+                  : 'border-gray-300 text-gray-700 hover:border-green-300'
+              }`}
+            >
+              <div className="flex items-center justify-center">
+                <CheckCircleIcon className="h-4 w-4 mr-2" />
+                <span>Oui</span>
+              </div>
+            </button>
+            
+            <button
+              onClick={() => setTraiterAction('non')}
+              className={`flex-1 py-3 rounded-lg border ${
+                traiterAction === 'non'
+                  ? 'border-red-500 bg-red-50 text-red-700'
+                  : 'border-gray-300 text-gray-700 hover:border-red-300'
+              }`}
+            >
+              <div className="flex items-center justify-center">
+                <XCircleIcon className="h-4 w-4 mr-2" />
+                <span>Non</span>
+              </div>
+            </button>
+          </div>
+
+          {/* Champ commentaire obligatoire si "Non" */}
+          {traiterAction === 'non' && (
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+               Commentaire 
+              </label>
+              <textarea
+               
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                value={relanceComment}
+                onChange={(e) => setRelanceComment(e.target.value)}
+                placeholder="Veuillez indiquer le Commentaire"
+                rows={3}
+              />
+             
+            </div>
+          )}
+        </div>
+
+        {/* Boutons d'action */}
+        <div className="flex space-x-2">
+          <button
+            onClick={() => {
+              setOpenTraiterRdv(false);
+              setTraiterAction(null);
+              setRelanceComment('');
+            }}
+            className="flex-1 py-2.5 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+          >
+            Annuler
+          </button>
+          
+          <button
+            onClick={handleTraiterRdv}
+            disabled={!traiterAction || (traiterAction === 'non' && !relanceComment.trim())}
+            className={`flex-1 py-2.5 text-sm rounded-lg ${
+              traiterAction === 'oui'
+                ? 'bg-green-600 text-white hover:bg-green-700'
+                : traiterAction === 'non'
+                ? 'bg-red-600 text-white hover:bg-red-700'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            } ${(traiterAction === 'non' && !relanceComment.trim()) ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            {traiterAction === 'oui' ? 'Valider' : 
+             traiterAction === 'non' ? 'Rejeter' : 'Sélectionner'}
+          </button>
+        </div>
+      </div>
+    </div>
+  </Modal>
+)}
       {/* Info Dialog */}
       {openInfo && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">Information</h3>
-                <button
-                  onClick={() => setOpenInfo(false)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  &times;
-                </button>
-              </div>
-              <p className="mb-6">{txtInfo}</p>
-              <div className="flex justify-end">
-                <button
-                  onClick={() => setOpenInfo(false)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
-                >
-                  Fermer
-                </button>
-              </div>
+        <Modal
+          isVisible={openInfo}
+          onClose={() => setOpenInfo(false)}
+        >
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Information</h3>
+              <button
+                onClick={() => setOpenInfo(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                &times;
+              </button>
+            </div>
+            <p className="mb-6">{txtInfo}</p>
+            <div className="flex justify-end">
+              <button
+                onClick={() => setOpenInfo(false)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
+              >
+                Fermer
+              </button>
             </div>
           </div>
-        </div>
+        </Modal>
       )}
 
       {showDeleteModal && selectedId && (
@@ -818,132 +1185,6 @@ export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
           />
         </Modal>
       )}
-      {/* Historique Dialog */}
-      {/*openHisto && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">
-                  Historique des rendez-vous
-                </h3>
-                <button
-                  onClick={() => setOpenHisto(false)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  &times;
-                </button>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Date
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Type
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Responsable
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Statut
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {historiques.map((histo) => (
-                      <tr key={histo.id}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {format(new Date(histo.rdv), 'dd/MM/yyyy kk:mm')}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              histo.type == 1
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-gray-100 text-gray-800'
-                            }`}
-                          >
-                            {histo.type == 1 ? 'Compromis' : 'Contrat'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {histo.user.name} {histo.user.prenom}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          <StatusBadge status={getStatut(histo.statut)} />
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {histo.statut == 1 && (
-                            <PDFDownloadLink
-                              document={
-                                <Document
-                                  data={[
-                                    histo.reservation.code_reservation,
-                                    histo.reservation.bien.propriete_dite_bien,
-                                    clients,
-                                    format(
-                                      new Date(histo.rdv),
-                                      'dd/MM/yyyy kk:mm'
-                                    ),
-                                    imageUrl,
-                                  ]}
-                                />
-                              }
-                              fileName="fiche_rdv.pdf"
-                            >
-                              {({ loading }) => (
-                                <button
-                                  className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 disabled:opacity-50"
-                                  disabled={loading}
-                                >
-                                  <PrinterIcon className="h-4 w-4 mr-1" />
-                                  {loading ? 'Génération...' : 'Imprimer'}
-                                </button>
-                              )}
-                            </PDFDownloadLink>
-                          )}
-                          {histo.statut == 2 && (
-                            <button
-                              className="inline-flex items-center text-sm text-red-600 hover:text-red-800"
-                              onClick={() => {
-                                setTxtInfo(
-                                  `Le rendez-vous du ${format(
-                                    new Date(histo.rdv),
-                                    'dd/MM/yyyy kk:mm'
-                                  )} a été rejeté pour la raison suivante: ${
-                                    histo.commentaire
-                                  }`
-                                );
-                                setOpenInfo(true);
-                              }}
-                            >
-                              Voir le motif
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <div className="mt-6 flex justify-end">
-                <button
-                  onClick={() => setOpenHisto(false)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
-                >
-                  Fermer
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )*/}
     </div>
   );
 };

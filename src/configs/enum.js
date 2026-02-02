@@ -2,6 +2,12 @@ export const User_roles = {
   ROLE_SUPER_ADMIN: 1,
   ROLE_ADMIN: 2,
   ROLE_COMMERCIAL: 3,
+  ROLE_NOTAIRE: 5,
+  ROLE_RESPO_LIVRAISON: 6,
+  ROLE_COMPTABLE: 7,
+  ROLE_SAV: 8,
+  ROLE_RESPO_COMMERCIAL: 9,
+  ROLE_AGENT_ADMINISTRATIF: 10,
 };
 
 export const decryptUserType = (role) => {
@@ -12,6 +18,18 @@ export const decryptUserType = (role) => {
       return User_roles.ROLE_ADMIN;
     case 3:
       return User_roles.ROLE_COMMERCIAL;
+    case 5:
+      return User_roles.ROLE_NOTAIRE;
+    case 6:
+      return User_roles.ROLE_RESPO_LIVRAISON;
+    case 7:
+      return User_roles.ROLE_COMPTABLE;
+    case 8:
+      return User_roles.ROLE_SAV;
+    case 9:
+      return User_roles.ROLE_RESPO_COMMERCIAL;
+    case 10:
+      return User_roles.ROLE_AGENT_ADMINISTRATIF;
     default:
       return 'UNKNOWN';
   }
@@ -24,8 +42,26 @@ export const isSuperAdmin = (role) => {
 export const isCommercial = (role) => {
   return decryptUserType(role) === User_roles.ROLE_COMMERCIAL;
 };
+export const isNotaire = (role) => {
+  return decryptUserType(role) === User_roles.ROLE_NOTAIRE;
+};
+export const isRespoLivraison = (role) => {
+  return decryptUserType(role) === User_roles.ROLE_RESPO_LIVRAISON;
+};
+export const isComptable = (role) => {
+  return decryptUserType(role) === User_roles.ROLE_COMPTABLE;
+};
+export const isSav = (role) => {
+  return decryptUserType(role) === User_roles.ROLE_SAV;
+};
 export const isAdmin = (role) => {
   return decryptUserType(role) === User_roles.ROLE_ADMIN;
+};
+export const isRespoCommercial = (role) => {
+  return decryptUserType(role) === User_roles.ROLE_RESPO_COMMERCIAL;
+};
+export const isAgentAdministratif = (role) => {
+  return decryptUserType(role) === User_roles.ROLE_AGENT_ADMINISTRATIF;
 };
 
 export const VISITE_STATUT = {

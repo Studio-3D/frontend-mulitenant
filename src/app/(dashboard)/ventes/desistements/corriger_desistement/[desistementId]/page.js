@@ -7,7 +7,7 @@ import { Changement_De_Bien } from '../../../desistements/ajouter_desistement/[r
 import { useRouter, useParams } from 'next/navigation';
 import { APIURL } from '../../../../../../configs/api';
 import axios from 'axios';
-import { type_dst } from '@/configs/enum';
+import { isAdmin, isCommercial, isSuperAdmin, type_dst } from '@/configs/enum';
 import { useAuth } from '../../../../../../context/AuthContext';
 import {
   fetchData_Select,
@@ -103,6 +103,17 @@ export default function Page() {
     formState: { errors },
   } = methods;
 
+  const userRole = user?.role;
+      useEffect(() => {
+        if (
+          !isAdmin(userRole) &&
+          !isSuperAdmin(userRole) &&
+          !isCommercial(userRole)
+        ) {
+          router.push('/');
+        }
+      }, [router]);
+      
   const [isFormInitialized, setIsFormInitialized] = useState(false);
 
   // Ajoutez cet useEffect pour gérer le toggle de pénalité

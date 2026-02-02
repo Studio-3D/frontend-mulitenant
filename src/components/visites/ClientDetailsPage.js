@@ -8,6 +8,8 @@ import { useAuth } from '../../context/AuthContext';
 import LoadingSpin from '@/components/LoadingSpin';
 import { useProjet } from '@/context/ProjetContext';
 import { useRouter } from 'next/navigation';
+import { isAdmin, isCommercial, isSuperAdmin } from '../user-utils';
+import { isRespoCommercial } from '@/configs/enum';
 
 export function ClientDetailsPage(visiteId) {
   const [loading, setLoading] = useState(true);
@@ -15,10 +17,22 @@ export function ClientDetailsPage(visiteId) {
   const [visites_all_show, setvisites_all_show] = useState([]);
   const [last_related_id, setLast_Related_id] = useState(0);
   const { selectedProjet } = useProjet();
-  const { token } = useAuth();
+  const { token ,user} = useAuth();
   const accessToken = token || localStorage.getItem('accessToken');
   const router = useRouter();
 
+   const userRole = user?.role;
+    useEffect(() => {
+      if (
+        !isAdmin(userRole) &&
+        !isSuperAdmin(userRole) &&
+        !isCommercial(userRole)&&
+        !isRespoCommercial(userRole)
+      
+      ) {
+        router.push('/');
+      }
+    }, [router]);
   // Simple cache et comparaison for return back en cas de changer projet
   const [oldProjetId, setOldProjetId] = useState(null);
 

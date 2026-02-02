@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import React, { useState, useRef, useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -25,12 +25,44 @@ const Page = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirmation, setShowPasswordConfirmation] =
     useState(false);
+  const [roles, setRoles] = useState([]);
+  const [loading_roles, setLoading_roles] = useState(false);
 
   useEffect(() => {
     if (user?.role === 1) {
       fetchSocietes();
     }
   }, [user]);
+
+
+
+  // Dans votre Page.jsx
+
+const fetchRoles = async (societeId) => {
+  setLoading_roles(true);
+  try {
+    const token = localStorage.getItem('accessToken');
+    const response = await axios.get(`${APIURL.GESTION_ROLES_ACTIVES}/${societeId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setRoles(response.data.roles || []);
+    setLoading_roles(false);
+
+  } catch (error) {
+    console.error('Error fetching roles:', error);
+    toast.error('Failed to load roles');
+  } finally {
+    setLoading_roles(false);
+  }
+};
+
+// Utilisation - appeler fetchRoles avec le societe_id
+useEffect(() => {
+  if (selectedSociete?.id) {
+    fetchRoles(selectedSociete.id);
+  }
+}, [selectedSociete?.id]); // Rafraîchir quand la société change
+
 
   const fetchSocietes = async () => {
     try {
@@ -42,6 +74,67 @@ const Page = () => {
     } catch (error) {
       toast.error("Erreur lors de la récupération des sociétés");
     }
+  };
+
+  // Fonction pour obtenir les options de rôles
+  const getRoleOptions = () => {
+    // Rôles par défaut (toujours disponibles)
+    const defaultRoles = [
+      ...(user?.role === 1 && !selectedSociete
+        ? [{ label: "Super Admin", value: "1" }]
+        : []),
+      { label: "Admin", value: "2" },
+      { label: "Commercial", value: "3" },
+    ];
+
+    // Si aucun rôle supplémentaire n'est configuré, retourner seulement les rôles par défaut
+    if (!roles || roles.length === 0) {
+      return defaultRoles;
+    }
+
+    // Mapper les rôles dynamiques depuis l'API
+    const dynamicRoles = roles
+      .filter(role => {
+        // Exclure les rôles déjà dans les rôles par défaut (1, 2, 3)
+        const roleValue = parseInt(role.role);
+        return ![1, 2, 3].includes(roleValue);
+      })
+      .map(role => {
+        const roleValue = parseInt(role.role);
+        let label = '';
+        
+        // Mapper les valeurs aux labels correspondants
+        switch(roleValue) {
+          case 6:
+            label = 'Responsable Livraison';
+            break;
+          case 5:
+            label = 'Notaire';
+            break;
+          case 7:
+            label = 'Comptable';
+            break;
+          case 8:
+            label = 'SAV';
+            break;
+          case 9:
+            label = 'Responsable Commercial';
+            break;
+          case 10:
+            label = 'Agent Administratif';
+            break;
+          default:
+            label = `Rôle ${roleValue}`;
+        }
+        
+        return {
+          label,
+          value: role.role.toString(),
+        };
+      });
+
+    // Combiner les rôles par défaut avec les rôles dynamiques
+    return [...defaultRoles, ...dynamicRoles];
   };
 
   const validationSchema = Yup.object().shape({
@@ -90,9 +183,6 @@ const Page = () => {
     password: Yup.string()
       .min(8, "• Au moins 8 caractères")
       .required("Mot de passe requis"),
-    // .matches(/^(?=.*[A-Z])/, '• Au moins une majuscule')
-    // .matches(/^(?=.*[0-9])/, '• Au moins un chiffre')
-    // .matches(/^(?=.*[@$!%*?&])/, '• Au moins un caractère spécial'),
     password_confirmation: Yup.string()
       .oneOf(
         [Yup.ref("password"), null],
@@ -122,7 +212,7 @@ const Page = () => {
       is_actif: "1",
       solde_conge: "",
     },
-    validationSchema, // Your Yup validation schema
+    validationSchema,
     onSubmit: async (values) => {
       setLoading(true);
       try {
@@ -156,9 +246,15 @@ const Page = () => {
         setLoading(false);
       }
     },
-    validateOnChange: true, // Enable validation on input changes
-    validateOnBlur: false, // Disable validation on blur events
+    validateOnChange: true,
+    validateOnBlur: false,
   });
+// OU si vous avez formik.values.societe_id
+useEffect(() => {
+  if (formik?.values?.societe_id) {
+    fetchRoles(formik?.values?.societe_id);
+  }
+}, [formik?.values?.societe_id]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -215,7 +311,6 @@ const Page = () => {
               value={formik.values.name}
               onChange={(e) => {
                 formik.handleChange(e);
-                // Mark the field as touched when user types
                 formik.setFieldTouched("name", true, false);
               }}
               onBlur={formik.handleBlur}
@@ -261,16 +356,11 @@ const Page = () => {
             <SelectInput
               label="Rôle"
               name="role"
+              loading={loading_roles}
               placeholder="Sélectionnez un rôle"
-              options={[
-                ...(user?.role === 1 && !selectedSociete
-                  ? [{ label: "Super Admin", value: "1" }]
-                  : []),
-                { label: "Admin", value: "2" },
-                { label: "Commercial", value: "3" },
-              ]}
-              value={formik.values.role} // Directly link the value from Formik
-              onChange={(value) => formik.setFieldValue("role", value)} // Handle change via setFieldValue
+              options={getRoleOptions()}
+              value={formik.values.role}
+              onChange={(value) => formik.setFieldValue("role", value)}
               onBlur={() => formik.setFieldTouched("role", true)}
               error={
                 formik.touched.role || formik.submitCount > 0
@@ -318,20 +408,17 @@ const Page = () => {
               value={formik.values.phone}
               placeholder={"Ex: 0612345678"}
               onChange={(e) => {
-                // Filter to allow only numbers
                 const numericValue = e.target.value.replace(/[^0-9]/g, "");
-                // Update Formik's value
                 formik.setFieldValue("phone", numericValue);
               }}
               onKeyPress={(e) => {
-                // Prevent non-numeric key presses
                 if (!/[0-9]/.test(e.key)) {
                   e.preventDefault();
                 }
               }}
               error={formik.errors.phone}
-              inputMode="numeric" // Shows numeric keyboard on mobile
-              pattern="[0-9]*" // Additional hint for numeric input
+              inputMode="numeric"
+              pattern="[0-9]*"
             />
             <Input
               label="CIN"
@@ -345,17 +432,17 @@ const Page = () => {
             <DateInput
               label="Date d'embauche"
               name="date_embauche"
-              value={formik.values.date_embauche} // Pass Formik's value
-              onChange={(date) => formik.setFieldValue("date_embauche", date)} // Update Formik value
-              error={formik.errors.date_embauche} // Pass validation error
+              value={formik.values.date_embauche}
+              onChange={(date) => formik.setFieldValue("date_embauche", date)}
+              error={formik.errors.date_embauche}
             />
             <SelectInput
               label="Niveau d'étude"
               name="niveau_etude"
               placeholder="Sélectionnez un niveau d'étude"
               options={Object.entries(EDUCATION_LEVELS).map(([key, label]) => ({
-                value: label, // ce qu'on enregistre
-                label, // ce qu'on affiche
+                value: label,
+                label,
               }))}
               value={formik.values.niveau_etude}
               onChange={(value) => formik.setFieldValue("niveau_etude", value)}
@@ -383,9 +470,9 @@ const Page = () => {
                 { label: "Actif", value: "1" },
                 { label: "Inactif", value: "0" },
               ]}
-              value={formik.values.is_actif} // Use formik.values.is_actif
-              onChange={(value) => formik.setFieldValue("is_actif", value)} // Use formik.setFieldValue
-              error={formik.errors.is_actif} // Add error for validation
+              value={formik.values.is_actif}
+              onChange={(value) => formik.setFieldValue("is_actif", value)}
+              error={formik.errors.is_actif}
             />
             <Input
               label="Fonction"

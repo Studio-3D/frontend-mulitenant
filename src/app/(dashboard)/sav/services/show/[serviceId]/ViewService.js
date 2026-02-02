@@ -4,10 +4,27 @@ import LoadingSpin from '@/components/LoadingSpin';
 import { APIURL } from '@/configs/api';
 import axios from 'axios';
 import PrestataireTable from '../../../prestataires/PrestataireTable';
-
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { isAdmin, isSuperAdmin,isSav } from '@/configs/enum';
 const ViewService = ({ serviceId }) => {
   const [Details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
+  
+      const {  user } = useAuth();
+          const router = useRouter();
+          const userRole = user?.role;
+            
+              useEffect(() => {
+                if (
+                  user && 
+                  !isAdmin(userRole) &&
+                  !isSuperAdmin(userRole) &&
+                  !isSav(userRole)
+                ) {
+                  router.push('/');
+                }
+              }, [user, userRole, router]);
   useEffect(() => {
     if (!serviceId) return;
 

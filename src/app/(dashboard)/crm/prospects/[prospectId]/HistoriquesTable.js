@@ -3,10 +3,10 @@
 import React, { useEffect, useState } from 'react';
 import Table from '@/components/Table';
 import { useAuth } from '../../../../../context/AuthContext';
-import { useRouter } from 'next/navigation';
 import { fetchData_table_by_id } from '../../../../../../src/configs/api-utils';
 import format from 'date-fns/format';
 import { Eye } from 'lucide-react';
+import { isAdmin, isCommercial, isRespoCommercial, isSuperAdmin } from '@/configs/enum';
 
 // Importez les nouvelles fonctions
 import {
@@ -35,7 +35,7 @@ const HistoriquesTable = ({ id, refreshTrigger = 0, type }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const { token } = useAuth();
+  const { user,token } = useAuth();
   const accesstoken = token || localStorage.getItem('accessToken');
 
   const [filters, setFilters] = useState({
@@ -60,7 +60,6 @@ const HistoriquesTable = ({ id, refreshTrigger = 0, type }) => {
     setFilters(tempFilters);
   };
 
-  const router = useRouter();
   const entity = {
     id: id,
     API_URL:
@@ -227,50 +226,62 @@ const columns = [
   label: 'Actions',
   render: (row) => (
     <div className="flex gap-3 items-center">
-      {row.type_source === 'prospect' ? (
-        <>
-          {row.visite_id != null && (
-            <Link
-              href={`/crm/visites/${row.visite_id}`}
-              title="Voir Visite"
-              className="p-1 hover:bg-gray-100 rounded"
-            >
-              <Eye className="w-4 h-4 text-blue-500 hover:text-blue-700" />
-            </Link>
-          )}
-          {row.appel_id != null && (
-            <Link
-              href={`/crm/appels/${row.appel_id}`}
-              title="Voir Appel"
-              className="p-1 hover:bg-gray-100 rounded"
-            >
-              <Eye className="w-4 h-4 text-green-500 hover:text-green-700" />
-            </Link>
-          )}
-        </>
-      ) : (
-        <>
-          {row.desistement_id != null ? (
-            <Link
-              href={`/ventes/desistements/show/${row.desistement_id}`}
-              title="Voir Désistement"
-              className="p-1 hover:bg-gray-100 rounded"
-            >
-              <Eye className="w-4 h-4 text-green-500 hover:text-green-700" />
-            </Link>
-          ) : (
-            row?.reservation?.id && (
-              <Link
-                href={`/ventes/reservations/${row.reservation.id}`}
-                title="Détail Réservation"
-                className="p-1 hover:bg-gray-100 rounded"
-              >
-                <Eye className="w-4 h-4 text-green-500 hover:text-green-700" />
-              </Link>
-            )
-          )}
-        </>
-      )}
+   
+           {isAdmin(user?.role) &&
+            isSuperAdmin(user?.role) &&
+            isCommercial(user?.role)&&
+            isRespoCommercial(user?.role)
+            && (
+              <>
+              {row.type_source === 'prospect' ? (
+                      <>
+                        {row.visite_id != null && (
+                          <Link
+                            href={`/crm/visites/${row.visite_id}`}
+                            title="Voir Visite"
+                            className="p-1 hover:bg-gray-100 rounded"
+                          >
+                            <Eye className="w-4 h-4 text-blue-500 hover:text-blue-700" />
+                          </Link>
+                        )}
+                        {row.appel_id != null && (
+                          <Link
+                            href={`/crm/appels/${row.appel_id}`}
+                            title="Voir Appel"
+                            className="p-1 hover:bg-gray-100 rounded"
+                          >
+                            <Eye className="w-4 h-4 text-green-500 hover:text-green-700" />
+                          </Link>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        {row.desistement_id != null ? (
+                          <Link
+                            href={`/ventes/desistements/show/${row.desistement_id}`}
+                            title="Voir Désistement"
+                            className="p-1 hover:bg-gray-100 rounded"
+                          >
+                            <Eye className="w-4 h-4 text-green-500 hover:text-green-700" />
+                          </Link>
+                        ) : (
+                          row?.reservation?.id && (
+                            <Link
+                              href={`/ventes/reservations/${row.reservation.id}`}
+                              title="Détail Réservation"
+                              className="p-1 hover:bg-gray-100 rounded"
+                            >
+                              <Eye className="w-4 h-4 text-green-500 hover:text-green-700" />
+                            </Link>
+                          )
+                        )}
+                      </>
+                    )}
+
+              </>
+          )
+        }
+     
     </div>
   ),
 }

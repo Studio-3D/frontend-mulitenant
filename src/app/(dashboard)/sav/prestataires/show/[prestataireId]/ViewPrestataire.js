@@ -27,6 +27,7 @@ const PieceJointeViewer = ({ Details, getFileUrl, url }) => {
     return null;
   }
 
+  
   return (
     <>
       <div className="my-8">

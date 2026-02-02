@@ -10,11 +10,8 @@ import Link from 'next/link';
 
 import { APIURL, ENDPOINTS } from '@/configs/api';
 import { fetchData_table_by_projet } from '@/configs/api-utils';
-import { isAdmin, isSuperAdmin } from '@/configs/enum';
 import { useAuth } from '@/context/AuthContext';
-import Input from '@/components/Input';
 import { useProjet } from '@/context/ProjetContext'; // Import ProjetContext
-import ProjetDialog from '@/components/ProjetDialog'; // Import ProjetDialog
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import CommissionConfigForm from '../../administration/commissions/configuration/page';
