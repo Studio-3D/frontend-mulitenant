@@ -1,4 +1,4 @@
-import React, { useState, Fragment, useRef, useEffect } from 'react';
+import React, { useState, Fragment, useRef, useEffect } from "react";
 import {
   CheckIcon,
   CalendarIcon,
@@ -19,28 +19,28 @@ import {
   UserCog,
   Calendar,
   PencilLine,
-} from 'lucide-react';
+} from "lucide-react";
 
-import Button from '@/components/Button'; // Import the component
+import Button from "@/components/Button"; // Import the component
 
-import TextField from '@/components/Textfield'; // Import the component
-import { useAuth } from '../../../../context/AuthContext';
-import axios from 'axios';
-import Pusher from 'pusher-js';
-import BreadCrumb from '../../navigation/BreadCrumb';
-import { APIURL, ENDPOINTS } from '../../../../configs/api';
-import { useRouter } from 'next/navigation';
-import * as yup from 'yup';
-import toast from 'react-hot-toast';
-import { useForm, Controller } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import LoadingSpin from '@/components/LoadingSpin';
-import SelectInput from '@/components/SelectInput';
+import TextField from "@/components/Textfield"; // Import the component
+import { useAuth } from "../../../../context/AuthContext";
+import axios from "axios";
+import Pusher from "pusher-js";
+import BreadCrumb from "../../navigation/BreadCrumb";
+import { APIURL, ENDPOINTS } from "../../../../configs/api";
+import { useRouter } from "next/navigation";
+import * as yup from "yup";
+import toast from "react-hot-toast";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import LoadingSpin from "@/components/LoadingSpin";
+import SelectInput from "@/components/SelectInput";
 
 import {
   fetchData_Select,
   fetchList_fichier_exist_by_Code,
-} from '../../../../../src/configs/api-utils';
+} from "../../../../../src/configs/api-utils";
 
 //import Modal from '@/components/Modal';
 //import Modal_File from './Modal_file';
@@ -49,19 +49,19 @@ import {
   SITUATION_FAMILIALLE,
   MODE_FINANCE,
   MODE_PAIEMENT,
-} from '@/configs/enum';
-import { CIVILITES } from '@/components/client-utils';
-import { useProjet } from '@/context/ProjetContext';
+} from "@/configs/enum";
+import { CIVILITES } from "@/components/client-utils";
+import { useProjet } from "@/context/ProjetContext";
 export default function ReservationForm({ id }) {
   const [hasPercentageChanged, setHasPercentageChanged] = useState(false);
   const [validationErrors, setValidationErrors] = useState([]);
 
-  const storedValue = localStorage.getItem('selectedClient_show_client');
+  const storedValue = localStorage.getItem("selectedClient_show_client");
   const selectedClient =
-    storedValue && !isNaN(Number(storedValue)) ? Number(storedValue) : '';
+    storedValue && !isNaN(Number(storedValue)) ? Number(storedValue) : "";
   const [formSubmitted_client, setFormSubmitted_client] = useState(false);
   const current = new Date();
-  const [old_bien_id, setOld_bien_id] = useState('');
+  const [old_bien_id, setOld_bien_id] = useState("");
 
   const [loading, setLoading] = useState({ form: false, reservations: false });
   const [clientToEdit, setClientToEdit] = useState(null);
@@ -76,7 +76,7 @@ export default function ReservationForm({ id }) {
 
   const { user, token } = useAuth();
   const router = useRouter();
-  const accessToken = token || localStorage.getItem('accessToken');
+  const accessToken = token || localStorage.getItem("accessToken");
   const { selectedProjet } = useProjet();
   const pusher_key_proposition = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_PROP;
   const [formData, setFormData] = useState(null);
@@ -91,7 +91,7 @@ export default function ReservationForm({ id }) {
   const [myfile, setMyfile] = useState(false);
   const [myfile_1, setMyfile_1] = useState(false);
   const [clientsExist, setClientsExist] = useState([]);
-  const [enabled, setenabled] = useState('none');
+  const [enabled, setenabled] = useState("none");
   const [disabled_var, setDisabled] = useState(!isEditing ? true : false);
   const [oldClients, setoldClients] = useState([]);
   const [addOreditPopup, setAddOreditPopup] = useState(0);
@@ -101,15 +101,15 @@ export default function ReservationForm({ id }) {
 
   const [addedClients, setAddedClients] = useState([]);
 
-  const step_ = window.localStorage.getItem('step_res_edit');
+  const step_ = window.localStorage.getItem("step_res_edit");
 
   const [currentStep, setCurrentStep] = useState(isEditing ? Number(step_) : 0);
 
   //clients select
   const [inputList1, setinputList1] = useState([
     {
-      id: '',
-      pourcentage: '',
+      id: "",
+      pourcentage: "",
     },
   ]);
   const [showNewClientForm, setShowNewClientForm] = useState(false);
@@ -117,28 +117,27 @@ export default function ReservationForm({ id }) {
   const [numberOfForms, setNumberOfForms] = useState(1);
   const [newClientForms, setNewClientForms] = useState([
     {
-      cin: '',
-      nom: '',
-      prenom: '',
-      telephone_num1: '',
-      pourcentage: '',
-      address: '',
-      type_client: '',
-      partenaire_id: '',
+      cin: "",
+      nom: "",
+      prenom: "",
+      telephone_num1: "",
+      pourcentage: "",
+      address: "",
+      type_client: "",
+      partenaire_id: "",
       prospect_id: null,
-      info_client: '',
-      info_prospect: '',
-      projet_id: selectedProjet ? selectedProjet.id : '',
+      info_client: "",
+      info_prospect: "",
+      projet_id: selectedProjet ? selectedProjet.id : "",
       situation_familliale: null,
       nom_mari: null,
       date_mariage: null,
       lieu_mariage: null,
-      notifie: '0',
-      civilite: '',
+      notifie: "0",
+      civilite: "",
       check: false, // Ajoutez cette ligne
       check_p: false, // Ajoutez cette ligne
-        check_field: null, // <-- Ajoutez ceci
-
+      check_field: null, // <-- Ajoutez ceci
     },
   ]);
   const [showClientErrors, setShowClientErrors] = useState(false);
@@ -146,15 +145,15 @@ export default function ReservationForm({ id }) {
 
   const steps = [
     {
-      name: 'Réservation',
+      name: "Réservation",
       icon: <CalendarIcon className="w-5 h-5" />,
     },
     {
-      name: 'Acquéreurs',
+      name: "Acquéreurs",
       icon: <UsersIcon className="w-5 h-5" />,
     },
     {
-      name: 'Paiement',
+      name: "Paiement",
       icon: <CreditCardIcon className="w-5 h-5" />,
     },
   ];
@@ -168,7 +167,7 @@ export default function ReservationForm({ id }) {
         // Projet a changé
 
         console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-        router.push('/ventes/reservations');
+        router.push("/ventes/reservations");
       }
       setOldProjetId(selectedProjet.id);
     }
@@ -192,7 +191,7 @@ export default function ReservationForm({ id }) {
       const errors = validateFields();
       if (errors.length > 0) {
         setValidationErrors(errors);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({ top: 0, behavior: "smooth" });
         return;
       }
       setValidationErrors([]);
@@ -213,8 +212,8 @@ export default function ReservationForm({ id }) {
     setinputList1([
       ...inputList1,
       {
-        id: '',
-        pourcentage: '',
+        id: "",
+        pourcentage: "",
       },
     ]);
   };
@@ -224,7 +223,7 @@ export default function ReservationForm({ id }) {
 
     const updatedList = inputList1.filter((_, i) => i !== index);
     const finalList =
-      updatedList.length > 0 ? updatedList : [{ id: '', pourcentage: '' }];
+      updatedList.length > 0 ? updatedList : [{ id: "", pourcentage: "" }];
 
     // Re-enable the removed client in the dropdown
     if (clientToRemove.id) {
@@ -232,8 +231,8 @@ export default function ReservationForm({ id }) {
         prevClients.map((client) =>
           client.id === clientToRemove.id
             ? { ...client, disabled: false }
-            : client
-        )
+            : client,
+        ),
       );
     }
 
@@ -252,26 +251,26 @@ export default function ReservationForm({ id }) {
     const totalPercentage = sum_percent_select + totalPercentage_client_form;
 
     console.log(
-      `After removal - InputList: ${sum_percent_select}, AddedClients: ${totalPercentage_client_form}, Total: ${totalPercentage}`
+      `After removal - InputList: ${sum_percent_select}, AddedClients: ${totalPercentage_client_form}, Total: ${totalPercentage}`,
     );
 
     // Update form values
-    setValue('pourcentages', totalPercentage);
+    setValue("pourcentages", totalPercentage);
 
     // Always validate percentage total after removal
     const isValid = totalPercentage == 100;
-    setValue('verifierPourcentages', isValid);
-    setenabled(isValid ? 'none' : 'block');
+    setValue("verifierPourcentages", isValid);
+    setenabled(isValid ? "none" : "block");
 
     // Update oldClients
     setoldClients(finalList);
-    setValue('oldClients', JSON.stringify(finalList));
+    setValue("oldClients", JSON.stringify(finalList));
   };
   // Reset all client disabled states when component unmounts or form resets
   useEffect(() => {
     return () => {
       setClientsExist((prevClients) =>
-        prevClients.map((client) => ({ ...client, disabled: false }))
+        prevClients.map((client) => ({ ...client, disabled: false })),
       );
     };
   }, []);
@@ -283,87 +282,87 @@ export default function ReservationForm({ id }) {
       Array(newValue)
         .fill(null)
         .map((_, index) => ({
-          cin: newClientForms[index]?.cin || '',
-          nom: newClientForms[index]?.nom || '',
-          prenom: newClientForms[index]?.prenom || '',
-          telephone_num1: newClientForms[index]?.email || '',
-          pourcentage: newClientForms[index]?.pourcentage || '',
-          address: newClientForms[index]?.address || '',
-          type_client: newClientForms[index]?.type_client || '',
-          partenaire_id: newClientForms[index]?.partenaire_id || '',
-          prospect_id: newClientForms[index]?.prospect_id || '',
-          info_client: newClientForms[index]?.info_client || '',
-          info_prospect: newClientForms[index]?.info_prospect || '',
-          projet_id: selectedProjet ? selectedProjet.id : '',
+          cin: newClientForms[index]?.cin || "",
+          nom: newClientForms[index]?.nom || "",
+          prenom: newClientForms[index]?.prenom || "",
+          telephone_num1: newClientForms[index]?.email || "",
+          pourcentage: newClientForms[index]?.pourcentage || "",
+          address: newClientForms[index]?.address || "",
+          type_client: newClientForms[index]?.type_client || "",
+          partenaire_id: newClientForms[index]?.partenaire_id || "",
+          prospect_id: newClientForms[index]?.prospect_id || "",
+          info_client: newClientForms[index]?.info_client || "",
+          info_prospect: newClientForms[index]?.info_prospect || "",
+          projet_id: selectedProjet ? selectedProjet.id : "",
           situation_familliale:
-            newClientForms[index]?.situation_familliale || '',
-          nom_mari: newClientForms[index]?.nom_mari || '',
+            newClientForms[index]?.situation_familliale || "",
+          nom_mari: newClientForms[index]?.nom_mari || "",
           date_mariage: newClientForms[index]?.date_mariage || null,
-          lieu_mariage: newClientForms[index]?.lieu_mariage || '',
-          notifie: newClientForms[index]?.notifie || '',
-          civilite: newClientForms[index]?.civilite || '',
+          lieu_mariage: newClientForms[index]?.lieu_mariage || "",
+          notifie: newClientForms[index]?.notifie || "",
+          civilite: newClientForms[index]?.civilite || "",
           check: newClientForms[index]?.check || false, // Ajoutez cette ligne
           check_p: newClientForms[index]?.check_p || false, // Ajoutez cette ligne
-        }))
+        })),
     );
   };
 
   const updateFormField = (formIndex, field, value) => {
     setNewClientForms((prevForms) => {
       const updatedForms = prevForms.map((form, index) =>
-        index === formIndex ? { ...form, [field]: value } : form
+        index === formIndex ? { ...form, [field]: value } : form,
       );
 
       // Log the specific form being updated
-      console.log('Updated form:', updatedForms[formIndex]);
+      console.log("Updated form:", updatedForms[formIndex]);
 
       // Log all forms (optional)
-      console.log('All forms:', updatedForms);
+      console.log("All forms:", updatedForms);
 
       return updatedForms;
     });
   };
   const defaultValues = {
-    projet_id: selectedProjet ? selectedProjet.id : '',
-    bien_id: '',
-    nb_acquereurs: '',
+    projet_id: selectedProjet ? selectedProjet.id : "",
+    bien_id: "",
+    nb_acquereurs: "",
     clients: addedClients || [],
     oldClients: [],
 
     /**Reservation */
-    date_reservation: new Date(new_date).toISOString().split('T')[0],
-    code_reservation: '',
+    date_reservation: new Date(new_date).toISOString().split("T")[0],
+    code_reservation: "",
     prix: 0,
     prix_final: 0,
-    mode_financement: '',
-    commentaire: '',
-    avance: '',
+    mode_financement: "",
+    commentaire: "",
+    avance: "",
     sr: 0,
-    banque_id: '',
-    numero_paiement: '',
-    echeance: '',
+    banque_id: "",
+    numero_paiement: "",
+    echeance: "",
     check_montant: false,
-    origin: 'reservation',
-    mode_paiement: '',
-    commentaireAvance: '',
+    origin: "reservation",
+    mode_paiement: "",
+    commentaireAvance: "",
     prix_remise: 0,
     prix_forfetaire: 0,
-    num_remise: '',
-    date_encaissement: '',
-    date_reglement: new Date(new_date).toISOString().split('T')[0],
+    num_remise: "",
+    date_encaissement: "",
+    date_reglement: new Date(new_date).toISOString().split("T")[0],
     verifierPourcentages: isEditing ? true : false,
     montant_encaisse: 0,
 
     ///
     reste: 0,
-    prix_val: '',
+    prix_val: "",
     Superficie_balcon_calculer: 0,
     superficie_jardin_calculer: 0,
     superficie_terrasse_calculer: 0,
     prix_box: 0,
     prix_parking: 0,
     prix_unitaire: 0,
-    avance_minimale: '',
+    avance_minimale: "",
     pourcentages: 0,
   };
   useEffect(() => {
@@ -375,14 +374,14 @@ export default function ReservationForm({ id }) {
   const validationSchemaRef = useRef(
     yup.object().shape({
       //nom: yup.string().required('Interêt de visite est requis')
-    })
+    }),
   );
 
   const hasExecuted = useRef(false);
 
   useEffect(() => {
     if (selectedClient && !hasExecuted.current) {
-      setinputList1([{ id: selectedClient, pourcentage: '' }]);
+      setinputList1([{ id: selectedClient, pourcentage: "" }]);
       hasExecuted.current = true;
     }
   }, [selectedClient]);
@@ -401,29 +400,29 @@ export default function ReservationForm({ id }) {
   });
   // Ajoutez ce useEffect après les autres useEffect
   useEffect(() => {
-    const avance = watch('avance');
+    const avance = watch("avance");
 
-    if (avance === 0 || avance === '0') {
+    if (avance === 0 || avance === "0") {
       // Définir automatiquement sur Espèces (code 1)
-      setValue('mode_paiement', '1');
+      setValue("mode_paiement", "1");
 
       // Réinitialiser les champs liés au paiement
-      setValue('banque_id', '');
-      setValue('numero_paiement', '');
-      setValue('echeance', '');
+      setValue("banque_id", "");
+      setValue("numero_paiement", "");
+      setValue("echeance", "");
 
       // Effacer les erreurs potentielles
-      clearErrors('mode_paiement');
+      clearErrors("mode_paiement");
     } else {
-      setValue('mode_paiement', '');
+      setValue("mode_paiement", "");
 
       // Réinitialiser les champs liés au paiement
-      setValue('banque_id', '');
-      setValue('numero_paiement', '');
-      setValue('echeance', '');
-      clearErrors('mode_paiement');
+      setValue("banque_id", "");
+      setValue("numero_paiement", "");
+      setValue("echeance", "");
+      clearErrors("mode_paiement");
     }
-  }, [watch('avance'), setValue, clearErrors]);
+  }, [watch("avance"), setValue, clearErrors]);
 
   useEffect(() => {
     setLoading(true);
@@ -437,17 +436,17 @@ export default function ReservationForm({ id }) {
         .then((response) => {
           if (response.status !== 200) router.back();
           const reservation = response.data.reservation;
-          console.log('Reservation data:', reservation);
-          console.log('le mode finance==>' + reservation?.mode_financement);
+          console.log("Reservation data:", reservation);
+          console.log("le mode finance==>" + reservation?.mode_financement);
           setOld_bien_id(reservation?.bien_id);
           setFormData({
             code_reservation: reservation.code_reservation,
-            date_reservation: reservation?.date_reservation || '',
-            mode_financement: reservation?.mode_financement || '',
-            commentaire: reservation?.commentaire || '',
-            bien_id: reservation?.bien_id || '',
-            prix_val: reservation?.prix || '',
-            prix: reservation?.prix || '',
+            date_reservation: reservation?.date_reservation || "",
+            mode_financement: reservation?.mode_financement || "",
+            commentaire: reservation?.commentaire || "",
+            bien_id: reservation?.bien_id || "",
+            prix_val: reservation?.prix || "",
+            prix: reservation?.prix || "",
             Superficie_balcon_calculer:
               reservation?.bien != null
                 ? reservation?.bien?.superficie_balcon_calculer
@@ -484,7 +483,7 @@ export default function ReservationForm({ id }) {
             /*  response.data.propriete_dite_bien.original,
             reservation.prix,
             'without_proposition',*/
-            'edit_mode'
+            "edit_mode",
           );
 
           // Initialize inputList1 with existing aquereurs
@@ -494,8 +493,8 @@ export default function ReservationForm({ id }) {
           }));
           setinputList1(aquereurs);
           setoldClients(aquereurs);
-          setValue('nb_acquereurs', Number(reservation.aquereurs.length || 0));
-          setValue('oldClients', JSON.stringify(aquereurs));
+          setValue("nb_acquereurs", Number(reservation.aquereurs.length || 0));
+          setValue("oldClients", JSON.stringify(aquereurs));
 
           // Get all aquereur client IDs
           const aquereurClientIds = aquereurs.map((aq) => aq.id);
@@ -506,7 +505,7 @@ export default function ReservationForm({ id }) {
               prevClients.map((client) => ({
                 ...client,
                 disabled: aquereurClientIds.includes(client.id),
-              }))
+              })),
             );
           });
 
@@ -514,16 +513,16 @@ export default function ReservationForm({ id }) {
           setLoading(false);
           fetchList_fichier_exist_by_Code(
             setfilesList,
-            'rsv',
+            "rsv",
             reservation.code_reservation,
-            setLoading_list
+            setLoading_list,
           );
 
           fetchList_fichier_exist_by_Code(
             setfilesList_avc,
-            'avc',
+            "avc",
             reservation.code_reservation,
-            setLoading_list
+            setLoading_list,
           );
         })
         .catch((error) => {
@@ -539,7 +538,7 @@ export default function ReservationForm({ id }) {
     if (errors.length > 0) {
       setValidationErrors(errors);
       // Scroll to show errors
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
@@ -550,7 +549,7 @@ export default function ReservationForm({ id }) {
     // Validate files first
     if (!validateFilesBeforeSubmit()) {
       toast.error(
-        'Certains fichiers sont invalides. Veuillez vérifier les fichiers sélectionnés.'
+        "Certains fichiers sont invalides. Veuillez vérifier les fichiers sélectionnés.",
       );
       return;
     }
@@ -560,19 +559,19 @@ export default function ReservationForm({ id }) {
     const validOldClients = oldClients.filter(
       (client) =>
         client.id &&
-        client.id !== '' &&
+        client.id !== "" &&
         client.pourcentage &&
-        client.pourcentage !== '' &&
+        client.pourcentage !== "" &&
         !isNaN(client.pourcentage) &&
-        Number(client.pourcentage) > 0
+        Number(client.pourcentage) > 0,
     );
 
     const validAddedClients = addedClients.filter(
       (client) =>
         client.pourcentage &&
-        client.pourcentage !== '' &&
+        client.pourcentage !== "" &&
         !isNaN(client.pourcentage) &&
-        Number(client.pourcentage) > 0
+        Number(client.pourcentage) > 0,
     );
     const totalAcquereurs = addedClients.length + oldClients.length;
 
@@ -587,7 +586,7 @@ export default function ReservationForm({ id }) {
       clients: JSON.stringify(validAddedClients), // Use filtered addedClients
     }).forEach(([key, value]) => {
       // Handle array/object data properly
-      if (key === 'clients' || key === 'oldClients') {
+      if (key === "clients" || key === "oldClients") {
         dataToSend.append(key, value);
       } else {
         dataToSend.append(key, value);
@@ -595,8 +594,8 @@ export default function ReservationForm({ id }) {
     });
 
     // Debug: Log files before sending
-    console.log('Files to send - Reservation:', selectedFiles_rsv);
-    console.log('Files to send - Avance:', selectedFiles_avc);
+    console.log("Files to send - Reservation:", selectedFiles_rsv);
+    console.log("Files to send - Avance:", selectedFiles_avc);
 
     // Handle reservation files
     if (!isEditing && selectedFiles_rsv.length > 0) {
@@ -607,7 +606,7 @@ export default function ReservationForm({ id }) {
           console.log(`Added reservation file: ${file.name}`);
         } else if (file && file.fichier) {
           // Handle existing files from edit mode
-          console.log('Skipping existing file in create mode:', file.fichier);
+          console.log("Skipping existing file in create mode:", file.fichier);
         }
       });
     }
@@ -625,10 +624,10 @@ export default function ReservationForm({ id }) {
     // For editing mode, handle file updates differently
     if (isEditing) {
       const newFiles_rsv = selectedFiles_rsv.filter(
-        (file) => file instanceof File
+        (file) => file instanceof File,
       );
       const existingFiles_rsv = selectedFiles_rsv.filter(
-        (file) => !(file instanceof File)
+        (file) => !(file instanceof File),
       );
 
       // Append new files
@@ -639,35 +638,35 @@ export default function ReservationForm({ id }) {
       // You might want to handle existing files deletion/keeping here
       // based on your backend requirements
 
-      dataToSend.append('_method', 'PATCH');
+      dataToSend.append("_method", "PATCH");
       url = `${url}/${id}`;
     }
 
     // Log FormData contents for debugging
-    console.log('FormData entries:');
+    console.log("FormData entries:");
     for (let pair of dataToSend.entries()) {
-      console.log(pair[0] + ': ', pair[1]);
+      console.log(pair[0] + ": ", pair[1]);
     }
 
     // Requête API avec axios
     axios
       .post(url, dataToSend, {
         headers: {
-          'Content-Type': 'multipart/form-data',
-          Accept: 'application/json',
+          "Content-Type": "multipart/form-data",
+          Accept: "application/json",
           Authorization: `Bearer ${accessToken}`,
         },
       })
       .then((res) => {
-        let message = 'Quelque chose ne va pas bien';
+        let message = "Quelque chose ne va pas bien";
         if (res.status == 200) {
           message = `Réservation ${
-            isEditing ? 'modifiée' : 'créée'
+            isEditing ? "modifiée" : "créée"
           } avec succès`;
           toast.success(message);
-          localStorage.removeItem('step_res_edit');
-          localStorage.removeItem('selectedClient_show_client');
-          router.push(ENDPOINTS.VENTE + '?tab=reservations');
+          localStorage.removeItem("step_res_edit");
+          localStorage.removeItem("selectedClient_show_client");
+          router.push(ENDPOINTS.VENTE + "?tab=reservations");
           reset(defaultValues);
         } else if (res.status == 422) {
           message = res.data.message;
@@ -688,7 +687,7 @@ export default function ReservationForm({ id }) {
           toast.error(response.data.error_33);
         } else {
           toast.error(
-            "Une erreur s'est produite lors de la soumission du formulaire."
+            "Une erreur s'est produite lors de la soumission du formulaire.",
           );
           setActiveStep((prevActiveStep) => prevActiveStep - 1);
         }
@@ -701,11 +700,11 @@ export default function ReservationForm({ id }) {
 
     // First check for invalid characters
     if (/[\\/]/.test(val)) {
-      setInfo_reservation('Les caractères / et \\ ne sont pas autorisés');
+      setInfo_reservation("Les caractères / et \\ ne sont pas autorisés");
       return; // Exit early if invalid characters found
     } else {
       setInfo_reservation(null);
-      console.log('le code est==>' + val);
+      console.log("le code est==>" + val);
 
       if (val.length >= 3) {
         try {
@@ -715,12 +714,12 @@ export default function ReservationForm({ id }) {
               headers: {
                 Authorization: `Bearer ${accessToken}`,
               },
-            }
+            },
           );
 
           if (res.data.reservation != null) {
             setInfo_reservation(
-              'Le Code Réservation : ' + val + ' est déjà existant'
+              "Le Code Réservation : " + val + " est déjà existant",
             );
           } else {
             setInfo_reservation(null);
@@ -737,32 +736,32 @@ export default function ReservationForm({ id }) {
       setBien_id(null);
     } else {
       setBien_id(v.id);
-      setValue('bien_id', v.id);
-      setValue('prix_val', v.prix);
-      setValue('prix', v.prix);
-      setValue('prix_final', v.prix);
+      setValue("bien_id", v.id);
+      setValue("prix_val", v.prix);
+      setValue("prix", v.prix);
+      setValue("prix_final", v.prix);
       setValue(
-        'Superficie_balcon_calculer',
-        v.superficie_balcon_calculer != null ? v.superficie_balcon_calculer : 0
+        "Superficie_balcon_calculer",
+        v.superficie_balcon_calculer != null ? v.superficie_balcon_calculer : 0,
       );
       setValue(
-        'superficie_jardin_calculer',
-        v.superficie_jardin_calculer != null ? v.superficie_jardin_calculer : 0
+        "superficie_jardin_calculer",
+        v.superficie_jardin_calculer != null ? v.superficie_jardin_calculer : 0,
       );
       setValue(
-        'superficie_terrasse_calculer',
+        "superficie_terrasse_calculer",
         v.superficie_terrasse_calculer != null
           ? v.superficie_terrasse_calculer
-          : 0
+          : 0,
       );
       setValue(
-        'superficie_habitable',
-        v.superficie_habitable != null ? v.superficie_habitable : 0
+        "superficie_habitable",
+        v.superficie_habitable != null ? v.superficie_habitable : 0,
       );
-      setValue('prix_box', v.prix_box ? v.prix_box : 0);
-      setValue('prix_parking', v.prix_parking ? v.prix_parking : 0);
-      setValue('prix_unitaire', v.prix_unitaire ? v.prix_unitaire : 0);
-      setValue('avance_minimale', v.avance_minimale ? v.avance_minimale : 0);
+      setValue("prix_box", v.prix_box ? v.prix_box : 0);
+      setValue("prix_parking", v.prix_parking ? v.prix_parking : 0);
+      setValue("prix_unitaire", v.prix_unitaire ? v.prix_unitaire : 0);
+      setValue("avance_minimale", v.avance_minimale ? v.avance_minimale : 0);
       storebien_en_proposition(v.id);
       pusher_function();
     }
@@ -770,14 +769,14 @@ export default function ReservationForm({ id }) {
 
   const fetch_bien_ByProjet = async (bien_id, from) => {
     setLoading_bien(true);
-    console.log('fetch_bien_ByProjet called with:', { bien_id, from });
+    console.log("fetch_bien_ByProjet called with:", { bien_id, from });
 
     let route = null;
     //on reservation edit
     if (isEditing && bien_id) {
-      route = 'getBiensByProjet_Concat_for_reservation_visite/' + bien_id;
+      route = "getBiensByProjet_Concat_for_reservation_visite/" + bien_id;
     } else {
-      route = 'getBiensByProjet_Concat';
+      route = "getBiensByProjet_Concat";
     }
     try {
       // Fetch all biens for the project from the single endpoint
@@ -787,16 +786,16 @@ export default function ReservationForm({ id }) {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
-        }
+        },
       );
 
       let biens = response.data.biens;
-      console.log('API response biens:', biens);
+      console.log("API response biens:", biens);
 
       // If we're in edit mode and have a bien_id, check if it exists in the response
       if (
         bien_id &&
-        from === 'edit_mode' &&
+        from === "edit_mode" &&
         !biens.some((b) => b.id === bien_id)
       ) {
         // If the bien is not in the API response, we need to handle this case
@@ -805,7 +804,7 @@ export default function ReservationForm({ id }) {
         // Since we can't call the other API, we'll create a minimal representation
         // OR you might want to show an error/toast to the user
         toast.error(
-          `Le bien sélectionné (ID: ${bien_id}) n'est plus disponible`
+          `Le bien sélectionné (ID: ${bien_id}) n'est plus disponible`,
         );
 
         // Optional: Add a placeholder if you still want to show it
@@ -813,16 +812,16 @@ export default function ReservationForm({ id }) {
           id: bien_id,
           propriete_dite_bien: `Bien #${bien_id} (Non disponible)`,
           prix: 0,
-          etat: 'NON_DISPONIBLE',
+          etat: "NON_DISPONIBLE",
         };
         biens = [placeholderBien, ...biens];
       }
 
       setBiensByProjet(biens);
-      console.log('Final biens array:', biens);
+      console.log("Final biens array:", biens);
     } catch (error) {
-      console.error('Error fetching biens:', error);
-      toast.error('Erreur lors du chargement des biens');
+      console.error("Error fetching biens:", error);
+      toast.error("Erreur lors du chargement des biens");
     } finally {
       setLoading_bien(false);
     }
@@ -832,20 +831,20 @@ export default function ReservationForm({ id }) {
     Pusher.logToConsole = true;
 
     const pusher = new Pusher(`${pusher_key_proposition}`, {
-      cluster: 'eu',
+      cluster: "eu",
       encrypted: true,
     });
 
-    const channel = pusher.subscribe('proposition-updates');
+    const channel = pusher.subscribe("proposition-updates");
 
-    channel.bind('App\\Events\\PropositionUpdated', (data) => {
-      if (isEditing) fetch_bien_ByProjet(old_bien_id, 'edit');
+    channel.bind("App\\Events\\PropositionUpdated", (data) => {
+      if (isEditing) fetch_bien_ByProjet(old_bien_id, "edit");
       else fetch_bien_ByProjet(null, null);
     });
 
     return () => {
-      channel.unbind('App\\Events\\PropositionUpdated');
-      pusher.unsubscribe('proposition-updates');
+      channel.unbind("App\\Events\\PropositionUpdated");
+      pusher.unsubscribe("proposition-updates");
     };
   };
   const storebien_en_proposition = async (id) => {
@@ -854,20 +853,20 @@ export default function ReservationForm({ id }) {
       old_id = 0;
     }
     axios({
-      method: 'put',
+      method: "put",
 
       url: `${APIURL.ROOTV1}/setPropostionBien/${id}/` + old_id,
       headers: {
-        'content-type': 'application/json',
-        Accept: 'application/json',
+        "content-type": "application/json",
+        Accept: "application/json",
         Authorization: `Bearer ${accessToken}`,
       },
     })
       .then(() => {
-        console.log('bien est en proposition');
+        console.log("bien est en proposition");
       })
       .catch(() => {
-        console.log('error');
+        console.log("error");
       });
   };
 
@@ -881,7 +880,7 @@ export default function ReservationForm({ id }) {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
-        }
+        },
       );
       if (isEditing) {
         const selectedClientIds = [
@@ -894,7 +893,7 @@ export default function ReservationForm({ id }) {
             nom: client.nom,
             prenom: client.prenom,
             disabled: selectedClientIds.includes(client.id),
-          }))
+          })),
         );
       } else {
         setClientsExist(
@@ -904,13 +903,13 @@ export default function ReservationForm({ id }) {
             prenom: client.prenom,
             // disabled: false,
             disabled: selectedClient ? client.id === selectedClient : false,
-          }))
+          })),
         );
       }
 
       setLoadingClients(false);
     } catch (error) {
-      console.error('Error fetching clients:', error);
+      console.error("Error fetching clients:", error);
       setLoadingClients(false);
     }
   };
@@ -920,12 +919,12 @@ export default function ReservationForm({ id }) {
       fetch_bien_ByProjet(null, null);
 
       if (banques.length == 0) {
-        fetchData_Select('banques', setBanques, setLoading_1);
+        fetchData_Select("banques", setBanques, setLoading_1);
       }
     }
 
     if (partenaires.length == 0) {
-      fetchData_Select('partenaires', setPartenaires, setLoading_1);
+      fetchData_Select("partenaires", setPartenaires, setLoading_1);
     }
 
     if (clientsExist.length == 0) {
@@ -938,7 +937,7 @@ export default function ReservationForm({ id }) {
   const handleFileClick = (file) => {
     window.open(
       `${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/reservations/${file}`,
-      '_blank'
+      "_blank",
     );
   };
   const handleDownloadFile = (file) => {
@@ -947,9 +946,9 @@ export default function ReservationForm({ id }) {
     window.open(fileURL);
   };
   const handleDeleteFile = (index, fileType) => {
-    if (fileType == 'rsv') {
+    if (fileType == "rsv") {
       setSelectedFiles_rsv((prev) => prev.filter((_, i) => i !== index));
-    } else if (fileType == 'avc') {
+    } else if (fileType == "avc") {
       setSelectedFiles_avc((prev) => prev.filter((_, i) => i !== index));
     }
   };
@@ -963,7 +962,7 @@ export default function ReservationForm({ id }) {
     const files = Array.from(event.target.files);
 
     // Reset input to allow selecting same file again
-    event.target.value = '';
+    event.target.value = "";
 
     const newFiles = files
       .filter((file) => {
@@ -991,16 +990,16 @@ export default function ReservationForm({ id }) {
           let newFileName = fileName;
           let fileNumber = 1;
 
-          const fileParts = fileName.split('.');
+          const fileParts = fileName.split(".");
           const extension = fileParts.pop();
-          const baseName = fileParts.join('.');
+          const baseName = fileParts.join(".");
 
           while (
             Object.values(fileList).includes(newFileName) ||
             selectedFiles.some(
               (sf) =>
                 (sf instanceof File && sf.name === newFileName) ||
-                (!(sf instanceof File) && sf.fichier === newFileName)
+                (!(sf instanceof File) && sf.fichier === newFileName),
             )
           ) {
             newFileName = `${baseName} (${fileNumber}).${extension}`;
@@ -1023,20 +1022,20 @@ export default function ReservationForm({ id }) {
   const validateFilesBeforeSubmit = () => {
     // Check if all files are valid File objects
     const allRsvFilesValid = selectedFiles_rsv.every(
-      (file) => file instanceof File || (file && file.fichier)
+      (file) => file instanceof File || (file && file.fichier),
     );
 
     const allAvcFilesValid = selectedFiles_avc.every(
-      (file) => file instanceof File || (file && file.fichier)
+      (file) => file instanceof File || (file && file.fichier),
     );
 
     if (!allRsvFilesValid) {
-      console.error('Invalid reservation files detected');
+      console.error("Invalid reservation files detected");
       return false;
     }
 
     if (!allAvcFilesValid) {
-      console.error('Invalid avance files detected');
+      console.error("Invalid avance files detected");
       return false;
     }
 
@@ -1066,45 +1065,45 @@ export default function ReservationForm({ id }) {
 
     // Step 0: Reservation validations
     if (currentStep === 0) {
-      if (!bien_id || bien_id === '') {
+      if (!bien_id || bien_id === "") {
         errors.push("La sélection d'un bien est requise");
       }
 
-      if (!code_reservation || code_reservation.trim() === '') {
-        errors.push('Le code de réservation est requis');
+      if (!code_reservation || code_reservation.trim() === "") {
+        errors.push("Le code de réservation est requis");
       }
 
-      if (!date_reservation || date_reservation === '') {
-        errors.push('La date de réservation est requise');
+      if (!date_reservation || date_reservation === "") {
+        errors.push("La date de réservation est requise");
       }
 
       if (info_reservation != null) {
-        errors.push('Le code de réservation existe déjà');
+        errors.push("Le code de réservation existe déjà");
       }
     }
 
     // Step 1: Client validations
     if (currentStep === 1) {
       if (!verifierPourcentages) {
-        errors.push('La somme des pourcentages doit être exactement 100%');
+        errors.push("La somme des pourcentages doit être exactement 100%");
       }
 
       // Validate inputList1 clients
       inputList1.forEach((client, index) => {
-        if (!client.id || client.id === '') {
+        if (!client.id || client.id === "") {
           errors.push(
-            `Client ${index + 1}: La sélection d'un client est requise`
+            `Client ${index + 1}: La sélection d'un client est requise`,
           );
         }
         if (
           !client.pourcentage ||
-          client.pourcentage === '' ||
+          client.pourcentage === "" ||
           isNaN(client.pourcentage)
         ) {
           errors.push(
             `Client ${
               index + 1
-            }: Le pourcentage est requis et doit être un nombre`
+            }: Le pourcentage est requis et doit être un nombre`,
           );
         }
       });
@@ -1113,7 +1112,7 @@ export default function ReservationForm({ id }) {
       addedClients.forEach((client, index) => {
         if (
           !client.pourcentage ||
-          client.pourcentage === '' ||
+          client.pourcentage === "" ||
           isNaN(client.pourcentage)
         ) {
           errors.push(`Nouveau client ${index + 1}: Le pourcentage est requis`);
@@ -1125,13 +1124,13 @@ export default function ReservationForm({ id }) {
     if (currentStep === 2) {
       // Mode financement validation
       if (!mode_financement) {
-        errors.push('Le mode de financement est requis');
+        errors.push("Le mode de financement est requis");
       }
 
       // Non-editing validations
       if (!isEditing) {
         // Basic amount validations
-        if (avance === '' || isNaN(avance)) {
+        if (avance === "" || isNaN(avance)) {
           errors.push("Le montant de l'avance est requis");
         } else if (avance < 0) {
           errors.push("Le montant de l'avance ne peut pas être négatif");
@@ -1142,29 +1141,29 @@ export default function ReservationForm({ id }) {
           // Users with role > 2 CANNOT create reservation with amount 0 AT ALL
           if (user?.role > 2) {
             errors.push(
-              'Le montant ne peut pas être 0 pour votre rôle. Veuillez saisir un montant positif.'
+              "Le montant ne peut pas être 0 pour votre rôle. Veuillez saisir un montant positif.",
             );
           }
           // For users with role ≤ 2, they need to check the checkbox
           else if (!check_montant) {
             errors.push(
-              "Vous devez cocher 'Enregistrer la Réservation sans montant' lorsque le montant est 0"
+              "Vous devez cocher 'Enregistrer la Réservation sans montant' lorsque le montant est 0",
             );
           }
           // For users with role ≤ 2 who checked the checkbox, comment is required
           else if (
             check_montant &&
-            (!commentaireAvance || commentaireAvance.trim() === '')
+            (!commentaireAvance || commentaireAvance.trim() === "")
           ) {
             errors.push(
-              'Un commentaire est requis lorsque vous enregistrez sans montant'
+              "Un commentaire est requis lorsque vous enregistrez sans montant",
             );
           }
         }
 
         // Payment method validation (only required when amount > 0)
         if (avance > 0 && !mode_paiement) {
-          errors.push('Le mode de paiement est requis');
+          errors.push("Le mode de paiement est requis");
         }
 
         // Check payment method specific rules (only when amount > 0)
@@ -1175,10 +1174,10 @@ export default function ReservationForm({ id }) {
 
           if (isCheckPayment) {
             if (!banque_id) {
-              errors.push('La banque est requise pour ce mode de paiement');
+              errors.push("La banque est requise pour ce mode de paiement");
             }
-            if (!numero_paiement || numero_paiement.trim() === '') {
-              errors.push('Le numéro de paiement est requis');
+            if (!numero_paiement || numero_paiement.trim() === "") {
+              errors.push("Le numéro de paiement est requis");
             }
             if (!echeance) {
               errors.push("La date d'échéance est requise");
@@ -1187,10 +1186,10 @@ export default function ReservationForm({ id }) {
 
           if (isTransferPayment) {
             if (!banque_id) {
-              errors.push('La banque est requise pour ce mode de paiement');
+              errors.push("La banque est requise pour ce mode de paiement");
             }
-            if (!numero_paiement || numero_paiement.trim() === '') {
-              errors.push('Le numéro de paiement est requis');
+            if (!numero_paiement || numero_paiement.trim() === "") {
+              errors.push("Le numéro de paiement est requis");
             }
           }
         }
@@ -1204,18 +1203,18 @@ export default function ReservationForm({ id }) {
 
     // General validations
     if (loading.form) {
-      errors.push('Le formulaire est en cours de chargement');
+      errors.push("Le formulaire est en cours de chargement");
     }
 
     return errors;
   };
   // Helper functions (add these outside your component)
   const getFileIcon = (filename) => {
-    const extension = filename.split('.').pop().toLowerCase();
-    const iconClass = 'w-5 h-5 flex-shrink-0 text-gray-400';
+    const extension = filename.split(".").pop().toLowerCase();
+    const iconClass = "w-5 h-5 flex-shrink-0 text-gray-400";
 
     switch (extension) {
-      case 'pdf':
+      case "pdf":
         return (
           <svg className={iconClass} fill="currentColor" viewBox="0 0 20 20">
             <path
@@ -1225,9 +1224,9 @@ export default function ReservationForm({ id }) {
             />
           </svg>
         );
-      case 'jpg':
-      case 'jpeg':
-      case 'png':
+      case "jpg":
+      case "jpeg":
+      case "png":
         return (
           <svg className={iconClass} fill="currentColor" viewBox="0 0 20 20">
             <path
@@ -1237,8 +1236,8 @@ export default function ReservationForm({ id }) {
             />
           </svg>
         );
-      case 'doc':
-      case 'docx':
+      case "doc":
+      case "docx":
         return (
           <svg className={iconClass} fill="currentColor" viewBox="0 0 20 20">
             <path
@@ -1262,7 +1261,7 @@ export default function ReservationForm({ id }) {
   };
 
   const formatFileSize = (bytes) => {
-    if (!bytes) return 'N/A';
+    if (!bytes) return "N/A";
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / 1048576).toFixed(1)} MB`;
@@ -1285,18 +1284,18 @@ export default function ReservationForm({ id }) {
       setDisabled(true);
     }
     // Activer l'état de modification
-    if (name === 'pourcentage') {
+    if (name === "pourcentage") {
       setHasPercentageChanged(true);
     }
 
     // Handle client selection changes
-    if (text == 'select_client') {
+    if (text == "select_client") {
       // Enable the previously selected client (if any)
       if (previousId && previousId !== value) {
         setClientsExist((prevClients) =>
           prevClients.map((client) =>
-            client.id === previousId ? { ...client, disabled: false } : client
-          )
+            client.id === previousId ? { ...client, disabled: false } : client,
+          ),
         );
       }
 
@@ -1304,8 +1303,8 @@ export default function ReservationForm({ id }) {
       if (value) {
         setClientsExist((prevClients) =>
           prevClients.map((client) =>
-            client.id === value ? { ...client, disabled: true } : client
-          )
+            client.id === value ? { ...client, disabled: true } : client,
+          ),
         );
       }
     }
@@ -1315,7 +1314,7 @@ export default function ReservationForm({ id }) {
       // Only count if percentage is valid and not empty
       if (
         client.pourcentage &&
-        client.pourcentage !== '' &&
+        client.pourcentage !== "" &&
         !isNaN(client.pourcentage)
       ) {
         return sum + Number(client.pourcentage);
@@ -1326,7 +1325,7 @@ export default function ReservationForm({ id }) {
     const totalPercentage_client_form = addedClients.reduce((sum, client) => {
       if (
         client.pourcentage &&
-        client.pourcentage !== '' &&
+        client.pourcentage !== "" &&
         !isNaN(client.pourcentage)
       ) {
         return sum + Number(client.pourcentage);
@@ -1335,29 +1334,29 @@ export default function ReservationForm({ id }) {
     }, 0);
 
     console.log(
-      'toto percentselect =>' +
+      "toto percentselect =>" +
         sum_percent_select +
-        'totalPercentage_client_form==>' +
-        totalPercentage_client_form
+        "totalPercentage_client_form==>" +
+        totalPercentage_client_form,
     );
 
     const totalPercentage = sum_percent_select + totalPercentage_client_form;
-    setValue('pourcentages', totalPercentage);
+    setValue("pourcentages", totalPercentage);
 
-    if (text == 'percent') {
+    if (text == "percent") {
       // Validate if total is exactly 100
       const isValid = totalPercentage == 100;
-      setValue('verifierPourcentages', isValid);
-      setenabled(isValid ? 'none' : 'block');
+      setValue("verifierPourcentages", isValid);
+      setenabled(isValid ? "none" : "block");
     }
     // Only include clients with valid percentages in oldClients
     const validClients = list.filter(
       (client) =>
         client.id &&
-        client.id !== '' &&
+        client.id !== "" &&
         client.pourcentage &&
-        client.pourcentage !== '' &&
-        !isNaN(client.pourcentage)
+        client.pourcentage !== "" &&
+        !isNaN(client.pourcentage),
     );
 
     /* var arrayinputList1 = Object.values(list);
@@ -1368,25 +1367,25 @@ export default function ReservationForm({ id }) {
     }*/
 
     setoldClients(validClients);
-    setValue('oldClients', JSON.stringify(validClients));
-    console.log(' the final list==>' + JSON.stringify(validClients));
+    setValue("oldClients", JSON.stringify(validClients));
+    console.log(" the final list==>" + JSON.stringify(validClients));
   };
   const validateClientStep = () => {
     // Filter out empty/invalid clients first
     const validSelectedClients = inputList1.filter(
       (client) =>
         client.id &&
-        client.id !== '' &&
+        client.id !== "" &&
         client.pourcentage &&
-        client.pourcentage !== '' &&
-        !isNaN(client.pourcentage)
+        client.pourcentage !== "" &&
+        !isNaN(client.pourcentage),
     );
 
     const validAddedClients = addedClients.filter(
       (client) =>
         client.pourcentage &&
-        client.pourcentage !== '' &&
-        !isNaN(client.pourcentage)
+        client.pourcentage !== "" &&
+        !isNaN(client.pourcentage),
     );
 
     // If no valid clients at all, return false
@@ -1403,14 +1402,14 @@ export default function ReservationForm({ id }) {
       (sum, client) => {
         return sum + Number(client.pourcentage);
       },
-      0
+      0,
     );
 
     const totalPercentage = sum_percent_select + totalPercentage_client_form;
     const totalValid = totalPercentage === 100;
 
     console.log(
-      `Validation - Selected: ${sum_percent_select}, Added: ${totalPercentage_client_form}, Total: ${totalPercentage}, Valid: ${totalValid}`
+      `Validation - Selected: ${sum_percent_select}, Added: ${totalPercentage_client_form}, Total: ${totalPercentage}, Valid: ${totalValid}`,
     );
 
     return totalValid;
@@ -1418,12 +1417,12 @@ export default function ReservationForm({ id }) {
   // Add this function to clean up empty client entries
   const cleanupEmptyClients = () => {
     const cleanedList = inputList1.filter(
-      (client) => !(client.id === '' && client.pourcentage === '')
+      (client) => !(client.id === "" && client.pourcentage === ""),
     );
 
     if (cleanedList.length !== inputList1.length) {
       setinputList1(
-        cleanedList.length > 0 ? cleanedList : [{ id: '', pourcentage: '' }]
+        cleanedList.length > 0 ? cleanedList : [{ id: "", pourcentage: "" }],
       );
     }
   };
@@ -1441,10 +1440,10 @@ export default function ReservationForm({ id }) {
   useEffect(() => {
     return () => {
       // Clean up selected client from localStorage when component unmounts
-      localStorage.removeItem('selectedClient_show_client');
+      localStorage.removeItem("selectedClient_show_client");
       // Reset all client disabled states
       setClientsExist((prevClients) =>
-        prevClients.map((client) => ({ ...client, disabled: false }))
+        prevClients.map((client) => ({ ...client, disabled: false })),
       );
     };
   }, []);
@@ -1456,48 +1455,47 @@ export default function ReservationForm({ id }) {
         ...form,
         check: false,
         check_p: false,
-          check_field: null, // <-- Ajoutez ceci
-
-      }))
+        check_field: null, // <-- Ajoutez ceci
+      })),
     );
 
     setHasPercentageChanged(true);
     // Calculate total percentage of selected clients
     const totalPercentage = newClientForms.reduce(
       (sum, client) => sum + Number(client.pourcentage || 0),
-      0
+      0,
     );
 
     // Get current value of pourcentages field
-    const old_value_pourcentages = getValues('pourcentages');
+    const old_value_pourcentages = getValues("pourcentages");
 
     // Calculate and set new value
     const newValue = old_value_pourcentages - totalPercentage;
-    setValue('pourcentages', newValue);
+    setValue("pourcentages", newValue);
 
     // Validate if total is exactly 100
 
-    setenabled(newValue == 100 ? 'none' : 'block');
+    setenabled(newValue == 100 ? "none" : "block");
   };
   const handleAnnuler_client_added = (percent) => {
     setHasPercentageChanged(true); // Activer l'état
     // Get current value of pourcentages field
-    const old_value_pourcentages = getValues('pourcentages');
+    const old_value_pourcentages = getValues("pourcentages");
 
     // Calculate and set new value
     const newValue = old_value_pourcentages - percent;
 
-    setValue('pourcentages', newValue);
+    setValue("pourcentages", newValue);
 
     // Validate if total is exactly 100
 
-    setenabled(newValue == 100 ? 'none' : 'block');
+    setenabled(newValue == 100 ? "none" : "block");
   };
   useEffect(() => {
-    if (watch('pourcentages') === 100) {
+    if (watch("pourcentages") === 100) {
       setHasPercentageChanged(false);
     }
-  }, [watch('pourcentages')]);
+  }, [watch("pourcentages")]);
 
   const calculateTotalPercentage_new_form = (currentClients) => {
     setHasPercentageChanged(true); // Activer l'état
@@ -1515,15 +1513,15 @@ export default function ReservationForm({ id }) {
     const total = newClientsSum + oldClientsSum;
 
     console.log(
-      `Calculation: ${newClientsSum} (new) + ${oldClientsSum} (old) = ${total}`
+      `Calculation: ${newClientsSum} (new) + ${oldClientsSum} (old) = ${total}`,
     );
 
     // Update all states
-    setValue('pourcentages', total);
+    setValue("pourcentages", total);
     // Validate
     const isValid = total == 100;
-    setValue('verifierPourcentages', isValid);
-    setenabled(isValid ? 'none' : 'block');
+    setValue("verifierPourcentages", isValid);
+    setenabled(isValid ? "none" : "block");
   };
   const validateNewClientForm = () => {
     const errors = [];
@@ -1535,7 +1533,7 @@ export default function ReservationForm({ id }) {
       // Vérifier si check (client existant) est vrai pour CE formulaire
       if (form.check) {
         errors.push(
-          `Client ${clientNumber}: Ce client existe déjà dans la base de données. Veuillez le sélectionner dans la liste des clients existants.`
+          `Client ${clientNumber}: Ce client existe déjà dans la base de données. Veuillez le sélectionner dans la liste des clients existants.`,
         );
       }
       // Type Client validation
@@ -1544,24 +1542,24 @@ export default function ReservationForm({ id }) {
       }
 
       // Partenaire validation (if type is Société)
-      if (form.type_client === '2' && !form.partenaire_id) {
+      if (form.type_client === "2" && !form.partenaire_id) {
         errors.push(
-          `Client ${clientNumber}: Partenaire est obligatoire pour Société`
+          `Client ${clientNumber}: Partenaire est obligatoire pour Société`,
         );
       }
 
       // CIN validation
-      if (!form.cin || form.cin.trim() === '') {
+      if (!form.cin || form.cin.trim() === "") {
         errors.push(`Client ${clientNumber}: CIN est obligatoire`);
       }
 
       // Nom validation
-      if (!form.nom || form.nom.trim() === '') {
+      if (!form.nom || form.nom.trim() === "") {
         errors.push(`Client ${clientNumber}: Nom est obligatoire`);
       }
 
       // Prénom validation
-      if (!form.prenom || form.prenom.trim() === '') {
+      if (!form.prenom || form.prenom.trim() === "") {
         errors.push(`Client ${clientNumber}: Prénom est obligatoire`);
       }
 
@@ -1571,7 +1569,7 @@ export default function ReservationForm({ id }) {
       }
 
       // Pourcentage validation
-      if (!form.pourcentage || form.pourcentage === '') {
+      if (!form.pourcentage || form.pourcentage === "") {
         errors.push(`Client ${clientNumber}: Pourcentage est obligatoire`);
       } else if (isNaN(Number(form.pourcentage))) {
         errors.push(`Client ${clientNumber}: Pourcentage doit être un nombre`);
@@ -1580,7 +1578,7 @@ export default function ReservationForm({ id }) {
         Number(form.pourcentage) > 100
       ) {
         errors.push(
-          `Client ${clientNumber}: Pourcentage doit être entre 0 et 100`
+          `Client ${clientNumber}: Pourcentage doit être entre 0 et 100`,
         );
       }
 
@@ -1589,43 +1587,43 @@ export default function ReservationForm({ id }) {
         errors.push(`Client ${clientNumber}: Téléphone est obligatoire`);
       } else if (String(form.telephone_num1).length < 8) {
         errors.push(
-          `Client ${clientNumber}: Téléphone doit avoir au moins 8 chiffres`
+          `Client ${clientNumber}: Téléphone doit avoir au moins 8 chiffres`,
         );
       } else if (isNaN(form.telephone_num1)) {
         errors.push(
-          `Client ${clientNumber}: Téléphone doit contenir uniquement des chiffres`
+          `Client ${clientNumber}: Téléphone doit contenir uniquement des chiffres`,
         );
       }
 
       // Situation Familiale validation
       if (!form.situation_familliale) {
         errors.push(
-          `Client ${clientNumber}: Situation familiale est obligatoire`
+          `Client ${clientNumber}: Situation familiale est obligatoire`,
         );
       }
 
       // Notifié validation
-      if (form.notifie === '' || form.notifie === undefined) {
+      if (form.notifie === "" || form.notifie === undefined) {
         errors.push(
-          `Client ${clientNumber}: "Accepte d'être contacté" est obligatoire`
+          `Client ${clientNumber}: "Accepte d'être contacté" est obligatoire`,
         );
       }
 
       // Marriage validations (only if situation is Marié)
-      if (form.situation_familliale === '2') {
-        if (!form.nom_mari || form.nom_mari.trim() === '') {
+      if (form.situation_familliale === "2") {
+        if (!form.nom_mari || form.nom_mari.trim() === "") {
           errors.push(
-            `Client ${clientNumber}: Nom du conjoint est obligatoire`
+            `Client ${clientNumber}: Nom du conjoint est obligatoire`,
           );
         }
         if (!form.date_mariage) {
           errors.push(
-            `Client ${clientNumber}: Date de mariage est obligatoire`
+            `Client ${clientNumber}: Date de mariage est obligatoire`,
           );
         }
-        if (!form.lieu_mariage || form.lieu_mariage.trim() === '') {
+        if (!form.lieu_mariage || form.lieu_mariage.trim() === "") {
           errors.push(
-            `Client ${clientNumber}: Lieu de mariage est obligatoire`
+            `Client ${clientNumber}: Lieu de mariage est obligatoire`,
           );
         }
       }
@@ -1653,31 +1651,31 @@ export default function ReservationForm({ id }) {
       const updatedClients = [...addedClients, ...clientsToAdd];
       calculateTotalPercentage_new_form(updatedClients);
       setAddedClients(updatedClients);
-      setValue('clients', updatedClients);
+      setValue("clients", updatedClients);
 
       // Reset form
       setShowNewClientForm(false);
       setNumberOfForms(1);
       setNewClientForms([
         {
-          cin: '',
-          nom: '',
-          prenom: '',
-          telephone_num1: '',
-          pourcentage: '',
-          address: '',
-          type_client: '',
-          partenaire_id: '',
+          cin: "",
+          nom: "",
+          prenom: "",
+          telephone_num1: "",
+          pourcentage: "",
+          address: "",
+          type_client: "",
+          partenaire_id: "",
           prospect_id: null,
-          info_client: '',
-          info_prospect: '',
-          projet_id: selectedProjet ? selectedProjet.id : '',
+          info_client: "",
+          info_prospect: "",
+          projet_id: selectedProjet ? selectedProjet.id : "",
           situation_familliale: null,
           nom_mari: null,
           date_mariage: null,
           lieu_mariage: null,
-          notifie: '',
-          civilite: '',
+          notifie: "",
+          civilite: "",
         },
       ]);
       setFormSubmitted_client(false);
@@ -1689,9 +1687,9 @@ export default function ReservationForm({ id }) {
       toast.error(
         `Veuillez corriger ${validationErrors.length} erreur(s) dans le formulaire`,
         {
-          position: 'top-center',
+          position: "top-center",
           duration: 5000,
-        }
+        },
       );
     }
   };
@@ -1708,44 +1706,44 @@ export default function ReservationForm({ id }) {
 
       const totalPercentage = sum_percent_select + totalPercentage_client_form;
 
-      setValue('pourcentages', totalPercentage);
+      setValue("pourcentages", totalPercentage);
 
       const isValid = totalPercentage === 100;
-      setValue('verifierPourcentages', isValid);
-      setenabled(isValid ? 'none' : 'block');
+      setValue("verifierPourcentages", isValid);
+      setenabled(isValid ? "none" : "block");
     }
   }, [inputList1, addedClients, currentStep, setValue]);
   const isFormValid = () => {
     return newClientForms.every((form) => {
       // Basic field validation
       const hasRequiredFields =
-        form.cin?.trim() !== '' &&
-        form.nom?.trim() !== '' &&
-        form.prenom?.trim() !== '' &&
-        String(form.telephone_num1 || '').length >= 8 &&
+        form.cin?.trim() !== "" &&
+        form.nom?.trim() !== "" &&
+        form.prenom?.trim() !== "" &&
+        String(form.telephone_num1 || "").length >= 8 &&
         !isNaN(form.telephone_num1) &&
-        form.pourcentage !== '' &&
+        form.pourcentage !== "" &&
         !isNaN(form.pourcentage) &&
         Number(form.pourcentage) >= 0 &&
         Number(form.pourcentage) <= 100 &&
-        form.situation_familliale !== '' && // Situation familiale is required
-        form.civilite != '' &&
-        form.notifie != '';
+        form.situation_familliale !== "" && // Situation familiale is required
+        form.civilite != "" &&
+        form.notifie != "";
       // Type client validation
-      const hasValidType = form.type_client !== '';
+      const hasValidType = form.type_client !== "";
 
       // Partenaire validation (only required if type is Société)
       const hasValidPartenaire =
-        form.type_client !== '2' || // Not Société
-        (form.type_client === '2' && form.partenaire_id !== ''); // Or has partenaire
+        form.type_client !== "2" || // Not Société
+        (form.type_client === "2" && form.partenaire_id !== ""); // Or has partenaire
 
       // Marriage validation (only required if situation is Marié)
       const hasValidMarriage =
-        form.situation_familliale !== '2' || // Not Marié
-        (form.situation_familliale === '2' &&
-          form.nom_mari?.trim() !== '' &&
+        form.situation_familliale !== "2" || // Not Marié
+        (form.situation_familliale === "2" &&
+          form.nom_mari?.trim() !== "" &&
           form.date_mariage &&
-          form.lieu_mariage?.trim() !== ''); // Or has all marriage fields
+          form.lieu_mariage?.trim() !== ""); // Or has all marriage fields
 
       const hasValidNotifie =
         form.notifie !== undefined && form.notifie !== null;
@@ -1766,85 +1764,85 @@ export default function ReservationForm({ id }) {
     // Vérifier si client existe (check est true)
     if (clientToEdit.check) {
       errors.push(
-        'Ce client existe déjà dans la base de données. Veuillez utiliser le client existant.'
+        "Ce client existe déjà dans la base de données. Veuillez utiliser le client existant.",
       );
       return errors; // Arrêter ici si client existe
     }
 
     // Type Client validation
     if (!clientToEdit.type_client) {
-      errors.push('Type client est obligatoire');
+      errors.push("Type client est obligatoire");
     }
 
     // Partenaire validation (if type is Société)
-    if (clientToEdit.type_client === '2' && !clientToEdit.partenaire_id) {
-      errors.push('Partenaire est obligatoire pour Société');
+    if (clientToEdit.type_client === "2" && !clientToEdit.partenaire_id) {
+      errors.push("Partenaire est obligatoire pour Société");
     }
 
     // CIN validation
-    if (!clientToEdit.cin || clientToEdit.cin.trim() === '') {
-      errors.push('CIN est obligatoire');
+    if (!clientToEdit.cin || clientToEdit.cin.trim() === "") {
+      errors.push("CIN est obligatoire");
     }
 
     // Nom validation
-    if (!clientToEdit.nom || clientToEdit.nom.trim() === '') {
-      errors.push('Nom est obligatoire');
+    if (!clientToEdit.nom || clientToEdit.nom.trim() === "") {
+      errors.push("Nom est obligatoire");
     }
 
     // Prénom validation
-    if (!clientToEdit.prenom || clientToEdit.prenom.trim() === '') {
-      errors.push('Prénom est obligatoire');
+    if (!clientToEdit.prenom || clientToEdit.prenom.trim() === "") {
+      errors.push("Prénom est obligatoire");
     }
 
     // Civilité validation
     if (!clientToEdit.civilite) {
-      errors.push('Civilité est obligatoire');
+      errors.push("Civilité est obligatoire");
     }
 
     // Pourcentage validation
-    if (!clientToEdit.pourcentage || clientToEdit.pourcentage === '') {
-      errors.push('Pourcentage est obligatoire');
+    if (!clientToEdit.pourcentage || clientToEdit.pourcentage === "") {
+      errors.push("Pourcentage est obligatoire");
     } else if (isNaN(Number(clientToEdit.pourcentage))) {
-      errors.push('Pourcentage doit être un nombre');
+      errors.push("Pourcentage doit être un nombre");
     } else if (
       Number(clientToEdit.pourcentage) < 0 ||
       Number(clientToEdit.pourcentage) > 100
     ) {
-      errors.push('Pourcentage doit être entre 0 et 100');
+      errors.push("Pourcentage doit être entre 0 et 100");
     }
 
     // Téléphone validation
     if (!clientToEdit.telephone_num1) {
-      errors.push('Téléphone est obligatoire');
+      errors.push("Téléphone est obligatoire");
     } else if (String(clientToEdit.telephone_num1).length < 8) {
-      errors.push('Téléphone doit avoir au moins 8 chiffres');
+      errors.push("Téléphone doit avoir au moins 8 chiffres");
     } else if (isNaN(clientToEdit.telephone_num1)) {
-      errors.push('Téléphone doit contenir uniquement des chiffres');
+      errors.push("Téléphone doit contenir uniquement des chiffres");
     }
 
     // Situation Familiale validation
     if (!clientToEdit.situation_familliale) {
-      errors.push('Situation familiale est obligatoire');
+      errors.push("Situation familiale est obligatoire");
     }
 
     // Notifié validation
-    if (clientToEdit.notifie === '' || clientToEdit.notifie === undefined) {
+    if (clientToEdit.notifie === "" || clientToEdit.notifie === undefined) {
       errors.push('"Accepte d\'être contacté" est obligatoire');
     }
 
     // Marriage validations (only if situation is Marié)
-    if (clientToEdit.situation_familliale === '2') {
-      if (!clientToEdit.nom_mari || clientToEdit.nom_mari.trim() === '') {
-        errors.push('Nom du conjoint est obligatoire');
+    if (clientToEdit.situation_familliale === "2") {
+      if (!clientToEdit.nom_mari || clientToEdit.nom_mari.trim() === "") {
+        errors.push("Nom du conjoint est obligatoire");
       }
       if (!clientToEdit.date_mariage) {
-        errors.push('Date de mariage est obligatoire');
+        errors.push("Date de mariage est obligatoire");
       }
       if (
         !clientToEdit.lieu_mariage ||
-        clientToEdit.lieu_mariage.trim() === ''
+        clientToEdit.lieu_mariage.trim() === ""
       ) {
-        errors.push('Lieu de mariage est obligatoire');
+        errors.push("Lieu de mariage est obligatoire");
       }
     }
 
@@ -1855,11 +1853,11 @@ export default function ReservationForm({ id }) {
     // Vérifier si client existe
     if (clientToEdit.check) {
       toast.error(
-        'Ce client existe déjà dans la base de données. Veuillez utiliser le client existant.',
+        "Ce client existe déjà dans la base de données. Veuillez utiliser le client existant.",
         {
-          position: 'top-center',
+          position: "top-center",
           duration: 5000,
-        }
+        },
       );
       return;
     }
@@ -1878,18 +1876,18 @@ export default function ReservationForm({ id }) {
         address: clientToEdit.address,
         type_client: clientToEdit.type_client,
         partenaire_id:
-          clientToEdit.type_client === '2' ? clientToEdit.partenaire_id : null,
+          clientToEdit.type_client === "2" ? clientToEdit.partenaire_id : null,
         situation_familliale: clientToEdit.situation_familliale,
         nom_mari:
-          clientToEdit.situation_familliale == '2'
+          clientToEdit.situation_familliale == "2"
             ? clientToEdit.nom_mari
             : null,
         date_mariage:
-          clientToEdit.situation_familliale == '2'
+          clientToEdit.situation_familliale == "2"
             ? clientToEdit.date_mariage
             : null,
         lieu_mariage:
-          clientToEdit.situation_familliale == '2'
+          clientToEdit.situation_familliale == "2"
             ? clientToEdit.lieu_mariage
             : null,
         civilite: clientToEdit.civilite,
@@ -1897,24 +1895,24 @@ export default function ReservationForm({ id }) {
       };
 
       setAddedClients(updatedClients);
-      setValue('clients', updatedClients);
+      setValue("clients", updatedClients);
 
       // Recalculate percentages
       const sum_percent_select = inputList1.reduce(
         (sum, nombres) => sum + Number(nombres.pourcentage) || 0,
-        0
+        0,
       );
 
       const totalPercentage_client_form = updatedClients.reduce(
         (sum, client) => sum + Number(client.pourcentage || 0),
-        0
+        0,
       );
 
       const totalPercentage = sum_percent_select + totalPercentage_client_form;
-      setValue('pourcentages', totalPercentage);
+      setValue("pourcentages", totalPercentage);
 
       const isValid = totalPercentage === 100;
-      setValue('verifierPourcentages', isValid);
+      setValue("verifierPourcentages", isValid);
 
       if (isValid) {
         setHasPercentageChanged(false);
@@ -1924,7 +1922,7 @@ export default function ReservationForm({ id }) {
     } else {
       // Show validation errors
       toast.error(`Veuillez corriger ${validationErrors.length} erreur(s)`, {
-        position: 'top-center',
+        position: "top-center",
         duration: 5000,
       });
     }
@@ -1933,34 +1931,34 @@ export default function ReservationForm({ id }) {
   const isFormValid_Edit = () => {
     // Basic field validation
     const hasRequiredFields =
-      clientToEdit.cin?.trim() !== '' &&
-      clientToEdit.nom?.trim() !== '' &&
-      clientToEdit.prenom?.trim() !== '' &&
-      String(clientToEdit.telephone_num1 || '').length >= 8 &&
+      clientToEdit.cin?.trim() !== "" &&
+      clientToEdit.nom?.trim() !== "" &&
+      clientToEdit.prenom?.trim() !== "" &&
+      String(clientToEdit.telephone_num1 || "").length >= 8 &&
       !isNaN(clientToEdit.telephone_num1) &&
-      clientToEdit.pourcentage !== '' &&
+      clientToEdit.pourcentage !== "" &&
       !isNaN(clientToEdit.pourcentage) &&
       Number(clientToEdit.pourcentage) >= 0 &&
       Number(clientToEdit.pourcentage) <= 100 &&
-      clientToEdit.situation_familliale != '' &&
-      clientToEdit.civilite != '' &&
-      clientToEdit.notifie != ''; // Situation familiale is required
+      clientToEdit.situation_familliale != "" &&
+      clientToEdit.civilite != "" &&
+      clientToEdit.notifie != ""; // Situation familiale is required
 
     // Type client validation
-    const hasValidType = clientToEdit.type_client !== '';
+    const hasValidType = clientToEdit.type_client !== "";
 
     // Partenaire validation (only required if type is Société)
     const hasValidPartenaire =
-      clientToEdit.type_client !== '2' || // Not Société
-      (clientToEdit.type_client === '2' && clientToEdit.partenaire_id !== ''); // Or has partenaire
+      clientToEdit.type_client !== "2" || // Not Société
+      (clientToEdit.type_client === "2" && clientToEdit.partenaire_id !== ""); // Or has partenaire
 
     // Marriage validation (only required if situation is Marié)
     const hasValidMarriage =
-      clientToEdit.situation_familliale !== '2' || // Not Marié
-      (clientToEdit.situation_familliale === '2' &&
-        clientToEdit.nom_marie?.trim() !== '' &&
+      clientToEdit.situation_familliale !== "2" || // Not Marié
+      (clientToEdit.situation_familliale === "2" &&
+        clientToEdit.nom_marie?.trim() !== "" &&
         clientToEdit.date_mariage &&
-        clientToEdit.lieu_mariage?.trim() !== ''); // Or has all marriage fields
+        clientToEdit.lieu_mariage?.trim() !== ""); // Or has all marriage fields
 
     return (
       hasRequiredFields &&
@@ -1977,9 +1975,9 @@ export default function ReservationForm({ id }) {
     accessToken,
     updateFormField,
     isEditMode = false, // Nouveau paramètre pour indiquer si c'est en mode édition
-    setClientToEdit = null // Pour le mode édition
+    setClientToEdit = null, // Pour le mode édition
   ) => {
-    const prefix = text == 'tel' ? 'Le numéro de téléphone ' : 'La Cin ';
+    const prefix = text == "tel" ? "Le numéro de téléphone " : "La Cin ";
 
     try {
       const response = await axios.get(
@@ -1988,21 +1986,21 @@ export default function ReservationForm({ id }) {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
-        }
+        },
       );
 
       if (response.data) {
         if (response.data.prospect) {
           toast.error(
             ` ${prefix} ${value} appartient au Prospect ${
-              (response.data.prospect.nom || '') +
-              ' ' +
-              (response.data.prospect.prenom || '')
+              (response.data.prospect.nom || "") +
+              " " +
+              (response.data.prospect.prenom || "")
             }`,
             {
-              position: 'top-center',
+              position: "top-center",
               duration: 5000,
-            }
+            },
           );
 
           if (isEditMode && setClientToEdit) {
@@ -2017,24 +2015,24 @@ export default function ReservationForm({ id }) {
             // Mode ajout
             updateFormField(
               formIndex,
-              'prospect_id',
-              response.data.prospect.id
+              "prospect_id",
+              response.data.prospect.id,
             );
-            updateFormField(formIndex, 'check_field', text); // <-- Ajoutez ce champ
+            updateFormField(formIndex, "check_field", text); // <-- Ajoutez ce champ
 
-            updateFormField(formIndex, 'check_p', true);
+            updateFormField(formIndex, "check_p", true);
           }
         }
 
         if (response.data.client) {
           toast.error(
             ` ${prefix} ${value} appartient au Client ${
-              response.data.client.nom + ' ' + response.data.client.prenom
+              response.data.client.nom + " " + response.data.client.prenom
             }`,
             {
-              position: 'top-center',
+              position: "top-center",
               duration: 5000,
-            }
+            },
           );
 
           if (isEditMode && setClientToEdit) {
@@ -2046,22 +2044,22 @@ export default function ReservationForm({ id }) {
             }));
           } else {
             // Mode ajout
-            updateFormField(formIndex, 'check', true);
-            updateFormField(formIndex, 'check_field', text); // <-- Ajoutez ce champ
+            updateFormField(formIndex, "check", true);
+            updateFormField(formIndex, "check_field", text); // <-- Ajoutez ce champ
           }
         } else {
           // Aucun client trouvé
           if (isEditMode && setClientToEdit) {
             setClientToEdit((prev) => ({ ...prev, check: false }));
           } else {
-            updateFormField(formIndex, 'check', false);
+            updateFormField(formIndex, "check", false);
           }
         }
       }
     } catch (error) {
-      console.error('Error checking phone number:', error);
-      toast.error('Erreur lors de la vérification', {
-        position: 'top-center',
+      console.error("Error checking phone number:", error);
+      toast.error("Erreur lors de la vérification", {
+        position: "top-center",
         duration: 5000,
       });
 
@@ -2069,15 +2067,14 @@ export default function ReservationForm({ id }) {
         setClientToEdit((prev) => ({
           ...prev,
           check: false,
-                      check_field: null, // <-- Réinitialiser
+          check_field: null, // <-- Réinitialiser
 
           check_p: false,
         }));
       } else {
-        updateFormField(formIndex, 'check', false);
-        updateFormField(formIndex, 'check_p', false);
-                  updateFormField(formIndex, 'check_field', null); // <-- Réinitialiser
-
+        updateFormField(formIndex, "check", false);
+        updateFormField(formIndex, "check_p", false);
+        updateFormField(formIndex, "check_field", null); // <-- Réinitialiser
       }
     }
   };
@@ -2116,32 +2113,32 @@ export default function ReservationForm({ id }) {
   const handleChangePrixRemise = (event) => {
     const values = {
       prix_remise: event.target.value,
-      prix_unitaire: watch('prix_unitaire'),
-      prix_forfetaire: watch('prix_forfetaire'),
-      superficie_jardin_calculer: watch('superficie_jardin_calculer'),
-      superficie_habitable: watch('superficie_habitable'),
-      superficie_balcon_calculer: watch('Superficie_balcon_calculer'),
-      superficie_terrasse_calculer: watch('superficie_terrasse_calculer'),
-      prix_box: watch('prix_box'),
-      prix_parking: watch('prix_parking'),
+      prix_unitaire: watch("prix_unitaire"),
+      prix_forfetaire: watch("prix_forfetaire"),
+      superficie_jardin_calculer: watch("superficie_jardin_calculer"),
+      superficie_habitable: watch("superficie_habitable"),
+      superficie_balcon_calculer: watch("Superficie_balcon_calculer"),
+      superficie_terrasse_calculer: watch("superficie_terrasse_calculer"),
+      prix_box: watch("prix_box"),
+      prix_parking: watch("prix_parking"),
     };
-    setValue('prix_final', calculateTotalPrice(values));
+    setValue("prix_final", calculateTotalPrice(values));
   };
 
   const handleChangePrixForfetaire = (event) => {
     const values = {
-      prix_remise: watch('prix_remise'),
-      prix_unitaire: watch('prix_unitaire'),
+      prix_remise: watch("prix_remise"),
+      prix_unitaire: watch("prix_unitaire"),
       prix_forfetaire: event.target.value,
-      superficie_jardin_calculer: watch('superficie_jardin_calculer'),
-      superficie_habitable: watch('superficie_habitable'),
-      superficie_balcon_calculer: watch('Superficie_balcon_calculer'),
-      superficie_terrasse_calculer: watch('superficie_terrasse_calculer'),
-      prix_box: watch('prix_box'),
-      prix_parking: watch('prix_parking'),
+      superficie_jardin_calculer: watch("superficie_jardin_calculer"),
+      superficie_habitable: watch("superficie_habitable"),
+      superficie_balcon_calculer: watch("Superficie_balcon_calculer"),
+      superficie_terrasse_calculer: watch("superficie_terrasse_calculer"),
+      prix_box: watch("prix_box"),
+      prix_parking: watch("prix_parking"),
     };
 
-    setValue('prix_final', calculateTotalPrice(values));
+    setValue("prix_final", calculateTotalPrice(values));
   };
 
   if (isEditing && !formData) {
@@ -2157,8 +2154,8 @@ export default function ReservationForm({ id }) {
       <div className="p-3">
         <div className="flex items-center justify-start">
           <BreadCrumb
-            baseUrl={ENDPOINTS.VENTE + '?tab=reservations'}
-            step={`${isEditing ? 'Modifier' : 'Ajouter'} Reservation`}
+            baseUrl={ENDPOINTS.VENTE + "?tab=reservations"}
+            step={`${isEditing ? "Modifier" : "Ajouter"} Reservation`}
           />
         </div>
       </div>
@@ -2170,10 +2167,10 @@ export default function ReservationForm({ id }) {
                 <div
                   className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
                     index < currentStep
-                      ? 'bg-blue-600 border-blue-600'
+                      ? "bg-blue-600 border-blue-600"
                       : index == currentStep
-                      ? 'border-blue-600'
-                      : 'border-gray-300'
+                        ? "border-blue-600"
+                        : "border-gray-300"
                   }`}
                 >
                   {index < currentStep ? (
@@ -2181,7 +2178,7 @@ export default function ReservationForm({ id }) {
                   ) : (
                     <span
                       className={`${
-                        index == currentStep ? 'text-blue-600' : 'text-gray-500'
+                        index == currentStep ? "text-blue-600" : "text-gray-500"
                       }`}
                     >
                       {steps[index].icon}
@@ -2190,7 +2187,7 @@ export default function ReservationForm({ id }) {
                 </div>
                 <span
                   className={`ml-3 text-lg font-medium ${
-                    index <= currentStep ? 'text-gray-700' : 'text-gray-400'
+                    index <= currentStep ? "text-gray-700" : "text-gray-400"
                   }`}
                 >
                   {`0${index + 1}`} {step.name}
@@ -2199,7 +2196,7 @@ export default function ReservationForm({ id }) {
               {index < steps.length - 1 && (
                 <div
                   className={`flex-1 mx-4 h-1 ${
-                    index < currentStep ? 'bg-blue-600' : 'bg-gray-200'
+                    index < currentStep ? "bg-blue-600" : "bg-gray-200"
                   }`}
                 ></div>
               )}
@@ -2223,39 +2220,39 @@ export default function ReservationForm({ id }) {
                     fetch_code_reservation(e);
                   }}
                 />
-                  {info_reservation != null && (
-                    <p style={{ color: 'red' }}>{info_reservation}</p>
-                  )}
-                  {showStepErrors && !watch('code_reservation') && (
-                    <p className="text-red-500 text-xs mt-1">
-                      Le code de réservation est requis
-                    </p>
-                  )}
+                {info_reservation != null && (
+                  <p style={{ color: "red" }}>{info_reservation}</p>
+                )}
+                {showStepErrors && !watch("code_reservation") && (
+                  <p className="text-red-500 text-xs mt-1">
+                    Le code de réservation est requis
+                  </p>
+                )}
               </div>
 
               <div>
                 <SelectInput
-                  label={'Bien :'}
+                  label={"Bien :"}
                   name="bien_id"
                   required={true}
                   loading={loading_bien}
                   options={biensByProjet.map((bien) => {
                     // Add the same disabled logic from your other component
                     const isDisabled =
-                      bien.etat == 'ENCOURS_DE_PROPOSITION' &&
+                      bien.etat == "ENCOURS_DE_PROPOSITION" &&
                       bien.is_proposed != null &&
                       user.id != bien.is_proposed.user_id;
 
                     // Add the same label text logic
                     const labelText =
                       bien.propriete_dite_bien +
-                      (bien.etat === 'ENCOURS_DE_PROPOSITION'
+                      (bien.etat === "ENCOURS_DE_PROPOSITION"
                         ? bien?.is_proposed !== null
                           ? user.id !== bien?.is_proposed?.user_id
                             ? ` Proposé par ${bien?.is_proposed?.user?.name} ${bien?.is_proposed?.user?.prenom}`
-                            : ' Proposé par Moi Même'
-                          : ''
-                        : '');
+                            : " Proposé par Moi Même"
+                          : ""
+                        : "");
 
                     return {
                       value: bien.id,
@@ -2264,23 +2261,25 @@ export default function ReservationForm({ id }) {
                       disabled: isDisabled,
                     };
                   })}
-                  value={watch('bien_id')}
+                  value={watch("bien_id")}
                   onChange={(value) => {
                     const selectedOption = biensByProjet.find(
-                      (b) => b.id === value
+                      (b) => b.id === value,
                     );
                     if (selectedOption) {
                       handleSelectBien(null, selectedOption);
                     }
                   }}
                   error={
-                    errors['bien_id']?.message || backendErrors['bien_id']?.[0]
+                    errors["bien_id"]?.message || backendErrors["bien_id"]?.[0]
                   }
                   disabled={isEditing && user?.role > 2 ? true : false}
                   placeholder="Sélectionnez un bien"
                 />
-                {showStepErrors && !watch('bien_id') && (
-                  <p className="text-red-500 text-xs mt-1">La sélection d'un bien est requise</p>
+                {showStepErrors && !watch("bien_id") && (
+                  <p className="text-red-500 text-xs mt-1">
+                    La sélection d'un bien est requise
+                  </p>
                 )}
               </div>
               <div>
@@ -2294,8 +2293,10 @@ export default function ReservationForm({ id }) {
                   backendErrors={backendErrors}
                   defaultValues={defaultValues}
                 />
-                {showStepErrors && !watch('date_reservation') && (
-                  <p className="text-red-500 text-xs mt-1">La date de réservation est requise</p>
+                {showStepErrors && !watch("date_reservation") && (
+                  <p className="text-red-500 text-xs mt-1">
+                    La date de réservation est requise
+                  </p>
                 )}
               </div>
             </div>
@@ -2382,7 +2383,7 @@ export default function ReservationForm({ id }) {
                                 {formatFileSize(data.size)}
                               </span>
                               <button
-                                onClick={() => handleDeleteFile(index, 'rsv')}
+                                onClick={() => handleDeleteFile(index, "rsv")}
                                 className="p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 transition-colors"
                                 title="Supprimer"
                               >
@@ -2444,14 +2445,14 @@ export default function ReservationForm({ id }) {
                           onChange={(value) => {
                             const syntheticEvent = {
                               target: {
-                                name: 'id',
+                                name: "id",
                                 value: value,
                               },
                             };
                             handleinputchange1(
                               syntheticEvent,
                               index,
-                              'select_client'
+                              "select_client",
                             );
                           }}
                           error={
@@ -2462,11 +2463,13 @@ export default function ReservationForm({ id }) {
                           placeholder="Sélectionnez un client"
                         />
                         <>
-                          {!entry.id && currentStep === 1 && showClientErrors && (
-                            <p className="text-red-500 text-xs mt-1">
-                              La sélection {"d'"}un client est requise
-                            </p>
-                          )}
+                          {!entry.id &&
+                            currentStep === 1 &&
+                            showClientErrors && (
+                              <p className="text-red-500 text-xs mt-1">
+                                La sélection {"d'"}un client est requise
+                              </p>
+                            )}
                         </>
                       </div>
                       <div>
@@ -2485,41 +2488,46 @@ export default function ReservationForm({ id }) {
                             selectedClient && index == 0 ? false : disabled_var
                           }
                           onChange={(e) =>
-                            handleinputchange1(e, index, 'percent')
+                            handleinputchange1(e, index, "percent")
                           }
                           className={`w-full px-3 py-2 border ${
-                            !entry.pourcentage && currentStep === 1 && showClientErrors
-                              ? 'border-red-500'
-                              : 'border-gray-300'
+                            !entry.pourcentage &&
+                            currentStep === 1 &&
+                            showClientErrors
+                              ? "border-red-500"
+                              : "border-gray-300"
                           } rounded-md focus:outline-none focus:ring-[0.5px] focus:ring-gray-800`}
                           placeholder="Entrez un pourcentage (0-100)"
                           min="0"
                           max="100"
                         />
                         <>
-                          {!entry.pourcentage && currentStep === 1 && showClientErrors && (
-                            <p className="text-red-500 text-xs mt-1">
-                              Le pourcentage est requis
-                            </p>
-                          )}
+                          {!entry.pourcentage &&
+                            currentStep === 1 &&
+                            showClientErrors && (
+                              <p className="text-red-500 text-xs mt-1">
+                                Le pourcentage est requis
+                              </p>
+                            )}
                         </>
                       </div>
                       <div className="mt-2">
-                        {showClientErrors && watch('pourcentages') > 0 &&
-                          watch('pourcentages') !== 100 && (
+                        {showClientErrors &&
+                          watch("pourcentages") > 0 &&
+                          watch("pourcentages") !== 100 && (
                             <p
                               className={`text-sm font-medium ${
                                 !hasPercentageChanged
-                                  ? 'text-sky-500'
-                                  : 'text-red-500'
+                                  ? "text-sky-500"
+                                  : "text-red-500"
                               }`}
                             >
                               ⚠️ La somme des pourcentages (
-                              {watch('pourcentages')}%) doit être exactement
+                              {watch("pourcentages")}%) doit être exactement
                               100% !
                             </p>
                           )}
-                        {showClientErrors && watch('pourcentages') === 100 && (
+                        {showClientErrors && watch("pourcentages") === 100 && (
                           <p className="text-green-600 text-sm font-medium flex items-center">
                             <CheckIcon className="w-4 h-4 mr-1" />✓ La somme des
                             pourcentages est correcte (100%)
@@ -2527,23 +2535,25 @@ export default function ReservationForm({ id }) {
                         )}
                       </div>
                     </div>
-                    <div className="mt-7">
-                      {index === inputList1.length - 1 ? (
-                        <button
-                          onClick={addClientEntry}
-                          className="flex items-center justify-center gap-2 px-3 py-2 text-white rounded-full  bg-[#2563eb]"
-                          title="Ajouter un acquéreur"
-                        >
-                          <PlusIcon className="w-5 h-5" />
-                          
-                        </button>
-                      ) : (
+                    <div className="mt-7 flex gap-2">
+                      {index > 0 ? (
                         <button
                           onClick={() => removeClientEntry(index)}
                           className="p-2 text-white hover:text-red-700 hover:bg-red rounded-md transition-colors bg-[red]"
                           title="Supprimer cet acquéreur"
                         >
                           <XIcon className="w-5 h-5" />
+                        </button>
+                      ) : (
+                        <div className="w-[85px]"></div>
+                      )}
+                      {index === inputList1.length - 1 && (
+                        <button
+                          onClick={addClientEntry}
+                          className="flex items-center justify-center gap-2 px-3 py-2 text-white rounded-full  bg-[#2563eb]"
+                          title="Ajouter un acquéreur"
+                        >
+                          <PlusIcon className="w-5 h-5" />
                         </button>
                       )}
                     </div>
@@ -2560,24 +2570,24 @@ export default function ReservationForm({ id }) {
                   setNumberOfForms(1);
                   setNewClientForms([
                     {
-                      cin: '',
-                      nom: '',
-                      prenom: '',
-                      telephone_num1: '',
-                      pourcentage: '',
-                      address: '',
-                      type_client: '',
-                      partenaire_id: '',
+                      cin: "",
+                      nom: "",
+                      prenom: "",
+                      telephone_num1: "",
+                      pourcentage: "",
+                      address: "",
+                      type_client: "",
+                      partenaire_id: "",
                       prospect_id: null,
-                      info_client: '',
-                      info_prospect: '',
-                      projet_id: selectedProjet ? selectedProjet.id : '',
+                      info_client: "",
+                      info_prospect: "",
+                      projet_id: selectedProjet ? selectedProjet.id : "",
                       situation_familliale: null,
                       nom_mari: null,
                       date_mariage: null,
                       lieu_mariage: null,
-                      notifie: '',
-                      civilite: '',
+                      notifie: "",
+                      civilite: "",
                     },
                   ]);
                 }}
@@ -2603,24 +2613,24 @@ export default function ReservationForm({ id }) {
                         setNumberOfForms(1);
                         setNewClientForms([
                           {
-                            cin: '',
-                            nom: '',
-                            prenom: '',
-                            telephone_num1: '',
-                            pourcentage: '',
-                            address: '',
-                            type_client: '',
-                            partenaire_id: '',
+                            cin: "",
+                            nom: "",
+                            prenom: "",
+                            telephone_num1: "",
+                            pourcentage: "",
+                            address: "",
+                            type_client: "",
+                            partenaire_id: "",
                             prospect_id: null,
-                            info_client: '',
-                            info_prospect: '',
-                            projet_id: selectedProjet ? selectedProjet.id : '',
+                            info_client: "",
+                            info_prospect: "",
+                            projet_id: selectedProjet ? selectedProjet.id : "",
                             situation_familliale: null,
                             nom_mari: null,
                             date_mariage: null,
                             lieu_mariage: null,
-                            notifie: '',
-                            civilite: '',
+                            notifie: "",
+                            civilite: "",
                           },
                         ]);
                       }}
@@ -2662,29 +2672,29 @@ export default function ReservationForm({ id }) {
                             {/* Type Client */}
                             <div className="sm:col-span-2 md:col-span-1">
                               <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Type Client{' '}
+                                Type Client{" "}
                                 <span className="text-red-500">*</span>
                               </label>
                               <select
-                                value={form.type_client || ''}
+                                value={form.type_client || ""}
                                 onChange={(e) => {
                                   updateFormField(
                                     formIndex,
-                                    'type_client',
-                                    e.target.value
+                                    "type_client",
+                                    e.target.value,
                                   );
-                                  if (e.target.value != '2') {
+                                  if (e.target.value != "2") {
                                     updateFormField(
                                       formIndex,
-                                      'partenaire_id',
-                                      ''
+                                      "partenaire_id",
+                                      "",
                                     );
                                   }
                                 }}
                                 className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                   formSubmitted_client && !form.type_client
-                                    ? 'border-red-500'
-                                    : 'border-gray-300'
+                                    ? "border-red-500"
+                                    : "border-gray-300"
                                 } rounded-md focus:outline-none focus:border-gray-500`}
                               >
                                 <option value="">Sélectionnez un type</option>
@@ -2705,27 +2715,27 @@ export default function ReservationForm({ id }) {
                             </div>
 
                             {/* Partenaire (conditional) */}
-                            {form.type_client == '2' && (
+                            {form.type_client == "2" && (
                               <div className="sm:col-span-2 md:col-span-1">
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                  Partenaire{' '}
+                                  Partenaire{" "}
                                   <span className="text-red-500">*</span>
                                 </label>
                                 <select
-                                  value={form.partenaire_id || ''}
+                                  value={form.partenaire_id || ""}
                                   onChange={(e) =>
                                     updateFormField(
                                       formIndex,
-                                      'partenaire_id',
-                                      e.target.value
+                                      "partenaire_id",
+                                      e.target.value,
                                     )
                                   }
                                   className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                     formSubmitted_client &&
-                                    form.type_client == '2' &&
+                                    form.type_client == "2" &&
                                     !form.partenaire_id
-                                      ? 'border-red-500'
-                                      : 'border-gray-300'
+                                      ? "border-red-500"
+                                      : "border-gray-300"
                                   } rounded-md focus:outline-none focus:border-gray-500`}
                                 >
                                   <option value="">
@@ -2741,7 +2751,7 @@ export default function ReservationForm({ id }) {
                                   ))}
                                 </select>
                                 {formSubmitted_client &&
-                                  form.type_client === '2' &&
+                                  form.type_client === "2" &&
                                   !form.partenaire_id && (
                                     <p className="text-red-500 text-xs mt-1">
                                       Partenaire est obligatoire
@@ -2761,25 +2771,25 @@ export default function ReservationForm({ id }) {
                                 value={form.cin}
                                 onChange={async (e) => {
                                   const value = e.target.value;
-                                  updateFormField(formIndex, 'cin', value);
+                                  updateFormField(formIndex, "cin", value);
 
                                   // Réinitialiser check si le champ est vidé
                                   if (value.length < 3) {
-                                    updateFormField(formIndex, 'check', false);
+                                    updateFormField(formIndex, "check", false);
                                     updateFormField(
                                       formIndex,
-                                      'check_p',
-                                      false
+                                      "check_p",
+                                      false,
                                     );
                                   } else if (value.length >= 3) {
                                     await fetch_cin_tel(
-                                      'cin',
+                                      "cin",
                                       value,
                                       formIndex,
                                       accessToken,
                                       updateFormField,
                                       false, // isEditMode = false
-                                      null // setClientToEdit = null
+                                      null, // setClientToEdit = null
                                     );
                                   }
                                 }}
@@ -2787,33 +2797,33 @@ export default function ReservationForm({ id }) {
                                   const value = e.target.value;
                                   if (value.length >= 3) {
                                     await fetch_cin_tel(
-                                      'cin',
+                                      "cin",
                                       value,
                                       formIndex,
                                       accessToken,
                                       updateFormField,
                                       false,
-                                      null
+                                      null,
                                     );
                                   }
                                 }}
                                 className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                   (formSubmitted_client &&
-                                    form.cin?.trim() === '') ||
-                                  form.check && form.check_field === 'cin'
-                                    ? 'border-red-500'
-                                    : 'border-gray-300'
+                                    form.cin?.trim() === "") ||
+                                  (form.check && form.check_field === "cin")
+                                    ? "border-red-500"
+                                    : "border-gray-300"
                                 } rounded-md focus:outline-none focus:border-gray-500`}
                                 //disabled={form.check} // Désactiver si client existe
                               />
-                              {form.check && form.check_field === 'cin' && (
+                              {form.check && form.check_field === "cin" && (
                                 <p className="text-red-500 text-xs mt-1">
                                   Ce CIN existe déjà. Veuillez sélectionner le
                                   client dans la liste déroulante.
                                 </p>
                               )}
                               {formSubmitted_client &&
-                                form.cin?.trim() === '' && (
+                                form.cin?.trim() === "" && (
                                   <p className="text-red-500 text-xs mt-1">
                                     CIN est obligatoire
                                   </p>
@@ -2831,18 +2841,18 @@ export default function ReservationForm({ id }) {
                                 onChange={(e) =>
                                   updateFormField(
                                     formIndex,
-                                    'nom',
-                                    e.target.value
+                                    "nom",
+                                    e.target.value,
                                   )
                                 }
                                 className={`w-full h-[38px] px-3 py-2 text-sm border ${
-                                  formSubmitted_client && form.nom?.trim() == ''
-                                    ? 'border-red-500'
-                                    : 'border-gray-300'
+                                  formSubmitted_client && form.nom?.trim() == ""
+                                    ? "border-red-500"
+                                    : "border-gray-300"
                                 } rounded-md focus:outline-none focus:border-gray-500`}
                               />
                               {formSubmitted_client &&
-                                form.nom?.trim() == '' && (
+                                form.nom?.trim() == "" && (
                                   <p className="text-red-500 text-xs mt-1">
                                     Nom est obligatoire
                                   </p>
@@ -2860,19 +2870,19 @@ export default function ReservationForm({ id }) {
                                 onChange={(e) =>
                                   updateFormField(
                                     formIndex,
-                                    'prenom',
-                                    e.target.value
+                                    "prenom",
+                                    e.target.value,
                                   )
                                 }
                                 className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                   formSubmitted_client &&
-                                  form.prenom?.trim() === ''
-                                    ? 'border-red-500'
-                                    : 'border-gray-300'
+                                  form.prenom?.trim() === ""
+                                    ? "border-red-500"
+                                    : "border-gray-300"
                                 } rounded-md focus:outline-none focus:border-gray-500`}
                               />
                               {formSubmitted_client &&
-                                form.prenom?.trim() === '' && (
+                                form.prenom?.trim() === "" && (
                                   <p className="text-red-500 text-xs mt-1">
                                     Prénom est obligatoire
                                   </p>
@@ -2885,18 +2895,18 @@ export default function ReservationForm({ id }) {
                                 Civilité <span className="text-red-500">*</span>
                               </label>
                               <select
-                                value={form.civilite || ''}
+                                value={form.civilite || ""}
                                 onChange={(e) =>
                                   updateFormField(
                                     formIndex,
-                                    'civilite',
-                                    e.target.value
+                                    "civilite",
+                                    e.target.value,
                                   )
                                 }
                                 className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                   formSubmitted_client && !form.civilite
-                                    ? 'border-red-500'
-                                    : 'border-gray-300'
+                                    ? "border-red-500"
+                                    : "border-gray-300"
                                 } rounded-md focus:outline-none focus:border-gray-500`}
                               >
                                 <option value="">
@@ -2921,7 +2931,7 @@ export default function ReservationForm({ id }) {
                             {/* Pourcentage */}
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Pourcentage{' '}
+                                Pourcentage{" "}
                                 <span className="text-red-500">*</span>
                               </label>
                               <input
@@ -2932,22 +2942,22 @@ export default function ReservationForm({ id }) {
                                 onChange={(e) =>
                                   updateFormField(
                                     formIndex,
-                                    'pourcentage',
-                                    e.target.value
+                                    "pourcentage",
+                                    e.target.value,
                                   )
                                 }
                                 className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                   (formSubmitted_client &&
-                                    form.pourcentage == '') ||
+                                    form.pourcentage == "") ||
                                   isNaN(Number(form.pourcentage)) ||
                                   Number(form.pourcentage) < 0 ||
                                   Number(form.pourcentage) > 100
-                                    ? 'border-red-500'
-                                    : 'border-gray-300'
+                                    ? "border-red-500"
+                                    : "border-gray-300"
                                 } rounded-md focus:outline-none focus:border-gray-500`}
                               />
                               {(formSubmitted_client &&
-                                form.pourcentage == '') ||
+                                form.pourcentage == "") ||
                                 (isNaN(Number(form.pourcentage)) && (
                                   <p className="text-red-500 text-xs mt-1">
                                     Pourcentage est obligatoire
@@ -2962,21 +2972,21 @@ export default function ReservationForm({ id }) {
                                   </p>
                                 )}
                               <div className="mt-2">
-                                {watch('pourcentages') > 0 &&
-                                  watch('pourcentages') !== 100 && (
+                                {watch("pourcentages") > 0 &&
+                                  watch("pourcentages") !== 100 && (
                                     <p
                                       className={`text-sm font-medium ${
                                         !hasPercentageChanged
-                                          ? 'text-sky-500' // bleu ciel au début
-                                          : 'text-red-500' // rouge après modification
+                                          ? "text-sky-500" // bleu ciel au début
+                                          : "text-red-500" // rouge après modification
                                       }`}
                                     >
                                       ⚠️ La somme des pourcentages (
-                                      {watch('pourcentages')}%) doit être
+                                      {watch("pourcentages")}%) doit être
                                       exactement 100% !
                                     </p>
                                   )}
-                                {watch('pourcentages') === 100 && (
+                                {watch("pourcentages") === 100 && (
                                   <p className="text-green-600 text-sm font-medium flex items-center">
                                     La somme des pourcentages est correcte
                                     (100%)
@@ -2989,7 +2999,7 @@ export default function ReservationForm({ id }) {
                             {/* Téléphone dans le formulaire d'ajout */}
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Téléphone{' '}
+                                Téléphone{" "}
                                 <span className="text-red-500">*</span>
                               </label>
                               <input
@@ -3000,27 +3010,27 @@ export default function ReservationForm({ id }) {
                                   const value = e.target.value;
                                   updateFormField(
                                     formIndex,
-                                    'telephone_num1',
-                                    value
+                                    "telephone_num1",
+                                    value,
                                   );
 
                                   // Réinitialiser check si le champ est vidé
                                   if (value.length < 8) {
-                                    updateFormField(formIndex, 'check', false);
+                                    updateFormField(formIndex, "check", false);
                                     updateFormField(
                                       formIndex,
-                                      'check_p',
-                                      false
+                                      "check_p",
+                                      false,
                                     );
                                   } else if (value.length >= 8) {
                                     await fetch_cin_tel(
-                                      'tel',
+                                      "tel",
                                       value,
                                       formIndex,
                                       accessToken,
                                       updateFormField,
                                       false,
-                                      null
+                                      null,
                                     );
                                   }
                                 }}
@@ -3028,35 +3038,35 @@ export default function ReservationForm({ id }) {
                                   const value = e.target.value;
                                   if (value.length >= 8) {
                                     await fetch_cin_tel(
-                                      'tel',
+                                      "tel",
                                       value,
                                       formIndex,
                                       accessToken,
                                       updateFormField,
                                       false,
-                                      null
+                                      null,
                                     );
                                   }
                                 }}
                                 className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                   (formSubmitted_client &&
-                                    String(form.telephone_num1 || '').length <
+                                    String(form.telephone_num1 || "").length <
                                       8) ||
                                   isNaN(form.telephone_num1) ||
-                                  form.check && form.check_field === 'tel'
-                                    ? 'border-red-500'
-                                    : 'border-gray-300'
+                                  (form.check && form.check_field === "tel")
+                                    ? "border-red-500"
+                                    : "border-gray-300"
                                 } rounded-md focus:outline-none focus:border-gray-500`}
-                               // disabled={form.check} // Désactiver si client existe
+                                // disabled={form.check} // Désactiver si client existe
                               />
-{form.check && form.check_field === 'tel' && (
+                              {form.check && form.check_field === "tel" && (
                                 <p className="text-red-500 text-xs mt-1">
                                   Ce numéro existe déjà. Veuillez sélectionner
                                   le client dans la liste déroulante.
                                 </p>
                               )}
                               {formSubmitted_client &&
-                                String(form.telephone_num1 || '').length <
+                                String(form.telephone_num1 || "").length <
                                   8 && (
                                   <p className="text-red-500 text-xs mt-1">
                                     Minimum 8 chiffres
@@ -3067,37 +3077,37 @@ export default function ReservationForm({ id }) {
                             {/* Situation Familiale */}
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Situation Familiale{' '}
+                                Situation Familiale{" "}
                                 <span className="text-red-500">*</span>
                               </label>
                               <select
-                                value={form.situation_familliale || ''}
+                                value={form.situation_familliale || ""}
                                 onChange={(e) => {
                                   const newSituation = e.target.value;
                                   updateFormField(
                                     formIndex,
-                                    'situation_familliale',
-                                    newSituation
+                                    "situation_familliale",
+                                    newSituation,
                                   );
-                                  if (newSituation != '2') {
-                                    updateFormField(formIndex, 'nom_mari', '');
+                                  if (newSituation != "2") {
+                                    updateFormField(formIndex, "nom_mari", "");
                                     updateFormField(
                                       formIndex,
-                                      'date_mariage',
-                                      null
+                                      "date_mariage",
+                                      null,
                                     );
                                     updateFormField(
                                       formIndex,
-                                      'lieu_mariage',
-                                      ''
+                                      "lieu_mariage",
+                                      "",
                                     );
                                   }
                                 }}
                                 className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                   formSubmitted_client &&
                                   !form.situation_familliale
-                                    ? 'border-red-500'
-                                    : 'border-gray-300'
+                                    ? "border-red-500"
+                                    : "border-gray-300"
                                 } rounded-md focus:outline-none focus:border-gray-500`}
                               >
                                 <option value="">
@@ -3111,7 +3121,7 @@ export default function ReservationForm({ id }) {
                                     >
                                       {situation.label}
                                     </option>
-                                  )
+                                  ),
                                 )}
                               </select>
                               {formSubmitted_client &&
@@ -3123,34 +3133,34 @@ export default function ReservationForm({ id }) {
                             </div>
 
                             {/* Marriage Fields (conditional) */}
-                            {form.situation_familliale == '2' && (
+                            {form.situation_familliale == "2" && (
                               <>
                                 <div>
                                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Marié(e) à M/MME{' '}
+                                    Marié(e) à M/MME{" "}
                                     <span className="text-red-500">*</span>
                                   </label>
                                   <input
                                     type="text"
-                                    value={form.nom_mari || ''}
+                                    value={form.nom_mari || ""}
                                     onChange={(e) =>
                                       updateFormField(
                                         formIndex,
-                                        'nom_mari',
-                                        e.target.value
+                                        "nom_mari",
+                                        e.target.value,
                                       )
                                     }
                                     className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                       formSubmitted_client &&
-                                      form.situation_familliale == '2' &&
-                                      (form.nom_mari || '').trim() === ''
-                                        ? 'border-red-500'
-                                        : 'border-gray-300'
+                                      form.situation_familliale == "2" &&
+                                      (form.nom_mari || "").trim() === ""
+                                        ? "border-red-500"
+                                        : "border-gray-300"
                                     } rounded-md focus:outline-none focus:border-gray-500`}
                                   />
                                   {formSubmitted_client &&
-                                    form.situation_familliale == '2' &&
-                                    form.nom_mari?.trim() === '' && (
+                                    form.situation_familliale == "2" &&
+                                    form.nom_mari?.trim() === "" && (
                                       <p className="text-red-500 text-xs mt-1">
                                         Nom du conjoint est obligatoire
                                       </p>
@@ -3159,29 +3169,29 @@ export default function ReservationForm({ id }) {
 
                                 <div>
                                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Date de Mariage{' '}
+                                    Date de Mariage{" "}
                                     <span className="text-red-500">*</span>
                                   </label>
                                   <input
                                     type="date"
-                                    value={form.date_mariage || ''}
+                                    value={form.date_mariage || ""}
                                     onChange={(e) =>
                                       updateFormField(
                                         formIndex,
-                                        'date_mariage',
-                                        e.target.value
+                                        "date_mariage",
+                                        e.target.value,
                                       )
                                     }
                                     className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                       formSubmitted_client &&
-                                      form.situation_familliale == '2' &&
-                                      (form.date_mariage || '').trim() === ''
-                                        ? 'border-red-500'
-                                        : 'border-gray-300'
+                                      form.situation_familliale == "2" &&
+                                      (form.date_mariage || "").trim() === ""
+                                        ? "border-red-500"
+                                        : "border-gray-300"
                                     } rounded-md focus:outline-none focus:border-gray-500`}
                                   />
                                   {formSubmitted_client &&
-                                    form.situation_familliale == '2' &&
+                                    form.situation_familliale == "2" &&
                                     !form.date_mariage && (
                                       <p className="text-red-500 text-xs mt-1">
                                         Date de mariage est obligatoire
@@ -3191,30 +3201,30 @@ export default function ReservationForm({ id }) {
 
                                 <div>
                                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Lieu de Mariage{' '}
+                                    Lieu de Mariage{" "}
                                     <span className="text-red-500">*</span>
                                   </label>
                                   <input
                                     type="text"
-                                    value={form.lieu_mariage || ''}
+                                    value={form.lieu_mariage || ""}
                                     onChange={(e) =>
                                       updateFormField(
                                         formIndex,
-                                        'lieu_mariage',
-                                        e.target.value
+                                        "lieu_mariage",
+                                        e.target.value,
                                       )
                                     }
                                     className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                       formSubmitted_client &&
-                                      form.situation_familliale == '2' &&
-                                      (form.lieu_mariage || '').trim() === ''
-                                        ? 'border-red-500'
-                                        : 'border-gray-300'
+                                      form.situation_familliale == "2" &&
+                                      (form.lieu_mariage || "").trim() === ""
+                                        ? "border-red-500"
+                                        : "border-gray-300"
                                     } rounded-md focus:outline-none focus:border-gray-500`}
                                   />
                                   {formSubmitted_client &&
-                                    form.situation_familliale == '2' &&
-                                    form.lieu_mariage?.trim() === '' && (
+                                    form.situation_familliale == "2" &&
+                                    form.lieu_mariage?.trim() === "" && (
                                       <p className="text-red-500 text-xs mt-1">
                                         Lieu de mariage est obligatoire
                                       </p>
@@ -3227,7 +3237,7 @@ export default function ReservationForm({ id }) {
                             <div>
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                  Accepte {"d'"}être contacté{' '}
+                                  Accepte {"d'"}être contacté{" "}
                                   <span className="text-red-500">*</span>
                                 </label>
                                 <div className="flex flex-wrap gap-4">
@@ -3236,12 +3246,12 @@ export default function ReservationForm({ id }) {
                                       type="radio"
                                       name={`notifie_${formIndex}`} // Make name unique per client
                                       value="1" // Use consistent values (1 for Oui, 0 for Non)
-                                      checked={form.notifie === '1'}
+                                      checked={form.notifie === "1"}
                                       onChange={(e) =>
                                         updateFormField(
                                           formIndex,
-                                          'notifie',
-                                          e.target.value
+                                          "notifie",
+                                          e.target.value,
                                         )
                                       }
                                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
@@ -3255,12 +3265,12 @@ export default function ReservationForm({ id }) {
                                       type="radio"
                                       name={`notifie_${formIndex}`} // Same unique name
                                       value="0"
-                                      checked={form.notifie === '0'}
+                                      checked={form.notifie === "0"}
                                       onChange={(e) =>
                                         updateFormField(
                                           formIndex,
-                                          'notifie',
-                                          e.target.value
+                                          "notifie",
+                                          e.target.value,
                                         )
                                       }
                                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
@@ -3294,8 +3304,8 @@ export default function ReservationForm({ id }) {
                                 onChange={(e) =>
                                   updateFormField(
                                     formIndex,
-                                    'address',
-                                    e.target.value
+                                    "address",
+                                    e.target.value,
                                   )
                                 }
                                 rows={3}
@@ -3351,26 +3361,26 @@ export default function ReservationForm({ id }) {
                           setNumberOfForms(1);
                           setNewClientForms([
                             {
-                              cin: '',
-                              nom: '',
-                              prenom: '',
-                              telephone_num1: '',
-                              pourcentage: '',
-                              address: '',
-                              type_client: '',
-                              partenaire_id: '',
+                              cin: "",
+                              nom: "",
+                              prenom: "",
+                              telephone_num1: "",
+                              pourcentage: "",
+                              address: "",
+                              type_client: "",
+                              partenaire_id: "",
                               prospect_id: null,
-                              info_client: '',
-                              info_prospect: '',
+                              info_client: "",
+                              info_prospect: "",
                               projet_id: selectedProjet
                                 ? selectedProjet.id
-                                : '',
+                                : "",
                               situation_familliale: null,
                               nom_mari: null,
                               date_mariage: null,
                               lieu_mariage: null,
-                              notifie: '',
-                              civilite: '',
+                              notifie: "",
+                              civilite: "",
                             },
                           ]);
                         }}
@@ -3385,8 +3395,8 @@ export default function ReservationForm({ id }) {
                         disabled={newClientForms.some((form) => form.check)} // Vérifier tous les formulaires
                         className={`px-6 py-2 rounded-md ${
                           newClientForms.some((form) => form.check)
-                            ? 'bg-gray-400 cursor-not-allowed'
-                            : 'bg-blue-600 hover:bg-blue-700'
+                            ? "bg-gray-400 cursor-not-allowed"
+                            : "bg-blue-600 hover:bg-blue-700"
                         } text-white`}
                       >
                         Ajouter
@@ -3407,24 +3417,35 @@ export default function ReservationForm({ id }) {
                     {/* Render selected clients from inputList1 */}
                     {inputList1.map((entry, idx) => {
                       if (!entry.id) return null;
-                      const full = clientsExist.find((c) => c.id == entry.id) || {};
+                      const full =
+                        clientsExist.find((c) => c.id == entry.id) || {};
                       return (
-                        <div key={`sel-${entry.id}-${idx}`} className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
+                        <div
+                          key={`sel-${entry.id}-${idx}`}
+                          className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
+                        >
                           <div className="p-5">
                             <div className="flex justify-between items-start">
                               <div className="flex-1">
                                 <div className="flex items-center mb-2">
                                   <Mail className="w-4 h-4 text-gray-500 mr-2" />
-                                  <h4 className="font-medium text-gray-900 truncate">{full.cin || ''}</h4>
+                                  <h4 className="font-medium text-gray-900 truncate">
+                                    {full.cin || ""}
+                                  </h4>
                                 </div>
                                 <div className="flex items-center mb-2">
                                   <User className="w-4 h-4 text-gray-500 mr-2" />
-                                  <h4 className="font-medium text-gray-900 truncate">{full.nom || full.name || ''} {full.prenom || ''}</h4>
+                                  <h4 className="font-medium text-gray-900 truncate">
+                                    {full.nom || full.name || ""}{" "}
+                                    {full.prenom || ""}
+                                  </h4>
                                 </div>
                                 <div className="space-y-1.5">
                                   <div className="flex items-center text-sm text-gray-600">
                                     <Percent className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
-                                    <span className="truncate text-green-600 font-bold">{entry.pourcentage || 0}</span>
+                                    <span className="truncate text-green-600 font-bold">
+                                      {entry.pourcentage || 0}
+                                    </span>
                                   </div>
                                   {full.telephone_num1 && (
                                     <div className="flex items-center text-sm text-gray-600">
@@ -3435,7 +3456,11 @@ export default function ReservationForm({ id }) {
                                 </div>
                               </div>
                               <div className="flex space-x-2">
-                                <button onClick={() => removeClientEntry(idx)} className="p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 transition-colors duration-200" aria-label="Supprimer le client sélectionné">
+                                <button
+                                  onClick={() => removeClientEntry(idx)}
+                                  className="p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 transition-colors duration-200"
+                                  aria-label="Supprimer le client sélectionné"
+                                >
                                   <XIcon className="w-5 h-5" />
                                 </button>
                               </div>
@@ -3447,22 +3472,32 @@ export default function ReservationForm({ id }) {
 
                     {/* Render added clients as well (duplicate of Clients ajoutés content) */}
                     {addedClients.map((client, index) => (
-                      <div key={`added-${index}`} className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
+                      <div
+                        key={`added-${index}`}
+                        className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
+                      >
                         <div className="p-5">
                           <div className="flex justify-between items-start">
                             <div className="flex-1">
                               <div className="flex items-center mb-2">
                                 <Mail className="w-4 h-4 text-gray-500 mr-2" />
-                                <h4 className="font-medium text-gray-900 truncate">{client.cin}</h4>
+                                <h4 className="font-medium text-gray-900 truncate">
+                                  {client.cin}
+                                </h4>
                               </div>
                               <div className="flex items-center mb-2">
                                 <User className="w-4 h-4 text-gray-500 mr-2" />
-                                <h4 className="font-medium text-gray-900 truncate">{client.nom} {client.prenom}</h4>
+                                <h4 className="font-medium text-gray-900 truncate">
+                                  {client.nom} {client.prenom}
+                                </h4>
                               </div>
                               <div className="space-y-1.5">
                                 <div className="flex items-center text-sm text-gray-600">
                                   <Percent className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
-                                  <span className="truncate text-green-600 font-bold">{client.pourcentage != undefined && client.pourcentage}</span>
+                                  <span className="truncate text-green-600 font-bold">
+                                    {client.pourcentage != undefined &&
+                                      client.pourcentage}
+                                  </span>
                                 </div>
                                 {client.telephone_num1 && (
                                   <div className="flex items-center text-sm text-gray-600">
@@ -3473,10 +3508,36 @@ export default function ReservationForm({ id }) {
                               </div>
                             </div>
                             <div className="flex space-x-2">
-                              <button onClick={() => { setClientToEdit({ ...client, originalIndex: index, check: false, check_field: null, check_p: false }); setShowEditModal(true); }} className="p-1 text-gray-400 hover:text-blue-500 rounded-full hover:bg-blue-50 transition-colors duration-200" aria-label="Modifier le client">
+                              <button
+                                onClick={() => {
+                                  setClientToEdit({
+                                    ...client,
+                                    originalIndex: index,
+                                    check: false,
+                                    check_field: null,
+                                    check_p: false,
+                                  });
+                                  setShowEditModal(true);
+                                }}
+                                className="p-1 text-gray-400 hover:text-blue-500 rounded-full hover:bg-blue-50 transition-colors duration-200"
+                                aria-label="Modifier le client"
+                              >
                                 <PencilLine className="w-5 h-5" />
                               </button>
-                              <button onClick={() => { handleAnnuler_client_added(client.pourcentage); const updatedClients = addedClients.filter((_, i) => i !== index); setAddedClients(updatedClients); setValue('clients', updatedClients); }} className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-red-50 transition-colors duration-200" aria-label="Supprimer le client">
+                              <button
+                                onClick={() => {
+                                  handleAnnuler_client_added(
+                                    client.pourcentage,
+                                  );
+                                  const updatedClients = addedClients.filter(
+                                    (_, i) => i !== index,
+                                  );
+                                  setAddedClients(updatedClients);
+                                  setValue("clients", updatedClients);
+                                }}
+                                className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-red-50 transition-colors duration-200"
+                                aria-label="Supprimer le client"
+                              >
                                 <XIcon className="w-5 h-5" />
                               </button>
                             </div>
@@ -3512,24 +3573,24 @@ export default function ReservationForm({ id }) {
                         {/* Type Client Select */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Type Client{' '}
+                            Type Client{" "}
                             <span className="text-red-500 ml-1">*</span>
                           </label>
                           <select
-                            value={clientToEdit.type_client || ''}
+                            value={clientToEdit.type_client || ""}
                             onChange={(e) => {
                               const newType = e.target.value;
                               setClientToEdit({
                                 ...clientToEdit,
                                 type_client: newType,
                                 // Reset partenaire_id when changing from Société to Particulier
-                                ...(newType != '2' && { partenaire_id: '' }),
+                                ...(newType != "2" && { partenaire_id: "" }),
                               });
                             }}
                             className={`w-full h-[38px] px-3 py-2 text-sm border ${
                               !clientToEdit.type_client
-                                ? 'border-red-500'
-                                : 'border-gray-300'
+                                ? "border-red-500"
+                                : "border-gray-300"
                             } rounded-md focus:outline-none focus:border-gray-500`}
                           >
                             <option value="">Sélectionnez un type</option>
@@ -3550,14 +3611,14 @@ export default function ReservationForm({ id }) {
                         </div>
 
                         {/* Conditional Partenaire Select - only shows when type_client === "2" */}
-                        {clientToEdit.type_client == '2' && (
+                        {clientToEdit.type_client == "2" && (
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Partenaire{' '}
+                              Partenaire{" "}
                               <span className="text-red-500 ml-1">*</span>
                             </label>
                             <select
-                              value={clientToEdit.partenaire_id || ''}
+                              value={clientToEdit.partenaire_id || ""}
                               onChange={(e) =>
                                 setClientToEdit({
                                   ...clientToEdit,
@@ -3565,10 +3626,10 @@ export default function ReservationForm({ id }) {
                                 })
                               }
                               className={`w-full h-[38px] px-3 py-2 text-sm border ${
-                                clientToEdit.type_client === '2' &&
+                                clientToEdit.type_client === "2" &&
                                 !clientToEdit.partenaire_id
-                                  ? 'border-red-500'
-                                  : 'border-gray-300'
+                                  ? "border-red-500"
+                                  : "border-gray-300"
                               } rounded-md focus:outline-none focus:border-gray-500`}
                             >
                               <option value="">
@@ -3583,7 +3644,7 @@ export default function ReservationForm({ id }) {
                                 </option>
                               ))}
                             </select>
-                            {clientToEdit.type_client == '2' &&
+                            {clientToEdit.type_client == "2" &&
                               !clientToEdit.partenaire_id && (
                                 <p className="text-red-500 text-xs mt-1">
                                   Partenaire est obligatoire pour Société
@@ -3606,20 +3667,19 @@ export default function ReservationForm({ id }) {
                                 cin: value,
                                 check: false, // Réinitialiser check
                                 check_p: false,
-                                  check_field: null, // <-- Ajoutez ceci
-
+                                check_field: null, // <-- Ajoutez ceci
                               });
 
                               // Only make API call if CIN has sufficient length
                               if (value.length >= 3) {
                                 await fetch_cin_tel(
-                                  'cin',
+                                  "cin",
                                   value,
                                   0, // formIndex non utilisé en mode édition
                                   accessToken,
                                   null, // updateFormField non utilisé en mode édition
                                   true, // isEditMode = true
-                                  setClientToEdit // passer setClientToEdit
+                                  setClientToEdit, // passer setClientToEdit
                                 );
                               }
                             }}
@@ -3627,31 +3687,31 @@ export default function ReservationForm({ id }) {
                               const value = e.target.value;
                               if (value.length >= 3) {
                                 await fetch_cin_tel(
-                                  'cin',
+                                  "cin",
                                   value,
                                   0,
                                   accessToken,
                                   null,
                                   true,
-                                  setClientToEdit
+                                  setClientToEdit,
                                 );
                               }
                             }}
                             className={`w-full h-[38px] px-3 py-2 text-sm border ${
-                              clientToEdit.cin?.trim() === '' ||
-                              clientToEdit.check && form.check_field === 'cin'
-                                ? 'border-red-500'
-                                : 'border-gray-300'
+                              clientToEdit.cin?.trim() === "" ||
+                              (clientToEdit.check && form.check_field === "cin")
+                                ? "border-red-500"
+                                : "border-gray-300"
                             } rounded-md focus:outline-none focus:border-gray-500`}
-                           // disabled={clientToEdit.check} // Désactiver si client existe
+                            // disabled={clientToEdit.check} // Désactiver si client existe
                           />
-                          {clientToEdit.check && form.check_field === 'cin' && (
+                          {clientToEdit.check && form.check_field === "cin" && (
                             <p className="text-red-500 text-xs mt-1">
                               Ce CIN existe déjà. Veuillez utiliser le client
                               existant.
                             </p>
                           )}
-                          {clientToEdit.cin?.trim() === '' && (
+                          {clientToEdit.cin?.trim() === "" && (
                             <p className="text-red-500 text-xs mt-1">
                               CIN est obligatoire
                             </p>
@@ -3672,12 +3732,12 @@ export default function ReservationForm({ id }) {
                               })
                             }
                             className={`w-full h-[38px] px-3 py-2 text-sm border ${
-                              clientToEdit.nom?.trim() === ''
-                                ? 'border-red-500'
-                                : 'border-gray-300'
+                              clientToEdit.nom?.trim() === ""
+                                ? "border-red-500"
+                                : "border-gray-300"
                             } rounded-md focus:outline-none focus:border-gray-500`}
                           />
-                          {clientToEdit.nom?.trim() === '' && (
+                          {clientToEdit.nom?.trim() === "" && (
                             <p className="text-red-500 text-xs mt-1">
                               Nom est obligatoire
                             </p>
@@ -3699,12 +3759,12 @@ export default function ReservationForm({ id }) {
                               })
                             }
                             className={`w-full h-[38px] px-3 py-2 text-sm border ${
-                              clientToEdit.prenom?.trim() === ''
-                                ? 'border-red-500'
-                                : 'border-gray-300'
+                              clientToEdit.prenom?.trim() === ""
+                                ? "border-red-500"
+                                : "border-gray-300"
                             } rounded-md focus:outline-none focus:border-gray-500`}
                           />
-                          {clientToEdit.prenom?.trim() === '' && (
+                          {clientToEdit.prenom?.trim() === "" && (
                             <p className="text-red-500 text-xs mt-1">
                               Prénom est obligatoire
                             </p>
@@ -3713,11 +3773,11 @@ export default function ReservationForm({ id }) {
 
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Civilité{' '}
+                            Civilité{" "}
                             <span className="text-red-500 ml-1">*</span>
                           </label>
                           <select
-                            value={clientToEdit.civilite || ''}
+                            value={clientToEdit.civilite || ""}
                             onChange={(e) => {
                               const newType = e.target.value;
                               setClientToEdit({
@@ -3727,8 +3787,8 @@ export default function ReservationForm({ id }) {
                             }}
                             className={`w-full h-[38px] px-3 py-2 text-sm border ${
                               !clientToEdit.civilite
-                                ? 'border-red-500'
-                                : 'border-gray-300'
+                                ? "border-red-500"
+                                : "border-gray-300"
                             } rounded-md focus:outline-none focus:border-gray-500`}
                           >
                             <option value="">Sélectionnez un type</option>
@@ -3751,7 +3811,7 @@ export default function ReservationForm({ id }) {
                         {/* POURCENTAGE */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Pourcentage{' '}
+                            Pourcentage{" "}
                             <span className="text-red-500 ml-1">*</span>
                           </label>
                           <input
@@ -3766,15 +3826,15 @@ export default function ReservationForm({ id }) {
                               })
                             }
                             className={`w-full h-[38px] px-3 py-2 text-sm border ${
-                              clientToEdit.pourcentage === '' ||
+                              clientToEdit.pourcentage === "" ||
                               isNaN(Number(clientToEdit.pourcentage)) ||
                               Number(clientToEdit.pourcentage) < 0 ||
                               Number(clientToEdit.pourcentage) > 100
-                                ? 'border-red-500'
-                                : 'border-gray-300'
+                                ? "border-red-500"
+                                : "border-gray-300"
                             } rounded-md focus:outline-none focus:border-gray-500`}
                           />
-                          {clientToEdit.pourcentage == '' ||
+                          {clientToEdit.pourcentage == "" ||
                             (isNaN(Number(clientToEdit.pourcentage)) && (
                               <p className="text-red-500 text-xs mt-1">
                                 Pourcentage est obligatoire
@@ -3793,7 +3853,7 @@ export default function ReservationForm({ id }) {
                         {/* Téléphone dans le formulaire d'édition */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Téléphone{' '}
+                            Téléphone{" "}
                             <span className="text-red-500 ml-1">*</span>
                           </label>
                           <input
@@ -3801,60 +3861,59 @@ export default function ReservationForm({ id }) {
                             pattern="[0-9]{8,}"
                             value={clientToEdit.telephone_num1}
                             onChange={async (e) => {
-                              const value = e.target.value.replace(/\D/g, '');
+                              const value = e.target.value.replace(/\D/g, "");
                               setClientToEdit({
                                 ...clientToEdit,
                                 telephone_num1: value,
                                 check: false, // Réinitialiser check
                                 check_p: false,
-                                  check_field: null, // <-- Ajoutez ceci
-
+                                check_field: null, // <-- Ajoutez ceci
                               });
 
                               // Only make API call if phone number has sufficient length
                               if (value.length >= 8) {
                                 await fetch_cin_tel(
-                                  'tel',
+                                  "tel",
                                   value,
                                   0,
                                   accessToken,
                                   null,
                                   true, // isEditMode = true
-                                  setClientToEdit
+                                  setClientToEdit,
                                 );
                               }
                             }}
                             onBlur={async (e) => {
-                              const value = e.target.value.replace(/\D/g, '');
+                              const value = e.target.value.replace(/\D/g, "");
                               if (value.length >= 8) {
                                 await fetch_cin_tel(
-                                  'tel',
+                                  "tel",
                                   value,
                                   0,
                                   accessToken,
                                   null,
                                   true,
-                                  setClientToEdit
+                                  setClientToEdit,
                                 );
                               }
                             }}
                             className={`w-full h-[38px] px-3 py-2 text-sm border ${
-                              String(clientToEdit.telephone_num1 || '').length <
+                              String(clientToEdit.telephone_num1 || "").length <
                                 8 ||
                               isNaN(clientToEdit.telephone_num1) ||
-                              clientToEdit.check && form.check_field === 'tel'
-                                ? 'border-red-500'
-                                : 'border-gray-300'
+                              (clientToEdit.check && form.check_field === "tel")
+                                ? "border-red-500"
+                                : "border-gray-300"
                             } rounded-md focus:outline-none focus:border-gray-500`}
-                           // disabled={clientToEdit.check} // Désactiver si client existe
+                            // disabled={clientToEdit.check} // Désactiver si client existe
                           />
-                          {clientToEdit.check && form.check_field === 'tel' && (
+                          {clientToEdit.check && form.check_field === "tel" && (
                             <p className="text-red-500 text-xs mt-1">
                               Ce numéro existe déjà. Veuillez utiliser le client
                               existant.
                             </p>
                           )}
-                          {String(clientToEdit.telephone_num1 || '').length <
+                          {String(clientToEdit.telephone_num1 || "").length <
                             8 && (
                             <p className="text-red-500 text-xs mt-1">
                               Minimum 8 chiffres
@@ -3863,28 +3922,28 @@ export default function ReservationForm({ id }) {
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Situation Familiale{' '}
+                            Situation Familiale{" "}
                             <span className="text-red-500 ml-1">*</span>
                           </label>
                           <select
-                            value={clientToEdit.situation_familliale || ''}
+                            value={clientToEdit.situation_familliale || ""}
                             onChange={(e) => {
                               const newSituation = e.target.value;
                               setClientToEdit({
                                 ...clientToEdit,
                                 situation_familliale: newSituation,
                                 // Clear marriage fields when not married
-                                ...(newSituation != '2' && {
-                                  nom_mari: '',
+                                ...(newSituation != "2" && {
+                                  nom_mari: "",
                                   date_mariage: null,
-                                  lieu_mariage: '',
+                                  lieu_mariage: "",
                                 }),
                               });
                             }}
                             className={`w-full h-[38px] px-3 py-2 text-sm border ${
                               !clientToEdit.situation_familliale
-                                ? 'border-red-500'
-                                : 'border-gray-300'
+                                ? "border-red-500"
+                                : "border-gray-300"
                             } rounded-md focus:outline-none focus:border-gray-500`}
                           >
                             <option value="">Sélectionnez une situation</option>
@@ -3896,7 +3955,7 @@ export default function ReservationForm({ id }) {
                                 >
                                   {situation.label}
                                 </option>
-                              )
+                              ),
                             )}
                           </select>
                           {!clientToEdit.situation_familliale && (
@@ -3907,7 +3966,7 @@ export default function ReservationForm({ id }) {
                         </div>
 
                         {/* Conditional Marriage Fields */}
-                        {clientToEdit.situation_familliale == '2' && (
+                        {clientToEdit.situation_familliale == "2" && (
                           <div className="mt-4 space-y-4">
                             {/* Spouse Name */}
                             <div>
@@ -3916,7 +3975,7 @@ export default function ReservationForm({ id }) {
                               </label>
                               <input
                                 type="text"
-                                value={clientToEdit.nom_mari || ''}
+                                value={clientToEdit.nom_mari || ""}
                                 onChange={(e) =>
                                   setClientToEdit({
                                     ...clientToEdit,
@@ -3925,15 +3984,15 @@ export default function ReservationForm({ id }) {
                                 }
                                 className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                   formSubmitted_client &&
-                                  clientToEdit.situation_familliale == '2' &&
-                                  clientToEdit.nom_mari?.trim() === ''
-                                    ? 'border-red-500'
-                                    : 'border-gray-300'
+                                  clientToEdit.situation_familliale == "2" &&
+                                  clientToEdit.nom_mari?.trim() === ""
+                                    ? "border-red-500"
+                                    : "border-gray-300"
                                 } rounded-md focus:outline-none focus:border-gray-500`}
                               />
                               {formSubmitted_client &&
-                                clientToEdit.situation_familliale == '2' &&
-                                clientToEdit.nom_mari?.trim() === '' && (
+                                clientToEdit.situation_familliale == "2" &&
+                                clientToEdit.nom_mari?.trim() === "" && (
                                   <p className="text-red-500 text-xs mt-1">
                                     Nom du conjoint est obligatoire
                                   </p>
@@ -3949,7 +4008,7 @@ export default function ReservationForm({ id }) {
                                 </label>
                                 <input
                                   type="date"
-                                  value={clientToEdit.date_mariage || ''}
+                                  value={clientToEdit.date_mariage || ""}
                                   onChange={(e) =>
                                     setClientToEdit({
                                       ...clientToEdit,
@@ -3958,14 +4017,14 @@ export default function ReservationForm({ id }) {
                                   }
                                   className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                     formSubmitted_client &&
-                                    clientToEdit.situation_familliale == '2' &&
+                                    clientToEdit.situation_familliale == "2" &&
                                     !clientToEdit.date_mariage
-                                      ? 'border-red-500'
-                                      : 'border-gray-300'
+                                      ? "border-red-500"
+                                      : "border-gray-300"
                                   } rounded-md focus:outline-none focus:border-gray-500`}
                                 />
                                 {formSubmitted_client &&
-                                  clientToEdit.situation_familliale == '2' &&
+                                  clientToEdit.situation_familliale == "2" &&
                                   !clientToEdit.date_mariage && (
                                     <p className="text-red-500 text-xs mt-1">
                                       Date de mariage est obligatoire
@@ -3980,7 +4039,7 @@ export default function ReservationForm({ id }) {
                                 </label>
                                 <input
                                   type="text"
-                                  value={clientToEdit.lieu_mariage || ''}
+                                  value={clientToEdit.lieu_mariage || ""}
                                   onChange={(e) =>
                                     setClientToEdit({
                                       ...clientToEdit,
@@ -3989,15 +4048,15 @@ export default function ReservationForm({ id }) {
                                   }
                                   className={`w-full h-[38px] px-3 py-2 text-sm border ${
                                     formSubmitted_client &&
-                                    clientToEdit.situation_familliale == '2' &&
-                                    clientToEdit.lieu_mariage?.trim() === ''
-                                      ? 'border-red-500'
-                                      : 'border-gray-300'
+                                    clientToEdit.situation_familliale == "2" &&
+                                    clientToEdit.lieu_mariage?.trim() === ""
+                                      ? "border-red-500"
+                                      : "border-gray-300"
                                   } rounded-md focus:outline-none focus:border-gray-500`}
                                 />
                                 {formSubmitted_client &&
-                                  clientToEdit.situation_familliale == '2' &&
-                                  clientToEdit.lieu_mariage?.trim() === '' && (
+                                  clientToEdit.situation_familliale == "2" &&
+                                  clientToEdit.lieu_mariage?.trim() === "" && (
                                     <p className="text-red-500 text-xs mt-1">
                                       Lieu de mariage est obligatoire
                                     </p>
@@ -4008,67 +4067,84 @@ export default function ReservationForm({ id }) {
                         )}
 
                         <div>
-  <label className="block text-sm font-medium text-gray-700 mb-1">
-    Accepte{"d'"}être contacté
-    <span className="text-red-500 ml-1">*</span>
-  </label>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Accepte{"d'"}être contacté
+                            <span className="text-red-500 ml-1">*</span>
+                          </label>
 
-  <div
-    className={`w-full h-[38px] px-3 py-2 text-sm border ${
-      clientToEdit.notifie === undefined ||
-      clientToEdit.notifie === null
-        ? 'border-red-500'
-        : 'border-gray-300'
-    } rounded-md focus:outline-none focus:border-gray-500 flex items-center`}
-  >
-    <div className="flex space-x-4">
-      {/* Yes Radio Button */}
-      <label className="inline-flex items-center">
-        <input
-          type="radio"
-          name="notifie"
-          value="1"
-          checked={clientToEdit.notifie === '1' || clientToEdit.notifie === 1}
-          onChange={(e) => {
-            console.log('Selected value:', e.target.value);
-            setClientToEdit({
-              ...clientToEdit,
-              notifie: e.target.value,
-            });
-          }}
-          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-        />
-        <span className="ml-2 text-sm text-gray-700">Oui</span>
-      </label>
+                          <div
+                            className={`w-full h-[38px] px-3 py-2 text-sm border ${
+                              clientToEdit.notifie === undefined ||
+                              clientToEdit.notifie === null
+                                ? "border-red-500"
+                                : "border-gray-300"
+                            } rounded-md focus:outline-none focus:border-gray-500 flex items-center`}
+                          >
+                            <div className="flex space-x-4">
+                              {/* Yes Radio Button */}
+                              <label className="inline-flex items-center">
+                                <input
+                                  type="radio"
+                                  name="notifie"
+                                  value="1"
+                                  checked={
+                                    clientToEdit.notifie === "1" ||
+                                    clientToEdit.notifie === 1
+                                  }
+                                  onChange={(e) => {
+                                    console.log(
+                                      "Selected value:",
+                                      e.target.value,
+                                    );
+                                    setClientToEdit({
+                                      ...clientToEdit,
+                                      notifie: e.target.value,
+                                    });
+                                  }}
+                                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                                />
+                                <span className="ml-2 text-sm text-gray-700">
+                                  Oui
+                                </span>
+                              </label>
 
-      {/* No Radio Button - CORRECTION ICI */}
-      <label className="inline-flex items-center">
-        <input
-          type="radio"
-          name="notifie"
-          value="0"
-          checked={clientToEdit.notifie === '0' || clientToEdit.notifie === 0 || clientToEdit.notifie === ''}
-          onChange={(e) => {
-            console.log('Selected value:', e.target.value);
-            setClientToEdit({
-              ...clientToEdit,
-              notifie: e.target.value,
-            });
-          }}
-          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-        />
-        <span className="ml-2 text-sm text-gray-700">Non</span>
-      </label>
-    </div>
-  </div>
+                              {/* No Radio Button - CORRECTION ICI */}
+                              <label className="inline-flex items-center">
+                                <input
+                                  type="radio"
+                                  name="notifie"
+                                  value="0"
+                                  checked={
+                                    clientToEdit.notifie === "0" ||
+                                    clientToEdit.notifie === 0 ||
+                                    clientToEdit.notifie === ""
+                                  }
+                                  onChange={(e) => {
+                                    console.log(
+                                      "Selected value:",
+                                      e.target.value,
+                                    );
+                                    setClientToEdit({
+                                      ...clientToEdit,
+                                      notifie: e.target.value,
+                                    });
+                                  }}
+                                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                                />
+                                <span className="ml-2 text-sm text-gray-700">
+                                  Non
+                                </span>
+                              </label>
+                            </div>
+                          </div>
 
-  {(clientToEdit.notifie === undefined ||
-    clientToEdit.notifie === null) && (
-    <p className="text-red-500 text-xs mt-1">
-      Cette sélection est obligatoire
-    </p>
-  )}
-</div>
+                          {(clientToEdit.notifie === undefined ||
+                            clientToEdit.notifie === null) && (
+                            <p className="text-red-500 text-xs mt-1">
+                              Cette sélection est obligatoire
+                            </p>
+                          )}
+                        </div>
                         {/* ADDRESS (Optional) */}
                         <div className="md:col-span-2">
                           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -4115,7 +4191,7 @@ export default function ReservationForm({ id }) {
                                     >
                                       {error}
                                     </li>
-                                  )
+                                  ),
                                 )}
                               </ul>
                             </div>
@@ -4161,8 +4237,8 @@ export default function ReservationForm({ id }) {
                           type="submit"
                           className={`px-6 py-2 rounded-md ${
                             clientToEdit?.check
-                              ? 'bg-gray-400 cursor-not-allowed'
-                              : 'bg-blue-600 hover:bg-blue-700'
+                              ? "bg-gray-400 cursor-not-allowed"
+                              : "bg-blue-600 hover:bg-blue-700"
                           } text-white`}
                           onClick={(e) => {
                             e.preventDefault();
@@ -4170,11 +4246,11 @@ export default function ReservationForm({ id }) {
                             // Désactiver si client existe || clientToEdit?.check_p
                             if (clientToEdit?.check) {
                               toast.error(
-                                'Impossible de modifier ce client car il existe déjà dans la base de données.',
+                                "Impossible de modifier ce client car il existe déjà dans la base de données.",
                                 {
-                                  position: 'top-center',
+                                  position: "top-center",
                                   duration: 5000,
-                                }
+                                },
                               );
                               return;
                             }
@@ -4193,21 +4269,21 @@ export default function ReservationForm({ id }) {
                                 address: clientToEdit.address,
                                 type_client: clientToEdit.type_client,
                                 partenaire_id:
-                                  clientToEdit.type_client === '2'
+                                  clientToEdit.type_client === "2"
                                     ? clientToEdit.partenaire_id
                                     : null,
                                 situation_familliale:
                                   clientToEdit.situation_familliale,
                                 nom_mari:
-                                  clientToEdit.situation_familliale == '2'
+                                  clientToEdit.situation_familliale == "2"
                                     ? clientToEdit.nom_mari
                                     : null,
                                 date_mariage:
-                                  clientToEdit.situation_familliale == '2'
+                                  clientToEdit.situation_familliale == "2"
                                     ? clientToEdit.date_mariage
                                     : null,
                                 lieu_mariage:
-                                  clientToEdit.situation_familliale == '2'
+                                  clientToEdit.situation_familliale == "2"
                                     ? clientToEdit.lieu_mariage
                                     : null,
                                 civilite: clientToEdit.civilite,
@@ -4215,29 +4291,29 @@ export default function ReservationForm({ id }) {
                               };
 
                               setAddedClients(updatedClients);
-                              setValue('clients', updatedClients);
+                              setValue("clients", updatedClients);
 
                               // Recalculate percentages
                               const sum_percent_select = inputList1.reduce(
                                 (sum, nombres) =>
                                   sum + (Number(nombres.pourcentage) || 0),
-                                0
+                                0,
                               );
 
                               const totalPercentage_client_form =
                                 updatedClients.reduce(
                                   (sum, client) =>
                                     sum + (Number(client.pourcentage) || 0),
-                                  0
+                                  0,
                                 );
 
                               const totalPercentage =
                                 sum_percent_select +
                                 totalPercentage_client_form;
-                              setValue('pourcentages', totalPercentage);
+                              setValue("pourcentages", totalPercentage);
 
                               const isValid = totalPercentage === 100;
-                              setValue('verifierPourcentages', isValid);
+                              setValue("verifierPourcentages", isValid);
 
                               if (isValid) {
                                 setHasPercentageChanged(false);
@@ -4245,17 +4321,17 @@ export default function ReservationForm({ id }) {
 
                               setShowEditModal(false);
 
-                              toast.success('Client modifié avec succès', {
-                                position: 'top-center',
+                              toast.success("Client modifié avec succès", {
+                                position: "top-center",
                                 duration: 3000,
                               });
                             } else {
                               toast.error(
                                 `Veuillez corriger ${validationErrors.length} erreur(s)`,
                                 {
-                                  position: 'top-center',
+                                  position: "top-center",
                                   duration: 5000,
-                                }
+                                },
                               );
                             }
                           }}
@@ -4270,25 +4346,25 @@ export default function ReservationForm({ id }) {
                   </div>
                 </div>
               )}
-              <p style={{ display: 'none' }}>
+              <p style={{ display: "none" }}>
                 {currentStep === 0 &&
-                  watch('bien_id') === '' &&
-                  '• Select a property\n'}
+                  watch("bien_id") === "" &&
+                  "• Select a property\n"}
                 {currentStep === 0 &&
-                  watch('code_reservation') === '' &&
-                  '• Enter reservation code\n'}
+                  watch("code_reservation") === "" &&
+                  "• Enter reservation code\n"}
                 {currentStep === 0 &&
-                  watch('date_reservation') === '' &&
-                  '• Choose reservation date\n'}
+                  watch("date_reservation") === "" &&
+                  "• Choose reservation date\n"}
                 {currentStep === 0 &&
                   info_reservation !== null &&
-                  '• Reservation already exists\n'}
+                  "• Reservation already exists\n"}
                 {currentStep === 0 &&
                   loading_bien &&
-                  '• Loading property data...\n'}
+                  "• Loading property data...\n"}
                 {currentStep === 1 &&
-                  !watch('verifierPourcentages') &&
-                  '• Fix percentage distribution (must total 100%)\n'}
+                  !watch("verifierPourcentages") &&
+                  "• Fix percentage distribution (must total 100%)\n"}
               </p>
             </>
           </div>
@@ -4302,16 +4378,16 @@ export default function ReservationForm({ id }) {
                   <Controller
                     name="sr"
                     control={control}
-                    defaultValue={defaultValues?.sr || ''}
+                    defaultValue={defaultValues?.sr || ""}
                     render={({ field }) => (
                       <div className="flex items-center">
                         <input
                           {...field}
                           id="sr"
                           type="checkbox"
-                          checked={field.value == '1'} // Or whatever string value you use
+                          checked={field.value == "1"} // Or whatever string value you use
                           onChange={(e) =>
-                            field.onChange(e.target.checked ? '1' : '0')
+                            field.onChange(e.target.checked ? "1" : "0")
                           }
                           className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                         />
@@ -4346,23 +4422,23 @@ export default function ReservationForm({ id }) {
                 backendErrors={backendErrors}
                 defaultValues={defaultValues}
               />
-              <p style={{ display: 'none' }}>
-                {'superficie_jardin_calculer' +
-                  watch('superficie_jardin_calculer') +
-                  'sup habitable=>' +
-                  watch('superficie_habitable') +
-                  'superficie_balcon_calculer=>' +
-                  watch('Superficie_balcon_calculer') +
-                  'sup terrasse==>' +
-                  watch('superficie_terrasse_calculer') +
-                  'prix box==>' +
-                  watch('prix_box') +
-                  'prix parking==>' +
-                  watch('prix_parking') +
-                  'prix remis=>' +
-                  watch('prix_remise') +
-                  'prix forfetaire=>' +
-                  watch('prix_forfetaire')}
+              <p style={{ display: "none" }}>
+                {"superficie_jardin_calculer" +
+                  watch("superficie_jardin_calculer") +
+                  "sup habitable=>" +
+                  watch("superficie_habitable") +
+                  "superficie_balcon_calculer=>" +
+                  watch("Superficie_balcon_calculer") +
+                  "sup terrasse==>" +
+                  watch("superficie_terrasse_calculer") +
+                  "prix box==>" +
+                  watch("prix_box") +
+                  "prix parking==>" +
+                  watch("prix_parking") +
+                  "prix remis=>" +
+                  watch("prix_remise") +
+                  "prix forfetaire=>" +
+                  watch("prix_forfetaire")}
               </p>
               <TextField
                 label="Prix unitaire remisé:"
@@ -4409,7 +4485,7 @@ export default function ReservationForm({ id }) {
                     defaultValues={defaultValues}
                   />
                   <div>
-                    {' '}
+                    {" "}
                     <TextField
                       label="Montant:"
                       name="avance"
@@ -4419,23 +4495,23 @@ export default function ReservationForm({ id }) {
                       backendErrors={backendErrors}
                       type="number"
                       onChange={(e) => {
-                        setValue('reste', watch('prix_final') - e.target.value);
+                        setValue("reste", watch("prix_final") - e.target.value);
                       }}
                     />
-                    {watch('avance') != '' &&
-                      watch('avance') == 0 &&
+                    {watch("avance") != "" &&
+                      watch("avance") == 0 &&
                       user?.role > 2 && (
-                        <p style={{ color: 'red' }}>
+                        <p style={{ color: "red" }}>
                           Votre rôle ne vous permet pas de créer une réservation
                           avec un montant de 0. Veuillez saisir un montant
-                          positif.{' '}
+                          positif.{" "}
                         </p>
                       )}
-                    {watch('avance') > 0 &&
-                      watch('avance') < watch('avance_minimale') && (
-                        <p style={{ color: 'red' }}>
-                          Le montant doit être au moins{' '}
-                          {watch('avance_minimale')}
+                    {watch("avance") > 0 &&
+                      watch("avance") < watch("avance_minimale") && (
+                        <p style={{ color: "red" }}>
+                          Le montant doit être au moins{" "}
+                          {watch("avance_minimale")}
                         </p>
                       )}
                   </div>
@@ -4455,14 +4531,14 @@ export default function ReservationForm({ id }) {
                   label="Mode Financement :"
                   placeholder="Sélectionner un mode de financement"
                   name="mode_financement"
-                  value={watch('mode_financement')}
+                  value={watch("mode_financement")}
                   required={true}
                   options={Object.values(MODE_FINANCE || {}).map((item) => ({
                     value: item.code || item.value,
                     label: item.label || item.name,
                   }))}
                   onChange={(value) => {
-                    setValue('mode_financement', value);
+                    setValue("mode_financement", value);
                   }}
                   error={
                     errors.mode_financement?.message ||
@@ -4478,14 +4554,14 @@ export default function ReservationForm({ id }) {
                   label="Mode Financement :"
                   placeholder="Sélectionner un mode de financement"
                   name="mode_financement"
-                  value={watch('mode_financement')}
+                  value={watch("mode_financement")}
                   required={true}
                   options={Object.values(MODE_FINANCE || {}).map((item) => ({
                     value: item.code || item.value,
                     label: item.label || item.name,
                   }))}
                   onChange={(value) => {
-                    setValue('mode_financement', value);
+                    setValue("mode_financement", value);
                   }}
                   error={
                     errors.mode_financement?.message ||
@@ -4494,23 +4570,23 @@ export default function ReservationForm({ id }) {
                 />
 
                 <>
-                  {(watch('avance') > 0 ||
-                    watch('avance') === '' ||
+                  {(watch("avance") > 0 ||
+                    watch("avance") === "" ||
                     isEditing) && (
                     <SelectInput
                       label="Mode Paiement :"
                       placeholder="Sélectionner un mode de paiement"
                       name="mode_paiement"
-                      value={watch('mode_paiement')}
+                      value={watch("mode_paiement")}
                       required={true}
                       options={Object.values(MODE_PAIEMENT || {}).map(
                         (item) => ({
                           value: item.code || item.value,
                           label: item.label || item.name,
-                        })
+                        }),
                       )}
                       onChange={(value) => {
-                        setValue('mode_paiement', value);
+                        setValue("mode_paiement", value);
                       }}
                       error={
                         errors.mode_paiement?.message ||
@@ -4519,14 +4595,14 @@ export default function ReservationForm({ id }) {
                     />
                   )}
 
-                  {watch('mode_paiement') != 1 &&
-                    watch('mode_paiement') != '' && (
+                  {watch("mode_paiement") != 1 &&
+                    watch("mode_paiement") != "" && (
                       <>
                         <SelectInput
                           label="Banque:"
                           placeholder="Sélectionner une banque"
                           name="banque_id"
-                          value={watch('banque_id')}
+                          value={watch("banque_id")}
                           required={true}
                           options={
                             Array.isArray(banques)
@@ -4541,7 +4617,7 @@ export default function ReservationForm({ id }) {
                           }
                           loading={loading_1}
                           onChange={(value) => {
-                            setValue('banque_id', value);
+                            setValue("banque_id", value);
                           }}
                           error={
                             errors.banque_id?.message ||
@@ -4561,10 +4637,10 @@ export default function ReservationForm({ id }) {
                       </>
                     )}
 
-                  {watch('mode_paiement') != '' &&
-                    watch('mode_paiement') != 1 &&
-                    watch('mode_paiement') != 6 &&
-                    watch('mode_paiement') != 5 && (
+                  {watch("mode_paiement") != "" &&
+                    watch("mode_paiement") != 1 &&
+                    watch("mode_paiement") != 6 &&
+                    watch("mode_paiement") != 5 && (
                       <TextField
                         label="Date Echéance:"
                         name="echeance"
@@ -4579,13 +4655,13 @@ export default function ReservationForm({ id }) {
                   {/* Only show the checkbox for users with role ≤ 2 when amount is 0 */}
 
                   {/* Only show the checkbox for users with role ≤ 2 when amount is 0 */}
-                  {watch('avance') != '' &&
-                    watch('avance') == 0 &&
+                  {watch("avance") != "" &&
+                    watch("avance") == 0 &&
                     user?.role <= 2 && (
                       <Controller
                         name="check_montant"
                         control={control}
-                        defaultValue={defaultValues?.check_montant || ''}
+                        defaultValue={defaultValues?.check_montant || ""}
                         render={({ field }) => (
                           <div className="flex items-center">
                             <input
@@ -4614,7 +4690,7 @@ export default function ReservationForm({ id }) {
                     label="Commentaire:"
                     name="commentaireAvance"
                     required={
-                      watch('avance') == 0 || watch('check_montant')
+                      watch("avance") == 0 || watch("check_montant")
                         ? true
                         : false
                     }
@@ -4626,7 +4702,7 @@ export default function ReservationForm({ id }) {
                     width="w-full" // Optionally set width, default is 'w-80'
                     height="h-full" // Optionally set height, default is 'h-10'
                   />
-                  {watch('avance') != '' && watch('avance') != 0 && (
+                  {watch("avance") != "" && watch("avance") != 0 && (
                     <div>
                       <div className="space-y-4F">
                         {/* File Input */}
@@ -4698,7 +4774,7 @@ export default function ReservationForm({ id }) {
                                       </span>
                                       <button
                                         onClick={() =>
-                                          handleDeleteFile(index, 'avc')
+                                          handleDeleteFile(index, "avc")
                                         }
                                         className="p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 transition-colors"
                                         title="Supprimer"
@@ -4724,12 +4800,12 @@ export default function ReservationForm({ id }) {
                             </div>
                           </div>
                         )}
-                        {user?.role <= 2 && watch('avance') > 0 && (
+                        {user?.role <= 2 && watch("avance") > 0 && (
                           <>
                             <div className="col-span-3">
                               <h2
                                 className="text-lg font-medium border-b pb-2 mb-4"
-                                style={{ color: '#231651' }}
+                                style={{ color: "#231651" }}
                               >
                                 Informations Encaissement
                               </h2>
@@ -4740,7 +4816,7 @@ export default function ReservationForm({ id }) {
                               name="num_remise"
                               type="number"
                               required={
-                                watch('date_encaissement') != '' ? true : false
+                                watch("date_encaissement") != "" ? true : false
                               }
                               control={control}
                               errors={errors}
@@ -4753,7 +4829,7 @@ export default function ReservationForm({ id }) {
                               name="date_encaissement"
                               type="date"
                               required={
-                                watch('num_remise') != '' ? true : false
+                                watch("num_remise") != "" ? true : false
                               }
                               control={control}
                               errors={errors}
@@ -4778,8 +4854,8 @@ export default function ReservationForm({ id }) {
             onClick={goToPrevStep}
             className={`px-6 py-2 rounded-md border border-gray-300 text-gray-700 ${
               currentStep == 0
-                ? 'opacity-50 cursor-not-allowed'
-                : 'hover:bg-gray-50'
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:bg-gray-50"
             }`}
             disabled={currentStep == 0}
           >
