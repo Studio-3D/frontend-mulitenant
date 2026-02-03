@@ -98,9 +98,9 @@ const TvaMensuelleManager = ({  }) => {
         <a
           href={`/Biens/${row.reservation?.bien_id}`}
           target="_blank"
-          className="text-blue-600 "
+         
         >
-          {row.reservation?.bien.propriete_dite_bien || '-'}
+          <strong style={{fontWeight:600}}>{row.reservation?.bien.propriete_dite_bien || '-'}</strong>
         </a>
       ),
     },
@@ -111,9 +111,9 @@ const TvaMensuelleManager = ({  }) => {
         <a
           href={`/ventes/reservations/${row.reservation?.id}`}
           target="_blank"
-          className="text-blue-600"
+         
         >
-          {row.reservation?.code_reservation || '-'}
+       <strong style={{fontWeight:600}}>   {row.reservation?.code_reservation || '-'}</strong>
         </a>
       ),
     },
@@ -130,9 +130,8 @@ const TvaMensuelleManager = ({  }) => {
             <a
               href={`/ventes/clients/${client.id}`}
               target="_blank"
-              className="text-blue-600 "
             >
-              {`${client.nom} ${client.prenom}`}
+                <strong style={{fontWeight:600}}>{`${client.nom} ${client.prenom}`}</strong>
             </a>
           );
         }
@@ -149,9 +148,9 @@ const TvaMensuelleManager = ({  }) => {
                   <a
                     href={`/clients/${client.id}`}
                     target="_blank"
-                    className="text-blue-600  block"
+                  
                   >
-                    {`${client.nom} ${client.prenom}`}
+                     <strong style={{fontWeight:600}}>{`${client.nom} ${client.prenom}`}</strong>
                   </a>
                 </div>
               );

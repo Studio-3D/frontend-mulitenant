@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useState } from 'react';
 import { X, Download, Maximize2 } from "lucide-react";
@@ -27,6 +27,7 @@ const PieceJointeViewer = ({ Details, getFileUrl, url }) => {
     return null;
   }
 
+  
   return (
     <>
       <div className="my-8">

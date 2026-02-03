@@ -7,7 +7,7 @@ import { Changement_De_Bien } from '../../../desistements/ajouter_desistement/[r
 import { useRouter, useParams } from 'next/navigation';
 import { APIURL } from '../../../../../../configs/api';
 import axios from 'axios';
-import { type_dst } from '@/configs/enum';
+import { isAdmin, isCommercial, isSuperAdmin, type_dst } from '@/configs/enum';
 import { useAuth } from '../../../../../../context/AuthContext';
 import {
   fetchData_Select,
@@ -19,17 +19,14 @@ import SelectInput from '@/components/SelectInput';
 import LoadingSpin from '@/components/LoadingSpin';
 import { useForm, FormProvider } from 'react-hook-form';
 import TextField from '@/components/Textfield';
-import AutocompleteSelectComponent from '@/components/AutocompleteSelectComponent';
-import {
-  MODE_PAIEMENT,
-  getModePenaliteCode,
-  modes_penalites,
-} from '@/configs/enum';
-import Autocomplete from '@/components/Autocomplete';
+import { MODE_PAIEMENT, modes_penalites } from '@/configs/enum';
 import { useProjet } from '@/context/ProjetContext';
 import BreadCrumb from '../../../../navigation/BreadCrumb';
 
 export default function Page() {
+  // Ajoutez ces states au début de votre composant
+  const [isPenaliteToggling, setIsPenaliteToggling] = useState(false);
+  const [formSubmitted, setFormSubmitted] = useState(false);
   const hasFetchedFiles = useRef(false);
   const codeResRef = useRef();
   const [dossierInfos, setDossierInfos] = useState({});
@@ -106,8 +103,46 @@ export default function Page() {
     formState: { errors },
   } = methods;
 
+  const userRole = user?.role;
+      useEffect(() => {
+        if (
+          !isAdmin(userRole) &&
+          !isSuperAdmin(userRole) &&
+          !isCommercial(userRole)
+        ) {
+          router.push('/');
+        }
+      }, [router]);
+      
   const [isFormInitialized, setIsFormInitialized] = useState(false);
 
+  // Ajoutez cet useEffect pour gérer le toggle de pénalité
+  useEffect(() => {
+    if (isPenaliteToggling) {
+      const timer = setTimeout(() => {
+        setIsPenaliteToggling(false);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isPenaliteToggling]);
+  // Modifiez l'effet pour calculer automatiquement la pénalité
+  useEffect(() => {
+    if (
+      avecPenalite &&
+      watch('mode_penalite') &&
+      watch('mode_penalite') !== 'Montant'
+    ) {
+      const percentage = parseFloat(watch('mode_penalite').replace('%', ''));
+      const penalitePar = watch('penalite_par') || 'avance';
+      const amount =
+        penalitePar === 'prix'
+          ? reservationData.prix || 0
+          : reservationData.sumAvances || 0;
+
+      const calculatedAmount = (amount * percentage) / 100;
+      setValue('penalite_montant', calculatedAmount.toFixed(2));
+    }
+  }, [watch('mode_penalite'), watch('penalite_par'), avecPenalite, setValue]);
   // Simple cache et comparaison for return back en cas de changer projet
   const [oldProjetId, setOldProjetId] = useState(null);
 
@@ -250,8 +285,8 @@ export default function Page() {
         mode_rembourse_2: 'direct',
         dossier_id: '',
         montant_transferer: '',
-        reste_a_rembourse: '',
         num_paiement: '',
+        reste_a_rembourse: '',
         cheque_recu: null,
         pour_le_compte: '',
         fichier_autorisation: null,
@@ -337,6 +372,12 @@ export default function Page() {
 
   // Handle form submission
   const onSubmit = async (data) => {
+    setFormSubmitted(true); // Set form as submitted
+    const errors = getErrors(); // Utilisez getErrors() au lieu de errors_g
+
+    if (errors.length > 0) {
+      return; // Don't proceed with submission if there are errors
+    }
     try {
       setLoading((prev) => ({ ...prev, submit: true }));
 
@@ -389,13 +430,6 @@ export default function Page() {
         formData.append(`new_files_desistement[${index}]`, file);
       });
       // Add files
-      /*  selectedFiles_dst.forEach((file, index) => {
-        formData.append(`files_desistement[${index}]`, file);
-      });
-
-      selectedFiles_plt.forEach((file, index) => {
-        formData.append(`files_penalite[${index}]`, file);
-      });*/
       // Handle penalty files - separate original file names and new files
       const { originalFileNames: originalFileNamesPlt, newFiles: newFilesPlt } =
         selectedFiles_plt.reduce(
@@ -485,7 +519,24 @@ export default function Page() {
         }
       } else if (activeModel == 3) {
         // DATA TYPE 3
+        //REMboursement
+        formData.append('type_remb', data.type_remb);
+        data.inputList_remb.forEach((item, index) => {
+          if (item.fichier_autorisation) {
+            formData.append(
+              `fichier_autorisation_${index}`,
+              item.fichier_autorisation
+            );
+          }
+        });
+        data.inputList_remb.forEach((item, index) => {
+          if (item.cheque_recu) {
+            formData.append(`cheque_recu_${index}`, item.cheque_recu);
+          }
+        });
 
+        formData.append('inputlist_remb', JSON.stringify(data.inputList_remb));
+        //////
         formData.append('type', 3);
         formData.append('bien_id_new', data.new_bien_id);
         formData.append('montant_a_ajouter', data.montant_a_ajouter);
@@ -510,8 +561,9 @@ export default function Page() {
       });
       if (response.status == 201 || response.status == 200) {
         if (user?.role <= 2) {
-          localStorage.setItem('etat_dst', '1');
-          router.push('/ventes?tab=desistements');
+          router.push('/ventes/desistements/show' + desistementId);
+          /* localStorage.setItem('etat_dst', '1');
+          router.push('/ventes?tab=desistements');*/
         } else {
           //commercial
           localStorage.setItem('etat_dst', '5');
@@ -519,7 +571,7 @@ export default function Page() {
             '/ventes?tab=validation&subtab=desistements-attente-encours'
           );
         }
-}
+      }
     } catch (error) {
       console.error('Error submitting form:', error);
     } finally {
@@ -532,6 +584,10 @@ export default function Page() {
   }
 
   const getErrors = () => {
+    // Skip validation if we're just toggling penalty
+    if (isPenaliteToggling) {
+      return [];
+    }
     const formValues = methods.getValues();
     const errors = [];
 
@@ -663,7 +719,10 @@ export default function Page() {
                   }
 
                   // Validate direct remboursement fields if type_remb_transfere is immediat
-                  if (item.type_remb_transfere == 'immediat') {
+                  if (
+                    item.type_remb_transfere == 'immediat' &&
+                    parseFloat(item.reste_a_rembourse) > 0
+                  ) {
                     if (!item.date_rembourse) {
                       errors.push(
                         `${clientPrefix} La date de remboursement est requise pour le remboursement immédiat`
@@ -674,11 +733,28 @@ export default function Page() {
                         `${clientPrefix} Le mode de remboursement est requis pour le remboursement immédiat`
                       );
                     }
-                    if (item.mode_rembourse && !item.num_paiement) {
-                      errors.push(
-                        `${clientPrefix} Le numéro de paiement est requis pour le remboursement immédiat`
-                      );
+                    if (item.mode_rembourse) {
+                      if (!item.num_paiement) {
+                        errors.push(
+                          `${clientPrefix} Le numéro de paiement est requis`
+                        );
+                      } else {
+                        const cleanedNum = String(item.num_paiement)
+                          .trim()
+                          .replace(/\s/g, '');
+
+                        if (!/^\d+$/.test(cleanedNum)) {
+                          errors.push(
+                            `${clientPrefix} Le numéro de paiement doit contenir uniquement des chiffres`
+                          );
+                        } else if (cleanedNum.length !== 16) {
+                          errors.push(
+                            `${clientPrefix} Le numéro de paiement doit contenir 16 chiffres`
+                          );
+                        }
+                      }
                     }
+
                     if (!item.pour_le_compte) {
                       errors.push(
                         `${clientPrefix} Le compte bénéficiaire est requis pour le remboursement immédiat`
@@ -713,27 +789,43 @@ export default function Page() {
                     `${clientPrefix} Le mode de remboursement est requis`
                   );
                 }
-                if (item.mode_rembourse && !item.num_paiement) {
-                  errors.push(
-                    `${clientPrefix} Le numéro de paiement est requis`
-                  );
+                if (item.mode_rembourse) {
+                  if (!item.num_paiement) {
+                    errors.push(
+                      `${clientPrefix} Le numéro de paiement est requis`
+                    );
+                  } else {
+                    const cleanedNum = String(item.num_paiement)
+                      .trim()
+                      .replace(/\s/g, '');
+
+                    if (!/^\d+$/.test(cleanedNum)) {
+                      errors.push(
+                        `${clientPrefix} Le numéro de paiement doit contenir uniquement des chiffres`
+                      );
+                    } else if (cleanedNum.length !== 16) {
+                      errors.push(
+                        `${clientPrefix} Le numéro de paiement doit contenir 16 chiffres`
+                      );
+                    }
+                  }
                 }
-                if (!item.pour_le_compte) {
-                  errors.push(
-                    `${clientPrefix} Le compte bénéficiaire est requis`
-                  );
-                }
-                if (item.mode_rembourse == 'cheque' && !item.cheque_recu) {
-                  errors.push(`${clientPrefix} Le reçu de chèque est requis`);
-                }
-                if (
-                  item.pour_le_compte == 'autre' &&
-                  !item.fichier_autorisation
-                ) {
-                  errors.push(
-                    `${clientPrefix} Le fichier d'autorisation est requis`
-                  );
-                }
+              }
+              if (!item.pour_le_compte) {
+                errors.push(
+                  `${clientPrefix} Le compte bénéficiaire est requis`
+                );
+              }
+              if (item.mode_rembourse == 'cheque' && !item.cheque_recu) {
+                errors.push(`${clientPrefix} Le reçu de chèque est requis`);
+              }
+              if (
+                item.pour_le_compte == 'autre' &&
+                !item.fichier_autorisation
+              ) {
+                errors.push(
+                  `${clientPrefix} Le fichier d'autorisation est requis`
+                );
               }
 
               // Validate the sum makes sense for transfert_remb
@@ -772,6 +864,15 @@ export default function Page() {
       const type_dp = formValues.type_dp;
 
       if (type_dp == 1) {
+        // ADD THIS VALIDATION:
+        if (
+          !formValues.nb_aquereurs_dp_proche ||
+          formValues.nb_aquereurs_dp_proche <= 0
+        ) {
+          errors.push(
+            'Le nombre des nouveaux acquéreurs doit être supérieur à 0'
+          );
+        }
         // Désistement au profit d'un proche
         if (
           !formValues.desisteur_dp_proche_co ||
@@ -853,7 +954,6 @@ export default function Page() {
         ) {
           errors.push('Au moins un bénéficiaire doit être sélectionné');
         } else {
-         
           let totalPercentage = 0;
           formValues.profit_dp_co_reser.forEach((beneficiary, index) => {
             const percent = parseFloat(beneficiary.new_pourcentage);
@@ -888,6 +988,12 @@ export default function Page() {
         }
       } else if (type_dp == 3) {
         // Désistement partiel
+        // ADD THIS VALIDATION:
+        if (!formValues.nb_aquereurs_dp || formValues.nb_aquereurs_dp <= 0) {
+          errors.push(
+            'Le nombre des nouveaux acquéreurs doit être supérieur à 0'
+          );
+        }
         if (
           !formValues.desisteutrs_profit_dp_partiel ||
           formValues.desisteutrs_profit_dp_partiel.length == 0
@@ -1008,45 +1114,314 @@ export default function Page() {
 
       // Validate montant à ajouter doesn't exceed new bien price
       const prixNouveauBien = formValues.prix_nouveau_bien || 0;
-      if (formValues.montant_a_ajouter > prixNouveauBien) {
-        errors.push(
-          `Le montant à ajouter (${formValues.montant_a_ajouter} DH) ne peut pas dépasser le prix du nouveau bien (${prixNouveauBien} DH)`
-        );
-      }
+      if (reservationData.sumAvances > prixNouveauBien) {
+        const diff = reservationData.sumAvances - prixNouveauBien;
+        // Validate based on remboursement type
+        if (formValues.type_remb == 'direct') {
+          if (
+            !formValues.inputList_remb ||
+            formValues.inputList_remb.length == 0
+          ) {
+            errors.push('Au moins un remboursement doit être configuré');
+          } else {
+            formValues.inputList_remb.forEach((item, index) => {
+              const clientPrefix = `Client ${item.nom} ${item.prenom}:`;
 
-      // Validate payment details if montant_a_ajouter > 0
-      if (formValues.montant_a_ajouter > 0) {
-        if (!formValues.mode_paiement) {
+              // Common validations for all modes
+              if (!item.type_remb) {
+                errors.push(
+                  `${clientPrefix} Le mode de remboursement est requis`
+                );
+              }
+
+              // Validate transfer section if mode is transfert or transfert_remb
+              if (
+                item.type_remb == 'transfert' ||
+                item.type_remb == 'transfert_remb'
+              ) {
+                if (!item.dossier_id) {
+                  errors.push(
+                    `${clientPrefix} Le dossier de transfert est requis`
+                  );
+                }
+
+                // Additional validation for transfert_remb mode
+                if (item.type_remb == 'transfert_remb') {
+                  const sum_avance_by_aq_percent =
+                    (item.pourcentage / 100) * diff;
+
+                  // Validate montant_transferer
+                  if (
+                    item.montant_transferer == '' ||
+                    item.montant_transferer == null
+                  ) {
+                    errors.push(
+                      `${clientPrefix} Le montant à transférer est requis`
+                    );
+                  } else if (isNaN(parseFloat(item.montant_transferer))) {
+                    errors.push(
+                      `${clientPrefix} Le montant à transférer doit être un nombre valide`
+                    );
+                  } else if (parseFloat(item.montant_transferer) <= 0) {
+                    errors.push(
+                      `${clientPrefix} Le montant à transférer doit être positif`
+                    );
+                  } else if (dossierInfos[index]) {
+                    // Check if dossier info exists
+                    if (
+                      parseFloat(item.montant_transferer) >
+                        sum_avance_by_aq_percent &&
+                      parseFloat(item.montant_transferer) >
+                        dossierInfos[index].reste
+                    ) {
+                      errors.push(
+                        `${clientPrefix} Le montant transféré ne doit pas dépasser le reste de dossier (${dossierInfos[
+                          index
+                        ].reste.toFixed(
+                          2
+                        )} DH) ni le reste à rembourser (${sum_avance_by_aq_percent.toFixed(
+                          2
+                        )} DH)`
+                      );
+                    } else if (
+                      parseFloat(item.montant_transferer) >
+                      sum_avance_by_aq_percent
+                    ) {
+                      errors.push(
+                        `${clientPrefix} Le montant transféré ne doit pas dépasser le reste à rembourser (${sum_avance_by_aq_percent.toFixed(
+                          2
+                        )} DH)`
+                      );
+                    } else if (
+                      parseFloat(item.montant_transferer) >
+                      dossierInfos[index].reste
+                    ) {
+                      errors.push(
+                        `${clientPrefix} Le montant transféré ne doit pas dépasser le reste de dossier (${dossierInfos[
+                          index
+                        ].reste.toFixed(2)} DH)`
+                      );
+                    }
+                  }
+
+                  // Validate reste_a_rembourse
+                  if (
+                    item.reste_a_rembourse == '' ||
+                    item.reste_a_rembourse == null
+                  ) {
+                    errors.push(
+                      `${clientPrefix} Le reste à rembourser est requis`
+                    );
+                  } else if (isNaN(parseFloat(item.reste_a_rembourse))) {
+                    errors.push(
+                      `${clientPrefix} Le reste à rembourser doit être un nombre valide`
+                    );
+                  } else if (parseFloat(item.reste_a_rembourse) < 0) {
+                    errors.push(
+                      `${clientPrefix} Le reste à rembourser ne peut pas être négatif`
+                    );
+                  }
+
+                  // Validate type_remb_transfere if there's a remaining amount
+                  if (
+                    parseFloat(item.reste_a_rembourse) > 0 &&
+                    !item.type_remb_transfere
+                  ) {
+                    errors.push(
+                      `${clientPrefix} Le type de remboursement du transfert est requis`
+                    );
+                  }
+
+                  // Validate direct remboursement fields if type_remb_transfere is immediat
+                  if (
+                    item.type_remb_transfere == 'immediat' &&
+                    parseFloat(item.reste_a_rembourse) > 0
+                  ) {
+                    if (!item.date_rembourse) {
+                      errors.push(
+                        `${clientPrefix} La date de remboursement est requise pour le remboursement immédiat`
+                      );
+                    }
+                    if (!item.mode_rembourse) {
+                      errors.push(
+                        `${clientPrefix} Le mode de remboursement est requis pour le remboursement immédiat`
+                      );
+                    } else if (item.mode_rembourse && item.num_paiement) {
+                      // First check if it's a valid string
+                      if (
+                        typeof item.num_paiement !== 'string' &&
+                        typeof item.num_paiement !== 'number'
+                      ) {
+                        errors.push(
+                          `${clientPrefix} Le numéro de paiement doit être une valeur valide`
+                        );
+                      } else {
+                        const numStr = String(item.num_paiement)
+                          .trim()
+                          .replace(/\s/g, '');
+
+                        if (!/^\d+$/.test(numStr)) {
+                          errors.push(
+                            `${clientPrefix} Le numéro de paiement doit contenir uniquement des chiffres`
+                          );
+                        } else if (numStr.length !== 16) {
+                          errors.push(
+                            `${clientPrefix} Le numéro de paiement doit contenir 16 chiffres (actuel: ${numStr.length})`
+                          );
+                        }
+                      }
+                    }
+
+                    if (!item.pour_le_compte) {
+                      errors.push(
+                        `${clientPrefix} Le compte bénéficiaire est requis pour le remboursement immédiat`
+                      );
+                    }
+                    if (item.mode_rembourse == 'cheque' && !item.cheque_recu) {
+                      errors.push(
+                        `${clientPrefix} Le reçu de chèque est requis pour le remboursement immédiat`
+                      );
+                    }
+                    if (
+                      item.pour_le_compte == 'autre' &&
+                      !item.fichier_autorisation
+                    ) {
+                      errors.push(
+                        `${clientPrefix} Le fichier d'autorisation est requis pour le remboursement immédiat`
+                      );
+                    }
+                  }
+                }
+              }
+
+              // Validate direct remboursement fields if mode is direct
+              if (item.type_remb == 'direct') {
+                if (!item.date_rembourse) {
+                  errors.push(
+                    `${clientPrefix} La date de remboursement est requise`
+                  );
+                }
+                if (!item.mode_rembourse) {
+                  errors.push(
+                    `${clientPrefix} Le mode de remboursement est requis`
+                  );
+                }
+                if (item.mode_rembourse) {
+                  if (!item.num_paiement) {
+                    errors.push(
+                      `${clientPrefix} Le numéro de paiement est requis`
+                    );
+                  } else {
+                    const numStr = String(item.num_paiement)
+                      .trim()
+                      .replace(/\s/g, '');
+
+                    if (!/^\d+$/.test(numStr)) {
+                      errors.push(
+                        `${clientPrefix} Le numéro de paiement doit contenir uniquement des chiffres`
+                      );
+                    } else if (numStr.length !== 16) {
+                      errors.push(
+                        `${clientPrefix} Le numéro de paiement doit contenir 16 chiffres`
+                      );
+                    }
+                  }
+                }
+                if (!item.pour_le_compte) {
+                  errors.push(
+                    `${clientPrefix} Le compte bénéficiaire est requis`
+                  );
+                }
+                if (item.mode_rembourse == 'cheque' && !item.cheque_recu) {
+                  errors.push(`${clientPrefix} Le reçu de chèque est requis`);
+                }
+                if (
+                  item.pour_le_compte == 'autre' &&
+                  !item.fichier_autorisation
+                ) {
+                  errors.push(
+                    `${clientPrefix} Le fichier d'autorisation est requis`
+                  );
+                }
+              }
+
+              // Validate the sum makes sense for transfert_remb
+              if (item.type_remb == 'transfert_remb') {
+                const montantTransferer =
+                  parseFloat(item.montant_transferer) || 0;
+                const resteARembourser =
+                  parseFloat(item.reste_a_rembourse) || 0;
+                const expectedTotal = (item.pourcentage / 100) * diff;
+                const actualTotal = montantTransferer + resteARembourser;
+
+                if (Math.abs(actualTotal - expectedTotal) > 0.01) {
+                  errors.push(
+                    `${clientPrefix} La somme du montant transféré (${montantTransferer.toFixed(
+                      2
+                    )} DH) ` +
+                      `et du reste à rembourser (${resteARembourser.toFixed(
+                        2
+                      )} DH) doit être égale ` +
+                      `à ${expectedTotal.toFixed(2)} DH`
+                  );
+                }
+              }
+            });
+          }
+        }
+      } else {
+        if (formValues.montant_a_ajouter > prixNouveauBien) {
           errors.push(
-            'Le mode de paiement est requis pour le montant à ajouter'
+            `Le montant à ajouter (${formValues.montant_a_ajouter} DH) ne peut pas dépasser le prix du nouveau bien (${prixNouveauBien} DH)`
           );
         }
 
-        // Validate non-cash payment details
-        if (formValues.mode_paiement && formValues.mode_paiement != 1) {
-          if (!formValues.banque_id) {
-            errors.push('La banque est requise pour ce mode de paiement');
-          }
-          if (!formValues.numero_paiement) {
-            errors.push('Le numéro de paiement est requis');
+        // Validate payment details if montant_a_ajouter > 0
+        if (formValues.montant_a_ajouter > 0) {
+          if (!formValues.mode_paiement) {
+            errors.push(
+              'Le mode de paiement est requis pour le montant à ajouter'
+            );
           }
 
-          // Validate echeance for certain payment methods
-          if (
-            ![1, 5, 6].includes(formValues.mode_paiement) &&
-            !formValues.echeance
-          ) {
-            errors.push("L'échéance est requise pour ce mode de paiement");
-          }
-        }
+          // Validate non-cash payment details
+          if (formValues.mode_paiement && formValues.mode_paiement != 1) {
+            if (!formValues.banque_id) {
+              errors.push('La banque est requise pour ce mode de paiement');
+            }
+            if (!formValues.numero_paiement) {
+              errors.push('Le numéro de paiement est requis');
+            } else {
+              const cleanedNum = String(formValues.numero_paiement)
+                .trim()
+                .replace(/\s/g, '');
 
-        // Validate files if required
-        /*if (
+              if (!/^\d+$/.test(cleanedNum)) {
+                errors.push(
+                  'Le numéro de paiement doit contenir uniquement des chiffres'
+                );
+              } else if (cleanedNum.length !== 16) {
+                errors.push('Le numéro de paiement doit contenir 16 chiffres');
+              }
+            }
+
+            // Validate echeance for certain payment methods
+            if (
+              !['1', '5', '6'].includes(formValues.mode_paiement) &&
+              !formValues.echeance
+            ) {
+              errors.push("L'échéance est requise pour ce mode de paiement");
+            }
+          }
+
+          // Validate files if required
+          /*if (
           (!formValues.files_avance || formValues.files_avance.length == 0) &&
           formValues.montant_a_ajouter > 0
         ) {
           errors.push('Veuillez joindre les fichiers de paiement');
         }*/
+        }
       }
     }
     // Penalty validation (applies to all activeModel cases if avecPenalite is true)
@@ -1080,6 +1455,21 @@ export default function Page() {
               }
               if (!formValues.numero_paiement_pen) {
                 errors.push('Le numéro de paiement de la pénalité est requis');
+              } else {
+                // Nettoyer le numéro
+                const cleanedNum = String(formValues.numero_paiement_pen)
+                  .trim()
+                  .replace(/\s/g, '');
+
+                if (!/^\d+$/.test(cleanedNum)) {
+                  errors.push(
+                    'Le numéro de paiement de la pénalité doit contenir uniquement des chiffres'
+                  );
+                } else if (cleanedNum.length !== 16) {
+                  errors.push(
+                    'Le numéro de paiement de la pénalité doit contenir 16 chiffres'
+                  );
+                }
               }
 
               // Validate echeance for certain payment methods
@@ -1219,16 +1609,20 @@ export default function Page() {
     window.open(fileURL);
   };
 
-  const handleDeleteFile = async (index, fileType) => {
+  const handleDeleteFile = (index, fileType, event) => {
+    // Empêcher la propagation d'événement
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
     const fileConfig = {
       1: {
-        // dst
         selectedFiles: selectedFiles_dst,
         setSelectedFiles: setSelectedFiles_dst,
         formField: 'files_desistement',
       },
       2: {
-        // plt
         selectedFiles: selectedFiles_plt,
         setSelectedFiles: setSelectedFiles_plt,
         formField: 'files_penalite',
@@ -1239,13 +1633,15 @@ export default function Page() {
     if (!config) return;
 
     const { selectedFiles, setSelectedFiles, formField } = config;
+    const updatedFiles = selectedFiles.filter((_, i) => i !== index);
 
-    const fileToDelete = selectedFiles[index];
-
-    const updatedFiles = selectedFiles.filter((_, i) => i != index);
+    // Mettre à jour l'état
     setSelectedFiles(updatedFiles);
-    await Promise.resolve();
-    setValue(formField, updatedFiles);
+
+    // Utiliser setTimeout pour éviter les conflits avec le cycle de rendu
+    setTimeout(() => {
+      setValue(formField, updatedFiles);
+    }, 10);
   };
 
   // Helper functions (add these outside your component)
@@ -1324,25 +1720,28 @@ export default function Page() {
     }
   };
 
+  // Modifiez la fonction handlechange_mode_penalite
   const handlechange_mode_penalite = (code) => {
     const selectedMode = modes_penalites[code];
     if (selectedMode) {
-      console.log('Selected Mode:', selectedMode.label);
       setValue('mode_penalite', selectedMode.label);
 
       // Calculate penalty amount
-      if (selectedMode.label != 'Montant') {
-        const percentage = parseFloat(selectedMode.label);
-        if (watch('penalite_par') == 'prix') {
-          setValue(
-            'penalite_montant',
-            (reservationData.prix * percentage) / 100
-          );
-        } else {
-          setValue(
-            'penalite_montant',
-            (reservationData.sumAvances * percentage) / 100
-          );
+      if (selectedMode.label !== 'Montant') {
+        const percentage = parseFloat(selectedMode.label.replace('%', ''));
+        const penalitePar = watch('penalite_par') || 'avance';
+
+        const amount =
+          penalitePar === 'prix'
+            ? reservationData.prix || 0
+            : reservationData.sumAvances || 0;
+
+        const calculatedAmount = (amount * percentage) / 100;
+        setValue('penalite_montant', calculatedAmount.toFixed(2));
+      } else {
+        // Reset to 0 for Montant mode if not already set
+        if (!watch('penalite_montant')) {
+          setValue('penalite_montant', 0);
         }
       }
     }
@@ -1459,13 +1858,20 @@ export default function Page() {
                 sum_avances_valides={reservationData.sumAvances}
                 banques={banques}
                 filesList_avc={filesList_avc}
-                // prix_reservation={reservationData?.prix}
+                // remboursement
+                accessToken={accessToken}
+                reservationId={desistementData.reservation_id}
+                type_remb_get={desistementData.type_remb}
+                inputListRemb_get={reservationData.inputListRemb}
+                dossierInfos={dossierInfos}
+                setDossierInfos={setDossierInfos}
               />
             )}
 
             {/* Add similar sections for other types if needed */}
 
             {/* Penalty section (same as in your original code) */}
+
             <div className="border-t border-gray-200 py-4 px-6">
               <div className="flex justify-between items-center">
                 <div>
@@ -1475,10 +1881,19 @@ export default function Page() {
                   <input
                     type="checkbox"
                     checked={avecPenalite}
-                    onChange={() => {
+                    onChange={(e) => {
+                      setIsPenaliteToggling(true);
                       setAvecPenalite(!avecPenalite);
-                      if (!avecPenalite && watch('penalite_montant') != null) {
+                      if (!e.target.checked) {
+                        // Reset penalty values when turning off
                         setValue('penalite_montant', 0);
+                        setValue('mode_penalite', '');
+                        setValue('penalite_par', 'avance');
+                        setValue('sr_pen', false);
+                        setValue('mode_paiement_pen', '');
+                        setValue('banque_pen', '');
+                        setValue('numero_paiement_pen', '');
+                        setValue('echeance_pen', '');
                       }
                     }}
                     className="sr-only peer"
@@ -1491,8 +1906,7 @@ export default function Page() {
             {avecPenalite && (
               <div className="border-t border-gray-200 py-4 px-6 space-y-4">
                 <div className="flex flex-col md:flex-row gap-4 items-center">
-                  {/* Ensures alignment */}
-                  {/* Mode Pénalité Dropdown */} {/* Added mt-1 */}
+                  {/* Mode Pénalité Dropdown */}
                   <div className="w-[600px] mt-1">
                     <SelectInput
                       label="Mode Pénalité :"
@@ -1501,336 +1915,340 @@ export default function Page() {
                       required={true}
                       options={Object.entries(modes_penalites).map(
                         ([key, value]) => ({
-                          value: value.label, // Use label as value
+                          value: value.label,
                           label: value.label,
                         })
                       )}
                       onChange={(value) => {
-                        // Find the code by label
                         const entry = Object.entries(modes_penalites).find(
                           ([key, val]) => val.label === value
                         );
                         if (entry) {
-                          handlechange_mode_penalite(entry[0]); // Pass the code
+                          handlechange_mode_penalite(entry[0]);
                         }
                       }}
                       error={errors.mode_penalite?.message}
                       placeholder="Sélectionnez un mode de pénalité"
                     />
                   </div>
-                  {/* Conditional Fields (aligned at the same height) */}
-                  {watch('mode_penalite') && (
+                  {watch('mode_penalite') &&
+                  watch('mode_penalite') !== 'Montant' ? (
+                    <div className="flex flex-1 flex-col md:flex-row gap-4 items-center">
+                      {/* Radio Buttons (Prix/Avance) */}
+                      <div className="min-w-[220px]">
+                        <div className="flex flex-col">
+                          <label className="text-sm font-medium text-gray-700 mb-1">
+                            Pénalité Sur <span className="text-red-500">*</span>
+                          </label>
+                          <div className="flex space-x-4">
+                            <label className="inline-flex items-center">
+                              <input
+                                type="radio"
+                                name="penalite_par"
+                                value="prix"
+                                checked={watch('penalite_par') === 'prix'}
+                                onChange={handlechange_penalite}
+                                className="h-4 w-4 text-blue-600 focus:ring-blue-500"
+                                disabled={!avecPenalite}
+                              />
+                              <span className="ml-2">
+                                Prix ({reservationData.prix?.toFixed(2) || 0}{' '}
+                                DH)
+                              </span>
+                            </label>
+                            <label className="inline-flex items-center">
+                              <input
+                                type="radio"
+                                name="penalite_par"
+                                value="avance"
+                                checked={watch('penalite_par') === 'avance'}
+                                onChange={handlechange_penalite}
+                                className="h-4 w-4 text-purple-600 focus:ring-purple-500"
+                                disabled={!avecPenalite}
+                              />
+                              <span className="ml-2">
+                                Avance (
+                                {reservationData.sumAvances?.toFixed(2) || 0}{' '}
+                                DH)
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                      {/* Auto-Calculated Penalty Amount */}
+                      <div className="min-w-[180px]">
+                        <TextField
+                          label="Montant Calculé"
+                          name="penalite_montant"
+                          type="number"
+                          control={control}
+                          errors={errors}
+                          backendErrors={{}}
+                          required
+                          disabled
+                          value={watch('penalite_montant') || ''}
+                          placeholder="Calculé automatiquement"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    /* Manual Penalty Amount Input */
+                    <div className="flex-1 min-w-[180px] mt-2">
+                      <TextField
+                        label="Pénalité Montant"
+                        name="penalite_montant"
+                        type="number"
+                        control={control}
+                        errors={errors}
+                        backendErrors={{}}
+                        required
+                        disabled={
+                          !avecPenalite ||
+                          (watch('mode_penalite') &&
+                            watch('mode_penalite') !== 'Montant')
+                        }
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value) || 0;
+                          setValue('penalite_montant', value);
+                        }}
+                        value={watch('penalite_montant') || ''}
+                        min="0"
+                        step="0.01"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="border-t border-gray-200 py-4">
+                  {/* Only show penalty payment section if mode_penalite is selected AND penalite_montant has a valid value */}
+                  {watch('mode_penalite') && watch('penalite_montant') > 0 && (
                     <>
-                      {watch('mode_penalite') == 'Montant' ||
-                      watch('mode_penalite') == '13' ? (
-                        /* Manual Penalty Amount Input (same height as other fields) */
-                        <div className="flex-1 min-w-[180px] mt-2">
-                          <TextField
-                            label="Pénalité Montant"
-                            name="penalite_montant"
-                            type="number"
-                            value={watch('penalite_montant')}
-                            control={control}
-                            errors={{}}
-                            backendErrors={{}}
-                            required
-                            onChange={(e) =>
-                              setValue('penalite_montant', e.target.value)
+                      <div className="mt-4">
+                        <h3 className="text-md font-medium text-gray-900">
+                          Mode Paiement Pénalité:
+                        </h3>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="inline-flex items-center">
+                            <input
+                              type="checkbox"
+                              name="sr_pen"
+                              checked={watch('sr_pen') || false}
+                              onChange={(e) =>
+                                setValue('sr_pen', e.target.checked ? 1 : 0)
+                              } // Sets to 1 when checked, 0 when unchecked
+                              className="text-blue-600 focus:ring-blue-500"
+                            />
+
+                            <span className="ml-2">SR</span>
+                          </label>
+                        </div>
+
+                        <div>
+                          <SelectInput
+                            label="Mode de Paiement"
+                            name="mode_paiement_pen"
+                            value={watch('mode_paiement_pen')}
+                            required={true}
+                            options={
+                              // Handle both array and object formats for MODE_PAIEMENT
+                              !MODE_PAIEMENT
+                                ? []
+                                : Array.isArray(MODE_PAIEMENT)
+                                ? MODE_PAIEMENT
+                                : typeof MODE_PAIEMENT === 'object'
+                                ? Object.entries(MODE_PAIEMENT).map(
+                                    ([key, value]) => ({
+                                      value: key,
+                                      label:
+                                        typeof value === 'object'
+                                          ? value.label ||
+                                            value.name ||
+                                            String(value)
+                                          : String(value),
+                                    })
+                                  )
+                                : []
                             }
+                            onChange={(value) => {
+                              console.log('Selected payment mode:', value);
+                              setValue('mode_paiement_pen', value);
+                            }}
+                            error={errors.mode_paiement_pen?.message}
+                            placeholder="Sélectionnez un mode de paiement"
                           />
                         </div>
-                      ) : (
-                        /* Percentage-based Penalty (keeps same height) */
-                        <div className="flex flex-1 flex-col md:flex-row gap-4 items-center">
-                          {' '}
-                          {/* Ensures inner alignment */}
-                          {/* Radio Buttons (Prix/Avance) */}
-                          <div className="min-w-[220px]">
-                            <div className="flex flex-col">
-                              <label className="text-sm font-medium text-gray-700 mb-1">
-                                Pénalité Par
-                              </label>
-                              <div className="flex space-x-4">
-                                <label className="inline-flex items-center">
-                                  <input
-                                    type="radio"
-                                    name="penalite_par"
-                                    value="prix"
-                                    checked={watch('penalite_par') == 'prix'}
-                                    onChange={handlechange_penalite}
-                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500"
-                                  />
-                                  <span className="ml-2">Prix</span>
-                                </label>
-                                <label className="inline-flex items-center">
-                                  <input
-                                    type="radio"
-                                    name="penalite_par"
-                                    value="avance"
-                                    checked={watch('penalite_par') == 'avance'}
-                                    onChange={handlechange_penalite}
-                                    className="h-4 w-4 text-purple-600 focus:ring-purple-500"
-                                  />
-                                  <span className="ml-2">Avance</span>
-                                </label>
-                              </div>
+                      </div>
+
+                      {watch('mode_paiement_pen') &&
+                        watch('mode_paiement_pen') != 1 && (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div>
+                              <SelectInput
+                                label="Banque:"
+                                name="banque_pen"
+                                value={watch('banque_pen')}
+                                required={watch('mode_paiement_pen') != '1'}
+                                options={
+                                  Array.isArray(banques)
+                                    ? banques.map((banque) => ({
+                                        value: banque.id,
+
+                                        label: banque.nom || 'Banque sans nom',
+                                      }))
+                                    : []
+                                }
+                                onChange={(value) => {
+                                  setValue('banque_pen', value);
+                                }}
+                                error={errors.banque_pen?.message||''}
+                                placeholder="Sélectionnez une banque"
+                              />
+                            </div>
+
+                            <div>
+                              <TextField
+                                label="N° Paiement:"
+                                name="numero_paiement_pen"
+                                type="number"
+                                control={control}
+                                errors={errors}
+                                backendErrors={{}}
+                                required
+                                onChange={(e) =>
+                                  setValue(
+                                    'numero_paiement_pen',
+                                    e.target.value
+                                  )
+                                }
+                              />
                             </div>
                           </div>
-                          {/* Auto-Calculated Penalty Amount (same height) */}
-                          <div className="min-w-[180px]">
+                        )}
+                      {watch('mode_paiement_pen') &&
+                        watch('mode_paiement_pen') != 1 &&
+                        watch('mode_paiement_pen') != 5 &&
+                        watch('mode_paiement_pen') != 6 && (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div>
+                              <TextField
+                                label="Echéance:"
+                                name="echeance_pen"
+                                type="date"
+                                control={control}
+                                errors={errors}
+                                backendErrors={{}}
+                                required
+                                onChange={(e) =>
+                                  setValue('echeance_pen', e.target.value)
+                                }
+                                InputLabelProps={{ shrink: true }}
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                      <div className="border-t border-gray-200 py-4 mt-2">
+                        <div className="mt-6">
+                          <div className="space-y-4">
                             <TextField
-                              label="Montant"
-                              name="penalite_montant"
-                              type="number"
+                              label="Fichiers de Pénalités:"
                               control={control}
-                              errors={errors}
+                              errors={{}}
                               backendErrors={{}}
-                              required
-                              disabled
-                              value={watch('penalite_montant') || ''}
+                              defaultValues={{}}
+                              name=""
+                              type="file"
+                              onChange={(e) => handleFileChange(e, 2)}
+                              accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                             />
+
+                            {selectedFiles_plt.length > 0 && (
+                              <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                                  <svg
+                                    className="w-4 h-4 mr-2 text-primary-500"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                    />
+                                  </svg>
+                                  Fichiers sélectionnés (
+                                  {selectedFiles_plt.length})
+                                </h3>
+
+                                <div className="space-y-2">
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                                    {selectedFiles_plt.map((data, index) => (
+                                      <div
+                                        key={data.id || data.name || index}
+                                        className="flex flex-col p-3 bg-white rounded-md border border-gray-200 hover:border-blue-200 transition-colors h-full"
+                                      >
+                                        <div className="flex items-center mb-2">
+                                          {getFileIcon(
+                                            data.name || data.fichier
+                                          )}
+                                          <button
+                                            onClick={() =>
+                                              data.fichier
+                                                ? handleFileClick(data.fichier)
+                                                : handleDownloadFile(data)
+                                            }
+                                            className="ml-2 text-sm font-medium text-gray-700 hover:text-blue-600 truncate flex-1 text-left"
+                                            title={data.fichier || data.name}
+                                          >
+                                            {data.fichier || data.name}
+                                          </button>
+                                        </div>
+
+                                        <div className="flex items-center justify-between mt-auto">
+                                          <span className="text-xs text-gray-500">
+                                            {formatFileSize(data.size)}
+                                          </span>
+                                          <button
+                                            onClick={() =>
+                                              handleDeleteFile(index, 3)
+                                            }
+                                            className="p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 transition-colors"
+                                            title="Supprimer"
+                                          >
+                                            <svg
+                                              className="w-4 h-4"
+                                              fill="none"
+                                              stroke="currentColor"
+                                              viewBox="0 0 24 24"
+                                            >
+                                              <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                              />
+                                            </svg>
+                                          </button>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
-                      )}
+                      </div>
                     </>
                   )}
                 </div>
-                <div className="border-t border-gray-200 py-4">
-                  {/* Only show penalty payment section if mode_penalite is selected AND penalite_montant has a valid value */}
-                  {watch('mode_penalite') &&
-                    watch('penalite_montant') &&
-                    watch('penalite_montant') > 0 && (
-                      <>
-                        <div className="mt-4">
-                          <h3 className="text-md font-medium text-gray-900">
-                            Mode Paiement Pénalité:
-                          </h3>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="inline-flex items-center">
-                              <input
-                                type="checkbox"
-                                name="sr_pen"
-                                checked={watch('sr_pen') || false}
-                                onChange={(e) =>
-                                  setValue('sr_pen', e.target.checked ? 1 : 0)
-                                } // Sets to 1 when checked, 0 when unchecked
-                                className="text-blue-600 focus:ring-blue-500"
-                              />
-
-                              <span className="ml-2">SR</span>
-                            </label>
-                          </div>
-
-                          <div>
-                            <SelectInput
-                              label="Mode de Paiement"
-                              name="mode_paiement_pen"
-                              value={watch('mode_paiement_pen')}
-                              required={true}
-                              options={
-                                // Handle both array and object formats for MODE_PAIEMENT
-                                !MODE_PAIEMENT
-                                  ? []
-                                  : Array.isArray(MODE_PAIEMENT)
-                                  ? MODE_PAIEMENT
-                                  : typeof MODE_PAIEMENT === 'object'
-                                  ? Object.entries(MODE_PAIEMENT).map(
-                                      ([key, value]) => ({
-                                        value: key,
-                                        label:
-                                          typeof value === 'object'
-                                            ? value.label ||
-                                              value.name ||
-                                              String(value)
-                                            : String(value),
-                                      })
-                                    )
-                                  : []
-                              }
-                              onChange={(value) => {
-                                console.log('Selected payment mode:', value);
-                                setValue('mode_paiement_pen', value);
-                              }}
-                              error={errors.mode_paiement_pen?.message}
-                              placeholder="Sélectionnez un mode de paiement"
-                            />
-                          </div>
-                        </div>
-
-                        {watch('mode_paiement_pen') &&
-                          watch('mode_paiement_pen') != 1 && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                              <div>
-                                <SelectInput
-                                  label="Banque:"
-                                  name="banque_pen"
-                                  value={watch('banque_pen')}
-                                  required={watch('mode_paiement_pen') != '1'}
-                                  options={
-                                    Array.isArray(banques)
-                                      ? banques.map((banque) => ({
-                                          value: banque.id,
-
-                                          label:
-                                            banque.nom || 'Banque sans nom',
-                                        }))
-                                      : []
-                                  }
-                                  onChange={(value) => {
-                                    setValue('banque_pen', value);
-                                  }}
-                                  error={errors.banque_pen?.message}
-                                  placeholder="Sélectionnez une banque"
-                                />
-                              </div>
-
-                              <div>
-                                <TextField
-                                  label="N° Paiement:"
-                                  name="numero_paiement_pen"
-                                  type="number"
-                                  control={control}
-                                  errors={errors}
-                                  backendErrors={{}}
-                                  required
-                                  onChange={(e) =>
-                                    setValue(
-                                      'numero_paiement_pen',
-                                      e.target.value
-                                    )
-                                  }
-                                />
-                              </div>
-                            </div>
-                          )}
-                        {watch('mode_paiement_pen') &&
-                          watch('mode_paiement_pen') != 1 &&
-                          watch('mode_paiement_pen') != 5 &&
-                          watch('mode_paiement_pen') != 6 && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                              <div>
-                                <TextField
-                                  label="Echéance:"
-                                  name="echeance_pen"
-                                  type="date"
-                                  control={control}
-                                  errors={errors}
-                                  backendErrors={{}}
-                                  required
-                                  onChange={(e) =>
-                                    setValue('echeance_pen', e.target.value)
-                                  }
-                                  InputLabelProps={{ shrink: true }}
-                                />
-                              </div>
-                            </div>
-                          )}
-
-                        <div className="border-t border-gray-200 py-4 mt-2">
-                          <div className="mt-6">
-                            <div className="space-y-4">
-                              <TextField
-                                label="Fichiers de Pénalités:"
-                                control={control}
-                                errors={{}}
-                                backendErrors={{}}
-                                defaultValues={{}}
-                                name=""
-                                type="file"
-                                onChange={(e) => handleFileChange(e, 2)}
-                                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                              />
-
-                              {selectedFiles_plt.length > 0 && (
-                                <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                  <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                                    <svg
-                                      className="w-4 h-4 mr-2 text-primary-500"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      viewBox="0 0 24 24"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                      />
-                                    </svg>
-                                    Fichiers sélectionnés (
-                                    {selectedFiles_plt.length})
-                                  </h3>
-
-                                  <div className="space-y-2">
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                                      {selectedFiles_plt.map((data, index) => (
-                                        <div
-                                          key={data.id || data.name || index}
-                                          className="flex flex-col p-3 bg-white rounded-md border border-gray-200 hover:border-blue-200 transition-colors h-full"
-                                        >
-                                          <div className="flex items-center mb-2">
-                                            {getFileIcon(
-                                              data.name || data.fichier
-                                            )}
-                                            <button
-                                              onClick={() =>
-                                                data.fichier
-                                                  ? handleFileClick(
-                                                      data.fichier
-                                                    )
-                                                  : handleDownloadFile(data)
-                                              }
-                                              className="ml-2 text-sm font-medium text-gray-700 hover:text-blue-600 truncate flex-1 text-left"
-                                              title={data.fichier || data.name}
-                                            >
-                                              {data.fichier || data.name}
-                                            </button>
-                                          </div>
-
-                                          <div className="flex items-center justify-between mt-auto">
-                                            <span className="text-xs text-gray-500">
-                                              {formatFileSize(data.size)}
-                                            </span>
-                                            <button
-                                              onClick={() =>
-                                                handleDeleteFile(index, 3)
-                                              }
-                                              className="p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 transition-colors"
-                                              title="Supprimer"
-                                            >
-                                              <svg
-                                                className="w-4 h-4"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                              >
-                                                <path
-                                                  strokeLinecap="round"
-                                                  strokeLinejoin="round"
-                                                  strokeWidth={2}
-                                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                                />
-                                              </svg>
-                                            </button>
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </>
-                    )}
-                </div>
               </div>
             )}
-
             {/* Attachments section (same as in your original code) */}
             <div className="border-t border-gray-200 py-4 px-6">
               <div className="flex justify-between items-center">
@@ -1921,7 +2339,10 @@ export default function Page() {
                                     {formatFileSize(data.size)}
                                   </span>
                                   <button
-                                    onClick={() => handleDeleteFile(index, 1)}
+                                    onClick={(e) =>
+                                      handleDeleteFile(index, 1, e)
+                                    }
+                                    type="button" // Important: spécifier type="button"
                                     className="p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 transition-colors"
                                     title="Supprimer"
                                   >
@@ -1967,7 +2388,7 @@ export default function Page() {
               />
             </div>
 
-            {errors_g.length > 0 && (
+            {formSubmitted && errors_g.length > 0 && (
               <div className="bg-red-50 border-l-4 border-red-500 text-red-500 p-4 mb-4">
                 <p className="font-semibold">
                   Veuillez corriger les erreurs suivantes :
@@ -1990,9 +2411,11 @@ export default function Page() {
               </button>
               <button
                 type="submit"
-                disabled={loading.submit || errors_g.length > 0}
+                disabled={
+                  loading.submit || (formSubmitted && errors_g.length > 0)
+                }
                 className={`px-4 py-2 rounded-md focus:outline-none focus:ring-2 transition-colors ${
-                  loading.submit || errors_g.length > 0
+                  loading.submit || (formSubmitted && errors_g.length > 0)
                     ? 'bg-indigo-100 text-indigo-600 cursor-not-allowed'
                     : 'bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500'
                 }`}

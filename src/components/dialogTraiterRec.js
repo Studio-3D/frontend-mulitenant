@@ -19,23 +19,27 @@ const ReclamationDialog = ({
   setValues,
   onSubmit,
   disabled,
+  from_dashboard_client,
 }) => {
   const isTraitementRec = type === 'traiter';
   const isTraitementClient = type === 'traiter_client';
   const isResolution = type === 'resoudre';
   const isResolutionClient = type === 'resoudre_client';
 
-  const statutOptions = isTraitementRec
+ const statutOptions = isTraitementRec
+  ? [/*
+      { value: '3', label: 'Résolu' },
+      { value: '4', label: 'Non Résolu' },
+    */]
+  : from_dashboard_client
     ? [
-        { value: '3', label: 'Résolu' },
-        { value: '4', label: 'Non Résolu' },
-      ]
-    : [
         { value: '1', label: 'En cours' },
         { value: '2', label: 'Traité' },
         { value: '3', label: 'Non Traité' },
-      ];
-
+      ]
+    : [ 
+        { value: '4', label: 'Traité' },
+        { value: '3', label: 'Non Traité' }];
   const prestataireOptions = prestataires.map((p) => ({
     value: p.id,
     label: `${p.prenom} ${p.nom}`,

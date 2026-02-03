@@ -17,7 +17,11 @@ import Desistement_dp_partiel_list from "../desistements/List/Desistement_dp_par
 import { APIURL } from "../../../../configs/api";
 import { useAuth } from "../../../../context/AuthContext";
 import { useProjet } from '@/context/ProjetContext';
+import { isAdmin, isSuperAdmin,isCommercial} from '@/configs/enum';
+import { useRouter } from 'next/navigation';
+
 const ViewDes = () => {
+    const router = useRouter();
   const [activeTab, setActiveTab] = useState(
     localStorage.getItem('tab_dst_active') != null
       ? localStorage.getItem('tab_dst_active')
@@ -29,10 +33,20 @@ const ViewDes = () => {
   const [nb_dp_co, setNb_dp_co] = useState(0);
   const [nb_change_bien, setNb_change_bien] = useState(0);
 
-  const { token } = useAuth();
+  const { user,token } = useAuth();
   const accessToken = token || localStorage.getItem('accessToken');
   const { selectedProjet } = useProjet();
-
+  const userRole = user?.role;
+  useEffect(() => {
+    if (
+      !isAdmin(userRole) &&
+      !isSuperAdmin(userRole) &&
+      !isCommercial(userRole)
+    ) {
+      router.push('/');
+    }
+  }, [router]);
+  
 const fetchData = useCallback(async () => {
     if (
       localStorage.getItem('etat_dst') == 5 ||

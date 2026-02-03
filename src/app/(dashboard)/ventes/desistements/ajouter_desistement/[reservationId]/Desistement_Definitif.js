@@ -125,13 +125,6 @@ export function Desistement_Definitif({
     return [];
   };
 
-  // Test with hardcoded options to verify SelectInput works
-  const testOptions = [
-    { value: 'test1', label: 'Test Option 1' },
-    { value: 'test2', label: 'Test Option 2' },
-    { value: 'test3', label: 'Test Option 3' },
-  ];
-
   useEffect(() => {
     if (isEditing && formData) {
       set_type_remb(type_remb_get);
@@ -260,7 +253,7 @@ export function Desistement_Definitif({
         );
 
         const { reservation, sum_avances_valides } = response.data;
-      
+
         const newDossierInfo = {
           clients: reservation.aquereurs,
           bien: reservation.bien,
@@ -292,7 +285,7 @@ export function Desistement_Definitif({
           ...item,
           type_remb: item.type_remb || 'direct',
           mode_rembourse: item.mode_rembourse || '',
-          reste_a_rembourse: item.reste_a_rembourse || 'fadwa',
+          reste_a_rembourse: item.reste_a_rembourse || '',
         });
       });
     }
@@ -301,18 +294,31 @@ export function Desistement_Definitif({
   const handleModeChange = (index, newMode) => {
     const currentValues = watch(`inputList_remb.${index}`) || {};
 
-    setValue(`inputList_remb.${index}`, {
+    // Get the current item from inputListRemb to get the correct pourcentage
+    const currentItem = inputListRemb[index] || currentValues;
+
+    // Calculate the proper reste_a_rembourse based on pourcentage
+    const sum_avance_by_aq_percent = sum_avances_valides
+      ? ((currentItem.pourcentage || 0) / 100) * sum_avances_valides
+      : 0;
+
+    console.log('Calculating amount for index', index, {
+      pourcentage: currentItem.pourcentage,
+      sum_avances_valides,
+      calculated: sum_avance_by_aq_percent,
+    });
+
+    // Create updated values
+    const updatedValues = {
       ...currentValues,
       type_remb: newMode,
       dossier_id: '',
       montant_transferer: '',
-      reste_a_rembourse: '',
+      reste_a_rembourse: sum_avance_by_aq_percent.toFixed(2),
       date_rembourse: '',
       mode_rembourse: '',
       num_paiement: '',
-      cheque_recu: null,
       pour_le_compte: '',
-      fichier_autorisation: null,
       error: '',
       type_remb_transfere:
         newMode == 'transfert_rem_direct'
@@ -320,7 +326,29 @@ export function Desistement_Definitif({
           : newMode == 'transfert_rem_apres_vente'
           ? 'apres_vente'
           : currentValues.type_remb_transfere || 'immediat',
-    });
+    };
+
+    // Only clear cheque_recu and fichier_autorisation when switching from transfer to direct
+    // or when switching to a mode that doesn't need these files
+    if (
+      newMode !== 'transfert_remb' &&
+      newMode !== 'transfert_rem_direct' &&
+      newMode !== 'transfert_rem_apres_vente'
+    ) {
+      updatedValues.cheque_recu = null;
+      updatedValues.fichier_autorisation = null;
+    } else if (newMode === 'direct') {
+      // When switching to direct mode, clear both files
+      updatedValues.cheque_recu = null;
+      updatedValues.fichier_autorisation = null;
+    } else {
+      // For other modes, keep existing files if they exist
+      updatedValues.cheque_recu = currentValues.cheque_recu || null;
+      updatedValues.fichier_autorisation =
+        currentValues.fichier_autorisation || null;
+    }
+
+    setValue(`inputList_remb.${index}`, updatedValues);
 
     setDossierInfos((prev) => {
       const newInfos = { ...prev };
@@ -328,7 +356,6 @@ export function Desistement_Definitif({
       return newInfos;
     });
   };
-
   return (
     <div className="p-6">
       {isEditing && (
@@ -405,7 +432,6 @@ export function Desistement_Definitif({
       </div>
       {type_remb == 'direct' && (
         <>
-          <div className="border-t border-gray-300 my-4"></div>
           <div className="w-full">
             {inputListRemb?.map((item, index) => {
               const itemKey = item.aq_id
@@ -431,11 +457,15 @@ export function Desistement_Definitif({
                   ) > 0);
               return (
                 <div key={`${itemKey}`} className="">
+                  <div className="border-t border-gray-300 my-4"></div>
+
                   <p className="text-indigo-600 font-bold mb-4">
                     Montant à rembourser au client: {item.nom} {item.prenom}
                     {currentMode != 'transfert' && (
                       <span className="text-red-600 ml-2">
-                        {item.reste_a_rembourse || 0} DH
+                        {watch(`inputList_remb.${index}.reste_a_rembourse`) ||
+                          '0.00'}{' '}
+                        DH
                       </span>
                     )}
                   </p>
@@ -472,12 +502,12 @@ export function Desistement_Definitif({
                                   checked={normalizedValue == 'direct'}
                                   onChange={() => {
                                     handleModeChange(index, 'direct');
-                                    setValue(
+                                    /*setValue(
                                       `inputList_remb.${index}.reste_a_rembourse`,
                                       parseFloat(
                                         item?.reste_a_rembourse || 0
                                       ).toFixed(2)
-                                    );
+                                    );*/
                                   }}
                                   className="text-blue-600 focus:ring-blue-500"
                                 />
@@ -489,12 +519,12 @@ export function Desistement_Definitif({
                                   checked={normalizedValue == 'transfert'}
                                   onChange={() => {
                                     handleModeChange(index, 'transfert');
-                                    setValue(
+                                    /* setValue(
                                       `inputList_remb.${index}.reste_a_rembourse`,
                                       parseFloat(
                                         item?.reste_a_rembourse || 0
                                       ).toFixed(2)
-                                    );
+                                    );*/
                                   }}
                                   className="text-purple-600 focus:ring-purple-500"
                                 />
@@ -605,8 +635,9 @@ export function Desistement_Definitif({
                                       </td>
                                       <td className="px-4 py-2 whitespace-nowrap">
                                         <div className="text-sm text-gray-900">
-                                         
-                                          {NomBienComplet(dossierInfos[index]?.bien)}
+                                          {NomBienComplet(
+                                            dossierInfos[index]?.bien
+                                          )}
                                         </div>
                                       </td>
                                     </tr>
@@ -683,9 +714,9 @@ export function Desistement_Definitif({
                               currentMode == 'transfert_rem_apres_vente') &&
                               watch(`inputList_remb.${index}.dossier_id`) && (
                                 <>
-                                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                                    <div className="flex items-center">
-                                      <TextField
+                         <div className="col-span-1 lg:col-span-2">
+      <div className="flex items-center space-x-4">
+                                                   <TextField
                                         label="Montant à Transférer"
                                         name={`inputList_remb.${index}.montant_transferer`}
                                         required
@@ -749,9 +780,7 @@ export function Desistement_Definitif({
                                           );
                                         }}
                                       />
-                                    </div>
-
-                                    <div className="flex items-center">
+                                    
                                       <TextField
                                         label="Reste à Rembourser"
                                         name={`inputList_remb.${index}.reste_a_rembourse`}
@@ -761,6 +790,7 @@ export function Desistement_Definitif({
                                         backendErrors={{}}
                                         disabled
                                       />
+                                      
                                     </div>
                                     {watch(`inputList_remb.${index}.error`) && (
                                       <p className="text-red-600 text-sm mt-1">
@@ -768,7 +798,15 @@ export function Desistement_Definitif({
                                       </p>
                                     )}
                                   </div>
-                                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                                 
+                    
+                            {/* Deuxième ligne: Remboursement de + Options radio */}
+                            {watch(`inputList_remb.${index}.reste_a_rembourse`)>0 && (
+                              <>
+                              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <p className="text-green-600 font-bold">
+                      Remboursement de: {watch(`inputList_remb.${index}.reste_a_rembourse`)} DH
+                    </p>
                                     <Controller
                                       name={`inputList_remb.${index}.type_remb_transfere`}
                                       control={control}
@@ -813,6 +851,9 @@ export function Desistement_Definitif({
                                       )}
                                     />
                                   </div>
+                              </>
+                            )}
+                  
                                 </>
                               )}
                           </>
@@ -942,7 +983,6 @@ export function Desistement_Definitif({
                                   `inputList_remb.${index}.mode_rembourse`
                                 ) == 'cheque'
                               }
-                              value={`inputList_remb.${index}.cheque_recu`}
                               type="file"
                               control={control}
                               errors={{}}
@@ -954,7 +994,17 @@ export function Desistement_Definitif({
                               height="h-[38px]"
                               accept="image/*, application/pdf"
                               existingFileName={
-                                isEditing ? item.cheque_recu : null
+                                watch(`inputList_remb.${index}.cheque_recu`)
+                                  ? typeof watch(
+                                      `inputList_remb.${index}.cheque_recu`
+                                    ) === 'string'
+                                    ? watch(
+                                        `inputList_remb.${index}.cheque_recu`
+                                      )
+                                    : watch(
+                                        `inputList_remb.${index}.cheque_recu`
+                                      )?.name
+                                  : null
                               }
                             />
                             {errors.inputList_remb?.[index]?.cheque_recu && (
@@ -1057,7 +1107,19 @@ export function Desistement_Definitif({
                                 height="h-[38px]"
                                 accept="image/*, application/pdf"
                                 existingFileName={
-                                  isEditing ? item.fichier_autorisation : null
+                                  watch(
+                                    `inputList_remb.${index}.fichier_autorisation`
+                                  )
+                                    ? typeof watch(
+                                        `inputList_remb.${index}.fichier_autorisation`
+                                      ) === 'string'
+                                      ? watch(
+                                          `inputList_remb.${index}.fichier_autorisation`
+                                        )
+                                      : watch(
+                                          `inputList_remb.${index}.fichier_autorisation`
+                                        )?.name
+                                    : null
                                 }
                               />
                               {errors.inputList_remb?.[index]

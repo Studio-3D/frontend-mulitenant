@@ -256,6 +256,27 @@ const fetchNotifications = async ({
         subtitle: (prospect, user, avance, reservation, bien, projet) =>
           `Avec Le Prospect: N°Téléphone: ${prospect?.telephone}`,
       },
+      32: {
+        title: 'Un Rendez Vous',
+        icon: 'guidance:meeting-room',
+        color: 'primary',
+        subtitle: (prospect, user, avance, reservation, bien, projet) =>
+          `Pour le Bien : ${bien?.propriete_dite_bien} Du Dossier: ${reservation?.code_reservation}`,
+      },
+      33: {
+        title: 'Un Nouveau Dossier affecté',
+        icon: 'mdi-pencil',
+        color: 'primary',
+        subtitle: (prospect, user, avance, reservation, bien, projet) =>
+          `Pour le Bien : ${bien?.propriete_dite_bien} Du Dossier: ${reservation?.code_reservation}`,
+      },
+       34: {
+        title: 'Une Relance',
+        icon: 'refresh-cw',
+        color: 'warning',
+        subtitle: (prospect, user, avance, reservation, bien, projet) =>
+          `Pour le Bien : ${bien?.propriete_dite_bien} Du Dossier: ${reservation?.code_reservation}`,
+      },
       91: {
         title: 'une Mention Facebook',
         icon: 'at-sign',

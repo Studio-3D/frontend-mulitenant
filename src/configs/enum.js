@@ -2,6 +2,12 @@ export const User_roles = {
   ROLE_SUPER_ADMIN: 1,
   ROLE_ADMIN: 2,
   ROLE_COMMERCIAL: 3,
+  ROLE_NOTAIRE: 5,
+  ROLE_RESPO_LIVRAISON: 6,
+  ROLE_COMPTABLE: 7,
+  ROLE_SAV: 8,
+  ROLE_RESPO_COMMERCIAL: 9,
+  ROLE_AGENT_ADMINISTRATIF: 10,
 };
 
 export const decryptUserType = (role) => {
@@ -12,6 +18,18 @@ export const decryptUserType = (role) => {
       return User_roles.ROLE_ADMIN;
     case 3:
       return User_roles.ROLE_COMMERCIAL;
+    case 5:
+      return User_roles.ROLE_NOTAIRE;
+    case 6:
+      return User_roles.ROLE_RESPO_LIVRAISON;
+    case 7:
+      return User_roles.ROLE_COMPTABLE;
+    case 8:
+      return User_roles.ROLE_SAV;
+    case 9:
+      return User_roles.ROLE_RESPO_COMMERCIAL;
+    case 10:
+      return User_roles.ROLE_AGENT_ADMINISTRATIF;
     default:
       return 'UNKNOWN';
   }
@@ -24,8 +42,26 @@ export const isSuperAdmin = (role) => {
 export const isCommercial = (role) => {
   return decryptUserType(role) === User_roles.ROLE_COMMERCIAL;
 };
+export const isNotaire = (role) => {
+  return decryptUserType(role) === User_roles.ROLE_NOTAIRE;
+};
+export const isRespoLivraison = (role) => {
+  return decryptUserType(role) === User_roles.ROLE_RESPO_LIVRAISON;
+};
+export const isComptable = (role) => {
+  return decryptUserType(role) === User_roles.ROLE_COMPTABLE;
+};
+export const isSav = (role) => {
+  return decryptUserType(role) === User_roles.ROLE_SAV;
+};
 export const isAdmin = (role) => {
   return decryptUserType(role) === User_roles.ROLE_ADMIN;
+};
+export const isRespoCommercial = (role) => {
+  return decryptUserType(role) === User_roles.ROLE_RESPO_COMMERCIAL;
+};
+export const isAgentAdministratif = (role) => {
+  return decryptUserType(role) === User_roles.ROLE_AGENT_ADMINISTRATIF;
 };
 
 export const VISITE_STATUT = {
@@ -92,19 +128,19 @@ export const Statuts_Client = {
   3: { id: '3', label: 'Demande des documents' },
   4: { id: '4', label: 'Autre' },
   5: { id: '5', label: 'Creation Reservation' },
-  6: { id: '6', label: 'Ajouter Rdv' },
-  7: { id: '7', label: 'Signer Attestation Vente' },
-  8: { id: '8', label: 'Signer Contrat Vente' },
+  6: { id: '6', label: 'Ajout Rendez Vous' },
+  7: { id: '7', label: 'Signature Attestation Vente' },
+  8: { id: '8', label: 'Signature Contrat Vente' },
   9: { id: '9', label: 'Remise Cle' },
-  10: { id: '10', label: 'Desistement dd' },
-  11: { id: '11', label: 'Desistement dp profit' },
-  12: { id: '12', label: 'Desistement dp co' },
-  13: { id: '13', label: 'Desistement dp partiel' },
-  14: { id: '14', label: 'Desistement change bien' },
+  10: { id: '10', label: 'Désistement Définitif' },
+  11: { id: '11', label: 'Désistement au Profit d\'un Proche' },
+  12: { id: '12', label: 'Désistement au Profit d\'un Co-Réservataire' },
+  13: { id: '13', label: 'Désistement Partiel' },
+  14: { id: '14', label: 'Désistement Changement de Bien' },
   15: { id: '15', label: 'Penalite valide' },
   16: { id: '16', label: 'Remise du Remboursement' },
   17: { id: '17', label: 'Decaissement effectue' },
-  18: { id: '17', label: 'Penalite rejete' },
+  18: { id: '18', label: 'Penalite rejete' },
 
 };
 // Visite notification types
@@ -193,12 +229,12 @@ export const getModePenaliteLabel = (percentage) => {
 
 export const type_dst = {
   1: { id: 1, label: 'Définitif' },
-  2: { id: 2, label: 'au Profit' },
+  2: { id: 2, label: 'Au Profit' },
   3: { id: 3, label: 'Changement de Bien' },
 };
 export const type_dst_dp = {
-  1: { id: 1, label: "au Profit d'un Proche" },
-  2: { id: 2, label: "au Profit d'un Co-Reservataire" },
+  1: { id: 1, label: "Au Profit d'un Proche" },
+  2: { id: 2, label: "Au Profit d'un Co-Reservataire" },
   3: { id: 3, label: 'Partiel' },
 };
 
@@ -507,17 +543,20 @@ export const getClientStatusLabel = (statutValue) => {
   
   const statutStr = String(statutValue);
   
-  // Recherche dans Statuts_Client
-  if (Statuts_Client.hasOwnProperty(statutStr)) {
-    return Statuts_Client[statutStr].label;
+  // First check Statuts_Client
+  for (const [key, value] of Object.entries(Statuts_Client)) {
+    if (value.id === statutStr || key === statutStr) {
+      // Direct mapping for desistement statuses
+      const label = value.label;
+      return label;
+    }
   }
   
-  // Recherche dans Statut_SUIVI_DOSSIER (si c'est le même ensemble)
+  // Recherche dans Statut_SUIVI_DOSSIER
   if (Statut_SUIVI_DOSSIER.hasOwnProperty(statutStr)) {
     return Statut_SUIVI_DOSSIER[statutStr].label;
   }
   
-  // Fallback : retourner la valeur telle quelle
   return statutStr;
 };
 
@@ -536,28 +575,27 @@ export const getClientStatusColor = (statutValue) => {
     
     // Statuts de réservation
     'Creation Reservation': 'bg-green-100 text-green-600',
-    'Ajouter Rdv': 'bg-indigo-100 text-indigo-600',
+    'Ajout Rendez Vous': 'bg-indigo-100 text-indigo-600',
     
     // Statuts de signature
-    'Signer Attestation Vente': 'bg-yellow-100 text-yellow-600',
-    'Signer Contrat Vente': 'bg-orange-100 text-orange-600',
+    'Signature Attestation Vente': 'bg-yellow-100 text-yellow-600',
+    'Signature Contrat Vente': 'bg-orange-100 text-orange-600',
     
     // Finalisation
     'Remise Cle': 'bg-green-100 text-emerald-600',
     
-    // Désistements
-    'Desistement dd': 'bg-red-100 text-red-600',
-    'Desistement dp profit': 'bg-red-200 text-red-700',
-    'Desistement dp co': 'bg-red-200 text-red-700',
-    'Desistement dp partiel': 'bg-red-200 text-red-700',
-    'Desistement change bien': 'bg-red-200 text-red-700',
+    // Désistements - UPDATE THESE TO MATCH NEW DISPLAY LABELS
+    'Désistement Définitif': 'bg-red-100 text-red-600',
+    'Désistement au Profit d\'un Proche': 'bg-red-200 text-red-700',
+    'Désistement au Profit d\'un Co-Réservataire': 'bg-red-200 text-red-700',
+    'Désistement Partiel': 'bg-red-200 text-red-700',
+    'Désistement Changement de Bien': 'bg-red-200 text-red-700',
     
     // Pénalités et remboursements
     'Penalite valide': 'bg-amber-100 text-amber-600',
     'decaissement_effectue': 'bg-indigo-200 text-indigo-700',
     'Remise du Remboursement': 'bg-green-200 text-green-700',
     'Penalite rejete': 'bg-red-200 text-red-700',
-
   };
   
   return clientStatusColors[label] || 'bg-gray-100 text-gray-600';

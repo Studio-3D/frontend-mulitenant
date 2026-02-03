@@ -288,6 +288,7 @@ const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
   const handleCloseDetail = () => {
     setShowDetailModal(false);
     clearSelection();
+    setErrors(null)
   };
   if (!open) return null;
 
@@ -444,20 +445,23 @@ const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
                 </div>
               </div>
 
-              {errors && (
-                <div className="bg-red-50 border-l-4 border-red-500 p-3">
-                  <div className="flex items-center space-x-2">
-                    <AlertCircle className="h-4 w-4 text-red-500" />
-                    <div>
-                      {Object.values(errors).map((error, index) => (
-                        <p key={index} className="text-xs text-red-500">
-                          {error[0]}
-                        </p>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
+            {errors && Object.keys(errors).length > 0 && (
+          <div className="bg-red-50 border-l-4 border-red-500 p-3">
+            <div className="flex items-center space-x-2">
+              <AlertCircle className="h-4 w-4 text-red-500" />
+              <div>
+                {/* Flatten errors if they come as an object with arrays */}
+                {Object.entries(errors).map(([field, errorArray], index) => (
+                  errorArray.map((errorMsg, subIndex) => (
+                    <p key={`${index}-${subIndex}`} className="text-xs text-red-500">
+                      {errorMsg}
+                    </p>
+                  ))
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
             </div>
 
             <div className="bg-gray-50 px-4 py-3 flex justify-end space-x-2 border-t rounded-b-xl sticky bottom-0">

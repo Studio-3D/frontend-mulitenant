@@ -7,7 +7,7 @@ import { Eye, Check, Upload, Clock } from 'lucide-react';
 import Table from '@/components/Table';
 import { format } from 'date-fns';
 import { MODE_PAIEMENT, type_dst, type_dst_dp } from '@/configs/enum';
-import { isAdmin, isSuperAdmin } from '../../../../../configs/enum';
+import { isAdmin, isSuperAdmin ,isCommercial} from '../../../../../configs/enum';
 import { APIURL } from '@/configs/api';
 import Link from 'next/link';
 import SelectInput from '@/components/SelectInput';
@@ -78,6 +78,16 @@ export default function PenalitesTable() {
     selectedId: 0,
   });
   const { selectedProjet } = useProjet();
+        useEffect(() => {
+          if (
+            !isAdmin(userRole) &&
+            !isSuperAdmin(userRole) &&
+            !isCommercial(userRole)
+          ) {
+            router.push('/');
+          }
+        }, [router]);
+        
   // API configuration
   const entity = {
     id: selectedProjet?.id + '/' + etat_penalite,
@@ -86,6 +96,7 @@ export default function PenalitesTable() {
     searchFields: [''],
   };
 
+  
   // Fetch data effect
   useEffect(() => {
     fetchData_table_by_id(
@@ -228,9 +239,10 @@ export default function PenalitesTable() {
               <Link
                 href={`/Utilisateurs/afficher-utilisateur/${row.cc_id}`}
                 target="_blank"
-                className="text-blue-500 hover:text-blue-700"
+              
               >
-                {row.cc}
+                 <strong style={{ fontWeight: 600 }}>{row.cc}</strong>
+                
               </Link>
             ),
           },
@@ -254,9 +266,9 @@ export default function PenalitesTable() {
       <Link
         href={`/ventes/reservations/${row.reservation_id}`}
         target="_blank"
-        className="text-blue-500 hover:text-blue-700 font-semibold"
+        className=""
       >
-        {row.code_reservation}
+         <strong style={{ fontWeight: 600 }}>{row.code_reservation}</strong>
       </Link>
     ),
   };
@@ -604,7 +616,7 @@ export default function PenalitesTable() {
                         onChange={(e) =>
                           updateDialogState({ num_remise: e.target.value })
                         }
-                        required={true}
+                        required={false}
                       />
                     </div>
                     <div className="mb-4">

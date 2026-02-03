@@ -221,7 +221,7 @@ export function Desistement_Au_Profit({ formData, desisteur_dp_proche_co }) {
                 <div>
                   <h3 className="text-md font-semibold text-gray-700 mb-4 flex items-center">
                     <span className="w-3 h-3 rounded-full bg-purple-500 mr-2"></span>
-                    Anciens Acquéreurs
+                     Les Clients Actuels :
                   </h3>
 
                   <div className="grid grid-cols-1 gap-4">

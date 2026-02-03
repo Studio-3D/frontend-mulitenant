@@ -1,10 +1,13 @@
 'use client';
 import React, { useMemo, useCallback, memo } from 'react';
-import { useRouter } from "next/navigation"; 
+import { useRouter } from 'next/navigation';
 import Table from '@/components/Table';
-import { Eye, Pencil, Edit } from 'lucide-react';
+import { Eye, Pencil, Edit, PencilLine } from 'lucide-react';
+import Link from 'next/link';
+import { isAdmin, isCommercial, isSuperAdmin } from '@/configs/enum';
 
 const AcquereursTabComponent = ({
+  statut,
   etat,
   contrat_vente,
   aquereurs,
@@ -18,13 +21,7 @@ const AcquereursTabComponent = ({
     router.push(`/ventes/reservations/?id=${reservationId}&action=edit`);
   }, [reservationId, router]);
 
-  const handleShow = useCallback((aqId) => {
-    router.push(`/ventes/clients/${aqId}`);
-  }, [router]);
-
-  const handleEdit = useCallback((aqId) => {
-    router.push(`/ventes/clients/?id=${aqId}&action=edit`);
-  }, [router]);
+ 
 
   const formatData = useMemo(() => {
     return aquereurs.map((data) => ({
@@ -61,60 +58,81 @@ const AcquereursTabComponent = ({
     }));
   }, [aquereurs]);
 
-  const columns_export = useMemo(() => [
-    { key: 'cin', label: 'Cin' },
-    { key: 'nom', label: 'nomComplet' },
-    { key: 'prenom', label: 'Prénom' },
-    { key: 'telephone', label: 'Telephone' },
-    { key: 'pourcentage', label: 'Pourcentage' },
-  ], []);
+  const columns_export = useMemo(
+    () => [
+      { key: 'cin', label: 'Cin' },
+      { key: 'nom', label: 'nomComplet' },
+      { key: 'prenom', label: 'Prénom' },
+      { key: 'telephone', label: 'Telephone' },
+      { key: 'pourcentage', label: 'Pourcentage' },
+    ],
+    []
+  );
 
-  const columns = useMemo(() => [
-    { key: 'cin', label: 'Cin' },
-    { key: 'nom', label: 'Nom' },
-    { key: 'prenom', label: 'Prénom' },
-    { key: 'telephone', label: 'Téléphone' },
-    { key: 'pourcentage', label: 'Pourcentage' },
-    {
-      key: 'actions',
-      label: 'Actions',
-      render: (row) => (
-        <div className="flex gap-3 items-center">
-          <button
-            className="text-blue-500 hover:text-blue-700 cursor-pointer"
-            title="Voir détails"
-            onClick={() => handleShow(row.client_id)}
-          >
-            <Eye className='w-4 h-4' />
-          </button>
-
-          {etat == 1 && user_role <= 3 && (
-            <button
-              className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
-              title="Modifier"
-              onClick={() => handleEdit(row.client_id)}
+  const columns = useMemo(
+    () => [
+      { key: 'cin', label: 'Cin' },
+      { key: 'nom', label: 'Nom' },
+      { key: 'prenom', label: 'Prénom' },
+      { key: 'telephone', label: 'Téléphone' },
+      { key: 'pourcentage', label: 'Pourcentage' },
+      {
+        key: 'actions',
+        label: 'Actions',
+        render: (row) => (
+          <div className="flex gap-3 items-center">
+            <Link
+              href={`/ventes/clients/${row.client_id}`}
+              className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+              title="Voir les détails"
+              target="_blank"
             >
-              <Pencil className='w-4 h-4' />
-            </button>
-          )}
-        </div>
-      ),
-    },
-  ], [etat, user_role, handleShow, handleEdit]);
+              <Eye className="w-4 h-4" />
+            </Link>
+            {etat == 1 && user_role <= 3 && (
+              <Link
+                href={`/ventes/clients/?id=${row.client_id}&action=edit`}
+                className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
+                title="Modifier"
+                target="_blank"
+              >
+                <PencilLine className="w-4 h-4" />
+              </Link>
+            )}
+          </div>
+        ),
+      },
+    ],
+    [etat, user_role]
+  );
 
+  
   const customActions = useMemo(() => {
-    const actions = [];
-    if (etat == 1 && contrat_vente == null) {
-      actions.push({
-        label: "Modifier aquéreurs",
-        icon: <Edit className="w-5 h-5" />,
-        className: "bg-green-600 hover:bg-green-700",
-        onClick: handleEdit_pourcentage,
-      });
-    }
-    return actions;
-  }, [etat, contrat_vente, handleEdit_pourcentage]);
+  const actions = [];
+  
+  // Check if user can see the "Modifier aquéreurs" action
+  const canEditAcquereurs = 
+    // For Admin/SuperAdmin: etat == 1 && contrat_vente == null
+    ((isSuperAdmin(user_role) || isAdmin(user_role)) &&
+      etat == 1 &&
+      contrat_vente == null) ||
+    // For Commercial: statut == 0 AND etat == 1 && contrat_vente == null
+    (isCommercial(user_role) &&
+      statut == 0 &&
+      etat == 1 &&
+      contrat_vente == null);
 
+  if (canEditAcquereurs) {
+    actions.push({
+      label: 'Modifier aquéreurs',
+      icon: <Edit className="w-5 h-5" />,
+      className: 'bg-green-600 hover:bg-green-700',
+      onClick: handleEdit_pourcentage,
+    });
+  }
+  
+  return actions;
+}, [etat, contrat_vente, handleEdit_pourcentage, user_role,statut]);
   return (
     <div className="space-y-6">
       <Table

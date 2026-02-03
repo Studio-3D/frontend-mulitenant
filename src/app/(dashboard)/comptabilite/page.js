@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useProjet } from '@/context/ProjetContext';
-import { isAdmin, isSuperAdmin } from '@/configs/enum';
+import { isAdmin, isSuperAdmin,isComptable } from '@/configs/enum';
 import { ComptabilitePage } from '../../../components/comptabilite/ComptabilitePage';
 import LoadingSpin from '@/components/LoadingSpin';
 
@@ -14,7 +14,7 @@ const Page = () => {
 
   // Check user permissions
   useEffect(() => {
-    if (user && !isAdmin(user.role) && !isSuperAdmin(user.role)) {
+    if (user && !isAdmin(user.role) && !isSuperAdmin(user.role) && !isComptable(user.role)) {
       router.push('/');
     }
   }, [user, router]);

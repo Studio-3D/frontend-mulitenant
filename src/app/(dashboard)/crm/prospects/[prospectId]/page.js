@@ -17,7 +17,7 @@ import VisiteTable from '../../visites/VisiteTable';
 import { format } from 'date-fns'; // Import format from date-fns
 import JournalTable from '../../appels/[appelId]/JournalTable';
 import Modal_Traite from '../Modal_Traite';
-import { isAdmin } from '@/configs/enum';
+import { isAdmin, isCommercial, isRespoCommercial, isSuperAdmin } from '@/configs/enum';
 
 const ProspectDetails = () => {
   const [refreshHistoriques, setRefreshHistoriques] = useState(0);
@@ -60,6 +60,16 @@ const ProspectDetails = () => {
   const handleShowClient = (id) => {
     router.push(`/ventes/clients/`+id);
   };
+useEffect(() => {
+    if (
+      !isAdmin(user?.role) &&
+      !isSuperAdmin(user?.role) &&
+      !isCommercial(user?.role)&&
+      !isRespoCommercial(user?.role)
+    ) {
+      router.push('/');
+    }
+  }, [user?.role, router]);
 
   const tabs = [
     ...(prospectDetails?.id != null

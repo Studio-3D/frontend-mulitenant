@@ -33,7 +33,7 @@ const Compromis_show = ({
   reservationData,
   data_c,
   nb_compromis_annule,
-  onCompromisCreated
+  onCompromisCreated,
 }) => {
   // Group by year function
 
@@ -63,7 +63,6 @@ const Compromis_show = ({
   const [compromis_id, setCompromis_id] = useState(0);
   const [etat_res, setEtat_res] = useState(1);
   const [fichier_scanner, setfichier_scanner] = useState(null);
-  const [alert_title, setAlert_title] = useState(' ');
   const [comp_sign, set_comp_signe] = useState(null);
   const [nb_comp_annule, set_nb_comp_annule] = useState(0);
   const [data_compromis_annule, setData_Compromis_annule] = useState(null);
@@ -300,9 +299,6 @@ const Compromis_show = ({
                   <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
                     N°: {data.num_recu}
                   </span>
-                  <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                    Commentaire: {commentaire}
-                  </span>
                 </div>
 
                 {/* Dates grid */}
@@ -337,7 +333,7 @@ const Compromis_show = ({
                 {comp_sign && (
                   <div className="text-center mb-6">
                     <h3 className="text-lg font-semibold text-blue-700">
-                      Attestation Signé
+                      Attestation Signée
                     </h3>
                     <div className="flex items-center justify-center">
                       {comp_sign.toLowerCase().endsWith('.pdf') ? (
@@ -418,6 +414,11 @@ const Compromis_show = ({
                     </button>
                   )}
                 </div>
+                {commentaire != null && (
+                  <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                    Commentaire: {commentaire}
+                  </span>
+                )}
               </div>
             </div>
           </div>

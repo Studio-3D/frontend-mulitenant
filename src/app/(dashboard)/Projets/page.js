@@ -8,7 +8,7 @@ import { useProjet } from '@/context/ProjetContext';
 import { Eye, PencilLine, Trash2 } from 'lucide-react';
 import Table from '@/components/Table';
 import Link from 'next/link';
-import { isAdmin, isSuperAdmin } from '@/configs/enum';
+import { isAdmin, isSuperAdmin,isCommercial } from '@/configs/enum';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
 import Input from '@/components/Input';
@@ -28,6 +28,18 @@ const Page = ({ user_id }) => {
   const [selectedId, setSelectedId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
+    const userRole = user?.role;
+  
+    useEffect(() => {
+      if (
+        user && 
+        !isAdmin(userRole) &&
+        !isSuperAdmin(userRole) &&
+        !isCommercial(userRole)
+      ) {
+        router.push('/');
+      }
+    }, [user, userRole, router]);
   // State for filters - use 'type' to match backend expectation
   const [filters, setFilters] = useState({
     nom: '',

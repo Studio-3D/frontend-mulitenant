@@ -20,9 +20,13 @@ import {
   endOfDay,
   format,
 } from "date-fns";
+import { isAdmin, isSuperAdmin,isCommercial,isRespoCommercial} from '@/configs/enum';
+import { useRouter } from 'next/navigation';
 
 export default function ActualitesPage() {
   const { user } = useAuth();
+    const router = useRouter();
+  
   const { selectedProjet } = useProjet();
   const [loading, setLoading] = useState(true);
   const [commercialId, setCommercialId] = useState(
@@ -67,6 +71,19 @@ export default function ActualitesPage() {
   };
 
   // Get user information
+
+   const userRole = user?.role;
+    
+      useEffect(() => {
+        if (
+          user && 
+          !isAdmin(userRole) &&
+          !isSuperAdmin(userRole) &&
+          !isCommercial(userRole) &&!isRespoCommercial(userRole)
+        ) {
+          router.push('/');
+        }
+      }, [user, userRole, router]);
 
   const fetchCommercials = async () => {
     setLoadingCommercials(true);
@@ -124,7 +141,7 @@ export default function ActualitesPage() {
   useEffect(() => {
     if (!selectedProjet?.id) return;
 
-    if (user.role <= 2) {
+    if (user.role <= 2 ||user.role ==9 ) {
       fetchCommercials();
     }
   }, [selectedProjet?.id]);
@@ -330,7 +347,7 @@ export default function ActualitesPage() {
             avances={avances}
             sumAvances={sumAvances}
             remboursements={remboursements}
-            sumRemb={sumRemb}
+            sumRemb={parseFloat(sumRemb.toFixed(2))}
           />
         </div>
 

@@ -8,6 +8,9 @@ import { APIURL } from '../../../../../../configs/api';
 import {
   MODE_PAIEMENT,
   getModePenaliteLabel,
+  isAdmin,
+  isCommercial,
+  isSuperAdmin,
   modes_penalites,
   type_dst,
   type_dst_dp,
@@ -28,7 +31,7 @@ import { useProjet } from '@/context/ProjetContext';
 const STATUS_BADGES = {
   0: { text: 'Attente Validation', color: 'bg-yellow-100 text-yellow-800' },
   1: { text: 'Validé', color: 'bg-green-100 text-green-800' },
-  2: { text: 'Rejeter', color: 'bg-red-100 text-red-800' },
+  2: { text: 'Rejeté', color: 'bg-red-100 text-red-800' },
 };
 
 const ShowPenalite = () => {
@@ -57,7 +60,17 @@ const ShowPenalite = () => {
     remiseNumber: '',
     encaissementDate: '',
   });
-
+     const userRole = user?.role;
+        useEffect(() => {
+          if (
+            !isAdmin(userRole) &&
+            !isSuperAdmin(userRole) &&
+            !isCommercial(userRole)
+          ) {
+            router.push('/');
+          }
+        }, [router]);
+        
   // Simple cache et comparaison for return back en cas de changer projet
   const [oldProjetId, setOldProjetId] = useState(null);
 
@@ -133,7 +146,8 @@ const ShowPenalite = () => {
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
 
-      await fetchData(); // Refresh data
+     // await fetchData(); // Refresh data
+      router.push('/ventes?tab=validation&subtab=penalites-validation')
       toast.success('Action Traité avec Succés');
 
       setOpenValidationDialog(false);
@@ -192,7 +206,7 @@ const ShowPenalite = () => {
       router.push('/ventes?tab=validation&subtab=penalites-validation');
 
       // Show success message
-      toast.success('Action traitée avec succès');
+      toast.success('Action corrigé avec succès');
       setLoadingSave(false);
     } catch (error) {
       setLoadingSave(false);
@@ -270,7 +284,7 @@ const ShowPenalite = () => {
       {/* Header */}
       <div className="flex justify-between items-center mb-1">
         <BreadCrumb
-          baseUrl={'#'}
+          baseUrl={'/ventes?tab=penalites'}
           step={`Détail pénalité`}
         />
       </div>
@@ -339,7 +353,7 @@ const ShowPenalite = () => {
                 onClick={fetchHistory}
                 className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition"
               >
-                View History
+                Historiques
               </button>
             )}
           </div>
@@ -499,7 +513,7 @@ const PenaltyDetails = ({
       <div className="flex items-center mb-4">
         <span className="text-sm font-medium text-gray-500 mr-2">SR:</span>
         <span className="font-medium text-black-500">
-          {penalite.sr ? 'Oui' : 'Non'}
+          {penalite.sr==0 ? 'Non' : 'Oui'}
         </span>
       </div>
 
@@ -623,7 +637,7 @@ const HistoryModal = ({
   <Modal_l
     open={open}
     onClose={onClose}
-    title="Historique du Pénalité"
+    title="Historique des Pénalités"
     size="max-w-6xl"
   >
     <div className="overflow-x-auto">
@@ -631,14 +645,14 @@ const HistoryModal = ({
         <thead className="bg-black text-white-500">
           <tr className="text-white">
             <TableHeader>Date</TableHeader>
-            <TableHeader>Receipt No</TableHeader>
-            <TableHeader>Responsible</TableHeader>
-            <TableHeader>Amount</TableHeader>
-            <TableHeader>Payment Method</TableHeader>
-            <TableHeader>Bank</TableHeader>
-            <TableHeader>Payment No</TableHeader>
-            <TableHeader>Due Date</TableHeader>
-            <TableHeader>Status</TableHeader>
+            <TableHeader>N° Reçu</TableHeader>
+            <TableHeader>Responsable</TableHeader>
+            <TableHeader>Montant</TableHeader>
+            <TableHeader>Mode de Paiement</TableHeader>
+            <TableHeader>Banque</TableHeader>
+            <TableHeader>N° Paiement</TableHeader>
+            <TableHeader>date Echéance</TableHeader>
+            <TableHeader>Statut</TableHeader>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-black-200">

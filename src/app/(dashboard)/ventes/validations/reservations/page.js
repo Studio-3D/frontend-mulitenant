@@ -19,6 +19,7 @@ import Modal_show_info from "../../../ventes/reservations/Modal_show_info";
 import LoadingSpin from "@/components/LoadingSpin";
 import DateRangePicker from "@/components/DateRangePicker";
 import { useProjet } from '@/context/ProjetContext';
+import { isCommercial } from "@/components/user-utils";
 
 const PageTraitement_Validation_rejets = () => {
   const { selectedProjet  } = useProjet();
@@ -99,6 +100,15 @@ const PageTraitement_Validation_rejets = () => {
   const handleFilterChange = (field, value) => {
     setTempFilters((prev) => ({ ...prev, [field]: value }));
   };
+   useEffect(() => {
+            if (
+              !isAdmin(userRole) &&
+              !isSuperAdmin(userRole) &&
+              !isCommercial(userRole)
+            ) {
+              router.push('/');
+            }
+          }, [router]);
 
   useEffect(() => {
     //Implementing the setInterval method

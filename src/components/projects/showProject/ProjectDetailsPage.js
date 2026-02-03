@@ -6,7 +6,7 @@ import { RightCard } from './RightCard';
 import { APIURL } from '@/configs/api';
 import { useProjet } from '@/context/ProjetContext';
 import { useAuth } from '@/context/AuthContext';
-import { isAdmin, isSuperAdmin } from '@/configs/enum';
+import { isAdmin, isSuperAdmin,isCommercial } from '@/configs/enum';
 import axios from 'axios';
 import Modal from '@/components/Modal';
 import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
@@ -54,6 +54,18 @@ export const ProjectDetailsPage = () => {
   const [activeTab, setActiveTab] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
+     const userRole = user?.role;
+    
+      useEffect(() => {
+        if (
+          user && 
+          !isAdmin(userRole) &&
+          !isSuperAdmin(userRole) &&
+          !isCommercial(userRole)
+        ) {
+          router.push('/');
+        }
+      }, [user, userRole, router]);
   // Custom setActiveTab function that also persists to localStorage
   const setActiveTabPersistent = useCallback(
     (tabName) => {

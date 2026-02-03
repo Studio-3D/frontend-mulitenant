@@ -79,26 +79,31 @@ export default function ReclamationForm({ id }) {
       setOldProjetId(selectedProjet.id);
     }
   }, [selectedProjet?.id, oldProjetId, router]);
-  const fetchServices = async () => {
-    try {
-      setLoading(true);
+ const fetchServices = async () => {
+  try {
+    setLoading(true);
 
-      const response = await axios.get(
-        `${APIURL.ROOT}/v1/projets/${selectedProjet?.id}/ServicesPrestataires/`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      const { data } = response;
-      setServices(data.services);
-
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
+    const response = await axios.get(
+      `${APIURL.ROOT}/v1/projets/${selectedProjet?.id}/ServicesPrestataires/`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    const { data } = response;
+    
+    // Filter services to only include those with prestataires
+    const servicesWithPrestataires = data.services.filter(
+      service => service.prestataires && service.prestataires.length > 0
+    );
+    
+    setServices(servicesWithPrestataires);
+    setLoading(false);
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+};
 
   useEffect(() => {
     fetchbiens();
@@ -716,7 +721,7 @@ export default function ReclamationForm({ id }) {
               Annuler
             </Button>
 
-            <Button type="submit">Enregistrer</Button>
+            <Button type="submit"  disabled={formSubmitted}>Enregistrer</Button>
           </div>
         </form>
         <ConfirmDialog

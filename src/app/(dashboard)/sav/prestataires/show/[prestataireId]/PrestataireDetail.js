@@ -1,6 +1,10 @@
-'use client';
+'use client'
 
-import React from 'react';
+import React, { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { isAdmin, isSuperAdmin,isSav } from '@/configs/enum';
+
 import {
   UserIcon,
   PhoneIcon,
@@ -10,12 +14,23 @@ import {
   MapPinIcon,
 } from 'lucide-react';
 
-import { useRouter } from 'next/navigation';
 import { ENDPOINTS } from '@/configs/api';
 
 const PrestataireDetail = ({ Details }) => {
   const router = useRouter();
-
+       const {  user } = useAuth();
+            const userRole = user?.role;
+              
+                useEffect(() => {
+                  if (
+                    user && 
+                    !isAdmin(userRole) &&
+                    !isSuperAdmin(userRole) &&
+                    !isSav(userRole)
+                  ) {
+                    router.push('/');
+                  }
+                }, [user, userRole, router]);
   if (!Details) {
     return (
       <div className="p-8 text-center !text-gray-300">
@@ -23,6 +38,7 @@ const PrestataireDetail = ({ Details }) => {
       </div>
     );
   }
+
 
   return (
     <div className="bg-gradient-to-r from-blue-500 to-blue-700 rounded-xl text-white p-8 shadow-lg max-w-7xl mx-auto">

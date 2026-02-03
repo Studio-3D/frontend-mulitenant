@@ -11,6 +11,9 @@ import {
   X,
   Trash2,
   PencilLine,
+  Send,
+  Pencil,
+  UserPlus,
 } from "lucide-react";
 import Modal from "@/components/Modal";
 import DeleteData from "@/components/DeleteData";
@@ -18,15 +21,19 @@ import { useAuth } from "../../../../context/AuthContext";
 import { APIURL, ENDPOINTS } from "../../../../configs/api";
 import { useRouter } from "next/navigation";
 import { formatDate, formatDateTime } from "../../../../utils/dateUtils";
-import { isAdmin, isCommercial, isSuperAdmin } from "../../../../configs/enum";
-import { fetchData_table_by_projet } from "../../../../configs/api-utils";
+import { isAdmin, isCommercial,  isRespoLivraison, isSuperAdmin } from "../../../../configs/enum";
+import {  fetchData_table_by_projet } from "../../../../configs/api-utils";
 import Link from "next/link";
 import Input from "@/components/Input";
+import axios from 'axios';
+
 
 import { MODE_FINANCE } from "../../../../configs/enum";
 import Modal_Valider_Reservation from "./Modal_Valider_Reservation";
 
 import Modal_Rejeter_Reservation from "./Modal_Rejeter_Reservation";
+
+import Modal_Affecte from "./Modal_Affecte";
 
 import Modal_show_info from "./Modal_show_info";
 import DateRangePicker from "@/components/DateRangePicker";
@@ -36,7 +43,7 @@ const ReservationTable = ({ dataClient, user_id,searchParams }) => {
   const { user, token } = useAuth();
   const userRole = user?.role;
   const accesstoken = token || localStorage.getItem("accessToken");
-const { selectedProjet  } = useProjet();
+  const { selectedProjet  } = useProjet();
   const router = useRouter();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -54,6 +61,9 @@ const { selectedProjet  } = useProjet();
   const [av_id, setav_id] = useState(0);
   const [open_v_reservation, setOpen_v_reservation] = useState(false);
   const [open_r, setOpen_r] = useState(false);
+    const [notaires, setNotaires] = useState([]);
+    const [old_notaire_id, setNoraire_id] = useState(null);
+    const [open_affecte, setOpen_affecte] = useState(false);
   const [code_reservation, setCode_reservation] = useState(null);
   const [dst_id, set_dst_id] = useState(null);
   const [statut_dst, setStatut_des] = useState(0);
@@ -133,6 +143,27 @@ const { selectedProjet  } = useProjet();
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
+    const fetchNotaires = async () => {
+      await axios
+        .get(`${APIURL.ROOTV1}/notaires`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          },
+        })
+        .then((res) => {
+          setNotaires(res.data.notaires);
+        })
+        .catch(() => {});
+    };
+  
+  useEffect(() => {
+    if(isSuperAdmin(userRole) ||
+            isAdmin(userRole) ||
+            isRespoLivraison(userRole)){
+    fetchNotaires();
+            }
+  }, []);
+
   function NomBienComplet(bien) {
     const noms = [];
 
@@ -172,9 +203,7 @@ const { selectedProjet  } = useProjet();
     router.push(`${ENDPOINTS.RESERVATIONS}?id=${resId}&action=edit`);
   }
 
-  const handleShow = (resId) => {
-    router.push(`/ventes/reservations/${resId}`);
-  };
+
 
   const handleDesiste = (res_id, desistement_id, statut_dstt, msg_rejete) => {
     if (desistement_id == null) {
@@ -209,6 +238,7 @@ const { selectedProjet  } = useProjet();
         prix: pro.prix,
         avances_sum_montant: pro.avances_sum_montant,
         statut: pro.statut,
+        notaire_id:pro?.notaire_id,
         data_res: pro,
       };
     });
@@ -322,118 +352,150 @@ const { selectedProjet  } = useProjet();
       render: (row) => (
         <div className="flex gap-3 items-center">
           
-          <Eye
-            className="w-4 h-4 !text-blue-500 hover:text-blue-700 cursor-pointer"
-            title="Voir détails"
-            onClick={() => handleShow(row.id)}
-          />
-          {row.data_res.contrat_vente == null && (
-            <PencilLine
-              className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
-              title="Modifier"
-              onClick={() => handleEdit(row.id)}
-            />
-          )}
+           <Link
+                      href={`/ventes/reservations/${row.id}`}
+                      className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+                      title="Voir les détails"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </Link>
+          
 
-          {row.statut == 3 ? (
-            <>
-              {isSuperAdmin(userRole) || isAdmin(userRole) ? (
+            {(isSuperAdmin(userRole) ||
+            isAdmin(userRole) ||
+            isCommercial(userRole)) && (
+              <>
+              {(isSuperAdmin(userRole) || isAdmin(userRole)) && row.data_res.contrat_vente == null && (
+                <PencilLine
+                  className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
+                  title="Modifier"
+                  onClick={() => handleEdit(row.id)}
+                />
+              )}
+                {row.statut == 3 ? (
                 <>
-                  {/* Approve Button */}
-                  <ThumbsUp
-                    className="w-4 h-4 !text-green-500 hover:text-green-700 cursor-pointer"
-                    title="Valider"
+                  {isSuperAdmin(userRole) || isAdmin(userRole) ? (
+                    <>
+                      {/* Approve Button */}
+                      <ThumbsUp
+                        className="w-4 h-4 !text-green-500 hover:text-green-700 cursor-pointer"
+                        title="Valider"
+                        onClick={() =>
+                          handle_valider(
+                            row.id,
+                            row.code_reservation,
+                            row.data_res.first_avance?.num_recu,
+                            row.data_res.first_avance?.id,
+                            row.data_res.first_avance?.statut,
+                            row.data_res.user.name + " " + row.data_res.user.prenom,
+                            row.data_res.aquereurs,
+                            row.data_res.date_reservation,
+                            row.data_res.prix,
+                            row.first_avance?.montant
+                          )
+                        }
+                      />
+
+                      {/* Reject Button */}
+                      <ThumbsDown
+                        className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
+                        title="Refuser"
+                        onClick={() => handle_rejeter(row.id, row.code_reservation)}
+                      />
+                      <Trash2
+                        className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
+                        onClick={() => {
+                          setSelectedId(row.id);
+                          setShowDeleteModal(true);
+                        }}
+                        title="Supprimer"
+                      />
+                    </>
+                  ) : (
+                    <Clock
+                      className="w-4 h-4 !text-gray-500 hover:text-gray-700 cursor-pointer"
+                      title="En Attente de Validation"
+                      onClick={() => handle_show_info_2(row.code_reservation)}
+                    />
+                  )}
+                </>
+                ) : row.statut == 2 ? (
+                  <Eye
+                    className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
+                    title="Détail du Rejet"
                     onClick={() =>
-                      handle_valider(
-                        row.id,
+                      handle_show_comment_rejete(
                         row.code_reservation,
-                        row.data_res.first_avance?.num_recu,
-                        row.data_res.first_avance?.id,
-                        row.data_res.first_avance?.statut,
-                        row.data_res.user.name + " " + row.data_res.user.prenom,
-                        row.data_res.aquereurs,
-                        row.data_res.date_reservation,
-                        row.data_res.prix,
-                        row.first_avance?.montant
+                        row.data_res.last_statut?.commentaire
                       )
                     }
                   />
+                ) : row.statut == 1 && row.data_res.first_avance?.statut == 3 ? (
+                  <Clock
+                    className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
+                    title="Première avance en attente de validation"
+                    onClick={() => handle_show_info(row.code_reservation)}
+                  />
+                ) : null}
 
-                  {/* Reject Button */}
-                  <ThumbsDown
-                    className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
-                    title="Refuser"
-                    onClick={() => handle_rejeter(row.id, row.code_reservation)}
-                  />
-                  <Trash2
-                    className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
-                    onClick={() => {
-                      setSelectedId(row.id);
-                      setShowDeleteModal(true);
-                    }}
-                    title="Supprimer"
-                  />
-                </>
-              ) : (
-                <Clock
-                  className="w-4 h-4 !text-gray-500 hover:text-gray-700 cursor-pointer"
-                  title="En Attente de Validation"
-                  onClick={() => handle_show_info_2(row.code_reservation)}
-                />
-              )}
-            </>
-          ) : row.statut == 2 ? (
-            <Eye
-              className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
-              title="Détail du Rejet"
-              onClick={() =>
-                handle_show_comment_rejete(
-                  row.code_reservation,
-                  row.data_res.last_statut?.commentaire
-                )
-              }
-            />
-          ) : row.statut == 1 && row.data_res.first_avance?.statut == 3 ? (
-            <Clock
-              className="w-4 h-4 !text-yellow-500 hover:text-yellow-700 cursor-pointer"
-              title="Première avance en attente de validation"
-              onClick={() => handle_show_info(row.code_reservation)}
-            />
-          ) : null}
-          {(isSuperAdmin(userRole) ||
-            isAdmin(userRole) ||
-            isCommercial(userRole)) &&
-            row.statut == 1 && (
-              <X
-                className={`w-4 h-4 cursor-pointer ${
-                  row.data_res.desistement_att_validation_rejete?.statut == 0
-                    ? "text-orange-500 hover:text-orange-700"
-                    : row.data_res.desistement_att_validation_rejete?.statut ==
-                      2
-                    ? "text-red-500 hover:text-red-700"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-                title={
-                  row.data_res.desistement_att_validation_rejete?.statut == 0
-                    ? "désistement en attente"
-                    : row.data_res.desistement_att_validation_rejete?.statut ==
-                      2
-                    ? "Désistement rejeté"
-                    : "Désister la réservation"
-                }
-                onClick={() =>
-                  row.data_res.desistement_att_validation_rejete != null
-                    ? handleDesiste(
-                        row.id,
-                        row.data_res.desistement_att_validation_rejete?.id,
-                        row.data_res.desistement_att_validation_rejete?.statut,
-                        row.data_res.desistement_att_validation_rejete
-                          ?.commentaire_rejete
-                      )
-                    : handleDesiste(row.id, null, null, null)
-                }
-              />
+                {row.statut == 1 && row.avances_sum_montant>0 && (
+                      <X
+                        className={`w-4 h-4 cursor-pointer ${
+                          row.data_res.desistement_att_validation_rejete?.statut == 0
+                            ? "text-orange-500 hover:text-orange-700"
+                            : row.data_res.desistement_att_validation_rejete?.statut ==
+                              2
+                            ? "text-red-500 hover:text-red-700"
+                            : "text-gray-500 hover:text-gray-700"
+                        }`}
+                        title={
+                          row.data_res.desistement_att_validation_rejete?.statut == 0
+                            ? "désistement en attente"
+                            : row.data_res.desistement_att_validation_rejete?.statut ==
+                              2
+                            ? "Désistement rejeté"
+                            : "Désister la réservation"
+                        }
+                        onClick={() =>
+                          row.data_res.desistement_att_validation_rejete != null
+                            ? handleDesiste(
+                                row.id,
+                                row.data_res.desistement_att_validation_rejete?.id,
+                                row.data_res.desistement_att_validation_rejete?.statut,
+                                row.data_res.desistement_att_validation_rejete
+                                  ?.commentaire_rejete
+                              )
+                            : handleDesiste(row.id, null, null, null)
+                        }
+                      />
+                )}
+              </>
             )}
+        
+           {(isSuperAdmin(userRole) ||
+            isAdmin(userRole) ||
+            isRespoLivraison(userRole)) &&
+            row.statut == 1 && 
+            row.avances_sum_montant > 0 && 
+            notaires?.length > 0 && (
+              <>
+                {row.notaire_id ? (
+                  // If notaire already assigned, show Pencil icon for modification
+                  <Pencil
+                    className="w-4 h-4 !text-orange-500 hover:text-orange-700 cursor-pointer"
+                    title="Modifier le notaire"
+                    onClick={() => handle_affecte(row.id, row.code_reservation, row.notaire_id)}
+                  />
+                ) : (
+                  // If no notaire assigned, show UserPlus icon for affectation
+                  <UserPlus 
+                    className="w-4 h-4 !text-green-500 hover:text-green-700 cursor-pointer"
+                    title="Affecter un notaire"
+                    onClick={() => handle_affecte(row.id, row.code_reservation, null)}
+                  />
+                )}
+              </>
+          )}
         </div>
       ),
     },
@@ -547,6 +609,14 @@ const { selectedProjet  } = useProjet();
     setID(Id);
     setCode_reservation(code);
   };
+
+  
+   const handle_affecte = (Id, code,old_notaire_id) => {
+    setOpen_affecte(!open_affecte);
+    setID(Id);
+    setCode_reservation(code);
+    setNoraire_id(old_notaire_id)
+  };
   const handle_show_info_2 = (code) => {
     set_txt_info("La Réservation " + code + " est  en attente de validation !");
     setOpen_info(true);
@@ -643,7 +713,7 @@ const { selectedProjet  } = useProjet();
                 />*/}
                 <Input
                   type="text"
-                  label="Commercial"
+                  label="Responsable"
                   value={tempFilters.cc}
                   onChange={(e) => handleFilterChange("cc", e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
@@ -723,6 +793,19 @@ const { selectedProjet  } = useProjet();
               av_id={av_id}
               onClose={() => setOpen_v_reservation(false)}
               closeParentModal={() => setOpen_v_reservation(false)} // Add this prop
+            />
+          </Modal>
+        </>
+      )}
+       {open_affecte && (
+        <>
+          <Modal isVisible={true} onClose={() => setOpen_r(false)}>
+            <Modal_Affecte
+            old_notaire_id={old_notaire_id}
+              code_reservation={code_reservation}
+              id={ID}
+              notaires={notaires}
+              onClose={() => setOpen_affecte(false)}
             />
           </Modal>
         </>

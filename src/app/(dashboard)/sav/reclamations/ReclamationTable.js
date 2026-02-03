@@ -19,6 +19,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import ReclamationDialog from '@/components/dialogTraiterRec';
 import { useProjet } from '@/context/ProjetContext';
+import Link from 'next/link';
 
 const ReclamationTable = (prestId) => {
   const [reclamations, setReclamations] = useState([]);
@@ -60,7 +61,6 @@ const ReclamationTable = (prestId) => {
 
   const fetchPrestataires = async (service_id) => {
     try {
-      setLoading(true);
       const response = await axios.get(
         `${APIURL.ROOT}/v1/projets/${selectedProjet?.id}/Prestataires/`,
         {
@@ -73,7 +73,6 @@ const ReclamationTable = (prestId) => {
         (p) => p.service_id == service_id
       );
       setPrestataires(filtered);
-      setLoading(false);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -241,8 +240,8 @@ const ReclamationTable = (prestId) => {
   const statut = {
     1: { code: 1, label: 'En Attente', color: 'bg-blue-100 !text-blue-800' },
     2: { code: 2, label: 'En Cours', color: 'bg-blue-100 !text-blue-800' },
-    3: { code: 3, label: 'Resolu', color: 'bg-green-100 !text-green-800' },
-    4: { code: 4, label: 'Non Resolu', color: 'bg-red-100 !text-red-800' },
+    4: { code: 4, label: 'Resolu', color: 'bg-green-100 !text-green-800' },
+    3: { code: 3, label: 'Non Resolu', color: 'bg-red-100 !text-red-800' },
   };
 
   const getStatutBadge = (Statut) => {
@@ -270,9 +269,7 @@ const ReclamationTable = (prestId) => {
     return noms.join(' - ');
   }
 
-  function handleShow(Id) {
-    router.push(`/sav/reclamations/show/${Id}`);
-  }
+ 
 
   const columns = [
     {
@@ -281,10 +278,20 @@ const ReclamationTable = (prestId) => {
       render: (row) => {
         const date = new Date(row.date_reclamation);
         const formattedDate = date.toLocaleDateString('fr-FR'); // jj/mm/aaaa
-        return <strong>{formattedDate}</strong>; // en gras
+        return <strong style={{ fontWeight: 600 }}>{formattedDate}</strong>; // en gras
       },
     },
-    { key: 'bien', label: 'Bien' },
+
+    {
+      key: 'bien',
+      label: 'Bien',
+      sortable: true,
+      render: (row) => (
+        <Link target="_blank" href={'/Biens/' + row.bien_id}>
+          <strong style={{ fontWeight: 600 }}>{row.bien}</strong>
+        </Link>
+      ),
+    },
     { key: 'service', label: 'Service' },
     { key: 'prestataire', label: 'Prestataire' },
     {
@@ -300,23 +307,26 @@ const ReclamationTable = (prestId) => {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          <button
-            className="text-blue-500 hover:text-yellow-700"
-            onClick={() => handleShow(row.id)}
-            title="Voir"
+          
+
+ <Link
+            href={`/sav/reclamations/show/${row.id}`}
+            className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+            title="Voir les détails"
           >
             <Eye className="w-4 h-4" />
-          </button>
-
-          <button
-            className="text-yellow-500 hover:text-yellow-700"
-            onClick={() => handleEdit(row.id)}
-            title="Modifier"
-          >
-            <Pencil className="w-4 h-4" />
-          </button>
-
+          </Link>
+         
           {row.statut_raw === 1 && (
+            <>
+            <button
+              className="text-yellow-500 hover:text-yellow-700"
+              onClick={() => handleEdit(row.id)}
+              title="Modifier"
+            >
+              <Pencil className="w-4 h-4" />
+            </button>
+        
             <button
               className="text-red-500 hover:text-red-700"
               onClick={() => openTraitement(row, row.bien)}
@@ -324,6 +334,7 @@ const ReclamationTable = (prestId) => {
             >
               <Wrench className="w-5 h-5" />
             </button>
+            </>
           )}
 
           {row.statut_raw === 2 && (
@@ -355,6 +366,7 @@ const ReclamationTable = (prestId) => {
     return reclamations?.map((rec) => ({
       id: rec.id,
       date_reclamation: rec.date_reclamation,
+      bien_id: rec?.bien?.id,
       bien: NomBienComplet(rec.bien),
       emplacement: rec.emplacement,
       service_id: rec.service_id,
@@ -569,6 +581,7 @@ const ReclamationTable = (prestId) => {
         setValues={setFormValues}
         onSubmit={handleSubmitReclamation}
         disabled={disabled}
+        from_dashboard_client={false}
       />
 
       {showDeleteModal && selectedId && (

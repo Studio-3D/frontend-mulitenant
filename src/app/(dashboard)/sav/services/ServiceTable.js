@@ -9,7 +9,7 @@ import { Pencil, Trash2, Eye } from 'lucide-react';
 
 import { APIURL, ENDPOINTS } from '@/configs/api';
 import { fetchData_table_by_projet } from '@/configs/api-utils';
-import { isAdmin, isSuperAdmin } from '@/configs/enum';
+import { isAdmin, isSav, isSuperAdmin } from '@/configs/enum';
 import { useAuth } from '@/context/AuthContext';
 import Input from '@/components/Input';
 import { useProjet } from '@/context/ProjetContext'; // Import ProjetContext
@@ -252,7 +252,7 @@ const ServiceTable = () => {
           enableExport={true}
           enableImport={true}
           addLink={
-            isSuperAdmin(user.role) || isAdmin(user.role)
+            isSuperAdmin(user.role) || isAdmin(user.role)|| isSav(user.role)
               ? `${ENDPOINTS.ServicesPrestataires}?action=add`
               : undefined
           }
