@@ -13,6 +13,8 @@ export const RESOURCE_URL = {
 export const APIURL = {
   ROOT: APIBASEURL,
   ME: `${APIBASEURL}/dashboard`,
+  GESTION_ROLES: `${APIBASEURL}/v1/gestion_roles`,
+  GESTION_ROLES_ACTIVES: `${APIBASEURL}/v1/gestion_roles_actives`,
   LOGIN: `${APIBASEURL}/login`,
   REGISTER: `${APIBASEURL}/register`,
   LOGOUT: `${APIBASEURL}/logout`,

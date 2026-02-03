@@ -8,6 +8,9 @@ import { APIURL } from '../../../../../../configs/api';
 import {
   MODE_PAIEMENT,
   getModePenaliteLabel,
+  isAdmin,
+  isCommercial,
+  isSuperAdmin,
   modes_penalites,
   type_dst,
   type_dst_dp,
@@ -57,7 +60,17 @@ const ShowPenalite = () => {
     remiseNumber: '',
     encaissementDate: '',
   });
-
+     const userRole = user?.role;
+        useEffect(() => {
+          if (
+            !isAdmin(userRole) &&
+            !isSuperAdmin(userRole) &&
+            !isCommercial(userRole)
+          ) {
+            router.push('/');
+          }
+        }, [router]);
+        
   // Simple cache et comparaison for return back en cas de changer projet
   const [oldProjetId, setOldProjetId] = useState(null);
 

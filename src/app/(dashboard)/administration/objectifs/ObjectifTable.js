@@ -69,7 +69,6 @@ const ObjectifTable = () => {
  
 
   function handleEdit(ObjectifId) {
-    console.log('jjj')
     router.push(`${ENDPOINTS.OBJECTIFS}?id=${ObjectifId}&action=edit`);
   }
 

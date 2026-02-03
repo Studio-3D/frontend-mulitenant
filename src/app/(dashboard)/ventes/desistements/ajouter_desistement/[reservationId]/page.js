@@ -10,7 +10,7 @@ import axios from 'axios';
 import Modal_select_type_dst from './Modal_select_type_dst';
 import Modal from '@/components/Modal';
 import SelectInput from '@/components/SelectInput';
-import { type_dst } from '@/configs/enum';
+import { isAdmin, isCommercial, isSuperAdmin, type_dst } from '@/configs/enum';
 import { useAuth } from '../../../../../../context/AuthContext';
 import {
   fetchData_Select,
@@ -93,6 +93,17 @@ export default function Page() {
     inputListRemb: [],
   });
 
+   const userRole = user?.role;
+    useEffect(() => {
+      if (
+        !isAdmin(userRole) &&
+        !isSuperAdmin(userRole) &&
+        !isCommercial(userRole)
+      ) {
+        router.push('/');
+      }
+    }, [router]);
+    
   useEffect(() => {
     if (isPenaliteToggling) {
       const timer = setTimeout(() => {

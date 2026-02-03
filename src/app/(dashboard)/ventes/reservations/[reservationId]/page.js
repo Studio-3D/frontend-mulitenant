@@ -11,6 +11,7 @@ import { RendezVousTab } from '../../../../../components/reservation/tabs/Rendez
 import { CompromisVentesTab } from '../../../../../components/reservation/tabs/CompromisVentesTab';
 import { ContractTab } from '../../../../../components/reservation/tabs/ContractTab';
 import { TransfertTab } from '../../../../../components/reservation/tabs/TransfertTab';
+import { isAdmin, isSuperAdmin,isCommercial,isRespoCommercial,isNotaire,isAgentAdministratif,isRespoLivraison} from '@/configs/enum';
 
 import HistoriqueDesistementTab from '../../../../../components/reservation/tabs/HistoriqueDesistementTab';
 import axios from 'axios';
@@ -247,7 +248,7 @@ const Res_Show = () => {
         id: 'historiques',
         label: 'Historiques',
         icon: 'history',
-        visible: true,
+        visible: isAdmin(userRole) || isSuperAdmin(userRole) || isCommercial(userRole) || isRespoCommercial(userRole)
       },
       { id: 'acquereurs', label: 'Acquéreurs', icon: 'users' },
       { id: 'piecesJointes', label: 'Pièces jointes', icon: 'paperclip' },
@@ -256,35 +257,37 @@ const Res_Show = () => {
         id: 'transfert',
         label: 'Transfert',
         icon: 'swap-horizontal',
-        visible:
-          reservationData?.reservation?.etat == 2 &&
-          reservationData?.reservation?.remboursement_dd_with_transfert != null,
+       visible: (
+        reservationData?.reservation?.etat == 2 &&
+        reservationData?.reservation?.remboursement_dd_with_transfert != null
+      ) && (isAdmin(userRole) || isSuperAdmin(userRole) || isCommercial(userRole) || isRespoCommercial(userRole))
       },
       {
         id: 'historiqueDesistement',
         label: 'Historique Désistement',
         icon: 'repeat',
-        visible: reservationData?.reservation?.code_desistement != null,
-      },
+         visible: reservationData?.reservation?.code_desistement != null &&
+        (isAdmin(userRole) || isSuperAdmin(userRole) || isCommercial(userRole) || isRespoCommercial(userRole))
+     },
       {
         id: 'rendezVous',
         label: 'Rendez-vous',
         icon: 'calendar',
-        visible: userRole <= 3,
+        visible:(isAdmin(userRole) || isSuperAdmin(userRole) || isCommercial(userRole) || isRespoCommercial(userRole)|| isNotaire(userRole)|| isRespoLivraison(userRole)) ,
       },
       {
         id: 'compromisVentes',
         label: 'Attestation de vente',
         icon: 'file-signature',
         // Condition corrigée - afficher si user a le droit ET (il y a des avances OU un compromis existe déjà)
-        visible: userRole <= 3 && reservationData.sum_avances_valides > 0,
+        visible:(isAdmin(userRole) || isSuperAdmin(userRole) || isCommercial(userRole) || isRespoCommercial(userRole)|| isNotaire(userRole)|| isRespoLivraison(userRole)) && reservationData.sum_avances_valides > 0,
       },
       {
         id: 'contract',
         label: 'Contrat de vente',
         icon: 'file-text',
         visible:
-          userRole <= 3 &&
+         (isAdmin(userRole) || isSuperAdmin(userRole) || isCommercial(userRole) || isRespoCommercial(userRole)|| isNotaire(userRole)|| isRespoLivraison(userRole)) &&
           reservationData.sum_avances_valides >=
             reservationData?.reservation?.prix,
       },
@@ -326,6 +329,7 @@ const Res_Show = () => {
       case 'acquereurs':
         return (
           <AcquereursTab
+            statut={reservationData?.reservation?.statut}
             etat={reservationData?.reservation?.etat}
             contrat_vente={reservationData?.reservation?.contrat_vente}
             reservationId={reservationData?.reservation?.id}

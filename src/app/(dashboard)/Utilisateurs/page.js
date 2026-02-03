@@ -153,6 +153,18 @@ const Page = () => {
         return 'Admin';
       case 3:
         return 'Commercial';
+      case 5:
+        return 'Notaire';
+      case 6:
+        return 'Responsable Livraison';
+      case 7:
+        return 'Comptable';
+      case 8:
+        return 'Service Après-Vente';
+      case 9:
+        return 'Responsable Commercial';
+      case 10:
+        return 'Agent Administratif';
       default:
         return 'Utilisateur';
     }
@@ -240,27 +252,37 @@ const Page = () => {
     { key: 'date', label: 'Date' },
     { key: 'telephone', label: 'Téléphone' },
     {
-      key: 'role',
-      label: 'Rôle',
-      render: (row) => {
-        const roleColors = {
-          'Super Admin': 'bg-blue-100 text-[#009FFF]',
-          Admin: 'bg-purple-100 text-purple-600',
-          Commercial: 'bg-yellow-100 !text-yellow-600',
-          Utilisateur: 'bg-gray-100 !text-gray-600',
-        };
+  key: 'role',
+  label: 'Rôle',
+  render: (row) => {
+    const roleColors = {
+      'Super Admin': 'bg-blue-100 text-[#009FFF]',
+      Admin: 'bg-purple-100 text-purple-600',
+      Commercial: 'bg-yellow-100 !text-yellow-600',
+      'Responsable Livraison': 'bg-orange-100 !text-orange-600',
+      Notaire: 'bg-green-100 !text-green-600',
+      Comptable: 'bg-red-100 !text-red-600',
+      'Service Après-Vente': 'bg-indigo-100 !text-indigo-600',
+      'Responsable Commercial': 'bg-cyan-100 !text-cyan-600',
+      'Agent Administratif': 'bg-slate-100 !text-slate-600',
+      Utilisateur: 'bg-gray-100 !text-gray-600',
+    };
 
-        return (
-          <span
-            className={`px-2 py-1 rounded text-sm font-semibold ${
-              roleColors[row.role] || 'bg-gray-100 !text-gray-600'
-            }`}
-          >
-            {row.role}
-          </span>
-        );
-      },
-    },
+    // Utilisation de la fonction getRoleText qui est déjà définie
+    const roleText = getRoleText(row.roleId || row.originalRoleId); // Adaptez selon votre structure de données
+    
+    // Ou directement depuis le row formaté
+    const role = row.role || roleText;
+    
+    const colorClass = roleColors[role] || roleColors['Utilisateur'];
+    
+    return (
+      <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${colorClass}`}>
+        {role}
+      </span>
+    );
+  }
+},
     {
       key: 'status',
       label: 'Statut',

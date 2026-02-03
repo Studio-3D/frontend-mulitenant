@@ -8,6 +8,7 @@ import {
   PlusIcon,
 } from 'lucide-react';
 import { useRouter } from "next/navigation";
+import { isAdmin, isCommercial, isSuperAdmin } from '@/configs/enum';
 
 export const PiecesJointesTab = ({ reservationData, user,piecesJointesData}) => {
   const router = useRouter();
@@ -37,15 +38,20 @@ export const PiecesJointesTab = ({ reservationData, user,piecesJointesData}) => 
     <div className="space-y-6 min-h-[50vh]">
       {/* Header with add button */}
       <div className="flex justify-end">
-        {reservation?.etat == 1 && reservation?.contrat_vente == null && (
-          <button
-            className="px-3 py-2 bg-blue-600 text-white rounded-md text-sm flex items-center"
-            onClick={handleEdit_PJ}
-          >
-            <PlusIcon className="h-4 w-4 mr-1" />
-            Modifier les documents
-          </button>
+        {isAdmin(user?.role)||isSuperAdmin(user?.role)||isCommercial(user?.role) && (
+          <>
+            {reservation?.etat == 1 && reservation?.contrat_vente == null && (
+                      <button
+                        className="px-3 py-2 bg-blue-600 text-white rounded-md text-sm flex items-center"
+                        onClick={handleEdit_PJ}
+                      >
+                        <PlusIcon className="h-4 w-4 mr-1" />
+                        Modifier les documents
+                      </button>
+                    )}
+            </>
         )}
+       
       </div>
 
       {/* Documents grid - KEEPING YOUR CARD DESIGN */}

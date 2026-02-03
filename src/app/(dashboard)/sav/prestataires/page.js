@@ -4,11 +4,27 @@ import React, { useEffect, useState } from 'react'
 import PrestataireTable from './PrestataireTable'
 import PrestataireForm from './PrestataireForm'
 import { useSearchParams } from 'next/navigation'
-
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { isAdmin, isSuperAdmin,isSav } from '@/configs/enum';
 export default function Page() {
   const ACTION = { EDIT: 'edit', ADD: 'add' }
   const [child, setChild] = useState(null)
 
+  const {  user } = useAuth();
+    const router = useRouter();
+    const userRole = user?.role;
+      
+        useEffect(() => {
+          if (
+            user && 
+            !isAdmin(userRole) &&
+            !isSuperAdmin(userRole) &&
+            !isSav(userRole)
+          ) {
+            router.push('/');
+          }
+        }, [user, userRole, router]);
   const searchParams = useSearchParams()
   useEffect(() => {
     if (!searchParams) return

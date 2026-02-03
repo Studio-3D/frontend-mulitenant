@@ -125,7 +125,17 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
     etat_av,
     selectedProjet?.id,
   ]);
-
+  const router = useRouter();
+        useEffect(() => {
+          if (
+            !isAdmin(userRole) &&
+            !isSuperAdmin(userRole) &&
+            !isCommercial(userRole)
+          ) {
+            router.push('/');
+          }
+        }, [router]);
+        
   const handle_valider_rejete = (Id, n_recu, number, text) => {
     setOpen_v_r(!open_v_r);
     setID(Id);

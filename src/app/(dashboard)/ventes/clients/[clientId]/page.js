@@ -20,6 +20,7 @@ import { useSearchParams } from 'next/navigation';
 import JournalTable from '@/app/(dashboard)/crm/appels/[appelId]/JournalTable';
 import HistoriquesTable from '@/app/(dashboard)/crm/prospects/[prospectId]/HistoriquesTable';
 import { useProjet } from '@/context/ProjetContext';
+import { isAdmin, isCommercial, isNotaire, isRespoCommercial, isRespoLivraison, isSuperAdmin } from '@/configs/enum';
 
 const ClientDetails = () => {
   const { token, user } = useAuth();
@@ -37,7 +38,19 @@ const ClientDetails = () => {
   const handleEdit = (id) => {
     router.push(`${ENDPOINTS.CLIENTS}?id=${id}&action=edit`);
   };
-
+ const userRole = user?.role;
+  useEffect(() => {
+    if (
+      !isAdmin(userRole) &&
+      !isSuperAdmin(userRole) &&
+      !isCommercial(userRole)&&
+      !isRespoCommercial(userRole)&&
+      !isNotaire(userRole)&&
+      !isRespoLivraison(userRole)
+    ) {
+      router.push('/');
+    }
+  }, [router]);
   const tabs = [
     { id: 'encaissements', label: 'Encaissements', icon: '' },
     { id: 'reservations', label: 'Reservations', icon: '' },
@@ -349,13 +362,16 @@ const ClientDetails = () => {
 >
   {({ loading }) => (loading ? 'Préparation...' : 'Imprimer')}
 </PDFDownloadLink> */}
-                    <button
+{isSuperAdmin(userRole)||isAdmin(userRole) && (
+<button
                       type="button"
                       onClick={() => handleEdit(clientDetails?.id)}
                       className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded transition text-sm"
                     >
                       Modifier
                     </button>
+)}
+                    
                   </div>
                 </div>
               </div>

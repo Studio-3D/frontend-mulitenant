@@ -30,6 +30,7 @@ import BienDossiers from './BienDossiers';
 import BienTvaCollecte from './BienTvaCollecte';
 import BienMedia from './BienMedia';
 import { useProjet } from '@/context/ProjetContext';
+import { isAdmin, isSuperAdmin ,isCommercial,isComptable} from '@/configs/enum';
 
 import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
 import EncaissementTable from '@/app/(dashboard)/encaissements/EncaissementTable';
@@ -45,6 +46,19 @@ export default function BienDetails({ id }) {
   // Only admins and super admins can edit properties
   const canEditBien = user?.role === 1 || user?.role === 2;
 
+  const userRole = user?.role;
+      
+        useEffect(() => {
+          if (
+            user && 
+            !isAdmin(userRole) &&
+            !isSuperAdmin(userRole) &&
+            !isCommercial(userRole)&&
+            !isComptable(userRole)
+          ) {
+            router.push('/');
+          }
+        }, [user, userRole, router]);
   // Read breadcrumb context for names without fetching
   // Simple cache et comparaison
   const [oldProjetId, setOldProjetId] = useState(null);

@@ -4,7 +4,7 @@ import { useProjet } from "@/context/ProjetContext";
 import { useRouter } from "next/navigation";
 import SelectInput from "./SelectInput";
 import Link from "next/link";
-import { isCommercial } from '../configs/enum';
+import { isAdmin } from '../configs/enum';
 import { useAuth } from '../context/AuthContext';
 
 const ProjetDialog = ({
@@ -58,7 +58,6 @@ const ProjetDialog = ({
   if (!open) return null;
 
   // Check if user is commercial using your existing function
-  const userIsCommercial = isCommercial(user?.role);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -69,6 +68,8 @@ const ProjetDialog = ({
         </div>
 
         {/* Content */}
+        <div className="text-gray-500"> {/* ← ADD THIS WRAPPER */}
+
         <div className="flex flex-col items-center justify-center pt-6 px-4">
           <SelectInput
             label="Projet:"
@@ -109,7 +110,7 @@ const ProjetDialog = ({
         </div>
 
         {/* Show "Créer un projet" link only if user is NOT commercial */}
-        {!userIsCommercial && (
+        { isAdmin(user?.role) && (
           <div className="text-center pb-4">
             <Link 
               href="/Projets/addProject" 
@@ -120,6 +121,7 @@ const ProjetDialog = ({
             </Link>
           </div>
         )}
+         </div>
       </div>
     </div>
   );

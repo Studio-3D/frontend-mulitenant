@@ -48,7 +48,14 @@ import {
   StepBackIcon,
   StepBack,
   Cuboid,
-  Euro, // Replacement for FaFileInvoiceDollar
+  Euro,
+  UsbIcon,
+  UserCog,
+  FolderArchive,
+  FolderCog2,
+  User,
+  TimerIcon,
+  Send, // Replacement for FaFileInvoiceDollar
 } from 'lucide-react';
 
 import { User_roles } from '../configs/enum';
@@ -131,13 +138,14 @@ const Menu = () => {
     if (role <= User_roles.ROLE_ADMIN) {
       items.push(...getAdminItems());
     }
-
-    items.push({
-      label: 'Projets',
-      icon: <Briefcase size={20} />,
-      href: '/Projets',
-      needsSociete: true && user.role == 1,
-    });
+  if (role <= User_roles.ROLE_COMMERCIAL ) {
+      items.push({
+        label: 'Projets',
+        icon: <Briefcase size={20} />,
+        href: '/Projets',
+        needsSociete: true && user.role == 1,
+      });
+    }
 
     if (role <= User_roles.ROLE_COMMERCIAL) {
       items.push(...getCommercialItems());
@@ -145,6 +153,24 @@ const Menu = () => {
 
     if (role <= User_roles.ROLE_ADMIN) {
       items.push(...getAdditionalAdminItems());
+    }
+    if (role == User_roles.ROLE_SAV) {
+      items.push(...getSavItems());
+    }
+    if (role == User_roles.ROLE_RESPO_LIVRAISON) {
+      items.push(...getRespoLivraisonItems());
+    }
+     if (role == User_roles.ROLE_NOTAIRE) {
+      items.push(...getNotaireItems());
+    }
+     if (role == User_roles.ROLE_COMPTABLE) {
+      items.push(...getComptableItems());
+    }
+     if (role == User_roles.ROLE_AGENT_ADMINISTRATIF) {
+      items.push(...getAgentAdminItems());
+    }
+     if (role == User_roles.ROLE_RESPO_COMMERCIAL) {
+      items.push(...getRespoCommercialItems());
     }
 
     return items;
@@ -250,8 +276,14 @@ const Menu = () => {
           href: '/administration/config-socials',
           needsSociete: user.role === 1,
         },
+        {
+          label: 'Gestion Roles',
+          icon: <UserCog size={20} />,
+          href: '/administration/gestion-roles',
+          needsSociete: user.role === 1,
+        },
       ],
-    },
+    }
   ];
 
   const getCommercialItems = () => [
@@ -285,17 +317,67 @@ const Menu = () => {
       needsSociete: user.role === 1,
       // needsProjet: true,
     },
-    {
-      label: 'Remise Des Clés',
-      icon: <Percent size={20} />,
-      href: '/remiseCles',
-      needsSociete: user.role === 1,
-      needsProjet: true,
-    },
-    {
-      label: 'Sav',
-      icon: <FolderCog />,
-      children: [
+   
+  ];
+   const getRespoLivraisonItems = () => [
+     {
+    label: 'Affectations',
+    icon: <Send size={20} />,
+    href: '/respoLivraison/affectation',
+    needsSociete: user.role === 1,
+    needsProjet: true,
+  },
+  {
+    label: 'Suivi Notaire',
+    icon: <Users />,
+    children: [
+      {
+        label: 'Nouveaux Dossiers',
+        icon: <Wrench />,
+        href: '/notaire/nouveau-dossier',
+        needsSociete: user.role === 1,
+        needsProjet: true,
+      },
+      {
+        label: 'Rendez Vous',
+        icon: <Users />,
+        href: '/notaire/Rendez-vous/rdv',
+        needsProjet: true,
+        needsSociete: user.role === 1,
+      },
+      {
+        label: 'Relance',
+        icon: <FileText />,
+        href: '/notaire/Rendez-vous/relance',
+        needsProjet: true,
+        needsSociete: user.role === 1,
+      },
+      {
+        label: 'Attestation de Vente',
+        icon: <FolderArchive />,
+        href: '/notaire/attestations-vente',
+        needsSociete: user.role === 1,
+        needsProjet: true,
+      },
+      {
+        label: 'Contrat de Vente',
+        icon: <FolderCog2 />,
+        href: '/notaire/contrats-vente',
+        needsSociete: user.role === 1,
+        needsProjet: true,
+      },
+    ],
+  },
+  {
+    label: 'Remise Des Clés',
+    icon: <Percent size={20} />,
+    href: '/remiseCles',
+    needsSociete: user.role === 1,
+    needsProjet: true,
+  }
+];
+  const getSavItems = () => [
+   
         {
           label: 'Services prestataire',
           icon: <Wrench />,
@@ -317,7 +399,90 @@ const Menu = () => {
           needsProjet: true,
           needsSociete: user.role === 1,
         },
-      ],
+     
+  ];
+  const getNotaireItems = () => [
+   
+      {
+          label: 'Nouveaux Dossiers',
+          icon: <Wrench />,
+          href: '/notaire/nouveau-dossier',
+          needsSociete: user.role === 1,
+          needsProjet: true,
+        },
+        {
+          label: 'Rendez Vous',
+          icon: <Users />,
+          href: '/notaire/Rendez-vous/rdv',
+          needsProjet: true,
+          needsSociete: user.role === 1,
+        },
+        {
+          label: 'Relances',
+          icon: <FileText />,
+          href: '/notaire/Rendez-vous/relance',
+          needsProjet: true,
+          needsSociete: user.role === 1,
+        },
+    {
+      label: 'Attestation de Vente',
+      icon: <FolderArchive />,
+      href: '/notaire/attestations-vente',
+      needsSociete: user.role === 1,
+      needsProjet: true,
+    },
+    {
+      label: 'Contrat Vente',
+      icon: <FolderCog2 />,
+      href: '/notaire/contrats-vente',
+      needsSociete: user.role === 1,
+      needsProjet: true,
+    },
+     {
+      label: 'Créneaux',
+      icon: <TimerIcon />,
+      href: '/notaire/creneaux-occupes',
+      needsSociete: user.role === 1,
+      needsProjet: false,
+    },
+  ];
+  const getAgentAdminItems = () => [
+    {
+      
+    }
+  ];
+  const getRespoCommercialItems = () => [
+    {
+      label: 'CRM',
+      icon: <CreditCard size={20} />,
+      href: '/crm',
+      needsProjet: true,
+      needsSociete: user.role === 1,
+    },
+    {
+      label: 'Ventes',
+      icon: <Handshake />,
+      href: '/ventes',
+
+      needsSociete: user.role === 1,
+      needsProjet: true,
+    },
+    
+  ];
+  const getComptableItems = () => [
+    {
+      label: 'Encaissments',
+      icon: <Receipt />,
+      href: '/encaissements',
+      needsSociete: user.role === 1,
+      needsProjet: true,
+    },
+    {
+      label: 'Comptabilité',
+      icon: <Calculator />,
+      href: '/comptabilite',
+      needsProjet: true,
+      needsSociete: user.role === 1,
     },
   ];
 
@@ -349,7 +514,40 @@ const Menu = () => {
         },
       ],
     },
-
+    {
+      label: 'Sav',
+      icon: <FolderCog />,
+      children: [
+        {
+          label: 'Services prestataire',
+          icon: <Wrench />,
+          href: '/sav/services',
+          needsSociete: user.role === 1,
+          needsProjet: true,
+        },
+        {
+          label: 'Prestataires',
+          icon: <Users />,
+          href: '/sav/prestataires',
+          needsProjet: true,
+          needsSociete: user.role === 1,
+        },
+        {
+          label: 'Reclamations',
+          icon: <FileText />,
+          href: '/sav/reclamations',
+          needsProjet: true,
+          needsSociete: user.role === 1,
+        },
+      ],
+    },
+   {
+      label: 'Remise Des Clés',
+      icon: <Percent size={20} />,
+      href: '/remiseCles',
+      needsSociete: user.role === 1,
+      needsProjet: true,
+    },
     {
       label: 'Reclamations',
       icon: <FileText />,

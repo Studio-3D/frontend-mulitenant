@@ -69,7 +69,7 @@ export const fetchData_table_by_projet = async (
 
   try {
     const selectedProjet = JSON.parse(localStorage.getItem('selectedProjet')) || {};
-    const urlsSansProjet = ['ReclamationsClients', 'projets', 'typeProjets', 'sources', 'banques', 'typefreins'];
+    const urlsSansProjet = ['ReclamationsClients', 'projets', 'typeProjets', 'sources', 'banques', 'typefreins','creaneau_occupes_by_user_id'];
 
     if (!urlsSansProjet.includes(entity.API_URL)) {
       if (!selectedProjet?.id) {

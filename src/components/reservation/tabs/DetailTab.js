@@ -1,12 +1,8 @@
-import React, { useState, memo } from 'react';
+import React, { useState, memo, useEffect } from 'react';
 import LoadingSpin from '@/components/LoadingSpin';
 import Link from 'next/link';
-import {
-  isAdmin,
-  isSuperAdmin,
-  isCommercial,
-  getModeFinanceLabel,
-} from '@/configs/enum';
+import { isAdmin, isSuperAdmin,isCommercial,isRespoCommercial,isNotaire,isAgentAdministratif,isRespoLivraison, getModeFinanceLabel} from '@/configs/enum';
+
 import { useAuth } from '@/context/AuthContext';
 import { Clock, Edit, Eye, ThumbsDown, ThumbsUp, X } from 'lucide-react';
 import Button from '@/components/Button';
@@ -16,6 +12,9 @@ import Modal_Rejeter_Reservation from '@/app/(dashboard)/ventes/reservations/Mod
 import Modal_show_info from '@/app/(dashboard)/ventes/reservations/Modal_show_info';
 import { useRouter } from 'next/navigation';
 import Modal_Relance from '../Modal_Relance';
+import Modal_Affecte from '@/app/(dashboard)/ventes/reservations/Modal_Affecte';
+import axios from 'axios';
+import { APIURL } from '@/configs/api';
 
 // Define the component first
 const DetailTabComponent = ({
@@ -24,7 +23,9 @@ const DetailTabComponent = ({
   onReservationUpdate,
 }) => {
   const [open_dialog_rejete, setOpen_dialog_rejete] = useState(false);
-
+ const [notaires, setNotaires] = useState([]);
+    const [old_notaire_id, setNoraire_id] = useState(null);
+    const [open_affecte, setOpen_affecte] = useState(false);
   const router = useRouter();
   const { user } = useAuth();
   const [dst_id, set_dst_id] = useState(null);
@@ -56,6 +57,26 @@ const DetailTabComponent = ({
 
     return noms.join(' - ');
   }
+   const fetchNotaires = async () => {
+        await axios
+          .get(`${APIURL.ROOTV1}/notaires`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+            },
+          })
+          .then((res) => {
+            setNotaires(res.data.notaires);
+          })
+          .catch(() => {});
+      };
+    
+    useEffect(() => {
+      if(isSuperAdmin(user.role) ||
+              isAdmin(user.role) ||
+              isRespoLivraison(user.role)){
+              fetchNotaires();
+              }
+    }, []);
 
   // Add null checks and default values
   if (!reservationData) {
@@ -83,7 +104,7 @@ const DetailTabComponent = ({
       setOpen_info(true);
     }
   };
-
+  
   const handleEdit = (reservationId) => {
     window.localStorage.setItem('step_res_edit', 0);
     const editUrl = `${window.location.origin}/ventes/reservations/?id=${reservationId}&action=edit`;
@@ -120,6 +141,12 @@ const DetailTabComponent = ({
     setAvance(avance);
   };
 
+  const handle_affecte = (Id, code,old_notaire_id) => {
+    setOpen_affecte(!open_affecte);
+    setID(Id);
+    setCode_reservation(code);
+    setNoraire_id(old_notaire_id)
+  };
   const handle_rejeter = (Id, code) => {
     setOpen_r(!open_r);
     setID(Id);
@@ -134,6 +161,7 @@ const DetailTabComponent = ({
     setOpen_dialog_rejete(true);
   };
 
+   
   // Destructure the nested reservation object
   const { reservation } = reservationData;
 
@@ -250,17 +278,57 @@ const DetailTabComponent = ({
                       : 'Désister'}
                   </Button>
                 )}
+                
 
-              {reservation?.etat == 1 && reservation?.contrat_vente == null && (
-                <div className="flex justify-end">
-                  <Button
-                    type="edit"
-                    onClick={() => handleEdit(reservation.id)}
-                  >
-                    Modifier
-                  </Button>
-                </div>
-              )}
+              {((isSuperAdmin(user.role) || isAdmin(user.role)) &&
+                reservation?.etat == 1 &&
+                reservation?.contrat_vente == null) ||
+                (isCommercial(user.role) &&
+                  reservation?.statut == 0 &&
+                  reservation?.etat == 1 &&
+                  reservation?.contrat_vente == null) && (
+                  <div className="flex justify-end">
+                    <Button type="edit" onClick={() => handleEdit(reservation.id)}>
+                      Modifier
+                    </Button>
+                  </div>
+                )}
+
+             {(isSuperAdmin(user.role) ||
+            isAdmin(user.role) ||
+            isRespoLivraison(user.role)) &&
+            reservation.statut == 1 &&
+            sum_avances_valides > 0 &&
+            notaires?.length > 0 && (
+              <Button
+                type="button" // Keep as button since we'll override styles
+                onClick={() => handle_affecte(
+                  reservation.id,
+                  reservation.code_reservation,
+                  reservation.notaire_id
+                )}
+                className={`!px-3 !py-1 text-sm ${
+                  reservation.notaire_id 
+                    ? '!bg-blue-600 hover:!bg-blue-700 text-white' 
+                    : '!bg-green-600 hover:!bg-green-700 text-white'
+                }`}
+                title={
+                  reservation.notaire_id!=null
+                    ? "Modifier le notaire" 
+                    : "Affecter un notaire"
+                }
+              >
+                {reservation.notaire_id ? (
+                  <>
+                    Modifier Notaire
+                  </>
+                ) : (
+                  <>
+                    Affecter Notaire
+                  </>
+                )}
+              </Button>
+          )}
             </>
           )}
         </div>
@@ -379,6 +447,45 @@ const DetailTabComponent = ({
                           )}
                         </p>
                       </div>
+                      {reservation.notaire_id!=null && (
+                          <div>
+                        <p className="text-sm text-gray-500">
+                          Notaire
+                        </p>
+                        <p className="font-medium">
+                          {' '}
+                          {isSuperAdmin(user.role) || isAdmin(user.role) ? (
+                            <>
+                              {reservation?.notaire && (
+                                <>
+                                  <Link
+                                    target="_blank"
+                                    href={
+                                      '/Utilisateurs/afficher-utilisateur/' +
+                                      reservation.notaire?.user_id_origin
+                                    }
+                                    style={{
+                                      textDecoration: 'none',
+                                    }}
+                                  >
+                                    <strong>
+                                      {reservation.notaire.name}{' '}
+                                      {reservation.notaire.prenom}
+                                    </strong>
+                                  </Link>
+                                  <br />
+                                </>
+                              )}
+                            </>
+                          ) : (
+                            reservation.notaire.name +
+                            ' ' +
+                            reservation.notaire.prenom
+                          )}
+                        </p>
+                      </div>
+                      )}
+                    
                     </>
                   )}
                 </div>
@@ -452,7 +559,9 @@ const DetailTabComponent = ({
                       <p className="font-medium text-blue-500">
                         {reservation?.prix?.toLocaleString() + ' DH'}
                       </p>
-                      {reservation?.etat == 1 &&
+                                     
+
+                      {(isSuperAdmin(user.role) || isAdmin(user.role)) &&reservation?.etat == 1 &&
                         reservation?.contrat_vente == null && (
                           <button
                             onClick={() => handleEdit_Prix(reservation.id)}
@@ -568,6 +677,21 @@ const DetailTabComponent = ({
           </Modal>
         </>
       )}
+      {open_affecte && (
+              <>
+                <Modal isVisible={true} onClose={() => setOpen_r(false)}>
+                  <Modal_Affecte
+                    res_show={true} // Add this
+                    old_notaire_id={old_notaire_id}
+                    code_reservation={code_reservation}
+                    id={ID}
+                    notaires={notaires}
+                    onReservationUpdate={onReservationUpdate} // Add this
+                    onClose={() => setOpen_affecte(false)}
+                  />
+                </Modal>
+              </>
+            )}
       {open_r && (
         <>
           <Modal isVisible={true} onClose={() => setOpen_r(false)}>

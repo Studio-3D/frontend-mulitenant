@@ -41,7 +41,8 @@ import {
   SIDEBAR_ITEMS,
 } from './calendar-constants';
 import LoadingSpin from '@/components/LoadingSpin';
-
+import { isAdmin, isSuperAdmin,isCommercial } from '@/configs/enum';
+import { useRouter } from 'next/navigation';
 const toTitleCase = (str) =>
   str.replace(
     /\w\S*/g,
@@ -51,6 +52,7 @@ const toTitleCase = (str) =>
 import { useAuth } from '../../context/AuthContext';
 import { useProjet } from '@/context/ProjetContext';
 export const Calendar = () => {
+     const router = useRouter();
   const { user } = useAuth();
   const [users, setUsers] = useState([]);
   const [activeTab, setActiveTab] = useState(user?.role == 3 ? -1 : 0); // Set initial tab to user ID
@@ -87,6 +89,21 @@ export const Calendar = () => {
   const selectedProjet_id =selectedProjet?.id
 
   const hasExecuted = useRef(false);
+const userRole = user?.role;
+    
+      useEffect(() => {
+        if (
+          user && 
+          !isAdmin(userRole) &&
+          !isSuperAdmin(userRole) &&
+          !isCommercial(userRole)
+        ) {
+          router.push('/');
+        }else{
+     fetchData(activeTab);
+
+        }
+      }, [user, userRole, router,selectedProjet_id, currentDate, activeTab]);
 
   useEffect(() => {
     if (user?.role >= 2) {
@@ -94,11 +111,7 @@ export const Calendar = () => {
       hasExecuted.current = true;
     }
   }, []);
-  useEffect(() => {
-    // Use the activeTab instead of hardcoded 0
-    fetchData(activeTab);
-  }, [selectedProjet_id, currentDate, activeTab]); // Add activeTab to dependencies
-
+ 
   useEffect(() => {
     const filtered = applyFilter(events, activeFilter);
     setFilteredEvents(filtered);
@@ -376,7 +389,10 @@ export const Calendar = () => {
           <LoadingSpin />
         </div>
       )}
-
+  {(isAdmin(userRole) ||isCommercial(userRole)) && (
+    <>
+    
+    
       {/* User tabs for role >= 2 */}
       {user?.role >= 2 && (
         <div className="w-full mb-4">
@@ -514,6 +530,8 @@ export const Calendar = () => {
           {renderView()}
         </div>
       </div>
+    </>
+  )}
     </div>
   );
 };

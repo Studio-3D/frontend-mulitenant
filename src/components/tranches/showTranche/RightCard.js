@@ -654,7 +654,7 @@ const TAB_CONFIG = {
       return {
         data_to_export: massEditData,
         columns_export: massEditColumns,
-        name_file_export: 'biens_export_mass_edit',
+        name_file_export: 'export_biens_a_modifier',
       };
     },
   },
@@ -1666,7 +1666,7 @@ export const RightCard = ({
                   </button>
                   <p className="text-xs text-gray-500 mt-2">
                     Fichier :{' '}
-                    {exportConfig?.name_file_export || 'biens_export_mass_edit'}
+                    {exportConfig?.name_file_export || 'export_biens_a_modifier'}
                     .xlsx
                   </p>
                 </div>

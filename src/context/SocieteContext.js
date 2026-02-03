@@ -3,7 +3,7 @@ import { createContext, useState, useContext, useEffect } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useAuth } from "./AuthContext";
-import { isSuperAdmin, isAdmin, isCommercial } from "@/configs/enum";
+import { isSuperAdmin, isAdmin, isCommercial ,isNotaire,isRespoLivraison,isComptable,isSav,isRespoCommercial,isAgentAdministratif} from "@/configs/enum";
 import { APIURL } from "@/configs/api";
 
 const SocieteContext = createContext();
@@ -82,7 +82,9 @@ export function SocieteProvider({ children }) {
         return;
       }
 
-      if (user && (isAdmin(user.role) || isCommercial(user.role))) {
+     // if (user && (isAdmin(user.role) || isCommercial(user.role)|| isNotaire(user.role)|| isRespoLivraison(user.role)|| isComptable(user.role)|| isSav(user.role)|| isRespoCommercial(user.role)|| isAgentAdministratif(user.role))) {
+             if (user && ( !isSuperAdmin(user.role))) {
+
         if (user.societe) {
           const userSociete = user.societe;
           setSocietes([userSociete]);

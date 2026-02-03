@@ -326,6 +326,18 @@ const ProfileContent = ({ userId }) => {
                 ? 'Admin'
                 : userData.role === 3
                 ? 'Commercial'
+                 : userData.role ===5 
+                ? 'Notaire'
+                : userData.role ===6
+                ? 'Responsable Livraison'
+                 : userData.role ===7
+                ? 'Comptable'
+                  : userData.role ===8
+                ? 'Service Après-Vente'
+                 : userData.role ===9
+                ? 'Responsable Commercial'
+                 : userData.role ===10
+                ? 'Agent Administratif'
                 : 'Utilisateur'}
             </div>
           </div>
@@ -438,14 +450,27 @@ const ProfileContent = ({ userId }) => {
             label="Role:"
             name="role"
             value={
-              formik.values.role === 1
+              formik.values.role == 1
                 ? 'Super Admin'
-                : formik.values.role === 2
+                : formik.values.role == 2
                 ? 'Admin'
-                : formik.values.role === 3
+                : formik.values.role == 3
                 ? 'Commercial'
-                : 'Utilisateur'
+                  :  formik.values.role ==5 
+                ? 'Notaire'
+                :  formik.values.role ==6
+                ? 'Responsable Livraison'
+                :  formik.values.role ==7
+                 ? 'Comptable'
+                  :  formik.values.role ==8
+                ? 'Service Après-Vente'
+                : formik.values.role ===9
+                ? 'Responsable Commercial'
+                 : formik.values.role ===10
+                ? 'Agent Administratif'
+                : 'Utilisateur' 
             }
+            
             readOnly
           />
           <SelectInput

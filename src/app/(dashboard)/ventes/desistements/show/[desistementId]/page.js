@@ -9,7 +9,7 @@ import { APIURL } from '../../../../../../configs/api';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import TextField from '@/components/Textfield';
-import { type_dst } from '@/configs/enum';
+import { isAdmin, isCommercial, isSuperAdmin, type_dst } from '@/configs/enum';
 import { useAuth } from '../../../../../../context/AuthContext';
 import { fetchData_Select } from '../../../../../../../src/configs/api-utils';
 import { type_dst_dp } from '@/configs/enum';
@@ -116,6 +116,17 @@ export default function Page() {
       setLoading((prev) => ({ ...prev, form: false, general: false }));
     }
   };
+    const userRole = user?.role;
+        useEffect(() => {
+          if (
+            !isAdmin(userRole) &&
+            !isSuperAdmin(userRole) &&
+            !isCommercial(userRole)
+          ) {
+            router.push('/');
+          }
+        }, [router]);
+        
 
   // Simple cache et comparaison for return back en cas de changer projet
   const [oldProjetId, setOldProjetId] = useState(null);
