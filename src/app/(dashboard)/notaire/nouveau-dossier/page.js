@@ -81,7 +81,7 @@ const Nouveau_Dossier = ({}) => {
       setLoadingNotaires(true);
       try {
         await axios
-              .get(`${APIURL.ROOTV1}/notaires`, {
+              .get(`${APIURL.ROOTV1}/projets/${selectedProjet?.id}/notaires`, {
                 headers: {
                   Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
                 },

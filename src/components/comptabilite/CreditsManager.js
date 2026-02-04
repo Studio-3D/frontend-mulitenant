@@ -307,7 +307,7 @@ const CreditsManager = ({}) => {
       />
 
       {showFormModal && (
-        <Modal isVisible={true} onClose={handleFormCancel}>
+        <Modal isVisible={true} onClose={handleFormCancel} maxWidth='max-w-3xl'>
           <CreditsForm
             credit={currentCredit}
             onSave={handleFormSave}

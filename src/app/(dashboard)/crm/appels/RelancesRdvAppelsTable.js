@@ -145,11 +145,9 @@ const RelancesRdvAppelsTable = (type) => {
       return {
         id: pro.id,
         cc: pro.traite_appel.user.name + ' ' + pro.traite_appel.user.prenom,
-        nomComplet: `${
-          pro.traite_appel.appel.prospect.nom +
-          ' ' +
-          pro.traite_appel.appel.prospect.prenom
-        }`.trim(),
+        nomComplet: `${pro.traite_appel.appel.prospect.nom == null || pro.traite_appel.appel.prospect.nom === "null" ? "" : pro.traite_appel.appel.prospect.nom}${
+          pro.traite_appel.appel.prospect.prenom == null || pro.traite_appel.appel.prospect.prenom === "null" ? "" : " " + pro.traite_appel.appel.prospect.prenom
+        }`.trim(),        
         prospect_id: pro.traite_appel.appel.prospect.id,
         cin: pro.traite_appel.appel.prospect.cin,
         telephone:
@@ -285,10 +283,8 @@ const RelancesRdvAppelsTable = (type) => {
       return {
         cc: pro.traite_appel.user.name + ' ' + pro.traite_appel.user.prenom,
 
-        nomComplet: `${
-          pro.traite_appel.appel.prospect.nom +
-          ' ' +
-          pro.traite_appel.appel.prospect.prenom
+         nomComplet: `${pro.traite_appel.appel.prospect.nom == null || pro.traite_appel.appel.prospect.nom === "null" ? "" : pro.traite_appel.appel.prospect.nom}${
+          pro.traite_appel.appel.prospect.prenom == null || pro.traite_appel.appel.prospect.prenom === "null" ? "" : " " + pro.traite_appel.appel.prospect.prenom
         }`.trim(),
         cin: pro.traite_appel.appel.prospect.cin,
         telephone:

@@ -319,6 +319,13 @@ const Menu = () => {
     },
    
   ];
+   {/*
+        label: 'Relances',
+        icon: <FileText />,
+        href: '/notaire/Rendez-vous/relance',
+        needsProjet: true,
+        needsSociete: user.role === 1,
+      */}
    const getRespoLivraisonItems = () => [
      {
     label: 'Affectations',
@@ -345,13 +352,7 @@ const Menu = () => {
         needsProjet: true,
         needsSociete: user.role === 1,
       },
-      {
-        label: 'Relance',
-        icon: <FileText />,
-        href: '/notaire/Rendez-vous/relance',
-        needsProjet: true,
-        needsSociete: user.role === 1,
-      },
+     
       {
         label: 'Attestation de Vente',
         icon: <FolderArchive />,
@@ -366,6 +367,13 @@ const Menu = () => {
         needsSociete: user.role === 1,
         needsProjet: true,
       },
+      {
+      label: 'Agenda',
+      icon: <TimerIcon />,
+      href: '/notaire/agenda',
+      needsSociete: user.role === 1,
+      needsProjet: false,
+    },
     ],
   },
   {
@@ -401,6 +409,13 @@ const Menu = () => {
         },
      
   ];
+    {/*
+          label: 'Relances',
+          icon: <FileText />,
+          href: '/notaire/Rendez-vous/relance',
+          needsProjet: true,
+          needsSociete: user.role === 1,
+        */}
   const getNotaireItems = () => [
    
       {
@@ -417,13 +432,7 @@ const Menu = () => {
           needsProjet: true,
           needsSociete: user.role === 1,
         },
-        {
-          label: 'Relances',
-          icon: <FileText />,
-          href: '/notaire/Rendez-vous/relance',
-          needsProjet: true,
-          needsSociete: user.role === 1,
-        },
+      
     {
       label: 'Attestation de Vente',
       icon: <FolderArchive />,
@@ -439,9 +448,9 @@ const Menu = () => {
       needsProjet: true,
     },
      {
-      label: 'Créneaux',
+      label: 'Agenda',
       icon: <TimerIcon />,
-      href: '/notaire/creneaux-occupes',
+      href: '/notaire/agenda',
       needsSociete: user.role === 1,
       needsProjet: false,
     },

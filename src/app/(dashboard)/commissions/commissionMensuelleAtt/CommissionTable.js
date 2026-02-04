@@ -525,10 +525,12 @@ const CommissionTable = () => {
           onConfigClick={handleconfigClick}
         />
         {showConfigModal && (
-          <Modal isVisible={true} onClose={() => setShowConfigModal(false)}>
+          <Modal isVisible={true} onClose={() => setShowConfigModal(false)}maxWidth="max-w-4xl" // Largeur plus grande pour le formulaire
+>
             <CommissionConfigForm
               onClose={() => setShowConfigModal(false)}
               onSuccess={() => setShowConfigModal(false)} // juste fermer le modal
+
             />
           </Modal>
         )}

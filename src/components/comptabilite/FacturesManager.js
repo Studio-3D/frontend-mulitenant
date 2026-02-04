@@ -328,7 +328,7 @@ const FacturesManager = ({
       />
 
       {showFormModal && (
-        <Modal isVisible={true} onClose={handleFormCancel}>
+        <Modal isVisible={true} onClose={handleFormCancel} maxWidth='max-w-3xl'>
           <FacturesForm
             facture={currentFacture}
             decompteId={decompteId}

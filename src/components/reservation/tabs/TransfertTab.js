@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { FolderSearch, ArrowUp, ArrowDown } from 'lucide-react';
 import Table from '@/components/Table';
-import { APIURL } from '../../../configs/api';
-import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { format } from 'date-fns';
-import Modal from '@/components/Modal';
-import DeleteData from '@/components/DeleteData';
 import Link from 'next/link';
 import { fetchData_table_by_id } from '@/configs/api-utils';
 import Input from '@/components/Input';

@@ -2,7 +2,7 @@ import React, { useState, memo, useEffect } from 'react';
 import LoadingSpin from '@/components/LoadingSpin';
 import Link from 'next/link';
 import { isAdmin, isSuperAdmin,isCommercial,isRespoCommercial,isNotaire,isAgentAdministratif,isRespoLivraison, getModeFinanceLabel} from '@/configs/enum';
-
+import { useProjet } from '@/context/ProjetContext';
 import { useAuth } from '@/context/AuthContext';
 import { Clock, Edit, Eye, ThumbsDown, ThumbsUp, X } from 'lucide-react';
 import Button from '@/components/Button';
@@ -22,6 +22,8 @@ const DetailTabComponent = ({
   sum_avances_valides,
   onReservationUpdate,
 }) => {
+    const { selectedProjet } = useProjet();
+  
   const [open_dialog_rejete, setOpen_dialog_rejete] = useState(false);
  const [notaires, setNotaires] = useState([]);
     const [old_notaire_id, setNoraire_id] = useState(null);
@@ -59,7 +61,7 @@ const DetailTabComponent = ({
   }
    const fetchNotaires = async () => {
         await axios
-          .get(`${APIURL.ROOTV1}/notaires`, {
+          .get(`${APIURL.ROOTV1}/projets/${selectedProjet?.id}/notaires`, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
             },

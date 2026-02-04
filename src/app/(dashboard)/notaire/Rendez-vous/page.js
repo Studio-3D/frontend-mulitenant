@@ -106,7 +106,7 @@ export default function RelancesRdv_notaire({ type }) {
     if (isRespoLivraison(userRole)) {    
       setLoadingNotaires(true);
       try {
-        const response = await axios.get(`${APIURL.ROOTV1}/notaires`, {
+        const response = await axios.get(`${APIURL.ROOTV1}/projets/${selectedProjet?.id}/notaires`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
           },

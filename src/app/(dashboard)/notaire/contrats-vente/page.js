@@ -108,7 +108,7 @@ export default function Contrat_vente({ title = "Contrats de Vente" }) {
     if (isRespoLivraison(userRole)) {    
       setLoadingNotaires(true);
       try {
-        const response = await axios.get(`${APIURL.ROOTV1}/notaires`, {
+          const response = await axios.get(`${APIURL.ROOTV1}/projets/${selectedProjet?.id}/notaires`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
           },
@@ -274,7 +274,7 @@ export default function Contrat_vente({ title = "Contrats de Vente" }) {
 
   const columns = [
     { key: "code_reservation", label: "Code Réservation" },
-    { key: "num_titre", label: "Num titre" },
+    { key: "num_titre", label: "titre foncier" },
     {
       key: "bien",
       label: "Bien",

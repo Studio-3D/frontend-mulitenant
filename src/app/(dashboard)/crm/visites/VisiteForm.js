@@ -2355,7 +2355,7 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
     !watch('loading_b_pre');
   return (
     <div>
-      <Modal isVisible={open_D_P} onClose={() => handleCloseD_P()}>
+      <Modal isVisible={open_D_P} onClose={() => handleCloseD_P()} maxWidth = 'max-w-2xl'>
         <Modal_OldVisites_Perdu
           open={open_D_P}
           onClose={handleCloseD_P}

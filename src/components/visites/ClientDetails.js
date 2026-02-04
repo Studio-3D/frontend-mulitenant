@@ -117,7 +117,7 @@ export function ClientDetails({ Prospect }) {
 
       {openDialog && (
         <>
-          <Modal isVisible={true} onClose={() => setOpenDialog(false)}>
+          <Modal isVisible={true} onClose={() => setOpenDialog(false)}maxWidth="max-w-2xl">
             <ProspectFormDialog
               id={Prospect?.id}
               onClose={() => setOpenDialog(false)}

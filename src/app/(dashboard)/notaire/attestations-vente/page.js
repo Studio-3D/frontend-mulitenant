@@ -18,6 +18,7 @@ import { APIURL } from "@/configs/api";
 import MenuNotaires from "../MenuNotaires";
 
 export default function Attestation_vente({ title = "Attestations de Vente" }) {
+
   const { user, token } = useAuth();
   const userRole = user?.role;
   const accesstoken = token || localStorage.getItem("accessToken");
@@ -113,7 +114,7 @@ export default function Attestation_vente({ title = "Attestations de Vente" }) {
     if (isRespoLivraison(userRole)) {    
       setLoadingNotaires(true);
       try {
-        const response = await axios.get(`${APIURL.ROOTV1}/notaires`, {
+        const response = await axios.get(`${APIURL.ROOTV1}/projets/${selectedProjet?.id} /notaires`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
           },
@@ -296,7 +297,7 @@ export default function Attestation_vente({ title = "Attestations de Vente" }) {
 
   const columns = [
     { key: "code_reservation", label: "Code Réservation" },
-    { key: "num_titre", label: "Num titre" },
+    { key: "num_titre", label: "titre foncier" },
     {
       key: "bien",
       label: "Bien",

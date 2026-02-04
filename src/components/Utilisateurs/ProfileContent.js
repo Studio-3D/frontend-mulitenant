@@ -508,13 +508,15 @@ const ProfileContent = ({ userId }) => {
             onChange={formik.handleChange}
             readOnly={!isEditing}
           />
-          <DateInput
+          <Input
             label="Date embauche:"
+            type='date'
             name="date_embauche"
             value={formik.values.date_embauche}
-            onChange={(date) => formik.setFieldValue('date_embauche', date)}
+            onChange={formik.handleChange}
             readOnly={!isEditing}
           />
+         
           <Input
             label="CIN:"
             name="cin"

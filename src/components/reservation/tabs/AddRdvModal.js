@@ -6,6 +6,7 @@ import axios from "axios";
 import { X, Calendar, Clock, CheckCircle, AlertCircle } from "lucide-react";
 import { APIURL } from "../../../configs/api";
 import Pusher from "pusher-js";
+import Modal from "@/components/Modal";
 
 const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
   const [selectedSlot, setSelectedSlot] = useState(null);
@@ -201,7 +202,7 @@ const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
     channel.bind("Rendez_vous_Prop", (data) => {
       console.log("Received Pusher event:", data);
 
-      if (data.reservationId == reservation_id) {
+     // if (data.reservationId == reservation_id) {
         console.log("Matching reservation ID, refreshing...");
 
         const view = calendarApi.view;
@@ -225,7 +226,7 @@ const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
             extendedProps: { isSelection: true },
           });
         }
-      }
+      //
     });
 
     // Debugging connection state
@@ -293,7 +294,6 @@ const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
   if (!open) return null;
 
   return (
-   <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
   <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[200vh] flex flex-col">
     {/* Header */}
     <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-4 text-white sticky top-0 z-10">
@@ -351,23 +351,24 @@ const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
             selectOverlap={(event) => {
               return event.extendedProps?.disponible !== false;
             }}
-            slotMinTime="08:00:00"
-            slotMaxTime="18:00:00"
+            slotMinTime="09:00:00"
+            slotMaxTime="17:00:00"
             events={fetchEvents}
             locale="fr"
             firstDay={1}
-            weekends={false}
+            weekends={true}
             businessHours={{
-              daysOfWeek: [1, 2, 3, 4, 5],
-              startTime: "08:00",
-              endTime: "18:00",
+              daysOfWeek: [1, 2, 3, 4, 5,6],
+              startTime: "09:00",
+              endTime: "17:00",
             }}
             dayHeaderFormat={{
               weekday: "short",
               day: "numeric",
               month: "short",
             }}
-            hiddenDays={[0, 6]}
+            hiddenDays={[0]}  // Cacher dimanche
+
             nowIndicator={true}
             unselectAuto={false}
           />
@@ -375,7 +376,13 @@ const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
       </div>
 
       {showDetailModal && selectedSlot && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <Modal
+            maxWidth='max-w-xl'
+                isVisible={showDetailModal}
+               
+                 onClose={handleCloseDetail}
+            >
+ <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-4 text-white sticky top-0">
               <div className="flex justify-between items-center">
@@ -513,10 +520,12 @@ const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
             </div>
           </div>
         </div>
+            </Modal>
+       
       )}
     </div>
   </div>
-</div>
+
   );
 };
 

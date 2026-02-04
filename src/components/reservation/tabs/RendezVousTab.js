@@ -80,12 +80,31 @@ const [isAddingRelance, setIsAddingRelance] = useState(false);
   const etatRes = reservationData?.reservation?.etat;
   const contratVente = reservationData?.reservation?.contrat_vente;
   const [isLoading, setIsLoading] = useState(true);
-  const [listStatut, setListStatut] = useState([
+  const [listStatut] = useState([
     { title: 'En_Attente', value: 1 },
     { title: 'Traite', value: 2 },
     { title: 'Non_traite', value: 3 }, // Changed from 'Raté' to 'Non_traite'
+    { title: 'Annulé Automatique', value: 4 }, // Changed from 'Raté' to 'Non_traite'
+
   ]);
 
+// Fonction simple pour formater l'heure
+const formatTimeFromBackend = (dateString) => {
+  if (!dateString) return '';
+  
+  try {
+    const date = new Date(dateString);
+    
+    // Extraire directement les composants d'heure
+    const hours = date.getUTCHours().toString().padStart(2, '0');
+    const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+    
+    return `${hours}:${minutes}`;
+  } catch (error) {
+    console.error('Error formatting time:', error);
+    return '';
+  }
+};
   // Dialog states
   const [openAddRdv, setOpenAddRdv] = useState(false);
   const [openEditRdv, setOpenEditRdv] = useState(false);
@@ -361,7 +380,7 @@ const handleAddProchaineRelance = async () => {
     e.preventDefault();
     const formData = new FormData();
     formData.append('statut', traiterAction === 'oui' ? 2 : 3); // 2 for Validé, 3 for Non_traite
-    if (traiterAction === 'non' && relanceComment) {
+    if (traiterAction !=null) {
       formData.append('commentaire', relanceComment);
     }
 
@@ -503,6 +522,8 @@ const loadRelancesHistory = async (rdvId) => {
                         ? 'bg-blue-50'
                         : rdv.statut == 3
                         ? 'bg-red-50'
+                        : rdv.statut == 4
+                        ? 'bg-gray-70'
                         : 'bg-gray-50'
                     }`}
                   >
@@ -512,8 +533,10 @@ const loadRelancesHistory = async (rdvId) => {
                           ? 'text-green-600'
                           : rdv.statut == 1
                           ? 'text-blue-500'
-                          : rdv.statut == 2
+                          : rdv.statut == 3
                           ? 'text-red-500'
+                          : rdv.statut == 4
+                          ? 'text-gray-800'
                           : 'text-gray-500'
                       }`}
                     />
@@ -526,7 +549,7 @@ const loadRelancesHistory = async (rdvId) => {
                     </h3>
                     <p className="text-sm text-gray-500">
                       {format(new Date(rdv.rdv), 'dd/MM/yyyy')} à{' '}
-                      {format(new Date(rdv.rdv), 'kk:mm')}
+                      {formatTimeFromBackend(rdv.rdv)}
                     </p>
                   </div>
                 </div>
@@ -573,7 +596,7 @@ const loadRelancesHistory = async (rdvId) => {
                       </button>
                       )}
                       
-                      {/* Relance button - show for past appointments or non-traite */}
+                      {/* Relance button - show for past appointments or non-traite 
                       {(rdv.statut ==  1 && user.role ==5 ) && (
                         <button
                           className="p-2 text-gray-500 hover:text-orange-500 transition-colors"
@@ -586,7 +609,7 @@ const loadRelancesHistory = async (rdvId) => {
                         >
                           <BellRingIcon className="h-4 w-4" />
                         </button>
-                      )}
+                      )}*/}
                     </>
                   )}
                 </div>
@@ -604,6 +627,13 @@ const loadRelancesHistory = async (rdvId) => {
                   <span className="font-medium w-24">Statut:</span>
                   <StatusBadge status={getStatut(rdv.statut)} />
                 </p>
+                {rdv.commentaire!=null&&(
+               <div className="flex items-center text-gray-600 mb-1">
+                  <span className="font-medium w-24">Commentaire:</span>
+                  <p>{rdv?.commentaire}</p>
+                </div>
+                )}
+                
                 {rdv.statut == 1 && (
                   <p className="flex items-center text-gray-600 mb-1">
                     <span className="font-medium w-24">Fiche:</span>
@@ -799,17 +829,24 @@ const loadRelancesHistory = async (rdvId) => {
         </div>
     </Modal>
     )}
-     <AddRdvModal
-        open={openAddRdv}
-        reservation_id={reservationId}
+    <Modal
+    maxWidth='max-w-5xl'
+        isVisible={openAddRdv}
         onClose={() => {
-            setOpenAddRdv(false);
+        setOpenAddRdv(false);
         }}
-        onRdvAdded={handleRdvAdded}
-        />
-
-      {/* Edit RDV Dialog */}
+    >
+      <AddRdvModal
       
+          open={openAddRdv}
+          reservation_id={reservationId}
+          onClose={() => {
+              setOpenAddRdv(false);
+          }}
+          onRdvAdded={handleRdvAdded}
+          />
+    </Modal>
+          {/* Edit RDV Dialog */}
 
       {/* Validation Dialog 
       {openValidation && (
@@ -1088,7 +1125,7 @@ const loadRelancesHistory = async (rdvId) => {
           </div>
 
           {/* Champ commentaire obligatoire si "Non" */}
-          {traiterAction === 'non' && (
+          {traiterAction !=null && (
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                Commentaire 
