@@ -6,7 +6,7 @@ import RemiseCleForm from './RemiseCleForm'
 import { useSearchParams } from 'next/navigation'
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { isAdmin, isSuperAdmin,isCommercial } from '@/configs/enum';
+import { isAdmin, isSuperAdmin,isCommercial, isRespoLivraison } from '@/configs/enum';
 
 export default function Page() {
   const ACTION = { EDIT: 'edit', ADD: 'add' }
@@ -20,7 +20,8 @@ export default function Page() {
           user && 
           !isAdmin(userRole) &&
           !isSuperAdmin(userRole) &&
-          !isCommercial(userRole)
+          !isCommercial(userRole)&&
+          !isRespoLivraison(userRole)
         ) {
           router.push('/');
         }

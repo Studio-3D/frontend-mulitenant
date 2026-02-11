@@ -461,7 +461,7 @@ const getShortTitle = () => {
 
   return (
     <>
-      <div className="relative bg-white rounded-lg p-4">
+      <div className="space-y-4">
         {/* Menu des notaires pour responsable livraison */}
         {isRespoLivraison(userRole) && (
           <MenuNotaires
@@ -471,6 +471,8 @@ const getShortTitle = () => {
             loading={loadingNotaires}
           />
         )}
+        </div>
+        <div className="bg-white rounded-lg p-4">
 
         <Table
           title={getShortTitle()} // Titre court

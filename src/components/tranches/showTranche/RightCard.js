@@ -1,8 +1,8 @@
 import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { StatusCard } from './StatusCard';
-import { Download, Eye, PencilLine, Trash2 } from 'lucide-react';
+import { Download, Eye, PencilLine, Trash2, X } from 'lucide-react';
 import Link from 'next/link';
-import { isAdmin, isSuperAdmin } from '@/configs/enum';
+import { isAdmin, isRespoLivraison, isSuperAdmin } from '@/configs/enum';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import SelectInput from '@/components/SelectInput';
@@ -534,7 +534,7 @@ const TAB_CONFIG = {
         'Superficie balcon calculée': item.superficie_balcon_calculer || 0,
         'Superficie jardin': item.superficie_jardin || 0,
         'Superficie jardin calculée': item.superficie_jardin_calculer || 0,
-        'Titre foncier': item.titre_foncier || 0,
+        'Titre foncier': item.titre_foncier || '',
         'Superficie totale': item.superficie_total || 0,
         'Superficie vendable': item.superficie_vendable || 0,
         // Données de la première composition seulement
@@ -677,6 +677,13 @@ export const RightCard = ({
   const [importErrors, setImportErrors] = useState([]);
   const [isImporting, setIsImporting] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+
+  /* import titre foncier*/
+      // 1. Ajouter un nouvel état pour le modal spécifique au titre foncier
+    const [showMassEditTitreModal, setShowMassEditTitreModal] = useState(false);
+    const [importTitreErrors, setImportTitreErrors] = useState([]);
+    const [isImportingTitre, setIsImportingTitre] = useState(false);
+    const [selectedTitreFile, setSelectedTitreFile] = useState(null);
 
   const { token, user } = useAuth();
   const router = useRouter();
@@ -1140,6 +1147,307 @@ export const RightCard = ({
 
     setSelectedFile(null);
   };
+   // Fonction pour exporter les biens pour modification en masse
+    // 2. Ajouter une fonction pour exporter le titre foncier seulement
+   const handleMassEditExportTitreFoncier = () => {
+      if (safeActiveTab === 'bien' && filteredItems.length > 0) {
+        // Créer un export spécifique avec seulement les colonnes nécessaires
+        const titreFoncierData = filteredItems.map((item) => ({
+          ID: item.id || '',
+          Nom: item.name || '',
+          Numero: item.numero || '',
+          Nom_projet: item.nom_projet || '',
+          // Inclure Tranche directement
+          Tranche: item.tranche_nom || '',
+          ...(nbre_blocs > 0 && { Bloc: item.bloc_nom || '' }),
+          ...(nbre_immeubles > 0 && { Immeuble: item.immeuble_nom || '' }),
+          'Titre foncier': item.titre_foncier || '',
+        }));
+
+        const titreFoncierColumns = [
+          { key: 'ID', label: 'ID' },
+          { key: 'Nom', label: 'Nom' },
+          { key: 'Numero', label: 'Numero' },
+          { key: 'Nom_projet', label: 'Projet' },
+          { key: 'Tranche', label: 'Tranche' },
+          ...(nbre_blocs > 0 ? [{ key: 'Bloc', label: 'Bloc' }] : []),
+          ...(nbre_immeubles > 0 ? [{ key: 'Immeuble', label: 'Immeuble' }] : []),
+          { key: 'Titre foncier', label: 'Titre foncier' },
+        ];
+
+        handleExportExcel(
+          titreFoncierData,
+          titreFoncierColumns,
+          'export_titre_foncier_a_modifier.xlsx'
+        );
+      }
+    };
+      // Fonction pour exporter les biens pour modification en masse titre
+      // 3. Fonction pour gérer l'import du titre foncier
+    const handleMassEditImportTitre = async (file) => {
+      if (!file) return;
+  
+      // Vérifier le type de fichier
+      if (!file.name.match(/\.(xlsx|xls)$/)) {
+        setImportTitreErrors([
+          {
+            id: 0,
+            msg: 'Veuillez sélectionner un fichier Excel (.xlsx ou .xls)',
+          },
+        ]);
+        return;
+      }
+  
+      // Vérifier la taille du fichier
+      if (file.size > 10 * 1024 * 1024) {
+        setImportTitreErrors([
+          { id: 0, msg: 'Le fichier est trop volumineux. Taille maximale: 10MB' },
+        ]);
+        return;
+      }
+  
+      try {
+        setIsImportingTitre(true);
+        setImportTitreErrors([]);
+  
+        const XLSX = await import('xlsx');
+        const reader = new FileReader();
+  
+        reader.onload = (e) => {
+          try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const sheetName = workbook.SheetNames[0];
+            const sheet = workbook.Sheets[sheetName];
+            const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+            let rows = XLSX.utils.sheet_to_json(sheet);
+            const rawHeaders = jsonData[0] || [];
+            const normalizedHeaders = rawHeaders.map((h) =>
+              h?.toString().trim().toLowerCase()
+            );
+  
+            let msg_error = [];
+            let err = 0;
+            let hasAtLeastOneTitre = false;
+            let rowsWithErrors = new Set();
+  
+            // Headers requis pour la modification du titre foncier
+            const requiredHeaders = ['id', 'titre foncier'];
+  
+            const missingHeaders = requiredHeaders.filter(
+              (h) => !normalizedHeaders.includes(h)
+            );
+  
+            if (missingHeaders.length > 0) {
+              msg_error.push({
+                id: 0,
+                msg: `Colonnes manquantes: ${missingHeaders.join(', ')}`,
+              });
+              err = 1;
+            }
+  
+            if (rows.length > 0) {
+              for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const rowNumber = i + 2; // +2 car la ligne 1 est l'en-tête dans Excel
+  
+                // Vérification des IDs
+                const id = row['ID'];
+                if (!id) {
+                  msg_error.push({
+                    id: rowNumber,
+                    msg: `Ligne ${rowNumber}: ID manquant`,
+                  });
+                  err = 1;
+                  rowsWithErrors.add(rowNumber);
+                }
+  
+                // Vérification du titre foncier
+                const titreFoncier = row['Titre foncier'];
+                
+                // Vérifier si le titre foncier existe et n'est pas vide
+                if (titreFoncier !== undefined && titreFoncier !== null && titreFoncier !== '') {
+                  const titreStr = titreFoncier.toString().trim();
+                  if (titreStr.length > 0) {
+                    hasAtLeastOneTitre = true;
+                  } else {
+                    // Titre foncier existe mais est vide (que des espaces)
+                    // On ne l'ajoute pas comme erreur si ce n'est pas une ligne avec ID manquant
+                    if (!rowsWithErrors.has(rowNumber)) {
+                      msg_error.push({
+                        id: rowNumber,
+                        msg: `Ligne ${rowNumber}: Titre foncier vide`,
+                      });
+                      err = 1;
+                    }
+                  }
+                } else {
+                  // Titre foncier manquant ou undefined/null
+                  // C'est acceptable tant qu'au moins une ligne a un titre foncier
+                  // On ne l'ajoute pas comme erreur
+                }
+              }
+  
+              // Vérification supplémentaire: au moins un titre foncier doit être présent dans le fichier
+              if (!hasAtLeastOneTitre) {
+                msg_error.push({
+                  id: 0,
+                  msg: 'Aucun titre foncier valide trouvé dans le fichier. Veuillez fournir au moins un titre foncier.',
+                });
+                err = 1;
+              }
+  
+              if (err === 1 || msg_error.length > 0) {
+                setImportTitreErrors(msg_error);
+              } else {
+                // Filtrer les lignes pour ne garder que celles avec un titre foncier valide
+                const validRows = rows.filter(row => {
+                  const titreFoncier = row['Titre foncier'];
+                  return titreFoncier !== undefined && 
+                        titreFoncier !== null && 
+                        titreFoncier !== '' && 
+                        titreFoncier.toString().trim().length > 0;
+                });
+  
+                if (validRows.length > 0) {
+                  console.log(`${validRows.length} lignes valides avec titre foncier`);
+                  // Envoyer les données au backend pour le titre foncier
+                  sendMassEditTitreDataToBackend(validRows, file);
+                } else {
+                  setImportTitreErrors([{ 
+                    id: 0, 
+                    msg: 'Aucune ligne avec titre foncier valide trouvée.' 
+                  }]);
+                }
+              }
+            } else {
+              setImportTitreErrors([{ id: 0, msg: 'Le fichier est vide' }]);
+            }
+          } catch (error) {
+            console.error('Erreur lors du traitement du fichier:', error);
+            setImportTitreErrors([
+              { id: 0, msg: 'Erreur lors de la lecture du fichier Excel' },
+            ]);
+          } finally {
+            setIsImportingTitre(false);
+          }
+        };
+  
+        reader.onerror = () => {
+          setImportTitreErrors([{ id: 0, msg: 'Erreur de lecture du fichier' }]);
+          setIsImportingTitre(false);
+        };
+  
+        reader.readAsArrayBuffer(file);
+      } catch (error) {
+        console.error("Erreur lors de l'import:", error);
+        setImportTitreErrors([{ id: 0, msg: "Erreur lors de l'import du fichier" }]);
+        setIsImportingTitre(false);
+      }
+    };
+  
+    // fonction pour envoyer les donne au backend titre fncier
+    // 4. Fonction pour envoyer les données du titre foncier au backend
+    const sendMassEditTitreDataToBackend = async (jsonData, file) => {
+      try {
+        setIsImportingTitre(true); // Démarre le chargement
+        
+        const dataToSend = new FormData();
+        dataToSend.append('projet_id', projetId);
+        dataToSend.append('jsonData', JSON.stringify(jsonData));
+  
+        if (file != null) {
+          dataToSend.append('piece_jointe', file);
+        }
+  
+        const response = await axios.post(
+          `${APIURL.ROOTV1}/upload_excel_titre_foncier_en_masse`,
+          dataToSend,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+            },
+            // Optionnel: ajouter un timeout et suivre la progression
+            onUploadProgress: (progressEvent) => {
+              if (progressEvent.total) {
+                const percentCompleted = Math.round(
+                  (progressEvent.loaded * 100) / progressEvent.total
+                );
+                console.log(`Progression de l'upload: ${percentCompleted}%`);
+                // Vous pouvez aussi mettre à jour un état pour afficher la progression
+                // setUploadProgress(percentCompleted);
+              }
+            },
+          }
+        );
+  
+        // Succès
+        setImportTitreErrors([]);
+        setShowMassEditTitreModal(false);
+        resetTitreImportInterface();
+        
+        toast.success(
+          `Import du titre foncier programmé avec succès, consulter l'historique des imports pour plus de détails`
+        );
+        
+       
+      } catch (error) {
+        console.error("Erreur lors de l'envoi des données:", error);
+        const errorMessage =
+          error.response?.data?.error || "Erreur lors de l'import";
+        setImportTitreErrors([{ id: 0, msg: errorMessage }]);
+        
+        // Afficher une notification d'erreur
+        toast.error(`Erreur lors de l'import: ${errorMessage}`);
+      } finally {
+        setIsImportingTitre(false); // Arrête le chargement
+      }
+    };
+  // 5. Fonction pour réinitialiser l'interface d'import titre foncier
+    const resetTitreImportInterface = () => {
+      const fileInput = document.getElementById('titre-file-drop-zone-input');
+      if (fileInput) {
+        fileInput.value = '';
+      }
+  
+      const dropZone = document.getElementById('titre-file-drop-zone');
+      if (dropZone) {
+        dropZone.innerHTML = `
+          <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+          </svg>
+          <p class="text-sm text-gray-600">
+            <span class="text-green-600 font-medium">Cliquez pour sélectionner</span> ou glissez-déposez votre fichier
+          </p>
+          <p class="text-xs text-gray-500 mt-1">
+            Formats acceptés: .xlsx, .xls
+          </p>
+        `;
+      }
+  
+      setSelectedTitreFile(null);
+    };
+    // 6. Fonction pour mettre à jour l'affichage du fichier titre foncier
+  const updateTitreFileDisplay = (file) => {
+    const dropZone = document.getElementById('titre-file-drop-zone');
+    if (dropZone && file) {
+      dropZone.innerHTML = `
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <div class="text-left">
+            <p class="text-sm font-medium text-gray-700">${file.name}</p>
+            <p class="text-xs text-gray-500">${(file.size / 1024 / 1024).toFixed(2)} MB</p>
+          </div>
+        </div>
+        <p class="text-xs text-green-600 mt-2">Fichier sélectionné avec succès</p>
+      `;
+    }
+  };
+
   // Fonction pour exporter les biens pour modification en masse
   const handleMassEditExport = () => {
     if (safeActiveTab === 'bien' && TAB_CONFIG.bien.massEditExportConfig) {
@@ -1375,11 +1683,13 @@ export const RightCard = ({
   };
 
   // Configuration pour l'action personnalisée de modification en masse
-  const massEditAction = useMemo(() => {
-    if (safeActiveTab === 'bien') {
+  const userRole = user?.role;
+   // Configuration pour l'action personnalisée de modification en masse
+   const massEditAction = useMemo(() => {
+     if (safeActiveTab === 'bien' && (isAdmin(userRole) ||isSuperAdmin(userRole) ))  {
       return {
         label: 'Modifier en masse',
-        className: 'bg-purple-600 hover:bg-purple-700',
+        className: 'bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 h-10 min-h-[40px] text-sm', // Ajouté text-sm
         onClick: () => {
           setImportErrors([]); // ← Réinitialiser les erreurs
           setShowMassEditModal(true);
@@ -1390,13 +1700,31 @@ export const RightCard = ({
     return null;
   }, [safeActiveTab]);
 
-  const customActions = useMemo(() => {
-    const actions = [];
-    if (massEditAction) {
-      actions.push(massEditAction);
-    }
-    return actions;
-  }, [massEditAction]);
+   //7-8 Configuration pour l'action personnalisée du titre foncier
+   const massEditTitreAction = useMemo(() => {
+     if (safeActiveTab === 'bien' && (isAdmin(userRole) || isSuperAdmin(userRole)||isRespoLivraison(userRole))) {
+       return {
+         label: 'Titres fonciers', // Texte raccourci
+         className: 'bg-black hover:bg-gray-800 text-white px-3 py-2 h-10 min-h-[40px] text-sm whitespace-nowrap', // whitespace-nowrap
+         onClick: () => {
+           setImportTitreErrors([]);
+           setShowMassEditTitreModal(true);
+         },
+         icon: <PencilLine className="w-4 h-4" />, // Taille réduite
+       };
+     }
+     return null;
+   }, [safeActiveTab, userRole]);
+   const customActions = useMemo(() => {
+     const actions = [];
+     if (massEditAction) {
+       actions.push(massEditAction);
+     }
+     if (massEditTitreAction) {
+     actions.push(massEditTitreAction);
+     }
+     return actions;
+   }, [massEditAction,massEditTitreAction]);
 
   const exportConfig = useMemo(() => {
     if (!TAB_CONFIG[safeActiveTab]?.exportConfig) return null;
@@ -1542,6 +1870,249 @@ export const RightCard = ({
             tranche_id_get={trancheId}
           />
           {/* Delete Confirmation Modal    */}
+           {/**Modifie en mass titre foncier   9. Ajouter le modal pour le titre foncier dans le JSX*/}
+                    {showMassEditTitreModal && (
+                      <Modal
+                      maxWidth='max-w-xl'
+                        isVisible={true}
+                        onClose={() => {
+                          setShowMassEditTitreModal(false);
+                          setSelectedTitreFile(null);
+                          setImportTitreErrors([]);
+                          resetTitreImportInterface();
+                        }}
+                      >
+                        <div className="p-6 max-w-2xl">
+                          <div className="flex items-center justify-between mb-4">
+                            <h2 className="text-xl font-semibold text-gray-800">
+                              Modification du titre foncier en masse
+                            </h2>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setShowMassEditTitreModal(false);
+                                setSelectedTitreFile(null);
+                                setImportTitreErrors([]);
+                                resetTitreImportInterface();
+                              }}
+                              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+                              title="Fermer"
+                            >
+                              <X className="w-5 h-5" />
+                            </button>
+                          </div>
+          
+                          {/* Messages d'information */}
+                          <div className="space-y-4 mb-6">
+                            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                              <h3 className="font-medium text-blue-800 mb-2 flex items-center gap-2">
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                </svg>
+                                Comment modifier les titres fonciers en masse ?
+                              </h3>
+                              <ol className="list-decimal list-inside space-y-2 text-blue-700 text-sm">
+                                <li className="font-medium">
+                                  Exportez le fichier Excel contenant seulement les titres fonciers
+                                </li>
+                                <li className="font-medium">
+                                  Modifiez la colonne Titre foncier dans Excel
+                                </li>
+                                <li className="font-medium">
+                                  Importez le fichier modifié via la zone de dépôt
+                                </li>
+                              </ol>
+                            </div>
+          
+                            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                              <div className="flex items-start gap-2">
+                                <svg className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                </svg>
+                                <div className="text-yellow-700 text-sm">
+                                  <strong>Important :</strong>
+                                  <ul className="list-disc list-inside mt-1 ml-2 space-y-1">
+                                    <li>
+                                      Ne modifiez pas la colonne <strong>ID</strong> dans le fichier Excel.
+                                    </li>
+                                    <li>
+                                      Seule la colonne <strong>Titre foncier</strong> sera mise à jour.
+                                    </li>
+                                  </ul>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+          
+                          {/* Section d'export */}
+                          <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
+                            <h3 className="font-medium text-gray-700 mb-3">
+                              Étape 1 : Exporter les données
+                            </h3>
+                            <p className="text-gray-600 text-sm mb-4">
+                              Téléchargez le fichier Excel contenant les titres fonciers de vos biens.
+                            </p>
+                            <button
+                              onClick={handleMassEditExportTitreFoncier}
+                              className="w-full px-4 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-900 flex items-center justify-center gap-2 transition-colors"
+                            >
+                              <Download className="w-5 h-5" />
+                              <span className="font-medium">
+                                Exporter les titres fonciers
+                              </span>
+                            </button>
+                            <p className="text-xs text-gray-500 mt-2">
+                              Fichier : export_titre_foncier_a_modifier.xlsx
+                            </p>
+                          </div>
+          
+                          {/* Section d'import */}
+                          <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                            <h3 className="font-medium text-green-700 mb-3">
+                              Étape 2 : Importer les modifications
+                            </h3>
+                            <p className="text-green-600 text-sm mb-4">
+                              Importez le fichier Excel avec les titres fonciers modifiés.
+                            </p>
+          
+                            {/* Zone de dépôt de fichier */}
+                            <div className="mb-4">
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Sélectionnez votre fichier Excel modifié
+                              </label>
+                              <div className="flex items-center gap-3">
+                                <input
+                                  type="file"
+                                  id="titre-file-drop-zone-input"
+                                  accept=".xlsx, .xls"
+                                  className="hidden"
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      setImportTitreErrors([]);
+                                      setSelectedTitreFile(file);
+                                      updateTitreFileDisplay(file);
+                                    }
+                                  }}
+                                />
+                                <label
+                                  htmlFor="titre-file-drop-zone-input"
+                                  className="flex-1 cursor-pointer"
+                                >
+                                  <div
+                                    id="titre-file-drop-zone"
+                                    className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-green-400 hover:bg-green-25 transition-colors"
+                                  >
+                                    <svg className="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                    </svg>
+                                    <p className="text-sm text-gray-600">
+                                      <span className="text-green-600 font-medium">Cliquez pour sélectionner</span> ou glissez-déposez votre fichier
+                                    </p>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                      Formats acceptés : .xlsx, .xls
+                                    </p>
+                                  </div>
+                                </label>
+                              </div>
+                            </div>
+          
+                            {/* File info and import button */}
+                           {selectedTitreFile && (
+                            <div className="flex justify-center mt-4">
+                              <button
+                                onClick={() => handleMassEditImportTitre(selectedTitreFile)}
+                                disabled={isImportingTitre}
+                                className={`px-6 py-3 rounded-lg font-medium flex items-center gap-3 transition-all ${
+                                  isImportingTitre
+                                    ? 'bg-gray-400 cursor-not-allowed'
+                                    : 'bg-green-600 hover:bg-green-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
+                                } text-white`}
+                              >
+                                {isImportingTitre ? (
+                                  <>
+                                    <svg
+                                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <circle
+                                        className="opacity-25"
+                                        cx="12"
+                                        cy="12"
+                                        r="10"
+                                        stroke="currentColor"
+                                        strokeWidth="4"
+                                      ></circle>
+                                      <path
+                                        className="opacity-75"
+                                        fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                      ></path>
+                                    </svg>
+                                    Import en cours...
+                                  </>
+                                ) : (
+                                  <>
+                                    <svg
+                                      className="w-5 h-5"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                                      />
+                                    </svg>
+                                    Importer les titres fonciers modifiés
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          )}
+          
+                            {/* Informations sur le format */}
+                            <div className="mt-3 p-3 bg-white rounded border">
+                              <h4 className="font-medium text-gray-700 text-sm mb-2">
+                                Colonnes attendues :
+                              </h4>
+                              <ul className="text-xs text-gray-600 space-y-1">
+                                <li>• ID (obligatoire)</li>
+                                <li>• Titre foncier (colonne à modifier)</li>
+                                <li>• Les autres colonnes (Nom, Numero, etc.) servent seulement de référence</li>
+                              </ul>
+                            </div>
+                          </div>
+          
+                          {/* Affichage des erreurs */}
+                          {importTitreErrors.length > 0 && (
+                            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                              <h4 className="font-medium text-red-700 mb-2">
+                                Erreurs détectées :
+                              </h4>
+                              <ul className="text-red-600 text-sm space-y-1 max-h-32 overflow-y-auto">
+                                {importTitreErrors.map((error, index) => (
+                                  <li key={index}>• {error.msg}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+          
+                          {/* Indicateur de progression */}
+                          <div className="mt-6 pt-4 border-t border-gray-200">
+                            <div className="flex items-center justify-between text-sm text-gray-500">
+                              <span className="font-medium text-green-600">
+                             ✓ Total des Biens :{filteredItems.length} 
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </Modal>
+                    )}
           {showDeleteModal && (
             <Modal isVisible={true} onClose={() => setShowDeleteModal(false)}>
               <DeleteData
@@ -1567,6 +2138,7 @@ export const RightCard = ({
           )}
           {showMassEditModal && (
             <Modal
+          
               isVisible={true}
               onClose={() => {
                 setShowMassEditModal(false);
@@ -1576,9 +2148,24 @@ export const RightCard = ({
               }}
             >
               <div className="p-6 max-w-2xl">
-                <h2 className="text-xl font-semibold mb-4 text-gray-800">
-                  Modification en masse des biens
-                </h2>
+                             <div className="flex items-center justify-between mb-4">
+                                 <h2 className="text-xl font-semibold text-gray-800">
+                                   Modification en masse des biens
+                                 </h2>
+                                 <button
+                                   type="button"
+                                   onClick={() => {
+                                     setShowMassEditModal(false);
+                                     setSelectedFile(null);
+                                     setImportErrors([]);
+                                     resetImportInterface();
+                                   }}
+                                   className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+                                   title="Fermer"
+                                 >
+                                   <X className="w-5 h-5" />
+                                 </button>
+                               </div>
 
                 {/* Messages d'information */}
                 <div className="space-y-4 mb-6">

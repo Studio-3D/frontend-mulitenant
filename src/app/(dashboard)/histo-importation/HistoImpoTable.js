@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { APIURL, ENDPOINTS, RESOURCE_URL } from "@/configs/api";
 import { fetchData_table_by_projet } from "@/configs/api-utils";
-import { isAdmin, isSuperAdmin } from "@/configs/enum";
+import { isAdmin, isRespoLivraison, isSuperAdmin } from "@/configs/enum";
 import { useAuth } from "@/context/AuthContext";
 import Input from "@/components/Input";
 import { useProjet } from "@/context/ProjetContext"; // Import ProjetContext
@@ -15,6 +15,7 @@ import ProjetDialog from "@/components/ProjetDialog"; // Import ProjetDialog
 import { format } from "date-fns";
 import { Trash2 , File, Eye, Download } from "lucide-react";
 import SelectInput from "@/components/SelectInput";
+import Link from "next/link";
 
 const HistoImpoTable = () => {
   const [histoImportations, sethistoImportations] = useState([]);
@@ -81,16 +82,25 @@ const getStatutBadge = (statutValue) => {
       if (!isOpen) resetFilters(); // Si on ferme, on réinitialise
     };
 
-    function handleShow(Id) {
-      router.push(`/histo-importation/${Id}`);
-  }
+ 
 
-    const handleFileClick = file => {
-    window.open(
-      `${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/Import_fichier/${file}`,
-      '_blank'
-    )
+    const handleFileClick = (file, type) => {
+  let folderName;
+      console.log('type==>',type)
+  if (type =='1') {
+    folderName = 'Import_fichier_en_masse';
+  } else if (type == '0') {
+    folderName = 'Import_fichier';
+  } else {
+    // Valeur par défaut si type n'est pas spécifié
+    folderName = 'Import_fichier';
   }
+  
+  window.open(
+    `${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/${folderName}/${file}`,
+    '_blank'
+  );
+};
   useEffect(() => {
 
     fetchData_table_by_projet(
@@ -139,7 +149,7 @@ const getStatutBadge = (statutValue) => {
     render: (row) => (
       <span
         className="text-sm hover:text-blue-600 cursor-pointer"
-        onClick={() => handleFileClick(row.fichier)}
+        onClick={() => handleFileClick(row.fichier,row.type)}
       >
         {row.fichier}
       </span>
@@ -158,7 +168,7 @@ const getStatutBadge = (statutValue) => {
         {/* Download button - always visible */}
         <button
           title="Télécharger le fichier"
-          onClick={() => handleFileClick(row.fichier)}
+          onClick={() =>  handleFileClick(row.fichier,row.type)}
           className="text-blue-500 hover:text-blue-700 transition-colors"
         >
           <Download className="w-4 h-4" />
@@ -166,28 +176,31 @@ const getStatutBadge = (statutValue) => {
 
 
         {/* Visualiser button - redirect to details page */}
-        <button
-          title="Voir les détails"
-          onClick={() => handleShow(row.id)}
-          className="text-green-500 hover:text-green-700 transition-colors"
-        >
-          <Eye className="w-4 h-4" />
-        </button>
+       
+         <Link
+            href={`/histo-importation/${row.id}`}
+            className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+            title="Voir les détails"
+          >
+            <Eye className="w-4 h-4" />
+          </Link>
 
         {/* Remove button - only for "en_attente" status (0) */}
 
-        {row.statut == 0 && (
+        {row.statut == 0 && (isAdmin(user?.role)|| isSuperAdmin(user?.role)|| isRespoLivraison(user?.role)) &&(
           <button
-            className="text-red-500 hover:text-red-700 transition-colors"
-            onClick={() => {
-              setSelectedId(row.id);
-              setShowDeleteModal(true);
-            }}
-            title="Supprimer"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
-        )}
+                className="text-red-500 hover:text-red-700 transition-colors"
+                      onClick={() => {
+                        setSelectedId(row.id);
+                        setShowDeleteModal(true);
+                      }}
+                      title="Supprimer"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+        )
+         
+        }
       </div>
     ),
   },

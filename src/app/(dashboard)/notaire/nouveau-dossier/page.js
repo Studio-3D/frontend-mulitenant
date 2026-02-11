@@ -360,7 +360,7 @@ const Nouveau_Dossier = ({}) => {
           <Table
             title={
               selectedNotaireId && selectedNotaireName
-                ? `Dossiers du notaire ${selectedNotaireName}`
+                ? `Dossiers du  ${selectedNotaireName}`
                 : isRespoLivraison(userRole)
                 ? "Liste des Nouveaux Dossiers - Tous les notaires"
                 : "Mes Nouveaux Dossiers"

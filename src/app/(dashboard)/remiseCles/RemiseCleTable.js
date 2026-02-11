@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 
 import { APIURL, ENDPOINTS, RESOURCE_URL } from '@/configs/api';
 import { fetchData_table_by_projet } from '@/configs/api-utils';
-import { isAdmin, isCommercial, isSuperAdmin } from '@/configs/enum';
+import { isAdmin, isCommercial, isRespoLivraison, isSuperAdmin } from '@/configs/enum';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import { Pencil, Trash2, Eye } from 'lucide-react';
@@ -45,9 +45,7 @@ const RemiseCleTable = ({searchParams}) => {
     searchFields: ['nom'],
   };
 
-  function handleShow(Id) {
-    router.push(`/ventes/reservations/${Id}`);
-  }
+
 
   const handleFilterToggle = (isOpen) => {
     if (!isOpen) resetFilters(); // Si on ferme, on réinitialise
@@ -204,10 +202,15 @@ const RemiseCleTable = ({searchParams}) => {
             />
           </div>
           <div title="Détail du Vente">
-            <Eye
-              className="w-4 h-4 !text-blue-500 hover:text-yellow-700 cursor-pointer"
-              onClick={() => handleShow(row.id_res)}
-            />
+             <Link
+                                  href={`/ventes/reservations/${row.id_res}`}
+                                  className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+                                  title="Voir les détails"
+                                >
+                                  <Eye className="w-4 h-4" />
+               </Link>
+                      
+          
           </div>
           <div title="Supprimer">
             <Trash2
@@ -321,7 +324,8 @@ const RemiseCleTable = ({searchParams}) => {
         addLink={
           isSuperAdmin(user.role) ||
           isAdmin(user.role) ||
-          isCommercial(user.role)
+          isCommercial(user.role)||
+          isRespoLivraison(user.role)
             ? `${ENDPOINTS.REMISECLES}?action=add`
             : undefined
         }

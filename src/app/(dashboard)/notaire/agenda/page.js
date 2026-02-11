@@ -336,9 +336,9 @@ const handleSelectNotaire = (notaireId, notaireNom = "") => {
     }
   }
 };
-   // Initialiser Pusher pour les mises à jour en temps réel
-    useEffect(() => {
-      if (!pusherKey) {
+
+ const pusher_function = () => {
+ if (!pusherKey) {
         console.error("Pusher key is missing");
         return;
       }
@@ -359,41 +359,14 @@ const handleSelectNotaire = (notaireId, notaireNom = "") => {
       const channel = pusher.subscribe("creneau-updates");
   
       console.log("Subscribing to creneau-updates channel...");
-  
-      channel.bind("CreneauAdded", (data) => {
-        console.log("Received CreneauAdded event:", data);
-        
-        if (calendarApi) {
-          const view = calendarApi.view;
-          refreshCalendar({
-            start: view.activeStart,
-            end: view.activeEnd
-          });
-        }
-      });
-  
-      channel.bind("CreneauDeleted", (data) => {
-        console.log("Received CreneauDeleted event:", data);
-        
-        if (calendarApi) {
-          const view = calendarApi.view;
-          refreshCalendar({
-            start: view.activeStart,
-            end: view.activeEnd
-          });
-        }
-      });
-  
-      channel.bind("CreneauUpdated", (data) => {
-        console.log("Received CreneauUpdated event:", data);
-        
-        if (calendarApi) {
-          const view = calendarApi.view;
-          refreshCalendar({
-            start: view.activeStart,
-            end: view.activeEnd
-          });
-        }
+      channel.bind("Rendez_vous_Prop", (data) => {
+      
+        const view = calendarApi.view;
+        refreshCalendar({
+          start: view.activeStart,
+          end: view.activeEnd,
+          timeZone: view.calendar.getOption("timeZone"),
+        });
       });
   
       // Debugging connection state
@@ -407,6 +380,10 @@ const handleSelectNotaire = (notaireId, notaireNom = "") => {
         channel.unsubscribe();
         pusher.disconnect();
       };
+   };
+   // Initialiser Pusher pour les mises à jour en temps réel
+    useEffect(() => {
+     pusher_function()
     }, [calendarApi, pusherKey]);
   
   // Charger les créneaux au montage
@@ -431,7 +408,7 @@ useEffect(() => {
       fetchCreneaux(start, end, selectedNotaireId);
     }
   }
-}, [userRole, selectedNotaireId]);
+}, [userRole, selectedNotaireId,selectedProjet]);
   // Handler pour le clic sur une date du calendrier
 // Handler pour le clic sur une date du calendrier
 const handleDateClick = (clickInfo) => {
@@ -767,6 +744,7 @@ const handleSlotClick = (clickInfo) => {
       });
       
       setSuccess("Créneau ajouté avec succès");
+      pusher_function()
       
       // Rafraîchir le calendrier
       if (calendarRef.current) {
@@ -858,7 +836,7 @@ const handleSlotClick = (clickInfo) => {
       });
       
       setSuccess("Créneau modifié avec succès");
-      
+      pusher_function()
       // Rafraîchir le calendrier
       if (calendarRef.current) {
         const calendarApi = calendarRef.current.getApi();
@@ -907,7 +885,7 @@ const handleSlotClick = (clickInfo) => {
       });
 
       setSuccess("Créneau supprimé avec succès");
-      
+      pusher_function()
       // Rafraîchir le calendrier
       if (calendarRef.current) {
         const calendarApi = calendarRef.current.getApi();
@@ -1073,7 +1051,7 @@ const handleSlotClick = (clickInfo) => {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Date et heure de début *
+                      Date et heure de début <span className="text-red-500 ml-1">*</span>
                     </label>
                     <input
                       type="datetime-local"
@@ -1088,7 +1066,7 @@ const handleSlotClick = (clickInfo) => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Date et heure de fin *
+                      Date et heure de fin <span className="text-red-500 ml-1">*</span>
                     </label>
                     <input
                       type="datetime-local"
@@ -1104,7 +1082,7 @@ const handleSlotClick = (clickInfo) => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Type de rendez-vous *
+                    Type  <span className="text-red-500 ml-1">*</span>
                   </label>
                   <SelectInput
                     placeholder="Sélectionner un type"
@@ -1205,7 +1183,7 @@ const handleSlotClick = (clickInfo) => {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Date et heure de début *
+                      Date et heure de début <span className="text-red-500 ml-1">*</span>
                     </label>
                     <input
                       type="datetime-local"
@@ -1220,7 +1198,7 @@ const handleSlotClick = (clickInfo) => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Date et heure de fin *
+                      Date et heure de fin <span className="text-red-500 ml-1">*</span>
                     </label>
                     <input
                       type="datetime-local"
@@ -1236,7 +1214,7 @@ const handleSlotClick = (clickInfo) => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Type de rendez-vous *
+                    Type<span className="text-red-500 ml-1">*</span>
                   </label>
                   <SelectInput
                     placeholder="Sélectionner un type"
@@ -1250,6 +1228,14 @@ const handleSlotClick = (clickInfo) => {
                   />
                 </div>
               </div>
+               {error && (
+                <div className="mb-4 bg-red-50 border-l-4 border-red-500 p-4">
+                  <div className="flex items-center">
+                    <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
+                    <p className="text-red-700">{error}</p>
+                  </div>
+                </div>
+              )}
               
 
               <div className="flex justify-end space-x-3">

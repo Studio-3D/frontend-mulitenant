@@ -474,6 +474,7 @@ const ProfileContent = ({ userId }) => {
             readOnly
           />
           <SelectInput
+            
             label="Genre"
             name="gender"
             options={[
@@ -482,7 +483,7 @@ const ProfileContent = ({ userId }) => {
             ]}
             value={formik.values.gender}
             onChange={(value) => formik.setFieldValue('gender', value)}
-            readOnly={!isEditing}
+            disabled={!isEditing}
             required={isEditing}
             error={
               formik.touched.gender || formik.submitCount > 0
@@ -499,7 +500,7 @@ const ProfileContent = ({ userId }) => {
             ]}
             value={formik.values.is_actif}
             onChange={(value) => formik.setFieldValue('is_actif', value)}
-            readOnly={!isEditing}
+            disabled={!isEditing}
           />
           <Input
             label="Fonction:"
@@ -564,6 +565,7 @@ const ProfileContent = ({ userId }) => {
               Projets 
             </label>
             <SelectInput
+            disabled={!isEditing}
               isMulti
               label=""
               placeholder="Sélectionnez des projets"

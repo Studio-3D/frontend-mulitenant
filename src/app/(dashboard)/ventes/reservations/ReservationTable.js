@@ -350,14 +350,15 @@ const ReservationTable = ({ dataClient, user_id,searchParams }) => {
       label: "Actions",
       render: (row) => (
         <div className="flex gap-3 items-center">
-     
-           <Link
+               <div title="Détail du Vente">
+               <Link
                       href={`/ventes/reservations/${row.id}`}
                       className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
                       title="Voir les détails"
                     >
                       <Eye className="w-4 h-4" />
                     </Link>
+              </div>
           
 
             {(isSuperAdmin(userRole) ||
@@ -538,7 +539,7 @@ const ReservationTable = ({ dataClient, user_id,searchParams }) => {
         date_reservation: item.date_reservation
           ? formatDate(item.date_reservation)
           : "",
-        bien: item.bien?.propriete_dite_bien || "",
+        bien: NomBienComplet(item?.bien )|| "",
         prix: item.prix ? `${item.prix.toLocaleString()} DH` : "",
         avance: item.avances_sum_montant
           ? `${item.avances_sum_montant.toLocaleString()} DH`

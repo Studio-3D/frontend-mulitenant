@@ -6,7 +6,7 @@ import { RightCard } from './RightCard';
 import { APIURL } from '@/configs/api';
 import { useProjet } from '@/context/ProjetContext';
 import { useAuth } from '@/context/AuthContext';
-import { isAdmin, isSuperAdmin,isCommercial } from '@/configs/enum';
+import { isAdmin, isSuperAdmin,isCommercial, isRespoLivraison } from '@/configs/enum';
 import axios from 'axios';
 import Modal from '@/components/Modal';
 import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
@@ -61,7 +61,8 @@ export const ProjectDetailsPage = () => {
           user && 
           !isAdmin(userRole) &&
           !isSuperAdmin(userRole) &&
-          !isCommercial(userRole)
+          !isCommercial(userRole)&&
+          !isRespoLivraison(userRole)
         ) {
           router.push('/');
         }

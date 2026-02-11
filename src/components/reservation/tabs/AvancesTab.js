@@ -884,7 +884,7 @@ export const AvancesTab = ({
                       </button>
                     )}
                   </>
-                ) : user?.role == 3 && Number(row.statut != 1) ? (
+                ) : (user?.role == 3||user?.role == 5||user?.role == 6||user?.role == 9) && Number(row.statut != 1) ? (
                   <button
                     className="p-1 text-yellow-500 hover:text-yellow-700"
                     onClick={() => handleEdit(row.id)}
@@ -1132,7 +1132,7 @@ export const AvancesTab = ({
       </div>
       {etat_res == 1 && (
         <>
-          {user?.role <= 3 && reste_first > 0 && (
+          {(user?.role <= 3|| user?.role==9|| user?.role==5||user?.role==6)&& reste_first > 0 && (
             <button
               onClick={handleAdd}
               className="px-4 py-2 rounded-md flex items-center bg-[rgb(26,21,120)] text-white hover:bg-indigo-700"
