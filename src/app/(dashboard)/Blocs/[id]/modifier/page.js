@@ -22,7 +22,7 @@ export default function EditBlocPage() {
   // Redirect if user doesn't have permission
   useEffect(() => {
     if (user && !canEditBloc) {
-      router.push("/Projets");
+      router.push("/projets");
     }
   }, [user, canEditBloc, router]);
 

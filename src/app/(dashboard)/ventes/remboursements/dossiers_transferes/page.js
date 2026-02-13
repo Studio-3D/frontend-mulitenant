@@ -136,7 +136,7 @@ const RemboDosTable = () => {
             render: (row) => (
               <Link
                 target="_blank"
-                href={`/Utilisateurs/afficher-utilisateur/${row.desistement_not_trashed?.user?.id}`}
+                href={`/utilisateurs/afficher-utilisateur/${row.desistement_not_trashed?.user?.id}`}
                 // className="text-blue-500 hover:text-blue-800"
               >
                 <strong style={{ fontWeight: 600 }}>

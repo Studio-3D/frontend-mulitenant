@@ -489,7 +489,7 @@ export default function BienImport({
                           Merci d{"'"}ajouter une tranche en cliquant sur le
                           lien suivant{' '}
                           <a
-                            href={`/Tranches/ajouter?projet=${selectedProjet?.id}`}
+                            href={`/tranches/ajouter?projet=${selectedProjet?.id}`}
                             className="text-red-600 underline"
                           >
                             Lien

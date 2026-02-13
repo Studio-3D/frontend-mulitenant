@@ -356,7 +356,7 @@ function InfoSection({ dossier }) {
     <span style={labelStyle}>{label}</span>
     {label === 'Propriete dite bien' && val ? (
       <a 
-        href={`/Biens/${d?.reservation?.bien_id}`} 
+        href={`/biens/${d?.reservation?.bien_id}`} 
         style={{ 
           fontSize: '13px', 
           color: '#4f46e5', 

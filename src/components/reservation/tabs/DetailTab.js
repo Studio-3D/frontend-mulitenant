@@ -426,7 +426,7 @@ const DetailTabComponent = ({
                                   <Link
                                     target="_blank"
                                     href={
-                                      '/Utilisateurs/afficher-utilisateur/' +
+                                      '/utilisateurs/afficher-utilisateur/' +
                                       reservation.user.id
                                     }
                                     style={{
@@ -463,7 +463,7 @@ const DetailTabComponent = ({
                                   <Link
                                     target="_blank"
                                     href={
-                                      '/Utilisateurs/afficher-utilisateur/' +
+                                      '/utilisateurs/afficher-utilisateur/' +
                                       reservation.notaire?.user_id_origin
                                     }
                                     style={{
@@ -504,7 +504,7 @@ const DetailTabComponent = ({
                     <p className="font-medium">
                       <Link
                         target="_blank"
-                        href={'/Biens/' + reservation?.bien_id}
+                        href={'/biens/' + reservation?.bien_id}
                         style={{
                           textDecoration: 'none',
                         }}

@@ -22,7 +22,7 @@ export default function AddTranchePage() {
   // Redirect if user doesn't have permission
   useEffect(() => {
     if (user && !canCreateTranche) {
-      router.push("/Projets");
+      router.push("/projets");
     }
   }, [user, canCreateTranche, router]);
 
@@ -67,7 +67,7 @@ export default function AddTranchePage() {
     return (
       <div className="bg-red-50 p-4 rounded-md border-l-4 border-red-500 !text-red-700">
         <p className="font-medium">Accès refusé</p>
-        <p>Vous n'avez pas les droits nécessaires pour ajouter une tranche.</p>
+        <p>Vous n{"'"}avez pas les droits nécessaires pour ajouter une tranche.</p>
       </div>
     );
   }

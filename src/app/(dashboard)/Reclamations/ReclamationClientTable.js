@@ -263,7 +263,7 @@ const ReclamationTable = ({}) => {
        
 
             <Link
-              href={`/Reclamations/show/${row.id}`}
+              href={`/reclamations/show/${row.id}`}
               className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
               title="Voir les détails"
             >

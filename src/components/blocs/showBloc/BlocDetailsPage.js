@@ -101,7 +101,7 @@ export const BlocDetailsPage = () => {
    useEffect(() => {
  // console.log('projet_id==>'+ selectedProjet?.id + 'w projet d tranche'+trancheData?.tranche?.projet_id)
   if(blocData?.bloc?.projet_id!=undefined && selectedProjet?.id!=blocData?.bloc?.projet_id){
-    router.push('/Projets/'+selectedProjet?.id)
+    router.push('/projets/'+selectedProjet?.id)
   }
 }, [selectedProjet?.id, blocData?.bloc?.projet_id]);
 
@@ -127,7 +127,7 @@ export const BlocDetailsPage = () => {
 
   // Handle edit action
   const handleEdit = () => {
-    router.push(`/Blocs/${id}/modifier`);
+    router.push(`/blocs/${id}/modifier`);
   };
 
   // Handle delete action
@@ -144,15 +144,15 @@ export const BlocDetailsPage = () => {
         `tranche-${blocData?.bloc?.tranche_id}-activeTab`,
         'blocs'
       );
-      router.push(`/Tranches/${blocData?.bloc?.tranche_id}`);
+      router.push(`/tranches/${blocData?.bloc?.tranche_id}`);
     } else if (blocData?.bloc?.projet_id) {
       localStorage.setItem(
         `project-${blocData?.bloc?.projet_id}-activeTab`,
         'blocs'
       );
-      router.push(`/Projets/${blocData?.bloc?.projet_id}`);
+      router.push(`/projets/${blocData?.bloc?.projet_id}`);
     } else {
-      router.push('/Projets');
+      router.push('/projets');
     }
   };
 
@@ -405,7 +405,7 @@ export const BlocDetailsPage = () => {
           <div className="text-red-500 text-xl font-semibold mb-4">Error</div>
           <div className="text-gray-600 mb-6">{error}</div>
           <button
-            onClick={() => router.push('/Projets')}
+            onClick={() => router.push('/projets')}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
           >
             Return to Projects
@@ -421,7 +421,7 @@ export const BlocDetailsPage = () => {
         <div className="text-center">
           <div className="text-xl font-semibold mb-4">Bloc Not Found</div>
           <button
-            onClick={() => router.push('/Projets')}
+            onClick={() => router.push('/projets')}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
           >
             Return to Projects
@@ -436,18 +436,18 @@ export const BlocDetailsPage = () => {
       {/* Breadcrumbs */}
       <div className="mb-4">
         <BreadCrumb
-          onRoot={{ href: '/Projets' }}
+          onRoot={{ href: '/projets' }}
           items={[
             blocData?.bloc?.projet
               ? {
                   label: blocData.bloc.projet.nom,
-                  href: `/Projets/${blocData.bloc.projet_id}`,
+                  href: `/projets/${blocData.bloc.projet_id}`,
                 }
               : null,
             blocData?.bloc?.tranche
               ? {
                   label: blocData.bloc.tranche.nom,
-                  href: `/Tranches/${blocData.bloc.tranche_id}`,
+                  href: `/tranches/${blocData.bloc.tranche_id}`,
                 }
               : null,
             { label: blocData?.bloc?.nom || 'Bloc' },

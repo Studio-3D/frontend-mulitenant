@@ -94,7 +94,7 @@ export function SideBar({
               <div className="text-sm !text-gray-500">Bien:</div>
               <div className="font-medium">
                 {" "}
-                <Link href={"/Biens/" + bien_id} target="_blank">
+                <Link href={"/biens/" + bien_id} target="_blank">
                   <strong style={{ fontWeight: 600 }}>
                     {NomBienComplet(bien)}
                   </strong>

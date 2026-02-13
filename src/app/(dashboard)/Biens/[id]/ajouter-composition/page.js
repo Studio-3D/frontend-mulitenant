@@ -61,7 +61,7 @@ const CompositionForm = ({}) => {
       toast.success("Composition ajouté avec succès");
       // Navigate to the specific page instead of using router.back()
       router.back()
-     // router.push(`/Biens/${id}`); // Adjust this path as needed
+     // router.push(`/biens/${id}`); // Adjust this path as needed
     } catch (error) {
       console.error("Error submitting form:", error);
 
@@ -92,7 +92,7 @@ const CompositionForm = ({}) => {
       <div className="flex items-center justify-start">
         {/* Use a proper path instead of router.back() */}
         <BreadCrumb
-          baseUrl={`/Biens/${id}`} // Fixed: Use the actual path
+          baseUrl={`/biens/${id}`} // Fixed: Use the actual path
           step="Ajouter une composition de bien"
         />
       </div>

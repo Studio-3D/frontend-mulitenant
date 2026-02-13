@@ -136,7 +136,7 @@ const RemiseCleTable = ({searchParams}) => {
             render: (row) => (
               <Link
                 target="_blank"
-                href={`/Utilisateurs/afficher-utilisateur/${row.user_id_remis}`}
+                href={`/utilisateurs/afficher-utilisateur/${row.user_id_remis}`}
                 style={{ textDecoration: 'none' }}
               >
                 <strong style={{fontWeight:600}}>
@@ -168,7 +168,7 @@ const RemiseCleTable = ({searchParams}) => {
       render: (row) => (
         <Link
           target="_blank"
-          href={`/Biens/${row.bien_id}`}
+          href={`/biens/${row.bien_id}`}
           style={{ textDecoration: 'none' }}
         >
            <strong style={{fontWeight:600}}>{NomBienComplet(row.bien)}</strong>

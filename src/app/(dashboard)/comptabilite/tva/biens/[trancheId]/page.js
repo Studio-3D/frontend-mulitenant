@@ -132,7 +132,7 @@ const TvaBiensPage = () => {
 
   const handleShowTvaCollecte = (bienId) => {
     localStorage.setItem('active_tab_bien_id', bienId);
-    window.open(`/Biens/${bienId}`, '_blank');
+    window.open(`/biens/${bienId}`, '_blank');
   };
 
   const columns = [
@@ -140,7 +140,7 @@ const TvaBiensPage = () => {
       key: 'propriete_dite_bien',
       label: 'Bien',
       render: (row) => (
-        <Link target="_blank" href={'/Biens/' + row.id}>
+        <Link target="_blank" href={'/biens/' + row.id}>
           <strong style={{ fontWeight: 600 }}>{row.propriete_dite_bien}</strong>
         </Link>
       ),

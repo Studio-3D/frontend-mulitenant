@@ -315,7 +315,7 @@ const Page = ({ user_id }) => {
       render: (row) => (
         <div className="flex gap-4 items-center text-sm">
           <Link
-            href={`/Projets/${row.id}`}
+            href={`/projets/${row.id}`}
             className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
             title="Voir le projet"
           >
@@ -325,7 +325,7 @@ const Page = ({ user_id }) => {
           {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
             <>
               <Link
-                href={`/Projets/editProject/${row.id}`}
+                href={`/projets/editProject/${row.id}`}
                 className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
                 title="Modifier le projet"
               >
@@ -359,7 +359,7 @@ const Page = ({ user_id }) => {
         addLink={
           user_id == null &&
           (isSuperAdmin(user?.role) || isAdmin(user?.role)
-            ? '/Projets/addProject'
+            ? '/projets/addProject'
             : undefined)
         }
         currentPage={currentPage}

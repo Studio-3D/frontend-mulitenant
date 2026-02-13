@@ -252,7 +252,7 @@ export default function RembTable({ etat }) {
       key: 'bien',
       label: 'Bien',
       render: (row) => (
-        <Link href={`/Biens/${row.bien_id}`} target="_blank">
+        <Link href={`/biens/${row.bien_id}`} target="_blank">
           <strong style={{ fontWeight: 600 }}>
             {NomBienComplet(row.bien)}
           </strong>
@@ -281,7 +281,7 @@ export default function RembTable({ etat }) {
             label: 'Responsable',
             render: (row) => (
               <Link
-                href={`/Utilisateurs/afficher-utilisateur/${row.responsable_id}`}
+                href={`/utilisateurs/afficher-utilisateur/${row.responsable_id}`}
                 // className="text-blue-500 hover:text-blue-700"
                 target="_blank"
               >

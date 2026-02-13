@@ -130,7 +130,7 @@ const Menu = () => {
       items.push({
         label: 'Societes',
         icon: <Building size={20} />,
-        href: '/Societes',
+        href: '/societes',
       });
     }
 
@@ -142,7 +142,7 @@ const Menu = () => {
       items.push({
         label: 'Projets',
         icon: <Briefcase size={20} />,
-        href: '/Projets',
+        href: '/projets',
         needsSociete: true && user.role == 1,
       });
     }
@@ -180,7 +180,7 @@ const Menu = () => {
     {
       label: 'Utilisateurs',
       icon: <UsersRound size={20} />,
-      href: '/Utilisateurs',
+      href: '/utilisateurs',
       needsSociete: user.role === 1,
     },
     {
@@ -327,7 +327,7 @@ const Menu = () => {
     {
       label: 'Projets',
       icon: <Briefcase size={20} />,
-      href: '/Projets',
+      href: '/projets',
       needsSociete: true && user.role == 1,
     },
     {
@@ -492,7 +492,7 @@ const Menu = () => {
     {
       label: 'Projets',
       icon: <Briefcase size={20} />,
-      href: '/Projets',
+      href: '/projets',
       needsSociete: true && user.role == 1,
     },
     {
@@ -607,7 +607,7 @@ const Menu = () => {
     {
       label: 'Reclamations',
       icon: <FileText />,
-      href: '/Reclamations',
+      href: '/reclamations',
       needsSociete: user.role === 1,
       needsProjet: true,
     },
@@ -628,7 +628,7 @@ const Menu = () => {
     {
       label: 'Statistiques',
       icon: <BarChart4 size={20} />,
-      href: '/Statistiques',
+      href: '/statistiques',
       needsProjet: true,
       needsSociete: user.role === 1,
     },

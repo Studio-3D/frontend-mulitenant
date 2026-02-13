@@ -25,7 +25,7 @@ const TAB_CONFIG = {
     apiEndpoint: APIURL.BIENS,
     addLink: (user, immeubleId, projetId) =>
       isSuperAdmin(user?.role) || isAdmin(user?.role)
-        ? `/Biens/ajouter?projet=${projetId}&immeuble=${immeubleId}`
+        ? `/biens/ajouter?projet=${projetId}&immeuble=${immeubleId}`
         : undefined,
     filters: (tabsData, immeubleId, nbre_tranches, nbre_blocs) => {
       // Get unique status values from the biens data
@@ -259,7 +259,7 @@ const TAB_CONFIG = {
         render: (row) => (
           <div className="flex gap-4 items-center text-sm">
             <Link
-              href={`/Biens/${row.id}`}
+              href={`/biens/${row.id}`}
               className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
               title="Voir le bien"
             >
@@ -269,7 +269,7 @@ const TAB_CONFIG = {
             {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
               <>
                 <Link
-                  href={`/Biens/${row.id}/modifier/?edit=true`}
+                  href={`/biens/${row.id}/modifier/?edit=true`}
                   className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
                   title="Modifier le bien"
                 >

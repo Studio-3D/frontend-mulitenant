@@ -91,7 +91,7 @@ const MENU_BY_ROLE = {
       bgColor: 'bg-indigo-600',
       textColor: 'text-indigo-600',
       iconBg: 'bg-indigo-50',
-      url: '/Projets',
+      url: '/projets',
       needsProjet: false,
     },
     {

@@ -197,7 +197,7 @@ const PreReservationTable = () => {
       label: 'Bien',
       render: (row) => {
         return (
-          <Link target="_blank" href={`/Biens/${row?.bien.id}`}            className="flex items-center gap-1 text-black-500 hover:text-black-700"
+          <Link target="_blank" href={`/biens/${row?.bien.id}`}            className="flex items-center gap-1 text-black-500 hover:text-black-700"
 >
             <strong style={{ fontWeight: 600 }}>
               {' '}

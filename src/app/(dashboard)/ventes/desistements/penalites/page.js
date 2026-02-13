@@ -237,7 +237,7 @@ export default function PenalitesTable() {
             label: 'CC',
             render: (row) => (
               <Link
-                href={`/Utilisateurs/afficher-utilisateur/${row.cc_id}`}
+                href={`/utilisateurs/afficher-utilisateur/${row.cc_id}`}
                 target="_blank"
               
               >

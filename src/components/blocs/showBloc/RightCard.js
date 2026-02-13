@@ -25,7 +25,7 @@ const TAB_CONFIG = {
     apiEndpoint: APIURL.IMMEUBLES,
     addLink: (user, trancheId, projetId, blocId) =>
       isSuperAdmin(user?.role) || isAdmin(user?.role)
-        ? `/Immeubles/ajouter?projet=${projetId}${
+        ? `/immeubles/ajouter?projet=${projetId}${
             blocId ? `&bloc=${blocId}` : ''
           }${trancheId ? `&tranche=${trancheId}` : ''}`
         : '',
@@ -76,7 +76,7 @@ const TAB_CONFIG = {
         render: (row) => (
           <div className="flex gap-4 items-center">
             <Link
-              href={`/Immeubles/${row.id}`}
+              href={`/immeubles/${row.id}`}
               className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
               title="Voir l'immeuble"
             >
@@ -86,7 +86,7 @@ const TAB_CONFIG = {
             {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
               <>
                 <Link
-                  href={`/Immeubles/${row.id}/modifier/?edit=true`}
+                  href={`/immeubles/${row.id}/modifier/?edit=true`}
                   className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
                   title="Modifier l'immeuble"
                 >
@@ -131,7 +131,7 @@ const TAB_CONFIG = {
     apiEndpoint: APIURL.BIENS,
     addLink: (user, trancheId, projetId, blocId, immeubleId) =>
       isSuperAdmin(user?.role) || isAdmin(user?.role)
-        ? `/Biens/ajouter?projet=${projetId}${blocId ? `&bloc=${blocId}` : ''}${
+        ? `/biens/ajouter?projet=${projetId}${blocId ? `&bloc=${blocId}` : ''}${
             immeubleId ? `&immeuble=${immeubleId}` : ''
           }${trancheId ? `&tranche=${trancheId}` : ''}`
         : undefined,
@@ -373,7 +373,7 @@ const TAB_CONFIG = {
         render: (row) => (
           <div className="flex gap-4 items-center text-sm">
             <Link
-              href={`/Biens/${row.id}`}
+              href={`/biens/${row.id}`}
               className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
               title="Voir le bien"
             >
@@ -383,7 +383,7 @@ const TAB_CONFIG = {
             {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
               <>
                 <Link
-                  href={`/Biens/${row.id}/modifier/?edit=true`}
+                  href={`/biens/${row.id}/modifier/?edit=true`}
                   className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
                   title="Modifier le bien"
                 >

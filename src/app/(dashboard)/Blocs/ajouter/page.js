@@ -23,7 +23,7 @@ export default function AddBlocPage() {
   // Redirect if user doesn't have permission
   useEffect(() => {
     if (user && !canCreateBloc) {
-      router.push("/Projets");
+      router.push("/projets");
     }
   }, [user, canCreateBloc, router]);
 

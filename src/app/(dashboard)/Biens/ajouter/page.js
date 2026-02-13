@@ -24,7 +24,7 @@ export default function AddBienPage() {
   // Redirect if user doesn't have permission
   useEffect(() => {
     if (user && !canCreateBien) {
-      router.push('/Projets');
+      router.push('/projets');
     }
   }, [user, canCreateBien, router]);
 

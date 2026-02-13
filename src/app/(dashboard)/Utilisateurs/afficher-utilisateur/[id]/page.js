@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import ProfileContent from '@/components/Utilisateurs/ProfileContent';
 import ProjetsContent from '@/components/Utilisateurs/ProjetsContent';
 import VisitesContent from '@/components/Utilisateurs/VisitesContent';
@@ -7,12 +7,14 @@ import VentesContent from '@/components/Utilisateurs/VentesContent';
 import { User, Briefcase, Map, Handshake } from "lucide-react";
 import { useParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
+import { isAdmin, isSuperAdmin } from '@/configs/enum';
 
 export default function UserDetailsPage() { // Renamed to PascalCase
   const { id } = useParams();
   const [selectedMenu, setSelectedMenu] = useState('Profil');
-  const { token } = useAuth();
-   
+  const { user, token } = useAuth();
+  const router = useRouter();
 
   const menuItems = [
     { label: 'Profil', icon: <User /> },
@@ -20,7 +22,15 @@ export default function UserDetailsPage() { // Renamed to PascalCase
     { label: 'Visites', icon: <Map /> },
     { label: 'Ventes', icon: <Handshake /> },
   ];
-
+ 
+    useEffect(() => {
+          if (
+            !isAdmin(user?.role) &&
+            !isSuperAdmin(user?.role) 
+          ) {
+            router.push('/');
+          }
+        }, [user, user?.role, router]);
   return (
     <div className='bg-white xl:min-h-[90vh] shadow-md rounded-xl pb-4'>
      

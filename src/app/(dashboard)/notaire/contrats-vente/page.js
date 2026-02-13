@@ -282,7 +282,7 @@ export default function Contrat_vente({ title = "Contrats de Vente" }) {
         const bien = row.bien;
         if (!bien || !bien.id) return null;
         return (
-          <Link target="_blank" href={`/Biens/${bien.id}`}>
+          <Link target="_blank" href={`/biens/${bien.id}`}>
             <strong style={{ fontWeight: 600 }}>
               {NomBienComplet(bien)}
             </strong>

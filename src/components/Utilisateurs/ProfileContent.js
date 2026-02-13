@@ -141,7 +141,7 @@ const ProfileContent = ({ userId }) => {
         setIsEditing(false);
 
        if (searchParams.get('edit')) {
-          router.push('/Utilisateurs');
+          router.push('/utilisateurs');
         }
       } catch (error) {
         toast.error("Une erreur s'est produite, Veuillez réessayer.");
@@ -232,7 +232,7 @@ const ProfileContent = ({ userId }) => {
 
   const resetForm = () => {
     if (searchParams.get('edit')) {
-      router.push('/Utilisateurs');
+      router.push('/utilisateurs');
     } else {
       formik.resetForm();
       setIsEditing(false);

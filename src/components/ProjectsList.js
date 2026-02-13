@@ -106,10 +106,10 @@ export default function ProjectsList() {
               </button>
               
               <div className="flex space-x-3">
-                <Link href={`/Projets/${projet.id}`} className="text-gray-600 hover:text-[#009FFF]">
+                <Link href={`/projets/${projet.id}`} className="text-gray-600 hover:text-[#009FFF]">
                   <Eye size={18} />
                 </Link>
-                <Link href={`/Projets/edit/${projet.id}`} className="text-gray-600 hover:text-[#009FFF]">
+                <Link href={`/projets/edit/${projet.id}`} className="text-gray-600 hover:text-[#009FFF]">
                   <Pencil size={18} />
                 </Link>
               </div>

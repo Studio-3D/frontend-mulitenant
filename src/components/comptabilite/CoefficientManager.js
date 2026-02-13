@@ -135,7 +135,7 @@ const CoefficientManager = ({}) => {
         <div className="flex space-x-2">
          
            <Link
-                href={`/Tranches//${row.id}`}
+                href={`/tranches//${row.id}`}
                 className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
                 title="Détail Tranche"
               >

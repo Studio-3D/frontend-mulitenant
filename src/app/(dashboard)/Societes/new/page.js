@@ -47,7 +47,7 @@ export default function CreateSociete() {
       
       setSuccess(true);
       setTimeout(() => {
-        router.push("/Societes");
+        router.push("/societes");
       }, 1500);
     } catch (err) {
       console.error("Error creating societe:", err);
@@ -61,7 +61,7 @@ export default function CreateSociete() {
     <div className="container mx-auto p-4">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Ajouter une société</h1>
-        <Link href="/Societes" className="text-blue-500 hover:underline">
+        <Link href="/societes" className="text-blue-500 hover:underline">
           Retour à la liste
         </Link>
       </div>
@@ -213,7 +213,7 @@ export default function CreateSociete() {
             {submitting ? 'Création en cours...' : 'Créer la société'}
           </button>
           <Link 
-            href="/Societes"
+            href="/societes"
             className="px-4 py-2 bg-gray-300 !text-gray-800 rounded hover:bg-gray-400"
           >
             Annuler

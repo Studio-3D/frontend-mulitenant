@@ -244,7 +244,7 @@ const CommissionTable = () => {
       render: (row) => (
         <Link
           target="_blank"
-          href={`/Utilisateurs/afficher-utilisateur/${row.id}`}
+          href={`/utilisateurs/afficher-utilisateur/${row.id}`}
         >
           <strong>{row.name + ' ' + row.prenom}</strong>
         </Link>

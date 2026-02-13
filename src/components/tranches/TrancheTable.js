@@ -181,10 +181,10 @@ export default function TrancheTable({ projetId }) {
   const handleAction = (action, id) => {
     switch (action) {
       case 'view':
-        router.push(`/Tranches/${id}`);
+        router.push(`/tranches/${id}`);
         break;
       case 'edit':
-        router.push(`/Tranches/${id}/modifier`);
+        router.push(`/tranches/${id}/modifier`);
         break;
       default:
         console.log(`Action ${action} for tranche ${id}`);
@@ -192,7 +192,7 @@ export default function TrancheTable({ projetId }) {
   };
 
   const addButtonUrl = canManageTranches
-    ? `/Tranches/ajouter?projet=${projetId}`
+    ? `/tranches/ajouter?projet=${projetId}`
     : '';
 
   if (error) {

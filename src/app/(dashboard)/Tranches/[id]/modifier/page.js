@@ -22,7 +22,7 @@ export default function EditTranchePage() {
   // Redirect if user doesn't have permission
   useEffect(() => {
     if (user && !canEditTranche) {
-      router.push("/Projets");
+      router.push("/projets");
     }
   }, [user, canEditTranche, router]);
 

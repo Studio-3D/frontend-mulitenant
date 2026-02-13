@@ -197,7 +197,7 @@ const EncaissementTable = ({ dataClient_id, bien_id }) => {
             key: 'bien',
             label: 'Bien',
             render: (row) => (
-              <Link target="_blank" href={'/Biens/' + row.reservations.bien_id}>
+              <Link target="_blank" href={'/biens/' + row.reservations.bien_id}>
                 <strong style={{ fontWeight: 600 }}>
                   {row.reservations.bien.propriete_dite_bien}
                 </strong>

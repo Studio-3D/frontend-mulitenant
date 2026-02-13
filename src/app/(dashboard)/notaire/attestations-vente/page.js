@@ -306,7 +306,7 @@ export default function Attestation_vente({ title = "Attestations de Vente" }) {
         if (!bien || !bien.id) return null;
         
         return (
-          <Link target="_blank" href={`/Biens/${bien.id}`}>
+          <Link target="_blank" href={`/biens/${bien.id}`}>
             <strong style={{ fontWeight: 600 }}>
               {NomBienComplet(bien)}
             </strong>

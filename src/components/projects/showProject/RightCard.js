@@ -26,7 +26,7 @@ const TAB_CONFIG = {
     apiEndpoint: APIURL.TRANCHES,
     addLink: (user, projectId) =>
       isSuperAdmin(user?.role) || isAdmin(user?.role)
-        ? `/Tranches/ajouter?projet=${projectId}`
+        ? `/tranches/ajouter?projet=${projectId}`
         : undefined,
 
     filters: (
@@ -80,7 +80,7 @@ const TAB_CONFIG = {
         render: (row) => (
           <div className="flex gap-4 items-center">
             <Link
-              href={`/Tranches/${row.id}`}
+              href={`/tranches/${row.id}`}
               className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
               title="Voir la tranche"
             >
@@ -90,7 +90,7 @@ const TAB_CONFIG = {
             {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
               <>
                 <Link
-                  href={`/Tranches/${row.id}/modifier/?edit=true`}
+                  href={`/tranches/${row.id}/modifier/?edit=true`}
                   className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
                   title="Modifier la tranche"
                 >
@@ -136,7 +136,7 @@ const TAB_CONFIG = {
     apiEndpoint: APIURL.BLOCS,
     addLink: (user, projectId) =>
       isSuperAdmin(user?.role) || isAdmin(user?.role)
-        ? `/Blocs/ajouter?projet=${projectId}`
+        ? `/blocs/ajouter?projet=${projectId}`
         : undefined,
 
     filters: (
@@ -196,7 +196,7 @@ const TAB_CONFIG = {
         render: (row) => (
           <div className="flex gap-4 items-center">
             <Link
-              href={`/Blocs/${row.id}`}
+              href={`/blocs/${row.id}`}
               className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
               title="Voir le bloc"
             >
@@ -206,7 +206,7 @@ const TAB_CONFIG = {
             {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
               <>
                 <Link
-                  href={`/Blocs/${row.id}/modifier/?edit=true`}
+                  href={`/blocs/${row.id}/modifier/?edit=true`}
                   className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
                   title="Modifier le bloc"
                 >
@@ -253,7 +253,7 @@ const TAB_CONFIG = {
     apiEndpoint: APIURL.IMMEUBLES,
     addLink: (user, projectId) =>
       isSuperAdmin(user?.role) || isAdmin(user?.role)
-        ? `/Immeubles/ajouter?projet=${projectId}`
+        ? `/immeubles/ajouter?projet=${projectId}`
         : undefined,
     filters: (
       tabsData,
@@ -327,7 +327,7 @@ const TAB_CONFIG = {
         render: (row) => (
           <div className="flex gap-4 items-center">
             <Link
-              href={`/Immeubles/${row.id}`}
+              href={`/immeubles/${row.id}`}
               className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
               title="Voir l'immeuble"
             >
@@ -337,7 +337,7 @@ const TAB_CONFIG = {
             {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
               <>
                 <Link
-                  href={`/Immeubles/${row.id}/modifier/?edit=true`}
+                  href={`/immeubles/${row.id}/modifier/?edit=true`}
                   className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
                   title="Modifier l'immeuble"
                 >
@@ -382,7 +382,7 @@ const TAB_CONFIG = {
     apiEndpoint: APIURL.BIENS,
     addLink: (user, projectId) =>
       isSuperAdmin(user?.role) || isAdmin(user?.role)
-        ? `/Biens/ajouter?projet=${projectId}`
+        ? `/biens/ajouter?projet=${projectId}`
         : undefined,
 
     filters: (
@@ -650,7 +650,7 @@ const TAB_CONFIG = {
         render: (row) => (
           <div className="flex gap-4 items-center text-sm">
             <Link
-              href={`/Biens/${row.id}`}
+              href={`/biens/${row.id}`}
               className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
               title="Voir le bien"
             >
@@ -660,7 +660,7 @@ const TAB_CONFIG = {
             {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
               <>
                 <Link
-                  href={`/Biens/${row.id}/modifier/?edit=true`}
+                  href={`/biens/${row.id}/modifier/?edit=true`}
                   className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
                   title="Modifier le bien"
                 >

@@ -5,7 +5,6 @@ import CommissionTable from './CommissionTable';
 import CommissionForm from './CommissionForm';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
-import VenteNavbar from '@/components/VenteNavbar';
 import { isAdmin, isCommercial, isSuperAdmin } from '@/configs/enum';
 import { useAuth } from '@/context/AuthContext';
 
