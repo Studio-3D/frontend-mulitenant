@@ -215,10 +215,10 @@ export default function ImmeubleTable({ projetId, trancheId, blocId }) {
   const handleAction = (action, id) => {
     switch (action) {
       case 'view':
-        router.push(`/Immeubles/${id}`);
+        router.push(`/immeubles/${id}`);
         break;
       case 'edit':
-        router.push(`/Immeubles/${id}/modifier`);
+        router.push(`/immeubles/${id}/modifier`);
         break;
       default:
         console.log(`Action ${action} for immeuble ${id}`);
@@ -242,7 +242,7 @@ export default function ImmeubleTable({ projetId, trancheId, blocId }) {
 
   // Add button URL
   const addButtonUrl = canManageImmeubles 
-    ? `/Immeubles/ajouter?projet=${projetId}${blocId ? `&bloc=${blocId}` : ''}${trancheId ? `&tranche=${trancheId}` : ''}`
+    ? `/immeubles/ajouter?projet=${projetId}${blocId ? `&bloc=${blocId}` : ''}${trancheId ? `&tranche=${trancheId}` : ''}`
     : "";
 
   // Error and empty states

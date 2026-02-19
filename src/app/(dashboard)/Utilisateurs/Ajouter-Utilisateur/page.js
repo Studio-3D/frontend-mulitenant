@@ -56,6 +56,13 @@ const fetchRoles = async (societeId) => {
   }
 };
 
+   useEffect(() => {
+        if (
+          user.role!=1 
+        ) {
+          router.push('/');
+        }
+      }, [user, router]);
 // Utilisation - appeler fetchRoles avec le societe_id
 useEffect(() => {
   if (selectedSociete?.id) {
@@ -237,7 +244,7 @@ useEffect(() => {
           },
         });
         toast.success("Utilisateur ajouté avec succès");
-        router.push("/Utilisateurs");
+        router.push("/utilisateurs");
       } catch (error) {
         toast.error(
           error.response?.data?.message || "Une erreur est survenue."
@@ -536,7 +543,7 @@ useEffect(() => {
             <button
               type="button"
               className="bg-gray-400 text-white font-medium rounded-lg px-6 py-2"
-              onClick={() => router.push("/Utilisateurs")}
+              onClick={() => router.push("/utilisateurs")}
             >
               Annuler
             </button>

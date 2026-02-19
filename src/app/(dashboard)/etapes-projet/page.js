@@ -14,7 +14,7 @@ export default function Page() {
   const { user } = useAuth();
   const userRole = user?.role;
   const router = useRouter();
-  useEffect(() => {
+  {/*useEffect(() => {
     if (
       !isAdmin(userRole) &&
       !isSuperAdmin(userRole) &&
@@ -22,7 +22,7 @@ export default function Page() {
     ) {
       router.push('/');
     }
-  }, [router]);
+  }, [router]);*/}
 
   const searchParams = useSearchParams();
   useEffect(() => {

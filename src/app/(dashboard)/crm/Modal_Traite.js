@@ -170,7 +170,7 @@ export default function Modal_Traite({ onClose, id, text, client, type_menu }) {
         </div>
       </div>
 
-      <div className="p-4 w-[600px] ">
+      <div className="p-4 w-[500px] ">
         <form
           onSubmit={handleSubmit(onSubmit)}
           className="mt-4 mx-auto w-full max-w-[360px] flex flex-col items-center"

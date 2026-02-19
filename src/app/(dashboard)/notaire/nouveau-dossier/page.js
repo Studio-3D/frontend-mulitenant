@@ -81,7 +81,7 @@ const Nouveau_Dossier = ({}) => {
       setLoadingNotaires(true);
       try {
         await axios
-              .get(`${APIURL.ROOTV1}/notaires`, {
+              .get(`${APIURL.ROOTV1}/projets/${selectedProjet?.id}/notaires`, {
                 headers: {
                   Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
                 },
@@ -210,7 +210,7 @@ const Nouveau_Dossier = ({}) => {
       key: "propriete_dite_bien",
       label: "Bien",
       render: (row) => (
-        <Link target="_blank" href={`/Biens/${row.bien_id}`}>
+        <Link target="_blank" href={`/biens/${row.bien_id}`}>
           <strong style={{ fontWeight: 600 }}>
             {NomBienComplet(row.bien)}
           </strong>
@@ -360,7 +360,7 @@ const Nouveau_Dossier = ({}) => {
           <Table
             title={
               selectedNotaireId && selectedNotaireName
-                ? `Dossiers du notaire ${selectedNotaireName}`
+                ? `Dossiers du  ${selectedNotaireName}`
                 : isRespoLivraison(userRole)
                 ? "Liste des Nouveaux Dossiers - Tous les notaires"
                 : "Mes Nouveaux Dossiers"

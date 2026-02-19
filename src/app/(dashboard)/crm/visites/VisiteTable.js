@@ -224,7 +224,7 @@ const VisiteTable = ({ user_id, dataProspect, dataClient ,searchParams}) => {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          { isSuperAdmin(user.role) || isAdmin(user.role) || isCommercial(user.role) && (
+          { (isSuperAdmin(user.role) || isAdmin(user.role) || isCommercial(user.role)) && (
             <Link
             href={`/crm/visites/${row.origin_id}`}
             className="flex items-center gap-1 text-blue-500 hover:text-blue-700"

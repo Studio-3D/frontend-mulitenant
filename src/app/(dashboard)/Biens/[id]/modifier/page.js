@@ -71,7 +71,7 @@ export default function EditBienPage() {
   useEffect(() => {
     if (user && !canEditBien) {
       toast.error("Vous n'avez pas les droits pour modifier un bien");
-      router.push("/Biens");
+      router.push("/biens");
     }
   }, [user, canEditBien, router]);
 
@@ -88,7 +88,7 @@ export default function EditBienPage() {
       <div className="bg-red-50 p-4 rounded-md border-l-4 border-red-500 !text-red-700">
         <p className="font-medium">Erreur</p>
         <p>{error}</p>
-        <Link href="/Biens" className="text-blue-500 hover:underline mt-2 inline-block">
+        <Link href="/biens" className="text-blue-500 hover:underline mt-2 inline-block">
           Retour à la liste des biens
         </Link>
       </div>

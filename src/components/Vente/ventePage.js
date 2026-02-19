@@ -227,75 +227,125 @@ export function VentePage() {
   ]);
 
   // Update the handleTabChange to be simpler
-  const handleTabChange = (tabId, fromUrl = false) => {
-    console.log('handleTabChange called:', tabId, 'fromUrl:', fromUrl);
-    setActiveTab(tabId);
+ // Update the handleTabChange function
+const handleTabChange = (tabId, fromUrl = false) => {
+  console.log('handleTabChange called:', tabId, 'fromUrl:', fromUrl);
+  setActiveTab(tabId);
 
-    if (!fromUrl) {
-      updateURL(tabId);
+  if (!fromUrl) {
+    updateURL(tabId);
+  }
+
+  // Set default sub-tabs when main tab changes
+  if (tabId === 'validation') {
+    // For comptable (role=7), set default to avances-validation instead of desistements
+    const defaultSubTab = userRole === 7 ? 'avances-validation' : 'desistements-attente-encours';
+    
+    if (!renderedTabs.current[tabId]) {
+      renderedTabs.current = { ...renderedTabs.current, [tabId]: true };
+    }
+    if (!renderedTabs.current[defaultSubTab]) {
+      renderedTabs.current = {
+        ...renderedTabs.current,
+        [defaultSubTab]: true,
+      };
     }
 
-    // Set default sub-tabs when main tab changes
-    if (tabId === 'validation') {
-      const defaultSubTab = 'desistements-attente-encours';
-      if (!renderedTabs.current[tabId]) {
-        renderedTabs.current = { ...renderedTabs.current, [tabId]: true };
-      }
-      if (!renderedTabs.current[defaultSubTab]) {
-        renderedTabs.current = {
-          ...renderedTabs.current,
-          [defaultSubTab]: true,
-        };
-      }
-
-      if (activeSubTab.validation !== defaultSubTab) {
-        setActiveSubTab((prev) => ({ ...prev, validation: defaultSubTab }));
-        if (!fromUrl) {
-          updateURL(tabId, defaultSubTab);
-        }
-      }
-    } else if (tabId === 'rejet') {
-      const defaultSubTab = 'desistements-rejet';
-      if (!renderedTabs.current[tabId]) {
-        renderedTabs.current = { ...renderedTabs.current, [tabId]: true };
-      }
-      if (!renderedTabs.current[defaultSubTab]) {
-        renderedTabs.current = {
-          ...renderedTabs.current,
-          [defaultSubTab]: true,
-        };
-      }
-
-      if (activeSubTab.rejet !== defaultSubTab) {
-        setActiveSubTab((prev) => ({ ...prev, rejet: defaultSubTab }));
-        if (!fromUrl) {
-          updateURL(tabId, defaultSubTab);
-        }
-      }
-    } else if (tabId === 'remboursements') {
-      const defaultSubTab = 'apres-ventes';
-      if (!renderedTabs.current[tabId]) {
-        renderedTabs.current = { ...renderedTabs.current, [tabId]: true };
-      }
-      if (!renderedTabs.current[defaultSubTab]) {
-        renderedTabs.current = {
-          ...renderedTabs.current,
-          [defaultSubTab]: true,
-        };
-      }
-
-      if (activeSubTab.remboursements !== defaultSubTab) {
-        setActiveSubTab((prev) => ({ ...prev, remboursements: defaultSubTab }));
-        if (!fromUrl) {
-          updateURL(tabId, defaultSubTab);
-        }
-      }
-    } else {
-      if (!renderedTabs.current[tabId]) {
-        renderedTabs.current = { ...renderedTabs.current, [tabId]: true };
+    if (activeSubTab.validation !== defaultSubTab) {
+      setActiveSubTab((prev) => ({ ...prev, validation: defaultSubTab }));
+      if (!fromUrl) {
+        updateURL(tabId, defaultSubTab);
       }
     }
-  };
+  } else if (tabId === 'rejet') {
+    // For comptable (role=7), set default to avances-rejet instead of desistements-rejet
+    const defaultSubTab = userRole === 7 ? 'avances-rejet' : 'desistements-rejet';
+    
+    if (!renderedTabs.current[tabId]) {
+      renderedTabs.current = { ...renderedTabs.current, [tabId]: true };
+    }
+    if (!renderedTabs.current[defaultSubTab]) {
+      renderedTabs.current = {
+        ...renderedTabs.current,
+        [defaultSubTab]: true,
+      };
+    }
+
+    if (activeSubTab.rejet !== defaultSubTab) {
+      setActiveSubTab((prev) => ({ ...prev, rejet: defaultSubTab }));
+      if (!fromUrl) {
+        updateURL(tabId, defaultSubTab);
+      }
+    }
+  } else if (tabId === 'remboursements') {
+    const defaultSubTab = 'apres-ventes';
+    if (!renderedTabs.current[tabId]) {
+      renderedTabs.current = { ...renderedTabs.current, [tabId]: true };
+    }
+    if (!renderedTabs.current[defaultSubTab]) {
+      renderedTabs.current = {
+        ...renderedTabs.current,
+        [defaultSubTab]: true,
+      };
+    }
+
+    if (activeSubTab.remboursements !== defaultSubTab) {
+      setActiveSubTab((prev) => ({ ...prev, remboursements: defaultSubTab }));
+      if (!fromUrl) {
+        updateURL(tabId, defaultSubTab);
+      }
+    }
+  } else {
+    if (!renderedTabs.current[tabId]) {
+      renderedTabs.current = { ...renderedTabs.current, [tabId]: true };
+    }
+  }
+};
+
+// Update the handleSubTabClick function to ensure localStorage is set correctly
+const handleSubTabClick = (parentTab, subTabId) => {
+  console.log('handleSubTabClick called:', parentTab, subTabId);
+  
+  // Set localStorage states based on sub-tab selection
+  switch (subTabId) {
+    case 'avances-validation':
+      localStorage.setItem('etat_av', '3');
+      break;
+    case 'penalites-validation':
+      if (userRole <= 2) {
+        localStorage.setItem('etat_penalite', '5');
+      } else {
+        localStorage.setItem('etat_penalite', '0');
+      }
+      break;
+    case 'desistements-attente-encours':
+      if (userRole <= 2) {
+        localStorage.setItem('etat_dst', '5');
+      } else {
+        localStorage.setItem('etat_dst', '0');
+      }
+      break;
+    case 'reservations-validation':
+      localStorage.setItem('etat_res', '3');
+      break;
+    case 'avances-rejet':
+      localStorage.setItem('etat_av', '2');
+      break;
+    case 'penalites-rejet':
+      localStorage.setItem('etat_penalite', '2');
+      break;
+    case 'desistements-rejet':
+      localStorage.setItem('etat_dst', '2');
+      break;
+    case 'reservations-rejet':
+      localStorage.setItem('etat_res', '2');
+      break;
+    default:
+      break;
+  }
+  
+  handleSubTabChange(parentTab, subTabId, true);
+};
   // Update handleSubTabChange to be simpler
   const handleSubTabChange = (parentTab, subTabId, updateUrl = true) => {
     console.log('handleSubTabChange called:', parentTab, subTabId, updateUrl);
@@ -332,47 +382,7 @@ export function VentePage() {
     handleTabChange(tabId, false);
   };
 
-  const handleSubTabClick = (parentTab, subTabId) => {
-    console.log('handleSubTabClick called:', parentTab, subTabId);
-    // Set localStorage states based on sub-tab selection (from old navbar)
-    switch (subTabId) {
-      case 'desistements-attente-encours':
-        if (userRole <= 2) {
-          localStorage.setItem('etat_dst', '5');
-        } else {
-          localStorage.setItem('etat_dst', '0');
-        }
-        break;
-      case 'penalites-validation':
-        if (userRole <= 2) {
-          localStorage.setItem('etat_penalite', '5');
-        } else {
-          localStorage.setItem('etat_penalite', '0');
-        }
-        break;
-      case 'reservations-validation':
-        localStorage.setItem('etat_res', '3');
-        break;
-      case 'avances-validation':
-        localStorage.setItem('etat_av', '3');
-        break;
-      case 'desistements-rejet':
-        localStorage.setItem('etat_dst', '2');
-        break;
-      case 'penalites-rejet':
-        localStorage.setItem('etat_penalite', '2');
-        break;
-      case 'reservations-rejet':
-        localStorage.setItem('etat_res', '2');
-        break;
-      case 'avances-rejet':
-        localStorage.setItem('etat_av', '2');
-        break;
-      default:
-        break;
-    }
-    handleSubTabChange(parentTab, subTabId, true);
-  };
+
   // Show loading state if no project selected
   if (!selectedProjet) {
     return (

@@ -64,7 +64,7 @@ const Page = () => {
         resetForm();
         setImageFileUrl(null);
         refreshSocietes();
-        router.push('/Societes');
+        router.push('/societes');
       } catch (error) {
         toast.error("Une erreur s'est produite");
       } finally {
@@ -212,7 +212,7 @@ const Page = () => {
             <button
               type="button"
               className='bg-gray-400 text-white px-4 py-2 rounded-md'
-              onClick={() => router.push('/Societes')}
+              onClick={() => router.push('/societes')}
             >
               Annuler
             </button>

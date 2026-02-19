@@ -11,7 +11,6 @@ import { useProjet } from '@/context/ProjetContext';
 
 export default function AffectationPage() {
   const searchParams = useSearchParams();
-  const [showAffectationOnly, setShowAffectationOnly] = useState(false);
   const { token } = useAuth();
   const accesstoken = token || localStorage.getItem("accessToken");
   const { selectedProjet } = useProjet();
@@ -102,22 +101,7 @@ export default function AffectationPage() {
         </div>
       )}
 
-      {/* Panneau d'informations */}
-      <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <div className="flex items-start gap-3">
-          <Users className="w-5 h-5 text-blue-600 mt-0.5" />
-          <div>
-            <h3 className="font-medium text-blue-800">Instructions d{"'"}affectation</h3>
-            <ul className="mt-2 text-sm text-blue-700 space-y-1">
-              <li>• Sélectionnez une réservation valide (statut = 1)</li>
-              <li>• La réservation doit avoir une avance validée</li>
-              <li>• Cliquez sur <span className="font-medium text-green-600">⊕</span> pour affecter un notaire</li>
-              <li>• Cliquez sur <span className="font-medium text-orange-600">✏️</span> pour modifier l{"'"}affectation</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
+    
       {/* Statistiques */}
       {selectedProjet?.id && (
         <>
@@ -221,7 +205,7 @@ export default function AffectationPage() {
         <ReservationTable 
           searchParams={searchParams}
           // Passer un filtre pour n'afficher que les réservations non affectées si la case est cochée
-          filters={showAffectationOnly ? { notaire_id: "null" } : {}}
+        
         />
       </div>
     </div>

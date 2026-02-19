@@ -51,7 +51,7 @@ const VenteTabsNavigation = ({
   });
   
   const [displayedLabels, setDisplayedLabels] = useState({
-    validation: userRole <= 2 ? 'Validation' : 'En cours',
+    validation: (userRole <= 2 || userRole ==7 )? 'Validation' : 'En cours',
     rejet: 'Rejet',
     remboursements: 'Remboursements',
   });
@@ -61,7 +61,7 @@ const VenteTabsNavigation = ({
     if (activeTab !== 'validation') {
       setDisplayedLabels(prev => ({
         ...prev,
-        validation: userRole <= 2 ? 'Validation' : 'En cours',
+        validation: (userRole <= 2 || userRole ==7 ) ? 'Validation' : 'En cours',
       }));
     }
     if (activeTab !== 'rejet') {
@@ -233,43 +233,44 @@ const VenteTabsNavigation = ({
   };
 
   // Define all tabs - ONLY show counts on specific tabs
-  const tabs = [
-    { id: 'reservations', label: 'Reservations', icon: 'user' },
-    { id: 'clients', label: 'Clients', icon: 'users' },
-    { id: 'desistements', label: 'Désistements', icon: 'repeat' },
-    { id: 'penalites', label: 'Penalités', icon: 'euro' },
-    { 
-      id: 'remboursements', 
-      label: displayedLabels.remboursements, 
-      icon: 'handshake', 
-      dropdown: true, 
-      count: getDisplayedNotificationCount('remboursements'),
-      showCount: true
-    },
-    { 
-      id: 'validation', 
-      label: displayedLabels.validation, 
-      icon: 'check', 
-      dropdown: true, 
-      count: getDisplayedNotificationCount('validation'),
-      showCount: true
-    },
-    { 
-      id: 'rejet', 
-      label: displayedLabels.rejet, 
-      icon: 'circle-x', 
-      dropdown: true, 
-      count: getDisplayedNotificationCount('rejet'),
-      showCount: true
-    },
-    { 
-      id: 'echeances', 
-      label: 'Echéances', 
-      icon: 'clock', 
-      count: notifications.echeances,
-      showCount: false
-    },
-  ];
+const tabs = [
+  { id: 'reservations', label: 'Reservations', icon: 'user' },
+  { id: 'clients', label: 'Clients', icon: 'users' },
+  // Conditionally add desistements tab based on userRole
+  ...(userRole <= 3 ? [{ id: 'desistements', label: 'Désistements', icon: 'repeat' }] : []),
+  { id: 'penalites', label: 'Penalités', icon: 'euro' },
+  { 
+    id: 'remboursements', 
+    label: displayedLabels.remboursements, 
+    icon: 'handshake', 
+    dropdown: true, 
+    count: getDisplayedNotificationCount('remboursements'),
+    showCount: true
+  },
+  { 
+    id: 'validation', 
+    label: displayedLabels.validation, 
+    icon: 'check', 
+    dropdown: true, 
+    count: getDisplayedNotificationCount('validation'),
+    showCount: true
+  },
+  { 
+    id: 'rejet', 
+    label: displayedLabels.rejet, 
+    icon: 'circle-x', 
+    dropdown: true, 
+    count: getDisplayedNotificationCount('rejet'),
+    showCount: true
+  },
+  { 
+    id: 'echeances', 
+    label: 'Echéances', 
+    icon: 'clock', 
+    count: notifications.echeances,
+    showCount: false
+  },
+];
 
   return (
     <div className="bg-white border-b border-gray-200 w-full">
@@ -304,7 +305,8 @@ const VenteTabsNavigation = ({
                 >
                   {tab.id === 'validation' ? (
                     <>
-                      <DropdownItem
+                      {userRole <= 3 && (
+                        <DropdownItem
                         label="Désistements"
                         count={notifications['desistements-attente-encours']}
                         active={
@@ -319,6 +321,8 @@ const VenteTabsNavigation = ({
                           )
                         }
                       />
+                      )}
+                      
                       <DropdownItem
                         label="Pénalités"
                         count={notifications['penalites-validation']}
@@ -334,21 +338,22 @@ const VenteTabsNavigation = ({
                           )
                         }
                       />
-                      <DropdownItem
-                        label="Réservations"
-                        count={notifications['reservations-validation']}
-                        active={
-                          activeTab === 'validation' &&
-                          activeSubTab.validation === 'reservations-validation'
-                        }
-                        onClick={() =>
-                          handleSubTabSelect(
-                            'validation',
-                            'reservations-validation',
-                            'Réservations',
-                          )
-                        }
-                      />
+                        {userRole <= 3  && (
+                          <DropdownItem
+                            label="Réservations"
+                            count={notifications['reservations-validation']}
+                            active={
+                              activeTab === 'validation' &&
+                              activeSubTab.validation === 'reservations-validation'
+                            }
+                            onClick={() =>
+                              handleSubTabSelect(
+                                'validation',
+                                'reservations-validation',
+                                'Réservations',
+                              )
+                            }
+                          />)}
                       <DropdownItem
                         label="Avances"
                         count={notifications['avances-validation']}
@@ -367,14 +372,16 @@ const VenteTabsNavigation = ({
                     </>
                   ) : tab.id === 'rejet' ? (
                     <>
-                      <DropdownItem
-                        label="Désistements"
-                        count={notifications['desistements-rejet']}
-                        active={activeTab === 'rejet' && activeSubTab.rejet === 'desistements-rejet'}
-                        onClick={() =>
-                          handleSubTabSelect('rejet', 'desistements-rejet', 'Désistements')
-                        }
-                      />
+                      {userRole <= 3 && (
+                        <DropdownItem
+                          label="Désistements"
+                          count={notifications['desistements-rejet']}
+                          active={activeTab === 'rejet' && activeSubTab.rejet === 'desistements-rejet'}
+                          onClick={() =>
+                            handleSubTabSelect('rejet', 'desistements-rejet', 'Désistements')
+                          }
+                        />
+                      )}
                       <DropdownItem
                         label="Pénalités"
                         count={notifications['penalites-rejet']}
@@ -383,14 +390,16 @@ const VenteTabsNavigation = ({
                           handleSubTabSelect('rejet', 'penalites-rejet', 'Pénalités')
                         }
                       />
-                      <DropdownItem
-                        label="Réservations"
-                        count={notifications['reservations-rejet']}
-                        active={activeTab === 'rejet' && activeSubTab.rejet === 'reservations-rejet'}
-                        onClick={() =>
-                          handleSubTabSelect('rejet', 'reservations-rejet', 'Réservations')
-                        }
-                      />
+                       {userRole <= 3  && (
+                        <DropdownItem
+                          label="Réservations"
+                          count={notifications['reservations-rejet']}
+                          active={activeTab === 'rejet' && activeSubTab.rejet === 'reservations-rejet'}
+                          onClick={() =>
+                            handleSubTabSelect('rejet', 'reservations-rejet', 'Réservations')
+                          }
+                        />
+                        )}
                       <DropdownItem
                         label="Avances"
                         count={notifications['avances-rejet']}
@@ -419,7 +428,7 @@ const VenteTabsNavigation = ({
                           handleSubTabSelect('remboursements', 'att-accuse-cheque', 'Attente Accusé')
                         }
                       />
-                      {userRole <= 2 ? (
+                      {(userRole <= 2 || userRole ==7 ) ? (
                         <>
                           <DropdownItem
                             label="Attente Décaissement"

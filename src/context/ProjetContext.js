@@ -104,14 +104,14 @@ export function ProjetProvider({ children }) {
     localStorage.setItem('selectedProjet', JSON.stringify(projet));
     setSelectedProjet(projet);
     
-    if (pathname?.startsWith('/Projets/')) {
-      const projectMatch = pathname.match(/^\/Projets\/(\d+)(\/.*)?$/);
+    if (pathname?.startsWith('/projets/')) {
+      const projectMatch = pathname.match(/^\/projets\/(\d+)(\/.*)?$/);
       if (projectMatch) {
         const currentProjectId = projectMatch[1];
         const trailingPath = projectMatch[2] || '';
         
         if (currentProjectId !== projet.id.toString()) {
-          const newPath = `/Projets/${projet.id}${trailingPath}`;
+          const newPath = `/projets/${projet.id}${trailingPath}`;
           router.push(newPath, {scroll: false});
         }
       }

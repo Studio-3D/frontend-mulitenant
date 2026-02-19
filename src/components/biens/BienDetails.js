@@ -22,7 +22,7 @@ import {
   Image,
   EyeIcon,
 } from 'lucide-react';
-import { getEtatLabel, getFullOrientation } from '@/configs/enum';
+import { getEtatLabel, getFullOrientation, isNotaire, isRespoCommercial, isRespoLivraison } from '@/configs/enum';
 import BienSuperficies from './BienSuperficies';
 import BienComposition from './BienComposition';
 import BienDescriptionGenerator from './BienDescriptionGenerator';
@@ -54,7 +54,10 @@ export default function BienDetails({ id }) {
             !isAdmin(userRole) &&
             !isSuperAdmin(userRole) &&
             !isCommercial(userRole)&&
-            !isComptable(userRole)
+            !isComptable(userRole)&&
+            !isRespoLivraison(userRole)&&
+            !isRespoCommercial(userRole)&&
+            !isNotaire(userRole)
           ) {
             router.push('/');
           }
@@ -68,7 +71,7 @@ export default function BienDetails({ id }) {
       if (oldProjetId) {
         // Projet a changé
         console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-        router.push('/Projets/' + selectedProjet.id);
+        router.push('/projets/' + selectedProjet.id);
       }
       setOldProjetId(selectedProjet.id);
     }
@@ -133,7 +136,7 @@ export default function BienDetails({ id }) {
         <p className="font-medium">Erreur</p>
         <p>{error}</p>
         <Link
-          href="/Biens"
+          href="/biens"
           className="text-blue-500 hover:underline mt-2 inline-block"
         >
           Retour à la liste des biens
@@ -238,24 +241,24 @@ export default function BienDetails({ id }) {
         {/* Header with actions - Redesigned with professional white background */}
         <div className="mb-1">
           <BreadCrumb
-            onRoot={{ href: '/Projets' }}
+            onRoot={{ href: '/projets' }}
             items={[
               bien.projet
-                ? { label: bien.projet.nom, href: `/Projets/${bien.projet_id}` }
+                ? { label: bien.projet.nom, href: `/projets/${bien.projet_id}` }
                 : null,
               bien.tranche
                 ? {
                     label: bien.tranche.nom,
-                    href: `/Tranches/${bien.tranche_id}`,
+                    href: `/tranches/${bien.tranche_id}`,
                   }
                 : null,
               bien.bloc
-                ? { label: bien.bloc.nom, href: `/Blocs/${bien.bloc_id}` }
+                ? { label: bien.bloc.nom, href: `/blocs/${bien.bloc_id}` }
                 : null,
               bien.immeuble
                 ? {
                     label: bien.immeuble.nom,
-                    href: `/Immeubles/${bien.immeuble_id}`,
+                    href: `/immeubles/${bien.immeuble_id}`,
                   }
                 : null,
               { label: bien.propriete_dite_bien },
@@ -296,7 +299,7 @@ export default function BienDetails({ id }) {
               {/* Modifier button */}
               {canEditBien && (
                 <Link
-                  href={`/Biens/${id}/modifier`}
+                  href={`/biens/${id}/modifier`}
                   className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                 >
                   <Pencil className="w-4 h-4" />

@@ -7,7 +7,7 @@ import { RightCard } from './RightCard';
 import { APIURL } from '@/configs/api';
 import { useProjet } from '@/context/ProjetContext';
 import { useAuth } from '@/context/AuthContext';
-import { isAdmin, isSuperAdmin ,isCommercial} from '@/configs/enum';
+import { isAdmin, isSuperAdmin ,isCommercial,isRespoLivraison, isComptable} from '@/configs/enum';
 import axios from 'axios';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
@@ -54,7 +54,9 @@ export const TrancheDetailsPage = () => {
           user && 
           !isAdmin(userRole) &&
           !isSuperAdmin(userRole) &&
-          !isCommercial(userRole)
+          !isCommercial(userRole)&&
+          !isRespoLivraison(userRole)&&
+          !isComptable(userRole)
         ) {
           router.push('/');
         }
@@ -103,7 +105,7 @@ export const TrancheDetailsPage = () => {
       trancheData?.tranche?.projet_id != undefined &&
       selectedProjet?.id != trancheData?.tranche?.projet_id
     ) {
-      router.push('/Projets/' + selectedProjet?.id);
+      router.push('/projets/' + selectedProjet?.id);
     }
   }, [selectedProjet?.id, trancheData?.tranche?.projet_id]);
 
@@ -128,7 +130,7 @@ export const TrancheDetailsPage = () => {
 
   // Handle edit action
   const handleEdit = () => {
-    router.push(`/Tranches/${id}/modifier`);
+    router.push(`/tranches/${id}/modifier`);
   };
 
   // Handle delete action
@@ -143,9 +145,9 @@ export const TrancheDetailsPage = () => {
         `project-${trancheData?.tranche?.projet_id}-activeTab`,
         'tranche'
       );
-      router.push(`/Projets/${trancheData?.tranche?.projet_id}`);
+      router.push(`/projets/${trancheData?.tranche?.projet_id}`);
     } else {
-      router.push('/Projets');
+      router.push('/projets');
     }
   };
 
@@ -405,7 +407,7 @@ export const TrancheDetailsPage = () => {
           <div className="text-red-500 text-xl font-semibold mb-4">Error</div>
           <div className="text-gray-600 mb-6">{error}</div>
           <button
-            onClick={() => router.push('/Projets')}
+            onClick={() => router.push('/projets')}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
           >
             Return to Projects
@@ -421,7 +423,7 @@ export const TrancheDetailsPage = () => {
         <div className="text-center">
           <div className="text-xl font-semibold mb-4">Tranche Not Found</div>
           <button
-            onClick={() => router.push('/Projets')}
+            onClick={() => router.push('/projets')}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
           >
             Return to Projects
@@ -436,14 +438,14 @@ export const TrancheDetailsPage = () => {
       {/* Breadcrumbs */}
       <div className="mb-4">
         <BreadCrumb
-          onRoot={{ href: '/Projets' }}
+          onRoot={{ href: '/projets' }}
           items={[
             trancheData?.tranche?.projet_id
               ? {
                   label:
                     trancheData?.tranche?.projet?.nom ||
                     `Projet #${trancheData.tranche.projet_id}`,
-                  href: `/Projets/${trancheData.tranche.projet_id}`,
+                  href: `/projets/${trancheData.tranche.projet_id}`,
                 }
               : { label: 'Projet inconnu' },
             { label: trancheData?.tranche?.nom || `Tranche #${id}` },

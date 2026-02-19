@@ -6,7 +6,7 @@ import { RightCard } from './RightCard';
 import { APIURL } from '@/configs/api';
 import { useProjet } from '@/context/ProjetContext';
 import { useAuth } from '@/context/AuthContext';
-import { isAdmin, isSuperAdmin ,isCommercial} from '@/configs/enum';
+import { isAdmin, isSuperAdmin ,isCommercial, isRespoLivraison} from '@/configs/enum';
 import axios from 'axios';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
@@ -55,7 +55,8 @@ export const ImmeubleDetailsPage = () => {
             user && 
             !isAdmin(userRole) &&
             !isSuperAdmin(userRole) &&
-            !isCommercial(userRole)
+            !isCommercial(userRole)&&
+                      !isRespoLivraison(userRole)
           ) {
             router.push('/');
           }
@@ -103,7 +104,7 @@ export const ImmeubleDetailsPage = () => {
       immeubleData?.immeuble?.projet_id != undefined &&
       selectedProjet?.id != immeubleData?.immeuble?.projet_id
     ) {
-      router.push('/Projets/' + selectedProjet?.id);
+      router.push('/projets/' + selectedProjet?.id);
     }
   }, [selectedProjet?.id, immeubleData?.immeuble?.projet_id]);
 
@@ -144,7 +145,7 @@ export const ImmeubleDetailsPage = () => {
 
   // Handle edit action
   const handleEdit = () => {
-    router.push(`/Immeubles/${id}`);
+    router.push(`/immeubles/${id}`);
   };
 
   // Handle delete action
@@ -160,22 +161,22 @@ export const ImmeubleDetailsPage = () => {
         `bloc-${immeubleData?.immeuble?.bloc_id}-activeTab`,
         'immeuble'
       );
-      router.push(`/Blocs/${immeubleData?.immeuble?.bloc_id}`);
+      router.push(`/blocs/${immeubleData?.immeuble?.bloc_id}`);
     } else if (immeubleData?.immeuble?.tranche_id) {
       localStorage.setItem(
         `tranche-${immeubleData?.immeuble?.tranche_id}-activeTab`,
         'immeuble'
       );
 
-      router.push(`/Tranches/${immeubleData?.immeuble?.tranche_id}`);
+      router.push(`/tranches/${immeubleData?.immeuble?.tranche_id}`);
     } else if (immeubleData?.immeuble?.projet_id) {
       localStorage.setItem(
         `project-${immeubleData?.immeuble?.projet_id}-activeTab`,
         'immeuble'
       );
-      router.push(`/Projets/${immeubleData?.immeuble?.projet_id}`);
+      router.push(`/projets/${immeubleData?.immeuble?.projet_id}`);
     } else {
-      router.push('/Projets');
+      router.push('/projets');
     }
     // router.push('/Projets'); // Redirect to projects page
   };
@@ -384,7 +385,7 @@ export const ImmeubleDetailsPage = () => {
           <div className="text-red-500 text-xl font-semibold mb-4">Error</div>
           <div className="text-gray-600 mb-6">{error}</div>
           <button
-            onClick={() => router.push('/Projets')}
+            onClick={() => router.push('/projets')}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
           >
             Return to Projects
@@ -400,7 +401,7 @@ export const ImmeubleDetailsPage = () => {
         <div className="text-center">
           <div className="text-xl font-semibold mb-4">Immeuble Not Found</div>
           <button
-            onClick={() => router.push('/Projets')}
+            onClick={() => router.push('/projets')}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
           >
             Return to Projects
@@ -415,24 +416,24 @@ export const ImmeubleDetailsPage = () => {
       {/* Breadcrumbs */}
       <div className="mb-4">
         <BreadCrumb
-          onRoot={{ href: '/Projets' }}
+          onRoot={{ href: '/projets' }}
           items={[
             immeubleData?.immeuble?.projet
               ? {
                   label: immeubleData.immeuble.projet.nom,
-                  href: `/Projets/${immeubleData.immeuble.projet_id}`,
+                  href: `/projets/${immeubleData.immeuble.projet_id}`,
                 }
               : null,
             immeubleData?.immeuble?.tranche
               ? {
                   label: immeubleData.immeuble.tranche.nom,
-                  href: `/Tranches/${immeubleData.immeuble.tranche_id}`,
+                  href: `/tranches/${immeubleData.immeuble.tranche_id}`,
                 }
               : null,
             immeubleData?.immeuble?.bloc
               ? {
                   label: immeubleData.immeuble.bloc.nom,
-                  href: `/Blocs/${immeubleData.immeuble.bloc_id}`,
+                  href: `/blocs/${immeubleData.immeuble.bloc_id}`,
                 }
               : null,
             { label: immeubleData?.immeuble?.nom || 'Immeuble' },

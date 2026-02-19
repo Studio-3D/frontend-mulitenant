@@ -244,7 +244,7 @@ const CommissionTable = () => {
       render: (row) => (
         <Link
           target="_blank"
-          href={`/Utilisateurs/afficher-utilisateur/${row.id}`}
+          href={`/utilisateurs/afficher-utilisateur/${row.id}`}
         >
           <strong>{row.name + ' ' + row.prenom}</strong>
         </Link>
@@ -525,10 +525,12 @@ const CommissionTable = () => {
           onConfigClick={handleconfigClick}
         />
         {showConfigModal && (
-          <Modal isVisible={true} onClose={() => setShowConfigModal(false)}>
+          <Modal isVisible={true} onClose={() => setShowConfigModal(false)}maxWidth="max-w-4xl" // Largeur plus grande pour le formulaire
+>
             <CommissionConfigForm
               onClose={() => setShowConfigModal(false)}
               onSuccess={() => setShowConfigModal(false)} // juste fermer le modal
+
             />
           </Modal>
         )}

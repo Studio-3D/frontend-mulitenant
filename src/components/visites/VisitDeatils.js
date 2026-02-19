@@ -1344,7 +1344,7 @@ export function VisitDetails({
                               value={
                                 visite.bien_id != null && (
                                   <a
-                                    href={`/Biens/${visite.bien_id}`} // Adjust the path as needed
+                                    href={`/biens/${visite.bien_id}`} // Adjust the path as needed
                                     className="text-black"
                                     target="_blank"
                                     rel="noopener noreferrer"

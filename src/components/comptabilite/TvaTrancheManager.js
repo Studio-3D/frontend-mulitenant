@@ -195,7 +195,7 @@ const TvaTrancheManager = ({}) => {
           )}
 
           <Link
-            href={`/Tranches/${row.id}`}
+            href={`/tranches/${row.id}`}
             className="flex items-center gap-1 text-purple-500 hover:text-purple-700"
             title="Voir Détails Tranche"
           >

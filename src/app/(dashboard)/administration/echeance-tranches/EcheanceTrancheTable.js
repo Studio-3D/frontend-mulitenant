@@ -139,7 +139,9 @@ const EcheanceTrancheTable = ({ searchParams }) => {
           >
             <Eye className="w-4 h-4" />
           </button>
-          <Link
+          {isAdmin(user.role)||isSuperAdmin(user.role)&& (
+          <> 
+           <Link
             href={`/administration/echeance-tranches?id=${row.id}&action=edit`}
             className="text-blue-500 hover:text-blue-700"
             title="Modifier"
@@ -156,6 +158,9 @@ const EcheanceTrancheTable = ({ searchParams }) => {
           >
             <Trash2 className="w-4 h-4" />
           </button>
+          </>
+          )}
+        
         </div>
       ),
     },
@@ -200,7 +205,7 @@ const EcheanceTrancheTable = ({ searchParams }) => {
       <div className="reflative bg-white rounded-lg shadow-md p-4">
         <Table
           showSearch={false}
-          title={'Tranches'}
+          title={'Echéances  Tranches'}
           data_to_export={data_to_export()}
           columns_export={columns_export}
           name_file_export={'tranches_export'}
@@ -218,8 +223,7 @@ const EcheanceTrancheTable = ({ searchParams }) => {
           onFilterToggle={handleFilterToggle}
           addLink={
             isSuperAdmin(user.role) ||
-            isAdmin(user.role) ||
-            isCommercial(user.role)
+            isAdmin(user.role) 
               ? `/administration/echeance-tranches?action=add`
               : undefined
           }

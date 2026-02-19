@@ -6,6 +6,7 @@ import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import { useAuth } from '../context/AuthContext';
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { RESOURCE_URL } from "@/configs/api";
 
 const DropdownMenuDemo = () => {
   const { forceLogout, user } = useAuth();
@@ -39,8 +40,16 @@ const DropdownMenuDemo = () => {
             <Avatar>
               <AvatarImage
                 src={
-                  user?.profilePicture ||
+                  user?.photo?`${RESOURCE_URL.DOCS}/${
+                                              user.societe
+                                                ? user?.societe?.raison_sociale_concatene
+                                                : user?.societe?.raison_sociale_concatene
+                                            }_${user.societe_id ? user.societe_id : user.societe_id}/users/${
+                                              user?.photo
+                                            }`
+                                          :  
                   "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
+                                          
                 }
               />
             </Avatar>
@@ -60,12 +69,12 @@ const DropdownMenuDemo = () => {
               >
                 Profil
               </DropdownMenuItem>
-              <DropdownMenuItem 
+              {/*<DropdownMenuItem 
                 className='p-2 mt-1 hover:bg-gray-100 hover:rounded-md cursor-pointer' 
                 onClick={() => router.push("/settings")}
               >
                 Paramètres
-              </DropdownMenuItem>
+              </DropdownMenuItem>*/}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem 

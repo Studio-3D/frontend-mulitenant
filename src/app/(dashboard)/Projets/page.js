@@ -8,7 +8,7 @@ import { useProjet } from '@/context/ProjetContext';
 import { Eye, PencilLine, Trash2 } from 'lucide-react';
 import Table from '@/components/Table';
 import Link from 'next/link';
-import { isAdmin, isSuperAdmin,isCommercial } from '@/configs/enum';
+import { isAdmin, isSuperAdmin,isCommercial, isRespoLivraison } from '@/configs/enum';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
 import Input from '@/components/Input';
@@ -35,7 +35,8 @@ const Page = ({ user_id }) => {
         user && 
         !isAdmin(userRole) &&
         !isSuperAdmin(userRole) &&
-        !isCommercial(userRole)
+        !isCommercial(userRole)&&
+        !isRespoLivraison(userRole)
       ) {
         router.push('/');
       }
@@ -314,7 +315,7 @@ const Page = ({ user_id }) => {
       render: (row) => (
         <div className="flex gap-4 items-center text-sm">
           <Link
-            href={`/Projets/${row.id}`}
+            href={`/projets/${row.id}`}
             className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
             title="Voir le projet"
           >
@@ -324,7 +325,7 @@ const Page = ({ user_id }) => {
           {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
             <>
               <Link
-                href={`/Projets/editProject/${row.id}`}
+                href={`/projets/editProject/${row.id}`}
                 className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
                 title="Modifier le projet"
               >
@@ -358,7 +359,7 @@ const Page = ({ user_id }) => {
         addLink={
           user_id == null &&
           (isSuperAdmin(user?.role) || isAdmin(user?.role)
-            ? '/Projets/addProject'
+            ? '/projets/addProject'
             : undefined)
         }
         currentPage={currentPage}

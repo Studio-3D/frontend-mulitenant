@@ -17,6 +17,7 @@ const FacturesForm = ({
   montantDecompte,
   onSave,
   onCancel,
+  onFactureChange, // Add this
 }) => {
   const { selectedProjet } = useProjet();
   const [loading, setLoading] = useState(false);
@@ -170,6 +171,20 @@ const FacturesForm = ({
     }
   }, [selectedProjet]);
 
+  // Add this useEffect to handle when decompteId is provided from parent
+useEffect(() => {
+  if (decompteId && decomptes.length > 0) {
+    const selectedDecompte = decomptes.find(
+      (d) => d.id.toString() === decompteId.toString()
+    );
+    
+    if (selectedDecompte) {
+      setValue('decompte_id', decompteId);
+      setValue('montant_decompte', selectedDecompte.montant);
+      setValue('deja_facture', selectedDecompte.factures_sum_montant || 0);
+    }
+  }
+}, [decompteId, decomptes, setValue]);
   // Check if the facture number is unique
   const checkNumeroUnique = async (numero) => {
     if (!numero) return;
@@ -354,7 +369,13 @@ const FacturesForm = ({
       });
 
       toast.success(`Facture ${facture ? 'modifiée' : 'ajoutée'} avec succès`);
-      onSave();
+     // Call onSave first (closes modal and refreshes factures list)
+    onSave();
+    
+    // If we have decompteId, call onFactureChange to refresh decompte details
+    if (decompteId && onFactureChange) {
+      onFactureChange();
+    }
     } catch (error) {
       console.error('Error submitting form:', error);
 
@@ -437,39 +458,47 @@ const FacturesForm = ({
           {renderFournisseurDropdown()}
 
           {/* Décompte */}
-          <div>
-            <label className="block text-sm font-medium !text-gray-700 mb-1">
-              Décompte <span className="text-red-500">*</span>
-            </label>
-            {facture && facture.decompte_id ? (
-              <input
-                type="text"
-                value={watch('numero_decompte_edit') || ''}
-                readOnly
-                className="w-full px-3 py-2 border border-gray-300 bg-gray-100 rounded-md"
-              />
-            ) : (
-              <select
-                {...register('decompte_id')}
-                onChange={handleDecompteChange}
-                className={`w-full px-3 py-2 border rounded-md ${
-                  formErrors.decompte_id ? 'border-red-500' : 'border-gray-300'
-                }`}
-              >
-                <option value="">Sélectionner un décompte</option>
-                {decomptes.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.numero}
-                  </option>
-                ))}
-              </select>
-            )}
-            {formErrors.decompte_id && (
-              <p className="mt-1 text-sm !text-red-500">
-                {formErrors.decompte_id.message}
-              </p>
-            )}
-          </div>
+         {/* Décompte */}
+<div>
+  <label className="block text-sm font-medium !text-gray-700 mb-1">
+    Décompte <span className="text-red-500">*</span>
+  </label>
+  {facture && facture.decompte_id ? (
+    <input
+      type="text"
+      value={watch('numero_decompte_edit') || ''}
+      readOnly
+      className="w-full px-3 py-2 border border-gray-300 bg-gray-100 rounded-md"
+    />
+  ) : decompteId ? ( // If decompteId is provided from parent
+    <input
+      type="text"
+      value={decomptes.find(d => d.id.toString() === decompteId?.toString())?.numero || ''}
+      readOnly
+      className="w-full px-3 py-2 border border-gray-300 bg-gray-100 rounded-md"
+    />
+  ) : (
+    <select
+      {...register('decompte_id')}
+      onChange={handleDecompteChange}
+      className={`w-full px-3 py-2 border rounded-md ${
+        formErrors.decompte_id ? 'border-red-500' : 'border-gray-300'
+      }`}
+    >
+      <option value="">Sélectionner un décompte</option>
+      {decomptes.map((d) => (
+        <option key={d.id} value={d.id}>
+          {d.numero}
+        </option>
+      ))}
+    </select>
+  )}
+  {formErrors.decompte_id && (
+    <p className="mt-1 text-sm !text-red-500">
+      {formErrors.decompte_id.message}
+    </p>
+  )}
+</div>
 
           {/* Montant Décompte */}
           <div>

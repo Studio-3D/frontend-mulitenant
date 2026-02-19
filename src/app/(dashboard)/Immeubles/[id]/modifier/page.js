@@ -22,7 +22,7 @@ export default function EditImmeublePage() {
   // Redirect if user doesn't have permission
   useEffect(() => {
     if (user && !canEditImmeuble) {
-      router.push("/Projets");
+      router.push("/projets");
     }
   }, [user, canEditImmeuble, router]);
 

@@ -259,18 +259,18 @@ const TabsNavigation = ({
     }
   };
 
-  const handleSubTabSelect = (parentTab, subTab, label) => {
-    onTabChange(parentTab);
-    onSubTabChange(parentTab, subTab);
-    setDisplayedLabels((prev) => ({
-      ...prev,
-      [parentTab]: label,
-    }));
-    setDropdownState((prev) => ({
-      ...prev,
-      [parentTab]: false,
-    }));
-  };
+ const handleSubTabSelect = (parentTab, subTab, label) => {
+  onTabChange(parentTab);
+  onSubTabChange(parentTab, subTab);
+  setDisplayedLabels((prev) => ({
+    ...prev,
+    [parentTab]: label,
+  }));
+  setDropdownState((prev) => ({
+    ...prev,
+    [parentTab]: false,
+  }));
+};
 
   // Get the appropriate notification count for displayed labels
   const getDisplayedNotificationCount = (tabId) => {

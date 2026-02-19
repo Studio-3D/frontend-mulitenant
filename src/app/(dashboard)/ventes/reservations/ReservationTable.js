@@ -14,6 +14,7 @@ import {
   Send,
   Pencil,
   UserPlus,
+  UserPenIcon,
 } from "lucide-react";
 import Modal from "@/components/Modal";
 import DeleteData from "@/components/DeleteData";
@@ -145,7 +146,7 @@ const ReservationTable = ({ dataClient, user_id,searchParams }) => {
 
     const fetchNotaires = async () => {
       await axios
-        .get(`${APIURL.ROOTV1}/notaires`, {
+        .get(`${APIURL.ROOTV1}/projets/${selectedProjet?.id}/notaires`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
           },
@@ -199,9 +200,7 @@ const ReservationTable = ({ dataClient, user_id,searchParams }) => {
     return () => clearInterval(interval);
   }, [accesstoken, currentPage, rowsPerPage, searchTerm,selectedProjet]);
 
-  function handleEdit(resId) {
-    router.push(`${ENDPOINTS.RESERVATIONS}?id=${resId}&action=edit`);
-  }
+
 
 
 
@@ -279,7 +278,7 @@ const ReservationTable = ({ dataClient, user_id,searchParams }) => {
               <>
                 <Link
                   target="_blank"
-                  href={"/Utilisateurs/afficher-utilisateur/" + row.user_id}
+                  href={"/utilisateurs/afficher-utilisateur/" + row.user_id}
                 >
                   <strong style={{ fontWeight: 600 }}>{row.cc}</strong>
                 </Link>
@@ -308,7 +307,7 @@ const ReservationTable = ({ dataClient, user_id,searchParams }) => {
       key: "propriete_dite_bien",
       label: "Bien",
       render: (row) => (
-        <Link target="_blank" href={`/Biens/${row.bien_id}`}>
+        <Link target="_blank" href={`/biens/${row.bien_id}`}>
           <strong style={{ fontWeight: 600 }}>
             {NomBienComplet(row.bien)}
           </strong>
@@ -351,14 +350,15 @@ const ReservationTable = ({ dataClient, user_id,searchParams }) => {
       label: "Actions",
       render: (row) => (
         <div className="flex gap-3 items-center">
-          
-           <Link
+               <div title="Détail du Vente">
+               <Link
                       href={`/ventes/reservations/${row.id}`}
                       className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
                       title="Voir les détails"
                     >
                       <Eye className="w-4 h-4" />
                     </Link>
+              </div>
           
 
             {(isSuperAdmin(userRole) ||
@@ -366,11 +366,14 @@ const ReservationTable = ({ dataClient, user_id,searchParams }) => {
             isCommercial(userRole)) && (
               <>
               {(isSuperAdmin(userRole) || isAdmin(userRole)) && row.data_res.contrat_vente == null && (
-                <PencilLine
-                  className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
-                  title="Modifier"
-                  onClick={() => handleEdit(row.id)}
-                />
+            
+                <Link
+                href={`/ventes/reservations/${row.id}?id=${row.id}&action=edit`}
+                      className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
+                title="Modifier Réervation"
+              >
+                <PencilLine className="w-4 h-4" />
+              </Link>
               )}
                 {row.statut == 3 ? (
                 <>
@@ -439,6 +442,8 @@ const ReservationTable = ({ dataClient, user_id,searchParams }) => {
                 ) : null}
 
                 {row.statut == 1 && row.avances_sum_montant>0 && (
+                  <span title="désister">
+
                       <X
                         className={`w-4 h-4 cursor-pointer ${
                           row.data_res.desistement_att_validation_rejete?.statut == 0
@@ -467,7 +472,7 @@ const ReservationTable = ({ dataClient, user_id,searchParams }) => {
                               )
                             : handleDesiste(row.id, null, null, null)
                         }
-                      />
+                      /></span>
                 )}
               </>
             )}
@@ -481,18 +486,21 @@ const ReservationTable = ({ dataClient, user_id,searchParams }) => {
               <>
                 {row.notaire_id ? (
                   // If notaire already assigned, show Pencil icon for modification
-                  <Pencil
+                  <span title="Modifier le notaire">
+                  <UserPenIcon
                     className="w-4 h-4 !text-orange-500 hover:text-orange-700 cursor-pointer"
                     title="Modifier le notaire"
                     onClick={() => handle_affecte(row.id, row.code_reservation, row.notaire_id)}
-                  />
+                  /></span>
                 ) : (
                   // If no notaire assigned, show UserPlus icon for affectation
+                  <span title="Affecter un notaire">
                   <UserPlus 
                     className="w-4 h-4 !text-green-500 hover:text-green-700 cursor-pointer"
                     title="Affecter un notaire"
                     onClick={() => handle_affecte(row.id, row.code_reservation, null)}
                   />
+                  /</span>
                 )}
               </>
           )}
@@ -531,7 +539,7 @@ const ReservationTable = ({ dataClient, user_id,searchParams }) => {
         date_reservation: item.date_reservation
           ? formatDate(item.date_reservation)
           : "",
-        bien: item.bien?.propriete_dite_bien || "",
+        bien: NomBienComplet(item?.bien )|| "",
         prix: item.prix ? `${item.prix.toLocaleString()} DH` : "",
         avance: item.avances_sum_montant
           ? `${item.avances_sum_montant.toLocaleString()} DH`
@@ -779,7 +787,7 @@ const ReservationTable = ({ dataClient, user_id,searchParams }) => {
       )}
       {open_v_reservation && (
         <>
-          <Modal isVisible={true} onClose={() => setOpen_v_reservation(false)}>
+          <Modal isVisible={true} onClose={() => setOpen_v_reservation(false)} maxWidth="max-w-xl">
             <Modal_Valider_Reservation
               prix={prix}
               avance={avance}
@@ -812,7 +820,7 @@ const ReservationTable = ({ dataClient, user_id,searchParams }) => {
       )}
       {open_r && (
         <>
-          <Modal isVisible={true} onClose={() => setOpen_r(false)}>
+          <Modal isVisible={true} onClose={() => setOpen_r(false)} maxWidth="max-w-xl">
             <Modal_Rejeter_Reservation
               code_reservation={code_reservation}
               id={ID}

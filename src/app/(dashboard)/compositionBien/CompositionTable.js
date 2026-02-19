@@ -234,7 +234,7 @@ export default function Composition({ bien, reloadTrigger }) {
         columns={columns}
         onFilterToggle={handleFilterToggle}
         data={compositionBiens}
-        addLink={`/Biens/${bien}/ajouter-composition`}
+        addLink={`/biens/${bien}/ajouter-composition`}
         totalRows={totalRows}
         loading={loading}
         error={error}

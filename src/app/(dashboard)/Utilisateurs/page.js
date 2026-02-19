@@ -24,6 +24,7 @@ import {
   USER_TYPES,
 } from '@/components/user-utils';
 import format from 'date-fns/format';
+import { isAdmin, isSuperAdmin } from '@/configs/enum';
 
 const Page = () => {
   const [users, setUsers] = useState([]);
@@ -138,7 +139,14 @@ const Page = () => {
     setTempFilters(reset);
     setSearchTerm(''); // Also reset search term
   };
-
+      useEffect(() => {
+          if (
+            !isAdmin(user?.role) &&
+            !isSuperAdmin(user?.role) 
+          ) {
+            router.push('/');
+          }
+        }, [user, user?.role, router]);
   // Fetch users when pagination, filters or search changes
   useEffect(() => {
     fetchUsers();
@@ -304,7 +312,7 @@ const Page = () => {
       render: (row) => (
         <div className="flex gap-4 items-center text-sm">
           <Link
-            href={`/Utilisateurs/afficher-utilisateur/${row.id}`}
+            href={`/utilisateurs/afficher-utilisateur/${row.id}`}
             className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
             title="Voir les détails"
           >
@@ -312,7 +320,7 @@ const Page = () => {
           </Link>
 
           <Link
-            href={`/Utilisateurs/afficher-utilisateur/${row.id}?edit=true`}
+            href={`/utilisateurs/afficher-utilisateur/${row.id}?edit=true`}
             className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
             title="Modifier l'utilisateur"
           >
@@ -506,7 +514,7 @@ const Page = () => {
           loading={loading}
           error={error}
           addLink={
-            user?.role === 1 ? `/Utilisateurs/Ajouter-Utilisateur` : undefined
+            user?.role == 1 ? `/utilisateurs/ajouter-utilisateur` : undefined
           }
           enableExport
           currentPage={currentPage}

@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react';
 import { XCircle } from 'lucide-react';
 import Input from '../Input';
 
-const FacturesFilter = ({ onSubmit, initialValues = {} }) => {
-  const [values, setValues] = useState({
+const FacturesFilter = ({ onSubmit, initialValues = {}, hideNumDecompte = false }) => {  const [values, setValues] = useState({
     code_fourn: '',
     nom_fourn: '',
     num_facture: '',
@@ -82,14 +81,9 @@ const FacturesFilter = ({ onSubmit, initialValues = {} }) => {
           className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
         />
 
-        <Input
-          name="num_decompte"
-          type="text"
-          label=" N° Décompte"
-          value={values.num_decompte}
-          onChange={handleChange}
-          className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-        />
+        {!hideNumDecompte && ( // Conditionally render
+          <Input name="num_decompte" type="text" label=" N° Décompte" value={values.num_decompte} onChange={handleChange} className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm" />
+        )}
 
         <Input
           name="montant"

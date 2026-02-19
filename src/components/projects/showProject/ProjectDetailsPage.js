@@ -6,7 +6,7 @@ import { RightCard } from './RightCard';
 import { APIURL } from '@/configs/api';
 import { useProjet } from '@/context/ProjetContext';
 import { useAuth } from '@/context/AuthContext';
-import { isAdmin, isSuperAdmin,isCommercial } from '@/configs/enum';
+import { isAdmin, isSuperAdmin,isCommercial, isRespoLivraison } from '@/configs/enum';
 import axios from 'axios';
 import Modal from '@/components/Modal';
 import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
@@ -61,7 +61,8 @@ export const ProjectDetailsPage = () => {
           user && 
           !isAdmin(userRole) &&
           !isSuperAdmin(userRole) &&
-          !isCommercial(userRole)
+          !isCommercial(userRole)&&
+          !isRespoLivraison(userRole)
         ) {
           router.push('/');
         }
@@ -125,7 +126,7 @@ export const ProjectDetailsPage = () => {
 
   // Handle edit action
   const handleEdit = () => {
-    router.push(`/Projets/editProject/${id}`);
+    router.push(`/projets/editProject/${id}`);
   };
 
   // Handle delete action
@@ -135,7 +136,7 @@ export const ProjectDetailsPage = () => {
 
   const handleDeleteSuccess = () => {
     setShowDeleteModal(false);
-    window.location.href = '/Projets'; // go + reload in one step
+    window.location.href = '/projets'; // go + reload in one step
   };
 
   const allTabsData = useMemo(() => {
@@ -354,7 +355,7 @@ export const ProjectDetailsPage = () => {
           <div className="text-red-500 text-xl font-semibold mb-4">Error</div>
           <div className="text-gray-600 mb-6">{error}</div>
           <button
-            onClick={() => router.push('/Projets')}
+            onClick={() => router.push('/projets')}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
           >
             Return to Projects
@@ -370,7 +371,7 @@ export const ProjectDetailsPage = () => {
         <div className="text-center">
           <div className="text-xl font-semibold mb-4">Project Not Found</div>
           <button
-            onClick={() => router.push('/Projets')}
+            onClick={() => router.push('/projets')}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
           >
             Return to Projects
@@ -382,14 +383,14 @@ export const ProjectDetailsPage = () => {
 
   const handleBack = () => {
     setShowDeleteModal(false);
-    router.push(`/Projets`);
+    router.push(`/projets`);
   };
   return (
     <div className="w-full">
       {/* Breadcrumbs */}
       <div className="mb-4">
         <BreadCrumb
-          onRoot={{ href: '/Projets' }}
+          onRoot={{ href: '/projets' }}
           items={[{ label: projectData?.projet?.nom || `Projet #${id}` }]}
         />
       </div>

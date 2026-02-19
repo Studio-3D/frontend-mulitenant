@@ -9,12 +9,11 @@ import Table from '@/components/Table';
 import FournisseursFilter from './FournisseursFilter';
 import FournisseursForm from './FournisseursForm';
 import { toast } from 'react-hot-toast';
-import { Eye, PencilLine, Trash2 } from 'lucide-react';
 import Modal from '@/components/Modal';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import { fetchData_table_by_projet } from '@/configs/api-utils';
 import { useAuth } from '@/context/AuthContext';
-
+import { Eye, PencilLine, Trash2, X } from 'lucide-react';
 const FournisseursManager = () => {
   const { user } = useAuth();
   const { selectedProjet } = useProjet();
@@ -264,13 +263,21 @@ const FournisseursManager = () => {
         </Modal>
       )}
 
-      {facturesModalOpen && selectedFournisseur && (
-        <Modal isVisible={true} onClose={() => setFacturesModalOpen(false)}>
-          <div className="p-5">
-            <h2 className="text-xl font-bold mb-4">
-              Factures du fournisseur: {selectedFournisseur.code} -{' '}
-              {selectedFournisseur.nom}
-            </h2>
+     {facturesModalOpen && selectedFournisseur && (
+  <Modal isVisible={true} onClose={() => setFacturesModalOpen(false)} maxWidth='max-w-xl'>
+    <div className="p-5">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold">
+          Factures du fournisseur: {selectedFournisseur.code} -{' '}
+          {selectedFournisseur.nom}
+        </h2>
+        <button
+          onClick={() => setFacturesModalOpen(false)}
+          className="text-gray-500 hover:text-gray-700 p-1"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
             {selectedFournisseur.factures &&
             selectedFournisseur.factures.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

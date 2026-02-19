@@ -82,7 +82,7 @@ export default function BienForm() {
       if (oldProjetId) {
         // Projet a changé
         console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-        router.push('/Projets/' + selectedProjet.id);
+        router.push('/projets/' + selectedProjet.id);
       }
       setOldProjetId(selectedProjet.id);
     }
@@ -990,18 +990,18 @@ export default function BienForm() {
         setTimeout(() => {
           if (immeubleId) {
             localStorage.setItem(`immeuble-${immeubleId}-activeTab`, 'bien');
-            router.push(`/Immeubles/${immeubleId}`);
+            router.push(`/immeubles/${immeubleId}`);
           } else if (blocId) {
             localStorage.setItem(`bloc-${blocId}-activeTab`, 'bien');
-            router.push(`/Blocs/${blocId}`);
+            router.push(`/blocs/${blocId}`);
           } else if (trancheId) {
             localStorage.setItem(`tranche-${trancheId}-activeTab`, 'bien');
-            router.push(`/Tranches/${trancheId}`);
+            router.push(`/tranches/${trancheId}`);
           } else if (projet.id) {
             localStorage.setItem(`project-${projet.id}-activeTab`, 'bien');
-            router.push(`/Projets/${projet.id}`);
+            router.push(`/projets/${projet.id}`);
           } else {
-            router.push('/Projets');
+            router.push('/projets');
           }
         }, 100);
       }
@@ -1883,30 +1883,30 @@ export default function BienForm() {
     <div className="p-3">
       <div className="flex items-center justify-start">
         <BreadCrumb
-          onRoot={{ href: '/Projets' }}
+          onRoot={{ href: '/projets' }}
           items={[
             projetId || selectedProjet?.id
               ? {
                   label: selectedProjet?.nom || 'Projet',
-                  href: `/Projets/${projetId || selectedProjet.id}`,
+                  href: `/projets/${projetId || selectedProjet.id}`,
                 }
-              : { label: 'Projets', href: '/Projets' },
+              : { label: 'Projets', href: '/projets' },
             selectedTranche?.nom
               ? {
                   label: selectedTranche.nom,
-                  href: `/Tranches/${trancheId || selectedTranche?.id}`,
+                  href: `/tranches/${trancheId || selectedTranche?.id}`,
                 }
               : null,
             selectedBloc?.nom
               ? {
                   label: selectedBloc.nom,
-                  href: `/Blocs/${blocId || selectedBloc?.id}`,
+                  href: `/blocs/${blocId || selectedBloc?.id}`,
                 }
               : null,
             selectedImmeuble?.nom
               ? {
                   label: selectedImmeuble.nom,
-                  href: `/Immeubles/${immeubleId || selectedImmeuble?.id}`,
+                  href: `/immeubles/${immeubleId || selectedImmeuble?.id}`,
                 }
               : null,
             { label: `${id ? 'Modifier' : 'Ajouter'} un bien` },

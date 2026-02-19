@@ -90,7 +90,7 @@ export default function UpdateSociete() {
         });
         refreshSocietes();
         toast.success("Informations de l'entreprise mises à jour avec succès.");
-        router.push('/Societes');
+        router.push('/societes');
       } catch (error) {
         toast.error(
           "Erreur lors de la mise à jour des informations de l'entreprise."

@@ -51,7 +51,7 @@ const EditProjectPage = () => {
       <div className="p-4 text-red-500">
         <p>{error}</p>
         <button
-          onClick={() => router.push('/Projets')}
+          onClick={() => router.push('/projets')}
           className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
         >
           Back to Projects
@@ -65,7 +65,7 @@ const EditProjectPage = () => {
       <div className="p-4">
         <p>Project not found</p>
         <button
-          onClick={() => router.push('/Projets')}
+          onClick={() => router.push('/projets')}
           className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
         >
           Back to Projects
@@ -78,7 +78,7 @@ const EditProjectPage = () => {
     <div className="">
       <div className="mb-4">
         <BreadCrumb
-          onRoot={{ href: '/Projets' }}
+          onRoot={{ href: '/projets' }}
           items={[{ label: projectData?.projet?.nom || 'Projet' }, { label: 'Modifier' }]}
         />
       </div>

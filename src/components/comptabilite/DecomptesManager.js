@@ -275,7 +275,7 @@ const DecomptesManager = ({ urlParams, activeTab, onTabActivated }) => {
       />
 
       {showFormModal && (
-        <Modal isVisible={true} onClose={handleFormCancel}>
+        <Modal isVisible={true} onClose={handleFormCancel} maxWidth='max-w-2xl'>
           <DecomptesForm
             decompte={currentDecompte}
             onSave={handleFormSave}

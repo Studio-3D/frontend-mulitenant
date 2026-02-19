@@ -24,7 +24,7 @@ export default function AddImmeublePage() {
   // Redirect if user doesn't have permission
   useEffect(() => {
     if (user && !canCreateImmeuble) {
-      router.push("/Projets");
+      router.push("/projets");
     }
   }, [user, canCreateImmeuble, router]);
 

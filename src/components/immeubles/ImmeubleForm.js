@@ -93,7 +93,7 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
       if (oldProjetId) {
         // Projet a changé
         console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet?.id}`);
-        router.push('/Projets/' + selectedProjet.id);
+        router.push('/projets/' + selectedProjet.id);
       }
       setOldProjetId(selectedProjet.id);
     }
@@ -291,19 +291,19 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
       setTimeout(() => {
         if (blocId) {
           localStorage.setItem(`bloc-${blocId}-activeTab`, 'immeuble');
-          router.push(`/Blocs/${blocId}`);
+          router.push(`/blocs/${blocId}`);
         } else if (trancheId) {
           localStorage.setItem(`tranche-${trancheId}-activeTab`, 'immeuble');
 
-          router.push(`/Tranches/${trancheId}`);
+          router.push(`/tranches/${trancheId}`);
         } else if (selectedProjet.id) {
           localStorage.setItem(
             `project-${selectedProjet.id}-activeTab`,
             'immeuble'
           );
-          router.push(`/Projets/${selectedProjet.id}`);
+          router.push(`/projets/${selectedProjet.id}`);
         } else {
-          router.push('/Projets');
+          router.push('/projets');
         }
       }, 100);
     } catch (error) {
@@ -329,20 +329,20 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
     <div className="p-3">
       <div className="flex items-center justify-start">
         <BreadCrumb
-          onRoot={{ href: '/Projets' }}
+          onRoot={{ href: '/projets' }}
           items={[
             selectedProjet?.id
               ? {
                   label: selectedProjet?.nom || `Projet #${selectedProjet?.id}`,
-                  href: `/Projets/${selectedProjet?.id}`,
+                  href: `/projets/${selectedProjet?.id}`,
                 }
-              : { label: 'Projets', href: '/Projets' },
+              : { label: 'Projets', href: '/projets' },
             selectedTranche?.nom
               ? {
                   label:
                     selectedTranche?.nom ||
                     `Tranche #${selectedTranche?.nom}`,
-                  href: `/Tranches/${trancheId || selectedTranche?.id}`,
+                  href: `/tranches/${trancheId || selectedTranche?.id}`,
                 }
               : null,
             selectedBloc?.nom
@@ -350,7 +350,7 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
                   label:
                     selectedBloc?.nom ||
                     `Bloc #${selectedBloc?.id}`,
-                  href: `/Blocs/${blocId || selectedBloc?.id}`,
+                  href: `/blocs/${blocId || selectedBloc?.id}`,
                 }
               : null,
             { label: `${id ? 'Modifier' : 'Ajouter'} un immeuble` },

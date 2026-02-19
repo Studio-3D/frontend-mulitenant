@@ -20,7 +20,7 @@ import { useSearchParams } from 'next/navigation';
 import JournalTable from '@/app/(dashboard)/crm/appels/[appelId]/JournalTable';
 import HistoriquesTable from '@/app/(dashboard)/crm/prospects/[prospectId]/HistoriquesTable';
 import { useProjet } from '@/context/ProjetContext';
-import { isAdmin, isCommercial, isNotaire, isRespoCommercial, isRespoLivraison, isSuperAdmin } from '@/configs/enum';
+import { isAdmin, isCommercial, isComptable, isNotaire, isRespoCommercial, isRespoLivraison, isSuperAdmin } from '@/configs/enum';
 
 const ClientDetails = () => {
   const { token, user } = useAuth();
@@ -46,7 +46,8 @@ const ClientDetails = () => {
       !isCommercial(userRole)&&
       !isRespoCommercial(userRole)&&
       !isNotaire(userRole)&&
-      !isRespoLivraison(userRole)
+      !isRespoLivraison(userRole)&&
+      !isComptable(userRole)
     ) {
       router.push('/');
     }

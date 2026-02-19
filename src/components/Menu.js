@@ -37,9 +37,9 @@ import {
   Building2,
   FolderCog,
   Receipt,
-  LayoutDashboard as LayoutDashboardFilled, // Replacement for TbLayoutDashboardFilled
-  DollarSign, // Replacement for FaFileInvoiceDollar
-  Share2, // Added for social networks
+  LayoutDashboard as LayoutDashboardFilled,
+  DollarSign,
+  Share2,
   Coins,
   CheckCircle2,
   Clock,
@@ -55,7 +55,10 @@ import {
   FolderCog2,
   User,
   TimerIcon,
-  Send, // Replacement for FaFileInvoiceDollar
+  Send,
+  Workflow,
+  Split,
+  
 } from 'lucide-react';
 
 import { User_roles } from '../configs/enum';
@@ -63,7 +66,6 @@ import { useSociete } from '@/context/SocieteContext';
 import SocieteDialog from './SocieteDialog';
 import { useProjet } from '@/context/ProjetContext';
 import ProjetDialog from './ProjetDialog';
-
 
 const Menu = () => {
   const [menuItems, setMenuItems] = useState([]);
@@ -78,23 +80,20 @@ const Menu = () => {
   const router = useRouter();
   const [isProjetDialogVisible, setIsProjetDialogVisible] = useState(false);
   const [selectedProjetId, setSelectedProjetId] = useState('');
-  const [requireProjetAfterSociete, setRequireProjetAfterSociete] =
-    useState(false);
+  const [requireProjetAfterSociete, setRequireProjetAfterSociete] = useState(false);
 
   const handleSocieteSelected = () => {
     const projet = localStorage.getItem('selectedProjet');
 
-    // Ferme la fenêtre de la société
     setIsModalVisible(false);
 
-    // Si le projet n'est pas encore sélectionné, on montre le popup projet
     if (!projet && requireProjetAfterSociete) {
       setIsProjetDialogVisible(true);
     } else {
-      router.push(targetHref); // Si le projet est déjà sélectionné, redirige directement
+      router.push(targetHref);
     }
 
-    setRequireProjetAfterSociete(false); // Réinitialise l'état
+    setRequireProjetAfterSociete(false);
   };
 
   useEffect(() => {
@@ -102,12 +101,12 @@ const Menu = () => {
       const projet = localStorage.getItem('selectedProjet');
 
       if (!projet) {
-        setIsProjetDialogVisible(true); // Affiche le projet si non sélectionné
+        setIsProjetDialogVisible(true);
       } else {
-        router.push(targetHref); // Redirige si le projet est déjà sélectionné
+        router.push(targetHref);
       }
 
-      setRequireProjetAfterSociete(false); // Réinitialise la nécessité de projet
+      setRequireProjetAfterSociete(false);
     }
   }, [isModalVisible, requireProjetAfterSociete]);
 
@@ -131,18 +130,19 @@ const Menu = () => {
       items.push({
         label: 'Societes',
         icon: <Building size={20} />,
-        href: '/Societes',
+        href: '/societes',
       });
     }
 
     if (role <= User_roles.ROLE_ADMIN) {
       items.push(...getAdminItems());
     }
-  if (role <= User_roles.ROLE_COMMERCIAL ) {
+    
+    if (role <= User_roles.ROLE_COMMERCIAL) {
       items.push({
         label: 'Projets',
         icon: <Briefcase size={20} />,
-        href: '/Projets',
+        href: '/projets',
         needsSociete: true && user.role == 1,
       });
     }
@@ -160,16 +160,16 @@ const Menu = () => {
     if (role == User_roles.ROLE_RESPO_LIVRAISON) {
       items.push(...getRespoLivraisonItems());
     }
-     if (role == User_roles.ROLE_NOTAIRE) {
+    if (role == User_roles.ROLE_NOTAIRE) {
       items.push(...getNotaireItems());
     }
-     if (role == User_roles.ROLE_COMPTABLE) {
+    if (role == User_roles.ROLE_COMPTABLE) {
       items.push(...getComptableItems());
     }
-     if (role == User_roles.ROLE_AGENT_ADMINISTRATIF) {
+    if (role == User_roles.ROLE_AGENT_ADMINISTRATIF) {
       items.push(...getAgentAdminItems());
     }
-     if (role == User_roles.ROLE_RESPO_COMMERCIAL) {
+    if (role == User_roles.ROLE_RESPO_COMMERCIAL) {
       items.push(...getRespoCommercialItems());
     }
 
@@ -180,7 +180,7 @@ const Menu = () => {
     {
       label: 'Utilisateurs',
       icon: <UsersRound size={20} />,
-      href: '/Utilisateurs',
+      href: '/utilisateurs',
       needsSociete: user.role === 1,
     },
     {
@@ -207,7 +207,6 @@ const Menu = () => {
           needsProjet: true,
           needsSociete: user.role === 1,
         },
-
         {
           label: 'Etapes Projet',
           icon: <Cuboid size={20} />,
@@ -242,7 +241,6 @@ const Menu = () => {
           needsProjet: true,
           needsSociete: user.role === 1,
         },
-
         {
           label: 'Typologies',
           icon: <FolderOpen size={20} />,
@@ -265,7 +263,7 @@ const Menu = () => {
         },
         {
           label: 'Echéances Tranche',
-          icon: <Euro size={20} />,
+          icon: <Split  size={20} />,
           href: '/administration/echeance-tranches',
           needsProjet: true,
           needsSociete: user.role == 1,
@@ -283,7 +281,8 @@ const Menu = () => {
           needsSociete: user.role === 1,
         },
       ],
-    }
+    },
+    
   ];
 
   const getCommercialItems = () => [
@@ -298,11 +297,10 @@ const Menu = () => {
       label: 'Ventes',
       icon: <Handshake />,
       href: '/ventes',
-
       needsSociete: user.role === 1,
       needsProjet: true,
     },
-
+   
     {
       label: 'Actualités du Jour',
       icon: <Timer />,
@@ -315,95 +313,42 @@ const Menu = () => {
       icon: <Calendar />,
       href: '/calendrier',
       needsSociete: user.role === 1,
-      // needsProjet: true,
     },
-   
+    {
+      label: 'Echéances Tranche',
+      icon: <Split   size={20} />,
+      href: '/administration/echeance-tranches',
+      needsProjet: true,
+      needsSociete: user.role == 1,
+    },
+    {
+          label: 'Etapes Projet',
+          icon: <Cuboid size={20} />,
+          href: '/etapes-projet',
+          needsProjet: true,
+          needsSociete: user.role == 1,
+    },
   ];
-   const getRespoLivraisonItems = () => [
-     {
-    label: 'Affectations',
-    icon: <Send size={20} />,
-    href: '/respoLivraison/affectation',
-    needsSociete: user.role === 1,
-    needsProjet: true,
-  },
-  {
-    label: 'Suivi Notaire',
-    icon: <Users />,
-    children: [
-      {
-        label: 'Nouveaux Dossiers',
-        icon: <Wrench />,
-        href: '/notaire/nouveau-dossier',
-        needsSociete: user.role === 1,
-        needsProjet: true,
-      },
-      {
-        label: 'Rendez Vous',
-        icon: <Users />,
-        href: '/notaire/Rendez-vous/rdv',
-        needsProjet: true,
-        needsSociete: user.role === 1,
-      },
-      {
-        label: 'Relance',
-        icon: <FileText />,
-        href: '/notaire/Rendez-vous/relance',
-        needsProjet: true,
-        needsSociete: user.role === 1,
-      },
-      {
-        label: 'Attestation de Vente',
-        icon: <FolderArchive />,
-        href: '/notaire/attestations-vente',
-        needsSociete: user.role === 1,
-        needsProjet: true,
-      },
-      {
-        label: 'Contrat de Vente',
-        icon: <FolderCog2 />,
-        href: '/notaire/contrats-vente',
-        needsSociete: user.role === 1,
-        needsProjet: true,
-      },
-    ],
-  },
-  {
-    label: 'Remise Des Clés',
-    icon: <Percent size={20} />,
-    href: '/remiseCles',
-    needsSociete: user.role === 1,
-    needsProjet: true,
-  }
-];
-  const getSavItems = () => [
-   
+
+  const getRespoLivraisonItems = () => [
+    {
+      label: 'Projets',
+      icon: <Briefcase size={20} />,
+      href: '/projets',
+      needsSociete: true && user.role == 1,
+    },
+    {
+      label: 'Affectations',
+      icon: <Send size={20} />,
+      href: '/respoLivraison/affectation',
+      needsSociete: user.role === 1,
+      needsProjet: true,
+    },
+    {
+      label: 'Suivi Notaire',
+      icon: <Users />,
+      children: [
         {
-          label: 'Services prestataire',
-          icon: <Wrench />,
-          href: '/sav/services',
-          needsSociete: user.role === 1,
-          needsProjet: true,
-        },
-        {
-          label: 'Prestataires',
-          icon: <Users />,
-          href: '/sav/prestataires',
-          needsProjet: true,
-          needsSociete: user.role === 1,
-        },
-        {
-          label: 'Reclamations',
-          icon: <FileText />,
-          href: '/sav/reclamations',
-          needsProjet: true,
-          needsSociete: user.role === 1,
-        },
-     
-  ];
-  const getNotaireItems = () => [
-   
-      {
           label: 'Nouveaux Dossiers',
           icon: <Wrench />,
           href: '/notaire/nouveau-dossier',
@@ -418,12 +363,106 @@ const Menu = () => {
           needsSociete: user.role === 1,
         },
         {
-          label: 'Relances',
-          icon: <FileText />,
-          href: '/notaire/Rendez-vous/relance',
-          needsProjet: true,
+          label: 'Attestation de Vente',
+          icon: <FolderArchive />,
+          href: '/notaire/attestations-vente',
           needsSociete: user.role === 1,
+          needsProjet: true,
         },
+        {
+          label: 'Contrat de Vente',
+          icon: <FolderCog2 />,
+          href: '/notaire/contrats-vente',
+          needsSociete: user.role === 1,
+          needsProjet: true,
+        },
+        {
+          label: 'Agenda',
+          icon: <TimerIcon />,
+          href: '/notaire/agenda',
+          needsSociete: user.role === 1,
+          needsProjet: false,
+        },
+      ],
+    },
+    {
+      label: 'Etat Dossier',
+      icon: <Workflow />,
+      href: '/etat-dossiers',
+      needsSociete: user.role === 1,
+      needsProjet: true,
+    },
+    {
+      label: 'Remise Des Clés',
+      icon: <Percent size={20} />,
+      href: '/remiseCles',
+      needsSociete: user.role === 1,
+      needsProjet: true,
+    },
+    {
+      label: 'Historique Importation',
+      icon: <History size={20} />,
+      href: '/histo-importation',
+      needsSociete: user.role === 1,
+      needsProjet: true,
+    },
+    {
+          label: 'Etapes Projet',
+          icon: <Cuboid size={20} />,
+          href: '/etapes-projet',
+          needsProjet: true,
+          needsSociete: user.role == 1,
+    },
+    
+  ];
+
+  const getSavItems = () => [
+    {
+      label: 'Services prestataire',
+      icon: <Wrench />,
+      href: '/sav/services',
+      needsSociete: user.role === 1,
+      needsProjet: true,
+    },
+    {
+      label: 'Prestataires',
+      icon: <Users />,
+      href: '/sav/prestataires',
+      needsProjet: true,
+      needsSociete: user.role === 1,
+    },
+    {
+      label: 'Reclamations',
+      icon: <FileText />,
+      href: '/sav/reclamations',
+      needsProjet: true,
+      needsSociete: user.role === 1,
+    },
+      {
+          label: 'Etapes Projet',
+          icon: <Cuboid size={20} />,
+          href: '/etapes-projet',
+          needsProjet: true,
+          needsSociete: user.role == 1,
+        },
+   
+  ];
+
+  const getNotaireItems = () => [
+    {
+      label: 'Nouveaux Dossiers',
+      icon: <Wrench />,
+      href: '/notaire/nouveau-dossier',
+      needsSociete: user.role === 1,
+      needsProjet: true,
+    },
+    {
+      label: 'Rendez Vous',
+      icon: <Users />,
+      href: '/notaire/Rendez-vous/rdv',
+      needsProjet: true,
+      needsSociete: user.role === 1,
+    },
     {
       label: 'Attestation de Vente',
       icon: <FolderArchive />,
@@ -438,20 +477,34 @@ const Menu = () => {
       needsSociete: user.role === 1,
       needsProjet: true,
     },
-     {
-      label: 'Créneaux',
+    {
+      label: 'Agenda',
       icon: <TimerIcon />,
-      href: '/notaire/creneaux-occupes',
+      href: '/notaire/agenda',
       needsSociete: user.role === 1,
       needsProjet: false,
     },
+      {
+          label: 'Etapes Projet',
+          icon: <Cuboid size={20} />,
+          href: '/etapes-projet',
+          needsProjet: true,
+          needsSociete: user.role == 1,
+        },
+
   ];
+
   const getAgentAdminItems = () => [
-    {
-      
-    }
+    // Items à définir
   ];
+
   const getRespoCommercialItems = () => [
+    {
+      label: 'Projets',
+      icon: <Briefcase size={20} />,
+      href: '/projets',
+      needsSociete: true && user.role == 1,
+    },
     {
       label: 'CRM',
       icon: <CreditCard size={20} />,
@@ -463,13 +516,33 @@ const Menu = () => {
       label: 'Ventes',
       icon: <Handshake />,
       href: '/ventes',
-
       needsSociete: user.role === 1,
       needsProjet: true,
     },
-    
+     {
+      label: 'Echéances Tranche',
+      icon: <Split  size={20} />,
+      href: '/administration/echeance-tranches',
+      needsProjet: true,
+      needsSociete: user.role == 1,
+    },
+      {
+          label: 'Etapes Projet',
+          icon: <Cuboid size={20} />,
+          href: '/etapes-projet',
+          needsProjet: true,
+          needsSociete: user.role == 1,
+        },
   ];
+
   const getComptableItems = () => [
+    {
+      label: 'Ventes',
+      icon: <Handshake />,
+      href: '/ventes',
+      needsSociete: user.role === 1,
+      needsProjet: true,
+    },
     {
       label: 'Encaissments',
       icon: <Receipt />,
@@ -483,6 +556,27 @@ const Menu = () => {
       href: '/comptabilite',
       needsProjet: true,
       needsSociete: user.role === 1,
+    },
+     {
+      label: 'Echéances Tranche',
+      icon: <Split  size={20} />,
+      href: '/administration/echeance-tranches',
+      needsProjet: true,
+      needsSociete: user.role == 1,
+    },
+    {
+      label: 'Etat Dossier',
+      icon: <Workflow />,
+      href: '/etat-dossiers',
+      needsSociete: user.role === 1,
+      needsProjet: true,
+    },
+    {
+          label: 'Etapes Projet',
+          icon: <Cuboid size={20} />,
+          href: '/etapes-projet',
+          needsProjet: true,
+          needsSociete: user.role == 1,
     },
   ];
 
@@ -541,7 +635,7 @@ const Menu = () => {
         },
       ],
     },
-   {
+    {
       label: 'Remise Des Clés',
       icon: <Percent size={20} />,
       href: '/remiseCles',
@@ -551,7 +645,7 @@ const Menu = () => {
     {
       label: 'Reclamations',
       icon: <FileText />,
-      href: '/Reclamations',
+      href: '/reclamations',
       needsSociete: user.role === 1,
       needsProjet: true,
     },
@@ -572,7 +666,7 @@ const Menu = () => {
     {
       label: 'Statistiques',
       icon: <BarChart4 size={20} />,
-      href: '/Statistiques',
+      href: '/statistiques',
       needsProjet: true,
       needsSociete: user.role === 1,
     },
@@ -587,6 +681,72 @@ const Menu = () => {
 
   const toggleDropdown = (index) => {
     setOpenDropdown(openDropdown === index ? null : index);
+  };
+
+  const handleLinkClick = (e, item) => {
+    const societe = localStorage.getItem('selectedSociete');
+    const projet = localStorage.getItem('selectedProjet');
+    const role = user?.role;
+
+    const needsSociete = typeof item.needsSociete === 'function' 
+      ? item.needsSociete(role) 
+      : item.needsSociete ?? false;
+
+    const needsProjet = typeof item.needsProjet === 'function' 
+      ? item.needsProjet(role) 
+      : item.needsProjet ?? false;
+
+    if (needsSociete && !societe) {
+      e.preventDefault();
+      setTargetHref(item.href);
+      setIsModalVisible(true);
+      if (needsProjet && !projet) {
+        setRequireProjetAfterSociete(true);
+      }
+      return;
+    }
+
+    if (needsProjet && !projet) {
+      e.preventDefault();
+      setTargetHref(item.href);
+      setIsProjetDialogVisible(true);
+      return;
+    }
+
+    // Si toutes les conditions sont remplies, la navigation se fait via le Link
+  };
+
+  const handleChildLinkClick = (e, child) => {
+    const societe = localStorage.getItem('selectedSociete');
+    const projet = localStorage.getItem('selectedProjet');
+    const role = user?.role;
+
+    const needsSociete = typeof child.needsSociete === 'function' 
+      ? child.needsSociete(role) 
+      : child.needsSociete ?? false;
+
+    const needsProjet = typeof child.needsProjet === 'function' 
+      ? child.needsProjet(role) 
+      : child.needsProjet ?? false;
+
+    if (needsSociete && !societe) {
+      e.preventDefault();
+      setTargetHref(child.href);
+      setIsModalVisible(true);
+      if (needsProjet && !projet) {
+        setRequireProjetAfterSociete(true);
+      }
+      return;
+    }
+
+    if (needsProjet && !projet) {
+      e.preventDefault();
+      setTargetHref(child.href);
+      setIsProjetDialogVisible(true);
+      return;
+    }
+
+    // Si toutes les conditions sont remplies, la navigation se fait via le Link
   };
 
   return (
@@ -623,41 +783,10 @@ const Menu = () => {
               {openDropdown === index && (
                 <div className="pl-1.5 lg:pl-6">
                   {item.children.map((child, childIndex) => (
-                    <div
+                    <Link
                       key={childIndex}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setTargetHref(child.href);
-
-                        const societe = localStorage.getItem('selectedSociete');
-                        const projet = localStorage.getItem('selectedProjet');
-                        const role = user?.role;
-
-                        const needsSociete =
-                          typeof child.needsSociete === 'function'
-                            ? child.needsSociete(role)
-                            : child.needsSociete ?? false;
-
-                        const needsProjet =
-                          typeof child.needsProjet === 'function'
-                            ? child.needsProjet(role)
-                            : child.needsProjet ?? false;
-
-                        if (needsSociete && !societe) {
-                          setIsModalVisible(true);
-                          if (needsProjet && !projet) {
-                            setRequireProjetAfterSociete(true);
-                          }
-                          return;
-                        }
-
-                        if (needsProjet && !projet) {
-                          setIsProjetDialogVisible(true);
-                          return;
-                        }
-
-                        router.push(child.href);
-                      }}
+                      href={child.href}
+                      onClick={(e) => handleChildLinkClick(e, child)}
                       className={`flex items-center gap-2 p-[7px] mt-1 cursor-pointer ${
                         pathname === child.href
                           ? 'bg-active text-[#231651] rounded-md'
@@ -668,47 +797,16 @@ const Menu = () => {
                         {child.icon}
                       </span>
                       <span className="hidden lg:block">{child.label}</span>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               )}
             </div>
           ) : (
             // Item sans enfants
-            <div
-              onClick={(e) => {
-                e.preventDefault();
-                setTargetHref(item.href);
-
-                const societe = localStorage.getItem('selectedSociete');
-                const projet = localStorage.getItem('selectedProjet');
-                const role = user?.role;
-
-                const needsSociete =
-                  typeof item.needsSociete === 'function'
-                    ? item.needsSociete(role)
-                    : item.needsSociete ?? false;
-
-                const needsProjet =
-                  typeof item.needsProjet === 'function'
-                    ? item.needsProjet(role)
-                    : item.needsProjet ?? false;
-
-                if (needsSociete && !societe) {
-                  setIsModalVisible(true);
-                  if (needsProjet && !projet) {
-                    setRequireProjetAfterSociete(true);
-                  }
-                  return;
-                }
-
-                if (needsProjet && !projet) {
-                  setIsProjetDialogVisible(true);
-                  return;
-                }
-
-                router.push(item.href);
-              }}
+            <Link
+              href={item.href}
+              onClick={(e) => handleLinkClick(e, item)}
               className={`flex items-center gap-2 p-2 mt-1 cursor-pointer ${
                 pathname.startsWith(item.href)
                   ? 'bg-active text-[#231651] rounded-md'
@@ -719,7 +817,7 @@ const Menu = () => {
                 {item.icon}
               </span>
               <span className="hidden lg:block">{item.label}</span>
-            </div>
+            </Link>
           )}
         </div>
       ))}
@@ -749,7 +847,7 @@ const Menu = () => {
           onConfirm={() => {
             localStorage.setItem('selectedProjet', selectedProjetId);
             setIsProjetDialogVisible(false);
-            router.push(targetHref); // Navigate after both are selected
+            router.push(targetHref);
           }}
         />
       )}

@@ -113,7 +113,7 @@ export default function SocieteDropDown() {
         {isSelectorOpened && user?.role === 1 && (
           <li className="p-2 mt-2 border-t border-gray-100">
             <Link 
-              href="/Societes"
+              href="/societes"
               className="flex items-center justify-center gap-2 w-full text-center !text-blue-500 hover:text-blue-800 p-2 hover:bg-blue-50 rounded-md transition-colors"
               onClick={() => setIsSelectorOpened(false)}
             >

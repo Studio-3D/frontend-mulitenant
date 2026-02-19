@@ -77,7 +77,7 @@ export const MultiStepForm = ({
       if (oldProjetId) {
         // Projet a changé
         console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-        router.push('/Projets/' + selectedProjet.id);
+        router.push('/projets/' + selectedProjet.id);
       }
       setOldProjetId(selectedProjet.id);
     }
@@ -411,7 +411,7 @@ export const MultiStepForm = ({
         localStorage.setItem('selectedProjet', JSON.stringify(newProject));
       }
 
-      router.push('/Projets');
+      router.push('/projets');
     } catch (error) {
       console.error('Error submitting form:', error);
       let errorMessage = editMode

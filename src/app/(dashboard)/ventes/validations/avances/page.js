@@ -11,6 +11,7 @@ import { formatDate } from '../../../../../utils/dateUtils';
 import {
   isAdmin,
   isCommercial,
+  isComptable,
   isSuperAdmin,
 } from '../../../../../configs/enum';
 import { fetchData_table_by_id } from '../../../../../configs/api-utils';
@@ -58,7 +59,7 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
   const [open_v_r, setOpen_v_r] = useState(false);
   const [ID, setID] = useState(0);
   const [num_recu, set_num_recu] = useState(0);
-  const [Commentaire_r, setCommentaire_r] = useState(null);
+  const [Commentaire_r, setCommentaire_r] = useState('');
   const [type_action, set_type_action] = useState(null);
   const [action, setAction] = useState('');
   const [date_encaissement_v, set_date_encaissement_v] = useState('');
@@ -130,7 +131,8 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
           if (
             !isAdmin(userRole) &&
             !isSuperAdmin(userRole) &&
-            !isCommercial(userRole)
+            !isCommercial(userRole) &&
+            !isComptable(userRole)
           ) {
             router.push('/');
           }
@@ -208,6 +210,7 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
       numero_paiement: av.numero_paiement,
       echeance: av.echeance ? formatDate(av.echeance) : null,
       statut: av.last_statut?.statut || av.statut,
+       statut_t:  av.statut,
       num_remise: av.last_statut?.num_remise || null,
       date_encaissement: av.last_statut?.date_encaissement
         ? formatDate(av.last_statut.date_encaissement)
@@ -227,7 +230,7 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
   };
 
   const columns = [
-    { key: 'sr', label: 'N° Reçu' },
+    { key: 'sr', label: 'N° Rekkkçu' },
     { key: 'date_reglement', label: 'Date' },
     {
       key: 'code_reservation',
@@ -278,7 +281,7 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
             label: 'Actions',
             render: (row) => {
               const isAdminOrSuperAdmin =
-                (isAdmin(userRole) || isSuperAdmin(userRole)) &&
+                (isAdmin(userRole) || isSuperAdmin(userRole)|| isComptable(userRole)) &&
                 (etat_av == 2 || etat_av == 3);
 
               return (
@@ -286,7 +289,7 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
                   {/* Validation/Encashment Buttons */}
                   {isAdminOrSuperAdmin && (
                     <>
-                      {row.last_statut == null && (
+                      {row.last_statut == null ||row.statut_t=="3"&& (
                         <button
                           className="p-1 text-green-500 hover:text-green-700"
                           onClick={() =>
@@ -590,14 +593,14 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
                       <>
                         <div>
                           <label className="block text-sm font-medium mb-1">
-                            N° Remise: <span className="text-red-500">*</span>
+                            N° Remise: 
                           </label>
                           <input
                             type="number"
                             className="w-full px-3 py-2 border border-gray-300 rounded-md"
                             value={num_remise_v || ''}
                             onChange={(e) => set_num_remise_v(e.target.value)}
-                            required
+                            
                           />
                         </div>
                         <div>
@@ -623,10 +626,11 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
                         <label className="block text-sm font-medium mb-1">
                           Commentaire: <span className="text-red-500">*</span>
                         </label>
+                        
                         <textarea
                           className="w-full px-3 py-2 border border-gray-300 rounded-md"
                           rows={3}
-                          value={Commentaire_r}
+                          value={Commentaire_r || ''}  // Use empty string instead of null
                           onChange={(e) => setCommentaire_r(e.target.value)}
                           required
                         />

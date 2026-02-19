@@ -14,31 +14,52 @@ export function CRMPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const urlTab = searchParams.get('tab');
+  const urlSubTab = searchParams.get('subtab'); // Add subtab parameter
 
   // Set initial state from URL parameters
   const [activeTab, setActiveTab] = useState(urlTab || 'prospects');
   const [activeSubTab, setActiveSubTab] = useState({
-    relance: 'appels-relance',
-    rdv: 'appels-rdv',
-    prospects: isCommercial(user?.role) ? 'mes-prospects' : 'tous-prospects', // Add prospects subTab
+    relance: urlSubTab && ['appels-relance', 'visites-relance'].includes(urlSubTab) 
+      ? urlSubTab 
+      : 'appels-relance',
+    rdv: urlSubTab && ['appels-rdv', 'visites-rdv'].includes(urlSubTab)
+      ? urlSubTab
+      : 'appels-rdv',
+    prospects: isCommercial(user?.role) ? 'mes-prospects' : 'tous-prospects',
   });
 
   // Use the project from context
   const { selectedProjet } = useProjet();
 
-  // FIX: Initialize with only the active tab rendered
-  const initialTab =
-    isCommercial(user?.role) && activeTab === 'prospects'
-      ? activeSubTab.prospects
-      : activeTab;
-  const renderedTabs = useRef({ [initialTab]: true });
+  // FIX: Initialize renderedTabs based on URL params
+  const getInitialTabId = () => {
+    if (urlTab === 'relance' && urlSubTab) {
+      return urlSubTab;
+    } else if (urlTab === 'rdv' && urlSubTab) {
+      return urlSubTab;
+    } else if (urlTab === 'prospects' && isCommercial(user?.role) && urlSubTab) {
+      return urlSubTab;
+    } else if (isCommercial(user?.role) && urlTab === 'prospects') {
+      return activeSubTab.prospects;
+    } else {
+      return urlTab || 'prospects';
+    }
+  };
 
-  // FIX: Update renderedTabs when tab changes
+  const initialTabId = getInitialTabId();
+  const renderedTabs = useRef({ [initialTabId]: true });
+
+  // FIX: Update renderedTabs when tab or subtab changes
   useEffect(() => {
-    const currentTab =
-      isCommercial(user?.role) && activeTab === 'prospects'
-        ? activeSubTab.prospects
-        : activeTab;
+    let currentTab;
+    
+    if (activeTab === 'relance' || activeTab === 'rdv') {
+      currentTab = activeSubTab[activeTab];
+    } else if (activeTab === 'prospects' && isCommercial(user?.role)) {
+      currentTab = activeSubTab.prospects;
+    } else {
+      currentTab = activeTab;
+    }
 
     if (currentTab && !renderedTabs.current[currentTab]) {
       renderedTabs.current[currentTab] = true;
@@ -50,12 +71,41 @@ export function CRMPage() {
     if (urlTab && urlTab !== activeTab) {
       handleTabChange(urlTab, true);
     }
-  }, [urlTab]);
+    if (urlSubTab && ['appels-relance', 'visites-relance', 'appels-rdv', 'visites-rdv', 'mes-prospects', 'tous-prospects'].includes(urlSubTab)) {
+      handleSubTabChangeFromUrl(urlSubTab);
+    }
+  }, [urlTab, urlSubTab]);
 
-  // Update URL when tab changes
-  const updateUrl = (tabId) => {
+  // Handle subtab change from URL
+  const handleSubTabChangeFromUrl = (subTabId) => {
+    if (['appels-relance', 'visites-relance'].includes(subTabId)) {
+      setActiveTab('relance');
+      setActiveSubTab(prev => ({ ...prev, relance: subTabId }));
+    } else if (['appels-rdv', 'visites-rdv'].includes(subTabId)) {
+      setActiveTab('rdv');
+      setActiveSubTab(prev => ({ ...prev, rdv: subTabId }));
+    } else if (['mes-prospects', 'tous-prospects'].includes(subTabId)) {
+      setActiveTab('prospects');
+      setActiveSubTab(prev => ({ ...prev, prospects: subTabId }));
+    }
+  };
+
+  // Update URL when tab/subtab changes
+  const updateUrl = (tabId, subTabId = null) => {
     const params = new URLSearchParams();
     params.set('tab', tabId);
+    
+    // Add subtab parameter for dropdown tabs
+    if (subTabId) {
+      params.set('subtab', subTabId);
+    } else if (tabId === 'relance') {
+      params.set('subtab', activeSubTab.relance);
+    } else if (tabId === 'rdv') {
+      params.set('subtab', activeSubTab.rdv);
+    } else if (tabId === 'prospects' && isCommercial(user?.role)) {
+      params.set('subtab', activeSubTab.prospects);
+    }
+    
     const newUrl = `?${params.toString()}`;
     window.history.replaceState(null, '', newUrl);
   };
@@ -74,8 +124,7 @@ export function CRMPage() {
     freins: 0,
   });
 
-  const pusher_key_NotifMenu =
-    process.env.NEXT_PUBLIC_PUSHER_APP_KEY_NOTIF_MENU;
+  const pusher_key_NotifMenu = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_NOTIF_MENU;
 
   // Wrap fetchDataNotiMon in useCallback with project dependency
   const fetchDataNotiMon = useCallback(
@@ -121,7 +170,7 @@ export function CRMPage() {
       );
     },
     [selectedProjet]
-  ); // Add selectedProjet as dependency
+  );
 
   // Reset notifications when project changes
   useEffect(() => {
@@ -194,8 +243,28 @@ export function CRMPage() {
 
   const handleTabChange = (tabId, fromUrl = false) => {
     setActiveTab(tabId);
-    if (!fromUrl) {
-      updateUrl(tabId);
+    
+    // Set default subtab when switching to dropdown tabs
+    if (tabId === 'relance' || tabId === 'rdv' || 
+        (tabId === 'prospects' && isCommercial(user?.role))) {
+      if (!fromUrl) {
+        let defaultSubTab;
+        if (tabId === 'relance') {
+          defaultSubTab = 'appels-relance';
+          setActiveSubTab(prev => ({ ...prev, relance: defaultSubTab }));
+        } else if (tabId === 'rdv') {
+          defaultSubTab = 'appels-rdv';
+          setActiveSubTab(prev => ({ ...prev, rdv: defaultSubTab }));
+        } else if (tabId === 'prospects') {
+          defaultSubTab = 'mes-prospects';
+          setActiveSubTab(prev => ({ ...prev, prospects: defaultSubTab }));
+        }
+        updateUrl(tabId, defaultSubTab);
+      }
+    } else {
+      if (!fromUrl) {
+        updateUrl(tabId);
+      }
     }
 
     if (tabId === 'relance' || tabId === 'rdv') {
@@ -234,6 +303,9 @@ export function CRMPage() {
       ...prev,
       [parentTab]: subTabId,
     }));
+    
+    // Update URL with subtab
+    updateUrl(parentTab, subTabId);
 
     if (!renderedTabs.current[subTabId]) {
       renderedTabs.current = { ...renderedTabs.current, [subTabId]: true };

@@ -112,7 +112,7 @@ const CommissionTableParType = ({ type }) => {
       render: (row) => (
         <Link
           target="_blank"
-          href={`/Utilisateurs/afficher-utilisateur/${row.id}`}
+          href={`/utilisateurs/afficher-utilisateur/${row.id}`}
         >
           <strong>
             {`${row.user?.name || ''} ${row.user?.prenom || ''}`.trim()}

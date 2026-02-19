@@ -203,10 +203,10 @@ export default function BlocTable({ projetId, trancheId }) {
   const handleAction = (action, id) => {
     switch (action) {
       case 'view':
-        router.push(`/Blocs/${id}`);
+        router.push(`/blocs/${id}`);
         break;
       case 'edit':
-        router.push(`/Blocs/${id}/modifier`);
+        router.push(`/blocs/${id}/modifier`);
         break;
       default:
         console.log(`Action ${action} for bloc ${id}`);
@@ -215,7 +215,7 @@ export default function BlocTable({ projetId, trancheId }) {
 
   // Add button URL
   const addButtonUrl = canManageBlocs 
-    ? `/Blocs/ajouter?projet=${projetId}${trancheId ? `&tranche=${trancheId}` : ''}`
+    ? `/blocs/ajouter?projet=${projetId}${trancheId ? `&tranche=${trancheId}` : ''}`
     : "";
 
   // Error and empty states

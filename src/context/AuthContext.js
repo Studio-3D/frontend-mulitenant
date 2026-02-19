@@ -21,6 +21,18 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const isRefreshing = useRef(false); // To prevent multiple refresh token requests
 
+  const updateUser = useCallback((updatedUserData) => {
+    setUser(prevUser => ({
+      ...prevUser,
+      ...updatedUserData
+    }));
+    
+    // Also update in localStorage
+    localStorage.setItem('authUser', JSON.stringify({
+      ...user,
+      ...updatedUserData
+    }));
+  }, [user]);
   // Memoize authConfig to prevent unnecessary re-renders of components consuming it
   const memoizedAuthConfig = useMemo(() => authConfig, []);
 
@@ -261,9 +273,9 @@ export function AuthProvider({ children }) {
       logout: protectedLogout,
       forceLogout: logout, // Direct logout without LinkedIn protection
       isAuthenticated: !!user,
-      loading,
+      loading,updateUser, // Add this
     }),
-    [user, login, protectedLogout, logout, loading]
+    [user, login, protectedLogout, logout, loading,updateUser]
   );
 
   return (

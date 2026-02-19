@@ -88,7 +88,7 @@ export default function TrancheForm({ id, projet }) {
         // Projet a changé
 
         console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-        router.push('/Projets/' + selectedProjet.id);
+        router.push('/projets/' + selectedProjet.id);
       }
       setOldProjetId(selectedProjet.id);
     }
@@ -162,9 +162,9 @@ export default function TrancheForm({ id, projet }) {
 
           'tranche'
         );
-        router.push(`/Projets/${selectedProjet.id}`);
+        router.push(`/projets/${selectedProjet.id}`);
       } else {
-        router.push('/Projets');
+        router.push('/projets');
       }
     } catch (error) {
       console.error('Failed to save tranche:', error);
@@ -195,14 +195,14 @@ export default function TrancheForm({ id, projet }) {
     <div className="p-3">
       <div className="flex items-center justify-start">
         <BreadCrumb
-          onRoot={{ href: '/Projets' }}
+          onRoot={{ href: '/projets' }}
           items={[
             selectedProjet?.id
               ? {
                   label: selectedProjet?.nom || `Projet #${selectedProjet.id}`,
-                  href: `/Projets/${selectedProjet.id}`,
+                  href: `/projets/${selectedProjet.id}`,
                 }
-              : { label: 'Projets', href: '/Projets' },
+              : { label: 'Projets', href: '/projets' },
             { label: `${id ? 'Modifier' : 'Ajouter'} une tranche` },
           ]}
         />

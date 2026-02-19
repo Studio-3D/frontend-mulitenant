@@ -6,6 +6,7 @@ import axios from "axios";
 import { X, Calendar, Clock, CheckCircle, AlertCircle } from "lucide-react";
 import { APIURL } from "../../../configs/api";
 import Pusher from "pusher-js";
+import Modal from "@/components/Modal";
 
 const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
   const [selectedSlot, setSelectedSlot] = useState(null);
@@ -33,17 +34,32 @@ const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
     };
   }, [open, calendarApi, pusherKey]);
   // Modified refreshCalendar function
-  const refreshCalendar = async (fetchInfo) => {
+   const refreshCalendar = async (fetchInfo) => {
     if (!calendarApi) return;
 
     try {
       const events = await fetchEvents(fetchInfo);
+      // Clear existing events
       calendarApi.removeAllEvents();
+      // Add all events
       calendarApi.addEventSource(events);
+      
+      // Re-add selection if exists
+      if (selectedSlot) {
+        calendarApi.addEvent({
+          title: "Selected",
+          start: selectedSlot.start,
+          end: selectedSlot.end,
+          color: "#3b82f6",
+          display: "background",
+          extendedProps: { isSelection: true },
+        });
+      }
     } catch (error) {
       console.error("Error refreshing calendar:", error);
     }
   };
+
 
   // Modified fetchEvents to handle missing fetchInfo
   const fetchEvents = async (fetchInfo = {}) => {
@@ -156,7 +172,6 @@ const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
           },
         }
       );
-
       // Visual feedback
       selectInfo.view.calendar.addEvent({
         title: "Selected",
@@ -177,10 +192,11 @@ const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
 
   // Enhanced Pusher handler
 
+  
   const pusher_function = () => {
     if (!pusherKey) {
       console.error("Pusher key is missing");
-      return;
+      return () => {}; // Return empty cleanup function
     }
 
     const pusher = new Pusher(pusherKey, {
@@ -195,36 +211,26 @@ const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
     });
 
     const channel = pusher.subscribe("rdv-updates");
-
     console.log("Subscribing to channel...");
 
     channel.bind("Rendez_vous_Prop", (data) => {
       console.log("Received Pusher event:", data);
+      console.log("Our reservation ID:", reservation_id, "Event reservation ID:", data.reservationId);
 
-      if (data.reservationId == reservation_id) {
-        console.log("Matching reservation ID, refreshing...");
-
+      // ALWAYS refresh calendar for ALL events
+      if (calendarApi && calendarApi.view) {
         const view = calendarApi.view;
         refreshCalendar({
           start: view.activeStart,
           end: view.activeEnd,
           timeZone: view.calendar.getOption("timeZone"),
         });
+      }
 
-        if (
-          selectedSlot &&
-          new Date(selectedSlot.start).getTime() ==
-            new Date(data.newDate).getTime()
-        ) {
-          calendarApi.addEvent({
-            title: "Selected",
-            start: selectedSlot.start,
-            end: selectedSlot.end,
-            color: "#3b82f6",
-            display: "background",
-            extendedProps: { isSelection: true },
-          });
-        }
+      // If this event is for our reservation, update selection
+      if (selectedSlot && data.reservationId == reservation_id) {
+        console.log("Updating our selection");
+        // Selection is already handled in refreshCalendar
       }
     });
 
@@ -290,10 +296,16 @@ const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
     clearSelection();
     setErrors(null)
   };
+   // MODIFIED: Add useEffect to refresh when Pusher events come
+  useEffect(() => {
+    if (calendarApi && open) {
+      // Force initial refresh when calendar loads
+      refreshCalendar();
+    }
+  }, [calendarApi, open]);
   if (!open) return null;
 
   return (
-   <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
   <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[200vh] flex flex-col">
     {/* Header */}
     <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-4 text-white sticky top-0 z-10">
@@ -351,23 +363,24 @@ const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
             selectOverlap={(event) => {
               return event.extendedProps?.disponible !== false;
             }}
-            slotMinTime="08:00:00"
-            slotMaxTime="18:00:00"
+            slotMinTime="09:00:00"
+            slotMaxTime="17:00:00"
             events={fetchEvents}
             locale="fr"
             firstDay={1}
-            weekends={false}
+            weekends={true}
             businessHours={{
-              daysOfWeek: [1, 2, 3, 4, 5],
-              startTime: "08:00",
-              endTime: "18:00",
+              daysOfWeek: [1, 2, 3, 4, 5,6],
+              startTime: "09:00",
+              endTime: "17:00",
             }}
             dayHeaderFormat={{
               weekday: "short",
               day: "numeric",
               month: "short",
             }}
-            hiddenDays={[0, 6]}
+            hiddenDays={[0]}  // Cacher dimanche
+
             nowIndicator={true}
             unselectAuto={false}
           />
@@ -375,7 +388,13 @@ const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
       </div>
 
       {showDetailModal && selectedSlot && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <Modal
+            maxWidth='max-w-xl'
+                isVisible={showDetailModal}
+               
+                 onClose={handleCloseDetail}
+            >
+ <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-4 text-white sticky top-0">
               <div className="flex justify-between items-center">
@@ -513,10 +532,12 @@ const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
             </div>
           </div>
         </div>
+            </Modal>
+       
       )}
     </div>
   </div>
-</div>
+
   );
 };
 

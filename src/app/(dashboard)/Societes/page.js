@@ -163,7 +163,7 @@ export default function Societes() {
               }
             />
           </button>
-          <Link href={`/Societes/${row.id}/edit`} title="Modifier Société">
+          <Link href={`/societes/${row.id}/edit`} title="Modifier Société">
             <PencilLine className="w-4 h-4 !text-yellow-500 hover:text-yellow-500" />
           </Link>
           {/* Delete button */}
@@ -298,7 +298,7 @@ export default function Societes() {
         onPageChange={handlePageChange}
         onRowsPerPageChange={handleRowsPerPageChange}
         // add + export buttons
-        addLink={"/Societes/ajouter-societe"}
+        addLink={"/societes/ajouter-societe"}
         enableExport={true}
         searchFields={["raison_sociale", "email"]} // Specify filterable fields
         onSearch={setSearchTerm} // Pass searchTerm handler

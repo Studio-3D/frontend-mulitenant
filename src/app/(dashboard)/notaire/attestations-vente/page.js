@@ -18,6 +18,7 @@ import { APIURL } from "@/configs/api";
 import MenuNotaires from "../MenuNotaires";
 
 export default function Attestation_vente({ title = "Attestations de Vente" }) {
+
   const { user, token } = useAuth();
   const userRole = user?.role;
   const accesstoken = token || localStorage.getItem("accessToken");
@@ -113,7 +114,7 @@ export default function Attestation_vente({ title = "Attestations de Vente" }) {
     if (isRespoLivraison(userRole)) {    
       setLoadingNotaires(true);
       try {
-        const response = await axios.get(`${APIURL.ROOTV1}/notaires`, {
+        const response = await axios.get(`${APIURL.ROOTV1}/projets/${selectedProjet?.id} /notaires`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
           },
@@ -282,7 +283,7 @@ export default function Attestation_vente({ title = "Attestations de Vente" }) {
         date_enreg: item.date_enreg,
         compromis_signe: item.compromis_signe,
         date_echeance: item.date_echeance,
-        num_titre: item.num_titre || "",
+        num_titre: reservation?.bien?.titre_foncier || "",
         statut_type: item.statut_type || (isNonSignedReservation ? 'non_signe' : (item.compromis_signe != null ? 'signe' : 'non_signe_attestation')),
         is_non_signed_reservation: isNonSignedReservation,
         data_res: item,
@@ -296,7 +297,7 @@ export default function Attestation_vente({ title = "Attestations de Vente" }) {
 
   const columns = [
     { key: "code_reservation", label: "Code Réservation" },
-    { key: "num_titre", label: "Num titre" },
+    { key: "num_titre", label: "Nᵒ Titre" },
     {
       key: "bien",
       label: "Bien",
@@ -305,7 +306,7 @@ export default function Attestation_vente({ title = "Attestations de Vente" }) {
         if (!bien || !bien.id) return null;
         
         return (
-          <Link target="_blank" href={`/Biens/${bien.id}`}>
+          <Link target="_blank" href={`/biens/${bien.id}`}>
             <strong style={{ fontWeight: 600 }}>
               {NomBienComplet(bien)}
             </strong>
@@ -433,7 +434,7 @@ export default function Attestation_vente({ title = "Attestations de Vente" }) {
 
       return {
         code_reservation: item?.reservation?.code_reservation || "",
-        num_titre: item?.num_titre || "",
+        num_titre: item?.reservation?.bien?.titre_foncier || "",
         bien: NomBienComplet(item?.reservation?.bien) || "",
         notaire: notaireExportName,
         noms_acquereurs: acquereursNames,
@@ -450,7 +451,7 @@ export default function Attestation_vente({ title = "Attestations de Vente" }) {
 
   const columns_export = [
     { key: "code_reservation", label: "Code reservation" },
-    { key: "num_titre", label: "Numéro titre" },
+    { key: "num_titre", label: "Nᵒ Titre" },
     { key: "bien", label: "Bien" },
     { key: "notaire", label: "Notaire" },
     { key: "noms_acquereurs", label: "Nom client" },
@@ -485,7 +486,7 @@ export default function Attestation_vente({ title = "Attestations de Vente" }) {
 
   return (
     <>
-      <div className="relative bg-white rounded-lg p-4">
+      <div className="space-y-4">
         {/* Menu des notaires pour responsable livraison */}
         {isRespoLivraison(userRole) && (
           <MenuNotaires
@@ -494,8 +495,8 @@ export default function Attestation_vente({ title = "Attestations de Vente" }) {
             onSelectNotaire={handleSelectNotaire}
             loading={loadingNotaires}
           />
-        )}
-
+        )}</div>
+      <div className="bg-white rounded-lg p-4">
         <Table
           showSearch={false}
           title={getShortTitle()}

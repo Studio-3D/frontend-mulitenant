@@ -62,11 +62,7 @@ export default function Page(dataClient) {
       ) : (
         <>
           <div>
-            {/*!clientId && (
-              <>
-                 <VenteNavbar /> 
-              </>
-            )*/}
+           
             <ReservationTable dataClient={dataClient} searchParams={searchParams} />
           </div>
         </>

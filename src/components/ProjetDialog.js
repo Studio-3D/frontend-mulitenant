@@ -113,7 +113,7 @@ const ProjetDialog = ({
         { isAdmin(user?.role) && (
           <div className="text-center pb-4">
             <Link 
-              href="/Projets/addProject" 
+              href="/projets/addProject" 
               className="text-[#009FFF] hover:underline text-sm"
               onClick={onClose} 
             >

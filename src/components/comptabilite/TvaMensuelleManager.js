@@ -96,7 +96,7 @@ const TvaMensuelleManager = ({  }) => {
       label: 'Bien',
       render: (row) => (
         <a
-          href={`/Biens/${row.reservation?.bien_id}`}
+          href={`/biens/${row.reservation?.bien_id}`}
           target="_blank"
          
         >

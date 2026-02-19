@@ -287,7 +287,7 @@ const ReclamationTable = (prestId) => {
       label: 'Bien',
       sortable: true,
       render: (row) => (
-        <Link target="_blank" href={'/Biens/' + row.bien_id}>
+        <Link target="_blank" href={'/biens/' + row.bien_id}>
           <strong style={{ fontWeight: 600 }}>{row.bien}</strong>
         </Link>
       ),

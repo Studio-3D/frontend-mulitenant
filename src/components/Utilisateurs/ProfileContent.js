@@ -141,7 +141,7 @@ const ProfileContent = ({ userId }) => {
         setIsEditing(false);
 
        if (searchParams.get('edit')) {
-          router.push('/Utilisateurs');
+          router.push('/utilisateurs');
         }
       } catch (error) {
         toast.error("Une erreur s'est produite, Veuillez réessayer.");
@@ -232,7 +232,7 @@ const ProfileContent = ({ userId }) => {
 
   const resetForm = () => {
     if (searchParams.get('edit')) {
-      router.push('/Utilisateurs');
+      router.push('/utilisateurs');
     } else {
       formik.resetForm();
       setIsEditing(false);
@@ -474,6 +474,7 @@ const ProfileContent = ({ userId }) => {
             readOnly
           />
           <SelectInput
+            
             label="Genre"
             name="gender"
             options={[
@@ -482,7 +483,7 @@ const ProfileContent = ({ userId }) => {
             ]}
             value={formik.values.gender}
             onChange={(value) => formik.setFieldValue('gender', value)}
-            readOnly={!isEditing}
+            disabled={!isEditing}
             required={isEditing}
             error={
               formik.touched.gender || formik.submitCount > 0
@@ -499,7 +500,7 @@ const ProfileContent = ({ userId }) => {
             ]}
             value={formik.values.is_actif}
             onChange={(value) => formik.setFieldValue('is_actif', value)}
-            readOnly={!isEditing}
+            disabled={!isEditing}
           />
           <Input
             label="Fonction:"
@@ -508,13 +509,15 @@ const ProfileContent = ({ userId }) => {
             onChange={formik.handleChange}
             readOnly={!isEditing}
           />
-          <DateInput
+          <Input
             label="Date embauche:"
+            type='date'
             name="date_embauche"
             value={formik.values.date_embauche}
-            onChange={(date) => formik.setFieldValue('date_embauche', date)}
+            onChange={formik.handleChange}
             readOnly={!isEditing}
           />
+         
           <Input
             label="CIN:"
             name="cin"
@@ -562,6 +565,7 @@ const ProfileContent = ({ userId }) => {
               Projets 
             </label>
             <SelectInput
+            disabled={!isEditing}
               isMulti
               label=""
               placeholder="Sélectionnez des projets"

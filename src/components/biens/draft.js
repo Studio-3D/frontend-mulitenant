@@ -289,12 +289,12 @@ export default function BienTable({ projetId, immeubleId, blocId, trancheId }) {
   ];
 
   const handleAction = (action, id) => {
-    if (action === 'view') router.push(`/Biens/${id}`);
-    else if (action === 'edit') router.push(`/Biens/${id}/modifier`);
+    if (action === 'view') router.push(`/biens/${id}`);
+    else if (action === 'edit') router.push(`/biens/${id}/modifier`);
   };
 
   const addButtonUrl = (user?.role === 1 || user?.role === 2)
-    ? `/Biens/ajouter?projet=${projetId}${blocId ? `&bloc=${blocId}` : ''}${immeubleId ? `&immeuble=${immeubleId}` : ''}${trancheId ? `&tranche=${trancheId}` : ''}`
+    ? `/biens/ajouter?projet=${projetId}${blocId ? `&bloc=${blocId}` : ''}${immeubleId ? `&immeuble=${immeubleId}` : ''}${trancheId ? `&tranche=${trancheId}` : ''}`
     : "";
 
   return (

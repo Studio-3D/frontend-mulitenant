@@ -106,7 +106,7 @@ export default function RelancesRdv_notaire({ type }) {
     if (isRespoLivraison(userRole)) {    
       setLoadingNotaires(true);
       try {
-        const response = await axios.get(`${APIURL.ROOTV1}/notaires`, {
+        const response = await axios.get(`${APIURL.ROOTV1}/projets/${selectedProjet?.id}/notaires`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
           },
@@ -318,7 +318,7 @@ export default function RelancesRdv_notaire({ type }) {
         if (!bien || !bien.id) return null;
         
         return (
-          <Link target="_blank" href={`/Biens/${bien.id}`}>
+          <Link target="_blank" href={`/biens/${bien.id}`}>
             <strong style={{ fontWeight: 600 }}>
               {NomBienComplet(bien)}
             </strong>
@@ -461,7 +461,7 @@ const getShortTitle = () => {
 
   return (
     <>
-      <div className="relative bg-white rounded-lg p-4">
+      <div className="space-y-4">
         {/* Menu des notaires pour responsable livraison */}
         {isRespoLivraison(userRole) && (
           <MenuNotaires
@@ -471,6 +471,8 @@ const getShortTitle = () => {
             loading={loadingNotaires}
           />
         )}
+        </div>
+        <div className="bg-white rounded-lg p-4">
 
         <Table
           title={getShortTitle()} // Titre court

@@ -40,7 +40,7 @@ export default function Biens_Dispo_By_frein_id() {
     searchFields: [],
   };
   const handleShow = (Id) => {
-    window.open(`/Biens/${Id}`, '_blank');
+    window.open(`/biens/${Id}`, '_blank');
   };
 
   useEffect(() => {
@@ -120,7 +120,7 @@ export default function Biens_Dispo_By_frein_id() {
         return (
           <Link
             target="_blank"
-            href={`/Biens/${row?.bien_id}`}
+            href={`/biens/${row?.bien_id}`}
             className="flex items-center gap-1 text-black-500 hover:text-black-700"
           >
             <strong style={{ fontWeight: 600 }}>

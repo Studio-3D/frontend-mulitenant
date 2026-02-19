@@ -10,6 +10,7 @@ import {
   getModePenaliteLabel,
   isAdmin,
   isCommercial,
+  isComptable,
   isSuperAdmin,
   modes_penalites,
   type_dst,
@@ -65,7 +66,8 @@ const ShowPenalite = () => {
           if (
             !isAdmin(userRole) &&
             !isSuperAdmin(userRole) &&
-            !isCommercial(userRole)
+            !isCommercial(userRole)&&
+            !isComptable(userRole)
           ) {
             router.push('/');
           }
@@ -604,7 +606,7 @@ const PenaltyDetails = ({
       )}
     </div>
 
-    {penalite.statut == 0 && user?.role <= 2 && (
+    {penalite.statut == 0 && (user?.role <= 2 ||user?.role==7) && (
       <div className="flex justify-end pt-4">
         <Button
           type="submit"
@@ -726,7 +728,7 @@ const ValidationModal = ({
   };
 
   return (
-    <Modal isVisible={open} onClose={onClose}>
+    <Modal isVisible={open} onClose={onClose} maxWidth='max-w-xl'>
       <div className="w-[90vw] max-w-xl p-6">
         <div className="w-full h-[60px] bg-[green] px-4 mb-3">
           <div className="flex items-center justify-center h-full">
