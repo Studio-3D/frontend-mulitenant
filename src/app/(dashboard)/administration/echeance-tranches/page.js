@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import EcheanceTrancheTable from './EcheanceTrancheTable';
 import EcheanceTrancheForm from './EcheanceTrancheForm';
 import { useSearchParams } from 'next/navigation';
-import { isAdmin, isSuperAdmin, isCommercial, isRespoCommercial, isNotaire, isRespoLivraison, isSav, isAgentAdministratif } from '../../../../configs/enum';
+import { isAdmin, isSuperAdmin, isCommercial, isRespoCommercial, isNotaire, isRespoLivraison, isSav, isAgentAdministratif, isComptable } from '../../../../configs/enum';
 import { useAuth } from '../../../../context/AuthContext';
 import { useRouter } from 'next/navigation';
 
@@ -22,8 +22,7 @@ export default function Page() {
       !isRespoCommercial(userRole)&&
       !isNotaire(userRole)&&
       !isRespoLivraison(userRole)&&
-      !isSav(userRole)&&
-      !isAgentAdministratif(userRole)
+      !isComptable(userRole)
     ) {
       router.push('/');
     }

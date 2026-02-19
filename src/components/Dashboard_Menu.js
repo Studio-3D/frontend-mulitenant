@@ -21,6 +21,22 @@ import {
   Send,
   Clock,
   Handshake,
+  Wrench,
+  Receipt,
+  Calculator,
+  Split,
+  Cuboid,
+  Timer,
+  Workflow,
+  Percent,
+  History,
+  UserCog,
+  Settings,
+  BarChart3,
+  BarChart4,
+  CheckCircle2,
+  Coins,
+  TimerIcon,
 } from 'lucide-react'
 import ProjetDialog from './ProjetDialog'
 import { useProjet } from '@/context/ProjetContext'
@@ -32,6 +48,7 @@ const serif = {
 
 // Menus par rôle avec URLs
 const MENU_BY_ROLE = {
+   // Notaire (Role 5)
   5: [
     {
       title: 'Nouveau dossier',
@@ -54,13 +71,13 @@ const MENU_BY_ROLE = {
       needsProjet: true,
     },
     {
-      title: 'Compromis de vente',
+      title: 'Attestation de vente',
       description: 'Rédiger et gérer les avant-contrats et promesses de vente.',
       icon: FileSignature,
       bgColor: 'bg-amber-600',
       textColor: 'text-amber-600',
       iconBg: 'bg-amber-50',
-      url: '/compromis-vente',
+      url: '/notaire/attestations-vente',
       needsProjet: true,
     },
     {
@@ -82,8 +99,20 @@ const MENU_BY_ROLE = {
       iconBg: 'bg-rose-50',
       url: '/notaire/agenda',
       needsProjet: false,
-    }
+    },
+     {
+      title: 'Étapes Projet',
+      description: 'Suivi des étapes.',
+      icon: Cuboid,
+      bgColor: 'bg-cyan-600',
+      textColor: 'text-cyan-600',
+      iconBg: 'bg-cyan-50',
+      url: '/etapes-projet',
+      needsProjet: true,
+    },
+   
   ],
+    // Respo Livraison (Role 6)
   6: [
     {
       title: 'Projets',
@@ -117,13 +146,13 @@ const MENU_BY_ROLE = {
       needsProjet: true,
     },
     {
-      title: 'Compromis de vente',
+      title: 'Attestation de vente',
       description: 'Gérer les avant-contrats de vente.',
       icon: FileSignature,
       bgColor: 'bg-amber-600',
       textColor: 'text-amber-600',
       iconBg: 'bg-amber-50',
-      url: '/compromis-vente',
+      url: '/notaire/attestations-vente',
       needsProjet: true,
     },
     {
@@ -166,7 +195,19 @@ const MENU_BY_ROLE = {
       url: '/histo-importation',
       needsProjet: true,
     }
+    ,
+    {
+      title: 'État Dossier',
+      description: 'Suivi des dossiers.',
+      icon: Workflow,
+      bgColor: 'bg-orange-600',
+      textColor: 'text-orange-600',
+      iconBg: 'bg-orange-50',
+      url: '/etat-dossiers',
+      needsProjet: true,
+    },
   ],
+  // Comptable (Role 7)
   7: [
     {
       title: 'Ventes',
@@ -176,6 +217,16 @@ const MENU_BY_ROLE = {
       textColor: 'text-orange-600',
       iconBg: 'bg-orange-50',
       url: '/ventes',
+      needsProjet: true,
+    },
+     {
+      title: 'Encaissements',
+      description: 'Suivi et gestion des encaissements clients.',
+      icon: CreditCard,
+      bgColor: 'bg-lime-600',
+      textColor: 'text-lime-600',
+      iconBg: 'bg-lime-50',
+      url: '/encaissements',
       needsProjet: true,
     },
     {
@@ -188,17 +239,40 @@ const MENU_BY_ROLE = {
       url: '/comptabilite',
       needsProjet: true,
     },
-    {
-      title: 'Encaissements',
-      description: 'Suivi et gestion des encaissements clients.',
-      icon: CreditCard,
-      bgColor: 'bg-lime-600',
-      textColor: 'text-lime-600',
-      iconBg: 'bg-lime-50',
-      url: '/encaissements',
+      {
+      title: 'État Dossier',
+      description: 'Suivi des dossiers.',
+      icon: Workflow,
+      bgColor: 'bg-indigo-600',
+      textColor: 'text-indigo-600',
+      iconBg: 'bg-indigo-50',
+      url: '/etat-dossiers',
       needsProjet: true,
     },
+    {
+      title: 'Étapes Projet',
+      description: 'Suivi des étapes.',
+      icon: Cuboid,
+      bgColor: 'bg-cyan-600',
+      textColor: 'text-cyan-600',
+      iconBg: 'bg-cyan-50',
+      url: '/etapes-projet',
+      needsProjet: true,
+    },
+    {
+      title: 'Échéances Tranche',
+      description: 'Gestion des échéances.',
+      icon: Split,
+      bgColor: 'bg-purple-600',
+      textColor: 'text-purple-600',
+      iconBg: 'bg-purple-50',
+      url: '/administration/echeance-tranches',
+      needsProjet: true,
+    },
+   
   ],
+  
+  // SAV (Role 8)
   8: [
     {
       title: 'Services prestataire',
@@ -230,8 +304,30 @@ const MENU_BY_ROLE = {
       url: '/sav/reclamations',
       needsProjet: true,
     },
+    {
+      title: 'Étapes Projet',
+      description: 'Suivi des étapes.',
+      icon: Cuboid,
+      bgColor: 'bg-blue-600',
+      textColor: 'text-blue-600',
+      iconBg: 'bg-blue-50',
+      url: '/etapes-projet',
+      needsProjet: true,
+    },
+   
   ],
+   // Respo Commercial (Role 9)
   9: [
+     {
+      title: 'Projets',
+      description: 'Gestion des projets.',
+      icon: Projector,
+      bgColor: 'bg-indigo-600',
+      textColor: 'text-indigo-600',
+      iconBg: 'bg-indigo-50',
+      url: '/projets',
+      needsProjet: false,
+    },
     {
       title: 'CRM',
       description: 'Gestion de la relation client complète.',
@@ -252,6 +348,27 @@ const MENU_BY_ROLE = {
       url: '/ventes',
       needsProjet: true,
     },
+    {
+      title: 'Échéances Tranche',
+      description: 'Gestion des échéances.',
+      icon: Split,
+      bgColor: 'bg-purple-600',
+      textColor: 'text-purple-600',
+      iconBg: 'bg-purple-50',
+      url: '/administration/echeance-tranches',
+      needsProjet: true,
+    },
+    {
+      title: 'Étapes Projet',
+      description: 'Suivi des étapes.',
+      icon: Cuboid,
+      bgColor: 'bg-cyan-600',
+      textColor: 'text-cyan-600',
+      iconBg: 'bg-cyan-50',
+      url: '/etapes-projet',
+      needsProjet: true,
+    },
+   
   ]
 }
 
