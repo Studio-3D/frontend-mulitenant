@@ -484,8 +484,7 @@ const EtapeTable = ({ searchParams }) => {
           onFilterToggle={handleFilterToggle}
           addLink={
             isSuperAdmin(user.role) ||
-            isAdmin(user.role) ||
-            isCommercial(user.role)
+            isAdmin(user.role)
               ? `${ENDPOINTS.ETAPESPROJET}?action=add`
               : undefined
           }

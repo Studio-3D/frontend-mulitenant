@@ -321,6 +321,13 @@ const Menu = () => {
       needsProjet: true,
       needsSociete: user.role == 1,
     },
+    {
+          label: 'Etapes Projet',
+          icon: <Cuboid size={20} />,
+          href: '/etapes-projet',
+          needsProjet: true,
+          needsSociete: user.role == 1,
+    },
   ];
 
   const getRespoLivraisonItems = () => [
@@ -399,13 +406,14 @@ const Menu = () => {
       needsSociete: user.role === 1,
       needsProjet: true,
     },
-     {
-      label: 'Echéances Tranche',
-      icon: <Split  size={20} />,
-      href: '/administration/echeance-tranches',
-      needsProjet: true,
-      needsSociete: user.role == 1,
+    {
+          label: 'Etapes Projet',
+          icon: <Cuboid size={20} />,
+          href: '/etapes-projet',
+          needsProjet: true,
+          needsSociete: user.role == 1,
     },
+    
   ];
 
   const getSavItems = () => [
@@ -430,13 +438,14 @@ const Menu = () => {
       needsProjet: true,
       needsSociete: user.role === 1,
     },
-    {
-      label: 'Echéances Tranche',
-      icon: <Split size={20} />,
-      href: '/administration/echeance-tranches',
-      needsProjet: true,
-      needsSociete: user.role == 1,
-    },
+      {
+          label: 'Etapes Projet',
+          icon: <Cuboid size={20} />,
+          href: '/etapes-projet',
+          needsProjet: true,
+          needsSociete: user.role == 1,
+        },
+   
   ];
 
   const getNotaireItems = () => [
@@ -475,13 +484,14 @@ const Menu = () => {
       needsSociete: user.role === 1,
       needsProjet: false,
     },
-     {
-      label: 'Echéances Tranche',
-      icon: <Split size={20} />,
-      href: '/administration/echeance-tranches',
-      needsProjet: true,
-      needsSociete: user.role == 1,
-    },
+      {
+          label: 'Etapes Projet',
+          icon: <Cuboid size={20} />,
+          href: '/etapes-projet',
+          needsProjet: true,
+          needsSociete: user.role == 1,
+        },
+
   ];
 
   const getAgentAdminItems = () => [
@@ -516,9 +526,23 @@ const Menu = () => {
       needsProjet: true,
       needsSociete: user.role == 1,
     },
+      {
+          label: 'Etapes Projet',
+          icon: <Cuboid size={20} />,
+          href: '/etapes-projet',
+          needsProjet: true,
+          needsSociete: user.role == 1,
+        },
   ];
 
   const getComptableItems = () => [
+    {
+      label: 'Ventes',
+      icon: <Handshake />,
+      href: '/ventes',
+      needsSociete: user.role === 1,
+      needsProjet: true,
+    },
     {
       label: 'Encaissments',
       icon: <Receipt />,
@@ -539,6 +563,20 @@ const Menu = () => {
       href: '/administration/echeance-tranches',
       needsProjet: true,
       needsSociete: user.role == 1,
+    },
+    {
+      label: 'Etat Dossier',
+      icon: <Workflow />,
+      href: '/etat-dossiers',
+      needsSociete: user.role === 1,
+      needsProjet: true,
+    },
+    {
+          label: 'Etapes Projet',
+          icon: <Cuboid size={20} />,
+          href: '/etapes-projet',
+          needsProjet: true,
+          needsSociete: user.role == 1,
     },
   ];
 

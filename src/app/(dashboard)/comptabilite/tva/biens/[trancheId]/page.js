@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useProjet } from '@/context/ProjetContext';
-import { isAdmin, isSuperAdmin } from '@/configs/enum';
+import { isAdmin, isComptable, isSuperAdmin } from '@/configs/enum';
 import axios from 'axios';
 import { APIURL, ENDPOINTS } from '@/configs/api';
 import Table from '@/components/Table';
@@ -40,7 +40,7 @@ const TvaBiensPage = () => {
 
   // Check user permissions and project selection
   useEffect(() => {
-    if (user && !isAdmin(user.role) && !isSuperAdmin(user.role)) {
+    if (user && !isAdmin(user.role) && !isSuperAdmin(user.role)&& !isComptable(user.role)) {
       router.push('/home');
     } else if (!selectedProjet) {
       router.push('/comptabilite');

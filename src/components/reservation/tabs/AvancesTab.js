@@ -896,7 +896,7 @@ export const AvancesTab = ({
 
                 {/* Validation/Encashment Buttons */}
                 {reservationData.reservation?.statut == 1 &&
-                  isAdminOrEditor && (
+                  (isAdminOrEditor||user?.role==7) && (
                     <>
                       {Number(row.statut) == 3 && (
                         <button
@@ -1161,6 +1161,7 @@ export const AvancesTab = ({
         />
       </div>
       {(editDialogOpen || addDialogOpen) && (
+        <Modal isVisible={editDialogOpen || addDialogOpen} onClick={handleDialogClose}>
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           {/* Added max-h-[90vh] and overflow-y-auto here */}
           <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -1544,9 +1545,11 @@ export const AvancesTab = ({
             </form>
           </div>
         </div>
+        </Modal>
       )}
       {/* Validation/Rejection Dialog */}
       {open_v_r && (
+          <Modal isVisible={open_v_r} onClose={() => setOpen_v_r(false)}>
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-0 rounded-lg max-w-md w-full">
             <div
@@ -1658,6 +1661,7 @@ export const AvancesTab = ({
             </form>
           </div>
         </div>
+        </Modal>
       )}
       {/* PJ Dialog */}
       {open_dialog && (

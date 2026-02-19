@@ -16,7 +16,7 @@ import { APIURL } from '@/configs/api';
 import Input from '@/components/Input';
 
 import { fetchData_Select, fetchData_table_by_id } from '@/configs/api-utils';
-import { isAdmin, isSuperAdmin } from '@/configs/enum';
+import { isAdmin, isComptable, isSuperAdmin } from '@/configs/enum';
 
 import { useProjet } from '@/context/ProjetContext';
 export default function RembTable({ etat }) {
@@ -273,24 +273,34 @@ export default function RembTable({ etat }) {
     },
   ];
 
-  const adminColumns =
-    userRole <= 2
-      ? [
-          {
-            key: 'responsable',
-            label: 'Responsable',
-            render: (row) => (
+ const adminColumns =
+  userRole <= 2 || userRole == 7
+    ? [
+        {
+          key: 'responsable',
+          label: 'Responsable',
+          render: (row) => {
+            // For comptables, show text without link
+            if (isComptable(userRole)) {
+              return (
+                <strong style={{ fontWeight: 600 }}>
+                  {row.responsable}
+                </strong>
+              );
+            }
+            // For super admin and admin, show with link
+            return (
               <Link
                 href={`/utilisateurs/afficher-utilisateur/${row.responsable_id}`}
-                // className="text-blue-500 hover:text-blue-700"
                 target="_blank"
               >
                 <strong style={{ fontWeight: 600 }}>{row.responsable}</strong>
               </Link>
-            ),
+            );
           },
-        ]
-      : [];
+        },
+      ]
+    : [];
   {
     /* demande apres vente */
   }
@@ -363,12 +373,14 @@ export default function RembTable({ etat }) {
             >
               <Eye className="w-4 h-4" />
             </Link>
-
-            <Check
+            {userRole<=3 && (   
+              <Check
               onClick={() => handleTraiterDemande(row.id, row.client, row.bien)}
               className="w-4 h-4 text-green-500 hover:text-green-700"
               title="Traiter une demande"
             />
+            )}
+            
           </div>
         );
       } else if (etat == 3) {
@@ -381,13 +393,14 @@ export default function RembTable({ etat }) {
             >
               <Eye className="w-4 h-4" />
             </Link>
+             {userRole<=3 && (   
             <button
               onClick={() => handleTraiterAccuse(row.id, row.client, row.bien)}
               className="w-4 h-4 text-red-500 hover:text-red-700"
               title="Traiter Accusé"
             >
               <Check className="w-4 h-4" />
-            </button>
+            </button>)}
           </div>
         );
       } else if (etat == 1) {
@@ -686,7 +699,7 @@ export default function RembTable({ etat }) {
                   gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
                 }}
               >
-                {(isSuperAdmin(userRole) || isAdmin(userRole)) && (
+                {(isSuperAdmin(userRole) || isAdmin(userRole)||isComptable(userRole)) && (
                   <Input
                     type="text"
                     label="Responsable"

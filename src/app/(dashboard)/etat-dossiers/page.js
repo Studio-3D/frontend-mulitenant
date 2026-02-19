@@ -3,7 +3,7 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { isAdmin, isCommercial, isRespoLivraison, isSuperAdmin } from '@/configs/enum';
+import { isAdmin, isCommercial, isComptable, isRespoLivraison, isSuperAdmin } from '@/configs/enum';
 import EtatDossierTable from './EtatDossierTable';
 
 export default function Page() {
@@ -16,7 +16,8 @@ export default function Page() {
       if (
         !isAdmin(userRole) &&
         !isSuperAdmin(userRole) &&
-        !isRespoLivraison(userRole)
+        !isRespoLivraison(userRole)&&
+        !isComptable(userRole)
       ) {
         router.push('/');
       }

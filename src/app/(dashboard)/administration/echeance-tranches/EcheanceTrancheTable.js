@@ -223,8 +223,7 @@ const EcheanceTrancheTable = ({ searchParams }) => {
           onFilterToggle={handleFilterToggle}
           addLink={
             isSuperAdmin(user.role) ||
-            isAdmin(user.role) ||
-            isCommercial(user.role)
+            isAdmin(user.role) 
               ? `/administration/echeance-tranches?action=add`
               : undefined
           }

@@ -9,7 +9,7 @@ import { APIURL } from '../../../../../../configs/api';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import TextField from '@/components/Textfield';
-import { isAdmin, isCommercial, isSuperAdmin, type_dst } from '@/configs/enum';
+import { isAdmin, isCommercial, isComptable, isSuperAdmin, type_dst } from '@/configs/enum';
 import { useAuth } from '../../../../../../context/AuthContext';
 import { fetchData_Select } from '../../../../../../../src/configs/api-utils';
 import { type_dst_dp } from '@/configs/enum';
@@ -121,7 +121,8 @@ export default function Page() {
           if (
             !isAdmin(userRole) &&
             !isSuperAdmin(userRole) &&
-            !isCommercial(userRole)
+            !isCommercial(userRole) &&
+            !isComptable(userRole)
           ) {
             router.push('/');
           }

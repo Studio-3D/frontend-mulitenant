@@ -20,6 +20,7 @@ import {
   Briefcase,
   Send,
   Clock,
+  Handshake,
 } from 'lucide-react'
 import ProjetDialog from './ProjetDialog'
 import { useProjet } from '@/context/ProjetContext'
@@ -167,6 +168,16 @@ const MENU_BY_ROLE = {
     }
   ],
   7: [
+    {
+      title: 'Ventes',
+      description: 'Gestion complète des ventes.',
+      icon: Handshake,
+      bgColor: 'bg-orange-600',
+      textColor: 'text-orange-600',
+      iconBg: 'bg-orange-50',
+      url: '/ventes',
+      needsProjet: true,
+    },
     {
       title: 'Comptabilité',
       description: 'Gestion complète de la comptabilité de l\'étude.',

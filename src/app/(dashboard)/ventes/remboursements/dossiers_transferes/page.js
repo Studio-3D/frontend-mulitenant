@@ -2,12 +2,11 @@
 
 import React, { useEffect, useState } from 'react';
 import Table from '@/components/Table';
-import { Eye, Check } from 'lucide-react';
 import { useAuth } from '../../../../../context/AuthContext';
 import { useProjet } from '../../../../../context/ProjetContext';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { isAdmin, isSuperAdmin } from '../../../../../configs/enum';
+import { isAdmin, isComptable, isSuperAdmin } from '../../../../../configs/enum';
 import Link from 'next/link';
 import { fetchData_table_by_id } from '../../../../../../src/configs/api-utils';
 import Input from '@/components/Input';
@@ -116,75 +115,87 @@ const RemboDosTable = () => {
     setTempFilters(reset);
   };
 
-  const columns = [
-    {
-      key: 'date',
-      label: 'Date Transfert',
-      render: (row) => (
-        <span>
-          {row.created_at
-            ? format(new Date(row.created_at), 'dd/MM/yyyy')
-            : '-'}
-        </span>
-      ),
-    },
-    ...(isSuperAdmin(userRole) || isAdmin(userRole)
-      ? [
-          {
-            key: 'responsable',
-            label: 'Responsable',
-            render: (row) => (
+ const columns = [
+  {
+    key: 'date',
+    label: 'Date Transfert',
+    render: (row) => (
+      <span>
+        {row.created_at
+          ? format(new Date(row.created_at), 'dd/MM/yyyy')
+          : '-'}
+      </span>
+    ),
+  },
+  ...(isSuperAdmin(userRole) || isAdmin(userRole) || isComptable(userRole)
+    ? [
+        {
+          key: 'responsable',
+          label: 'Responsable',
+          render: (row) => {
+            // For comptables, show text without link
+            if (isComptable(userRole)) {
+              return (
+                <strong style={{ fontWeight: 600 }}>
+                  {row.desistement_not_trashed?.user?.name}{' '}
+                  {row.desistement_not_trashed?.user?.prenom}
+                </strong>
+              );
+            }
+            // For super admin and admin, show with link
+            return (
               <Link
                 target="_blank"
                 href={`/utilisateurs/afficher-utilisateur/${row.desistement_not_trashed?.user?.id}`}
-                // className="text-blue-500 hover:text-blue-800"
               >
                 <strong style={{ fontWeight: 600 }}>
-                  {' '}
                   {row.desistement_not_trashed?.user?.name}{' '}
                   {row.desistement_not_trashed?.user?.prenom}
                 </strong>
               </Link>
-            ),
+            );
           },
-        ]
-      : []),
-    {
-      key: 'old_dos',
-      label: 'Ancien Dossier',
-      render: (row) => (
-        <Link
-          target="_blank"
-          href={`/ventes/reservations/${row.reservation?.id}`}
-         // className="text-blue-500 hover:text-blue-800"
-        >
-         <strong style={{ fontWeight: 600 }}>{row.reservation?.code_reservation || ' '}</strong>  
-        </Link>
-      ),
-    },
-    {
-      key: 'new_dos',
-      label: 'Nouveau Dossier',
-      render: (row) => (
-        <Link
-          target="_blank"
-          href={`ventes/reservations/${row.dossier_id_transfert}`}
-          //className="text-blue-500 hover:text-blue-800"
-        >
-           <strong style={{ fontWeight: 600 }}>{row.dossier_transfert?.code_reservation || ' '}</strong>
-        </Link>
-      ),
-    },
-    {
-      key: 'montant',
-      label: 'Montant Transféré',
-      render: (row) => (
-        <span className="text-green-500 font-medium">
-          {row.montant_transfert?.toLocaleString() + ' DH'}
-        </span>
-      ),
-    },
-  ];
+        },
+      ]
+    : []),
+  {
+    key: 'old_dos',
+    label: 'Ancien Dossier',
+    render: (row) => (
+      <Link
+        target="_blank"
+        href={`/ventes/reservations/${row.reservation?.id}`}
+      >
+        <strong style={{ fontWeight: 600 }}>
+          {row.reservation?.code_reservation || ' '}
+        </strong>  
+      </Link>
+    ),
+  },
+  {
+    key: 'new_dos',
+    label: 'Nouveau Dossier',
+    render: (row) => (
+      <Link
+        target="_blank"
+        href={`ventes/reservations/${row.dossier_id_transfert}`}
+      >
+        <strong style={{ fontWeight: 600 }}>
+          {row.dossier_transfert?.code_reservation || ' '}
+        </strong>
+      </Link>
+    ),
+  },
+  {
+    key: 'montant',
+    label: 'Montant Transféré',
+    render: (row) => (
+      <span className="text-green-500 font-medium">
+        {row.montant_transfert?.toLocaleString() + ' DH'}
+      </span>
+    ),
+  },
+];
 
   return (
     <>

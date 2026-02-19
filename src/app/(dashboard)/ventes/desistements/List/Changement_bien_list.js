@@ -31,7 +31,7 @@ export default function Changement_bien_list() {
     1: { id: 2, label: 'Rejeté' },
     2: { id: 1, label: 'Validé' },
     3:
-      user_role <= 2
+      (user_role <= 2) 
         ? { id: 5, label: 'En Attente' }
         : { id: 0, label: 'En cours' },
   };
@@ -168,7 +168,7 @@ export default function Changement_bien_list() {
 
   const columns = [
     { key: 'date', label: 'Date' },
-    ...(user_role <= 2
+    ...((user_role <= 2) 
       ? [{ key: 'cc', label: 'Responsable', width: '100px' }]
       : []),
     { key: 'code_reservation', label: 'Code Réservation' },
@@ -198,7 +198,7 @@ export default function Changement_bien_list() {
     { key: 'nouveau_bien', label: 'Nouveau Bien' },
     { key: 'montant_ajouter', label: 'Montant à Ajouter' },
     { key: 'penalite', label: 'Pénalité' },
-    ...(user_role <= 2 && !(etat_desistement == 5 || etat_desistement == 0)
+    ...((user_role <= 2) && !(etat_desistement == 5 || etat_desistement == 0)
       ? [
           {
             key: 'date_validation',
@@ -247,7 +247,7 @@ export default function Changement_bien_list() {
             <Eye className="w-4 h-4" />
           </Link>
 
-          {etat_desistement == 2 && (
+          {etat_desistement == 2 && user_role==3 &&  (
             <button
               onClick={() => handleCorriger(row.id, row.reservation_id)}
               className="text-red-500 hover:text-red-700"
@@ -369,7 +369,7 @@ export default function Changement_bien_list() {
               }}
             >
               {/* Regular inputs */}
-              {user_role <= 2 && (
+              {(user_role <= 2) && (
                 <Input
                   type="text"
                   label="Responsable"
@@ -387,7 +387,7 @@ export default function Changement_bien_list() {
                 }
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
-              {user_role <= 2 &&
+              {(user_role <= 2)  &&
                 !(etat_desistement == 5 || etat_desistement == 0) && (
                   <Input
                     type="text"
@@ -453,7 +453,7 @@ export default function Changement_bien_list() {
                 onChange={handleFilterChange}
                 labeL="Choisir une Date"
               />
-              {user_role <= 2 &&
+              {(user_role <= 2)  &&
                 !(etat_desistement == 5 || etat_desistement == 0) && (
                   <DateRangePicker
                     startName="de_date_respo_req"

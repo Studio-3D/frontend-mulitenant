@@ -22,7 +22,7 @@ import {
   Image,
   EyeIcon,
 } from 'lucide-react';
-import { getEtatLabel, getFullOrientation, isRespoLivraison } from '@/configs/enum';
+import { getEtatLabel, getFullOrientation, isNotaire, isRespoCommercial, isRespoLivraison } from '@/configs/enum';
 import BienSuperficies from './BienSuperficies';
 import BienComposition from './BienComposition';
 import BienDescriptionGenerator from './BienDescriptionGenerator';
@@ -55,7 +55,9 @@ export default function BienDetails({ id }) {
             !isSuperAdmin(userRole) &&
             !isCommercial(userRole)&&
             !isComptable(userRole)&&
-            !isRespoLivraison(userRole)
+            !isRespoLivraison(userRole)&&
+            !isRespoCommercial(userRole)&&
+            !isNotaire(userRole)
           ) {
             router.push('/');
           }

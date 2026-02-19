@@ -6,7 +6,7 @@ import { fetchData_table_by_id } from '../../../../../../src/configs/api-utils';
 import { Eye, Check, Upload, Clock } from 'lucide-react';
 import Table from '@/components/Table';
 import { format } from 'date-fns';
-import { MODE_PAIEMENT, type_dst, type_dst_dp } from '@/configs/enum';
+import { isComptable, MODE_PAIEMENT, type_dst, type_dst_dp } from '@/configs/enum';
 import { isAdmin, isSuperAdmin ,isCommercial} from '../../../../../configs/enum';
 import { APIURL } from '@/configs/api';
 import Link from 'next/link';
@@ -82,7 +82,8 @@ export default function PenalitesTable() {
           if (
             !isAdmin(userRole) &&
             !isSuperAdmin(userRole) &&
-            !isCommercial(userRole)
+            !isCommercial(userRole)&&
+            !isComptable(userRole)
           ) {
             router.push('/');
           }
@@ -230,24 +231,33 @@ export default function PenalitesTable() {
   ];
 
   const adminColumns =
-    isSuperAdmin(userRole) || isAdmin(userRole)
-      ? [
-          {
-            key: 'cc',
-            label: 'CC',
-            render: (row) => (
+  isSuperAdmin(userRole) || isAdmin(userRole) || isComptable(userRole)
+    ? [
+        {
+          key: 'cc',
+          label: 'CC',
+          render: (row) => {
+            // For comptables, show text without link
+            if (isComptable(userRole)) {
+              return (
+                <strong style={{ fontWeight: 600 }}>
+                  {row.cc}
+                </strong>
+              );
+            }
+            // For super admin and admin, show with link
+            return (
               <Link
                 href={`/utilisateurs/afficher-utilisateur/${row.cc_id}`}
                 target="_blank"
-              
               >
-                 <strong style={{ fontWeight: 600 }}>{row.cc}</strong>
-                
+                <strong style={{ fontWeight: 600 }}>{row.cc}</strong>
               </Link>
-            ),
+            );
           },
-        ]
-      : [];
+        },
+      ]
+    : [];
 
   const typeColumn = {
     key: 'type_desistement',
@@ -274,7 +284,7 @@ export default function PenalitesTable() {
   };
 
   const validationColumns =
-    (isSuperAdmin(userRole) || isAdmin(userRole)) &&
+    (isSuperAdmin(userRole) || isAdmin(userRole)||isComptable(userRole)) &&
     [1, 2].includes(etat_penalite)
       ? [
           {
@@ -292,7 +302,7 @@ export default function PenalitesTable() {
       : [];
 
   const actionColumn =
-    isAdmin(userRole) || isSuperAdmin(userRole) ? (
+    isAdmin(userRole) || isSuperAdmin(userRole) ||isComptable(userRole) ? (
       {
         key: 'actions',
         label: 'ACTIONS',
@@ -304,7 +314,6 @@ export default function PenalitesTable() {
           return (
             <div className="flex gap-2">
               
-              
                <Link
               href={`/ventes/desistements/penalites/${row.id}`}
               className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
@@ -313,7 +322,7 @@ export default function PenalitesTable() {
               <Eye className="w-4 h-4" />
             </Link>
 
-              {etat_penalite === 5 && (
+              {etat_penalite == 5 &&(
                 <button
                   onClick={() => handleValiderRejeter(row.id, row.num_recu)}
                   className="text-green-500 hover:text-green-700"
@@ -489,7 +498,7 @@ export default function PenalitesTable() {
                   }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-                {userRole <= 2 && (
+                {(userRole <= 2||userRole ==7) && (
                   <Input
                     type="text"
                     label="Responsable"

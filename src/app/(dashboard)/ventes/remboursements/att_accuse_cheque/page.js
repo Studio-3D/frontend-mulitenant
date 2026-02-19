@@ -7,4 +7,3 @@ const att_accuse_cheque = () => {
 };
 
 export default att_accuse_cheque;
-att_accuse_cheque
