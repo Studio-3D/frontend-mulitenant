@@ -178,7 +178,6 @@ export const ImmeubleDetailsPage = () => {
     } else {
       router.push('/projets');
     }
-    // router.push('/Projets'); // Redirect to projects page
   };
 
   const allTabsData = useMemo(() => {

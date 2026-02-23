@@ -58,6 +58,7 @@ import {
   Send,
   Workflow,
   Split,
+  FileBarChart,
   
 } from 'lucide-react';
 
@@ -577,6 +578,20 @@ const Menu = () => {
           href: '/etapes-projet',
           needsProjet: true,
           needsSociete: user.role == 1,
+    },
+    {
+          label: 'Rapport',
+          icon: <FileBarChart size={20} />,
+          href: '/comptabilite/rapports',
+          needsProjet: true,
+          needsSociete: user.role == 1,
+    },
+    {
+      label: 'Statistiques',
+      icon: <BarChart4 size={20} />,
+      href: '/statistiques',
+      needsProjet: true,
+      needsSociete: user.role === 1,
     },
   ];
 
