@@ -137,7 +137,6 @@ export const BlocDetailsPage = () => {
 
   const handleDeleteSuccess = () => {
     setShowDeleteModal(false);
-    //router.push("/Projets"); // Redirect to projects page
     // Redirect to the tranche page if available, otherwise to the project page
     if (blocData?.bloc?.tranche_id) {
       localStorage.setItem(

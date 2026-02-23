@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import ProjetsPage from '@/app/(dashboard)/Projets/page';
+import ProjetsPage from '@/app/(dashboard)/projets/page';
 
 const ProjetsContent = ({ user_id }) => {
   return (
