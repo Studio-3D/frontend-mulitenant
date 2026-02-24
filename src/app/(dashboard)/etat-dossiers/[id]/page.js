@@ -106,8 +106,8 @@ const getGlobalStatus = () => {
   if (contratStatus === 'in_progress') return 'Contrat en cours';
   
   // Then check compromis status
-  if (compromisStatus === 'completed') return 'Compromis signé';
-  if (compromisStatus === 'in_progress') return 'Compromis en cours';
+  if (compromisStatus === 'completed') return 'Attestation signé';
+  if (compromisStatus === 'in_progress') return 'Attestation en cours';
   
   // Default to reservation
   return 'Réservation';
@@ -145,8 +145,8 @@ const transformApiData = (apiData) => {
     if (contratStatus === 'in_progress') return 'Contrat en cours';
     
     // Then check compromis status
-    if (compromisStatus === 'completed') return 'Compromis signé';
-    if (compromisStatus === 'in_progress') return 'Compromis en cours';
+    if (compromisStatus === 'completed') return 'Attestation signé';
+    if (compromisStatus === 'in_progress') return 'Attestation en cours';
     
     // Default to reservation
     return 'Réservation';
@@ -596,7 +596,7 @@ const reservationDotColor = reste > 0 ? '#ef4444' : '#10b981'; // red if reste >
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px' }}>
             
             {/* Réservation - Always green since data exists */}
-          <StageCard title="Réservation" icon={Calendar} titleColor="#2563eb" dotColor={reservationDotColor}>
+          <StageCard title="Détail Réservation" icon={Calendar} titleColor="#2563eb" dotColor={reservationDotColor}>
             
     <FieldItem 
       label="Code Réservation" 
@@ -632,16 +632,16 @@ const reservationDotColor = reste > 0 ? '#ef4444' : '#10b981'; // red if reste >
 
             {/* Compromis de Vente - Dynamic color based on status */}
             <StageCard 
-              title="Compromis de Vente" 
+              title="Attestation de Vente" 
               icon={FileText} 
               titleColor={d.compromis.status === 'completed' ? '#2563eb' : d.compromis.status === 'in_progress' ? '#ea580c' : '#6b7280'}
               dotColor={getStatusColor(d.compromis.status)}
             >
-              <FieldItem label="Date du compromis" value={d.compromis.date_enregistrement} completed={!!d.compromis.date_enregistrement} />
+              <FieldItem label="Date d'enregistrement" value={d.compromis.date_enregistrement} completed={!!d.compromis.date_enregistrement} />
               <FieldItem label="Signature Client" value={d.compromis.date_signature_client} icon={PenTool} completed={!!d.compromis.date_signature_client} />
               <FieldItem label="Signature Maître d'Ouvrage" value={d.compromis.date_signature_mo} icon={Stamp} completed={!!d.compromis.date_signature_mo} />
               <FieldItem 
-                label="Compromis signé" 
+                label="Attestation signé" 
                 value={d.compromis.compromis_signee} 
                 icon={FileSignature} 
                 completed={!!d.compromis.compromis_signee}
