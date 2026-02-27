@@ -840,7 +840,7 @@ export default function VisiteFormEdit({ id }) {
           errors.push('Le mode de paiement est requis');
         }
 
-        if (watch('mode_paiement') && watch('mode_paiement') !== '1') {
+        if (watch('mode_paiement') && watch('mode_paiement') != 1) {
           if (!watch('banque_id')) {
             errors.push('La banque est requise pour ce mode de paiement');
           }
