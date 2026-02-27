@@ -1076,7 +1076,7 @@ export default function BienForm() {
           setCompositionModalMessage(
             "Voulez-vous ajouter d'autre composition pour ce bien?"
           );
-          setDataReloadTrigger((prev) => prev + 1);
+          setDataReloadTrigger((prev) => prev + 1);    
         } else if (res.status === 422) {
         }
       })

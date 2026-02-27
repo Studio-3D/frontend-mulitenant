@@ -164,6 +164,57 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
       ? selectedPerson.partenaire.description
       : null
   );
+  const formatPhoneNumber = (value) => {
+    if (!value) return value;
+    
+    // Remove all non-digit characters except '+'
+    let cleaned = value.replace(/[^\d+]/g, '');
+    
+    // Morocco: +212|00212|212 -> 0 + rest (9 digits after prefix)
+    if (cleaned.match(/^(\+212|00212|212)/)) {
+      let rest = cleaned.replace(/^(\+212|00212|212)/, '');
+      // Ensure we have exactly 9 digits after prefix
+      if (rest.length > 9) rest = rest.slice(0, 9);
+      return '0' + rest;
+    }
+    
+    // France: +33|0033|0 -> 0 + rest (9 digits after prefix)
+    if (cleaned.match(/^(\+33|0033|0)/)) {
+      let rest = cleaned.replace(/^(\+33|0033|0)/, '');
+      // Ensure we have exactly 9 digits after prefix
+      if (rest.length > 9) rest = rest.slice(0, 9);
+      return '0' + rest;
+    }
+    
+    // USA/Canada: +1|001|1 -> keep as is (10 digits)
+    if (cleaned.match(/^(\+1|001|1)/)) {
+      let rest = cleaned.replace(/^(\+1|001|1)/, '');
+      if (rest.length > 10) rest = rest.slice(0, 10);
+      return '+1' + rest;
+    }
+    
+    // UK: +44|0044|0 -> 0 + rest (10 digits after prefix)
+    if (cleaned.match(/^(\+44|0044|0)/)) {
+      let rest = cleaned.replace(/^(\+44|0044|0)/, '');
+      if (rest.length > 10) rest = rest.slice(0, 10);
+      return '0' + rest;
+    }
+    
+    // Morocco local: starts with 05,06,07, etc.
+    if (cleaned.match(/^0[5-9]/)) {
+      if (cleaned.length > 10) cleaned = cleaned.slice(0, 10);
+      return cleaned;
+    }
+    
+    // France local: starts with 01-09
+    if (cleaned.match(/^0[1-9]/)) {
+      if (cleaned.length > 10) cleaned = cleaned.slice(0, 10);
+      return cleaned;
+    }
+    
+    // Default: return cleaned number
+    return cleaned;
+  };
   const defaultValues = {
     //suvi dossier
     statut_suivi: '',
@@ -191,9 +242,9 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
     prenom: selectedPerson?.prenom || '',
     telephone:
       personType == 'prospect'
-        ? selectedPerson?.telephone
+        ? formatPhoneNumber(selectedPerson?.telephone)
         : personType == 'client'
-        ? selectedPerson?.telephone_num1
+        ? formatPhoneNumber(selectedPerson?.telephone_num1)
         : '',
     telephone_num2: selectedPerson?.telephone_num2 || null,
     ville: selectedPerson?.ville || '',

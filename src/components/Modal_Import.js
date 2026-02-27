@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Printer } from 'lucide-react';
+import { Printer, Upload } from 'lucide-react';
 import Button from './Button';
 import toast from 'react-hot-toast';
 import { APIURL, RESOURCE_URL } from '../configs/api';
@@ -26,7 +26,7 @@ export default function Modal_Import({ onClose, title, route }) {
   const handleFileClick = () => {
     if (selectedSociete?.raison_sociale_concatene && selectedSociete?.id) {
       window.open(
-        `${RESOURCE_URL.DOCS}/import_prospect.xlsx`,
+        `${RESOURCE_URL.DOCS}/import_prospects.xlsx`,
         '_blank'
       );
     } else {
@@ -278,7 +278,7 @@ export default function Modal_Import({ onClose, title, route }) {
                 aria-label="Clear"
                 onClick={() => handleFileClick()}
               >
-                <Printer className="text-blue-500 w-5 h-5" />
+                <Upload className="text-blue-500 w-5 h-5" />
               </button>
             </div>
           </div>
