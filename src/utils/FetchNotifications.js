@@ -58,7 +58,7 @@ const fetchNotifications = async ({
         icon: 'home',
         color: 'success',
         subtitle: (prospect, user, avance, reservation, bien, projet) =>
-          `Pour Le visuaClient: ${prospect?.nom} ${prospect?.prenom}`,
+          `Pour Le Client: ${prospect?.nom} ${prospect?.prenom}`,
       },
       4: {
         title: "Une Pré Réservation sur le point d'expirer",
