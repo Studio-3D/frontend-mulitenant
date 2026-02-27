@@ -49,6 +49,8 @@ const SocieteModal = ({
         </div>
 
         {/* Content */}
+        <div className="text-gray-500"> {/* ← ADD THIS WRAPPER */}
+
         <div className="flex flex-col items-center justify-center pt-6 px-4">
           <SelectInput
             label="Société"
@@ -60,6 +62,7 @@ const SocieteModal = ({
             required={true}
           />
         </div>
+       
 
         {/* Actions */}
         <div className="flex justify-center gap-2 px-4 mt-4">
@@ -80,6 +83,7 @@ const SocieteModal = ({
             {switching ? "Chargement..." : "Confirmer"}
           </button>
         </div>
+         </div>
       </div>
     </div>
   );

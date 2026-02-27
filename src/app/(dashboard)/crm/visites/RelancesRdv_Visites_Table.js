@@ -178,9 +178,9 @@ const RelancesRdv_Visites_Table = (type) => {
   function NomBienComplet(bien) {
     const noms = [];
 
-    if (bien.tranche?.nom) noms.push(bien.tranche.nom);
-    if (bien.bloc?.nom) noms.push(bien.bloc.nom);
-    if (bien.immeuble?.nom) noms.push(bien.immeuble.nom);
+    if (bien?.tranche?.nom) noms.push(bien?.tranche.nom);
+    if (bien?.bloc?.nom) noms.push(bien?.bloc?.nom);
+    if (bien?.immeuble?.nom) noms.push(bien?.immeuble?.nom);
 
     noms.push(bien.propriete_dite_bien);
 
