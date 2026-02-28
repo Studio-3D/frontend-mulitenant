@@ -2278,7 +2278,7 @@ export default function ReservationForm({ id }) {
                 />
                 {showStepErrors && !watch("bien_id") && (
                   <p className="text-red-500 text-xs mt-1">
-                    La sélection d'un bien est requise
+                    La sélection d{"'"}un bien est requise
                   </p>
                 )}
               </div>
