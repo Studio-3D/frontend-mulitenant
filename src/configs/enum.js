@@ -117,7 +117,7 @@ export const Statut_SUIVI_DOSSIER  = {
     label: 'Demande des documents',
   },
   4: {
-    code: 8,
+    code: 4,
     label: 'Autre ',
   },
 };
