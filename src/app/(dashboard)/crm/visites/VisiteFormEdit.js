@@ -836,11 +836,11 @@ export default function VisiteFormEdit({ id }) {
           errors.push('Le mode de financement est requis');
         }
 
-        if (!watch('mode_paiement')) {
+        if ( avance > 0 && !watch('mode_paiement')) {
           errors.push('Le mode de paiement est requis');
         }
 
-        if (watch('mode_paiement') && watch('mode_paiement') !== '1') {
+        if (watch('mode_paiement') && watch('mode_paiement') != 1) {
           if (!watch('banque_id')) {
             errors.push('La banque est requise pour ce mode de paiement');
           }
@@ -2679,8 +2679,8 @@ export default function VisiteFormEdit({ id }) {
                               }
                               submitted={formSubmitted}
                             />
-
-                            <SelectInput
+{watch("avance") > 0 && (
+ <SelectInput
                               placeholder="Sélectionner le mode de paiement"
                               label="Mode Paiement:"
                               name="mode_paiement"
@@ -2701,6 +2701,8 @@ export default function VisiteFormEdit({ id }) {
                               }
                               submitted={formSubmitted}
                             />
+)}
+                           
                             {/* Conditional Fields */}
                             {watch('mode_paiement') !== 1 &&
                               watch('mode_paiement') !== '' && (

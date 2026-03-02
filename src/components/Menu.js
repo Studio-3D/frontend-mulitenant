@@ -219,7 +219,6 @@ const Menu = () => {
           label: 'Freins',
           icon: <AlertCircle size={20} />,
           href: '/administration/freins',
-          needsProjet: true,
           needsSociete: user.role === 1,
         },
         {
@@ -423,7 +422,6 @@ const Menu = () => {
       icon: <Wrench />,
       href: '/sav/services',
       needsSociete: user.role === 1,
-      needsProjet: true,
     },
     {
       label: 'Prestataires',

@@ -500,7 +500,7 @@ const ReservationTable = ({ dataClient, user_id,searchParams }) => {
                     title="Affecter un notaire"
                     onClick={() => handle_affecte(row.id, row.code_reservation, null)}
                   />
-                  /</span>
+                  </span>
                 )}
               </>
           )}
