@@ -152,7 +152,7 @@ export default function InstagramConfigTab() {
       if (
         !instagramConfig.instagram_id ||
         !instagramConfig.acces_token_user ||
-        instagramConfig.acces_token_user_short_term ||
+        !instagramConfig.acces_token_user_short_term ||
         !instagramConfig.projet_id
       ) {
         toast.error('Veuillez remplir tous les champs');
@@ -872,7 +872,7 @@ export default function InstagramConfigTab() {
                           </ul>*/}
 
                           <p className="text-gray-700 mt-4">
-                            <strong>2. Générer le token d&apos;accès :</strong>
+                            <strong>2. Générer le token d&apos;accès court terme :</strong>
                           </p>
                           <ul className="list-disc pl-5 space-y-1 text-gray-600">
                             <li>
@@ -907,15 +907,13 @@ export default function InstagramConfigTab() {
                             </li>
                             <li>Configurez les permissions requises</li>
                             <li>
-                              Générez un token d&apos;accès
+                              Générez un token d&apos;accès court Terme
                               <div>
                                 Ajoutez votre compte Instagram Business puis
                                 copiez ID du compte ci-dessous (nom du compte).{' '}
                                 <br />
                                 <div>
-                                  <p className="font-medium text-gray-800">
-                                    Générez et copiez le token
-                                  </p>
+                                 
                                   <p className="text-sm text-gray-600 mt-1">
                                     • Allez dans{' Outil '}
                                     <strong>Explorateur Api Graph</strong>
@@ -937,10 +935,151 @@ export default function InstagramConfigTab() {
                                       instagram_content_publish
                                     </code>
                                     <br />•{' '}
-                                    <strong>Copiez le token généré</strong>
+                                    <strong>Copiez le token généré </strong>
                                   </p>
                                 </div>
                               </div>
+                            </li>
+                            <p className="text-gray-700 mt-4">
+                            <strong>2. Générer le token d&apos;accès long terme:</strong>
+                            </p>
+                            
+                          </ul>
+                              <p className="text-gray-700 mt-4">
+                          <strong>
+                            3. Générer le Token d {"'"}accès à long terme:
+                          </strong>
+                        </p>
+                        <ul className="list-disc pl-5 space-y-1 text-gray-600">
+<li>
+                        <div className="mt-4">
+                          <h4 className="font-medium text-gray-800 mb-2">
+                            🔄 Comment prolonger votre token pour 60 jours :
+                          </h4>
+
+                          <div className="space-y-3">
+                            {/* Étape 1 */}
+                            <div className="flex items-start bg-white p-3 rounded-lg border">
+                              <div className="bg-blue-100 text-blue-800 rounded-full w-8 h-8 flex items-center justify-center font-bold mr-3 flex-shrink-0">
+                                1
+                              </div>
+                              <div>
+                                <p className="font-medium text-gray-800">
+                                  Ouvrez l{"'"}outil de débogage de token
+                                </p>
+                                <p className="text-sm text-gray-600 mt-1">
+                                  • Allez sur{' '}
+                                  <strong>developers.facebook.com</strong>
+                                  <br />• Cliquez sur <strong>
+                                    Outils
+                                  </strong>{' '}
+                                  dans le menu supérieur
+                                  <br />• Sélectionnez{' '}
+                                  <strong>Debug Access Token</strong>
+                                  <br />• Ou accédez directement à :{' '}
+                                  <a
+                                    href="https://developers.facebook.com/tools/debug/accesstoken/"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:underline"
+                                  >
+                                    developers.facebook.com/tools/debug/accesstoken/
+                                  </a>
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Étape 2 */}
+                            <div className="flex items-start bg-white p-3 rounded-lg border">
+                              <div className="bg-blue-100 text-blue-800 rounded-full w-8 h-8 flex items-center justify-center font-bold mr-3 flex-shrink-0">
+                                2
+                              </div>
+                              <div>
+                                <p className="font-medium text-gray-800">
+                                  Collez et déboguez votre token à court terme
+                                </p>
+                                <p className="text-sm text-gray-600 mt-1">
+                                  • <strong>Collez</strong> votre token à court
+                                  terme dans le champ de saisie
+                                  <br />• Cliquez sur{' '}
+                                  <strong className="text-green-600">
+                                    Déboguer
+                                  </strong>
+                                  <br />• Attendez que les informations s{"'"}
+                                  affichent
+                                  <br />• Vérifiez que toutes les permissions
+                                  sont présentes :
+                                  <br />
+                                  <code className="text-xs bg-gray-100 px-2 py-1 rounded mt-1 inline-block">
+                                    pages_show_list ✓
+                                  </code>{' '}
+                                  <code className="text-xs bg-gray-100 px-2 py-1 rounded">
+                                    pages_read_engagement ✓
+                                  </code>{' '}
+                                  <code className="text-xs bg-gray-100 px-2 py-1 rounded">
+                                    pages_manage_posts ✓
+                                  </code>
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Étape 3 */}
+                            <div className="flex items-start bg-white p-3 rounded-lg border">
+                              <div className="bg-blue-100 text-blue-800 rounded-full w-8 h-8 flex items-center justify-center font-bold mr-3 flex-shrink-0">
+                                3
+                              </div>
+                              <div>
+                                <p className="font-medium text-gray-800">
+                                  Prolongez le token pour 60 jours
+                                </p>
+                                <p className="text-sm text-gray-600 mt-1">
+                                  • Sur la page de débogage, cherchez{' '}
+                                  <strong>Étendre {"l'"}accès</strong>
+                                  <br />• Cliquez sur le bouton{' '}
+                                  <strong className="text-blue-600">
+                                    Étendre
+                                  </strong>
+                                  <br />• Confirmez {"l'"}action si demandé
+                                  <br />• Votre token est maintenant valide pour{' '}
+                                  <strong>60 jours</strong>
+                                  <br />•{' '}
+                                  <strong>Copiez ce nouveau token</strong> et
+                                  collez-le dans le formulaire ci-dessus
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                            <div className="flex items-start">
+                              <div className="bg-yellow-100 text-yellow-800 rounded-full w-6 h-6 flex items-center justify-center mr-2 flex-shrink-0">
+                                ⚠️
+                              </div>
+                              <div>
+                                <p className="text-sm text-yellow-800">
+                                  <strong>Important :</strong> Ce token expire
+                                  après 60 jours.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <div className="flex items-start">
+                              <div className="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center mr-2 flex-shrink-0">
+                                💡
+                              </div>
+                              <div>
+                                <p className="text-sm text-blue-800">
+                                  <strong>Astuce :</strong> Pour éviter les
+                                  interruptions, créez un rappel dans votre
+                                  calendier 55 jours après la génération du
+                                  token.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                             </li>
                           </ul>
 

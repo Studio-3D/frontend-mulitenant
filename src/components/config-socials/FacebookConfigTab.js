@@ -865,7 +865,7 @@ export default function FacebookConfigTab() {
                         </p>
                         <ul className="list-disc pl-5 space-y-1 text-gray-600">
                           <li>Allez sur votre page Facebook</li>
-                          <li>Cliquez sur À propos</li>
+                          <li>Cliquez sur À propos ou Nom de la page </li>
                           <li>Cliquer sur Transparence de la Page</li>
                           <li>Faites défiler pour voir ID de la page</li>
                         </ul>
@@ -911,6 +911,10 @@ export default function FacebookConfigTab() {
                                   <span className="text-blue-600 font-bold">
                                     Entreprise
                                   </span>
+                                   <br />• <strong>Passer Application en Mode</strong> :{' '}
+                                  <span className="text-blue-600 font-bold">
+                                    Live en donnant un URL de la Politique de confidentialité 
+                                  </span>
                                 </p>
                               </div>
                             </div>
@@ -943,6 +947,13 @@ export default function FacebookConfigTab() {
                                   <code className="text-xs bg-gray-100 px-2 py-1 rounded">
                                     pages_manage_posts
                                   </code>
+                                   <code className="text-xs bg-gray-100 px-2 py-1 rounded">
+                                    pages_messaging
+                                  </code>
+                                   <code className="text-xs bg-gray-100 px-2 py-1 rounded">
+                                    pages_manage_metadata
+                                  </code>
+
                                   <br />•{' '}
                                   <strong>Copiez le token généré</strong>
                                 </p>
