@@ -2679,7 +2679,8 @@ export default function VisiteFormEdit({ id }) {
                               }
                               submitted={formSubmitted}
                             />
-                    {watch("avance_res") > 0 && (
+                    {watch("avance_res") > 0 && (   
+                      
                     <SelectInput
                               placeholder="Sélectionner le mode de paiement"
                               label="Mode Paiement:"
