@@ -940,9 +940,7 @@ export default function InstagramConfigTab() {
                                 </div>
                               </div>
                             </li>
-                            <p className="text-gray-700 mt-4">
-                            <strong>2. Générer le token d&apos;accès long terme:</strong>
-                            </p>
+                          
                             
                           </ul>
                               <p className="text-gray-700 mt-4">
@@ -1007,18 +1005,7 @@ export default function InstagramConfigTab() {
                                   </strong>
                                   <br />• Attendez que les informations s{"'"}
                                   affichent
-                                  <br />• Vérifiez que toutes les permissions
-                                  sont présentes :
-                                  <br />
-                                  <code className="text-xs bg-gray-100 px-2 py-1 rounded mt-1 inline-block">
-                                    pages_show_list ✓
-                                  </code>{' '}
-                                  <code className="text-xs bg-gray-100 px-2 py-1 rounded">
-                                    pages_read_engagement ✓
-                                  </code>{' '}
-                                  <code className="text-xs bg-gray-100 px-2 py-1 rounded">
-                                    pages_manage_posts ✓
-                                  </code>
+                               
                                 </p>
                               </div>
                             </div>
@@ -1493,9 +1480,9 @@ export default function InstagramConfigTab() {
                       <li>
                         <strong>Configurez les webhooks</strong>
                         <p className="text-sm text-gray-600 mt-1">
-                          Faites défiler vers le bas jusqu {"'"}à la section
-                          Webhooks.
-                        </p>
+                         Dans le tableau de bord de votre application, ajoutez le produit Webhooks<br/>
+                         cliquez sur Configurer Instagram<br/>
+                       </p>
                       </li>
 
                       <li>
@@ -1522,7 +1509,7 @@ export default function InstagramConfigTab() {
                       <li>
                         <strong>Sélectionnez les champs et abonnez-vous</strong>
                         <p className="text-sm text-gray-600 mt-1">
-                          Sélectionnez tous les champs nécessaires et cliquez
+                         Sélectionnez comments,mentions,message_reactions,messages cliquez
                           sur S{"'"}abonner.
                         </p>
                       </li>
