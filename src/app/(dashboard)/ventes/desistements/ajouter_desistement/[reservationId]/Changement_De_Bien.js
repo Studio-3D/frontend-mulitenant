@@ -602,7 +602,7 @@ export function Changement_De_Bien({
 
                     // Add the same label text logic
                     const labelText =
-                      bien.id +
+                      bien.propriete_dite_bien +
                       (bien.etat === 'ENCOURS_DE_PROPOSITION'
                         ? bien?.is_proposed != null
                           ? user.id != bien?.is_proposed?.user_id
