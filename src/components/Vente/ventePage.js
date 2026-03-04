@@ -582,7 +582,7 @@ const handleSubTabClick = (parentTab, subTabId) => {
           )}
         </div>
 
-        {userRole <= 2 ? (
+    {(userRole <= 2 || userRole === 7) ? (
           <>
             <div
               style={{

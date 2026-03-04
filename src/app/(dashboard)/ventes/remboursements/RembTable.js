@@ -373,7 +373,7 @@ export default function RembTable({ etat }) {
             >
               <Eye className="w-4 h-4" />
             </Link>
-            {userRole<=3 && (   
+            {(userRole<=3 ||userRole==7) && (   
               <Check
               onClick={() => handleTraiterDemande(row.id, row.client, row.bien)}
               className="w-4 h-4 text-green-500 hover:text-green-700"
@@ -393,7 +393,7 @@ export default function RembTable({ etat }) {
             >
               <Eye className="w-4 h-4" />
             </Link>
-             {userRole<=3 && (   
+             {(userRole<=3 ||userRole==7) && (   
             <button
               onClick={() => handleTraiterAccuse(row.id, row.client, row.bien)}
               className="w-4 h-4 text-red-500 hover:text-red-700"

@@ -428,7 +428,7 @@ const tabs = [
                           handleSubTabSelect('remboursements', 'att-accuse-cheque', 'Attente Accusé')
                         }
                       />
-                      {(userRole <= 2 || userRole ==7 ) ? (
+                      {(userRole <= 2 || userRole ===7 ) ? (
                         <>
                           <DropdownItem
                             label="Attente Décaissement"
