@@ -28,6 +28,7 @@ import toast from 'react-hot-toast';
 
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import Document_Compromis from './recu';
+import Modal from '@/components/Modal';
 const Compromis_show = ({
   user,
   reservationData,
@@ -426,235 +427,239 @@ const Compromis_show = ({
       </div>
 
       {/* Edit Modal */}
+     {/* Edit Modal - Using your Modal component */}
       {open_edit && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl">
-            <div className="bg-blue-600 text-white py-4 px-6 rounded-t-lg">
-              <h3 className="text-xl font-bold">Modifier Compromis</h3>
-            </div>
-            <div className="p-6">
-              <form onSubmit={onSubmit_edit} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="mb-2">
-                    <label
-                      htmlFor="date_sign_client"
-                      className="block text-[15px] font-medium text-gray-700 mb-1"
-                    >
-                      Date Signature Client{' '}
-                      <span className="text-red-500 ml-1">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      id="date_sign_client"
-                      defaultValue={format(
-                        new Date(data.date_sign_client),
-                        'yyyy-MM-dd'
-                      )}
-                      onChange={(e) => setDate_sign_client(e.target.value)}
-                      className="block w-full h-[38px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none hover:border-gray-500 focus:border-gray-500"
-                      required
-                    />
-                  </div>
-
-                  <div className="mb-2">
-                    <label
-                      htmlFor="date_sign_mo"
-                      className="block text-[15px] font-medium text-gray-700 mb-1"
-                    >
-                      Date Signature Maitre Ouvrage{' '}
-                      <span className="text-red-500 ml-1">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      id="date_sign_mo"
-                      defaultValue={format(
-                        new Date(data.date_sign_mo),
-                        'yyyy-MM-dd'
-                      )}
-                      onChange={(e) => setDate_sign_mo(e.target.value)}
-                      className="block w-full h-[38px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none hover:border-gray-500 focus:border-gray-500"
-                      required
-                    />
-                  </div>
-
-                  <div className="mb-2">
-                    <label
-                      htmlFor="date_enreg"
-                      className="block text-[15px] font-medium text-gray-700 mb-1"
-                    >
-                      Date Enregistrement{' '}
-                      <span className="text-red-500 ml-1">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      id="date_enreg"
-                      defaultValue={format(
-                        new Date(data.date_enreg),
-                        'yyyy-MM-dd'
-                      )}
-                      onChange={(e) => setDate_enreg(e.target.value)}
-                      className="block w-full h-[38px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none hover:border-gray-500 focus:border-gray-500"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="bg-blue-600 text-white py-2 px-4 rounded">
-                  <h4 className="text-center font-medium">Echéance</h4>
-                </div>
-                {info && (
-                  <div className="rounded-lg bg-yellow-50 p-4 shadow-sm">
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0">
-                        <AlertTriangle className="h-5 w-5 text-yellow-600" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-yellow-800">
-                          {info}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => setdisplay(false)}
-                        className="text-yellow-600 hover:text-yellow-800"
-                      >
-                        <X className="h-5 w-5" />
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex flex-col w-full">
-                    <label className="font-medium text-gray-700 mb-1">
-                      Durée Echéance
-                    </label>
-                    <div className="relative">
-                      <select
-                        value={duree_echeance ?? ''} // Fallback to empty string if null/undefined
-                        onChange={(e) => {
-                          const newValue = e.target.value;
-                          set_duree_echeance(newValue);
-                          setInfo(
-                            "Toute modification de la durée ou de la date d'échéance entraînera l'annulation d'attestation et la création d'un nouveau automatique."
-                          );
-                          setdisplay(true);
-
-                          if (newValue !== 'Autre') {
-                            set_date_echeance(
-                              format(
-                                new Date(
-                                  new Date().setMonth(
-                                    new Date().getMonth() +
-                                      parseInt(newValue, 10)
-                                  )
-                                ),
-                                'yyyy-MM-dd'
-                              )
-                            );
-                          } else {
-                            set_date_echeance(''); // Use empty string instead of null
-                          }
-                        }}
-                        className="h-[38px] text-[15px] px-4 py-2 border border-gray-300 rounded-md cursor-pointer appearance-none w-full focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-gray-500"
-                      >
-                        <option value="" disabled>
-                          Choisissez un Mode {"d'"}Echéance
-                        </option>
-                        <option value="3">3 Mois</option>
-                        <option value="6">6 Mois</option>
-                        <option value="12">12 Mois</option>
-                        <option value="Autre">Autre</option>
-                      </select>
-                      <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" />
-                    </div>
-                  </div>
-                  <div className="mb-2">
-                    <label
-                      htmlFor="date_echeance"
-                      className="block text-[15px] font-medium text-gray-700 mb-1"
-                    >
-                      Date Echéance
-                    </label>
-                    {display ? (
-                      <input
-                        type="date"
-                        id="date_echeance"
-                        value={date_echeance}
-                        onChange={(e) => set_date_echeance(e.target.value)}
-                        disabled={duree_echeance != 'Autre'}
-                        className={`block w-full h-[38px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none hover:border-gray-500 focus:border-gray-500 ${
-                          duree_echeance != 'Autre'
-                            ? 'bg-gray-100 cursor-not-allowed'
-                            : ''
-                        }`}
-                      />
-                    ) : (
-                      <input
-                        type="date"
-                        id="date_echeance"
-                        defaultValue={
-                          data.date_echeance &&
-                          format(new Date(data.date_echeance), 'yyyy-MM-dd')
-                        }
-                        onChange={(e) => set_date_echeance(e.target.value)}
-                        disabled
-                        className="block w-full h-[38px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none bg-gray-100 cursor-not-allowed"
-                      />
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Commentaire
+        <Modal 
+          isVisible={open_edit}
+          onClose={() => setOpen_edit(false)}
+          maxWidth="max-w-2xl" // Using max-w-2xl for the edit form
+        >
+          <div className="bg-blue-600 text-white py-4 px-6 rounded-t-lg">
+            <h3 className="text-xl font-bold">Modifier Compromis</h3>
+          </div>
+          <div className="p-6">
+            <form onSubmit={onSubmit_edit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="mb-2">
+                  <label
+                    htmlFor="date_sign_client"
+                    className="block text-[15px] font-medium text-gray-700 mb-1"
+                  >
+                    Date Signature Client{' '}
+                    <span className="text-red-500 ml-1">*</span>
                   </label>
-                  <textarea
-                    rows={3}
-                    defaultValue={data.commentaire}
-                    onChange={(e) => setCommentaire(e.target.value)}
-                    className="w-full px-3 py-2 border border-black-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black-500"
-                    placeholder="Commentaire"
+                  <input
+                    type="date"
+                    id="date_sign_client"
+                    defaultValue={format(
+                      new Date(data.date_sign_client),
+                      'yyyy-MM-dd'
+                    )}
+                    onChange={(e) => setDate_sign_client(e.target.value)}
+                    className="block w-full h-[38px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none hover:border-gray-500 focus:border-gray-500"
+                    required
                   />
                 </div>
 
-                {errors_edit && (
-                  <div className="bg-red-100 border-l-4 border-red-500 p-4">
-                    <div className="flex">
-                      <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
-                      <div className="ml-3">
-                        {Object.keys(errors_edit).map((key) => (
-                          <p key={key} className="text-sm text-red-700">
-                            {errors_edit[key][0]}
-                          </p>
-                        ))}
-                      </div>
+                <div className="mb-2">
+                  <label
+                    htmlFor="date_sign_mo"
+                    className="block text-[15px] font-medium text-gray-700 mb-1"
+                  >
+                    Date Signature Maitre Ouvrage{' '}
+                    <span className="text-red-500 ml-1">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    id="date_sign_mo"
+                    defaultValue={format(
+                      new Date(data.date_sign_mo),
+                      'yyyy-MM-dd'
+                    )}
+                    onChange={(e) => setDate_sign_mo(e.target.value)}
+                    className="block w-full h-[38px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none hover:border-gray-500 focus:border-gray-500"
+                    required
+                  />
+                </div>
+
+                <div className="mb-2">
+                  <label
+                    htmlFor="date_enreg"
+                    className="block text-[15px] font-medium text-gray-700 mb-1"
+                  >
+                    Date Enregistrement{' '}
+                    <span className="text-red-500 ml-1">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    id="date_enreg"
+                    defaultValue={format(
+                      new Date(data.date_enreg),
+                      'yyyy-MM-dd'
+                    )}
+                    onChange={(e) => setDate_enreg(e.target.value)}
+                    className="block w-full h-[38px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none hover:border-gray-500 focus:border-gray-500"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="bg-blue-600 text-white py-2 px-4 rounded">
+                <h4 className="text-center font-medium">Echéance</h4>
+              </div>
+              
+              {info && (
+                <div className="rounded-lg bg-yellow-50 p-4 shadow-sm">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0">
+                      <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-yellow-800">
+                        {info}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setdisplay(false)}
+                      className="text-yellow-600 hover:text-yellow-800"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex flex-col w-full">
+                  <label className="font-medium text-gray-700 mb-1">
+                    Durée Echéance
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={duree_echeance ?? ''}
+                      onChange={(e) => {
+                        const newValue = e.target.value;
+                        set_duree_echeance(newValue);
+                        setInfo(
+                          "Toute modification de la durée ou de la date d'échéance entraînera l'annulation d'attestation et la création d'un nouveau automatique."
+                        );
+                        setdisplay(true);
+
+                        if (newValue !== 'Autre') {
+                          set_date_echeance(
+                            format(
+                              new Date(
+                                new Date().setMonth(
+                                  new Date().getMonth() +
+                                    parseInt(newValue, 10)
+                                )
+                              ),
+                              'yyyy-MM-dd'
+                            )
+                          );
+                        } else {
+                          set_date_echeance('');
+                        }
+                      }}
+                      className="h-[38px] text-[15px] px-4 py-2 border border-gray-300 rounded-md cursor-pointer appearance-none w-full focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-gray-500"
+                    >
+                      <option value="" disabled>
+                        Choisissez un Mode {"d'"}Echéance
+                      </option>
+                      <option value="3">3 Mois</option>
+                      <option value="6">6 Mois</option>
+                      <option value="12">12 Mois</option>
+                      <option value="Autre">Autre</option>
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" />
+                  </div>
+                </div>
+                <div className="mb-2">
+                  <label
+                    htmlFor="date_echeance"
+                    className="block text-[15px] font-medium text-gray-700 mb-1"
+                  >
+                    Date Echéance
+                  </label>
+                  {display ? (
+                    <input
+                      type="date"
+                      id="date_echeance"
+                      value={date_echeance}
+                      onChange={(e) => set_date_echeance(e.target.value)}
+                      disabled={duree_echeance != 'Autre'}
+                      className={`block w-full h-[38px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none hover:border-gray-500 focus:border-gray-500 ${
+                        duree_echeance != 'Autre'
+                          ? 'bg-gray-100 cursor-not-allowed'
+                          : ''
+                      }`}
+                    />
+                  ) : (
+                    <input
+                      type="date"
+                      id="date_echeance"
+                      defaultValue={
+                        data.date_echeance &&
+                        format(new Date(data.date_echeance), 'yyyy-MM-dd')
+                      }
+                      onChange={(e) => set_date_echeance(e.target.value)}
+                      disabled
+                      className="block w-full h-[38px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none bg-gray-100 cursor-not-allowed"
+                    />
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Commentaire
+                </label>
+                <textarea
+                  rows={3}
+                  defaultValue={data.commentaire}
+                  onChange={(e) => setCommentaire(e.target.value)}
+                  className="w-full px-3 py-2 border border-black-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black-500"
+                  placeholder="Commentaire"
+                />
+              </div>
+
+              {errors_edit && (
+                <div className="bg-red-100 border-l-4 border-red-500 p-4">
+                  <div className="flex">
+                    <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
+                    <div className="ml-3">
+                      {Object.keys(errors_edit).map((key) => (
+                        <p key={key} className="text-sm text-red-700">
+                          {errors_edit[key][0]}
+                        </p>
+                      ))}
                     </div>
                   </div>
-                )}
-
-                <div className="flex justify-end space-x-3 pt-4">
-                  {loading_btn ? (
-                    <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
-                  ) : (
-                    <button
-                      type="submit"
-                      className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 flex items-center"
-                    >
-                      Enregistrer
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => setOpen_edit(false)}
-                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 flex items-center"
-                  >
-                    Annuler
-                  </button>
                 </div>
-              </form>
-            </div>
+              )}
+
+              <div className="flex justify-end space-x-3 pt-4">
+                {loading_btn ? (
+                  <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
+                ) : (
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 flex items-center"
+                  >
+                    Enregistrer
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setOpen_edit(false)}
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 flex items-center"
+                >
+                  Annuler
+                </button>
+              </div>
+            </form>
           </div>
-        </div>
+        </Modal>
       )}
 
       {/* Scanner Modal */}
@@ -810,7 +815,7 @@ const Compromis_show = ({
                               <p className="text-xs text-gray-500">Durée</p>
                             </div>
                             <p className="font-medium text-sm">
-                              {comp.duree_echeance + ' Mois'}
+                              {comp.duree_echeance!=null && (comp.duree_echeance + ' Mois')}
                             </p>
                           </div>
 

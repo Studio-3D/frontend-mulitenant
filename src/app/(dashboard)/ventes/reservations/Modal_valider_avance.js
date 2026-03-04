@@ -298,6 +298,7 @@ export default function Modal_valider_avance({
                 placeholder="Choisir un Statut d Paiement"
                 className="h-10 text-sm"
                 width="w-90"
+                required
               />
             </div>
           </div>

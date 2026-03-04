@@ -460,7 +460,7 @@ const loadRelancesHistory = async (rdvId) => {
           Rendez-vous
         </h2>
 
-        {etatRes == 1 && contratVente == null && (
+        {reservationData?.reservation?.statut==1 && etatRes == 1 && contratVente == null && (
           <button
             onClick={() => setOpenAddRdv(true)}
             className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 transition-colors"

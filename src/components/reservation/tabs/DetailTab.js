@@ -648,7 +648,7 @@ const DetailTabComponent = ({
       </div>
       {open_v_reservation && (
         <>
-          <Modal isVisible={true} onClose={() => setOpen_v_reservation(false)}>
+          <Modal isVisible={true} onClose={() => setOpen_v_reservation(false)} maxWidth="max-w-xl">
             <Modal_Valider_Reservation
               res_show={true}
               onReservationUpdate={onReservationUpdate} // Pass the callback
@@ -671,7 +671,7 @@ const DetailTabComponent = ({
       {/* pour relance reservation rejete */}
       {open_dialog_rejete && (
         <>
-          <Modal isVisible={true} onClose={() => setOpen_dialog_rejete(false)}>
+          <Modal isVisible={true} onClose={() => setOpen_dialog_rejete(false)}  maxWidth='max-w-lg'>
             <Modal_Relance
               id={reservation.id}
               onClose={() => setOpen_dialog_rejete(false)}

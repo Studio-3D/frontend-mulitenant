@@ -155,7 +155,7 @@ export default function Modal_Valider_Reservation({
 
   return (
     <>
-      <div className="w-full max-w-[90%] sm:max-w-[500px] md:max-w-[600px] lg:max-w-[800px] h-auto bg-white flex flex-col mx-auto">
+      <div className="w-full max-w-[70%] sm:max-w-[500px] md:max-w-[600px] lg:max-w-[800px] h-auto bg-white flex flex-col mx-auto">
         <div className="w-full h-[60px] bg-blue-600 px-4">
           <div className="flex items-center justify-center h-full">
             <h1 className="text-3xl font-bold text-center text-white">
@@ -245,7 +245,7 @@ export default function Modal_Valider_Reservation({
       {open_v_avances && (
         <Modal
           isVisible={open_v_avances}
-          onClose={() => setOpen_v_avances(false)}
+          onClose={() => setOpen_v_avances(false)} maxWidth="max-w-xl"
         >
           <Modal_valider_avance
             onload_res_true={() => setLoading({ ...loading, form: true })}
