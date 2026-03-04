@@ -539,7 +539,7 @@ const PageTraitement_Validation_rejets = () => {
       </div>
 
       {open_v_reservation && (
-        <Modal isVisible={true} onClose={() => setOpen_v_reservation(false)}>
+        <Modal isVisible={true} onClose={() => setOpen_v_reservation(false)} maxWidth="max-w-xl">
           <Modal_Valider_Reservation
             prix={prix}
             avance={avance}

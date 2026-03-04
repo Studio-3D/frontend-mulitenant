@@ -230,7 +230,7 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
   };
 
   const columns = [
-    { key: 'sr', label: 'N° Rekkkçu' },
+    { key: 'sr', label: 'N° Reçu' },
     { key: 'date_reglement', label: 'Date' },
     {
       key: 'code_reservation',
@@ -287,9 +287,7 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
               return (
                 <div className="flex gap-3 items-center">
                   {/* Validation/Encashment Buttons */}
-                  {isAdminOrSuperAdmin && (
-                    <>
-                      {row.last_statut == null ||row.statut_t=="3"&& (
+                  <>{(row.last_statut == null || row.statut_t=="3" )&& (
                         <button
                           className="p-1 text-green-500 hover:text-green-700"
                           onClick={() =>
@@ -305,6 +303,10 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
                           <ThumbsUp className="w-5 h-5" />
                         </button>
                       )}
+                  </>
+                  {isAdminOrSuperAdmin && (
+                    <>
+                      
 
                       {Number(row.mode_pai) != 7 &&
                         parseFloat(row.montant) > 0 &&

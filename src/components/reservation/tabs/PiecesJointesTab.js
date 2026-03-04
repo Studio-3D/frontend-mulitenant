@@ -38,21 +38,32 @@ export const PiecesJointesTab = ({ reservationData, user,piecesJointesData}) => 
     <div className="space-y-6 min-h-[50vh]">
       {/* Header with add button */}
       <div className="flex justify-end">
-        {isAdmin(user?.role)||isSuperAdmin(user?.role)||isCommercial(user?.role) && (
-          <>
-            {reservation?.etat == 1 && reservation?.contrat_vente == null && (
-                      <button
-                        className="px-3 py-2 bg-blue-600 text-white rounded-md text-sm flex items-center"
-                        onClick={handleEdit_PJ}
-                      >
-                        <PlusIcon className="h-4 w-4 mr-1" />
-                        Modifier les documents
-                      </button>
-                    )}
-            </>
-        )}
-       
-      </div>
+      {(isAdmin(user?.role) || isSuperAdmin(user?.role)) ? (
+        <>
+          {reservation?.etat == 1 && reservation?.contrat_vente == null && (
+            <button
+              className="px-3 py-2 bg-blue-600 text-white rounded-md text-sm flex items-center"
+              onClick={handleEdit_PJ}
+            >
+              <PlusIcon className="h-4 w-4 mr-1" />
+              Modifier les documents
+            </button>
+          )}
+        </>
+      ) : isCommercial(user?.role) && (
+        <>
+          {reservation?.statut == 0 && (
+            <button
+              className="px-3 py-2 bg-blue-600 text-white rounded-md text-sm flex items-center"
+              onClick={handleEdit_PJ}
+            >
+              <PlusIcon className="h-4 w-4 mr-1" />
+              Modifier les documents
+            </button>
+          )}
+        </>
+      )}
+    </div>
 
       {/* Documents grid - KEEPING YOUR CARD DESIGN */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

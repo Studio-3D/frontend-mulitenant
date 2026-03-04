@@ -110,8 +110,18 @@ const MyDocument = ({ data }) => {
       <Page size="A4" style={styles.page}>
         {/* Logo */}
         <View style={styles.logoContainer}>
-          <Image src={imageUrl} style={styles.logo} />
-
+            <Image
+                  src={`${formValues.imageUrl}`}
+                  alt={`Logo de ${formValues.imageUrl}`}
+                  fill
+                  className="object-contain"
+                  sizes="96px"
+                  unoptimized={process.env.NODE_ENV !== 'production'} // Disable optimization in development
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = '/default-company-logo.png';
+                  }}
+                />
           <Text style={styles.TextHeader}>{formValues.raison_social}</Text>
         </View>
 
@@ -171,7 +181,7 @@ const MyDocument = ({ data }) => {
               {formValues.montant.toLocaleString("fr-FR", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
-              })}{" "}
+              })}{"     "} 
               DIRHAMS
             </Text>
             &nbsp;
@@ -282,8 +292,8 @@ const MyDocument = ({ data }) => {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}
-            </Text>{" "}
-            <Text style={[styles.erpText]}>DIRHAMS</Text>
+            </Text>{" "}&nbsp;&nbsp;&nbsp;&nbsp;
+            <Text style={[styles.erpText]}>DH</Text>
           </Text>
         </View>
         <View style={styles.section}>
@@ -296,8 +306,7 @@ const MyDocument = ({ data }) => {
           </Text>
         </View>
         <View style={styles.section}>
-          <Text style={[styles.TextFin]}>NORD AFRIQUE IMMOBILIER</Text>
-          <Text style={[styles.TextFin]}>Es qualité</Text>
+          <Text style={[styles.TextFin]}>LA SOCIÉTÉ :{formValues.raison_social}</Text>
         </View>
       </Page>
     </Document>
