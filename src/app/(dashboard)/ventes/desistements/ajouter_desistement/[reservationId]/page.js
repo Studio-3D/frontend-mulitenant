@@ -1934,11 +1934,10 @@ export default function Page() {
                 </div>
                 {avecPenalite && (
                   <div className="border-t border-gray-200 py-4 px-6 space-y-4">
-                    <div className="flex flex-col md:flex-row gap-4 items-center">
-                      {' '}
+                    <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center">                      {' '}
                       {/* Ensures alignment */}
                       {/* Mode Pénalité Dropdown */}
-                      <div className="w-[600px] mt-1">
+                      <div className="w-full lg:w-[400px] xl:w-[600px]">
                         <SelectInput
                           label="Mode Pénalité :"
                           name="mode_penalite"
@@ -1965,15 +1964,14 @@ export default function Page() {
                       </div>
                       {watch('mode_penalite') &&
                       watch('mode_penalite') !== 'Montant' ? (
-                        <div className="flex flex-1 flex-col md:flex-row gap-4 items-center">
-                          {/* Radio Buttons (Prix/Avance) */}
-                          <div className="min-w-[220px]">
-                            <div className="flex flex-col">
+                    <div className="w-full flex flex-col lg:flex-row gap-4 items-start lg:items-center">                          {/* Radio Buttons (Prix/Avance) */}
+                          <div className="w-full lg:w-auto">
+                             <div className="flex flex-col">
                               <label className="text-sm font-medium text-gray-700 mb-1">
                                 Pénalité Sur{' '}
                                 <span className="text-red-500">*</span>
                               </label>
-                              <div className="flex space-x-4">
+                               <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-2 sm:space-y-0">
                                 <label className="inline-flex items-center">
                                   <input
                                     type="radio"
@@ -2010,7 +2008,7 @@ export default function Page() {
                             </div>
                           </div>
                           {/* Auto-Calculated Penalty Amount */}
-                          <div className="min-w-[180px]">
+                      <div className="w-full lg:w-[200px]">
                             <TextField
                               label="Montant Calculé"
                               name="penalite_montant"
@@ -2027,7 +2025,7 @@ export default function Page() {
                         </div>
                       ) : (
                         /* Manual Penalty Amount Input */
-                        <div className="flex-1 min-w-[180px] mt-2">
+              <div className="w-full lg:w-[200px]">
                           <TextField
                             label="Pénalité Montant"
                             name="penalite_montant"
@@ -2130,7 +2128,7 @@ export default function Page() {
                         </>
                       )*/}
                     </div>
-                    <div className="border-t border-gray-200 py-4">
+              <div className="border-t border-gray-200 py-4">
                       {/* Only show penalty payment section if mode_penalite is selected AND penalite_montant has a valid value */}
                       {watch('mode_penalite') &&
                         watch('penalite_montant') > 0 && (

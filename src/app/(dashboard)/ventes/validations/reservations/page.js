@@ -553,6 +553,8 @@ const PageTraitement_Validation_rejets = () => {
             av_id={av_id}
             onClose={() => setOpen_v_reservation(false)}
             closeParentModal={() => setOpen_v_reservation(false)}
+            res_show = {false}
+            onReservationUpdate={false}
           />
         </Modal>
       )}
@@ -562,6 +564,7 @@ const PageTraitement_Validation_rejets = () => {
             code_reservation={code_reservation}
             id={ID}
             onClose={() => setOpen_r(false)}
+            maxWidth="max-w-xl"
           />
         </Modal>
       )}
