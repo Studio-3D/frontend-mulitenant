@@ -302,7 +302,7 @@ export default function PenalitesTable() {
       : [];
 
   const actionColumn =
-    isAdmin(userRole) || isSuperAdmin(userRole) ||isComptable(userRole) ? (
+    isAdmin(userRole) || isSuperAdmin(userRole) ||isComptable(userRole)||isCommercial(userRole) ? (
       {
         key: 'actions',
         label: 'ACTIONS',

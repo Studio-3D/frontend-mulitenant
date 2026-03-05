@@ -180,7 +180,7 @@ export default function Desistement_dd_list() {
             client.id ? (
               <Link
                 key={index}
-                href={`/ventes/clients/show/${client.id}`}
+                href={`/ventes/clients/${client.id}`}
                 className="text-blue-500 hover:text-blue-800"
                 target="_blank"
               >

@@ -703,6 +703,7 @@ const DetailTabComponent = ({
               code_reservation={code_reservation}
               id={ID}
               onClose={() => setOpen_r(false)}
+              maxWidth="max-w-xl"
             />
           </Modal>
         </>

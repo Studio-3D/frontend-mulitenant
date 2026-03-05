@@ -772,7 +772,7 @@ const ValidationModal = ({
                       <Controller
                         name="remiseNumber"
                         control={control}
-                        rules={{ required: 'Ce champ est obligatoire' }}
+                        //rules={{ required: 'Ce champ est obligatoire' }}
                         render={({ field }) => (
                           <TextField
                             type="number"
