@@ -148,7 +148,7 @@ function NomBienComplet(bien) {
 
         const newDossierInfo = {
           clients: reservation.aquereurs,
-          bien: reservation.bien.propriete_dite_bien,
+          bien: reservation.bien,
           type: reservation.bien.type_bien.type,
           prix: reservation.prix,
           sum_avances: sum_avances_valides,

@@ -313,7 +313,6 @@ export default function PenalitesTable() {
 
           return (
             <div className="flex gap-2">
-              
                <Link
               href={`/ventes/desistements/penalites/${row.id}`}
               className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
