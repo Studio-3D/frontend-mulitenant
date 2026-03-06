@@ -75,6 +75,7 @@ const TabButton = forwardRef(
 TabButton.displayName = 'TabButton';
 
 // Mobile Menu Item
+// Mobile Menu Item - Version corrigée avec compteurs individuels
 const MobileMenuItem = ({ 
   tab, 
   active, 
@@ -91,7 +92,6 @@ const MobileMenuItem = ({
 }) => {
   const isActive = () => {
     if (tab.parentId) {
-      // This is a sub-tab
       if (tab.parentId === 'relance') {
         return activeTab === 'relance' && activeSubTab.relance === tab.id;
       }
@@ -109,13 +109,27 @@ const MobileMenuItem = ({
     if (hasChildren) {
       onToggle(tab.id);
     } else if (tab.parentId) {
-      // This is a sub-tab
-      let label = tab.label;
-      onSubTabSelect(tab.parentId, tab.id, label);
+      onSubTabSelect(tab.parentId, tab.id, tab.label);
     } else {
       onPress(tab);
     }
   };
+
+  // Obtenir le compteur spécifique à cet item
+  const getItemCount = () => {
+    // Si c'est un sous-menu avec un ID spécifique, utiliser le compteur correspondant
+    if (tab.id === 'appels-relance') return notifications['appels-relance'] || 0;
+    if (tab.id === 'visites-relance') return notifications['visites-relance'] || 0;
+    if (tab.id === 'appels-rdv') return notifications['appels-rdv'] || 0;
+    if (tab.id === 'visites-rdv') return notifications['visites-rdv'] || 0;
+    if (tab.id === 'mes-prospects') return notifications['mes-prospects'] || 0;
+    if (tab.id === 'tous-prospects') return notifications['tous-prospects'] || 0;
+    
+    // Pour les items principaux, utiliser leur count direct
+    return tab.count || 0;
+  };
+
+  const count = getItemCount();
 
   return (
     <div className="border-b border-gray-100 last:border-b-0">
@@ -128,9 +142,9 @@ const MobileMenuItem = ({
         <div className="flex items-center gap-3">
           {getIcon(tab.icon)}
           <span className="font-medium">{tab.label}</span>
-          {tab.count > 0 && (
+          {count > 0 && (
             <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5 min-w-5 h-5 flex items-center justify-center">
-              {tab.count}
+              {count > 99 ? '99+' : count}
             </span>
           )}
         </div>
@@ -154,7 +168,6 @@ const MobileMenuItem = ({
                   id: 'appels-relance',
                   label: 'Appels Relances',
                   icon: 'phone',
-                  count: notifications['appels-relance'],
                   parentId: 'relance'
                 }}
                 active={activeTab === 'relance' && activeSubTab.relance === 'appels-relance'}
@@ -171,7 +184,6 @@ const MobileMenuItem = ({
                   id: 'visites-relance',
                   label: 'Visites Relances',
                   icon: 'walk',
-                  count: notifications['visites-relance'],
                   parentId: 'relance'
                 }}
                 active={activeTab === 'relance' && activeSubTab.relance === 'visites-relance'}
@@ -192,7 +204,6 @@ const MobileMenuItem = ({
                   id: 'appels-rdv',
                   label: 'Appels RDV',
                   icon: 'phone',
-                  count: notifications['appels-rdv'],
                   parentId: 'rdv'
                 }}
                 active={activeTab === 'rdv' && activeSubTab.rdv === 'appels-rdv'}
@@ -209,7 +220,6 @@ const MobileMenuItem = ({
                   id: 'visites-rdv',
                   label: 'Visites RDV',
                   icon: 'walk',
-                  count: notifications['visites-rdv'],
                   parentId: 'rdv'
                 }}
                 active={activeTab === 'rdv' && activeSubTab.rdv === 'visites-rdv'}
@@ -230,7 +240,6 @@ const MobileMenuItem = ({
                   id: 'mes-prospects',
                   label: 'Mes Prospects',
                   icon: 'user',
-                  count: notifications['mes-prospects'],
                   parentId: 'prospects'
                 }}
                 active={activeTab === 'prospects' && activeSubTab.prospects === 'mes-prospects'}
@@ -247,7 +256,6 @@ const MobileMenuItem = ({
                   id: 'tous-prospects',
                   label: 'Tous Prospects',
                   icon: 'user',
-                  count: notifications['tous-prospects'],
                   parentId: 'prospects'
                 }}
                 active={activeTab === 'prospects' && activeSubTab.prospects === 'tous-prospects'}
@@ -727,7 +735,39 @@ const TabsNavigation = ({
       <span className="font-medium text-gray-900">
         {tabs.find(t => t.id === activeTab)?.label || 'Tableau de bord'}
       </span>
-      {notifications[activeTab] > 0 && (
+      {/* Afficher le compteur spécifique au sous-menu actif */}
+      {activeTab === 'relance' && activeSubTab.relance === 'appels-relance' && notifications['appels-relance'] > 0 && (
+        <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
+          {notifications['appels-relance']}
+        </span>
+      )}
+      {activeTab === 'relance' && activeSubTab.relance === 'visites-relance' && notifications['visites-relance'] > 0 && (
+        <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
+          {notifications['visites-relance']}
+        </span>
+      )}
+      {activeTab === 'rdv' && activeSubTab.rdv === 'appels-rdv' && notifications['appels-rdv'] > 0 && (
+        <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
+          {notifications['appels-rdv']}
+        </span>
+      )}
+      {activeTab === 'rdv' && activeSubTab.rdv === 'visites-rdv' && notifications['visites-rdv'] > 0 && (
+        <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
+          {notifications['visites-rdv']}
+        </span>
+      )}
+      {activeTab === 'prospects' && activeSubTab.prospects === 'mes-prospects' && notifications['mes-prospects'] > 0 && (
+        <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
+          {notifications['mes-prospects']}
+        </span>
+      )}
+      {activeTab === 'prospects' && activeSubTab.prospects === 'tous-prospects' && notifications['tous-prospects'] > 0 && (
+        <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
+          {notifications['tous-prospects']}
+        </span>
+      )}
+      {/* Pour les tabs sans sous-menus, afficher leur compteur normal */}
+      {!['relance', 'rdv', 'prospects'].includes(activeTab) && notifications[activeTab] > 0 && (
         <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
           {notifications[activeTab]}
         </span>

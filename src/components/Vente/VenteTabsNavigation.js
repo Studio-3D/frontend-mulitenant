@@ -146,6 +146,34 @@ const MobileMenuItem = ({
     }
   };
 
+  // Obtenir le compteur spécifique à cet item
+  const getItemCount = () => {
+    // Sous-menus de validation
+    if (tab.id === 'desistements-attente-encours') return notifications['desistements-attente-encours'] || 0;
+    if (tab.id === 'penalites-validation') return notifications['penalites-validation'] || 0;
+    if (tab.id === 'reservations-validation') return notifications['reservations-validation'] || 0;
+    if (tab.id === 'avances-validation') return notifications['avances-validation'] || 0;
+    
+    // Sous-menus de rejet
+    if (tab.id === 'desistements-rejet') return notifications['desistements-rejet'] || 0;
+    if (tab.id === 'penalites-rejet') return notifications['penalites-rejet'] || 0;
+    if (tab.id === 'reservations-rejet') return notifications['reservations-rejet'] || 0;
+    if (tab.id === 'avances-rejet') return notifications['avances-rejet'] || 0;
+    
+    // Sous-menus de remboursements
+    if (tab.id === 'apres-ventes') return notifications['apres-ventes'] || 0;
+    if (tab.id === 'att-accuse-cheque') return notifications['att-accuse-cheque'] || 0;
+    if (tab.id === 'att-decaissement') return notifications['att-decaissement'] || 0;
+    if (tab.id === 'accuses') return notifications['accuses'] || 0;
+    if (tab.id === 'dossiers-transferes') return notifications['dossiers-transferes'] || 0;
+    if (tab.id === 'accuses-cheque-traite') return notifications['accuses-cheque-traite'] || 0;
+    
+    // Pour les items principaux
+    return tab.count || 0;
+  };
+
+  const count = getItemCount();
+
   return (
     <div className="border-b border-gray-100 last:border-b-0">
       <button
@@ -157,9 +185,9 @@ const MobileMenuItem = ({
         <div className="flex items-center gap-3">
           {getIcon(tab.icon, 20)}
           <span className="font-medium">{tab.label}</span>
-          {tab.count > 0 && (
+          {count > 0 && (
             <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5 min-w-5 h-5 flex items-center justify-center">
-              {tab.count > 99 ? '99+' : tab.count}
+              {count > 99 ? '99+' : count}
             </span>
           )}
         </div>
@@ -184,7 +212,6 @@ const MobileMenuItem = ({
                     id: 'desistements-attente-encours',
                     label: 'Désistements',
                     icon: 'repeat',
-                    count: notifications['desistements-attente-encours'],
                     parentId: 'validation'
                   }}
                   active={activeTab === 'validation' && activeSubTab.validation === 'desistements-attente-encours'}
@@ -202,7 +229,6 @@ const MobileMenuItem = ({
                   id: 'penalites-validation',
                   label: 'Pénalités',
                   icon: 'euro',
-                  count: notifications['penalites-validation'],
                   parentId: 'validation'
                 }}
                 active={activeTab === 'validation' && activeSubTab.validation === 'penalites-validation'}
@@ -220,7 +246,6 @@ const MobileMenuItem = ({
                     id: 'reservations-validation',
                     label: 'Réservations',
                     icon: 'user',
-                    count: notifications['reservations-validation'],
                     parentId: 'validation'
                   }}
                   active={activeTab === 'validation' && activeSubTab.validation === 'reservations-validation'}
@@ -238,7 +263,6 @@ const MobileMenuItem = ({
                   id: 'avances-validation',
                   label: 'Avances',
                   icon: 'euro',
-                  count: notifications['avances-validation'],
                   parentId: 'validation'
                 }}
                 active={activeTab === 'validation' && activeSubTab.validation === 'avances-validation'}
@@ -260,7 +284,6 @@ const MobileMenuItem = ({
                     id: 'desistements-rejet',
                     label: 'Désistements',
                     icon: 'repeat',
-                    count: notifications['desistements-rejet'],
                     parentId: 'rejet'
                   }}
                   active={activeTab === 'rejet' && activeSubTab.rejet === 'desistements-rejet'}
@@ -278,7 +301,6 @@ const MobileMenuItem = ({
                   id: 'penalites-rejet',
                   label: 'Pénalités',
                   icon: 'euro',
-                  count: notifications['penalites-rejet'],
                   parentId: 'rejet'
                 }}
                 active={activeTab === 'rejet' && activeSubTab.rejet === 'penalites-rejet'}
@@ -296,7 +318,6 @@ const MobileMenuItem = ({
                     id: 'reservations-rejet',
                     label: 'Réservations',
                     icon: 'user',
-                    count: notifications['reservations-rejet'],
                     parentId: 'rejet'
                   }}
                   active={activeTab === 'rejet' && activeSubTab.rejet === 'reservations-rejet'}
@@ -314,7 +335,6 @@ const MobileMenuItem = ({
                   id: 'avances-rejet',
                   label: 'Avances',
                   icon: 'euro',
-                  count: notifications['avances-rejet'],
                   parentId: 'rejet'
                 }}
                 active={activeTab === 'rejet' && activeSubTab.rejet === 'avances-rejet'}
@@ -333,9 +353,8 @@ const MobileMenuItem = ({
               <MobileMenuItem
                 tab={{
                   id: 'apres-ventes',
-                  label: 'Aprés Vente',
+                  label: 'Après Vente', // Corrigé l'accent
                   icon: 'handshake',
-                  count: notifications['apres-ventes'],
                   parentId: 'remboursements'
                 }}
                 active={activeTab === 'remboursements' && activeSubTab.remboursements === 'apres-ventes'}
@@ -352,7 +371,6 @@ const MobileMenuItem = ({
                   id: 'att-accuse-cheque',
                   label: 'Attente Accusé',
                   icon: 'clock',
-                  count: notifications['att-accuse-cheque'],
                   parentId: 'remboursements'
                 }}
                 active={activeTab === 'remboursements' && activeSubTab.remboursements === 'att-accuse-cheque'}
@@ -369,9 +387,8 @@ const MobileMenuItem = ({
                   <MobileMenuItem
                     tab={{
                       id: 'att-decaissement',
-                      label: 'Attente Décaissement',
+                      label: 'Attente Décaissement', // Corrigé l'espace
                       icon: 'clock',
-                      count: notifications['att-decaissement'],
                       parentId: 'remboursements'
                     }}
                     active={activeTab === 'remboursements' && activeSubTab.remboursements === 'att-decaissement'}
@@ -388,7 +405,6 @@ const MobileMenuItem = ({
                       id: 'accuses',
                       label: 'Liste des Accusés',
                       icon: 'users',
-                      count: notifications['accuses'],
                       parentId: 'remboursements'
                     }}
                     active={activeTab === 'remboursements' && activeSubTab.remboursements === 'accuses'}
@@ -407,7 +423,6 @@ const MobileMenuItem = ({
                     id: 'accuses-cheque-traite',
                     label: 'Accusé Traité',
                     icon: 'check',
-                    count: notifications['accuses-cheque-traite'],
                     parentId: 'remboursements'
                   }}
                   active={activeTab === 'remboursements' && activeSubTab.remboursements === 'accuses-cheque-traite'}
@@ -423,9 +438,8 @@ const MobileMenuItem = ({
               <MobileMenuItem
                 tab={{
                   id: 'dossiers-transferes',
-                  label: 'Dossiers Transférés',
+                  label: 'Dossiers Transférés', // Corrigé l'espace
                   icon: 'users',
-                  count: notifications['dossiers-transferes'],
                   parentId: 'remboursements'
                 }}
                 active={activeTab === 'remboursements' && activeSubTab.remboursements === 'dossiers-transferes'}
@@ -597,20 +611,19 @@ const VenteTabsNavigation = ({
     }
   };
 
-  const handleSubTabSelect = (parentTab, subTab, label) => {
-    onTabChange(parentTab);
-    onSubTabChange(parentTab, subTab);
-    setDisplayedLabels(prev => ({
-      ...prev,
-      [parentTab]: label,
-    }));
-    setDropdownState(prev => ({
-      ...prev,
-      [parentTab]: false,
-    }));
-    closeMobileMenu();
-  };
-
+ const handleSubTabSelect = (parentTab, subTab, label) => {
+  onTabChange(parentTab);
+  onSubTabChange(parentTab, subTab);
+  setDisplayedLabels(prev => ({
+    ...prev,
+    [parentTab]: label,
+  }));
+  setDropdownState(prev => ({
+    ...prev,
+    [parentTab]: false,
+  }));
+  closeMobileMenu();
+};
   // Mobile handlers
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
@@ -638,76 +651,118 @@ const VenteTabsNavigation = ({
   };
 
   // Get notification count for displayed labels
-  const getDisplayedNotificationCount = (tabId) => {
-    if (tabId === 'validation' && activeTab === 'validation') {
-      const subTab = activeSubTab.validation;
-      const countMap = {
-        'desistements-attente-encours': notifications['desistements-attente-encours'],
-        'penalites-validation': notifications['penalites-validation'],
-        'reservations-validation': notifications['reservations-validation'],
-        'avances-validation': notifications['avances-validation'],
-      };
-      return countMap[subTab] || notifications.validation;
-    } 
-    else if (tabId === 'rejet' && activeTab === 'rejet') {
-      const subTab = activeSubTab.rejet;
-      const countMap = {
-        'desistements-rejet': notifications['desistements-rejet'],
-        'penalites-rejet': notifications['penalites-rejet'],
-        'reservations-rejet': notifications['reservations-rejet'],
-        'avances-rejet': notifications['avances-rejet'],
-      };
-      return countMap[subTab] || notifications.rejet;
-    }
-    else if (tabId === 'remboursements' && activeTab === 'remboursements') {
-      const subTab = activeSubTab.remboursements;
-      const countMap = {
-        'apres-ventes': notifications['apres-ventes'],
-        'att-accuse-cheque': notifications['att-accuse-cheque'],
-        'att-decaissement': notifications['att-decaissement'],
-        'accuses': notifications['accuses'],
-        'dossiers-transferes': notifications['dossiers-transferes'],
-        'accuses-cheque-traite': notifications['accuses-cheque-traite'],
-      };
-      return countMap[subTab] || notifications.remboursements;
-    }
-    return notifications[tabId];
-  };
+ // Dans le composant VenteTabsNavigation, modifions la fonction getDisplayedNotificationCount
+// et la façon dont les compteurs sont affichés dans les tabs
 
-  // Define all tabs
-  const tabs = [
-    { id: 'reservations', label: 'Reservations', icon: 'user', count: notifications.reservations },
-    { id: 'clients', label: 'Clients', icon: 'users', count: notifications.clients },
-    ...(userRole <= 3 ? [{ id: 'desistements', label: 'Désistements', icon: 'repeat', count: notifications.desistements }] : []),
-    { id: 'penalites', label: 'Penalités', icon: 'euro', count: notifications.penalites },
-    { 
-      id: 'remboursements', 
-      label: displayedLabels.remboursements, 
-      icon: 'handshake', 
-      dropdown: true, 
-      count: getDisplayedNotificationCount('remboursements'),
-    },
-    { 
-      id: 'validation', 
-      label: displayedLabels.validation, 
-      icon: 'check', 
-      dropdown: true, 
-      count: getDisplayedNotificationCount('validation'),
-    },
-    { 
-      id: 'rejet', 
-      label: displayedLabels.rejet, 
-      icon: 'circle-x', 
-      dropdown: true, 
-      count: getDisplayedNotificationCount('rejet'),
-    },
-    { 
-      id: 'echeances', 
-      label: 'Echéances', 
-      icon: 'clock', 
-      count: notifications.echeances,
-    },
-  ];
+// Get notification count for displayed labels - CORRIGÉ pour les sous-menus
+const getDisplayedNotificationCount = (tabId) => {
+  // Pour l'onglet validation - retourne le compteur du sous-menu actif si on est sur validation
+  if (tabId === 'validation') {
+    if (activeTab === 'validation') {
+      // Si on est sur un sous-menu de validation, retourne son compteur spécifique
+      if (activeSubTab.validation === 'desistements-attente-encours') return notifications['desistements-attente-encours'] || 0;
+      if (activeSubTab.validation === 'penalites-validation') return notifications['penalites-validation'] || 0;
+      if (activeSubTab.validation === 'reservations-validation') return notifications['reservations-validation'] || 0;
+      if (activeSubTab.validation === 'avances-validation') return notifications['avances-validation'] || 0;
+    }
+    // Sinon, retourne le total (quand l'onglet n'est pas actif)
+    return notifications.validation || 0;
+  }
+  
+  // Pour l'onglet rejet
+  if (tabId === 'rejet') {
+    if (activeTab === 'rejet') {
+      if (activeSubTab.rejet === 'desistements-rejet') return notifications['desistements-rejet'] || 0;
+      if (activeSubTab.rejet === 'penalites-rejet') return notifications['penalites-rejet'] || 0;
+      if (activeSubTab.rejet === 'reservations-rejet') return notifications['reservations-rejet'] || 0;
+      if (activeSubTab.rejet === 'avances-rejet') return notifications['avances-rejet'] || 0;
+    }
+    return notifications.rejet || 0;
+  }
+  
+  // Pour l'onglet remboursements
+  if (tabId === 'remboursements') {
+    if (activeTab === 'remboursements') {
+      if (activeSubTab.remboursements === 'apres-ventes') return notifications['apres-ventes'] || 0;
+      if (activeSubTab.remboursements === 'att-accuse-cheque') return notifications['att-accuse-cheque'] || 0;
+      if (activeSubTab.remboursements === 'att-decaissement') return notifications['att-decaissement'] || 0;
+      if (activeSubTab.remboursements === 'accuses') return notifications['accuses'] || 0;
+      if (activeSubTab.remboursements === 'dossiers-transferes') return notifications['dossiers-transferes'] || 0;
+      if (activeSubTab.remboursements === 'accuses-cheque-traite') return notifications['accuses-cheque-traite'] || 0;
+    }
+    return notifications.remboursements || 0;
+  }
+  
+  // Pour les autres onglets
+  return notifications[tabId] || 0;
+};
+
+// Aussi, modifions la définition des tabs pour utiliser cette fonction
+const tabs = [
+  { id: 'reservations', label: 'Reservations', icon: 'user', count: notifications.reservations },
+  { id: 'clients', label: 'Clients', icon: 'users', count: notifications.clients },
+  ...(userRole <= 3 ? [{ id: 'desistements', label: 'Désistements', icon: 'repeat', count: notifications.desistements }] : []),
+  { id: 'penalites', label: 'Penalités', icon: 'euro', count: notifications.penalites },
+  { 
+    id: 'remboursements', 
+    label: displayedLabels.remboursements, 
+    icon: 'handshake', 
+    dropdown: true, 
+    count: getDisplayedNotificationCount('remboursements'), // Utilise la fonction corrigée
+  },
+  { 
+    id: 'validation', 
+    label: displayedLabels.validation, 
+    icon: 'check', 
+    dropdown: true, 
+    count: getDisplayedNotificationCount('validation'), // Utilise la fonction corrigée
+  },
+  { 
+    id: 'rejet', 
+    label: displayedLabels.rejet, 
+    icon: 'circle-x', 
+    dropdown: true, 
+    count: getDisplayedNotificationCount('rejet'), // Utilise la fonction corrigée
+  },
+  { 
+    id: 'echeances', 
+    label: 'Echéances', 
+    icon: 'clock', 
+    count: notifications.echeances,
+  },
+];
+  // Fonction pour obtenir le compteur du sous-menu actif dans l'en-tête
+const getActiveTabNotification = () => {
+  // Validation et ses sous-menus
+  if (activeTab === 'validation') {
+    if (activeSubTab.validation === 'desistements-attente-encours') return notifications['desistements-attente-encours'] || 0;
+    if (activeSubTab.validation === 'penalites-validation') return notifications['penalites-validation'] || 0;
+    if (activeSubTab.validation === 'reservations-validation') return notifications['reservations-validation'] || 0;
+    if (activeSubTab.validation === 'avances-validation') return notifications['avances-validation'] || 0;
+    return notifications.validation || 0;
+  }
+  // Rejet et ses sous-menus
+  if (activeTab === 'rejet') {
+    if (activeSubTab.rejet === 'desistements-rejet') return notifications['desistements-rejet'] || 0;
+    if (activeSubTab.rejet === 'penalites-rejet') return notifications['penalites-rejet'] || 0;
+    if (activeSubTab.rejet === 'reservations-rejet') return notifications['reservations-rejet'] || 0;
+    if (activeSubTab.rejet === 'avances-rejet') return notifications['avances-rejet'] || 0;
+    return notifications.rejet || 0;
+  }
+  // Remboursements et ses sous-menus
+  if (activeTab === 'remboursements') {
+    if (activeSubTab.remboursements === 'apres-ventes') return notifications['apres-ventes'] || 0;
+    if (activeSubTab.remboursements === 'att-accuse-cheque') return notifications['att-accuse-cheque'] || 0;
+    if (activeSubTab.remboursements === 'att-decaissement') return notifications['att-decaissement'] || 0;
+    if (activeSubTab.remboursements === 'accuses') return notifications['accuses'] || 0;
+    if (activeSubTab.remboursements === 'dossiers-transferes') return notifications['dossiers-transferes'] || 0;
+    if (activeSubTab.remboursements === 'accuses-cheque-traite') return notifications['accuses-cheque-traite'] || 0;
+    return notifications.remboursements || 0;
+  }
+  // Tabs normaux
+  return notifications[activeTab] || 0;
+};
+
 
   return (
     <>
@@ -876,9 +931,10 @@ const VenteTabsNavigation = ({
             <span className="font-medium text-gray-900">
               {tabs.find(t => t.id === activeTab)?.label || 'Tableau de bord'}
             </span>
-            {notifications[activeTab] > 0 && (
+            {/* Afficher le compteur spécifique au sous-menu actif */}
+            {getActiveTabNotification() > 0 && (
               <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
-                {notifications[activeTab] > 99 ? '99+' : notifications[activeTab]}
+                {getActiveTabNotification() > 99 ? '99+' : getActiveTabNotification()}
               </span>
             )}
           </div>

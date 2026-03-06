@@ -182,7 +182,7 @@ const RelancesRdv_Visites_Table = (type) => {
     if (bien?.bloc?.nom) noms.push(bien?.bloc?.nom);
     if (bien?.immeuble?.nom) noms.push(bien?.immeuble?.nom);
 
-    noms.push(bien.propriete_dite_bien);
+    noms.push(bien?.propriete_dite_bien);
 
     return noms.join(' - ');
   }
