@@ -1831,14 +1831,14 @@ export const RightCard = ({
           <Table
             columns={currentColumns}
             data={hasItems ? paginatedItems : []}
-            addLink={{
-              pathname: TAB_CONFIG[safeActiveTab]?.addLink?.(
-                user,
-                trancheId,
-                projetId
-              ),
-              onClick: persistAddBienContext,
-            }}
+            addLink={(user?.role !=1 && user?.role !=2) ? undefined : {
+            pathname: TAB_CONFIG[safeActiveTab]?.addLink?.(
+              user,
+              trancheId,
+              projetId
+            ),
+            onClick: persistAddBienContext,
+          }}
             showSearch={false}
             filterComponent={filterComponent}
             onFilterToggle={handleFilterToggle}

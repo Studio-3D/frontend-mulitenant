@@ -6,7 +6,7 @@ import { RightCard } from './RightCard';
 import { APIURL } from '@/configs/api';
 import { useProjet } from '@/context/ProjetContext';
 import { useAuth } from '@/context/AuthContext';
-import { isAdmin, isSuperAdmin ,isCommercial, isRespoLivraison} from '@/configs/enum';
+import { isAdmin, isSuperAdmin ,isCommercial, isRespoLivraison, isRespoCommercial} from '@/configs/enum';
 import axios from 'axios';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
@@ -56,7 +56,8 @@ export const BlocDetailsPage = () => {
           !isAdmin(userRole) &&
           !isSuperAdmin(userRole) &&
           !isCommercial(userRole)&&
-          !isRespoLivraison(userRole)
+          !isRespoLivraison(userRole)&&
+          !isRespoCommercial(userRole)
         ) {
           router.push('/');
         }

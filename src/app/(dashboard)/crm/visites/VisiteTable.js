@@ -8,7 +8,7 @@ import { useProjet } from '../../../../context/ProjetContext';
 import { ENDPOINTS } from '../../../../configs/api';
 import { useRouter } from 'next/navigation';
 import { fetchData_table_by_projet } from '../../../../../src/configs/api-utils';
-import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
+import { isAdmin, isCommercial, isRespoCommercial, isSuperAdmin } from '../../../../configs/enum';
 import { formatDate } from '../../../../utils/dateUtils';
 import Input from '@/components/Input';
 
@@ -224,7 +224,7 @@ const VisiteTable = ({ user_id, dataProspect, dataClient ,searchParams}) => {
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          { (isSuperAdmin(user.role) || isAdmin(user.role) || isCommercial(user.role)) && (
+          { (isSuperAdmin(user.role) || isAdmin(user.role) || isCommercial(user.role)|| isRespoCommercial(user.role)) && (
             <Link
             href={`/crm/visites/${row.origin_id}`}
             className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
@@ -275,7 +275,7 @@ const VisiteTable = ({ user_id, dataProspect, dataClient ,searchParams}) => {
     { key: 'statut', label: 'Statut' },
   ];
   const canAddVisite =
-    isSuperAdmin(user.role) || isAdmin(user.role) || isCommercial(user.role);
+    isSuperAdmin(user.role) || isAdmin(user.role) || isCommercial(user.role)|| isRespoCommercial(user.role);
 
   function getAddLinkForVisite(user) {
     if (canAddVisite) {

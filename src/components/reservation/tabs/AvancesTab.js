@@ -813,7 +813,7 @@ export const AvancesTab = ({
         const isAdminOrEditor = user?.role == 1 || user?.role == 2;
         const isLastRow = row.number == last_row_number;
         const canShowScan =
-          etat_res == 1 && user?.role <= 3 && !row.recu_scanne;
+          etat_res == 1 && (user?.role <= 3 || user?.role ==9)&& !row.recu_scanne;
 
         return (
           <div className="flex gap-3 items-center">

@@ -1597,12 +1597,12 @@ export const RightCard = ({
           <Table
             columns={currentColumns}
             data={hasItems ? filteredItems : []}
-            addLink={{
-              pathname: TAB_CONFIG[safeActiveTab]?.addLink?.(
-                user,
+            addLink={(user?.role !=1 && user?.role !=2) ? undefined : {
+            pathname: TAB_CONFIG[safeActiveTab]?.addLink?.(
+               user,
                 immeubleId,
                 projetId
-              ),
+            ),
               onClick: persistAddBienContext,
             }}
             showSearch={false}

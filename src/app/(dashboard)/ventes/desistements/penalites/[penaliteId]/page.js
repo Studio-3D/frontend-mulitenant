@@ -11,6 +11,7 @@ import {
   isAdmin,
   isCommercial,
   isComptable,
+  isRespoCommercial,
   isSuperAdmin,
   modes_penalites,
   type_dst,
@@ -67,7 +68,8 @@ const ShowPenalite = () => {
             !isAdmin(userRole) &&
             !isSuperAdmin(userRole) &&
             !isCommercial(userRole)&&
-            !isComptable(userRole)
+            !isComptable(userRole)&&
+                  !isRespoCommercial(userRole)
           ) {
             router.push('/');
           }

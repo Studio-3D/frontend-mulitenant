@@ -70,7 +70,7 @@ const AgendaCreneaux = () => {
     const [selectedNotaireName, setSelectedNotaireName] = useState("");
   // Types de rendez-vous pour notaire immobilier avec correspondance valeur => libellé
   const typeOptions = [
-    { value: "3", label: "Réunion préalable" },
+    {/* value: "3", label: "Réunion préalable" */},
     { value: "4", label: "Bloqué" }
   ];
 

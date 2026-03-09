@@ -17,7 +17,7 @@ import Desistement_dp_partiel_list from "../desistements/List/Desistement_dp_par
 import { APIURL } from "../../../../configs/api";
 import { useAuth } from "../../../../context/AuthContext";
 import { useProjet } from '@/context/ProjetContext';
-import { isAdmin, isSuperAdmin,isCommercial, isComptable} from '@/configs/enum';
+import { isAdmin, isSuperAdmin,isCommercial, isComptable, isRespoCommercial} from '@/configs/enum';
 import { useRouter } from 'next/navigation';
 
 const ViewDes = () => {
@@ -41,7 +41,8 @@ const ViewDes = () => {
     if (
       !isAdmin(userRole) &&
       !isSuperAdmin(userRole) &&
-      !isCommercial(userRole)
+      !isCommercial(userRole)&&
+      !isRespoCommercial(userRole)
     ) {
       router.push('/');
     }
