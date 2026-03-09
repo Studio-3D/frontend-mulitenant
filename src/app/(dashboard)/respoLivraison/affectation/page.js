@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import ReservationTable from "../../ventes/reservations/ReservationTable";
 import { useSearchParams } from "next/navigation";
 import { Filter, Users, Loader2, RefreshCw } from "lucide-react";
@@ -24,7 +24,7 @@ export default function AffectationPage() {
   });
 
   // Fonction pour récupérer les statistiques
-  const fetchStatistics = async () => {
+  const fetchStatistics = useCallback(async () => {
     try {
       if (!selectedProjet?.id) {
         console.log("Aucun projet sélectionné");
@@ -33,7 +33,6 @@ export default function AffectationPage() {
 
       setStatistics(prev => ({ ...prev, loading: true }));
       
-      // Récupérer toutes les réservations validées (statut = 1) pour le projet sélectionné
       const response = await axios.get(
         `${APIURL.ROOTV1}/projets/${selectedProjet.id}/reservations`, 
         {
@@ -41,15 +40,14 @@ export default function AffectationPage() {
             Authorization: `Bearer ${accesstoken}`,
           },
           params: {
-            statut: 1, // Seulement les réservations validées
-            size: 1000 // Récupérer un grand nombre pour compter
+            statut: 1,
+            size: 1000
           }
         }
       );
 
       const reservations = response.data.data || [];
       
-      // Calculer les statistiques
       const validated = reservations.length;
       const assigned = reservations.filter(res => res.notaire_id !== null && res.notaire_id !== undefined).length;
       const toAssign = reservations.filter(res => res.notaire_id === null || res.notaire_id === undefined).length;
@@ -65,13 +63,54 @@ export default function AffectationPage() {
       console.error("Erreur lors du chargement des statistiques:", error);
       setStatistics(prev => ({ ...prev, loading: false }));
     }
-  };
+  }, [accesstoken, selectedProjet]);
 
   useEffect(() => {
     if (accesstoken && selectedProjet?.id) {
       fetchStatistics();
     }
-  }, [accesstoken, selectedProjet]);
+  }, [accesstoken, selectedProjet, fetchStatistics]);
+
+  // Listen for localStorage changes (cross-tab)
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'refresh_affectation_stats') {
+        console.log('🔄 Storage event detected, refreshing statistics...');
+        fetchStatistics();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [fetchStatistics]);
+
+  // Polling mechanism for same-tab updates (since storage event doesn't fire in same tab)
+  useEffect(() => {
+    const checkForRefresh = () => {
+      const refreshFlag = localStorage.getItem('refresh_affectation_stats');
+      if (refreshFlag) {
+        const lastRefresh = parseInt(refreshFlag);
+        const now = Date.now();
+        
+        // If the flag was set in the last 5 seconds, refresh
+        if (now - lastRefresh < 5000) {
+          console.log('🔄 Polling detected flag, refreshing statistics...');
+          fetchStatistics();
+          
+          // Optional: Clear the flag after using it
+          // localStorage.removeItem('refresh_affectation_stats');
+        }
+      }
+    };
+
+    // Check every second
+    const interval = setInterval(checkForRefresh, 1000);
+    
+    return () => clearInterval(interval);
+  }, [fetchStatistics]);
 
   return (
     <div className="container mx-auto p-4">
@@ -80,11 +119,10 @@ export default function AffectationPage() {
           <h1 className="text-2xl font-bold">Gestion des Affectations</h1>
           <p className="text-gray-600">
             Affectation des notaires aux réservations
-          
           </p>
         </div>
         
-       
+        
       </div>
 
       {!selectedProjet?.id && (
@@ -101,7 +139,6 @@ export default function AffectationPage() {
         </div>
       )}
 
-    
       {/* Statistiques */}
       {selectedProjet?.id && (
         <>
@@ -120,7 +157,6 @@ export default function AffectationPage() {
                     )}
                   </div>
                 </div>
-                
               </div>
               {!statistics.loading && (
                 <div className="mt-2 text-xs text-gray-500">
@@ -142,7 +178,6 @@ export default function AffectationPage() {
                     )}
                   </div>
                 </div>
-               
               </div>
               {!statistics.loading && statistics.validated > 0 && (
                 <div className="mt-2 text-xs text-gray-500">
@@ -166,7 +201,6 @@ export default function AffectationPage() {
                     )}
                   </div>
                 </div>
-               
               </div>
               {!statistics.loading && (
                 <div className="mt-2 text-xs text-gray-500">
@@ -204,8 +238,6 @@ export default function AffectationPage() {
       <div className="bg-white rounded-lg shadow">
         <ReservationTable 
           searchParams={searchParams}
-          // Passer un filtre pour n'afficher que les réservations non affectées si la case est cochée
-        
         />
       </div>
     </div>

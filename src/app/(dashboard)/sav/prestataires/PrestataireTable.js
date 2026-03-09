@@ -394,7 +394,7 @@ const PrestataireTable = (serviceId) => {
         onRowsPerPageChange={setRowsPerPage}
         onSearchChange={setSearchTerm}
         enableExport={true}
-        enableImport={true}
+        enableImport={false}
         addLink={
           (isSuperAdmin(user.role) || isAdmin(user.role)|| isSav(user.role)) && selectedProjet
             ? `${ENDPOINTS.Prestataires}?action=add`

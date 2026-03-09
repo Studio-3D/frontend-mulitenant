@@ -133,6 +133,8 @@ export default function Modal_Affecte({
         } else {
           toast.success('Réservation affectée au notaire avec succès');
         }
+        // Set localStorage flag for statistics refresh
+            localStorage.setItem('refresh_affectation_stats', Date.now().toString());
 
       
                 if (res_show && onReservationUpdate) {
