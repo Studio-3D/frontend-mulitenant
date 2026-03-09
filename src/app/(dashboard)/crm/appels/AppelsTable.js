@@ -14,7 +14,7 @@ import { useAuth } from '../../../../context/AuthContext';
 import { APIURL, ENDPOINTS } from '../../../../configs/api';
 import { useRouter } from 'next/navigation';
 import { formatDate } from '../../../../utils/dateUtils';
-import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
+import { isAdmin, isCommercial, isRespoCommercial, isSuperAdmin } from '../../../../configs/enum';
 import { fetchData_table_by_projet } from '../../../../../src/configs/api-utils';
 import Link from 'next/link';
 import Input from '@/components/Input';
@@ -328,7 +328,8 @@ const AppelsTable = ({ dataClient, searchParams }) => {
            addLink={
             isSuperAdmin(user.role) ||
             isAdmin(user.role) ||
-            isCommercial(user.role)
+            isCommercial(user.role)||
+            isRespoCommercial(user.role)
               ? `${ENDPOINTS.APPELS}?action=add`
               : undefined
           } 

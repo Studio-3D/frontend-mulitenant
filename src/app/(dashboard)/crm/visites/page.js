@@ -6,7 +6,7 @@ import VisiteForm from './VisiteForm';
 import VisiteFormEdit from './VisiteFormEdit';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
-import { isAdmin, isSuperAdmin, isCommercial } from '../../../../configs/enum';
+import { isAdmin, isSuperAdmin, isCommercial, isRespoCommercial } from '../../../../configs/enum';
 import { useAuth } from '../../../../context/AuthContext';
 
 export default function VisitePage({ dataProspect, dataClient }) {
@@ -22,7 +22,8 @@ export default function VisitePage({ dataProspect, dataClient }) {
       user && 
       !isAdmin(userRole) &&
       !isSuperAdmin(userRole) &&
-      !isCommercial(userRole)
+      !isCommercial(userRole)&&
+      !isRespoCommercial(userRole)
     ) {
       router.push('/');
     }

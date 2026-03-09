@@ -10,7 +10,7 @@ import { useProjet } from '@/context/ProjetContext';
 import { APIURL, ENDPOINTS } from '@/configs/api';
 import { useRouter } from 'next/navigation';
 import { fetchData_table_by_projet } from '@/configs/api-utils';
-import { isAdmin, isCommercial, isSuperAdmin } from '@/configs/enum';
+import { isAdmin, isCommercial, isRespoCommercial, isSuperAdmin } from '@/configs/enum';
 import Modal_Traite from './Modal_Traite';
 import {
   Statuts_Prospect,
@@ -827,7 +827,8 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
             user &&
             (isSuperAdmin(user.role) ||
               isAdmin(user.role) ||
-              isCommercial(user.role))
+              isCommercial(user.role))||
+              isRespoCommercial(user.role)
               ? `${ENDPOINTS.PROSPECTS}?action=add`
               : undefined
           }

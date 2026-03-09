@@ -8,7 +8,7 @@ import { useAuth } from "../../../../../context/AuthContext";
 
 import { useRouter } from "next/navigation";
 import format from "date-fns/format";
-import { isAdmin, isSuperAdmin } from "../../../../../configs/enum";
+import { isAdmin, isRespoCommercial, isSuperAdmin } from "../../../../../configs/enum";
 import { fetchData_table_by_id } from "../../../../../configs/api-utils";
 import Link from "next/link";
 import Input from "@/components/Input";
@@ -104,7 +104,8 @@ const PageTraitement_Validation_rejets = () => {
             if (
               !isAdmin(userRole) &&
               !isSuperAdmin(userRole) &&
-              !isCommercial(userRole)
+              !isCommercial(userRole)&&
+              !isRespoCommercial(userRole)
             ) {
               router.push('/');
             }

@@ -1745,7 +1745,7 @@ export function VisitDetails({
                                       onClick={() =>
                                         handleDelete(
                                           visite.id,
-                                          visite.id == origin_id &&
+                                         // visite.id == origin_id && 
                                             visites_all.length == 1
                                             ? 'first_visite'
                                             : null
@@ -1870,7 +1870,7 @@ export function VisitDetails({
             onClose={() => {
               setShowDeleteModal(false);
               if (text_route == 'first_visite') {
-                router.push('/visites');
+                router.push('/crm?tab=visites');
               } else {
                 localStorage.setItem('visite_fetch_show', 1);
                 fetch_histo();

@@ -239,7 +239,7 @@ const DetailTabComponent = ({
               ) : null}
               {(isSuperAdmin(user.role) ||
                 isAdmin(user.role) ||
-                isCommercial(user.role)) &&
+                isCommercial(user.role)||isRespoCommercial(user?.role)) &&
                 reservation.statut == 1 && (
                   <Button
                     type="desister"
@@ -285,7 +285,7 @@ const DetailTabComponent = ({
               {((isSuperAdmin(user.role) || isAdmin(user.role)) &&
                 reservation?.etat == 1 &&
                 reservation?.contrat_vente == null) ||
-                (isCommercial(user.role) &&
+                ((isCommercial(user.role)||isRespoCommercial(user.role)) &&
                   reservation?.statut == 0 &&
                   reservation?.etat == 1 &&
                   reservation?.contrat_vente == null) && (

@@ -701,7 +701,7 @@ const getDisplayedNotificationCount = (tabId) => {
 const tabs = [
   { id: 'reservations', label: 'Reservations', icon: 'user', count: notifications.reservations },
   { id: 'clients', label: 'Clients', icon: 'users', count: notifications.clients },
-  ...(userRole <= 3 ? [{ id: 'desistements', label: 'Désistements', icon: 'repeat', count: notifications.desistements }] : []),
+  ...((userRole <= 3|| userRole==9)? [{ id: 'desistements', label: 'Désistements', icon: 'repeat', count: notifications.desistements }] : []),
   { id: 'penalites', label: 'Penalités', icon: 'euro', count: notifications.penalites },
   { 
     id: 'remboursements', 
@@ -798,7 +798,7 @@ const getActiveTabNotification = () => {
                   >
                     {tab.id === 'validation' ? (
                       <>
-                        {userRole <= 3 && (
+                        {(userRole <= 3 ||userRole ==9)&& (
                           <DropdownItem
                             label="Désistements"
                             count={notifications['desistements-attente-encours']}
@@ -812,7 +812,7 @@ const getActiveTabNotification = () => {
                           active={activeTab === 'validation' && activeSubTab.validation === 'penalites-validation'}
                           onClick={() => handleSubTabSelect('validation', 'penalites-validation', 'Pénalités')}
                         />
-                        {userRole <= 3 && (
+                        {(userRole <= 3 ||userRole ==9) && (
                           <DropdownItem
                             label="Réservations"
                             count={notifications['reservations-validation']}
@@ -829,7 +829,7 @@ const getActiveTabNotification = () => {
                       </>
                     ) : tab.id === 'rejet' ? (
                       <>
-                        {userRole <= 3 && (
+                        {(userRole <= 3 ||userRole ==9) && (
                           <DropdownItem
                             label="Désistements"
                             count={notifications['desistements-rejet']}
@@ -843,7 +843,7 @@ const getActiveTabNotification = () => {
                           active={activeTab === 'rejet' && activeSubTab.rejet === 'penalites-rejet'}
                           onClick={() => handleSubTabSelect('rejet', 'penalites-rejet', 'Pénalités')}
                         />
-                        {userRole <= 3 && (
+                        {(userRole <= 3 ||userRole ==9) && (
                           <DropdownItem
                             label="Réservations"
                             count={notifications['reservations-rejet']}

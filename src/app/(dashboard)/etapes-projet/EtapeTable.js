@@ -269,41 +269,47 @@ const EtapeTable = ({ searchParams }) => {
 
         return (
           <div className="flex gap-3 items-center">
-            {statusButtonProps && (
-              <button
-                className={statusButtonProps.color}
-                onClick={() => handleStatusUpdate(row.originalData)}
-                title={statusButtonProps.title}
-              >
-                {statusButtonProps.icon === Play && (
-                  <Play className="w-4 h-4" />
+            {isAdmin(user.role) && (
+              <>
+                {statusButtonProps && (
+                  <button
+                    className={statusButtonProps.color}
+                    onClick={() => handleStatusUpdate(row.originalData)}
+                    title={statusButtonProps.title}
+                  >
+                    {statusButtonProps.icon === Play && (
+                      <Play className="w-4 h-4" />
+                    )}
+                    {statusButtonProps.icon === CheckCircle && (
+                      <CheckCircle className="w-4 h-4" />
+                    )}
+                  </button>
                 )}
-                {statusButtonProps.icon === CheckCircle && (
-                  <CheckCircle className="w-4 h-4" />
+                {row.etat == '0' && (
+                  <Link
+                    href={`${ENDPOINTS.ETAPESPROJET}?id=${row.id}&action=edit`}
+                    className="text-blue-500 hover:text-blue-700"
+                    title="Modifier"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </Link>
                 )}
-              </button>
-            )}
-            {row.etat == '0' && (
-              <Link
-                href={`${ENDPOINTS.ETAPESPROJET}?id=${row.id}&action=edit`}
-                className="text-blue-500 hover:text-blue-700"
-                title="Modifier"
-              >
-                <Pencil className="w-4 h-4" />
-              </Link>
-            )}
 
-            <button
-              className="text-red-500 hover:text-red-700"
-              onClick={() => {
-                setSelectedId(row.id);
-                setShowDeleteModal(true);
-              }}
-              title="Supprimer"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
+              <button
+                className="text-red-500 hover:text-red-700"
+                onClick={() => {
+                  setSelectedId(row.id);
+                  setShowDeleteModal(true);
+                }}
+                title="Supprimer"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+              </>
+            )}     
           </div>
+          
+         
         );
       },
     },

@@ -30,6 +30,7 @@ import DeleteData from '@/components/DeleteData';
 import { APIURL, RESOURCE_URL } from '@/configs/api';
 import AddRdvModal from './AddRdvModal';
 import Pusher from 'pusher-js';
+import { isAdmin, isCommercial, isNotaire, isRespoCommercial, isRespoLivraison } from '@/configs/enum';
 
 const StatusBadge = ({ status }) => {
   const statusConfig = {
@@ -459,8 +460,9 @@ const loadRelancesHistory = async (rdvId) => {
           <CalendarIcon className="h-5 w-5 mr-2 text-blue-500" />
           Rendez-vous
         </h2>
-
-        {reservationData?.reservation?.statut==1 && etatRes == 1 && contratVente == null && (
+        {(isAdmin(user?.role)||isCommercial(user?.role)||isRespoCommercial(user.role)||isNotaire(user?.role)||isRespoLivraison(user.role)) && (
+          <>
+           {reservationData?.reservation?.statut==1 && etatRes == 1 && contratVente == null && (
           <button
             onClick={() => setOpenAddRdv(true)}
             className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 transition-colors"
@@ -469,6 +471,9 @@ const loadRelancesHistory = async (rdvId) => {
             Ajouter un rendez-vous
           </button>
         )}
+          </>
+        )}
+       
       </div>
       
       {etatRes != 1 && (
@@ -489,8 +494,15 @@ const loadRelancesHistory = async (rdvId) => {
       {/* Appointments grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {rdvs.map((rdv) => {
-          const isTodayAppointment = isToday(new Date(rdv.rdv));
-          const isPastAppointment = new Date(rdv.rdv) <= new Date();
+          const isTodayAppointment = (() => {
+            const appointmentDate = new Date(rdv.rdv);
+            const today = new Date();
+            
+            return appointmentDate.getDate() === today.getDate() &&
+              appointmentDate.getMonth() === today.getMonth() &&
+              appointmentDate.getFullYear() === today.getFullYear();
+          })(); 
+         const isPastAppointment = new Date(rdv.rdv) <= new Date();
           
           return (
             <div
@@ -587,7 +599,7 @@ const loadRelancesHistory = async (rdvId) => {
                          
                         </>
                       )}*/}
-                      { (user.role <= 2 || user.role ==5 || user.role ==6 )  &&rdv.statut==1 && (
+                      {(isAdmin(user?.role)||isCommercial(user?.role)||isRespoCommercial(user.role)||isNotaire(user?.role)||isRespoLivraison(user.role))  &&rdv.statut==1 && (
                       <button
                         className="p-2 text-gray-500 hover:text-red-500 transition-colors"
                         onClick={() => handleDeleteRdv(rdv.id, rdv.rdv)}
@@ -1128,7 +1140,7 @@ const loadRelancesHistory = async (rdvId) => {
           {traiterAction !=null && (
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-               Commentaire 
+               Commentaire  {traiterAction=='non' && (<span className="text-red-500 ml-1">*</span>)}
               </label>
               <textarea
                

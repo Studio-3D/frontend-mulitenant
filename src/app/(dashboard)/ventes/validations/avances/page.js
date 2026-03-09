@@ -289,7 +289,10 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
               return (
                 <div className="flex gap-3 items-center">
                   {/* Validation/Encashment Buttons */}
-                  <>{(row.last_statut == null || row.statut_t=="3" )&& (
+                 
+                  {isAdminOrSuperAdmin && (
+                    <>
+                       {(row.last_statut == null || row.statut_t=="3" )&& (
                         <button
                           className="p-1 text-green-500 hover:text-green-700"
                           onClick={() =>
@@ -305,10 +308,7 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
                           <ThumbsUp className="w-5 h-5" />
                         </button>
                       )}
-                  </>
-                  {isAdminOrSuperAdmin && (
-                    <>
-                      
+                  
 
                       {Number(row.mode_pai) != 7 &&
                         parseFloat(row.montant) > 0 &&

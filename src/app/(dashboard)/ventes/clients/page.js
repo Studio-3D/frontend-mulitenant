@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import ClientTable from './ClientTable';
 import ClientForm from './ClientForm';
 import { useSearchParams } from 'next/navigation';
-import { isAdmin, isSuperAdmin, isCommercial } from '../../../../configs/enum';
+import { isAdmin, isSuperAdmin, isCommercial, isRespoCommercial } from '../../../../configs/enum';
 import { useAuth } from '../../../../context/AuthContext';
 import { useRouter } from 'next/navigation';
 
@@ -18,7 +18,8 @@ export default function Page() {
     if (
       !isAdmin(userRole) &&
       !isSuperAdmin(userRole) &&
-      !isCommercial(userRole)
+      !isCommercial(userRole)&&
+      !isRespoCommercial(userRole)
     ) {
       router.push('/');
     }

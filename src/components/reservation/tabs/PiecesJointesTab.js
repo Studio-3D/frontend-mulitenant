@@ -8,7 +8,7 @@ import {
   PlusIcon,
 } from 'lucide-react';
 import { useRouter } from "next/navigation";
-import { isAdmin, isCommercial, isSuperAdmin } from '@/configs/enum';
+import { isAdmin, isCommercial, isRespoCommercial, isSuperAdmin } from '@/configs/enum';
 
 export const PiecesJointesTab = ({ reservationData, user,piecesJointesData}) => {
   const router = useRouter();
@@ -50,7 +50,7 @@ export const PiecesJointesTab = ({ reservationData, user,piecesJointesData}) => 
             </button>
           )}
         </>
-      ) : isCommercial(user?.role) && (
+      ) : (isCommercial(user?.role)|| isRespoCommercial(user?.role)) && (
         <>
           {reservation?.statut == 0 && (
             <button

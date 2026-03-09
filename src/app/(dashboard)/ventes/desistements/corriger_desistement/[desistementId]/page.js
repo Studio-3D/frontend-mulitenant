@@ -7,7 +7,7 @@ import { Changement_De_Bien } from '../../../desistements/ajouter_desistement/[r
 import { useRouter, useParams } from 'next/navigation';
 import { APIURL } from '../../../../../../configs/api';
 import axios from 'axios';
-import { isAdmin, isCommercial, isSuperAdmin, type_dst } from '@/configs/enum';
+import { isAdmin, isCommercial, isRespoCommercial, isSuperAdmin, type_dst } from '@/configs/enum';
 import { useAuth } from '../../../../../../context/AuthContext';
 import {
   fetchData_Select,
@@ -108,7 +108,8 @@ export default function Page() {
         if (
           !isAdmin(userRole) &&
           !isSuperAdmin(userRole) &&
-          !isCommercial(userRole)
+          !isCommercial(userRole)&&
+                !isRespoCommercial(userRole)
         ) {
           router.push('/');
         }

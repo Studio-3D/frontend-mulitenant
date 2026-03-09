@@ -8,7 +8,7 @@ import { useProjet } from '@/context/ProjetContext';
 import { Eye, PencilLine, Trash2 } from 'lucide-react';
 import Table from '@/components/Table';
 import Link from 'next/link';
-import { isAdmin, isSuperAdmin,isCommercial, isRespoLivraison } from '@/configs/enum';
+import { isAdmin, isSuperAdmin,isCommercial, isRespoLivraison, isRespoCommercial } from '@/configs/enum';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
 import Input from '@/components/Input';
@@ -36,7 +36,8 @@ const Page = ({ user_id }) => {
         !isAdmin(userRole) &&
         !isSuperAdmin(userRole) &&
         !isCommercial(userRole)&&
-        !isRespoLivraison(userRole)
+        !isRespoLivraison(userRole)&&
+        !isRespoCommercial(userRole)
       ) {
         router.push('/');
       }

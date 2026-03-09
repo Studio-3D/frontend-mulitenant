@@ -1002,7 +1002,7 @@ export default function AppelsForm({ id }) {
   const fetch_cin_unique = async (value) => {
     await axios
       .get(
-        `${APIURL.ROOTV1}/get_info_cin_unique/` + prospect_id + '/' + value,
+        `${APIURL.ROOTV1}/get_info_cin_unique/` + id + '/' + value,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,

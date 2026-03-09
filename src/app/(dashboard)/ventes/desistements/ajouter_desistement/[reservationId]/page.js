@@ -10,7 +10,7 @@ import axios from 'axios';
 import Modal_select_type_dst from './Modal_select_type_dst';
 import Modal from '@/components/Modal';
 import SelectInput from '@/components/SelectInput';
-import { isAdmin, isCommercial, isSuperAdmin, type_dst } from '@/configs/enum';
+import { isAdmin, isCommercial, isRespoCommercial, isSuperAdmin, type_dst } from '@/configs/enum';
 import { useAuth } from '../../../../../../context/AuthContext';
 import {
   fetchData_Select,
@@ -98,7 +98,8 @@ export default function Page() {
       if (
         !isAdmin(userRole) &&
         !isSuperAdmin(userRole) &&
-        !isCommercial(userRole)
+        !isCommercial(userRole)&&
+        !isRespoCommercial(userRole)
       ) {
         router.push('/');
       }

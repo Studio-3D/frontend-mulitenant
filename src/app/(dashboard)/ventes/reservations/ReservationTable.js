@@ -22,7 +22,7 @@ import { useAuth } from "../../../../context/AuthContext";
 import { APIURL, ENDPOINTS } from "../../../../configs/api";
 import { useRouter } from "next/navigation";
 import { formatDate, formatDateTime } from "../../../../utils/dateUtils";
-import { isAdmin, isCommercial,  isRespoLivraison, isSuperAdmin } from "../../../../configs/enum";
+import { isAdmin, isCommercial,  isRespoCommercial,  isRespoLivraison, isSuperAdmin } from "../../../../configs/enum";
 import {  fetchData_table_by_projet } from "../../../../configs/api-utils";
 import Link from "next/link";
 import Input from "@/components/Input";
@@ -363,14 +363,15 @@ const ReservationTable = ({ dataClient, user_id,searchParams }) => {
 
             {(isSuperAdmin(userRole) ||
             isAdmin(userRole) ||
-            isCommercial(userRole)) && (
+            isCommercial(userRole)||
+            isRespoCommercial(userRole)) && (
               <>
               {(isSuperAdmin(userRole) || isAdmin(userRole)) && row.data_res.contrat_vente == null && (
             
                 <Link
                 href={`/ventes/reservations/${row.id}?id=${row.id}&action=edit`}
                       className="w-4 h-4 text-yellow-500 hover:text-yellow-700 cursor-pointer"
-                title="Modifier Réervation"
+                title="Modifier Réservation"
               >
                 <PencilLine className="w-4 h-4" />
               </Link>
@@ -682,7 +683,8 @@ const ReservationTable = ({ dataClient, user_id,searchParams }) => {
           addLink={
             (isSuperAdmin(user?.role) ||
               isAdmin(user?.role) ||
-              isCommercial(user?.role)) &&
+              isCommercial(user?.role)||
+              isRespoCommercial(userRole)) &&
             !user_id
               ? getAddLinkForReservation()
               : undefined
