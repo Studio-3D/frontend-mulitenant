@@ -12,6 +12,7 @@ import {
   isAdmin,
   isCommercial,
   isComptable,
+  isRespoCommercial,
   isSuperAdmin,
 } from '../../../../../configs/enum';
 import { fetchData_table_by_id } from '../../../../../configs/api-utils';
@@ -132,7 +133,8 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
             !isAdmin(userRole) &&
             !isSuperAdmin(userRole) &&
             !isCommercial(userRole) &&
-            !isComptable(userRole)
+            !isComptable(userRole)&&
+            !isRespoCommercial(userRole)
           ) {
             router.push('/');
           }

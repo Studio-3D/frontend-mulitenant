@@ -6,7 +6,7 @@ import { fetchData_table_by_id } from '../../../../../../src/configs/api-utils';
 import { Eye, Check, Upload, Clock } from 'lucide-react';
 import Table from '@/components/Table';
 import { format } from 'date-fns';
-import { isComptable, MODE_PAIEMENT, type_dst, type_dst_dp } from '@/configs/enum';
+import { isComptable, isRespoCommercial, MODE_PAIEMENT, type_dst, type_dst_dp } from '@/configs/enum';
 import { isAdmin, isSuperAdmin ,isCommercial} from '../../../../../configs/enum';
 import { APIURL } from '@/configs/api';
 import Link from 'next/link';
@@ -83,7 +83,8 @@ export default function PenalitesTable() {
             !isAdmin(userRole) &&
             !isSuperAdmin(userRole) &&
             !isCommercial(userRole)&&
-            !isComptable(userRole)
+            !isComptable(userRole)&&
+            !isRespoCommercial(userRole)
           ) {
             router.push('/');
           }

@@ -8,11 +8,14 @@ import {
   Calendar,
   AlertTriangle,
   ChevronDown,
+  Menu,
+  X,
 } from 'lucide-react';
 import { isCommercial } from '@/configs/enum';
+import Modal from '@/components/Modal';
 
 const getIcon = (type) => {
-  const iconProps = { size: 16 };
+  const iconProps = { size: 20 }; // Slightly larger icons for mobile
 
   switch (type) {
     case 'user':
@@ -34,7 +37,7 @@ const getIcon = (type) => {
   }
 };
 
-// Define TabButton outside with proper forwardRef
+// Desktop Tab Button
 const TabButton = forwardRef(
   ({ label, icon, active, onClick, dropdown, expanded, count }, ref) => {
     return (
@@ -69,9 +72,212 @@ const TabButton = forwardRef(
   }
 );
 
-// Add displayName for better debugging
 TabButton.displayName = 'TabButton';
 
+// Mobile Menu Item
+// Mobile Menu Item - Version corrigée avec compteurs individuels
+const MobileMenuItem = ({ 
+  tab, 
+  active, 
+  onPress, 
+  level = 0,
+  hasChildren,
+  expanded,
+  onToggle,
+  notifications,
+  activeTab,
+  activeSubTab,
+  userRole,
+  onSubTabSelect
+}) => {
+  const isActive = () => {
+    if (tab.parentId) {
+      if (tab.parentId === 'relance') {
+        return activeTab === 'relance' && activeSubTab.relance === tab.id;
+      }
+      if (tab.parentId === 'rdv') {
+        return activeTab === 'rdv' && activeSubTab.rdv === tab.id;
+      }
+      if (tab.parentId === 'prospects') {
+        return activeTab === 'prospects' && activeSubTab.prospects === tab.id;
+      }
+    }
+    return activeTab === tab.id;
+  };
+
+  const handleClick = () => {
+    if (hasChildren) {
+      onToggle(tab.id);
+    } else if (tab.parentId) {
+      onSubTabSelect(tab.parentId, tab.id, tab.label);
+    } else {
+      onPress(tab);
+    }
+  };
+
+  // Obtenir le compteur spécifique à cet item
+  const getItemCount = () => {
+    // Si c'est un sous-menu avec un ID spécifique, utiliser le compteur correspondant
+    if (tab.id === 'appels-relance') return notifications['appels-relance'] || 0;
+    if (tab.id === 'visites-relance') return notifications['visites-relance'] || 0;
+    if (tab.id === 'appels-rdv') return notifications['appels-rdv'] || 0;
+    if (tab.id === 'visites-rdv') return notifications['visites-rdv'] || 0;
+    if (tab.id === 'mes-prospects') return notifications['mes-prospects'] || 0;
+    if (tab.id === 'tous-prospects') return notifications['tous-prospects'] || 0;
+    
+    // Pour les items principaux, utiliser leur count direct
+    return tab.count || 0;
+  };
+
+  const count = getItemCount();
+
+  return (
+    <div className="border-b border-gray-100 last:border-b-0">
+      <button
+        onClick={handleClick}
+        className={`flex items-center justify-between w-full px-4 py-4 text-left transition-colors ${
+          isActive() && !hasChildren ? 'bg-emerald-50 text-emerald-600' : 'text-gray-700 hover:bg-gray-50'
+        } ${level > 0 ? 'pl-8' : ''}`}
+      >
+        <div className="flex items-center gap-3">
+          {getIcon(tab.icon)}
+          <span className="font-medium">{tab.label}</span>
+          {count > 0 && (
+            <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5 min-w-5 h-5 flex items-center justify-center">
+              {count > 99 ? '99+' : count}
+            </span>
+          )}
+        </div>
+        {hasChildren && (
+          <ChevronDown
+            size={18}
+            className={`transform transition-transform ${
+              expanded ? 'rotate-180' : ''
+            }`}
+          />
+        )}
+      </button>
+      
+      {/* Submenu items */}
+      {hasChildren && expanded && (
+        <div className="bg-gray-50">
+          {tab.id === 'relance' && (
+            <>
+              <MobileMenuItem
+                tab={{
+                  id: 'appels-relance',
+                  label: 'Appels Relances',
+                  icon: 'phone',
+                  parentId: 'relance'
+                }}
+                active={activeTab === 'relance' && activeSubTab.relance === 'appels-relance'}
+                onPress={onPress}
+                onSubTabSelect={onSubTabSelect}
+                level={1}
+                notifications={notifications}
+                activeTab={activeTab}
+                activeSubTab={activeSubTab}
+                userRole={userRole}
+              />
+              <MobileMenuItem
+                tab={{
+                  id: 'visites-relance',
+                  label: 'Visites Relances',
+                  icon: 'walk',
+                  parentId: 'relance'
+                }}
+                active={activeTab === 'relance' && activeSubTab.relance === 'visites-relance'}
+                onPress={onPress}
+                onSubTabSelect={onSubTabSelect}
+                level={1}
+                notifications={notifications}
+                activeTab={activeTab}
+                activeSubTab={activeSubTab}
+                userRole={userRole}
+              />
+            </>
+          )}
+          {tab.id === 'rdv' && (
+            <>
+              <MobileMenuItem
+                tab={{
+                  id: 'appels-rdv',
+                  label: 'Appels RDV',
+                  icon: 'phone',
+                  parentId: 'rdv'
+                }}
+                active={activeTab === 'rdv' && activeSubTab.rdv === 'appels-rdv'}
+                onPress={onPress}
+                onSubTabSelect={onSubTabSelect}
+                level={1}
+                notifications={notifications}
+                activeTab={activeTab}
+                activeSubTab={activeSubTab}
+                userRole={userRole}
+              />
+              <MobileMenuItem
+                tab={{
+                  id: 'visites-rdv',
+                  label: 'Visites RDV',
+                  icon: 'walk',
+                  parentId: 'rdv'
+                }}
+                active={activeTab === 'rdv' && activeSubTab.rdv === 'visites-rdv'}
+                onPress={onPress}
+                onSubTabSelect={onSubTabSelect}
+                level={1}
+                notifications={notifications}
+                activeTab={activeTab}
+                activeSubTab={activeSubTab}
+                userRole={userRole}
+              />
+            </>
+          )}
+          {tab.id === 'prospects' && isCommercial(userRole) && (
+            <>
+              <MobileMenuItem
+                tab={{
+                  id: 'mes-prospects',
+                  label: 'Mes Prospects',
+                  icon: 'user',
+                  parentId: 'prospects'
+                }}
+                active={activeTab === 'prospects' && activeSubTab.prospects === 'mes-prospects'}
+                onPress={onPress}
+                onSubTabSelect={onSubTabSelect}
+                level={1}
+                notifications={notifications}
+                activeTab={activeTab}
+                activeSubTab={activeSubTab}
+                userRole={userRole}
+              />
+              <MobileMenuItem
+                tab={{
+                  id: 'tous-prospects',
+                  label: 'Tous Prospects',
+                  icon: 'user',
+                  parentId: 'prospects'
+                }}
+                active={activeTab === 'prospects' && activeSubTab.prospects === 'tous-prospects'}
+                onPress={onPress}
+                onSubTabSelect={onSubTabSelect}
+                level={1}
+                notifications={notifications}
+                activeTab={activeTab}
+                activeSubTab={activeSubTab}
+                userRole={userRole}
+              />
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+MobileMenuItem.displayName = 'MobileMenuItem';
+
+// Dropdown Item Component
 const DropdownItem = ({ label, active, onClick, count }) => {
   return (
     <button
@@ -96,19 +302,30 @@ const TabsNavigation = ({
   notifications,
   onTabChange,
   onSubTabChange,
-  userRole, // Add userRole prop
+  userRole,
 }) => {
   const [dropdownState, setDropdownState] = useState({
     relance: false,
     rdv: false,
-    prospects: false, // Add prospects dropdown state
+    prospects: false,
   });
+
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileExpanded, setMobileExpanded] = useState({});
 
   const [displayedLabels, setDisplayedLabels] = useState({
     relance: 'Relances',
     rdv: 'RDV',
-    prospects: 'Prospects', // Add prospects label
+    prospects: 'Prospects',
   });
+
+  // Refs for desktop dropdowns
+  const relanceTabRef = useRef(null);
+  const rdvTabRef = useRef(null);
+  const relanceDropdownRef = useRef(null);
+  const rdvDropdownRef = useRef(null);
+  const prospectsTabRef = useRef(null);
+  const prospectsDropdownRef = useRef(null);
 
   // Reset to default labels when switching to different tabs
   useEffect(() => {
@@ -132,7 +349,7 @@ const TabsNavigation = ({
     }
   }, [activeTab]);
 
-  // Update displayed labels based on active sub-tabs only when the parent tab is active
+  // Update displayed labels based on active sub-tabs
   useEffect(() => {
     if (activeTab === 'relance') {
       if (activeSubTab.relance === 'appels-relance') {
@@ -175,14 +392,7 @@ const TabsNavigation = ({
     }
   }, [activeTab, activeSubTab, userRole]);
 
-  const relanceTabRef = useRef(null);
-  const rdvTabRef = useRef(null);
-  const relanceDropdownRef = useRef(null);
-  const rdvDropdownRef = useRef(null);
-  const prospectsTabRef = useRef(null); // Add prospects ref
-
-  const prospectsDropdownRef = useRef(null); // Add prospects dropdown ref
-
+  // Handle click outside for desktop dropdowns
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -256,23 +466,52 @@ const TabsNavigation = ({
         prospects: false,
       });
       onTabChange(tab);
+      closeMobileMenu();
     }
   };
 
- const handleSubTabSelect = (parentTab, subTab, label) => {
-  onTabChange(parentTab);
-  onSubTabChange(parentTab, subTab);
-  setDisplayedLabels((prev) => ({
-    ...prev,
-    [parentTab]: label,
-  }));
-  setDropdownState((prev) => ({
-    ...prev,
-    [parentTab]: false,
-  }));
-};
+  const handleSubTabSelect = (parentTab, subTab, label) => {
+    onTabChange(parentTab);
+    onSubTabChange(parentTab, subTab);
+    setDisplayedLabels((prev) => ({
+      ...prev,
+      [parentTab]: label,
+    }));
+    setDropdownState((prev) => ({
+      ...prev,
+      [parentTab]: false,
+    }));
+    closeMobileMenu();
+  };
 
-  // Get the appropriate notification count for displayed labels
+  // Mobile handlers
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+    setMobileExpanded({}); // Reset expanded state when closing/opening menu
+  };
+
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+    setMobileExpanded({});
+  };
+
+  const handleMobileTabPress = (tab) => {
+    if (tab.dropdown) {
+      // For tabs with dropdown, we'll handle through the MobileMenuItem
+      return;
+    }
+    onTabChange(tab.id);
+    closeMobileMenu();
+  };
+
+  const toggleMobileExpand = (tabId) => {
+    setMobileExpanded((prev) => ({
+      ...prev,
+      [tabId]: !prev[tabId],
+    }));
+  };
+
+  // Get notification count for displayed labels
   const getDisplayedNotificationCount = (tabId) => {
     if (tabId === 'relance' && activeTab === 'relance') {
       if (displayedLabels.relance === 'Appels Relances') {
@@ -297,13 +536,10 @@ const TabsNavigation = ({
         return notifications['tous-prospects'];
       }
     }
-
-    // Return total count for non-active tabs or default labels
     return notifications[tabId];
   };
 
-  // Define all tabs - conditionally show dropdown for prospects based on role
-  // Ajoutez cette tab dans le tableau `tabs`
+  // Define all tabs
   const tabs = [
     {
       id: 'prospects',
@@ -312,9 +548,9 @@ const TabsNavigation = ({
       dropdown: isCommercial(userRole),
       count: getDisplayedNotificationCount('prospects'),
     },
-    { id: 'visites', label: 'Visites', icon: 'walk' },
-    { id: 'appels', label: 'Appels', icon: 'phone' },
-    { id: 'pre-reservation', label: 'Pré-réservations', icon: 'home' },
+    { id: 'visites', label: 'Visites', icon: 'walk', count: notifications.visites },
+    { id: 'appels', label: 'Appels', icon: 'phone', count: notifications.appels },
+    { id: 'pre-reservation', label: 'Pré-réservations', icon: 'home', count: notifications['pre-reservation'] },
     {
       id: 'relance',
       label: displayedLabels.relance,
@@ -338,152 +574,271 @@ const TabsNavigation = ({
   ];
 
   return (
-    <div className="bg-white border-b border-gray-200 w-full">
-      {/* Use grid with 7 equal columns for 7 tabs */}
-      <div className="grid grid-cols-7 w-full">
-        {tabs.map((tab) =>
-          tab.dropdown ? (
-            <div key={tab.id} className="relative">
+    <>
+      {/* Desktop Navigation - Hidden on mobile */}
+      <div className="hidden md:block bg-white border-b border-gray-200 w-full">
+        <div className="grid grid-cols-7 w-full">
+          {tabs.map((tab) =>
+            tab.dropdown ? (
+              <div key={tab.id} className="relative">
+                <TabButton
+                  label={tab.label}
+                  icon={tab.icon}
+                  active={activeTab === tab.id}
+                  count={tab.count}
+                  onClick={() => handleTabClick(tab.id)}
+                  dropdown={true}
+                  expanded={dropdownState[tab.id]}
+                  ref={
+                    tab.id === 'relance'
+                      ? relanceTabRef
+                      : tab.id === 'rdv'
+                      ? rdvTabRef
+                      : prospectsTabRef
+                  }
+                />
+                {dropdownState[tab.id] && (
+                  <div
+                    ref={
+                      tab.id === 'relance'
+                        ? relanceDropdownRef
+                        : tab.id === 'rdv'
+                        ? rdvDropdownRef
+                        : prospectsDropdownRef
+                    }
+                    className="absolute top-full left-0 right-0 bg-white shadow-lg rounded-b-md border border-gray-200 z-10 overflow-hidden"
+                  >
+                    {tab.id === 'relance' ? (
+                      <>
+                        <DropdownItem
+                          label="Appels Relances"
+                          count={notifications['appels-relance']}
+                          active={
+                            activeTab === 'relance' &&
+                            activeSubTab.relance === 'appels-relance'
+                          }
+                          onClick={() =>
+                            handleSubTabSelect(
+                              'relance',
+                              'appels-relance',
+                              'Appels Relances'
+                            )
+                          }
+                        />
+                        <DropdownItem
+                          label="Visites Relances"
+                          count={notifications['visites-relance']}
+                          active={
+                            activeTab === 'relance' &&
+                            activeSubTab.relance === 'visites-relance'
+                          }
+                          onClick={() =>
+                            handleSubTabSelect(
+                              'relance',
+                              'visites-relance',
+                              'Visites Relances'
+                            )
+                          }
+                        />
+                      </>
+                    ) : tab.id === 'rdv' ? (
+                      <>
+                        <DropdownItem
+                          label="Appels RDV"
+                          count={notifications['appels-rdv']}
+                          active={
+                            activeTab === 'rdv' &&
+                            activeSubTab.rdv === 'appels-rdv'
+                          }
+                          onClick={() =>
+                            handleSubTabSelect('rdv', 'appels-rdv', 'Appels RDV')
+                          }
+                        />
+                        <DropdownItem
+                          label="Visites RDV"
+                          count={notifications['visites-rdv']}
+                          active={
+                            activeTab === 'rdv' &&
+                            activeSubTab.rdv === 'visites-rdv'
+                          }
+                          onClick={() =>
+                            handleSubTabSelect(
+                              'rdv',
+                              'visites-rdv',
+                              'Visites RDV'
+                            )
+                          }
+                        />
+                      </>
+                    ) : (
+                      // Prospects dropdown for commercial users
+                      <>
+                        <DropdownItem
+                          label="Mes Prospects"
+                          count={notifications['mes-prospects']}
+                          active={
+                            activeTab === 'prospects' &&
+                            activeSubTab.prospects === 'mes-prospects'
+                          }
+                          onClick={() =>
+                            handleSubTabSelect(
+                              'prospects',
+                              'mes-prospects',
+                              'Mes Prospects'
+                            )
+                          }
+                        />
+                        <DropdownItem
+                          label="Tous Prospects"
+                          count={notifications['tous-prospects']}
+                          active={
+                            activeTab === 'prospects' &&
+                            activeSubTab.prospects === 'tous-prospects'
+                          }
+                          onClick={() =>
+                            handleSubTabSelect(
+                              'prospects',
+                              'tous-prospects',
+                              'Tous Prospects'
+                            )
+                          }
+                        />
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            ) : (
               <TabButton
+                key={tab.id}
                 label={tab.label}
                 icon={tab.icon}
                 active={activeTab === tab.id}
                 count={tab.count}
                 onClick={() => handleTabClick(tab.id)}
-                dropdown={true}
-                expanded={dropdownState[tab.id]}
-                ref={
-                  tab.id === 'relance'
-                    ? relanceTabRef
-                    : tab.id === 'rdv'
-                    ? rdvTabRef
-                    : prospectsTabRef
-                }
               />
-              {dropdownState[tab.id] && (
-                <div
-                  ref={
-                    tab.id === 'relance'
-                      ? relanceDropdownRef
-                      : tab.id === 'rdv'
-                      ? rdvDropdownRef
-                      : prospectsDropdownRef
-                  }
-                  className="absolute top-full left-0 right-0 bg-white shadow-lg rounded-b-md border border-gray-200 z-10 overflow-hidden"
-                >
-                  {tab.id === 'relance' ? (
-                    <>
-                      <DropdownItem
-                        label="Appels Relances"
-                        count={notifications['appels-relance']}
-                        active={
-                          activeTab === 'relance' &&
-                          activeSubTab.relance === 'appels-relance'
-                        }
-                        onClick={() =>
-                          handleSubTabSelect(
-                            'relance',
-                            'appels-relance',
-                            'Appels Relances'
-                          )
-                        }
-                      />
-                      <DropdownItem
-                        label="Visites Relances"
-                        count={notifications['visites-relance']}
-                        active={
-                          activeTab === 'relance' &&
-                          activeSubTab.relance === 'visites-relance'
-                        }
-                        onClick={() =>
-                          handleSubTabSelect(
-                            'relance',
-                            'visites-relance',
-                            'Visites Relances'
-                          )
-                        }
-                      />
-                    </>
-                  ) : tab.id === 'rdv' ? (
-                    <>
-                      <DropdownItem
-                        label="Appels RDV"
-                        count={notifications['appels-rdv']}
-                        active={
-                          activeTab === 'rdv' &&
-                          activeSubTab.rdv === 'appels-rdv'
-                        }
-                        onClick={() =>
-                          handleSubTabSelect('rdv', 'appels-rdv', 'Appels RDV')
-                        }
-                      />
-                      <DropdownItem
-                        label="Visites RDV"
-                        count={notifications['visites-rdv']}
-                        active={
-                          activeTab === 'rdv' &&
-                          activeSubTab.rdv === 'visites-rdv'
-                        }
-                        onClick={() =>
-                          handleSubTabSelect(
-                            'rdv',
-                            'visites-rdv',
-                            'Visites RDV'
-                          )
-                        }
-                      />
-                    </>
-                  ) : (
-                    // Prospects dropdown for commercial users
-                    <>
-                      <DropdownItem
-                        label="Mes Prospects"
-                        count={notifications['mes-prospects']}
-                        active={
-                          activeTab === 'prospects' &&
-                          activeSubTab.prospects === 'mes-prospects'
-                        }
-                        onClick={() =>
-                          handleSubTabSelect(
-                            'prospects',
-                            'mes-prospects',
-                            'Mes Prospects'
-                          )
-                        }
-                      />
-                      <DropdownItem
-                        label="Tous Prospects"
-                        count={notifications['tous-prospects']}
-                        active={
-                          activeTab === 'prospects' &&
-                          activeSubTab.prospects === 'tous-prospects'
-                        }
-                        onClick={() =>
-                          handleSubTabSelect(
-                            'prospects',
-                            'tous-prospects',
-                            'Tous Prospects'
-                          )
-                        }
-                      />
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-          ) : (
-            <TabButton
-              key={tab.id}
-              label={tab.label}
-              icon={tab.icon}
-              active={activeTab === tab.id}
-              count={tab.count}
-              onClick={() => handleTabClick(tab.id)}
-            />
-          )
-        )}
+            )
+          )}
+        </div>
       </div>
+
+      {/* Mobile Navigation - Visible only on mobile */}
+
+      {/* Mobile Navigation - Visible only on mobile */}
+
+{/* Mobile Navigation - Visible only on mobile */}
+<div className="md:hidden bg-white border-b border-gray-200">
+  {/* Mobile Header with current tab info and menu button */}
+  <div className="flex items-center justify-between px-4 py-3">
+    <div className="flex items-center gap-2">
+      {getIcon(tabs.find(t => t.id === activeTab)?.icon || 'user')}
+      <span className="font-medium text-gray-900">
+        {tabs.find(t => t.id === activeTab)?.label || 'Tableau de bord'}
+      </span>
+      {/* Afficher le compteur spécifique au sous-menu actif */}
+      {activeTab === 'relance' && activeSubTab.relance === 'appels-relance' && notifications['appels-relance'] > 0 && (
+        <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
+          {notifications['appels-relance']}
+        </span>
+      )}
+      {activeTab === 'relance' && activeSubTab.relance === 'visites-relance' && notifications['visites-relance'] > 0 && (
+        <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
+          {notifications['visites-relance']}
+        </span>
+      )}
+      {activeTab === 'rdv' && activeSubTab.rdv === 'appels-rdv' && notifications['appels-rdv'] > 0 && (
+        <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
+          {notifications['appels-rdv']}
+        </span>
+      )}
+      {activeTab === 'rdv' && activeSubTab.rdv === 'visites-rdv' && notifications['visites-rdv'] > 0 && (
+        <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
+          {notifications['visites-rdv']}
+        </span>
+      )}
+      {activeTab === 'prospects' && activeSubTab.prospects === 'mes-prospects' && notifications['mes-prospects'] > 0 && (
+        <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
+          {notifications['mes-prospects']}
+        </span>
+      )}
+      {activeTab === 'prospects' && activeSubTab.prospects === 'tous-prospects' && notifications['tous-prospects'] > 0 && (
+        <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
+          {notifications['tous-prospects']}
+        </span>
+      )}
+      {/* Pour les tabs sans sous-menus, afficher leur compteur normal */}
+      {!['relance', 'rdv', 'prospects'].includes(activeTab) && notifications[activeTab] > 0 && (
+        <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
+          {notifications[activeTab]}
+        </span>
+      )}
     </div>
+    <button
+      onClick={toggleMobileMenu}
+      className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+      aria-label="Menu"
+    >
+      {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+    </button>
+  </div>
+
+  {/* Mobile Menu avec Modal */}
+  <Modal 
+    isVisible={mobileMenuOpen} 
+    onClose={closeMobileMenu}
+    maxWidth="max-w-full"
+  >
+    {/* Header du modal avec titre et bouton fermer */}
+    <div className="flex items-center justify-between p-4 border-b border-gray-200">
+      <h3 className="font-semibold text-gray-900">Menu</h3>
+      <button 
+        onClick={closeMobileMenu}
+        className="p-1 hover:bg-gray-100 rounded-lg"
+      >
+        <X size={20} />
+      </button>
+    </div>
+    
+    {/* Menu Items */}
+    <div className="max-h-[70vh] overflow-y-auto">
+      {tabs.map((tab) => (
+        <MobileMenuItem
+          key={tab.id}
+          tab={tab}
+          active={activeTab === tab.id}
+          onPress={handleMobileTabPress}
+          hasChildren={tab.dropdown}
+          expanded={mobileExpanded[tab.id]}
+          onToggle={toggleMobileExpand}
+          notifications={notifications}
+          activeTab={activeTab}
+          activeSubTab={activeSubTab}
+          userRole={userRole}
+          onSubTabSelect={handleSubTabSelect}
+        />
+      ))}
+    </div>
+  </Modal>
+</div>
+
+      {/* Ajoutez ces styles à la fin de votre composant ou dans votre fichier CSS global */}
+      <style jsx>{`
+        @keyframes slideDown {
+          from {
+            transform: translateY(-100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+
+        .animate-slide-down {
+          animation: slideDown 0.3s ease-out;
+        }
+      `}</style>
+    </>
   );
 };
 

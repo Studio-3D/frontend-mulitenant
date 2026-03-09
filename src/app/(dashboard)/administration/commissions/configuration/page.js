@@ -190,6 +190,7 @@ export default function CommissionConfigForm({ onClose, onSuccess }) {
           reset(defaultValues);
           if (onSuccess) {
             onSuccess();
+             localStorage.setItem('load_data_commission_mensuelle', 1);
           } else {
             router.push('/commissions/commissionMensuelleAtt');
           }

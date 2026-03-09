@@ -312,7 +312,7 @@ const handleSubTabClick = (parentTab, subTabId) => {
       localStorage.setItem('etat_av', '3');
       break;
     case 'penalites-validation':
-      if (userRole <= 2 || userRole ==7 ) {
+      if (userRole <= 2||userRole ==7) {
         localStorage.setItem('etat_penalite', '5');
       } else {
         localStorage.setItem('etat_penalite', '0');

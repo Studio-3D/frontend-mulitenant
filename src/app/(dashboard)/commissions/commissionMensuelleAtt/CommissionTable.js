@@ -104,6 +104,39 @@ const CommissionTable = () => {
     selectedProjet,
   ]); // Add selectedProjet dependency
 
+  useEffect(() => {
+      //Implementing the setInterval method
+      const interval = setInterval(() => {
+        if (localStorage.getItem('load_data_commission_mensuelle') == 1) {
+          if (selectedProjet) {
+              fetchData_table_by_projet(
+                entity,
+                filters,
+                searchTerm,
+                currentPage,
+                rowsPerPage,
+                accesstoken,
+                setLoading,
+                setError,
+                setCommissions,
+                setTotalRows
+              );
+            }
+          localStorage.removeItem('load_data_commission_mensuelle');
+        }
+      }, 1000);
+  
+      //Clearing the interval
+      return () => clearInterval(interval);
+    }, [
+       searchTerm,
+    currentPage,
+    rowsPerPage,
+    accesstoken,
+    filters,
+    selectedProjet,
+    ]);
+  
   // Ouvre ou ferme le modal
   const toggleDialog = () => setOpenTraiter(!openTraiter);
 
