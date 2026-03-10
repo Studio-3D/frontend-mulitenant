@@ -240,8 +240,8 @@ const ReclamationTable = (prestId) => {
   const statut = {
     1: { code: 1, label: 'En Attente', color: 'bg-blue-100 !text-blue-800' },
     2: { code: 2, label: 'En Cours', color: 'bg-blue-100 !text-blue-800' },
-    4: { code: 4, label: 'Resolu', color: 'bg-green-100 !text-green-800' },
-    3: { code: 3, label: 'Non Resolu', color: 'bg-red-100 !text-red-800' },
+    3: { code: 3, label: 'Résolu', color: 'bg-green-100 !text-green-800' },
+    4: { code: 4, label: 'Non Résolu', color: 'bg-red-100 !text-red-800' },
   };
 
   const getStatutBadge = (Statut) => {
@@ -386,10 +386,12 @@ const ReclamationTable = (prestId) => {
       prestataire_id: rec.prestataire?.id,
       statut:
         rec.statut == '1'
-          ? 'En Cours'
+          ? 'En Attente'
           : rec.statut == '2'
-          ? 'Résolu'
+          ? 'En cours'
           : rec.statut == '3'
+          ? ' Résolu'
+           : rec.statut == '4'
           ? 'Non Résolu'
           : '',
       statut_raw: parseInt(rec.statut),
@@ -417,10 +419,12 @@ const ReclamationTable = (prestId) => {
         : '',
       Statut:
         rec.statut == '1'
-          ? 'En Cours'
+          ? 'En Attente'
           : rec.statut == '2'
-          ? 'Résolu'
+          ? 'En cours'
           : rec.statut == '3'
+          ? ' Résolu'
+           : rec.statut == '4'
           ? 'Non Résolu'
           : '',
       'Date Traitement': rec.date_traitement
@@ -480,14 +484,14 @@ const ReclamationTable = (prestId) => {
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
 
-              <Input
+              {/*<Input
                 type="text"
                 label="Client"
                 placeholder="Client"
                 value={tempFilters.client}
                 onChange={(e) => handleFilterChange('client', e.target.value)}
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-              />
+              />*/}
               <Input
                 type="date"
                 label="Date Intervention"
@@ -537,9 +541,10 @@ const ReclamationTable = (prestId) => {
                 name="statut"
                 placeholder="Sélectionnez un statut"
                 options={[
-                  { label: 'En cours', value: '1' },
-                  { label: 'Résolu', value: '2' },
-                  { label: 'Non Résolu', value: '3' },
+                   { label: 'En Attente', value: '1' },
+                  { label: 'En cours', value: '2' },
+                  { label: 'Résolu', value: '3' },
+                  { label: 'Non Résolu', value: '4' },
                 ]}
                 value={tempFilters.statut}
                 onChange={(value) => handleFilterChange('statut', value)}
@@ -582,7 +587,8 @@ const ReclamationTable = (prestId) => {
             : undefined
         }
       />
-      <ReclamationDialog
+       <Modal isVisible={openDialog} onClose={() => setOpenDialog(false)} maxWidth='max-w-lg'>
+         <ReclamationDialog
         open={openDialog}
         onClose={() => setOpenDialog(false)}
         type={dialogType}
@@ -593,6 +599,8 @@ const ReclamationTable = (prestId) => {
         disabled={disabled}
         from_dashboard_client={false}
       />
+       </Modal>
+     
 
       {showDeleteModal && selectedId && (
         <Modal isVisible={true} onClose={() => setShowDeleteModal(false)}>

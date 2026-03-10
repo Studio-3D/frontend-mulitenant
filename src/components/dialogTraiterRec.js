@@ -1,10 +1,6 @@
 'use client';
 
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
+import { Fragment } from 'react';
 import InputSelect from './inputSelect';
 import Input from './Input';
 import SelectInput from './SelectInput';
@@ -40,50 +36,39 @@ const ReclamationDialog = ({
     : [ 
         { value: '4', label: 'Traité' },
         { value: '3', label: 'Non Traité' }];
+        
   const prestataireOptions = prestataires.map((p) => ({
     value: p.id,
     label: `${p.prenom} ${p.nom}`,
   }));
 
-  return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      fullWidth
-      maxWidth="sm"
-      PaperProps={{ sx: { borderRadius: 3 } }}
-    >
-      {/* Header */}
-      <Box
-        sx={{
-          backgroundColor:
-            isResolution || isResolutionClient ? '#28A745' : '#009FFF',
-          px: 3,
-          py: 2,
-          borderTopLeftRadius: 8,
-          borderTopRightRadius: 8,
-        }}
-      >
-        <Typography
-          variant="h5"
-          align="center"
-          sx={{ color: 'white', fontWeight: 'bold' }}
-        >
-          {isTraitementRec && 'Traiter Réclamation'}
-          {isResolution && 'Résoudre Réclamation'}
-          {isResolutionClient && 'Résoudre Réclamation Client'}
-          {isTraitementClient && 'Traiter Réclamation'}
-        </Typography>
-      </Box>
+  if (!open) return null;
 
-      {/* Content */}
-      <DialogContent sx={{ px: 4, py: 3 }}>
-        <Box component="form" onSubmit={onSubmit} noValidate>
-          <Grid container spacing={3}>
-            {isTraitementRec && (
-              <>
-                {/* Prestataire */}
-                <Grid item xs={12} sm={6}>
+  return (
+    
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+      <div className="bg-white rounded-2xl w-full max-w-sm shadow-xl">
+        {/* Header */}
+        <div
+          className={`px-6 py-4 rounded-t-2xl ${
+            isResolution || isResolutionClient ? 'bg-green-600' : 'bg-[#009FFF]'
+          }`}
+        >
+          <h5 className="text-white font-bold text-xl text-center">
+            {isTraitementRec && 'Traiter Réclamation'}
+            {isResolution && 'Résoudre Réclamation'}
+            {isResolutionClient && 'Résoudre Réclamation Client'}
+            {isTraitementClient && 'Traiter Réclamation'}
+          </h5>
+        </div>
+
+        {/* Content */}
+        <div className="px-6 py-4">
+          <form onSubmit={onSubmit} noValidate>
+            <div className="space-y-6">
+              {isTraitementRec && (
+                <>
+                  {/* Prestataire */}
                   <div className="w-full sm:w-[250px]">
                     <InputSelect
                       label="Prestataire"
@@ -100,10 +85,8 @@ const ReclamationDialog = ({
                       required
                     />
                   </div>
-                </Grid>
 
-                {/* Date d’intervention */}
-                <Grid item xs={12} sm={6}>
+                  {/* Date d’intervention */}
                   <div className="w-full sm:w-[250px]">
                     <Input
                       label="Date d’intervention"
@@ -119,14 +102,12 @@ const ReclamationDialog = ({
                       required
                     />
                   </div>
-                </Grid>
-              </>
-            )}
+                </>
+              )}
 
-            {isResolution && (
-              <>
-                {/* Statut */}
-                <Grid item xs={12} sm={6}>
+              {isResolution && (
+                <>
+                  {/* Statut */}
                   <div className="w-full sm:w-[250px]">
                     <SelectInput
                       label="Statut"
@@ -140,9 +121,7 @@ const ReclamationDialog = ({
                       required
                     />
                   </div>
-                </Grid>
 
-                <Grid item xs={12} sm={6}>
                   <div className="w-full sm:w-[250px]">
                     <Input
                       label="Date de fin d’intervention"
@@ -158,14 +137,12 @@ const ReclamationDialog = ({
                       required
                     />
                   </div>
-                </Grid>
-              </>
-            )}
+                </>
+              )}
 
-            {(isTraitementClient || isResolutionClient) && (
-              <>
-                {/* Statut */}
-                <Grid item xs={12} sm={6}>
+              {(isTraitementClient || isResolutionClient) && (
+                <>
+                  {/* Statut */}
                   <div className="w-full sm:w-[250px]">
                     <SelectInput
                       label="Statut"
@@ -183,11 +160,9 @@ const ReclamationDialog = ({
                       required
                     />
                   </div>
-                </Grid>
 
-                {values.statut == 1 ? (
-                  // En cours → date de traitement
-                  <Grid item xs={12} sm={6}>
+                  {values.statut == 1 ? (
+                    // En cours → date de traitement
                     <div className="w-full sm:w-[250px]">
                       <Input
                         label="Date de traitement"
@@ -203,10 +178,8 @@ const ReclamationDialog = ({
                         required
                       />
                     </div>
-                  </Grid>
-                ) : values.statut == 2 ? (
-                  // Traité ou Non Traité → date de fin d’intervention
-                  <Grid item xs={12} sm={6}>
+                  ) : values.statut == 2 ? (
+                    // Traité ou Non Traité → date de fin d’intervention
                     <div className="w-full sm:w-[250px]">
                       <Input
                         label="Date fin traitement"
@@ -222,14 +195,12 @@ const ReclamationDialog = ({
                         required
                       />
                     </div>
-                  </Grid>
-                ) : null}
-              </>
-            )}
+                  ) : null}
+                </>
+              )}
 
-            {/* Commentaire pour tous les cas */}
-            <Grid item xs={12}>
-              <div className="w-full sm:w-[500px]">
+              {/* Commentaire pour tous les cas */}
+              <div className="w-full ">
                 <Input
                   label="Commentaire"
                   name="commentaire"
@@ -240,27 +211,34 @@ const ReclamationDialog = ({
                       commentaire: e.target.value,
                     }))
                   }
-                  placeholder="Ajouter un commentaire (optionnel)"
+                  placeholder="Ajouter un commentaire "
                   multiline
                   rows={4}
                   required
                 />
               </div>
-            </Grid>
-          </Grid>
+            </div>
 
-          <div className="flex justify-center gap-4 items-center mt-6 mb-6">
-            <Button type="button" onClick={onClose} disabled={disabled}>
-              Annuler
-            </Button>
+            <div className="flex justify-center gap-4 items-center mt-8 mb-4">
+              <Button type="button" onClick={onClose} disabled={disabled}>
+                Annuler
+              </Button>
 
-            <Button type="submit" disabled={disabled}>
-              Enregistrer
-            </Button>
-          </div>
-        </Box>
-      </DialogContent>
-    </Dialog>
+              <Button type="submit" disabled={disabled}>
+                Enregistrer
+              </Button>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      {/* Backdrop - click outside to close */}
+      <div 
+        className="fixed inset-0 -z-10" 
+        onClick={onClose}
+      />
+    </div>
+  
   );
 };
 
