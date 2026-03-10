@@ -10,7 +10,7 @@ import SelectInput from '@/components/SelectInput';
 
 import { APIURL, ENDPOINTS, RESOURCE_URL } from '@/configs/api';
 import { fetchData_table_by_projet } from '@/configs/api-utils';
-import { isAdmin, isSuperAdmin, Statuts_Prospect } from '@/configs/enum';
+import { isAdmin, isSav, isSuperAdmin, Statuts_Prospect } from '@/configs/enum';
 import { useAuth } from '@/context/AuthContext';
 import { format } from 'date-fns';
 
@@ -278,7 +278,7 @@ const ReclamationTable = (prestId) => {
       render: (row) => {
         const date = new Date(row.date_reclamation);
         const formattedDate = date.toLocaleDateString('fr-FR'); // jj/mm/aaaa
-        return <strong style={{ fontWeight: 600 }}>{formattedDate}</strong>; // en gras
+        return <p >{formattedDate}</p>; // en gras
       },
     },
 
@@ -293,7 +293,16 @@ const ReclamationTable = (prestId) => {
       ),
     },
     { key: 'service', label: 'Service' },
-    { key: 'prestataire', label: 'Prestataire' },
+    {
+      key: 'prestataire',
+      label: 'Prestataire',
+      sortable: true,
+      render: (row) => (
+        <Link target="_blank" href={'/sav/prestataires/show/' + row?.prestataire_id}>
+          <strong style={{ fontWeight: 600 }}>{row?.prestataire}</strong>
+        </Link>
+      ),
+    },
     {
       key: 'statut',
       label: 'Statut',
@@ -309,7 +318,7 @@ const ReclamationTable = (prestId) => {
         <div className="flex gap-3 items-center">
           
 
- <Link
+      <Link
             href={`/sav/reclamations/show/${row.id}`}
             className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
             title="Voir les détails"
@@ -374,6 +383,7 @@ const ReclamationTable = (prestId) => {
       prestataire: rec.prestataire?.nom
         ? `${rec.prestataire.nom} ${rec.prestataire.prenom}`
         : '',
+      prestataire_id: rec.prestataire?.id,
       statut:
         rec.statut == '1'
           ? 'En Cours'
@@ -565,9 +575,9 @@ const ReclamationTable = (prestId) => {
         onRowsPerPageChange={setRowsPerPage}
         onSearchChange={setSearchTerm}
         enableExport={true}
-        enableImport={true}
+        enableImport={false}
         addLink={
-          (isSuperAdmin(user?.role) || isAdmin(user?.role)) && isPrestIdEmpty
+          (isSuperAdmin(user?.role) || isAdmin(user?.role)|| isSav(user?.role)) && isPrestIdEmpty
             ? `${ENDPOINTS.ReclamationsSav}?action=add`
             : undefined
         }
