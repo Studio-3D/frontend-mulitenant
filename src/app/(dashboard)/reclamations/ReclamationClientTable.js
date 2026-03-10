@@ -17,6 +17,7 @@ import ReclamationDialog from '@/components/dialogTraiterRec';
 import { useProjet } from '@/context/ProjetContext';
 import Link from 'next/link';
 import format from 'date-fns/format';
+import Modal from "@/components/Modal";
 
 const ReclamationTable = ({}) => {
   const { selectedProjet } = useProjet();
@@ -463,6 +464,7 @@ const ReclamationTable = ({}) => {
           onSearchChange={setSearchTerm}
           enableExport={true}
         />
+        <Modal isVisible={openDialog} onClose={() => setOpenDialog(false)} maxWidth='max-w-lg'>
         <ReclamationDialog
           open={openDialog}
           onClose={() => setOpenDialog(false)}
@@ -473,6 +475,8 @@ const ReclamationTable = ({}) => {
           onSubmit={handleSubmitReclamation}
           disabled={disabled}
         />
+        </Modal>
+       
       </div>
     </>
   );
