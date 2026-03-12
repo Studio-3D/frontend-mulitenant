@@ -12,8 +12,10 @@ import { CIVILITES, getSCodeCivilite } from '@/components/client-utils';
 import { useProjet } from '@/context/ProjetContext';
 import SelectInput from '@/components/SelectInput';
 import Input from '@/components/Input';
+import { useSociete } from '@/context/SocieteContext';
 
 const PrestataireForm = ({ id = null }) => {
+  const { selectedSociete } = useSociete();
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [services, setServices] = useState([]);
@@ -47,19 +49,21 @@ const PrestataireForm = ({ id = null }) => {
   });
 
   // Simple cache et comparaison for return back en cas de changer projet
-  const [oldProjetId, setOldProjetId] = useState(null);
+       const [oldProjetId, setOldProjetId] = useState(null);
+      const [oldSocieteId, setOldSocieteId] = useState(null);
+    
 
-  useEffect(() => {
-    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
-      if (oldProjetId) {
-        // Projet a changé
-
+  	 useEffect(() => {
+  if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId)||(selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+    if (oldProjetId||oldSocieteId) {
+      // Projet ou société a changé
         console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-        router.push('/sav/prestataires');
-      }
-      setOldProjetId(selectedProjet.id);
+      router.push('/sav/prestataires');
     }
-  }, [selectedProjet?.id, oldProjetId, router]);
+    setOldSocieteId(selectedSociete?.id)
+    setOldProjetId(selectedProjet?.id);
+  }
+}, [selectedProjet?.id, selectedSociete?.id, oldProjetId, oldSocieteId, router]);
   // Load prestataire data if editing
   useEffect(() => {
     if (id) {

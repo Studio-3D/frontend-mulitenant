@@ -22,11 +22,12 @@ import {
 } from "date-fns";
 import { isAdmin, isSuperAdmin,isCommercial,isRespoCommercial} from '@/configs/enum';
 import { useRouter } from 'next/navigation';
+import { useSociete } from '@/context/SocieteContext';
 
 export default function ActualitesPage() {
   const { user } = useAuth();
     const router = useRouter();
-  
+  const { selectedSociete } = useSociete();
   const { selectedProjet } = useProjet();
   const [loading, setLoading] = useState(true);
   const [commercialId, setCommercialId] = useState(
@@ -144,7 +145,7 @@ export default function ActualitesPage() {
     if (user.role <= 2 ||user.role ==9 ) {
       fetchCommercials();
     }
-  }, [selectedProjet?.id]);
+  }, [selectedProjet?.id,selectedSociete]);
 
   // Fetch data based on filters
   const fetchData = async (start = null, end = null) => {
@@ -216,7 +217,7 @@ export default function ActualitesPage() {
     if (selectedProjet?.id) {
       fetchData(startDate, endDate);
     }
-  }, [selectedProjet?.id, commercialId]);
+  }, [selectedProjet?.id, commercialId,selectedSociete]);
 
   // Handle date filter change from DateFilter component
   const handleDateChange = (start, end, period) => {

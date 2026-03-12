@@ -12,8 +12,10 @@ import { useRouter } from 'next/navigation';
 import { fetchData_table_by_projet } from '../../../../configs/api-utils';
 import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
 import Input from '@/components/Input';
+import { useSociete } from '@/context/SocieteContext';
 
 const TypologieTable = () => {
+  const { selectedSociete } = useSociete();
   const [typologies, setTypologies] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -59,7 +61,7 @@ const TypologieTable = () => {
     rowsPerPage,
     searchTerm,
     filters,
-    selectedProjet,
+    selectedProjet,selectedSociete
   ]);
 
   function handleEdit(TypologieId) {

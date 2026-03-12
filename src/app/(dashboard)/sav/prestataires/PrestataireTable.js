@@ -17,8 +17,10 @@ import InputSelect from '@/components/inputSelect';
 import { useProjet } from '@/context/ProjetContext'; // Import ProjetContext
 import ProjetDialog from '@/components/ProjetDialog'; // Import ProjetDialog
 import Select from 'react-select';
+import { useSociete } from '@/context/SocieteContext';
 
 const PrestataireTable = (serviceId) => {
+   const { selectedSociete } = useSociete();
   const [prestataires, setPrestataires] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -106,7 +108,7 @@ const PrestataireTable = (serviceId) => {
       setPrestataires,
       setTotalRows
     );
-  }, [searchTerm, currentPage, rowsPerPage, accesstoken, filters]);
+  }, [searchTerm, currentPage, rowsPerPage, accesstoken, filters,selectedSociete]);
 
   const handleFilterChange = (field, value) => {
     setTempFilters((prev) => ({ ...prev, [field]: value }));

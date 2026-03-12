@@ -14,7 +14,9 @@ import { useAuth } from '@/context/AuthContext';
 import Input from '@/components/Input';
 import { useProjet } from '@/context/ProjetContext'; // Import ProjetContext
 import ProjetDialog from '@/components/ProjetDialog'; // Import ProjetDialog
+import { useSociete } from '@/context/SocieteContext';
 const ServiceTable = () => {
+  const { selectedSociete } = useSociete();
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -77,7 +79,7 @@ const ServiceTable = () => {
     rowsPerPage,
     accesstoken,
     filters,
-    selectedProjet,
+    selectedProjet,selectedSociete
   ]); // Add selectedProjet dependency
 
   function handleShow(Id, nom) {

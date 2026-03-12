@@ -66,7 +66,33 @@ export const GeneralParametersStep = ({
     return options;
   }, [users]);
 
-  // Handle user selection from dropdown
+  const handleUserSelection = (selectedValues) => {
+  // Check if "Tous" was selected
+  const hasTous = selectedValues.includes('tous');
+  
+  if (hasTous) {
+    // "Tous" was selected - select all actual user IDs
+    const allUserIds = users.map(user => user.id.toString());
+    setSelectedUserIds(allUserIds); // Ne pas inclure 'tous'
+    updateFormData(`parameters.utilisateursAcces`, allUserIds);
+  } else {
+    // Normal user selection
+    setSelectedUserIds(selectedValues || []);
+    updateFormData(`parameters.utilisateursAcces`, selectedValues || []);
+  }
+  
+  if (display_errors_users) {
+    setDisplay_Errors_users(false);
+  }
+};
+
+// Et simplifiez getSelectedUsers
+const getSelectedUsers = () => {
+  return selectedUserIds
+    .map((id) => users.find((user) => user.id.toString() === id.toString()))
+    .filter(Boolean);
+};
+  /*Handle user selection from dropdown
   const handleUserSelection = (selectedValues) => {
     // Check if "Tous" was selected or deselected
     const hasTous = selectedValues.includes('tous');
@@ -107,7 +133,7 @@ export const GeneralParametersStep = ({
       .filter(id => id !== 'tous')
       .map((id) => users.find((user) => user.id.toString() === id.toString()))
       .filter(Boolean);
-  };
+  };*/
 
   // Add new item to a parameter field
   const handleAddItem = (field) => {
@@ -282,7 +308,7 @@ export const GeneralParametersStep = ({
                 label=""
                 placeholder="Sélectionnez des utilisateurs"
                 options={userOptions}
-                value={selectedUserIds}
+                value={selectedUserIds.filter(id => id !== 'tous')} // FILTRE ICI
                 onChange={handleUserSelection}
                 error={errors.parameters?.utilisateursAcces}
                 submitted={touched.parameters?.utilisateursAcces}

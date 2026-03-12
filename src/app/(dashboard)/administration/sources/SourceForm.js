@@ -6,6 +6,7 @@ import BreadCrumb from '../../navigation/BreadCrumb';
 import Button from '@/components/Button';
 import { useRouter } from 'next/navigation';
 import { useProjet } from '@/context/ProjetContext';
+import { useSociete } from '@/context/SocieteContext';
 
 const SourceForm = ({ id = null, onComplete }) => {
   const [loading, setLoading] = useState(false);
@@ -17,23 +18,25 @@ const SourceForm = ({ id = null, onComplete }) => {
     source: '',
   });
   const { selectedProjet } = useProjet();
+  const { selectedSociete } = useSociete();
   // Validation errors
   const [errors, setErrors] = useState({});
 
   // Simple cache et comparaison for return back en cas de changer projet
   const [oldProjetId, setOldProjetId] = useState(null);
+  const [oldSocieteId, setOldSocieteId] = useState(null);
 
   useEffect(() => {
-    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
-      if (oldProjetId) {
-        // Projet a changé
-
+  if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId)||(selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+    if (oldProjetId||oldSocieteId) {
+      // Projet ou société a changé
         console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-        router.push('/administration/sources');
-      }
-      setOldProjetId(selectedProjet.id);
+      router.push('/administration/sources');
     }
-  }, [selectedProjet?.id, oldProjetId, router]);
+    setOldSocieteId(selectedSociete?.id)
+    setOldProjetId(selectedProjet?.id);
+  }
+}, [selectedProjet?.id, selectedSociete?.id, oldProjetId, oldSocieteId, router]);
   useEffect(() => {
     // Load source data if editing
     if (id) {

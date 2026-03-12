@@ -6,11 +6,13 @@ import toast from 'react-hot-toast';
 import BreadCrumb from '../../navigation/BreadCrumb';
 import Button from '@/components/Button';
 import { useRouter } from 'next/navigation';
+import { useSociete } from '@/context/SocieteContext';
 
 const TypologieForm = ({ id = null, onComplete }) => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const { selectedProjet } = useProjet();
+  const { selectedSociete } = useSociete();
   const router = useRouter();
   const [originalFormData, setOriginalFormData] = useState({});
   // Form state
@@ -20,19 +22,20 @@ const TypologieForm = ({ id = null, onComplete }) => {
   });
 
    // Simple cache et comparaison for return back en cas de changer projet
-  const [oldProjetId, setOldProjetId] = useState(null);
-
-  useEffect(() => {
-    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
-      if (oldProjetId) {
-        // Projet a changé
-
-        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-        router.push('/administration/typologies');
+   const [oldProjetId, setOldProjetId] = useState(null);
+      const [oldSocieteId, setOldSocieteId] = useState(null);
+    
+   	useEffect(() => {
+      if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId)||(selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+        if (oldProjetId||oldSocieteId) {
+          // Projet ou société a changé
+            console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+          router.push('/administration/typologies');
+        }
+        setOldSocieteId(selectedSociete?.id)
+        setOldProjetId(selectedProjet?.id);
       }
-      setOldProjetId(selectedProjet.id);
-    }
-  }, [selectedProjet?.id, oldProjetId, router]);
+    }, [selectedProjet?.id, selectedSociete?.id, oldProjetId, oldSocieteId, router]);
 
   // Validation errors
   const [errors, setErrors] = useState({});

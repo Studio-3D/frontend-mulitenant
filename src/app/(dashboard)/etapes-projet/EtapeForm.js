@@ -16,6 +16,7 @@ import Button from '@/components/Button'; // adjust the path as needed
 import LoadingSpin from '@/components/LoadingSpin';
 import SelectInput from '@/components/SelectInput';
 import { useProjet } from '@/context/ProjetContext';
+import { useSociete } from '@/context/SocieteContext';
 export default function EtapeForm({ id, onClose, onSuccess }) {
   const { token } = useAuth();
   const router = useRouter();
@@ -58,19 +59,21 @@ export default function EtapeForm({ id, onClose, onSuccess }) {
   const isEditing = !!id;
 
   // Simple cache et comparaison for return back en cas de changer projet
-  const [oldProjetId, setOldProjetId] = useState(null);
+    const { selectedSociete } = useSociete();
+    const [oldProjetId, setOldProjetId] = useState(null);
+    const [oldSocieteId, setOldSocieteId] = useState(null);
 
-  useEffect(() => {
-    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
-      if (oldProjetId) {
-        // Projet a changé
-
-        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-        router.push('/crm/prospects');
+  	 useEffect(() => {
+    if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId)||(selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+      if (oldProjetId||oldSocieteId) {
+        // Projet ou société a changé
+          console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+        router.push('/etapes-projet');
       }
-      setOldProjetId(selectedProjet.id);
+      setOldSocieteId(selectedSociete?.id)
+      setOldProjetId(selectedProjet?.id);
     }
-  }, [selectedProjet?.id, oldProjetId, router]);
+  }, [selectedProjet?.id, selectedSociete?.id, oldProjetId, oldSocieteId, router]);
 
   useEffect(() => {
     if (isEditing) {

@@ -13,9 +13,11 @@ import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
 import Input from '@/components/Input';
 import SelectInput from '@/components/SelectInput';
+import { useSociete } from '@/context/SocieteContext';
 
 const Page = ({ user_id }) => {
   // State Management
+  const { selectedSociete } = useSociete();
   const { token, user } = useAuth();
   const { removeProjet } = useProjet();
   const router = useRouter();
@@ -170,7 +172,7 @@ const Page = ({ user_id }) => {
   // Fetch data when dependencies change
   useEffect(() => {
     fetchProjects();
-  }, [fetchProjects]);
+  }, [fetchProjects,selectedSociete]);
 
   // Format projects for display
   const formattedProjects = useMemo(() => {

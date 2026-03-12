@@ -51,6 +51,7 @@ const toTitleCase = (str) =>
 
 import { useAuth } from '../../context/AuthContext';
 import { useProjet } from '@/context/ProjetContext';
+import { useSociete } from '@/context/SocieteContext';
 export const Calendar = () => {
      const router = useRouter();
   const { user } = useAuth();
@@ -86,6 +87,7 @@ export const Calendar = () => {
 
   const accessToken = localStorage.getItem('accessToken');
   const { selectedProjet  } = useProjet();
+  const { selectedSociete } = useSociete();
   const selectedProjet_id =selectedProjet?.id
 
   const hasExecuted = useRef(false);
@@ -110,7 +112,7 @@ const userRole = user?.role;
       fetchUsers();
       hasExecuted.current = true;
     }
-  }, []);
+  }, [selectedSociete]);
  
   useEffect(() => {
     const filtered = applyFilter(events, activeFilter);

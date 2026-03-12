@@ -12,8 +12,10 @@ import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
 import { useProjet } from '@/context/ProjetContext';
 import { isAdmin, isCommercial, isSuperAdmin } from '@/configs/enum';
 import { useAuth } from '@/context/AuthContext';
+import { useSociete } from '@/context/SocieteContext';
 
 export default function CommissionConfigForm({ onClose, onSuccess }) {
+  const { selectedSociete } = useSociete();
   const router = useRouter();
   const accessToken = localStorage.getItem('accessToken');
   const { selectedProjet } = useProjet();
@@ -89,17 +91,21 @@ export default function CommissionConfigForm({ onClose, onSuccess }) {
   }, [router]);
 
   // Simple cache et comparaison for return back en cas de changer projet
-  const [oldProjetId, setOldProjetId] = useState(null);
-
-  useEffect(() => {
-    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
-      if (oldProjetId) {
-        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-        router.push('/administration/commissions/configuration');
-      }
-      setOldProjetId(selectedProjet.id);
-    }
-  }, [selectedProjet?.id, oldProjetId, router]);
+        const [oldProjetId, setOldProjetId] = useState(null);
+        const [oldSocieteId, setOldSocieteId] = useState(null);
+      
+      useEffect(() => {
+        if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId)||(selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+          if (oldProjetId||oldSocieteId) {
+            // Projet ou société a changé
+              console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+           router.push('/administration/commissions/configuration');
+          }
+          setOldSocieteId(selectedSociete?.id)
+          setOldProjetId(selectedProjet?.id);
+        }
+      }, [selectedProjet?.id, selectedSociete?.id, oldProjetId, oldSocieteId, router]);
+  
 
   const handleAddInput = () => {
     setInputs([...inputs, { de: '', a: '', pourcentage: '' }]);

@@ -42,18 +42,18 @@ function getStatutBadge(statut) {
           En Cours
         </span>
       );
-    case 4:
+    case 3:
       return (
         <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200">
           <CheckCircle className="w-3 h-3 mr-1" />
-          Résolue
+          Résolu
         </span>
       );
-    case 3:
+    case 4:
       return (
         <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-200">
           <AlertCircle className="w-3 h-3 mr-1" />
-          Non Résolue
+          Non Résolu
         </span>
       );
     default:

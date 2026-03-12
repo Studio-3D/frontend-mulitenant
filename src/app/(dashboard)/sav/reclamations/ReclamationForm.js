@@ -24,6 +24,7 @@ import {
   Typography,
 } from '@mui/material';
 import Input from '@/components/Input';
+import { useSociete } from '@/context/SocieteContext';
 
 export default function ReclamationForm({ id }) {
   const { token } = useAuth();
@@ -63,22 +64,24 @@ export default function ReclamationForm({ id }) {
   const [myfile, setMyfile] = useState(false);
   const [myfile_1, setMyfile_1] = useState(false);
   const { selectedProjet } = useProjet();
-
+  const { selectedSociete } = useSociete();
 
   // Simple cache et comparaison for return back en cas de changer projet
-  const [oldProjetId, setOldProjetId] = useState(null);
+      const [oldProjetId, setOldProjetId] = useState(null);
+      const [oldSocieteId, setOldSocieteId] = useState(null);
+    
 
-  useEffect(() => {
-    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
-      if (oldProjetId) {
-        // Projet a changé
-
+  	 useEffect(() => {
+  if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId)||(selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+    if (oldProjetId||oldSocieteId) {
+      // Projet ou société a changé
         console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-        router.back();
-      }
-      setOldProjetId(selectedProjet.id);
+      router.back();
     }
-  }, [selectedProjet?.id, oldProjetId, router]);
+    setOldSocieteId(selectedSociete?.id)
+    setOldProjetId(selectedProjet?.id);
+  }
+}, [selectedProjet?.id, selectedSociete?.id, oldProjetId, oldSocieteId, router]);
  const fetchServices = async () => {
   try {
     setLoading(true);

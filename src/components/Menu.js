@@ -275,7 +275,7 @@ const Menu = () => {
           needsSociete: user.role === 1,
         },
         {
-          label: 'Gestion Roles',
+          label: 'Gestion Rôles',
           icon: <UserCog size={20} />,
           href: '/administration/gestion-roles',
           needsSociete: user.role === 1,

@@ -7,10 +7,12 @@ import { useRouter } from 'next/navigation';
 import BreadCrumb from '../../navigation/BreadCrumb';
 import LoadingSpin from '@/components/LoadingSpin';
 import { useProjet } from '@/context/ProjetContext';
+import { useSociete } from '@/context/SocieteContext';
 const ServiceForm = ({ id = null }) => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
+  const { selectedSociete } = useSociete();
   const { selectedProjet } = useProjet();
   // Form state
   const [formData, setFormData] = useState({
@@ -21,19 +23,21 @@ const ServiceForm = ({ id = null }) => {
   const [errors, setErrors] = useState({});
 
   // Simple cache et comparaison for return back en cas de changer projet
-  const [oldProjetId, setOldProjetId] = useState(null);
+       const [oldProjetId, setOldProjetId] = useState(null);
+      const [oldSocieteId, setOldSocieteId] = useState(null);
+    
 
-  useEffect(() => {
-    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
-      if (oldProjetId) {
-        // Projet a changé
-
+  	 useEffect(() => {
+  if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId)||(selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+    if (oldProjetId||oldSocieteId) {
+      // Projet ou société a changé
         console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-        router.push('/sav/services');
-      }
-      setOldProjetId(selectedProjet.id);
+      router.push('/sav/services');
     }
-  }, [selectedProjet?.id, oldProjetId, router]);
+    setOldSocieteId(selectedSociete?.id)
+    setOldProjetId(selectedProjet?.id);
+  }
+}, [selectedProjet?.id, selectedSociete?.id, oldProjetId, oldSocieteId, router]);
   // Load nom projet data if editing
   useEffect(() => {
     if (id) {

@@ -76,11 +76,16 @@ const EditProjectPage = () => {
 
   return (
     <div className="">
-      <div className="mb-4">
+      <div className="mb-4">      
         <BreadCrumb
-          onRoot={{ href: '/projets' }}
-          items={[{ label: projectData?.projet?.nom || 'Projet' }, { label: 'Modifier' }]}
-        />
+                    onRoot={{ href: '/projets' }}
+                    items={[
+                     projectData?.projet?.nom
+                        ? { label: projectData?.projet?.nom, href: `/projets/${projectData?.projet?.id}` }
+                        : null,                   
+                      { label: "Modifier"},
+                    ].filter(Boolean)}
+                  /> 
       </div>
       <MultiStepForm
         editMode={true}

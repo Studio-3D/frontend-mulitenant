@@ -15,7 +15,9 @@ import { Pencil, Trash2, Eye } from 'lucide-react';
 import { useProjet } from '@/context/ProjetContext';
 import format from 'date-fns/format';
 import Input from '@/components/Input';
+import { useSociete } from '@/context/SocieteContext';
 const RemiseCleTable = ({searchParams}) => {
+   const { selectedSociete } = useSociete();
   const { selectedProjet  } = useProjet();
   const [remisecles, setRemiseCles] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -74,7 +76,7 @@ const RemiseCleTable = ({searchParams}) => {
       setRemiseCles,
       setTotalRows
     );
-  }, [searchTerm, currentPage, rowsPerPage, accesstoken, filters,selectedProjet]);
+  }, [searchTerm, currentPage, rowsPerPage, accesstoken, filters,selectedProjet,selectedSociete]);
 
   const handleFilterChange = (field, value) => {
     setTempFilters((prev) => ({ ...prev, [field]: value }));

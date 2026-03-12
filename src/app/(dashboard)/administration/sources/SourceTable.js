@@ -12,9 +12,11 @@ import { useRouter } from 'next/navigation';
 import { fetchData_table_by_projet } from '../../../../configs/api-utils';
 import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
 import Input from '@/components/Input';
+import { useSociete } from '@/context/SocieteContext';
 
 const SourceTable = () => {
    const { selectedProjet  } = useProjet();
+   const { selectedSociete } = useSociete();
   const [sources, setSources] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -53,7 +55,7 @@ const SourceTable = () => {
       setSources,
       setTotalRows
     );
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters,selectedProjet]);
+  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filters,selectedProjet,selectedSociete]);
 
 
 

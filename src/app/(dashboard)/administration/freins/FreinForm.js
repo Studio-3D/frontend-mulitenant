@@ -6,11 +6,13 @@ import toast from "react-hot-toast";
 import Button from "@/components/Button";
 import BreadCrumb from "../../navigation/BreadCrumb";
 import { useRouter } from "next/navigation";
+import { useSociete } from "@/context/SocieteContext";
 
 const FreinForm = ({ id = null, onComplete }) => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const { selectedProjet } = useProjet();
+  const { selectedSociete } = useSociete();
   const router = useRouter();
 
   // Form state
@@ -58,19 +60,21 @@ const FreinForm = ({ id = null, onComplete }) => {
   };
 
     // Simple cache et comparaison for return back en cas de changer projet
-  const [oldProjetId, setOldProjetId] = useState(null);
+      const [oldProjetId, setOldProjetId] = useState(null);
+      const [oldSocieteId, setOldSocieteId] = useState(null);
+    
 
-  useEffect(() => {
-    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
-      if (oldProjetId) {
-        // Projet a changé
-
+  	 useEffect(() => {
+  if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId)||(selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+    if (oldProjetId||oldSocieteId) {
+      // Projet ou société a changé
         console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-        router.push('/administration/freins');
-      }
-      setOldProjetId(selectedProjet.id);
+      router.push('/administration/freins');
     }
-  }, [selectedProjet?.id, oldProjetId, router]);
+    setOldSocieteId(selectedSociete?.id)
+    setOldProjetId(selectedProjet?.id);
+  }
+}, [selectedProjet?.id, selectedSociete?.id, oldProjetId, oldSocieteId, router]);
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
