@@ -27,6 +27,8 @@ import format from 'date-fns/format';
 import { isAdmin, isSuperAdmin } from '@/configs/enum';
 
 const Page = () => {
+  const [roles, setRoles] = useState([]);
+  const [loading_roles, setLoading_roles] = useState(false);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -57,6 +59,84 @@ const Page = () => {
 
   const accesstoken = token || localStorage.getItem('accessToken');
 
+  // Fonction pour obtenir les options de rôles
+  const getRoleOptions = () => {
+    // Rôles par défaut (toujours disponibles)
+    const defaultRoles = [
+      ...(user?.role === 1 && !selectedSociete
+        ? [{ label: "Super Admin", value: "1" }]
+        : []),
+      { label: "Admin", value: "2" },
+      { label: "Commercial", value: "3" },
+    ];
+
+    // Si aucun rôle supplémentaire n'est configuré, retourner seulement les rôles par défaut
+    if (!roles || roles.length === 0) {
+      return defaultRoles;
+    }
+
+    // Mapper les rôles dynamiques depuis l'API
+    const dynamicRoles = roles
+      .filter(role => {
+        // Exclure les rôles déjà dans les rôles par défaut (1, 2, 3)
+        const roleValue = parseInt(role.role);
+        return ![1, 2, 3].includes(roleValue);
+      })
+      .map(role => {
+        const roleValue = parseInt(role.role);
+        let label = '';
+        
+        // Mapper les valeurs aux labels correspondants
+        switch(roleValue) {
+          case 6:
+            label = 'Responsable Livraison';
+            break;
+          case 5:
+            label = 'Notaire';
+            break;
+          case 7:
+            label = 'Comptable';
+            break;
+          case 8:
+            label = 'SAV';
+            break;
+          case 9:
+            label = 'Responsable Commercial';
+            break;
+          case 10:
+            label = 'Agent Administratif';
+            break;
+          default:
+            label = `Rôle ${roleValue}`;
+        }
+        
+        return {
+          label,
+          value: role.role,
+        };
+      });
+
+    // Combiner les rôles par défaut avec les rôles dynamiques
+    return [...defaultRoles, ...dynamicRoles];
+  };
+
+  const fetchRoles = async (societeId) => {
+    setLoading_roles(true);
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await axios.get(`${APIURL.GESTION_ROLES_ACTIVES}/${societeId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setRoles(response.data.roles || []);
+      setLoading_roles(false);
+  
+    } catch (error) {
+      console.error('Error fetching roles:', error);
+      toast.error('Failed to load roles');
+    } finally {
+      setLoading_roles(false);
+    }
+  };
   // Fetch users from API with pagination and search
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -150,7 +230,10 @@ const Page = () => {
   // Fetch users when pagination, filters or search changes
   useEffect(() => {
     fetchUsers();
-  }, [fetchUsers]);
+     if (selectedSociete?.id) {
+      fetchRoles(selectedSociete.id);
+    }
+  }, [fetchUsers,selectedSociete?.id]);
 
   // Format user role text
   const getRoleText = (roleId) => {
@@ -426,17 +509,14 @@ const Page = () => {
                     className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                   />
                 )}
+                 
 
                 <SelectInput
-                  label={'Role'}
-                  value={tempFilters.role}
+                  label={'Rôle'}
+                  loading={loading_roles}
+                  value={tempFilters.value}
                   onChange={(value) => handleFilterChange('role', value)}
-                  options={Object.entries(USER_TYPES)
-                    .filter(([key]) => key !== 'SUPERADMIN')
-                    .map(([key, label]) => ({
-                      value: encryptUserType(label),
-                      label,
-                    }))}
+                  options={getRoleOptions()}
                   placeholder="Rôle"
                 />
                 <SelectInput

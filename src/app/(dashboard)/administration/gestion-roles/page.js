@@ -28,8 +28,12 @@ import {
 } from 'lucide-react';
 import { isAdmin, isSuperAdmin } from '../../../../configs/enum';
 import { useAuth } from '../../../../context/AuthContext';
+import { useSociete } from '@/context/SocieteContext';
+import { useProjet } from '@/context/ProjetContext';
 
 const GestionRoles = () => {
+  const { selectedSociete } = useSociete();
+  const { selectedProjet } = useProjet();
   const { token, user } = useAuth();
   const accesstoken = token || localStorage.getItem('accessToken');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -87,7 +91,7 @@ const GestionRoles = () => {
     7: 'Comptable',
     8: 'SAV',
     9: 'Responsable Commercial',
-    10: 'Agent Administratif',
+   // 10: 'Agent Administratif',
   };
 
   // Descriptions pour chaque rôle
@@ -99,7 +103,7 @@ const GestionRoles = () => {
     7: 'Service Comptable',
     8: 'Service Après-Vente (SAV)',
     9: 'Service Commercial (Responsable)',
-    10: 'Service Administratif',
+    //10: 'Service Administratif',
   };
 
   // Couleurs de fond pour Tailwind
@@ -124,9 +128,22 @@ const GestionRoles = () => {
     'slate': 'text-slate-600',
   };
 
+      const [oldProjetId, setOldProjetId] = useState(null);
+      const [oldSocieteId, setOldSocieteId] = useState(null);
+    useEffect(() => {
+    if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId)||(selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+      if (oldProjetId||oldSocieteId) {
+        // Projet ou société a changé
+          console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+        router.back();
+      }
+      setOldSocieteId(selectedSociete?.id)
+      setOldProjetId(selectedProjet?.id);
+    }
+  }, [selectedProjet?.id, selectedSociete?.id, oldProjetId, oldSocieteId, router]);
   useEffect(() => {
     fetchRoles();
-  }, []);
+  }, [selectedProjet,selectedSociete]);
 
   const fetchRoles = async () => {
     setLoading(true);
@@ -209,7 +226,7 @@ const GestionRoles = () => {
       { value: 7, label: 'Comptable - Service Comptable' },
       { value: 8, label: 'SAV - Service Après-Vente (SAV)' },
       { value: 9, label: 'Responsable Commercial - Service Commercial (Responsable)' },
-      { value: 10, label: 'Agent Administratif - Service Administratif' },
+      {/* value: 10, label: 'Agent Administratif - Service Administratif'*/ },
     ].filter(option => !existingRoleValues.includes(Number(option.value)))
      .map(option => ({ value: option.value, label: option.label }));
   };
@@ -243,7 +260,7 @@ const GestionRoles = () => {
       {getAvailableOptions().length > 0 && (
         <div className="mb-6">
           <Button
-            type="button"
+            type="submit"
             onClick={() => setShowAddForm(!showAddForm)}
             className="flex items-center gap-2"
           >
@@ -273,11 +290,7 @@ const GestionRoles = () => {
                     setNewRoleForm({ ...newRoleForm, role: value })
                   }
                 />
-                {newRoleForm.role && (
-                  <p className="mt-2 text-sm text-gray-600">
-                    {roleDescriptions[newRoleForm.role] || 'Description du rôle'}
-                  </p>
-                )}
+                
               </div>
             </div>
 

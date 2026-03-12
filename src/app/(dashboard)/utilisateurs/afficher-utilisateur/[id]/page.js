@@ -9,12 +9,17 @@ import { useParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { isAdmin, isSuperAdmin } from '@/configs/enum';
+import { useProjet } from '@/context/ProjetContext';
+import { useSociete } from '@/context/SocieteContext';
 
 export default function UserDetailsPage() { // Renamed to PascalCase
   const { id } = useParams();
   const [selectedMenu, setSelectedMenu] = useState('Profil');
   const { user, token } = useAuth();
   const router = useRouter();
+  const { selectedSociete } = useSociete();
+  const {selectedProjet}=useProjet();
+  
 
   const menuItems = [
     { label: 'Profil', icon: <User /> },
@@ -23,6 +28,20 @@ export default function UserDetailsPage() { // Renamed to PascalCase
     { label: 'Ventes', icon: <Handshake /> },
   ];
  
+   // Simple cache et comparaison for return back en cas de changer projet
+  const [oldProjetId, setOldProjetId] = useState(null);
+  const [oldSocieteId, setOldSocieteId] = useState(null);
+
+  useEffect(() => {
+    if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId)||(selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+      if (oldProjetId||oldSocieteId) {
+        // Projet a changé
+        router.push('/utilisateurs');
+      }
+      setOldSocieteId(selectedSociete?.id)
+      setOldProjetId(selectedProjet?.id);
+    }
+  }, [selectedProjet?.id, oldProjetId, router,selectedSociete]);
     useEffect(() => {
           if (
             !isAdmin(user?.role) &&

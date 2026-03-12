@@ -96,6 +96,8 @@ export default function Societes() {
    // Handle successful deletion of a société
    const handleDeleteSuccess = (deletedId) => {
     setSocietes((prevSocietes) => prevSocietes.filter(societe => societe.id !== deletedId));
+    toast.success('Société supprimée avec succès'); // Add toast here instead
+
 };
 
 
@@ -261,14 +263,14 @@ export default function Societes() {
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
         
-              <Input
+              {/*<Input
                 label={'Adresse'}
                 type="text"
                 placeholder="Adresse..."
                 value={tempFilters.adresse}
                 onChange={(e) => handleFilterChange("adresse", e.target.value)}
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-              />
+              />*/}
             </div>
         
             {/* Boutons */}

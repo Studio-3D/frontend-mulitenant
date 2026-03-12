@@ -5,11 +5,12 @@ import { useRouter } from 'next/navigation';
 import { APIURL } from '@/configs/api';
 import toast from 'react-hot-toast';
 import { useProjet } from '@/context/ProjetContext';
+import { useSociete } from '@/context/SocieteContext';
 
 export default function CommissionForm({ id = null, onComplete }) {
   const router = useRouter();
   const { selectedProjet } = useProjet();
-
+  const { selectedSociete } = useSociete();
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [msg_alert, setMsg_alert] = useState(null);
@@ -19,19 +20,21 @@ export default function CommissionForm({ id = null, onComplete }) {
   const [inputs, setInputs] = useState([{ de: '', a: '', pourcentage: '' }]);
 
   // Simple cache et comparaison for return back en cas de changer projet
-  const [oldProjetId, setOldProjetId] = useState(null);
+      const [oldProjetId, setOldProjetId] = useState(null);
+      const [oldSocieteId, setOldSocieteId] = useState(null);
+    
 
-  useEffect(() => {
-    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
-      if (oldProjetId) {
-        // Projet a changé
-
+  	 useEffect(() => {
+  if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId)||(selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+    if (oldProjetId||oldSocieteId) {
+      // Projet ou société a changé
         console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-        router.back('');
-      }
-      setOldProjetId(selectedProjet.id);
+      router.push('/');
     }
-  }, [selectedProjet?.id, oldProjetId, router]);
+    setOldSocieteId(selectedSociete?.id)
+    setOldProjetId(selectedProjet?.id);
+  }
+}, [selectedProjet?.id, selectedSociete?.id, oldProjetId, oldSocieteId, router]);
   // Fetch existing configuration if any
   useEffect(() => {
     if (!selectedProjet) return;

@@ -88,7 +88,7 @@ export default function EditBlocPage() {
     return (
       <div className="bg-red-50 p-4 rounded-md border-l-4 border-red-500 !text-red-700">
         <p className="font-medium">Accès refusé</p>
-        <p>Vous n'avez pas les droits nécessaires pour modifier un bloc.</p>
+        <p>Vous n{"'"}avez pas les droits nécessaires pour modifier un bloc.</p>
       </div>
     );
   }

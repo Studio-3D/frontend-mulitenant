@@ -25,8 +25,6 @@ export default function DeletSociete({
       // ✅ suppression via le contexte
       await deleteSociete(Id);
 
-      toast.success(`${type} supprimée avec succès`);
-
       if (onClose) onClose(); // Fermer le modal
     } catch (error) {
       console.error('Erreur suppression:', error);
@@ -47,7 +45,8 @@ export default function DeletSociete({
         <button
           className="font-medium px-4 py-2 rounded-lg bg-gray-200"
           onClick={onClose}
-        >
+        >              loading={loading_roles}
+
           Non, annuler
         </button>
         <button

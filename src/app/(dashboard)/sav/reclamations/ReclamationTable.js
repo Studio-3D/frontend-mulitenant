@@ -20,8 +20,10 @@ import toast from 'react-hot-toast';
 import ReclamationDialog from '@/components/dialogTraiterRec';
 import { useProjet } from '@/context/ProjetContext';
 import Link from 'next/link';
+import { useSociete } from '@/context/SocieteContext';
 
 const ReclamationTable = (prestId) => {
+  const { selectedSociete } = useSociete();
   const [reclamations, setReclamations] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -145,7 +147,7 @@ const ReclamationTable = (prestId) => {
     rowsPerPage,
     accesstoken,
     filters,
-    selectedProjet,
+    selectedProjet,selectedSociete
   ]);
 
   const handleSubmitReclamation = (e) => {

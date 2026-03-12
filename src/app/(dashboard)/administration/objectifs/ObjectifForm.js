@@ -8,10 +8,11 @@ import { useProjet } from "@/context/ProjetContext";
 import Button from "@/components/Button";
 import BreadCrumb from "../../navigation/BreadCrumb";
 import LoadingSpin from "@/components/LoadingSpin";
+import { useSociete } from "@/context/SocieteContext";
 export default function ObjectifForm({ id = null }) {
   const router = useRouter();
-  const { selectedProjet } = useProjet();
-
+      const { selectedProjet  } = useProjet();
+      const { selectedSociete } = useSociete();
   const [loading, setLoading] = useState(id ? true : false);
   const [submitting, setSubmitting] = useState(false);
   const [users, setUsers] = useState([]);
@@ -56,19 +57,19 @@ export default function ObjectifForm({ id = null }) {
   }, [selectedProjet]);
 
   // Simple cache et comparaison for return back en cas de changer projet
-  const [oldProjetId, setOldProjetId] = useState(null);
-
-  useEffect(() => {
-    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
-      if (oldProjetId) {
-        // Projet a changé
-
+      const [oldProjetId, setOldProjetId] = useState(null);
+      const [oldSocieteId, setOldSocieteId] = useState(null);
+  	 useEffect(() => {
+  if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId)||(selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+    if (oldProjetId||oldSocieteId) {
+      // Projet ou société a changé
         console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-        router.push('/administration/objectifs');
-      }
-      setOldProjetId(selectedProjet.id);
+      router.push('/administration/objectifs');
     }
-  }, [selectedProjet?.id, oldProjetId, router]);
+    setOldSocieteId(selectedSociete?.id)
+    setOldProjetId(selectedProjet?.id);
+  }
+}, [selectedProjet?.id, selectedSociete?.id, oldProjetId, oldSocieteId, router]);
   // Fetch objectif data if editing
   useEffect(() => {
     if (!id || !selectedProjet) return;

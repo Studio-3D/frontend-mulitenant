@@ -16,8 +16,10 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import CommissionConfigForm from '../../administration/commissions/configuration/page';
 import Button from '@/components/Button';
+import { useSociete } from '@/context/SocieteContext';
 
 const CommissionTable = () => {
+  const { selectedSociete } = useSociete();
   const [commissions, setCommissions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -101,7 +103,7 @@ const CommissionTable = () => {
     rowsPerPage,
     accesstoken,
     filters,
-    selectedProjet,
+    selectedProjet,selectedSociete
   ]); // Add selectedProjet dependency
 
   useEffect(() => {

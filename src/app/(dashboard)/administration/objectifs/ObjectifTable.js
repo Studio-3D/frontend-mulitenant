@@ -15,8 +15,10 @@ import { isAdmin, isCommercial, isSuperAdmin } from "../../../../configs/enum";
 import Input from "@/components/Input";
 import { format } from "date-fns";
 import { formatDate } from "@/utils/dateUtils";
+import { useSociete } from "@/context/SocieteContext";
 
 const ObjectifTable = () => {
+  const { selectedSociete } = useSociete();
   const [objectifs, setObjectifs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -63,7 +65,7 @@ const ObjectifTable = () => {
     rowsPerPage,
     searchTerm,
     filters,
-    selectedProjet,
+    selectedProjet,selectedSociete
   ]);
 
  

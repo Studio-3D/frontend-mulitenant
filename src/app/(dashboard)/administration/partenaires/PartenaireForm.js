@@ -7,13 +7,14 @@ import toast from "react-hot-toast";
 import { useProjet } from "@/context/ProjetContext";
 import BreadCrumb from "../../navigation/BreadCrumb";
 import Button from "@/components/Button";
+import { useSociete } from "@/context/SocieteContext";
 
 export default function PartenaireForm({ id = null, onComplete }) {
   const router = useRouter();
   const [loading, setLoading] = useState(id ? true : false);
   const [submitting, setSubmitting] = useState(false);
   const { selectedProjet } = useProjet();
-
+  const { selectedSociete } = useSociete();
   // Form state
   const [formData, setFormData] = useState({
     description: "",
@@ -62,19 +63,20 @@ export default function PartenaireForm({ id = null, onComplete }) {
 
   
   // Simple cache et comparaison for return back en cas de changer projet
-  const [oldProjetId, setOldProjetId] = useState(null);
-
-  useEffect(() => {
-    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
-      if (oldProjetId) {
-        // Projet a changé
-
-        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-        router.push('/administration/partenaires');
+      const [oldProjetId, setOldProjetId] = useState(null);
+      const [oldSocieteId, setOldSocieteId] = useState(null);
+    
+   	useEffect(() => {
+      if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId)||(selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+        if (oldProjetId||oldSocieteId) {
+          // Projet ou société a changé
+            console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+          router.push('/administration/partenaires');
+        }
+        setOldSocieteId(selectedSociete?.id)
+        setOldProjetId(selectedProjet?.id);
       }
-      setOldProjetId(selectedProjet.id);
-    }
-  }, [selectedProjet?.id, oldProjetId, router]);
+    }, [selectedProjet?.id, selectedSociete?.id, oldProjetId, oldSocieteId, router]);
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));

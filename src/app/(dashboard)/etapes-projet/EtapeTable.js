@@ -19,9 +19,11 @@ import DateRangePicker from '@/components/DateRangePicker';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import Button from '@/components/Button';
+import { useSociete } from '@/context/SocieteContext';
 
 const EtapeTable = ({ searchParams }) => {
   const { selectedProjet } = useProjet();
+  const { selectedSociete } = useSociete();
   const [etapes, setEtapes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -96,7 +98,7 @@ const EtapeTable = ({ searchParams }) => {
     rowsPerPage,
     searchTerm,
     filters,
-    selectedProjet,
+    selectedProjet,selectedSociete
   ]);
 
   const handleFilterToggle = (isOpen) => {

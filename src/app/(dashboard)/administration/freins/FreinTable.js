@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import { fetchData_table_by_projet } from '../../../../configs/api-utils';
 import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
 import Input from '@/components/Input';
+import { useSociete } from '@/context/SocieteContext';
 
 const FreinTable = () => {
   const [freins, setFreins] = useState([]);
@@ -25,6 +26,7 @@ const FreinTable = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const { user, token } = useAuth();
   const { selectedProjet } = useProjet();
+  const { selectedSociete } = useSociete();
   const accesstoken = token || localStorage.getItem('accessToken');
 
   const router = useRouter();
@@ -60,7 +62,7 @@ const FreinTable = () => {
     rowsPerPage,
     searchTerm,
     filters,
-    selectedProjet,
+    selectedProjet,selectedSociete
   ]);
 
   function handleEdit(FreinId) {

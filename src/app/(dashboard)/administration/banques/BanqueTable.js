@@ -12,8 +12,10 @@ import { useRouter } from 'next/navigation';
 import { fetchData_table_by_projet } from '../../../../configs/api-utils';
 import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
 import Input from '@/components/Input';
+import { useSociete } from '@/context/SocieteContext';
 
 const BanqueTable = () => {
+  const { selectedSociete } = useSociete();
   const { selectedProjet } = useProjet();
   const [banques, setBanques] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -59,7 +61,7 @@ const BanqueTable = () => {
     rowsPerPage,
     searchTerm,
     filters,
-    selectedProjet,
+    selectedProjet,selectedSociete
   ]);
 
   function handleEdit(BanqueId) {

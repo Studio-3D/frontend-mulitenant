@@ -54,12 +54,12 @@ export default function UpdateSociete() {
         .required('Téléphone est obligatoire')
         .min(10, 'Téléphone doit contenir au moins 10 caractères')
         .max(15, 'Téléphone ne doit pas dépasser 15 caractères'),
-      adresse: Yup.string().required('Adresse est obligatoire'),
+      /*adresse: Yup.string().required('Adresse est obligatoire'),
       registre_commerce: Yup.number().required(
         'Registre de commerce est obligatoire'
       ),
       id_fiscal: Yup.number().required('ID Fiscal est obligatoire'),
-      capital: Yup.number().required('Capital est obligatoire'),
+      capital: Yup.number().required('Capital est obligatoire'),*/
     }),
     onSubmit: async (values) => {
       if (!hasChanges(values)) {
@@ -89,11 +89,11 @@ export default function UpdateSociete() {
           },
         });
         refreshSocietes();
-        toast.success("Informations de l'entreprise mises à jour avec succès.");
+        toast.success("Informations du Societé mises à jour avec succès.");
         router.push('/societes');
       } catch (error) {
         toast.error(
-          "Erreur lors de la mise à jour des informations de l'entreprise."
+          "Erreur lors de la mise à jour des informations du Societé."
         );
       } finally {
         setIsSubmitting(false);
@@ -114,48 +114,49 @@ export default function UpdateSociete() {
     return logoChanged || fieldsChanged;
   };
 
-  useEffect(() => {
-    const fetchSocieteById = async () => {
-      const accessToken = localStorage.getItem('accessToken');
-      if (!accessToken) {
-        toast.error("Aucun jeton d'accès trouvé.");
-        return;
-      }
+ useEffect(() => {
+  const fetchSocieteById = async () => {
+    const accessToken = localStorage.getItem('accessToken');
+    if (!accessToken) {
+      toast.error("Aucun jeton d'accès trouvé.");
+      return;
+    }
 
-      try {
-        const response = await axios.get(`${APIURL.SOCIETES}/${id}`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
+    try {
+      const response = await axios.get(`${APIURL.SOCIETES}/${id}`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
 
-        const societeData = response.data.societe;
-        setSociete(societeData);
+      const societeData = response.data.societe;
+      setSociete(societeData);
 
-        const initialValues = {
-          raison_sociale: societeData.raison_sociale,
-          nom_contact: societeData.nom_contact,
-          prenom_contact: societeData.prenom_contact,
-          email: societeData.email,
-          tel: societeData.tel,
-          adresse: societeData.adresse,
-          registre_commerce: societeData.registre_commerce,
-          id_fiscal: societeData.id_fiscal,
-          capital: societeData.capital,
-          logo: null,
-        };
+      // CHANGE THIS PART - Convert null values to empty strings
+      const initialValues = {
+        raison_sociale: societeData.raison_sociale || '',
+        nom_contact: societeData.nom_contact || '',
+        prenom_contact: societeData.prenom_contact || '',
+        email: societeData.email || '',
+        tel: societeData.tel || '',
+        adresse: societeData.adresse || '',        // Fix: null becomes ''
+        registre_commerce: societeData.registre_commerce || '', // Fix: null becomes ''
+        id_fiscal: societeData.id_fiscal || '',    // Fix: null becomes ''
+        capital: societeData.capital || '',        // Fix: null becomes ''
+        logo: null, // Keep null for logo as it's handled separately
+      };
 
-        formik.setValues(initialValues);
-        initialValuesRef.current = initialValues;
-      } catch (error) {
-        toast.error(
-          "Erreur lors de la récupération des informations de l'entreprise."
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
+      formik.setValues(initialValues);
+      initialValuesRef.current = initialValues;
+    } catch (error) {
+      toast.error(
+        "Erreur lors de la récupération des informations du Societé."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    if (id) fetchSocieteById();
-  }, [id]);
+  if (id) fetchSocieteById();
+}, [id]);
 
   if (loading) return <div>Loading...</div>;
 

@@ -15,8 +15,10 @@ import Input from '@/components/Input';
 import { useProjet } from '@/context/ProjetContext'; // Import ProjetContext
 import { format } from 'date-fns';
 import Link from 'next/link';
+import { useSociete } from '@/context/SocieteContext';
 
 const CommissionTableParType = ({ type }) => {
+  const { selectedSociete } = useSociete();
   const [commissions, setCommissions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -83,7 +85,7 @@ const CommissionTableParType = ({ type }) => {
     rowsPerPage,
     accesstoken,
     filters,
-    selectedProjet,
+    selectedProjet,selectedSociete
   ]); // Add selectedProjet dependency
 
 

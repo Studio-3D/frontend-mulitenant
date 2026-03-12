@@ -6,11 +6,13 @@ import toast from 'react-hot-toast';
 import BreadCrumb from '../../navigation/BreadCrumb';
 import Button from '@/components/Button';
 import { useRouter } from 'next/navigation';
+import { useSociete } from '@/context/SocieteContext';
 
 const VueForm = ({ id = null, onComplete }) => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const { selectedProjet } = useProjet();
+  const { selectedSociete } = useSociete();
   const router = useRouter();
 
   // Form state
@@ -24,18 +26,19 @@ const VueForm = ({ id = null, onComplete }) => {
 
   // Simple cache et comparaison for return back en cas de changer projet
   const [oldProjetId, setOldProjetId] = useState(null);
-
-  useEffect(() => {
-    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
-      if (oldProjetId) {
-        // Projet a changé
-
-        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-        router.push('/administration/vues');
+      const [oldSocieteId, setOldSocieteId] = useState(null);
+    
+   	useEffect(() => {
+      if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId)||(selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+        if (oldProjetId||oldSocieteId) {
+          // Projet ou société a changé
+            console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+          router.push('/administration/vues');
+        }
+        setOldSocieteId(selectedSociete?.id)
+        setOldProjetId(selectedProjet?.id);
       }
-      setOldProjetId(selectedProjet.id);
-    }
-  }, [selectedProjet?.id, oldProjetId, router]);
+    }, [selectedProjet?.id, selectedSociete?.id, oldProjetId, oldSocieteId, router]);
   useEffect(() => {
     // Set project ID when project is selected
     if (selectedProjet) {

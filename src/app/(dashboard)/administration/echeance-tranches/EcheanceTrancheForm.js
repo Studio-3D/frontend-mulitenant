@@ -15,8 +15,10 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useAuth } from '../../../../context/AuthContext';
+import { useSociete } from '@/context/SocieteContext';
 
 const EcheanceTrancheFormForm = ({ id = null }) => {
+  const { selectedSociete } = useSociete();
   const [fieldErrors, setFieldErrors] = useState({});
   const [showErrors, setShowErrors] = useState(false); // Nouvel état pour contrôler l'affichage
   const router = useRouter();
@@ -115,19 +117,21 @@ const EcheanceTrancheFormForm = ({ id = null }) => {
 
   const { selectedProjet } = useProjet();
   // Simple cache et comparaison for return back en cas de changer projet
-  const [oldProjetId, setOldProjetId] = useState(null);
-
-  useEffect(() => {
-    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
-      if (oldProjetId) {
-        // Projet a changé
-
-        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-        router.push('/administration/banques');
-      }
-      setOldProjetId(selectedProjet.id);
-    }
-  }, [selectedProjet?.id, oldProjetId, router]);
+        const [oldProjetId, setOldProjetId] = useState(null);
+        const [oldSocieteId, setOldSocieteId] = useState(null);
+      
+      useEffect(() => {
+        if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId)||(selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+          if (oldProjetId||oldSocieteId) {
+            // Projet ou société a changé
+              console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+           router.push('/administration/echeance-tranche');
+          }
+          setOldSocieteId(selectedSociete?.id)
+          setOldProjetId(selectedProjet?.id);
+        }
+      }, [selectedProjet?.id, selectedSociete?.id, oldProjetId, oldSocieteId, router]);
+  
 
   const validateFields = () => {
     const errors = {};

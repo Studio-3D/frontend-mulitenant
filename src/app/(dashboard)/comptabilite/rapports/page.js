@@ -371,7 +371,7 @@ const propertyFields = useMemo(() => {
   </div>
 </div>
 
-      {/* Export Button */}
+      {/* Export Button 
       <div className="mt-6 flex justify-end">
         <button
           onClick={() => {
@@ -382,7 +382,7 @@ const propertyFields = useMemo(() => {
           <Download className="w-5 h-5 mr-2" />
           Exporter le rapport (PDF)
         </button>
-      </div>
+      </div>*/}
     </div>
   );
 };

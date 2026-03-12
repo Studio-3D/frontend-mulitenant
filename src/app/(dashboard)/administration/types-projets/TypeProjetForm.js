@@ -6,12 +6,14 @@ import BreadCrumb from "../../navigation/BreadCrumb";
 import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
 import { useProjet } from '@/context/ProjetContext';
+import { useSociete } from "@/context/SocieteContext";
 
 const TypeProjetForm = ({ id = null, onComplete }) => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
   const { selectedProjet  } = useProjet();
+  const { selectedSociete } = useSociete();
 
   // Form state
   const [formData, setFormData] = useState({
@@ -20,22 +22,19 @@ const TypeProjetForm = ({ id = null, onComplete }) => {
 
   // Validation errors
   const [errors, setErrors] = useState({});
-
-  // Simple cache et comparaison
-    const [oldProjetId, setOldProjetId] = useState(null);
-  
-    useEffect(() => {
-      if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
-  
-        if (oldProjetId) {
-          // Projet a changé
-  
-          console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-          router.push('/administration/types-projets');
+      // Simple cache et comparaison for return back en cas de changer projet
+       const [oldProjetId, setOldProjetId] = useState(null);
+      const [oldSocieteId, setOldSocieteId] = useState(null);
+       useEffect(() => {
+        if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId)||(selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+          if (oldProjetId||oldSocieteId) {
+            // Projet ou société a changé
+            router.push('/administration/types-projets');
+          }
+          setOldSocieteId(selectedSociete?.id)
+          setOldProjetId(selectedProjet?.id);
         }
-        setOldProjetId(selectedProjet.id);
-      }
-    }, [selectedProjet?.id, oldProjetId, router]);
+      }, [selectedProjet?.id, selectedSociete?.id, oldProjetId, oldSocieteId, router]);
   // Load type projet data if editing
   useEffect(() => {
     if (id) {

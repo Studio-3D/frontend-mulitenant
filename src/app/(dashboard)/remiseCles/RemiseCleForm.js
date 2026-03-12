@@ -17,6 +17,7 @@ import { APIURL, ENDPOINTS, RESOURCE_URL } from '@/configs/api';
 import BreadCrumb from '../navigation/BreadCrumb';
 import Button from '@/components/Button';
 import LoadingSpin from '@/components/LoadingSpin';
+import { useSociete } from '@/context/SocieteContext';
 
 // Create schema based on user role
 const createSchema = (userRole) => {
@@ -44,6 +45,7 @@ const createSchema = (userRole) => {
 
 const RemiseCleForm = ({ id = null }) => {
   const router = useRouter();
+  const { selectedSociete } = useSociete();
   const { selectedProjet } = useProjet();
   const { user } = useAuth();
 
@@ -103,19 +105,21 @@ const RemiseCleForm = ({ id = null }) => {
   };
 
   // Simple cache et comparaison for return back en cas de changer projet
-  const [oldProjetId, setOldProjetId] = useState(null);
+       const [oldProjetId, setOldProjetId] = useState(null);
+      const [oldSocieteId, setOldSocieteId] = useState(null);
+    
 
-  useEffect(() => {
-    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
-      if (oldProjetId) {
-        // Projet a changé
-
+  	 useEffect(() => {
+  if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId)||(selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+    if (oldProjetId||oldSocieteId) {
+      // Projet ou société a changé
         console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-        router.push('/remiseCles');
-      }
-      setOldProjetId(selectedProjet.id);
+      router.push('/remiseCles');
     }
-  }, [selectedProjet?.id, oldProjetId, router]);
+    setOldSocieteId(selectedSociete?.id)
+    setOldProjetId(selectedProjet?.id);
+  }
+}, [selectedProjet?.id, selectedSociete?.id, oldProjetId, oldSocieteId, router]);
 
   // Fonction utilitaire pour afficher le nom complet du bien
   function NomBienComplet(bien) {
