@@ -15,7 +15,11 @@ export default function BienImport({
   max_etages,
   tranches,
   tranche_id_get,
+  hasTranches,
+  hasBlocs,
+  hasImmeubles
 }) {
+
   const [file, setFile] = useState(null);
   const [backendErrors, setBackendErrors] = useState([]);
   const [disabled_var, setDisabled_var] = useState(true);
@@ -56,9 +60,9 @@ export default function BienImport({
     }
   };
 
-  const hasTranches = selectedProjet?.nbre_tranches > 0;
+  /*const hasTranches = selectedProjet?.nbre_tranches > 0;
   const hasBlocs = selectedProjet?.nbre_blocs > 0;
-  const hasImmeubles = selectedProjet?.nbre_immeubles > 0;
+  const hasImmeubles = selectedProjet?.nbre_immeubles > 0;*/
 
   const handleImportClick = async (file) => {
     try {

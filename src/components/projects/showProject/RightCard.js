@@ -1875,7 +1875,6 @@ export const RightCard = ({
     }
   };
   const userRole = user?.role;
-  console.log('useRole==>'+userRole)
   // Configuration pour l'action personnalisée de modification en masse
   const massEditAction = useMemo(() => {
     if (safeActiveTab === 'bien' && (isAdmin(userRole) || isSuperAdmin(userRole))) {
@@ -2055,6 +2054,9 @@ export const RightCard = ({
             projetId={projectId}
             max_etages={max_etages}
             tranches={tranches}
+            hasTranches={nbre_tranches > 0}
+            hasBlocs={nbre_blocs > 0}
+            hasImmeubles={nbre_immeubles > 0}
           />
 
           {/* Modal de modification en masse */}

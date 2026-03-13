@@ -1635,6 +1635,9 @@ export const RightCard = ({
             projetId={projetId}
             max_etages={max_etages}
             tranche_id_get={trancheId}
+            hasTranches={nbre_tranches > 0}
+            hasBlocs={nbre_blocs > 0}
+            hasImmeubles={true}
           />
           {/* Delete Confirmation Modal */}
           {showDeleteModal && (

@@ -1868,6 +1868,9 @@ export const RightCard = ({
             projetId={projetId}
             max_etages={max_etages}
             tranche_id_get={trancheId}
+            hasTranches={true}
+            hasBlocs={nbre_blocs > 0}
+            hasImmeubles={nbre_immeubles > 0}
           />
           {/* Delete Confirmation Modal    */}
            {/**Modifie en mass titre foncier   9. Ajouter le modal pour le titre foncier dans le JSX*/}
