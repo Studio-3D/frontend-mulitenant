@@ -11,6 +11,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useProjet } from '@/context/ProjetContext';
 import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
+import { useSociete } from '@/context/SocieteContext';
 
 export const MultiStepForm = ({
   editMode = false,
@@ -18,7 +19,7 @@ export const MultiStepForm = ({
   projetId = null,
 }) => {
 const { selectedProjet, refreshProjets, selectProjet } = useProjet();
-
+const { selectedSociete } = useSociete();
   const { token } = useAuth();
   const router = useRouter();
 
@@ -70,18 +71,20 @@ const { selectedProjet, refreshProjets, selectProjet } = useProjet();
   const initializedFromApi = useRef(false);
 
   // Simple cache et comparaison
-  const [oldProjetId, setOldProjetId] = useState(null);
+      const [oldProjetId, setOldProjetId] = useState(null);
+      const [oldSocieteId, setOldSocieteId] = useState(null);
+    
 
-  useEffect(() => {
-    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
-      if (oldProjetId) {
-        // Projet a changé
-        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-        router.push('/projets/' + selectedProjet.id);
-      }
-      setOldProjetId(selectedProjet.id);
+  	 useEffect(() => {
+  if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId)||(selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+    if (oldProjetId||oldSocieteId) {
+      // Projet ou société a changé
+      router.push('/projets');
     }
-  }, [selectedProjet?.id, oldProjetId, router]);
+    setOldSocieteId(selectedSociete?.id)
+    setOldProjetId(selectedProjet?.id);
+  }
+}, [selectedProjet?.id, selectedSociete?.id, oldProjetId, oldSocieteId, router]);
   // Load initial data when in edit mode
   useEffect(() => {
     if (editMode && initialData && !initializedFromApi.current) {

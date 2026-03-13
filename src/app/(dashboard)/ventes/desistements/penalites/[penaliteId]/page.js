@@ -30,6 +30,7 @@ import { useForm, Controller } from 'react-hook-form';
 import CorrectionForm from './CorrectionForm';
 
 import { useProjet } from '@/context/ProjetContext';
+import { useSociete } from '@/context/SocieteContext';
 const STATUS_BADGES = {
   0: { text: 'Attente Validation', color: 'bg-yellow-100 text-yellow-800' },
   1: { text: 'Validé', color: 'bg-green-100 text-green-800' },
@@ -76,19 +77,21 @@ const ShowPenalite = () => {
         }, [router]);
         
   // Simple cache et comparaison for return back en cas de changer projet
-  const [oldProjetId, setOldProjetId] = useState(null);
-
-  useEffect(() => {
-    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
-      if (oldProjetId) {
-        // Projet a changé
-
-      //  console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+   const { selectedSociete } = useSociete();
+      const [oldProjetId, setOldProjetId] = useState(null);
+      const [oldSocieteId, setOldSocieteId] = useState(null);
+  
+     useEffect(() => {
+  if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId)||(selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+    if (oldProjetId||oldSocieteId) {
+      // Projet ou société a changé
+      //  console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet?.id}`);
         router.back();
-      }
-      setOldProjetId(selectedProjet.id);
     }
-  }, [selectedProjet?.id, oldProjetId, router]);
+    setOldSocieteId(selectedSociete?.id)
+    setOldProjetId(selectedProjet?.id);
+  }
+}, [selectedProjet?.id, selectedSociete?.id, oldProjetId, oldSocieteId, router]);
   // Fetch data
   const fetchData = useCallback(async () => {
     try {

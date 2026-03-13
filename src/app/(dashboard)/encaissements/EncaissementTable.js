@@ -15,11 +15,12 @@ import DateRangePicker from '@/components/DateRangePicker';
 import SelectInput from '@/components/SelectInput';
 import { useProjet } from '@/context/ProjetContext';
 import { useRouter } from 'next/navigation';
+import { useSociete } from '@/context/SocieteContext';
 
 const EncaissementTable = ({ dataClient_id, bien_id }) => {
   const [encaissements, setEncaissements] = useState([]);
   const router = useRouter();
-
+   const { selectedSociete } = useSociete();
   const { selectedProjet } = useProjet();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -155,7 +156,7 @@ const EncaissementTable = ({ dataClient_id, bien_id }) => {
       setEncaissements,
       setTotalRows
     );
-  }, [searchTerm, currentPage, rowsPerPage, accesstoken, filters,selectedProjet]);
+  }, [searchTerm, currentPage, rowsPerPage, accesstoken, filters,selectedProjet,selectedSociete]);
 
   const typeEncaissementMap = {
     1: { label: 'Avances', color: 'bg-green-100 !text-green-800' },
@@ -303,7 +304,7 @@ const EncaissementTable = ({ dataClient_id, bien_id }) => {
         row.type_encaissement === '1'
           ? row.avance?.last_statut.num_remise
           : row.type_encaissement === '6'
-          ? row.penalite?.last_statut.num_remise
+          ? row.penalite?.last_statut?.num_remise
           : null,
     },
 

@@ -29,6 +29,7 @@ import {
 } from '@/configs/enum';
 import useClearProspectAppel from '../hook/useClearProspectAppel';
 import useClearClientAppel from '../hook/useClearClientAppel';
+import { useSociete } from '@/context/SocieteContext';
 
 export default function AppelsForm({ id }) {
   useClearProspectAppel();
@@ -92,19 +93,19 @@ export default function AppelsForm({ id }) {
     key: key,
   }));
   // Simple cache et comparaison for return back en cas de changer projet
-  const [oldProjetId, setOldProjetId] = useState(null);
-
-  useEffect(() => {
-    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
-      if (oldProjetId) {
-        // Projet a changé
-
-      //  console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-        router.push('/crm/appels');
-      }
-      setOldProjetId(selectedProjet.id);
+        const { selectedSociete } = useSociete();
+      const [oldProjetId, setOldProjetId] = useState(null);
+      const [oldSocieteId, setOldSocieteId] = useState(null);
+  	 useEffect(() => {
+  if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId)||(selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+    if (oldProjetId||oldSocieteId) {
+      // Projet ou société a changé
+      router.push('/crm?tab=appels');
     }
-  }, [selectedProjet?.id, oldProjetId, router]);
+    setOldSocieteId(selectedSociete?.id)
+    setOldProjetId(selectedProjet?.id);
+  }
+}, [selectedProjet?.id, selectedSociete?.id, oldProjetId, oldSocieteId, router]);
 
   // Safely get and parse the prospect data
   const getProspectFromStorage = () => {

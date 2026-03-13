@@ -26,6 +26,7 @@ import { modes_penalites } from '@/configs/enum';
 import { MODE_PAIEMENT } from '@/configs/enum';
 import Autocomplete from '@/components/Autocomplete';
 import { useProjet } from '@/context/ProjetContext';
+import { useSociete } from '@/context/SocieteContext';
 export default function Page() {
   const [dossierInfos, setDossierInfos] = useState({});
   const [formSubmitted, setFormSubmitted] = useState(false);
@@ -115,19 +116,21 @@ export default function Page() {
   }, [isPenaliteToggling]);
 
   // Simple cache et comparaison for return back en cas de changer projet
-  const [oldProjetId, setOldProjetId] = useState(null);
-
-  useEffect(() => {
-    if (selectedProjet?.id && selectedProjet.id != oldProjetId) {
-      if (oldProjetId) {
-        // Projet a changé
-
-       // console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+      const { selectedSociete } = useSociete();
+      const [oldProjetId, setOldProjetId] = useState(null);
+      const [oldSocieteId, setOldSocieteId] = useState(null);
+  
+  	 useEffect(() => {
+  if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId)||(selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+    if (oldProjetId||oldSocieteId) {
+      // Projet ou société a changé
+      //  console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet?.id}`);
         router.push('/ventes?tab=desistements');
-      }
-      setOldProjetId(selectedProjet.id);
     }
-  }, [selectedProjet?.id, oldProjetId, router]);
+    setOldSocieteId(selectedSociete?.id)
+    setOldProjetId(selectedProjet?.id);
+  }
+}, [selectedProjet?.id, selectedSociete?.id, oldProjetId, oldSocieteId, router]);
   // Form methods
   const methods = useForm({
     defaultValues: {

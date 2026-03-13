@@ -9,6 +9,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { AlertTriangle } from 'lucide-react';
+import Button from '../Button';
 
 const CreditsForm = ({ credit, onSave, onCancel }) => {
   const { selectedProjet } = useProjet();
@@ -480,24 +481,14 @@ const CreditsForm = ({ credit, onSave, onCancel }) => {
         </div>
 
         <div className="flex justify-end space-x-3">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-4 py-2 bg-gray-300 !text-gray-700 rounded-md hover:bg-gray-400"
-          >
-            Annuler
-          </button>
-          <button
-            type="submit"
-            disabled={loading || !numeroUnique}
-            className={`px-4 py-2 bg-blue-600 text-white rounded-md ${
-              loading || !numeroUnique
-                ? 'opacity-50 cursor-not-allowed'
-                : 'hover:bg-blue-700'
-            }`}
-          >
+            <Button type="button" onClick={onCancel}>   
+              Annuler
+            </Button>
+            <Button type="submit" disabled={loading || !numeroUnique}
+>
             {loading ? 'Enregistrement...' : 'Enregistrer'}
-          </button>
+            </Button>
+         
         </div>
       </form>
     </div>

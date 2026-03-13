@@ -22,6 +22,7 @@ import { useAuth } from '../../../../../context/AuthContext';
 import { useProjet } from '@/context/ProjetContext';
 import { useRouter } from 'next/navigation';
 import Pusher from 'pusher-js';
+import { useSociete } from '@/context/SocieteContext';
 
 const Res_Show = () => {
   const router = useRouter();
@@ -119,18 +120,22 @@ const Res_Show = () => {
   }
 }, [reservationId, pusher_key_avances, user?.id, activeTab]);*/ // Add activeTab to dependencies
   // Simple cache et comparaison for return back en cas de changer projet
-  const [oldProjetId, setOldProjetId] = useState(null);
+      const { selectedSociete } = useSociete();
+      const [oldProjetId, setOldProjetId] = useState(null);
+      const [oldSocieteId, setOldSocieteId] = useState(null);
+    
 
-  useEffect(() => {
-    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
-      if (oldProjetId) {
-        // Projet a changé
-
-        router.push('/ventes/reservations');
-      }
-      setOldProjetId(selectedProjet.id);
+  	 useEffect(() => {
+  if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId)||(selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+    if (oldProjetId||oldSocieteId) {
+      // Projet ou société a changé
+        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet?.id}`);
+      router.push('/ventes');
     }
-  }, [selectedProjet?.id, oldProjetId, router]);
+    setOldSocieteId(selectedSociete?.id)
+    setOldProjetId(selectedProjet?.id);
+  }
+}, [selectedProjet?.id, selectedSociete?.id, oldProjetId, oldSocieteId, router]);
   const fetchData = async () => {
     try {
       if (!reservationId) {

@@ -15,6 +15,7 @@ import format from 'date-fns/format';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import { useAuth } from '@/context/AuthContext';
 import { fetchData_table_by_projet } from '@/configs/api-utils';
+import ProjectSelectorWrapper from './ProjectSelectorWrapper';
 
 const CpsManager = ({}) => {
   const { user } = useAuth();
@@ -202,6 +203,7 @@ const CpsManager = ({}) => {
 
   return (
     <div className="relative bg-white px-4 py-4">
+      <ProjectSelectorWrapper>
       <Table
         name_file_export="cps"
         data_to_export={transformDataForExport()}
@@ -229,7 +231,7 @@ const CpsManager = ({}) => {
             initialValues={filterValues}
           />
         }
-      />
+      /></ProjectSelectorWrapper>
 
       {showFormModal && (
         <Modal isVisible={true} onClose={handleFormCancel}>

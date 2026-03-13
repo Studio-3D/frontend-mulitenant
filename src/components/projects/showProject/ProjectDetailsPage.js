@@ -11,6 +11,7 @@ import axios from 'axios';
 import Modal from '@/components/Modal';
 import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
 import DeleteData from '@/components/DeleteData';
+import { useSociete } from '@/context/SocieteContext';
 
 // Define status mapping outside component to avoid recreation
 const STATUS_CONFIG = {
@@ -47,6 +48,7 @@ export const ProjectDetailsPage = () => {
     fetchProjets,
     removeProjet,
   } = useProjet();
+  const { selectedSociete } = useSociete();
   const { user } = useAuth();
   const [projectData, setProjectData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -334,6 +336,16 @@ export const ProjectDetailsPage = () => {
     }
   }, [filteredTabsData, id, activeTab, setActiveTabPersistent]);
 
+  const [oldSocieteId, setOldSocieteId] = useState(null);
+  	 useEffect(() => {
+  if ((selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+    if (oldSocieteId) {
+      // Projet ou société a changé
+      router.push('/projets');
+    }
+    setOldSocieteId(selectedSociete?.id)
+  }
+}, [selectedSociete?.id, oldSocieteId, router]);
   if (loading) {
     return (
       <div className="w-full">

@@ -14,6 +14,7 @@ import Modal from '@/components/Modal';
 import format from 'date-fns/format';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import { useAuth } from '@/context/AuthContext';
+import ProjectSelectorWrapper from './ProjectSelectorWrapper';
 
 const CreditsManager = ({}) => {
   const { user } = useAuth();
@@ -277,6 +278,7 @@ const CreditsManager = ({}) => {
 
   return (
     <div className="relative bg-white px-4 py-4">
+      <ProjectSelectorWrapper>
       <Table
         showSearch={false}
         name_file_export="credits"
@@ -305,6 +307,7 @@ const CreditsManager = ({}) => {
           />
         }
       />
+      </ProjectSelectorWrapper>
 
       {showFormModal && (
         <Modal isVisible={true} onClose={handleFormCancel} maxWidth='max-w-3xl'>

@@ -19,6 +19,7 @@ import SelectInput from '@/components/SelectInput';
 
 import Modal from '@/components/Modal';
 import Modal_Traite from '../../crm/Modal_Traite';
+import { useSociete } from '@/context/SocieteContext';
 
 const RelancesRdvAppelsTable = (type) => {
   const [data, setData] = useState([]);
@@ -37,6 +38,7 @@ const RelancesRdvAppelsTable = (type) => {
 
   const { token } = useAuth();
   const { selectedProjet } = useProjet();
+  const { selectedSociete } = useSociete();
   const accesstoken = token || localStorage.getItem('accessToken');
 
   const router = useRouter();
@@ -93,7 +95,7 @@ const RelancesRdvAppelsTable = (type) => {
     rowsPerPage,
     searchTerm,
     filters,
-    selectedProjet,
+    selectedProjet,selectedSociete
   ]);
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);

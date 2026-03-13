@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import { Edit, Eye, PencilLine, PlusCircle } from 'lucide-react';
 import { fetchData_table_by_projet } from '@/configs/api-utils';
 import Link from 'next/link';
+import ProjectSelectorWrapper from './ProjectSelectorWrapper';
 
 const TvaTrancheManager = ({}) => {
   const { selectedProjet } = useProjet();
@@ -261,7 +262,7 @@ const TvaTrancheManager = ({}) => {
           </h5>
         </div>
       </div>
-
+    <ProjectSelectorWrapper>
       <Table
         showSearch={false}
         name_file_export="tva_Tranche_export"
@@ -286,6 +287,7 @@ const TvaTrancheManager = ({}) => {
           />
         }
       />
+      </ProjectSelectorWrapper>
 
       {dialogOpen && selectedTranche && (
         <TvaDialog

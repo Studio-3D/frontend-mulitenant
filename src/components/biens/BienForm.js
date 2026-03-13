@@ -19,7 +19,9 @@ import { Switch } from '@headlessui/react'; // ou votre composant Switch habitue
 import Input from '../Input';
 import Modal from '../Modal';
 import Composition from '@/app/(dashboard)/compositionBien/CompositionTable';
+import { useSociete } from '@/context/SocieteContext';
 export default function BienForm() {
+   const { selectedSociete } = useSociete();
   const [hasJardin, setHasJardin] = useState(false);
   const [hasParking, setHasParking] = useState(false);
   const [hasBox, setHasBox] = useState(false);
@@ -87,6 +89,16 @@ export default function BienForm() {
       setOldProjetId(selectedProjet.id);
     }
   }, [selectedProjet?.id, oldProjetId, router]);
+    const [oldSocieteId, setOldSocieteId] = useState(null);
+  	 useEffect(() => {
+  if ((selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+    if (oldSocieteId) {
+      // Projet ou société a changé
+      router.push('/projets');
+    }
+    setOldSocieteId(selectedSociete?.id)
+  }
+}, [selectedSociete?.id, oldSocieteId, router]);
   useEffect(() => {
     try {
       const raw = localStorage.getItem('bienBreadcrumbContext');

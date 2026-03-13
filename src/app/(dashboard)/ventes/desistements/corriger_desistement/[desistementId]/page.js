@@ -22,6 +22,7 @@ import TextField from '@/components/Textfield';
 import { MODE_PAIEMENT, modes_penalites } from '@/configs/enum';
 import { useProjet } from '@/context/ProjetContext';
 import BreadCrumb from '../../../../navigation/BreadCrumb';
+import { useSociete } from '@/context/SocieteContext';
 
 export default function Page() {
   // Ajoutez ces states au début de votre composant
@@ -145,19 +146,22 @@ export default function Page() {
     }
   }, [watch('mode_penalite'), watch('penalite_par'), avecPenalite, setValue]);
   // Simple cache et comparaison for return back en cas de changer projet
-  const [oldProjetId, setOldProjetId] = useState(null);
+  const { selectedSociete } = useSociete();
+      const [oldProjetId, setOldProjetId] = useState(null);
+      const [oldSocieteId, setOldSocieteId] = useState(null);
+    
 
-  useEffect(() => {
-    if (selectedProjet?.id && selectedProjet.id != oldProjetId) {
-      if (oldProjetId) {
-        // Projet a changé
-
-      //  console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-        router.push('/ventes?tab=desistements');
-      }
-      setOldProjetId(selectedProjet.id);
+  	 useEffect(() => {
+  if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId)||(selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+    if (oldProjetId||oldSocieteId) {
+      // Projet ou société a changé
+      //  console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet?.id}`);
+      router.push('/administration/types-biens');
     }
-  }, [selectedProjet?.id, oldProjetId, router]);
+    setOldSocieteId(selectedSociete?.id)
+    setOldProjetId(selectedProjet?.id);
+  }
+}, [selectedProjet?.id, selectedSociete?.id, oldProjetId, oldSocieteId, router]);
   // Fetch desistement data
   const fetchDesistementData = async () => {
     try {

@@ -34,6 +34,7 @@ import { isAdmin, isSuperAdmin ,isCommercial,isComptable} from '@/configs/enum';
 
 import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
 import EncaissementTable from '@/app/(dashboard)/encaissements/EncaissementTable';
+import { useSociete } from '@/context/SocieteContext';
 export default function BienDetails({ id }) {
   const [bien, setBien] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -43,6 +44,7 @@ export default function BienDetails({ id }) {
   const router = useRouter();
   const { user } = useAuth();
   const { selectedProjet } = useProjet();
+   const { selectedSociete } = useSociete();
   // Only admins and super admins can edit properties
   const canEditBien = user?.role === 1 || user?.role === 2;
 
@@ -76,6 +78,17 @@ export default function BienDetails({ id }) {
       setOldProjetId(selectedProjet.id);
     }
   }, [selectedProjet?.id, oldProjetId, router]);
+    const [oldSocieteId, setOldSocieteId] = useState(null);
+  	 useEffect(() => {
+  if ((selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+    if (oldSocieteId) {
+      // Projet ou société a changé
+      router.push('/projets');
+    }
+    setOldSocieteId(selectedSociete?.id)
+  }
+}, [selectedSociete?.id, oldSocieteId, router]);
+
   useEffect(() => {
     const fetchBienDetails = async () => {
       try {

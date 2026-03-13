@@ -10,6 +10,7 @@ import { useProjet } from '@/context/ProjetContext';
 import { useRouter } from 'next/navigation';
 import { isAdmin, isCommercial, isSuperAdmin } from '../user-utils';
 import { isRespoCommercial } from '@/configs/enum';
+import { useSociete } from '@/context/SocieteContext';
 
 export function ClientDetailsPage(visiteId) {
   const [loading, setLoading] = useState(true);
@@ -34,19 +35,19 @@ export function ClientDetailsPage(visiteId) {
       }
     }, [router]);
   // Simple cache et comparaison for return back en cas de changer projet
-  const [oldProjetId, setOldProjetId] = useState(null);
-
-  useEffect(() => {
-    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
-      if (oldProjetId) {
-        // Projet a changé
-
-        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-        router.push('/crm/visites');
+       const { selectedSociete } = useSociete();
+        const [oldProjetId, setOldProjetId] = useState(null);
+        const [oldSocieteId, setOldSocieteId] = useState(null);
+      useEffect(() => {
+    if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId)||(selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+      if (oldProjetId||oldSocieteId) {
+        // Projet ou société a changé
+        router.push('/crm?tab=visites');
       }
-      setOldProjetId(selectedProjet.id);
+      setOldSocieteId(selectedSociete?.id)
+      setOldProjetId(selectedProjet?.id);
     }
-  }, [selectedProjet?.id, oldProjetId, router]);
+  }, [selectedProjet?.id, selectedSociete?.id, oldProjetId, oldSocieteId, router]);
   const fetch_visite = async () => {
     if (Number(visiteId.visiteId)) {
       setLoading(true);

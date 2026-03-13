@@ -52,6 +52,7 @@ import {
 } from "@/configs/enum";
 import { CIVILITES } from "@/components/client-utils";
 import { useProjet } from "@/context/ProjetContext";
+import { useSociete } from "@/context/SocieteContext";
 export default function ReservationForm({ id }) {
   const [hasPercentageChanged, setHasPercentageChanged] = useState(false);
   const [validationErrors, setValidationErrors] = useState([]);
@@ -159,19 +160,22 @@ export default function ReservationForm({ id }) {
   ];
 
   // Simple cache et comparaison for return back en cas de changer projet
-  const [oldProjetId, setOldProjetId] = useState(null);
+       const { selectedSociete } = useSociete();
+      const [oldProjetId, setOldProjetId] = useState(null);
+      const [oldSocieteId, setOldSocieteId] = useState(null);
+    
 
-  useEffect(() => {
-    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
-      if (oldProjetId) {
-        // Projet a changé
-
-      //  console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-        router.push("/ventes/reservations");
-      }
-      setOldProjetId(selectedProjet.id);
+  	 useEffect(() => {
+  if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId)||(selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+    if (oldProjetId||oldSocieteId) {
+      // Projet ou société a changé
+        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet?.id}`);
+      router.push('/ventes');
     }
-  }, [selectedProjet?.id, oldProjetId, router]);
+    setOldSocieteId(selectedSociete?.id)
+    setOldProjetId(selectedProjet?.id);
+  }
+}, [selectedProjet?.id, selectedSociete?.id, oldProjetId, oldSocieteId, router]);
 
   const goToNextStep = () => {
     if (currentStep < steps.length - 1) {

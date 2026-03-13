@@ -33,6 +33,7 @@ import {
 } from '@/configs/enum';
 import Pusher from 'pusher-js';
 import ProspectInformations from './ProspectInformations'; // Adjust path as needed
+import { useSociete } from '@/context/SocieteContext';
 
 export default function VisiteFormEdit({ id }) {
   const [loading_tp_frein, setLoading_tp_frein] = useState(false);
@@ -191,19 +192,19 @@ export default function VisiteFormEdit({ id }) {
   }
 
   // Simple cache et comparaison for return back en cas de changer projet
-  const [oldProjetId, setOldProjetId] = useState(null);
-
-  useEffect(() => {
-    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
-      if (oldProjetId) {
-        // Projet a changé
-
-        //console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-        router.push('/crm/visites');
-      }
-      setOldProjetId(selectedProjet.id);
-    }
-  }, [selectedProjet?.id, oldProjetId, router]);
+      const { selectedSociete } = useSociete();
+       const [oldProjetId, setOldProjetId] = useState(null);
+       const [oldSocieteId, setOldSocieteId] = useState(null);
+     useEffect(() => {
+   if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId)||(selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+     if (oldProjetId||oldSocieteId) {
+       // Projet ou société a changé
+       router.push('/crm?tab=visites');
+     }
+     setOldSocieteId(selectedSociete?.id)
+     setOldProjetId(selectedProjet?.id);
+   }
+ }, [selectedProjet?.id, selectedSociete?.id, oldProjetId, oldSocieteId, router]);
   //fin multiple bien
 
   const pusher_function = async () => {
