@@ -230,7 +230,7 @@ const PrestataireTable = (serviceId) => {
       if (oldProjetId) {
         // Projet a changé
 
-        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+       // console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
         router.push('/sav/services');
       }
       setOldProjetId(selectedProjet.id);
