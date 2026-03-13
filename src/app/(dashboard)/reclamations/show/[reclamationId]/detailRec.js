@@ -283,7 +283,7 @@ export default function ReclamationFullPage({ reclamationId }) {
   useEffect(() => {
     if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
       if (oldProjetId) {
-        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+      //  console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
         router.back();
       }
       setOldProjetId(selectedProjet.id);

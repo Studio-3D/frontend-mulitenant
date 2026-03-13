@@ -98,7 +98,7 @@ export default function CommissionConfigForm({ onClose, onSuccess }) {
         if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId)||(selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
           if (oldProjetId||oldSocieteId) {
             // Projet ou société a changé
-              console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+             // console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
            router.push('/administration/commissions/configuration');
           }
           setOldSocieteId(selectedSociete?.id)

@@ -98,7 +98,7 @@ export default function ProspectForm({ id, onClose, onSuccess }) {
       if (oldProjetId) {
         // Projet a changé
 
-        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+       // console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
         router.push('/crm/prospects');
       }
       setOldProjetId(selectedProjet.id);

@@ -74,7 +74,7 @@ export default function ClientForm({ id, projetId, trancheId }) {
       if (oldProjetId) {
         // Projet a changé
 
-        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+       // console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
         router.push('/ventes/clients');
       }
       setOldProjetId(selectedProjet.id);

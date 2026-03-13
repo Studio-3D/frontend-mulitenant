@@ -66,7 +66,7 @@ export default function Biens_Dispo_By_frein_id() {
       if (oldProjetId) {
         // Projet a changé
 
-        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+      //  console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
         router.push('/crm/visites/freins');
       }
       setOldProjetId(selectedProjet.id);
