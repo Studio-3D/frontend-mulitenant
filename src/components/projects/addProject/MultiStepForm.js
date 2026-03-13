@@ -17,7 +17,7 @@ export const MultiStepForm = ({
   initialData = null,
   projetId = null,
 }) => {
-  const { selectedProjet, refreshProjets } = useProjet();
+const { selectedProjet, refreshProjets, selectProjet } = useProjet();
 
   const { token } = useAuth();
   const router = useRouter();
@@ -386,9 +386,27 @@ export const MultiStepForm = ({
             'Content-Type': 'application/json',
           },
         });
-        refreshProjets();
-        toast.success('Projet modifié avec succès');
-      } else {
+          await refreshProjets(); // This will refresh the projets list
+    // Also fetch and update the selected project specifically
+          try {
+            const projectResponse = await axios.get(`${APIURL.PROJETS}/${projetId}`, {
+              headers: { Authorization: `Bearer ${accessToken}` },
+            });
+            
+            if (projectResponse.data?.projet) {
+              const updatedProject = projectResponse.data.projet;
+              // Update the selected project in context
+        if (selectProjet) {
+            selectProjet(updatedProject);
+          }              // Also update localStorage
+              localStorage.setItem('selectedProjet', JSON.stringify(updatedProject));
+            }
+          } catch (error) {
+            console.error('Error refreshing project data:', error);
+          }
+          
+          toast.success('Projet modifié avec succès');
+          } else {
         // POST request for create
         response = await axios.post(`${APIURL.PROJETS}`, payload, {
           headers: {

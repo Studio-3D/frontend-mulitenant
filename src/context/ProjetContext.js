@@ -230,9 +230,39 @@ export function ProjetProvider({ children }) {
     currentSocieteIdRef.current = null;
   }, []);
 
-  const refreshProjets = useCallback(() => {
+  /*const refreshProjets = useCallback(() => {
     fetchProjets(true);
-  }, [fetchProjets]);
+  }, [fetchProjets]);*/
+  const refreshProjets = useCallback(async (projectId) => {
+  if (!projectId || !selectedSociete) return;
+  
+  try {
+    const token = localStorage.getItem('accessToken');
+    const response = await axios.get(`${APIURL.PROJETS}/${projectId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    
+    if (response.data?.projet) {
+      const updatedProject = response.data.projet;
+      
+      // Update in projets list
+      setProjets(prev => prev.map(p => 
+        p.id === updatedProject.id ? updatedProject : p
+      ));
+      
+      // Update selected project if it's the same
+      if (selectedProjet?.id === updatedProject.id) {
+        setSelectedProjet(updatedProject);
+        localStorage.setItem('selectedProjet', JSON.stringify(updatedProject));
+      }
+      
+      cacheTimestampRef.current = Date.now();
+      return updatedProject;
+    }
+  } catch (err) {
+    console.error('Failed to refresh project:', err);
+  }
+}, [selectedSociete, selectedProjet]);
 
   // ==================== PROVIDER VALUE ====================
   const value = {
