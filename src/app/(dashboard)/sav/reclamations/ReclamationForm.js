@@ -76,7 +76,7 @@ export default function ReclamationForm({ id }) {
     if (oldProjetId||oldSocieteId) {
       // Projet ou société a changé
     //    console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-      router.back();
+      router.push('/');
     }
     setOldSocieteId(selectedSociete?.id)
     setOldProjetId(selectedProjet?.id);
