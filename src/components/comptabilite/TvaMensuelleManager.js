@@ -8,8 +8,10 @@ import format from 'date-fns/format';
 import ProjectSelectorWrapper from './ProjectSelectorWrapper';
 import { getModePaiementLabel } from '@/configs/enum';
 import { fetchData_table_by_projet } from '@/configs/api-utils';
+import { useSociete } from '@/context/SocieteContext';
 
 const TvaMensuelleManager = ({  }) => {
+  const { selectedSociete } = useSociete();
   const { selectedProjet } = useProjet();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -45,7 +47,7 @@ const TvaMensuelleManager = ({  }) => {
         setTotalRows
       );
     }
-  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filterValues]);
+  }, [accesstoken, currentPage, rowsPerPage, searchTerm, filterValues,selectedProjet,selectedSociete]);
 
   // Calculate sum of TVA to declare
  useEffect(() => {

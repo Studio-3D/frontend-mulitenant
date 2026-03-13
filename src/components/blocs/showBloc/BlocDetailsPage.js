@@ -11,6 +11,7 @@ import axios from 'axios';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
 import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
+import { useSociete } from '@/context/SocieteContext';
 
 // Define status mapping outside component to avoid recreation
 const STATUS_CONFIG = {
@@ -38,6 +39,7 @@ const setStoredActiveTab = (blocId, tabName) => {
 };
 
 export const BlocDetailsPage = () => {
+  const { selectedSociete } = useSociete();
   const { id } = useParams();
   const router = useRouter();
   const { selectProjet, clearSelectedProjet,selectedProjet } = useProjet();
@@ -105,6 +107,18 @@ export const BlocDetailsPage = () => {
     router.push('/projets/'+selectedProjet?.id)
   }
 }, [selectedProjet?.id, blocData?.bloc?.projet_id]);
+
+
+  const [oldSocieteId, setOldSocieteId] = useState(null);
+  	 useEffect(() => {
+  if ((selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+    if (oldSocieteId) {
+      // Projet ou société a changé
+      router.push('/projets');
+    }
+    setOldSocieteId(selectedSociete?.id)
+  }
+}, [selectedSociete?.id, oldSocieteId, router]);
 
   // Persist breadcrumb context for fast "Ajouter bien" page
   useEffect(() => {

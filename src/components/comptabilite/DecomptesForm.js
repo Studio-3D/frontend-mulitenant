@@ -8,6 +8,7 @@ import { useProjet } from '@/context/ProjetContext';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
+import Button from '../Button';
 
 const DecomptesForm = ({ decompte, onSave, onCancel }) => {
   const { selectedProjet } = useProjet();
@@ -167,20 +168,14 @@ const DecomptesForm = ({ decompte, onSave, onCancel }) => {
         </div>
         
         <div className="mt-6 flex justify-end gap-3">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium !text-gray-700 hover:bg-gray-50"
-          >
-            Annuler
-          </button>
-          <button
-            type="submit"
-            disabled={isSubmitting || !numeroUnique}
-            className={`px-4 py-2 rounded-md shadow-sm text-sm font-medium text-white ${isSubmitting || !numeroUnique ? 'bg-blue-300' : 'bg-blue-600 hover:bg-blue-700'}`}
-          >
+
+            <Button type="button" onClick={onCancel}>   
+              Annuler
+            </Button>
+            <Button type="submit"   disabled={isSubmitting || !numeroUnique}>
             {isSubmitting ? 'Enregistrement...' : 'Enregistrer'}
-          </button>
+            </Button>
+         
         </div>
       </form>
     </div>

@@ -11,6 +11,7 @@ import JournalTable from './JournalTable';
 import BreadCrumb from '../../../navigation/BreadCrumb';
 import LoadingSpin from '@/components/LoadingSpin';
 import { useProjet } from '@/context/ProjetContext';
+import { useSociete } from '@/context/SocieteContext';
 const AppelDetails = () => {
   const { token } = useAuth();
   const router = useRouter();
@@ -34,19 +35,23 @@ const AppelDetails = () => {
     ];
 
   // Simple cache et comparaison for return back en cas de changer projet
-  const [oldProjetId, setOldProjetId] = useState(null);
+       const { selectedSociete } = useSociete();
 
-  useEffect(() => {
-    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
-      if (oldProjetId) {
-        // Projet a changé
+      const [oldProjetId, setOldProjetId] = useState(null);
+      const [oldSocieteId, setOldSocieteId] = useState(null);
+    
 
-        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-        router.push('/crm/appels');
-      }
-      setOldProjetId(selectedProjet.id);
+  	 useEffect(() => {
+  if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId)||(selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+    if (oldProjetId||oldSocieteId) {
+      // Projet ou société a changé
+        console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet?.id}`);
+      router.push('/crm?tab=appels');
     }
-  }, [selectedProjet?.id, oldProjetId, router]);
+    setOldSocieteId(selectedSociete?.id)
+    setOldProjetId(selectedProjet?.id);
+  }
+}, [selectedProjet?.id, selectedSociete?.id, oldProjetId, oldSocieteId, router]);
   useEffect(() => {
     if (appelId) {
       setLoading(true);

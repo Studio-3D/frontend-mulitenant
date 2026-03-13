@@ -15,6 +15,7 @@ import format from 'date-fns/format';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import { fetchData_table_by_projet } from '@/configs/api-utils';
 import Link from 'next/link';
+import ProjectSelectorWrapper from './ProjectSelectorWrapper';
 
 const DecomptesManager = ({ urlParams, activeTab, onTabActivated }) => {
   const { selectedProjet } = useProjet();
@@ -245,6 +246,7 @@ const DecomptesManager = ({ urlParams, activeTab, onTabActivated }) => {
   return (
     <div className="relative bg-white px-4 py-4">
       {/* Bouton de rafraîchissement manuel optionnel */}
+      <ProjectSelectorWrapper>
       <Table
         name_file_export="decomptes"
         data_to_export={transformDataForExport()}
@@ -273,6 +275,7 @@ const DecomptesManager = ({ urlParams, activeTab, onTabActivated }) => {
         onPageChange={setCurrentPage}
         currentPage={currentPage}
       />
+      </ProjectSelectorWrapper>
 
       {showFormModal && (
         <Modal isVisible={true} onClose={handleFormCancel} maxWidth='max-w-2xl'>

@@ -14,6 +14,7 @@ import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import { fetchData_table_by_projet } from '@/configs/api-utils';
 import { useAuth } from '@/context/AuthContext';
 import { Eye, PencilLine, Trash2, X } from 'lucide-react';
+import ProjectSelectorWrapper from './ProjectSelectorWrapper';
 const FournisseursManager = () => {
   const { user } = useAuth();
   const { selectedProjet } = useProjet();
@@ -224,34 +225,37 @@ const FournisseursManager = () => {
 
   return (
     <div className="relative bg-white px-4 py-4">
-      <Table
-        showSearch={false}
-        name_file_export="fournisseurs"
-        data_to_export={transformDataForExport()}
-        columns_export={exportColumns}
-        columns={columns}
-        data={data}
-        totalRows={totalRows}
-        loading={loading}
-        error={error}
-        emptyMessage="Aucun fournisseur trouvé"
-        onPageChange={setCurrentPage}
-        onRowsPerPageChange={setRowsPerPage}
-        onSearchChange={setSearchTerm}
-        currentPage={currentPage}
-        rowsPerPage={rowsPerPage}
-        enableExport={true}
-        addLink={{
-          pathname: '#', // Use hash to prevent navigation
-          onClick: handleAddFournisseur
-        }}
-        filterComponent={
-          <FournisseursFilter
-            onSubmit={handleFilterChange}
-            initialValues={filterValues}
-          />
-        }
-      />
+      <ProjectSelectorWrapper>
+      
+        <Table
+          showSearch={false}
+          name_file_export="fournisseurs"
+          data_to_export={transformDataForExport()}
+          columns_export={exportColumns}
+          columns={columns}
+          data={data}
+          totalRows={totalRows}
+          loading={loading}
+          error={error}
+          emptyMessage="Aucun fournisseur trouvé"
+          onPageChange={setCurrentPage}
+          onRowsPerPageChange={setRowsPerPage}
+          onSearchChange={setSearchTerm}
+          currentPage={currentPage}
+          rowsPerPage={rowsPerPage}
+          enableExport={true}
+          addLink={{
+            pathname: '#', // Use hash to prevent navigation
+            onClick: handleAddFournisseur
+          }}
+          filterComponent={
+            <FournisseursFilter
+              onSubmit={handleFilterChange}
+              initialValues={filterValues}
+            />
+          }
+        />
+      </ProjectSelectorWrapper>
 
       {showFormModal && (
         <Modal isVisible={true} onClose={handleFormCancel}>

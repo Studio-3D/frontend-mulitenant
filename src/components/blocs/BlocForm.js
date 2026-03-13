@@ -12,6 +12,7 @@ import Input from '../Input';
 import { fetchDataByProjet_params } from '@/configs/api-utils';
 import { useSearchParams } from 'next/navigation';
 import { useProjet } from '@/context/ProjetContext';
+import { useSociete } from '@/context/SocieteContext';
 
 export default function BlocForm({ id, projetId, trancheId }) {
   const router = useRouter();
@@ -27,7 +28,7 @@ export default function BlocForm({ id, projetId, trancheId }) {
   const searchParams = useSearchParams();
   trancheId = trancheId || searchParams.get('tranche');
   const { selectedProjet  } = useProjet();
-
+ const { selectedSociete } = useSociete();
   // Get selected project from localStorage
  /* const selectedProjet = JSON.parse(
     localStorage.getItem('selectedProjet') || '{}'
@@ -122,7 +123,8 @@ export default function BlocForm({ id, projetId, trancheId }) {
 
    // Simple cache et comparaison
     const [oldProjetId, setOldProjetId] = useState(null);
-  
+    const [oldSocieteId, setOldSocieteId] = useState(null);
+
     useEffect(() => {
       if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
   
@@ -135,6 +137,16 @@ export default function BlocForm({ id, projetId, trancheId }) {
         setOldProjetId(selectedProjet.id);
       }
     }, [selectedProjet?.id, oldProjetId, router]);
+
+  	 useEffect(() => {
+      if ((selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+        if (oldSocieteId) {
+          // Projet ou société a changé
+          router.push('/projets');
+        }
+        setOldSocieteId(selectedSociete?.id)
+      }
+    }, [selectedSociete?.id, oldSocieteId, router]);
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({

@@ -9,11 +9,12 @@ import LoadingSpin from '@/components/LoadingSpin';
 import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
 import Button from '../Button';
 import { useProjet } from '@/context/ProjetContext';
+import { useSociete } from '@/context/SocieteContext';
 
 export default function TrancheForm({ id, projet }) {
   const router = useRouter();
   const [loading_btn, setLoading_btn] = useState(false);
-
+  const { selectedSociete } = useSociete();
   const [loading, setLoading] = useState(false);
   const [backendErrors, setBackendErrors] = useState({});
   const [validationErrors, setValidationErrors] = useState({});
@@ -93,6 +94,18 @@ export default function TrancheForm({ id, projet }) {
       setOldProjetId(selectedProjet.id);
     }
   }, [selectedProjet?.id, oldProjetId, router]);
+
+  const [oldSocieteId, setOldSocieteId] = useState(null);
+  	 useEffect(() => {
+  if ((selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+    if (oldSocieteId) {
+      // Projet ou société a changé
+      router.push('/projets');
+    }
+    setOldSocieteId(selectedSociete?.id)
+  }
+}, [selectedSociete?.id, oldSocieteId, router]);
+  
   // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;

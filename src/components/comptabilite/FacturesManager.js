@@ -16,6 +16,7 @@ import { MODE_PAIEMENT } from '@/configs/enum';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 import { fetchData_table_by_projet } from '@/configs/api-utils';
 import { useAuth } from '@/context/AuthContext';
+import ProjectSelectorWrapper from './ProjectSelectorWrapper';
 
 const FacturesManager = ({
   decompteId,
@@ -330,6 +331,7 @@ const showAddButton = () => {
 
   return (
     <div className="relative bg-white px-4 py-4">
+      <ProjectSelectorWrapper>
       <Table
         showSearch={false}
         name_file_export="factures"
@@ -364,6 +366,7 @@ const showAddButton = () => {
           />
         }
       />
+      </ProjectSelectorWrapper>
 
       {showFormModal && (
         <Modal isVisible={true} onClose={handleFormCancel} maxWidth='max-w-3xl'>

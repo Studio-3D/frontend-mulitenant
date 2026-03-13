@@ -18,6 +18,7 @@ import { format } from 'date-fns'; // Import format from date-fns
 import JournalTable from '../../appels/[appelId]/JournalTable';
 import Modal_Traite from '../Modal_Traite';
 import { isAdmin, isCommercial, isRespoCommercial, isSuperAdmin } from '@/configs/enum';
+import { useSociete } from '@/context/SocieteContext';
 
 const ProspectDetails = () => {
   const [refreshHistoriques, setRefreshHistoriques] = useState(0);
@@ -80,19 +81,19 @@ useEffect(() => {
   ];
 
   // Simple cache et comparaison for return back en cas de changer projet
-  const [oldProjetId, setOldProjetId] = useState(null);
-
-  useEffect(() => {
-    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
-      if (oldProjetId) {
-        // Projet a changé
-
-       // console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
-        router.push('/crm/prospects');
-      }
-      setOldProjetId(selectedProjet.id);
+      const { selectedSociete } = useSociete();
+      const [oldProjetId, setOldProjetId] = useState(null);
+      const [oldSocieteId, setOldSocieteId] = useState(null);
+  	 useEffect(() => {
+  if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId)||(selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+    if (oldProjetId||oldSocieteId) {
+      // Projet ou société a changé
+      router.push('/crm');
     }
-  }, [selectedProjet?.id, oldProjetId, router]);
+    setOldSocieteId(selectedSociete?.id)
+    setOldProjetId(selectedProjet?.id);
+  }
+}, [selectedProjet?.id, selectedSociete?.id, oldProjetId, oldSocieteId, router]);
   useEffect(() => {
     if (prospectId) {
       setLoading(true);

@@ -10,6 +10,7 @@ import { toast } from 'react-hot-toast';
 import { useProjet } from '@/context/ProjetContext';
 import { getModePaiementLabel, MODE_PAIEMENT } from '@/configs/enum';
 import { Controller } from 'react-hook-form';
+import Button from '../Button';
 
 const FacturesForm = ({
   facture,
@@ -857,24 +858,15 @@ useEffect(() => {
         </div>
 
         <div className="flex justify-end space-x-3 mt-6">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-4 py-2 bg-gray-300 !text-gray-700 rounded-md hover:bg-gray-400"
-          >
-            Annuler
-          </button>
-          <button
-            type="submit"
-            disabled={loading || disabled || !numeroUnique}
-            className={`px-4 py-2 bg-blue-500 text-white rounded-md ${
-              loading || disabled || !numeroUnique
-                ? 'opacity-50 cursor-not-allowed'
-                : 'hover:bg-blue-700'
-            }`}
-          >
+            <Button type="button" onClick={onCancel}>   
+              Annuler
+            </Button>
+            <Button type="submit"     disabled={loading || disabled || !numeroUnique}
+>
             {loading ? 'Enregistrement...' : 'Enregistrer'}
-          </button>
+            </Button>
+         
+         
         </div>
       </form>
     </div>

@@ -22,6 +22,7 @@ import { Clipboard, FileSliders, Folder } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useProjet } from '@/context/ProjetContext';
 import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
+import { useSociete } from '@/context/SocieteContext';
 export default function Page() {
   const FileUrl = process.env.NEXT_PUBLIC_IMG_URL;
   const router = useRouter();
@@ -131,19 +132,21 @@ export default function Page() {
         
 
   // Simple cache et comparaison for return back en cas de changer projet
-  const [oldProjetId, setOldProjetId] = useState(null);
-
-  useEffect(() => {
-    if (selectedProjet?.id && selectedProjet.id !== oldProjetId) {
-      if (oldProjetId) {
-        // Projet a changé
-
-      //  console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet.id}`);
+   const { selectedSociete } = useSociete();
+      const [oldProjetId, setOldProjetId] = useState(null);
+      const [oldSocieteId, setOldSocieteId] = useState(null);
+  
+     useEffect(() => {
+  if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId)||(selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+    if (oldProjetId||oldSocieteId) {
+      // Projet ou société a changé
+      //  console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet?.id}`);
         router.push('/ventes?tab=desistements');
-      }
-      setOldProjetId(selectedProjet.id);
     }
-  }, [selectedProjet?.id, oldProjetId, router]);
+    setOldSocieteId(selectedSociete?.id)
+    setOldProjetId(selectedProjet?.id);
+  }
+}, [selectedProjet?.id, selectedSociete?.id, oldProjetId, oldSocieteId, router]);
   const getFileIcon = (filename) => {
     const extension = filename.split('.').pop().toLowerCase();
     const iconClass = 'w-5 h-5 flex-shrink-0 text-gray-400';

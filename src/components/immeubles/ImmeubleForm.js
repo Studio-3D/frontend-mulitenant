@@ -12,6 +12,7 @@ import Input from '../Input';
 import { fetchDataByProjet_params } from '@/configs/api-utils';
 import { useSearchParams } from 'next/navigation';
 import { useProjet } from '@/context/ProjetContext';
+import { useSociete } from '@/context/SocieteContext';
 
 export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
   const router = useRouter();
@@ -32,7 +33,7 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
   const isSubmittingRef = useRef(false);
   const [trancheHasNoBlocs, setTrancheHasNoBlocs] = useState(false);
   const { selectedProjet  } = useProjet();
-
+const { selectedSociete } = useSociete();
  /* // Get selected project from localStorage
   const selectedProjet = JSON.parse(
     localStorage.getItem('selectedProjet') || '{}'
@@ -98,6 +99,18 @@ export default function ImmeubleForm({ id, projetId, blocId, trancheId }) {
       setOldProjetId(selectedProjet.id);
     }
   }, [selectedProjet?.id, oldProjetId, router]);
+
+  
+  const [oldSocieteId, setOldSocieteId] = useState(null);
+  	 useEffect(() => {
+  if ((selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+    if (oldSocieteId) {
+      // Projet ou société a changé
+      router.push('/projets');
+    }
+    setOldSocieteId(selectedSociete?.id)
+  }
+}, [selectedSociete?.id, oldSocieteId, router]);
   // Ensure tranche and bloc names when IDs provided
   useEffect(() => {
     const loadNamesIfNeeded = async () => {
