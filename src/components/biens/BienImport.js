@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import axios from 'axios';
 import { APIURL, RESOURCE_URL } from '@/configs/api';
 import TextField from '@/components/Textfield';
-import { PlusSquare, Trash2, X } from 'lucide-react';
+import { PlusSquare, Trash2, X, Upload } from 'lucide-react';
 import Button1 from '../Button';
 import InputSelect from '../inputSelect';
 import { useProjet } from '@/context/ProjetContext';
@@ -29,6 +29,7 @@ export default function BienImport({
   const [selectedTranche, setSelectedTranche] = useState(null);
   const accessToken = localStorage.getItem('accessToken');
   const { selectedProjet } = useProjet();
+  const [isDragging, setIsDragging] = useState(false);
  // const selectedProjet = JSON.parse(localStorage.getItem("selectedProjet"));
   var err = 0;
   const [backendErrors_tp, setBackendErrors_tp] = useState(null);
@@ -43,6 +44,7 @@ export default function BienImport({
     setDisabled_var(false);
     setBackendErrors([]);
     setBackendErrors_tp(null);
+    setIsDragging(false);
   };
 
   const onSubmit_file = (e) => {
@@ -57,6 +59,60 @@ export default function BienImport({
     if (file != null) {
       console.log('File upload confirmed:', file);
       handleImportClick(file);
+    }
+  };
+
+  // Drag and drop handlers
+  const handleDragEnter = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const droppedFile = e.dataTransfer.files[0];
+    if (droppedFile && (droppedFile.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || 
+        droppedFile.type === 'application/vnd.ms-excel')) {
+      setFile(droppedFile);
+      if (
+        Object.keys(selectedProjet.types_bien).length === 0 &&
+        type_biens.length === 0
+      ) {
+        setDisabled_var(true);
+      } else {
+        setDisabled_var(false);
+      }
+    } else {
+      toast.error('Veuillez déposer un fichier Excel valide (.xlsx, .xls)');
+    }
+  };
+
+  const handleFileSelect = (e) => {
+    const selectedFile = e.target.files[0];
+    setFile(selectedFile);
+    if (
+      Object.keys(selectedProjet.types_bien).length === 0 &&
+      type_biens.length === 0
+    ) {
+      setDisabled_var(true);
+    } else {
+      setDisabled_var(false);
     }
   };
 
@@ -157,6 +213,15 @@ export default function BienImport({
 
           for (let i = 0; i < rows.length; i++) {
             const row = rows[i];
+
+            // Check if prix unitaire is null, empty, or 0
+            if (!row['Prix unitaire'] || row['Prix unitaire'] === '' || parseFloat(row['Prix unitaire']) <= 0) {
+              msg_error.push({
+                id: i,
+                msg: `La ligne ${i + 1} doit avoir un prix unitaire supérieur à 0.`,
+              });
+              err = 1;
+            }
 
             if ('Superficie totale' in row && 'Superficie habitable' in row) {
               if (
@@ -703,34 +768,52 @@ export default function BienImport({
 
             <hr className="w-full border-t border-gray-300 my-4" />
 
-            {/* File Input Section */}
+            {/* File Input Section with Drag & Drop */}
             <div className="w-full">
-              <TextField
-                control={false}
-                label="Fichier Excel"
-                name="file"
-                type="file"
-                accept=".xlsx,.xls"
-                value={file}
-                onChange={(e) => {
-                  const selectedFile = e.target.files[0];
-                  setFile(selectedFile);
-                  if (
-                    Object.keys(selectedProjet.types_bien).length === 0 &&
-                    type_biens.length === 0
-                  ) {
-                    setDisabled_var(true);
-                  } else {
-                    setDisabled_var(false);
-                  }
-                }}
-                width="w-full"
-              />
-              {file && (
-                <p className="text-sm text-green-600 mt-1">
-                  Fichier sélectionné: {file.name}
-                </p>
-              )}
+              <div
+                className={`border-2 border-dashed rounded-lg p-6 transition-colors cursor-pointer
+                  ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-blue-400'}
+                  ${file ? 'bg-green-50 border-green-500' : ''}`}
+                onDragEnter={handleDragEnter}
+                onDragLeave={handleDragLeave}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  className="hidden"
+                  accept=".xlsx,.xls"
+                  onChange={handleFileSelect}
+                />
+                
+                <div className="flex flex-col items-center justify-center gap-3">
+                  <Upload className={`w-12 h-12 ${isDragging ? 'text-blue-600' : 'text-gray-400'}`} />
+                  
+                  {file ? (
+                    <>
+                      <p className="text-lg font-medium text-green-700">Fichier sélectionné</p>
+                      <p className="text-sm text-gray-600">{file.name}</p>
+                      <p className="text-xs text-gray-500">
+                        Cliquez ou glissez-déposez pour changer de fichier
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-lg font-medium text-gray-700">
+                        {isDragging ? 'Déposez le fichier ici' : 'Glissez-déposez votre fichier Excel ici'}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        ou cliquez pour parcourir
+                      </p>
+                      <p className="text-xs text-gray-400 mt-2">
+                        Formats acceptés : .xlsx, .xls
+                      </p>
+                    </>
+                  )}
+                </div>
+              </div>
             </div>
 
             {backendErrors && backendErrors.length > 0 && (

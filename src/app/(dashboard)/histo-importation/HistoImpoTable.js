@@ -84,14 +84,17 @@ const getStatutBadge = (statutValue) => {
 
  
 
-    const handleFileClick = (file, type) => {
+  const handleFileClick = (file, type) => {
   let folderName;
       console.log('type==>',type)
   if (type =='1') {
-    folderName = 'Import_fichier_en_masse';
+    folderName = 'Edit_fichier_en_masse';
   } else if (type == '0') {
     folderName = 'Import_fichier';
-  } else {
+  }
+   else if (type == '2') {
+    folderName = 'Edit_titre_foncier';
+  }  else {
     // Valeur par défaut si type n'est pas spécifié
     folderName = 'Import_fichier';
   }

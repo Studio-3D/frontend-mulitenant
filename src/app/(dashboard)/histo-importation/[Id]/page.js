@@ -56,14 +56,28 @@ export default function ImportDetail() {
     fetchImport();
   }, [params.Id]);
 
-  const handleFileClick = (file) => {
-    if (!user?.societe) {
-      alert('Informations société non disponibles');
-      return;
-    }
-    const url = `${RESOURCE_URL.DOCS}/${user.societe.raison_sociale_concatene}_${user.societe.id}/Import_fichier/${file}`;
-    window.open(url, '_blank');
-  };
+
+   const handleFileClick = (file, type) => {
+  let folderName;
+      console.log('type==>',type)
+  if (type =='1') {
+    folderName = 'Edit_fichier_en_masse';
+  } else if (type == '0') {
+    folderName = 'Import_fichier';
+  }
+   else if (type == '2') {
+    folderName = 'Edit_titre_foncier';
+  }  else {
+    // Valeur par défaut si type n'est pas spécifié
+    folderName = 'Import_fichier';
+  }
+  
+  window.open(
+    `${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/${folderName}/${file}`,
+    '_blank'
+  );
+};
+  
   // Show loading state if no project selected
   if (!selectedProjet) {
     return (
@@ -192,7 +206,7 @@ export default function ImportDetail() {
             Fichier importé
           </h2>
           <button
-            onClick={() => handleFileClick(importInfo.fichier)}
+            onClick={() => handleFileClick(importInfo.fichier,importInfo.type)}
             className="text-blue-700  hover:text-blue-900 transition "
             title="Ouvrir le fichier importé"
           >
