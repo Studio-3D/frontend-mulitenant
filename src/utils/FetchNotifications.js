@@ -241,7 +241,6 @@ const fetchNotifications = async ({
         color: 'info',
         subtitle: (description_type) => description_type,
       },
-
       30: {
         title: 'Un Rappel',
         icon: 'eos-icons:loading',
@@ -277,6 +276,13 @@ const fetchNotifications = async ({
         subtitle: (prospect, user, avance, reservation, bien, projet) =>
           `Pour le Bien : ${bien?.propriete_dite_bien} Du Dossier: ${reservation?.code_reservation}`,
       },
+      35: {
+        title: (description_type) => description_type,
+        icon: 'ic:twotone-import-export',
+        color: 'error',
+        subtitle: (description_type) => description_type,
+      },
+
       91: {
         title: 'une Mention Facebook',
         icon: 'at-sign',
