@@ -27,7 +27,7 @@ const TypeProjetTable = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const { user, token } = useAuth();
-  const { selectedProjet } = useProjet();
+  const { selectedProjet ,refreshProjets} = useProjet();
   const accesstoken = token || localStorage.getItem('accessToken');
 
   const router = useRouter();
@@ -215,8 +215,16 @@ const TypeProjetTable = () => {
             type="Type de projet"
             message={'Etes-vous sûr de vouloir supprimer ce TypeProjet ?'}
             accessToken={accesstoken}
-            onClose={() => {
+            onClose={async () => {
               setShowDeleteModal(false);
+               // Refresh project data after deletion
+              if (selectedProjet?.id) {
+                try {
+                  await refreshProjets(selectedProjet.id);
+                } catch (refreshError) {
+                  console.error('Error refreshing project after deletion:', refreshError);
+                }
+              }
               fetchData_table_by_projet(
                 entity,
                 {},

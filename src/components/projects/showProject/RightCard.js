@@ -2,7 +2,7 @@ import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { StatusCard } from './StatusCard';
 import { Download, Eye, PencilLine, Trash2, X } from 'lucide-react';
 import Link from 'next/link';
-import { isAdmin, isRespoLivraison, isSuperAdmin } from '@/configs/enum';
+import { getOrientationLabel, isAdmin, isRespoLivraison, isSuperAdmin, ORIENTATIONS } from '@/configs/enum';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import SelectInput from '@/components/SelectInput';
@@ -12,7 +12,7 @@ import { HomeIcon, LayersIcon, BuildingIcon, BoxesIcon } from 'lucide-react';
 import Table from '@/components/Table';
 import Input from '@/components/Input'; // Make sure to import your Input component
 import BienImport from '@/components/biens/BienImport';
-import { getOrientationLabel } from '@/components/bien-utils'; // Import the new config
+import {  getOrientationOptions } from '@/components/bien-utils'; // Import the new config
 import { handleExportExcel } from '@/configs/export'; // Ajoutez cette ligne
 import toast from 'react-hot-toast';
 import axios from 'axios';
@@ -390,53 +390,66 @@ const TAB_CONFIG = {
       projectId,
       nbre_tranches,
       nbre_blocs,
-      nbre_immeubles
+      nbre_immeubles,max_etages,typologies, // Add this parameter FROM HERE
+      vues,typeBiens ,tranches,blocs,immeubles// Add this parameter 
+
     ) => {
-      // Get unique status values from the biens data
-      const statusOptions = tabsData.bien?.items
-        ? [...new Set(tabsData.bien.items.map((item) => item.status))]
-            .filter((status) => status) // Remove empty/null values
-            .map((status) => ({ label: status, value: status }))
+      // fadwa
+     // Use defaultStatuses from tabsData for status options
+      const statusOptions = tabsData.bien?.statuses
+        ? tabsData.bien.statuses.map((status) => ({
+            label: status.name,
+            value: status.name,
+          }))
         : [];
 
       // Get unique values for the new filters from ACTUAL project data
-      const orientationOptions = tabsData.bien?.items
-        ? [
-            ...new Set(
-              tabsData.bien.items
-                .map((item) => item.orientation)
-                .filter(Boolean)
-            ),
-          ].map((orientation) => {
-            // Use the getOrientationLabel function to get the French label
-            const label = getOrientationLabel(orientation);
-            return { label: label, value: orientation };
-          })
+
+      const orientationOptions = getOrientationOptions();
+
+       // Use the typologies prop instead of tabsData
+      const typologieOptions = typologies && typologies.length > 0
+        ? typologies.map((typologie) => ({
+            label: typologie.typologie  || 'Inconnu',
+            value: typologie.typologie || '',
+          }))
         : [];
 
-      const typologieOptions = tabsData.bien?.items
-        ? [
-            ...new Set(
-              tabsData.bien.items.map((item) => item.typologie).filter(Boolean)
-            ),
-          ].map((typologie) => ({ label: typologie, value: typologie }))
+      // Use the vues prop instead of tabsData
+      const vueOptions = vues && vues.length > 0
+        ? vues.map((vue) => ({
+            label: vue.vue  || 'Inconnu',
+            value: vue.vue ||  '',
+          }))
         : [];
-
-      const vueOptions = tabsData.bien?.items
-        ? [
-            ...new Set(
-              tabsData.bien.items.map((item) => item.vue).filter(Boolean)
-            ),
-          ].map((vue) => ({ label: vue, value: vue }))
-        : [];
-
-      const niveauOptions = tabsData.bien?.items
-        ? [
-            ...new Set(
-              tabsData.bien.items.map((item) => item.etage).filter(Boolean)
-            ),
-          ].map((niveau) => ({ label: niveau, value: niveau }))
-        : [];
+      const type_Bien_Options = typeBiens && typeBiens.length > 0
+      ? typeBiens.map((t) => ({
+          label: t.type ,
+          value: t.type ,
+        }))
+      : [];
+     // Generate niveau options based on project's max_etages
+      const generateNiveauOptions = (maxEtages) => {
+        const options = [];
+        const max = parseInt(maxEtages) || 0;
+        
+        // Always include RDC (0)
+        options.push({ label: 'RDC', value: 'RDC' });
+        
+        // Generate from 1 to max_etages
+        for (let i = 1; i <= max; i++) {
+          let label;
+          if (i === 1) label = '1er étage';
+          else if (i === 2) label = '2ème étage';
+          else if (i === 3) label = '3ème étage';
+          else label = `${i}ème étage`;
+          
+          options.push({ label, value: label });
+        }
+        
+        return options;
+      };
+      const niveauOptions = generateNiveauOptions(max_etages);
       return [
         {
           key: 'name',
@@ -459,7 +472,7 @@ const TAB_CONFIG = {
           label: 'Type',
           type: 'select',
           placeholder: 'Sélectionner un type',
-          options: tabsData.bien?.typeBienOptions || [],
+          options:type_Bien_Options|| [],
           className:
             'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
         },
@@ -518,7 +531,7 @@ const TAB_CONFIG = {
                 type: 'select',
                 placeholder: 'Sélectionner une tranche',
                 options:
-                  tabsData.tranche?.items?.map((t) => ({
+                 tranches?.map((t) => ({
                     label: t.nom,
                     value: t.nom,
                   })) || [],
@@ -535,7 +548,7 @@ const TAB_CONFIG = {
                 type: 'select',
                 placeholder: 'Sélectionner un bloc',
                 options:
-                  tabsData.blocs?.items?.map((b) => ({
+                 blocs?.map((b) => ({
                     label: b.nom,
                     value: b.nom,
                   })) || [],
@@ -552,7 +565,7 @@ const TAB_CONFIG = {
                 type: 'select',
                 placeholder: 'Sélectionner un immeuble',
                 options:
-                  tabsData.immeuble?.items?.map((b) => ({
+                 immeubles?.map((b) => ({
                     label: b.nom,
                     value: b.nom,
                   })) || [],
@@ -691,7 +704,7 @@ const TAB_CONFIG = {
         ...(nbre_blocs > 0 && { Bloc: item.bloc_nom || '' }),
         ...(nbre_immeubles > 0 && { Immeuble: item.immeuble_nom || '' }),
         Surface: item.surface || '',
-        Prix: item.price || '',
+        Prix: item.price || 0,
         Statut: item.status || '',
         Orientation: item.orientation || '',
         Niveau: item.etage || '', // Utilise la valeur formatée (RDC, 1er étage, etc.)
@@ -821,6 +834,8 @@ const TAB_CONFIG = {
         return {
           ID: item.id || '',
           'Type ID': item.type_id || '',
+          'Typologie ID': item.typologie_id || '',
+          'Vue ID': item.vue_id || '',
           ...cleanData,
         };
       });
@@ -829,8 +844,10 @@ const TAB_CONFIG = {
       const massEditColumns = [
         { key: 'ID', label: 'ID' },
         { key: 'Type ID', label: 'Type' },
+        { key: 'Typologie ID', label: 'Typologie' },
+        { key: 'Vue ID', label: 'Vue' },
         ...baseConfig.columns_export.filter(
-          (column) => !['Type'].includes(column.key)
+        (column) => !['Type', 'Typologie', 'Vue'].includes(column.key)
         ),
       ];
 
@@ -854,6 +871,9 @@ export const RightCard = ({
   nbre_immeubles,
   max_etages,
   tranches,
+  typologies, // Add this
+  vues, // Add this
+  typeBiens,blocs,immeubles
 }) => {
   const [showImportModal, setShowImportModal] = useState(false);
   /* import titre en masse*/
@@ -1019,6 +1039,7 @@ export const RightCard = ({
           });
         }
         // Handle select filters (orientation, typologie, vue, etage, etc.)
+        // In the filteredItems useMemo, update the orientation handling
         else if (
           [
             'orientation',
@@ -1034,8 +1055,8 @@ export const RightCard = ({
         ) {
           // For select filters, do exact matching
           items = items.filter((item) => {
-            const itemValue = item[key]?.toString().toLowerCase();
-            const filterValue = appliedFilters[key]?.toString().toLowerCase();
+            let itemValue = item[key]?.toString().toLowerCase();
+            const filterValue = appliedFilters[key]?.toString().toLowerCase();            
             return itemValue === filterValue;
           });
         }
@@ -1115,7 +1136,9 @@ export const RightCard = ({
       projectId,
       nbre_tranches,
       nbre_blocs,
-      nbre_immeubles
+      nbre_immeubles, max_etages , typologies, // Pass typologies here fadwa
+      vues ,typeBiens,tranches,blocs,immeubles// Pass vues here// Add this parameter
+    
     );
 
     return (
@@ -1283,7 +1306,10 @@ export const RightCard = ({
     tempFilters,
     nbre_tranches,
     nbre_blocs,
-    nbre_immeubles,
+    nbre_immeubles,,
+    max_etages,
+     typologies, // Pass typologies here 
+    vues,typeBiens ,tranches,blocs,immeubles// Pass vues here
   ]);
 
   // Function to update file display
@@ -1793,14 +1819,46 @@ export const RightCard = ({
                 err = 1;
               }
 
-              // Vérification de Type (avec valeurs comme "magasin")
-              if (!row['Type'] && !row['type']) {
+ 
+              // NEW: Validate Type ID - should be numeric
+            const typeId = row['Type'];
+            if (!typeId && typeId !== 0) {
+              msg_error.push({
+                id: i + 1,
+                msg: `Ligne ${i + 1}: Type manquant`,
+              });
+              err = 1;
+            } else if (typeId && (isNaN(parseFloat(typeId)) || !isFinite(typeId))) {
+              msg_error.push({
+                id: i + 1,
+                msg: `Ligne ${i + 1}: Type  doit être un nombre valide (ex: 1, 2, 3). Valeur actuelle: "${typeId}"`,
+              });
+              err = 1;
+            }
+
+            const typologieId = row['Typologie'];
+            if (typologieId && typologieId !== '') {
+              if (isNaN(parseFloat(typologieId)) || !isFinite(typologieId)) {
                 msg_error.push({
                   id: i + 1,
-                  msg: `Ligne ${i + 1}: Type manquant`,
+                  msg: `Ligne ${i + 1}: Typologie doit être un nombre valide ou vide. Valeur actuelle: "${typologieId}"`,
                 });
                 err = 1;
               }
+            }
+
+            // NEW: Validate Vue ID - should be numeric (can be empty)
+            const vueId = row['Vue'];
+            if (vueId && vueId !== '') {
+              if (isNaN(parseFloat(vueId)) || !isFinite(vueId)) {
+                msg_error.push({
+                  id: i + 1,
+                  msg: `Ligne ${i + 1}: Vue  doit être un nombre valide ou vide. Valeur actuelle: "${vueId}"`,
+                });
+                err = 1;
+              }
+            }
+
             }
 
             if (err == 1 || msg_error.length > 0) {
@@ -2375,7 +2433,10 @@ export const RightCard = ({
                       <li>
                         • Conservez la colonne <strong>ID</strong> intacte
                       </li>
-                      <li>
+                       <li>• <strong>Type </strong> : ID numérique du type de bien (obligatoire)</li>
+                        <li>• <strong>Typologie </strong> : ID numérique de la typologie (optionnel)</li>
+                        <li>• <strong>Vue </strong> : ID numérique de la vue (optionnel)</li>
+                        <li>
                         • Les colonnes{' '}
                         <strong>Tranche, Bloc et Immeuble</strong> sont ignorées
                         lors de {"l'import"}

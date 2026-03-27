@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import Table from '@/components/Table';
 import BienImport from '@/components/biens/BienImport';
-import { getOrientationLabel } from '@/components/bien-utils'; // Import the new config
+import { getOrientationLabel, getOrientationOptions } from '@/components/bien-utils'; // Import the new config
 import { handleExportExcel } from '@/configs/export'; // Ajoutez cette ligne
 import toast from 'react-hot-toast';
 import axios from 'axios';
@@ -128,7 +128,7 @@ const TAB_CONFIG = {
             blocId ? `&bloc=${blocId}` : ''
           }${trancheId ? `&tranche=${trancheId}` : ''}`
         : undefined,
-    filters: (tabsData, trancheId, nbre_blocs) => [
+    filters: (tabsData, trancheId, nbre_blocs, nbre_immeubles, max_etages, typologies, vues, typeBiens, blocsArray, immeublesArray) => [
       {
         key: 'nom',
         label: 'Nom',
@@ -146,11 +146,10 @@ const TAB_CONFIG = {
               label: 'Bloc',
               type: 'select',
               placeholder: 'Sélectionner un bloc',
-              options:
-                tabsData.blocs?.items?.map((b) => ({
-                  label: b.nom,
-                  value: b.nom,
-                })) || [],
+                options: (blocsArray || []).map((b) => ({
+                      label: b.nom,
+                      value: b.nom,
+                    })) || [],
               className:
                 'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
             },
@@ -234,194 +233,205 @@ const TAB_CONFIG = {
             immeubleId ? `&immeuble=${immeubleId}` : ''
           }${trancheId ? `&tranche=${trancheId}` : ''}`
         : undefined,
-    filters: (tabsData, trancheId, nbre_blocs, nbre_immeubles) => {
+    filters: (tabsData, trancheId, nbre_blocs, nbre_immeubles,max_etages,typologies, // Add this parameter FROM HERE
+      vues,typeBiens , blocsArray, immeublesArray) => {
       // Get unique status values from the biens data
-      const statusOptions = tabsData.bien?.items
-        ? [...new Set(tabsData.bien.items.map((item) => item.status))]
-            .filter((status) => status) // Remove empty/null values
-            .map((status) => ({ label: status, value: status }))
-        : [];
-      // Get unique values for the new filters from ACTUAL project data
-      const orientationOptions = tabsData.bien?.items
-        ? [
-            ...new Set(
-              tabsData.bien.items
-                .map((item) => item.orientation)
-                .filter(Boolean)
-            ),
-          ].map((orientation) => {
-            // Use the getOrientationLabel function to get the French label
-            const label = getOrientationLabel(orientation);
-            return { label: label, value: orientation };
-          })
-        : [];
+      // Use defaultStatuses from tabsData for status options
+            const statusOptions = tabsData.bien?.statuses
+              ? tabsData.bien.statuses.map((status) => ({
+                  label: status.name,
+                  value: status.name,
+                }))
+              : [];
+      
+            // Get unique values for the new filters from ACTUAL project data
+      
+            const orientationOptions = getOrientationOptions();
+      
+             // Use the typologies prop instead of tabsData
+            const typologieOptions = typologies && typologies.length > 0
+              ? typologies.map((typologie) => ({
+                  label: typologie.typologie  || 'Inconnu',
+                  value: typologie.typologie || '',
+                }))
+              : [];
+      
+            // Use the vues prop instead of tabsData
+            const vueOptions = vues && vues.length > 0
+              ? vues.map((vue) => ({
+                  label: vue.vue  || 'Inconnu',
+                  value: vue.vue ||  '',
+                }))
+              : [];
+            const type_Bien_Options = typeBiens && typeBiens.length > 0
+            ? typeBiens.map((t) => ({
+                label: t.type ,
+                value: t.type ,
+              }))
+            : [];
+           // Generate niveau options based on project's max_etages
+            const generateNiveauOptions = (maxEtages) => {
+              const options = [];
+              const max = parseInt(maxEtages) || 0;
+              
+              // Always include RDC (0)
+              options.push({ label: 'RDC', value: 'RDC' });
+              
+              // Generate from 1 to max_etages
+              for (let i = 1; i <= max; i++) {
+                let label;
+                if (i === 1) label = '1er étage';
+                else if (i === 2) label = '2ème étage';
+                else if (i === 3) label = '3ème étage';
+                else label = `${i}ème étage`;
+                
+                options.push({ label, value: label });
+              }
+              
+              return options;
+            };
+            const niveauOptions = generateNiveauOptions(max_etages);
+        return [
+          {
+            key: 'name',
+            label: 'Nom',
+            type: 'text',
+            placeholder: 'Nom...',
+            className:
+              'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+          },
+          {
+            key: 'numero',
+            label: 'Numéro',
+            type: 'text',
+            placeholder: '',
+            className:
+              'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+          },
+          {
+            key: 'type',
+            label: 'Type',
+            type: 'select',
+            placeholder: 'Sélectionner un type',
+            options:type_Bien_Options|| [],//fadwa
+            className:
+              'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+          },
 
-      const typologieOptions = tabsData.bien?.items
-        ? [
-            ...new Set(
-              tabsData.bien.items.map((item) => item.typologie).filter(Boolean)
-            ),
-          ].map((typologie) => ({ label: typologie, value: typologie }))
-        : [];
+          {
+            key: 'status',
+            label: 'Statut',
+            type: 'select',
+            placeholder: 'Sélectionner un statut',
+            options: statusOptions,
+            className:
+              'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+          },
+          // New filters for orientation, typologie, vue, and niveau
+          {
+            key: 'orientation',
+            label: 'Orientation',
+            type: 'select',
+            placeholder: 'Sélectionner une orientation',
+            options: orientationOptions, // This will only show orientations that exist in the data
+            className:
+              'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+          },
+          {
+            key: 'typologie',
+            label: 'Typologie',
+            type: 'select',
+            placeholder: 'Sélectionner une typologie',
+            options: typologieOptions,
+            className:
+              'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+          },
+          {
+            key: 'vue',
+            label: 'Vue',
+            type: 'select',
+            placeholder: 'Sélectionner une vue',
+            options: vueOptions,
+            className:
+              'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+          },
+          {
+            key: 'etage',
+            label: 'Niveau',
+            type: 'select',
+            placeholder: 'Sélectionner un niveau',
+            options: niveauOptions,
+            className:
+              'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+          },
 
-      const vueOptions = tabsData.bien?.items
-        ? [
-            ...new Set(
-              tabsData.bien.items.map((item) => item.vue).filter(Boolean)
-            ),
-          ].map((vue) => ({ label: vue, value: vue }))
-        : [];
-
-      const niveauOptions = tabsData.bien?.items
-        ? [
-            ...new Set(
-              tabsData.bien.items.map((item) => item.etage).filter(Boolean)
-            ),
-          ].map((niveau) => ({ label: niveau, value: niveau }))
-        : [];
-      return [
-        {
-          key: 'name',
-          label: 'Nom',
-          type: 'text',
-          placeholder: 'Nom...',
-          className:
-            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
-        },
-        {
-          key: 'numero',
-          label: 'Numéro',
-          type: 'text',
-          placeholder: '',
-          className:
-            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
-        },
-        {
-          key: 'type',
-          label: 'Type',
-          type: 'select',
-          placeholder: 'Sélectionner un type',
-          options: tabsData.bien?.typeBienOptions || [],
-          className:
-            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
-        },
-
-        {
-          key: 'status',
-          label: 'Statut',
-          type: 'select',
-          placeholder: 'Sélectionner un statut',
-          options: statusOptions,
-          className:
-            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
-        },
-        // New filters for orientation, typologie, vue, and niveau
-        {
-          key: 'orientation',
-          label: 'Orientation',
-          type: 'select',
-          placeholder: 'Sélectionner une orientation',
-          options: orientationOptions, // This will only show orientations that exist in the data
-          className:
-            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
-        },
-        {
-          key: 'typologie',
-          label: 'Typologie',
-          type: 'select',
-          placeholder: 'Sélectionner une typologie',
-          options: typologieOptions,
-          className:
-            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
-        },
-        {
-          key: 'vue',
-          label: 'Vue',
-          type: 'select',
-          placeholder: 'Sélectionner une vue',
-          options: vueOptions,
-          className:
-            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
-        },
-        {
-          key: 'etage',
-          label: 'Niveau',
-          type: 'select',
-          placeholder: 'Sélectionner un niveau',
-          options: niveauOptions,
-          className:
-            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
-        },
-
-        ...(nbre_blocs > 0
-          ? [
-              {
-                key: 'bloc_nom',
-                label: 'Bloc',
-                type: 'select',
-                placeholder: 'Sélectionner un bloc',
-                options:
-                  tabsData.blocs?.items?.map((b) => ({
-                    label: b.nom,
-                    value: b.nom,
-                  })) || [],
-                className:
-                  'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
-              },
-            ]
-          : []),
-        ...(nbre_immeubles > 0
-          ? [
-              {
-                key: 'immeuble_nom',
-                label: 'Immeuble',
-                type: 'select',
-                placeholder: 'Sélectionner un immeuble',
-                options:
-                  tabsData.immeuble?.items?.map((b) => ({
-                    label: b.nom,
-                    value: b.nom,
-                  })) || [],
-                className:
-                  'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
-              },
-            ]
-          : []),
-        // Surface min and max
-        {
-          key: 'surface_min',
-          label: 'Surface min',
-          type: 'number',
-          placeholder: 'Min...',
-          className:
-            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
-        },
-        {
-          key: 'surface_max',
-          label: 'Surface max',
-          type: 'number',
-          placeholder: 'Max...',
-          className:
-            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
-        },
-        // Prix min and max
-        {
-          key: 'price_min',
-          label: 'Prix min',
-          type: 'number',
-          placeholder: 'Min...',
-          className:
-            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
-        },
-        {
-          key: 'price_max',
-          label: 'Prix max',
-          type: 'number',
-          placeholder: 'Max...',
-          className:
-            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
-        },
-      ];
+          ...(nbre_blocs > 0
+            ? [
+                {
+                  key: 'bloc_nom',
+                  label: 'Bloc',
+                  type: 'select',
+                  placeholder: 'Sélectionner un bloc',
+                  options: (blocsArray || []).map((b) => ({
+                      label: b.nom,
+                      value: b.nom,
+                    })) || [],
+                  className:
+                    'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+                },
+              ]
+            : []),
+          ...(nbre_immeubles > 0
+            ? [
+                {
+                  key: 'immeuble_nom',
+                  label: 'Immeuble',
+                  type: 'select',
+                  placeholder: 'Sélectionner un immeuble',
+                 options: (immeublesArray || []).map((b) => ({
+                      label: b.nom,
+                      value: b.nom,
+                    })) || [],
+                  className:
+                    'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+                },
+              ]
+            : []),
+          // Surface min and max
+          {
+            key: 'surface_min',
+            label: 'Surface min',
+            type: 'number',
+            placeholder: 'Min...',
+            className:
+              'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+          },
+          {
+            key: 'surface_max',
+            label: 'Surface max',
+            type: 'number',
+            placeholder: 'Max...',
+            className:
+              'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+          },
+          // Prix min and max
+          {
+            key: 'price_min',
+            label: 'Prix min',
+            type: 'number',
+            placeholder: 'Min...',
+            className:
+              'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+          },
+          {
+            key: 'price_max',
+            label: 'Prix max',
+            type: 'number',
+            placeholder: 'Max...',
+            className:
+              'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+          },
+        ];
     },
     columns: (user, handleDelete, nbre_blocs, nbre_immeubles) => [
       { key: 'name', label: 'Nom' },
@@ -510,7 +520,7 @@ const TAB_CONFIG = {
         ...(nbre_blocs > 0 && { Bloc: item.bloc_nom || '' }),
         ...(nbre_immeubles > 0 && { Immeuble: item.immeuble_nom || '' }),
         Surface: item.surface || '',
-        Prix: item.price || '',
+        Prix: item.price || 0,
         Statut: item.status || '',
         Orientation: item.orientation || '',
         Niveau: item.etage || '', // Utilise la valeur formatée (RDC, 1er étage, etc.)
@@ -671,6 +681,9 @@ export const RightCard = ({
   nbre_blocs,
   nbre_immeubles,
   max_etages,
+  typologies, // Add this
+  vues, // Add this
+  typeBiens,blocs,immeubles
 }) => {
   const [showImportModal, setShowImportModal] = useState(false);
   const [showMassEditModal, setShowMassEditModal] = useState(false); // Nouvel état pour le modal de modification en masse
@@ -919,7 +932,8 @@ export const RightCard = ({
       tabsData,
       trancheId,
       nbre_blocs,
-      nbre_immeubles
+      nbre_immeubles, max_etages , typologies, // Pass typologies here
+      vues ,typeBiens,blocs,immeubles// Pass vues here// Add this paramet
     );
 
     return (
@@ -1086,7 +1100,8 @@ export const RightCard = ({
     trancheId,
     tempFilters,
     nbre_blocs,
-    nbre_immeubles,
+    nbre_immeubles,typologies, // Pass typologies here fadwa
+    vues,typeBiens,blocs,immeubles// Pass vues here
   ]);
 
   // Function to update file display

@@ -22,7 +22,7 @@ export default function EtapeForm({ id, onClose, onSuccess }) {
   const router = useRouter();
 
   const accessToken = token || localStorage.getItem('accessToken');
-  const { selectedProjet } = useProjet();
+  const { selectedProjet ,refreshProjets} = useProjet();
 
   const [loading, setLoading] = useState({ form: false });
   const [backendErrors, setBackendErrors] = useState({});
@@ -112,57 +112,66 @@ export default function EtapeForm({ id, onClose, onSuccess }) {
 
 
   // Replace your existing onSubmit function with this:
-  const onSubmit = (data) => {
-    setLoading({ ...loading, form: true });
-    setBackendErrors({});
-    const dataToSend = new FormData();
-    let url = APIURL.ETAPESPROJET;
+ const onSubmit = async (data) => {
+  setLoading({ ...loading, form: true });
+  setBackendErrors({});
+  const dataToSend = new FormData();
+  let url = APIURL.ETAPESPROJET;
 
-    Object.entries(data).forEach(([key, value]) => {
-      dataToSend.append(key, value);
+  Object.entries(data).forEach(([key, value]) => {
+    dataToSend.append(key, value);
+  });
+
+  if (isEditing) {
+    dataToSend.append('_method', 'PATCH');
+    url = `${url}/${id}`;
+  }
+
+  try {
+    const res = await axios.post(url, dataToSend, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
     });
 
-    if (isEditing) {
-      dataToSend.append('_method', 'PATCH');
-      url = `${url}/${id}`;
+    let message = 'Quelque chose ne va pas bien';
+    if (res.status === 200) {
+      message = `Etape a été ${
+        isEditing ? 'modifié' : 'créé'
+      } avec succès`;
+      reset(defaultValues);
+      
+      // Refresh the project data to include the new/updated typologie
+      if (selectedProjet?.id) {
+        try {
+          await refreshProjets(selectedProjet.id);
+        } catch (refreshError) {
+          console.error('Error refreshing project data:', refreshError);
+          // Don't block navigation even if refresh fails
+        }
+      }
+      
+      toast.success(message);
+      router.push(ENDPOINTS.ETAPESPROJET);
+    } else if (res.status === 422) {
+      message = res.data.message;
+      setBackendErrors(res.data.errors);
+      setTimeout(() => setBackendErrors({}), 5000);
     }
-
-    axios
-      .post(url, dataToSend, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      })
-
-      .then((res) => {
-        let message = 'Quelque chose ne va pas bien';
-        if (res.status === 200) {
-          message = `Etape a été ${
-            isEditing ? 'modifié' : 'créé'
-          } avec succès`;
-          reset(defaultValues);
-          toast.success(message);
-          router.push(ENDPOINTS.ETAPESPROJET);
-        } else if (res.status === 422) {
-          message = res.data.message;
-          setBackendErrors(res.data.errors);
-          setTimeout(() => setBackendErrors({}), 5000);
-        }
-      })
-      .catch((error) => {
-        const response = error.response;
-        if (response && response.status === 422) {
-          setBackendErrors(response.data.errors);
-          setTimeout(() => setBackendErrors({}), 5000);
-        } else {
-          toast.error(
-            "Une erreur s'est produite lors de la soumission du formulaire."
-          );
-        }
-      })
-      .finally(() => setLoading({ ...loading, form: false }));
-  };
-
+  } catch (error) {
+    const response = error.response;
+    if (response && response.status === 422) {
+      setBackendErrors(response.data.errors);
+      setTimeout(() => setBackendErrors({}), 5000);
+    } else {
+      toast.error(
+        "Une erreur s'est produite lors de la soumission du formulaire."
+      );
+    }
+  } finally {
+    setLoading({ ...loading, form: false });
+  }
+};
   if (loading_edit) {
     return <LoadingSpin />;
   }

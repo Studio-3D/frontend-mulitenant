@@ -67,7 +67,11 @@ export default function ImportDetail() {
   }
    else if (type == '2') {
     folderName = 'Edit_titre_foncier';
-  }  else {
+  }
+  else if (type == '3') {
+      folderName = 'Import_prospects';
+    
+    }  else {
     // Valeur par défaut si type n'est pas spécifié
     folderName = 'Import_fichier';
   }
@@ -223,7 +227,7 @@ export default function ImportDetail() {
           </p>
         </div>
 
-        {importInfo.statut === '3' && (
+        {((importInfo.statut == '3' )||( importInfo.statut == '2'  && importInfo.message_echou !=null)) && (
           <div className="space-y-4">
             {errorInfo ? (
               // New format with detailed error information
@@ -307,10 +311,11 @@ export default function ImportDetail() {
               </div>
             )}
           </div>
+          
         )}
 
         {/* Lignes traitées et restantes - Only show if not using new error format */}
-        {!(importInfo.statut === '3' && errorInfo) && (
+        {!(importInfo.statut === '3') && errorInfo==null && (
           <div className="flex flex-col sm:flex-row gap-6">
             <div className="flex-1 bg-green-200 p-4 rounded-md text-center">
               <p className="text-green-900 font-semibold">Lignes réussies</p>

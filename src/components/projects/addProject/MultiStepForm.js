@@ -75,7 +75,7 @@ const { selectedSociete } = useSociete();
       const [oldSocieteId, setOldSocieteId] = useState(null);
     
 
-  	 useEffect(() => {
+useEffect(() => {
   if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId)||(selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
     if (oldProjetId||oldSocieteId) {
       // Projet ou société a changé

@@ -33,7 +33,7 @@ import { useProjet } from '@/context/ProjetContext';
 
 const GestionRoles = () => {
   const { selectedSociete } = useSociete();
-  const { selectedProjet } = useProjet();
+  const { selectedProjet,refreshProjets  } = useProjet();
   const { token, user } = useAuth();
   const accesstoken = token || localStorage.getItem('accessToken');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -185,6 +185,15 @@ const GestionRoles = () => {
         toast.success('Rôle ajouté avec succès');
         setShowAddForm(false);
         setNewRoleForm({ role: '', actif: true });
+         // Refresh the project data to include the new/updated typologie
+      if (selectedProjet?.id) {
+        try {
+          await refreshProjets(selectedProjet.id);
+        } catch (refreshError) {
+          console.error('Error refreshing project data:', refreshError);
+          // Don't block navigation even if refresh fails
+        }
+      }
         fetchRoles();
       }
     } catch (error) {
@@ -422,8 +431,16 @@ const GestionRoles = () => {
             type="Role"
             message="Êtes-vous sûr de vouloir supprimer ce rôle ?"
             accessToken={accesstoken}
-            onClose={() => {
+            onClose={async () => {
               setShowDeleteModal(false);
+               // Refresh project data after deletion
+              if (selectedProjet?.id) {
+                try {
+                  await refreshProjets(selectedProjet.id);
+                } catch (refreshError) {
+                  console.error('Error refreshing project after deletion:', refreshError);
+                }
+              }
               setSelectedId(null);
             }}
             onSuccess={handleDeleteSuccess}

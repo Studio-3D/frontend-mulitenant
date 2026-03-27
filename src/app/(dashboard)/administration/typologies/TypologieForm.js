@@ -11,7 +11,7 @@ import { useSociete } from '@/context/SocieteContext';
 const TypologieForm = ({ id = null, onComplete }) => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const { selectedProjet } = useProjet();
+  const { selectedProjet,refreshProjets} = useProjet();
   const { selectedSociete } = useSociete();
   const router = useRouter();
   const [originalFormData, setOriginalFormData] = useState({});
@@ -148,6 +148,15 @@ const TypologieForm = ({ id = null, onComplete }) => {
         id ? 'Typologie modifiée avec succès' : 'Typologie ajoutée avec succès'
       );
 
+      // Refresh the project data to include the new/updated typologie
+      if (selectedProjet?.id) {
+        try {
+          await refreshProjets(selectedProjet.id);
+        } catch (refreshError) {
+          console.error('Error refreshing project data:', refreshError);
+          // Don't block navigation even if refresh fails
+        }
+      }
       router.push(ENDPOINTS.TYPOLOGIES);
     } catch (error) {
       console.error('Error submitting form:', error);

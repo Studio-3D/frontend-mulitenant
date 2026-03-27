@@ -22,7 +22,7 @@ import Button from '@/components/Button';
 import { useSociete } from '@/context/SocieteContext';
 
 const EtapeTable = ({ searchParams }) => {
-  const { selectedProjet } = useProjet();
+  const { selectedProjet ,refreshProjets} = useProjet();
   const { selectedSociete } = useSociete();
   const [etapes, setEtapes] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -558,8 +558,16 @@ const EtapeTable = ({ searchParams }) => {
             type="Source"
             message={'Etes-vous sûr de vouloir supprimer cette etape ?'}
             accessToken={accesstoken}
-            onClose={() => {
+            onClose={async () => {
               setShowDeleteModal(false);
+               // Refresh project data after deletion
+              if (selectedProjet?.id) {
+                try {
+                  await refreshProjets(selectedProjet.id);
+                } catch (refreshError) {
+                  console.error('Error refreshing project after deletion:', refreshError);
+                }
+              }
               fetchData_table_by_projet(
                 entity,
                 {},

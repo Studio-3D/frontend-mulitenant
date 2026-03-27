@@ -12,17 +12,18 @@ import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
 import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
 import { useSociete } from '@/context/SocieteContext';
+import { BIEN_ETATS } from '@/components/bien-utils';
 
 // Define status mapping outside component to avoid recreation
 const STATUS_CONFIG = {
-  DISPONIBLE: { name: 'Disponible', color: 'bg-green-500' },
-  PRE_RESERVATION: { name: 'Pré-réservé', color: 'bg-yellow-500' },
-  RESERVATION: { name: 'Réservé', color: 'bg-blue-500' },
-  BLOQUE: { name: 'Bloqué', color: 'bg-red-500' },
-  VENDU: { name: 'Vendu', color: 'bg-purple-500' },
-  ENCOURS_DE_PROPOSITION: {
-    name: 'En cours de proposition',
-    color: 'bg-orange-500',
+  DISPONIBLE: { name: BIEN_ETATS.DISPONIBLE.label, color: 'bg-green-500' },
+  PRE_RESERVATION: { name: BIEN_ETATS.PRE_RESERVATION.label, color: 'bg-yellow-500' },
+  RESERVATION: { name: BIEN_ETATS.RESERVATION.label, color: 'bg-blue-500' },
+  BLOQUE: { name: BIEN_ETATS.BLOQUE.label, color: 'bg-red-500' },
+  VENDU: { name: BIEN_ETATS.VENDU.label, color: 'bg-purple-500' },
+  ENCOURS_DE_PROPOSITION: { 
+    name: BIEN_ETATS.ENCOURS_DE_PROPOSITION.label, 
+    color: 'bg-orange-500' 
   },
 };
 
@@ -504,6 +505,11 @@ export const BlocDetailsPage = () => {
             }}
             max_etages={blocData?.bloc?.projet?.max_etages}
             trancheId={blocData?.bloc?.tranche_id}
+            tranches={blocData?.bloc?.tranche ? [blocData.bloc.tranche] : []}
+            immeubles={blocData?.bloc?.immeuble || []}
+            typologies={blocData?.bloc?.projet?.typologies || []}
+            vues={blocData?.bloc?.projet?.vues || []}
+            typeBiens={blocData?.bloc?.projet?.types_bien || []}
           />
         </div>
       </div>
