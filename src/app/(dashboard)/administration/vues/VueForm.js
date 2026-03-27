@@ -11,7 +11,7 @@ import { useSociete } from '@/context/SocieteContext';
 const VueForm = ({ id = null, onComplete }) => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const { selectedProjet } = useProjet();
+  const { selectedProjet,refreshProjets  } = useProjet();
   const { selectedSociete } = useSociete();
   const router = useRouter();
 
@@ -123,6 +123,15 @@ const VueForm = ({ id = null, onComplete }) => {
         },
       });
 
+      // Refresh the project data to include the new/updated typologie
+      if (selectedProjet?.id) {
+        try {
+          await refreshProjets(selectedProjet.id);
+        } catch (refreshError) {
+          console.error('Error refreshing project data:', refreshError);
+          // Don't block navigation even if refresh fails
+        }
+      }
       toast.success(
         id ? 'Vue modifiée avec succès' : 'Vue ajoutée avec succès'
       );

@@ -167,7 +167,7 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  useEffect(() => {
+  /*useEffect(() => {
     // Only set up interval if we're NOT in form mode
     const action = searchParams?.get('action');
     if (action === 'add' || action === 'edit') {
@@ -204,7 +204,7 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
     searchTerm,
     filters,
     selectedProjet,
-  ]);
+  ]);*/
 
   useEffect(() => {
     const timer = setTimeout(() => {}, 1200);

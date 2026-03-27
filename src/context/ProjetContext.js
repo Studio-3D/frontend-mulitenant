@@ -251,7 +251,7 @@ export function ProjetProvider({ children }) {
       ));
       
       // Update selected project if it's the same
-      if (selectedProjet?.id === updatedProject.id) {
+      if (selectedProjet?.id == updatedProject.id) {
         setSelectedProjet(updatedProject);
         localStorage.setItem('selectedProjet', JSON.stringify(updatedProject));
       }

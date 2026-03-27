@@ -198,64 +198,86 @@ useEffect(() => {
       .required("Confirmation du mot de passe requise"),
   });
 
-  const formik = useFormik({
-    initialValues: {
-      name: "",
-      prenom: "",
-      email: "",
-      adresse: "",
-      photo: null,
-      role: "",
-      password: "",
-      password_confirmation: "",
-      societe_id: selectedSociete?.id || "",
-      gender: "",
-      phone: "",
-      cin: "",
-      fonction: "",
-      date_embauche: "",
-      niveau_etude: "",
-      cnss: "",
-      is_actif: "1",
-      solde_conge: "",
-    },
-    validationSchema,
-    onSubmit: async (values) => {
-      setLoading(true);
-      try {
-        const token = localStorage.getItem("accessToken");
-        if (!token) {
-          toast.error("Token manquant. Veuillez vous reconnecter.");
-          setLoading(false);
-          return;
-        }
-
-        const formData = new FormData();
-        Object.keys(values).forEach((key) => {
-          if (values[key] !== null && values[key] !== "") {
-            formData.append(key, values[key]);
-          }
-        });
-
-        const response = await axios.post(APIURL.UTILISATEURS, formData, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        });
-        toast.success("Utilisateur ajouté avec succès");
-        router.push("/utilisateurs");
-      } catch (error) {
-        toast.error(
-          error.response?.data?.message || "Une erreur est survenue."
-        );
-      } finally {
+ const formik = useFormik({
+  initialValues: {
+    name: "",
+    prenom: "",
+    email: "",
+    adresse: "",
+    photo: null,
+    role: "",
+    password: "",
+    password_confirmation: "",
+    societe_id: selectedSociete?.id || "",
+    gender: "",
+    phone: "",
+    cin: "",
+    fonction: "",
+    date_embauche: "",
+    niveau_etude: "",
+    cnss: "",
+    is_actif: "1",
+    solde_conge: "",
+  },
+  validationSchema,
+  onSubmit: async (values) => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        toast.error("Token manquant. Veuillez vous reconnecter.");
         setLoading(false);
+        return;
       }
-    },
-    validateOnChange: true,
-    validateOnBlur: false,
-  });
+
+      const formData = new FormData();
+      Object.keys(values).forEach((key) => {
+        if (values[key] !== null && values[key] !== "") {
+          formData.append(key, values[key]);
+        }
+      });
+
+      const response = await axios.post(APIURL.UTILISATEURS, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      toast.success("Utilisateur ajouté avec succès");
+      router.push("/utilisateurs");
+    } catch (error) {
+      if (error.response?.status === 422) {
+        // Handle validation errors from Laravel
+        const errors = error.response.data.errors;
+        
+        // Set formik errors for each field
+        if (errors) {
+          Object.keys(errors).forEach((field) => {
+            formik.setFieldError(field, errors[field][0]);
+          });
+          
+          // Scroll to the first error field
+          const firstErrorField = Object.keys(errors)[0];
+          const errorElement = document.querySelector(`[name="${firstErrorField}"]`);
+          if (errorElement) {
+            errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
+      } else {
+        // Handle other errors with toast
+        toast.error(
+          error.response?.data?.message || 
+          error.response?.data?.error || 
+          "Une erreur est survenue."
+        );
+      }
+    } finally {
+      setLoading(false);
+    }
+  },
+  validateOnChange: true,
+  validateOnBlur: true, // Change this to true for better UX
+});
 // OU si vous avez formik.values.societe_id
 useEffect(() => {
   if (formik?.values?.societe_id) {

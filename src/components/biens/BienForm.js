@@ -563,7 +563,7 @@ export default function BienForm() {
         if (bienData.num_parking != null) {
           setHasParking(true);
         }
-        if (bienData.superficie_jardin != 0) {
+        if (bienData.superficie_jardin != null) {
           setHasJardin(true);
         }
         if (bienData.num_box != null) {
@@ -779,17 +779,16 @@ export default function BienForm() {
       errors.type_id = ['Le type de bien est requis'];
     }
 
-    if (!formData.nbre_facades) {
+   // Fix: Check for null/undefined specifically, allow 0
+    if (formData.nbre_facades === null || formData.nbre_facades === undefined || formData.nbre_facades === '') {
       errors.nbre_facades = ['Le nombre de façades est requis'];
     }
-    if (formData.prix_unitaire == null) {
-      // teste null ou undefined
-      errors.prix_unitaire = ['Le prix unitaire est requis'];
-    }
-
-    if (!formData.avance_minimale) {
-      errors.avance_minimale = ["L'avance minimale est requise"];
-    }
+    if (formData.prix_unitaire === null || formData.prix_unitaire === undefined || formData.prix_unitaire === '') {
+    errors.prix_unitaire = ['Le prix unitaire est requis'];
+  }
+    if (formData.avance_minimale === null || formData.avance_minimale === undefined || formData.avance_minimale === '') {
+    errors.avance_minimale = ["L'avance minimale est requise"];
+  }
     if (!formData.etat) {
       errors.etat = ["L'état est requis"];
     }
@@ -812,33 +811,34 @@ export default function BienForm() {
     }
     // Si jardin activé
     if (hasJardin) {
-      if (!formData.superficie_jardin) {
+         if (formData.superficie_jardin === null || formData.superficie_jardin === undefined || formData.superficie_jardin === '') {
         errors.superficie_jardin = ['La superficie du jardin est requise'];
       }
     }
 
     // Si parking activé
     if (hasParking) {
-      if (!formData.num_parking) {
+      if (formData.num_parking === null || formData.num_parking === undefined || formData.num_parking === '') {
         errors.num_parking = ['Le numéro de parking est requis'];
       }
-      if (!formData.prix_parking) {
+      if (formData.prix_parking === null || formData.prix_parking === undefined || formData.prix_parking === '') {
         errors.prix_parking = ['Le prix du parking est requis'];
       }
-      if (!formData.superficie_parking) {
+      if (formData.superficie_parking === null || formData.superficie_parking === undefined || formData.superficie_parking === '') {
         errors.superficie_parking = ['La superficie du parking est requise'];
       }
     }
 
     // Si box activé
     if (hasBox) {
-      if (!formData.num_box) {
+      if (formData.num_box === null || formData.num_box === undefined || formData.num_box === '') {
         errors.num_box = ['Le numéro du box est requis'];
       }
-      if (!formData.prix_box) {
+      if (formData.prix_box === null || formData.prix_box === undefined || formData.prix_box === '') {
         errors.prix_box = ['Le prix du box est requis'];
       }
-      if (!formData.superficie_box) {
+
+      if (formData.superficie_box === null || formData.superficie_box === undefined || formData.superficie_box === '') {
         errors.superficie_box = ['La superficie du box est requise'];
       }
     }
@@ -1382,15 +1382,19 @@ export default function BienForm() {
           error={errors.numero}
           required
         />
+       
         {(projet.nbre_tranches > 0 ||
-          projet.nbre_bocs > 0 ||
+          projet.nbre_blocs > 0 ||
           projet.nbre_immeubles > 0) && (
           <SelectInput
             label="Niveau"
             name="niveau"
-            value={formData.niveau}
-            options={etages.map((t) => ({ label: t.label, value: t.value }))}
-            onChange={(selected) => handleChange('niveau', selected)}
+            value={formData.niveau !== undefined && formData.niveau !== null ? String(formData.niveau) : ''}
+            options={etages.map((t) => ({ 
+              label: t.label, 
+              value: String(t.value) // Convert to string to ensure consistent comparison
+            }))}
+            onChange={(selected) => handleChange('niveau', selected ? Number(selected) : null)}
             required
           />
         )}

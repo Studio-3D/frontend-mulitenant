@@ -12,17 +12,19 @@ import axios from 'axios';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
 import { useSociete } from '@/context/SocieteContext';
+import { BIEN_ETATS } from '@/components/bien-utils';
 
 // Define status mapping outside component to avoid recreation
+
 const STATUS_CONFIG = {
-  DISPONIBLE: { name: 'Disponible', color: 'bg-green-500' },
-  PRE_RESERVATION: { name: 'Pré-réservé', color: 'bg-yellow-500' },
-  RESERVATION: { name: 'Réservé', color: 'bg-blue-500' },
-  BLOQUE: { name: 'Bloqué', color: 'bg-red-500' },
-  VENDU: { name: 'Vendu', color: 'bg-purple-500' },
-  ENCOURS_DE_PROPOSITION: {
-    name: 'En cours de proposition',
-    color: 'bg-orange-500',
+  DISPONIBLE: { name: BIEN_ETATS.DISPONIBLE.label, color: 'bg-green-500' },
+  PRE_RESERVATION: { name: BIEN_ETATS.PRE_RESERVATION.label, color: 'bg-yellow-500' },
+  RESERVATION: { name: BIEN_ETATS.RESERVATION.label, color: 'bg-blue-500' },
+  BLOQUE: { name: BIEN_ETATS.BLOQUE.label, color: 'bg-red-500' },
+  VENDU: { name: BIEN_ETATS.VENDU.label, color: 'bg-purple-500' },
+  ENCOURS_DE_PROPOSITION: { 
+    name: BIEN_ETATS.ENCOURS_DE_PROPOSITION.label, 
+    color: 'bg-orange-500' 
   },
 };
 
@@ -74,6 +76,7 @@ export const TrancheDetailsPage = () => {
 
       const trancheDetails = response.data;
       setTrancheData(trancheDetails);
+      console.log('les immeubles ==>'+trancheDetails.tranche.immeuble)  
       console.log('fetched tranche data', trancheDetails);
 
       // Update the context with the project details if available
@@ -500,6 +503,11 @@ export const TrancheDetailsPage = () => {
                 : undefined,
             }}
             max_etages={trancheData?.tranche?.projet?.max_etages}
+            blocs={trancheData?.tranche?.bloc|| []}
+            immeubles={trancheData?.tranche?.immeuble|| []}
+            typologies={trancheData?.tranche?.projet?.typologies || []}
+            vues={trancheData?.tranche?.projet?.vues || []}
+            typeBiens={trancheData?.tranche?.projet?.types_bien || []}
           />
         </div>
       </div>
