@@ -281,7 +281,7 @@ const EcheanceTrancheTable = ({ searchParams }) => {
             route={APIURL.ECHEANCESTRANCE}
             Id={selectedId}
             type="Source"
-            message={'Etes-vous sûr de vouloir supprimer ce tranche ?'}
+            message={'Etes-vous sûr de vouloir supprimer cette echeance ?'}
             accessToken={accesstoken}
             onClose={() => {
               setShowDeleteModal(false);

@@ -257,7 +257,7 @@ useEffect(() => {
       setFetchingUsers(true);
       try {
         const token = localStorage.getItem('accessToken');
-        const response = await axios.get(`${APIURL.ROOT}/get_users`, {
+        const response = await axios.get(`${APIURL.ROOTV1}/get_users`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 

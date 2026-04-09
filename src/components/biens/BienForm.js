@@ -563,7 +563,7 @@ export default function BienForm() {
         if (bienData.num_parking != null) {
           setHasParking(true);
         }
-        if (bienData.superficie_jardin != null) {
+        if (bienData.superficie_jardin != 0) {
           setHasJardin(true);
         }
         if (bienData.num_box != null) {

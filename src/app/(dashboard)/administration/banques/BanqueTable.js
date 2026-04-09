@@ -218,7 +218,7 @@ const BanqueTable = () => {
             route={APIURL.BANQUES}
             Id={selectedId}
             type="Banque"
-            message={'Etes-vous sûr de vouloir supprimer ce Banque ?'}
+            message={'Etes-vous sûr de vouloir supprimer cette Banque ?'}
             accessToken={accesstoken}
             onClose={() => {
               setShowDeleteModal(false);

@@ -265,13 +265,13 @@ const EtapeTable = ({ searchParams }) => {
     },
     {
       key: 'actions',
-      label: 'Actions',
+      label: 'Actiddons',
       render: (row) => {
         const statusButtonProps = getStatusButtonProps(row);
 
         return (
           <div className="flex gap-3 items-center">
-            {isAdmin(user.role) && (
+            {(isAdmin(user.role)||isSuperAdmin(user.role))&& (
               <>
                 {statusButtonProps && (
                   <button

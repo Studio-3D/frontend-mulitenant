@@ -2542,7 +2542,7 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
 
                   <div className="col-span-3 mt-4">
                     <h2 className="text-xl font-medium  border-b pb-2 mb-4">
-                      Informations de la visite
+                      Informations de la visite <p>{'prospec++>'+watch('prospect_id')}</p>
                     </h2>
                   </div>
 
